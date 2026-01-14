@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Soccer Skills Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <header>
+    <h1>Grassroots Tracker</h1>
+    <div id="coachName" style="font-size:12px; color:#22c55e; margin-top:4px;"></div>
+  </header>
+
+  <div class="container">
+    
+    <div id="loginUI" class="card" style="text-align:center; padding:40px;">
+      <h2>Welcome Coach</h2>
+      <p style="color:#94a3b8; margin-bottom:20px;">Sign in to securely track your players.</p>
+      <button id="loginBtn" style="background:#4285F4; border:none; color:white;">Sign in with Google</button>
+    </div>
+
+    <div id="appUI" style="display:none;">
+      
+      <div class="card">
+        <label>Player Name</label>
+        <input type="text" id="player" placeholder="Enter player name...">
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>Phase</label>
+            <div class="chips" id="phase">
+              <div class="chip active" data-val="attack">Attack</div>
+              <div class="chip" data-val="defend">Defend</div>
+            </div>
+          </div>
+          <div>
+            <label>Pressure Context</label>
+            <div class="chips" id="pressure">
+              <div class="chip active" data-val="front">Front</div>
+              <div class="chip" data-val="side">Side</div>
+              <div class="chip" data-val="back">Back</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:15px;">
+          <label>Player Action (Roadmap)</label>
+          <select id="action"></select>
+        </div>
+
+        <div style="margin-top:15px;">
+          <label>Technical Skill (Foundation)</label>
+          <div class="chips" id="skillSuggestions"></div>
+          <p class="small" style="margin-top:5px;">Skills filter based on pressure selected above.</p>
+        </div>
+
+        <div style="margin-top:15px;">
+          <label>Outcome</label>
+          <div class="chips" id="outcome">
+            <div class="chip active" data-val="success" style="color:#22c55e">✓ Success</div>
+            <div class="chip" data-val="partial" style="color:#facc15">~ Partial</div>
+            <div class="chip" data-val="fail" style="color:#ef4444">× Fail</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Observed Qualities</label>
+        <div class="chips" id="qualities"></div>
+        
+        <label style="margin-top:15px;">Notes</label>
+        <input id="notes" placeholder="Coaching cues used...">
+        
+        <button id="logRep" style="margin-top:15px; background:#22c55e; color:white; border:none;">Log Rep</button>
+      </div>
+      
+      <div style="text-align:center; margin-top:20px;">
+        <button id="logoutBtn" style="background:transparent; border:1px solid #333; color:#94a3b8; width:auto;">Sign Out</button>
+      </div>
+
+    </div>
+  </div>
+  
+  <script type="module" src="app.js"></script>
+</body>
+</html>
