@@ -6,83 +6,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal" class="close">&times;</span>
+      <h3 id="modalTitle" style="margin-top:0;">Skill Demo</h3>
+      <div class="video-container">
+        <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
   <header>
     <h1>Grassroots Tracker</h1>
-    <div id="coachName" style="font-size:12px; color:#22c55e; margin-top:4px;"></div>
+    <div id="coachName" style="font-size:12px; color:#22c55e;"></div>
   </header>
 
-  <div class="container">
-    
-    <div id="loginUI" class="card" style="text-align:center; padding:40px;">
-      <h2>Welcome Coach</h2>
-      <p style="color:#94a3b8; margin-bottom:20px;">Sign in to securely track your players.</p>
+  <div class="container" style="padding-bottom: 80px;"> <div id="loginUI" class="card" style="text-align:center; padding:40px;">
+      <h2>Player Portal</h2>
+      <p style="color:#94a3b8; margin-bottom:20px;">Sign in to track reps and watch drills.</p>
       <button id="loginBtn" style="background:#4285F4; border:none; color:white;">Sign in with Google</button>
     </div>
 
     <div id="appUI" style="display:none;">
-      
-      <div class="card">
-        <label>Player Name</label>
-        <input type="text" id="player" placeholder="Enter player name...">
-      </div>
 
-      <div class="card">
-        <div class="row">
-          <div>
-            <label>Phase</label>
-            <div class="chips" id="phase">
-              <div class="chip active" data-val="attack">Attack</div>
-              <div class="chip" data-val="defend">Defend</div>
+      <div id="viewTracker">
+        <div class="card">
+          <label>Player Name</label>
+          <input type="text" id="player" placeholder="Enter player name...">
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <label>Phase</label>
+              <div class="chips" id="phase">
+                <div class="chip active" data-val="attack">Attack</div>
+                <div class="chip" data-val="defend">Defend</div>
+              </div>
+            </div>
+            <div>
+              <label>Pressure</label>
+              <div class="chips" id="pressure">
+                <div class="chip active" data-val="front">Front</div>
+                <div class="chip" data-val="side">Side</div>
+                <div class="chip" data-val="back">Back</div>
+              </div>
             </div>
           </div>
-          <div>
-            <label>Pressure Context</label>
-            <div class="chips" id="pressure">
-              <div class="chip active" data-val="front">Front</div>
-              <div class="chip" data-val="side">Side</div>
-              <div class="chip" data-val="back">Back</div>
+
+          <div style="margin-top:15px;">
+            <label>Action (Roadmap)</label>
+            <select id="action"></select>
+          </div>
+
+          <div style="margin-top:15px;">
+            <label>Skill (Foundation) - <span style="color:#3b82f6">Tap to Select</span></label>
+            <div class="chips" id="skillSuggestions"></div>
+            
+            <div id="watchBtnContainer" style="display:none; margin-top:10px;">
+              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo Video</button>
+            </div>
+          </div>
+
+          <div style="margin-top:15px;">
+            <label>Outcome</label>
+            <div class="chips" id="outcome">
+              <div class="chip active" data-val="success" style="color:#22c55e">✓ Success</div>
+              <div class="chip" data-val="partial" style="color:#facc15">~ Partial</div>
+              <div class="chip" data-val="fail" style="color:#ef4444">× Fail</div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:15px;">
-          <label>Player Action (Roadmap)</label>
-          <select id="action"></select>
+        <div class="card">
+          <label>Notes</label>
+          <input id="notes" placeholder="Coaching cues...">
+          <button id="logRep" style="margin-top:15px; background:#22c55e; border:none;">Log Rep</button>
         </div>
+      </div>
 
-        <div style="margin-top:15px;">
-          <label>Technical Skill (Foundation)</label>
-          <div class="chips" id="skillSuggestions"></div>
-          <p class="small" style="margin-top:5px;">Skills filter based on pressure selected above.</p>
-        </div>
-
-        <div style="margin-top:15px;">
-          <label>Outcome</label>
-          <div class="chips" id="outcome">
-            <div class="chip active" data-val="success" style="color:#22c55e">✓ Success</div>
-            <div class="chip" data-val="partial" style="color:#facc15">~ Partial</div>
-            <div class="chip" data-val="fail" style="color:#ef4444">× Fail</div>
+      <div id="viewStats" style="display:none;">
+        <div class="card">
+          <h2>My Progress</h2>
+          <div class="row">
+            <div class="stat-box">
+              <div id="statTotal" class="stat-num">0</div>
+              <div class="stat-label">Total Reps</div>
+            </div>
+            <div class="stat-box">
+              <div id="statSuccess" class="stat-num">0%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
           </div>
         </div>
+
+        <div class="card">
+          <label>Recent Activity</label>
+          <canvas id="progressChart"></canvas> </div>
+
+        <div class="card">
+          <label>History</label>
+          <div id="historyList" class="small"></div>
+        </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+          <button id="refreshStats" class="secondary-btn">🔄 Refresh Data</button>
+          <button id="logoutBtn" style="margin-top:10px; background:transparent; border:1px solid #333; color:#94a3b8;">Sign Out</button>
+        </div>
       </div>
 
-      <div class="card">
-        <label>Observed Qualities</label>
-        <div class="chips" id="qualities"></div>
-        
-        <label style="margin-top:15px;">Notes</label>
-        <input id="notes" placeholder="Coaching cues used...">
-        
-        <button id="logRep" style="margin-top:15px; background:#22c55e; color:white; border:none;">Log Rep</button>
-      </div>
-      
-      <div style="text-align:center; margin-top:20px;">
-        <button id="logoutBtn" style="background:transparent; border:1px solid #333; color:#94a3b8; width:auto;">Sign Out</button>
-      </div>
+    </div> <nav class="bottom-nav" id="bottomNav" style="display:none;">
+      <button class="nav-item active" id="navTrack">
+        <span>📝</span> Track
+      </button>
+      <button class="nav-item" id="navStats">
+        <span>Ck</span> Report
+      </button>
+    </nav>
 
-    </div>
   </div>
   
   <script type="module" src="app.js"></script>
