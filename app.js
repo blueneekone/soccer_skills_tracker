@@ -241,6 +241,22 @@ document.getElementById("logRep").addEventListener("click", async () => {
         btn.textContent = "Log Rep";
         btn.disabled = false;
         alert("Saved!");
+
+try {
+        await addDoc(collection(db, "reps"), repData);
+        document.getElementById("notes").value = "";
+        btn.textContent = "Log Rep";
+        btn.disabled = false;
+        alert("Saved!");
+        
+        loadStats(); // <--- ADD THIS LINE! This refreshes the chart instantly.
+        
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        btn.textContent = "Error";
+        alert("Error saving: Check console");
+    }
+
     } catch (e) {
         console.error("Error adding document: ", e);
         btn.textContent = "Error";
