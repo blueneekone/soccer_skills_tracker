@@ -1,111 +1,83 @@
 export const dbData = {
-  // 1. QUALITIES (From US Soccer Roadmap)
-  qualities: [
-    { id: "q1", name: "Read Game", desc: "Decisions & Awareness" },
-    { id: "q2", name: "Initiative", desc: "Proactive & Brave" },
-    { id: "q3", name: "Focus", desc: "Optimal Mental State" },
-    { id: "q4", name: "Technical", desc: "Ball Mastery" },
-    { id: "q5", name: "Physical", desc: "Speed & Agility" },
-    { id: "q6", name: "Responsibility", desc: "Self-Regulation" }
+  // 1. POSITIONS (New!)
+  positions: [
+    { id: "all", name: "Show All" },
+    { id: "fwd", name: "Forward / Striker" },
+    { id: "mid", name: "Midfielder (CAM/CDM)" },
+    { id: "wing", name: "Winger" },
+    { id: "def", name: "Defender (CB/LB/RB)" },
+    { id: "gk", name: "Goalkeeper" }
   ],
 
-  // 2. TACTICAL GOALS (From US Soccer Roadmap)
+  // 2. QUALITIES
+  qualities: [
+    { id: "q1", name: "Read Game", desc: "Decisions" },
+    { id: "q2", name: "Initiative", desc: "Brave" },
+    { id: "q3", name: "Focus", desc: "Mental" },
+    { id: "q4", name: "Technical", desc: "Mastery" },
+    { id: "q5", name: "Physical", desc: "Fitness" },
+    { id: "q6", name: "Responsibility", desc: "Self-Reg" }
+  ],
+
+  // 3. TACTICAL GOALS
   roadmapActions: [
-    // ATTACKING
     { id: "att_1v1", name: "Create a 1v1 / Dribble Past", phase: "attack" },
     { id: "att_shoot", name: "Shoot / Finish", phase: "attack" },
-    { id: "att_pass_fwd", name: "Pass or Dribble Forward", phase: "attack" },
-    { id: "att_spread", name: "Spread Out", phase: "attack" },
-    { id: "att_options", name: "Create Passing Options", phase: "attack" },
-    { id: "att_change_point", name: "Change Point of Attack", phase: "attack" },
-    
-    // DEFENDING
+    { id: "att_pass", name: "Pass / Distribute", phase: "attack" },
     { id: "def_protect", name: "Protect the Goal", phase: "defend" },
     { id: "def_steal", name: "Steal the Ball", phase: "defend" },
-    { id: "def_pressure", name: "Pressure the Ball", phase: "defend" },
-    { id: "def_compact", name: "Make it Compact", phase: "defend" }
+    { id: "def_air", name: "Win Aerial Ball", phase: "defend" }
   ],
 
-  // 3. TECHNICAL SOLUTIONS (From Foundation Model & Brilliant Basics)
+  // 4. SKILLS (Updated with Position Tags)
   foundationSkills: [
-    // ============================================================
-    // MODE 1: ATTACK (Front/Side Pressure) - "SEARCH, SHIFT, SPEED"
-    // ============================================================
+    // --- FOUNDATION (FOR EVERYONE) ---
     { 
-      id: "fs_shift_r_out", 
-      name: "Shift Right (Outside)", 
-      pressure: ["front", "side"], 
-      video: "", 
-      category: "Shift & Speed",
-      drill: "Brilliant Basics Lvl 1: Toe Taps / Boxes"
+      id: "fs_shift_r", name: "Shift Right (Foundation)", 
+      pressure: ["front", "side"], positions: ["all"], 
+      drill: "Brilliant Basics Lvl 1: Toe Taps", video: "" 
     },
     { 
-      id: "fs_shift_l_out", 
-      name: "Shift Left (Outside)", 
-      pressure: ["front", "side"], 
-      video: "", 
-      category: "Shift & Speed",
-      drill: "Brilliant Basics Lvl 1: Toe Taps / Boxes"
+      id: "fs_step_over", name: "Step Over (Foundation)", 
+      pressure: ["front", "side"], positions: ["all"], 
+      drill: "Brilliant Basics Lvl 2: Step Over", video: "" 
     },
     { 
-      id: "fs_step_over", 
-      name: "Step Over (Scissors)", 
-      pressure: ["front", "side"], 
-      video: "", 
-      category: "Shift & Speed",
-      drill: "Brilliant Basics Lvl 2: Step Over"
-    },
-    { 
-      id: "fs_twist_turn", 
-      name: "Twist & Turn", 
-      pressure: ["front", "side"], 
-      video: "", 
-      category: "Shift & Speed",
-      drill: "Brilliant Basics Lvl 3: Twist Off"
+      id: "fs_pin", name: "Pinning (Foundation)", 
+      pressure: ["back"], positions: ["all"], 
+      drill: "Shielding: 1v1 Box", video: "" 
     },
 
-    // ============================================================
-    // MODE 2: SURVIVAL (Side/Back Pressure) - "SEARCH, SHIELD, SLIP"
-    // ============================================================
+    // --- POSITIONAL SPECIFIC (From your PDFs) ---
+    // GOALKEEPER
     { 
-      id: "fs_pin_defender", 
-      name: "Pinning the Defender", 
-      pressure: ["back"], 
-      video: "", 
-      category: "Shield & Slip",
-      drill: "Shielding: 1v1 Box (Back into player)"
+      id: "gk_dive", name: "Dive & Recovery", 
+      pressure: ["front", "side"], positions: ["gk"], 
+      drill: "Defensive Template: Dive & Recov", video: "" 
     },
     { 
-      id: "fs_first_touch", 
-      name: "First Time Touch (Slip)", 
-      pressure: ["side", "back"], 
-      video: "", 
-      category: "Shield & Slip",
-      drill: "Wall Ball: One Touch Passing"
+      id: "gk_high_ball", name: "High Ball Catch", 
+      pressure: ["front"], positions: ["gk"], 
+      drill: "Defensive Template: High Ball", video: "" 
+    },
+
+    // DEFENDER
+    { 
+      id: "def_clear", name: "Long Clearance", 
+      pressure: ["front", "side"], positions: ["def"], 
+      drill: "Defensive Template: Distribution", video: "" 
+    },
+
+    // WINGER / STRIKER
+    { 
+      id: "att_cross", name: "Crossing on the Run", 
+      pressure: ["side"], positions: ["wing", "fwd"], 
+      drill: "Offensive Template: Crossing Grid", video: "" 
     },
     { 
-      id: "fs_back_foot", 
-      name: "Back Foot Receive", 
-      pressure: ["side", "back"], 
-      video: "", 
-      category: "Shield & Slip",
-      drill: "Passing Gate: Open Up Body"
-    },
-    { 
-      id: "fs_hook_out", 
-      name: "Outside Hook (Turn)", 
-      pressure: ["side", "back"], 
-      video: "", 
-      category: "Turn Away",
-      drill: "Cone Grid: U-Turn (Outside)"
-    },
-    { 
-      id: "fs_drag_back", 
-      name: "Drag Back (Turn)", 
-      pressure: ["side", "back"], 
-      video: "", 
-      category: "Turn Away",
-      drill: "Stationary: Pull Back V"
+      id: "att_shoot_pwr", name: "Power Shot", 
+      pressure: ["front"], positions: ["fwd", "mid", "wing"], 
+      drill: "Offensive Template: Shooting Wall", video: "" 
     }
   ]
 };

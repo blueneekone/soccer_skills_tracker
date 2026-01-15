@@ -23,7 +23,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Offline Persistence
 enableIndexedDbPersistence(db).catch((err) => console.log('Persistence error:', err.code));
 
 // --- UI REFERENCES ---
@@ -35,14 +34,15 @@ const bottomNav = document.getElementById("bottomNav");
 
 const viewTracker = document.getElementById("viewTracker");
 const viewStats = document.getElementById("viewStats");
-const viewCoach = document.getElementById("viewCoach"); // New
+const viewCoach = document.getElementById("viewCoach"); 
 
 const navTrack = document.getElementById("navTrack");
 const navStats = document.getElementById("navStats");
-const navCoach = document.getElementById("navCoach"); // New
+const navCoach = document.getElementById("navCoach"); 
 
 const actionSelect = document.getElementById("action");
 const qualitiesDiv = document.getElementById("qualities");
+const positionSelect = document.getElementById("positionSelect"); // NEW
 
 // 5. AUTH LOGIC
 onAuthStateChanged(auth, (user) => {
@@ -52,11 +52,9 @@ onAuthStateChanged(auth, (user) => {
     bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = user.displayName;
     
-    // COACH CHECK: Reveal tab if email matches
     if(user.email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
         navCoach.style.display = "flex";
     }
-
     loadStats(); 
   } else {
     loginUI.style.display = "block";
@@ -79,7 +77,6 @@ function switchTab(tabName) {
     viewTracker.style.display = "none";
     viewStats.style.display = "none";
     viewCoach.style.display = "none";
-    
     navTrack.classList.remove("active");
     navStats.classList.remove("active");
     navCoach.classList.remove("active");
@@ -97,7 +94,6 @@ function switchTab(tabName) {
         loadCoachDashboard();
     }
 }
-
 navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
@@ -107,16 +103,8 @@ const modal = document.getElementById("videoModal");
 const videoPlayer = document.getElementById("videoPlayer");
 let currentSkillVideo = "";
 
-document.getElementById("closeModal").addEventListener("click", () => {
-    modal.style.display = "none";
-    videoPlayer.src = "";
-});
-window.onclick = (event) => {
-    if (event.target == modal) {
-        modal.style.display = "none";
-        videoPlayer.src = "";
-    }
-};
+document.getElementById("closeModal").addEventListener("click", () => { modal.style.display = "none"; videoPlayer.src = ""; });
+window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; videoPlayer.src = ""; }};
 document.getElementById("watchVideoBtn").addEventListener("click", () => {
     if(currentSkillVideo) {
         const activeChip = document.querySelector("#skillSuggestions .chip.active");
@@ -126,7 +114,19 @@ document.getElementById("watchVideoBtn").addEventListener("click", () => {
     }
 });
 
-// 8. DATA RENDERING
+// 8. DROPDOWNS & CHIPS
+// Populate Positions (NEW)
+if(positionSelect.options.length === 0) {
+    dbData.positions.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        positionSelect.appendChild(opt);
+    });
+}
+// Listen for Position Change to update skills
+positionSelect.addEventListener("change", updateSkillSuggestions);
+
 if(qualitiesDiv.innerHTML === "") {
     dbData.qualities.forEach(q => {
         const chip = document.createElement("div");
@@ -143,20 +143,14 @@ const chips = {
     outcome: document.getElementById("outcome")
 };
 
-function getActiveChip(group) {
-    return group.querySelector(".chip.active")?.dataset.val;
-}
+function getActiveChip(group) { return group.querySelector(".chip.active")?.dataset.val; }
 
 document.querySelectorAll(".chips").forEach(group => {
     group.addEventListener("click", (e) => {
         if(e.target.classList.contains("chip")) {
-            if (group.id === "qualities") {
-                e.target.classList.toggle("active");
-                return;
-            }
+            if (group.id === "qualities") { e.target.classList.toggle("active"); return; }
             Array.from(group.children).forEach(c => c.classList.remove("active"));
             e.target.classList.add("active");
-            
             if (group.id === "phase") updateActionDropdown();
             if (group.id === "pressure") updateSkillSuggestions();
         }
@@ -166,8 +160,7 @@ document.querySelectorAll(".chips").forEach(group => {
 function updateActionDropdown() {
     const currentPhase = getActiveChip(chips.phase) || "attack";
     actionSelect.innerHTML = "";
-    const filteredActions = dbData.roadmapActions.filter(a => a.phase === currentPhase);
-    filteredActions.forEach(a => {
+    dbData.roadmapActions.filter(a => a.phase === currentPhase).forEach(a => {
         const opt = document.createElement("option");
         opt.value = a.id;
         opt.textContent = a.name;
@@ -175,16 +168,23 @@ function updateActionDropdown() {
     });
 }
 
+// UPDATED FILTER LOGIC (Includes Position)
 function updateSkillSuggestions() {
     const suggestionsDiv = document.getElementById("skillSuggestions");
     suggestionsDiv.innerHTML = "";
     document.getElementById("watchBtnContainer").style.display = "none";
     
     const currentPressure = getActiveChip(chips.pressure);
+    const currentPosition = positionSelect.value || "all";
     
     const relevantSkills = dbData.foundationSkills.filter(s => {
-        if (!currentPressure || currentPressure === "none") return true;
-        return s.pressure.includes(currentPressure);
+        // 1. Filter by Pressure
+        const pressureMatch = (!currentPressure || currentPressure === "none") ? true : s.pressure.includes(currentPressure);
+        
+        // 2. Filter by Position (Show if it matches selected OR if it is for "all")
+        const positionMatch = s.positions.includes("all") || s.positions.includes(currentPosition);
+        
+        return pressureMatch && positionMatch;
     });
 
     relevantSkills.forEach(s => {
@@ -193,6 +193,11 @@ function updateSkillSuggestions() {
         chip.dataset.val = s.id;
         chip.innerText = s.name;
         
+        // Tag "Foundation" skills visually
+        if(s.positions.includes("all")) {
+            chip.style.borderLeft = "3px solid #facc15"; // Yellow stripe
+        }
+
         chip.addEventListener("click", () => {
             Array.from(suggestionsDiv.children).forEach(c => c.classList.remove("active"));
             chip.classList.add("active");
@@ -204,9 +209,7 @@ function updateSkillSuggestions() {
             if (s.drill) {
                 drillText.innerHTML = `<b>🎯 Practice Drill:</b><br>${s.drill}`;
                 container.style.display = "block";
-            } else {
-                drillText.innerHTML = "";
-            }
+            } else { drillText.innerHTML = ""; }
 
             if (s.video) {
                 currentSkillVideo = s.video;
@@ -221,14 +224,20 @@ function updateSkillSuggestions() {
     });
 }
 
-// 9. SUBMIT LOGIC
+// 9. SUBMIT LOGIC (Updated with New Metrics)
 document.getElementById("logRep").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Sign in first");
 
     const pFirst = document.getElementById("playerFirst").value.trim();
     const pLast = document.getElementById("playerLast").value.trim();
-    if (!pFirst || !pLast) return alert("Enter First and Last Name");
+    const sets = document.getElementById("sets").value || 0;
+    const reps = document.getElementById("reps").value || 0;
+    const mins = document.getElementById("minutes").value || 0;
+    const sig = document.getElementById("parentSig").value.trim();
+
+    if (!pFirst || !pLast) return alert("Enter Name");
+    if (!sig) return alert("Parent Initials required to verify session.");
 
     const repData = {
         coachEmail: user.email,
@@ -236,6 +245,11 @@ document.getElementById("logRep").addEventListener("click", async () => {
         playerFirst: pFirst,
         playerLast: pLast,
         player: `${pFirst} ${pLast}`,
+        position: positionSelect.options[positionSelect.selectedIndex]?.text,
+        sets: sets,
+        reps: reps,
+        minutes: mins,
+        signature: sig,
         phase: getActiveChip(chips.phase),
         pressure: getActiveChip(chips.pressure),
         action: actionSelect.options[actionSelect.selectedIndex]?.text,
@@ -251,10 +265,16 @@ document.getElementById("logRep").addEventListener("click", async () => {
 
     try {
         await addDoc(collection(db, "reps"), repData);
+        // Clear inputs
         document.getElementById("notes").value = "";
-        btn.textContent = "Log Rep";
+        document.getElementById("parentSig").value = ""; 
+        document.getElementById("sets").value = "";
+        document.getElementById("reps").value = "";
+        document.getElementById("minutes").value = "";
+        
+        btn.textContent = "Log Session";
         btn.disabled = false;
-        alert("Saved!");
+        alert("Session Verified & Saved!");
         loadStats(); 
     } catch (e) {
         console.error(e);
@@ -263,7 +283,7 @@ document.getElementById("logRep").addEventListener("click", async () => {
     }
 });
 
-// 10. PLAYER STATS (Personal)
+// 10. STATS ENGINE (Updated with Time)
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
@@ -278,10 +298,12 @@ async function loadStats() {
     const querySnapshot = await getDocs(q);
     const logs = [];
     const dailyStats = {};
+    let totalMinutes = 0;
 
     querySnapshot.forEach((doc) => {
         const data = doc.data();
         logs.push(data);
+        totalMinutes += parseInt(data.minutes || 0);
         
         const dateObj = new Date(data.timestamp.seconds * 1000);
         const dateKey = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
@@ -295,7 +317,6 @@ async function loadStats() {
     const today = new Date();
     let streak = 0;
     let checkDate = new Date(today);
-    
     for (let i = 0; i < 365; i++) {
         const key = `${checkDate.getMonth() + 1}/${checkDate.getDate()}`;
         if (dailyStats[key]) {
@@ -308,39 +329,41 @@ async function loadStats() {
     }
     document.getElementById("statStreak").innerText = streak;
 
+    // Totals
+    document.getElementById("statTotal").innerText = logs.length;
+    document.getElementById("statTime").innerText = totalMinutes + "m";
+
     // Chart
     const labels = Object.keys(dailyStats);
     const dataPoints = labels.map(date => {
         const day = dailyStats[date];
         return Math.round((day.success / day.total) * 100);
     });
+    renderChart(labels, dataPoints);
 
-    const totalReps = logs.length;
-    const totalSuccess = logs.filter(l => l.outcome === "success").length;
-    document.getElementById("statTotal").innerText = totalReps;
-    document.getElementById("statSuccess").innerText = (totalReps > 0 ? Math.round((totalSuccess / totalReps) * 100) : 0) + "%";
-
+    // History
     const historyDiv = document.getElementById("historyList");
     historyDiv.innerHTML = logs.slice().reverse().map(l => `
         <div style="border-bottom:1px solid #334155; padding:12px 0;">
-            <span style="color:${l.outcome === 'success' ? '#22c55e' : '#ef4444'}; font-size:18px;">●</span> 
-            <b style="color:#f1f5f9">${l.action}</b>
-            <div class="small" style="margin-top:4px;">${l.skill}</div>
+            <div style="display:flex; justify-content:space-between;">
+                <b style="color:#f1f5f9">${l.skill}</b>
+                <span class="small" style="color:#facc15">${l.minutes}m</span>
+            </div>
+            <div class="small" style="margin-top:4px; color:#94a3b8;">
+                ${l.sets} x ${l.reps} | Verified: ${l.signature}
+            </div>
         </div>
     `).join("");
-
-    renderChart(labels, dataPoints);
 }
 
+// Chart Render (Same as before)
 let myChart = null;
 function renderChart(dates, percentages) {
     const ctx = document.getElementById('progressChart').getContext('2d');
     if (myChart) myChart.destroy();
-
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)');
     gradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
-
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -368,78 +391,64 @@ function renderChart(dates, percentages) {
     });
 }
 
-// 11. COACH DASHBOARD LOGIC (ADMIN ONLY)
+// 11. COACH DASHBOARD
 async function loadCoachDashboard() {
     const listDiv = document.getElementById("coachPlayerList");
     listDiv.innerHTML = "Loading data...";
-    
-    // Fetch ALL reps (Requires updated Security Rules)
     const q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
     const snapshot = await getDocs(q);
     
     const players = {};
-    let totalTeamReps = 0;
+    let totalLogs = 0;
     const allReps = [];
 
     snapshot.forEach(doc => {
         const data = doc.data();
-        allReps.push(data); // Store for CSV export
-        totalTeamReps++;
-        
-        // Aggregate by Player Name
+        allReps.push(data);
+        totalLogs++;
         const name = data.player || "Unknown";
-        if (!players[name]) {
-            players[name] = { reps: 0, success: 0, lastActive: data.timestamp };
-        }
-        players[name].reps++;
-        if (data.outcome === "success") players[name].success++;
+        if (!players[name]) { players[name] = { logs: 0, minutes: 0, last: data.timestamp }; }
+        players[name].logs++;
+        players[name].minutes += parseInt(data.minutes || 0);
     });
 
-    document.getElementById("coachTotalReps").innerText = totalTeamReps;
+    document.getElementById("coachTotalReps").innerText = totalLogs;
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
 
-    // Render List
     listDiv.innerHTML = Object.keys(players).map(p => {
         const stats = players[p];
-        const rate = Math.round((stats.success / stats.reps) * 100);
         return `
         <div style="background:#0f172a; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <div style="font-weight:bold; font-size:16px;">${p}</div>
-                <div class="small" style="color:#94a3b8;">${stats.reps} Reps logged</div>
+                <div class="small" style="color:#94a3b8;">Last: ${new Date(stats.last.seconds * 1000).toLocaleDateString()}</div>
             </div>
             <div style="text-align:right;">
-                <div style="color:${rate > 70 ? '#22c55e' : '#f59e0b'}; font-weight:bold; font-size:18px;">${rate}%</div>
-                <div class="small">Success</div>
+                <div style="color:#22c55e; font-weight:bold; font-size:18px;">${stats.minutes}m</div>
+                <div class="small">Total Practice</div>
             </div>
-        </div>
-        `;
+        </div>`;
     }).join("");
 
-    // Setup Export Button
     document.getElementById("exportCsvBtn").onclick = () => downloadCSV(allReps);
 }
 
 function downloadCSV(data) {
-    const headers = ["Date", "Coach/Parent", "Player", "Phase", "Pressure", "Action", "Skill", "Outcome", "Notes"];
+    const headers = ["Date", "Player", "Position", "Skill", "Sets", "Reps", "Minutes", "VerifiedBy", "Notes"];
     const rows = data.map(r => [
         new Date(r.timestamp.seconds * 1000).toLocaleDateString(),
-        r.coachEmail,
         r.player,
-        r.phase,
-        r.pressure,
-        r.action,
+        r.position,
         r.skill,
-        r.outcome,
-        `"${r.notes || ''}"` // Quote notes to handle commas
+        r.sets,
+        r.reps,
+        r.minutes,
+        r.signature,
+        `"${r.notes || ''}"`
     ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," 
-        + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", encodeURI(csvContent));
     link.setAttribute("download", "team_report.csv");
     document.body.appendChild(link);
     link.click();

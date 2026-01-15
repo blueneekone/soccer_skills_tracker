@@ -29,7 +29,7 @@
     
     <div id="loginUI" class="card" style="text-align:center; padding:40px;">
       <h2>Player Portal</h2>
-      <p style="color:#94a3b8; margin-bottom:20px;">Sign in to track reps and watch drills.</p>
+      <p style="color:#94a3b8; margin-bottom:20px;">Sign in to track sessions.</p>
       <button id="loginBtn" style="background:#4285F4; border:none; color:white;">Sign in with Google</button>
     </div>
 
@@ -38,10 +38,15 @@
       <div id="viewTracker">
         
         <div class="card">
-          <label>Player Name</label>
+          <label>Player Profile</label>
           <div class="row">
-            <div><input type="text" id="playerFirst" placeholder="First Name" autocomplete="given-name"></div>
-            <div><input type="text" id="playerLast" placeholder="Last Name" autocomplete="family-name"></div>
+            <div><input type="text" id="playerFirst" placeholder="First Name"></div>
+            <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+          </div>
+          <div style="margin-top:10px;">
+            <label>My Position</label>
+            <select id="positionSelect" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid #334155; border-radius:6px;">
+              </select>
           </div>
         </div>
 
@@ -70,7 +75,7 @@
           </div>
 
           <div style="margin-top:15px;">
-            <label>Skill (Foundation) - <span style="color:#3b82f6">Tap to Select</span></label>
+            <label>Skill / Drill - <span style="color:#3b82f6">Tap to Select</span></label>
             <div class="chips" id="skillSuggestions"></div>
             
             <div id="watchBtnContainer" style="display:none; margin-top:10px; background:#1e293b; padding:10px; border-radius:8px;">
@@ -78,26 +83,42 @@
               <button id="watchVideoBtn" class="secondary-btn" style="width:100%">🎥 Watch Demo Video</button>
             </div>
           </div>
+        </div>
 
-          <div style="margin-top:15px;">
-            <label>Outcome</label>
-            <div class="chips" id="outcome">
-              <div class="chip active" data-val="success" style="color:#22c55e">✓ Success</div>
-              <div class="chip" data-val="partial" style="color:#facc15">~ Partial</div>
-              <div class="chip" data-val="fail" style="color:#ef4444">× Fail</div>
+        <div class="card">
+          <label>Session Details</label>
+          <div class="row" style="margin-bottom:10px;">
+            <div>
+              <label style="font-size:10px;">Sets</label>
+              <input type="number" id="sets" placeholder="3">
             </div>
+            <div>
+              <label style="font-size:10px;">Reps</label>
+              <input type="number" id="reps" placeholder="10">
+            </div>
+            <div>
+              <label style="font-size:10px;">Mins</label>
+              <input type="number" id="minutes" placeholder="15">
+            </div>
+          </div>
+          
+          <label>Observed Qualities</label>
+          <div class="chips" id="qualities"></div>
+
+          <label style="margin-top:15px;">Outcome</label>
+          <div class="chips" id="outcome">
+            <div class="chip active" data-val="success" style="color:#22c55e">✓ Success</div>
+            <div class="chip" data-val="partial" style="color:#facc15">~ Partial</div>
+            <div class="chip" data-val="fail" style="color:#ef4444">× Fail</div>
           </div>
         </div>
 
         <div class="card">
-          <label>Observed Qualities</label>
-          <div class="chips" id="qualities"></div>
-        </div>
-
-        <div class="card">
-          <label>Notes</label>
-          <input id="notes" placeholder="Coaching cues...">
-          <button id="logRep" style="margin-top:15px; background:#22c55e; border:none;">Log Rep</button>
+          <label>Accountability</label>
+          <input id="parentSig" placeholder="Parent Initials (e.g. EW)" style="margin-bottom:10px; border:1px solid #f59e0b;">
+          <input id="notes" placeholder="Notes (Rate of Exertion?)...">
+          
+          <button id="logRep" style="margin-top:15px; background:#22c55e; border:none;">Log Session</button>
         </div>
       </div>
 
@@ -105,57 +126,25 @@
         <div class="card">
           <h2>My Progress</h2>
           <div class="row">
-            <div class="stat-box">
-              <div id="statTotal" class="stat-num">0</div>
-              <div class="stat-label">Total Reps</div>
-            </div>
-            <div class="stat-box">
-              <div id="statSuccess" class="stat-num">0%</div>
-              <div class="stat-label">Success Rate</div>
-            </div>
-            <div class="stat-box">
-              <div id="statStreak" class="stat-num" style="color:#f59e0b">0</div>
-              <div class="stat-label">Day Streak 🔥</div>
-            </div>
+            <div class="stat-box"><div id="statTotal" class="stat-num">0</div><div class="stat-label">Sessions</div></div>
+            <div class="stat-box"><div id="statTime" class="stat-num">0</div><div class="stat-label">Minutes</div></div> <div class="stat-box"><div id="statStreak" class="stat-num" style="color:#f59e0b">0</div><div class="stat-label">Day Streak 🔥</div></div>
           </div>
         </div>
-
-        <div class="card">
-          <label>Performance Trend</label>
-          <canvas id="progressChart"></canvas>
-        </div>
-
-        <div class="card">
-          <label>Recent History</label>
-          <div id="historyList" class="small"></div>
-        </div>
-        
-        <div style="text-align:center; margin-top:20px;">
-          <button id="logoutBtn" style="margin-top:10px; background:transparent; border:1px solid #333; color:#94a3b8;">Sign Out</button>
-        </div>
+        <div class="card"><label>Performance Trend</label><canvas id="progressChart"></canvas></div>
+        <div class="card"><label>Recent History</label><div id="historyList" class="small"></div></div>
+        <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="color:#94a3b8; background:none; border:1px solid #333;">Sign Out</button></div>
       </div>
 
       <div id="viewCoach" style="display:none;">
         <div class="card" style="border: 1px solid #3b82f6;">
           <h2 style="color:#3b82f6">Coach Dashboard</h2>
-          <p class="small">Team Overview</p>
           <div class="row">
-            <div class="stat-box">
-              <div id="coachTotalReps" class="stat-num">0</div>
-              <div class="stat-label">Team Reps</div>
-            </div>
-            <div class="stat-box">
-              <div id="coachActivePlayers" class="stat-num">0</div>
-              <div class="stat-label">Active Players</div>
-            </div>
+            <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total Logs</div></div>
+            <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Active Players</div></div>
           </div>
           <button id="exportCsvBtn" style="margin-top:15px; background:#3b82f6; border:none;">📥 Download Report (CSV)</button>
         </div>
-
-        <div class="card">
-          <label>Player Leaderboard</label>
-          <div id="coachPlayerList"></div>
-        </div>
+        <div class="card"><label>Player Leaderboard</label><div id="coachPlayerList"></div></div>
       </div>
 
     </div>
@@ -167,7 +156,6 @@
     </nav>
 
   </div>
-  
   <script type="module" src="app.js"></script>
 </body>
 </html>
