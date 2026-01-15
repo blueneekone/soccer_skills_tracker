@@ -1,13 +1,13 @@
-// app.js
+// 1. IMPORTS (Must be at the top)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc } 
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { dbData } from "./data.js";
 
-// --- CONFIGURATION ---
+// 2. CONFIGURATION (Your Keys)
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
   authDomain: "soccer-skills-tracker.firebaseapp.com",
@@ -17,17 +17,48 @@ const firebaseConfig = {
   appId: "1:884044129977:web:47d54f59c891340e505d68"
 };
 
-// ... (Your Imports and Firebase Config stay the same) ...
+// 3. INITIALIZATION (This was likely missing!)
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Import Chart.js logic (We will use this globally)
-import { query, where, getDocs, orderBy, limit } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// --- UI LOGIC ---
 
-// ... (Your Auth Listener stays the same, but add this line inside 'if (user)'):
-    document.getElementById("bottomNav").style.display = "flex";
-    loadStats(); // Load stats on login
+// 4. AUTHENTICATION LISTENER
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const appUI = document.getElementById("appUI");
+const loginUI = document.getElementById("loginUI");
+const bottomNav = document.getElementById("bottomNav");
 
-// --- NAVIGATION LOGIC ---
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // User is logged in
+    loginUI.style.display = "none";
+    appUI.style.display = "block";
+    bottomNav.style.display = "flex"; // Show bottom nav
+    document.getElementById("coachName").textContent = user.displayName;
+    loadStats(); // Load data immediately
+  } else {
+    // User is logged out
+    loginUI.style.display = "block";
+    appUI.style.display = "none";
+    bottomNav.style.display = "none";
+  }
+});
+
+// Login / Logout Buttons
+loginBtn.addEventListener("click", () => {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider).catch((error) => console.error("Login failed", error));
+});
+
+logoutBtn.addEventListener("click", () => {
+    signOut(auth);
+    location.reload(); // Refresh page on logout to clear charts
+});
+
+// 5. NAVIGATION LOGIC (Tabs)
 const viewTracker = document.getElementById("viewTracker");
 const viewStats = document.getElementById("viewStats");
 const navTrack = document.getElementById("navTrack");
@@ -45,21 +76,21 @@ navStats.addEventListener("click", () => {
     viewStats.style.display = "block";
     navTrack.classList.remove("active");
     navStats.classList.add("active");
-    loadStats(); // Refresh data when tab clicked
+    loadStats(); 
 });
 
-// --- VIDEO MODAL LOGIC ---
+// 6. VIDEO MODAL LOGIC
 const modal = document.getElementById("videoModal");
 const closeModal = document.getElementById("closeModal");
 const videoPlayer = document.getElementById("videoPlayer");
 const watchBtnContainer = document.getElementById("watchBtnContainer");
 const watchBtn = document.getElementById("watchVideoBtn");
 
-let currentSkillVideo = ""; // Store the URL of the selected skill
+let currentSkillVideo = "";
 
 closeModal.addEventListener("click", () => {
     modal.style.display = "none";
-    videoPlayer.src = ""; // Stop video when closed
+    videoPlayer.src = "";
 });
 
 window.onclick = (event) => {
@@ -71,17 +102,75 @@ window.onclick = (event) => {
 
 watchBtn.addEventListener("click", () => {
     if(currentSkillVideo) {
-        document.getElementById("modalTitle").innerText = document.querySelector("#skillSuggestions .chip.active").innerText;
+        // Set title from active chip
+        const activeChip = document.querySelector("#skillSuggestions .chip.active");
+        if(activeChip) document.getElementById("modalTitle").innerText = activeChip.innerText;
+        
         videoPlayer.src = currentSkillVideo;
         modal.style.display = "block";
     }
 });
 
-// --- UPDATED SKILL SUGGESTION LOGIC ---
+// 7. DROPDOWN & CHIP LOGIC
+const actionSelect = document.getElementById("action");
+const qualitiesDiv = document.getElementById("qualities");
+
+// Render Quality Chips
+dbData.qualities.forEach(q => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.dataset.val = q.id;
+    chip.textContent = q.name;
+    qualitiesDiv.appendChild(chip);
+});
+
+const chips = {
+    phase: document.getElementById("phase"),
+    pressure: document.getElementById("pressure"),
+    outcome: document.getElementById("outcome")
+};
+
+function getActiveChip(group) {
+    return group.querySelector(".chip.active")?.dataset.val;
+}
+
+// Universal Chip Click Handler
+document.querySelectorAll(".chips").forEach(group => {
+    group.addEventListener("click", (e) => {
+        if(e.target.classList.contains("chip")) {
+            // If it's the Qualities section, allow multi-select
+            if (group.id === "qualities") {
+                e.target.classList.toggle("active");
+                return;
+            }
+            // Otherwise single select
+            Array.from(group.children).forEach(c => c.classList.remove("active"));
+            e.target.classList.add("active");
+            
+            // Trigger specific updates
+            if (group.id === "phase") updateActionDropdown();
+            if (group.id === "pressure") updateSkillSuggestions();
+        }
+    });
+});
+
+function updateActionDropdown() {
+    const currentPhase = getActiveChip(chips.phase) || "attack";
+    actionSelect.innerHTML = "";
+    
+    const filteredActions = dbData.roadmapActions.filter(a => a.phase === currentPhase);
+    filteredActions.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a.id;
+        opt.textContent = a.name;
+        actionSelect.appendChild(opt);
+    });
+}
+
 function updateSkillSuggestions() {
     const suggestionsDiv = document.getElementById("skillSuggestions");
     suggestionsDiv.innerHTML = "";
-    watchBtnContainer.style.display = "none"; // Hide button initially
+    watchBtnContainer.style.display = "none"; 
     
     const currentPressure = getActiveChip(chips.pressure);
     
@@ -97,11 +186,9 @@ function updateSkillSuggestions() {
         chip.innerText = s.name;
         
         chip.addEventListener("click", () => {
-            // Highlight logic
             Array.from(suggestionsDiv.children).forEach(c => c.classList.remove("active"));
             chip.classList.add("active");
             
-            // Video Button Logic
             if (s.video) {
                 currentSkillVideo = s.video;
                 watchBtnContainer.style.display = "block";
@@ -113,64 +200,91 @@ function updateSkillSuggestions() {
     });
 }
 
-// --- UPDATED STATS ENGINE (Line Chart) ---
+// 8. SUBMIT LOGIC
+document.getElementById("logRep").addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return alert("Please sign in first");
 
+    const playerInput = document.getElementById("player").value.trim();
+    if (!playerInput) return alert("Please enter a player name");
+
+    const repData = {
+        coachEmail: user.email,
+        timestamp: new Date(),
+        player: playerInput,
+        phase: getActiveChip(chips.phase),
+        pressure: getActiveChip(chips.pressure),
+        action: actionSelect.options[actionSelect.selectedIndex]?.text,
+        skill: document.querySelector("#skillSuggestions .chip.active")?.innerText || "None",
+        outcome: getActiveChip(chips.outcome),
+        qualities: Array.from(qualitiesDiv.querySelectorAll(".active")).map(c => c.textContent),
+        notes: document.getElementById("notes").value
+    };
+
+    const btn = document.getElementById("logRep");
+    btn.textContent = "Saving...";
+    btn.disabled = true;
+
+    try {
+        await addDoc(collection(db, "reps"), repData);
+        document.getElementById("notes").value = "";
+        btn.textContent = "Log Rep";
+        btn.disabled = false;
+        alert("Saved!");
+        // If we are on stats view, refresh it? No need, user will likely stay on tracker.
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        btn.textContent = "Error";
+        alert("Error saving: Check console");
+    }
+});
+
+// 9. STATS ENGINE (Line Chart)
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // 1. Query: Get last 100 reps for this user
+    // Get last 100 reps
     const q = query(
         collection(db, "reps"), 
         where("coachEmail", "==", user.email),
-        orderBy("timestamp", "asc"), // Get oldest first to build the timeline
+        orderBy("timestamp", "asc"), 
         limit(100)
     );
 
     const querySnapshot = await getDocs(q);
     const logs = [];
-    
-    // 2. Process Data: Group by Date
-    // Object structure: { "1/14": {total: 10, success: 8}, "1/15": ... }
     const dailyStats = {};
 
     querySnapshot.forEach((doc) => {
         const data = doc.data();
         logs.push(data);
         
-        // Convert timestamp to simple date string (e.g., "1/14")
+        // Group by Date (M/D)
         const dateObj = new Date(data.timestamp.seconds * 1000);
         const dateKey = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
-        if (!dailyStats[dateKey]) {
-            dailyStats[dateKey] = { total: 0, success: 0 };
-        }
+        if (!dailyStats[dateKey]) dailyStats[dateKey] = { total: 0, success: 0 };
 
         dailyStats[dateKey].total++;
-        if (data.outcome === "success") {
-            dailyStats[dateKey].success++;
-        }
+        if (data.outcome === "success") dailyStats[dateKey].success++;
     });
 
-    // 3. Prepare Chart Data Arrays
-    const labels = Object.keys(dailyStats); // Dates
+    // Chart Data
+    const labels = Object.keys(dailyStats);
     const dataPoints = labels.map(date => {
         const day = dailyStats[date];
-        // Calculate percentage for that day
         return Math.round((day.success / day.total) * 100);
     });
 
-    // 4. Update KPI Cards (Overall Totals)
+    // Totals
     const totalReps = logs.length;
     const totalSuccess = logs.filter(l => l.outcome === "success").length;
-    const globalRate = totalReps > 0 ? Math.round((totalSuccess / totalReps) * 100) : 0;
-
     document.getElementById("statTotal").innerText = totalReps;
-    document.getElementById("statSuccess").innerText = globalRate + "%";
+    document.getElementById("statSuccess").innerText = (totalReps > 0 ? Math.round((totalSuccess / totalReps) * 100) : 0) + "%";
 
-    // 5. Update History List (Show newest first)
+    // History List (Newest First)
     const historyDiv = document.getElementById("historyList");
-    // Reverse logs to show newest at top of list
     historyDiv.innerHTML = logs.slice().reverse().map(l => `
         <div style="border-bottom:1px solid #334155; padding:12px 0;">
             <span style="color:${l.outcome === 'success' ? '#22c55e' : '#ef4444'}; font-size:18px;">●</span> 
@@ -179,7 +293,6 @@ async function loadStats() {
         </div>
     `).join("");
 
-    // 6. Render the Line Chart
     renderChart(labels, dataPoints);
 }
 
@@ -187,13 +300,11 @@ let myChart = null;
 
 function renderChart(dates, percentages) {
     const ctx = document.getElementById('progressChart').getContext('2d');
-    
-    if (myChart) myChart.destroy(); // Clear old chart
+    if (myChart) myChart.destroy();
 
-    // Create Gradient for the line
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)'); // Green top
-    gradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)'); // Fade to bottom
+    gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)');
+    gradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
 
     myChart = new Chart(ctx, {
         type: 'line',
@@ -202,37 +313,26 @@ function renderChart(dates, percentages) {
             datasets: [{
                 label: 'Success Rate (%)',
                 data: percentages,
-                borderColor: '#22c55e', // Green Line
+                borderColor: '#22c55e',
                 backgroundColor: gradient,
                 borderWidth: 3,
                 pointBackgroundColor: '#fff',
                 pointRadius: 4,
-                fill: true, // Fill area under line
-                tension: 0.3 // Curvy line (0.0 is straight, 1.0 is very curvy)
+                fill: true,
+                tension: 0.3
             }]
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: { display: false }, // Hide legend to save space
-                tooltip: { 
-                    callbacks: { label: (c) => ` ${c.raw}% Success` }
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100, // Percentage is always 0-100
-                    grid: { color: '#334155' }, // Dark grid lines
-                    ticks: { color: '#94a3b8' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#94a3b8' }
-                }
+                y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
             }
         }
     });
 }
 
-// ... (Rest of logic: Chip handlers, Submit logic matches previous version) ...
+// Initial Render
+updateActionDropdown();
+updateSkillSuggestions();
