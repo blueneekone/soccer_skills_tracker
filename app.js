@@ -204,20 +204,39 @@ function updateSkillSuggestions() {
             
             const container = document.getElementById("watchBtnContainer");
             const drillText = document.getElementById("drillRecommendation");
+            const drillImg = document.getElementById("drillImage"); // NEW
             const videoBtn = document.getElementById("watchVideoBtn");
 
+            // 1. SET TEXT
             if (s.drill) {
                 drillText.innerHTML = `<b>🎯 Practice Drill:</b><br>${s.drill}`;
                 container.style.display = "block";
-            } else { drillText.innerHTML = ""; }
+            } else {
+                drillText.innerHTML = "";
+            }
 
+            // 2. SET IMAGE (NEW)
+            if (s.image) {
+                drillImg.src = s.image;
+                drillImg.style.display = "block";
+                container.style.display = "block";
+            } else {
+                drillImg.style.display = "none";
+                drillImg.src = "";
+            }
+
+            // 3. SET VIDEO
             if (s.video) {
                 currentSkillVideo = s.video;
                 videoBtn.style.display = "block";
                 container.style.display = "block";
             } else {
                 videoBtn.style.display = "none";
-                if(!s.drill) container.style.display = "none";
+            }
+            
+            // Hide container if absolutely nothing exists
+            if(!s.drill && !s.image && !s.video) {
+                container.style.display = "none";
             }
         });
         suggestionsDiv.appendChild(chip);

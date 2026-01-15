@@ -31,24 +31,32 @@ export const dbData = {
 
   // 4. SKILLS (Updated with Position Tags)
   foundationSkills: [
-    // --- FOUNDATION (FOR EVERYONE) ---
+    // EXAMPLE 1: With an Image
     { 
-      id: "fs_shift_r", name: "Shift Right (Foundation)", 
-      pressure: ["front", "side"], positions: ["all"], 
-      drill: "Brilliant Basics Lvl 1: Toe Taps", video: "" 
-    },
-    { 
-      id: "fs_step_over", name: "Step Over (Foundation)", 
-      pressure: ["front", "side"], positions: ["all"], 
-      drill: "Brilliant Basics Lvl 2: Step Over", video: "" 
-    },
-    { 
-      id: "fs_pin", name: "Pinning (Foundation)", 
-      pressure: ["back"], positions: ["all"], 
-      drill: "Shielding: 1v1 Box", video: "" 
+      id: "fs_shift_r", 
+      name: "Shift Right (Foundation)", 
+      pressure: ["front", "side"], 
+      positions: ["all"], 
+      drill: "Brilliant Basics Lvl 1: Toe Taps", 
+      video: "https://www.youtube.com/embed/YOUR_ID",
+      image: "images/toe_taps_diagram.png" // <--- ADD THIS LINE
     },
 
-    // --- POSITIONAL SPECIFIC (From your PDFs) ---
+    // EXAMPLE 2: No Image yet (App will hide the image box automatically)
+    { 
+      id: "fs_step_over", 
+      name: "Step Over (Foundation)", 
+      pressure: ["front", "side"], 
+      positions: ["all"], 
+      drill: "Brilliant Basics Lvl 2: Step Over", 
+      video: "",
+      image: "" // Leave empty if no screenshot
+    }
+    // ... continue for other skills
+  ],
+
+  // --- POSITIONAL SPECIFIC (From your PDFs) ---
+  allSkills: [
     // GOALKEEPER
     { 
       id: "gk_dive", name: "Dive & Recovery", 
