@@ -8,7 +8,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
 import { dbData } from "./data.js";
 
 // --- CONFIGURATION ---
-const COACH_EMAIL = "ecwaechtler@gmail.com"; // <--- PUT YOUR EMAIL HERE
+const COACH_EMAIL = "ecwaechtler@gmail.com";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
