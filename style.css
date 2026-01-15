@@ -68,3 +68,4 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 canvas#progressChart {
     min-height: 200px;
+}

@@ -49,6 +49,7 @@ export const dbData = {
       pressure: ["front", "side"], 
       video: "https://www.youtube.com/embed/YOUR_VIDEO_ID" 
     },
-    // ... keep adding the 'video' line to all your skills ...
-    // If you don't have a video yet, just leave the line out or put ""
-  ]
+      // ... keep adding the 'video' line to all your skills ...
+      // If you don't have a video yet, just leave the line out or put ""
+    ]
+  };
