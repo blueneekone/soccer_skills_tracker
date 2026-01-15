@@ -1,5 +1,5 @@
 export const dbData = {
-  // 1. POSITIONS (New!)
+  // 1. POSITIONS
   positions: [
     { id: "all", name: "Show All" },
     { id: "fwd", name: "Forward / Striker" },
@@ -29,63 +29,78 @@ export const dbData = {
     { id: "def_air", name: "Win Aerial Ball", phase: "defend" }
   ],
 
-  // 4. SKILLS (Updated with Position Tags)
+  // 4. SKILLS & DRILLS
   foundationSkills: [
-    // EXAMPLE 1: With an Image
+    // --- FOUNDATION (ALL) ---
     { 
-      id: "fs_shift_r", 
-      name: "Shift Right (Foundation)", 
-      pressure: ["front", "side"], 
-      positions: ["all"], 
+      id: "fs_shift_r", name: "Shift Right (Foundation)", 
+      pressure: ["front", "side"], positions: ["all"], 
       drill: "Brilliant Basics Lvl 1: Toe Taps", 
-      video: "https://www.youtube.com/embed/YOUR_ID",
-      image: "images/toe_taps_diagram.png" // <--- ADD THIS LINE
+      video: "", 
+      image: "images/toe_taps.png" 
     },
-
-    // EXAMPLE 2: No Image yet (App will hide the image box automatically)
     { 
-      id: "fs_step_over", 
-      name: "Step Over (Foundation)", 
-      pressure: ["front", "side"], 
-      positions: ["all"], 
+      id: "fs_shift_l", name: "Shift Left (Foundation)", 
+      pressure: ["front", "side"], positions: ["all"], 
+      drill: "Brilliant Basics Lvl 1: Toe Taps", 
+      video: "", 
+      image: "images/toe_taps.png" 
+    },
+    { 
+      id: "fs_step_over", name: "Step Over (Foundation)", 
+      pressure: ["front", "side"], positions: ["all"], 
       drill: "Brilliant Basics Lvl 2: Step Over", 
       video: "",
-      image: "" // Leave empty if no screenshot
-    }
-    // ... continue for other skills
-  ],
+      image: "images/step_over.png" 
+    },
+    { 
+      id: "fs_pin", name: "Pinning (Foundation)", 
+      pressure: ["back"], positions: ["all"], 
+      drill: "Shielding: 1v1 Box", 
+      video: "",
+      image: "" 
+    },
 
-  // --- POSITIONAL SPECIFIC (From your PDFs) ---
-  allSkills: [
+    // --- POSITIONAL SPECIFIC ---
     // GOALKEEPER
     { 
       id: "gk_dive", name: "Dive & Recovery", 
       pressure: ["front", "side"], positions: ["gk"], 
-      drill: "Defensive Template: Dive & Recov", video: "" 
+      drill: "Defensive Template: Dive & Recov", 
+      video: "",
+      image: "images/gk_dive.png"
     },
     { 
       id: "gk_high_ball", name: "High Ball Catch", 
       pressure: ["front"], positions: ["gk"], 
-      drill: "Defensive Template: High Ball", video: "" 
+      drill: "Defensive Template: High Ball", 
+      video: "",
+      image: ""
     },
 
     // DEFENDER
     { 
       id: "def_clear", name: "Long Clearance", 
       pressure: ["front", "side"], positions: ["def"], 
-      drill: "Defensive Template: Distribution", video: "" 
+      drill: "Defensive Template: Distribution", 
+      video: "",
+      image: ""
     },
 
     // WINGER / STRIKER
     { 
       id: "att_cross", name: "Crossing on the Run", 
       pressure: ["side"], positions: ["wing", "fwd"], 
-      drill: "Offensive Template: Crossing Grid", video: "" 
+      drill: "Offensive Template: Crossing Grid", 
+      video: "",
+      image: ""
     },
     { 
       id: "att_shoot_pwr", name: "Power Shot", 
       pressure: ["front"], positions: ["fwd", "mid", "wing"], 
-      drill: "Offensive Template: Shooting Wall", video: "" 
+      drill: "Offensive Template: Shooting Wall", 
+      video: "",
+      image: ""
     }
   ]
 };
