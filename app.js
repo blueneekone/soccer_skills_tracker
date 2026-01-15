@@ -1,8 +1,8 @@
-// 1. IMPORTS (Must be at the top)
+// 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } 
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { dbData } from "./data.js";
@@ -17,53 +17,64 @@ const firebaseConfig = {
   appId: "1:884044129977:web:47d54f59c891340e505d68"
 };
 
-// 3. INITIALIZATION (This was likely missing!)
+// 3. INITIALIZATION
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- UI LOGIC ---
+// 4. OFFLINE PERSISTENCE (Field-Ready Mode)
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.log('Persistence failed: Multiple tabs open');
+    } else if (err.code == 'unimplemented') {
+        console.log('Persistence not supported by browser');
+    }
+});
 
-// 4. AUTHENTICATION LISTENER
+// --- UI ELEMENT REFERENCES ---
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const appUI = document.getElementById("appUI");
 const loginUI = document.getElementById("loginUI");
 const bottomNav = document.getElementById("bottomNav");
 
+const viewTracker = document.getElementById("viewTracker");
+const viewStats = document.getElementById("viewStats");
+const navTrack = document.getElementById("navTrack");
+const navStats = document.getElementById("navStats");
+
+const actionSelect = document.getElementById("action");
+const qualitiesDiv = document.getElementById("qualities");
+
+// 5. AUTHENTICATION LOGIC
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // User is logged in
+    // Logged In
     loginUI.style.display = "none";
     appUI.style.display = "block";
-    bottomNav.style.display = "flex"; // Show bottom nav
+    bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = user.displayName;
-    loadStats(); // Load data immediately
+    loadStats(); // Load their data immediately
   } else {
-    // User is logged out
+    // Logged Out
     loginUI.style.display = "block";
     appUI.style.display = "none";
     bottomNav.style.display = "none";
   }
 });
 
-// Login / Logout Buttons
 loginBtn.addEventListener("click", () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider).catch((error) => console.error("Login failed", error));
 });
 
 logoutBtn.addEventListener("click", () => {
-    signOut(auth);
-    location.reload(); // Refresh page on logout to clear charts
+    signOut(auth).then(() => {
+        location.reload(); // Hard refresh to clear charts/memory
+    });
 });
 
-// 5. NAVIGATION LOGIC (Tabs)
-const viewTracker = document.getElementById("viewTracker");
-const viewStats = document.getElementById("viewStats");
-const navTrack = document.getElementById("navTrack");
-const navStats = document.getElementById("navStats");
-
+// 6. NAVIGATION TABS
 navTrack.addEventListener("click", () => {
     viewTracker.style.display = "block";
     viewStats.style.display = "none";
@@ -76,10 +87,10 @@ navStats.addEventListener("click", () => {
     viewStats.style.display = "block";
     navTrack.classList.remove("active");
     navStats.classList.add("active");
-    loadStats(); 
+    loadStats(); // Refresh data
 });
 
-// 6. VIDEO MODAL LOGIC
+// 7. VIDEO MODAL LOGIC
 const modal = document.getElementById("videoModal");
 const closeModal = document.getElementById("closeModal");
 const videoPlayer = document.getElementById("videoPlayer");
@@ -88,11 +99,11 @@ const watchBtn = document.getElementById("watchVideoBtn");
 
 let currentSkillVideo = "";
 
+// Close Modal Logic
 closeModal.addEventListener("click", () => {
     modal.style.display = "none";
     videoPlayer.src = "";
 });
-
 window.onclick = (event) => {
     if (event.target == modal) {
         modal.style.display = "none";
@@ -100,9 +111,9 @@ window.onclick = (event) => {
     }
 };
 
+// Watch Button Logic
 watchBtn.addEventListener("click", () => {
     if(currentSkillVideo) {
-        // Set title from active chip
         const activeChip = document.querySelector("#skillSuggestions .chip.active");
         if(activeChip) document.getElementById("modalTitle").innerText = activeChip.innerText;
         
@@ -111,18 +122,17 @@ watchBtn.addEventListener("click", () => {
     }
 });
 
-// 7. DROPDOWN & CHIP LOGIC
-const actionSelect = document.getElementById("action");
-const qualitiesDiv = document.getElementById("qualities");
-
+// 8. DROPDOWNS & CHIPS
 // Render Quality Chips
-dbData.qualities.forEach(q => {
-    const chip = document.createElement("div");
-    chip.className = "chip";
-    chip.dataset.val = q.id;
-    chip.textContent = q.name;
-    qualitiesDiv.appendChild(chip);
-});
+if(qualitiesDiv.innerHTML === "") { // Prevent duplicates if re-run
+    dbData.qualities.forEach(q => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.dataset.val = q.id;
+        chip.textContent = q.name;
+        qualitiesDiv.appendChild(chip);
+    });
+}
 
 const chips = {
     phase: document.getElementById("phase"),
@@ -134,20 +144,20 @@ function getActiveChip(group) {
     return group.querySelector(".chip.active")?.dataset.val;
 }
 
-// Universal Chip Click Handler
+// Universal Chip Handler
 document.querySelectorAll(".chips").forEach(group => {
     group.addEventListener("click", (e) => {
         if(e.target.classList.contains("chip")) {
-            // If it's the Qualities section, allow multi-select
+            // Qualities = Multi-select
             if (group.id === "qualities") {
                 e.target.classList.toggle("active");
                 return;
             }
-            // Otherwise single select
+            // Others = Single-select
             Array.from(group.children).forEach(c => c.classList.remove("active"));
             e.target.classList.add("active");
             
-            // Trigger specific updates
+            // Triggers
             if (group.id === "phase") updateActionDropdown();
             if (group.id === "pressure") updateSkillSuggestions();
         }
@@ -200,7 +210,7 @@ function updateSkillSuggestions() {
     });
 }
 
-// 8. SUBMIT LOGIC
+// 9. SUBMIT REP LOGIC
 document.getElementById("logRep").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Please sign in first");
@@ -231,7 +241,6 @@ document.getElementById("logRep").addEventListener("click", async () => {
         btn.textContent = "Log Rep";
         btn.disabled = false;
         alert("Saved!");
-        // If we are on stats view, refresh it? No need, user will likely stay on tracker.
     } catch (e) {
         console.error("Error adding document: ", e);
         btn.textContent = "Error";
@@ -239,12 +248,12 @@ document.getElementById("logRep").addEventListener("click", async () => {
     }
 });
 
-// 9. STATS ENGINE (Line Chart)
+// 10. STATS ENGINE (Line Chart + Streaks)
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Get last 100 reps
+    // Query last 100 reps
     const q = query(
         collection(db, "reps"), 
         where("coachEmail", "==", user.email),
@@ -260,7 +269,7 @@ async function loadStats() {
         const data = doc.data();
         logs.push(data);
         
-        // Group by Date (M/D)
+        // Group by Date (M/D) for Chart
         const dateObj = new Date(data.timestamp.seconds * 1000);
         const dateKey = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
@@ -270,20 +279,44 @@ async function loadStats() {
         if (data.outcome === "success") dailyStats[dateKey].success++;
     });
 
-    // Chart Data
+    // A. Calculate Streak
+    const today = new Date();
+    let streak = 0;
+    let checkDate = new Date(today); 
+    
+    // Check backwards for 365 days
+    for (let i = 0; i < 365; i++) {
+        const key = `${checkDate.getMonth() + 1}/${checkDate.getDate()}`;
+        if (dailyStats[key]) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            // Allow skipping "today" if no data yet
+            if (i === 0) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                continue;
+            }
+            break;
+        }
+    }
+    // Update Streak UI
+    const streakEl = document.getElementById("statStreak");
+    if(streakEl) streakEl.innerText = streak;
+
+    // B. Update Chart Data
     const labels = Object.keys(dailyStats);
     const dataPoints = labels.map(date => {
         const day = dailyStats[date];
         return Math.round((day.success / day.total) * 100);
     });
 
-    // Totals
+    // C. Update Totals
     const totalReps = logs.length;
     const totalSuccess = logs.filter(l => l.outcome === "success").length;
     document.getElementById("statTotal").innerText = totalReps;
     document.getElementById("statSuccess").innerText = (totalReps > 0 ? Math.round((totalSuccess / totalReps) * 100) : 0) + "%";
 
-    // History List (Newest First)
+    // D. Update History List (Reverse for newest first)
     const historyDiv = document.getElementById("historyList");
     historyDiv.innerHTML = logs.slice().reverse().map(l => `
         <div style="border-bottom:1px solid #334155; padding:12px 0;">
@@ -333,6 +366,6 @@ function renderChart(dates, percentages) {
     });
 }
 
-// Initial Render
+// 11. STARTUP
 updateActionDropdown();
 updateSkillSuggestions();
