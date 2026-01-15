@@ -215,9 +215,12 @@ document.getElementById("logRep").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Please sign in first");
 
-    const playerInput = document.getElementById("player").value.trim();
-    if (!playerInput) return alert("Please enter a player name");
+    // NEW: Get both names
+    const pFirst = document.getElementById("playerFirst").value.trim();
+    const pLast = document.getElementById("playerLast").value.trim();
 
+    if (!pFirst || !pLast) return alert("Please enter both First and Last name.");
+    
     const repData = {
         coachEmail: user.email,
         timestamp: new Date(),
