@@ -40,12 +40,8 @@
         <div class="card">
           <label>Player Name</label>
           <div class="row">
-            <div>
-              <input type="text" id="playerFirst" placeholder="First Name" autocomplete="given-name">
-            </div>
-            <div>
-              <input type="text" id="playerLast" placeholder="Last Name" autocomplete="family-name">
-            </div>
+            <div><input type="text" id="playerFirst" placeholder="First Name" autocomplete="given-name"></div>
+            <div><input type="text" id="playerLast" placeholder="Last Name" autocomplete="family-name"></div>
           </div>
         </div>
 
@@ -77,8 +73,9 @@
             <label>Skill (Foundation) - <span style="color:#3b82f6">Tap to Select</span></label>
             <div class="chips" id="skillSuggestions"></div>
             
-            <div id="watchBtnContainer" style="display:none; margin-top:10px;">
-              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo Video</button>
+            <div id="watchBtnContainer" style="display:none; margin-top:10px; background:#1e293b; padding:10px; border-radius:8px;">
+              <div id="drillRecommendation" class="small" style="color:#94a3b8; margin-bottom:8px; border-bottom:1px solid #334155; padding-bottom:5px;"></div>
+              <button id="watchVideoBtn" class="secondary-btn" style="width:100%">🎥 Watch Demo Video</button>
             </div>
           </div>
 
@@ -141,12 +138,8 @@
     </div>
 
     <nav class="bottom-nav" id="bottomNav" style="display:none;">
-      <button class="nav-item active" id="navTrack">
-        <span>📝</span> Track
-      </button>
-      <button class="nav-item" id="navStats">
-        <span>📈</span> Report
-      </button>
+      <button class="nav-item active" id="navTrack"><span>📝</span> Track</button>
+      <button class="nav-item" id="navStats"><span>📈</span> Report</button>
     </nav>
 
   </div>

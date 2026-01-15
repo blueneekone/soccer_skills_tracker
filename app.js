@@ -7,7 +7,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
 
 import { dbData } from "./data.js";
 
-// 2. CONFIGURATION (Your Keys)
+// 2. CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
   authDomain: "soccer-skills-tracker.firebaseapp.com",
@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 4. OFFLINE PERSISTENCE (Field-Ready Mode)
+// 4. OFFLINE PERSISTENCE
 enableIndexedDbPersistence(db).catch((err) => {
     if (err.code == 'failed-precondition') {
         console.log('Persistence failed: Multiple tabs open');
@@ -31,32 +31,28 @@ enableIndexedDbPersistence(db).catch((err) => {
     }
 });
 
-// --- UI ELEMENT REFERENCES ---
+// --- UI REFERENCES ---
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const appUI = document.getElementById("appUI");
 const loginUI = document.getElementById("loginUI");
 const bottomNav = document.getElementById("bottomNav");
-
 const viewTracker = document.getElementById("viewTracker");
 const viewStats = document.getElementById("viewStats");
 const navTrack = document.getElementById("navTrack");
 const navStats = document.getElementById("navStats");
-
 const actionSelect = document.getElementById("action");
 const qualitiesDiv = document.getElementById("qualities");
 
-// 5. AUTHENTICATION LOGIC
+// 5. AUTH LOGIC
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Logged In
     loginUI.style.display = "none";
     appUI.style.display = "block";
     bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = user.displayName;
-    loadStats(); // Load their data immediately
+    loadStats(); 
   } else {
-    // Logged Out
     loginUI.style.display = "block";
     appUI.style.display = "none";
     bottomNav.style.display = "none";
@@ -69,12 +65,10 @@ loginBtn.addEventListener("click", () => {
 });
 
 logoutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-        location.reload(); // Hard refresh to clear charts/memory
-    });
+    signOut(auth).then(() => location.reload());
 });
 
-// 6. NAVIGATION TABS
+// 6. NAVIGATION
 navTrack.addEventListener("click", () => {
     viewTracker.style.display = "block";
     viewStats.style.display = "none";
@@ -87,19 +81,16 @@ navStats.addEventListener("click", () => {
     viewStats.style.display = "block";
     navTrack.classList.remove("active");
     navStats.classList.add("active");
-    loadStats(); // Refresh data
+    loadStats();
 });
 
-// 7. VIDEO MODAL LOGIC
+// 7. VIDEO & DRILL POPUP LOGIC
 const modal = document.getElementById("videoModal");
 const closeModal = document.getElementById("closeModal");
 const videoPlayer = document.getElementById("videoPlayer");
-const watchBtnContainer = document.getElementById("watchBtnContainer");
 const watchBtn = document.getElementById("watchVideoBtn");
-
 let currentSkillVideo = "";
 
-// Close Modal Logic
 closeModal.addEventListener("click", () => {
     modal.style.display = "none";
     videoPlayer.src = "";
@@ -111,20 +102,17 @@ window.onclick = (event) => {
     }
 };
 
-// Watch Button Logic
 watchBtn.addEventListener("click", () => {
     if(currentSkillVideo) {
         const activeChip = document.querySelector("#skillSuggestions .chip.active");
         if(activeChip) document.getElementById("modalTitle").innerText = activeChip.innerText;
-        
         videoPlayer.src = currentSkillVideo;
         modal.style.display = "block";
     }
 });
 
-// 8. DROPDOWNS & CHIPS
-// Render Quality Chips
-if(qualitiesDiv.innerHTML === "") { // Prevent duplicates if re-run
+// 8. CHIPS & DROPDOWNS
+if(qualitiesDiv.innerHTML === "") {
     dbData.qualities.forEach(q => {
         const chip = document.createElement("div");
         chip.className = "chip";
@@ -144,20 +132,16 @@ function getActiveChip(group) {
     return group.querySelector(".chip.active")?.dataset.val;
 }
 
-// Universal Chip Handler
 document.querySelectorAll(".chips").forEach(group => {
     group.addEventListener("click", (e) => {
         if(e.target.classList.contains("chip")) {
-            // Qualities = Multi-select
             if (group.id === "qualities") {
                 e.target.classList.toggle("active");
                 return;
             }
-            // Others = Single-select
             Array.from(group.children).forEach(c => c.classList.remove("active"));
             e.target.classList.add("active");
             
-            // Triggers
             if (group.id === "phase") updateActionDropdown();
             if (group.id === "pressure") updateSkillSuggestions();
         }
@@ -167,7 +151,6 @@ document.querySelectorAll(".chips").forEach(group => {
 function updateActionDropdown() {
     const currentPhase = getActiveChip(chips.phase) || "attack";
     actionSelect.innerHTML = "";
-    
     const filteredActions = dbData.roadmapActions.filter(a => a.phase === currentPhase);
     filteredActions.forEach(a => {
         const opt = document.createElement("option");
@@ -180,7 +163,7 @@ function updateActionDropdown() {
 function updateSkillSuggestions() {
     const suggestionsDiv = document.getElementById("skillSuggestions");
     suggestionsDiv.innerHTML = "";
-    watchBtnContainer.style.display = "none"; 
+    document.getElementById("watchBtnContainer").style.display = "none";
     
     const currentPressure = getActiveChip(chips.pressure);
     
@@ -199,37 +182,49 @@ function updateSkillSuggestions() {
             Array.from(suggestionsDiv.children).forEach(c => c.classList.remove("active"));
             chip.classList.add("active");
             
+            const container = document.getElementById("watchBtnContainer");
+            const drillText = document.getElementById("drillRecommendation");
+            const videoBtn = document.getElementById("watchVideoBtn");
+
+            // LOGIC: Show Drill text if it exists
+            if (s.drill) {
+                drillText.innerHTML = `<b>🎯 Practice Drill:</b><br>${s.drill}`;
+                container.style.display = "block";
+            } else {
+                drillText.innerHTML = "";
+            }
+
+            // LOGIC: Show Video button if URL exists
             if (s.video) {
                 currentSkillVideo = s.video;
-                watchBtnContainer.style.display = "block";
+                videoBtn.style.display = "block";
+                container.style.display = "block";
             } else {
-                watchBtnContainer.style.display = "none";
+                videoBtn.style.display = "none";
+                // Only hide container if both drill and video are missing
+                if(!s.drill) container.style.display = "none";
             }
         });
         suggestionsDiv.appendChild(chip);
     });
 }
 
-// 9. SUBMIT REP LOGIC
+// 9. SUBMIT LOGIC (Split Names)
 document.getElementById("logRep").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Please sign in first");
 
-    // NEW: Get both names
     const pFirst = document.getElementById("playerFirst").value.trim();
     const pLast = document.getElementById("playerLast").value.trim();
 
-    if (!pFirst || !pLast) return alert("Please enter both First and Last name.");
+    if (!pFirst || !pLast) return alert("Please enter First and Last Name");
 
     const repData = {
         coachEmail: user.email,
         timestamp: new Date(),
-        
-        // SAVE SEPARATELY AND COMBINED
         playerFirst: pFirst,
         playerLast: pLast,
-        player: `${pFirst} ${pLast}`, // Keeps your charts working
-        
+        player: `${pFirst} ${pLast}`,
         phase: getActiveChip(chips.phase),
         pressure: getActiveChip(chips.pressure),
         action: actionSelect.options[actionSelect.selectedIndex]?.text,
@@ -249,22 +244,7 @@ document.getElementById("logRep").addEventListener("click", async () => {
         btn.textContent = "Log Rep";
         btn.disabled = false;
         alert("Saved!");
-
-try {
-        await addDoc(collection(db, "reps"), repData);
-        document.getElementById("notes").value = "";
-        btn.textContent = "Log Rep";
-        btn.disabled = false;
-        alert("Saved!");
-        
-        loadStats(); // <--- ADD THIS LINE! This refreshes the chart instantly.
-        
-    } catch (e) {
-        console.error("Error adding document: ", e);
-        btn.textContent = "Error";
-        alert("Error saving: Check console");
-    }
-
+        loadStats(); // Instant Refresh
     } catch (e) {
         console.error("Error adding document: ", e);
         btn.textContent = "Error";
@@ -272,12 +252,12 @@ try {
     }
 });
 
-// 10. STATS ENGINE (Line Chart + Streaks)
+// 10. STATS ENGINE (Streaks + Line Chart)
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Query last 100 reps
+    // Index Required: coachEmail (Asc) + timestamp (Asc)
     const q = query(
         collection(db, "reps"), 
         where("coachEmail", "==", user.email),
@@ -293,54 +273,45 @@ async function loadStats() {
         const data = doc.data();
         logs.push(data);
         
-        // Group by Date (M/D) for Chart
         const dateObj = new Date(data.timestamp.seconds * 1000);
         const dateKey = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
         if (!dailyStats[dateKey]) dailyStats[dateKey] = { total: 0, success: 0 };
-
         dailyStats[dateKey].total++;
         if (data.outcome === "success") dailyStats[dateKey].success++;
     });
 
-    // A. Calculate Streak
+    // A. STREAK LOGIC
     const today = new Date();
     let streak = 0;
-    let checkDate = new Date(today); 
+    let checkDate = new Date(today);
     
-    // Check backwards for 365 days
     for (let i = 0; i < 365; i++) {
         const key = `${checkDate.getMonth() + 1}/${checkDate.getDate()}`;
         if (dailyStats[key]) {
             streak++;
             checkDate.setDate(checkDate.getDate() - 1);
         } else {
-            // Allow skipping "today" if no data yet
-            if (i === 0) {
-                checkDate.setDate(checkDate.getDate() - 1);
-                continue;
-            }
+            if (i === 0) { checkDate.setDate(checkDate.getDate() - 1); continue; }
             break;
         }
     }
-    // Update Streak UI
-    const streakEl = document.getElementById("statStreak");
-    if(streakEl) streakEl.innerText = streak;
+    document.getElementById("statStreak").innerText = streak;
 
-    // B. Update Chart Data
+    // B. CHART LOGIC
     const labels = Object.keys(dailyStats);
     const dataPoints = labels.map(date => {
         const day = dailyStats[date];
         return Math.round((day.success / day.total) * 100);
     });
 
-    // C. Update Totals
+    // C. TOTALS
     const totalReps = logs.length;
     const totalSuccess = logs.filter(l => l.outcome === "success").length;
     document.getElementById("statTotal").innerText = totalReps;
     document.getElementById("statSuccess").innerText = (totalReps > 0 ? Math.round((totalSuccess / totalReps) * 100) : 0) + "%";
 
-    // D. Update History List (Reverse for newest first)
+    // D. HISTORY
     const historyDiv = document.getElementById("historyList");
     historyDiv.innerHTML = logs.slice().reverse().map(l => `
         <div style="border-bottom:1px solid #334155; padding:12px 0;">
@@ -368,7 +339,7 @@ function renderChart(dates, percentages) {
         data: {
             labels: dates,
             datasets: [{
-                label: 'Success Rate (%)',
+                label: 'Success %',
                 data: percentages,
                 borderColor: '#22c55e',
                 backgroundColor: gradient,
