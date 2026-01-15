@@ -1,6 +1,6 @@
 // 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
+import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -65,7 +65,8 @@ onAuthStateChanged(auth, (user) => {
 
 loginBtn.addEventListener("click", () => {
   const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider).catch((error) => console.error("Login failed", error));
+  // This keeps them in the same tab, which pleases the iPhone security gods
+  signInWithRedirect(auth, provider); 
 });
 
 logoutBtn.addEventListener("click", () => {
