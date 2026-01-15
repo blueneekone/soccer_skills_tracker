@@ -135,11 +135,35 @@
         </div>
       </div>
 
+      <div id="viewCoach" style="display:none;">
+        <div class="card" style="border: 1px solid #3b82f6;">
+          <h2 style="color:#3b82f6">Coach Dashboard</h2>
+          <p class="small">Team Overview</p>
+          <div class="row">
+            <div class="stat-box">
+              <div id="coachTotalReps" class="stat-num">0</div>
+              <div class="stat-label">Team Reps</div>
+            </div>
+            <div class="stat-box">
+              <div id="coachActivePlayers" class="stat-num">0</div>
+              <div class="stat-label">Active Players</div>
+            </div>
+          </div>
+          <button id="exportCsvBtn" style="margin-top:15px; background:#3b82f6; border:none;">📥 Download Report (CSV)</button>
+        </div>
+
+        <div class="card">
+          <label>Player Leaderboard</label>
+          <div id="coachPlayerList"></div>
+        </div>
+      </div>
+
     </div>
 
     <nav class="bottom-nav" id="bottomNav" style="display:none;">
       <button class="nav-item active" id="navTrack"><span>📝</span> Track</button>
       <button class="nav-item" id="navStats"><span>📈</span> Report</button>
+      <button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span> Coach</button>
     </nav>
 
   </div>
