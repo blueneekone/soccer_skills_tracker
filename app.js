@@ -220,11 +220,16 @@ document.getElementById("logRep").addEventListener("click", async () => {
     const pLast = document.getElementById("playerLast").value.trim();
 
     if (!pFirst || !pLast) return alert("Please enter both First and Last name.");
-    
+
     const repData = {
         coachEmail: user.email,
         timestamp: new Date(),
-        player: playerInput,
+        
+        // SAVE SEPARATELY AND COMBINED
+        playerFirst: pFirst,
+        playerLast: pLast,
+        player: `${pFirst} ${pLast}`, // Keeps your charts working
+        
         phase: getActiveChip(chips.phase),
         pressure: getActiveChip(chips.pressure),
         action: actionSelect.options[actionSelect.selectedIndex]?.text,
