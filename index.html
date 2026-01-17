@@ -24,7 +24,7 @@
 
   <header>
     <h1>Aggies FC Tracker</h1>
-    <div id="coachName"></div>
+    <div id="coachName" style="font-size:12px; color:#8A8D8F; margin-top:4px;"></div>
   </header>
 
   <div class="container">
@@ -40,11 +40,23 @@
       <div id="viewTracker">
         
         <div class="card">
-          <div class="card-header">Player Identity</div>
+          <div class="card-header">Session Setup</div>
           <div class="card-body">
+            <div class="timer-box">
+              <div class="timer-display" id="stopwatch">00:00</div>
+              <div class="timer-controls">
+                <button class="btn-start" id="startTimer">▶</button>
+                <button class="btn-stop" id="stopTimer">■</button>
+                <button class="btn-reset" id="resetTimer">↺</button>
+              </div>
+            </div>
+
             <div class="row">
               <div><input type="text" id="playerFirst" placeholder="First Name"></div>
               <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+            </div>
+            <div style="margin-top:10px;">
+              <select id="positionSelect"></select>
             </div>
           </div>
         </div>
@@ -52,24 +64,20 @@
         <div class="card" style="border: 2px solid #00263A;">
           <div class="card-header" style="background:#00263A; color:white;">
             <span>★ Daily Essentials</span>
-            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">START HERE</span>
+            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">REQUIRED</span>
           </div>
-          <div class="card-body" style="background:#f8fafc;">
-            <label>Foundation Skills (Ball Mastery)</label>
-            <div class="chips" id="foundationList">
-              </div>
+          <div class="card-body">
+            <label>Cardio & Fitness</label>
+            <div class="chips" id="cardioList" style="margin-bottom:15px;"></div>
+            
+            <label>Ball Mastery (Levels 1-3)</label>
+            <div class="chips" id="foundationList"></div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">Tactical & Position</div>
           <div class="card-body">
-            
-            <div style="margin-bottom:15px;">
-              <label>My Position</label>
-              <select id="positionSelect"></select>
-            </div>
-
             <div class="row">
               <div>
                 <label>Pressure</label>
@@ -80,24 +88,21 @@
                 </div>
               </div>
             </div>
-
             <div style="margin-top:15px;">
               <label>Select Scenario Skill</label>
               <div class="chips" id="skillSuggestions"></div>
             </div>
-          </div>
-        </div>
 
-        <div id="watchBtnContainer" class="card" style="display:none; border:2px solid #00263A;">
-          <div class="card-body" style="text-align:center;">
-            <div id="drillRecommendation" style="color:#00263A; font-weight:bold; font-size:16px; margin-bottom:10px;"></div>
-            <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
-            <button id="watchVideoBtn" style="background:#8A8D8F;">🎥 Watch Video</button>
+            <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
+              <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
+              <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
+              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo</button>
+            </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header">Session Results</div>
+          <div class="card-header">Results</div>
           <div class="card-body">
             <div class="row" style="margin-bottom:15px;">
               <div><label>Sets</label><input type="number" id="sets" placeholder="0"></div>
@@ -112,20 +117,26 @@
               <div class="chip" data-val="fail">× Fail</div>
             </div>
 
-            <div style="margin-top:15px;">
-              <label>Verification (Parent Initials)</label>
-              <input id="parentSig" placeholder="Required (e.g. EW)" style="border-color:#ca8a04;">
+            <div style="margin-top:20px;">
+              <label>Parent Signature</label>
+              <canvas id="signaturePad" width="300" height="150"></canvas>
+              <div style="text-align:right;">
+                <button id="clearSigBtn" class="clear-btn">Clear</button>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;">
+              <input id="notes" placeholder="Notes...">
             </div>
             
             <button id="logRep">Log Session</button>
           </div>
         </div>
-
       </div>
 
       <div id="viewStats" style="display:none;">
         <div class="card">
-          <div class="card-header">My Progress</div>
+          <div class="card-header">My Stats</div>
           <div class="card-body">
             <div class="row">
               <div class="stat-box"><div id="statTotal" class="stat-num">0</div><div class="stat-label">Logs</div></div>

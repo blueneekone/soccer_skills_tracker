@@ -36,15 +36,81 @@ const navStats = document.getElementById("navStats");
 const navCoach = document.getElementById("navCoach");
 const positionSelect = document.getElementById("positionSelect");
 
-// AUTH
+// === STOPWATCH LOGIC ===
+let timerInterval;
+let seconds = 0;
+const timerDisplay = document.getElementById("stopwatch");
+const minsInput = document.getElementById("minutes");
+
+function updateTimer() {
+    seconds++;
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    timerDisplay.innerText = `${m}:${s}`;
+}
+
+document.getElementById("startTimer").addEventListener("click", () => {
+    if (!timerInterval) timerInterval = setInterval(updateTimer, 1000);
+});
+
+document.getElementById("stopTimer").addEventListener("click", () => {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    // Auto-fill minutes (round up to 1 if less than a minute)
+    const m = Math.floor(seconds / 60);
+    minsInput.value = m > 0 ? m : 1; 
+});
+
+document.getElementById("resetTimer").addEventListener("click", () => {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    seconds = 0;
+    timerDisplay.innerText = "00:00";
+});
+
+// === SIGNATURE LOGIC ===
+const canvas = document.getElementById("signaturePad");
+const ctx = canvas.getContext("2d");
+let isDrawing = false;
+
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = 150;
+    ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
+}
+window.addEventListener('resize', resizeCanvas);
+
+function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
+function endDraw() { isDrawing = false; ctx.beginPath(); }
+function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('touchend', endDraw);
+canvas.addEventListener('touchmove', draw);
+
+document.getElementById("clearSigBtn").addEventListener("click", () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// === AUTH ===
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loginUI.style.display = "none";
     appUI.style.display = "block";
     bottomNav.style.display = "flex";
-    document.getElementById("coachName").textContent = user.displayName;
+    document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     if(user.email.toLowerCase() === COACH_EMAIL.toLowerCase()) navCoach.style.display = "flex";
-    loadStats(); 
+    loadStats(); resizeCanvas();
   } else {
     loginUI.style.display = "block";
     appUI.style.display = "none";
@@ -60,12 +126,12 @@ logoutBtn.addEventListener("click", () => {
     signOut(auth).then(() => location.reload());
 });
 
-// NAV
+// === NAV ===
 function switchTab(tab) {
     [viewTracker, viewStats, viewCoach].forEach(v => v.style.display = "none");
     [navTrack, navStats, navCoach].forEach(n => n.classList.remove("active"));
     
-    if (tab === 'track') { viewTracker.style.display = "block"; navTrack.classList.add("active"); }
+    if (tab === 'track') { viewTracker.style.display = "block"; navTrack.classList.add("active"); setTimeout(resizeCanvas, 100); }
     if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); }
     if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); }
 }
@@ -73,31 +139,37 @@ navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
 
-// INIT DROPDOWNS & LISTS
+// === DATA LOADING ===
 if(positionSelect.options.length === 0) {
     dbData.positions.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.name;
+        const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name;
         positionSelect.appendChild(opt);
     });
 }
 positionSelect.addEventListener("change", updateTacticalSkills);
 
-// LOAD FOUNDATION SKILLS (Always visible)
+// Load Cardio & Foundation
+const cardioList = document.getElementById("cardioList");
 const foundationList = document.getElementById("foundationList");
+
 if(foundationList.innerHTML === "") {
+    const cardios = dbData.foundationSkills.filter(s => s.type === "cardio");
     const foundations = dbData.foundationSkills.filter(s => s.type === "foundation");
+
+    cardios.forEach(s => {
+        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
+        chip.addEventListener("click", () => selectSkill(chip, s));
+        cardioList.appendChild(chip);
+    });
+
     foundations.forEach(s => {
-        const chip = document.createElement("div");
-        chip.className = "chip";
-        chip.textContent = s.name;
+        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
         chip.addEventListener("click", () => selectSkill(chip, s));
         foundationList.appendChild(chip);
     });
 }
 
-// TACTICAL SKILLS (Filtered)
+// Load Tactical
 const pressureChips = document.getElementById("pressure");
 pressureChips.addEventListener("click", (e) => {
     if(e.target.classList.contains("chip")) {
@@ -110,7 +182,6 @@ pressureChips.addEventListener("click", (e) => {
 function updateTacticalSkills() {
     const tacticalDiv = document.getElementById("skillSuggestions");
     tacticalDiv.innerHTML = "";
-    
     const currentPressure = pressureChips.querySelector(".active")?.dataset.val;
     const currentPos = positionSelect.value;
 
@@ -122,22 +193,18 @@ function updateTacticalSkills() {
     });
 
     tacticalSkills.forEach(s => {
-        const chip = document.createElement("div");
-        chip.className = "chip";
-        chip.textContent = s.name;
+        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
         chip.addEventListener("click", () => selectSkill(chip, s));
         tacticalDiv.appendChild(chip);
     });
 }
 
-// UNIVERSAL SKILL SELECTOR (Handles click for both lists)
+// Universal Selector
 function selectSkill(chipElement, skillData) {
-    // Clear all active chips in both lists
     document.querySelectorAll(".chip.active").forEach(c => {
-        if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; // Don't clear filters
+        if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; 
         c.classList.remove("active");
     });
-    
     chipElement.classList.add("active");
     
     const container = document.getElementById("watchBtnContainer");
@@ -150,28 +217,15 @@ function selectSkill(chipElement, skillData) {
     container.style.display = "block";
     title.innerHTML = `Selected: ${skillData.drill}`;
     
-    if(skillData.image) {
-        img.src = skillData.image;
-        img.style.display = "block";
-    } else {
-        img.style.display = "none";
-    }
-
+    if(skillData.image) { img.src = skillData.image; img.style.display = "block"; } else { img.style.display = "none"; }
     if(skillData.video) {
-        btn.style.display = "block";
-        btn.onclick = () => {
-            videoPlayer.src = skillData.video;
-            modal.style.display = "block";
-        }
-    } else {
-        btn.style.display = "none";
-    }
+        btn.style.display = "inline-block";
+        btn.onclick = () => { videoPlayer.src = skillData.video; modal.style.display = "block"; }
+    } else { btn.style.display = "none"; }
 }
 
-// MODAL CLOSE
 document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
 
-// OUTCOME CHIPS
 const outcomeChips = document.getElementById("outcome");
 outcomeChips.addEventListener("click", (e) => {
     if(e.target.classList.contains("chip")) {
@@ -187,12 +241,11 @@ document.getElementById("logRep").addEventListener("click", async () => {
     
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
-    const sig = document.getElementById("parentSig").value;
-    const activeSkill = document.querySelector("#foundationList .active, #skillSuggestions .active");
+    const activeSkill = document.querySelector("#foundationList .active, #cardioList .active, #skillSuggestions .active");
+    const signatureData = canvas.toDataURL(); 
 
     if(!pFirst || !pLast) return alert("Enter Name");
     if(!activeSkill) return alert("Select a skill");
-    if(!sig) return alert("Parent Initials Required");
 
     const repData = {
         coachEmail: user.email,
@@ -202,24 +255,31 @@ document.getElementById("logRep").addEventListener("click", async () => {
         sets: document.getElementById("sets").value,
         reps: document.getElementById("reps").value,
         minutes: document.getElementById("minutes").value,
-        signature: sig,
+        signatureImg: signatureData,
         outcome: document.querySelector("#outcome .active")?.dataset.val || "success",
         notes: document.getElementById("notes").value
     };
+
+    const btn = document.getElementById("logRep");
+    btn.disabled = true; btn.textContent = "Saving...";
 
     try {
         await addDoc(collection(db, "reps"), repData);
         alert("Logged!");
         loadStats();
-        // Reset Inputs
+        // Reset
         document.getElementById("sets").value = "";
         document.getElementById("reps").value = "";
         document.getElementById("minutes").value = "";
-        document.getElementById("parentSig").value = "";
-    } catch(e) { console.error(e); alert("Error"); }
+        document.getElementById("notes").value = "";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("resetTimer").click(); // Reset timer too
+    } catch(e) { console.error(e); alert("Error saving"); }
+    
+    btn.disabled = false; btn.textContent = "Log Session";
 });
 
-// STATS & DASHBOARD
+// STATS
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
@@ -229,8 +289,7 @@ async function loadStats() {
     let mins = 0;
     
     snap.forEach(doc => {
-        const d = doc.data();
-        logs.push(d);
+        const d = doc.data(); logs.push(d);
         mins += parseInt(d.minutes || 0);
     });
 
@@ -247,35 +306,25 @@ async function loadCoachDashboard() {
     const listDiv = document.getElementById("coachPlayerList");
     listDiv.innerHTML = "Loading...";
     const q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
-    
     try {
         const snap = await getDocs(q);
         const players = {};
         const allReps = [];
-        
         snap.forEach(doc => {
-            const d = doc.data();
-            allReps.push(d);
+            const d = doc.data(); allReps.push(d);
             const p = d.player || "Unknown";
             if(!players[p]) players[p] = { count: 0, mins: 0 };
-            players[p].count++;
-            players[p].mins += parseInt(d.minutes || 0);
+            players[p].count++; players[p].mins += parseInt(d.minutes || 0);
         });
-
         document.getElementById("coachTotalReps").innerText = allReps.length;
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
-        
         listDiv.innerHTML = Object.keys(players).map(p => `
             <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
-                <b>${p}</b>
-                <span>${players[p].mins}m / ${players[p].count} logs</span>
-            </div>
-        `).join("");
-        
+                <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} logs</span>
+            </div>`).join("");
         document.getElementById("exportCsvBtn").onclick = () => {
-            const csv = "data:text/csv;charset=utf-8," + allReps.map(r => `${r.player},${r.skill},${r.minutes}`).join("\n");
-            const link = document.createElement("a");
-            link.href = encodeURI(csv); link.download = "report.csv"; link.click();
+            const csv = "data:text/csv;charset=utf-8," + allReps.map(r => `${r.player},${r.skill},${r.minutes},${r.outcome}`).join("\n");
+            const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "report.csv"; link.click();
         };
     } catch (e) { listDiv.innerHTML = "Error loading. Check Rules."; }
 }

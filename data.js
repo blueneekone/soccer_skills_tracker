@@ -17,25 +17,35 @@ export const dbData = {
   ],
 
   foundationSkills: [
-    // === TYPE: FOUNDATION (Daily Essentials - Simon's Brilliant Basics) ===
+    // === TYPE: CARDIO (New) ===
     { 
-      id: "bb_toe_taps", name: "Toe Taps (Level 1)", type: "foundation",
+      id: "fit_run_1", name: "Interval Run (15m)", type: "cardio",
+      drill: "Run 1 min, Walk 1 min (x7)", video: "", image: ""
+    },
+    { 
+      id: "fit_sprint", name: "Shuttle Sprints", type: "cardio",
+      drill: "Cone Shuttles (10 yards) x 10", video: "", image: ""
+    },
+    { 
+      id: "fit_agility", name: "Ladder Agility", type: "cardio",
+      drill: "Agility Ladder Routine", video: "", image: ""
+    },
+
+    // === TYPE: FOUNDATION (Ball Mastery) ===
+    { 
+      id: "bb_toe_taps", name: "Toe Taps (Lvl 1)", type: "foundation",
       drill: "Brilliant Basics: Stationary Toe Taps", video: "", image: "images/toe_taps.png"
     },
     { 
-      id: "bb_boxes", name: "Boxes / Tic Tocs (Level 1)", type: "foundation",
+      id: "bb_boxes", name: "Boxes / Tic Tocs (Lvl 1)", type: "foundation",
       drill: "Brilliant Basics: Stationary Boxes", video: "", image: "images/boxes.png"
     },
     { 
-      id: "bb_step_over", name: "Step Over (Level 2)", type: "foundation",
+      id: "bb_step_over", name: "Step Over (Lvl 2)", type: "foundation",
       drill: "Brilliant Basics: Stationary Step Over", video: "", image: "images/step_over.png"
     },
-    { 
-      id: "bb_roll_over", name: "Roll Over (Level 2)", type: "foundation",
-      drill: "Brilliant Basics: Stationary Roll Over", video: "", image: "images/roll_over.png"
-    },
 
-    // === TYPE: TACTICAL (Filtered by Position & Pressure) ===
+    // === TYPE: TACTICAL ===
     { 
       id: "fs_shift_r", name: "Shift Right (Speed)", type: "tactical",
       pressure: ["front", "side"], positions: ["all"], 

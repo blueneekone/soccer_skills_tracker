@@ -1,10 +1,9 @@
 :root {
   --aggie-blue: #00263A;      /* Official Navy */
   --aggie-silver: #8A8D8F;    /* Official Silver */
-  --bg-color: #f1f5f9;        /* Light Grey Background */
+  --bg-color: #f1f5f9;
   --card-bg: #ffffff;
   --text-main: #0f172a;
-  --text-inverse: #ffffff;
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #ca8a04;
@@ -17,111 +16,82 @@ body {
   margin: 0; padding: 0; padding-bottom: 100px;
 }
 
-/* --- HEADER --- */
 header {
-  background: var(--aggie-blue);
-  color: white;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-  position: sticky; top: 0; z-index: 100;
+  background: var(--aggie-blue); color: white; padding: 20px; text-align: center;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-#coachName { color: var(--aggie-silver); font-size: 12px; margin-top: 4px; font-weight: 600; }
 
 .container { padding: 15px; max-width: 600px; margin: 0 auto; }
 
-/* --- CARDS (High Contrast) --- */
+/* Cards */
 .card {
-  background: var(--card-bg);
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Keeps header inside border */
-  border: 1px solid #cbd5e1;
+  background: var(--card-bg); border-radius: 10px; margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #cbd5e1;
 }
-
-/* New: Card Headers for Contrast */
 .card-header {
-  background: var(--aggie-blue);
-  color: white;
-  padding: 12px 15px;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: var(--aggie-blue); color: white; padding: 12px 15px;
+  font-size: 14px; font-weight: 700; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
 }
-
 .card-body { padding: 15px; }
 
-/* --- INPUTS --- */
-label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+/* STOPWATCH (NEW) */
+.timer-box {
+  background: #0f172a; color: #fff; padding: 15px; border-radius: 8px;
+  text-align: center; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
+}
+.timer-display { font-size: 32px; font-weight: 700; font-family: monospace; letter-spacing: 2px; }
+.timer-controls button {
+  width: auto; padding: 8px 12px; margin: 0 5px; font-size: 12px;
+}
+.btn-start { background: var(--success); }
+.btn-stop { background: var(--danger); }
+.btn-reset { background: var(--aggie-silver); }
 
+/* Inputs */
+label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
 input, select {
-  width: 100%; padding: 12px;
-  background: #f8fafc; border: 2px solid #e2e8f0;
-  border-radius: 6px; font-size: 16px; color: var(--text-main);
-  box-sizing: border-box; transition: border-color 0.2s;
+  width: 100%; padding: 12px; background: #f8fafc; border: 2px solid #e2e8f0;
+  border-radius: 6px; font-size: 16px; box-sizing: border-box;
 }
 input:focus, select:focus { outline: none; border-color: var(--aggie-blue); background: white; }
 
-/* --- CHIPS & BUTTONS --- */
+/* Chips */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-
 .chip {
-  padding: 10px 16px; border-radius: 6px;
-  font-size: 14px; font-weight: 600; cursor: pointer;
-  background: #e2e8f0; color: #475569;
-  border: 2px solid transparent;
-  flex: 1 1 auto; text-align: center;
+  padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600;
+  cursor: pointer; background: #e2e8f0; color: #475569; border: 2px solid transparent; flex: 1 1 auto; text-align: center;
 }
-
-.chip.active {
-  background: var(--aggie-blue); color: white;
-  border-color: var(--aggie-blue);
-  box-shadow: 0 2px 4px rgba(0,38,58,0.3);
-}
-
-/* Outcome Specific Colors */
+.chip.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
 .chip[data-val="success"].active { background: var(--success); border-color: var(--success); }
 .chip[data-val="partial"].active { background: var(--warning); border-color: var(--warning); }
 .chip[data-val="fail"].active { background: var(--danger); border-color: var(--danger); }
 
-/* Main Action Button */
-button#logRep {
-  background: var(--aggie-blue); color: white;
-  font-size: 18px; font-weight: 700; text-transform: uppercase;
-  padding: 16px; border-radius: 8px; border: none;
-  width: 100%; margin-top: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+/* Buttons */
+button {
+  width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700;
+  cursor: pointer; background: var(--aggie-blue); color: white; border: none;
 }
-button#logRep:active { transform: translateY(2px); }
+button:active { opacity: 0.9; }
+.secondary-btn { background: var(--aggie-silver); margin-top: 10px; }
+.clear-btn { background: none; color: #64748b; border: 1px solid #cbd5e1; font-size: 12px; padding: 5px 10px; width: auto; margin-top: 5px; }
 
-/* --- STAT BOXES --- */
-.row { display: flex; gap: 10px; }
-.row > div { flex: 1; }
-
-.stat-box {
-  background: white; border: 2px solid #e2e8f0;
-  border-radius: 8px; padding: 10px; text-align: center;
+/* Canvas */
+canvas#signaturePad {
+  border: 2px dashed #cbd5e1; border-radius: 8px; background-color: #fcfcfc;
+  width: 100%; height: 150px; cursor: crosshair; touch-action: none;
 }
-.stat-num { font-size: 20px; font-weight: 800; color: var(--aggie-blue); }
-.stat-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
 
-/* --- UTILS --- */
-.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,38,58,0.9); }
+/* Modal & Nav */
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,38,58,0.95); }
 .modal-content { background: white; margin: 20% auto; padding: 15px; width: 90%; max-width: 500px; border-radius: 12px; }
 .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: black; }
 .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-/* Navigation */
 .bottom-nav {
-  position: fixed; bottom: 0; width: 100%;
-  background: white; border-top: 1px solid #cbd5e1;
-  display: flex; justify-content: space-around; padding: 12px 0;
-  z-index: 999; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #cbd5e1;
+  display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 .nav-item { background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
