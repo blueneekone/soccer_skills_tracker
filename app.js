@@ -36,6 +36,8 @@ const navStats = document.getElementById("navStats");
 const navCoach = document.getElementById("navCoach");
 const foundationSelect = document.getElementById("foundationSelect");
 const cardioSelect = document.getElementById("cardioSelect");
+const addSkillBtn = document.getElementById("addSkillBtn"); // NEW
+const selectedSkillsList = document.getElementById("selectedSkillsList"); // NEW
 
 // TIMER
 let timerInterval;
@@ -158,27 +160,62 @@ if(foundationSelect.options.length === 1) {
     }
 }
 
+// === MULTI-SELECT LOGIC ===
+let currentRoutine = [];
+
+// Add Button Logic
+addSkillBtn.addEventListener("click", () => {
+    const val = foundationSelect.value;
+    if (!val) return;
+    
+    // Check if already in list
+    if (currentRoutine.includes(val)) return;
+
+    // Add to stack
+    currentRoutine.push(val);
+    renderRoutineStack();
+    
+    // Reset dropdown
+    foundationSelect.selectedIndex = 0;
+});
+
+function renderRoutineStack() {
+    selectedSkillsList.innerHTML = "";
+    currentRoutine.forEach((skill, index) => {
+        const chip = document.createElement("div");
+        chip.className = "chip active";
+        chip.style.display = "inline-flex";
+        chip.style.alignItems = "center";
+        chip.style.gap = "5px";
+        chip.innerHTML = `<span>${skill}</span> <span style='font-size:16px; font-weight:bold; cursor:pointer;'>&times;</span>`;
+        
+        // Remove on click
+        chip.addEventListener("click", () => {
+            currentRoutine.splice(index, 1);
+            renderRoutineStack();
+        });
+        selectedSkillsList.appendChild(chip);
+    });
+}
+
 // EVENTS FOR DROPDOWNS
 cardioSelect.addEventListener("change", (e) => {
-    // Hide Basics Dropdown or Reset it if user picks Cardio
     if(e.target.value !== "") {
-        foundationSelect.selectedIndex = 0;
-        document.getElementById("watchBtnContainer").style.display = "none"; // No video for cardio
+        // Clearing routine if they switch to cardio
+        currentRoutine = [];
+        renderRoutineStack();
+        document.getElementById("watchBtnContainer").style.display = "none";
     }
 });
 
+// Watch popup on dropdown change
 foundationSelect.addEventListener("change", (e) => {
-    // Reset Cardio
     cardioSelect.selectedIndex = 0;
-    
     const skillName = e.target.value;
     const skillData = dbData.foundationSkills.find(s => s.name === skillName);
     
-    // Clear Tactical Chips
-    document.querySelectorAll(".chip.active").forEach(c => {
-        if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; 
-        c.classList.remove("active");
-    });
+    // Clear Tactical
+    document.querySelectorAll("#skillSuggestions .chip.active").forEach(c => c.classList.remove("active"));
     
     showDrillPopup(skillData);
 });
@@ -208,6 +245,8 @@ function updateTacticalSkills() {
         chip.addEventListener("click", () => {
              foundationSelect.selectedIndex = 0; 
              cardioSelect.selectedIndex = 0;
+             currentRoutine = []; // clear basics
+             renderRoutineStack();
              selectTacticalSkill(chip, s);
         });
         tacticalDiv.appendChild(chip);
@@ -233,7 +272,6 @@ function showDrillPopup(skillData) {
 
     if(!skillData) { container.style.display = "none"; return; }
 
-    // Logic: Only show popup if it's NOT Cardio (though we handle that by dropdowns now)
     container.style.display = "block";
     title.innerHTML = `Selected: ${skillData.drill}`;
     
@@ -262,25 +300,37 @@ document.getElementById("logRep").addEventListener("click", async () => {
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
     
-    // Determine active skill
-    let activeSkillName = "";
-    if (cardioSelect.value !== "") activeSkillName = cardioSelect.value;
-    else if (foundationSelect.value !== "") activeSkillName = foundationSelect.value;
+    // Determine active skill string
+    let skillString = "";
+
+    // 1. Check Cardio
+    if (cardioSelect.value !== "") {
+        skillString = cardioSelect.value;
+    }
+    // 2. Check Routine Stack (Basics)
+    else if (currentRoutine.length > 0) {
+        skillString = currentRoutine.join(" + ");
+    }
+    // 3. Check Single Dropdown Select (if they didn't hit +)
+    else if (foundationSelect.value !== "") {
+        skillString = foundationSelect.value;
+    }
+    // 4. Check Tactical
     else {
         const activeChip = document.querySelector("#skillSuggestions .active");
-        if(activeChip) activeSkillName = activeChip.textContent;
+        if(activeChip) skillString = activeChip.textContent;
     }
 
     const signatureData = canvas.toDataURL(); 
 
     if(!pFirst || !pLast) return alert("Enter Name");
-    if(!activeSkillName) return alert("Select a skill or cardio activity");
+    if(skillString === "") return alert("Select a skill or build a routine");
 
     const repData = {
         coachEmail: user.email,
         timestamp: new Date(),
         player: `${pFirst} ${pLast}`,
-        skill: activeSkillName,
+        skill: skillString,
         sets: document.getElementById("sets").value,
         reps: document.getElementById("reps").value,
         minutes: document.getElementById("minutes").value,
@@ -301,8 +351,12 @@ document.getElementById("logRep").addEventListener("click", async () => {
         document.getElementById("reps").value = "";
         document.getElementById("minutes").value = "";
         document.getElementById("notes").value = "";
+        
         foundationSelect.selectedIndex = 0;
         cardioSelect.selectedIndex = 0;
+        currentRoutine = [];
+        renderRoutineStack();
+        
         document.querySelectorAll(".chip.active").forEach(c => {
              if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return;
              c.classList.remove("active");
@@ -331,7 +385,6 @@ async function loadStats() {
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = mins;
     
-    // XP Calculation: 10pts per log + 1pt per minute
     const xp = (logs.length * 10) + mins;
     let level = "Rookie";
     if (xp > 100) level = "Starter";
@@ -340,7 +393,6 @@ async function loadStats() {
     if (xp > 2000) level = "Legend";
     
     document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`;
-    // Cap bar at 1000 for visual effect
     const barPercent = Math.min((xp % 500) / 500 * 100, 100); 
     document.getElementById("xpBar").style.width = `${barPercent}%`;
 
@@ -356,28 +408,18 @@ async function loadStats() {
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarGrid");
     grid.innerHTML = "";
-    
-    // Get unique dates that have logs
     const activeDates = new Set(logs.map(l => new Date(l.timestamp.seconds*1000).toDateString()));
-    
     const today = new Date();
-    // Show last 14 days
     for (let i = 13; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(today.getDate() - i);
-        
-        const dayDiv = document.createElement("div");
-        dayDiv.className = "cal-day";
-        dayDiv.innerText = d.getDate();
-        
+        const d = new Date(); d.setDate(today.getDate() - i);
+        const dayDiv = document.createElement("div"); dayDiv.className = "cal-day"; dayDiv.innerText = d.getDate();
         if (activeDates.has(d.toDateString())) dayDiv.classList.add("active");
         if (d.toDateString() === today.toDateString()) dayDiv.classList.add("today");
-        
         grid.appendChild(dayDiv);
     }
 }
 
-// COACH DASHBOARD (XLSX & CHART)
+// COACH DASHBOARD
 async function loadCoachDashboard() {
     const listDiv = document.getElementById("coachPlayerList");
     listDiv.innerHTML = "Loading...";
@@ -385,34 +427,26 @@ async function loadCoachDashboard() {
     try {
         const snap = await getDocs(q);
         const players = {};
-        const allReps = []; // For Excel
-        
+        const allReps = [];
         snap.forEach(doc => {
             const d = doc.data(); allReps.push(d);
             const p = d.player || "Unknown";
             if(!players[p]) players[p] = { count: 0, mins: 0, history: [] };
-            players[p].count++; 
-            players[p].mins += parseInt(d.minutes || 0);
+            players[p].count++; players[p].mins += parseInt(d.minutes || 0);
             players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString());
         });
 
         document.getElementById("coachTotalReps").innerText = allReps.length;
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
-        
-        // Render Team Chart
         renderTeamChart(players);
 
-        // Leaderboard
         listDiv.innerHTML = Object.keys(players).map(p => `
             <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
                 <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} logs</span>
             </div>`).join("");
         
-        // Excel Export
         document.getElementById("exportXlsxBtn").onclick = () => {
             const wb = XLSX.utils.book_new();
-            
-            // Format data for cleaner Excel
             const formattedData = allReps.map(r => ({
                 Date: new Date(r.timestamp.seconds * 1000).toLocaleDateString(),
                 Player: r.player,
@@ -423,7 +457,6 @@ async function loadCoachDashboard() {
                 Outcome: r.outcome,
                 Notes: r.notes
             }));
-
             const ws = XLSX.utils.json_to_sheet(formattedData);
             XLSX.utils.book_append_sheet(wb, ws, "TeamData");
             XLSX.writeFile(wb, "AggiesFC_Report.xlsx");
@@ -431,47 +464,22 @@ async function loadCoachDashboard() {
     } catch (e) { listDiv.innerHTML = "Error loading. Check Rules."; console.error(e); }
 }
 
-// TEAM CHART (Line Graph with Toggles)
 let teamChart = null;
 function renderTeamChart(playersData) {
     const ctx = document.getElementById('teamChart').getContext('2d');
     if (teamChart) teamChart.destroy();
-
     const dates = [];
-    // Generate last 7 days labels
     for(let i=6; i>=0; i--) {
         const d = new Date(); d.setDate(new Date().getDate() - i);
         dates.push(d.toLocaleDateString());
     }
-
     const datasets = Object.keys(playersData).map(p => {
-        // Calculate daily mins for this player
-        const dailyMins = dates.map(dateStr => {
-            // Count occurrences of this date in player history
-            // (Simple count of logs, could be sum of minutes if history stored objects)
-            return playersData[p].history.filter(h => h === dateStr).length;
-        });
-
-        // Random Color Generator
-        const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
-
-        return {
-            label: p,
-            data: dailyMins,
-            borderColor: color,
-            tension: 0.3,
-            fill: false
-        };
+        const dailyMins = dates.map(dateStr => playersData[p].history.filter(h => h === dateStr).length);
+        return { label: p, data: dailyMins, borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`, tension: 0.3, fill: false };
     });
-
     teamChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: dates, datasets: datasets },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: true, position: 'bottom' } }, // Legend acts as toggle
-            scales: { y: { beginAtZero: true, title: {display:true, text:'Sessions'} } }
-        }
+        type: 'line', data: { labels: dates, datasets: datasets },
+        options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Sessions'} } } }
     });
 }
 
