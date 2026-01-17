@@ -12,8 +12,10 @@
   
   <div id="videoModal" class="modal">
     <div class="modal-content">
-      <span id="closeModal" class="close">&times;</span>
-      <h3 id="modalTitle" style="margin-top:0; color:#00263A;">Drill Detail</h3>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <h3 id="modalTitle" style="margin:0; color:#00263A;">Drill</h3>
+        <span id="closeModal" style="font-size:24px; cursor:pointer;">&times;</span>
+      </div>
       <div class="video-container">
         <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen></iframe>
       </div>
@@ -22,14 +24,14 @@
 
   <header>
     <h1>Aggies FC Tracker</h1>
-    <div id="coachName" style="font-size:12px; color:#64748b; margin-top:5px;"></div>
+    <div id="coachName"></div>
   </header>
 
   <div class="container">
     
     <div id="loginUI" class="card" style="text-align:center; padding:40px;">
       <h2 style="color:#00263A;">Player Portal</h2>
-      <p style="color:#64748b; margin-bottom:20px;">Sign in to track your development.</p>
+      <p style="color:#64748b;">Sign in to start training.</p>
       <button id="loginBtn">Sign in with Google</button>
     </div>
 
@@ -38,131 +40,128 @@
       <div id="viewTracker">
         
         <div class="card">
-          <label>Player Profile</label>
-          <div class="row">
-            <div><input type="text" id="playerFirst" placeholder="First Name"></div>
-            <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+          <div class="card-header">Player Identity</div>
+          <div class="card-body">
+            <div class="row">
+              <div><input type="text" id="playerFirst" placeholder="First Name"></div>
+              <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+            </div>
           </div>
-          <div style="margin-top:10px;">
-            <label>My Position</label>
-            <select id="positionSelect"></select>
+        </div>
+
+        <div class="card" style="border: 2px solid #00263A;">
+          <div class="card-header" style="background:#00263A; color:white;">
+            <span>★ Daily Essentials</span>
+            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">START HERE</span>
+          </div>
+          <div class="card-body" style="background:#f8fafc;">
+            <label>Foundation Skills (Ball Mastery)</label>
+            <div class="chips" id="foundationList">
+              </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="row">
-            <div>
-              <label>Phase</label>
-              <div class="chips" id="phase">
-                <div class="chip active" data-val="attack">Attack</div>
-                <div class="chip" data-val="defend">Defend</div>
-              </div>
-            </div>
-            <div>
-              <label>Pressure</label>
-              <div class="chips" id="pressure">
-                <div class="chip active" data-val="front">Front</div>
-                <div class="chip" data-val="side">Side</div>
-                <div class="chip" data-val="back">Back</div>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top:15px;">
-            <label>Roadmap Goal</label>
-            <select id="action"></select>
-          </div>
-
-          <div style="margin-top:15px;">
-            <label>Select Skill / Drill</label>
-            <div class="chips" id="skillSuggestions"></div>
+          <div class="card-header">Tactical & Position</div>
+          <div class="card-body">
             
-            <div id="watchBtnContainer" style="display:none; margin-top:10px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1;">
-              <div id="drillRecommendation" style="color:#0f172a; margin-bottom:10px; font-weight:bold; font-size:14px;"></div>
-              <img id="drillImage" src="" alt="Drill Diagram" style="width:100%; border-radius:6px; margin-bottom:10px; display:none; border:1px solid #cbd5e1;">
-              <button id="watchVideoBtn" class="secondary-btn" style="background:#8A8D8F;">🎥 Watch Demo</button>
+            <div style="margin-bottom:15px;">
+              <label>My Position</label>
+              <select id="positionSelect"></select>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>Pressure</label>
+                <div class="chips" id="pressure">
+                  <div class="chip active" data-val="front">Front</div>
+                  <div class="chip" data-val="side">Side</div>
+                  <div class="chip" data-val="back">Back</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:15px;">
+              <label>Select Scenario Skill</label>
+              <div class="chips" id="skillSuggestions"></div>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <label>Session Metrics</label>
-          <div class="row" style="margin-bottom:15px;">
-            <div><label style="font-size:10px;">Sets</label><input type="number" id="sets" placeholder="0"></div>
-            <div><label style="font-size:10px;">Reps</label><input type="number" id="reps" placeholder="0"></div>
-            <div><label style="font-size:10px;">Mins</label><input type="number" id="minutes" placeholder="0"></div>
-          </div>
-          
-          <label>Qualities</label>
-          <div class="chips" id="qualities"></div>
-
-          <label style="margin-top:15px;">Outcome</label>
-          <div class="chips" id="outcome">
-            <div class="chip active" data-val="success" style="background:#16a34a; color:white; border-color:#16a34a;">✓ Success</div>
-            <div class="chip" data-val="partial" style="color:#ca8a04; border-color:#ca8a04;">~ Partial</div>
-            <div class="chip" data-val="fail" style="color:#dc2626; border-color:#dc2626;">× Fail</div>
+        <div id="watchBtnContainer" class="card" style="display:none; border:2px solid #00263A;">
+          <div class="card-body" style="text-align:center;">
+            <div id="drillRecommendation" style="color:#00263A; font-weight:bold; font-size:16px; margin-bottom:10px;"></div>
+            <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
+            <button id="watchVideoBtn" style="background:#8A8D8F;">🎥 Watch Video</button>
           </div>
         </div>
 
         <div class="card">
-          <label>Verification</label>
-          <input id="parentSig" placeholder="Parent Initials (Required)" style="margin-bottom:10px; border:1px solid #00263A;">
-          <input id="notes" placeholder="Notes...">
-          <button id="logRep" style="margin-top:15px;">Log Session</button>
+          <div class="card-header">Session Results</div>
+          <div class="card-body">
+            <div class="row" style="margin-bottom:15px;">
+              <div><label>Sets</label><input type="number" id="sets" placeholder="0"></div>
+              <div><label>Reps</label><input type="number" id="reps" placeholder="0"></div>
+              <div><label>Mins</label><input type="number" id="minutes" placeholder="0"></div>
+            </div>
+            
+            <label>Outcome</label>
+            <div class="chips" id="outcome">
+              <div class="chip active" data-val="success">✓ Success</div>
+              <div class="chip" data-val="partial">~ Partial</div>
+              <div class="chip" data-val="fail">× Fail</div>
+            </div>
+
+            <div style="margin-top:15px;">
+              <label>Verification (Parent Initials)</label>
+              <input id="parentSig" placeholder="Required (e.g. EW)" style="border-color:#ca8a04;">
+            </div>
+            
+            <button id="logRep">Log Session</button>
+          </div>
         </div>
+
       </div>
 
       <div id="viewStats" style="display:none;">
         <div class="card">
-          <h2 style="color:#00263A;">My Progress</h2>
-          <div class="row">
-            <div class="stat-box"><div id="statTotal" class="stat-num">0</div><div class="stat-label">Sessions</div></div>
-            <div class="stat-box"><div id="statTime" class="stat-num">0</div><div class="stat-label">Minutes</div></div>
-            <div class="stat-box"><div id="statStreak" class="stat-num" style="color:#eab308">0</div><div class="stat-label">Streak 🔥</div></div>
+          <div class="card-header">My Progress</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="stat-box"><div id="statTotal" class="stat-num">0</div><div class="stat-label">Logs</div></div>
+              <div class="stat-box"><div id="statTime" class="stat-num">0</div><div class="stat-label">Mins</div></div>
+              <div class="stat-box"><div id="statStreak" class="stat-num">0</div><div class="stat-label">Streak</div></div>
+            </div>
           </div>
         </div>
-
-        <div class="card">
-          <label>Consistency Trend</label>
-          <canvas id="progressChart"></canvas>
-        </div>
-
-        <div class="card">
-          <label>Recent History</label>
-          <div id="historyList" class="small"></div>
-        </div>
-        
-        <div style="text-align:center; margin-top:20px;">
-          <button id="logoutBtn" style="color:#64748b; background:none; border:1px solid #cbd5e1;">Sign Out</button>
-        </div>
+        <div class="card"><div class="card-body"><canvas id="progressChart"></canvas></div></div>
+        <div class="card"><div class="card-body"><div id="historyList" class="small"></div></div></div>
+        <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
       <div id="viewCoach" style="display:none;">
-        <div class="card" style="border: 1px solid #00263A;">
-          <h2 style="color:#00263A;">Coach Dashboard</h2>
-          <div class="row">
-            <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Team Logs</div></div>
-            <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Active Players</div></div>
-          </div>
-          <button id="exportCsvBtn" style="margin-top:15px; background:#00263A;">📥 Download Report (CSV)</button>
-        </div>
-
         <div class="card">
-          <label>Leaderboard</label>
-          <div id="coachPlayerList"></div>
+          <div class="card-header">Coach Dashboard</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total</div></div>
+              <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div>
+            </div>
+            <button id="exportCsvBtn" style="margin-top:15px;">📥 Export CSV</button>
+          </div>
         </div>
+        <div class="card"><div class="card-body" id="coachPlayerList"></div></div>
       </div>
 
     </div>
 
     <nav class="bottom-nav" id="bottomNav" style="display:none;">
-      <button class="nav-item active" id="navTrack"><span>📝</span> Track</button>
-      <button class="nav-item" id="navStats"><span>📈</span> Report</button>
-      <button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span> Coach</button>
+      <button class="nav-item active" id="navTrack"><span>📝</span>Track</button>
+      <button class="nav-item" id="navStats"><span>📈</span>Stats</button>
+      <button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span>Coach</button>
     </nav>
 
   </div>
-  
   <script type="module" src="app.js"></script>
 </body>
 </html>

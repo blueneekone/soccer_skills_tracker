@@ -1,106 +1,60 @@
 export const dbData = {
-  // 1. POSITIONS
   positions: [
     { id: "all", name: "Show All" },
-    { id: "fwd", name: "Forward / Striker" },
-    { id: "mid", name: "Midfielder (CAM/CDM)" },
+    { id: "fwd", name: "Forward" },
+    { id: "mid", name: "Midfielder" },
     { id: "wing", name: "Winger" },
-    { id: "def", name: "Defender (CB/LB/RB)" },
+    { id: "def", name: "Defender" },
     { id: "gk", name: "Goalkeeper" }
   ],
 
-  // 2. QUALITIES
-  qualities: [
-    { id: "q1", name: "Read Game", desc: "Decisions" },
-    { id: "q2", name: "Initiative", desc: "Brave" },
-    { id: "q3", name: "Focus", desc: "Mental" },
-    { id: "q4", name: "Technical", desc: "Mastery" },
-    { id: "q5", name: "Physical", desc: "Fitness" },
-    { id: "q6", name: "Responsibility", desc: "Self-Reg" }
-  ],
-
-  // 3. TACTICAL GOALS
   roadmapActions: [
-    { id: "att_1v1", name: "Create a 1v1 / Dribble Past", phase: "attack" },
+    { id: "att_1v1", name: "Create a 1v1", phase: "attack" },
     { id: "att_shoot", name: "Shoot / Finish", phase: "attack" },
-    { id: "att_pass", name: "Pass / Distribute", phase: "attack" },
-    { id: "def_protect", name: "Protect the Goal", phase: "defend" },
-    { id: "def_steal", name: "Steal the Ball", phase: "defend" },
-    { id: "def_air", name: "Win Aerial Ball", phase: "defend" }
+    { id: "att_pass", name: "Distribute", phase: "attack" },
+    { id: "def_steal", name: "Steal Ball", phase: "defend" },
+    { id: "def_protect", name: "Protect Goal", phase: "defend" }
   ],
 
-  // 4. SKILLS & DRILLS
   foundationSkills: [
-    // --- FOUNDATION (ALL) ---
+    // === TYPE: FOUNDATION (Daily Essentials - Simon's Brilliant Basics) ===
     { 
-      id: "fs_shift_r", name: "Shift Right (Foundation)", 
-      pressure: ["front", "side"], positions: ["all"], 
-      drill: "Brilliant Basics Lvl 1: Toe Taps", 
-      video: "", 
-      image: "images/toe_taps.png" 
+      id: "bb_toe_taps", name: "Toe Taps (Level 1)", type: "foundation",
+      drill: "Brilliant Basics: Stationary Toe Taps", video: "", image: "images/toe_taps.png"
     },
     { 
-      id: "fs_shift_l", name: "Shift Left (Foundation)", 
-      pressure: ["front", "side"], positions: ["all"], 
-      drill: "Brilliant Basics Lvl 1: Toe Taps", 
-      video: "", 
-      image: "images/toe_taps.png" 
+      id: "bb_boxes", name: "Boxes / Tic Tocs (Level 1)", type: "foundation",
+      drill: "Brilliant Basics: Stationary Boxes", video: "", image: "images/boxes.png"
     },
     { 
-      id: "fs_step_over", name: "Step Over (Foundation)", 
-      pressure: ["front", "side"], positions: ["all"], 
-      drill: "Brilliant Basics Lvl 2: Step Over", 
-      video: "",
-      image: "images/step_over.png" 
+      id: "bb_step_over", name: "Step Over (Level 2)", type: "foundation",
+      drill: "Brilliant Basics: Stationary Step Over", video: "", image: "images/step_over.png"
     },
     { 
-      id: "fs_pin", name: "Pinning (Foundation)", 
+      id: "bb_roll_over", name: "Roll Over (Level 2)", type: "foundation",
+      drill: "Brilliant Basics: Stationary Roll Over", video: "", image: "images/roll_over.png"
+    },
+
+    // === TYPE: TACTICAL (Filtered by Position & Pressure) ===
+    { 
+      id: "fs_shift_r", name: "Shift Right (Speed)", type: "tactical",
+      pressure: ["front", "side"], positions: ["all"], 
+      drill: "1v1: Shift & Speed", video: "", image: "" 
+    },
+    { 
+      id: "fs_pin", name: "Pinning (Shield)", type: "tactical",
       pressure: ["back"], positions: ["all"], 
-      drill: "Shielding: 1v1 Box", 
-      video: "",
-      image: "" 
-    },
-
-    // --- POSITIONAL SPECIFIC ---
-    // GOALKEEPER
-    { 
-      id: "gk_dive", name: "Dive & Recovery", 
-      pressure: ["front", "side"], positions: ["gk"], 
-      drill: "Defensive Template: Dive & Recov", 
-      video: "",
-      image: "images/gk_dive.png"
+      drill: "1v1: Shielding Box", video: "", image: "" 
     },
     { 
-      id: "gk_high_ball", name: "High Ball Catch", 
+      id: "gk_dive", name: "Dive & Recovery", type: "tactical",
       pressure: ["front"], positions: ["gk"], 
-      drill: "Defensive Template: High Ball", 
-      video: "",
-      image: ""
+      drill: "GK: Low Dive", video: "", image: "" 
     },
-
-    // DEFENDER
     { 
-      id: "def_clear", name: "Long Clearance", 
-      pressure: ["front", "side"], positions: ["def"], 
-      drill: "Defensive Template: Distribution", 
-      video: "",
-      image: ""
-    },
-
-    // WINGER / STRIKER
-    { 
-      id: "att_cross", name: "Crossing on the Run", 
+      id: "att_cross", name: "Crossing Run", type: "tactical",
       pressure: ["side"], positions: ["wing", "fwd"], 
-      drill: "Offensive Template: Crossing Grid", 
-      video: "",
-      image: ""
-    },
-    { 
-      id: "att_shoot_pwr", name: "Power Shot", 
-      pressure: ["front"], positions: ["fwd", "mid", "wing"], 
-      drill: "Offensive Template: Shooting Wall", 
-      video: "",
-      image: ""
+      drill: "Wing Play: Cross & Finish", video: "", image: "" 
     }
   ]
 };
