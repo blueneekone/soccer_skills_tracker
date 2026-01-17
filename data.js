@@ -18,7 +18,7 @@ export const dbData = {
 
     // === BRILLIANT BASICS (32 SKILLS - MEDIA ACTIVE) ===
     // GROUP 1: Front/Side
-    { id: "fm_1", name: "1. Shift Right | Outside Right", type: "foundation", category: "1v1 Front/Side", drill: "Shift Right using Outside Right Foot", video: "", image: "" },
+    { id: "fm_1", name: "1. Shift Right | Outside Right", type: "foundation", category: "1v1 Front/Side", drill: "Shift Right using Outside Right Foot", video: "https://youtu.be/QqDTmCx_fME", image: "" },
     { id: "fm_2", name: "2. Shift Left | Outside Left", type: "foundation", category: "1v1 Front/Side", drill: "Shift Left using Outside Left Foot", video: "", image: "" },
     { id: "fm_3", name: "3. Shift Left | Inside Right", type: "foundation", category: "1v1 Front/Side", drill: "Shift Left using Inside Right Foot", video: "", image: "" },
     { id: "fm_4", name: "4. Shift Right | Inside Left", type: "foundation", category: "1v1 Front/Side", drill: "Shift Right using Inside Left Foot", video: "", image: "" },
