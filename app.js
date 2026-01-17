@@ -35,8 +35,9 @@ const navTrack = document.getElementById("navTrack");
 const navStats = document.getElementById("navStats");
 const navCoach = document.getElementById("navCoach");
 const positionSelect = document.getElementById("positionSelect");
+const foundationSelect = document.getElementById("foundationSelect");
 
-// === STOPWATCH LOGIC ===
+// TIMER
 let timerInterval;
 let seconds = 0;
 const timerDisplay = document.getElementById("stopwatch");
@@ -48,19 +49,15 @@ function updateTimer() {
     const s = (seconds % 60).toString().padStart(2, "0");
     timerDisplay.innerText = `${m}:${s}`;
 }
-
 document.getElementById("startTimer").addEventListener("click", () => {
     if (!timerInterval) timerInterval = setInterval(updateTimer, 1000);
 });
-
 document.getElementById("stopTimer").addEventListener("click", () => {
     clearInterval(timerInterval);
     timerInterval = null;
-    // Auto-fill minutes (round up to 1 if less than a minute)
     const m = Math.floor(seconds / 60);
     minsInput.value = m > 0 ? m : 1; 
 });
-
 document.getElementById("resetTimer").addEventListener("click", () => {
     clearInterval(timerInterval);
     timerInterval = null;
@@ -68,18 +65,16 @@ document.getElementById("resetTimer").addEventListener("click", () => {
     timerDisplay.innerText = "00:00";
 });
 
-// === SIGNATURE LOGIC ===
+// SIGNATURE
 const canvas = document.getElementById("signaturePad");
 const ctx = canvas.getContext("2d");
 let isDrawing = false;
-
 function resizeCanvas() {
     canvas.width = canvas.parentElement.offsetWidth;
     canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
 }
 window.addEventListener('resize', resizeCanvas);
-
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
 function endDraw() { isDrawing = false; ctx.beginPath(); }
 function draw(e) {
@@ -90,19 +85,17 @@ function draw(e) {
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
     ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
 }
-
 canvas.addEventListener('mousedown', startDraw);
 canvas.addEventListener('mouseup', endDraw);
 canvas.addEventListener('mousemove', draw);
 canvas.addEventListener('touchstart', startDraw);
 canvas.addEventListener('touchend', endDraw);
 canvas.addEventListener('touchmove', draw);
-
 document.getElementById("clearSigBtn").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-// === AUTH ===
+// AUTH
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loginUI.style.display = "none";
@@ -126,7 +119,7 @@ logoutBtn.addEventListener("click", () => {
     signOut(auth).then(() => location.reload());
 });
 
-// === NAV ===
+// NAV
 function switchTab(tab) {
     [viewTracker, viewStats, viewCoach].forEach(v => v.style.display = "none");
     [navTrack, navStats, navCoach].forEach(n => n.classList.remove("active"));
@@ -139,7 +132,7 @@ navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
 
-// === DATA LOADING ===
+// DROPDOWN LOGIC (FOUNDATION & FITNESS)
 if(positionSelect.options.length === 0) {
     dbData.positions.forEach(p => {
         const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name;
@@ -148,28 +141,49 @@ if(positionSelect.options.length === 0) {
 }
 positionSelect.addEventListener("change", updateTacticalSkills);
 
-// Load Cardio & Foundation
-const cardioList = document.getElementById("cardioList");
-const foundationList = document.getElementById("foundationList");
-
-if(foundationList.innerHTML === "") {
-    const cardios = dbData.foundationSkills.filter(s => s.type === "cardio");
-    const foundations = dbData.foundationSkills.filter(s => s.type === "foundation");
-
-    cardios.forEach(s => {
-        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
-        chip.addEventListener("click", () => selectSkill(chip, s));
-        cardioList.appendChild(chip);
+if(foundationSelect.options.length === 1) {
+    const essentials = dbData.foundationSkills.filter(s => s.type === "foundation" || s.type === "cardio");
+    const categories = {};
+    
+    essentials.forEach(s => {
+        if (!categories[s.category]) categories[s.category] = [];
+        categories[s.category].push(s);
     });
 
-    foundations.forEach(s => {
-        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
-        chip.addEventListener("click", () => selectSkill(chip, s));
-        foundationList.appendChild(chip);
+    // Sort: Fitness first, then Foundation
+    const sortedKeys = Object.keys(categories).sort((a,b) => {
+        if (a === "General Fitness") return -1;
+        if (b === "General Fitness") return 1;
+        return 0;
+    });
+
+    sortedKeys.forEach(cat => {
+        const group = document.createElement("optgroup");
+        group.label = cat;
+        categories[cat].forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s.name;
+            opt.textContent = s.name;
+            group.appendChild(opt);
+        });
+        foundationSelect.appendChild(group);
     });
 }
 
-// Load Tactical
+foundationSelect.addEventListener("change", (e) => {
+    const skillName = e.target.value;
+    const skillData = dbData.foundationSkills.find(s => s.name === skillName);
+    
+    // Unselect tactical
+    document.querySelectorAll(".chip.active").forEach(c => {
+        if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; 
+        c.classList.remove("active");
+    });
+    
+    showDrillPopup(skillData);
+});
+
+// TACTICAL CHIPS
 const pressureChips = document.getElementById("pressure");
 pressureChips.addEventListener("click", (e) => {
     if(e.target.classList.contains("chip")) {
@@ -194,25 +208,32 @@ function updateTacticalSkills() {
 
     tacticalSkills.forEach(s => {
         const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
-        chip.addEventListener("click", () => selectSkill(chip, s));
+        chip.addEventListener("click", () => {
+             foundationSelect.selectedIndex = 0; // Reset Dropdown
+             selectTacticalSkill(chip, s);
+        });
         tacticalDiv.appendChild(chip);
     });
 }
 
-// Universal Selector
-function selectSkill(chipElement, skillData) {
+function selectTacticalSkill(chipElement, skillData) {
     document.querySelectorAll(".chip.active").forEach(c => {
         if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; 
         c.classList.remove("active");
     });
     chipElement.classList.add("active");
-    
+    showDrillPopup(skillData);
+}
+
+function showDrillPopup(skillData) {
     const container = document.getElementById("watchBtnContainer");
     const title = document.getElementById("drillRecommendation");
     const img = document.getElementById("drillImage");
     const btn = document.getElementById("watchVideoBtn");
     const modal = document.getElementById("videoModal");
     const videoPlayer = document.getElementById("videoPlayer");
+
+    if(!skillData) { container.style.display = "none"; return; }
 
     container.style.display = "block";
     title.innerHTML = `Selected: ${skillData.drill}`;
@@ -241,17 +262,24 @@ document.getElementById("logRep").addEventListener("click", async () => {
     
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
-    const activeSkill = document.querySelector("#foundationList .active, #cardioList .active, #skillSuggestions .active");
+    
+    // Check Dropdown OR Chip
+    let activeSkillName = foundationSelect.value;
+    if (!activeSkillName || activeSkillName === "") {
+        const activeChip = document.querySelector("#skillSuggestions .active");
+        if (activeChip) activeSkillName = activeChip.textContent;
+    }
+
     const signatureData = canvas.toDataURL(); 
 
     if(!pFirst || !pLast) return alert("Enter Name");
-    if(!activeSkill) return alert("Select a skill");
+    if(!activeSkillName) return alert("Select a skill (Essentials or Tactical)");
 
     const repData = {
         coachEmail: user.email,
         timestamp: new Date(),
         player: `${pFirst} ${pLast}`,
-        skill: activeSkill.textContent,
+        skill: activeSkillName,
         sets: document.getElementById("sets").value,
         reps: document.getElementById("reps").value,
         minutes: document.getElementById("minutes").value,
@@ -272,8 +300,13 @@ document.getElementById("logRep").addEventListener("click", async () => {
         document.getElementById("reps").value = "";
         document.getElementById("minutes").value = "";
         document.getElementById("notes").value = "";
+        foundationSelect.selectedIndex = 0;
+        document.querySelectorAll(".chip.active").forEach(c => {
+             if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return;
+             c.classList.remove("active");
+        });
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById("resetTimer").click(); // Reset timer too
+        document.getElementById("resetTimer").click(); 
     } catch(e) { console.error(e); alert("Error saving"); }
     
     btn.disabled = false; btn.textContent = "Log Session";
