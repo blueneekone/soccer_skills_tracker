@@ -8,7 +8,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
 import { dbData } from "./data.js";
 
 // --- CONFIGURATION ---
-const COACH_EMAIL = "ecwaechtler@gmail.com";
+const COACH_EMAIL = "ecwaechtler@gmail.com"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
@@ -23,7 +23,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-enableIndexedDbPersistence(db).catch((err) => console.log('Persistence error:', err.code));
+enableIndexedDbPersistence(db).catch((err) => {
+    console.log('Persistence error:', err.code);
+});
 
 // --- UI REFERENCES ---
 const loginBtn = document.getElementById("loginBtn");
@@ -42,7 +44,7 @@ const navCoach = document.getElementById("navCoach");
 
 const actionSelect = document.getElementById("action");
 const qualitiesDiv = document.getElementById("qualities");
-const positionSelect = document.getElementById("positionSelect"); // NEW
+const positionSelect = document.getElementById("positionSelect");
 
 // 5. AUTH LOGIC
 onAuthStateChanged(auth, (user) => {
@@ -50,11 +52,13 @@ onAuthStateChanged(auth, (user) => {
     loginUI.style.display = "none";
     appUI.style.display = "block";
     bottomNav.style.display = "flex";
-    document.getElementById("coachName").textContent = user.displayName;
+    document.getElementById("coachName").textContent = `Logged in as: ${user.displayName}`;
     
+    // COACH CHECK (Case Insensitive)
     if(user.email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
         navCoach.style.display = "flex";
     }
+
     loadStats(); 
   } else {
     loginUI.style.display = "block";
@@ -65,8 +69,7 @@ onAuthStateChanged(auth, (user) => {
 
 loginBtn.addEventListener("click", () => {
   const provider = new GoogleAuthProvider();
-  // This keeps them in the same tab, which pleases the iPhone security gods
-  signInWithRedirect(auth, provider); 
+  signInWithRedirect(auth, provider);
 });
 
 logoutBtn.addEventListener("click", () => {
@@ -78,6 +81,7 @@ function switchTab(tabName) {
     viewTracker.style.display = "none";
     viewStats.style.display = "none";
     viewCoach.style.display = "none";
+    
     navTrack.classList.remove("active");
     navStats.classList.remove("active");
     navCoach.classList.remove("active");
@@ -95,17 +99,27 @@ function switchTab(tabName) {
         loadCoachDashboard();
     }
 }
+
 navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
 
-// 7. VIDEO POPUP
+// 7. POPUP LOGIC
 const modal = document.getElementById("videoModal");
 const videoPlayer = document.getElementById("videoPlayer");
 let currentSkillVideo = "";
 
-document.getElementById("closeModal").addEventListener("click", () => { modal.style.display = "none"; videoPlayer.src = ""; });
-window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; videoPlayer.src = ""; }};
+document.getElementById("closeModal").addEventListener("click", () => {
+    modal.style.display = "none";
+    videoPlayer.src = "";
+});
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.style.display = "none";
+        videoPlayer.src = "";
+    }
+};
+
 document.getElementById("watchVideoBtn").addEventListener("click", () => {
     if(currentSkillVideo) {
         const activeChip = document.querySelector("#skillSuggestions .chip.active");
@@ -115,8 +129,7 @@ document.getElementById("watchVideoBtn").addEventListener("click", () => {
     }
 });
 
-// 8. DROPDOWNS & CHIPS
-// Populate Positions (NEW)
+// 8. DATA INITIALIZATION
 if(positionSelect.options.length === 0) {
     dbData.positions.forEach(p => {
         const opt = document.createElement("option");
@@ -125,7 +138,6 @@ if(positionSelect.options.length === 0) {
         positionSelect.appendChild(opt);
     });
 }
-// Listen for Position Change to update skills
 positionSelect.addEventListener("change", updateSkillSuggestions);
 
 if(qualitiesDiv.innerHTML === "") {
@@ -144,14 +156,20 @@ const chips = {
     outcome: document.getElementById("outcome")
 };
 
-function getActiveChip(group) { return group.querySelector(".chip.active")?.dataset.val; }
+function getActiveChip(group) {
+    return group.querySelector(".chip.active")?.dataset.val;
+}
 
 document.querySelectorAll(".chips").forEach(group => {
     group.addEventListener("click", (e) => {
         if(e.target.classList.contains("chip")) {
-            if (group.id === "qualities") { e.target.classList.toggle("active"); return; }
+            if (group.id === "qualities") {
+                e.target.classList.toggle("active");
+                return;
+            }
             Array.from(group.children).forEach(c => c.classList.remove("active"));
             e.target.classList.add("active");
+            
             if (group.id === "phase") updateActionDropdown();
             if (group.id === "pressure") updateSkillSuggestions();
         }
@@ -169,22 +187,16 @@ function updateActionDropdown() {
     });
 }
 
-// UPDATED FILTER LOGIC (Includes Position)
 function updateSkillSuggestions() {
     const suggestionsDiv = document.getElementById("skillSuggestions");
     suggestionsDiv.innerHTML = "";
-    document.getElementById("watchBtnContainer").style.display = "none";
     
     const currentPressure = getActiveChip(chips.pressure);
     const currentPosition = positionSelect.value || "all";
     
     const relevantSkills = dbData.foundationSkills.filter(s => {
-        // 1. Filter by Pressure
         const pressureMatch = (!currentPressure || currentPressure === "none") ? true : s.pressure.includes(currentPressure);
-        
-        // 2. Filter by Position (Show if it matches selected OR if it is for "all")
         const positionMatch = s.positions.includes("all") || s.positions.includes(currentPosition);
-        
         return pressureMatch && positionMatch;
     });
 
@@ -194,9 +206,8 @@ function updateSkillSuggestions() {
         chip.dataset.val = s.id;
         chip.innerText = s.name;
         
-        // Tag "Foundation" skills visually
         if(s.positions.includes("all")) {
-            chip.style.borderLeft = "3px solid #facc15"; // Yellow stripe
+            chip.style.borderLeft = "3px solid #00263A"; 
         }
 
         chip.addEventListener("click", () => {
@@ -205,18 +216,14 @@ function updateSkillSuggestions() {
             
             const container = document.getElementById("watchBtnContainer");
             const drillText = document.getElementById("drillRecommendation");
-            const drillImg = document.getElementById("drillImage"); // NEW
+            const drillImg = document.getElementById("drillImage");
             const videoBtn = document.getElementById("watchVideoBtn");
 
-            // 1. SET TEXT
             if (s.drill) {
-                drillText.innerHTML = `<b>🎯 Practice Drill:</b><br>${s.drill}`;
+                drillText.innerHTML = `<b>🎯 Drill:</b> ${s.drill}`;
                 container.style.display = "block";
-            } else {
-                drillText.innerHTML = "";
-            }
+            } else { drillText.innerHTML = ""; }
 
-            // 2. SET IMAGE (NEW)
             if (s.image) {
                 drillImg.src = s.image;
                 drillImg.style.display = "block";
@@ -226,7 +233,6 @@ function updateSkillSuggestions() {
                 drillImg.src = "";
             }
 
-            // 3. SET VIDEO
             if (s.video) {
                 currentSkillVideo = s.video;
                 videoBtn.style.display = "block";
@@ -234,20 +240,17 @@ function updateSkillSuggestions() {
             } else {
                 videoBtn.style.display = "none";
             }
-            
-            // Hide container if absolutely nothing exists
-            if(!s.drill && !s.image && !s.video) {
-                container.style.display = "none";
-            }
+
+            if(!s.drill && !s.image && !s.video) container.style.display = "none";
         });
         suggestionsDiv.appendChild(chip);
     });
 }
 
-// 9. SUBMIT LOGIC (Updated with New Metrics)
+// 9. SUBMIT
 document.getElementById("logRep").addEventListener("click", async () => {
     const user = auth.currentUser;
-    if (!user) return alert("Sign in first");
+    if (!user) return alert("Please sign in first");
 
     const pFirst = document.getElementById("playerFirst").value.trim();
     const pLast = document.getElementById("playerLast").value.trim();
@@ -256,8 +259,8 @@ document.getElementById("logRep").addEventListener("click", async () => {
     const mins = document.getElementById("minutes").value || 0;
     const sig = document.getElementById("parentSig").value.trim();
 
-    if (!pFirst || !pLast) return alert("Enter Name");
-    if (!sig) return alert("Parent Initials required to verify session.");
+    if (!pFirst || !pLast) return alert("Please enter Player Name");
+    if (!sig) return alert("Parent Initials required.");
 
     const repData = {
         coachEmail: user.email,
@@ -285,9 +288,8 @@ document.getElementById("logRep").addEventListener("click", async () => {
 
     try {
         await addDoc(collection(db, "reps"), repData);
-        // Clear inputs
         document.getElementById("notes").value = "";
-        document.getElementById("parentSig").value = ""; 
+        document.getElementById("parentSig").value = "";
         document.getElementById("sets").value = "";
         document.getElementById("reps").value = "";
         document.getElementById("minutes").value = "";
@@ -297,13 +299,13 @@ document.getElementById("logRep").addEventListener("click", async () => {
         alert("Session Verified & Saved!");
         loadStats(); 
     } catch (e) {
-        console.error(e);
+        console.error("Error adding document: ", e);
         btn.textContent = "Error";
-        alert("Error saving. Try refreshing.");
+        alert("Error saving.");
     }
 });
 
-// 10. STATS ENGINE (Updated with Time)
+// 10. STATS
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
@@ -324,7 +326,7 @@ async function loadStats() {
         const data = doc.data();
         logs.push(data);
         totalMinutes += parseInt(data.minutes || 0);
-        
+
         const dateObj = new Date(data.timestamp.seconds * 1000);
         const dateKey = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
@@ -333,10 +335,10 @@ async function loadStats() {
         if (data.outcome === "success") dailyStats[dateKey].success++;
     });
 
-    // Streak Logic
     const today = new Date();
     let streak = 0;
     let checkDate = new Date(today);
+    
     for (let i = 0; i < 365; i++) {
         const key = `${checkDate.getMonth() + 1}/${checkDate.getDate()}`;
         if (dailyStats[key]) {
@@ -348,12 +350,9 @@ async function loadStats() {
         }
     }
     document.getElementById("statStreak").innerText = streak;
-
-    // Totals
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = totalMinutes + "m";
 
-    // Chart
     const labels = Object.keys(dailyStats);
     const dataPoints = labels.map(date => {
         const day = dailyStats[date];
@@ -361,29 +360,30 @@ async function loadStats() {
     });
     renderChart(labels, dataPoints);
 
-    // History
     const historyDiv = document.getElementById("historyList");
     historyDiv.innerHTML = logs.slice().reverse().map(l => `
-        <div style="border-bottom:1px solid #334155; padding:12px 0;">
+        <div style="border-bottom:1px solid #e2e8f0; padding:12px 0;">
             <div style="display:flex; justify-content:space-between;">
-                <b style="color:#f1f5f9">${l.skill}</b>
-                <span class="small" style="color:#facc15">${l.minutes}m</span>
+                <b style="color:#0f172a">${l.skill}</b>
+                <span class="small" style="color:#00263A; font-weight:bold;">${l.minutes}m</span>
             </div>
-            <div class="small" style="margin-top:4px; color:#94a3b8;">
-                ${l.sets} x ${l.reps} | Verified: ${l.signature}
+            <div class="small" style="margin-top:4px; color:#64748b;">
+                ${l.sets} x ${l.reps} | Sig: ${l.signature}
             </div>
         </div>
     `).join("");
 }
 
-// Chart Render (Same as before)
 let myChart = null;
+
 function renderChart(dates, percentages) {
     const ctx = document.getElementById('progressChart').getContext('2d');
     if (myChart) myChart.destroy();
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)');
-    gradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
+    gradient.addColorStop(0, 'rgba(0, 38, 58, 0.5)');
+    gradient.addColorStop(1, 'rgba(0, 38, 58, 0.0)');
+
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -391,7 +391,7 @@ function renderChart(dates, percentages) {
             datasets: [{
                 label: 'Success %',
                 data: percentages,
-                borderColor: '#22c55e',
+                borderColor: '#00263A',
                 backgroundColor: gradient,
                 borderWidth: 3,
                 pointBackgroundColor: '#fff',
@@ -404,8 +404,8 @@ function renderChart(dates, percentages) {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                y: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' }, ticks: { color: '#64748b' } },
+                x: { grid: { display: false }, ticks: { color: '#64748b' } }
             }
         }
     });
@@ -414,51 +414,65 @@ function renderChart(dates, percentages) {
 // 11. COACH DASHBOARD
 async function loadCoachDashboard() {
     const listDiv = document.getElementById("coachPlayerList");
-    listDiv.innerHTML = "Loading data...";
-    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
+    listDiv.innerHTML = "Loading Team Data...";
     
-    const players = {};
-    let totalLogs = 0;
-    const allReps = [];
+    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
+    
+    try {
+        const snapshot = await getDocs(q);
+        const players = {};
+        let totalTeamLogs = 0;
+        const allReps = []; 
 
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        allReps.push(data);
-        totalLogs++;
-        const name = data.player || "Unknown";
-        if (!players[name]) { players[name] = { logs: 0, minutes: 0, last: data.timestamp }; }
-        players[name].logs++;
-        players[name].minutes += parseInt(data.minutes || 0);
-    });
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            allReps.push(data);
+            totalTeamLogs++;
+            
+            const name = data.player || "Unknown";
+            if (!players[name]) {
+                players[name] = { logs: 0, minutes: 0, lastActive: data.timestamp };
+            }
+            players[name].logs++;
+            players[name].minutes += parseInt(data.minutes || 0);
+        });
 
-    document.getElementById("coachTotalReps").innerText = totalLogs;
-    document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
+        document.getElementById("coachTotalReps").innerText = totalTeamLogs;
+        document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
 
-    listDiv.innerHTML = Object.keys(players).map(p => {
-        const stats = players[p];
-        return `
-        <div style="background:#0f172a; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <div style="font-weight:bold; font-size:16px;">${p}</div>
-                <div class="small" style="color:#94a3b8;">Last: ${new Date(stats.last.seconds * 1000).toLocaleDateString()}</div>
+        listDiv.innerHTML = Object.keys(players).map(p => {
+            const stats = players[p];
+            return `
+            <div style="background:#f8fafc; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e2e8f0;">
+                <div>
+                    <div style="font-weight:bold; font-size:16px; color:#0f172a;">${p}</div>
+                    <div class="small" style="color:#64748b;">Last: ${new Date(stats.lastActive.seconds * 1000).toLocaleDateString()}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:#00263A; font-weight:bold; font-size:18px;">${stats.minutes}m</div>
+                    <div class="small">Total Time</div>
+                </div>
             </div>
-            <div style="text-align:right;">
-                <div style="color:#22c55e; font-weight:bold; font-size:18px;">${stats.minutes}m</div>
-                <div class="small">Total Practice</div>
-            </div>
-        </div>`;
-    }).join("");
+            `;
+        }).join("");
 
-    document.getElementById("exportCsvBtn").onclick = () => downloadCSV(allReps);
+        document.getElementById("exportCsvBtn").onclick = () => downloadCSV(allReps);
+        
+    } catch (err) {
+        console.error("Coach Dashboard Error:", err);
+        listDiv.innerHTML = "Error loading data. <br>Did you update Firebase Rules?";
+    }
 }
 
 function downloadCSV(data) {
-    const headers = ["Date", "Player", "Position", "Skill", "Sets", "Reps", "Minutes", "VerifiedBy", "Notes"];
+    const headers = ["Date", "Coach/Parent", "Player", "Position", "Phase", "Action", "Skill", "Sets", "Reps", "Minutes", "VerifiedBy", "Notes"];
     const rows = data.map(r => [
         new Date(r.timestamp.seconds * 1000).toLocaleDateString(),
+        r.coachEmail,
         r.player,
         r.position,
+        r.phase,
+        r.action,
         r.skill,
         r.sets,
         r.reps,
@@ -466,14 +480,18 @@ function downloadCSV(data) {
         r.signature,
         `"${r.notes || ''}"`
     ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "team_report.csv");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "AggiesFC_Report.csv");
     document.body.appendChild(link);
     link.click();
 }
 
-// 12. STARTUP
+// 12. INITIALIZE
 updateActionDropdown();
 updateSkillSuggestions();
