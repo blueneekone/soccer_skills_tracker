@@ -68,7 +68,7 @@
           <div class="card-body">
             <select id="cardioSelect">
               <option value="" selected>None / Skip Cardio</option>
-              </select>
+            </select>
           </div>
         </div>
 
@@ -78,9 +78,16 @@
             <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">CORE</span>
           </div>
           <div class="card-body">
-            <select id="foundationSelect" style="font-weight:600; color:#00263A;">
-              <option value="" selected>Select Skill (32 Model)...</option>
-              </select>
+            
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select id="foundationSelect" style="font-weight:600; color:#00263A; flex-grow:1; margin-bottom:0;">
+                <option value="" selected>Select Skill to Add...</option>
+                </select>
+              <button id="addSkillBtn" style="width:50px; height:48px; font-size:24px; padding:0; line-height:1; margin:0; background:#16a34a;">+</button>
+            </div>
+
+            <div id="selectedSkillsList" class="chips" style="margin-top:15px; min-height:10px;">
+              </div>
             
             <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
               <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
