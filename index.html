@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   
@@ -39,43 +40,58 @@
 
       <div id="viewTracker">
         
+        <div class="xp-container">
+          <div class="xp-level" id="userLevelDisplay">Rookie • 0 XP</div>
+          <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar"></div></div>
+        </div>
+
         <div class="card">
           <div class="card-header">Session Setup</div>
           <div class="card-body">
             <div class="timer-box">
               <div class="timer-display" id="stopwatch">00:00</div>
               <div class="timer-controls">
-                <button class="btn-start" id="startTimer">▶</button>
-                <button class="btn-stop" id="stopTimer">■</button>
-                <button class="btn-reset" id="resetTimer">↺</button>
+                <button class="btn-start" id="startTimer">Start</button>
+                <button class="btn-stop" id="stopTimer">Stop</button>
+                <button class="btn-reset" id="resetTimer">Reset</button>
               </div>
             </div>
-
             <div class="row">
               <div><input type="text" id="playerFirst" placeholder="First Name"></div>
               <div><input type="text" id="playerLast" placeholder="Last Name"></div>
             </div>
-            <div style="margin-top:10px;">
-              <select id="positionSelect"></select>
-            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">1. Cardio & Fitness</div>
+          <div class="card-body">
+            <select id="cardioSelect">
+              <option value="" selected>None / Skip Cardio</option>
+              </select>
           </div>
         </div>
 
         <div class="card" style="border: 2px solid #00263A;">
           <div class="card-header" style="background:#00263A; color:white;">
-            <span>★ Daily Essentials</span>
-            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">REQUIRED</span>
+            <span>2. Brilliant Basics</span>
+            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">CORE</span>
           </div>
           <div class="card-body">
-            <label>Foundation Skills & Fitness</label>
             <select id="foundationSelect" style="font-weight:600; color:#00263A;">
-              <option value="" disabled selected>Select a Workout...</option>
+              <option value="" selected>Select Skill (32 Model)...</option>
               </select>
+            
+            <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
+              <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
+              <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
+              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo</button>
+            </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header">Tactical & Position</div>
+          <div class="card-header">3. Tactical Scenario (Optional)</div>
           <div class="card-body">
             <div class="row">
               <div>
@@ -88,14 +104,8 @@
               </div>
             </div>
             <div style="margin-top:15px;">
-              <label>Select Scenario Skill</label>
+              <label>Select Scenario</label>
               <div class="chips" id="skillSuggestions"></div>
-            </div>
-
-            <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
-              <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
-              <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
-              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo</button>
             </div>
           </div>
         </div>
@@ -128,7 +138,7 @@
               <input id="notes" placeholder="Notes...">
             </div>
             
-            <button id="logRep">Log Session</button>
+            <button id="logRep">Log Session (+10 XP)</button>
           </div>
         </div>
       </div>
@@ -144,6 +154,14 @@
             </div>
           </div>
         </div>
+        
+        <div class="card">
+          <div class="card-header">Workout Calendar</div>
+          <div class="card-body">
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </div>
+        </div>
+
         <div class="card"><div class="card-body"><canvas id="progressChart"></canvas></div></div>
         <div class="card"><div class="card-body"><div id="historyList" class="small"></div></div></div>
         <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
@@ -157,7 +175,14 @@
               <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total</div></div>
               <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div>
             </div>
-            <button id="exportCsvBtn" style="margin-top:15px;">📥 Export CSV</button>
+            <button id="exportXlsxBtn" style="margin-top:15px; background:#16a34a;">📥 Download Excel (.xlsx)</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Team Performance</div>
+          <div class="card-body">
+            <canvas id="teamChart"></canvas>
+            <p style="font-size:10px; color:#64748b; text-align:center; margin-top:5px;">Click legend names to toggle players</p>
           </div>
         </div>
         <div class="card"><div class="card-body" id="coachPlayerList"></div></div>

@@ -34,8 +34,8 @@ const viewCoach = document.getElementById("viewCoach");
 const navTrack = document.getElementById("navTrack");
 const navStats = document.getElementById("navStats");
 const navCoach = document.getElementById("navCoach");
-const positionSelect = document.getElementById("positionSelect");
 const foundationSelect = document.getElementById("foundationSelect");
+const cardioSelect = document.getElementById("cardioSelect");
 
 // TIMER
 let timerInterval;
@@ -132,49 +132,49 @@ navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
 
-// DROPDOWN LOGIC (FOUNDATION & FITNESS)
-if(positionSelect.options.length === 0) {
-    dbData.positions.forEach(p => {
-        const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.name;
-        positionSelect.appendChild(opt);
+// POPULATE DROPDOWNS
+if(cardioSelect.options.length === 1) {
+    dbData.foundationSkills.filter(s => s.type === "cardio").forEach(s => {
+        const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+        cardioSelect.appendChild(opt);
     });
 }
-positionSelect.addEventListener("change", updateTacticalSkills);
 
 if(foundationSelect.options.length === 1) {
-    const essentials = dbData.foundationSkills.filter(s => s.type === "foundation" || s.type === "cardio");
+    const foundations = dbData.foundationSkills.filter(s => s.type === "foundation");
     const categories = {};
-    
-    essentials.forEach(s => {
+    foundations.forEach(s => {
         if (!categories[s.category]) categories[s.category] = [];
         categories[s.category].push(s);
     });
 
-    // Sort: Fitness first, then Foundation
-    const sortedKeys = Object.keys(categories).sort((a,b) => {
-        if (a === "General Fitness") return -1;
-        if (b === "General Fitness") return 1;
-        return 0;
-    });
-
-    sortedKeys.forEach(cat => {
-        const group = document.createElement("optgroup");
-        group.label = cat;
-        categories[cat].forEach(s => {
-            const opt = document.createElement("option");
-            opt.value = s.name;
-            opt.textContent = s.name;
+    for (const [catName, skills] of Object.entries(categories)) {
+        const group = document.createElement("optgroup"); group.label = catName;
+        skills.forEach(s => {
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
             group.appendChild(opt);
         });
         foundationSelect.appendChild(group);
-    });
+    }
 }
 
+// EVENTS FOR DROPDOWNS
+cardioSelect.addEventListener("change", (e) => {
+    // Hide Basics Dropdown or Reset it if user picks Cardio
+    if(e.target.value !== "") {
+        foundationSelect.selectedIndex = 0;
+        document.getElementById("watchBtnContainer").style.display = "none"; // No video for cardio
+    }
+});
+
 foundationSelect.addEventListener("change", (e) => {
+    // Reset Cardio
+    cardioSelect.selectedIndex = 0;
+    
     const skillName = e.target.value;
     const skillData = dbData.foundationSkills.find(s => s.name === skillName);
     
-    // Unselect tactical
+    // Clear Tactical Chips
     document.querySelectorAll(".chip.active").forEach(c => {
         if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; 
         c.classList.remove("active");
@@ -197,19 +197,17 @@ function updateTacticalSkills() {
     const tacticalDiv = document.getElementById("skillSuggestions");
     tacticalDiv.innerHTML = "";
     const currentPressure = pressureChips.querySelector(".active")?.dataset.val;
-    const currentPos = positionSelect.value;
 
     const tacticalSkills = dbData.foundationSkills.filter(s => {
         if(s.type !== "tactical") return false;
-        const pressureMatch = (!currentPressure) ? true : s.pressure.includes(currentPressure);
-        const posMatch = s.positions.includes("all") || s.positions.includes(currentPos);
-        return pressureMatch && posMatch;
+        return (!currentPressure) ? true : s.pressure.includes(currentPressure);
     });
 
     tacticalSkills.forEach(s => {
         const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
         chip.addEventListener("click", () => {
-             foundationSelect.selectedIndex = 0; // Reset Dropdown
+             foundationSelect.selectedIndex = 0; 
+             cardioSelect.selectedIndex = 0;
              selectTacticalSkill(chip, s);
         });
         tacticalDiv.appendChild(chip);
@@ -235,6 +233,7 @@ function showDrillPopup(skillData) {
 
     if(!skillData) { container.style.display = "none"; return; }
 
+    // Logic: Only show popup if it's NOT Cardio (though we handle that by dropdowns now)
     container.style.display = "block";
     title.innerHTML = `Selected: ${skillData.drill}`;
     
@@ -263,17 +262,19 @@ document.getElementById("logRep").addEventListener("click", async () => {
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
     
-    // Check Dropdown OR Chip
-    let activeSkillName = foundationSelect.value;
-    if (!activeSkillName || activeSkillName === "") {
+    // Determine active skill
+    let activeSkillName = "";
+    if (cardioSelect.value !== "") activeSkillName = cardioSelect.value;
+    else if (foundationSelect.value !== "") activeSkillName = foundationSelect.value;
+    else {
         const activeChip = document.querySelector("#skillSuggestions .active");
-        if (activeChip) activeSkillName = activeChip.textContent;
+        if(activeChip) activeSkillName = activeChip.textContent;
     }
 
     const signatureData = canvas.toDataURL(); 
 
     if(!pFirst || !pLast) return alert("Enter Name");
-    if(!activeSkillName) return alert("Select a skill (Essentials or Tactical)");
+    if(!activeSkillName) return alert("Select a skill or cardio activity");
 
     const repData = {
         coachEmail: user.email,
@@ -293,7 +294,7 @@ document.getElementById("logRep").addEventListener("click", async () => {
 
     try {
         await addDoc(collection(db, "reps"), repData);
-        alert("Logged!");
+        alert("Logged! +10 XP");
         loadStats();
         // Reset
         document.getElementById("sets").value = "";
@@ -301,6 +302,7 @@ document.getElementById("logRep").addEventListener("click", async () => {
         document.getElementById("minutes").value = "";
         document.getElementById("notes").value = "";
         foundationSelect.selectedIndex = 0;
+        cardioSelect.selectedIndex = 0;
         document.querySelectorAll(".chip.active").forEach(c => {
              if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return;
              c.classList.remove("active");
@@ -312,11 +314,11 @@ document.getElementById("logRep").addEventListener("click", async () => {
     btn.disabled = false; btn.textContent = "Log Session";
 });
 
-// STATS
+// STATS & GAMIFICATION
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
-    const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(50));
+    const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(100));
     const snap = await getDocs(q);
     const logs = [];
     let mins = 0;
@@ -328,6 +330,22 @@ async function loadStats() {
 
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = mins;
+    
+    // XP Calculation: 10pts per log + 1pt per minute
+    const xp = (logs.length * 10) + mins;
+    let level = "Rookie";
+    if (xp > 100) level = "Starter";
+    if (xp > 500) level = "Pro";
+    if (xp > 1000) level = "Elite";
+    if (xp > 2000) level = "Legend";
+    
+    document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`;
+    // Cap bar at 1000 for visual effect
+    const barPercent = Math.min((xp % 500) / 500 * 100, 100); 
+    document.getElementById("xpBar").style.width = `${barPercent}%`;
+
+    renderCalendar(logs);
+
     document.getElementById("historyList").innerHTML = logs.slice().reverse().map(l => `
         <div style="border-bottom:1px solid #e2e8f0; padding:10px;">
             <b>${l.skill}</b> <span style="float:right; color:#00263A; font-weight:bold;">${l.minutes}m</span>
@@ -335,6 +353,31 @@ async function loadStats() {
         </div>`).join("");
 }
 
+function renderCalendar(logs) {
+    const grid = document.getElementById("calendarGrid");
+    grid.innerHTML = "";
+    
+    // Get unique dates that have logs
+    const activeDates = new Set(logs.map(l => new Date(l.timestamp.seconds*1000).toDateString()));
+    
+    const today = new Date();
+    // Show last 14 days
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "cal-day";
+        dayDiv.innerText = d.getDate();
+        
+        if (activeDates.has(d.toDateString())) dayDiv.classList.add("active");
+        if (d.toDateString() === today.toDateString()) dayDiv.classList.add("today");
+        
+        grid.appendChild(dayDiv);
+    }
+}
+
+// COACH DASHBOARD (XLSX & CHART)
 async function loadCoachDashboard() {
     const listDiv = document.getElementById("coachPlayerList");
     listDiv.innerHTML = "Loading...";
@@ -342,24 +385,94 @@ async function loadCoachDashboard() {
     try {
         const snap = await getDocs(q);
         const players = {};
-        const allReps = [];
+        const allReps = []; // For Excel
+        
         snap.forEach(doc => {
             const d = doc.data(); allReps.push(d);
             const p = d.player || "Unknown";
-            if(!players[p]) players[p] = { count: 0, mins: 0 };
-            players[p].count++; players[p].mins += parseInt(d.minutes || 0);
+            if(!players[p]) players[p] = { count: 0, mins: 0, history: [] };
+            players[p].count++; 
+            players[p].mins += parseInt(d.minutes || 0);
+            players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString());
         });
+
         document.getElementById("coachTotalReps").innerText = allReps.length;
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
+        
+        // Render Team Chart
+        renderTeamChart(players);
+
+        // Leaderboard
         listDiv.innerHTML = Object.keys(players).map(p => `
             <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
                 <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} logs</span>
             </div>`).join("");
-        document.getElementById("exportCsvBtn").onclick = () => {
-            const csv = "data:text/csv;charset=utf-8," + allReps.map(r => `${r.player},${r.skill},${r.minutes},${r.outcome}`).join("\n");
-            const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "report.csv"; link.click();
+        
+        // Excel Export
+        document.getElementById("exportXlsxBtn").onclick = () => {
+            const wb = XLSX.utils.book_new();
+            
+            // Format data for cleaner Excel
+            const formattedData = allReps.map(r => ({
+                Date: new Date(r.timestamp.seconds * 1000).toLocaleDateString(),
+                Player: r.player,
+                Skill: r.skill,
+                Sets: r.sets,
+                Reps: r.reps,
+                Minutes: r.minutes,
+                Outcome: r.outcome,
+                Notes: r.notes
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(formattedData);
+            XLSX.utils.book_append_sheet(wb, ws, "TeamData");
+            XLSX.writeFile(wb, "AggiesFC_Report.xlsx");
         };
-    } catch (e) { listDiv.innerHTML = "Error loading. Check Rules."; }
+    } catch (e) { listDiv.innerHTML = "Error loading. Check Rules."; console.error(e); }
+}
+
+// TEAM CHART (Line Graph with Toggles)
+let teamChart = null;
+function renderTeamChart(playersData) {
+    const ctx = document.getElementById('teamChart').getContext('2d');
+    if (teamChart) teamChart.destroy();
+
+    const dates = [];
+    // Generate last 7 days labels
+    for(let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(new Date().getDate() - i);
+        dates.push(d.toLocaleDateString());
+    }
+
+    const datasets = Object.keys(playersData).map(p => {
+        // Calculate daily mins for this player
+        const dailyMins = dates.map(dateStr => {
+            // Count occurrences of this date in player history
+            // (Simple count of logs, could be sum of minutes if history stored objects)
+            return playersData[p].history.filter(h => h === dateStr).length;
+        });
+
+        // Random Color Generator
+        const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+
+        return {
+            label: p,
+            data: dailyMins,
+            borderColor: color,
+            tension: 0.3,
+            fill: false
+        };
+    });
+
+    teamChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dates, datasets: datasets },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true, position: 'bottom' } }, // Legend acts as toggle
+            scales: { y: { beginAtZero: true, title: {display:true, text:'Sessions'} } }
+        }
+    });
 }
 
 updateTacticalSkills();
