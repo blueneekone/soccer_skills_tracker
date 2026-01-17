@@ -78,41 +78,19 @@
             <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">CORE</span>
           </div>
           <div class="card-body">
-            
             <div style="display:flex; gap:10px; align-items:center;">
               <select id="foundationSelect" style="font-weight:600; color:#00263A; flex-grow:1; margin-bottom:0;">
                 <option value="" selected>Select Skill to Add...</option>
-                </select>
+              </select>
               <button id="addSkillBtn" style="width:50px; height:48px; font-size:24px; padding:0; line-height:1; margin:0; background:#16a34a;">+</button>
             </div>
 
-            <div id="selectedSkillsList" class="chips" style="margin-top:15px; min-height:10px;">
-              </div>
+            <div id="selectedSkillsList" class="chips" style="margin-top:15px; min-height:10px;"></div>
             
             <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
               <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
               <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
               <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">3. Tactical Scenario (Optional)</div>
-          <div class="card-body">
-            <div class="row">
-              <div>
-                <label>Pressure</label>
-                <div class="chips" id="pressure">
-                  <div class="chip active" data-val="front">Front</div>
-                  <div class="chip" data-val="side">Side</div>
-                  <div class="chip" data-val="back">Back</div>
-                </div>
-              </div>
-            </div>
-            <div style="margin-top:15px;">
-              <label>Select Scenario</label>
-              <div class="chips" id="skillSuggestions"></div>
             </div>
           </div>
         </div>
@@ -133,6 +111,11 @@
               <div class="chip" data-val="fail">× Fail</div>
             </div>
 
+            <div style="margin-top:15px;">
+              <label>Observed Qualities (Roadmap)</label>
+              <div class="chips" id="qualitiesList"></div>
+            </div>
+
             <div style="margin-top:20px;">
               <label>Parent Signature</label>
               <canvas id="signaturePad" width="300" height="150"></canvas>
@@ -151,6 +134,14 @@
       </div>
 
       <div id="viewStats" style="display:none;">
+        
+        <div class="card" style="border: 2px solid #ca8a04;">
+          <div class="card-header" style="background:#ca8a04; color:white;">🏆 Weekly Leaderboard</div>
+          <div class="card-body" id="leaderboardList">
+            <div style="text-align:center; color:#64748b; font-size:12px;">Loading Top 3...</div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">My Stats</div>
           <div class="card-body">
@@ -164,9 +155,7 @@
         
         <div class="card">
           <div class="card-header">Workout Calendar</div>
-          <div class="card-body">
-            <div id="calendarGrid" class="calendar-grid"></div>
-          </div>
+          <div class="card-body"><div id="calendarGrid" class="calendar-grid"></div></div>
         </div>
 
         <div class="card"><div class="card-body"><canvas id="progressChart"></canvas></div></div>
