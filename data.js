@@ -8,7 +8,7 @@ export const dbData = {
     { id: "u12g", name: "U12 Girls (2014)", coachEmail: "coach_u12g@gmail.com" },
     { id: "u14b", name: "U14 Boys (2012)", coachEmail: "coach_u14b@gmail.com" },
     // Keep adding teams...
-    { id: "misc", name: "Unassigned / Tryouts", coachEmail: "ecwaechtler@gmail.com" } 
+    { id: "u11b", name: "U11B Boys (2015)", coachEmail: "ecwaechtler@gmail.com" } 
   ],
 
   // 1. ROADMAP
