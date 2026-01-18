@@ -13,7 +13,7 @@
   
   <div id="videoModal" class="modal">
     <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
         <h3 id="modalTitle" style="margin:0; color:#00263A;">Drill</h3>
         <span id="closeModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
@@ -25,7 +25,7 @@
 
   <div id="dayModal" class="modal">
     <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
         <h3 id="dayModalDate" style="margin:0; color:#00263A;">Date</h3>
         <span id="closeDayModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
@@ -49,7 +49,6 @@
     <div id="appUI" style="display:none;">
 
       <div id="viewTracker">
-        
         <div class="xp-container">
           <div class="xp-level" id="userLevelDisplay">Rookie • 0 XP</div>
           <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar"></div></div>
@@ -66,12 +65,8 @@
                 <button class="btn-reset" id="resetTimer">Reset</button>
               </div>
             </div>
-            
             <label>My Team</label>
-            <select id="teamSelect">
-              <option value="" disabled selected>Select Your Team...</option>
-            </select>
-
+            <select id="teamSelect"><option value="" disabled selected>Select Your Team...</option></select>
             <div class="row">
               <div><input type="text" id="playerFirst" placeholder="First Name"></div>
               <div><input type="text" id="playerLast" placeholder="Last Name"></div>
@@ -82,9 +77,7 @@
         <div class="card">
           <div class="card-header">1. Cardio & Fitness</div>
           <div class="card-body">
-            <select id="cardioSelect">
-              <option value="" selected>None / Skip Cardio</option>
-            </select>
+            <select id="cardioSelect"><option value="" selected>None / Skip Cardio</option></select>
           </div>
         </div>
 
@@ -97,7 +90,6 @@
             <select id="foundationSelect" style="font-weight:600; color:#00263A;">
               <option value="" selected>Select Skill (32 Model)...</option>
             </select>
-            
             <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
               <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
               <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
@@ -107,7 +99,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header">Results</div>
+          <div class="card-header">3. Session Results</div>
           <div class="card-body">
             <div class="row" style="margin-bottom:15px;">
               <div><label>Sets</label><input type="number" id="sets" placeholder="0"></div>
@@ -130,49 +122,56 @@
               </div>
             </div>
 
-            <div style="margin-top:10px;">
-              <input id="notes" placeholder="Notes...">
-            </div>
-            
+            <div style="margin-top:10px;"><input id="notes" placeholder="Notes..."></div>
             <button id="addToSessionBtn" style="background:#8A8D8F; margin-bottom:10px;">+ Add to Stack</button>
-            <div style="border-top:1px solid #ccc; margin:15px 0;"></div>
+            <div style="border-top:1px solid #e2e8f0; margin:15px 0;"></div>
             <label>Current Stack</label>
-            <ul id="sessionList" style="list-style:none; padding:0; margin:0 0 15px 0; font-size:14px;">
-               <li style="color:#94a3b8; text-align:center;">Empty</li>
-            </ul>
-
+            <ul id="sessionList" style="list-style:none; padding:0; margin:0 0 15px 0; font-size:14px;"><li style="color:#94a3b8; text-align:center;">Empty</li></ul>
             <button id="submitWorkoutBtn" style="background:#16a34a;">✅ Submit Full Session</button>
           </div>
         </div>
       </div>
 
       <div id="viewStats" style="display:none;">
+        
         <div class="card">
-          <div class="card-header">My Stats</div>
+          <div class="card-header">My Dashboard</div>
           <div class="card-body">
-            <div class="row">
-              <div class="stat-box"><div id="statTotal" class="stat-num">0</div><div class="stat-label">Logs</div></div>
-              <div class="stat-box"><div id="statTime" class="stat-num">0</div><div class="stat-label">Mins</div></div>
-              <div class="stat-box"><div id="statStreak" class="stat-num">0</div><div class="stat-label">Streak</div></div>
+            <div class="stats-grid">
+              <div class="stat-item"><div id="statTotal" class="stat-val">0</div><div class="stat-lbl">Workouts</div></div>
+              <div class="stat-item"><div id="statTime" class="stat-val">0</div><div class="stat-lbl">Total Mins</div></div>
+              <div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Day Streak</div></div>
+              <div class="stat-item"><div id="statAvg" class="stat-val">0</div><div class="stat-lbl">Avg Mins</div></div>
             </div>
           </div>
         </div>
-        
+
+        <div class="card">
+          <div class="card-header">Activity (Last 7 Days)</div>
+          <div class="card-body"><canvas id="playerTrendChart"></canvas></div>
+        </div>
+
         <div class="card">
           <div class="card-body calendar-wrapper">
-            <div class="calendar-header">
-              <span id="calMonthYear">January 2026</span>
-            </div>
+            <div class="calendar-header"><span id="calMonthYear">January 2026</span></div>
             <div class="calendar-grid">
               <div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div>
             </div>
             <div id="calendarDays" class="calendar-grid"></div>
-            <p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap a highlighted day to view workout details.</p>
+            <p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap day to view details.</p>
           </div>
         </div>
 
-        <div class="card"><div class="card-body"><canvas id="progressChart"></canvas></div></div>
-        
+        <div class="card">
+          <div class="card-header">Team Standings</div>
+          <div class="card-body">
+            <table class="leader-table" id="teamLeaderboardTable">
+              <thead><tr><th>#</th><th>Player</th><th>Mins</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
         <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
@@ -182,9 +181,7 @@
           <div class="card-body">
             <div id="adminControls" style="display:none; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
                 <label style="color:#16a34a;">Club Director View</label>
-                <select id="adminTeamSelect">
-                    <option value="all">View All Teams</option>
-                </select>
+                <select id="adminTeamSelect"><option value="all">View All Teams</option></select>
             </div>
             <div class="row">
               <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total Sessions</div></div>
