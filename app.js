@@ -186,46 +186,19 @@ if(foundationSelect.options.length === 1) {
     }
 }
 
-// SELECTION
+// SELECTION EVENTS
 cardioSelect.addEventListener("change", (e) => {
     if(e.target.value !== "") {
-        foundationSelect.selectedIndex = 0; document.getElementById("watchBtnContainer").style.display = "none"; 
-        document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
+        foundationSelect.selectedIndex = 0; 
+        document.getElementById("watchBtnContainer").style.display = "none"; 
     }
 });
 foundationSelect.addEventListener("change", (e) => {
     cardioSelect.selectedIndex = 0;
     const skillName = e.target.value; const skillData = dbData.foundationSkills.find(s => s.name === skillName);
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     showDrillPopup(skillData);
 });
 
-// TACTICAL
-const pressureChips = document.getElementById("pressure");
-pressureChips.addEventListener("click", (e) => {
-    if(e.target.classList.contains("chip")) {
-        Array.from(pressureChips.children).forEach(c => c.classList.remove("active"));
-        e.target.classList.add("active");
-        updateTacticalSkills();
-    }
-});
-function updateTacticalSkills() {
-    const tacticalDiv = document.getElementById("skillSuggestions"); tacticalDiv.innerHTML = "";
-    const currentPressure = pressureChips.querySelector(".active")?.dataset.val;
-    const tacticalSkills = dbData.foundationSkills.filter(s => {
-        if(s.type !== "tactical") return false;
-        return (!currentPressure) ? true : s.pressure.includes(currentPressure);
-    });
-    tacticalSkills.forEach(s => {
-        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
-        chip.addEventListener("click", () => { foundationSelect.selectedIndex = 0; cardioSelect.selectedIndex = 0; selectTacticalSkill(chip, s); });
-        tacticalDiv.appendChild(chip);
-    });
-}
-function selectTacticalSkill(chipElement, skillData) {
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
-    chipElement.classList.add("active"); showDrillPopup(skillData);
-}
 function showDrillPopup(skillData) {
     const container = document.getElementById("watchBtnContainer"); const title = document.getElementById("drillRecommendation"); const img = document.getElementById("drillImage"); const btn = document.getElementById("watchVideoBtn");
     if(!skillData) { container.style.display = "none"; return; }
@@ -244,7 +217,6 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
     let activeSkillName = "";
     if (cardioSelect.value !== "") activeSkillName = cardioSelect.value;
     else if (foundationSelect.value !== "") activeSkillName = foundationSelect.value;
-    else { const activeChip = document.querySelector("#skillSuggestions .active"); if(activeChip) activeSkillName = activeChip.textContent; }
 
     if(!activeSkillName) return alert("Select an activity first.");
     const sets = document.getElementById("sets").value || "-"; const reps = document.getElementById("reps").value || "-";
@@ -252,7 +224,6 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
     currentSessionItems.push(item);
     renderSessionList();
     cardioSelect.selectedIndex = 0; foundationSelect.selectedIndex = 0;
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     document.getElementById("watchBtnContainer").style.display = "none";
 });
 function renderSessionList() {
@@ -297,7 +268,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     btn.disabled = false; btn.textContent = "✅ Submit Full Session";
 });
 
-// STATS
+// STATS & CALENDAR
 async function loadStats() {
     const user = auth.currentUser; if (!user) return;
     const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(100));
@@ -315,7 +286,6 @@ async function loadStats() {
     renderCalendar(logs);
 }
 
-// NEW: RENDER CALENDAR GRID
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarDays");
     const header = document.getElementById("calMonthYear");
@@ -342,14 +312,12 @@ function renderCalendar(logs) {
             dayDiv.classList.add("has-log");
             dayDiv.innerHTML += `<div class="cal-dot"></div>`;
             dayDiv.style.cursor = "pointer";
-            // CLICK TO SHOW MODAL
             dayDiv.addEventListener("click", () => showDayDetails(dateObj, logs));
         }
         grid.appendChild(dayDiv);
     }
 }
 
-// NEW: SHOW DAY MODAL
 function showDayDetails(dateObj, logs) {
     const modal = document.getElementById("dayModal");
     const content = document.getElementById("dayModalContent");
@@ -357,7 +325,6 @@ function showDayDetails(dateObj, logs) {
     const dateStr = dateObj.toDateString();
     
     title.innerText = dateStr;
-    
     const dayLogs = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dateStr);
     
     if(dayLogs.length === 0) {
@@ -367,27 +334,21 @@ function showDayDetails(dateObj, logs) {
             <div class="day-session-item">
                 <div class="day-session-header">
                     <span>${l.minutes} Mins</span>
-                    <span style="color:${l.signatureImg ? '#16a34a' : '#ccc'}">
-                        ${l.signatureImg ? '✓ Verified' : 'Unsigned'}
-                    </span>
+                    <span style="color:${l.signatureImg ? '#16a34a' : '#ccc'}">${l.signatureImg ? '✓ Verified' : 'Unsigned'}</span>
                 </div>
-                <div class="day-session-drills">
-                    ${l.drillSummary ? l.drillSummary : l.skill}
-                </div>
+                <div class="day-session-drills">${l.drillSummary ? l.drillSummary : l.skill}</div>
             </div>
         `).join("");
     }
     modal.style.display = "block";
 }
-
 document.getElementById("closeDayModal").onclick = () => { document.getElementById("dayModal").style.display = "none"; };
 
-// COACH DASHBOARD
+// COACH
 async function loadCoachDashboard(isAdmin = false) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList");
     listDiv.innerHTML = "Loading...";
-    
     let q;
     if (isAdmin) {
         const teamFilter = document.getElementById("adminTeamSelect").value;
@@ -396,11 +357,9 @@ async function loadCoachDashboard(isAdmin = false) {
     } else {
         q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc"));
     }
-
     try {
         const snap = await getDocs(q);
-        const players = {};
-        const allSessions = [];
+        const players = {}; const allSessions = [];
         snap.forEach(doc => {
             const d = doc.data(); allSessions.push(d);
             const p = d.player || "Unknown";
@@ -408,7 +367,6 @@ async function loadCoachDashboard(isAdmin = false) {
             players[p].count++; players[p].mins += parseInt(d.minutes || 0);
             players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString());
         });
-
         document.getElementById("coachTotalReps").innerText = allSessions.length;
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
         renderTeamChart(players);
@@ -416,17 +374,14 @@ async function loadCoachDashboard(isAdmin = false) {
             <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
                 <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span>
             </div>`).join("");
-        
         document.getElementById("exportXlsxBtn").onclick = () => {
             const formatted = allSessions.map(r => ({
                 Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-                Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes,
+                Team: r.teamId || "N/A", Player: r.player, Duration: r.minutes,
                 Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes
             }));
-            const ws = XLSX.utils.json_to_sheet(formatted);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "TrainingData");
-            XLSX.writeFile(wb, "AggiesFC_Export.xlsx");
+            const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx");
         };
     } catch (e) { listDiv.innerHTML = "No data found or permission denied."; console.error(e); }
 }
