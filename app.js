@@ -129,7 +129,6 @@ onAuthStateChanged(auth, (user) => {
     bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     
-    // Check Director/Coach
     const isDirector = user.email.toLowerCase() === "ecwaechtler@gmail.com";
     const assignedTeam = dbData.teams.find(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
     
@@ -314,68 +313,76 @@ async function loadStats() {
     document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`;
 
     renderCalendar(logs);
-    document.getElementById("historyList").innerHTML = logs.slice().reverse().map(l => `
-        <div style="border-bottom:1px solid #e2e8f0; padding:10px;">
-            <b>${new Date(l.timestamp.seconds*1000).toLocaleDateString()}</b> <span style="float:right; color:#00263A; font-weight:bold;">${l.minutes}m</span>
-            <div style="font-size:11px; color:#64748b;">${l.drills ? l.drills.length : 1} Exercises • ${l.signatureImg ? '✅ Verified' : '❌'}</div>
-        </div>`).join("");
 }
 
-// NEW: GOOGLE CALENDAR RENDER
+// NEW: RENDER CALENDAR GRID
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarDays");
     const header = document.getElementById("calMonthYear");
     grid.innerHTML = "";
     
-    // Set for easy lookup of logged dates
     const activeDates = new Set(logs.map(l => new Date(l.timestamp.seconds*1000).toDateString()));
-    
-    // Get Current Month Data
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
-    
-    // Set Header
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     header.innerText = `${monthNames[currentMonth]} ${currentYear}`;
 
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // Day of week (0-6)
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-    // 1. Padding for previous month
-    for (let i = 0; i < firstDay; i++) {
-        const blank = document.createElement("div");
-        grid.appendChild(blank);
-    }
+    for (let i = 0; i < firstDay; i++) { grid.appendChild(document.createElement("div")); }
 
-    // 2. Days
     for (let i = 1; i <= daysInMonth; i++) {
         const dateObj = new Date(currentYear, currentMonth, i);
-        const dayDiv = document.createElement("div");
-        dayDiv.className = "cal-day";
-        
-        // Number Span
-        const numSpan = document.createElement("span");
-        numSpan.innerText = i;
-        dayDiv.appendChild(numSpan);
-
-        // Check if Today
-        if (i === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
-            dayDiv.classList.add("today");
-        }
-
-        // Check if Workout Logged
+        const dayDiv = document.createElement("div"); dayDiv.className = "cal-day";
+        dayDiv.innerHTML = `<span>${i}</span>`;
+        if (i === today.getDate()) dayDiv.classList.add("today");
         if (activeDates.has(dateObj.toDateString())) {
             dayDiv.classList.add("has-log");
-            const dot = document.createElement("div");
-            dot.className = "cal-dot";
-            dayDiv.appendChild(dot);
+            dayDiv.innerHTML += `<div class="cal-dot"></div>`;
+            dayDiv.style.cursor = "pointer";
+            // CLICK TO SHOW MODAL
+            dayDiv.addEventListener("click", () => showDayDetails(dateObj, logs));
         }
-
         grid.appendChild(dayDiv);
     }
 }
 
+// NEW: SHOW DAY MODAL
+function showDayDetails(dateObj, logs) {
+    const modal = document.getElementById("dayModal");
+    const content = document.getElementById("dayModalContent");
+    const title = document.getElementById("dayModalDate");
+    const dateStr = dateObj.toDateString();
+    
+    title.innerText = dateStr;
+    
+    const dayLogs = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dateStr);
+    
+    if(dayLogs.length === 0) {
+        content.innerHTML = "<p>No sessions recorded for this day.</p>";
+    } else {
+        content.innerHTML = dayLogs.map(l => `
+            <div class="day-session-item">
+                <div class="day-session-header">
+                    <span>${l.minutes} Mins</span>
+                    <span style="color:${l.signatureImg ? '#16a34a' : '#ccc'}">
+                        ${l.signatureImg ? '✓ Verified' : 'Unsigned'}
+                    </span>
+                </div>
+                <div class="day-session-drills">
+                    ${l.drillSummary ? l.drillSummary : l.skill}
+                </div>
+            </div>
+        `).join("");
+    }
+    modal.style.display = "block";
+}
+
+document.getElementById("closeDayModal").onclick = () => { document.getElementById("dayModal").style.display = "none"; };
+
+// COACH DASHBOARD
 async function loadCoachDashboard(isAdmin = false) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList");
