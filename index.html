@@ -29,8 +29,7 @@
         <h3 id="dayModalDate" style="margin:0; color:#00263A;">Date</h3>
         <span id="closeDayModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
-      <div id="dayModalContent">
-        </div>
+      <div id="dayModalContent"></div>
     </div>
   </div>
 
@@ -108,26 +107,6 @@
         </div>
 
         <div class="card">
-          <div class="card-header">3. Tactical (Optional)</div>
-          <div class="card-body">
-            <div class="row">
-              <div>
-                <label>Pressure</label>
-                <div class="chips" id="pressure">
-                  <div class="chip active" data-val="front">Front</div>
-                  <div class="chip" data-val="side">Side</div>
-                  <div class="chip" data-val="back">Back</div>
-                </div>
-              </div>
-            </div>
-            <div style="margin-top:15px;">
-              <label>Select Scenario</label>
-              <div class="chips" id="skillSuggestions"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
           <div class="card-header">Results</div>
           <div class="card-body">
             <div class="row" style="margin-bottom:15px;">
@@ -185,13 +164,7 @@
               <span id="calMonthYear">January 2026</span>
             </div>
             <div class="calendar-grid">
-              <div class="cal-weekday">S</div>
-              <div class="cal-weekday">M</div>
-              <div class="cal-weekday">T</div>
-              <div class="cal-weekday">W</div>
-              <div class="cal-weekday">T</div>
-              <div class="cal-weekday">F</div>
-              <div class="cal-weekday">S</div>
+              <div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div>
             </div>
             <div id="calendarDays" class="calendar-grid"></div>
             <p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap a highlighted day to view workout details.</p>
@@ -199,6 +172,7 @@
         </div>
 
         <div class="card"><div class="card-body"><canvas id="progressChart"></canvas></div></div>
+        
         <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
