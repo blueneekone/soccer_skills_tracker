@@ -1,4 +1,128 @@
-/* ... (Keep all your existing CSS) ... */
+:root {
+  --aggie-blue: #00263A;
+  --aggie-silver: #8A8D8F;
+  --bg-color: #f1f5f9;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #ca8a04;
+  --google-blue: #1a73e8; /* For "Today" accent if preferred, or use Aggie Blue */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color); color: var(--text-main);
+  margin: 0; padding: 0; padding-bottom: 100px;
+}
+
+header {
+  background: var(--aggie-blue); color: white; padding: 20px; text-align: center;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+
+.container { padding: 15px; max-width: 600px; margin: 0 auto; }
+
+/* Cards */
+.card {
+  background: var(--card-bg); border-radius: 10px; margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #cbd5e1;
+}
+.card-header {
+  background: var(--aggie-blue); color: white; padding: 12px 15px;
+  font-size: 14px; font-weight: 700; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.card-body { padding: 15px; }
+
+/* --- GOOGLE STYLE CALENDAR --- */
+.calendar-wrapper { padding: 0; }
+.calendar-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; font-weight: 700; font-size: 16px; color: var(--text-main);
+}
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center;
+}
+.cal-weekday {
+  font-size: 10px; font-weight: 700; color: #70757a; text-transform: uppercase; padding-bottom: 8px;
+}
+.cal-day {
+  height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: start;
+  font-size: 14px; color: #3c4043; position: relative; cursor: default;
+}
+.cal-day span {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; z-index: 2;
+}
+/* Today Circle */
+.cal-day.today span {
+  background-color: var(--aggie-blue); color: white; font-weight: bold;
+}
+/* Workout Indicator Dot */
+.cal-dot {
+  width: 6px; height: 6px; background-color: var(--success); border-radius: 50%;
+  margin-top: 2px; display: none;
+}
+.cal-day.has-log .cal-dot { display: block; }
+
+/* TIMER */
+.timer-box {
+  background: #0f172a; color: #fff; padding: 15px; border-radius: 8px;
+  text-align: center; margin-bottom: 15px;
+}
+.timer-display { font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px; margin-bottom: 10px; }
+.timer-controls { display: flex; gap: 10px; justify-content: center; }
+.timer-controls button { flex: 1; padding: 12px; font-size: 14px; margin: 0; }
+.btn-start { background: var(--success); }
+.btn-stop { background: var(--danger); }
+.btn-reset { background: var(--aggie-silver); }
+
+/* GAMIFICATION */
+.xp-container { margin-bottom: 20px; text-align: center; }
+.xp-level { font-size: 12px; font-weight: 700; color: var(--aggie-blue); margin-bottom: 5px; text-transform: uppercase; }
+.xp-bar-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; }
+.xp-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.5s ease; }
+
+/* INPUTS & CHIPS */
+label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+input, select {
+  width: 100%; padding: 12px; background: #f8fafc; border: 2px solid #e2e8f0;
+  border-radius: 6px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;
+}
+input:focus, select:focus { outline: none; border-color: var(--aggie-blue); background: white; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600;
+  cursor: pointer; background: #e2e8f0; color: #475569; border: 2px solid transparent; flex: 1 1 auto; text-align: center;
+}
+.chip.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
+.chip[data-val="success"].active { background: var(--success); border-color: var(--success); }
+.chip[data-val="partial"].active { background: var(--warning); border-color: var(--warning); }
+.chip[data-val="fail"].active { background: var(--danger); border-color: var(--danger); }
+
+button {
+  width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700;
+  cursor: pointer; background: var(--aggie-blue); color: white; border: none;
+}
+button:active { opacity: 0.9; }
+.secondary-btn { background: var(--aggie-silver); margin-top: 10px; }
+.clear-btn { background: none; color: #64748b; border: 1px solid #cbd5e1; font-size: 12px; padding: 5px 10px; width: auto; margin-top: 5px; }
+
+canvas#signaturePad { border: 2px dashed #cbd5e1; border-radius: 8px; background-color: #fcfcfc; width: 100%; height: 150px; cursor: crosshair; touch-action: none; }
+
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,38,58,0.95); }
+.modal-content { background: white; margin: 20% auto; padding: 15px; width: 90%; max-width: 500px; border-radius: 12px; }
+.video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: black; }
+.video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+.bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.nav-item { background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
+.nav-item.active { color: var(--aggie-blue); }
+
 
 /* ADD THIS AT THE BOTTOM FOR THE NEW MODAL CONTENT */
 .day-session-item {
