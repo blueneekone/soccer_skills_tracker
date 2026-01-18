@@ -26,7 +26,6 @@ enableIndexedDbPersistence(db).catch((err) => console.log(err.code));
 let currentSessionItems = []; 
 let timerInterval;
 let seconds = 0;
-let isSignatureBlank = true; // TRACK SIGNATURE STATE
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
@@ -68,7 +67,7 @@ document.getElementById("resetTimer").addEventListener("click", () => {
     timerDisplay.innerText = "00:00";
 });
 
-// SIGNATURE LOGIC (UPDATED FOR VALIDATION)
+// SIGNATURE LOGIC
 const canvas = document.getElementById("signaturePad");
 const ctx = canvas.getContext("2d");
 let isDrawing = false;
@@ -81,17 +80,32 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
-function endDraw() { isDrawing = false; ctx.beginPath(); }
+function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); } // Check on lift
 function draw(e) {
     if (!isDrawing) return;
     e.preventDefault();
-    // If they draw, mark as NOT blank
-    isSignatureBlank = false;
-    
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
     ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+}
+
+// HELPER: PIXEL CHECK (Ensures ink is on page)
+function isCanvasBlank(canvas) {
+    const context = canvas.getContext('2d');
+    const pixelBuffer = new Uint32Array(
+        context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+    );
+    // Returns TRUE if every pixel is transparent (0)
+    return !pixelBuffer.some(color => color !== 0);
+}
+
+// HELPER: VISUAL FEEDBACK
+function checkSignature() {
+    if (!isCanvasBlank(canvas)) {
+        canvas.style.borderColor = "#16a34a"; // GREEN border if signed
+        canvas.style.backgroundColor = "#f0fdf4"; // Light green bg
+    }
 }
 
 canvas.addEventListener('mousedown', startDraw);
@@ -103,7 +117,8 @@ canvas.addEventListener('touchmove', draw);
 
 document.getElementById("clearSigBtn").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    isSignatureBlank = true; // Reset validation flag
+    canvas.style.borderColor = "#cbd5e1"; // Reset Grey
+    canvas.style.backgroundColor = "#fcfcfc"; 
 });
 
 // AUTH
@@ -263,9 +278,10 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     const pLast = document.getElementById("playerLast").value;
     const mins = document.getElementById("totalMinutes").value;
     
-    // STRICT CHECK: Is the signature pad touched?
-    if (isSignatureBlank) {
-        return alert("Parent Signature is REQUIRED to verify this session.");
+    // STRICT PIXEL CHECK
+    if (isCanvasBlank(canvas)) {
+        canvas.style.borderColor = "#dc2626"; // Flash RED
+        return alert("Parent Signature is REQUIRED. Please sign in the box.");
     }
     const signatureData = canvas.toDataURL();
 
@@ -301,7 +317,8 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
         
         // CLEAR SIG
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        isSignatureBlank = true; 
+        canvas.style.borderColor = "#cbd5e1";
+        canvas.style.backgroundColor = "#fcfcfc"; 
         
         document.getElementById("resetTimer").click(); 
         loadStats();
