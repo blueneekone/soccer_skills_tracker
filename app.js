@@ -26,6 +26,7 @@ enableIndexedDbPersistence(db).catch((err) => console.log(err.code));
 let currentSessionItems = []; 
 let timerInterval;
 let seconds = 0;
+let isSignatureBlank = true; 
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
@@ -40,6 +41,17 @@ const navTrack = document.getElementById("navTrack");
 const navStats = document.getElementById("navStats");
 const navCoach = document.getElementById("navCoach");
 const activitySelect = document.getElementById("activitySelect");
+
+// --- HELPER: CONSISTENT COLORS ---
+function getPlayerColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Generate HSL color based on name hash (High Saturation, darker Lightness for visibility)
+    const hue = Math.abs(hash % 360);
+    return `hsl(${hue}, 70%, 40%)`;
+}
 
 // TIMER LOGIC
 const timerDisplay = document.getElementById("stopwatch");
@@ -73,6 +85,7 @@ const ctx = canvas.getContext("2d");
 let isDrawing = false;
 
 function resizeCanvas() {
+    if(!canvas.parentElement) return;
     canvas.width = canvas.parentElement.offsetWidth;
     canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
@@ -80,31 +93,29 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
-function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); } // Check on lift
+function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
 function draw(e) {
     if (!isDrawing) return;
     e.preventDefault();
+    isSignatureBlank = false;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
     ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
 }
 
-// HELPER: PIXEL CHECK (Ensures ink is on page)
 function isCanvasBlank(canvas) {
     const context = canvas.getContext('2d');
     const pixelBuffer = new Uint32Array(
         context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
     );
-    // Returns TRUE if every pixel is transparent (0)
     return !pixelBuffer.some(color => color !== 0);
 }
 
-// HELPER: VISUAL FEEDBACK
 function checkSignature() {
     if (!isCanvasBlank(canvas)) {
-        canvas.style.borderColor = "#16a34a"; // GREEN border if signed
-        canvas.style.backgroundColor = "#f0fdf4"; // Light green bg
+        canvas.style.borderColor = "#16a34a"; 
+        canvas.style.backgroundColor = "#f0fdf4"; 
     }
 }
 
@@ -117,7 +128,8 @@ canvas.addEventListener('touchmove', draw);
 
 document.getElementById("clearSigBtn").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.style.borderColor = "#cbd5e1"; // Reset Grey
+    isSignatureBlank = true;
+    canvas.style.borderColor = "#cbd5e1"; 
     canvas.style.backgroundColor = "#fcfcfc"; 
 });
 
@@ -158,7 +170,7 @@ navTrack.addEventListener("click", () => switchTab('track'));
 navStats.addEventListener("click", () => switchTab('stats'));
 navCoach.addEventListener("click", () => switchTab('coach'));
 
-// --- SESSION STACKING LOGIC ---
+// --- SESSION LOGIC ---
 
 // 1. Populate Dropdown
 if(activitySelect.options.length === 1) {
@@ -187,7 +199,7 @@ if(activitySelect.options.length === 1) {
     }
 }
 
-// 2. Activity Select Changed
+// 2. Activity Changed
 activitySelect.addEventListener("change", (e) => {
     const skillName = e.target.value;
     const skillData = dbData.foundationSkills.find(s => s.name === skillName);
@@ -223,7 +235,7 @@ activitySelect.addEventListener("change", (e) => {
     }
 });
 
-// 3. Add to Session List
+// 3. Add Item
 document.getElementById("addToSessionBtn").addEventListener("click", () => {
     const skillName = activitySelect.value;
     const setsVal = document.getElementById("inputSets").value;
@@ -231,16 +243,10 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
 
     if(!skillName) return alert("Select an activity first.");
 
-    const item = {
-        name: skillName,
-        sets: setsVal || "-",
-        reps: repsVal || "-"
-    };
+    const item = { name: skillName, sets: setsVal || "-", reps: repsVal || "-" };
     currentSessionItems.push(item);
-
     renderSessionList();
     
-    // Clear Inputs
     activitySelect.selectedIndex = 0;
     document.getElementById("inputSets").value = "";
     document.getElementById("inputReps").value = "";
@@ -263,30 +269,28 @@ function renderSessionList() {
             <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span>
         </li>
     `).join("");
-    
     count.innerText = `${currentSessionItems.length} Items`;
 }
 
-// 4. SUBMIT WORKOUT (STRICT VALIDATION)
+// 4. SUBMIT (STRICT)
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Sign in first");
 
-    if (currentSessionItems.length === 0) return alert("Your session is empty! Add activities first.");
+    if (currentSessionItems.length === 0) return alert("Your session is empty! Add activities.");
 
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
     const mins = document.getElementById("totalMinutes").value;
     
-    // STRICT PIXEL CHECK
     if (isCanvasBlank(canvas)) {
-        canvas.style.borderColor = "#dc2626"; // Flash RED
-        return alert("Parent Signature is REQUIRED. Please sign in the box.");
+        canvas.style.borderColor = "#dc2626"; 
+        return alert("Parent Signature is REQUIRED.");
     }
     const signatureData = canvas.toDataURL();
 
     if(!pFirst || !pLast) return alert("Enter Name");
-    if(!mins || mins == 0) return alert("Enter Total Duration (or use Timer)");
+    if(!mins || mins == 0) return alert("Enter Duration");
 
     const drillSummary = currentSessionItems.map(i => `${i.name} (${i.sets} x ${i.reps})`).join(", ");
 
@@ -309,17 +313,14 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
         await addDoc(collection(db, "reps"), sessionData);
         alert(`Workout Logged! +${10 + parseInt(mins)} XP`);
         
-        // Reset
         currentSessionItems = [];
         renderSessionList();
         document.getElementById("totalMinutes").value = "";
         document.getElementById("notes").value = "";
-        
-        // CLEAR SIG
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.borderColor = "#cbd5e1";
+        isSignatureBlank = true;
+        canvas.style.borderColor = "#cbd5e1"; 
         canvas.style.backgroundColor = "#fcfcfc"; 
-        
         document.getElementById("resetTimer").click(); 
         loadStats();
     } catch(e) { console.error(e); alert("Error saving"); }
@@ -327,7 +328,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     btn.disabled = false; btn.textContent = "✅ Submit Workout";
 });
 
-// STATS & COACH
+// STATS
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
@@ -355,19 +356,31 @@ async function loadStats() {
 
     renderCalendar(logs);
 
-    document.getElementById("historyList").innerHTML = logs.slice().reverse().map(l => `
-        <div style="border-bottom:1px solid #e2e8f0; padding:10px;">
-            <b>${new Date(l.timestamp.seconds*1000).toLocaleDateString()}</b> 
-            <span style="float:right; color:#00263A; font-weight:bold;">${l.minutes}m</span>
-            <div style="font-size:11px; color:#64748b; margin-top:4px;">
-                ${l.drills ? l.drills.length : 1} Exercises • ${l.signatureImg ? '✅ Verified' : '❌ Unverified'}
-            </div>
-        </div>`).join("");
+    // Empty State for History
+    const historyDiv = document.getElementById("historyList");
+    if(logs.length === 0) {
+        historyDiv.innerHTML = `<div style="text-align:center; padding:20px; color:#94a3b8;">No workouts yet. Start the timer!</div>`;
+    } else {
+        historyDiv.innerHTML = logs.slice().reverse().map(l => `
+            <div style="border-bottom:1px solid #e2e8f0; padding:10px;">
+                <b>${new Date(l.timestamp.seconds*1000).toLocaleDateString()}</b> 
+                <span style="float:right; color:#00263A; font-weight:bold;">${l.minutes}m</span>
+                <div style="font-size:11px; color:#64748b; margin-top:4px;">
+                    ${l.drills ? l.drills.length : 1} Exercises • ${l.signatureImg ? '✅ Verified' : '❌ Unverified'}
+                </div>
+            </div>`).join("");
+    }
 }
 
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarGrid");
     grid.innerHTML = "";
+    
+    if(logs.length === 0) {
+        grid.innerHTML = `<div style="grid-column: span 7; text-align:center; color:#94a3b8; font-size:12px;">Complete a workout to light up the calendar!</div>`;
+        return;
+    }
+
     const activeDates = new Set(logs.map(l => new Date(l.timestamp.seconds*1000).toDateString()));
     const today = new Date();
     for (let i = 13; i >= 0; i--) {
@@ -408,15 +421,14 @@ async function loadCoachDashboard() {
                 <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span>
             </div>`).join("");
         
-        // EXCEL EXPORT (CLEANED UP)
+        // EXCEL EXPORT
         document.getElementById("exportXlsxBtn").onclick = () => {
             const formatted = allSessions.map(r => ({
                 Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
                 Player: r.player,
-                Duration_Mins: r.minutes,
-                Drill_Count: r.drills ? r.drills.length : 1,
+                Duration: r.minutes,
                 Summary: r.drillSummary || r.skill,
-                Parent_Verified: r.signatureImg ? "Signed" : "Not Signed", // SIMPLE TEXT
+                Verified: r.signatureImg ? "Signed" : "Not Signed",
                 Notes: r.notes
             }));
             const ws = XLSX.utils.json_to_sheet(formatted);
@@ -425,7 +437,7 @@ async function loadCoachDashboard() {
             XLSX.writeFile(wb, "AggiesFC_Export.xlsx");
         };
 
-    } catch (e) { listDiv.innerHTML = "Error loading."; console.error(e); }
+    } catch (e) { listDiv.innerHTML = "Error loading. Check Rules."; console.error(e); }
 }
 
 let teamChart = null;
@@ -441,7 +453,8 @@ function renderTeamChart(playersData) {
         const dailyMins = dates.map(dateStr => {
             return playersData[p].history.includes(dateStr) ? 1 : 0;
         });
-        const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+        // USE CONSISTENT COLOR
+        const color = getPlayerColor(p);
         return { label: p, data: dailyMins, borderColor: color, tension: 0.3, fill: false };
     });
     teamChart = new Chart(ctx, {
@@ -450,7 +463,7 @@ function renderTeamChart(playersData) {
         options: {
             responsive: true,
             plugins: { legend: { display: true, position: 'bottom' } },
-            scales: { y: { beginAtZero: true, title: {display:true, text:'Active? (1/0)'} } }
+            scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } }
         }
     });
 }
