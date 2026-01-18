@@ -23,9 +23,10 @@ const db = getFirestore(app);
 enableIndexedDbPersistence(db).catch((err) => console.log(err.code));
 
 // --- GLOBAL VARIABLES ---
-let currentSessionItems = []; // THE SHOPPING CART
+let currentSessionItems = []; 
 let timerInterval;
 let seconds = 0;
+let isSignatureBlank = true; // TRACK SIGNATURE STATE
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
@@ -67,34 +68,42 @@ document.getElementById("resetTimer").addEventListener("click", () => {
     timerDisplay.innerText = "00:00";
 });
 
-// SIGNATURE
+// SIGNATURE LOGIC (UPDATED FOR VALIDATION)
 const canvas = document.getElementById("signaturePad");
 const ctx = canvas.getContext("2d");
 let isDrawing = false;
+
 function resizeCanvas() {
     canvas.width = canvas.parentElement.offsetWidth;
     canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
 }
 window.addEventListener('resize', resizeCanvas);
+
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
 function endDraw() { isDrawing = false; ctx.beginPath(); }
 function draw(e) {
     if (!isDrawing) return;
     e.preventDefault();
+    // If they draw, mark as NOT blank
+    isSignatureBlank = false;
+    
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
     const y = (e.clientY || e.touches[0].clientY) - rect.top;
     ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
 }
+
 canvas.addEventListener('mousedown', startDraw);
 canvas.addEventListener('mouseup', endDraw);
 canvas.addEventListener('mousemove', draw);
 canvas.addEventListener('touchstart', startDraw);
 canvas.addEventListener('touchend', endDraw);
 canvas.addEventListener('touchmove', draw);
+
 document.getElementById("clearSigBtn").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    isSignatureBlank = true; // Reset validation flag
 });
 
 // AUTH
@@ -136,9 +145,8 @@ navCoach.addEventListener("click", () => switchTab('coach'));
 
 // --- SESSION STACKING LOGIC ---
 
-// 1. Populate Dropdown (Combined Cardio + Basics)
+// 1. Populate Dropdown
 if(activitySelect.options.length === 1) {
-    // Sort: Fitness first, then Foundation
     const allSkills = [...dbData.foundationSkills].sort((a,b) => {
         if (a.type === 'cardio' && b.type !== 'cardio') return -1;
         if (a.type !== 'cardio' && b.type === 'cardio') return 1;
@@ -164,19 +172,17 @@ if(activitySelect.options.length === 1) {
     }
 }
 
-// 2. Activity Select Changed (Show Video / Change Input Labels)
+// 2. Activity Select Changed
 activitySelect.addEventListener("change", (e) => {
     const skillName = e.target.value;
     const skillData = dbData.foundationSkills.find(s => s.name === skillName);
     
-    // Popup Logic
     const popup = document.getElementById("drillInfoBox");
     const title = document.getElementById("drillDesc");
     const btn = document.getElementById("watchVideoBtn");
     const inputSets = document.getElementById("inputSets");
     const inputReps = document.getElementById("inputReps");
 
-    // Change labels based on type
     if(skillData.type === 'cardio') {
         inputSets.placeholder = "e.g., 2 miles";
         inputSets.previousElementSibling.innerText = "Distance / Sets";
@@ -210,7 +216,6 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
 
     if(!skillName) return alert("Select an activity first.");
 
-    // Add to Array
     const item = {
         name: skillName,
         sets: setsVal || "-",
@@ -247,7 +252,7 @@ function renderSessionList() {
     count.innerText = `${currentSessionItems.length} Items`;
 }
 
-// 4. Submit Full Workout
+// 4. SUBMIT WORKOUT (STRICT VALIDATION)
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
     const user = auth.currentUser;
     if (!user) return alert("Sign in first");
@@ -257,12 +262,16 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     const pFirst = document.getElementById("playerFirst").value;
     const pLast = document.getElementById("playerLast").value;
     const mins = document.getElementById("totalMinutes").value;
-    const signatureData = canvas.toDataURL(); 
+    
+    // STRICT CHECK: Is the signature pad touched?
+    if (isSignatureBlank) {
+        return alert("Parent Signature is REQUIRED to verify this session.");
+    }
+    const signatureData = canvas.toDataURL();
 
     if(!pFirst || !pLast) return alert("Enter Name");
     if(!mins || mins == 0) return alert("Enter Total Duration (or use Timer)");
 
-    // Create readable string of drills for Excel
     const drillSummary = currentSessionItems.map(i => `${i.name} (${i.sets} x ${i.reps})`).join(", ");
 
     const sessionData = {
@@ -270,8 +279,8 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
         timestamp: new Date(),
         player: `${pFirst} ${pLast}`,
         minutes: mins,
-        drills: currentSessionItems, // Array of objects
-        drillSummary: drillSummary, // String for CSV/Excel
+        drills: currentSessionItems,
+        drillSummary: drillSummary,
         outcome: document.getElementById("sessionOutcome").value,
         notes: document.getElementById("notes").value,
         signatureImg: signatureData
@@ -284,14 +293,17 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
         await addDoc(collection(db, "reps"), sessionData);
         alert(`Workout Logged! +${10 + parseInt(mins)} XP`);
         
-        // Reset Everything
+        // Reset
         currentSessionItems = [];
         renderSessionList();
         document.getElementById("totalMinutes").value = "";
         document.getElementById("notes").value = "";
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById("resetTimer").click(); 
         
+        // CLEAR SIG
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        isSignatureBlank = true; 
+        
+        document.getElementById("resetTimer").click(); 
         loadStats();
     } catch(e) { console.error(e); alert("Error saving"); }
     
@@ -302,7 +314,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
 async function loadStats() {
     const user = auth.currentUser;
     if (!user) return;
-    const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(50));
+    const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(100));
     const snap = await getDocs(q);
     const logs = [];
     let mins = 0;
@@ -315,7 +327,6 @@ async function loadStats() {
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = mins;
 
-    // XP Logic
     const xp = (logs.length * 10) + mins; 
     let level = "Rookie";
     if (xp > 100) level = "Starter";
@@ -332,7 +343,7 @@ async function loadStats() {
             <b>${new Date(l.timestamp.seconds*1000).toLocaleDateString()}</b> 
             <span style="float:right; color:#00263A; font-weight:bold;">${l.minutes}m</span>
             <div style="font-size:11px; color:#64748b; margin-top:4px;">
-                ${l.drills ? l.drills.length : 1} Exercises Completed
+                ${l.drills ? l.drills.length : 1} Exercises • ${l.signatureImg ? '✅ Verified' : '❌ Unverified'}
             </div>
         </div>`).join("");
 }
@@ -380,14 +391,15 @@ async function loadCoachDashboard() {
                 <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span>
             </div>`).join("");
         
-        // EXCEL EXPORT (Using SheetJS)
+        // EXCEL EXPORT (CLEANED UP)
         document.getElementById("exportXlsxBtn").onclick = () => {
             const formatted = allSessions.map(r => ({
                 Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
                 Player: r.player,
-                Duration: r.minutes,
+                Duration_Mins: r.minutes,
                 Drill_Count: r.drills ? r.drills.length : 1,
-                Summary: r.drillSummary || r.skill, // Fallback for old data
+                Summary: r.drillSummary || r.skill,
+                Parent_Verified: r.signatureImg ? "Signed" : "Not Signed", // SIMPLE TEXT
                 Notes: r.notes
             }));
             const ws = XLSX.utils.json_to_sheet(formatted);
@@ -410,7 +422,6 @@ function renderTeamChart(playersData) {
     }
     const datasets = Object.keys(playersData).map(p => {
         const dailyMins = dates.map(dateStr => {
-            // Check if player trained on this date (simple check)
             return playersData[p].history.includes(dateStr) ? 1 : 0;
         });
         const color = `hsl(${Math.random() * 360}, 70%, 50%)`;
