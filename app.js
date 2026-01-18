@@ -5,7 +5,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
-const COACH_EMAIL = "ecwaechtler@gmail.com"; 
+const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
@@ -63,20 +63,13 @@ function updateTimer() {
     const s = (seconds % 60).toString().padStart(2, "0");
     timerDisplay.innerText = `${m}:${s}`;
 }
-document.getElementById("startTimer").addEventListener("click", () => {
-    if (!timerInterval) timerInterval = setInterval(updateTimer, 1000);
-});
+document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
 document.getElementById("stopTimer").addEventListener("click", () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    const m = Math.floor(seconds / 60);
-    minsInput.value = m > 0 ? m : 1; 
+    clearInterval(timerInterval); timerInterval = null;
+    const m = Math.floor(seconds / 60); minsInput.value = m > 0 ? m : 1; 
 });
 document.getElementById("resetTimer").addEventListener("click", () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    seconds = 0;
-    timerDisplay.innerText = "00:00";
+    clearInterval(timerInterval); timerInterval = null; seconds = 0; timerDisplay.innerText = "00:00";
 });
 
 // SIGNATURE
@@ -85,16 +78,14 @@ const ctx = canvas.getContext("2d");
 let isDrawing = false;
 function resizeCanvas() {
     if(!canvas.parentElement) return;
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = 150;
+    canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
 }
 window.addEventListener('resize', resizeCanvas);
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
 function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
 function draw(e) {
-    if (!isDrawing) return;
-    e.preventDefault();
+    if (!isDrawing) return; e.preventDefault();
     isSignatureBlank = false;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -109,27 +100,24 @@ function isCanvasBlank(canvas) {
 function checkSignature() {
     if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
 }
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mouseup', endDraw);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('touchstart', startDraw);
-canvas.addEventListener('touchend', endDraw);
-canvas.addEventListener('touchmove', draw);
+canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
 document.getElementById("clearSigBtn").addEventListener("click", () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    isSignatureBlank = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true;
     canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; 
 });
 
-// AUTH
+// AUTH & INIT
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    loginUI.style.display = "none";
-    appUI.style.display = "block";
-    bottomNav.style.display = "flex";
+    loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     
-    const isDirector = user.email.toLowerCase() === "ecwaechtler@gmail.com";
+    // NEW: LOAD STICKY PROFILE
+    loadUserProfile();
+
+    const isDirector = user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase();
     const assignedTeam = dbData.teams.find(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
     
     if(isDirector || assignedTeam) {
@@ -151,12 +139,26 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-loginBtn.addEventListener("click", () => {
-  const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider);
-});
+// --- NEW: PROFILE HELPERS ---
+function saveUserProfile(first, last, team) {
+    localStorage.setItem("aggie_first", first);
+    localStorage.setItem("aggie_last", last);
+    localStorage.setItem("aggie_team", team);
+}
+
+function loadUserProfile() {
+    const f = localStorage.getItem("aggie_first");
+    const l = localStorage.getItem("aggie_last");
+    const t = localStorage.getItem("aggie_team");
+    
+    if(f) document.getElementById("playerFirst").value = f;
+    if(l) document.getElementById("playerLast").value = l;
+    if(t) document.getElementById("teamSelect").value = t;
+}
+
+loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
 logoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 
-// NAV
 function switchTab(tab) {
     [viewTracker, viewStats, viewCoach].forEach(v => v.style.display = "none");
     [navTrack, navStats, navCoach].forEach(n => n.classList.remove("active"));
@@ -164,17 +166,11 @@ function switchTab(tab) {
     if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); }
     if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); }
 }
-navTrack.addEventListener("click", () => switchTab('track'));
-navStats.addEventListener("click", () => switchTab('stats'));
-navCoach.addEventListener("click", () => switchTab('coach'));
+navTrack.addEventListener("click", () => switchTab('track')); navStats.addEventListener("click", () => switchTab('stats')); navCoach.addEventListener("click", () => switchTab('coach'));
 
 // INIT DROPDOWNS
-if(teamSelect.options.length === 1) {
-    dbData.teams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
-}
-if(cardioSelect.options.length === 1) {
-    dbData.foundationSkills.filter(s => s.type === "cardio").forEach(s => { const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; cardioSelect.appendChild(opt); });
-}
+if(teamSelect.options.length === 1) { dbData.teams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); }); }
+if(cardioSelect.options.length === 1) { dbData.foundationSkills.filter(s => s.type === "cardio").forEach(s => { const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; cardioSelect.appendChild(opt); }); }
 if(foundationSelect.options.length === 1) {
     const foundations = dbData.foundationSkills.filter(s => s.type === "foundation");
     const categories = {};
@@ -186,19 +182,46 @@ if(foundationSelect.options.length === 1) {
     }
 }
 
-// SELECTION EVENTS
+// SELECTION
 cardioSelect.addEventListener("change", (e) => {
     if(e.target.value !== "") {
-        foundationSelect.selectedIndex = 0; 
-        document.getElementById("watchBtnContainer").style.display = "none"; 
+        foundationSelect.selectedIndex = 0; document.getElementById("watchBtnContainer").style.display = "none"; 
+        document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     }
 });
 foundationSelect.addEventListener("change", (e) => {
     cardioSelect.selectedIndex = 0;
     const skillName = e.target.value; const skillData = dbData.foundationSkills.find(s => s.name === skillName);
+    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     showDrillPopup(skillData);
 });
 
+// TACTICAL
+const pressureChips = document.getElementById("pressure");
+pressureChips.addEventListener("click", (e) => {
+    if(e.target.classList.contains("chip")) {
+        Array.from(pressureChips.children).forEach(c => c.classList.remove("active"));
+        e.target.classList.add("active");
+        updateTacticalSkills();
+    }
+});
+function updateTacticalSkills() {
+    const tacticalDiv = document.getElementById("skillSuggestions"); tacticalDiv.innerHTML = "";
+    const currentPressure = pressureChips.querySelector(".active")?.dataset.val;
+    const tacticalSkills = dbData.foundationSkills.filter(s => {
+        if(s.type !== "tactical") return false;
+        return (!currentPressure) ? true : s.pressure.includes(currentPressure);
+    });
+    tacticalSkills.forEach(s => {
+        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
+        chip.addEventListener("click", () => { foundationSelect.selectedIndex = 0; cardioSelect.selectedIndex = 0; selectTacticalSkill(chip, s); });
+        tacticalDiv.appendChild(chip);
+    });
+}
+function selectTacticalSkill(chipElement, skillData) {
+    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
+    chipElement.classList.add("active"); showDrillPopup(skillData);
+}
 function showDrillPopup(skillData) {
     const container = document.getElementById("watchBtnContainer"); const title = document.getElementById("drillRecommendation"); const img = document.getElementById("drillImage"); const btn = document.getElementById("watchVideoBtn");
     if(!skillData) { container.style.display = "none"; return; }
@@ -217,6 +240,7 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
     let activeSkillName = "";
     if (cardioSelect.value !== "") activeSkillName = cardioSelect.value;
     else if (foundationSelect.value !== "") activeSkillName = foundationSelect.value;
+    else { const activeChip = document.querySelector("#skillSuggestions .active"); if(activeChip) activeSkillName = activeChip.textContent; }
 
     if(!activeSkillName) return alert("Select an activity first.");
     const sets = document.getElementById("sets").value || "-"; const reps = document.getElementById("reps").value || "-";
@@ -224,15 +248,13 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
     currentSessionItems.push(item);
     renderSessionList();
     cardioSelect.selectedIndex = 0; foundationSelect.selectedIndex = 0;
+    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     document.getElementById("watchBtnContainer").style.display = "none";
 });
 function renderSessionList() {
     const list = document.getElementById("sessionList");
     if(currentSessionItems.length === 0) { list.innerHTML = `<li style="color:#94a3b8; text-align:center;">Empty Stack</li>`; return; }
-    list.innerHTML = currentSessionItems.map((item, index) => `
-        <li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span>
-        </li>`).join("");
+    list.innerHTML = currentSessionItems.map((item, index) => `<li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;"><span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span></li>`).join("");
 }
 
 // SUBMIT
@@ -243,9 +265,12 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     if(!teamId) return alert("Select Team"); if(!pFirst || !pLast) return alert("Enter Name"); if(!mins || mins == 0) return alert("Enter Duration");
     if (isCanvasBlank(canvas)) { canvas.style.borderColor = "#dc2626"; return alert("Signature Required"); }
     
+    // NEW: SAVE PROFILE TO LOCAL STORAGE
+    saveUserProfile(pFirst, pLast, teamId);
+
     const signatureData = canvas.toDataURL();
     const selectedTeam = dbData.teams.find(t => t.id === teamId);
-    const assignedCoachEmail = selectedTeam ? selectedTeam.coachEmail : "ecwaechtler@gmail.com";
+    const assignedCoachEmail = selectedTeam ? selectedTeam.coachEmail : DIRECTOR_EMAIL;
     const drillSummary = currentSessionItems.map(i => `${i.name} (${i.sets}x${i.reps})`).join(", ");
 
     const sessionData = {
@@ -268,7 +293,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     btn.disabled = false; btn.textContent = "✅ Submit Full Session";
 });
 
-// STATS & CALENDAR
+// STATS
 async function loadStats() {
     const user = auth.currentUser; if (!user) return;
     const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(100));
@@ -311,7 +336,6 @@ function renderCalendar(logs) {
         if (activeDates.has(dateObj.toDateString())) {
             dayDiv.classList.add("has-log");
             dayDiv.innerHTML += `<div class="cal-dot"></div>`;
-            dayDiv.style.cursor = "pointer";
             dayDiv.addEventListener("click", () => showDayDetails(dateObj, logs));
         }
         grid.appendChild(dayDiv);
@@ -377,7 +401,7 @@ async function loadCoachDashboard(isAdmin = false) {
         document.getElementById("exportXlsxBtn").onclick = () => {
             const formatted = allSessions.map(r => ({
                 Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-                Team: r.teamId || "N/A", Player: r.player, Duration: r.minutes,
+                Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes,
                 Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes
             }));
             const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new();
@@ -397,9 +421,6 @@ function renderTeamChart(playersData) {
         const color = getPlayerColor(p);
         return { label: p, data: dailyMins, borderColor: color, tension: 0.3, fill: false };
     });
-    teamChart = new Chart(ctx, {
-        type: 'line', data: { labels: dates, datasets: datasets },
-        options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } }
-    });
+    teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
 }
 document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
