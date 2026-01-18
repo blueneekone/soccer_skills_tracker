@@ -7,10 +7,11 @@
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #ca8a04;
+  --google-blue: #1a73e8; /* For "Today" accent if preferred, or use Aggie Blue */
 }
 
 body {
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color); color: var(--text-main);
   margin: 0; padding: 0; padding-bottom: 100px;
 }
@@ -35,39 +36,56 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-tra
 }
 .card-body { padding: 15px; }
 
-/* TIMER (Fixed Proportions) */
+/* --- GOOGLE STYLE CALENDAR --- */
+.calendar-wrapper { padding: 0; }
+.calendar-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; font-weight: 700; font-size: 16px; color: var(--text-main);
+}
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center;
+}
+.cal-weekday {
+  font-size: 10px; font-weight: 700; color: #70757a; text-transform: uppercase; padding-bottom: 8px;
+}
+.cal-day {
+  height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: start;
+  font-size: 14px; color: #3c4043; position: relative; cursor: default;
+}
+.cal-day span {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; z-index: 2;
+}
+/* Today Circle */
+.cal-day.today span {
+  background-color: var(--aggie-blue); color: white; font-weight: bold;
+}
+/* Workout Indicator Dot */
+.cal-dot {
+  width: 6px; height: 6px; background-color: var(--success); border-radius: 50%;
+  margin-top: 2px; display: none;
+}
+.cal-day.has-log .cal-dot { display: block; }
+
+/* TIMER */
 .timer-box {
   background: #0f172a; color: #fff; padding: 15px; border-radius: 8px;
   text-align: center; margin-bottom: 15px;
 }
 .timer-display { font-size: 36px; font-weight: 700; font-family: monospace; letter-spacing: 2px; margin-bottom: 10px; }
 .timer-controls { display: flex; gap: 10px; justify-content: center; }
-.timer-controls button {
-  flex: 1; /* Makes them all equal width */
-  padding: 12px; font-size: 14px; margin: 0;
-}
+.timer-controls button { flex: 1; padding: 12px; font-size: 14px; margin: 0; }
 .btn-start { background: var(--success); }
 .btn-stop { background: var(--danger); }
 .btn-reset { background: var(--aggie-silver); }
 
-/* GAMIFICATION XP BAR */
+/* GAMIFICATION */
 .xp-container { margin-bottom: 20px; text-align: center; }
 .xp-level { font-size: 12px; font-weight: 700; color: var(--aggie-blue); margin-bottom: 5px; text-transform: uppercase; }
 .xp-bar-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; }
 .xp-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.5s ease; }
 
-/* CALENDAR GRID */
-.calendar-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;
-}
-.cal-day {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  font-size: 10px; border-radius: 4px; background: #f1f5f9; color: #94a3b8;
-}
-.cal-day.active { background: var(--success); color: white; font-weight: bold; }
-.cal-day.today { border: 2px solid var(--aggie-blue); }
-
-/* Inputs */
+/* INPUTS & CHIPS */
 label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
 input, select {
   width: 100%; padding: 12px; background: #f8fafc; border: 2px solid #e2e8f0;
@@ -75,7 +93,6 @@ input, select {
 }
 input:focus, select:focus { outline: none; border-color: var(--aggie-blue); background: white; }
 
-/* Chips */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
   padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600;
@@ -86,7 +103,6 @@ input:focus, select:focus { outline: none; border-color: var(--aggie-blue); back
 .chip[data-val="partial"].active { background: var(--warning); border-color: var(--warning); }
 .chip[data-val="fail"].active { background: var(--danger); border-color: var(--danger); }
 
-/* Buttons */
 button {
   width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700;
   cursor: pointer; background: var(--aggie-blue); color: white; border: none;
@@ -95,22 +111,14 @@ button:active { opacity: 0.9; }
 .secondary-btn { background: var(--aggie-silver); margin-top: 10px; }
 .clear-btn { background: none; color: #64748b; border: 1px solid #cbd5e1; font-size: 12px; padding: 5px 10px; width: auto; margin-top: 5px; }
 
-/* Canvas */
-canvas#signaturePad {
-  border: 2px dashed #cbd5e1; border-radius: 8px; background-color: #fcfcfc;
-  width: 100%; height: 150px; cursor: crosshair; touch-action: none;
-}
+canvas#signaturePad { border: 2px dashed #cbd5e1; border-radius: 8px; background-color: #fcfcfc; width: 100%; height: 150px; cursor: crosshair; touch-action: none; }
 
-/* Modal & Nav */
 .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,38,58,0.95); }
 .modal-content { background: white; margin: 20% auto; padding: 15px; width: 90%; max-width: 500px; border-radius: 12px; }
 .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: black; }
 .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-.bottom-nav {
-  position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #cbd5e1;
-  display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
+.bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 .nav-item { background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
 .nav-item.active { color: var(--aggie-blue); }
