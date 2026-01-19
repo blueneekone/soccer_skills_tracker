@@ -34,8 +34,11 @@
   </div>
 
   <header>
-    <h1>Aggies FC Tracker</h1>
-    <div id="coachName" style="font-size:12px; color:#8A8D8F; margin-top:4px;"></div>
+    <div class="header-left">
+        <h1>Aggies FC Tracker</h1>
+        <div id="coachName"></div>
+    </div>
+    <button id="globalLogoutBtn">Sign Out</button>
   </header>
 
   <div class="container">
@@ -50,7 +53,6 @@
 
       <div id="viewTracker">
         <div class="xp-container"><div class="xp-level" id="userLevelDisplay">Rookie • 0 XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar"></div></div></div>
-        
         <div class="card">
           <div class="card-header">1. Session Setup</div>
           <div class="card-body">
@@ -62,7 +64,6 @@
             <div class="row"><div><input type="text" id="playerFirst" placeholder="First Name"></div><div><input type="text" id="playerLast" placeholder="Last Name"></div></div>
           </div>
         </div>
-
         <div class="card" style="border: 2px solid #00263A;">
           <div class="card-header" style="background:#00263A; color:white;"><span>2. Build Workout</span></div>
           <div class="card-body">
@@ -73,7 +74,6 @@
             <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"><label>Current Stack</label><ul id="sessionList" style="list-style:none; padding:0; margin:0; font-size:14px;"><li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li></ul></div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-header">3. Finish & Sign</div>
           <div class="card-body">
@@ -91,7 +91,6 @@
         <div class="card"><div class="card-header">Team Leaderboard</div><div class="card-body"><table class="leader-table" id="teamLeaderboardTable"><thead><tr><th>#</th><th>Player</th><th>Mins</th></tr></thead><tbody><tr><td colspan="3" style="text-align:center; color:#94a3b8;">No data yet.</td></tr></tbody></table></div></div>
         <div class="card"><div class="card-header">Activity</div><div class="card-body"><canvas id="playerTrendChart"></canvas></div></div>
         <div class="card"><div class="card-body calendar-wrapper"><div class="calendar-header"><span id="calMonthYear">Jan 2026</span></div><div class="calendar-grid"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div><div id="calendarDays" class="calendar-grid"></div><p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap highlighted day to view details.</p></div></div>
-        <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
       <div id="viewCoach" style="display:none;">
