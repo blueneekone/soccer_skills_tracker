@@ -17,13 +17,23 @@ body {
   margin: 0; padding: 0; padding-bottom: 100px;
 }
 
-/* --- HEADER --- */
+/* --- HEADER (Updated) --- */
 header {
-  background: var(--aggie-blue); color: white; padding: 20px; text-align: center;
+  background: var(--aggie-blue); color: white; padding: 15px 20px;
   position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex; justify-content: space-between; align-items: center;
 }
-h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-#coachName { font-size: 12px; color: var(--aggie-silver); margin-top: 4px; }
+.header-left { text-align: left; }
+h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+#coachName { font-size: 11px; color: var(--aggie-silver); margin-top: 2px; }
+
+/* Global Logout Button */
+#globalLogoutBtn {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  color: white; width: auto; padding: 8px 12px; font-size: 12px; border-radius: 6px;
+  cursor: pointer; display: none; /* Hidden by default until logged in */
+}
+#globalLogoutBtn:hover { background: var(--danger); border-color: var(--danger); }
 
 .container { padding: 15px; max-width: 600px; margin: 0 auto; }
 
@@ -113,10 +123,14 @@ button:active { opacity: 0.9; }
 .stat-val { font-size: 24px; font-weight: 800; color: var(--aggie-blue); line-height: 1; margin-bottom: 5px; }
 .stat-lbl { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
 
-/* --- ADMIN TABLES --- */
-.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-.admin-table th { text-align: left; background: #f1f5f9; padding: 10px; color: #64748b; font-weight: 700; border-bottom: 2px solid var(--border); }
-.admin-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+/* --- LEADERBOARD & TABLES --- */
+.leader-table, .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+.leader-table th, .admin-table th { text-align: left; background: #f1f5f9; padding: 10px; color: #64748b; font-weight: 700; border-bottom: 2px solid var(--border); }
+.leader-table td, .admin-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.leader-rank { font-weight: bold; color: var(--aggie-blue); width: 30px; }
+.leader-score { text-align: right; font-weight: 700; color: var(--success); }
+
+/* Admin Buttons */
 .admin-action-btn { padding: 6px 10px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; color: white; }
 .btn-delete { background: var(--danger); }
 .btn-edit { background: #3b82f6; }
