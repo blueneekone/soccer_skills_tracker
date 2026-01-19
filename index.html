@@ -34,11 +34,11 @@
   </div>
 
   <header>
-    <div class="header-left">
-        <h1>Aggies FC Tracker</h1>
-        <div id="coachName"></div>
+    <div style="text-align:left;">
+        <h1 style="margin:0;">Aggies FC Tracker</h1>
+        <div id="coachName" style="font-size:11px; color:#8A8D8F;"></div>
     </div>
-    <button id="globalLogoutBtn">Sign Out</button>
+    <button id="globalLogoutBtn" style="width:auto; padding:8px 12px; font-size:12px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); display:none;">Sign Out</button>
   </header>
 
   <div class="container">
@@ -53,6 +53,7 @@
 
       <div id="viewTracker">
         <div class="xp-container"><div class="xp-level" id="userLevelDisplay">Rookie • 0 XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar"></div></div></div>
+        
         <div class="card">
           <div class="card-header">1. Session Setup</div>
           <div class="card-body">
@@ -64,6 +65,7 @@
             <div class="row"><div><input type="text" id="playerFirst" placeholder="First Name"></div><div><input type="text" id="playerLast" placeholder="Last Name"></div></div>
           </div>
         </div>
+
         <div class="card" style="border: 2px solid #00263A;">
           <div class="card-header" style="background:#00263A; color:white;"><span>2. Build Workout</span></div>
           <div class="card-body">
@@ -74,6 +76,7 @@
             <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"><label>Current Stack</label><ul id="sessionList" style="list-style:none; padding:0; margin:0; font-size:14px;"><li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li></ul></div>
           </div>
         </div>
+
         <div class="card">
           <div class="card-header">3. Finish & Sign</div>
           <div class="card-body">
