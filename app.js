@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence } 
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
@@ -45,39 +45,114 @@ const foundationSelect = document.getElementById("foundationSelect");
 const cardioSelect = document.getElementById("cardioSelect");
 const teamSelect = document.getElementById("teamSelect");
 const adminTeamSelect = document.getElementById("adminTeamSelect");
+const coachTeamSelect = document.getElementById("coachTeamSelect");
 
-// --- MODAL LOGIC (UPDATED) ---
-// 1. Close on 'X' click
+// --- MODAL LOGIC ---
+window.addEventListener("click", (event) => {
+    const videoModal = document.getElementById("videoModal");
+    const dayModal = document.getElementById("dayModal");
+    if (event.target === videoModal) { videoModal.style.display = "none"; document.getElementById("videoPlayer").src = ""; }
+    if (event.target === dayModal) dayModal.style.display = "none";
+});
 document.getElementById("closeModal").addEventListener("click", () => {
-    document.getElementById("videoModal").style.display = "none";
-    document.getElementById("videoPlayer").src = ""; // Stop video
+    document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = "";
 });
 document.getElementById("closeDayModal").addEventListener("click", () => {
     document.getElementById("dayModal").style.display = "none";
 });
 
-// 2. Close on "Click Outside" (Backdrop Click)
-window.addEventListener("click", (event) => {
-    const videoModal = document.getElementById("videoModal");
-    const dayModal = document.getElementById("dayModal");
-
-    // If the click target IS the backdrop (not the content inside)
-    if (event.target === videoModal) {
-        videoModal.style.display = "none";
-        document.getElementById("videoPlayer").src = ""; // Stop video
-    }
-    if (event.target === dayModal) {
-        dayModal.style.display = "none";
-    }
-});
-
-// --- HELPER: CONSISTENT COLORS ---
+// --- HELPER: COLOR ---
 function getPlayerColor(name) {
     let hash = 0;
     for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
     const hue = Math.abs(hash % 360);
     return `hsl(${hue}, 70%, 40%)`;
 }
+
+// --- ROSTER UPLOAD LOGIC (NEW) ---
+document.getElementById("rosterPdfInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    if(file.type !== "application/pdf") return alert("Please select a PDF file.");
+
+    const btn = document.getElementById("rosterPdfInput");
+    btn.disabled = true; // Prevent double click
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        let fullText = "";
+
+        // Loop through all pages
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            
+            // Extract strings
+            textContent.items.forEach(item => {
+                // Stack Sports typically lists: "First Last" or "Last, First" in specific columns
+                // We'll just grab all text for now and let the user filter
+                fullText += item.str + "\n";
+            });
+        }
+
+        // Heuristic Parsing: Clean up the mess
+        // 1. Remove short lines (dates, numbers, "Jersey")
+        // 2. Look for lines with 2-3 words (likely names)
+        const lines = fullText.split("\n");
+        const potentialNames = lines.filter(line => {
+            const clean = line.trim();
+            // Regex: Starts with letter, 3-25 chars long, no digits
+            const looksLikeName = /^[a-zA-Z\s,'-]{3,25}$/.test(clean);
+            return looksLikeName && !clean.toLowerCase().includes("jersey") && !clean.toLowerCase().includes("coach");
+        }).map(l => l.trim());
+
+        // Unique names
+        const uniqueNames = [...new Set(potentialNames)];
+
+        // Show Review Area
+        document.getElementById("rosterUploadStep1").style.display = "none";
+        document.getElementById("rosterReviewArea").style.display = "block";
+        document.getElementById("rosterTextRaw").value = uniqueNames.join("\n");
+
+    } catch(err) {
+        console.error(err);
+        alert("Error parsing PDF. Try manual entry.");
+    }
+    btn.disabled = false;
+});
+
+document.getElementById("cancelRosterBtn").addEventListener("click", () => {
+    document.getElementById("rosterReviewArea").style.display = "none";
+    document.getElementById("rosterUploadStep1").style.display = "block";
+    document.getElementById("rosterPdfInput").value = "";
+});
+
+document.getElementById("saveRosterBtn").addEventListener("click", async () => {
+    const teamId = coachTeamSelect.value;
+    const namesRaw = document.getElementById("rosterTextRaw").value;
+    
+    if(!namesRaw.trim()) return alert("Roster is empty.");
+    if(!teamId) return alert("Select a team.");
+
+    const namesList = namesRaw.split("\n").map(n => n.trim()).filter(n => n.length > 0);
+
+    try {
+        // Save to Firestore: collection "rosters", docID = teamId
+        await setDoc(doc(db, "rosters", teamId), {
+            teamId: teamId,
+            players: namesList,
+            updatedAt: new Date()
+        });
+        
+        alert(`Success! Saved ${namesList.length} players to ${teamId}.`);
+        document.getElementById("cancelRosterBtn").click(); // Reset UI
+    } catch(e) {
+        console.error(e);
+        alert("Error saving to database.");
+    }
+});
 
 // TIMER
 const timerDisplay = document.getElementById("stopwatch");
@@ -88,20 +163,13 @@ function updateTimer() {
     const s = (seconds % 60).toString().padStart(2, "0");
     timerDisplay.innerText = `${m}:${s}`;
 }
-document.getElementById("startTimer").addEventListener("click", () => {
-    if (!timerInterval) timerInterval = setInterval(updateTimer, 1000);
-});
+document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
 document.getElementById("stopTimer").addEventListener("click", () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    const m = Math.floor(seconds / 60);
-    minsInput.value = m > 0 ? m : 1; 
+    clearInterval(timerInterval); timerInterval = null;
+    const m = Math.floor(seconds / 60); minsInput.value = m > 0 ? m : 1; 
 });
 document.getElementById("resetTimer").addEventListener("click", () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    seconds = 0;
-    timerDisplay.innerText = "00:00";
+    clearInterval(timerInterval); timerInterval = null; seconds = 0; timerDisplay.innerText = "00:00";
 });
 
 // SIGNATURE
@@ -110,16 +178,14 @@ const ctx = canvas.getContext("2d");
 let isDrawing = false;
 function resizeCanvas() {
     if(!canvas.parentElement) return;
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = 150;
+    canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
 }
 window.addEventListener('resize', resizeCanvas);
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
 function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
 function draw(e) {
-    if (!isDrawing) return;
-    e.preventDefault();
+    if (!isDrawing) return; e.preventDefault();
     isSignatureBlank = false;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -134,27 +200,19 @@ function isCanvasBlank(canvas) {
 function checkSignature() {
     if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
 }
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mouseup', endDraw);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('touchstart', startDraw);
-canvas.addEventListener('touchend', endDraw);
-canvas.addEventListener('touchmove', draw);
+canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
 document.getElementById("clearSigBtn").addEventListener("click", () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    isSignatureBlank = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true;
     canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; 
 });
 
 // AUTH
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    loginUI.style.display = "none";
-    appUI.style.display = "block";
-    bottomNav.style.display = "flex";
+    loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
-    
-    // LOAD STICKY PROFILE
     loadUserProfile();
 
     const isDirector = user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase();
@@ -162,6 +220,18 @@ onAuthStateChanged(auth, (user) => {
     
     if(isDirector || assignedTeam) {
         navCoach.style.display = "flex";
+        
+        // Populate Coach Team Select (for roster upload)
+        if(coachTeamSelect.options.length === 0) {
+            dbData.teams.forEach(t => {
+                // If director, show all. If coach, show only theirs.
+                if(isDirector || t.coachEmail.toLowerCase() === user.email.toLowerCase()) {
+                    const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name;
+                    coachTeamSelect.appendChild(opt);
+                }
+            });
+        }
+
         if(isDirector) {
             document.getElementById("adminControls").style.display = "block";
             if(adminTeamSelect.options.length === 1) {
@@ -181,14 +251,10 @@ onAuthStateChanged(auth, (user) => {
 
 // PROFILE HELPERS
 function saveUserProfile(first, last, team) {
-    localStorage.setItem("aggie_first", first);
-    localStorage.setItem("aggie_last", last);
-    localStorage.setItem("aggie_team", team);
+    localStorage.setItem("aggie_first", first); localStorage.setItem("aggie_last", last); localStorage.setItem("aggie_team", team);
 }
 function loadUserProfile() {
-    const f = localStorage.getItem("aggie_first");
-    const l = localStorage.getItem("aggie_last");
-    const t = localStorage.getItem("aggie_team");
+    const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team");
     if(f) document.getElementById("playerFirst").value = f;
     if(l) document.getElementById("playerLast").value = l;
     if(t) document.getElementById("teamSelect").value = t;
@@ -197,7 +263,6 @@ function loadUserProfile() {
 loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
 logoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 
-// NAV
 function switchTab(tab) {
     [viewTracker, viewStats, viewCoach].forEach(v => v.style.display = "none");
     [navTrack, navStats, navCoach].forEach(n => n.classList.remove("active"));
@@ -205,9 +270,7 @@ function switchTab(tab) {
     if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); }
     if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); }
 }
-navTrack.addEventListener("click", () => switchTab('track'));
-navStats.addEventListener("click", () => switchTab('stats'));
-navCoach.addEventListener("click", () => switchTab('coach'));
+navTrack.addEventListener("click", () => switchTab('track')); navStats.addEventListener("click", () => switchTab('stats')); navCoach.addEventListener("click", () => switchTab('coach'));
 
 // INIT DROPDOWNS
 if(teamSelect.options.length === 1) { dbData.teams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); }); }
@@ -223,46 +286,15 @@ if(foundationSelect.options.length === 1) {
     }
 }
 
-// SELECTION
 cardioSelect.addEventListener("change", (e) => {
-    if(e.target.value !== "") {
-        foundationSelect.selectedIndex = 0; document.getElementById("watchBtnContainer").style.display = "none"; 
-        document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
-    }
+    if(e.target.value !== "") { foundationSelect.selectedIndex = 0; document.getElementById("watchBtnContainer").style.display = "none"; }
 });
 foundationSelect.addEventListener("change", (e) => {
     cardioSelect.selectedIndex = 0;
     const skillName = e.target.value; const skillData = dbData.foundationSkills.find(s => s.name === skillName);
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     showDrillPopup(skillData);
 });
 
-// TACTICAL
-const pressureChips = document.getElementById("pressure");
-pressureChips.addEventListener("click", (e) => {
-    if(e.target.classList.contains("chip")) {
-        Array.from(pressureChips.children).forEach(c => c.classList.remove("active"));
-        e.target.classList.add("active");
-        updateTacticalSkills();
-    }
-});
-function updateTacticalSkills() {
-    const tacticalDiv = document.getElementById("skillSuggestions"); tacticalDiv.innerHTML = "";
-    const currentPressure = pressureChips.querySelector(".active")?.dataset.val;
-    const tacticalSkills = dbData.foundationSkills.filter(s => {
-        if(s.type !== "tactical") return false;
-        return (!currentPressure) ? true : s.pressure.includes(currentPressure);
-    });
-    tacticalSkills.forEach(s => {
-        const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = s.name;
-        chip.addEventListener("click", () => { foundationSelect.selectedIndex = 0; cardioSelect.selectedIndex = 0; selectTacticalSkill(chip, s); });
-        tacticalDiv.appendChild(chip);
-    });
-}
-function selectTacticalSkill(chipElement, skillData) {
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
-    chipElement.classList.add("active"); showDrillPopup(skillData);
-}
 function showDrillPopup(skillData) {
     const container = document.getElementById("watchBtnContainer"); const title = document.getElementById("drillRecommendation"); const img = document.getElementById("drillImage"); const btn = document.getElementById("watchVideoBtn");
     if(!skillData) { container.style.display = "none"; return; }
@@ -275,20 +307,16 @@ outcomeChips.addEventListener("click", (e) => {
     if(e.target.classList.contains("chip")) { Array.from(outcomeChips.children).forEach(c => c.classList.remove("active")); e.target.classList.add("active"); }
 });
 
-// STACK ADD
 document.getElementById("addToSessionBtn").addEventListener("click", () => {
     let activeSkillName = "";
     if (cardioSelect.value !== "") activeSkillName = cardioSelect.value;
     else if (foundationSelect.value !== "") activeSkillName = foundationSelect.value;
-    else { const activeChip = document.querySelector("#skillSuggestions .active"); if(activeChip) activeSkillName = activeChip.textContent; }
-
     if(!activeSkillName) return alert("Select an activity first.");
     const sets = document.getElementById("sets").value || "-"; const reps = document.getElementById("reps").value || "-";
     const item = { name: activeSkillName, sets: sets, reps: reps };
     currentSessionItems.push(item);
     renderSessionList();
     cardioSelect.selectedIndex = 0; foundationSelect.selectedIndex = 0;
-    document.querySelectorAll(".chip.active").forEach(c => { if(c.parentElement.id === "pressure" || c.parentElement.id === "outcome") return; c.classList.remove("active"); });
     document.getElementById("watchBtnContainer").style.display = "none";
 });
 function renderSessionList() {
@@ -297,7 +325,6 @@ function renderSessionList() {
     list.innerHTML = currentSessionItems.map((item, index) => `<li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;"><span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span></li>`).join("");
 }
 
-// SUBMIT
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
     const user = auth.currentUser; if (!user) return alert("Sign in first");
     if (currentSessionItems.length === 0) return alert("Your stack is empty!");
@@ -305,9 +332,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     if(!teamId) return alert("Select Team"); if(!pFirst || !pLast) return alert("Enter Name"); if(!mins || mins == 0) return alert("Enter Duration");
     if (isCanvasBlank(canvas)) { canvas.style.borderColor = "#dc2626"; return alert("Signature Required"); }
     
-    // SAVE PROFILE
     saveUserProfile(pFirst, pLast, teamId);
-
     const signatureData = canvas.toDataURL();
     const selectedTeam = dbData.teams.find(t => t.id === teamId);
     const assignedCoachEmail = selectedTeam ? selectedTeam.coachEmail : DIRECTOR_EMAIL;
@@ -333,30 +358,35 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     btn.disabled = false; btn.textContent = "✅ Submit Full Session";
 });
 
-// STATS
 async function loadStats() {
     const user = auth.currentUser; if (!user) return;
-    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100)); // Fetch all, filter for graph
+    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100)); 
     const snap = await getDocs(q);
-    const allLogs = [];
-    snap.forEach(doc => allLogs.push(doc.data()));
-
-    // Use all logs for team stats
-    const logs = allLogs;
-    let mins = 0;
-    logs.forEach(l => mins += parseInt(l.minutes || 0));
+    const logs = []; let mins = 0;
+    snap.forEach(doc => { const d = doc.data(); logs.push(d); mins += parseInt(d.minutes || 0); });
 
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = mins;
-    
     const xp = (logs.length * 10) + mins;
     let level = "Rookie"; if (xp > 100) level = "Starter"; if (xp > 500) level = "Pro"; if (xp > 1000) level = "Elite"; if (xp > 2000) level = "Legend";
     document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`;
     document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`;
 
+    // Advanced Stats
+    if(logs.length) {
+        document.getElementById("statAvg").innerText = Math.round(mins / logs.length);
+        
+        // Streak Logic (Approximate)
+        let streak = 0;
+        const dates = [...new Set(logs.map(l => new Date(l.timestamp.seconds*1000).toDateString()))];
+        const today = new Date().toDateString();
+        if(dates.includes(today)) streak = 1;
+        // Simple streak for demo
+        document.getElementById("statStreak").innerText = streak;
+    }
+
     renderCalendar(logs);
     renderPlayerTrendChart(logs);
-    renderTeamLeaderboard(logs);
 }
 
 function renderCalendar(logs) {
@@ -431,15 +461,6 @@ function renderPlayerTrendChart(logs) {
     });
 }
 
-function renderTeamLeaderboard(logs) {
-    const tableBody = document.getElementById("teamLeaderboardTable").querySelector("tbody");
-    const playerStats = {};
-    logs.forEach(l => { const name = l.player || "Unknown"; if(!playerStats[name]) playerStats[name] = 0; playerStats[name] += parseInt(l.minutes); });
-    const sortedPlayers = Object.keys(playerStats).sort((a,b) => playerStats[b] - playerStats[a]).slice(0, 5);
-    tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td class="leader-rank">${i+1}</td><td class="leader-name">${p}</td><td class="leader-score">${playerStats[p]}m</td></tr>`).join("");
-}
-
-// COACH DASHBOARD
 async function loadCoachDashboard(isAdmin = false) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList");
