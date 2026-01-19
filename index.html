@@ -8,12 +8,17 @@
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script>
+    // Initialize PDF Worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  </script>
 </head>
 <body>
   
   <div id="videoModal" class="modal">
     <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
         <h3 id="modalTitle" style="margin:0; color:#00263A;">Drill</h3>
         <span id="closeModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
@@ -25,7 +30,7 @@
 
   <div id="dayModal" class="modal">
     <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
         <h3 id="dayModalDate" style="margin:0; color:#00263A;">Date</h3>
         <span id="closeDayModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
@@ -99,32 +104,27 @@
         </div>
 
         <div class="card">
-          <div class="card-header">3. Session Results</div>
+          <div class="card-header">Results</div>
           <div class="card-body">
             <div class="row" style="margin-bottom:15px;">
               <div><label>Sets</label><input type="number" id="sets" placeholder="0"></div>
               <div><label>Reps</label><input type="number" id="reps" placeholder="0"></div>
               <div><label>Mins</label><input type="number" id="minutes" placeholder="0"></div>
             </div>
-            
             <label>Outcome</label>
             <div class="chips" id="outcome">
               <div class="chip active" data-val="success">✓ Success</div>
               <div class="chip" data-val="partial">~ Partial</div>
               <div class="chip" data-val="fail">× Fail</div>
             </div>
-
             <div style="margin-top:20px;">
               <label>Parent Signature</label>
               <canvas id="signaturePad" width="300" height="150"></canvas>
-              <div style="text-align:right;">
-                <button id="clearSigBtn" class="clear-btn">Clear</button>
-              </div>
+              <div style="text-align:right;"><button id="clearSigBtn" class="clear-btn">Clear</button></div>
             </div>
-
             <div style="margin-top:10px;"><input id="notes" placeholder="Notes..."></div>
             <button id="addToSessionBtn" style="background:#8A8D8F; margin-bottom:10px;">+ Add to Stack</button>
-            <div style="border-top:1px solid #e2e8f0; margin:15px 0;"></div>
+            <div style="border-top:1px solid #ccc; margin:15px 0;"></div>
             <label>Current Stack</label>
             <ul id="sessionList" style="list-style:none; padding:0; margin:0 0 15px 0; font-size:14px;"><li style="color:#94a3b8; text-align:center;">Empty</li></ul>
             <button id="submitWorkoutBtn" style="background:#16a34a;">✅ Submit Full Session</button>
@@ -133,53 +133,62 @@
       </div>
 
       <div id="viewStats" style="display:none;">
-        
         <div class="card">
           <div class="card-header">My Dashboard</div>
           <div class="card-body">
             <div class="stats-grid">
               <div class="stat-item"><div id="statTotal" class="stat-val">0</div><div class="stat-lbl">Workouts</div></div>
               <div class="stat-item"><div id="statTime" class="stat-val">0</div><div class="stat-lbl">Total Mins</div></div>
-              <div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Day Streak</div></div>
+              <div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Streak</div></div>
               <div class="stat-item"><div id="statAvg" class="stat-val">0</div><div class="stat-lbl">Avg Mins</div></div>
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">Activity (Last 7 Days)</div>
-          <div class="card-body"><canvas id="playerTrendChart"></canvas></div>
-        </div>
-
+        <div class="card"><div class="card-header">Activity</div><div class="card-body"><canvas id="playerTrendChart"></canvas></div></div>
         <div class="card">
           <div class="card-body calendar-wrapper">
             <div class="calendar-header"><span id="calMonthYear">January 2026</span></div>
-            <div class="calendar-grid">
-              <div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div>
-            </div>
+            <div class="calendar-grid"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div>
             <div id="calendarDays" class="calendar-grid"></div>
-            <p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap day to view details.</p>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">Team Standings</div>
-          <div class="card-body">
-            <table class="leader-table" id="teamLeaderboardTable">
-              <thead><tr><th>#</th><th>Player</th><th>Mins</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
         <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
       <div id="viewCoach" style="display:none;">
+        
+        <div class="card" style="border: 2px solid #8A8D8F;">
+          <div class="card-header" style="background:#8A8D8F; color:white;">
+            <span>Roster Management</span>
+            <span style="font-size:10px;">PDF IMPORT</span>
+          </div>
+          <div class="card-body">
+            
+            <div id="rosterUploadStep1">
+                <label>1. Select Team to Update</label>
+                <select id="coachTeamSelect" style="margin-bottom:15px;">
+                    </select>
+                
+                <label>2. Upload Stack Sports PDF</label>
+                <input type="file" id="rosterPdfInput" accept=".pdf" style="background:white;">
+                <p style="font-size:11px; color:#64748b; margin-top:5px;">We will try to extract names automatically.</p>
+            </div>
+
+            <div id="rosterReviewArea" style="display:none;">
+                <label style="color:#16a34a;">3. Review & Edit Names</label>
+                <p style="font-size:11px; color:#64748b;">Ensure names are clean (One per line).</p>
+                <textarea id="rosterTextRaw" rows="10" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:monospace;"></textarea>
+                <button id="saveRosterBtn" style="background:#16a34a; margin-top:10px;">💾 Save Roster</button>
+                <button id="cancelRosterBtn" class="secondary-btn">Cancel</button>
+            </div>
+
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">Coach Dashboard</div>
           <div class="card-body">
-            <div id="adminControls" style="display:none; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
+            <div id="adminControls" style="display:none; margin-bottom:15px; border-bottom:1px solid #eee;">
                 <label style="color:#16a34a;">Club Director View</label>
                 <select id="adminTeamSelect"><option value="all">View All Teams</option></select>
             </div>
@@ -187,13 +196,10 @@
               <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total Sessions</div></div>
               <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div>
             </div>
-            <button id="exportXlsxBtn" style="margin-top:15px; background:#16a34a;">📥 Download Excel</button>
+            <button id="exportXlsxBtn" style="margin-top:15px;">📥 Download Excel</button>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">Team Activity</div>
-          <div class="card-body"><canvas id="teamChart"></canvas></div>
-        </div>
+        <div class="card"><div class="card-header">Team Activity</div><div class="card-body"><canvas id="teamChart"></canvas></div></div>
         <div class="card"><div class="card-body" id="coachPlayerList"></div></div>
       </div>
 
