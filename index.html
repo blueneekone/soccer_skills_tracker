@@ -9,10 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-  <script>
-    // Initialize PDF Worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-  </script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
 </head>
 <body>
   
@@ -22,9 +19,7 @@
         <h3 id="modalTitle" style="margin:0; color:#00263A;">Drill</h3>
         <span id="closeModal" style="font-size:24px; cursor:pointer;">&times;</span>
       </div>
-      <div class="video-container">
-        <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen></iframe>
-      </div>
+      <div class="video-container"><iframe id="videoPlayer" src="" frameborder="0" allowfullscreen></iframe></div>
     </div>
   </div>
 
@@ -44,7 +39,6 @@
   </header>
 
   <div class="container">
-    
     <div id="loginUI" class="card" style="text-align:center; padding:40px;">
       <h2 style="color:#00263A;">Player Portal</h2>
       <p style="color:#64748b;">Sign in to start training.</p>
@@ -60,7 +54,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header">Session Setup</div>
+          <div class="card-header">1. Session Setup</div>
           <div class="card-body">
             <div class="timer-box">
               <div class="timer-display" id="stopwatch">00:00</div>
@@ -79,138 +73,110 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">1. Cardio & Fitness</div>
-          <div class="card-body">
-            <select id="cardioSelect"><option value="" selected>None / Skip Cardio</option></select>
-          </div>
-        </div>
-
         <div class="card" style="border: 2px solid #00263A;">
           <div class="card-header" style="background:#00263A; color:white;">
-            <span>2. Brilliant Basics</span>
-            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">CORE</span>
+            <span>2. Build Workout</span>
+            <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">ADD ITEMS</span>
           </div>
           <div class="card-body">
-            <select id="foundationSelect" style="font-weight:600; color:#00263A;">
-              <option value="" selected>Select Skill (32 Model)...</option>
-            </select>
-            <div id="watchBtnContainer" style="display:none; margin-top:15px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; text-align:center;">
-              <div id="drillRecommendation" style="color:#00263A; font-weight:bold; margin-bottom:10px;"></div>
-              <img id="drillImage" src="" style="width:100%; border-radius:6px; margin-bottom:10px; display:none;">
-              <button id="watchVideoBtn" class="secondary-btn">🎥 Watch Demo</button>
+            
+            <label>Select Activity (Cardio or Skills)</label>
+            <select id="unifiedSelect" style="font-weight:700; color:#00263A;">
+              <option value="" disabled selected>Choose activity...</option>
+              </select>
+
+            <div id="drillInfoBox" style="display:none; margin-bottom:15px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+               <div style="display:flex; justify-content:space-between; align-items:center;">
+                   <div id="drillDesc" style="font-weight:bold; font-size:13px; color:#334155;"></div>
+                   <button id="watchVideoBtn" style="width:auto; padding:6px 12px; font-size:11px; background:#3b82f6;">🎥 Video</button>
+               </div>
             </div>
+
+            <div class="row">
+              <div>
+                <label id="labelSets">Sets</label>
+                <input type="number" id="inputSets" placeholder="0">
+              </div>
+              <div>
+                <label id="labelReps">Reps</label>
+                <input type="number" id="inputReps" placeholder="0">
+              </div>
+            </div>
+
+            <button id="addToSessionBtn" style="background:#8A8D8F; margin-top:5px;">+ Add to Stack</button>
+
+            <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;">
+                <label>Current Stack</label>
+                <ul id="sessionList" style="list-style:none; padding:0; margin:0; font-size:14px;">
+                   <li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li>
+                </ul>
+            </div>
+
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header">Results</div>
+          <div class="card-header">3. Finish & Sign</div>
           <div class="card-body">
-            <div class="row" style="margin-bottom:15px;">
-              <div><label>Sets</label><input type="number" id="sets" placeholder="0"></div>
-              <div><label>Reps</label><input type="number" id="reps" placeholder="0"></div>
-              <div><label>Mins</label><input type="number" id="minutes" placeholder="0"></div>
-            </div>
-            <label>Outcome</label>
+            
+            <label>Total Duration (Mins)</label>
+            <input type="number" id="totalMinutes" placeholder="Use Timer or Enter Manual Time">
+
+            <label>How did it go?</label>
             <div class="chips" id="outcome">
-              <div class="chip active" data-val="success">✓ Success</div>
-              <div class="chip" data-val="partial">~ Partial</div>
-              <div class="chip" data-val="fail">× Fail</div>
+              <div class="chip active" data-val="success">✓ Good</div>
+              <div class="chip" data-val="partial">~ Okay</div>
+              <div class="chip" data-val="fail">× Struggle</div>
             </div>
+
             <div style="margin-top:20px;">
-              <label>Parent Signature</label>
+              <label>Parent Signature (Required)</label>
               <canvas id="signaturePad" width="300" height="150"></canvas>
               <div style="text-align:right;"><button id="clearSigBtn" class="clear-btn">Clear</button></div>
             </div>
-            <div style="margin-top:10px;"><input id="notes" placeholder="Notes..."></div>
-            <button id="addToSessionBtn" style="background:#8A8D8F; margin-bottom:10px;">+ Add to Stack</button>
-            <div style="border-top:1px solid #ccc; margin:15px 0;"></div>
-            <label>Current Stack</label>
-            <ul id="sessionList" style="list-style:none; padding:0; margin:0 0 15px 0; font-size:14px;"><li style="color:#94a3b8; text-align:center;">Empty</li></ul>
-            <button id="submitWorkoutBtn" style="background:#16a34a;">✅ Submit Full Session</button>
+
+            <div style="margin-top:10px;"><input id="notes" placeholder="Optional notes..."></div>
+            
+            <button id="submitWorkoutBtn" style="background:#16a34a; margin-top:10px;">✅ Submit Full Session</button>
           </div>
         </div>
       </div>
 
       <div id="viewStats" style="display:none;">
-        <div class="card">
-          <div class="card-header">My Dashboard</div>
-          <div class="card-body">
-            <div class="stats-grid">
-              <div class="stat-item"><div id="statTotal" class="stat-val">0</div><div class="stat-lbl">Workouts</div></div>
-              <div class="stat-item"><div id="statTime" class="stat-val">0</div><div class="stat-lbl">Total Mins</div></div>
-              <div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Streak</div></div>
-              <div class="stat-item"><div id="statAvg" class="stat-val">0</div><div class="stat-lbl">Avg Mins</div></div>
-            </div>
-          </div>
-        </div>
+        <div class="card"><div class="card-header">My Dashboard</div><div class="card-body"><div class="stats-grid"><div class="stat-item"><div id="statTotal" class="stat-val">0</div><div class="stat-lbl">Workouts</div></div><div class="stat-item"><div id="statTime" class="stat-val">0</div><div class="stat-lbl">Total Mins</div></div><div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Streak</div></div><div class="stat-item"><div id="statAvg" class="stat-val">0</div><div class="stat-lbl">Avg Mins</div></div></div></div></div>
         <div class="card"><div class="card-header">Activity</div><div class="card-body"><canvas id="playerTrendChart"></canvas></div></div>
-        <div class="card">
-          <div class="card-body calendar-wrapper">
-            <div class="calendar-header"><span id="calMonthYear">January 2026</span></div>
-            <div class="calendar-grid"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div>
-            <div id="calendarDays" class="calendar-grid"></div>
-          </div>
-        </div>
+        <div class="card"><div class="card-body calendar-wrapper"><div class="calendar-header"><span id="calMonthYear">Jan 2026</span></div><div class="calendar-grid"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div><div id="calendarDays" class="calendar-grid"></div></div></div>
         <div style="text-align:center; margin-top:20px;"><button id="logoutBtn" style="background:none; color:#64748b; border:1px solid #cbd5e1;">Sign Out</button></div>
       </div>
 
       <div id="viewCoach" style="display:none;">
-        
         <div class="card" style="border: 2px solid #8A8D8F;">
-          <div class="card-header" style="background:#8A8D8F; color:white;">
-            <span>Roster Management</span>
-            <span style="font-size:10px;">PDF IMPORT</span>
-          </div>
+          <div class="card-header" style="background:#8A8D8F; color:white;"><span>Roster Management</span><span style="font-size:10px;">PDF</span></div>
           <div class="card-body">
-            
             <div id="rosterUploadStep1">
-                <label>1. Select Team to Update</label>
-                <select id="coachTeamSelect" style="margin-bottom:15px;">
-                    </select>
-                
-                <label>2. Upload Stack Sports PDF</label>
-                <input type="file" id="rosterPdfInput" accept=".pdf" style="background:white;">
-                <p style="font-size:11px; color:#64748b; margin-top:5px;">We will try to extract names automatically.</p>
+                <label>1. Team</label><select id="coachTeamSelect" style="margin-bottom:10px;"></select>
+                <label>2. Upload Stack PDF</label><input type="file" id="rosterPdfInput" accept=".pdf">
             </div>
-
             <div id="rosterReviewArea" style="display:none;">
-                <label style="color:#16a34a;">3. Review & Edit Names</label>
-                <p style="font-size:11px; color:#64748b;">Ensure names are clean (One per line).</p>
-                <textarea id="rosterTextRaw" rows="10" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:monospace;"></textarea>
-                <button id="saveRosterBtn" style="background:#16a34a; margin-top:10px;">💾 Save Roster</button>
-                <button id="cancelRosterBtn" class="secondary-btn">Cancel</button>
+                <label>3. Review Names</label><textarea id="rosterTextRaw" rows="5" style="width:100%; border-radius:6px;"></textarea>
+                <button id="saveRosterBtn" style="background:#16a34a; margin-top:10px;">Save</button><button id="cancelRosterBtn" class="secondary-btn">Cancel</button>
             </div>
-
           </div>
         </div>
-
         <div class="card">
           <div class="card-header">Coach Dashboard</div>
           <div class="card-body">
-            <div id="adminControls" style="display:none; margin-bottom:15px; border-bottom:1px solid #eee;">
-                <label style="color:#16a34a;">Club Director View</label>
-                <select id="adminTeamSelect"><option value="all">View All Teams</option></select>
-            </div>
-            <div class="row">
-              <div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Total Sessions</div></div>
-              <div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div>
-            </div>
+            <div id="adminControls" style="display:none;"><select id="adminTeamSelect"><option value="all">All Teams</option></select></div>
+            <div class="row"><div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Sessions</div></div><div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div></div>
             <button id="exportXlsxBtn" style="margin-top:15px;">📥 Download Excel</button>
           </div>
         </div>
-        <div class="card"><div class="card-header">Team Activity</div><div class="card-body"><canvas id="teamChart"></canvas></div></div>
+        <div class="card"><div class="card-body"><canvas id="teamChart"></canvas></div></div>
         <div class="card"><div class="card-body" id="coachPlayerList"></div></div>
       </div>
 
     </div>
-
-    <nav class="bottom-nav" id="bottomNav" style="display:none;">
-      <button class="nav-item active" id="navTrack"><span>📝</span>Track</button>
-      <button class="nav-item" id="navStats"><span>📈</span>Stats</button>
-      <button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span>Coach</button>
-    </nav>
-
+    <nav class="bottom-nav" id="bottomNav" style="display:none;"><button class="nav-item active" id="navTrack"><span>📝</span>Track</button><button class="nav-item" id="navStats"><span>📈</span>Stats</button><button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span>Coach</button></nav>
   </div>
   <script type="module" src="app.js"></script>
 </body>
