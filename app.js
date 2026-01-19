@@ -5,8 +5,9 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
-// MASTER FALLBACK
-const MASTER_DIRECTOR = "ecwaechtler@gmail.com"; 
+// --- THE SAFETY NET ---
+// If a player has no team, or the team config fails, data goes here.
+const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
@@ -26,14 +27,14 @@ enableIndexedDbPersistence(db).catch((err) => console.log(err.code));
 // VARS
 let currentSessionItems = []; 
 let globalTeams = [];
-let globalAdmins = [MASTER_DIRECTOR]; 
+let globalAdmins = [DIRECTOR_EMAIL]; 
 let timerInterval;
 let seconds = 0;
 let isSignatureBlank = true; 
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
-const globalLogoutBtn = document.getElementById("globalLogoutBtn"); // NEW HEADER BTN
+const globalLogoutBtn = document.getElementById("globalLogoutBtn");
 const appUI = document.getElementById("appUI");
 const loginUI = document.getElementById("loginUI");
 const bottomNav = document.getElementById("bottomNav");
@@ -58,27 +59,52 @@ async function logSecurityEvent(type, detail) {
     addDoc(collection(db, "logs_security"), { type: type, detail: detail, user: auth.currentUser ? auth.currentUser.email : "system", timestamp: new Date() });
 }
 
-// CONFIG
+// CONFIG FETCHING
 async function fetchConfig() {
     try {
         const teamSnap = await getDoc(doc(db, "config", "teams"));
         if (teamSnap.exists()) globalTeams = teamSnap.data().list;
-        else { globalTeams = dbData.teams; await setDoc(doc(db, "config", "teams"), { list: globalTeams }); }
+        else { 
+            // First time setup? Use data.js fallback
+            globalTeams = dbData.teams; 
+            await setDoc(doc(db, "config", "teams"), { list: globalTeams }); 
+        }
     } catch (e) { globalTeams = dbData.teams; }
 
     try {
         const adminSnap = await getDoc(doc(db, "config", "admins"));
         if (adminSnap.exists()) globalAdmins = adminSnap.data().list;
-        else { globalAdmins = [MASTER_DIRECTOR]; await setDoc(doc(db, "config", "admins"), { list: globalAdmins }); }
-    } catch (e) { globalAdmins = [MASTER_DIRECTOR]; }
+        else { 
+            globalAdmins = [DIRECTOR_EMAIL]; 
+            await setDoc(doc(db, "config", "admins"), { list: globalAdmins }); 
+        }
+    } catch (e) { globalAdmins = [DIRECTOR_EMAIL]; }
+    
     populateDropdowns();
 }
 
 function populateDropdowns() {
+    // 1. PLAYER TEAM SELECT (With Forced Fallback)
     teamSelect.innerHTML = '<option value="" disabled selected>Select Your Team...</option>';
-    globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
+    
+    // FORCE "Unassigned" option so data is never stranded
+    teamSelect.innerHTML += `<option value="unassigned" style="font-weight:bold; color:#00263A;">★ Unassigned / Tryouts</option>`;
+    
+    globalTeams.forEach(t => { 
+        const opt = document.createElement("option"); 
+        opt.value = t.id; 
+        opt.textContent = t.name; 
+        teamSelect.appendChild(opt); 
+    });
+    
+    // 2. COACH ROSTER SELECT
     coachTeamSelect.innerHTML = "";
-    globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
+    globalTeams.forEach(t => { 
+        const opt = document.createElement("option"); 
+        opt.value = t.id; 
+        opt.textContent = t.name; 
+        coachTeamSelect.appendChild(opt); 
+    });
 }
 
 // ADMIN LOGIC
@@ -86,7 +112,7 @@ function renderAdminTables() {
     const teamTbody = document.getElementById("teamTable").querySelector("tbody");
     teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="admin-action-btn btn-delete" onclick="deleteTeam('${t.id}')">Delete</button></td></tr>`).join("");
     const adminTbody = document.getElementById("adminTable").querySelector("tbody");
-    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email === MASTER_DIRECTOR ? '<span style="color:#aaa">Master</span>' : '<button class="admin-action-btn btn-delete" onclick="deleteAdmin(\''+email+'\')">Remove</button>'}</td></tr>`).join("");
+    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email === DIRECTOR_EMAIL ? '<span style="color:#aaa">Master</span>' : '<button class="admin-action-btn btn-delete" onclick="deleteAdmin(\''+email+'\')">Remove</button>'}</td></tr>`).join("");
 }
 window.deleteTeam = async (id) => {
     if(!confirm(`Delete team ${id}?`)) return;
@@ -167,7 +193,7 @@ document.getElementById("saveRosterBtn").addEventListener("click", async () => {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
-    globalLogoutBtn.style.display = "block"; // SHOW LOGOUT BTN
+    globalLogoutBtn.style.display = "block"; 
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     await fetchConfig(); loadUserProfile();
     
@@ -185,7 +211,7 @@ onAuthStateChanged(auth, async (user) => {
     loadStats(); resizeCanvas();
   } else {
     loginUI.style.display = "block"; appUI.style.display = "none"; bottomNav.style.display = "none";
-    globalLogoutBtn.style.display = "none"; // HIDE LOGOUT BTN
+    globalLogoutBtn.style.display = "none";
   }
 });
 
@@ -193,7 +219,7 @@ onAuthStateChanged(auth, async (user) => {
 function saveUserProfile(first, last, team) { localStorage.setItem("aggie_first", first); localStorage.setItem("aggie_last", last); localStorage.setItem("aggie_team", team); }
 function loadUserProfile() { const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team"); if(f) document.getElementById("playerFirst").value = f; if(l) document.getElementById("playerLast").value = l; if(t) document.getElementById("teamSelect").value = t; }
 loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
-globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); }); // LOGOUT HANDLER
+globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 function switchTab(tab) { [viewTracker, viewStats, viewCoach, viewAdmin].forEach(v => v.style.display = "none"); [navTrack, navStats, navCoach, navAdmin].forEach(n => n.classList.remove("active")); if (tab === 'track') { viewTracker.style.display = "block"; navTrack.classList.add("active"); setTimeout(resizeCanvas, 100); } if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); } if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); } if (tab === 'admin') { viewAdmin.style.display = "block"; navAdmin.classList.add("active"); } }
 navTrack.addEventListener("click", () => switchTab('track')); navStats.addEventListener("click", () => switchTab('stats')); navCoach.addEventListener("click", () => switchTab('coach')); navAdmin.addEventListener("click", () => switchTab('admin'));
 
@@ -224,14 +250,27 @@ function renderSessionList() {
     if(currentSessionItems.length === 0) { list.innerHTML = `<li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li>`; return; }
     list.innerHTML = currentSessionItems.map((item, index) => `<li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;"><span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span></li>`).join("");
 }
+
+// SUBMIT
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
     const user = auth.currentUser; if (!user) return alert("Sign in first");
     if (currentSessionItems.length === 0) return alert("Stack is empty!");
     const teamId = teamSelect.value; const pFirst = document.getElementById("playerFirst").value; const pLast = document.getElementById("playerLast").value; const mins = document.getElementById("totalMinutes").value;
     if(!teamId) return alert("Select Team"); if(!pFirst || !pLast) return alert("Enter Name"); if(!mins || mins == 0) return alert("Enter Duration");
     if (isSignatureBlank) { canvas.style.borderColor = "#dc2626"; return alert("Signature Required"); }
-    saveUserProfile(pFirst, pLast, teamId); const signatureData = canvas.toDataURL();
-    const selectedTeam = globalTeams.find(t => t.id === teamId); const assignedCoachEmail = selectedTeam ? selectedTeam.coachEmail : DIRECTOR_EMAIL;
+    
+    saveUserProfile(pFirst, pLast, teamId);
+    const signatureData = canvas.toDataURL();
+    
+    // --- SAFETY NET LOGIC ---
+    let assignedCoachEmail = DIRECTOR_EMAIL; // Default to safety
+    if (teamId !== "unassigned") {
+        const selectedTeam = globalTeams.find(t => t.id === teamId);
+        if (selectedTeam && selectedTeam.coachEmail) {
+            assignedCoachEmail = selectedTeam.coachEmail;
+        }
+    }
+
     const drillSummary = currentSessionItems.map(i => `${i.name} (${i.sets}x${i.reps})`).join(", ");
     const sessionData = { coachEmail: assignedCoachEmail, teamId: teamId, timestamp: new Date(), player: `${pFirst} ${pLast}`, minutes: mins, drills: currentSessionItems, drillSummary: drillSummary, outcome: document.getElementById("outcome").querySelector(".active")?.dataset.val || "success", notes: document.getElementById("notes").value, signatureImg: signatureData };
     try { await addDoc(collection(db, "reps"), sessionData); alert(`Logged! +${10 + parseInt(mins)} XP`); logSystemEvent("SESSION_LOGGED", `Player: ${pFirst} ${pLast}, Team: ${teamId}, Mins: ${mins}`); currentSessionItems = []; renderSessionList(); document.getElementById("totalMinutes").value = ""; document.getElementById("notes").value = ""; ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; document.getElementById("resetTimer").click(); loadStats(); } catch(e) { console.error(e); alert("Error saving"); }
@@ -306,4 +345,13 @@ async function loadCoachDashboard(isAdmin=false) {
         document.getElementById("coachTotalReps").innerText = allSessions.length; document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
         renderTeamChart(players);
         listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;"><b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span></div>`).join("");
-        document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC
+        document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx"); };
+    } catch (e) { listDiv.innerHTML = "No data found or permission denied."; console.error(e); }
+}
+function renderTeamChart(playersData) {
+    const ctx = document.getElementById('teamChart').getContext('2d'); if (teamChart) teamChart.destroy();
+    const dates = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate() - i); dates.push(d.toLocaleDateString()); }
+    const datasets = Object.keys(playersData).map(p => { const dailyMins = dates.map(dateStr => { return playersData[p].history.includes(dateStr) ? 1 : 0; }); const color = getPlayerColor(p); return { label: p, data: dailyMins, borderColor: color, tension: 0.3, fill: false }; });
+    teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
+}
+document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
