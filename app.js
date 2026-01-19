@@ -33,7 +33,7 @@ let isSignatureBlank = true;
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
+const globalLogoutBtn = document.getElementById("globalLogoutBtn"); // NEW HEADER BTN
 const appUI = document.getElementById("appUI");
 const loginUI = document.getElementById("loginUI");
 const bottomNav = document.getElementById("bottomNav");
@@ -163,10 +163,11 @@ document.getElementById("saveRosterBtn").addEventListener("click", async () => {
     try { await setDoc(doc(db, "rosters", teamId), { teamId: teamId, players: namesList, updatedAt: new Date() }); alert("Roster Saved!"); document.getElementById("cancelRosterBtn").click(); } catch(e) { alert("Error saving."); }
 });
 
-// AUTH
+// AUTH & STARTUP
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
+    globalLogoutBtn.style.display = "block"; // SHOW LOGOUT BTN
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     await fetchConfig(); loadUserProfile();
     
@@ -182,14 +183,17 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
     loadStats(); resizeCanvas();
-  } else { loginUI.style.display = "block"; appUI.style.display = "none"; bottomNav.style.display = "none"; }
+  } else {
+    loginUI.style.display = "block"; appUI.style.display = "none"; bottomNav.style.display = "none";
+    globalLogoutBtn.style.display = "none"; // HIDE LOGOUT BTN
+  }
 });
 
 // STANDARD HELPERS
 function saveUserProfile(first, last, team) { localStorage.setItem("aggie_first", first); localStorage.setItem("aggie_last", last); localStorage.setItem("aggie_team", team); }
 function loadUserProfile() { const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team"); if(f) document.getElementById("playerFirst").value = f; if(l) document.getElementById("playerLast").value = l; if(t) document.getElementById("teamSelect").value = t; }
 loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
-logoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
+globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); }); // LOGOUT HANDLER
 function switchTab(tab) { [viewTracker, viewStats, viewCoach, viewAdmin].forEach(v => v.style.display = "none"); [navTrack, navStats, navCoach, navAdmin].forEach(n => n.classList.remove("active")); if (tab === 'track') { viewTracker.style.display = "block"; navTrack.classList.add("active"); setTimeout(resizeCanvas, 100); } if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); } if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); } if (tab === 'admin') { viewAdmin.style.display = "block"; navAdmin.classList.add("active"); } }
 navTrack.addEventListener("click", () => switchTab('track')); navStats.addEventListener("click", () => switchTab('stats')); navCoach.addEventListener("click", () => switchTab('coach')); navAdmin.addEventListener("click", () => switchTab('admin'));
 
@@ -302,12 +306,4 @@ async function loadCoachDashboard(isAdmin=false) {
         document.getElementById("coachTotalReps").innerText = allSessions.length; document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
         renderTeamChart(players);
         listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;"><b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span></div>`).join("");
-        document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx"); };
-    } catch (e) { listDiv.innerHTML = "No data found or permission denied."; console.error(e); }
-}
-function renderTeamChart(playersData) {
-    const ctx = document.getElementById('teamChart').getContext('2d'); if (teamChart) teamChart.destroy();
-    const dates = []; for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate() - i); dates.push(d.toLocaleDateString()); }
-    const datasets = Object.keys(playersData).map(p => { const dailyMins = dates.map(dateStr => { return playersData[p].history.includes(dateStr) ? 1 : 0; }); const color = getPlayerColor(p); return { label: p, data: dailyMins, borderColor: color, tension: 0.3, fill: false }; });
-    teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
-}
+        document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC
