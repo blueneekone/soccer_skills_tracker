@@ -46,7 +46,32 @@ const cardioSelect = document.getElementById("cardioSelect");
 const teamSelect = document.getElementById("teamSelect");
 const adminTeamSelect = document.getElementById("adminTeamSelect");
 
-// HELPER: COLOR
+// --- MODAL LOGIC (UPDATED) ---
+// 1. Close on 'X' click
+document.getElementById("closeModal").addEventListener("click", () => {
+    document.getElementById("videoModal").style.display = "none";
+    document.getElementById("videoPlayer").src = ""; // Stop video
+});
+document.getElementById("closeDayModal").addEventListener("click", () => {
+    document.getElementById("dayModal").style.display = "none";
+});
+
+// 2. Close on "Click Outside" (Backdrop Click)
+window.addEventListener("click", (event) => {
+    const videoModal = document.getElementById("videoModal");
+    const dayModal = document.getElementById("dayModal");
+
+    // If the click target IS the backdrop (not the content inside)
+    if (event.target === videoModal) {
+        videoModal.style.display = "none";
+        document.getElementById("videoPlayer").src = ""; // Stop video
+    }
+    if (event.target === dayModal) {
+        dayModal.style.display = "none";
+    }
+});
+
+// --- HELPER: CONSISTENT COLORS ---
 function getPlayerColor(name) {
     let hash = 0;
     for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
@@ -63,13 +88,20 @@ function updateTimer() {
     const s = (seconds % 60).toString().padStart(2, "0");
     timerDisplay.innerText = `${m}:${s}`;
 }
-document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
+document.getElementById("startTimer").addEventListener("click", () => {
+    if (!timerInterval) timerInterval = setInterval(updateTimer, 1000);
+});
 document.getElementById("stopTimer").addEventListener("click", () => {
-    clearInterval(timerInterval); timerInterval = null;
-    const m = Math.floor(seconds / 60); minsInput.value = m > 0 ? m : 1; 
+    clearInterval(timerInterval);
+    timerInterval = null;
+    const m = Math.floor(seconds / 60);
+    minsInput.value = m > 0 ? m : 1; 
 });
 document.getElementById("resetTimer").addEventListener("click", () => {
-    clearInterval(timerInterval); timerInterval = null; seconds = 0; timerDisplay.innerText = "00:00";
+    clearInterval(timerInterval);
+    timerInterval = null;
+    seconds = 0;
+    timerDisplay.innerText = "00:00";
 });
 
 // SIGNATURE
@@ -78,14 +110,16 @@ const ctx = canvas.getContext("2d");
 let isDrawing = false;
 function resizeCanvas() {
     if(!canvas.parentElement) return;
-    canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150;
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = 150;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A";
 }
 window.addEventListener('resize', resizeCanvas);
 function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
 function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
 function draw(e) {
-    if (!isDrawing) return; e.preventDefault();
+    if (!isDrawing) return;
+    e.preventDefault();
     isSignatureBlank = false;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -100,21 +134,27 @@ function isCanvasBlank(canvas) {
 function checkSignature() {
     if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
 }
-canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw);
-canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw);
-canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('touchend', endDraw);
+canvas.addEventListener('touchmove', draw);
 document.getElementById("clearSigBtn").addEventListener("click", () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    isSignatureBlank = true;
     canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; 
 });
 
-// AUTH & INIT
+// AUTH
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
+    loginUI.style.display = "none";
+    appUI.style.display = "block";
+    bottomNav.style.display = "flex";
     document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
     
-    // NEW: LOAD STICKY PROFILE
+    // LOAD STICKY PROFILE
     loadUserProfile();
 
     const isDirector = user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase();
@@ -139,18 +179,16 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// --- NEW: PROFILE HELPERS ---
+// PROFILE HELPERS
 function saveUserProfile(first, last, team) {
     localStorage.setItem("aggie_first", first);
     localStorage.setItem("aggie_last", last);
     localStorage.setItem("aggie_team", team);
 }
-
 function loadUserProfile() {
     const f = localStorage.getItem("aggie_first");
     const l = localStorage.getItem("aggie_last");
     const t = localStorage.getItem("aggie_team");
-    
     if(f) document.getElementById("playerFirst").value = f;
     if(l) document.getElementById("playerLast").value = l;
     if(t) document.getElementById("teamSelect").value = t;
@@ -159,6 +197,7 @@ function loadUserProfile() {
 loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
 logoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 
+// NAV
 function switchTab(tab) {
     [viewTracker, viewStats, viewCoach].forEach(v => v.style.display = "none");
     [navTrack, navStats, navCoach].forEach(n => n.classList.remove("active"));
@@ -166,7 +205,9 @@ function switchTab(tab) {
     if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); }
     if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); }
 }
-navTrack.addEventListener("click", () => switchTab('track')); navStats.addEventListener("click", () => switchTab('stats')); navCoach.addEventListener("click", () => switchTab('coach'));
+navTrack.addEventListener("click", () => switchTab('track'));
+navStats.addEventListener("click", () => switchTab('stats'));
+navCoach.addEventListener("click", () => switchTab('coach'));
 
 // INIT DROPDOWNS
 if(teamSelect.options.length === 1) { dbData.teams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); }); }
@@ -229,7 +270,6 @@ function showDrillPopup(skillData) {
     if(skillData.image) { img.src = skillData.image; img.style.display = "block"; } else { img.style.display = "none"; }
     if(skillData.video) { btn.style.display = "inline-block"; btn.onclick = () => { document.getElementById("videoPlayer").src = skillData.video; document.getElementById("videoModal").style.display = "block"; } } else { btn.style.display = "none"; }
 }
-document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
 const outcomeChips = document.getElementById("outcome");
 outcomeChips.addEventListener("click", (e) => {
     if(e.target.classList.contains("chip")) { Array.from(outcomeChips.children).forEach(c => c.classList.remove("active")); e.target.classList.add("active"); }
@@ -265,7 +305,7 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     if(!teamId) return alert("Select Team"); if(!pFirst || !pLast) return alert("Enter Name"); if(!mins || mins == 0) return alert("Enter Duration");
     if (isCanvasBlank(canvas)) { canvas.style.borderColor = "#dc2626"; return alert("Signature Required"); }
     
-    // NEW: SAVE PROFILE TO LOCAL STORAGE
+    // SAVE PROFILE
     saveUserProfile(pFirst, pLast, teamId);
 
     const signatureData = canvas.toDataURL();
@@ -296,19 +336,27 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
 // STATS
 async function loadStats() {
     const user = auth.currentUser; if (!user) return;
-    const q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "asc"), limit(100));
+    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100)); // Fetch all, filter for graph
     const snap = await getDocs(q);
-    const logs = []; let mins = 0;
-    snap.forEach(doc => { const d = doc.data(); logs.push(d); mins += parseInt(d.minutes || 0); });
+    const allLogs = [];
+    snap.forEach(doc => allLogs.push(doc.data()));
+
+    // Use all logs for team stats
+    const logs = allLogs;
+    let mins = 0;
+    logs.forEach(l => mins += parseInt(l.minutes || 0));
 
     document.getElementById("statTotal").innerText = logs.length;
     document.getElementById("statTime").innerText = mins;
+    
     const xp = (logs.length * 10) + mins;
     let level = "Rookie"; if (xp > 100) level = "Starter"; if (xp > 500) level = "Pro"; if (xp > 1000) level = "Elite"; if (xp > 2000) level = "Legend";
     document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`;
     document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`;
 
     renderCalendar(logs);
+    renderPlayerTrendChart(logs);
+    renderTeamLeaderboard(logs);
 }
 
 function renderCalendar(logs) {
@@ -347,18 +395,17 @@ function showDayDetails(dateObj, logs) {
     const content = document.getElementById("dayModalContent");
     const title = document.getElementById("dayModalDate");
     const dateStr = dateObj.toDateString();
-    
     title.innerText = dateStr;
     const dayLogs = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dateStr);
     
     if(dayLogs.length === 0) {
-        content.innerHTML = "<p>No sessions recorded for this day.</p>";
+        content.innerHTML = "<p>No sessions recorded.</p>";
     } else {
         content.innerHTML = dayLogs.map(l => `
             <div class="day-session-item">
                 <div class="day-session-header">
-                    <span>${l.minutes} Mins</span>
-                    <span style="color:${l.signatureImg ? '#16a34a' : '#ccc'}">${l.signatureImg ? '✓ Verified' : 'Unsigned'}</span>
+                    <span>${l.player}</span>
+                    <span>${l.minutes}m (${l.signatureImg ? '✓' : 'X'})</span>
                 </div>
                 <div class="day-session-drills">${l.drillSummary ? l.drillSummary : l.skill}</div>
             </div>
@@ -366,9 +413,33 @@ function showDayDetails(dateObj, logs) {
     }
     modal.style.display = "block";
 }
-document.getElementById("closeDayModal").onclick = () => { document.getElementById("dayModal").style.display = "none"; };
 
-// COACH
+let playerTrendChart = null;
+function renderPlayerTrendChart(logs) {
+    const ctx = document.getElementById('playerTrendChart').getContext('2d');
+    if (playerTrendChart) playerTrendChart.destroy();
+    const labels = []; const dataPoints = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(new Date().getDate() - i); const dateStr = d.toDateString();
+        labels.push(d.toLocaleDateString('en-US', {weekday:'short'}));
+        const dayMins = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dateStr).reduce((sum, l) => sum + parseInt(l.minutes), 0);
+        dataPoints.push(dayMins);
+    }
+    playerTrendChart = new Chart(ctx, {
+        type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutes', data: dataPoints, backgroundColor: '#00263A', borderRadius: 4 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+    });
+}
+
+function renderTeamLeaderboard(logs) {
+    const tableBody = document.getElementById("teamLeaderboardTable").querySelector("tbody");
+    const playerStats = {};
+    logs.forEach(l => { const name = l.player || "Unknown"; if(!playerStats[name]) playerStats[name] = 0; playerStats[name] += parseInt(l.minutes); });
+    const sortedPlayers = Object.keys(playerStats).sort((a,b) => playerStats[b] - playerStats[a]).slice(0, 5);
+    tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td class="leader-rank">${i+1}</td><td class="leader-name">${p}</td><td class="leader-score">${playerStats[p]}m</td></tr>`).join("");
+}
+
+// COACH DASHBOARD
 async function loadCoachDashboard(isAdmin = false) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList");
@@ -394,16 +465,9 @@ async function loadCoachDashboard(isAdmin = false) {
         document.getElementById("coachTotalReps").innerText = allSessions.length;
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
         renderTeamChart(players);
-        listDiv.innerHTML = Object.keys(players).map(p => `
-            <div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
-                <b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span>
-            </div>`).join("");
+        listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;"><b>${p}</b> <span>${players[p].mins}m / ${players[p].count} Sessions</span></div>`).join("");
         document.getElementById("exportXlsxBtn").onclick = () => {
-            const formatted = allSessions.map(r => ({
-                Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-                Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes,
-                Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes
-            }));
+            const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes }));
             const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx");
         };
@@ -423,4 +487,3 @@ function renderTeamChart(playersData) {
     });
     teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
 }
-document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
