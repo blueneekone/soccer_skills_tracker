@@ -2,217 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aggies FC Tracker</title>
-<small id="loginStatus" style="color:red; display:block; margin-bottom:10px;">Loading...</small>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
-    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <style>
-        :root { --primary: #00263A; --accent: #C69214; --bg: #f8fafc; --text: #334155; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
-        
-        /* Layout */
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        /* Typography */
-        h1, h2, h3 { color: var(--primary); margin-top: 0; }
-        label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; margin-top: 15px; color: var(--primary); }
-        .helper-text { font-size: 0.8rem; color: #64748b; margin-top: -5px; margin-bottom: 10px; }
-
-        /* Inputs & Buttons */
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; }
-        input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
-        
-        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
-        button:active { opacity: 0.9; }
-        .btn-secondary { background: #e2e8f0; color: var(--text); }
-        .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; font-size: 12px; width: auto; margin:0; }
-        
-        /* Navigation */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; z-index: 100; }
-        .nav-item { text-align: center; color: #94a3b8; font-size: 12px; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
-
-        /* Modules */
-        .timer-display { font-size: 48px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--primary); margin: 10px 0; }
-        canvas { border: 2px dashed #cbd5e1; border-radius: 8px; background: #fcfcfc; width: 100%; cursor: crosshair; }
-        
-        /* Calendar & Lists */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
-        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; position: relative; }
-        .cal-day.has-log { background: #e0f2fe; color: #0284c7; font-weight: bold; cursor: pointer; }
-        
-        #rosterListEditor li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #f1f5f9; }
-        #rosterListEditor li:last-child { border-bottom: none; }
-
-        /* Utility */
-        .hidden { display: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; }
-    </style>
-</head>
-<body>
-
-    <div id="loginUI" class="container" style="text-align: center; margin-top: 50px;">
-        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Aggies FC ⚽</h1>
-        <p style="color: #64748b; margin-bottom: 40px;">Official Skills Tracker</p>
-        <button id="loginBtn">Sign in with Google</button>
-    </div>
-
-    <div id="appUI" class="container" style="display: none;">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin:0;">Dashboard</h2>
-                <small id="coachName" style="color: #64748b;">Loading...</small>
-            </div>
-            <button id="globalLogoutBtn" style="width: auto; padding: 5px 15px; font-size: 12px; background: #94a3b8;">Log Out</button>
-        </div>
-
-        <div id="viewTracker">
-            <div class="card">
-                <h3>1. Player Info</h3>
-                
-                <label>Team</label>
-                <select id="teamSelect"></select>
-
-                <div id="playerSelectArea" style="display:none; margin-top: 10px;">
-                    <label>Player</label>
-                    <select id="playerDropdown"></select>
-                </div>
-
-                <div id="manualNameArea" style="display:none; margin-top: 10px;">
-                    <label>Full Name</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="playerFirst" placeholder="First Name">
-                        <input type="text" id="playerLast" placeholder="Last Name">
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>2. Build Workout</h3>
-                <label>Select Activity</label>
-                <select id="unifiedSelect">
-                    <option value="" disabled selected>-- Choose Drill --</option>
-                </select>
-
-                <div id="drillInfoBox" style="display:none; background: #f0f9ff; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px solid #bae6fd;">
-                    <p id="drillDesc" style="margin:0; font-size: 14px; color: #0369a1;"></p>
-                    <button id="watchVideoBtn" class="btn-secondary" style="margin-top:5px; font-size:12px; padding:5px;">🎥 Watch Demo</button>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex:1;">
-                        <label id="labelSets">Sets</label>
-                        <input type="number" id="inputSets" placeholder="3">
-                    </div>
-                    <div style="flex:1;">
-                        <label id="labelReps">Reps</label>
-                        <input type="text" id="inputReps" placeholder="50">
-                    </div>
-                </div>
-                <button id="addToSessionBtn" class="btn-secondary" style="margin-top: 15px;">+ Add to Session</button>
-
-                <div style="margin-top: 20px;">
-                    <label>Session Stack:</label>
-                    <ul id="sessionList" style="padding:0; list-style:none;"></ul>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>3. Finish</h3>
-                <div class="timer-display" id="timerDisplay">00:00</div>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button id="startTimer" style="background:#16a34a;">Start</button>
-                    <button id="stopTimer" style="background:#ca8a04;">Stop</button>
-                    <button id="resetTimer" class="btn-secondary">Reset</button>
-                </div>
-
-                <label>Total Minutes</label>
-                <input type="number" id="totalMinutes" placeholder="e.g. 45">
-
-                <label>Effort Level</label>
-                <div id="outcome" style="display: flex; gap: 5px; margin-top: 5px;">
-                    <button class="outcome-btn active" data-val="success" style="flex:1; background:#dcfce7; color:#166534; border:1px solid #86efac;">Great</button>
-                    <button class="outcome-btn" data-val="ok" style="flex:1; background:#fef9c3; color:#854d0e; border:1px solid #fde047;">OK</button>
-                    <button class="outcome-btn" data-val="hard" style="flex:1; background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">Hard</button>
-                </div>
-
-                <label>Notes</label>
-                <textarea id="notes" placeholder="Any records broken?"></textarea>
-
-                <label>Signature <span style="color:red">*</span></label>
-                <canvas id="signatureCanvas"></canvas>
-                <button id="clearSigBtn" style="font-size: 12px; padding: 5px; width: auto; background: none; color: #64748b;">Clear Signature</button>
-
-                <button id="submitWorkoutBtn" style="margin-top: 20px; font-size: 18px;">✅ LOG WORKOUT</button>
-            </div>
-        </div>
-
-        <div id="viewStats" class="hidden">
-            <div class="card" style="background: linear-gradient(135deg, #00263A 0%, #0f172a 100%); color: white;">
-                <h3 style="color: #e2e8f0; margin-bottom: 5px;">My Career</h3>
-                <div style="display: flex; justify-content: space-between; align-items: end;">
-                    <div>
-                        <h1 id="statTotal" style="font-size: 3rem; margin: 0; color: white;">0</h1>
-                        <span style="font-size: 0.9rem; opacity: 0.8;">Sessions</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <h2 id="statTime" style="margin: 0; color: #C69214;">0</h2>
-                        <span style="font-size: 0.9rem; opacity: 0.8;">Minutes</span>
-                    </div>
-                </div>
-                <div style="margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
-                        <span id="userLevelDisplay">Rookie • 0 XP</span>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; overflow: hidden;">
-                        <div id="xpBar" style="width: 0%; background: #C69214; height: 100%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Calendar</h3>
-                <div class="calendar-grid" id="calendarDays"></div>
-            </div>
-
-            <div class="card">
-                <h3>7-Day Trend</h3>
-                <canvas id="playerTrendChart"></canvas>
-            </div>
-            
-            <div class="card">
-                <h3>Team Leaderboard</h3>
-                <table id="teamLeaderboardTable">
-                    <thead><tr><th>#</th><th>Name</th><th>Mins</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Aggies FC | Skills Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Aggies FC | Skills Tracker</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -222,10 +13,12 @@
     <style>
         :root {
             --aggie-blue: #00263A;
-            --aggie-gold: #BFAE5A; /* Optional accent */
+            --aggie-gold: #BFAE5A; 
             --bg-gray: #f8fafc;
             --text-dark: #1e293b;
             --white: #ffffff;
+            --danger: #ef4444;
+            --success: #10b981;
         }
 
         body {
@@ -233,206 +26,238 @@
             background-color: var(--bg-gray);
             margin: 0;
             padding: 0;
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 80px; 
             color: var(--text-dark);
         }
 
-        /* --- UTILS --- */
+        /* --- LAYOUT & CARDS --- */
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         .hidden { display: none !important; }
-        .section-title { color: var(--aggie-blue); margin-top: 0; font-size: 1.5rem; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; }
         
-        /* --- FORMS & INPUTS --- */
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #475569; font-size: 0.9rem; }
-        input, select, textarea {
-            width: 100%; padding: 12px; margin-bottom: 10px;
-            border: 1px solid #cbd5e1; border-radius: 8px;
-            font-size: 16px; box-sizing: border-box; /* Fixes padding issues */
+        .section-title { 
+            color: var(--aggie-blue); 
+            margin: 20px 0 10px 0; 
+            font-size: 1.5rem; 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
-        input:focus, select:focus { outline: 2px solid var(--aggie-blue); border-color: transparent; }
+
+        .card { 
+            background: var(--white); 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            margin-bottom: 20px; 
+            overflow: hidden; 
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            background-color: var(--aggie-blue);
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body { padding: 15px; }
+
+        /* --- FORMS --- */
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 16px; box-sizing: border-box; 
+            background: #f8fafc;
+        }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--aggie-blue); border-color: transparent; background: white; }
 
         /* --- BUTTONS --- */
         .primary-btn {
             background-color: var(--aggie-blue); color: white; border: none;
-            padding: 12px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold;
+            padding: 14px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold;
             cursor: pointer; width: 100%; transition: opacity 0.2s;
         }
         .primary-btn:active { opacity: 0.9; }
         .secondary-btn {
             background-color: #e2e8f0; color: var(--text-dark); border: none;
-            padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;
+            padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600;
         }
         .action-btn {
             background: var(--aggie-blue); color: white; border: none;
-            padding: 5px 10px; border-radius: 4px; cursor: pointer;
+            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
         }
-        .btn-delete { background: #ef4444; }
+        .btn-delete { background: var(--danger); }
 
-        /* --- LOGIN SCREEN --- */
-        #loginUI {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 90vh; text-align: center;
-        }
-        .login-logo { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin-bottom: 20px; }
+        /* --- LOGIN --- */
+        #loginUI { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; text-align: center; }
+        .login-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; }
 
-        /* --- NAVIGATION --- */
+        /* --- BOTTOM NAV --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--white); border-top: 1px solid #e2e8f0;
-            display: flex; justify-content: space-around; padding: 10px 0;
-            z-index: 1000;
+            display: flex; justify-content: space-around; padding: 12px 0;
+            z-index: 1000; padding-bottom: env(safe-area-inset-bottom);
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 11px; color: #64748b; text-decoration: none; cursor: pointer;
-        }
-        .nav-item.active { color: var(--aggie-blue); font-weight: bold; }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #94a3b8; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .nav-item.active { color: var(--aggie-blue); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
 
-        /* --- TRACKER SPECIFIC --- */
-        .timer-box { font-size: 2rem; font-weight: bold; text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; }
-        .timer-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        
-        .session-stack { list-style: none; padding: 0; margin: 10px 0; }
-        .session-stack li { background: #f1f5f9; margin-bottom: 5px; border-radius: 6px; }
+        /* --- MODULES --- */
+        .timer-box { font-size: 3rem; font-weight: 800; text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; color: var(--aggie-blue); }
+        .session-stack { list-style: none; padding: 0; margin: 0; }
+        .session-stack li { background: #f1f5f9; margin-bottom: 8px; border-radius: 6px; padding: 10px; border-left: 4px solid var(--aggie-blue); }
 
-        #outcome { display: flex; gap: 10px; margin-bottom: 10px; }
-        .outcome-btn { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; text-align: center; }
+        /* EFFORT BUTTONS */
+        #outcome { display: flex; gap: 10px; margin-bottom: 15px; }
+        .outcome-btn { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; text-align: center; font-weight: bold; color: #64748b; }
         .outcome-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
 
         canvas#signatureCanvas { border: 2px dashed #cbd5e1; border-radius: 8px; width: 100%; height: 150px; background: #fcfcfc; touch-action: none; }
 
-        /* --- STATS SPECIFIC --- */
-        .xp-bar-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 5px; }
-        .xp-bar-fill { height: 100%; background: var(--aggie-blue); width: 0%; transition: width 0.5s ease; }
+        /* --- STATS & CALENDAR --- */
+        .xp-bar-container { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        .xp-bar-fill { height: 100%; background: var(--aggie-gold); width: 0%; transition: width 0.5s ease; }
         
-        /* Calendar */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
-        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; border-radius: 4px; background: white; border: 1px solid #f1f5f9; position: relative; }
-        .cal-day.today { border: 1px solid var(--aggie-blue); font-weight: bold; }
-        .cal-day.has-log { background: #e0f2fe; cursor: pointer; }
-        .cal-dot { width: 4px; height: 4px; background: var(--aggie-blue); border-radius: 50%; margin-top: 2px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
+        .cal-day { 
+            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            font-size: 12px; border-radius: 6px; background: #f8fafc; position: relative; border: 1px solid #e2e8f0;
+        }
+        .cal-day.today { border: 2px solid var(--aggie-blue); font-weight: bold; background: white; }
+        .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; border-color: #93c5fd; }
+        .cal-dot { width: 5px; height: 5px; background: #1e40af; border-radius: 50%; margin-top: 2px; }
+        
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .admin-table th { text-align: left; padding: 10px; background: #f1f5f9; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        .admin-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
 
         /* --- MODAL --- */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 12px; width: 85%; max-width: 400px; position: relative; }
-        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #666; }
-
-        /* --- ADMIN TABLES --- */
-        .admin-table th { background: #f1f5f9; text-align: left; font-size: 0.85rem; padding: 8px; }
-        .admin-table td { border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; padding: 8px; }
-        .log-tab { background: #f1f5f9; border: 1px solid #ccc; border-bottom: none; border-radius: 4px 4px 0 0; }
-        .log-tab.active { background: white; border-bottom: 1px solid white; font-weight: bold; }
-        .log-entry { font-size: 11px; padding: 4px 0; border-bottom: 1px dotted #eee; }
-        .log-sec { color: #dc2626; font-weight: bold; }
-        .log-type { color: #2563eb; font-weight: bold; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(2px); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 0; border-radius: 12px; width: 90%; max-width: 500px; position: relative; overflow: hidden; }
+        .modal-header { background: var(--aggie-blue); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { color: white; font-size: 24px; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
 
     </style>
 </head>
 <body>
 
     <div id="loginUI" class="container">
-        <div class="login-logo"></div> <h1 style="color:var(--aggie-blue);">Aggies FC</h1>
-        <p style="color:#64748b;">Skills & Fitness Tracker</p>
-        <button id="loginBtn" class="primary-btn" style="max-width:250px;">
-            <span style="margin-right:8px">G</span> Sign in with Google
+        <div class="login-circle">⚽</div> 
+        <h1 style="color:var(--aggie-blue); margin-bottom: 5px;">Aggies FC</h1>
+        <p style="color:#64748b; margin-top: 0;">Skills & Fitness Tracker</p>
+        <button id="loginBtn" class="primary-btn" style="max-width:280px; margin-top: 20px;">
+            Sign in with Google
         </button>
     </div>
 
     <div id="appUI" class="container" style="display:none;">
         
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #e2e8f0;">
             <div>
-                <h3 style="margin:0; color:var(--aggie-blue);">Hello!</h3>
+                <h2 style="margin:0; color:var(--aggie-blue); font-size: 1.2rem;">Dashboard</h2>
                 <span id="coachName" style="font-size:12px; color:#64748b;">Loading...</span>
             </div>
-            <button id="globalLogoutBtn" class="secondary-btn" style="font-size:11px;">Sign Out</button>
+            <button id="globalLogoutBtn" class="secondary-btn" style="font-size:11px; padding: 6px 12px;">Sign Out</button>
         </div>
 
         <div id="viewTracker" class="view-section">
-            <h2 class="section-title">Track Workout</h2>
-
+            
             <div class="card">
-                <label>My Team:</label>
-                <select id="teamSelect">
-                    <option value="" disabled selected>Select Team...</option>
-                </select>
-
-                <div id="playerSelectArea" style="display:none;">
-                    <label>Who are you?</label>
-                    <select id="playerDropdown">
-                        <option value="" disabled selected>Select Player...</option>
+                <div class="card-header">1. Player Identity</div>
+                <div class="card-body">
+                    <label>Team Selection</label>
+                    <select id="teamSelect">
+                        <option value="" disabled selected>Loading Teams...</option>
                     </select>
-                </div>
 
-                <div id="manualNameArea" style="display:none; margin-top:10px; border-top:1px dashed #ccc; padding-top:10px;">
-                    <label style="color:#d97706;">New / Manual Entry:</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="playerFirst" placeholder="First Name">
-                        <input type="text" id="playerLast" placeholder="Last Name">
+                    <div id="playerSelectArea" style="display:none;">
+                        <label>Select Player</label>
+                        <select id="playerDropdown">
+                            <option value="" disabled selected>Select Player...</option>
+                        </select>
+                    </div>
+
+                    <div id="manualNameArea" style="display:none; margin-top:15px; padding-top:15px; border-top:1px dashed #cbd5e1;">
+                        <label style="color:#d97706;">Manual Entry (If not on roster)</label>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="playerFirst" placeholder="First Name">
+                            <input type="text" id="playerLast" placeholder="Last Name">
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <label>Activity / Drill:</label>
-                <select id="unifiedSelect">
-                    <option value="" disabled selected>Select Activity...</option>
+                <div class="card-header">2. Build Session</div>
+                <div class="card-body">
+                    <label>Select Activity</label>
+                    <select id="unifiedSelect">
+                        <option value="" disabled selected>Choose Drill...</option>
                     </select>
-                
-                <div id="drillInfoBox" style="display:none; background:#f0f9ff; padding:10px; border-radius:6px; margin-bottom:10px; border-left: 3px solid #0ea5e9;">
-                    <p id="drillDesc" style="margin:0; font-size:13px; color:#0c4a6e;"></p>
-                    <button id="watchVideoBtn" style="margin-top:5px; background:none; border:none; color:#0284c7; font-weight:bold; cursor:pointer; font-size:12px;">▶ Watch Demo Video</button>
-                </div>
-
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1;">
-                        <label id="labelSets">Sets</label>
-                        <input type="number" id="inputSets" placeholder="3">
+                    
+                    <div id="drillInfoBox" style="display:none; background:#f0f9ff; padding:12px; border-radius:6px; margin-bottom:15px; border-left: 4px solid #0ea5e9;">
+                        <p id="drillDesc" style="margin:0; font-size:14px; color:#0c4a6e; line-height: 1.4;"></p>
+                        <button id="watchVideoBtn" style="margin-top:8px; background:white; border:1px solid #bae6fd; color:#0284c7; padding: 5px 10px; border-radius: 4px; font-weight:bold; cursor:pointer; font-size:12px;">🎥 Watch Demo</button>
                     </div>
-                    <div style="flex:1;">
-                        <label id="labelReps">Reps</label>
-                        <input type="number" id="inputReps" placeholder="20">
+
+                    <div style="display:flex; gap:15px;">
+                        <div style="flex:1;">
+                            <label id="labelSets">Sets</label>
+                            <input type="number" id="inputSets" placeholder="3">
+                        </div>
+                        <div style="flex:1;">
+                            <label id="labelReps">Reps</label>
+                            <input type="number" id="inputReps" placeholder="20">
+                        </div>
                     </div>
-                </div>
 
-                <button id="addToSessionBtn" class="secondary-btn" style="width:100%; margin-top:5px;">+ Add to Session</button>
+                    <button id="addToSessionBtn" class="secondary-btn" style="width:100%; margin-top:5px;">+ Add Drill to Stack</button>
 
-                <div style="margin-top:15px;">
-                    <label>Current Session:</label>
-                    <ul id="sessionList" class="session-stack">
-                        <li style="text-align:center; padding:10px; color:#94a3b8;">No activities added yet.</li>
-                    </ul>
+                    <div style="margin-top:20px;">
+                        <label>Session Stack</label>
+                        <ul id="sessionList" class="session-stack">
+                            <li style="text-align:center; padding:15px; color:#94a3b8; background: #f8fafc; border:none; border-left:none;">No drills added yet.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <label>Workout Duration</label>
-                <div class="timer-box" id="timerDisplay">00:00</div>
-                <div class="timer-controls">
-                    <button id="startTimer" class="secondary-btn" style="background:#dcfce7; color:#166534;">Start</button>
-                    <button id="stopTimer" class="secondary-btn" style="background:#fee2e2; color:#991b1b;">Stop</button>
-                    <button id="resetTimer" class="secondary-btn">Reset</button>
-                </div>
-                <input type="number" id="totalMinutes" placeholder="Total Minutes (if not using timer)">
+                <div class="card-header">3. Complete & Sign</div>
+                <div class="card-body">
+                    <div class="timer-box" id="timerDisplay">00:00</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                        <button id="startTimer" class="secondary-btn" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">Start</button>
+                        <button id="stopTimer" class="secondary-btn" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">Stop</button>
+                        <button id="resetTimer" class="secondary-btn">Reset</button>
+                    </div>
 
-                <label style="margin-top:15px;">How did it go?</label>
-                <div id="outcome">
-                    <div class="outcome-btn active" data-val="success">Great!</div>
-                    <div class="outcome-btn" data-val="struggled" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Hard</div>
-                    <div class="outcome-btn" data-val="injured" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Injured</div>
-                </div>
-                
-                <textarea id="notes" placeholder="Optional notes for coach..." rows="2"></textarea>
+                    <label>Total Minutes</label>
+                    <input type="number" id="totalMinutes" placeholder="e.g. 45">
 
-                <label>Signature (Required)</label>
-                <div style="position:relative;">
-                    <canvas id="signatureCanvas"></canvas>
-                    <button id="clearSigBtn" style="position:absolute; top:5px; right:5px; background:rgba(255,255,255,0.8); border:1px solid #ccc; font-size:10px; padding:2px 5px; border-radius:4px;">Clear</button>
-                </div>
+                    <label>Effort Level</label>
+                    <div id="outcome">
+                        <div class="outcome-btn" data-val="light" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Light</div>
+                        <div class="outcome-btn active" data-val="moderate" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Moderate</div>
+                        <div class="outcome-btn" data-val="hard" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Hard</div>
+                    </div>
+                    
+                    <textarea id="notes" placeholder="Notes for coach..." rows="2"></textarea>
 
-                <button id="submitWorkoutBtn" class="primary-btn" style="margin-top:20px;">✅ Log Workout</button>
+                    <label>Player Signature <span style="color:red">*</span></label>
+                    <div style="position:relative; margin-bottom: 20px;">
+                        <canvas id="signatureCanvas"></canvas>
+                        <button id="clearSigBtn" style="position:absolute; top:10px; right:10px; background:white; border:1px solid #cbd5e1; font-size:10px; padding:4px 8px; border-radius:4px; cursor:pointer;">Clear</button>
+                    </div>
+
+                    <button id="submitWorkoutBtn" class="primary-btn">✅ Log Workout</button>
+                </div>
             </div>
         </div>
 
@@ -440,44 +265,52 @@
         <div id="viewStats" class="view-section" style="display:none;">
             <h2 class="section-title">My Stats</h2>
             
-            <div class="card" style="background: linear-gradient(135deg, #00263A 0%, #0f364d 100%); color:white;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                    <div>
-                        <span style="font-size:12px; opacity:0.8;">Current Level</span>
-                        <div id="userLevelDisplay" style="font-size:1.5rem; font-weight:bold;">Rookie</div>
+            <div class="card" style="background: linear-gradient(135deg, #00263A 0%, #1e40af 100%); color:white; border:none;">
+                <div class="card-body">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div>
+                            <span style="font-size:12px; opacity:0.8; text-transform:uppercase;">Current Level</span>
+                            <div id="userLevelDisplay" style="font-size:1.8rem; font-weight:800; color: var(--aggie-gold);">Rookie</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span id="statTime" style="font-size:2rem; font-weight:800;">0</span>
+                            <span style="font-size:12px; display:block;">Total Minutes</span>
+                        </div>
                     </div>
-                    <div style="text-align:right;">
-                        <span id="statTime" style="font-size:1.8rem; font-weight:bold;">0</span>
-                        <span style="font-size:12px;"> mins</span>
+                    <div class="xp-bar-container">
+                        <div id="xpBar" class="xp-bar-fill"></div>
                     </div>
-                </div>
-                <div class="xp-bar-container">
-                    <div id="xpBar" class="xp-bar-fill"></div>
+                    <div style="margin-top:5px; font-size:10px; text-align:right; opacity:0.8;">XP Progress</div>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content:space-between;">
-                    <label id="calMonthYear" style="margin:0;">January 2026</label>
-                    <span style="font-size:11px; color:#666;">Total: <b id="statTotal">0</b> sessions</span>
+                <div class="card-header">
+                    <span id="calMonthYear">Calendar</span>
+                    <span style="font-size:11px; font-weight:normal; opacity:0.9;">Total: <b id="statTotal">0</b></span>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:10px; color:#666; margin-top:10px;">
-                    <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
-                </div>
-                <div id="calendarDays" class="calendar-grid">
+                <div class="card-body">
+                    <div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:10px; color:#64748b; margin-bottom:5px; font-weight:bold;">
+                        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
                     </div>
+                    <div id="calendarDays" class="calendar-grid"></div>
+                </div>
             </div>
 
             <div class="card">
-                <label>Activity Last 7 Days</label>
-                <canvas id="playerTrendChart" height="200"></canvas>
+                <div class="card-header">Activity Trend (7 Days)</div>
+                <div class="card-body">
+                    <canvas id="playerTrendChart" height="200"></canvas>
+                </div>
             </div>
 
             <div class="card">
-                <label>Top Teammates</label>
-                <table id="teamLeaderboardTable" style="width:100%; font-size:13px; border-collapse:collapse; margin-top:5px;">
-                    <tbody></tbody>
-                </table>
+                <div class="card-header">Team Leaderboard</div>
+                <div class="card-body" style="padding:0;">
+                    <table id="teamLeaderboardTable" class="admin-table">
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -485,34 +318,58 @@
         <div id="viewCoach" class="view-section" style="display:none;">
             <h2 class="section-title">Coach Dashboard</h2>
             
-            <div id="adminControls" style="display:none; margin-bottom: 15px; padding: 15px; background: #e2e8f0; border-radius: 8px;">
-                <label style="font-weight:bold; color:#00263A;">Select Team to View/Manage:</label>
-                <select id="adminTeamSelect" style="background:white; margin-bottom:0;">
+            <div id="adminControls" style="display:none; margin-bottom: 20px;">
+                <label>Viewing Team:</label>
+                <select id="adminTeamSelect" style="background:white; border: 2px solid var(--aggie-blue);">
                     </select>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                <div class="card" style="text-align:center; padding:10px; margin:0;">
-                    <h3 id="coachActivePlayers" style="margin:0; font-size:1.8rem; color:var(--aggie-blue);">0</h3>
-                    <p style="margin:0; font-size:12px; color:#666;">Active Players</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                <div class="card" style="margin:0; text-align:center;">
+                    <div class="card-body">
+                        <h3 id="coachActivePlayers" style="margin:0; font-size:2rem; color:var(--aggie-blue);">0</h3>
+                        <p style="margin:0; font-size:11px; color:#64748b; text-transform:uppercase;">Active Players</p>
+                    </div>
                 </div>
-                <div class="card" style="text-align:center; padding:10px; margin:0;">
-                    <h3 id="coachTotalReps" style="margin:0; font-size:1.8rem; color:var(--aggie-blue);">0</h3>
-                    <p style="margin:0; font-size:12px; color:#666;">Total Sessions</p>
+                <div class="card" style="margin:0; text-align:center;">
+                    <div class="card-body">
+                        <h3 id="coachTotalReps" style="margin:0; font-size:2rem; color:var(--aggie-blue);">0</h3>
+                        <p style="margin:0; font-size:11px; color:#64748b; text-transform:uppercase;">Total Logs</p>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <canvas id="teamChart"></canvas>
+                <div class="card-header">Team Engagement</div>
+                <div class="card-body">
+                    <canvas id="teamChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card" style="border: 1px solid var(--aggie-blue);">
+                <div class="card-header">📂 Upload Roster</div>
+                <div class="card-body">
+                    <p style="font-size:13px; color:#64748b; margin-top:0;">Select a team in the dropdown above, then upload their PDF roster here.</p>
+                    
+                    <div id="rosterUploadStep1">
+                        <input type="file" id="rosterPdfInput" accept="application/pdf">
+                    </div>
+
+                    <div id="rosterReviewArea" style="display:none;">
+                        <label>Extracted Names</label>
+                        <textarea id="rosterTextRaw" rows="6" style="font-family:monospace; font-size:12px;"></textarea>
+                        <button id="saveParsedRosterBtn" class="primary-btn">Save to Selected Team</button>
+                        <button onclick="document.getElementById('rosterReviewArea').style.display='none'; document.getElementById('rosterUploadStep1').style.display='block';" class="secondary-btn" style="width:100%; margin-top:10px;">Cancel</button>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-top:20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0; color:#00263A;">Team Roster</h3>
-                    <button id="exportXlsxBtn" class="action-btn" style="background:#107c41; font-size:12px;">Export Excel</button>
+            <div class="card">
+                <div class="card-header">
+                    <span>Player Roster</span>
+                    <button id="exportXlsxBtn" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; font-size:10px; padding:4px 8px; border-radius:4px; cursor:pointer;">Export Excel</button>
                 </div>
-                <div id="coachPlayerList" style="border:1px solid #ccc; border-radius:6px; overflow:hidden;">
-                    </div>
+                <div id="coachPlayerList" style="background:white;"></div>
             </div>
         </div>
 
@@ -520,72 +377,78 @@
         <div id="viewAdmin" class="view-section" style="display:none;">
             <h2 class="section-title">Director Controls</h2>
 
-            <div class="card" style="border:1px solid #00263A;">
-                <h3 style="color:#00263A; margin-top:0;">📂 Upload PDF Roster</h3>
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">Select a team in the "Coach Dashboard" tab or using the dropdown above, then upload their PDF roster.</p>
-                
-                <div id="rosterUploadStep1">
-                    <input type="file" id="rosterPdfInput" accept="application/pdf">
-                </div>
-
-                <div id="rosterReviewArea" style="display:none;">
-                    <label>Review Extracted Names:</label>
-                    <textarea id="rosterTextRaw" rows="5" style="width:100%; font-family:monospace;"></textarea>
-                    <button id="saveParsedRosterBtn" class="action-btn" style="width:100%; margin-top:5px;">Save to Selected Team</button>
-                    <button onclick="document.getElementById('rosterReviewArea').style.display='none'; document.getElementById('rosterUploadStep1').style.display='block';" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; margin-top:5px; width:100%;">Cancel</button>
-                </div>
-            </div>
-
-            <div style="margin-bottom:20px;">
-                <div class="section-header" style="background:#00263A; color:white; padding:10px; border-radius:6px 6px 0 0; font-weight:bold;">Manage Teams</div>
-                <table id="teamTable" class="admin-table" style="width:100%; border-collapse:collapse; border:1px solid #ccc; border-top:none;">
-                    <thead><tr style="background:#f1f5f9;"><th style="padding:8px;">ID</th><th>Name</th><th>Coach</th><th>Act</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-                <div style="padding:10px; background:#f8fafc; border:1px solid #ccc; border-top:none; display:flex; gap:5px;">
-                    <input type="text" id="newTeamId" placeholder="ID" style="width:25%; margin:0;">
-                    <input type="text" id="newTeamName" placeholder="Name" style="width:30%; margin:0;">
-                    <input type="text" id="newCoachEmail" placeholder="Coach Email" style="width:30%; margin:0;">
-                    <button id="addTeamBtn" class="action-btn small">Add</button>
-                </div>
-            </div>
-
-            <div style="margin-bottom:20px;">
-                <div class="section-header" style="background:#00263A; color:white; padding:10px; border-radius:6px 6px 0 0; font-weight:bold;">Manage Admins</div>
-                <table id="adminTable" class="admin-table" style="width:100%; border-collapse:collapse; border:1px solid #ccc; border-top:none;">
-                    <thead><tr style="background:#f1f5f9;"><th style="padding:8px;">Email</th><th>Action</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-                <div style="padding:10px; background:#f8fafc; border:1px solid #ccc; border-top:none; display:flex; gap:5px;">
-                    <input type="text" id="newAdminEmail" placeholder="New Admin Email" style="flex:1; margin:0;">
-                    <button id="addAdminBtn" class="action-btn small">Add</button>
-                </div>
-            </div>
-
-            <div>
-                <div style="display:flex; gap:2px;">
-                    <button id="tabSysLogs" class="log-tab active" style="padding:6px 12px; cursor:pointer;">System</button>
-                    <button id="tabSecLogs" class="log-tab" style="padding:6px 12px; cursor:pointer;">Security</button>
-                    <button id="runSecurityAuditBtn" style="margin-left:auto; font-size:10px;">Audit</button>
-                </div>
-                <div id="logContainer" style="height:200px; overflow-y:auto; border:1px solid #ccc; background:white; padding:5px;">
+            <div class="card">
+                <div class="card-header">Manage Teams</div>
+                <div style="padding:0;">
+                    <table id="teamTable" class="admin-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Coach</th><th></th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                    <div style="padding:15px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+                        <label>Add New Team</label>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <input type="text" id="newTeamId" placeholder="ID (e.g. u12-boys)" style="flex:1; margin:0;">
+                            <input type="text" id="newTeamName" placeholder="Name (e.g. U12 Boys)" style="flex:1; margin:0;">
+                        </div>
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <input type="text" id="newCoachEmail" placeholder="Coach Email" style="flex:2; margin:0;">
+                            <button id="addTeamBtn" class="action-btn" style="flex:1;">Add</button>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Manage Admins</div>
+                <div>
+                    <table id="adminTable" class="admin-table">
+                        <thead><tr><th>Email</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                    <div style="padding:15px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; gap:5px;">
+                        <input type="text" id="newAdminEmail" placeholder="New Admin Email" style="flex:1; margin:0;">
+                        <button id="addAdminBtn" class="action-btn">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>System Logs</span>
+                    <button id="generateTestLogBtn" style="font-size:9px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:2px 6px; border-radius:3px; cursor:pointer; margin-right:5px;">+ Test</button>
+                    <button id="runSecurityAuditBtn" style="font-size:9px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:2px 6px; border-radius:3px; cursor:pointer;">Audit</button>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div style="display:flex; border-bottom:1px solid #e2e8f0;">
+                        <button id="tabSysLogs" class="log-tab active" style="flex:1; background:white; border:none; padding:10px; font-weight:bold; color:var(--aggie-blue); border-bottom:2px solid var(--aggie-blue);">System</button>
+                        <button id="tabSecLogs" class="log-tab" style="flex:1; background:#f8fafc; border:none; padding:10px; color:#64748b;">Security</button>
+                    </div>
+                    <div id="logContainer" style="height:200px; overflow-y:auto; padding:10px; font-size:11px;"></div>
+                </div>
             </div>
         </div>
 
-    </div> <div id="videoModal" class="modal">
+    </div> 
+
+    <div id="videoModal" class="modal">
         <div class="modal-content">
-            <span id="closeModal" class="close-btn">&times;</span>
-            <h3 style="margin-top:0;">Drill Demo</h3>
-            <iframe id="videoPlayer" width="100%" height="200" src="" frameborder="0" allowfullscreen></iframe>
+            <div class="modal-header">
+                <span>Drill Demo</span>
+                <span id="closeModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body" style="padding:0; background:black; height:300px;">
+                <iframe id="videoPlayer" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
         </div>
     </div>
 
     <div id="dayModal" class="modal">
         <div class="modal-content">
-            <span id="closeDayModal" class="close-btn">&times;</span>
-            <h3 id="dayModalDate" style="margin-top:0; color:var(--aggie-blue);">Date</h3>
-            <div id="dayModalContent" style="max-height:300px; overflow-y:auto;"></div>
+            <div class="modal-header">
+                <span id="dayModalDate">Date</span>
+                <span id="closeDayModal" class="close-btn">&times;</span>
+            </div>
+            <div id="dayModalContent" class="modal-body"></div>
         </div>
     </div>
 
@@ -613,86 +476,12 @@
 
     <script>
         const canvas = document.getElementById("signatureCanvas");
-        const ctx = canvas.getContext("2d");
-        // Handled in app.js, but fallback resizing here
         window.onload = function() {
-            canvas.width = canvas.parentElement.offsetWidth;
-            canvas.height = 150;
+            if(canvas.parentElement) {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = 150;
+            }
         }
-    </script>
-</body>
-</html>
-            <div class="card">
-                <h3>Activity Log</h3>
-                <button id="exportXlsxBtn" class="btn-secondary" style="margin-bottom: 15px;">📥 Export to Excel</button>
-                <div id="coachPlayerList"></div>
-            </div>
-        </div>
-
-        <div id="viewAdmin" class="hidden">
-            <div class="card">
-                <h3>Manage Teams</h3>
-                <input type="text" id="newTeamId" placeholder="Team ID (e.g. 2012-girls-red)">
-                <input type="text" id="newTeamName" placeholder="Display Name (e.g. 2012 Girls Red)">
-                <input type="text" id="newCoachEmail" placeholder="Coach Email">
-                <button id="addTeamBtn">Save Team</button>
-                
-                <table id="teamTable" style="margin-top:15px;"><thead><tr><th>ID</th><th>Coach</th><th></th></tr></thead><tbody></tbody></table>
-            </div>
-
-            <div class="card">
-                <h3>Manage Admins</h3>
-                <input type="text" id="newAdminEmail" placeholder="New Admin Email">
-                <button id="addAdminBtn">Add Admin</button>
-                <table id="adminTable" style="margin-top: 10px;"><tbody></tbody></table>
-            </div>
-        </div>
-        
-        <div style="height: 60px;"></div>
-    </div>
-
-    <div id="bottomNav" class="bottom-nav" style="display: none;">
-        <div class="nav-item active" id="navTrack">
-            <span class="nav-icon">⏱</span>Track
-        </div>
-        <div class="nav-item" id="navStats">
-            <span class="nav-icon">📊</span>Stats
-        </div>
-        <div class="nav-item" id="navCoach" style="display: none;">
-            <span class="nav-icon">📋</span>Coach
-        </div>
-        <div class="nav-item" id="navAdmin" style="display: none;">
-            <span class="nav-icon">⚙️</span>Admin
-        </div>
-    </div>
-
-    <div id="videoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200;">
-        <div style="position: relative; width: 90%; max-width: 600px; margin: 10% auto; background: black; padding: 10px;">
-            <span id="closeModal" style="position: absolute; top: -30px; right: 0; color: white; font-size: 30px; cursor: pointer;">&times;</span>
-            <iframe id="videoPlayer" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <div id="dayModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200;">
-        <div style="background: white; width: 85%; margin: 20% auto; padding: 20px; border-radius: 12px; max-height: 70vh; overflow-y: auto;">
-            <h3 id="dayModalDate">Date</h3>
-            <div id="dayModalContent"></div>
-            <button id="closeDayModal" class="btn-secondary">Close</button>
-        </div>
-    </div>
-
-    <script type="module" src="app.js"></script>
-
-    <script>
-        // Toggle Logic for Outcome Buttons
-        document.querySelectorAll('.outcome-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.outcome-btn').forEach(b => {
-                    b.style.opacity = '0.5'; b.classList.remove('active');
-                });
-                e.target.style.opacity = '1'; e.target.classList.add('active');
-            });
-        });
     </script>
 </body>
 </html>
