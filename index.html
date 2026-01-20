@@ -60,7 +60,7 @@
         }
         .card-body { padding: 15px; }
 
-        /* --- INPUTS --- */
+        /* --- INPUTS & BUTTONS --- */
         label { display: block; margin-bottom: 5px; font-weight: 700; color: #475569; font-size: 0.8rem; text-transform: uppercase; }
         input, select, textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
@@ -68,7 +68,6 @@
             box-sizing: border-box; background: #fff;
         }
         
-        /* --- BUTTONS --- */
         .primary-btn {
             background-color: var(--aggie-blue); color: white; border: none;
             padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold;
@@ -120,8 +119,8 @@
 
         /* --- MODAL --- */
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(2px); }
-        .modal-content { background-color: white; margin: 20% auto; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; }
-        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        .modal-content { background-color: white; margin: 10% auto; width: 95%; max-width: 500px; border-radius: 12px; overflow: hidden; height: auto; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-body { padding: 0; flex: 1; overflow-y: auto; background: black; }
         
         /* ADMIN */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -129,6 +128,11 @@
         .admin-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
         .log-tab { padding: 8px; flex: 1; text-align: center; cursor: pointer; font-size: 11px; background: #f1f5f9; border: 1px solid #e2e8f0; }
         .log-tab:hover { background: #e2e8f0; }
+        
+        /* RANK COLORS */
+        .rank-1 td:nth-child(1) { color: #d97706; font-weight: 900; font-size: 1.1em; }
+        .rank-2 td:nth-child(1) { color: #94a3b8; font-weight: 900; font-size: 1.1em; }
+        .rank-3 td:nth-child(1) { color: #b45309; font-weight: 900; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -290,6 +294,7 @@
 
         <div id="viewCoach" class="view-section" style="display:none;">
             <div id="adminControls" style="margin-bottom:15px; display:none;">
+                <label>Viewing Team:</label>
                 <select id="adminTeamSelect" style="width:100%; border:2px solid var(--aggie-blue); font-weight:bold;"></select>
             </div>
 
@@ -314,9 +319,9 @@
             </div>
 
             <div class="card">
-                <div class="card-header">SESSION HISTORY <button id="exportXlsxBtn" class="action-btn">Export Data</button></div>
+                <div class="card-header">WORKOUT HISTORY <button id="exportXlsxBtn" class="action-btn">Export Log</button></div>
                 <div class="card-body">
-                    <p style="font-size:12px; color:#666;">Export all workout logs for the selected team.</p>
+                    <p style="font-size:12px; color:#666;">Download all workout data for this team as an Excel file.</p>
                 </div>
             </div>
 
@@ -392,9 +397,9 @@
 
     </div>
 
-    <div id="videoModal" class="modal"><div class="modal-content"><div class="card-header"><span>Demo</span><span class="close-btn" id="closeModal">×</span></div><div class="modal-body" style="padding:0; background:black; height:250px;"><iframe id="videoPlayer" width="100%" height="100%" frameborder="0"></iframe></div></div></div>
+    <div id="videoModal" class="modal"><div class="modal-content" style="height:300px; max-height:none;"><div class="card-header"><span>Demo</span><span class="close-btn" id="closeModal">×</span></div><div class="modal-body" style="padding:0; background:black; height:100%;"><iframe id="videoPlayer" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div></div>
     
-    <div id="dayModal" class="modal"><div class="modal-content"><div class="card-header"><span id="dayModalDate">Date</span><span class="close-btn" id="closeDayModal">×</span></div><div class="modal-body" id="dayModalContent"></div></div></div>
+    <div id="dayModal" class="modal"><div class="modal-content"><div class="card-header"><span id="dayModalDate">Date</span><span class="close-btn" id="closeDayModal">×</span></div><div class="modal-body" id="dayModalContent" style="background:white; padding:15px;"></div></div></div>
 
     <div id="bottomNav" class="bottom-nav" style="display:none;">
         <div class="nav-item active" id="navTrack"><span class="nav-icon">⚽</span>Track</div>

@@ -28,11 +28,11 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let currentCoachTeamId = null;
 let teamChart = null;
-let allSessionsCache = []; // For Export
+let allSessionsCache = [];
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v7 Loaded");
+    console.log("App v8 Loaded");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -147,14 +147,17 @@ onAuthStateChanged(auth, async (user) => {
         const isDirector = globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
         const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
         
-        if(isDirector || myTeams.length > 0) {
-            document.getElementById("navCoach").style.display='flex';
-            initCoachDropdown(isDirector, myTeams);
-        }
+        // Director Logic: Show all teams
         if(isDirector) {
+            document.getElementById("navCoach").style.display='flex';
             document.getElementById("navAdmin").style.display='flex';
+            initCoachDropdown(true, globalTeams); 
             renderAdminTables();
+        } else if (myTeams.length > 0) {
+            document.getElementById("navCoach").style.display='flex';
+            initCoachDropdown(false, myTeams);
         }
+        
     } else {
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
@@ -301,10 +304,16 @@ function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
     document.getElementById("adminControls").style.display = 'block';
     sel.innerHTML = "";
-    const list = isDirector ? globalTeams : teams;
-    list.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
-    sel.onchange = () => loadCoachDashboard(isDirector, list);
-    if(list.length > 0) { sel.value = list[0].id; loadCoachDashboard(isDirector, list); }
+    
+    // Director sees ALL teams; Coach sees their own
+    teams.forEach(t => { 
+        const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); 
+    });
+    
+    sel.onchange = () => loadCoachDashboard(isDirector, teams);
+    
+    // Auto-select first
+    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
 }
 
 async function loadCoachDashboard(isDirector, teams) {
@@ -321,26 +330,41 @@ async function loadCoachDashboard(isDirector, teams) {
     snap.forEach(doc => {
         const d = doc.data();
         allSessionsCache.push(d); // Store for export
-        if(!players[d.player]) players[d.player] = 0;
-        players[d.player] += Number(d.minutes);
+        if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
+        players[d.player].mins += Number(d.minutes);
+        // Find latest date
+        const logDate = d.timestamp.toDate();
+        if(!players[d.player].lastActive || logDate > players[d.player].lastActive) {
+            players[d.player].lastActive = logDate;
+        }
         count++;
     });
     
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
     document.getElementById("coachTotalReps").innerText = count;
     
-    // Roster rendering
+    // Roster rendering (Fetch uploaded list + Merge stats)
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterHtml = "";
+    
     if(rosterSnap.exists() && rosterSnap.data().players) {
-        rosterHtml = rosterSnap.data().players.map(p => `
+        rosterHtml = rosterSnap.data().players.map(p => {
+            const stats = players[p] || { mins: 0, lastActive: null };
+            const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Never";
+            return `
             <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <div><b>${p}</b> <span style="font-size:11px; color:#666;">(${players[p]||0} mins)</span></div>
-                <button class="delete-btn" onclick="window.deletePlayer('${p}')">Remove</button>
-            </div>
-        `).join("");
+                <div>
+                    <b>${p}</b> 
+                    <div style="font-size:10px; color:#666;">Last Active: ${lastDate}</div>
+                </div>
+                <div>
+                    <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:10px;">${stats.mins}m</span>
+                    <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
+                </div>
+            </div>`;
+        }).join("");
     } else {
-        rosterHtml = "<div style='padding:10px; color:#999;'>No roster loaded.</div>";
+        rosterHtml = "<div style='padding:10px; color:#999;'>No roster loaded. Use Upload or Add Manually.</div>";
     }
     document.getElementById("coachPlayerList").innerHTML = rosterHtml;
 }
@@ -385,7 +409,6 @@ async function parsePDF(e) {
         }
         const words = txt.split(" ").filter(w => /^[A-Z][a-z]+$/.test(w));
         const pairs = []; for(let i=0; i<words.length-1; i+=2) pairs.push(words[i]+" "+words[i+1]);
-        
         document.getElementById("rosterTextRaw").value = pairs.join("\n");
         document.getElementById("rosterReviewArea").style.display='block';
     } catch(err) { alert("PDF Error"); }
@@ -398,19 +421,18 @@ async function saveRosterList() {
     await setDoc(doc(db, "rosters", tid), { players: list, lastUpdated: new Date() });
     alert("Saved");
     document.getElementById("rosterReviewArea").style.display='none';
-    loadCoachDashboard(false, globalTeams);
+    loadCoachDashboard(false, globalTeams); // Force refresh
 }
 
 // --- EXPORT ---
 function exportSessionData() {
-    if(allSessionsCache.length === 0) return alert("No sessions to export for this team.");
+    if(allSessionsCache.length === 0) return alert("No sessions to export.");
     const formatted = allSessionsCache.map(r => ({
         Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
         Player: r.player,
         Minutes: r.minutes,
         Drills: r.drillSummary,
-        Feedback: r.outcome,
-        Notes: r.notes
+        Feedback: r.outcome
     }));
     const ws = XLSX.utils.json_to_sheet(formatted);
     const wb = XLSX.utils.book_new();
@@ -442,7 +464,7 @@ async function addAdmin() {
 
 // --- LOGS ---
 async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); c.innerHTML = "Fetching...";
+    const c = document.getElementById("logContainer"); c.innerHTML = "Fetching System Logs...";
     const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
     c.innerHTML = "";
     snap.forEach(d => { 
@@ -466,7 +488,6 @@ function runSecurityScan() {
     setTimeout(() => {
         c.innerHTML += "<div style='color:green'>✔ Auth: Protected (Firebase Auth)</div>";
         c.innerHTML += "<div style='color:green'>✔ Database: Rules Active</div>";
-        c.innerHTML += "<div style='color:green'>✔ Input Sanitization: Active</div>";
         c.innerHTML += "<div style='font-weight:bold; margin-top:5px;'>Scan Complete. No critical vulnerabilities found.</div>";
     }, 800);
 }
