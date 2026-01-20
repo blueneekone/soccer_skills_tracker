@@ -31,7 +31,7 @@ let teamChart = null;
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v5 Loaded (YouTube & Modals Fixed)");
+    console.log("App v6 Loaded");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -64,9 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // DRILLS POPULATION
     const us = document.getElementById("unifiedSelect");
     if(us && us.options.length <= 1) {
+        const cardio = document.createElement("optgroup"); cardio.label = "CARDIO";
+        const basic = document.createElement("optgroup"); basic.label = "BRILLIANT BASICS";
         dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; us.appendChild(opt);
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+            if(s.type === 'cardio') cardio.appendChild(opt); else basic.appendChild(opt);
         });
+        us.appendChild(cardio); us.appendChild(basic);
     }
 
     // TRACKER
@@ -79,13 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if(s.video) { 
                 vb.style.display='inline-block'; 
                 vb.onclick = () => { 
-                    // FIX: Convert URL to Embed format
-                    const embedUrl = convertToEmbedUrl(s.video);
-                    document.getElementById("videoPlayer").src = embedUrl; 
+                    document.getElementById("videoPlayer").src = getEmbedUrl(s.video); 
                     document.getElementById("videoModal").style.display='block'; 
                 } 
-            }
-            else vb.style.display='none';
+            } else vb.style.display='none';
         }
     };
     
@@ -118,47 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("btnLogSecurity").onclick = runSecurityScan;
     document.getElementById("btnLogDebug").onclick = runDebugLog;
 
-    // --- MODAL FIXES ---
-    // Close buttons (X)
+    // MODALS
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
-            // Stop video
             document.getElementById("videoPlayer").src = "";
         }
     });
-
-    // Close on background click
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
-            document.getElementById("videoPlayer").src = "";
-        }
-    };
 });
-
-// --- HELPER: YOUTUBE EMBED FIX ---
-function convertToEmbedUrl(url) {
-    if (!url) return "";
-    let videoId = "";
-    // Handle youtu.be/ID
-    if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1];
-    } 
-    // Handle youtube.com/watch?v=ID
-    else if (url.includes("v=")) {
-        videoId = url.split("v=")[1].split("&")[0];
-    }
-    // Already embed?
-    else if (url.includes("embed/")) {
-        return url;
-    }
-    
-    // Remove any query params like ?t=10
-    if(videoId.includes("?")) videoId = videoId.split("?")[0];
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-}
 
 // --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
@@ -265,7 +233,7 @@ async function loadStats() {
     const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(50));
     const snap = await getDocs(q);
     const logs = []; let totalMins = 0;
-    snap.forEach(d => { logs.push(d.data()); totalMins += d.data().minutes; });
+    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
     
     document.getElementById("statTotal").innerText = `${logs.length} Sessions`;
     document.getElementById("statTime").innerText = totalMins;
@@ -281,6 +249,8 @@ async function loadStats() {
     document.getElementById("xpBar").style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
     
     renderCalendar(logs);
+    renderPlayerTrendChart(logs);
+    renderTeamLeaderboard(logs);
 }
 
 function renderCalendar(logs) {
@@ -289,13 +259,11 @@ function renderCalendar(logs) {
     const now = new Date();
     header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     grid.innerHTML = "";
-    
     const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
     
     for(let i=1; i<=daysInMonth; i++) {
         const dStr = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
         const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-        
         const dayDiv = document.createElement("div");
         dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
         dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
@@ -311,6 +279,18 @@ function renderCalendar(logs) {
     }
 }
 
+function renderPlayerTrendChart(logs) {
+    const ctx = document.getElementById('playerTrendChart').getContext('2d'); if(teamChart) teamChart.destroy();
+    const data = Array(7).fill(0); const labels = [];
+    for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); data[6-i] = logs.filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((s,l)=>s+Number(l.minutes),0); }
+    teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
+}
+
+function renderTeamLeaderboard(logs) {
+    const stats = {}; logs.forEach(l => { stats[l.player] = (stats[l.player] || 0) + Number(l.minutes); });
+    document.getElementById("teamLeaderboardTable").querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+}
+
 // --- COACH DASHBOARD ---
 function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
@@ -318,7 +298,6 @@ function initCoachDropdown(isDirector, teams) {
     sel.innerHTML = "";
     const list = isDirector ? globalTeams : teams;
     list.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
-    
     sel.onchange = () => loadCoachDashboard(isDirector, list);
     if(list.length > 0) { sel.value = list[0].id; loadCoachDashboard(isDirector, list); }
 }
@@ -336,14 +315,14 @@ async function loadCoachDashboard(isDirector, teams) {
     snap.forEach(doc => {
         const d = doc.data();
         if(!players[d.player]) players[d.player] = 0;
-        players[d.player] += d.minutes;
+        players[d.player] += Number(d.minutes);
         count++;
     });
     
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
     document.getElementById("coachTotalReps").innerText = count;
     
-    // Render Roster List with Delete
+    // Roster rendering
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterHtml = "";
     if(rosterSnap.exists() && rosterSnap.data().players) {
@@ -376,7 +355,6 @@ async function manualAddPlayer() {
     if(!name) return;
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team");
-    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -470,7 +448,33 @@ function runDebugLog() {
     c.innerHTML = `<pre style="font-size:10px;">${JSON.stringify(state, null, 2)}</pre>`;
 }
 
-// --- HELPERS ---
+// --- UTILS ---
+function getEmbedUrl(url) {
+    if(!url) return "";
+    let id = "";
+    if(url.includes("youtu.be/")) id = url.split("youtu.be/")[1];
+    else if(url.includes("v=")) id = url.split("v=")[1].split("&")[0];
+    else if(url.includes("embed/")) return url;
+    return id ? `https://www.youtube.com/embed/${id}` : "";
+}
+
+function updateTimer() { seconds++; const m = Math.floor(seconds / 60).toString().padStart(2, "0"); const s = (seconds % 60).toString().padStart(2, "0"); document.getElementById("timerDisplay").innerText = `${m}:${s}`; }
+document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
+document.getElementById("stopTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds / 60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
+document.getElementById("resetTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; document.getElementById("timerDisplay").innerText = "00:00"; });
+function resizeCanvas() { if(!canvas.parentElement) return; canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; }
+window.addEventListener('resize', resizeCanvas);
+function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
+function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
+function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+function isCanvasBlank(canvas) { const context = canvas.getContext('2d'); const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer); return !pixelBuffer.some(color => color !== 0); }
+function checkSignature() { if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; } }
+const canvas = document.getElementById("signatureCanvas");
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
+document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
+
 function loadUserProfile() {
     const t = localStorage.getItem("aggie_last_team");
     if(t) document.getElementById("teamSelect").value = t; 
