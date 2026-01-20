@@ -14,7 +14,7 @@
         :root {
             --aggie-blue: #00263A;
             --aggie-gold: #BFAE5A; 
-            --bg-gray: #f8fafc;
+            --bg-gray: #f1f5f9;
             --text-dark: #1e293b;
             --white: #ffffff;
             --danger: #ef4444;
@@ -30,24 +30,28 @@
         .container { max-width: 600px; margin: 0 auto; padding: 15px; padding-bottom: 90px; }
         .hidden { display: none !important; }
 
-        /* --- LOGIN --- */
-        #loginUI {
+        /* --- FULL SCREEN AUTH --- */
+        .full-screen-center {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--bg-gray); z-index: 9999;
+            background-color: var(--aggie-blue); /* Branded Background */
+            z-index: 9999;
             display: flex; flex-direction: column; 
             align-items: center; justify-content: center; text-align: center;
+            padding: 20px;
         }
-        .login-card {
-            width: 90%; max-width: 340px; background: white; padding: 30px; 
-            border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        
+        .auth-card {
+            width: 100%; max-width: 340px; background: white; padding: 30px; 
+            border-radius: 16px; box-shadow: 0 15px 30px rgba(0,0,0,0.2);
         }
-        .login-circle { 
+        
+        .logo-circle { 
             width: 70px; height: 70px; background: var(--aggie-blue); border-radius: 50%; 
-            margin: 0 auto 20px auto; display:flex; align-items:center; justify-content:center; 
-            color:white; font-size:35px; 
+            margin: 0 auto 15px auto; display:flex; align-items:center; justify-content:center; 
+            color:white; font-size:35px; border: 4px solid var(--aggie-gold);
         }
 
-        /* --- CARDS --- */
+        /* --- CARDS & HEADERS --- */
         .card { 
             background: var(--white); border-radius: 12px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; 
@@ -55,13 +59,13 @@
         }
         .card-header {
             background-color: var(--aggie-blue); color: white; padding: 12px 15px;
-            font-weight: bold; font-size: 0.95rem; display: flex; 
-            justify-content: space-between; align-items: center;
+            font-weight: bold; font-size: 0.9rem; display: flex; 
+            justify-content: space-between; align-items: center; letter-spacing: 0.5px;
         }
         .card-body { padding: 15px; }
 
         /* --- INPUTS & BUTTONS --- */
-        label { display: block; margin-bottom: 5px; font-weight: 700; color: #475569; font-size: 0.8rem; text-transform: uppercase; }
+        label { display: block; margin-bottom: 6px; font-weight: 700; color: #475569; font-size: 0.75rem; text-transform: uppercase; }
         input, select, textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; 
@@ -71,15 +75,17 @@
         .primary-btn {
             background-color: var(--aggie-blue); color: white; border: none;
             padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold;
-            cursor: pointer; width: 100%; text-align: center;
+            cursor: pointer; width: 100%; text-align: center; transition: opacity 0.2s;
         }
+        .primary-btn:active { opacity: 0.8; }
+        
         .secondary-btn {
             background-color: #e2e8f0; color: var(--text-dark); border: none;
             padding: 10px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
         }
         .action-btn {
             background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4);
-            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;
+            padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;
         }
         .delete-btn { background: #fee2e2; color: #b91c1c; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;}
 
@@ -119,8 +125,8 @@
 
         /* --- MODAL --- */
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(2px); }
-        .modal-content { background-color: white; margin: 10% auto; width: 95%; max-width: 500px; border-radius: 12px; overflow: hidden; height: auto; max-height: 80vh; display: flex; flex-direction: column; }
-        .modal-body { padding: 0; flex: 1; overflow-y: auto; background: black; }
+        .modal-content { background-color: white; margin: 20% auto; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; }
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
         
         /* ADMIN */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -131,15 +137,15 @@
         
         /* RANK COLORS */
         .rank-1 td:nth-child(1) { color: #d97706; font-weight: 900; font-size: 1.1em; }
-        .rank-2 td:nth-child(1) { color: #94a3b8; font-weight: 900; font-size: 1.1em; }
+        .rank-2 td:nth-child(1) { color: #64748b; font-weight: 900; font-size: 1.1em; }
         .rank-3 td:nth-child(1) { color: #b45309; font-weight: 900; font-size: 1.1em; }
     </style>
 </head>
 <body>
 
-    <div id="loginUI">
-        <div class="login-card">
-            <div class="login-circle">⚽</div> 
+    <div id="loginUI" class="full-screen-center">
+        <div class="auth-card">
+            <div class="logo-circle">⚽</div> 
             <h2 style="color:var(--aggie-blue); margin:0;">Aggies FC</h2>
             <p style="color:#64748b; margin-top:5px; margin-bottom:25px;">Skills & Fitness Tracker</p>
             
@@ -162,40 +168,41 @@
         </div>
     </div>
 
+    <div id="setupUI" class="full-screen-center" style="display:none;">
+        <div class="auth-card">
+            <h2 style="color:var(--aggie-blue);">Welcome!</h2>
+            <p style="color:#64748b; margin-bottom: 20px;">Let's find your athlete.</p>
+            
+            <label style="text-align:left;">1. Select Team</label>
+            <select id="setupTeamSelect"><option>Loading...</option></select>
+            
+            <label style="text-align:left;">2. Select Athlete</label>
+            <select id="setupPlayerDropdown" disabled><option>Select Team First...</option></select>
+            
+            <div id="setupManualEntry" style="display:none;">
+                <label style="text-align:left; color:#d97706;">Not listed? Enter Name:</label>
+                <input id="setupPlayerManual" placeholder="First & Last Name">
+            </div>
+            
+            <button id="completeSetupBtn" class="primary-btn" style="margin-top:20px;">Connect Profile</button>
+        </div>
+    </div>
+
     <div id="appUI" class="container" style="display:none;">
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div>
                 <h2 style="margin:0; color:var(--aggie-blue);">Dashboard</h2>
-                <span id="coachName" style="font-size:12px; color:#64748b;">Loading...</span>
+                <div style="font-size:12px; color:#64748b;">
+                    Athlete: <span id="activePlayerName" style="font-weight:bold; color:var(--aggie-blue);">Loading...</span>
+                </div>
             </div>
             <button id="globalLogoutBtn" style="border:none; background:none; color:#64748b; text-decoration:underline; cursor:pointer; font-size:12px;">Sign Out</button>
         </div>
 
         <div id="viewTracker" class="view-section">
             <div class="card">
-                <div class="card-header">1. IDENTITY</div>
-                <div class="card-body">
-                    <label>Team</label>
-                    <select id="teamSelect"><option>Loading...</option></select>
-                    
-                    <div id="playerSelectArea" style="display:none; margin-top:10px;">
-                        <label>Player Name</label>
-                        <select id="playerDropdown"><option>Select...</option></select>
-                    </div>
-                    
-                    <div id="manualNameArea" style="display:none; margin-top:10px;">
-                        <label>Manual Entry</label>
-                        <div style="display:flex; gap:10px;">
-                            <input id="playerFirst" placeholder="First Name">
-                            <input id="playerLast" placeholder="Last Name">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">2. WORKOUT</div>
+                <div class="card-header">1. BUILD WORKOUT</div>
                 <div class="card-body">
                     <label>Drill / Activity</label>
                     <select id="unifiedSelect"><option>Loading Drills...</option></select>
@@ -209,16 +216,16 @@
                         <div style="flex:1;"><label id="labelSets">Sets</label><input type="number" id="inputSets" placeholder="3"></div>
                         <div style="flex:1;"><label id="labelReps">Reps</label><input type="number" id="inputReps" placeholder="20"></div>
                     </div>
-                    <button id="addToSessionBtn" class="secondary-btn" style="width:100%;">+ Add to Session</button>
+                    <button id="addToSessionBtn" class="secondary-btn" style="width:100%;">+ Add Drill to List</button>
                     
-                    <ul id="sessionList" style="list-style:none; padding:0; margin-top:15px; color:#64748b; font-size:14px; text-align:center;">
+                    <ul id="sessionList" style="list-style:none; padding:0; margin-top:15px; color:#64748b; font-size:14px; text-align:center; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
                         <li>No drills added yet.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header">3. SELF EVALUATION</div>
+                <div class="card-header">2. FINISH & EVALUATE</div>
                 <div class="card-body">
                     <div style="text-align:center; margin-bottom:15px;">
                         <div id="timerDisplay" style="font-size:3rem; font-weight:800; color:var(--aggie-blue); font-variant-numeric:tabular-nums;">00:00</div>
@@ -232,7 +239,7 @@
                     <label>Total Duration (Mins)</label>
                     <input type="number" id="totalMinutes" placeholder="e.g. 30">
 
-                    <label>Skill Confidence</label>
+                    <label>Skill Confidence (Self-Check)</label>
                     <div id="outcome">
                         <div class="outcome-btn" data-val="struggled">Needs<br>Practice</div>
                         <div class="outcome-btn active" data-val="improved">Getting<br>Better</div>
@@ -314,7 +321,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header">TEAM ENGAGEMENT</div>
+                <div class="card-header">WEEKLY TEAM VOLUME</div>
                 <div class="card-body"><canvas id="teamChart"></canvas></div>
             </div>
 
