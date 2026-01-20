@@ -1,180 +1,338 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Aggies FC Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aggies FC Tracker</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root { --primary: #00263A; --accent: #C69214; --bg: #f8fafc; --text: #334155; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+        
+        /* Layout */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* Typography */
+        h1, h2, h3 { color: var(--primary); margin-top: 0; }
+        label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; margin-top: 15px; color: var(--primary); }
+        
+        /* Inputs & Buttons */
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; }
+        input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+        
+        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
+        button:active { opacity: 0.9; transform: scale(0.98); }
+        .btn-secondary { background: #e2e8f0; color: var(--text); }
+        .btn-delete { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; font-size: 12px; width: auto; }
+        
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); z-index: 100; }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 12px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        /* Specific Modules */
+        #sessionList li { list-style: none; }
+        #sessionList { padding: 0; margin: 10px 0; }
+        .timer-display { font-size: 48px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--primary); margin: 10px 0; }
+        canvas { border: 2px dashed #cbd5e1; border-radius: 8px; background: #fcfcfc; width: 100%; cursor: crosshair; touch-action: none; }
+        
+        /* Calendar */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; position: relative; border: 1px solid transparent; }
+        .cal-day.today { border-color: var(--accent); font-weight: bold; color: var(--accent); }
+        .cal-day.has-log { background: #e0f2fe; color: #0284c7; font-weight: bold; cursor: pointer; }
+        .cal-dot { width: 4px; height: 4px; background: #0284c7; border-radius: 50%; position: absolute; bottom: 4px; }
+
+        /* Admin */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; }
+        th { color: var(--primary); }
+
+        /* Utility */
+        .hidden { display: none; }
+        .helper-text { font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 10px; }
+    </style>
 </head>
 <body>
-  
-  <div id="videoModal" class="modal">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-        <h3 id="modalTitle" style="margin:0; color:#00263A;">Drill</h3>
-        <span id="closeModal" style="font-size:24px; cursor:pointer;">&times;</span>
-      </div>
-      <div class="video-container"><iframe id="videoPlayer" src="" frameborder="0" allowfullscreen></iframe></div>
-    </div>
-  </div>
 
-  <div id="dayModal" class="modal">
-    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-        <h3 id="dayModalDate" style="margin:0; color:#00263A;">Date</h3>
-        <span id="closeDayModal" style="font-size:24px; cursor:pointer;">&times;</span>
-      </div>
-      <div id="dayModalContent"></div>
-    </div>
-  </div>
-
-  <header>
-    <div style="text-align:left;">
-        <h1 style="margin:0;">Aggies FC Tracker</h1>
-        <div id="coachName" style="font-size:11px; color:#8A8D8F;"></div>
-    </div>
-    <button id="globalLogoutBtn" style="width:auto; padding:8px 12px; font-size:12px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); display:none;">Sign Out</button>
-  </header>
-
-  <div class="container">
-    
-    <div id="loginUI" class="card" style="text-align:center; padding:40px;">
-      <h2 style="color:#00263A;">Player Portal</h2>
-      <p style="color:#64748b;">Sign in to start training.</p>
-      <button id="loginBtn">Sign in with Google</button>
+    <div id="loginUI" class="container" style="text-align: center; margin-top: 50px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Aggies FC ⚽</h1>
+        <p style="color: #64748b; margin-bottom: 40px;">Official Skills Tracker</p>
+        <button id="loginBtn">Sign in with Google</button>
     </div>
 
-    <div id="appUI" style="display:none;">
-
-      <div id="viewTracker">
-        <div class="xp-container"><div class="xp-level" id="userLevelDisplay">Rookie • 0 XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar"></div></div></div>
+    <div id="appUI" class="container" style="display: none;">
         
-        <div class="card">
-          <div class="card-header">1. Session Setup</div>
-          <div class="card-body">
-            <div class="timer-box">
-              <div class="timer-display" id="stopwatch">00:00</div>
-              <div class="timer-controls"><button class="btn-start" id="startTimer">Start</button><button class="btn-stop" id="stopTimer">Stop</button><button class="btn-reset" id="resetTimer">Reset</button></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin:0;">Dashboard</h2>
+                <small id="coachName" style="color: #64748b;">Loading...</small>
             </div>
-            
-            <label>My Team</label>
-            <select id="teamSelect" style="margin-bottom:15px;"><option value="" disabled selected>Loading Teams...</option></select>
-            
-            <div id="playerSelectArea" style="display:none;">
-                <label>Player Name</label>
-                <select id="playerDropdown" style="font-weight:bold; color:#00263A;">
-                    <option value="" disabled selected>Select Yourself...</option>
-                </select>
-            </div>
+            <button id="globalLogoutBtn" style="width: auto; padding: 5px 15px; font-size: 12px; background: #94a3b8;">Log Out</button>
+        </div>
 
-            <div id="manualNameArea">
-                <div class="row">
-                    <div><input type="text" id="playerFirst" placeholder="First Name"></div>
-                    <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+        <div id="viewTracker">
+            <div class="card">
+                <h3>1. Who is training?</h3>
+                
+                <label>Team</label>
+                <select id="teamSelect"></select>
+
+                <div id="playerSelectArea" style="display:none; margin-top: 10px;">
+                    <label>Player</label>
+                    <select id="playerDropdown"></select>
+                </div>
+
+                <div id="manualNameArea" style="display:none; margin-top: 10px;">
+                    <label>Full Name</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="playerFirst" placeholder="First Name">
+                        <input type="text" id="playerLast" placeholder="Last Name">
+                    </div>
                 </div>
             </div>
 
-          </div>
-        </div>
+            <div class="card">
+                <h3>2. Build Workout</h3>
+                <label>Select Activity</label>
+                <select id="unifiedSelect">
+                    <option value="" disabled selected>-- Choose Drill --</option>
+                </select>
 
-        <div class="card" style="border: 2px solid #00263A;">
-          <div class="card-header" style="background:#00263A; color:white;"><span>2. Build Workout</span></div>
-          <div class="card-body">
-            <label>Activity</label><select id="unifiedSelect" style="font-weight:700; color:#00263A;"><option value="" disabled selected>Choose activity...</option></select>
-            <div id="drillInfoBox" style="display:none; margin-bottom:15px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"><div style="display:flex; justify-content:space-between; align-items:center;"><div id="drillDesc" style="font-weight:bold; font-size:13px; color:#334155;"></div><button id="watchVideoBtn" style="width:auto; padding:6px 12px; font-size:11px; background:#3b82f6;">🎥 Video</button></div></div>
-            <div class="row"><div><label id="labelSets">Sets</label><input type="number" id="inputSets" placeholder="0"></div><div><label id="labelReps">Reps</label><input type="number" id="inputReps" placeholder="0"></div></div>
-            <button id="addToSessionBtn" style="background:#8A8D8F; margin-top:5px;">+ Add to Stack</button>
-            <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"><label>Current Stack</label><ul id="sessionList" style="list-style:none; padding:0; margin:0; font-size:14px;"><li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li></ul></div>
-          </div>
-        </div>
+                <div id="drillInfoBox" style="display:none; background: #f0f9ff; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px solid #bae6fd;">
+                    <p id="drillDesc" style="margin:0; font-size: 14px; color: #0369a1;"></p>
+                    <button id="watchVideoBtn" class="btn-secondary" style="margin-top:5px; font-size:12px; padding:5px;">🎥 Watch Demo</button>
+                </div>
 
-        <div class="card">
-          <div class="card-header">3. Finish & Sign</div>
-          <div class="card-body">
-            <label>Total Duration (Mins)</label><input type="number" id="totalMinutes" placeholder="Duration">
-            <label>How did it go?</label><div class="chips" id="outcome"><div class="chip active" data-val="success">✓ Good</div><div class="chip" data-val="partial">~ Okay</div><div class="chip" data-val="fail">× Struggle</div></div>
-            <div style="margin-top:20px;"><label>Parent Signature (Required)</label><canvas id="signaturePad" width="300" height="150"></canvas><div style="text-align:right;"><button id="clearSigBtn" class="clear-btn">Clear</button></div></div>
-            <div style="margin-top:10px;"><input id="notes" placeholder="Optional notes..."></div>
-            <button id="submitWorkoutBtn" style="background:#16a34a; margin-top:10px;">✅ Submit Full Session</button>
-          </div>
-        </div>
-      </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex:1;">
+                        <label id="labelSets">Sets</label>
+                        <input type="number" id="inputSets" placeholder="3">
+                    </div>
+                    <div style="flex:1;">
+                        <label id="labelReps">Reps</label>
+                        <input type="text" id="inputReps" placeholder="50">
+                    </div>
+                </div>
+                <button id="addToSessionBtn" class="btn-secondary" style="margin-top: 15px;">+ Add to Session</button>
 
-      <div id="viewStats" style="display:none;">
-        <div class="card"><div class="card-header">My Dashboard</div><div class="card-body"><div class="stats-grid"><div class="stat-item"><div id="statTotal" class="stat-val">0</div><div class="stat-lbl">Workouts</div></div><div class="stat-item"><div id="statTime" class="stat-val">0</div><div class="stat-lbl">Total Mins</div></div><div class="stat-item"><div id="statStreak" class="stat-val" style="color:#ca8a04;">0</div><div class="stat-lbl">Streak</div></div><div class="stat-item"><div id="statAvg" class="stat-val">0</div><div class="stat-lbl">Avg Mins</div></div></div></div></div>
-        <div class="card"><div class="card-header">Team Leaderboard</div><div class="card-body"><table class="leader-table" id="teamLeaderboardTable"><thead><tr><th>#</th><th>Player</th><th>Mins</th></tr></thead><tbody><tr><td colspan="3" style="text-align:center; color:#94a3b8;">No data yet.</td></tr></tbody></table></div></div>
-        <div class="card"><div class="card-header">Activity</div><div class="card-body"><canvas id="playerTrendChart"></canvas></div></div>
-        <div class="card"><div class="card-body calendar-wrapper"><div class="calendar-header"><span id="calMonthYear">Jan 2026</span></div><div class="calendar-grid"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div><div id="calendarDays" class="calendar-grid"></div><p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:10px;">Tap highlighted day to view details.</p></div></div>
-      </div>
-
-      <div id="viewCoach" style="display:none;">
-        <div class="card" style="border: 2px solid #8A8D8F;">
-          <div class="card-header" style="background:#8A8D8F; color:white;"><span>Roster Management</span><span style="font-size:10px;">PDF</span></div>
-          <div class="card-body">
-            <div id="rosterUploadStep1">
-                <label>1. Team</label><select id="coachTeamSelect" style="margin-bottom:10px;"></select>
-                <label>2. Upload Stack PDF</label><input type="file" id="rosterPdfInput" accept=".pdf">
+                <div style="margin-top: 20px;">
+                    <label>Current Session Stack:</label>
+                    <ul id="sessionList"></ul>
+                </div>
             </div>
-            <div id="rosterReviewArea" style="display:none;">
-                <label>3. Review Names</label><textarea id="rosterTextRaw" rows="5" style="width:100%; border-radius:6px;"></textarea>
-                <button id="saveRosterBtn" style="background:#16a34a; margin-top:10px;">Save</button><button id="cancelRosterBtn" class="secondary-btn">Cancel</button>
+
+            <div class="card">
+                <h3>3. Timer & Finish</h3>
+                <div class="timer-display" id="timerDisplay">00:00</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="startTimer" style="background:#16a34a;">Start</button>
+                    <button id="stopTimer" style="background:#ca8a04;">Stop</button>
+                    <button id="resetTimer" class="btn-secondary">Reset</button>
+                </div>
+
+                <label>Total Duration (Minutes)</label>
+                <input type="number" id="totalMinutes" placeholder="e.g. 45">
+
+                <label>How did it go?</label>
+                <div id="outcome" style="display: flex; gap: 5px; margin-top: 5px;">
+                    <button class="outcome-btn active" data-val="success" style="flex:1; background:#dcfce7; color:#166534; border:1px solid #86efac;">Great</button>
+                    <button class="outcome-btn" data-val="ok" style="flex:1; background:#fef9c3; color:#854d0e; border:1px solid #fde047;">OK</button>
+                    <button class="outcome-btn" data-val="hard" style="flex:1; background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">Hard</button>
+                </div>
+                <script>
+                    // Small logic for toggle buttons
+                    document.querySelectorAll('.outcome-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            document.querySelectorAll('.outcome-btn').forEach(b => {
+                                b.style.opacity = '0.5'; b.classList.remove('active');
+                            });
+                            e.target.style.opacity = '1'; e.target.classList.add('active');
+                        });
+                    });
+                </script>
+
+                <label>Notes (Optional)</label>
+                <textarea id="notes" placeholder="Juggling record? Injury note?"></textarea>
+
+                <label>Player Signature <span style="color:red">*</span></label>
+                <canvas id="signatureCanvas"></canvas>
+                <button id="clearSigBtn" style="font-size: 12px; padding: 5px; width: auto; background: none; color: #64748b;">Clear Signature</button>
+
+                <button id="submitWorkoutBtn" style="margin-top: 20px; font-size: 18px;">✅ LOG WORKOUT</button>
             </div>
-          </div>
         </div>
-        <div class="card">
-          <div class="card-header">Coach Dashboard</div>
-          <div class="card-body">
-            <div id="adminControls" style="display:none; margin-bottom:15px; border-bottom:1px solid #eee;"><label style="color:#16a34a;">Club Director View</label><select id="adminTeamSelect"><option value="all">View All Teams</option></select></div>
-            <div class="row"><div class="stat-box"><div id="coachTotalReps" class="stat-num">0</div><div class="stat-label">Sessions</div></div><div class="stat-box"><div id="coachActivePlayers" class="stat-num">0</div><div class="stat-label">Players</div></div></div>
-            <button id="exportXlsxBtn" style="margin-top:15px;">📥 Download Excel</button>
-          </div>
-        </div>
-        <div class="card"><div class="card-header">Team Activity</div><div class="card-body"><canvas id="teamChart"></canvas></div></div>
-        <div class="card"><div class="card-body" id="coachPlayerList"></div></div>
-      </div>
 
-      <div id="viewAdmin" style="display:none;">
-        <div class="card" style="border: 2px solid #dc2626;">
-          <div class="card-header" style="background:#dc2626; color:white;">Access Control</div>
-          <div class="card-body">
-            <label>Add Director / Admin</label>
-            <div class="input-group"><input id="newAdminEmail" placeholder="New Admin Email"><button id="addAdminBtn" style="width:auto; background:#334155;">Add</button></div>
-            <label>Authorized Admins</label><table class="admin-table" id="adminTable"><thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody></table>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">Team Management</div>
-          <div class="card-body">
-            <label>Add New Team</label>
-            <div class="input-group"><input id="newTeamId" placeholder="ID (u10g)" style="width:30%;"><input id="newTeamName" placeholder="Name (U10 Girls)"></div>
-            <div class="input-group"><input id="newCoachEmail" placeholder="Coach Email"><button id="addTeamBtn" style="width:auto; background:#16a34a;">Save</button></div>
-            <label style="margin-top:15px;">Current Teams</label><table class="admin-table" id="teamTable"><thead><tr><th>ID</th><th>Name</th><th>Coach</th><th>Action</th></tr></thead><tbody></tbody></table>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">System Logs</div>
-          <div class="card-body">
-            <div class="log-tabs"><button class="log-tab active" id="tabSysLogs">App Logs</button><button class="log-tab" id="tabSecLogs" style="color:#dc2626;">Security Audit</button></div>
-            <div id="logContainer" class="log-console"><div class="log-entry">Initializing...</div></div>
-            <button id="runSecurityAuditBtn" class="secondary-btn" style="margin-top:10px;">🔍 Run Manual Audit</button>
-          </div>
-        </div>
-      </div>
+        <div id="viewStats" class="hidden">
+            <div class="card" style="background: linear-gradient(135deg, #00263A 0%, #0f172a 100%); color: white;">
+                <h3 style="color: #e2e8f0; margin-bottom: 5px;">My Career</h3>
+                <div style="display: flex; justify-content: space-between; align-items: end;">
+                    <div>
+                        <h1 id="statTotal" style="font-size: 3rem; margin: 0; color: white;">0</h1>
+                        <span style="font-size: 0.9rem; opacity: 0.8;">Total Sessions</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 id="statTime" style="margin: 0; color: #C69214;">0</h2>
+                        <span style="font-size: 0.9rem; opacity: 0.8;">Minutes Trained</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                        <span id="userLevelDisplay">Rookie • 0 XP</span>
+                        <span>Next Level</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="xpBar" style="width: 0%; background: #C69214; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="card">
+                <h3 id="calMonthYear">Calendar</h3>
+                <div class="calendar-grid" id="calendarDays"></div>
+            </div>
+
+            <div class="card">
+                <h3>Trend (Last 7 Days)</h3>
+                <canvas id="playerTrendChart"></canvas>
+            </div>
+            
+            <div class="card">
+                <h3>Team Leaderboard</h3>
+                <table id="teamLeaderboardTable">
+                    <thead><tr><th>#</th><th>Name</th><th>Mins</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="viewCoach" class="hidden">
+            <div class="card">
+                <h3>Coach Dashboard</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex:1; background:#f1f5f9; padding:10px; border-radius:8px; text-align:center;">
+                        <span style="display:block; font-size:20px; font-weight:bold;" id="coachTotalReps">0</span>
+                        <span style="font-size:12px; color:#64748b;">Total Logs</span>
+                    </div>
+                    <div style="flex:1; background:#f1f5f9; padding:10px; border-radius:8px; text-align:center;">
+                        <span style="display:block; font-size:20px; font-weight:bold;" id="coachActivePlayers">0</span>
+                        <span style="font-size:12px; color:#64748b;">Active Players</span>
+                    </div>
+                </div>
+                <canvas id="teamChart" style="height: 200px;"></canvas>
+            </div>
+
+            <div class="card">
+                <h3>Roster Activity</h3>
+                <button id="exportXlsxBtn" class="btn-secondary" style="margin-bottom: 15px;">📥 Export to Excel</button>
+                <div id="coachPlayerList"></div>
+            </div>
+            
+            <div id="adminControls" style="display:none;">
+                <div class="card" style="border: 2px solid #C69214;">
+                    <h3>👑 Director Controls</h3>
+                    <label>Filter Dashboard by Team</label>
+                    <select id="adminTeamSelect"></select>
+                </div>
+            </div>
+        </div>
+
+        <div id="viewAdmin" class="hidden">
+            <div class="card">
+                <h3>Manage Teams</h3>
+                <input type="text" id="newTeamId" placeholder="Team ID (e.g. 2012-girls-red)">
+                <input type="text" id="newTeamName" placeholder="Display Name (e.g. 2012 Girls Red)">
+                <input type="text" id="newCoachEmail" placeholder="Coach Email">
+                <button id="addTeamBtn">Save Team</button>
+                
+                <div style="max-height: 200px; overflow-y: auto; margin-top: 15px;">
+                    <table id="teamTable"><thead><tr><th>ID</th><th>Name</th><th>Coach</th><th></th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📂 Upload Roster from PDF</h3>
+                <p class="helper-text">Select a team in the "Manage Teams" or "Director Controls" dropdown first.</p>
+                
+                <div id="rosterUploadStep1">
+                    <input type="file" id="rosterPdfInput" accept="application/pdf">
+                </div>
+
+                <div id="rosterReviewArea" style="display: none; margin-top: 15px;">
+                    <label>Parsed Names</label>
+                    <textarea id="rosterTextRaw" rows="10" placeholder="Names will appear here..."></textarea>
+                    <button id="saveParsedRosterBtn">✅ Save Roster to DB</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Security Logs</h3>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <button id="tabSysLogs" class="log-tab active" style="flex:1;">System</button>
+                    <button id="tabSecLogs" class="log-tab" style="flex:1;">Security</button>
+                </div>
+                <div id="logContainer" style="height: 200px; overflow-y: scroll; background: #1e293b; color: #33e4db; font-family: monospace; padding: 10px; font-size: 11px; border-radius: 6px;"></div>
+                <button id="runSecurityAuditBtn" class="btn-secondary" style="margin-top: 5px;">Run Audit</button>
+            </div>
+
+            <div class="card">
+                <h3>Manage Admins</h3>
+                <input type="text" id="newAdminEmail" placeholder="New Admin Email">
+                <button id="addAdminBtn">Add Admin</button>
+                <table id="adminTable" style="margin-top: 10px;"><thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+        
+        <div style="height: 60px;"></div>
+
+    </div> <div id="bottomNav" class="bottom-nav" style="display: none;">
+        <div class="nav-item active" id="navTrack">
+            <span class="nav-icon">⏱</span>Track
+        </div>
+        <div class="nav-item" id="navStats">
+            <span class="nav-icon">📊</span>Stats
+        </div>
+        <div class="nav-item" id="navCoach" style="display: none;">
+            <span class="nav-icon">📋</span>Coach
+        </div>
+        <div class="nav-item" id="navAdmin" style="display: none;">
+            <span class="nav-icon">⚙️</span>Admin
+        </div>
     </div>
-    
-    <nav class="bottom-nav" id="bottomNav" style="display:none;">
-        <button class="nav-item active" id="navTrack"><span>📝</span>Track</button>
-        <button class="nav-item" id="navStats"><span>📈</span>Stats</button>
-        <button class="nav-item" id="navCoach" style="display:none;"><span>🏆</span>Coach</button>
-        <button class="nav-item" id="navAdmin" style="display:none;"><span>⚙️</span>Admin</button>
-    </nav>
-  </div>
-  <script type="module" src="app.js"></script>
+
+    <div id="videoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200;">
+        <div style="position: relative; width: 90%; max-width: 600px; margin: 10% auto; background: black; padding: 10px;">
+            <span id="closeModal" style="position: absolute; top: -30px; right: 0; color: white; font-size: 30px; cursor: pointer;">&times;</span>
+            <iframe id="videoPlayer" width="100%" height="315" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="dayModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200;">
+        <div style="background: white; width: 85%; margin: 20% auto; padding: 20px; border-radius: 12px; max-height: 70vh; overflow-y: auto;">
+            <h3 id="dayModalDate">Date</h3>
+            <div id="dayModalContent"></div>
+            <button id="closeDayModal" class="btn-secondary">Close</button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+
+    <script>
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        // Resize handled in app.js
+    </script>
 </body>
 </html>
