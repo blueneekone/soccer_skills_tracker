@@ -33,7 +33,7 @@ let userProfile = null; // Stores { teamId, playerName }
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v11 Loaded (Parent-Proxy)");
+    console.log("App v12 Loaded (Admin Bypass)");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -140,27 +140,42 @@ onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
         
-        await fetchConfig(); // Load teams
-        
-        // CHECK IF PARENT HAS SETUP A PROFILE
-        const userRef = doc(db, "users", user.email);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-            // RETURNING USER
-            userProfile = userSnap.data();
-            document.getElementById("appUI").style.display='block';
-            document.getElementById("bottomNav").style.display='flex';
-            document.getElementById("coachName").innerText = user.email;
-            document.getElementById("activePlayerName").innerText = userProfile.playerName;
+        try {
+            await fetchConfig(); // Load teams
             
-            // Initial Data Load
-            loadStats();
-            checkRoles(user);
-        } else {
-            // NEW USER -> SETUP SCREEN
-            document.getElementById("setupUI").style.display = 'flex';
-            initSetupDropdowns();
+            // CHECK IF PARENT HAS SETUP A PROFILE
+            const userRef = doc(db, "users", user.email);
+            const userSnap = await getDoc(userRef);
+            
+            // --- ADMIN BYPASS LOGIC ---
+            if (!userSnap.exists() && user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
+                console.log("Admin detected. Bypassing setup...");
+                const adminProfile = { teamId: "admin_team", playerName: "Director", role: "admin", joinedAt: new Date() };
+                await setDoc(userRef, adminProfile);
+                userProfile = adminProfile;
+            } 
+            else if (userSnap.exists()) {
+                userProfile = userSnap.data();
+            }
+
+            // Route User
+            if (userProfile) {
+                document.getElementById("appUI").style.display='block';
+                document.getElementById("bottomNav").style.display='flex';
+                document.getElementById("coachName").innerText = user.email;
+                document.getElementById("activePlayerName").innerText = userProfile.playerName;
+                
+                // Initial Data Load
+                loadStats();
+                checkRoles(user);
+            } else {
+                // NEW USER -> SETUP SCREEN
+                document.getElementById("setupUI").style.display = 'flex';
+                initSetupDropdowns();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Critical Error Loading App: " + error.message);
         }
         
     } else {
@@ -599,4 +614,8 @@ document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.cle
 
 function logSystemEvent(type, detail) {
     addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
+}
+
+function loadUserProfile() {
+    // Only used for UI pre-fill, core logic now uses Firestore 'userProfile' var
 }
