@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aggies FC | Skills Tracker</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,14 +44,18 @@
             align-items: center;     /* Horizontal Center */
             text-align: center;
             background-color: var(--bg-gray);
+            position: fixed; /* Ensures it stays on top */
+            top: 0; left: 0;
+            z-index: 2000;
         }
 
         .login-card {
-            width: 100%;
-            max-width: 320px;
-            padding: 20px;
-            /* Optional: Add a white background to the login box itself for contrast */
-            /* background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); */
+            width: 90%;
+            max-width: 340px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .login-circle { 
@@ -107,7 +111,7 @@
 
         .auth-divider { border-top: 1px solid #cbd5e1; margin: 25px 0; position: relative; width: 100%; }
         .auth-divider span { 
-            background: var(--bg-gray); padding: 0 10px; position: absolute; top: -10px; 
+            background: white; padding: 0 10px; position: absolute; top: -10px; 
             left: 50%; transform: translateX(-50%); color: #64748b; font-size: 12px; font-weight: bold; 
         }
 
@@ -151,7 +155,7 @@
         .log-tab.active { background: white; border-bottom: 1px solid white; font-weight: bold; }
 
         /* --- MODAL --- */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(2px); }
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(2px); }
         .modal-content { background-color: white; margin: 15% auto; padding: 0; border-radius: 12px; width: 90%; max-width: 500px; position: relative; overflow: hidden; }
         .modal-header { background: var(--aggie-blue); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .close-btn { color: white; font-size: 24px; cursor: pointer; line-height: 1; }
