@@ -30,7 +30,7 @@
         .container { max-width: 600px; margin: 0 auto; padding: 15px; padding-bottom: 90px; }
         .hidden { display: none !important; }
 
-        /* --- FULL SCREEN AUTH (Centered) --- */
+        /* --- FULL SCREEN LAYOUTS (Login & Setup) --- */
         .full-screen-center {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-color: var(--aggie-blue); 
@@ -51,7 +51,7 @@
             color:white; font-size:35px; border: 4px solid var(--aggie-gold);
         }
 
-        /* --- CARDS --- */
+        /* --- CARDS & HEADERS --- */
         .card { 
             background: var(--white); border-radius: 12px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; 
@@ -337,9 +337,15 @@
             <div class="card">
                 <div class="card-header">ROSTER MANAGEMENT</div>
                 <div class="card-body">
-                    <div style="display:flex; gap:5px; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
-                        <input id="coachAddPlayerName" placeholder="New Player Name" style="margin:0; font-size:14px;">
-                        <button id="coachAddPlayerBtn" class="primary-btn" style="width:auto; margin:0; padding:0 15px;">+</button>
+                    <p style="font-size:11px; color:#64748b; margin-bottom:10px;">
+                        <b>Automation Tip:</b> Enter the parent's email. When they log in, they will be automatically connected to this player.
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                        <div style="display:flex; gap:5px;">
+                            <input id="coachAddPlayerName" placeholder="Player Name (e.g. John D)" style="margin:0; font-size:14px; flex:1;">
+                            <input id="coachAddPlayerEmail" placeholder="Parent Email (Optional)" style="margin:0; font-size:14px; flex:1;">
+                        </div>
+                        <button id="coachAddPlayerBtn" class="primary-btn" style="width:100%; margin:0; padding:8px;">+ Add & Invite Player</button>
                     </div>
 
                     <label>Or Upload PDF Roster</label>
