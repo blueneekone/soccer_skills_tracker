@@ -15,6 +15,7 @@
             --aggie-blue: #00263A;
             --aggie-gold: #BFAE5A; 
             --bg-gray: #f8fafc;
+            --bg-gray: #f8fafc;
             --text-dark: #1e293b;
             --white: #ffffff;
             --danger: #ef4444;
@@ -47,7 +48,7 @@
             color:white; font-size:35px; 
         }
 
-        /* --- CARDS --- */
+        /* --- CARDS & HEADERS --- */
         .card { 
             background: var(--white); border-radius: 12px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; 
@@ -105,6 +106,11 @@
         .cal-day.today { border: 2px solid var(--aggie-blue); font-weight: bold; background: white; }
         .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; }
         .cal-dot { width: 4px; height: 4px; background: #1e40af; border-radius: 50%; margin-top: 2px; }
+
+        /* --- LEADERBOARD --- */
+        .rank-1 { color: #d97706; font-weight: 900; } /* Gold */
+        .rank-2 { color: #64748b; font-weight: 900; } /* Silver */
+        .rank-3 { color: #b45309; font-weight: 900; } /* Bronze */
 
         /* --- NAV --- */
         .bottom-nav {
