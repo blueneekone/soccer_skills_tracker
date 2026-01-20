@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc } 
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
@@ -29,340 +29,359 @@ let isSignatureBlank = true;
 let currentCoachTeamId = null;
 let teamChart = null;
 
-// --- WAIT FOR DOM BEFORE ATTACHING LISTENERS ---
+// --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App initialized. Waiting for Auth...");
+    console.log("App v3 Loaded");
 
-    // AUTH LISTENERS
-    document.getElementById("loginGoogleBtn").addEventListener("click", () => {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(err => alert("Google Error: " + err.message));
-    });
+    // AUTH
+    document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
+    document.getElementById("loginEmailBtn").onclick = () => {
+        const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
+        if(e&&p) signInWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+    };
+    document.getElementById("signupEmailBtn").onclick = () => {
+        const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
+        if(e&&p) createUserWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+    };
+    document.getElementById("globalLogoutBtn").onclick = () => signOut(auth).then(()=>location.reload());
 
-    document.getElementById("loginEmailBtn").addEventListener("click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        if(!e || !p) return alert("Enter email and password");
-        signInWithEmailAndPassword(auth, e, p).catch(err => {
-            document.getElementById("authErrorMsg").innerText = err.message;
-            document.getElementById("authErrorMsg").style.display = "block";
-        });
-    });
-
-    document.getElementById("signupEmailBtn").addEventListener("click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        if(!e || !p) return alert("Enter email and password");
-        createUserWithEmailAndPassword(auth, e, p).catch(err => {
-            document.getElementById("authErrorMsg").innerText = err.message;
-            document.getElementById("authErrorMsg").style.display = "block";
-        });
-    });
-
-    document.getElementById("globalLogoutBtn").addEventListener("click", () => signOut(auth).then(()=>location.reload()));
-
-    // NAV LISTENERS
-    const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+    // NAVIGATION
     const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
-    navs.forEach((navId, idx) => {
-        document.getElementById(navId).addEventListener("click", () => {
-            views.forEach(v => document.getElementById(v).style.display = 'none');
+    const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+    navs.forEach((nid, i) => {
+        document.getElementById(nid).addEventListener("click", () => {
             navs.forEach(n => document.getElementById(n).classList.remove('active'));
-            document.getElementById(views[idx]).style.display = 'block';
-            document.getElementById(navId).classList.add('active');
+            views.forEach(v => document.getElementById(v).style.display='none');
+            document.getElementById(nid).classList.add('active');
+            document.getElementById(views[i]).style.display='block';
             
-            // Refresh Data on Tab Switch
-            if(views[idx] === 'viewStats') loadStats();
-            if(views[idx] === 'viewCoach') loadCoachDashboard(false, globalTeams);
-            if(views[idx] === 'viewTracker') setTimeout(resizeCanvas, 100);
+            // Refresh data on tab switch
+            if(views[i] === 'viewStats') loadStats();
+            if(views[i] === 'viewCoach') loadCoachDashboard(false, globalTeams);
         });
     });
 
-    // TRACKER LISTENERS
-    document.getElementById("addToSessionBtn").addEventListener("click", addToSession);
-    document.getElementById("submitWorkoutBtn").addEventListener("click", submitWorkout);
-    document.getElementById("startTimer").addEventListener("click", () => { if(!timerInterval) timerInterval=setInterval(()=>{seconds++;updateTimer();},1000); });
-    document.getElementById("stopTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval=null; document.getElementById("totalMinutes").value=Math.floor(seconds/60)||1; });
-    document.getElementById("resetTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval=null; seconds=0; document.getElementById("timerDisplay").innerText="00:00"; });
-    
-    // CANVAS
-    const canvas = document.getElementById("signatureCanvas");
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    canvas.addEventListener('mousedown', e => { isDrawing=true; ctx.beginPath(); draw(e, ctx, canvas); });
-    canvas.addEventListener('mousemove', e => { if(isDrawing) draw(e, ctx, canvas); });
-    window.addEventListener('mouseup', () => { isDrawing=false; if(!isCanvasBlank(canvas)) isSignatureBlank=false; });
-    canvas.addEventListener('touchstart', e => { isDrawing=true; ctx.beginPath(); draw(e, ctx, canvas); });
-    canvas.addEventListener('touchmove', e => { if(isDrawing) draw(e, ctx, canvas); });
-    document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.clearRect(0,0,canvas.width,canvas.height); isSignatureBlank=true; });
-
-    // SELECTORS
-    const uSelect = document.getElementById("unifiedSelect");
-    if(uSelect.options.length === 1) {
+    // DRILLS POPULATION
+    const us = document.getElementById("unifiedSelect");
+    if(us && us.options.length <= 1) {
         dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; uSelect.appendChild(opt);
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; us.appendChild(opt);
         });
     }
+
+    // TRACKER
+    document.getElementById("unifiedSelect").onchange = (e) => {
+        const s = dbData.foundationSkills.find(x=>x.name===e.target.value);
+        if(s) {
+            document.getElementById("drillInfoBox").style.display='block';
+            document.getElementById("drillDesc").innerText = s.drill;
+            const vb = document.getElementById("watchVideoBtn");
+            if(s.video) { vb.style.display='inline-block'; vb.onclick = () => { document.getElementById("videoPlayer").src=s.video; document.getElementById("videoModal").style.display='block'; } }
+            else vb.style.display='none';
+        }
+    };
     
-    // ROSTER & ADMIN
-    document.getElementById("rosterPdfInput").addEventListener("change", parseRosterPDF);
-    document.getElementById("saveParsedRosterBtn").addEventListener("click", saveRoster);
-    document.getElementById("addTeamBtn").addEventListener("click", addTeam);
-    document.getElementById("runSecurityAuditBtn").addEventListener("click", () => loadLogs('logs_security'));
+    document.getElementById("addToSessionBtn").onclick = () => {
+        const n = document.getElementById("unifiedSelect").value;
+        if(!n || n.includes("Loading")) return;
+        currentSessionItems.push({ name: n, sets: document.getElementById("inputSets").value||3, reps: document.getElementById("inputReps").value||20 });
+        renderSession();
+    };
+
+    document.getElementById("submitWorkoutBtn").onclick = submitWorkout;
+
+    // EFFORT BUTTONS
+    document.querySelectorAll(".outcome-btn").forEach(b => {
+        b.onclick = () => {
+            document.querySelectorAll(".outcome-btn").forEach(x=>x.classList.remove("active"));
+            b.classList.add("active");
+        }
+    });
+
+    // ROSTER & COACH
+    document.getElementById("rosterPdfInput").onchange = parsePDF;
+    document.getElementById("saveParsedRosterBtn").onclick = saveRosterList;
+    document.getElementById("coachAddPlayerBtn").onclick = manualAddPlayer;
+    
+    // ADMIN
+    document.getElementById("addTeamBtn").onclick = addTeam;
+    document.getElementById("generateTestLogBtn").onclick = () => logSystemEvent("TEST", "Test Log");
+
+    // MODALS
+    document.querySelectorAll(".close-btn").forEach(b => b.onclick = () => b.closest(".modal").style.display='none');
 });
 
 // --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        document.getElementById("loginUI").style.display = "none";
-        document.getElementById("appUI").style.display = "block";
-        document.getElementById("bottomNav").style.display = "flex";
+    if(user) {
+        document.getElementById("loginUI").style.display='none';
+        document.getElementById("appUI").style.display='block';
+        document.getElementById("bottomNav").style.display='flex';
         document.getElementById("coachName").innerText = user.email;
         
         await fetchConfig();
-        
-        // Roles
+        loadUserProfile();
+        loadStats();
+
+        // Check Roles
         const isDirector = globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
         const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
         
-        if (isDirector || myTeams.length > 0) {
-            document.getElementById("navCoach").style.display = "flex";
-            populateCoachDropdown(isDirector, myTeams);
+        if(isDirector || myTeams.length > 0) {
+            document.getElementById("navCoach").style.display='flex';
+            initCoachDropdown(isDirector, myTeams);
         }
-        if (isDirector) document.getElementById("navAdmin").style.display = "flex";
-        
-        loadStats();
+        if(isDirector) {
+            document.getElementById("navAdmin").style.display='flex';
+            renderAdminTables();
+        }
     } else {
-        document.getElementById("loginUI").style.display = "flex";
-        document.getElementById("appUI").style.display = "none";
-        document.getElementById("bottomNav").style.display = "none";
+        document.getElementById("loginUI").style.display='flex';
+        document.getElementById("appUI").style.display='none';
+        document.getElementById("bottomNav").style.display='none';
     }
 });
 
-// --- CORE FUNCTIONS ---
-
-function updateTimer() {
-    const m = Math.floor(seconds/60).toString().padStart(2,'0');
-    const s = (seconds%60).toString().padStart(2,'0');
-    document.getElementById("timerDisplay").innerText = `${m}:${s}`;
-}
-
-function draw(e, ctx, canvas) {
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    ctx.lineWidth = 2; ctx.lineCap = 'round';
-    ctx.lineTo(clientX - rect.left, clientY - rect.top);
-    ctx.stroke(); ctx.beginPath(); ctx.moveTo(clientX - rect.left, clientY - rect.top);
-}
-
-function isCanvasBlank(canvas) {
-    const context = canvas.getContext('2d');
-    const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
-    return !pixelBuffer.some(color => color !== 0);
-}
-
-function addToSession() {
-    const name = document.getElementById("unifiedSelect").value;
-    if (name === "Select Drill...") return alert("Pick a drill first");
-    const sets = document.getElementById("inputSets").value || "-";
-    const reps = document.getElementById("inputReps").value || "-";
-    currentSessionItems.push({ name, sets, reps });
-    renderSession();
-}
-
-function renderSession() {
-    const list = document.getElementById("sessionList");
-    list.innerHTML = currentSessionItems.map((i,idx) => `<li>${idx+1}. ${i.name} (${i.sets} x ${i.reps})</li>`).join("");
-}
-
-async function submitWorkout() {
-    if (currentSessionItems.length === 0) return alert("Add drills first!");
-    const teamId = document.getElementById("teamSelect").value;
-    const mins = document.getElementById("totalMinutes").value;
-    
-    // Name Logic
-    let player = "";
-    const dd = document.getElementById("playerDropdown");
-    if (dd && dd.offsetParent !== null && dd.value !== "") player = dd.value;
-    else player = `${document.getElementById("playerFirst").value} ${document.getElementById("playerLast").value}`;
-    
-    if(!teamId || !player || !mins) return alert("Fill all fields");
-    if(isSignatureBlank) return alert("Sign needed");
-
-    try {
-        await addDoc(collection(db, "reps"), {
-            timestamp: new Date(),
-            player: player,
-            teamId: teamId,
-            coachEmail: globalTeams.find(t=>t.id===teamId)?.coachEmail || DIRECTOR_EMAIL,
-            minutes: mins,
-            drills: currentSessionItems,
-            drillSummary: currentSessionItems.map(i=>i.name).join(", "),
-            signature: document.getElementById("signatureCanvas").toDataURL()
-        });
-        alert("Saved! +XP");
-        currentSessionItems = []; renderSession(); 
-        document.getElementById("totalMinutes").value = "";
-        loadStats();
-    } catch(e) { alert("Save error: " + e.message); }
-}
+// --- CORE LOGIC ---
 
 async function fetchConfig() {
-    // Teams
     try {
-        const s = await getDoc(doc(db, "config", "teams"));
-        if(s.exists()) globalTeams = s.data().list;
-        else globalTeams = dbData.teams; 
+        const d = await getDoc(doc(db, "config", "teams"));
+        if(d.exists()) globalTeams = d.data().list; else globalTeams = dbData.teams;
     } catch(e) { globalTeams = dbData.teams; }
     
     // Populate Team Select
     const ts = document.getElementById("teamSelect");
     ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
-    globalTeams.forEach(t => {
-        const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; ts.appendChild(opt);
-    });
+    globalTeams.forEach(t => { const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; ts.appendChild(o); });
     
-    // Roster Logic
-    ts.addEventListener("change", async (e) => {
+    ts.onchange = async (e) => {
         const tid = e.target.value;
-        const rRef = await getDoc(doc(db, "rosters", tid));
-        const pDrop = document.getElementById("playerDropdown");
-        const pArea = document.getElementById("playerSelectArea");
-        const mArea = document.getElementById("manualNameArea");
-        
-        if (rRef.exists() && rRef.data().players) {
-            pDrop.innerHTML = '<option value="">Select You...</option>';
-            rRef.data().players.sort().forEach(p => {
-                const o = document.createElement("option"); o.value=p; o.textContent=p; pDrop.appendChild(o);
-            });
-            pDrop.innerHTML += '<option value="manual">-- Not Listed --</option>';
-            pArea.style.display = "block"; mArea.style.display = "none";
+        const snap = await getDoc(doc(db, "rosters", tid));
+        const pd = document.getElementById("playerDropdown");
+        pd.innerHTML = '<option value="">Select You...</option>';
+        if(snap.exists() && snap.data().players) {
+            snap.data().players.sort().forEach(p => { const o=document.createElement("option"); o.value=p; o.textContent=p; pd.appendChild(o); });
+            pd.innerHTML += '<option value="manual">-- Not Listed --</option>';
+            document.getElementById("playerSelectArea").style.display='block';
+            document.getElementById("manualNameArea").style.display='none';
         } else {
-            pArea.style.display = "none"; mArea.style.display = "block";
+            document.getElementById("playerSelectArea").style.display='none';
+            document.getElementById("manualNameArea").style.display='block';
         }
-    });
-    
-    document.getElementById("playerDropdown").addEventListener("change", (e) => {
-        document.getElementById("manualNameArea").style.display = (e.target.value === "manual") ? "block" : "none";
-    });
+    };
 }
 
-// --- COACH & ADMIN ---
-function populateCoachDropdown(isDirector, myTeams) {
-    const sel = document.getElementById("adminTeamSelect");
-    document.getElementById("adminControls").style.display = "block";
-    sel.innerHTML = "";
+function renderSession() {
+    const l = document.getElementById("sessionList");
+    if(currentSessionItems.length===0) l.innerHTML='<li>Empty</li>';
+    else l.innerHTML = currentSessionItems.map((i,idx) => `<li>${idx+1}. ${i.name} (${i.sets}x${i.reps})</li>`).join("");
+}
+
+async function submitWorkout() {
+    if(currentSessionItems.length===0) return alert("Add drills!");
+    const tid = document.getElementById("teamSelect").value;
+    const mins = document.getElementById("totalMinutes").value;
     
-    const list = isDirector ? globalTeams : myTeams;
-    list.forEach(t => {
-        const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o);
-    });
+    let pname = "";
+    const pd = document.getElementById("playerDropdown");
+    if(pd && pd.offsetParent && pd.value !== "" && pd.value !== "manual") pname = pd.value;
+    else pname = `${document.getElementById("playerFirst").value} ${document.getElementById("playerLast").value}`;
     
-    if(list.length > 0) {
-        currentCoachTeamId = list[0].id;
-        loadCoachDashboard(isDirector, list);
+    if(!tid || !pname || !mins) return alert("Fill all info");
+    
+    // Save Profile
+    localStorage.setItem("aggie_last_team", tid);
+    if(pd.value !== "manual") localStorage.setItem("aggie_last_name", pname);
+
+    try {
+        await addDoc(collection(db, "reps"), {
+            timestamp: new Date(),
+            teamId: tid,
+            player: pname,
+            minutes: parseInt(mins),
+            drills: currentSessionItems,
+            drillSummary: currentSessionItems.map(x=>x.name).join(", "),
+            outcome: document.querySelector(".outcome-btn.active").dataset.val,
+            notes: document.getElementById("notes").value,
+            coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
+        });
+        alert("Workout Logged! +XP");
+        currentSessionItems=[]; renderSession(); loadStats();
+    } catch(e) { alert("Save Failed: "+e.message); }
+}
+
+async function loadStats() {
+    // Gamification Logic
+    const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(50));
+    const snap = await getDocs(q);
+    const logs = []; let totalMins = 0;
+    snap.forEach(d => { logs.push(d.data()); totalMins += d.data().minutes; });
+    
+    document.getElementById("statTotal").innerText = `${logs.length} Sessions`;
+    document.getElementById("statTime").innerText = totalMins;
+    
+    let lvl = "ROOKIE"; let xp = totalMins + (logs.length * 10);
+    if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+    document.getElementById("userLevelDisplay").innerText = lvl;
+    document.getElementById("xpBar").style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    
+    renderCalendar(logs);
+}
+
+function renderCalendar(logs) {
+    const grid = document.getElementById("calendarDays");
+    const header = document.getElementById("calMonthYear");
+    const now = new Date();
+    header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+    grid.innerHTML = "";
+    
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    
+    for(let i=1; i<=daysInMonth; i++) {
+        const dStr = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
+        const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
+        
+        const dayDiv = document.createElement("div");
+        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
+        dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
+        if(hasLog) {
+            dayDiv.onclick = () => {
+                const daily = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
+                document.getElementById("dayModalDate").innerText = dStr;
+                document.getElementById("dayModalContent").innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary} (${l.minutes}m)</div>`).join("");
+                document.getElementById("dayModal").style.display='block';
+            };
+        }
+        grid.appendChild(dayDiv);
     }
+}
+
+// --- COACH DASHBOARD ---
+function initCoachDropdown(isDirector, teams) {
+    const sel = document.getElementById("adminTeamSelect");
+    document.getElementById("adminControls").style.display = 'block';
+    sel.innerHTML = "";
+    const list = isDirector ? globalTeams : teams;
+    list.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
     
-    sel.addEventListener("change", (e) => {
-        currentCoachTeamId = e.target.value;
-        loadCoachDashboard(isDirector, list);
-    });
+    sel.onchange = () => loadCoachDashboard(isDirector, list);
+    // Initial Load
+    if(list.length > 0) { sel.value = list[0].id; loadCoachDashboard(isDirector, list); }
 }
 
 async function loadCoachDashboard(isDirector, teams) {
-    const tid = document.getElementById("adminTeamSelect").value || (teams[0]?.id);
+    const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
+    currentCoachTeamId = tid; // For upload
     
     const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"));
     const snap = await getDocs(q);
     const players = {};
-    let logs = 0;
+    let count = 0;
     
-    snap.forEach(d => {
-        const p = d.data().player;
-        if(!players[p]) players[p] = 0;
-        players[p] += parseInt(d.data().minutes);
-        logs++;
+    snap.forEach(doc => {
+        const d = doc.data();
+        if(!players[d.player]) players[d.player] = 0;
+        players[d.player] += d.minutes;
+        count++;
     });
     
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
-    document.getElementById("coachTotalReps").innerText = logs;
+    document.getElementById("coachTotalReps").innerText = count;
     
-    // List
-    document.getElementById("coachPlayerList").innerHTML = Object.keys(players).map(p => 
-        `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-            <b>${p}</b> <span>${players[p]}m</span>
-        </div>`
-    ).join("");
+    // Render Roster List with Delete
+    const rosterSnap = await getDoc(doc(db, "rosters", tid));
+    let rosterHtml = "";
+    if(rosterSnap.exists() && rosterSnap.data().players) {
+        rosterHtml = rosterSnap.data().players.map(p => `
+            <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <div><b>${p}</b> <span style="font-size:11px; color:#666;">(${players[p]||0} mins)</span></div>
+                <button class="delete-btn" onclick="window.deletePlayer('${p}')">Remove</button>
+            </div>
+        `).join("");
+    } else {
+        rosterHtml = "<div style='padding:10px; color:#999;'>No roster loaded.</div>";
+    }
+    document.getElementById("coachPlayerList").innerHTML = rosterHtml;
 }
 
-async function parseRosterPDF(e) {
-    const file = e.target.files[0];
-    if(!file) return;
+window.deletePlayer = async (name) => {
+    if(!confirm(`Remove ${name}?`)) return;
+    const tid = document.getElementById("adminTeamSelect").value;
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    if(snap.exists()) {
+        const newPlayers = snap.data().players.filter(p => p !== name);
+        await updateDoc(ref, { players: newPlayers });
+        loadCoachDashboard(false, globalTeams); // Reload
+    }
+}
+
+async function manualAddPlayer() {
+    const name = document.getElementById("coachAddPlayerName").value.trim();
+    if(!name) return;
+    const tid = document.getElementById("adminTeamSelect").value;
+    if(!tid) return alert("Select team");
+    
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    let list = snap.exists() ? snap.data().players : [];
+    list.push(name);
+    await setDoc(ref, { players: list }, { merge: true });
+    document.getElementById("coachAddPlayerName").value = "";
+    loadCoachDashboard(false, globalTeams);
+}
+
+// --- ROSTER PDF ---
+async function parsePDF(e) {
+    const f = e.target.files[0]; if(!f) return;
     try {
-        const buf = await file.arrayBuffer();
+        const buf = await f.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(buf).promise;
         let txt = "";
         for(let i=1; i<=pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            txt += content.items.map(x=>x.str).join(" ");
+            const p = await pdf.getPage(i);
+            const c = await p.getTextContent();
+            txt += c.items.map(x=>x.str).join(" ");
         }
-        // Dumb parser: Finds capitalized names roughly
+        // Basic parser
         const words = txt.split(" ").filter(w => /^[A-Z][a-z]+$/.test(w));
-        const names = [];
-        for(let i=0; i<words.length-1; i+=2) names.push(words[i] + " " + words[i+1]);
+        const pairs = []; for(let i=0; i<words.length-1; i+=2) pairs.push(words[i]+" "+words[i+1]);
         
-        document.getElementById("rosterTextRaw").value = names.join("\n");
-        document.getElementById("rosterReviewArea").style.display = "block";
+        document.getElementById("rosterTextRaw").value = pairs.join("\n");
+        document.getElementById("rosterReviewArea").style.display='block';
+        document.getElementById("rosterUploadStep1").style.display='none';
     } catch(err) { alert("PDF Error"); }
 }
 
-async function saveRoster() {
-    const tid = document.getElementById("adminTeamSelect").value;
-    const txt = document.getElementById("rosterTextRaw").value;
-    if(!tid) return alert("Select team in dropdown first");
-    await setDoc(doc(db, "rosters", tid), { players: txt.split("\n"), lastUpdated: new Date() });
-    alert("Roster Saved!");
-    document.getElementById("rosterReviewArea").style.display = "none";
+async function saveRosterList() {
+    const tid = currentCoachTeamId;
+    const list = document.getElementById("rosterTextRaw").value.split("\n").map(s=>s.trim()).filter(s=>s);
+    if(!tid) return alert("No team selected");
+    await setDoc(doc(db, "rosters", tid), { players: list, lastUpdated: new Date() });
+    alert("Saved");
+    document.getElementById("rosterReviewArea").style.display='none';
+    loadCoachDashboard(false, globalTeams);
 }
 
+// --- ADMIN ---
+function renderAdminTables() {
+    const tb = document.getElementById("teamTable").querySelector("tbody");
+    tb.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+}
 async function addTeam() {
     const id = document.getElementById("newTeamId").value;
     const name = document.getElementById("newTeamName").value;
     const email = document.getElementById("newCoachEmail").value;
-    if(!id || !name) return alert("Fill fields");
+    if(!id || !name) return;
     globalTeams.push({ id, name, coachEmail: email });
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Added. Refresh to see.");
+    alert("Team Added"); renderAdminTables();
 }
 
-async function loadLogs(col) {
-    const c = document.getElementById("logContainer");
-    c.innerHTML = "Loading...";
-    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
-    c.innerHTML = "";
-    snap.forEach(d => {
-        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;">${d.data().detail}</div>`;
-    });
-}
-
-function resizeCanvas() {
-    const c = document.getElementById("signatureCanvas");
-    if(c && c.parentElement) { c.width = c.parentElement.offsetWidth; c.height = 150; }
-}
-
-async function loadStats() {
-    // Basic stats for demo
-    const snap = await getDocs(query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(5)));
-    let html = "";
-    let total = 0;
-    snap.forEach(d => {
-        total += parseInt(d.data().minutes);
-        html += `<tr><td>${d.data().player}</td><td>${d.data().minutes}m</td></tr>`;
-    });
-    document.getElementById("teamLeaderboardTable").querySelector("tbody").innerHTML = html;
-    document.getElementById("statTime").innerText = total;
+// --- HELPERS ---
+function loadUserProfile() {
+    const t = localStorage.getItem("aggie_last_team");
+    if(t) document.getElementById("teamSelect").value = t; 
 }
