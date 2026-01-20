@@ -316,7 +316,7 @@ onAuthStateChanged(auth, async (user) => {
     
     loadStats(); resizeCanvas();
   } else {
-    loginUI.style.display = "block"; appUI.style.display = "none"; bottomNav.style.display = "none";
+    loginUI.style.display = "flex"; appUI.style.display = "none"; bottomNav.style.display = "none";
     globalLogoutBtn.style.display = "none";
   }
 });
@@ -471,45 +471,69 @@ function renderTeamLeaderboard(logs) {
     tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td style="font-weight:bold; color:#00263A;">${i+1}</td><td>${p}</td><td style="text-align:right; font-weight:bold; color:#10b981;">${playerStats[p]}m</td></tr>`).join("");
 }
 
-// --- UPDATED COACH DASHBOARD ---
+// --- UPDATED COACH DASHBOARD (Supports Multi-Team & Banners) ---
 async function loadCoachDashboard(isDirector=false, myTeams=[]) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList"); 
     listDiv.innerHTML = "Loading...";
 
+    // Determine Logic: Which teams to show?
     let q;
-    // USE CURRENTLY SELECTED TEAM ID IF AVAILABLE, ELSE FALLBACK
-    const selectedTeamId = currentCoachTeamId || (myTeams.length > 0 ? myTeams[0].id : null);
-    
-    // UPDATE DROPDOWN IF NEEDED (Forcing sync)
-    if(document.getElementById("adminTeamSelect").value !== selectedTeamId) {
-         document.getElementById("adminTeamSelect").value = selectedTeamId;
-    }
+    const selectedTeamId = document.getElementById("adminTeamSelect").value;
 
     if (isDirector) {
-        if(selectedTeamId === "all") { q = query(collection(db, "reps"), orderBy("timestamp", "desc")); } 
-        else { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); }
+        if(selectedTeamId === "all") {
+            q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
+        } else {
+            q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc"));
+        }
     } else {
-        if (selectedTeamId) { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); } 
-        else { q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc")); }
+        // NOT Director (Regular Coach)
+        if (myTeams.length > 1 && selectedTeamId) {
+            // Coach has multiple teams and picked one from dropdown
+             q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc"));
+        } else if (myTeams.length === 1) {
+            // Coach has 1 team, force that team
+             q = query(collection(db, "reps"), where("teamId", "==", myTeams[0].id), orderBy("timestamp", "desc"));
+        } else {
+            // Fallback for messy data (search by email)
+            q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc"));
+        }
     }
 
     try {
-        const snap = await getDocs(q); const players = {}; const allSessions = [];
-        snap.forEach(doc => { const d = doc.data(); allSessions.push(d); const p = d.player || "Unknown"; if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; players[p].count++; players[p].mins += parseInt(d.minutes || 0); players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); });
+        const snap = await getDocs(q); 
+        const players = {}; 
+        const allSessions = [];
+        
+        snap.forEach(doc => { 
+            const d = doc.data(); 
+            allSessions.push(d); 
+            const p = d.player || "Unknown"; 
+            if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; 
+            players[p].count++; 
+            players[p].mins += parseInt(d.minutes || 0); 
+            players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); 
+        });
 
         document.getElementById("coachTotalReps").innerText = allSessions.length; 
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
+        
         renderTeamChart(players);
 
-        // LIST RENDER with Blue Styles via CSS class implicit in div
-        if (Object.keys(players).length === 0) { listDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`; } 
-        else {
-            listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        // RENDER LIST WITH BLUE BANNER
+        let html = `<div style="${headerStyle}">Player Progress</div><div style="${tableContainerStyle} background:white;">`;
+        if (Object.keys(players).length === 0) {
+            html += `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`;
+        } else {
+            html += Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:bold; color:#333;">${p}</span> 
-                <span style="font-size:14px; color:#00263A; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
+                <span style="font-size:14px; color:${AGGIE_BLUE}; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
             </div>`).join("");
         }
+        html += `</div>`;
+        
+        listDiv.innerHTML = html;
 
         document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx"); };
     } catch (e) { listDiv.innerHTML = "No data found or permission denied."; console.error(e); }
@@ -522,7 +546,7 @@ function renderTeamChart(playersData) {
     teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
 }
 
-// ROSTER PARSING & SAVING (NOW READS FROM COACH DROPDOWN OR CURRENT ID)
+// ROSTER PARSING & SAVING
 document.getElementById("rosterPdfInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if(!file || file.type !== "application/pdf") return alert("Please select a PDF file.");
@@ -548,18 +572,8 @@ const saveRosterBtn = document.getElementById("saveParsedRosterBtn");
 if (saveRosterBtn) {
     saveRosterBtn.addEventListener("click", async () => {
         const rawText = document.getElementById("rosterTextRaw").value;
-        
-        // AUTO-DETECT TARGET TEAM
-        // If dropdown is visible, use that. If not, use currentCoachTeamId (for single-team coaches)
-        let targetTeamId = document.getElementById("adminTeamSelect").value;
-        if (!targetTeamId || targetTeamId === "") {
-            targetTeamId = currentCoachTeamId;
-        }
-
-        if (!targetTeamId || targetTeamId === "unassigned" || targetTeamId === "all") { 
-            return alert("Error: Could not determine which team to save to. Please ensure a team is selected."); 
-        }
-
+        const targetTeamId = document.getElementById("adminTeamSelect").value; 
+        if (!targetTeamId || targetTeamId === "unassigned" || targetTeamId === "all") { return alert("Please select a specific team in the Admin panel (above) to attach this roster to."); }
         if (!rawText) return alert("Roster list is empty.");
         const playerList = rawText.split("\n").map(name => name.trim()).filter(name => name.length > 0);
         try {
