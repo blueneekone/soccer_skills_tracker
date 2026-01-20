@@ -33,7 +33,7 @@ let userProfile = null;
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v14 Loaded (Smart PDF Import)");
+    console.log("App v15 Loaded (Automation)");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -404,7 +404,7 @@ async function loadCoachDashboard(isDirector, teams) {
 }
 
 window.deletePlayer = async (name) => {
-    if(!confirm(`Remove ${name} from roster?`)) return;
+    if(!confirm(`Remove ${name}?`)) return;
     const tid = document.getElementById("adminTeamSelect").value;
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
@@ -433,7 +433,7 @@ async function manualAddPlayer() {
     // 2. Automate Parent Login (if email provided)
     if(email) {
         await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-        alert(`Player Added! Parent (${email}) will be auto-connected on next login.`);
+        alert(`Player Added! Invitation set for ${email}`);
     } else {
         alert("Player Added to Roster");
     }
@@ -443,7 +443,7 @@ async function manualAddPlayer() {
     loadCoachDashboard(false, globalTeams);
 }
 
-// --- SMART PDF PARSER ---
+// --- ROSTER PDF ---
 async function parsePDF(e) {
     const f = e.target.files[0]; if(!f) return;
     try {
@@ -523,7 +523,7 @@ async function saveRosterList() {
 
 // --- EXPORT ---
 function exportSessionData() {
-    if(allSessionsCache.length === 0) return alert("No sessions.");
+    if(allSessionsCache.length === 0) return alert("No sessions to export.");
     const formatted = allSessionsCache.map(r => ({
         Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
         Player: r.player,
@@ -592,7 +592,12 @@ function runSecurityScan() {
 
 function runDebugLog() {
     const c = document.getElementById("logContainer");
-    const state = { version: "5.0.0", user: auth.currentUser?.email, teams: globalTeams.length, currentTeam: currentCoachTeamId };
+    const state = { 
+        version: "4.0.0 (Release)", 
+        user: auth.currentUser?.email, 
+        teamsLoaded: globalTeams.length, 
+        currentCoachTeam: currentCoachTeamId 
+    };
     c.innerHTML = `<pre style="font-size:10px;">${JSON.stringify(state, null, 2)}</pre>`;
 }
 
@@ -626,4 +631,8 @@ document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.cle
 
 function logSystemEvent(type, detail) {
     addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
+}
+
+function loadUserProfile() {
+    // Only used for UI pre-fill, core logic now uses Firestore 'userProfile' var
 }
