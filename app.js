@@ -107,34 +107,79 @@ function populateDropdowns() {
     });
 }
 
-// ADMIN LOGIC
+// --- ADMIN LOGIC ---
 function renderAdminTables() {
     const teamTbody = document.getElementById("teamTable").querySelector("tbody");
-    teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="admin-action-btn btn-delete" onclick="deleteTeam('${t.id}')">Delete</button></td></tr>`).join("");
+    teamTbody.innerHTML = globalTeams.map(t => `
+        <tr>
+            <td>${t.id}</td>
+            <td>${t.name}</td>
+            <td>${t.coachEmail}</td>
+            <td><button class="admin-action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Delete</button></td>
+        </tr>
+    `).join("");
+
     const adminTbody = document.getElementById("adminTable").querySelector("tbody");
-    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email === DIRECTOR_EMAIL ? '<span style="color:#aaa">Master</span>' : '<button class="admin-action-btn btn-delete" onclick="deleteAdmin(\''+email+'\')">Remove</button>'}</td></tr>`).join("");
+    adminTbody.innerHTML = globalAdmins.map(email => `
+        <tr>
+            <td>${email}</td>
+            <td>${email.toLowerCase() === MASTER_DIRECTOR.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="admin-action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Remove</button>`}</td>
+        </tr>
+    `).join("");
 }
+
+// FORCE GLOBAL SCOPE (This fixes the "Delete doesn't work" issue)
 window.deleteTeam = async (id) => {
     if(!confirm(`Delete team ${id}?`)) return;
     globalTeams = globalTeams.filter(t => t.id !== id);
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    renderAdminTables(); populateDropdowns(); logSystemEvent("TEAM_DELETED", `ID: ${id}`);
+    try {
+        await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+        renderAdminTables(); 
+        populateDropdowns(); 
+        alert("Team Deleted");
+    } catch(e) { 
+        alert("Database Error: You might not have permission. Check Rules."); 
+        console.error(e);
+    }
 };
+
 window.deleteAdmin = async (email) => {
     if(!confirm(`Remove admin access for ${email}?`)) return;
     globalAdmins = globalAdmins.filter(e => e !== email);
-    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    renderAdminTables(); logSecurityEvent("ADMIN_REMOVED", `Removed: ${email}`);
+    try {
+        await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+        renderAdminTables();
+        alert("Admin Removed");
+    } catch(e) { alert("Error removing admin."); }
 };
 document.getElementById("addTeamBtn").addEventListener("click", async () => {
     const id = document.getElementById("newTeamId").value.trim();
     const name = document.getElementById("newTeamName").value.trim();
     const email = document.getElementById("newCoachEmail").value.trim();
-    if(!id || !name || !email) return alert("Fill all fields");
+    
+    if(!id || !name || !email) return alert("Please fill all fields (ID, Name, Email)");
+    
+    // Optimistic Update (Update UI before DB to feel fast)
     const idx = globalTeams.findIndex(t => t.id === id);
-    if(idx >= 0) globalTeams[idx] = { id, name, coachEmail: email }; else globalTeams.push({ id, name, coachEmail: email });
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Saved"); renderAdminTables(); populateDropdowns(); logSystemEvent("TEAM_UPDATED", `Team: ${id}`);
+    if(idx >= 0) globalTeams[idx] = { id, name, coachEmail: email }; 
+    else globalTeams.push({ id, name, coachEmail: email });
+    
+    try {
+        console.log("Attempting to save teams to Firestore...");
+        await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+        alert("Team Saved Successfully!");
+        
+        // Clear inputs
+        document.getElementById("newTeamId").value = "";
+        document.getElementById("newTeamName").value = "";
+        document.getElementById("newCoachEmail").value = "";
+        
+        renderAdminTables(); 
+        populateDropdowns(); 
+    } catch(e) { 
+        console.error("SAVE FAILED:", e);
+        alert("Save Failed! Permission Denied. Did you update the Firestore Rules?"); 
+    }
 });
 document.getElementById("addAdminBtn").addEventListener("click", async () => {
     const email = document.getElementById("newAdminEmail").value.trim().toLowerCase();
