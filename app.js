@@ -51,6 +51,7 @@ const navAdmin = document.getElementById("navAdmin");
 const unifiedSelect = document.getElementById("unifiedSelect");
 const teamSelect = document.getElementById("teamSelect");
 const adminTeamSelect = document.getElementById("adminTeamSelect");
+const adminTeamSelect = document.getElementById("adminTeamSelect");
 const coachTeamSelect = document.getElementById("coachTeamSelect");
 const playerDropdown = document.getElementById("playerDropdown");
 const playerSelectArea = document.getElementById("playerSelectArea");
@@ -83,10 +84,12 @@ async function fetchConfig() {
 
 function populateDropdowns() {
     // 1. Main Tracker Team Select
+    // 1. Main Tracker Team Select
     teamSelect.innerHTML = '<option value="" disabled selected>Select Your Team...</option>';
     teamSelect.innerHTML += `<option value="unassigned" style="font-weight:bold; color:#00263A;">★ Unassigned / Tryouts</option>`;
     globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
     
+    // 2. Coach/Admin Dropdowns
     // 2. Coach/Admin Dropdowns
     if(coachTeamSelect) {
         coachTeamSelect.innerHTML = "";
@@ -135,14 +138,18 @@ playerDropdown.addEventListener("change", (e) => {
 });
 
 // --- ADMIN / COACH TABLES ---
+// --- ADMIN / COACH TABLES ---
 function renderAdminTables() {
     const teamTbody = document.getElementById("teamTable").querySelector("tbody");
+    teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Del</button></td></tr>`).join("");
     teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Del</button></td></tr>`).join("");
     
     const adminTbody = document.getElementById("adminTable").querySelector("tbody");
     adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Rem</button>`}</td></tr>`).join("");
+    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Rem</button>`}</td></tr>`).join("");
 }
 
+// Window functions
 // Window functions
 window.deleteTeam = async (id) => {
     if(!confirm(`Delete team ${id}?`)) return;
@@ -176,10 +183,19 @@ document.getElementById("addAdminBtn").addEventListener("click", async () => {
 });
 
 // Logs Logic
+// Logs Logic
 document.getElementById("tabSysLogs").addEventListener("click", () => loadLogs("logs_system"));
 document.getElementById("tabSecLogs").addEventListener("click", () => loadLogs("logs_security"));
 
 async function loadLogs(collectionName) {
+    document.querySelectorAll(".log-tab").forEach(b => { 
+        b.classList.remove("active"); 
+        b.style.borderBottom = "none"; b.style.color = "#64748b"; b.style.background = "#f8fafc";
+    });
+    const activeTab = collectionName === "logs_system" ? document.getElementById("tabSysLogs") : document.getElementById("tabSecLogs");
+    activeTab.classList.add("active");
+    activeTab.style.borderBottom = "2px solid #00263A"; activeTab.style.color = "#00263A"; activeTab.style.background = "white";
+
     document.querySelectorAll(".log-tab").forEach(b => { 
         b.classList.remove("active"); 
         b.style.borderBottom = "none"; b.style.color = "#64748b"; b.style.background = "#f8fafc";
@@ -197,8 +213,11 @@ async function loadLogs(collectionName) {
     if(snap.empty) { container.innerHTML = `<div style="padding:10px; color:#666;">No logs found.</div>`; return; }
     
     let html = ``;
+    let html = ``;
     snap.forEach(doc => {
         const d = doc.data(); const date = new Date(d.timestamp.seconds*1000).toLocaleString();
+        const styleColor = collectionName === "logs_security" ? "#dc2626" : "#2563eb";
+        html += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="color:#888; font-size:10px;">[${date}]</span> <span style="font-weight:bold; color:${styleColor};">${d.type}</span>: ${d.detail} <span style="font-size:10px; color:#aaa">(${d.user})</span></div>`;
         const styleColor = collectionName === "logs_security" ? "#dc2626" : "#2563eb";
         html += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="color:#888; font-size:10px;">[${date}]</span> <span style="font-weight:bold; color:${styleColor};">${d.type}</span>: ${d.detail} <span style="font-size:10px; color:#aaa">(${d.user})</span></div>`;
     });
@@ -231,13 +250,16 @@ onAuthStateChanged(auth, async (user) => {
         
         const adminControls = document.getElementById("adminControls");
         adminTeamSelect.innerHTML = "";
+        adminTeamSelect.innerHTML = "";
         
         if (isDirector) {
             navAdmin.style.display = "flex"; 
             adminControls.style.display = "block"; 
+            adminControls.style.display = "block"; 
             const allOpt = document.createElement("option"); allOpt.value = "all"; allOpt.textContent = "View All Teams";
             adminTeamSelect.appendChild(allOpt);
             globalTeams.forEach(t => {
+                const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
                 const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
             });
             // Default to ALL for director
@@ -246,7 +268,9 @@ onAuthStateChanged(auth, async (user) => {
             // Not Director (Regular Coach)
             if (myTeams.length > 1) {
                 adminControls.style.display = "block"; 
+                adminControls.style.display = "block"; 
                 myTeams.forEach(t => {
+                    const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
                     const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
                 });
                 currentCoachTeamId = myTeams[0].id; // Default to first
@@ -320,8 +344,16 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
 });
 
 // RENDER SESSION LIST (Uses List Styling from CSS)
+// RENDER SESSION LIST (Uses List Styling from CSS)
 function renderSessionList() {
     const list = document.getElementById("sessionList");
+    if(currentSessionItems.length === 0) { list.innerHTML = `<li style="text-align:center; padding:15px; color:#94a3b8; background:#f8fafc; border:none;">No drills added yet.</li>`; return; }
+    list.innerHTML = currentSessionItems.map((item, index) => `<li>
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>${index+1}. ${item.name}</span>
+            <span>${item.sets} x ${item.reps}</span>
+        </div>
+    </li>`).join("");
     if(currentSessionItems.length === 0) { list.innerHTML = `<li style="text-align:center; padding:15px; color:#94a3b8; background:#f8fafc; border:none;">No drills added yet.</li>`; return; }
     list.innerHTML = currentSessionItems.map((item, index) => `<li>
         <div style="display:flex; justify-content:space-between; font-weight:bold;">
@@ -382,6 +414,7 @@ async function loadStats() {
     document.getElementById("statTotal").innerText = logs.length; document.getElementById("statTime").innerText = mins;
     const xp = (logs.length * 10) + mins; let level = "Rookie"; if (xp > 100) level = "Starter"; if (xp > 500) level = "Pro"; if (xp > 1000) level = "Elite"; if (xp > 2000) level = "Legend";
     document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`; document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`; 
+    document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`; document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`; 
     renderCalendar(logs); renderPlayerTrendChart(logs); renderTeamLeaderboard(logs);
 }
 function renderCalendar(logs) {
@@ -404,6 +437,11 @@ function showDayDetails(dateObj, logs) {
         <div style="font-size:12px; color:#666; margin-bottom:5px;">${l.minutes}m • Signature: ${l.signatureImg ? '✓' : 'X'}</div>
         <div style="background:#f8fafc; padding:10px; border-radius:6px; font-size:13px;">${l.drillSummary}</div>
     </div>`).join("");
+    content.innerHTML = dayLogs.length === 0 ? "<p style='padding:15px; text-align:center;'>No sessions.</p>" : dayLogs.map(l => `<div style="padding:15px; border-bottom:1px solid #eee;">
+        <div style="font-weight:bold; color:#00263A;">${l.player}</div>
+        <div style="font-size:12px; color:#666; margin-bottom:5px;">${l.minutes}m • Signature: ${l.signatureImg ? '✓' : 'X'}</div>
+        <div style="background:#f8fafc; padding:10px; border-radius:6px; font-size:13px;">${l.drillSummary}</div>
+    </div>`).join("");
     modal.style.display = "block";
 }
 let playerTrendChart = null;
@@ -412,15 +450,19 @@ function renderPlayerTrendChart(logs) {
     const labels = []; const dataPoints = [];
     for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(new Date().getDate() - i); labels.push(d.toLocaleDateString('en-US', {weekday:'short'})); const dayMins = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((sum, l) => sum + parseInt(l.minutes), 0); dataPoints.push(dayMins); }
     playerTrendChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutes', data: dataPoints, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
+    playerTrendChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutes', data: dataPoints, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
 }
 function renderTeamLeaderboard(logs) {
     const tableBody = document.getElementById("teamLeaderboardTable").querySelector("tbody");
     if(!logs.length) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:15px; color:#94a3b8;">No data yet.</td></tr>`; return; }
+    if(!logs.length) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:15px; color:#94a3b8;">No data yet.</td></tr>`; return; }
     const playerStats = {}; logs.forEach(l => { const name = l.player || "Unknown"; if(!playerStats[name]) playerStats[name] = 0; playerStats[name] += parseInt(l.minutes); });
     const sortedPlayers = Object.keys(playerStats).sort((a,b) => playerStats[b] - playerStats[a]).slice(0, 5);
     tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td style="font-weight:bold; color:#00263A;">${i+1}</td><td>${p}</td><td style="text-align:right; font-weight:bold; color:#10b981;">${playerStats[p]}m</td></tr>`).join("");
+    tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td style="font-weight:bold; color:#00263A;">${i+1}</td><td>${p}</td><td style="text-align:right; font-weight:bold; color:#10b981;">${playerStats[p]}m</td></tr>`).join("");
 }
 
+// --- UPDATED COACH DASHBOARD ---
 // --- UPDATED COACH DASHBOARD ---
 async function loadCoachDashboard(isDirector=false, myTeams=[]) {
     const user = auth.currentUser;
@@ -439,12 +481,16 @@ async function loadCoachDashboard(isDirector=false, myTeams=[]) {
     if (isDirector) {
         if(selectedTeamId === "all") { q = query(collection(db, "reps"), orderBy("timestamp", "desc")); } 
         else { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); }
+        if(selectedTeamId === "all") { q = query(collection(db, "reps"), orderBy("timestamp", "desc")); } 
+        else { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); }
     } else {
         if (selectedTeamId) { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); } 
         else { q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc")); }
     }
 
     try {
+        const snap = await getDocs(q); const players = {}; const allSessions = [];
+        snap.forEach(doc => { const d = doc.data(); allSessions.push(d); const p = d.player || "Unknown"; if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; players[p].count++; players[p].mins += parseInt(d.minutes || 0); players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); });
         const snap = await getDocs(q); const players = {}; const allSessions = [];
         snap.forEach(doc => { const d = doc.data(); allSessions.push(d); const p = d.player || "Unknown"; if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; players[p].count++; players[p].mins += parseInt(d.minutes || 0); players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); });
 
@@ -456,7 +502,12 @@ async function loadCoachDashboard(isDirector=false, myTeams=[]) {
         if (Object.keys(players).length === 0) { listDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`; } 
         else {
             listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        // LIST RENDER with Blue Styles via CSS class implicit in div
+        if (Object.keys(players).length === 0) { listDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`; } 
+        else {
+            listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:bold; color:#333;">${p}</span> 
+                <span style="font-size:14px; color:#00263A; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
                 <span style="font-size:14px; color:#00263A; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
             </div>`).join("");
         }
