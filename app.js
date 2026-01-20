@@ -7,7 +7,6 @@ import { dbData } from "./data.js";
 
 // MASTER FALLBACK
 const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
-const AGGIE_BLUE = "#00263A"; // For consistent styling
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
@@ -49,7 +48,7 @@ const navCoach = document.getElementById("navCoach");
 const navAdmin = document.getElementById("navAdmin");
 const unifiedSelect = document.getElementById("unifiedSelect");
 const teamSelect = document.getElementById("teamSelect");
-const adminTeamSelect = document.getElementById("adminTeamSelect"); // Used for Dashboard filtering
+const adminTeamSelect = document.getElementById("adminTeamSelect");
 const coachTeamSelect = document.getElementById("coachTeamSelect");
 const playerDropdown = document.getElementById("playerDropdown");
 const playerSelectArea = document.getElementById("playerSelectArea");
@@ -81,12 +80,12 @@ async function fetchConfig() {
 }
 
 function populateDropdowns() {
-    // 1. Main Tracker Team Select (For Players)
+    // 1. Main Tracker Team Select
     teamSelect.innerHTML = '<option value="" disabled selected>Select Your Team...</option>';
     teamSelect.innerHTML += `<option value="unassigned" style="font-weight:bold; color:#00263A;">★ Unassigned / Tryouts</option>`;
     globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
     
-    // 2. Coach/Admin Dropdowns (populated later based on permissions)
+    // 2. Coach/Admin Dropdowns
     if(coachTeamSelect) {
         coachTeamSelect.innerHTML = "";
         globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
@@ -133,23 +132,16 @@ playerDropdown.addEventListener("change", (e) => {
     else { manualNameArea.style.display = "none"; }
 });
 
-// --- ADMIN / COACH LOGIC ---
-
-// Helper for "Blue Banner" Headers
-const headerStyle = `background: ${AGGIE_BLUE}; color: white; padding: 10px; border-radius: 6px 6px 0 0; font-weight: bold; margin-bottom: 0;`;
-const tableContainerStyle = `border: 1px solid #ccc; border-top: none; padding: 0; border-radius: 0 0 6px 6px; overflow: hidden;`;
-
+// --- ADMIN / COACH TABLES ---
 function renderAdminTables() {
-    // Teams Table
     const teamTbody = document.getElementById("teamTable").querySelector("tbody");
-    teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="admin-action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Delete</button></td></tr>`).join("");
+    teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Del</button></td></tr>`).join("");
     
-    // Admins Table
     const adminTbody = document.getElementById("adminTable").querySelector("tbody");
-    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="admin-action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Remove</button>`}</td></tr>`).join("");
+    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Rem</button>`}</td></tr>`).join("");
 }
 
-// Window functions for HTML buttons
+// Window functions
 window.deleteTeam = async (id) => {
     if(!confirm(`Delete team ${id}?`)) return;
     globalTeams = globalTeams.filter(t => t.id !== id);
@@ -181,14 +173,19 @@ document.getElementById("addAdminBtn").addEventListener("click", async () => {
     alert("Admin Added"); document.getElementById("newAdminEmail").value=""; renderAdminTables(); logSecurityEvent("ADMIN_ADDED", `Added: ${email}`);
 });
 
-// Logs Logic with Banners
+// Logs Logic
 document.getElementById("tabSysLogs").addEventListener("click", () => loadLogs("logs_system"));
 document.getElementById("tabSecLogs").addEventListener("click", () => loadLogs("logs_security"));
 
 async function loadLogs(collectionName) {
-    document.querySelectorAll(".log-tab").forEach(b => b.classList.remove("active"));
-    if(collectionName === "logs_system") document.getElementById("tabSysLogs").classList.add("active"); else document.getElementById("tabSecLogs").classList.add("active");
-    
+    document.querySelectorAll(".log-tab").forEach(b => { 
+        b.classList.remove("active"); 
+        b.style.borderBottom = "none"; b.style.color = "#64748b"; b.style.background = "#f8fafc";
+    });
+    const activeTab = collectionName === "logs_system" ? document.getElementById("tabSysLogs") : document.getElementById("tabSecLogs");
+    activeTab.classList.add("active");
+    activeTab.style.borderBottom = "2px solid #00263A"; activeTab.style.color = "#00263A"; activeTab.style.background = "white";
+
     const container = document.getElementById("logContainer"); 
     container.innerHTML = "Loading...";
     
@@ -197,14 +194,12 @@ async function loadLogs(collectionName) {
     
     if(snap.empty) { container.innerHTML = `<div style="padding:10px; color:#666;">No logs found.</div>`; return; }
     
-    let html = `<div style="${headerStyle}">System Activity Log</div><div style="${tableContainerStyle} background:white;">`;
-    
+    let html = ``;
     snap.forEach(doc => {
         const d = doc.data(); const date = new Date(d.timestamp.seconds*1000).toLocaleString();
-        const styleClass = collectionName === "logs_security" ? "log-sec" : "log-type";
-        html += `<div class="log-entry" style="border-bottom:1px solid #eee; padding:8px;"><span class="log-time" style="color:#888; font-size:12px;">[${date}]</span> <span class="${styleClass}" style="font-weight:bold;">${d.type}</span>: ${d.detail} <span style="font-size:11px; color:#aaa">(${d.user})</span></div>`;
+        const styleColor = collectionName === "logs_security" ? "#dc2626" : "#2563eb";
+        html += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="color:#888; font-size:10px;">[${date}]</span> <span style="font-weight:bold; color:${styleColor};">${d.type}</span>: ${d.detail} <span style="font-size:10px; color:#aaa">(${d.user})</span></div>`;
     });
-    html += `</div>`;
     container.innerHTML = html;
 }
 
@@ -212,7 +207,7 @@ document.getElementById("runSecurityAuditBtn").addEventListener("click", () => {
     logSecurityEvent("MANUAL_AUDIT", "Audit triggered by user"); alert("Audit log entry created."); loadLogs("logs_security");
 });
 
-// --- AUTH & DYNAMIC DASHBOARD STARTUP ---
+// --- AUTH & DASHBOARD STARTUP ---
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
@@ -221,52 +216,34 @@ onAuthStateChanged(auth, async (user) => {
     await fetchConfig(); loadUserProfile();
     
     const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-    
-    // FIND ALL TEAMS associated with this coach
     const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
     
     if(isDirector || myTeams.length > 0) {
         navCoach.style.display = "flex";
         
-        // --- DASHBOARD CONTROLS (TEAM SELECTOR) ---
-        // We reuse the 'adminControls' div but make it visible for coaches too if they have multiple teams
         const adminControls = document.getElementById("adminControls");
-        
-        // POPULATE THE DASHBOARD SELECTOR
-        adminTeamSelect.innerHTML = ""; // Clear
+        adminTeamSelect.innerHTML = "";
         
         if (isDirector) {
-            // Director sees ALL teams + "All Teams" option
             navAdmin.style.display = "flex"; 
-            adminControls.style.display = "block"; // Always show controls for director
-            
+            adminControls.style.display = "block"; 
             const allOpt = document.createElement("option"); allOpt.value = "all"; allOpt.textContent = "View All Teams";
             adminTeamSelect.appendChild(allOpt);
-            
             globalTeams.forEach(t => {
-                const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; 
-                adminTeamSelect.appendChild(opt);
+                const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
             });
         } else {
-            // Regular Coach Logic
             if (myTeams.length > 1) {
-                // Multi-Team Coach: Show dropdown with THEIR teams
-                adminControls.style.display = "block"; // Show the filter box
+                adminControls.style.display = "block"; 
                 myTeams.forEach(t => {
-                    const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; 
-                    adminTeamSelect.appendChild(opt);
+                    const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
                 });
             } else {
-                // Single Team Coach: Hide dropdown (Auto-select happens in loadCoachDashboard)
                 adminControls.style.display = "none"; 
-                // We don't populate dropdown, loadCoachDashboard will default to myTeams[0]
             }
         }
         
-        // Attach Listener to Reload Dashboard on Change
         adminTeamSelect.addEventListener("change", () => loadCoachDashboard(isDirector, myTeams));
-        
-        // Initial Load
         if(isDirector) { renderAdminTables(); loadLogs("logs_system"); }
     }
     
@@ -290,8 +267,6 @@ function switchTab(tab) {
     if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); } 
     if (tab === 'coach') { 
         viewCoach.style.display = "block"; navCoach.classList.add("active"); 
-        // Pass params if needed, but usually state is handled globally or via DOM
-        // Re-trigger load to ensure current selector value is respected
         const user = auth.currentUser;
         if(user) {
              const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
@@ -327,13 +302,16 @@ document.getElementById("addToSessionBtn").addEventListener("click", () => {
     currentSessionItems.push({ name: skillName, sets: sets, reps: reps }); renderSessionList(); unifiedSelect.selectedIndex = 0; document.getElementById("drillInfoBox").style.display = "none";
 });
 
-// BLUE BANNER SESSION LIST
+// RENDER SESSION LIST (Uses List Styling from CSS)
 function renderSessionList() {
     const list = document.getElementById("sessionList");
-    if(currentSessionItems.length === 0) { list.innerHTML = `<li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li>`; return; }
-    
-    // Simple list, no header needed here as it's inside the user tracker
-    list.innerHTML = currentSessionItems.map((item, index) => `<li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;"><span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span></li>`).join("");
+    if(currentSessionItems.length === 0) { list.innerHTML = `<li style="text-align:center; padding:15px; color:#94a3b8; background:#f8fafc; border:none;">No drills added yet.</li>`; return; }
+    list.innerHTML = currentSessionItems.map((item, index) => `<li>
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>${index+1}. ${item.name}</span>
+            <span>${item.sets} x ${item.reps}</span>
+        </div>
+    </li>`).join("");
 }
 
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
@@ -365,7 +343,6 @@ document.getElementById("submitWorkoutBtn").addEventListener("click", async () =
     try { await addDoc(collection(db, "reps"), sessionData); alert(`Logged! +${10 + parseInt(mins)} XP`); logSystemEvent("SESSION_LOGGED", `Player: ${playerName}, Team: ${teamId}, Mins: ${mins}`); currentSessionItems = []; renderSessionList(); document.getElementById("totalMinutes").value = ""; document.getElementById("notes").value = ""; ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; document.getElementById("resetTimer").click(); loadStats(); } catch(e) { console.error(e); alert("Error saving"); }
 });
 
-// TIMER & SIGNATURE (No changes needed, code omitted for brevity but assumed present in your file structure if copying partial. Since I am giving full file, I will include standard blocks)
 function updateTimer() { seconds++; const m = Math.floor(seconds / 60).toString().padStart(2, "0"); const s = (seconds % 60).toString().padStart(2, "0"); timerDisplay.innerText = `${m}:${s}`; }
 document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
 document.getElementById("stopTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds / 60); minsInput.value = m > 0 ? m : 1; });
@@ -380,7 +357,6 @@ function checkSignature() { if (!isCanvasBlank(canvas)) { canvas.style.borderCol
 canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
 document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
 
-// HELPERS & STATS
 function getPlayerColor(name) { let hash = 0; for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); } const hue = Math.abs(hash % 360); return `hsl(${hue}, 70%, 40%)`; }
 async function loadStats() {
     const user = auth.currentUser; if (!user) return;
@@ -388,7 +364,7 @@ async function loadStats() {
     snap.forEach(doc => { const d = doc.data(); logs.push(d); mins += parseInt(d.minutes || 0); });
     document.getElementById("statTotal").innerText = logs.length; document.getElementById("statTime").innerText = mins;
     const xp = (logs.length * 10) + mins; let level = "Rookie"; if (xp > 100) level = "Starter"; if (xp > 500) level = "Pro"; if (xp > 1000) level = "Elite"; if (xp > 2000) level = "Legend";
-    document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`; document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`; if(logs.length) document.getElementById("statAvg").innerText = Math.round(mins / logs.length);
+    document.getElementById("userLevelDisplay").innerText = `${level} • ${xp} XP`; document.getElementById("xpBar").style.width = `${Math.min((xp%500)/500*100, 100)}%`; 
     renderCalendar(logs); renderPlayerTrendChart(logs); renderTeamLeaderboard(logs);
 }
 function renderCalendar(logs) {
@@ -406,7 +382,11 @@ function renderCalendar(logs) {
 function showDayDetails(dateObj, logs) {
     const modal = document.getElementById("dayModal"); const content = document.getElementById("dayModalContent"); document.getElementById("dayModalDate").innerText = dateObj.toDateString();
     const dayLogs = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dateObj.toDateString());
-    content.innerHTML = dayLogs.length === 0 ? "<p>No sessions.</p>" : dayLogs.map(l => `<div class="day-session-item"><div class="day-session-header"><span>${l.player}</span><span>${l.minutes}m (${l.signatureImg ? '✓' : 'X'})</span></div><div class="day-session-drills">${l.drillSummary}</div></div>`).join("");
+    content.innerHTML = dayLogs.length === 0 ? "<p style='padding:15px; text-align:center;'>No sessions.</p>" : dayLogs.map(l => `<div style="padding:15px; border-bottom:1px solid #eee;">
+        <div style="font-weight:bold; color:#00263A;">${l.player}</div>
+        <div style="font-size:12px; color:#666; margin-bottom:5px;">${l.minutes}m • Signature: ${l.signatureImg ? '✓' : 'X'}</div>
+        <div style="background:#f8fafc; padding:10px; border-radius:6px; font-size:13px;">${l.drillSummary}</div>
+    </div>`).join("");
     modal.style.display = "block";
 }
 let playerTrendChart = null;
@@ -414,79 +394,50 @@ function renderPlayerTrendChart(logs) {
     const ctx = document.getElementById('playerTrendChart').getContext('2d'); if (playerTrendChart) playerTrendChart.destroy();
     const labels = []; const dataPoints = [];
     for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(new Date().getDate() - i); labels.push(d.toLocaleDateString('en-US', {weekday:'short'})); const dayMins = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((sum, l) => sum + parseInt(l.minutes), 0); dataPoints.push(dayMins); }
-    playerTrendChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutes', data: dataPoints, backgroundColor: AGGIE_BLUE, borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
+    playerTrendChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Minutes', data: dataPoints, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
 }
 function renderTeamLeaderboard(logs) {
     const tableBody = document.getElementById("teamLeaderboardTable").querySelector("tbody");
-    if(!logs.length) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No data yet.</td></tr>`; return; }
+    if(!logs.length) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:15px; color:#94a3b8;">No data yet.</td></tr>`; return; }
     const playerStats = {}; logs.forEach(l => { const name = l.player || "Unknown"; if(!playerStats[name]) playerStats[name] = 0; playerStats[name] += parseInt(l.minutes); });
     const sortedPlayers = Object.keys(playerStats).sort((a,b) => playerStats[b] - playerStats[a]).slice(0, 5);
-    tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td class="leader-rank">${i+1}</td><td class="leader-name">${p}</td><td class="leader-score">${playerStats[p]}m</td></tr>`).join("");
+    tableBody.innerHTML = sortedPlayers.map((p, i) => `<tr><td style="font-weight:bold; color:#00263A;">${i+1}</td><td>${p}</td><td style="text-align:right; font-weight:bold; color:#10b981;">${playerStats[p]}m</td></tr>`).join("");
 }
 
-// --- UPDATED COACH DASHBOARD (Supports Multi-Team & Banners) ---
+// --- UPDATED COACH DASHBOARD ---
 async function loadCoachDashboard(isDirector=false, myTeams=[]) {
     const user = auth.currentUser;
     const listDiv = document.getElementById("coachPlayerList"); 
     listDiv.innerHTML = "Loading...";
 
-    // Determine Logic: Which teams to show?
     let q;
     const selectedTeamId = document.getElementById("adminTeamSelect").value;
 
     if (isDirector) {
-        if(selectedTeamId === "all") {
-            q = query(collection(db, "reps"), orderBy("timestamp", "desc"));
-        } else {
-            q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc"));
-        }
+        if(selectedTeamId === "all") { q = query(collection(db, "reps"), orderBy("timestamp", "desc")); } 
+        else { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); }
     } else {
-        // NOT Director (Regular Coach)
-        if (myTeams.length > 1 && selectedTeamId) {
-            // Coach has multiple teams and picked one from dropdown
-             q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc"));
-        } else if (myTeams.length === 1) {
-            // Coach has 1 team, force that team
-             q = query(collection(db, "reps"), where("teamId", "==", myTeams[0].id), orderBy("timestamp", "desc"));
-        } else {
-            // Fallback for messy data (search by email)
-            q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc"));
-        }
+        if (myTeams.length > 1 && selectedTeamId) { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); } 
+        else if (myTeams.length === 1) { q = query(collection(db, "reps"), where("teamId", "==", myTeams[0].id), orderBy("timestamp", "desc")); } 
+        else { q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc")); }
     }
 
     try {
-        const snap = await getDocs(q); 
-        const players = {}; 
-        const allSessions = [];
-        
-        snap.forEach(doc => { 
-            const d = doc.data(); 
-            allSessions.push(d); 
-            const p = d.player || "Unknown"; 
-            if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; 
-            players[p].count++; 
-            players[p].mins += parseInt(d.minutes || 0); 
-            players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); 
-        });
+        const snap = await getDocs(q); const players = {}; const allSessions = [];
+        snap.forEach(doc => { const d = doc.data(); allSessions.push(d); const p = d.player || "Unknown"; if(!players[p]) players[p] = { count: 0, mins: 0, history: [] }; players[p].count++; players[p].mins += parseInt(d.minutes || 0); players[p].history.push(new Date(d.timestamp.seconds * 1000).toLocaleDateString()); });
 
         document.getElementById("coachTotalReps").innerText = allSessions.length; 
         document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
-        
         renderTeamChart(players);
 
-        // RENDER LIST WITH BLUE BANNER
-        let html = `<div style="${headerStyle}">Player Progress</div><div style="${tableContainerStyle} background:white;">`;
-        if (Object.keys(players).length === 0) {
-            html += `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`;
-        } else {
-            html += Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        // LIST RENDER with Blue Styles via CSS class implicit in div
+        if (Object.keys(players).length === 0) { listDiv.innerHTML = `<div style="padding:15px; text-align:center; color:#888;">No data found for this selection.</div>`; } 
+        else {
+            listDiv.innerHTML = Object.keys(players).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:bold; color:#333;">${p}</span> 
-                <span style="font-size:14px; color:${AGGIE_BLUE}; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
+                <span style="font-size:14px; color:#00263A; background:#f0f4f8; padding:4px 8px; border-radius:4px;">${players[p].mins}m <small style="color:#888">(${players[p].count} sess)</small></span>
             </div>`).join("");
         }
-        html += `</div>`;
-        
-        listDiv.innerHTML = html;
 
         document.getElementById("exportXlsxBtn").onclick = () => { const formatted = allSessions.map(r => ({ Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(), Team: r.teamId || "N/A", Player: r.player, Duration_Mins: r.minutes, Drills: r.drillSummary, Verified: r.signatureImg ? "Signed" : "Not Signed", Notes: r.notes })); const ws = XLSX.utils.json_to_sheet(formatted); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TrainingData"); XLSX.writeFile(wb, "AggiesFC_Export.xlsx"); };
     } catch (e) { listDiv.innerHTML = "No data found or permission denied."; console.error(e); }
