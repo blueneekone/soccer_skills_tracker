@@ -43,12 +43,13 @@
             letter-spacing: -0.5px;
         }
 
+        /* THE BLUE BANNER CARD STYLE */
         .card { 
             background: var(--white); 
             border-radius: 12px; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
             margin-bottom: 20px; 
-            overflow: hidden; 
+            overflow: hidden; /* Ensures header corners stay rounded */
             border: 1px solid #e2e8f0;
         }
 
@@ -63,7 +64,9 @@
             align-items: center;
         }
         
-        .card-body { padding: 15px; }
+        .card-body {
+            padding: 15px;
+        }
 
         /* --- FORMS --- */
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -92,9 +95,9 @@
         }
         .btn-delete { background: var(--danger); }
 
-        /* --- LOGIN (CENTERED) --- */
+        /* --- LOGIN --- */
         #loginUI { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; text-align: center; }
-        .login-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 20px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; }
+        .login-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; }
 
         /* --- BOTTOM NAV --- */
         .bottom-nav {
@@ -112,25 +115,20 @@
         .session-stack { list-style: none; padding: 0; margin: 0; }
         .session-stack li { background: #f1f5f9; margin-bottom: 8px; border-radius: 6px; padding: 10px; border-left: 4px solid var(--aggie-blue); }
 
-        /* EFFORT BUTTONS */
         #outcome { display: flex; gap: 10px; margin-bottom: 15px; }
-        .outcome-btn { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; text-align: center; font-weight: bold; color: #64748b; }
+        .outcome-btn { flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; text-align: center; font-weight: bold; }
         .outcome-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
 
         canvas#signatureCanvas { border: 2px dashed #cbd5e1; border-radius: 8px; width: 100%; height: 150px; background: #fcfcfc; touch-action: none; }
 
-        /* --- STATS & CALENDAR --- */
+        /* --- STATS & ADMIN --- */
         .xp-bar-container { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .xp-bar-fill { height: 100%; background: var(--aggie-gold); width: 0%; transition: width 0.5s ease; }
         
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
-        .cal-day { 
-            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            font-size: 12px; border-radius: 6px; background: #f8fafc; position: relative; border: 1px solid #e2e8f0;
-        }
-        .cal-day.today { border: 2px solid var(--aggie-blue); font-weight: bold; background: white; }
-        .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; border-color: #93c5fd; }
-        .cal-dot { width: 5px; height: 5px; background: #1e40af; border-radius: 50%; margin-top: 2px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; border-radius: 4px; background: #f8fafc; position: relative; }
+        .cal-day.today { border: 2px solid var(--aggie-blue); font-weight: bold; }
+        .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; }
         
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .admin-table th { text-align: left; padding: 10px; background: #f1f5f9; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
@@ -222,7 +220,7 @@
                     <div style="margin-top:20px;">
                         <label>Session Stack</label>
                         <ul id="sessionList" class="session-stack">
-                            <li style="text-align:center; padding:15px; color:#94a3b8; background: #f8fafc; border:none; border-left:none;">No drills added yet.</li>
+                            <li style="text-align:center; padding:15px; color:#94a3b8; background: #f8fafc; border:none;">No drills added yet.</li>
                         </ul>
                     </div>
                 </div>
@@ -243,9 +241,9 @@
 
                     <label>Effort Level</label>
                     <div id="outcome">
-                        <div class="outcome-btn" data-val="light" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Light</div>
-                        <div class="outcome-btn active" data-val="moderate" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Moderate</div>
-                        <div class="outcome-btn" data-val="hard" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Hard</div>
+                        <div class="outcome-btn active" data-val="success">Great</div>
+                        <div class="outcome-btn" data-val="struggled" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Hard</div>
+                        <div class="outcome-btn" data-val="injured" onclick="this.parentElement.querySelectorAll('.active').forEach(e=>e.classList.remove('active')); this.classList.add('active');">Injured</div>
                     </div>
                     
                     <textarea id="notes" placeholder="Notes for coach..." rows="2"></textarea>
@@ -290,7 +288,7 @@
                     <span style="font-size:11px; font-weight:normal; opacity:0.9;">Total: <b id="statTotal">0</b></span>
                 </div>
                 <div class="card-body">
-                    <div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:10px; color:#64748b; margin-bottom:5px; font-weight:bold;">
+                    <div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:10px; color:#64748b; margin-bottom:5px;">
                         <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
                     </div>
                     <div id="calendarDays" class="calendar-grid"></div>
@@ -346,24 +344,6 @@
                 </div>
             </div>
 
-            <div class="card" style="border: 1px solid var(--aggie-blue);">
-                <div class="card-header">📂 Upload Roster (PDF)</div>
-                <div class="card-body">
-                    <p style="font-size:13px; color:#64748b; margin-top:0;">Select a team above (if applicable) and upload their roster.</p>
-                    
-                    <div id="rosterUploadStep1">
-                        <input type="file" id="rosterPdfInput" accept="application/pdf">
-                    </div>
-
-                    <div id="rosterReviewArea" style="display:none;">
-                        <label>Review Extracted Names</label>
-                        <textarea id="rosterTextRaw" rows="6" style="font-family:monospace; font-size:12px;"></textarea>
-                        <button id="saveParsedRosterBtn" class="primary-btn">Save to Current Team</button>
-                        <button onclick="document.getElementById('rosterReviewArea').style.display='none'; document.getElementById('rosterUploadStep1').style.display='block';" class="secondary-btn" style="width:100%; margin-top:10px;">Cancel</button>
-                    </div>
-                </div>
-            </div>
-
             <div class="card">
                 <div class="card-header">
                     <span>Player Roster</span>
@@ -376,6 +356,24 @@
 
         <div id="viewAdmin" class="view-section" style="display:none;">
             <h2 class="section-title">Director Controls</h2>
+
+            <div class="card" style="border: 2px solid var(--aggie-blue);">
+                <div class="card-header">📂 Upload Roster</div>
+                <div class="card-body">
+                    <p style="font-size:13px; color:#64748b; margin-top:0;">Select a team in the "Coach Dashboard" tab first, then upload their PDF roster here.</p>
+                    
+                    <div id="rosterUploadStep1">
+                        <input type="file" id="rosterPdfInput" accept="application/pdf">
+                    </div>
+
+                    <div id="rosterReviewArea" style="display:none;">
+                        <label>Extracted Names</label>
+                        <textarea id="rosterTextRaw" rows="6" style="font-family:monospace; font-size:12px;"></textarea>
+                        <button id="saveParsedRosterBtn" class="primary-btn">Save to Selected Team</button>
+                        <button onclick="document.getElementById('rosterReviewArea').style.display='none'; document.getElementById('rosterUploadStep1').style.display='block';" class="secondary-btn" style="width:100%; margin-top:10px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
 
             <div class="card">
                 <div class="card-header">Manage Teams</div>
@@ -415,8 +413,7 @@
             <div class="card">
                 <div class="card-header">
                     <span>System Logs</span>
-                    <button id="generateTestLogBtn" style="font-size:9px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:2px 6px; border-radius:3px; cursor:pointer; margin-right:5px;">+ Test</button>
-                    <button id="runSecurityAuditBtn" style="font-size:9px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:2px 6px; border-radius:3px; cursor:pointer;">Audit</button>
+                    <button id="runSecurityAuditBtn" style="font-size:9px; background:rgba(0,0,0,0.3); color:white; border:none; padding:2px 5px; border-radius:3px; cursor:pointer;">Audit</button>
                 </div>
                 <div class="card-body" style="padding:0;">
                     <div style="display:flex; border-bottom:1px solid #e2e8f0;">
