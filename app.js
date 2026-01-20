@@ -1,15 +1,16 @@
-// --- 1. ERROR CATCHER (FOR DEBUGGING) ---
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-    alert("System Error: " + msg + "\nLine: " + lineNo);
+// --- 1. ERROR TRAP (Visible on phone) ---
+window.onerror = function(msg, url, line) {
+    const status = document.getElementById("loginStatus");
+    if(status) status.innerText = "Error: " + msg;
     return false;
 };
 
-// --- IMPORTS (Reverted to 11.1.0 which worked previously) ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+// --- IMPORTS (Reverted to 10.7.1 - STABLE) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } 
-  from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } 
-  from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
 // --- CONFIG ---
@@ -27,7 +28,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Attempt persistence (ignoring errors for mobile stability)
+// Attempt persistence
 try { enableIndexedDbPersistence(db).catch(() => {}); } catch(e) {}
 
 // --- STATE ---
@@ -40,10 +41,77 @@ let isSignatureBlank = true;
 let teamChart = null; 
 let currentCoachTeamId = null;
 
-// --- DOM ELEMENTS (Safe Lookup) ---
-const el = (id) => document.getElementById(id); // Helper shortcut
+// --- DOM HELPER ---
+const el = (id) => document.getElementById(id);
 
-// --- CONFIG LOADING ---
+// --- MAIN STARTUP (Waits for Page Load) ---
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Activate Login Button
+    const btn = el("loginBtn");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            const status = el("loginStatus");
+            if(status) status.innerText = "Redirecting to Google...";
+            const provider = new GoogleAuthProvider();
+            signInWithRedirect(auth, provider);
+        });
+        // Update Status
+        if(el("loginStatus")) el("loginStatus").innerText = "System: Ready";
+    }
+
+    // 2. Activate Logout
+    const logout = el("globalLogoutBtn");
+    if(logout) logout.addEventListener("click", () => signOut(auth).then(() => location.reload()));
+});
+
+// --- AUTH HANDLER ---
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    if(el("loginUI")) el("loginUI").style.display = "none"; 
+    if(el("appUI")) el("appUI").style.display = "block"; 
+    if(el("bottomNav")) el("bottomNav").style.display = "flex";
+    if(el("coachName")) el("coachName").textContent = `Logged in: ${user.displayName}`;
+    
+    // Load Data
+    await fetchConfig();
+    
+    // Check Permissions
+    const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+    const assignedTeam = globalTeams.find(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
+    
+    if(isDirector || assignedTeam) {
+        if(el("navCoach")) el("navCoach").style.display = "flex";
+        if(isDirector) {
+            if(el("navAdmin")) el("navAdmin").style.display = "flex"; 
+            if(el("adminControls")) el("adminControls").style.display = "block";
+            
+            // Populate Director Select
+            const ats = el("adminTeamSelect");
+            if(ats) {
+                ats.innerHTML = '<option value="" disabled selected>Select Team to Manage</option>';
+                globalTeams.forEach(t => { 
+                    const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; 
+                    ats.appendChild(opt); 
+                });
+                ats.addEventListener("change", (e) => loadCoachDashboard(e.target.value));
+            }
+            renderAdminTables();
+        } else {
+            // Regular Coach
+            loadCoachDashboard(assignedTeam.id);
+        }
+    }
+    loadStats();
+    
+  } else {
+    // Show Login
+    if(el("loginUI")) el("loginUI").style.display = "block"; 
+    if(el("appUI")) el("appUI").style.display = "none"; 
+    if(el("bottomNav")) el("bottomNav").style.display = "none";
+  }
+});
+
+// --- DATA FETCHING ---
 async function fetchConfig() {
     try {
         const teamSnap = await getDoc(doc(db, "config", "teams"));
@@ -70,7 +138,7 @@ function populateDropdowns() {
 }
 
 // --- TRACKER: SMART ROSTER ---
-if (el("teamSelect")) {
+if(el("teamSelect")) {
     el("teamSelect").addEventListener("change", async (e) => {
         const teamId = e.target.value;
         const savedFirst = el("playerFirst") ? el("playerFirst").value.trim().toLowerCase() : "";
@@ -102,7 +170,7 @@ if (el("teamSelect")) {
     });
 }
 
-if (el("playerDropdown")) {
+if(el("playerDropdown")) {
     el("playerDropdown").addEventListener("change", (e) => {
         if (e.target.value === "manual") {
             if(el("manualNameArea")) el("manualNameArea").style.display = "block";
@@ -119,7 +187,7 @@ async function loadCoachDashboard(forceTeamId = null) {
     const listDiv = el("coachPlayerList");
     const label = el("manageTeamLabel");
     
-    // Determine Team
+    // Determine Team Context
     let targetTeamId = null;
     let targetTeamName = "Unknown";
 
@@ -143,7 +211,7 @@ async function loadCoachDashboard(forceTeamId = null) {
     // Roster Editor
     const rosterList = el("rosterListEditor");
     if(rosterList) {
-        rosterList.innerHTML = '<li style="padding:15px; text-align:center; color:#94a3b8;">Loading roster...</li>';
+        rosterList.innerHTML = '<li style="padding:15px; text-align:center; color:#94a3b8;">Loading...</li>';
         if (currentCoachTeamId) {
             try {
                 const docSnap = await getDoc(doc(db, "rosters", currentCoachTeamId));
@@ -151,7 +219,7 @@ async function loadCoachDashboard(forceTeamId = null) {
                     const players = docSnap.data().players.sort();
                     rosterList.innerHTML = players.map(p => `<li><span>${p}</span><button class="btn-delete" onclick="window.removePlayer('${p}')">✖</button></li>`).join("");
                 } else {
-                    rosterList.innerHTML = '<li style="padding:10px; text-align:center;">No players found. Add one!</li>';
+                    rosterList.innerHTML = '<li style="padding:10px; text-align:center;">No players found.</li>';
                 }
             } catch (e) { rosterList.innerHTML = 'Error loading roster.'; }
         } else {
@@ -159,7 +227,7 @@ async function loadCoachDashboard(forceTeamId = null) {
         }
     }
 
-    // Stats
+    // Stats List
     if(!listDiv) return;
     let q;
     if (currentCoachTeamId) q = query(collection(db, "reps"), where("teamId", "==", currentCoachTeamId), orderBy("timestamp", "desc"));
@@ -168,8 +236,7 @@ async function loadCoachDashboard(forceTeamId = null) {
 
     try {
         const snap = await getDocs(q);
-        const players = {}; 
-        const allSessions = [];
+        const players = {}; const allSessions = [];
         snap.forEach(doc => {
             const d = doc.data(); allSessions.push(d);
             const p = d.player || "Unknown";
@@ -191,7 +258,7 @@ async function loadCoachDashboard(forceTeamId = null) {
     } catch (e) { console.error(e); }
 }
 
-// --- ROSTER ACTIONS ---
+// --- NEW: ROSTER ACTIONS ---
 if(el("addNewPlayerBtn")) {
     el("addNewPlayerBtn").addEventListener("click", async () => {
         const nameInput = el("newPlayerNameInput");
@@ -271,47 +338,10 @@ if(el("addAdminBtn")) el("addAdminBtn").addEventListener("click", async () => {
     const email = el("newAdminEmail").value; if(email) { globalAdmins.push(email); await setDoc(doc(db, "config", "admins"), { list: globalAdmins }); alert("Admin Added"); renderAdminTables(); }
 });
 
-// --- AUTH HANDLER ---
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    if(el("loginUI")) el("loginUI").style.display = "none"; 
-    if(el("appUI")) el("appUI").style.display = "block"; 
-    if(el("bottomNav")) el("bottomNav").style.display = "flex";
-    if(el("coachName")) el("coachName").textContent = `Logged in: ${user.displayName}`;
-    
-    await fetchConfig();
-    const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-    const assignedTeam = globalTeams.find(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
-    
-    if(isDirector || assignedTeam) {
-        if(el("navCoach")) el("navCoach").style.display = "flex";
-        if(isDirector) {
-            if(el("navAdmin")) el("navAdmin").style.display = "flex"; 
-            if(el("adminControls")) el("adminControls").style.display = "block";
-            const ats = el("adminTeamSelect");
-            if(ats) {
-                ats.innerHTML = '<option value="" disabled selected>Select Team to Manage</option>';
-                globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; ats.appendChild(opt); });
-                ats.addEventListener("change", (e) => loadCoachDashboard(e.target.value));
-            }
-            renderAdminTables();
-        } else {
-            loadCoachDashboard(assignedTeam.id);
-        }
-    }
-    loadStats();
-  } else {
-    if(el("loginUI")) el("loginUI").style.display = "block"; 
-    if(el("appUI")) el("appUI").style.display = "none"; 
-    if(el("bottomNav")) el("bottomNav").style.display = "none";
-  }
-});
-
 // --- NAVIGATION ---
 function switchTab(tab) { 
     [viewTracker, viewStats, viewCoach, viewAdmin].forEach(v => { if(v) v.classList.add("hidden"); }); 
     [navTrack, navStats, navCoach, navAdmin].forEach(n => { if(n) n.classList.remove("active"); }); 
-    
     if (tab === 'track') { if(viewTracker) viewTracker.classList.remove("hidden"); if(navTrack) navTrack.classList.add("active"); }
     if (tab === 'stats') { if(viewStats) viewStats.classList.remove("hidden"); if(navStats) navStats.classList.add("active"); loadStats(); }
     if (tab === 'coach') { if(viewCoach) viewCoach.classList.remove("hidden"); if(navCoach) navCoach.classList.add("active"); }
@@ -370,11 +400,7 @@ if(el("submitWorkoutBtn")) el("submitWorkoutBtn").addEventListener("click", asyn
     } catch(e) { console.error(e); alert("Error saving workout."); }
 });
 
-// --- HELPERS (Login/Timer/Canvas) ---
-if(loginBtn) loginBtn.addEventListener("click", () => { signInWithRedirect(auth, new GoogleAuthProvider()); });
-if(globalLogoutBtn) globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
-
-// Unified Select
+// --- HELPERS (Unified Select, Timer, Canvas) ---
 if(el("unifiedSelect") && el("unifiedSelect").options.length === 1) {
     const cardioSkills = dbData.foundationSkills.filter(s => s.type === 'cardio');
     const cardioGroup = document.createElement("optgroup"); cardioGroup.label = "Cardio & Fitness";
