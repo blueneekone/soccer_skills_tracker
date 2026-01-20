@@ -31,6 +31,8 @@ let timerInterval;
 let seconds = 0;
 let isSignatureBlank = true; 
 let teamChart = null; 
+// TRACK CURRENT TEAM ID FOR COACHES
+let currentCoachTeamId = null;
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
@@ -223,6 +225,7 @@ onAuthStateChanged(auth, async (user) => {
     const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
     const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
     
+    // SETUP COACH DASHBOARD
     if(isDirector || myTeams.length > 0) {
         navCoach.style.display = "flex";
         
@@ -237,18 +240,27 @@ onAuthStateChanged(auth, async (user) => {
             globalTeams.forEach(t => {
                 const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
             });
+            // Default to ALL for director
+            currentCoachTeamId = "all";
         } else {
+            // Not Director (Regular Coach)
             if (myTeams.length > 1) {
                 adminControls.style.display = "block"; 
                 myTeams.forEach(t => {
                     const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt);
                 });
+                currentCoachTeamId = myTeams[0].id; // Default to first
             } else {
                 adminControls.style.display = "none"; 
+                currentCoachTeamId = myTeams[0].id; // Only team
             }
         }
         
-        adminTeamSelect.addEventListener("change", () => loadCoachDashboard(isDirector, myTeams));
+        adminTeamSelect.addEventListener("change", (e) => {
+            currentCoachTeamId = e.target.value;
+            loadCoachDashboard(isDirector, myTeams);
+        });
+        
         if(isDirector) { renderAdminTables(); loadLogs("logs_system"); }
     }
     
@@ -416,14 +428,19 @@ async function loadCoachDashboard(isDirector=false, myTeams=[]) {
     listDiv.innerHTML = "Loading...";
 
     let q;
-    const selectedTeamId = document.getElementById("adminTeamSelect").value;
+    // USE CURRENTLY SELECTED TEAM ID IF AVAILABLE, ELSE FALLBACK
+    const selectedTeamId = currentCoachTeamId || (myTeams.length > 0 ? myTeams[0].id : null);
+    
+    // UPDATE DROPDOWN IF NEEDED (Forcing sync)
+    if(document.getElementById("adminTeamSelect").value !== selectedTeamId) {
+         document.getElementById("adminTeamSelect").value = selectedTeamId;
+    }
 
     if (isDirector) {
         if(selectedTeamId === "all") { q = query(collection(db, "reps"), orderBy("timestamp", "desc")); } 
         else { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); }
     } else {
-        if (myTeams.length > 1 && selectedTeamId) { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); } 
-        else if (myTeams.length === 1) { q = query(collection(db, "reps"), where("teamId", "==", myTeams[0].id), orderBy("timestamp", "desc")); } 
+        if (selectedTeamId) { q = query(collection(db, "reps"), where("teamId", "==", selectedTeamId), orderBy("timestamp", "desc")); } 
         else { q = query(collection(db, "reps"), where("coachEmail", "==", user.email), orderBy("timestamp", "desc")); }
     }
 
@@ -455,7 +472,7 @@ function renderTeamChart(playersData) {
     teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
 }
 
-// ROSTER PARSING & SAVING (NOW READS FROM COACH DROPDOWN)
+// ROSTER PARSING & SAVING (NOW READS FROM COACH DROPDOWN OR CURRENT ID)
 document.getElementById("rosterPdfInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if(!file || file.type !== "application/pdf") return alert("Please select a PDF file.");
@@ -481,8 +498,18 @@ const saveRosterBtn = document.getElementById("saveParsedRosterBtn");
 if (saveRosterBtn) {
     saveRosterBtn.addEventListener("click", async () => {
         const rawText = document.getElementById("rosterTextRaw").value;
-        const targetTeamId = document.getElementById("adminTeamSelect").value; 
-        if (!targetTeamId || targetTeamId === "unassigned" || targetTeamId === "all") { return alert("Please select a specific team in the Coach Dashboard dropdown above."); }
+        
+        // AUTO-DETECT TARGET TEAM
+        // If dropdown is visible, use that. If not, use currentCoachTeamId (for single-team coaches)
+        let targetTeamId = document.getElementById("adminTeamSelect").value;
+        if (!targetTeamId || targetTeamId === "") {
+            targetTeamId = currentCoachTeamId;
+        }
+
+        if (!targetTeamId || targetTeamId === "unassigned" || targetTeamId === "all") { 
+            return alert("Error: Could not determine which team to save to. Please ensure a team is selected."); 
+        }
+
         if (!rawText) return alert("Roster list is empty.");
         const playerList = rawText.split("\n").map(name => name.trim()).filter(name => name.length > 0);
         try {
@@ -492,3 +519,11 @@ if (saveRosterBtn) {
         } catch (error) { console.error("Error saving roster:", error); alert("Error saving to database."); }
     });
 }
+
+// Global modal close handlers
+window.addEventListener("click", (event) => {
+    if (event.target === document.getElementById("videoModal")) { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; }
+    if (event.target === document.getElementById("dayModal")) { document.getElementById("dayModal").style.display = "none"; }
+});
+document.getElementById("closeModal").addEventListener("click", () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; });
+document.getElementById("closeDayModal").addEventListener("click", () => { document.getElementById("dayModal").style.display = "none"; });

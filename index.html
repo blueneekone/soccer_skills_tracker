@@ -92,9 +92,9 @@
         }
         .btn-delete { background: var(--danger); }
 
-        /* --- LOGIN --- */
+        /* --- LOGIN (CENTERED) --- */
         #loginUI { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; text-align: center; }
-        .login-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; }
+        .login-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 20px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; }
 
         /* --- BOTTOM NAV --- */
         .bottom-nav {
@@ -345,20 +345,20 @@
                     <canvas id="teamChart"></canvas>
                 </div>
             </div>
-            
+
             <div class="card" style="border: 1px solid var(--aggie-blue);">
-                <div class="card-header">📂 Upload Roster</div>
+                <div class="card-header">📂 Upload Roster (PDF)</div>
                 <div class="card-body">
-                    <p style="font-size:13px; color:#64748b; margin-top:0;">Select a team in the dropdown above, then upload their PDF roster here.</p>
+                    <p style="font-size:13px; color:#64748b; margin-top:0;">Select a team above (if applicable) and upload their roster.</p>
                     
                     <div id="rosterUploadStep1">
                         <input type="file" id="rosterPdfInput" accept="application/pdf">
                     </div>
 
                     <div id="rosterReviewArea" style="display:none;">
-                        <label>Extracted Names</label>
+                        <label>Review Extracted Names</label>
                         <textarea id="rosterTextRaw" rows="6" style="font-family:monospace; font-size:12px;"></textarea>
-                        <button id="saveParsedRosterBtn" class="primary-btn">Save to Selected Team</button>
+                        <button id="saveParsedRosterBtn" class="primary-btn">Save to Current Team</button>
                         <button onclick="document.getElementById('rosterReviewArea').style.display='none'; document.getElementById('rosterUploadStep1').style.display='block';" class="secondary-btn" style="width:100%; margin-top:10px;">Cancel</button>
                     </div>
                 </div>
