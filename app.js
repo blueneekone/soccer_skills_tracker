@@ -202,22 +202,111 @@ window.addEventListener("click", (event) => {
 document.getElementById("closeModal").addEventListener("click", () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; });
 document.getElementById("closeDayModal").addEventListener("click", () => { document.getElementById("dayModal").style.display = "none"; });
 
-// ROSTER UPLOAD
+// ... (Keep existing imports and config) ...
+
+// --- ROSTER UPLOAD (SMART ROW PARSING) ---
 document.getElementById("rosterPdfInput").addEventListener("change", async (e) => {
-    const file = e.target.files[0]; if(!file || file.type !== "application/pdf") return alert("Select PDF");
+    const file = e.target.files[0];
+    if(!file || file.type !== "application/pdf") return alert("Please select a PDF file.");
+
+    const btn = document.getElementById("rosterPdfInput");
+    const statusText = document.createElement("div"); 
+    statusText.innerText = "Scanning PDF structure...";
+    btn.parentNode.appendChild(statusText);
+    btn.disabled = true;
+
     try {
-        const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-        let fullText = ""; for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); textContent.items.forEach(item => fullText += item.str + "\n"); }
-        const lines = fullText.split("\n");
-        const uniqueNames = [...new Set(lines.filter(l => /^[a-zA-Z\s,'-]{3,25}$/.test(l.trim()) && !l.toLowerCase().includes("jersey") && !l.toLowerCase().includes("coach")).map(l=>l.trim()))];
-        document.getElementById("rosterUploadStep1").style.display = "none"; document.getElementById("rosterReviewArea").style.display = "block"; document.getElementById("rosterTextRaw").value = uniqueNames.join("\n");
-    } catch(err) { alert("Error parsing PDF."); }
-});
-document.getElementById("cancelRosterBtn").addEventListener("click", () => { document.getElementById("rosterReviewArea").style.display = "none"; document.getElementById("rosterUploadStep1").style.display = "block"; });
-document.getElementById("saveRosterBtn").addEventListener("click", async () => {
-    const teamId = coachTeamSelect.value; const namesList = document.getElementById("rosterTextRaw").value.split("\n").map(n=>n.trim()).filter(n=>n.length>0);
-    if(!teamId) return alert("Select Team");
-    try { await setDoc(doc(db, "rosters", teamId), { teamId: teamId, players: namesList, updatedAt: new Date() }); alert("Roster Saved!"); document.getElementById("cancelRosterBtn").click(); } catch(e) { alert("Error saving."); }
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        let extractedRows = [];
+
+        // 1. Loop through all pages
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            
+            // 2. Map items with their Y-Coordinate
+            // item.transform[5] is the Y position in PDF coordinates
+            const items = textContent.items.map(item => ({
+                text: item.str.trim(),
+                y: Math.round(item.transform[5]), // Round to group slightly misaligned text
+                x: Math.round(item.transform[4])  // Keep X for sorting columns
+            })).filter(i => i.text.length > 0);
+
+            // 3. Group by Y-Coordinate (Create Rows)
+            const rows = {};
+            items.forEach(item => {
+                if (!rows[item.y]) rows[item.y] = [];
+                rows[item.y].push(item);
+            });
+
+            // 4. Flatten to sorted array of rows (Top to Bottom)
+            const sortedY = Object.keys(rows).sort((a, b) => b - a); // PDF Y starts at bottom
+            
+            sortedY.forEach(y => {
+                // Sort columns Left to Right
+                const cols = rows[y].sort((a, b) => a.x - b.x);
+                extractedRows.push(cols.map(c => c.text));
+            });
+        }
+
+        // 5. "Smart" Filter Logic
+        // We look for rows that look like player data.
+        // Characteristics based on your PDF: Has a date (DOB), has an ID (digits), has names.
+        const cleanNames = extractedRows.filter(row => {
+            const rowString = row.join(" ");
+            
+            // Filter A: Must have a Date of Birth pattern (MM/DD/YYYY)
+            // Your PDF uses format like 06/25/2015
+            const hasDate = /\d{1,2}\/\d{1,2}\/\d{4}/.test(rowString);
+            
+            // Filter B: Must NOT be an Admin/Coach row (optional, but safer)
+            const isHeader = rowString.toLowerCase().includes("last name") || rowString.toLowerCase().includes("printed on");
+            
+            return hasDate && !isHeader;
+        })
+        .map(row => {
+            // 6. Extraction: Isolate the Name
+            // A row usually looks like: [ID, LastName, FirstName, DOB, Address, City...]
+            // Strategy: Filter out items that contain digits (ID, DOB, Address, Zip, Phone)
+            // The remaining items are Name and City. We usually take the first 1-2.
+            
+            const textOnly = row.filter(str => {
+                // Remove strings with digits (IDs, Dates, Zips, Phones, Street Addresses)
+                return !/\d/.test(str) && 
+                       // Remove headers if they snuck in
+                       !['Male','Female','Boy','Girl','Approved'].includes(str);
+            });
+
+            // Usually [LastName, FirstName, City, State] remains.
+            // We'll take the first two entries (Last, First) or join them.
+            // Aggies PDF seems to be: Last, First
+            // NOTE: Adjust slice if City shows up
+            
+            // Basic cleanup to remove common "City" names if they appear at the end
+            // For now, let's just grab the first few text blocks which are likely the name.
+            
+            // Format: "First Last" is usually better for the app
+            if (textOnly.length >= 2) {
+                // Assuming format is [LastName, FirstName] based on standard rosters
+                return `${textOnly[1]} ${textOnly[0]}`; 
+            } else {
+                return textOnly.join(" ");
+            }
+        });
+
+        // 7. Update UI
+        document.getElementById("rosterUploadStep1").style.display = "none";
+        document.getElementById("rosterReviewArea").style.display = "block";
+        document.getElementById("rosterTextRaw").value = cleanNames.join("\n");
+        statusText.remove();
+
+    } catch(err) {
+        console.error(err);
+        statusText.innerText = "Error parsing. Please enter manually.";
+        alert("Could not parse PDF layout.");
+    }
+    btn.disabled = false;
 });
 
 // AUTH & STARTUP
