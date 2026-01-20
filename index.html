@@ -14,7 +14,7 @@
         :root {
             --aggie-blue: #00263A;
             --aggie-gold: #BFAE5A; 
-            --bg-gray: #f1f5f9;
+            --bg-gray: #f8fafc;
             --text-dark: #1e293b;
             --white: #ffffff;
             --danger: #ef4444;
@@ -60,7 +60,7 @@
         }
         .card-body { padding: 15px; }
 
-        /* --- INPUTS & BUTTONS --- */
+        /* --- INPUTS --- */
         label { display: block; margin-bottom: 5px; font-weight: 700; color: #475569; font-size: 0.8rem; text-transform: uppercase; }
         input, select, textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
@@ -68,6 +68,7 @@
             box-sizing: border-box; background: #fff;
         }
         
+        /* --- BUTTONS --- */
         .primary-btn {
             background-color: var(--aggie-blue); color: white; border: none;
             padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold;
@@ -83,7 +84,7 @@
         }
         .delete-btn { background: #fee2e2; color: #b91c1c; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;}
 
-        /* --- SELF EVALUATION BUTTONS --- */
+        /* --- SELF EVALUATION --- */
         #outcome { display: flex; gap: 8px; margin-bottom: 15px; }
         .outcome-btn { 
             flex: 1; padding: 15px 5px; border: 1px solid #e2e8f0; border-radius: 8px; 
@@ -97,7 +98,6 @@
         .xp-bar-container { width: 100%; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; margin-top: 10px; }
         .xp-bar-fill { height: 100%; background: var(--aggie-gold); width: 0%; transition: width 0.5s ease; }
         
-        /* CALENDAR */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-day { 
             aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -226,9 +226,9 @@
                     </div>
 
                     <label>Total Duration (Mins)</label>
-                    <input type="number" id="totalMinutes" placeholder="45">
+                    <input type="number" id="totalMinutes" placeholder="e.g. 30">
 
-                    <label>Skill Confidence (Self-Check)</label>
+                    <label>Skill Confidence</label>
                     <div id="outcome">
                         <div class="outcome-btn" data-val="struggled">Needs<br>Practice</div>
                         <div class="outcome-btn active" data-val="improved">Getting<br>Better</div>
@@ -297,13 +297,13 @@
                 <div class="card" style="margin:0; text-align:center;">
                     <div class="card-body">
                         <div id="coachActivePlayers" style="font-size:2rem; font-weight:800; color:var(--aggie-blue);">0</div>
-                        <div style="font-size:10px; color:#64748b; font-weight:bold;">ACTIVE PLAYERS</div>
+                        <div style="font-size:10px; color:#64748b; font-weight:bold;">ACTIVE</div>
                     </div>
                 </div>
                 <div class="card" style="margin:0; text-align:center;">
                     <div class="card-body">
                         <div id="coachTotalReps" style="font-size:2rem; font-weight:800; color:var(--aggie-blue);">0</div>
-                        <div style="font-size:10px; color:#64748b; font-weight:bold;">TOTAL SESSIONS</div>
+                        <div style="font-size:10px; color:#64748b; font-weight:bold;">SESSIONS</div>
                     </div>
                 </div>
             </div>
@@ -311,6 +311,13 @@
             <div class="card">
                 <div class="card-header">TEAM ENGAGEMENT</div>
                 <div class="card-body"><canvas id="teamChart"></canvas></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">SESSION HISTORY <button id="exportXlsxBtn" class="action-btn">Export Data</button></div>
+                <div class="card-body">
+                    <p style="font-size:12px; color:#666;">Export all workout logs for the selected team.</p>
+                </div>
             </div>
 
             <div class="card">
@@ -335,7 +342,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header">CURRENT ROSTER <button id="exportXlsxBtn" class="action-btn">Export Data</button></div>
+                <div class="card-header">CURRENT ROSTER</div>
                 <div class="card-body" id="coachPlayerList" style="padding:0;"></div>
             </div>
         </div>
@@ -355,11 +362,11 @@
             </div>
 
             <div class="card">
-                <div class="card-header">MANAGE ADMINS</div>
+                <div class="card-header">MANAGE DIRECTORS</div>
                 <div class="card-body" style="padding:0;">
                     <table id="adminTable" class="admin-table"><thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody></table>
                     <div style="padding:10px; background:#f8fafc; display:flex; gap:5px;">
-                        <input id="newAdminEmail" placeholder="New Admin Email" style="flex:1; margin:0;">
+                        <input id="newAdminEmail" placeholder="New Director Email" style="flex:1; margin:0;">
                         <button id="addAdminBtn" class="secondary-btn" style="width:auto; margin:0;">Add</button>
                     </div>
                 </div>
@@ -373,7 +380,12 @@
                         <div id="btnLogSecurity" class="log-tab">Security Scan</div>
                         <div id="btnLogDebug" class="log-tab">Debugging</div>
                     </div>
-                    <div id="logContainer" style="height:150px; overflow-y:auto; padding:10px; font-size:11px;"></div>
+                    <div id="logContainer" style="height:150px; overflow-y:auto; padding:10px; font-size:11px;">
+                        <div style="padding:10px; color:#666;">Select a log type above.</div>
+                    </div>
+                    <div style="padding:10px; border-top:1px solid #eee;">
+                        <button id="generateTestLogBtn" class="action-btn" style="width:100%; text-align:center;">GENERATE SAMPLE LOGS</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -394,10 +406,8 @@
     <script type="module" src="app.js"></script>
     <script type="module" src="data.js"></script>
     <script>
-        // Init Canvas Helper
         const c=document.getElementById("signatureCanvas");
         window.onload=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
-        window.onresize=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
     </script>
 </body>
 </html>

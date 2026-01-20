@@ -28,10 +28,11 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let currentCoachTeamId = null;
 let teamChart = null;
+let allSessionsCache = []; // For Export
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v5 Loaded (YouTube & Modals Fixed)");
+    console.log("App v7 Loaded");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -64,9 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // DRILLS POPULATION
     const us = document.getElementById("unifiedSelect");
     if(us && us.options.length <= 1) {
+        const cardio = document.createElement("optgroup"); cardio.label = "CARDIO";
+        const basic = document.createElement("optgroup"); basic.label = "BRILLIANT BASICS";
         dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name; us.appendChild(opt);
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+            if(s.type === 'cardio') cardio.appendChild(opt); else basic.appendChild(opt);
         });
+        us.appendChild(cardio); us.appendChild(basic);
     }
 
     // TRACKER
@@ -79,13 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if(s.video) { 
                 vb.style.display='inline-block'; 
                 vb.onclick = () => { 
-                    // FIX: Convert URL to Embed format
-                    const embedUrl = convertToEmbedUrl(s.video);
-                    document.getElementById("videoPlayer").src = embedUrl; 
+                    document.getElementById("videoPlayer").src = getEmbedUrl(s.video); 
                     document.getElementById("videoModal").style.display='block'; 
                 } 
-            }
-            else vb.style.display='none';
+            } else vb.style.display='none';
         }
     };
     
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("rosterPdfInput").onchange = parsePDF;
     document.getElementById("saveParsedRosterBtn").onclick = saveRosterList;
     document.getElementById("coachAddPlayerBtn").onclick = manualAddPlayer;
+    document.getElementById("exportXlsxBtn").onclick = exportSessionData;
     
     // ADMIN
     document.getElementById("addTeamBtn").onclick = addTeam;
@@ -117,48 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("btnLogSystem").onclick = () => loadLogs("logs_system");
     document.getElementById("btnLogSecurity").onclick = runSecurityScan;
     document.getElementById("btnLogDebug").onclick = runDebugLog;
+    document.getElementById("generateTestLogBtn").onclick = generateSampleLogs;
 
-    // --- MODAL FIXES ---
-    // Close buttons (X)
+    // MODALS
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
-            // Stop video
             document.getElementById("videoPlayer").src = "";
         }
     });
-
-    // Close on background click
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
-            document.getElementById("videoPlayer").src = "";
-        }
-    };
 });
-
-// --- HELPER: YOUTUBE EMBED FIX ---
-function convertToEmbedUrl(url) {
-    if (!url) return "";
-    let videoId = "";
-    // Handle youtu.be/ID
-    if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1];
-    } 
-    // Handle youtube.com/watch?v=ID
-    else if (url.includes("v=")) {
-        videoId = url.split("v=")[1].split("&")[0];
-    }
-    // Already embed?
-    else if (url.includes("embed/")) {
-        return url;
-    }
-    
-    // Remove any query params like ?t=10
-    if(videoId.includes("?")) videoId = videoId.split("?")[0];
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-}
 
 // --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
@@ -257,15 +228,17 @@ async function submitWorkout() {
             coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
         });
         alert("Workout Logged! +XP");
+        logSystemEvent("WORKOUT_SUBMIT", `Player: ${pname}, Mins: ${mins}`);
         currentSessionItems=[]; renderSession(); loadStats();
     } catch(e) { alert("Save Failed: "+e.message); }
 }
 
 async function loadStats() {
+    // Gamification Logic
     const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(50));
     const snap = await getDocs(q);
     const logs = []; let totalMins = 0;
-    snap.forEach(d => { logs.push(d.data()); totalMins += d.data().minutes; });
+    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
     
     document.getElementById("statTotal").innerText = `${logs.length} Sessions`;
     document.getElementById("statTime").innerText = totalMins;
@@ -281,6 +254,8 @@ async function loadStats() {
     document.getElementById("xpBar").style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
     
     renderCalendar(logs);
+    renderPlayerTrendChart(logs);
+    renderTeamLeaderboard(logs);
 }
 
 function renderCalendar(logs) {
@@ -289,13 +264,11 @@ function renderCalendar(logs) {
     const now = new Date();
     header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     grid.innerHTML = "";
-    
     const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
     
     for(let i=1; i<=daysInMonth; i++) {
         const dStr = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
         const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-        
         const dayDiv = document.createElement("div");
         dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
         dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
@@ -311,6 +284,18 @@ function renderCalendar(logs) {
     }
 }
 
+function renderPlayerTrendChart(logs) {
+    const ctx = document.getElementById('playerTrendChart').getContext('2d'); if(teamChart) teamChart.destroy();
+    const data = Array(7).fill(0); const labels = [];
+    for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); data[6-i] = logs.filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((s,l)=>s+Number(l.minutes),0); }
+    teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
+}
+
+function renderTeamLeaderboard(logs) {
+    const stats = {}; logs.forEach(l => { stats[l.player] = (stats[l.player] || 0) + Number(l.minutes); });
+    document.getElementById("teamLeaderboardTable").querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+}
+
 // --- COACH DASHBOARD ---
 function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
@@ -318,7 +303,6 @@ function initCoachDropdown(isDirector, teams) {
     sel.innerHTML = "";
     const list = isDirector ? globalTeams : teams;
     list.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
-    
     sel.onchange = () => loadCoachDashboard(isDirector, list);
     if(list.length > 0) { sel.value = list[0].id; loadCoachDashboard(isDirector, list); }
 }
@@ -333,17 +317,19 @@ async function loadCoachDashboard(isDirector, teams) {
     const players = {};
     let count = 0;
     
+    allSessionsCache = []; // Reset for export
     snap.forEach(doc => {
         const d = doc.data();
+        allSessionsCache.push(d); // Store for export
         if(!players[d.player]) players[d.player] = 0;
-        players[d.player] += d.minutes;
+        players[d.player] += Number(d.minutes);
         count++;
     });
     
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
     document.getElementById("coachTotalReps").innerText = count;
     
-    // Render Roster List with Delete
+    // Roster rendering
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterHtml = "";
     if(rosterSnap.exists() && rosterSnap.data().players) {
@@ -376,7 +362,6 @@ async function manualAddPlayer() {
     if(!name) return;
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team");
-    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -403,7 +388,6 @@ async function parsePDF(e) {
         
         document.getElementById("rosterTextRaw").value = pairs.join("\n");
         document.getElementById("rosterReviewArea").style.display='block';
-        document.getElementById("rosterUploadStep1").style.display='none';
     } catch(err) { alert("PDF Error"); }
 }
 
@@ -414,8 +398,24 @@ async function saveRosterList() {
     await setDoc(doc(db, "rosters", tid), { players: list, lastUpdated: new Date() });
     alert("Saved");
     document.getElementById("rosterReviewArea").style.display='none';
-    document.getElementById("rosterUploadStep1").style.display='block';
     loadCoachDashboard(false, globalTeams);
+}
+
+// --- EXPORT ---
+function exportSessionData() {
+    if(allSessionsCache.length === 0) return alert("No sessions to export for this team.");
+    const formatted = allSessionsCache.map(r => ({
+        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
+        Player: r.player,
+        Minutes: r.minutes,
+        Drills: r.drillSummary,
+        Feedback: r.outcome,
+        Notes: r.notes
+    }));
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
+    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
 }
 
 // --- ADMIN ---
@@ -430,22 +430,34 @@ async function addTeam() {
     if(!id || !name) return;
     globalTeams.push({ id, name, coachEmail: email });
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Added"); renderAdminTables();
+    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
 }
 async function addAdmin() {
     const email = document.getElementById("newAdminEmail").value;
     if(!email) return;
     globalAdmins.push(email);
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    alert("Admin Added"); renderAdminTables();
+    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
 }
 
-// --- LOGS & DIAGNOSTICS ---
+// --- LOGS ---
 async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); c.innerHTML = "Fetching System Logs...";
+    const c = document.getElementById("logContainer"); c.innerHTML = "Fetching...";
     const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
     c.innerHTML = "";
-    snap.forEach(d => { c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${d.data().type}</b>: ${d.data().detail}</div>`; });
+    snap.forEach(d => { 
+        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;">
+            <span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br>
+            <b>${d.data().type}</b>: ${d.data().detail}
+        </div>`; 
+    });
+}
+
+function generateSampleLogs() {
+    logSystemEvent("SYSTEM_START", "Application initialized");
+    logSecurityEvent("AUTH_CHECK", "User credentials verified");
+    logSystemEvent("DATA_SYNC", "Roster data synced with cloud");
+    alert("3 Sample Logs Added. Click 'System Log' to view.");
 }
 
 function runSecurityScan() {
@@ -462,7 +474,7 @@ function runSecurityScan() {
 function runDebugLog() {
     const c = document.getElementById("logContainer");
     const state = { 
-        version: "3.2.0", 
+        version: "4.0.0 (Release)", 
         user: auth.currentUser?.email, 
         teamsLoaded: globalTeams.length, 
         currentCoachTeam: currentCoachTeamId 
@@ -470,7 +482,38 @@ function runDebugLog() {
     c.innerHTML = `<pre style="font-size:10px;">${JSON.stringify(state, null, 2)}</pre>`;
 }
 
-// --- HELPERS ---
+// --- UTILS ---
+function getEmbedUrl(url) {
+    if(!url) return "";
+    let id = "";
+    if(url.includes("youtu.be/")) id = url.split("youtu.be/")[1];
+    else if(url.includes("v=")) id = url.split("v=")[1].split("&")[0];
+    else if(url.includes("embed/")) return url;
+    if(id.includes("?")) id = id.split("?")[0];
+    return id ? `https://www.youtube.com/embed/${id}` : "";
+}
+
+function updateTimer() { seconds++; const m = Math.floor(seconds / 60).toString().padStart(2, "0"); const s = (seconds % 60).toString().padStart(2, "0"); document.getElementById("timerDisplay").innerText = `${m}:${s}`; }
+document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
+document.getElementById("stopTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds / 60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
+document.getElementById("resetTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; document.getElementById("timerDisplay").innerText = "00:00"; });
+function resizeCanvas() { if(!canvas.parentElement) return; canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; }
+window.addEventListener('resize', resizeCanvas);
+function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
+function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
+function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+function checkSignature() { if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; } }
+function isCanvasBlank(canvas) { const context = canvas.getContext('2d'); const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer); return !pixelBuffer.some(color => color !== 0); }
+const canvas = document.getElementById("signatureCanvas");
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
+document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
+
+function logSystemEvent(type, detail) {
+    addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
+}
+
 function loadUserProfile() {
     const t = localStorage.getItem("aggie_last_team");
     if(t) document.getElementById("teamSelect").value = t; 

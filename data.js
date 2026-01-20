@@ -1,4 +1,5 @@
 export const dbData = {
+  // FALLBACK TEAMS
   teams: [
     { id: "misc", name: "Unassigned", coachEmail: "ecwaechtler@gmail.com" } 
   ],
@@ -6,10 +7,13 @@ export const dbData = {
   roadmapActions: [],
 
   foundationSkills: [
+    // === CARDIO ===
     { id: "fit_run", name: "Interval Run", type: "cardio", category: "Endurance", drill: "Run/Walk intervals", video: "", image: "" },
     { id: "fit_sprint", name: "Shuttle Sprints", type: "cardio", category: "Speed", drill: "10 Yard Shuttles", video: "", image: "" },
     { id: "fit_bike", name: "Biking", type: "cardio", category: "Endurance", drill: "Cycling", video: "", image: "" },
     { id: "fit_swim", name: "Swimming", type: "cardio", category: "Endurance", drill: "Swimming", video: "", image: "" },
+
+    // === BRILLIANT BASICS ===
     { id: "fm_1", name: "1. Shift Right | Outside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Outside Right Foot", video: "https://youtu.be/imq7LHS_KwM", image: "" },
     { id: "fm_2", name: "2. Shift Left | Outside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Outside Left Foot", video: "", image: "" },
     { id: "fm_3", name: "3. Shift Left | Inside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Inside Right Foot", video: "", image: "" },
@@ -22,7 +26,7 @@ export const dbData = {
     { id: "fm_10", name: "10. Twist & Turn | Outside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Twist Off using Outside Left", video: "", image: "" },
     { id: "fm_11", name: "11. Twist & Turn | Inside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Twist Off using Inside Right", video: "", image: "" },
     { id: "fm_12", name: "12. Twist & Turn | Inside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Twist Off using Inside Left", video: "", image: "" },
-    { id: "fm_13", name: "1. Outside Hook | Right Foot", type: "foundation", category: "Changing Direction F/S/B", drill: "Cut back with Outside Right", video: "", image: "" },
+    { id: "fm_13", name: "1. Outside Hook | Right Foot", type: "foundation", category: "Changing Direction F/S/B F/S/B", drill: "Cut back with Outside Right", video: "", image: "" },
     { id: "fm_14", name: "2. Outside Hook | Left Foot", type: "foundation", category: "Changing Direction F/S/B", drill: "Cut back with Outside Left", video: "", image: "" },
     { id: "fm_15", name: "3. Inside Hook | Right Foot", type: "foundation", category: "Changing Direction F/S/B", drill: "Cut back with Inside Right", video: "", image: "" },
     { id: "fm_16", name: "4. Inside Hook | Left Foot", type: "foundation", category: "Changing Direction F/S/B", drill: "Cut back with Inside Left", video: "", image: "" },
