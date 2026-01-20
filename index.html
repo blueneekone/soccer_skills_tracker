@@ -14,7 +14,7 @@
         :root {
             --aggie-blue: #00263A;
             --aggie-gold: #BFAE5A; 
-            --bg-gray: #f1f5f9;
+            --bg-gray: #f8fafc;
             --text-dark: #1e293b;
             --white: #ffffff;
             --danger: #ef4444;
@@ -47,7 +47,7 @@
             color:white; font-size:35px; 
         }
 
-        /* --- CARDS & HEADERS --- */
+        /* --- CARDS --- */
         .card { 
             background: var(--white); border-radius: 12px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; 
@@ -83,19 +83,21 @@
         }
         .delete-btn { background: #fee2e2; color: #b91c1c; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;}
 
-        /* --- EFFORT BUTTONS (Gamified) --- */
+        /* --- SELF EVALUATION BUTTONS --- */
         #outcome { display: flex; gap: 8px; margin-bottom: 15px; }
         .outcome-btn { 
             flex: 1; padding: 15px 5px; border: 1px solid #e2e8f0; border-radius: 8px; 
             background: white; cursor: pointer; text-align: center; font-weight: bold; 
             color: #64748b; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; line-height: 1.2;
         }
         .outcome-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); transform: scale(1.02); }
 
-        /* --- STATS & CALENDAR --- */
-        .xp-bar-container { width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; margin-top: 10px; }
+        /* --- STATS --- */
+        .xp-bar-container { width: 100%; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; margin-top: 10px; }
         .xp-bar-fill { height: 100%; background: var(--aggie-gold); width: 0%; transition: width 0.5s ease; }
         
+        /* CALENDAR */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .cal-day { 
             aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -105,7 +107,7 @@
         .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; }
         .cal-dot { width: 4px; height: 4px; background: #1e40af; border-radius: 50%; margin-top: 2px; }
 
-        /* --- BOTTOM NAV --- */
+        /* --- NAV --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--white); border-top: 1px solid #e2e8f0;
@@ -121,10 +123,12 @@
         .modal-content { background-color: white; margin: 20% auto; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; }
         .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
         
-        /* ADMIN TABLES */
+        /* ADMIN */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .admin-table th { text-align: left; padding: 8px; background: #f1f5f9; color: #64748b; }
         .admin-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+        .log-tab { padding: 8px; flex: 1; text-align: center; cursor: pointer; font-size: 11px; background: #f1f5f9; border: 1px solid #e2e8f0; }
+        .log-tab:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -210,7 +214,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header">3. FINISH</div>
+                <div class="card-header">3. SELF EVALUATION</div>
                 <div class="card-body">
                     <div style="text-align:center; margin-bottom:15px;">
                         <div id="timerDisplay" style="font-size:3rem; font-weight:800; color:var(--aggie-blue); font-variant-numeric:tabular-nums;">00:00</div>
@@ -224,11 +228,11 @@
                     <label>Total Duration (Mins)</label>
                     <input type="number" id="totalMinutes" placeholder="45">
 
-                    <label>How did it feel?</label>
+                    <label>How are you doing with these skills?</label>
                     <div id="outcome">
-                        <div class="outcome-btn" data-val="light">Too<br>Easy</div>
-                        <div class="outcome-btn active" data-val="moderate">Good<br>Workout</div>
-                        <div class="outcome-btn" data-val="hard">Total<br>Exhaustion</div>
+                        <div class="outcome-btn" data-val="struggled">Needs<br>Practice</div>
+                        <div class="outcome-btn active" data-val="improved">Getting<br>Better</div>
+                        <div class="outcome-btn" data-val="mastered">Nailed<br>It!</div>
                     </div>
 
                     <label>Signature</label>
@@ -254,7 +258,7 @@
                         </div>
                     </div>
                     <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div></div>
-                    <div style="text-align:right; font-size:10px; margin-top:5px; opacity:0.7;">Keep training to level up!</div>
+                    <div style="text-align:right; font-size:10px; margin-top:5px; opacity:0.7;">Fill bar to level up!</div>
                 </div>
             </div>
 
@@ -351,11 +355,23 @@
             </div>
 
             <div class="card">
-                <div class="card-header">SYSTEM LOGS <button id="generateTestLogBtn" class="action-btn">Test</button></div>
+                <div class="card-header">MANAGE ADMINS</div>
+                <div class="card-body" style="padding:0;">
+                    <table id="adminTable" class="admin-table"><thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody></table>
+                    <div style="padding:10px; background:#f8fafc; display:flex; gap:5px;">
+                        <input id="newAdminEmail" placeholder="New Admin Email" style="flex:1; margin:0;">
+                        <button id="addAdminBtn" class="secondary-btn" style="width:auto; margin:0;">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">SYSTEM DIAGNOSTICS</div>
                 <div class="card-body" style="padding:0;">
                     <div style="display:flex; border-bottom:1px solid #e2e8f0;">
-                        <div style="flex:1; padding:10px; text-align:center; font-weight:bold; border-bottom:2px solid var(--aggie-blue);">System</div>
-                        <div style="flex:1; padding:10px; text-align:center; color:#94a3b8;">Security</div>
+                        <div id="btnLogSystem" class="log-tab" style="background:white; font-weight:bold; border-bottom:2px solid var(--aggie-blue);">System Log</div>
+                        <div id="btnLogSecurity" class="log-tab">Security Scan</div>
+                        <div id="btnLogDebug" class="log-tab">Debugging</div>
                     </div>
                     <div id="logContainer" style="height:150px; overflow-y:auto; padding:10px; font-size:11px;"></div>
                 </div>
@@ -378,10 +394,8 @@
     <script type="module" src="app.js"></script>
     <script type="module" src="data.js"></script>
     <script>
-        // Init Canvas Helper
         const c=document.getElementById("signatureCanvas");
         window.onload=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
-        window.onresize=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
     </script>
 </body>
 </html>
