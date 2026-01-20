@@ -14,7 +14,7 @@
         :root {
             --aggie-blue: #00263A;
             --aggie-gold: #BFAE5A; 
-            --bg-gray: #f8fafc;
+            --bg-gray: #f1f5f9;
             --text-dark: #1e293b;
             --white: #ffffff;
             --danger: #ef4444;
@@ -228,7 +228,7 @@
                     <label>Total Duration (Mins)</label>
                     <input type="number" id="totalMinutes" placeholder="45">
 
-                    <label>How are you doing with these skills?</label>
+                    <label>Skill Confidence (Self-Check)</label>
                     <div id="outcome">
                         <div class="outcome-btn" data-val="struggled">Needs<br>Practice</div>
                         <div class="outcome-btn active" data-val="improved">Getting<br>Better</div>
@@ -394,8 +394,10 @@
     <script type="module" src="app.js"></script>
     <script type="module" src="data.js"></script>
     <script>
+        // Init Canvas Helper
         const c=document.getElementById("signatureCanvas");
         window.onload=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
+        window.onresize=function(){if(c.parentElement){c.width=c.parentElement.offsetWidth;c.height=120;}}
     </script>
 </body>
 </html>

@@ -31,7 +31,7 @@ let teamChart = null;
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v4 Loaded");
+    console.log("App v5 Loaded (YouTube & Modals Fixed)");
 
     // AUTH
     document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
@@ -76,7 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("drillInfoBox").style.display='block';
             document.getElementById("drillDesc").innerText = s.drill;
             const vb = document.getElementById("watchVideoBtn");
-            if(s.video) { vb.style.display='inline-block'; vb.onclick = () => { document.getElementById("videoPlayer").src=s.video; document.getElementById("videoModal").style.display='block'; } }
+            if(s.video) { 
+                vb.style.display='inline-block'; 
+                vb.onclick = () => { 
+                    // FIX: Convert URL to Embed format
+                    const embedUrl = convertToEmbedUrl(s.video);
+                    document.getElementById("videoPlayer").src = embedUrl; 
+                    document.getElementById("videoModal").style.display='block'; 
+                } 
+            }
             else vb.style.display='none';
         }
     };
@@ -110,9 +118,47 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("btnLogSecurity").onclick = runSecurityScan;
     document.getElementById("btnLogDebug").onclick = runDebugLog;
 
-    // MODALS
-    document.querySelectorAll(".close-btn").forEach(b => b.onclick = () => b.closest(".modal").style.display='none');
+    // --- MODAL FIXES ---
+    // Close buttons (X)
+    document.querySelectorAll(".close-btn").forEach(b => {
+        b.onclick = () => {
+            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
+            // Stop video
+            document.getElementById("videoPlayer").src = "";
+        }
+    });
+
+    // Close on background click
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+            document.getElementById("videoPlayer").src = "";
+        }
+    };
 });
+
+// --- HELPER: YOUTUBE EMBED FIX ---
+function convertToEmbedUrl(url) {
+    if (!url) return "";
+    let videoId = "";
+    // Handle youtu.be/ID
+    if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1];
+    } 
+    // Handle youtube.com/watch?v=ID
+    else if (url.includes("v=")) {
+        videoId = url.split("v=")[1].split("&")[0];
+    }
+    // Already embed?
+    else if (url.includes("embed/")) {
+        return url;
+    }
+    
+    // Remove any query params like ?t=10
+    if(videoId.includes("?")) videoId = videoId.split("?")[0];
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+}
 
 // --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
@@ -216,7 +262,6 @@ async function submitWorkout() {
 }
 
 async function loadStats() {
-    // Gamification Logic (Levels & XP)
     const q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(50));
     const snap = await getDocs(q);
     const logs = []; let totalMins = 0;
@@ -225,7 +270,7 @@ async function loadStats() {
     document.getElementById("statTotal").innerText = `${logs.length} Sessions`;
     document.getElementById("statTime").innerText = totalMins;
     
-    // XP Algo: 10xp per session + 1xp per minute
+    // XP Algo
     let xp = totalMins + (logs.length * 10);
     let lvl = "ROOKIE";
     if(xp > 500) lvl = "STARTER";
@@ -233,7 +278,6 @@ async function loadStats() {
     if(xp > 3000) lvl = "LEGEND";
     
     document.getElementById("userLevelDisplay").innerText = lvl;
-    // Modulo 500 for bar progress (0-500)
     document.getElementById("xpBar").style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
     
     renderCalendar(logs);
@@ -299,7 +343,7 @@ async function loadCoachDashboard(isDirector, teams) {
     document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
     document.getElementById("coachTotalReps").innerText = count;
     
-    // Roster rendering fix
+    // Render Roster List with Delete
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterHtml = "";
     if(rosterSnap.exists() && rosterSnap.data().players) {
