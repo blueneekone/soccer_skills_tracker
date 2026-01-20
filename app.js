@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } 
+import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -36,6 +36,11 @@ let currentCoachTeamId = null;
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
+const loginGoogleBtn = document.getElementById("loginGoogleBtn");
+const loginEmailBtn = document.getElementById("loginEmailBtn");
+const signupEmailBtn = document.getElementById("signupEmailBtn");
+const authErrorMsg = document.getElementById("authErrorMsg");
+
 const globalLogoutBtn = document.getElementById("globalLogoutBtn");
 const appUI = document.getElementById("appUI");
 const loginUI = document.getElementById("loginUI");
@@ -92,6 +97,51 @@ function populateDropdowns() {
         coachTeamSelect.innerHTML = "";
         globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
     }
+}
+
+// --- AUTH HANDLERS ---
+// Google Login
+if(loginGoogleBtn) {
+    loginGoogleBtn.addEventListener("click", () => {
+        const provider = new GoogleAuthProvider();
+        signInWithRedirect(auth, provider);
+    });
+}
+
+// Email Login
+if(loginEmailBtn) {
+    loginEmailBtn.addEventListener("click", () => {
+        const email = document.getElementById("authEmail").value;
+        const pass = document.getElementById("authPassword").value;
+        if(!email || !pass) {
+            authErrorMsg.textContent = "Please enter both email and password.";
+            authErrorMsg.style.display = "block";
+            return;
+        }
+        signInWithEmailAndPassword(auth, email, pass)
+            .catch((error) => {
+                authErrorMsg.textContent = "Login Failed: " + error.message;
+                authErrorMsg.style.display = "block";
+            });
+    });
+}
+
+// Email Signup
+if(signupEmailBtn) {
+    signupEmailBtn.addEventListener("click", () => {
+        const email = document.getElementById("authEmail").value;
+        const pass = document.getElementById("authPassword").value;
+        if(!email || !pass) {
+            authErrorMsg.textContent = "Please enter both email and password.";
+            authErrorMsg.style.display = "block";
+            return;
+        }
+        createUserWithEmailAndPassword(auth, email, pass)
+            .catch((error) => {
+                authErrorMsg.textContent = "Signup Failed: " + error.message;
+                authErrorMsg.style.display = "block";
+            });
+    });
 }
 
 // --- SMART ROSTER SELECTOR ---
@@ -219,7 +269,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginUI.style.display = "none"; appUI.style.display = "block"; bottomNav.style.display = "flex";
     globalLogoutBtn.style.display = "block"; 
-    document.getElementById("coachName").textContent = `Logged in: ${user.displayName}`;
+    document.getElementById("coachName").textContent = `Logged in: ${user.email}`;
     await fetchConfig(); loadUserProfile();
     
     const isDirector = globalAdmins.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
@@ -274,7 +324,7 @@ onAuthStateChanged(auth, async (user) => {
 // STANDARD HELPERS
 function saveUserProfile(first, last, team) { localStorage.setItem("aggie_first", first); localStorage.setItem("aggie_last", last); localStorage.setItem("aggie_team", team); }
 function loadUserProfile() { const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team"); if(f) document.getElementById("playerFirst").value = f; if(l) document.getElementById("playerLast").value = l; if(t) { document.getElementById("teamSelect").value = t; const event = new Event('change'); document.getElementById("teamSelect").dispatchEvent(event); } }
-loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
+
 globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 
 function switchTab(tab) { 
