@@ -61,8 +61,24 @@
               <div class="timer-display" id="stopwatch">00:00</div>
               <div class="timer-controls"><button class="btn-start" id="startTimer">Start</button><button class="btn-stop" id="stopTimer">Stop</button><button class="btn-reset" id="resetTimer">Reset</button></div>
             </div>
-            <label>My Team</label><select id="teamSelect"><option value="" disabled selected>Loading Teams...</option></select>
-            <div class="row"><div><input type="text" id="playerFirst" placeholder="First Name"></div><div><input type="text" id="playerLast" placeholder="Last Name"></div></div>
+            
+            <label>My Team</label>
+            <select id="teamSelect" style="margin-bottom:15px;"><option value="" disabled selected>Loading Teams...</option></select>
+            
+            <div id="playerSelectArea" style="display:none;">
+                <label>Player Name</label>
+                <select id="playerDropdown" style="font-weight:bold; color:#00263A;">
+                    <option value="" disabled selected>Select Yourself...</option>
+                </select>
+            </div>
+
+            <div id="manualNameArea">
+                <div class="row">
+                    <div><input type="text" id="playerFirst" placeholder="First Name"></div>
+                    <div><input type="text" id="playerLast" placeholder="Last Name"></div>
+                </div>
+            </div>
+
           </div>
         </div>
 

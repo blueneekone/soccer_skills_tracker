@@ -5,8 +5,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
-// --- THE SAFETY NET ---
-// If a player has no team, or the team config fails, data goes here.
+// MASTER FALLBACK
 const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
 
 const firebaseConfig = {
@@ -50,6 +49,9 @@ const unifiedSelect = document.getElementById("unifiedSelect");
 const teamSelect = document.getElementById("teamSelect");
 const adminTeamSelect = document.getElementById("adminTeamSelect");
 const coachTeamSelect = document.getElementById("coachTeamSelect");
+const playerDropdown = document.getElementById("playerDropdown");
+const playerSelectArea = document.getElementById("playerSelectArea");
+const manualNameArea = document.getElementById("manualNameArea");
 
 // LOGGING
 async function logSystemEvent(type, detail) {
@@ -59,133 +61,117 @@ async function logSecurityEvent(type, detail) {
     addDoc(collection(db, "logs_security"), { type: type, detail: detail, user: auth.currentUser ? auth.currentUser.email : "system", timestamp: new Date() });
 }
 
-// CONFIG FETCHING
+// CONFIG
 async function fetchConfig() {
     try {
         const teamSnap = await getDoc(doc(db, "config", "teams"));
         if (teamSnap.exists()) globalTeams = teamSnap.data().list;
-        else { 
-            // First time setup? Use data.js fallback
-            globalTeams = dbData.teams; 
-            await setDoc(doc(db, "config", "teams"), { list: globalTeams }); 
-        }
+        else { globalTeams = dbData.teams; await setDoc(doc(db, "config", "teams"), { list: globalTeams }); }
     } catch (e) { globalTeams = dbData.teams; }
 
     try {
         const adminSnap = await getDoc(doc(db, "config", "admins"));
         if (adminSnap.exists()) globalAdmins = adminSnap.data().list;
-        else { 
-            globalAdmins = [DIRECTOR_EMAIL]; 
-            await setDoc(doc(db, "config", "admins"), { list: globalAdmins }); 
-        }
+        else { globalAdmins = [DIRECTOR_EMAIL]; await setDoc(doc(db, "config", "admins"), { list: globalAdmins }); }
     } catch (e) { globalAdmins = [DIRECTOR_EMAIL]; }
     
     populateDropdowns();
 }
 
 function populateDropdowns() {
-    // 1. PLAYER TEAM SELECT (With Forced Fallback)
     teamSelect.innerHTML = '<option value="" disabled selected>Select Your Team...</option>';
-    
-    // FORCE "Unassigned" option so data is never stranded
     teamSelect.innerHTML += `<option value="unassigned" style="font-weight:bold; color:#00263A;">★ Unassigned / Tryouts</option>`;
+    globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
     
-    globalTeams.forEach(t => { 
-        const opt = document.createElement("option"); 
-        opt.value = t.id; 
-        opt.textContent = t.name; 
-        teamSelect.appendChild(opt); 
-    });
-    
-    // 2. COACH ROSTER SELECT
     coachTeamSelect.innerHTML = "";
-    globalTeams.forEach(t => { 
-        const opt = document.createElement("option"); 
-        opt.value = t.id; 
-        opt.textContent = t.name; 
-        coachTeamSelect.appendChild(opt); 
-    });
+    globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
 }
 
-// --- ADMIN LOGIC ---
+// NEW: SMART ROSTER SELECTOR
+teamSelect.addEventListener("change", async (e) => {
+    const teamId = e.target.value;
+    
+    // Reset Logic
+    playerSelectArea.style.display = "none";
+    manualNameArea.style.display = "block";
+    playerDropdown.innerHTML = '<option value="" disabled selected>Select Player...</option>';
+    
+    if (teamId === "unassigned") return; // Keep manual
+
+    try {
+        const docRef = doc(db, "rosters", teamId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists() && docSnap.data().players && docSnap.data().players.length > 0) {
+            // Roster Exists!
+            const players = docSnap.data().players.sort();
+            
+            // Populate Dropdown
+            players.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                playerDropdown.appendChild(opt);
+            });
+            
+            // Add "Manual" Option
+            const manualOpt = document.createElement("option");
+            manualOpt.value = "manual";
+            manualOpt.textContent = "name not listed? (type manually)";
+            manualOpt.style.color = "#8A8D8F";
+            playerDropdown.appendChild(manualOpt);
+
+            // Show Dropdown, Hide Manual
+            playerSelectArea.style.display = "block";
+            manualNameArea.style.display = "none";
+        }
+    } catch (e) { console.error("Roster fetch error", e); }
+});
+
+// If they select "Manual" in dropdown, show the inputs
+playerDropdown.addEventListener("change", (e) => {
+    if (e.target.value === "manual") {
+        manualNameArea.style.display = "block";
+        document.getElementById("playerFirst").focus();
+    } else {
+        manualNameArea.style.display = "none";
+    }
+});
+
+// ADMIN LOGIC
 function renderAdminTables() {
     const teamTbody = document.getElementById("teamTable").querySelector("tbody");
-    teamTbody.innerHTML = globalTeams.map(t => `
-        <tr>
-            <td>${t.id}</td>
-            <td>${t.name}</td>
-            <td>${t.coachEmail}</td>
-            <td><button class="admin-action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Delete</button></td>
-        </tr>
-    `).join("");
-
+    teamTbody.innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td><td><button class="admin-action-btn btn-delete" onclick="window.deleteTeam('${t.id}')">Delete</button></td></tr>`).join("");
     const adminTbody = document.getElementById("adminTable").querySelector("tbody");
-    adminTbody.innerHTML = globalAdmins.map(email => `
-        <tr>
-            <td>${email}</td>
-            <td>${email.toLowerCase() === MASTER_DIRECTOR.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="admin-action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Remove</button>`}</td>
-        </tr>
-    `).join("");
+    adminTbody.innerHTML = globalAdmins.map(email => `<tr><td>${email}</td><td>${email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase() ? '<span style="color:#aaa">Master</span>' : `<button class="admin-action-btn btn-delete" onclick="window.deleteAdmin('${email}')">Remove</button>`}</td></tr>`).join("");
 }
-
-// FORCE GLOBAL SCOPE (This fixes the "Delete doesn't work" issue)
 window.deleteTeam = async (id) => {
     if(!confirm(`Delete team ${id}?`)) return;
     globalTeams = globalTeams.filter(t => t.id !== id);
-    try {
-        await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-        renderAdminTables(); 
-        populateDropdowns(); 
-        alert("Team Deleted");
-    } catch(e) { 
-        alert("Database Error: You might not have permission. Check Rules."); 
-        console.error(e);
-    }
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    renderAdminTables(); populateDropdowns(); logSystemEvent("TEAM_DELETED", `ID: ${id}`);
 };
-
 window.deleteAdmin = async (email) => {
     if(!confirm(`Remove admin access for ${email}?`)) return;
     globalAdmins = globalAdmins.filter(e => e !== email);
-    try {
-        await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-        renderAdminTables();
-        alert("Admin Removed");
-    } catch(e) { alert("Error removing admin."); }
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    renderAdminTables(); logSecurityEvent("ADMIN_REMOVED", `Removed: ${email}`);
 };
 document.getElementById("addTeamBtn").addEventListener("click", async () => {
     const id = document.getElementById("newTeamId").value.trim();
     const name = document.getElementById("newTeamName").value.trim();
     const email = document.getElementById("newCoachEmail").value.trim();
-    
-    if(!id || !name || !email) return alert("Please fill all fields (ID, Name, Email)");
-    
-    // Optimistic Update (Update UI before DB to feel fast)
+    if(!id || !name || !email) return alert("Fill all fields");
     const idx = globalTeams.findIndex(t => t.id === id);
-    if(idx >= 0) globalTeams[idx] = { id, name, coachEmail: email }; 
-    else globalTeams.push({ id, name, coachEmail: email });
-    
-    try {
-        console.log("Attempting to save teams to Firestore...");
-        await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-        alert("Team Saved Successfully!");
-        
-        // Clear inputs
-        document.getElementById("newTeamId").value = "";
-        document.getElementById("newTeamName").value = "";
-        document.getElementById("newCoachEmail").value = "";
-        
-        renderAdminTables(); 
-        populateDropdowns(); 
-    } catch(e) { 
-        console.error("SAVE FAILED:", e);
-        alert("Save Failed! Permission Denied. Did you update the Firestore Rules?"); 
-    }
+    if(idx >= 0) globalTeams[idx] = { id, name, coachEmail: email }; else globalTeams.push({ id, name, coachEmail: email });
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    alert("Team Saved"); document.getElementById("newTeamId").value=""; document.getElementById("newTeamName").value=""; document.getElementById("newCoachEmail").value=""; renderAdminTables(); populateDropdowns(); logSystemEvent("TEAM_UPDATED", `Team: ${id}`);
 });
 document.getElementById("addAdminBtn").addEventListener("click", async () => {
     const email = document.getElementById("newAdminEmail").value.trim().toLowerCase();
     if(!email || globalAdmins.includes(email)) return;
     globalAdmins.push(email); await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    alert("Admin Added"); renderAdminTables(); logSecurityEvent("ADMIN_ADDED", `Added: ${email}`);
+    alert("Admin Added"); document.getElementById("newAdminEmail").value=""; renderAdminTables(); logSecurityEvent("ADMIN_ADDED", `Added: ${email}`);
 });
 document.getElementById("tabSysLogs").addEventListener("click", () => loadLogs("logs_system"));
 document.getElementById("tabSecLogs").addEventListener("click", () => loadLogs("logs_security"));
@@ -223,7 +209,7 @@ document.getElementById("rosterPdfInput").addEventListener("change", async (e) =
         const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
         let fullText = ""; for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); textContent.items.forEach(item => fullText += item.str + "\n"); }
         const lines = fullText.split("\n");
-        const uniqueNames = [...new Set(lines.filter(l => /^[a-zA-Z\s,'-]{3,25}$/.test(l.trim()) && !l.toLowerCase().includes("jersey")).map(l=>l.trim()))];
+        const uniqueNames = [...new Set(lines.filter(l => /^[a-zA-Z\s,'-]{3,25}$/.test(l.trim()) && !l.toLowerCase().includes("jersey") && !l.toLowerCase().includes("coach")).map(l=>l.trim()))];
         document.getElementById("rosterUploadStep1").style.display = "none"; document.getElementById("rosterReviewArea").style.display = "block"; document.getElementById("rosterTextRaw").value = uniqueNames.join("\n");
     } catch(err) { alert("Error parsing PDF."); }
 });
@@ -262,7 +248,7 @@ onAuthStateChanged(auth, async (user) => {
 
 // STANDARD HELPERS
 function saveUserProfile(first, last, team) { localStorage.setItem("aggie_first", first); localStorage.setItem("aggie_last", last); localStorage.setItem("aggie_team", team); }
-function loadUserProfile() { const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team"); if(f) document.getElementById("playerFirst").value = f; if(l) document.getElementById("playerLast").value = l; if(t) document.getElementById("teamSelect").value = t; }
+function loadUserProfile() { const f = localStorage.getItem("aggie_first"); const l = localStorage.getItem("aggie_last"); const t = localStorage.getItem("aggie_team"); if(f) document.getElementById("playerFirst").value = f; if(l) document.getElementById("playerLast").value = l; if(t) { document.getElementById("teamSelect").value = t; /* Trigger change for smart roster */ const event = new Event('change'); document.getElementById("teamSelect").dispatchEvent(event); } }
 loginBtn.addEventListener("click", () => { const provider = new GoogleAuthProvider(); signInWithRedirect(auth, provider); });
 globalLogoutBtn.addEventListener("click", () => { signOut(auth).then(() => location.reload()); });
 function switchTab(tab) { [viewTracker, viewStats, viewCoach, viewAdmin].forEach(v => v.style.display = "none"); [navTrack, navStats, navCoach, navAdmin].forEach(n => n.classList.remove("active")); if (tab === 'track') { viewTracker.style.display = "block"; navTrack.classList.add("active"); setTimeout(resizeCanvas, 100); } if (tab === 'stats') { viewStats.style.display = "block"; navStats.classList.add("active"); loadStats(); } if (tab === 'coach') { viewCoach.style.display = "block"; navCoach.classList.add("active"); loadCoachDashboard(); } if (tab === 'admin') { viewAdmin.style.display = "block"; navAdmin.classList.add("active"); } }
@@ -295,30 +281,43 @@ function renderSessionList() {
     if(currentSessionItems.length === 0) { list.innerHTML = `<li style="color:#94a3b8; text-align:center; padding:10px; background:#f8fafc; border-radius:6px;">No activities added yet.</li>`; return; }
     list.innerHTML = currentSessionItems.map((item, index) => `<li style="border-bottom:1px solid #e2e8f0; padding:8px; display:flex; justify-content:space-between; align-items:center;"><span><b>${index+1}.</b> ${item.name}</span> <span style="font-size:12px; color:#64748b;">${item.sets} x ${item.reps}</span></li>`).join("");
 }
-
-// SUBMIT
 document.getElementById("submitWorkoutBtn").addEventListener("click", async () => {
     const user = auth.currentUser; if (!user) return alert("Sign in first");
     if (currentSessionItems.length === 0) return alert("Stack is empty!");
-    const teamId = teamSelect.value; const pFirst = document.getElementById("playerFirst").value; const pLast = document.getElementById("playerLast").value; const mins = document.getElementById("totalMinutes").value;
-    if(!teamId) return alert("Select Team"); if(!pFirst || !pLast) return alert("Enter Name"); if(!mins || mins == 0) return alert("Enter Duration");
+    const teamId = teamSelect.value; const mins = document.getElementById("totalMinutes").value;
+    
+    // NEW: NAME HANDLING
+    let playerName = "";
+    if(playerSelectArea.style.display !== "none" && playerDropdown.value !== "manual") {
+        playerName = playerDropdown.value; // From Dropdown
+    } else {
+        const f = document.getElementById("playerFirst").value;
+        const l = document.getElementById("playerLast").value;
+        if(f && l) playerName = `${f} ${l}`; // From Manual
+    }
+
+    if(!teamId) return alert("Select Team"); 
+    if(!playerName) return alert("Select or Enter Name"); 
+    if(!mins || mins == 0) return alert("Enter Duration");
     if (isSignatureBlank) { canvas.style.borderColor = "#dc2626"; return alert("Signature Required"); }
     
-    saveUserProfile(pFirst, pLast, teamId);
+    // Only save profile if manual entry was used
+    if(manualNameArea.style.display !== "none") {
+        saveUserProfile(document.getElementById("playerFirst").value, document.getElementById("playerLast").value, teamId);
+    } else {
+        localStorage.setItem("aggie_team", teamId); // Still save team preference
+    }
+
     const signatureData = canvas.toDataURL();
-    
-    // --- SAFETY NET LOGIC ---
-    let assignedCoachEmail = DIRECTOR_EMAIL; // Default to safety
+    let assignedCoachEmail = DIRECTOR_EMAIL;
     if (teamId !== "unassigned") {
         const selectedTeam = globalTeams.find(t => t.id === teamId);
-        if (selectedTeam && selectedTeam.coachEmail) {
-            assignedCoachEmail = selectedTeam.coachEmail;
-        }
+        if (selectedTeam && selectedTeam.coachEmail) assignedCoachEmail = selectedTeam.coachEmail;
     }
 
     const drillSummary = currentSessionItems.map(i => `${i.name} (${i.sets}x${i.reps})`).join(", ");
-    const sessionData = { coachEmail: assignedCoachEmail, teamId: teamId, timestamp: new Date(), player: `${pFirst} ${pLast}`, minutes: mins, drills: currentSessionItems, drillSummary: drillSummary, outcome: document.getElementById("outcome").querySelector(".active")?.dataset.val || "success", notes: document.getElementById("notes").value, signatureImg: signatureData };
-    try { await addDoc(collection(db, "reps"), sessionData); alert(`Logged! +${10 + parseInt(mins)} XP`); logSystemEvent("SESSION_LOGGED", `Player: ${pFirst} ${pLast}, Team: ${teamId}, Mins: ${mins}`); currentSessionItems = []; renderSessionList(); document.getElementById("totalMinutes").value = ""; document.getElementById("notes").value = ""; ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; document.getElementById("resetTimer").click(); loadStats(); } catch(e) { console.error(e); alert("Error saving"); }
+    const sessionData = { coachEmail: assignedCoachEmail, teamId: teamId, timestamp: new Date(), player: playerName, minutes: mins, drills: currentSessionItems, drillSummary: drillSummary, outcome: document.getElementById("outcome").querySelector(".active")?.dataset.val || "success", notes: document.getElementById("notes").value, signatureImg: signatureData };
+    try { await addDoc(collection(db, "reps"), sessionData); alert(`Logged! +${10 + parseInt(mins)} XP`); logSystemEvent("SESSION_LOGGED", `Player: ${playerName}, Team: ${teamId}, Mins: ${mins}`); currentSessionItems = []; renderSessionList(); document.getElementById("totalMinutes").value = ""; document.getElementById("notes").value = ""; ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; document.getElementById("resetTimer").click(); loadStats(); } catch(e) { console.error(e); alert("Error saving"); }
 });
 
 // TIMER
@@ -399,4 +398,3 @@ function renderTeamChart(playersData) {
     const datasets = Object.keys(playersData).map(p => { const dailyMins = dates.map(dateStr => { return playersData[p].history.includes(dateStr) ? 1 : 0; }); const color = getPlayerColor(p); return { label: p, data: dailyMins, borderColor: color, tension: 0.3, fill: false }; });
     teamChart = new Chart(ctx, { type: 'line', data: { labels: dates, datasets: datasets }, options: { responsive: true, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true, title: {display:true, text:'Active?'} } } } });
 }
-document.getElementById("closeModal").onclick = () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; };
