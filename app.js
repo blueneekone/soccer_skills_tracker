@@ -30,6 +30,7 @@ let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval;
 let seconds = 0;
 let isSignatureBlank = true; 
+let teamChart = null; // Defined explicitly to prevent errors
 
 // REFS
 const loginBtn = document.getElementById("loginBtn");
@@ -83,15 +84,22 @@ function populateDropdowns() {
     teamSelect.innerHTML += `<option value="unassigned" style="font-weight:bold; color:#00263A;">★ Unassigned / Tryouts</option>`;
     globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt); });
     
-    coachTeamSelect.innerHTML = "";
-    globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
+    if(coachTeamSelect) {
+        coachTeamSelect.innerHTML = "";
+        globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; coachTeamSelect.appendChild(opt); });
+    }
 }
 
-// NEW: SMART ROSTER SELECTOR
+// --- NEW: SMART ROSTER SELECTOR (With Auto-Select Fix) ---
 teamSelect.addEventListener("change", async (e) => {
     const teamId = e.target.value;
     
-    // Reset Logic
+    // 1. Get saved profile to try and auto-match
+    const savedFirst = document.getElementById("playerFirst").value.trim().toLowerCase();
+    const savedLast = document.getElementById("playerLast").value.trim().toLowerCase();
+    const fullSavedName = `${savedFirst} ${savedLast}`;
+
+    // Reset UI
     playerSelectArea.style.display = "none";
     manualNameArea.style.display = "block";
     playerDropdown.innerHTML = '<option value="" disabled selected>Select Player...</option>';
@@ -107,10 +115,16 @@ teamSelect.addEventListener("change", async (e) => {
             const players = docSnap.data().players.sort();
             
             // Populate Dropdown
+            let matchFound = false;
             players.forEach(p => {
                 const opt = document.createElement("option");
                 opt.value = p;
                 opt.textContent = p;
+                // AUTO SELECT IF MATCHES PROFILE
+                if (p.toLowerCase() === fullSavedName) {
+                    opt.selected = true;
+                    matchFound = true;
+                }
                 playerDropdown.appendChild(opt);
             });
             
@@ -202,8 +216,6 @@ window.addEventListener("click", (event) => {
 document.getElementById("closeModal").addEventListener("click", () => { document.getElementById("videoModal").style.display = "none"; document.getElementById("videoPlayer").src = ""; });
 document.getElementById("closeDayModal").addEventListener("click", () => { document.getElementById("dayModal").style.display = "none"; });
 
-// ... (Keep existing imports and config) ...
-
 // --- ROSTER UPLOAD (SMART ROW PARSING) ---
 document.getElementById("rosterPdfInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
@@ -226,11 +238,10 @@ document.getElementById("rosterPdfInput").addEventListener("change", async (e) =
             const textContent = await page.getTextContent();
             
             // 2. Map items with their Y-Coordinate
-            // item.transform[5] is the Y position in PDF coordinates
             const items = textContent.items.map(item => ({
                 text: item.str.trim(),
-                y: Math.round(item.transform[5]), // Round to group slightly misaligned text
-                x: Math.round(item.transform[4])  // Keep X for sorting columns
+                y: Math.round(item.transform[5]), 
+                x: Math.round(item.transform[4]) 
             })).filter(i => i.text.length > 0);
 
             // 3. Group by Y-Coordinate (Create Rows)
@@ -241,54 +252,28 @@ document.getElementById("rosterPdfInput").addEventListener("change", async (e) =
             });
 
             // 4. Flatten to sorted array of rows (Top to Bottom)
-            const sortedY = Object.keys(rows).sort((a, b) => b - a); // PDF Y starts at bottom
+            const sortedY = Object.keys(rows).sort((a, b) => b - a); 
             
             sortedY.forEach(y => {
-                // Sort columns Left to Right
                 const cols = rows[y].sort((a, b) => a.x - b.x);
                 extractedRows.push(cols.map(c => c.text));
             });
         }
 
         // 5. "Smart" Filter Logic
-        // We look for rows that look like player data.
-        // Characteristics based on your PDF: Has a date (DOB), has an ID (digits), has names.
         const cleanNames = extractedRows.filter(row => {
             const rowString = row.join(" ");
-            
-            // Filter A: Must have a Date of Birth pattern (MM/DD/YYYY)
-            // Your PDF uses format like 06/25/2015
             const hasDate = /\d{1,2}\/\d{1,2}\/\d{4}/.test(rowString);
-            
-            // Filter B: Must NOT be an Admin/Coach row (optional, but safer)
             const isHeader = rowString.toLowerCase().includes("last name") || rowString.toLowerCase().includes("printed on");
-            
             return hasDate && !isHeader;
         })
         .map(row => {
             // 6. Extraction: Isolate the Name
-            // A row usually looks like: [ID, LastName, FirstName, DOB, Address, City...]
-            // Strategy: Filter out items that contain digits (ID, DOB, Address, Zip, Phone)
-            // The remaining items are Name and City. We usually take the first 1-2.
-            
             const textOnly = row.filter(str => {
-                // Remove strings with digits (IDs, Dates, Zips, Phones, Street Addresses)
-                return !/\d/.test(str) && 
-                       // Remove headers if they snuck in
-                       !['Male','Female','Boy','Girl','Approved'].includes(str);
+                return !/\d/.test(str) && !['Male','Female','Boy','Girl','Approved'].includes(str);
             });
 
-            // Usually [LastName, FirstName, City, State] remains.
-            // We'll take the first two entries (Last, First) or join them.
-            // Aggies PDF seems to be: Last, First
-            // NOTE: Adjust slice if City shows up
-            
-            // Basic cleanup to remove common "City" names if they appear at the end
-            // For now, let's just grab the first few text blocks which are likely the name.
-            
-            // Format: "First Last" is usually better for the app
             if (textOnly.length >= 2) {
-                // Assuming format is [LastName, FirstName] based on standard rosters
                 return `${textOnly[1]} ${textOnly[0]}`; 
             } else {
                 return textOnly.join(" ");
@@ -309,6 +294,43 @@ document.getElementById("rosterPdfInput").addEventListener("change", async (e) =
     btn.disabled = false;
 });
 
+// --- NEW: SAVE ROSTER BUTTON LOGIC ---
+const saveRosterBtn = document.getElementById("saveParsedRosterBtn"); 
+if (saveRosterBtn) {
+    saveRosterBtn.addEventListener("click", async () => {
+        const rawText = document.getElementById("rosterTextRaw").value;
+        const targetTeamId = document.getElementById("adminTeamSelect").value; 
+
+        if (!targetTeamId || targetTeamId === "unassigned" || targetTeamId === "all") {
+            return alert("Please select a specific team in the Admin panel (above) to attach this roster to.");
+        }
+
+        if (!rawText) return alert("Roster list is empty.");
+
+        // Split text by new lines to get array
+        const playerList = rawText.split("\n").map(name => name.trim()).filter(name => name.length > 0);
+
+        try {
+            await setDoc(doc(db, "rosters", targetTeamId), {
+                players: playerList,
+                lastUpdated: new Date()
+            });
+            
+            alert(`Success! Saved ${playerList.length} players to team: ${targetTeamId}`);
+            
+            // Cleanup UI
+            document.getElementById("rosterReviewArea").style.display = "none";
+            document.getElementById("rosterPdfInput").value = ""; 
+            document.getElementById("rosterUploadStep1").style.display = "block";
+            
+        } catch (error) {
+            console.error("Error saving roster:", error);
+            alert("Error saving to database.");
+        }
+    });
+}
+
+
 // AUTH & STARTUP
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -324,7 +346,11 @@ onAuthStateChanged(auth, async (user) => {
         navCoach.style.display = "flex";
         if(isDirector) {
             navAdmin.style.display = "flex"; document.getElementById("adminControls").style.display = "block";
-            if(adminTeamSelect.options.length === 1) { globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt); }); adminTeamSelect.addEventListener("change", () => loadCoachDashboard(true)); }
+            if(adminTeamSelect.options.length <= 1) { 
+                adminTeamSelect.innerHTML = '<option value="all">All Teams</option>';
+                globalTeams.forEach(t => { const opt = document.createElement("option"); opt.value = t.id; opt.textContent = t.name; adminTeamSelect.appendChild(opt); }); 
+                adminTeamSelect.addEventListener("change", () => loadCoachDashboard(true)); 
+            }
             renderAdminTables(); loadLogs("logs_system");
         }
     }
