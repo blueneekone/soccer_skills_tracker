@@ -8,7 +8,6 @@ import { dbData } from "./data.js";
 // --- GLOBAL ERROR HANDLER ---
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
-    // Suppress the specific "null" errors in alert to avoid annoyance, just log them
     if (!message.includes("null")) alert(`System Error: ${message}`);
 };
 
@@ -38,7 +37,7 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE TEXT SETTER (CRITICAL FIX)
+// HELPER: SAFE TEXT SETTER
 const setText = (id, text) => {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
@@ -48,10 +47,6 @@ const setText = (id, text) => {
 const safeBind = (id, event, func) => {
     const el = document.getElementById(id);
     if(el) {
-        // Cloning the node is a nuclear option to clear ALL previous listeners 
-        // to prevent double-firing if init runs twice.
-        // But simple addEventListener is usually fine if we don't re-run init.
-        // We will just use a flag on the element to ensure we don't bind twice.
         if (el.dataset.bound === "true") return; 
         el.addEventListener(event, func);
         el.dataset.bound = "true";
@@ -60,12 +55,11 @@ const safeBind = (id, event, func) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v25 Starting (Redirect Auth & Full Safety)");
+    console.log("App v26 Starting (Robust Roster & UI)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
         console.log("Redirecting to Google...");
-        // Using Redirect instead of Popup to avoid Extension/Browser blocking
         signInWithRedirect(auth, new GoogleAuthProvider()).catch(e => alert("Login Error: " + e.message));
     });
     
@@ -216,16 +210,11 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 1. ADMIN BYPASS
             if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } 
-            // 2. RETURNING USER
-            else if (userSnap.exists()) {
+            } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-            }
-            // 3. AUTO-LINK
-            else {
+            } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
@@ -241,7 +230,6 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
-                
                 loadStats();
                 checkRoles(user);
             } else {
@@ -359,29 +347,36 @@ async function loadStats() {
         setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
-        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
+        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName));
     }
 
-    const snap = await getDocs(q);
-    const logs = []; let totalMins = 0;
-    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
-    
-    const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
-    setText("statTotal", `${logs.length} ${countLabel}`);
-    setText("statTime", totalMins);
-    
-    let xp = totalMins + (logs.length * 10);
-    let lvl = "ROOKIE";
-    if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
-    
-    if (userProfile.role !== 'admin') {
-        setText("userLevelDisplay", lvl);
-        const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-    }
-    
-    renderCalendar(logs);
-    renderPlayerTrendChart(logs);
-    renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs); 
+    try {
+        const snap = await getDocs(q);
+        const logs = []; let totalMins = 0;
+        snap.forEach(d => { 
+            logs.push(d.data()); 
+            totalMins += Number(d.data().minutes || 0); 
+        });
+        
+        logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
+        
+        const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
+        setText("statTotal", `${logs.length} ${countLabel}`);
+        setText("statTime", totalMins);
+        
+        let xp = totalMins + (logs.length * 10);
+        let lvl = "ROOKIE";
+        if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+        
+        if (userProfile.role !== 'admin') {
+            setText("userLevelDisplay", lvl);
+            const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+        }
+        
+        renderCalendar(logs);
+        renderPlayerTrendChart(logs);
+        renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
+    } catch (e) { console.error("Stats Load Error", e); }
 }
 
 function renderCalendar(logs) {
@@ -426,7 +421,7 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     if (!tid) { // Director Mode
         logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); });
     } else { // Team Mode
-        const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
+        const q = query(collection(db, "reps"), where("teamId", "==", tid));
         const snap = await getDocs(q);
         snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
     }
@@ -445,57 +440,69 @@ function initCoachDropdown(isDirector, teams) {
     if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
 }
 
+// *** CRITICAL UPDATE: ROSTER LOADING LOGIC ***
 async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
     currentCoachTeamId = tid; 
     
     const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Fetching...";
+    if(listEl) listEl.innerHTML = "Fetching roster data...";
 
-    // Stats
-    const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"));
-    const snap = await getDocs(q);
-    const players = {};
-    let count = 0;
-    
-    allSessionsCache = [];
-    snap.forEach(doc => {
-        const d = doc.data();
-        allSessionsCache.push(d);
-        if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
-        players[d.player].mins += Number(d.minutes);
-        const logDate = d.timestamp.toDate();
-        if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
-        count++;
-    });
-    
-    setText("coachActivePlayers", Object.keys(players).length);
-    setText("coachTotalReps", count);
-    
-    // Roster Render
-    const rosterSnap = await getDoc(doc(db, "rosters", tid));
-    let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
-    const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
-    const combinedList = Array.from(combinedSet).sort();
+    try {
+        // 1. Get Workout Stats
+        const q = query(collection(db, "reps"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const players = {};
+        let count = 0;
+        
+        allSessionsCache = [];
+        snap.forEach(doc => {
+            const d = doc.data();
+            allSessionsCache.push(d);
+            if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
+            players[d.player].mins += Number(d.minutes);
+            const logDate = d.timestamp.toDate();
+            if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
+            count++;
+        });
+        
+        setText("coachActivePlayers", Object.keys(players).length);
+        setText("coachTotalReps", count);
+        
+        // 2. Get Roster Names
+        const rosterSnap = await getDoc(doc(db, "rosters", tid));
+        let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
+        const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
+        const combinedList = Array.from(combinedSet).sort();
 
-    if(listEl) {
-        if(combinedList.length > 0) {
-            listEl.innerHTML = combinedList.map(p => {
-                const stats = players[p] || { mins: 0, lastActive: null };
-                const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
-                return `
-                <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
-                    <div>
-                        <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
-                        <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
-                        <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
-                    </div>
-                </div>`;
-            }).join("");
-        } else {
-            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
+        // 3. Render
+        if(listEl) {
+            if(combinedList.length > 0) {
+                listEl.innerHTML = combinedList.map(p => {
+                    const stats = players[p] || { mins: 0, lastActive: null };
+                    const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                    return `
+                    <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                        <div>
+                            <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
+                            <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
+                            <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
+                        </div>
+                    </div>`;
+                }).join("");
+            } else {
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually above.</div>";
+            }
+        }
+    } catch(e) {
+        console.error(e);
+        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
+    } finally {
+        // Fallback: If logic finishes but listEl still says Fetching, clear it
+        if(listEl && listEl.innerHTML === "Fetching roster data...") {
+             listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
         }
     }
 }
@@ -525,8 +532,10 @@ async function manualAddPlayer() {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
     if(!name) return alert("Enter name");
+    
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team first");
+    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -539,6 +548,7 @@ async function manualAddPlayer() {
     } else {
         alert("Player Added to Roster");
     }
+    
     document.getElementById("coachAddPlayerName").value = "";
     document.getElementById("coachAddPlayerEmail").value = "";
     loadCoachDashboard(false, globalTeams);
@@ -559,7 +569,8 @@ async function parsePDF(e) {
         
         const rows = {};
         textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5] / 10);
+            // Increased tolerance to 20 to group loosely aligned ID and Name
+            const y = Math.round(item.transform[5] / 20);
             if(!rows[y]) rows[y] = [];
             rows[y].push(decodeURIComponent(item.str));
         });
@@ -567,13 +578,33 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
+            // Looks for ID (12345-123456) OR Date (MM/DD/YYYY)
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             const idMatch = rowText.match(/\d{5}-\d{6}/);
             
             if (dateMatch || idMatch) {
-                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
-                let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
-                if(words.length >= 2) {
+                // Strip dates, IDs, Zips to find Name
+                let cleanRow = rowText
+                    .replace(/\d{5}-\d{6}/g, "")
+                    .replace(/\d{2}\/\d{2}\/\d{4}/g, "")
+                    .replace(/\d{5}/g, "") // Zip codes
+                    .trim();
+                
+                // Get words that look like names (Letters only, >2 length)
+                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
+                
+                // If we found "Waechtler, Evan" format
+                if (cleanRow.includes(",")) {
+                     // Split by comma
+                     let parts = cleanRow.split(",");
+                     if(parts.length >= 2) {
+                         let last = parts[0].trim();
+                         let first = parts[1].trim().split(" ")[0]; // Take just first name if multiple words
+                         extracted.push(`${first} ${last}`);
+                     }
+                }
+                // Fallback: If 2 words found, assume First Last
+                else if(words.length >= 2) {
                     let name = `${words[0]} ${words[1]}`;
                     extracted.push(name);
                 }
@@ -590,7 +621,12 @@ async function parsePDF(e) {
 
 async function saveRosterList() {
     const tid = currentCoachTeamId;
-    if(!tid) return alert("No team selected");
+    if(!tid) {
+        // Fallback: try to grab from DOM if variable is stale
+        const domTid = document.getElementById("adminTeamSelect")?.value;
+        if(!domTid) return alert("No team selected");
+        currentCoachTeamId = domTid;
+    }
     
     const lines = document.getElementById("rosterTextRaw").value.split("\n");
     const cleanNames = [];
@@ -602,14 +638,14 @@ async function saveRosterList() {
             cleanNames.push(name);
             if(email.includes("@")) {
                 const ref = doc(db, "player_lookup", email.toLowerCase());
-                batch.set(ref, { teamId: tid, playerName: name });
+                batch.set(ref, { teamId: currentCoachTeamId, playerName: name });
             }
         } else {
             if(line.trim()) cleanNames.push(line.trim());
         }
     });
 
-    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
+    await setDoc(doc(db, "rosters", currentCoachTeamId), { players: cleanNames, lastUpdated: new Date() });
     await batch.commit();
     
     alert("Roster Saved!");
