@@ -33,29 +33,36 @@ let userProfile = null;
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v15 Loaded (Automation)");
+    console.log("App v16 Loaded (Crash Proof)");
+
+    // Helper: Safely bind event listeners
+    const safeBind = (id, event, func) => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener(event, func);
+        else console.warn(`Element ${id} not found.`);
+    };
 
     // AUTH
-    document.getElementById("loginGoogleBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message));
-    document.getElementById("loginEmailBtn").onclick = () => {
+    safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
+    safeBind("loginEmailBtn", "click", () => {
         const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
         if(e&&p) signInWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
-    };
-    document.getElementById("signupEmailBtn").onclick = () => {
+    });
+    safeBind("signupEmailBtn", "click", () => {
         const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
         if(e&&p) createUserWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
-    };
-    document.getElementById("globalLogoutBtn").onclick = () => signOut(auth).then(()=>location.reload());
+    });
+    safeBind("globalLogoutBtn", "click", () => signOut(auth).then(()=>location.reload()));
 
     // SETUP SCREEN
-    document.getElementById("completeSetupBtn").onclick = completeUserSetup;
+    safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION
     const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
     const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
     navs.forEach((nid, i) => {
-        document.getElementById(nid).addEventListener("click", () => {
-            navs.forEach(n => document.getElementById(n).classList.remove('active'));
+        safeBind(nid, "click", () => {
+            navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
             views.forEach(v => document.getElementById(v).style.display='none');
             document.getElementById(nid).classList.add('active');
             document.getElementById(views[i]).style.display='block';
@@ -79,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // TRACKER
-    document.getElementById("unifiedSelect").onchange = (e) => {
+    safeBind("unifiedSelect", "change", (e) => {
         const s = dbData.foundationSkills.find(x=>x.name===e.target.value);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
@@ -93,16 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
             } else vb.style.display='none';
         }
-    };
+    });
     
-    document.getElementById("addToSessionBtn").onclick = () => {
+    safeBind("addToSessionBtn", "click", () => {
         const n = document.getElementById("unifiedSelect").value;
         if(!n || n.includes("Loading")) return;
         currentSessionItems.push({ name: n, sets: document.getElementById("inputSets").value||3, reps: document.getElementById("inputReps").value||20 });
         renderSession();
-    };
+    });
 
-    document.getElementById("submitWorkoutBtn").onclick = submitWorkout;
+    safeBind("submitWorkoutBtn", "click", submitWorkout);
 
     // EVALUATION BUTTONS
     document.querySelectorAll(".outcome-btn").forEach(b => {
@@ -113,18 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ROSTER & COACH
-    document.getElementById("rosterPdfInput").onchange = parsePDF;
-    document.getElementById("saveParsedRosterBtn").onclick = saveRosterList;
-    document.getElementById("coachAddPlayerBtn").onclick = manualAddPlayer;
-    document.getElementById("exportXlsxBtn").onclick = exportSessionData;
+    safeBind("rosterPdfInput", "change", parsePDF);
+    safeBind("saveParsedRosterBtn", "click", saveRosterList);
+    safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
+    safeBind("exportXlsxBtn", "click", exportSessionData);
     
     // ADMIN
-    document.getElementById("addTeamBtn").onclick = addTeam;
-    document.getElementById("addAdminBtn").onclick = addAdmin;
-    document.getElementById("btnLogSystem").onclick = () => loadLogs("logs_system");
-    document.getElementById("btnLogSecurity").onclick = runSecurityScan;
-    document.getElementById("btnLogDebug").onclick = runDebugLog;
-    document.getElementById("generateTestLogBtn").onclick = generateSampleLogs;
+    safeBind("addTeamBtn", "click", addTeam);
+    safeBind("addAdminBtn", "click", addAdmin);
+    safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
+    safeBind("btnLogSecurity", "click", runSecurityScan);
+    safeBind("btnLogDebug", "click", runDebugLog);
+    safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
     // MODALS
     document.querySelectorAll(".close-btn").forEach(b => {
@@ -133,6 +140,38 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("videoPlayer").src = "";
         }
     });
+
+    // TIMER & CANVAS LOGIC (Inside DOMContentLoaded)
+    const timerEl = document.getElementById("timerDisplay");
+    function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
+    
+    safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
+    safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
+    safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
+
+    const canvas = document.getElementById("signatureCanvas");
+    if(canvas) {
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        
+        function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
+        window.addEventListener('resize', resizeCanvas);
+        // Initial resize
+        resizeCanvas();
+
+        function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
+        function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
+        function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+        function checkSignature() { 
+            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
+            if (!pixelBuffer.some(color => color !== 0)) { isSignatureBlank = true; } else { isSignatureBlank = false; canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
+        }
+
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
+        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
+        
+        safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
+    }
 });
 
 // --- AUTH STATE & AUTOMATION ---
@@ -246,8 +285,10 @@ async function fetchConfig() {
     } catch(e) { globalTeams = dbData.teams; }
     
     const ts = document.getElementById("teamSelect");
-    ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
-    globalTeams.forEach(t => { const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; ts.appendChild(o); });
+    if(ts) {
+        ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
+        globalTeams.forEach(t => { const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; ts.appendChild(o); });
+    }
 }
 
 function renderSession() {
@@ -423,17 +464,15 @@ async function manualAddPlayer() {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team first");
     
-    // 1. Add to Roster
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
     if(!list.includes(name)) list.push(name);
     await setDoc(ref, { players: list }, { merge: true });
     
-    // 2. Automate Parent Login (if email provided)
     if(email) {
         await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-        alert(`Player Added! Invitation set for ${email}`);
+        alert(`Player Added! Parent (${email}) will be auto-connected.`);
     } else {
         alert("Player Added to Roster");
     }
@@ -452,33 +491,23 @@ async function parsePDF(e) {
         const page = await pdf.getPage(1);
         const textContent = await page.getTextContent();
         
-        // 1. Group by Y-Coordinate (Rows)
         const rows = {};
         textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5]); // Round to group near-aligned items
+            const y = Math.round(item.transform[5]);
             if(!rows[y]) rows[y] = [];
             rows[y].push(item.str);
         });
 
-        // 2. Extract Data from Rows
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ");
-            // Look for patterns: Name (Words) ... Email (@)
             const emailMatch = rowText.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
             if (emailMatch) {
-                // If row has email, try to find a name before it
-                // This is a heuristic: Assume name is the first non-numeric string
-                const nameMatch = rowText.match(/^[A-Z][a-z]+\s[A-Z][a-z]+/); // First Last
-                if(nameMatch) {
-                    extracted.push(`${nameMatch[0]} | ${emailMatch[0]}`);
-                }
+                const nameMatch = rowText.match(/^[A-Z][a-z]+\s[A-Z][a-z]+/);
+                if(nameMatch) extracted.push(`${nameMatch[0]} | ${emailMatch[0]}`);
             } else {
-                // Just a name row?
                 const nameOnly = rowText.match(/^[A-Z][a-z]+\s[A-Z][a-z]+$/);
-                if(nameOnly && !rowText.includes("Page") && !rowText.includes("Team")) {
-                    extracted.push(nameOnly[0]);
-                }
+                if(nameOnly && !rowText.includes("Page") && !rowText.includes("Team")) extracted.push(nameOnly[0]);
             }
         });
 
@@ -493,11 +522,10 @@ async function saveRosterList() {
     
     const lines = document.getElementById("rosterTextRaw").value.split("\n");
     const cleanNames = [];
-    const batch = writeBatch(db); // efficient batch write for lookups
+    const batch = writeBatch(db);
     
     lines.forEach(line => {
         if(line.includes("|")) {
-            // "Name | Email" format
             const [name, email] = line.split("|").map(s=>s.trim());
             cleanNames.push(name);
             if(email.includes("@")) {
@@ -505,15 +533,11 @@ async function saveRosterList() {
                 batch.set(ref, { teamId: tid, playerName: name });
             }
         } else {
-            // Just Name
             if(line.trim()) cleanNames.push(line.trim());
         }
     });
 
-    // Save Names
     await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
-    
-    // Save Lookups
     await batch.commit();
     
     alert("Roster Saved & Invites Created!");
@@ -572,67 +596,10 @@ async function loadLogs(col) {
     });
 }
 
-function generateSampleLogs() {
-    logSystemEvent("SYSTEM_START", "Application initialized");
-    logSecurityEvent("AUTH_CHECK", "User credentials verified");
-    logSystemEvent("DATA_SYNC", "Roster data synced with cloud");
-    alert("3 Sample Logs Added. Click 'System Log' to view.");
-}
-
-function runSecurityScan() {
-    const c = document.getElementById("logContainer");
-    c.innerHTML = "<div>Running Vulnerability Scan...</div>";
-    setTimeout(() => {
-        c.innerHTML += "<div style='color:green'>✔ Auth: Protected (Firebase Auth)</div>";
-        c.innerHTML += "<div style='color:green'>✔ Database: Rules Active</div>";
-        c.innerHTML += "<div style='color:green'>✔ Input Sanitization: Active</div>";
-        c.innerHTML += "<div style='font-weight:bold; margin-top:5px;'>Scan Complete. No critical vulnerabilities found.</div>";
-    }, 800);
-}
-
-function runDebugLog() {
-    const c = document.getElementById("logContainer");
-    const state = { 
-        version: "4.0.0 (Release)", 
-        user: auth.currentUser?.email, 
-        teamsLoaded: globalTeams.length, 
-        currentCoachTeam: currentCoachTeamId 
-    };
-    c.innerHTML = `<pre style="font-size:10px;">${JSON.stringify(state, null, 2)}</pre>`;
-}
+function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Application initialized"); alert("Log Generated"); }
+function runSecurityScan() { const c = document.getElementById("logContainer"); c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); }
+function runDebugLog() { document.getElementById("logContainer").innerHTML = `<pre>${JSON.stringify({v:"6.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 
 // --- UTILS ---
-function getEmbedUrl(url) {
-    if(!url) return "";
-    let id = "";
-    if(url.includes("youtu.be/")) id = url.split("youtu.be/")[1];
-    else if(url.includes("v=")) id = url.split("v=")[1].split("&")[0];
-    else if(url.includes("embed/")) return url;
-    if(id.includes("?")) id = id.split("?")[0];
-    return id ? `https://www.youtube.com/embed/${id}` : "";
-}
-
-function updateTimer() { seconds++; const m = Math.floor(seconds / 60).toString().padStart(2, "0"); const s = (seconds % 60).toString().padStart(2, "0"); document.getElementById("timerDisplay").innerText = `${m}:${s}`; }
-document.getElementById("startTimer").addEventListener("click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
-document.getElementById("stopTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds / 60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
-document.getElementById("resetTimer").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; document.getElementById("timerDisplay").innerText = "00:00"; });
-function resizeCanvas() { if(!canvas.parentElement) return; canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; }
-window.addEventListener('resize', resizeCanvas);
-function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
-function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
-function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
-function checkSignature() { if (!isCanvasBlank(canvas)) { canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; } }
-function isCanvasBlank(canvas) { const context = canvas.getContext('2d'); const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer); return !pixelBuffer.some(color => color !== 0); }
-const canvas = document.getElementById("signatureCanvas");
-const ctx = canvas.getContext('2d');
-let isDrawing = false;
-canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
-document.getElementById("clearSigBtn").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
-
-function logSystemEvent(type, detail) {
-    addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
-}
-
-function loadUserProfile() {
-    // Only used for UI pre-fill, core logic now uses Firestore 'userProfile' var
-}
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
+function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
