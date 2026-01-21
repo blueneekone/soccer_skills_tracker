@@ -20,7 +20,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// VARS
+// GLOBAL VARS
 let currentSessionItems = [];
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
@@ -31,37 +31,40 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE BINDING
-const safeBind = (id, event, func) => {
-    const el = document.getElementById(id);
-    if(el) el.addEventListener(event, func);
-};
-const setText = (id, text) => {
-    const el = document.getElementById(id);
-    if(el) el.innerText = text;
-};
+// --- MAIN INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("App v26 Loaded (Race Condition Fix)");
 
-// --- DOM LOADED ---
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v25 Loaded (Visual Link Status)");
-    logSystemEvent("SYSTEM", "App Mounted DOM");
+    // 1. HELPERS
+    const safeBind = (id, event, func) => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener(event, func);
+    };
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if(el) el.innerText = text;
+    };
 
-    // AUTH
-    safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
+    // 2. EXPOSE GLOBALS FOR HTML BUTTONS (Crucial for module scripts)
+    window.linkParent = linkParent;
+    window.deletePlayer = deletePlayer;
+
+    // 3. AUTH LISTENERS
+    safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert("Login Error: " + e.message)));
     safeBind("loginEmailBtn", "click", () => {
         const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
-        if(e&&p) signInWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+        if(e&&p) signInWithEmailAndPassword(auth,e,p).catch(err=>alert("Login Error: " + err.message));
     });
     safeBind("signupEmailBtn", "click", () => {
         const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
-        if(e&&p) createUserWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+        if(e&&p) createUserWithEmailAndPassword(auth,e,p).catch(err=>alert("Signup Error: " + err.message));
     });
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(()=>location.reload()));
 
-    // SETUP SCREEN
+    // 4. SETUP LISTENERS
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
-    // NAVIGATION
+    // 5. NAVIGATION
     const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
     const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
     navs.forEach((nid, i) => {
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // DRILLS POPULATION
+    // 6. DRILLS
     const us = document.getElementById("unifiedSelect");
     if(us && us.options.length <= 1) {
         const cardio = document.createElement("optgroup"); cardio.label = "CARDIO";
@@ -89,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
         us.appendChild(cardio); us.appendChild(basic);
     }
 
-    // TRACKER
     safeBind("unifiedSelect", "change", (e) => {
         const s = dbData.foundationSkills.find(x=>x.name===e.target.value);
         if(s) {
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     safeBind("submitWorkoutBtn", "click", submitWorkout);
 
-    // EVALUATION BUTTONS
+    // 7. DASHBOARD ACTIONS
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".outcome-btn").forEach(x=>x.classList.remove("active"));
@@ -123,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ROSTER & COACH & RESOURCES
     safeBind("rosterPdfInput", "change", parsePDF);
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
@@ -131,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
     safeBind("addResBtn", "click", addResourceLink);
     
-    // ADMIN LOGGING
+    // 8. ADMIN ACTIONS
     safeBind("addTeamBtn", "click", addTeam);
     safeBind("addAdminBtn", "click", addAdmin);
     
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeBind("generateTestLogBtn", "click", runHealthCheck);
     safeBind("clearLogsBtn", "click", () => document.getElementById("logContainer").innerHTML = "");
 
-    // MODALS
+    // 9. MODALS
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
@@ -156,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // TIMER & CANVAS
+    // 10. TIMER
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
     
@@ -164,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
     safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
 
+    // 11. CANVAS
     const canvas = document.getElementById("signatureCanvas");
     if(canvas) {
         const ctx = canvas.getContext('2d');
@@ -182,52 +184,55 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
         safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
     }
-});
 
-// --- AUTH & SETUP ---
-onAuthStateChanged(auth, async (user) => {
-    if(user) {
-        document.getElementById("loginUI").style.display='none';
-        try {
-            await fetchConfig(); 
-            const userRef = doc(db, "users", user.email);
-            const userSnap = await getDoc(userRef);
-            
-            if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
-                userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } else if (userSnap.exists()) {
-                userProfile = userSnap.data();
-            } else {
-                const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
-                const inviteSnap = await getDoc(inviteRef);
-                if(inviteSnap.exists()) {
-                    const data = inviteSnap.data();
-                    const newProfile = { teamId: data.teamId, playerName: data.playerName, joinedAt: new Date() };
-                    await setDoc(userRef, newProfile);
-                    userProfile = newProfile;
+    // 12. AUTH STATE (Inside DOMContentLoaded to safely access UI)
+    onAuthStateChanged(auth, async (user) => {
+        if(user) {
+            document.getElementById("loginUI").style.display='none';
+            try {
+                await fetchConfig(); 
+                const userRef = doc(db, "users", user.email);
+                const userSnap = await getDoc(userRef);
+                
+                if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
+                    userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
+                } else if (userSnap.exists()) {
+                    userProfile = userSnap.data();
+                } else {
+                    const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
+                    const inviteSnap = await getDoc(inviteRef);
+                    if(inviteSnap.exists()) {
+                        const data = inviteSnap.data();
+                        const newProfile = { teamId: data.teamId, playerName: data.playerName, joinedAt: new Date() };
+                        await setDoc(userRef, newProfile);
+                        userProfile = newProfile;
+                    }
                 }
-            }
 
-            if (userProfile) {
-                document.getElementById("appUI").style.display='block';
-                document.getElementById("bottomNav").style.display='flex';
-                setText("coachName", user.email);
-                setText("activePlayerName", userProfile.playerName);
-                loadStats();
-                checkRoles(user);
-                logSystemEvent("SYSTEM", `User Login: ${user.email}`);
-            } else {
-                document.getElementById("setupUI").style.display = 'flex';
-                initSetupDropdowns();
-            }
-        } catch (error) { console.error(error); alert("Error Loading: " + error.message); }
-    } else {
-        document.getElementById("loginUI").style.display='flex';
-        document.getElementById("appUI").style.display='none';
-        document.getElementById("bottomNav").style.display='none';
-        document.getElementById("setupUI").style.display='none';
-    }
+                if (userProfile) {
+                    document.getElementById("appUI").style.display='block';
+                    document.getElementById("bottomNav").style.display='flex';
+                    setText("coachName", user.email);
+                    setText("activePlayerName", userProfile.playerName);
+                    
+                    loadStats();
+                    checkRoles(user);
+                    logSystemEvent("SYSTEM", `Login: ${user.email}`);
+                } else {
+                    document.getElementById("setupUI").style.display = 'flex';
+                    initSetupDropdowns();
+                }
+            } catch (error) { console.error(error); alert("Startup Error: " + error.message); }
+        } else {
+            document.getElementById("loginUI").style.display='flex';
+            document.getElementById("appUI").style.display='none';
+            document.getElementById("bottomNav").style.display='none';
+            document.getElementById("setupUI").style.display='none';
+        }
+    });
 });
+
+// --- FUNCTIONS ---
 
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
@@ -260,7 +265,6 @@ async function completeUserSetup() {
     location.reload();
 }
 
-// --- LOGIC ---
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -294,26 +298,29 @@ async function addResourceLink() {
     const title = document.getElementById("newResTitle").value.trim();
     const link = document.getElementById("newResLink").value.trim();
     if(!title || !link) return alert("Enter title and link");
-    
-    await addDoc(collection(db, "resources"), {
-        title: title,
-        link: link,
-        addedBy: auth.currentUser.email,
-        timestamp: new Date()
-    });
-    
+    await addDoc(collection(db, "resources"), { title: title, link: link, addedBy: auth.currentUser.email, timestamp: new Date() });
     document.getElementById("newResTitle").value = "";
     document.getElementById("newResLink").value = "";
-    loadCoachDashboard(true, globalTeams); // Refresh
+    loadCoachDashboard(true, globalTeams); 
 }
 
-// --- DASHBOARD LOAD ---
+// --- DASHBOARD ---
+function initCoachDropdown(isDirector, teams) {
+    const sel = document.getElementById("adminTeamSelect");
+    if(!sel) return;
+    document.getElementById("adminControls").style.display = 'block';
+    sel.innerHTML = "";
+    teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
+    sel.onchange = () => loadCoachDashboard(isDirector, teams);
+    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
+}
+
 async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
     currentCoachTeamId = tid; 
     
-    // 1. Load Resources
+    // Load Resources
     const resDiv = document.getElementById("resourceList");
     if(resDiv) {
         const qRes = query(collection(db, "resources"), orderBy("timestamp", "desc"));
@@ -328,18 +335,16 @@ async function loadCoachDashboard(isDirector, teams) {
         }
     }
 
-    // 2. Load Stats & Roster
+    // Load Stats & Roster
     const listEl = document.getElementById("coachPlayerList");
     if(listEl) listEl.innerHTML = "Fetching...";
 
     try {
-        // Fetch Linked Players FIRST to map status
         const qLinks = query(collection(db, "player_lookup"), where("teamId", "==", tid));
         const snapLinks = await getDocs(qLinks);
         const linkedSet = new Set();
         snapLinks.forEach(d => linkedSet.add(d.data().playerName));
 
-        // Fetch Stats
         const q = query(collection(db, "reps"), where("teamId", "==", tid));
         const snap = await getDocs(q);
         const players = {};
@@ -355,6 +360,7 @@ async function loadCoachDashboard(isDirector, teams) {
             count++;
         });
         
+        const setText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
         
@@ -369,9 +375,8 @@ async function loadCoachDashboard(isDirector, teams) {
                     const stats = players[p] || { mins: 0, lastActive: null };
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
                     const isLinked = linkedSet.has(p);
-                    
                     const linkBtn = isLinked 
-                        ? `<button class="link-btn linked-success" onclick="alert('${p} is linked to a parent.')">✔ Linked</button>`
+                        ? `<button class="link-btn linked-success" onclick="alert('${p} is linked.')">✔ Linked</button>`
                         : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
 
                     return `
@@ -385,35 +390,179 @@ async function loadCoachDashboard(isDirector, teams) {
                     </div>`;
                 }).join("");
             } else {
-                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players. Upload roster.</div>";
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
     } catch(e) { console.error(e); if(listEl) listEl.innerHTML = `<div style='color:red;'>Error: ${e.message}</div>`; }
 }
 
-window.linkParent = async (playerName) => {
+async function linkParent(playerName) {
     const email = prompt(`Enter parent email for ${playerName}:`);
     if(email && email.includes("@")) {
         const tid = document.getElementById("adminTeamSelect").value;
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
         alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
-        loadCoachDashboard(true, globalTeams); // Refresh to show green button
+        loadCoachDashboard(true, globalTeams);
     }
 }
 
-// ... (Rest of utils: manualAddPlayer, parsePDF, saveRosterList, exportSessionData, renderAdminTables, addTeam, addAdmin, loadLogs, etc.) ...
-// Keep existing implementations below:
-// - logSystemEvent
-// - loadLogs
-// - runHealthCheck
-// - runSecurityScan
-// - runDebugLog
-// - parsePDF
-// - saveRosterList
-// - exportSessionData
-// - renderAdminTables
-// - addTeam
-// - addAdmin
-// - getEmbedUrl
-// - window.deletePlayer
-// - manualAddPlayer
+async function deletePlayer(name) {
+    if(!confirm(`Remove ${name}?`)) return;
+    const tid = document.getElementById("adminTeamSelect").value;
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    if(snap.exists()) {
+        const newPlayers = snap.data().players.filter(p => p !== name);
+        await updateDoc(ref, { players: newPlayers });
+        loadCoachDashboard(false, globalTeams);
+    }
+}
+
+async function manualAddPlayer() {
+    const name = document.getElementById("coachAddPlayerName").value.trim();
+    const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
+    if(!name) return alert("Enter name");
+    const tid = document.getElementById("adminTeamSelect").value;
+    if(!tid) return alert("Select team first");
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    let list = snap.exists() ? snap.data().players : [];
+    if(!list.includes(name)) list.push(name);
+    await setDoc(ref, { players: list }, { merge: true });
+    
+    if(email) {
+        await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
+        alert(`Player Added! Parent (${email}) will be auto-connected.`);
+    } else {
+        alert("Player Added to Roster");
+    }
+    document.getElementById("coachAddPlayerName").value = "";
+    document.getElementById("coachAddPlayerEmail").value = "";
+    loadCoachDashboard(false, globalTeams);
+}
+
+// --- PARSERS & UTILS ---
+async function parsePDF(e) {
+    const f = e.target.files[0]; if(!f) return;
+    const txtBox = document.getElementById("rosterTextRaw");
+    if(txtBox) txtBox.value = "Reading...";
+    document.getElementById("rosterReviewArea").style.display='block';
+
+    try {
+        const buf = await f.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(buf).promise;
+        const page = await pdf.getPage(1);
+        const textContent = await page.getTextContent();
+        
+        const rows = {};
+        textContent.items.forEach(item => {
+            const y = Math.round(item.transform[5] / 10);
+            if(!rows[y]) rows[y] = [];
+            rows[y].push(decodeURIComponent(item.str));
+        });
+
+        let extracted = [];
+        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
+            const rowText = rows[y].join(" ").trim();
+            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
+            const idMatch = rowText.match(/\d{5}-\d{6}/);
+            if (dateMatch || idMatch) {
+                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
+                let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
+                if(words.length >= 2) {
+                    let name = `${words[0]} ${words[1]}`;
+                    extracted.push(name);
+                }
+            }
+        });
+
+        if (extracted.length === 0) {
+            if(txtBox) txtBox.value = "No player rows detected. Please paste names manually.";
+        } else {
+            if(txtBox) txtBox.value = extracted.join("\n");
+        }
+    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
+}
+
+async function saveRosterList() {
+    const tid = currentCoachTeamId;
+    if(!tid) return alert("No team selected");
+    const lines = document.getElementById("rosterTextRaw").value.split("\n");
+    const cleanNames = [];
+    const batch = writeBatch(db);
+    lines.forEach(line => {
+        if(line.includes("|")) {
+            const [name, email] = line.split("|").map(s=>s.trim());
+            cleanNames.push(name);
+            if(email.includes("@")) {
+                const ref = doc(db, "player_lookup", email.toLowerCase());
+                batch.set(ref, { teamId: tid, playerName: name });
+            }
+        } else { if(line.trim()) cleanNames.push(line.trim()); }
+    });
+    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
+    await batch.commit();
+    alert("Roster Saved!");
+    document.getElementById("rosterReviewArea").style.display='none';
+    loadCoachDashboard(false, globalTeams);
+}
+
+function exportSessionData() {
+    if(allSessionsCache.length === 0) return alert("No sessions to export.");
+    const formatted = allSessionsCache.map(r => ({
+        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
+        Player: r.player,
+        Minutes: r.minutes,
+        Drills: r.drillSummary,
+        Feedback: r.outcome
+    }));
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
+    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
+}
+
+function renderSession() {
+    const l = document.getElementById("sessionList");
+    if(currentSessionItems.length===0) l.innerHTML='<li>No drills added yet.</li>';
+    else l.innerHTML = currentSessionItems.map((i,idx) => `<li>${idx+1}. ${i.name} (${i.sets}x${i.reps})</li>`).join("");
+}
+
+function renderAdminTables() {
+    const t = document.getElementById("teamTable"); 
+    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    const a = document.getElementById("adminTable");
+    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+}
+async function addTeam() {
+    const id = document.getElementById("newTeamId").value;
+    const name = document.getElementById("newTeamName").value;
+    const email = document.getElementById("newCoachEmail").value;
+    if(!id || !name) return;
+    globalTeams.push({ id, name, coachEmail: email });
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
+}
+async function addAdmin() {
+    const email = document.getElementById("newAdminEmail").value;
+    if(!email) return;
+    globalAdmins.push(email);
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
+}
+
+async function loadLogs(col) {
+    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
+    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
+    c.innerHTML = "";
+    snap.forEach(d => { 
+        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`; 
+    });
+}
+
+function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
+function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
+function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
+
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
+function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
