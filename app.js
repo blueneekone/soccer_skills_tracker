@@ -43,7 +43,7 @@ const setText = (id, text) => {
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v20 Loaded (Multi-Pass Parsing)");
+    console.log("App v21 Loaded (Force Refresh)");
 
     // AUTH
     safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
+    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); // Force refresh
     
     // ADMIN
     safeBind("addTeamBtn", "click", addTeam);
@@ -270,7 +271,7 @@ function checkRoles(user) {
     }
 }
 
-// --- CORE LOGIC ---
+// --- CORE ---
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -417,6 +418,9 @@ async function loadCoachDashboard(isDirector, teams) {
     if(!tid) return;
     currentCoachTeamId = tid; 
     
+    const listEl = document.getElementById("coachPlayerList");
+    if(listEl) listEl.innerHTML = "Fetching...";
+
     // Stats
     const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"));
     const snap = await getDocs(q);
@@ -438,9 +442,6 @@ async function loadCoachDashboard(isDirector, teams) {
     setText("coachTotalReps", count);
     
     // Roster Render
-    const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Loading...";
-    
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
     const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
@@ -461,7 +462,7 @@ async function loadCoachDashboard(isDirector, teams) {
                 </div>`;
             }).join("");
         } else {
-            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually.</div>";
+            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
         }
     }
 }
