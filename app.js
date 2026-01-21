@@ -31,15 +31,19 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
+// HELPER: SAFE TEXT SETTER
+const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if(el) el.innerText = text;
+};
+
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v16 Loaded (Crash Proof)");
+    console.log("App v17 Loaded (Safe Bind)");
 
-    // Helper: Safely bind event listeners
     const safeBind = (id, event, func) => {
         const el = document.getElementById(id);
         if(el) el.addEventListener(event, func);
-        else console.warn(`Element ${id} not found.`);
     };
 
     // AUTH
@@ -90,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const s = dbData.foundationSkills.find(x=>x.name===e.target.value);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
-            document.getElementById("drillDesc").innerText = s.drill;
+            setText("drillDesc", s.drill);
             const vb = document.getElementById("watchVideoBtn");
             if(s.video) { 
                 vb.style.display='inline-block'; 
@@ -141,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // TIMER & CANVAS LOGIC (Inside DOMContentLoaded)
+    // TIMER & CANVAS (Initial setup)
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
     
@@ -156,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
         window.addEventListener('resize', resizeCanvas);
-        // Initial resize
         resizeCanvas();
 
         function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- AUTH STATE & AUTOMATION ---
+// --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
@@ -184,17 +187,15 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 1. ADMIN BYPASS
-            if (!userSnap.exists() && user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
-                const adminProfile = { teamId: "admin_team", playerName: "Director", role: "admin", joinedAt: new Date() };
-                await setDoc(userRef, adminProfile);
-                userProfile = adminProfile;
+            // ADMIN BYPASS
+            if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
+                userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; // Virtual profile
             } 
-            // 2. RETURNING USER
+            // RETURNING USER
             else if (userSnap.exists()) {
                 userProfile = userSnap.data();
             }
-            // 3. AUTO-LINK (AUTOMATION)
+            // AUTO-LINK
             else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
@@ -209,15 +210,16 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 document.getElementById("bottomNav").style.display='flex';
-                document.getElementById("coachName").innerText = user.email;
-                document.getElementById("activePlayerName").innerText = userProfile.playerName;
+                setText("coachName", user.email);
+                setText("activePlayerName", userProfile.playerName);
+                
                 loadStats();
                 checkRoles(user);
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
             }
-        } catch (error) { alert("Error Loading: " + error.message); }
+        } catch (error) { console.error(error); alert("Error Loading: " + error.message); }
         
     } else {
         document.getElementById("loginUI").style.display='flex';
@@ -230,6 +232,7 @@ onAuthStateChanged(auth, async (user) => {
 // --- USER SETUP ---
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
+    if(!sel) return;
     sel.innerHTML = '<option value="">Select Team...</option>';
     globalTeams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
     
@@ -247,7 +250,8 @@ function initSetupDropdowns() {
         pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
     };
     
-    document.getElementById("setupPlayerDropdown").onchange = (e) => {
+    const drop = document.getElementById("setupPlayerDropdown");
+    if(drop) drop.onchange = (e) => {
         document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none";
     };
 }
@@ -262,8 +266,10 @@ async function completeUserSetup() {
 }
 
 function checkRoles(user) {
-    const isDirector = globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
+    // Only check if we are actually logged in
+    const isDirector = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
     const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
+    
     if(isDirector) {
         document.getElementById("navCoach").style.display='flex';
         document.getElementById("navAdmin").style.display='flex';
@@ -314,7 +320,7 @@ async function submitWorkout() {
             drills: currentSessionItems,
             drillSummary: currentSessionItems.map(x=>x.name).join(", "),
             outcome: document.querySelector(".outcome-btn.active").dataset.val,
-            notes: document.getElementById("notes").value,
+            notes: document.getElementById("notes")?.value || "",
             coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
         });
         alert("Workout Logged! +XP");
@@ -330,15 +336,15 @@ async function loadStats() {
     const logs = []; let totalMins = 0;
     snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
     
-    document.getElementById("statTotal").innerText = `${logs.length} Sessions`;
-    document.getElementById("statTime").innerText = totalMins;
+    setText("statTotal", `${logs.length} Sessions`);
+    setText("statTime", totalMins);
     
     let xp = totalMins + (logs.length * 10);
     let lvl = "ROOKIE";
     if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
     
-    document.getElementById("userLevelDisplay").innerText = lvl;
-    document.getElementById("xpBar").style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    setText("userLevelDisplay", lvl);
+    const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
     
     renderCalendar(logs);
     renderPlayerTrendChart(logs);
@@ -347,9 +353,10 @@ async function loadStats() {
 
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarDays");
+    if(!grid) return;
     const header = document.getElementById("calMonthYear");
     const now = new Date();
-    header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+    if(header) header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     grid.innerHTML = "";
     const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
     for(let i=1; i<=daysInMonth; i++) {
@@ -361,8 +368,9 @@ function renderCalendar(logs) {
         if(hasLog) {
             dayDiv.onclick = () => {
                 const daily = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-                document.getElementById("dayModalDate").innerText = dStr;
-                document.getElementById("dayModalContent").innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary} (${l.minutes}m)</div>`).join("");
+                setText("dayModalDate", dStr);
+                const content = document.getElementById("dayModalContent");
+                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary} (${l.minutes}m)</div>`).join("");
                 document.getElementById("dayModal").style.display='block';
             };
         }
@@ -371,23 +379,26 @@ function renderCalendar(logs) {
 }
 
 function renderPlayerTrendChart(logs) {
-    const ctx = document.getElementById('playerTrendChart').getContext('2d'); if(teamChart) teamChart.destroy();
+    const cvs = document.getElementById('playerTrendChart'); if(!cvs) return;
+    const ctx = cvs.getContext('2d'); if(teamChart) teamChart.destroy();
     const data = Array(7).fill(0); const labels = [];
     for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); data[6-i] = logs.filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((s,l)=>s+Number(l.minutes),0); }
     teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
 }
 
 async function renderTeamLeaderboard(tid) {
+    const table = document.getElementById("teamLeaderboardTable"); if(!table) return;
     const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
     const snap = await getDocs(q);
     const stats = {}; 
     snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
-    document.getElementById("teamLeaderboardTable").querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+    table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
 // --- COACH DASHBOARD ---
 function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
+    if(!sel) return;
     document.getElementById("adminControls").style.display = 'block';
     sel.innerHTML = "";
     teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
@@ -417,8 +428,8 @@ async function loadCoachDashboard(isDirector, teams) {
         count++;
     });
     
-    document.getElementById("coachActivePlayers").innerText = Object.keys(players).length;
-    document.getElementById("coachTotalReps").innerText = count;
+    setText("coachActivePlayers", Object.keys(players).length);
+    setText("coachTotalReps", count);
     
     // Roster Render (Merged)
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
@@ -426,21 +437,24 @@ async function loadCoachDashboard(isDirector, teams) {
     const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
     const combinedList = Array.from(combinedSet).sort();
 
-    if(combinedList.length > 0) {
-        document.getElementById("coachPlayerList").innerHTML = combinedList.map(p => {
-            const stats = players[p] || { mins: 0, lastActive: null };
-            const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
-            return `
-            <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
-                <div>
-                    <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:10px;">${stats.mins}m</span>
-                    <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
-                </div>
-            </div>`;
-        }).join("");
-    } else {
-        document.getElementById("coachPlayerList").innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster to begin.</div>";
+    const listEl = document.getElementById("coachPlayerList");
+    if(listEl) {
+        if(combinedList.length > 0) {
+            listEl.innerHTML = combinedList.map(p => {
+                const stats = players[p] || { mins: 0, lastActive: null };
+                const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                return `
+                <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                    <div>
+                        <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:10px;">${stats.mins}m</span>
+                        <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
+                    </div>
+                </div>`;
+            }).join("");
+        } else {
+            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster to begin.</div>";
+        }
     }
 }
 
@@ -563,8 +577,8 @@ function exportSessionData() {
 
 // --- ADMIN ---
 function renderAdminTables() {
-    document.getElementById("teamTable").querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
-    document.getElementById("adminTable").querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+    const tb = document.getElementById("teamTable"); if(tb) tb.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    const ab = document.getElementById("adminTable"); if(ab) ab.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
 }
 async function addTeam() {
     const id = document.getElementById("newTeamId").value;
@@ -585,7 +599,7 @@ async function addAdmin() {
 
 // --- LOGS ---
 async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); c.innerHTML = "Fetching System Logs...";
+    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching System Logs...";
     const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
     c.innerHTML = "";
     snap.forEach(d => { 
@@ -597,8 +611,8 @@ async function loadLogs(col) {
 }
 
 function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Application initialized"); alert("Log Generated"); }
-function runSecurityScan() { const c = document.getElementById("logContainer"); c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); }
-function runDebugLog() { document.getElementById("logContainer").innerHTML = `<pre>${JSON.stringify({v:"6.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
+function runSecurityScan() { const c = document.getElementById("logContainer"); if(!c)return; c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); }
+function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"6.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 
 // --- UTILS ---
 function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
