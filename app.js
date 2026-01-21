@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -7,7 +7,9 @@ import { dbData } from "./data.js";
 
 // --- GLOBAL ERROR HANDLER ---
 window.onerror = function(message, source, lineno, colno, error) {
-    alert(`System Error: ${message}`);
+    console.error("System Error:", message); 
+    // Suppress the specific "null" errors in alert to avoid annoyance, just log them
+    if (!message.includes("null")) alert(`System Error: ${message}`);
 };
 
 // CONFIG
@@ -36,40 +38,49 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE BINDING & TEXT
-const safeBind = (id, event, func) => {
-    const el = document.getElementById(id);
-    if(el) {
-        el.removeEventListener(event, func); // Prevent duplicates
-        el.addEventListener(event, func);
-    } else {
-        console.warn(`Element ${id} missing (might be okay depending on view)`);
-    }
-};
+// HELPER: SAFE TEXT SETTER (CRITICAL FIX)
 const setText = (id, text) => {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
 };
 
+// HELPER: SAFE BINDING
+const safeBind = (id, event, func) => {
+    const el = document.getElementById(id);
+    if(el) {
+        // Cloning the node is a nuclear option to clear ALL previous listeners 
+        // to prevent double-firing if init runs twice.
+        // But simple addEventListener is usually fine if we don't re-run init.
+        // We will just use a flag on the element to ensure we don't bind twice.
+        if (el.dataset.bound === "true") return; 
+        el.addEventListener(event, func);
+        el.dataset.bound = "true";
+    }
+};
+
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v24 Starting (Robust Init)");
+    console.log("App v25 Starting (Redirect Auth & Full Safety)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
-        console.log("Attempting Google Sign-In...");
-        signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("Login Error: " + e.message));
+        console.log("Redirecting to Google...");
+        // Using Redirect instead of Popup to avoid Extension/Browser blocking
+        signInWithRedirect(auth, new GoogleAuthProvider()).catch(e => alert("Login Error: " + e.message));
     });
+    
     safeBind("loginEmailBtn", "click", () => {
         const e = document.getElementById("authEmail").value;
         const p = document.getElementById("authPassword").value;
         if(e && p) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
     });
+    
     safeBind("signupEmailBtn", "click", () => {
         const e = document.getElementById("authEmail").value;
         const p = document.getElementById("authPassword").value;
         if(e && p) createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
     });
+    
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
 
     // SETUP
@@ -112,10 +123,10 @@ const initApp = () => {
             const vb = document.getElementById("watchVideoBtn");
             if(s.video) { 
                 vb.style.display='inline-block'; 
-                vb.onclick = () => { 
+                safeBind("watchVideoBtn", "click", () => { 
                     document.getElementById("videoPlayer").src = getEmbedUrl(s.video); 
                     document.getElementById("videoModal").style.display='block'; 
-                } 
+                });
             } else vb.style.display='none';
         }
     });
@@ -173,7 +184,7 @@ const initApp = () => {
         let isDrawing = false;
         function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
         window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500); // Delay resize to ensure layout is done
+        setTimeout(resizeCanvas, 500); 
 
         function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
         function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
@@ -192,27 +203,28 @@ const initApp = () => {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    initApp(); // Run immediately if already loaded
+    initApp(); 
 }
 
-// --- AUTH STATE ---
+// --- AUTH STATE & AUTOMATION ---
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
+        
         try {
             await fetchConfig(); 
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // ADMIN BYPASS
+            // 1. ADMIN BYPASS
             if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
             } 
-            // RETURNING USER
+            // 2. RETURNING USER
             else if (userSnap.exists()) {
                 userProfile = userSnap.data();
             }
-            // AUTO-LINK
+            // 3. AUTO-LINK
             else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
@@ -229,13 +241,15 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
+                
                 loadStats();
                 checkRoles(user);
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
             }
-        } catch (error) { console.error(error); alert("Data Load Error: " + error.message); }
+        } catch (error) { console.error(error); alert("Data Error: " + error.message); }
+        
     } else {
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
@@ -345,36 +359,29 @@ async function loadStats() {
         setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
-        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName));
+        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
     }
 
-    try {
-        const snap = await getDocs(q);
-        const logs = []; let totalMins = 0;
-        snap.forEach(d => { 
-            logs.push(d.data()); 
-            totalMins += Number(d.data().minutes || 0); 
-        });
-        
-        logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
-        
-        const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
-        setText("statTotal", `${logs.length} ${countLabel}`);
-        setText("statTime", totalMins);
-        
-        let xp = totalMins + (logs.length * 10);
-        let lvl = "ROOKIE";
-        if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
-        
-        if (userProfile.role !== 'admin') {
-            setText("userLevelDisplay", lvl);
-            const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-        }
-        
-        renderCalendar(logs);
-        renderPlayerTrendChart(logs);
-        renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
-    } catch (e) { console.error("Stats Load Error", e); }
+    const snap = await getDocs(q);
+    const logs = []; let totalMins = 0;
+    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
+    
+    const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
+    setText("statTotal", `${logs.length} ${countLabel}`);
+    setText("statTime", totalMins);
+    
+    let xp = totalMins + (logs.length * 10);
+    let lvl = "ROOKIE";
+    if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+    
+    if (userProfile.role !== 'admin') {
+        setText("userLevelDisplay", lvl);
+        const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    }
+    
+    renderCalendar(logs);
+    renderPlayerTrendChart(logs);
+    renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs); 
 }
 
 function renderCalendar(logs) {
@@ -419,7 +426,7 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     if (!tid) { // Director Mode
         logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); });
     } else { // Team Mode
-        const q = query(collection(db, "reps"), where("teamId", "==", tid));
+        const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
         const snap = await getDocs(q);
         snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
     }
@@ -446,53 +453,50 @@ async function loadCoachDashboard(isDirector, teams) {
     const listEl = document.getElementById("coachPlayerList");
     if(listEl) listEl.innerHTML = "Fetching...";
 
-    try {
-        const q = query(collection(db, "reps"), where("teamId", "==", tid));
-        const snap = await getDocs(q);
-        const players = {};
-        let count = 0;
-        
-        allSessionsCache = [];
-        snap.forEach(doc => {
-            const d = doc.data();
-            allSessionsCache.push(d);
-            if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
-            players[d.player].mins += Number(d.minutes);
-            const logDate = d.timestamp.toDate();
-            if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
-            count++;
-        });
-        
-        setText("coachActivePlayers", Object.keys(players).length);
-        setText("coachTotalReps", count);
-        
-        const rosterSnap = await getDoc(doc(db, "rosters", tid));
-        let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
-        const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
-        const combinedList = Array.from(combinedSet).sort();
+    // Stats
+    const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"));
+    const snap = await getDocs(q);
+    const players = {};
+    let count = 0;
+    
+    allSessionsCache = [];
+    snap.forEach(doc => {
+        const d = doc.data();
+        allSessionsCache.push(d);
+        if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
+        players[d.player].mins += Number(d.minutes);
+        const logDate = d.timestamp.toDate();
+        if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
+        count++;
+    });
+    
+    setText("coachActivePlayers", Object.keys(players).length);
+    setText("coachTotalReps", count);
+    
+    // Roster Render
+    const rosterSnap = await getDoc(doc(db, "rosters", tid));
+    let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
+    const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
+    const combinedList = Array.from(combinedSet).sort();
 
-        if(listEl) {
-            if(combinedList.length > 0) {
-                listEl.innerHTML = combinedList.map(p => {
-                    const stats = players[p] || { mins: 0, lastActive: null };
-                    const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
-                    return `
-                    <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
-                        <div>
-                            <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
-                            <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
-                            <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
-                        </div>
-                    </div>`;
-                }).join("");
-            } else {
-                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
-            }
+    if(listEl) {
+        if(combinedList.length > 0) {
+            listEl.innerHTML = combinedList.map(p => {
+                const stats = players[p] || { mins: 0, lastActive: null };
+                const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                return `
+                <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                    <div>
+                        <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
+                        <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
+                        <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
+                    </div>
+                </div>`;
+            }).join("");
+        } else {
+            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
         }
-    } catch(e) {
-        console.error(e);
-        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error loading roster: ${e.message}</div>`;
     }
 }
 
@@ -521,10 +525,8 @@ async function manualAddPlayer() {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
     if(!name) return alert("Enter name");
-    
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team first");
-    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -537,7 +539,6 @@ async function manualAddPlayer() {
     } else {
         alert("Player Added to Roster");
     }
-    
     document.getElementById("coachAddPlayerName").value = "";
     document.getElementById("coachAddPlayerEmail").value = "";
     loadCoachDashboard(false, globalTeams);
@@ -566,12 +567,10 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
-            // Match league ID or DOB as marker of a player row
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             const idMatch = rowText.match(/\d{5}-\d{6}/);
             
             if (dateMatch || idMatch) {
-                // Strip numbers and dates to find name
                 let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
                 let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
                 if(words.length >= 2) {
