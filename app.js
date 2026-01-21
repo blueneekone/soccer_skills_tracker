@@ -319,23 +319,60 @@ async function submitWorkout() {
 
 async function loadStats() {
     if (!userProfile) return;
-    const q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
-    const snap = await getDocs(q);
-    const logs = []; let totalMins = 0;
-    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
     
-    setText("statTotal", `${logs.length} Sessions`);
+    let q;
+    
+    // DIRECTOR MODE: Show global club activity (Last 100 workouts from anyone)
+    if (userProfile.role === 'admin') {
+        document.getElementById("userLevelDisplay").innerText = "DIRECTOR";
+        // Query ALL reps, ordered by date
+        q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
+    } 
+    // PLAYER MODE: Show only my specific workouts
+    else {
+        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
+    }
+
+    const snap = await getDocs(q);
+    const logs = []; 
+    let totalMins = 0;
+    
+    snap.forEach(d => { 
+        logs.push(d.data()); 
+        totalMins += Number(d.data().minutes || 0); 
+    });
+    
+    // Update Text
+    const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
+    const timeLabel = userProfile.role === 'admin' ? "Club Minutes" : "Minutes";
+    
+    setText("statTotal", `${logs.length} ${countLabel}`);
     setText("statTime", totalMins);
     
+    // XP Calculation (Only relevant for players, but we calculate it anyway to prevent errors)
     let xp = totalMins + (logs.length * 10);
     let lvl = "ROOKIE";
     if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
     
-    setText("userLevelDisplay", lvl);
-    const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    if (userProfile.role !== 'admin') {
+        setText("userLevelDisplay", lvl);
+        const bar = document.getElementById("xpBar"); 
+        if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    } else {
+        // Hide XP bar for director, it's irrelevant
+        const bar = document.getElementById("xpBar"); 
+        if(bar) bar.style.width = "100%";
+    }
+    
+    // Render Charts with the data we found
     renderCalendar(logs);
     renderPlayerTrendChart(logs);
-    renderTeamLeaderboard(userProfile.teamId); 
+    
+    // For the Leaderboard: 
+    // If Director, calculate based on ALL logs found.
+    // If Player, we stick to the team view we passed in profile.
+    const leaderboardTeamId = userProfile.role === 'admin' ? null : userProfile.teamId;
+    renderTeamLeaderboard(leaderboardTeamId, logs); 
 }
 
 function renderCalendar(logs) {
@@ -373,13 +410,32 @@ function renderPlayerTrendChart(logs) {
     teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
 }
 
-async function renderTeamLeaderboard(tid) {
+async function renderTeamLeaderboard(tid, logsOverride = []) {
     const table = document.getElementById("teamLeaderboardTable"); if(!table) return;
-    const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
-    const snap = await getDocs(q);
-    const stats = {}; 
-    snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
-    table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+    
+    let stats = {};
+    
+    // If Director (tid is null), use the logs we just fetched (Global View)
+    if (!tid) {
+        logsOverride.forEach(d => { 
+            const p = d.player; 
+            stats[p] = (stats[p] || 0) + Number(d.minutes); 
+        });
+    } else {
+        // Standard Team View
+        const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
+        const snap = await getDocs(q);
+        snap.forEach(d => { 
+            const p = d.data().player; 
+            stats[p] = (stats[p] || 0) + Number(d.data().minutes); 
+        });
+    }
+
+    table.querySelector("tbody").innerHTML = Object.entries(stats)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,5)
+        .map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`)
+        .join("");
 }
 
 // --- COACH DASHBOARD ---
