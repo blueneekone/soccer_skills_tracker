@@ -43,7 +43,7 @@ const setText = (id, text) => {
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v18 Loaded (Roster Fix)");
+    console.log("App v19 Loaded (No-Email Roster Support)");
 
     // AUTH
     safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
@@ -270,7 +270,7 @@ function checkRoles(user) {
     }
 }
 
-// --- CORE ---
+// --- CORE LOGIC ---
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -278,6 +278,7 @@ async function fetchConfig() {
         const a = await getDoc(doc(db, "config", "admins"));
         if(a.exists()) globalAdmins = a.data().list;
     } catch(e) { globalTeams = dbData.teams; }
+    
     const ts = document.getElementById("teamSelect");
     if(ts) {
         ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
@@ -321,58 +322,33 @@ async function loadStats() {
     if (!userProfile) return;
     
     let q;
-    
-    // DIRECTOR MODE: Show global club activity (Last 100 workouts from anyone)
     if (userProfile.role === 'admin') {
-        document.getElementById("userLevelDisplay").innerText = "DIRECTOR";
-        // Query ALL reps, ordered by date
+        setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
-    } 
-    // PLAYER MODE: Show only my specific workouts
-    else {
+    } else {
         q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
     }
 
     const snap = await getDocs(q);
-    const logs = []; 
-    let totalMins = 0;
+    const logs = []; let totalMins = 0;
+    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
     
-    snap.forEach(d => { 
-        logs.push(d.data()); 
-        totalMins += Number(d.data().minutes || 0); 
-    });
-    
-    // Update Text
     const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
-    const timeLabel = userProfile.role === 'admin' ? "Club Minutes" : "Minutes";
-    
     setText("statTotal", `${logs.length} ${countLabel}`);
     setText("statTime", totalMins);
     
-    // XP Calculation (Only relevant for players, but we calculate it anyway to prevent errors)
     let xp = totalMins + (logs.length * 10);
     let lvl = "ROOKIE";
     if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
     
     if (userProfile.role !== 'admin') {
         setText("userLevelDisplay", lvl);
-        const bar = document.getElementById("xpBar"); 
-        if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-    } else {
-        // Hide XP bar for director, it's irrelevant
-        const bar = document.getElementById("xpBar"); 
-        if(bar) bar.style.width = "100%";
+        const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
     }
     
-    // Render Charts with the data we found
     renderCalendar(logs);
     renderPlayerTrendChart(logs);
-    
-    // For the Leaderboard: 
-    // If Director, calculate based on ALL logs found.
-    // If Player, we stick to the team view we passed in profile.
-    const leaderboardTeamId = userProfile.role === 'admin' ? null : userProfile.teamId;
-    renderTeamLeaderboard(leaderboardTeamId, logs); 
+    renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs); 
 }
 
 function renderCalendar(logs) {
@@ -412,30 +388,17 @@ function renderPlayerTrendChart(logs) {
 
 async function renderTeamLeaderboard(tid, logsOverride = []) {
     const table = document.getElementById("teamLeaderboardTable"); if(!table) return;
-    
     let stats = {};
     
-    // If Director (tid is null), use the logs we just fetched (Global View)
-    if (!tid) {
-        logsOverride.forEach(d => { 
-            const p = d.player; 
-            stats[p] = (stats[p] || 0) + Number(d.minutes); 
-        });
-    } else {
-        // Standard Team View
+    if (!tid) { // Director Mode
+        logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); });
+    } else { // Team Mode
         const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
         const snap = await getDocs(q);
-        snap.forEach(d => { 
-            const p = d.data().player; 
-            stats[p] = (stats[p] || 0) + Number(d.data().minutes); 
-        });
+        snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
     }
-
-    table.querySelector("tbody").innerHTML = Object.entries(stats)
-        .sort((a,b)=>b[1]-a[1])
-        .slice(0,5)
-        .map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`)
-        .join("");
+    
+    table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
 // --- COACH DASHBOARD ---
@@ -476,7 +439,7 @@ async function loadCoachDashboard(isDirector, teams) {
     
     // Roster Render
     const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Loading..."; // Feedback
+    if(listEl) listEl.innerHTML = "Loading...";
     
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
@@ -519,10 +482,8 @@ async function manualAddPlayer() {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
     if(!name) return alert("Enter name");
-    
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team first");
-    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -535,7 +496,6 @@ async function manualAddPlayer() {
     } else {
         alert("Player Added to Roster");
     }
-    
     document.getElementById("coachAddPlayerName").value = "";
     document.getElementById("coachAddPlayerEmail").value = "";
     loadCoachDashboard(false, globalTeams);
@@ -544,10 +504,8 @@ async function manualAddPlayer() {
 // --- PARSERS & UTILS ---
 async function parsePDF(e) {
     const f = e.target.files[0]; if(!f) return;
-    
-    // UI Feedback
     const txtBox = document.getElementById("rosterTextRaw");
-    if(txtBox) txtBox.value = "Scanning for Player/Parent pairs...";
+    if(txtBox) txtBox.value = "Reading...";
     document.getElementById("rosterReviewArea").style.display='block';
 
     try {
@@ -556,59 +514,40 @@ async function parsePDF(e) {
         const page = await pdf.getPage(1);
         const textContent = await page.getTextContent();
         
-        // 1. Map all text items by their geometry
-        // We store them as objects: { text, x, y }
-        const items = textContent.items.map(item => ({
-            text: decodeURIComponent(item.str).trim(),
-            x: item.transform[4], // X position
-            y: item.transform[5]  // Y position (Row)
-        })).filter(i => i.text.length > 0);
+        const rows = {};
+        textContent.items.forEach(item => {
+            const y = Math.round(item.transform[5] / 10);
+            if(!rows[y]) rows[y] = [];
+            rows[y].push(decodeURIComponent(item.str));
+        });
 
         let extracted = [];
-
-        // 2. Find Emails (The Anchors)
-        const emails = items.filter(i => i.text.includes("@") && i.text.includes("."));
-
-        if (emails.length === 0) {
-            txtBox.value = "Error: No email addresses found in PDF. Cannot link parents.";
-            return;
-        }
-
-        // 3. For each email, find the Name on the same line
-        emails.forEach(emailItem => {
-            // Find items on the same "Row" (within 5px Y tolerance)
-            // AND are to the LEFT of the email (Name usually comes before email)
-            const rowMatches = items.filter(i => 
-                Math.abs(i.y - emailItem.y) < 5 && // Same vertical line
-                i.x < emailItem.x &&               // To the left of email
-                !i.text.includes("@")              // Isn't the email itself
-            );
-
-            // Join the name parts (First Last) found on that line
-            // We verify it looks like a name (no numbers, decent length)
-            let nameCandidate = rowMatches.map(i => i.text).join(" ");
+        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
+            const rowText = rows[y].join(" ").trim();
+            // Robust check: Does row have a date?
+            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             
-            // Clean up: Remove common labels like "Player:", "Parent:"
-            nameCandidate = nameCandidate.replace(/Player:|Parent:|Name:/gi, "").trim();
-
-            // Validate: Must be letters, at least 3 chars long
-            if (nameCandidate.length > 3 && !/[0-9]/.test(nameCandidate)) {
-                extracted.push(`${nameCandidate} | ${emailItem.text}`);
+            if (dateMatch) {
+                // If yes, this is a player row.
+                // Clean up ID numbers (5-6 digits with dash)
+                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
+                // Take the first 2-3 words as name (heuristic)
+                let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
+                if(words.length >= 2) {
+                    // Assuming format Last Name First Name, swap them for display
+                    // Or just grab them. Let's grab Last First.
+                    let name = `${words[0]} ${words[1]}`;
+                    extracted.push(name);
+                }
             }
         });
 
-        // 4. Output
         if (extracted.length === 0) {
-            txtBox.value = "Found emails, but couldn't align them with names. Check PDF layout.";
+            if(txtBox) txtBox.value = "No player rows detected (looked for MM/DD/YYYY). Paste names manually.";
         } else {
-            // Success!
-            txtBox.value = extracted.join("\n");
+            if(txtBox) txtBox.value = extracted.join("\n");
         }
-
-    } catch(err) { 
-        console.error(err); 
-        alert("PDF Read Error: " + err.message); 
-    }
+    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
 }
 
 async function saveRosterList() {
