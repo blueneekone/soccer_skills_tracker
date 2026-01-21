@@ -544,36 +544,71 @@ async function manualAddPlayer() {
 // --- PARSERS & UTILS ---
 async function parsePDF(e) {
     const f = e.target.files[0]; if(!f) return;
+    
+    // UI Feedback
+    const txtBox = document.getElementById("rosterTextRaw");
+    if(txtBox) txtBox.value = "Scanning for Player/Parent pairs...";
+    document.getElementById("rosterReviewArea").style.display='block';
+
     try {
         const buf = await f.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(buf).promise;
         const page = await pdf.getPage(1);
         const textContent = await page.getTextContent();
         
-        const rows = {};
-        textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5]);
-            if(!rows[y]) rows[y] = [];
-            rows[y].push(item.str);
-        });
+        // 1. Map all text items by their geometry
+        // We store them as objects: { text, x, y }
+        const items = textContent.items.map(item => ({
+            text: decodeURIComponent(item.str).trim(),
+            x: item.transform[4], // X position
+            y: item.transform[5]  // Y position (Row)
+        })).filter(i => i.text.length > 0);
 
         let extracted = [];
-        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
-            const rowText = rows[y].join(" ");
-            const emailMatch = rowText.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
-            if (emailMatch) {
-                const nameMatch = rowText.match(/^[A-Z][a-z]+\s[A-Z][a-z]+/);
-                if(nameMatch) extracted.push(`${nameMatch[0]} | ${emailMatch[0]}`);
-            } else {
-                const nameOnly = rowText.match(/^[A-Z][a-z]+\s[A-Z][a-z]+$/);
-                if(nameOnly && !rowText.includes("Page") && !rowText.includes("Team")) extracted.push(nameOnly[0]);
+
+        // 2. Find Emails (The Anchors)
+        const emails = items.filter(i => i.text.includes("@") && i.text.includes("."));
+
+        if (emails.length === 0) {
+            txtBox.value = "Error: No email addresses found in PDF. Cannot link parents.";
+            return;
+        }
+
+        // 3. For each email, find the Name on the same line
+        emails.forEach(emailItem => {
+            // Find items on the same "Row" (within 5px Y tolerance)
+            // AND are to the LEFT of the email (Name usually comes before email)
+            const rowMatches = items.filter(i => 
+                Math.abs(i.y - emailItem.y) < 5 && // Same vertical line
+                i.x < emailItem.x &&               // To the left of email
+                !i.text.includes("@")              // Isn't the email itself
+            );
+
+            // Join the name parts (First Last) found on that line
+            // We verify it looks like a name (no numbers, decent length)
+            let nameCandidate = rowMatches.map(i => i.text).join(" ");
+            
+            // Clean up: Remove common labels like "Player:", "Parent:"
+            nameCandidate = nameCandidate.replace(/Player:|Parent:|Name:/gi, "").trim();
+
+            // Validate: Must be letters, at least 3 chars long
+            if (nameCandidate.length > 3 && !/[0-9]/.test(nameCandidate)) {
+                extracted.push(`${nameCandidate} | ${emailItem.text}`);
             }
         });
 
-        const txtBox = document.getElementById("rosterTextRaw");
-        if(txtBox) txtBox.value = extracted.join("\n");
-        document.getElementById("rosterReviewArea").style.display='block';
-    } catch(err) { console.error(err); alert("PDF Error"); }
+        // 4. Output
+        if (extracted.length === 0) {
+            txtBox.value = "Found emails, but couldn't align them with names. Check PDF layout.";
+        } else {
+            // Success!
+            txtBox.value = extracted.join("\n");
+        }
+
+    } catch(err) { 
+        console.error(err); 
+        alert("PDF Read Error: " + err.message); 
+    }
 }
 
 async function saveRosterList() {
