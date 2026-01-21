@@ -31,7 +31,11 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE TEXT SETTER
+// HELPER: SAFE BINDING
+const safeBind = (id, event, func) => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener(event, func);
+};
 const setText = (id, text) => {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
@@ -39,12 +43,7 @@ const setText = (id, text) => {
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v17 Loaded (Safe Bind)");
-
-    const safeBind = (id, event, func) => {
-        const el = document.getElementById(id);
-        if(el) el.addEventListener(event, func);
-    };
+    console.log("App v18 Loaded (Roster Fix)");
 
     // AUTH
     safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
@@ -145,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // TIMER & CANVAS (Initial setup)
+    // TIMER & CANVAS
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
     
@@ -157,11 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if(canvas) {
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
-        
         function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
-
         function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
         function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
         function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
@@ -169,10 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
             if (!pixelBuffer.some(color => color !== 0)) { isSignatureBlank = true; } else { isSignatureBlank = false; canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
         }
-
         canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
         canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
-        
         safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
     }
 });
@@ -189,7 +184,7 @@ onAuthStateChanged(auth, async (user) => {
             
             // ADMIN BYPASS
             if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
-                userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; // Virtual profile
+                userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
             } 
             // RETURNING USER
             else if (userSnap.exists()) {
@@ -229,7 +224,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// --- USER SETUP ---
+// --- SETUP ---
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
     if(!sel) return;
@@ -241,7 +236,6 @@ function initSetupDropdowns() {
         const pSel = document.getElementById("setupPlayerDropdown");
         pSel.disabled = false;
         pSel.innerHTML = '<option value="">Loading Roster...</option>';
-        
         const snap = await getDoc(doc(db, "rosters", tid));
         pSel.innerHTML = '<option value="">Select Your Child...</option>';
         if(snap.exists() && snap.data().players) {
@@ -249,11 +243,8 @@ function initSetupDropdowns() {
         }
         pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
     };
-    
     const drop = document.getElementById("setupPlayerDropdown");
-    if(drop) drop.onchange = (e) => {
-        document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none";
-    };
+    if(drop) drop.onchange = (e) => { document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none"; };
 }
 
 async function completeUserSetup() {
@@ -266,10 +257,8 @@ async function completeUserSetup() {
 }
 
 function checkRoles(user) {
-    // Only check if we are actually logged in
     const isDirector = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
     const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
-    
     if(isDirector) {
         document.getElementById("navCoach").style.display='flex';
         document.getElementById("navAdmin").style.display='flex';
@@ -281,7 +270,7 @@ function checkRoles(user) {
     }
 }
 
-// --- CORE LOGIC ---
+// --- CORE ---
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -289,7 +278,6 @@ async function fetchConfig() {
         const a = await getDoc(doc(db, "config", "admins"));
         if(a.exists()) globalAdmins = a.data().list;
     } catch(e) { globalTeams = dbData.teams; }
-    
     const ts = document.getElementById("teamSelect");
     if(ts) {
         ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
@@ -345,7 +333,6 @@ async function loadStats() {
     
     setText("userLevelDisplay", lvl);
     const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-    
     renderCalendar(logs);
     renderPlayerTrendChart(logs);
     renderTeamLeaderboard(userProfile.teamId); 
@@ -431,13 +418,15 @@ async function loadCoachDashboard(isDirector, teams) {
     setText("coachActivePlayers", Object.keys(players).length);
     setText("coachTotalReps", count);
     
-    // Roster Render (Merged)
+    // Roster Render
+    const listEl = document.getElementById("coachPlayerList");
+    if(listEl) listEl.innerHTML = "Loading..."; // Feedback
+    
     const rosterSnap = await getDoc(doc(db, "rosters", tid));
     let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
     const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
     const combinedList = Array.from(combinedSet).sort();
 
-    const listEl = document.getElementById("coachPlayerList");
     if(listEl) {
         if(combinedList.length > 0) {
             listEl.innerHTML = combinedList.map(p => {
@@ -453,7 +442,7 @@ async function loadCoachDashboard(isDirector, teams) {
                 </div>`;
             }).join("");
         } else {
-            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster to begin.</div>";
+            listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually.</div>";
         }
     }
 }
@@ -496,7 +485,7 @@ async function manualAddPlayer() {
     loadCoachDashboard(false, globalTeams);
 }
 
-// --- ROSTER PDF ---
+// --- PARSERS & UTILS ---
 async function parsePDF(e) {
     const f = e.target.files[0]; if(!f) return;
     try {
@@ -525,9 +514,10 @@ async function parsePDF(e) {
             }
         });
 
-        document.getElementById("rosterTextRaw").value = extracted.join("\n");
+        const txtBox = document.getElementById("rosterTextRaw");
+        if(txtBox) txtBox.value = extracted.join("\n");
         document.getElementById("rosterReviewArea").style.display='block';
-    } catch(err) { console.error(err); alert("PDF Parsing Failed. Try manual entry."); }
+    } catch(err) { console.error(err); alert("PDF Error"); }
 }
 
 async function saveRosterList() {
@@ -554,12 +544,11 @@ async function saveRosterList() {
     await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
     await batch.commit();
     
-    alert("Roster Saved & Invites Created!");
+    alert("Roster Saved!");
     document.getElementById("rosterReviewArea").style.display='none';
     loadCoachDashboard(false, globalTeams);
 }
 
-// --- EXPORT ---
 function exportSessionData() {
     if(allSessionsCache.length === 0) return alert("No sessions to export.");
     const formatted = allSessionsCache.map(r => ({
@@ -575,10 +564,11 @@ function exportSessionData() {
     XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
 }
 
-// --- ADMIN ---
 function renderAdminTables() {
-    const tb = document.getElementById("teamTable"); if(tb) tb.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
-    const ab = document.getElementById("adminTable"); if(ab) ab.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+    const t = document.getElementById("teamTable"); 
+    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    const a = document.getElementById("adminTable");
+    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
 }
 async function addTeam() {
     const id = document.getElementById("newTeamId").value;
@@ -597,23 +587,18 @@ async function addAdmin() {
     alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
 }
 
-// --- LOGS ---
 async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching System Logs...";
+    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
     const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
     c.innerHTML = "";
     snap.forEach(d => { 
-        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;">
-            <span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br>
-            <b>${d.data().type}</b>: ${d.data().detail}
-        </div>`; 
+        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`; 
     });
 }
 
-function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Application initialized"); alert("Log Generated"); }
-function runSecurityScan() { const c = document.getElementById("logContainer"); if(!c)return; c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); }
-function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"6.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
+function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
+function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
+function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 
-// --- UTILS ---
 function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
 function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
