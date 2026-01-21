@@ -43,7 +43,7 @@ const setText = (id, text) => {
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v19 Loaded (No-Email Roster Support)");
+    console.log("App v20 Loaded (Multi-Pass Parsing)");
 
     // AUTH
     safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
@@ -482,8 +482,10 @@ async function manualAddPlayer() {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
     if(!name) return alert("Enter name");
+    
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return alert("Select team first");
+    
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     let list = snap.exists() ? snap.data().players : [];
@@ -496,6 +498,7 @@ async function manualAddPlayer() {
     } else {
         alert("Player Added to Roster");
     }
+    
     document.getElementById("coachAddPlayerName").value = "";
     document.getElementById("coachAddPlayerEmail").value = "";
     loadCoachDashboard(false, globalTeams);
@@ -524,18 +527,19 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
-            // Robust check: Does row have a date?
+            // Robust check: Does row have a date or ID?
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
+            const idMatch = rowText.match(/\d{5}-\d{6}/);
             
-            if (dateMatch) {
-                // If yes, this is a player row.
-                // Clean up ID numbers (5-6 digits with dash)
+            if (dateMatch || idMatch) {
+                // Remove the date and ID to isolate the name
                 let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
-                // Take the first 2-3 words as name (heuristic)
+                // Filter out short words (like "1P", "D") and numbers
                 let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
+                
+                // Heuristic: If we have at least 2 words (First Last), it's likely a name
                 if(words.length >= 2) {
-                    // Assuming format Last Name First Name, swap them for display
-                    // Or just grab them. Let's grab Last First.
+                    // Assuming the first two significant words are the name
                     let name = `${words[0]} ${words[1]}`;
                     extracted.push(name);
                 }
@@ -543,7 +547,7 @@ async function parsePDF(e) {
         });
 
         if (extracted.length === 0) {
-            if(txtBox) txtBox.value = "No player rows detected (looked for MM/DD/YYYY). Paste names manually.";
+            if(txtBox) txtBox.value = "No player rows detected. Please paste names manually.";
         } else {
             if(txtBox) txtBox.value = extracted.join("\n");
         }
