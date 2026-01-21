@@ -43,7 +43,7 @@ const setText = (id, text) => {
 
 // --- DOM LOADED ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v21 Loaded (Force Refresh)");
+    console.log("App v22 Loaded (Link Logic)");
 
     // AUTH
     safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
-    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); // Force refresh
+    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
     
     // ADMIN
     safeBind("addTeamBtn", "click", addTeam);
@@ -279,7 +279,6 @@ async function fetchConfig() {
         const a = await getDoc(doc(db, "config", "admins"));
         if(a.exists()) globalAdmins = a.data().list;
     } catch(e) { globalTeams = dbData.teams; }
-    
     const ts = document.getElementById("teamSelect");
     if(ts) {
         ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
@@ -456,7 +455,8 @@ async function loadCoachDashboard(isDirector, teams) {
                 <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                     <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
                     <div>
-                        <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:10px;">${stats.mins}m</span>
+                        <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
+                        <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
                         <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
                     </div>
                 </div>`;
@@ -476,6 +476,15 @@ window.deletePlayer = async (name) => {
         const newPlayers = snap.data().players.filter(p => p !== name);
         await updateDoc(ref, { players: newPlayers });
         loadCoachDashboard(false, globalTeams);
+    }
+}
+
+window.linkParent = async (playerName) => {
+    const email = prompt(`Enter parent email for ${playerName}:`);
+    if(email && email.includes("@")) {
+        const tid = document.getElementById("adminTeamSelect").value;
+        await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
+        alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
     }
 }
 
