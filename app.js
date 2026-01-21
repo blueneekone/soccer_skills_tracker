@@ -5,6 +5,11 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
+// --- GLOBAL ERROR HANDLER ---
+window.onerror = function(message, source, lineno, colno, error) {
+    alert(`System Error: ${message}`);
+};
+
 // CONFIG
 const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
 const firebaseConfig = {
@@ -31,33 +36,43 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE BINDING
+// HELPER: SAFE BINDING & TEXT
 const safeBind = (id, event, func) => {
     const el = document.getElementById(id);
-    if(el) el.addEventListener(event, func);
+    if(el) {
+        el.removeEventListener(event, func); // Prevent duplicates
+        el.addEventListener(event, func);
+    } else {
+        console.warn(`Element ${id} missing (might be okay depending on view)`);
+    }
 };
 const setText = (id, text) => {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
 };
 
-// --- DOM LOADED ---
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("App v23 Loaded (Indexing Fix)");
+// --- INITIALIZATION LOGIC ---
+const initApp = () => {
+    console.log("App v24 Starting (Robust Init)");
 
-    // AUTH
-    safeBind("loginGoogleBtn", "click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e=>alert(e.message)));
+    // AUTH BINDINGS
+    safeBind("loginGoogleBtn", "click", () => {
+        console.log("Attempting Google Sign-In...");
+        signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("Login Error: " + e.message));
+    });
     safeBind("loginEmailBtn", "click", () => {
-        const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
-        if(e&&p) signInWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+        const e = document.getElementById("authEmail").value;
+        const p = document.getElementById("authPassword").value;
+        if(e && p) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
     });
     safeBind("signupEmailBtn", "click", () => {
-        const e=document.getElementById("authEmail").value, p=document.getElementById("authPassword").value;
-        if(e&&p) createUserWithEmailAndPassword(auth,e,p).catch(err=>alert(err.message));
+        const e = document.getElementById("authEmail").value;
+        const p = document.getElementById("authPassword").value;
+        if(e && p) createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
     });
-    safeBind("globalLogoutBtn", "click", () => signOut(auth).then(()=>location.reload()));
+    safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
 
-    // SETUP SCREEN
+    // SETUP
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION
@@ -76,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // DRILLS POPULATION
+    // POPULATE DRILLS
     const us = document.getElementById("unifiedSelect");
     if(us && us.options.length <= 1) {
         const cardio = document.createElement("optgroup"); cardio.label = "CARDIO";
@@ -88,9 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
         us.appendChild(cardio); us.appendChild(basic);
     }
 
-    // TRACKER
+    // TRACKER EVENTS
     safeBind("unifiedSelect", "change", (e) => {
-        const s = dbData.foundationSkills.find(x=>x.name===e.target.value);
+        const s = dbData.foundationSkills.find(x => x.name === e.target.value);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
             setText("drillDesc", s.drill);
@@ -114,22 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     safeBind("submitWorkoutBtn", "click", submitWorkout);
 
-    // EVALUATION BUTTONS
+    // EVALUATION
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
-            document.querySelectorAll(".outcome-btn").forEach(x=>x.classList.remove("active"));
+            document.querySelectorAll(".outcome-btn").forEach(x => x.classList.remove("active"));
             b.classList.add("active");
         }
     });
 
-    // ROSTER & COACH
+    // ROSTER & ADMIN
     safeBind("rosterPdfInput", "change", parsePDF);
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
     
-    // ADMIN
     safeBind("addTeamBtn", "click", addTeam);
     safeBind("addAdminBtn", "click", addAdmin);
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
@@ -145,21 +159,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // TIMER & CANVAS
+    // TIMER
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
-    
     safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
     safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
     safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
 
+    // CANVAS
     const canvas = document.getElementById("signatureCanvas");
     if(canvas) {
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
         function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        setTimeout(resizeCanvas, 500); // Delay resize to ensure layout is done
+
         function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
         function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
         function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
@@ -171,13 +186,19 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
         safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
     }
-});
+};
+
+// --- RUN INIT WHEN READY ---
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp(); // Run immediately if already loaded
+}
 
 // --- AUTH STATE ---
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
-        
         try {
             await fetchConfig(); 
             const userRef = doc(db, "users", user.email);
@@ -208,15 +229,13 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
-                
                 loadStats();
                 checkRoles(user);
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
             }
-        } catch (error) { console.error(error); alert("Error Loading: " + error.message); }
-        
+        } catch (error) { console.error(error); alert("Data Load Error: " + error.message); }
     } else {
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
@@ -321,19 +340,11 @@ async function submitWorkout() {
 async function loadStats() {
     if (!userProfile) return;
     
-    // REMOVED COMPOSITE INDEX QUERY
-    // We now just query by collection and filter/sort in memory if necessary for the specific view
-    // For large scale apps this is bad, for a roster of <20 it's perfect and avoids index errors.
-    
     let q;
     if (userProfile.role === 'admin') {
         setText("userLevelDisplay", "DIRECTOR");
-        // Simple query (No Index Needed)
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
-        // Simple query: get all for player, sort in memory if index fails
-        // Actually, player+timestamp index usually exists or is auto-suggested.
-        // Let's try simple filter first.
         q = query(collection(db, "reps"), where("player", "==", userProfile.playerName));
     }
 
@@ -345,7 +356,6 @@ async function loadStats() {
             totalMins += Number(d.data().minutes || 0); 
         });
         
-        // Sort in memory to be safe
         logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
         
         const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
@@ -364,9 +374,7 @@ async function loadStats() {
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
         renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
-    } catch (e) {
-        console.error("Stats Load Error", e);
-    }
+    } catch (e) { console.error("Stats Load Error", e); }
 }
 
 function renderCalendar(logs) {
@@ -439,7 +447,6 @@ async function loadCoachDashboard(isDirector, teams) {
     if(listEl) listEl.innerHTML = "Fetching...";
 
     try {
-        // 1. Get Stats (No Sort to avoid index error)
         const q = query(collection(db, "reps"), where("teamId", "==", tid));
         const snap = await getDocs(q);
         const players = {};
@@ -459,13 +466,11 @@ async function loadCoachDashboard(isDirector, teams) {
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
         
-        // 2. Get Roster
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        // 3. Render
         if(listEl) {
             if(combinedList.length > 0) {
                 listEl.innerHTML = combinedList.map(p => {
@@ -561,17 +566,14 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
-            // Robust check: Does row have a date or ID?
+            // Match league ID or DOB as marker of a player row
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             const idMatch = rowText.match(/\d{5}-\d{6}/);
             
             if (dateMatch || idMatch) {
-                // Remove the date and ID to isolate the name
+                // Strip numbers and dates to find name
                 let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
-                // Filter out short words (like "1P", "D") and numbers
                 let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
-                
-                // Heuristic: If we have at least 2 words (First Last), it's likely a name
                 if(words.length >= 2) {
                     let name = `${words[0]} ${words[1]}`;
                     extracted.push(name);
