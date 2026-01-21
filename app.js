@@ -440,7 +440,7 @@ function initCoachDropdown(isDirector, teams) {
     if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
 }
 
-// *** CRITICAL UPDATE: ROSTER LOADING LOGIC ***
+// --- ROSTER LOADING LOGIC ---
 async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
@@ -473,10 +473,19 @@ async function loadCoachDashboard(isDirector, teams) {
         // 2. Get Roster Names
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
+        
+        // 3. Get Linked Parents 
+        const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
+        const linkSnap = await getDocs(linkQuery);
+        const linkedPlayers = new Set();
+        linkSnap.forEach(doc => {
+            linkedPlayers.add(doc.data().playerName); // Collect names that have parents
+        });
+
+        // 4. Combine and Render
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        // 3. Render
         if(listEl) {
             if(combinedList.length > 0) {
                 listEl.innerHTML = combinedList.map(p => {
@@ -525,6 +534,7 @@ window.linkParent = async (playerName) => {
         const tid = document.getElementById("adminTeamSelect").value;
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
         alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
+        loadCoachDashboard(false, globalTeams);
     }
 }
 
