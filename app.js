@@ -196,6 +196,7 @@ const initApp = () => {
 // --- RUN INIT WHEN READY ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
+    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams));
 } else {
     initApp(); 
 }
@@ -445,9 +446,9 @@ async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
     currentCoachTeamId = tid; 
-    
     const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Fetching roster data...";
+    if(listEl) {listEl.innerHTML = "Fetching roster data..."; 
+    }  
 
     try {
         // 1. Get Workout Stats
@@ -470,7 +471,7 @@ async function loadCoachDashboard(isDirector, teams) {
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
         
-        // 2. Get Roster Names
+        // . Get Roster Names
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
         
@@ -486,33 +487,41 @@ async function loadCoachDashboard(isDirector, teams) {
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        if(listEl) {
-            if(combinedList.length > 0) {
+        if (listEl) {
+            if (combinedList.length > 0) {
+                // --- THIS IS THE CORRECT PLACE FOR THE NEW LOGIC ---
                 listEl.innerHTML = combinedList.map(p => {
                     const stats = players[p] || { mins: 0, lastActive: null };
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                    
+                    // 1. Check if this specific player is in the 'linkedPlayers' set
+                    const isLinked = linkedPlayers.has(p);
+                    
+                    // 2. Decide which button to show (Green vs Blue)
+                    const linkButton = isLinked 
+                        ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
+                        : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
+
                     return `
                     <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                         <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
                         <div>
                             <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
-                            <button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>
+                            ${linkButton}
                             <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
                         </div>
                     </div>`;
                 }).join("");
             } else {
-                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually above.</div>";
+                // --- IF NO PLAYERS FOUND ---
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
-    } catch(e) {
+     } catch(e) {
         console.error(e);
         if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
     } finally {
-        // Fallback: If logic finishes but listEl still says Fetching, clear it
-        if(listEl && listEl.innerHTML === "Fetching roster data...") {
-             listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
-        }
+        if(listEl && listEl.innerHTML === "Fetching...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
     }
 }
 
@@ -535,6 +544,16 @@ window.linkParent = async (playerName) => {
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
         alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
         loadCoachDashboard(false, globalTeams);
+    }
+}
+
+window.linkParent = async (playerName) => {
+    const email = prompt(`Enter parent email for ${playerName}:`);
+    if(email && email.includes("@")) {
+        const tid = document.getElementById("adminTeamSelect").value;
+        await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
+        alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
+        loadCoachDashboard(false, globalTeams); // Refresh list immediately
     }
 }
 

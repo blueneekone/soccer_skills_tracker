@@ -74,6 +74,12 @@ button:active { opacity: 0.9; }
 .secondary-btn { background: var(--aggie-silver); margin-top: 10px; padding: 12px; }
 .clear-btn { background: none; color: #64748b; border: 1px solid var(--border); font-size: 12px; padding: 5px 10px; width: auto; margin-top: 5px; }
 
+.link-btn { 
+    background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; 
+    padding: 4px 8px; border-radius: 4px; font-size: 10px; 
+    cursor: pointer; margin-right: 5px; 
+}
+
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
   padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
