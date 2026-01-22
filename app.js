@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -37,12 +37,6 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// HELPER: SAFE TEXT SETTER
-const setText = (id, text) => {
-    const el = document.getElementById(id);
-    if(el) el.innerText = text;
-};
-
 // HELPER: SAFE BINDING
 const safeBind = (id, event, func) => {
     const el = document.getElementById(id);
@@ -52,16 +46,19 @@ const safeBind = (id, event, func) => {
         el.dataset.bound = "true";
     }
 };
+const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if(el) el.innerText = text;
+};
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v28 Starting...");
+    console.log("App v28 Loaded (Auth Fix & Roster Sync)");
 
+    // 1. CHECK FOR REDIRECT LOGIN ERRORS
     getRedirectResult(auth)
         .then((result) => {
-            if (result) {
-                console.log("Redirect Login Successful:", result.user.email);
-            }
+            if (result) console.log("Redirect Login Successful:", result.user.email);
         })
         .catch((error) => {
             console.error("Redirect Error:", error);
@@ -71,7 +68,9 @@ const initApp = () => {
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
         console.log("Redirecting to Google...");
-        signInWithRedirect(auth, new GoogleAuthProvider()).catch(e => alert("Login Error: " + e.message));
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        signInWithRedirect(auth, provider).catch(e => alert("Login Error: " + e.message));
     });
     
     safeBind("loginEmailBtn", "click", () => {
@@ -207,7 +206,6 @@ const initApp = () => {
 // --- RUN INIT WHEN READY ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
-    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams));
 } else {
     initApp(); 
 }
@@ -217,23 +215,21 @@ onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
         
-// SAFETY CHECK
-        if (!user.email) {
-            alert("Login Error: Could not detect email address.");
-            await signOut(auth);
-            return;
-        }
-
         try {
             await fetchConfig(); 
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
+            // 1. ADMIN BYPASS
             if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } else if (userSnap.exists()) {
+            } 
+            // 2. RETURNING USER
+            else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-            } else {
+            }
+            // 3. AUTO-LINK
+            else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
@@ -249,6 +245,7 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
+                
                 loadStats();
                 checkRoles(user);
             } else {
@@ -366,36 +363,29 @@ async function loadStats() {
         setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
-        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName));
+        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
     }
 
-    try {
-        const snap = await getDocs(q);
-        const logs = []; let totalMins = 0;
-        snap.forEach(d => { 
-            logs.push(d.data()); 
-            totalMins += Number(d.data().minutes || 0); 
-        });
-        
-        logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
-        
-        const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
-        setText("statTotal", `${logs.length} ${countLabel}`);
-        setText("statTime", totalMins);
-        
-        let xp = totalMins + (logs.length * 10);
-        let lvl = "ROOKIE";
-        if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
-        
-        if (userProfile.role !== 'admin') {
-            setText("userLevelDisplay", lvl);
-            const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-        }
-        
-        renderCalendar(logs);
-        renderPlayerTrendChart(logs);
-        renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
-    } catch (e) { console.error("Stats Load Error", e); }
+    const snap = await getDocs(q);
+    const logs = []; let totalMins = 0;
+    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
+    
+    const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
+    setText("statTotal", `${logs.length} ${countLabel}`);
+    setText("statTime", totalMins);
+    
+    let xp = totalMins + (logs.length * 10);
+    let lvl = "ROOKIE";
+    if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+    
+    if (userProfile.role !== 'admin') {
+        setText("userLevelDisplay", lvl);
+        const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+    }
+    
+    renderCalendar(logs);
+    renderPlayerTrendChart(logs);
+    renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs); 
 }
 
 function renderCalendar(logs) {
@@ -440,7 +430,7 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     if (!tid) { // Director Mode
         logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); });
     } else { // Team Mode
-        const q = query(collection(db, "reps"), where("teamId", "==", tid));
+        const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
         const snap = await getDocs(q);
         snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
     }
@@ -459,14 +449,13 @@ function initCoachDropdown(isDirector, teams) {
     if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
 }
 
-// --- ROSTER LOADING LOGIC ---
 async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
     currentCoachTeamId = tid; 
+    
     const listEl = document.getElementById("coachPlayerList");
-    if(listEl) {listEl.innerHTML = "Fetching roster data..."; 
-    }  
+    if(listEl) listEl.innerHTML = "Fetching roster data...";
 
     try {
         // 1. Get Workout Stats
@@ -489,7 +478,7 @@ async function loadCoachDashboard(isDirector, teams) {
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
         
-        // . Get Roster Names
+        // 2. Get Roster Names
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
         
@@ -498,24 +487,20 @@ async function loadCoachDashboard(isDirector, teams) {
         const linkSnap = await getDocs(linkQuery);
         const linkedPlayers = new Set();
         linkSnap.forEach(doc => {
-            linkedPlayers.add(doc.data().playerName); // Collect names that have parents
+            linkedPlayers.add(doc.data().playerName); 
         });
 
         // 4. Combine and Render
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        if (listEl) {
-            if (combinedList.length > 0) {
-                // --- THIS IS THE CORRECT PLACE FOR THE NEW LOGIC ---
+        if(listEl) {
+            if(combinedList.length > 0) {
                 listEl.innerHTML = combinedList.map(p => {
                     const stats = players[p] || { mins: 0, lastActive: null };
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
                     
-                    // 1. Check if this specific player is in the 'linkedPlayers' set
                     const isLinked = linkedPlayers.has(p);
-                    
-                    // 2. Decide which button to show (Green vs Blue)
                     const linkButton = isLinked 
                         ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
                         : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
@@ -531,15 +516,15 @@ async function loadCoachDashboard(isDirector, teams) {
                     </div>`;
                 }).join("");
             } else {
-                // --- IF NO PLAYERS FOUND ---
                 listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
-     } catch(e) {
+
+    } catch(e) {
         console.error(e);
         if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
     } finally {
-        if(listEl && listEl.innerHTML === "Fetching...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
+        if(listEl && listEl.innerHTML === "Fetching roster data...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
     }
 }
 
@@ -562,16 +547,6 @@ window.linkParent = async (playerName) => {
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
         alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
         loadCoachDashboard(false, globalTeams);
-    }
-}
-
-window.linkParent = async (playerName) => {
-    const email = prompt(`Enter parent email for ${playerName}:`);
-    if(email && email.includes("@")) {
-        const tid = document.getElementById("adminTeamSelect").value;
-        await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
-        alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
-        loadCoachDashboard(false, globalTeams); // Refresh list immediately
     }
 }
 
@@ -616,8 +591,7 @@ async function parsePDF(e) {
         
         const rows = {};
         textContent.items.forEach(item => {
-            // Increased tolerance to 20 to group loosely aligned ID and Name
-            const y = Math.round(item.transform[5] / 20);
+            const y = Math.round(item.transform[5] / 20); // 20 tolerance for loose alignment
             if(!rows[y]) rows[y] = [];
             rows[y].push(decodeURIComponent(item.str));
         });
@@ -625,32 +599,23 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
-            // Looks for ID (12345-123456) OR Date (MM/DD/YYYY)
+            // Robust check: Does row have a date or ID?
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             const idMatch = rowText.match(/\d{5}-\d{6}/);
             
             if (dateMatch || idMatch) {
-                // Strip dates, IDs, Zips to find Name
-                let cleanRow = rowText
-                    .replace(/\d{5}-\d{6}/g, "")
-                    .replace(/\d{2}\/\d{2}\/\d{4}/g, "")
-                    .replace(/\d{5}/g, "") // Zip codes
-                    .trim();
+                // Remove the date and ID to isolate the name
+                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
+                let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
                 
-                // Get words that look like names (Letters only, >2 length)
-                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
-                
-                // If we found "Waechtler, Evan" format
                 if (cleanRow.includes(",")) {
-                     // Split by comma
                      let parts = cleanRow.split(",");
                      if(parts.length >= 2) {
                          let last = parts[0].trim();
-                         let first = parts[1].trim().split(" ")[0]; // Take just first name if multiple words
+                         let first = parts[1].trim().split(" ")[0]; 
                          extracted.push(`${first} ${last}`);
                      }
                 }
-                // Fallback: If 2 words found, assume First Last
                 else if(words.length >= 2) {
                     let name = `${words[0]} ${words[1]}`;
                     extracted.push(name);
@@ -668,12 +633,7 @@ async function parsePDF(e) {
 
 async function saveRosterList() {
     const tid = currentCoachTeamId;
-    if(!tid) {
-        // Fallback: try to grab from DOM if variable is stale
-        const domTid = document.getElementById("adminTeamSelect")?.value;
-        if(!domTid) return alert("No team selected");
-        currentCoachTeamId = domTid;
-    }
+    if(!tid) return alert("No team selected");
     
     const lines = document.getElementById("rosterTextRaw").value.split("\n");
     const cleanNames = [];
@@ -685,14 +645,14 @@ async function saveRosterList() {
             cleanNames.push(name);
             if(email.includes("@")) {
                 const ref = doc(db, "player_lookup", email.toLowerCase());
-                batch.set(ref, { teamId: currentCoachTeamId, playerName: name });
+                batch.set(ref, { teamId: tid, playerName: name });
             }
         } else {
             if(line.trim()) cleanNames.push(line.trim());
         }
     });
 
-    await setDoc(doc(db, "rosters", currentCoachTeamId), { players: cleanNames, lastUpdated: new Date() });
+    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
     await batch.commit();
     
     alert("Roster Saved!");
