@@ -55,7 +55,18 @@ const safeBind = (id, event, func) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v26 Starting (Robust Roster & UI)");
+    console.log("App v28 Starting...");
+
+    getRedirectResult(auth)
+        .then((result) => {
+            if (result) {
+                console.log("Redirect Login Successful:", result.user.email);
+            }
+        })
+        .catch((error) => {
+            console.error("Redirect Error:", error);
+            alert("Google Login Failed: " + error.message);
+        });
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
@@ -206,6 +217,13 @@ onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
         
+// SAFETY CHECK
+        if (!user.email) {
+            alert("Login Error: Could not detect email address.");
+            await signOut(auth);
+            return;
+        }
+
         try {
             await fetchConfig(); 
             const userRef = doc(db, "users", user.email);
