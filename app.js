@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -53,24 +53,18 @@ const setText = (id, text) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v28 Loaded (Auth Fix & Roster Sync)");
-
-    // 1. CHECK FOR REDIRECT LOGIN ERRORS
-    getRedirectResult(auth)
-        .then((result) => {
-            if (result) console.log("Redirect Login Successful:", result.user.email);
-        })
-        .catch((error) => {
-            console.error("Redirect Error:", error);
-            alert("Google Login Failed: " + error.message);
-        });
+    console.log("App v29 Loaded (Popup Auth + Final Roster Logic)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
-        console.log("Redirecting to Google...");
+        console.log("Attempting Popup Login...");
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        signInWithRedirect(auth, provider).catch(e => alert("Login Error: " + e.message));
+        
+        signInWithPopup(auth, provider).catch(e => {
+            console.error(e);
+            alert("Login Failed: " + e.message + "\n\n1. Check Firebase Authorized Domains.\n2. Check Popup Blocker.");
+        });
     });
     
     safeBind("loginEmailBtn", "click", () => {
@@ -494,13 +488,17 @@ async function loadCoachDashboard(isDirector, teams) {
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        if(listEl) {
-            if(combinedList.length > 0) {
+        if (listEl) {
+            if (combinedList.length > 0) {
+                // --- RENDER LIST ---
                 listEl.innerHTML = combinedList.map(p => {
                     const stats = players[p] || { mins: 0, lastActive: null };
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
                     
+                    // 1. Check if this specific player is in the 'linkedPlayers' set
                     const isLinked = linkedPlayers.has(p);
+                    
+                    // 2. Decide which button to show (Green vs Blue)
                     const linkButton = isLinked 
                         ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
                         : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
@@ -516,15 +514,17 @@ async function loadCoachDashboard(isDirector, teams) {
                     </div>`;
                 }).join("");
             } else {
+                // --- IF NO PLAYERS FOUND ---
                 listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
-
     } catch(e) {
         console.error(e);
         if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
     } finally {
-        if(listEl && listEl.innerHTML === "Fetching roster data...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
+        if(listEl && listEl.innerHTML === "Fetching roster data...") {
+             listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
+        }
     }
 }
 
