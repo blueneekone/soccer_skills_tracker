@@ -289,9 +289,17 @@ async function completeUserSetup() {
 }
 
 function checkRoles(user) {
-    const isDirector = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
-    const myTeams = globalTeams.filter(t => t.coachEmail.toLowerCase() === user.email.toLowerCase());
-    if(isDirector) {
+    const email = user.email.toLowerCase();
+    const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
+    
+    // Check if user is Head Coach OR Assistant
+    const myTeams = globalTeams.filter(t => {
+        const isHead = t.coachEmail.toLowerCase() === email;
+        const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
+        return isHead || isAsst;
+    });
+
+    if (isDirector) {
         document.getElementById("navCoach").style.display='flex';
         document.getElementById("navAdmin").style.display='flex';
         initCoachDropdown(true, globalTeams); 
