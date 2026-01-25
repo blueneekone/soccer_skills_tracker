@@ -152,7 +152,7 @@ const initApp = () => {
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
-    
+    safeBind("addAssistantBtn", "click", addAssistant);
     safeBind("addTeamBtn", "click", addTeam);
     safeBind("addAdminBtn", "click", addAdmin);
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
@@ -456,6 +456,17 @@ async function loadCoachDashboard(isDirector, teams) {
     if(!tid) return;
     currentCoachTeamId = tid; 
     
+// --- NEW: STAFF PERMISSION CHECK ---
+    const userEmail = auth.currentUser.email.toLowerCase();
+    const currentTeam = globalTeams.find(t => t.id === tid);
+    // You are manager if: Director OR Head Coach
+    const isManager = isDirector || (currentTeam && currentTeam.coachEmail.toLowerCase() === userEmail);
+    
+    const staffCard = document.getElementById("cardStaffManager");
+    if(staffCard) {
+        staffCard.style.display = isManager ? 'block' : 'none';
+        if(isManager) renderAssistantList(currentTeam);
+
     const listEl = document.getElementById("coachPlayerList");
     if(listEl) listEl.innerHTML = "Fetching roster data...";
 
@@ -535,6 +546,58 @@ async function loadCoachDashboard(isDirector, teams) {
         }
     }
 }
+
+// --- STAFF MANAGEMENT ---
+function renderAssistantList(team) {
+    const c = document.getElementById("assistantList");
+    if(!team || !team.assistants || team.assistants.length === 0) {
+        c.innerHTML = "No assistants added.";
+        return;
+    }
+    c.innerHTML = team.assistants.map(email => `
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;">
+            <span>${email}</span>
+            <button class="delete-btn" onclick="window.removeAssistant('${email}')">Remove</button>
+        </div>
+    `).join("");
+}
+
+async function addAssistant() {
+    const email = document.getElementById("newAssistantEmail").value.trim().toLowerCase();
+    if(!email || !email.includes("@")) return alert("Enter a valid email.");
+    
+    const tid = currentCoachTeamId;
+    const teamIdx = globalTeams.findIndex(t => t.id === tid);
+    if(teamIdx === -1) return;
+    
+    // Update local data
+    if(!globalTeams[teamIdx].assistants) globalTeams[teamIdx].assistants = [];
+    if(globalTeams[teamIdx].assistants.includes(email)) return alert("User already added.");
+    globalTeams[teamIdx].assistants.push(email);
+    
+    // Save to Cloud
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    
+    alert("Assistant Added! They can now log in.");
+    document.getElementById("newAssistantEmail").value = "";
+    
+    // Refresh View
+    const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
+    loadCoachDashboard(isDirector, globalTeams);
+}
+
+window.removeAssistant = async (email) => {
+    if(!confirm(`Revoke access for ${email}?`)) return;
+    const tid = currentCoachTeamId;
+    const teamIdx = globalTeams.findIndex(t => t.id === tid);
+    if(teamIdx === -1) return;
+    
+    globalTeams[teamIdx].assistants = globalTeams[teamIdx].assistants.filter(e => e !== email);
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    
+    const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
+    loadCoachDashboard(isDirector, globalTeams);
+};
 
 window.deletePlayer = async (name) => {
     if(!confirm(`Remove ${name}?`)) return;
