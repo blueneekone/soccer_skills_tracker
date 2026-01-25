@@ -6,10 +6,46 @@ export const dbData = {
   roadmapActions: [],
 
   foundationSkills: [
+    // --- CARDIO (Stage 1) ---
     { id: "fit_run", name: "Interval Run", type: "cardio", category: "Endurance", drill: "Run/Walk intervals", video: "", image: "" },
     { id: "fit_sprint", name: "Shuttle Sprints", type: "cardio", category: "Speed", drill: "10 Yard Shuttles", video: "", image: "" },
     { id: "fit_bike", name: "Biking", type: "cardio", category: "Endurance", drill: "Cycling", video: "", image: "" },
     { id: "fit_swim", name: "Swimming", type: "cardio", category: "Endurance", drill: "Swimming", video: "", image: "" },
+
+    // --- BALL MASTERY (Stage 2 - From PDF) ---
+    // Level 1
+    { id: "bm_l1_1", name: "Sole Drag (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
+    { id: "bm_l1_2", name: "Inside Taps (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
+    { id: "bm_l1_3", name: "Sole Drags (x4) to Inside Taps (x4)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
+    { id: "bm_l1_4", name: "Triple Roll Over (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
+    // Level 2
+    { id: "bm_l2_1", name: "Sole Drag (R) + Inside Push (L)", type: "ball_mastery", category: "Level 2", drill: "Stationary Ball Mastery L2", video: "", image: "" },
+    { id: "bm_l2_2", name: "Sole Drag (L) + Inside Push (R)", type: "ball_mastery", category: "Level 2", drill: "Stationary Ball Mastery L2", video: "", image: "" },
+    { id: "bm_l2_3", name: "Sole Drag & Outside Push (Right)", type: "ball_mastery", category: "Level 2", drill: "Stationary Ball Mastery L2", video: "", image: "" },
+    { id: "bm_l2_4", name: "Sole Drag & Outside Push (Left)", type: "ball_mastery", category: "Level 2", drill: "Stationary Ball Mastery L2", video: "", image: "" },
+    // Level 3
+    { id: "bm_l3_1", name: "Pull & Push (Right Foot)", type: "ball_mastery", category: "Level 3", drill: "Stationary Ball Mastery L3", video: "", image: "" },
+    { id: "bm_l3_2", name: "Pull & Push (Left Foot)", type: "ball_mastery", category: "Level 3", drill: "Stationary Ball Mastery L3", video: "", image: "" },
+    { id: "bm_l3_3", name: "Pull & Push (Both Feet)", type: "ball_mastery", category: "Level 3", drill: "Stationary Ball Mastery L3", video: "", image: "" },
+    { id: "bm_l3_4", name: "Inside 'V' Shape", type: "ball_mastery", category: "Level 3", drill: "Stationary Ball Mastery L3", video: "", image: "" },
+    { id: "bm_l3_5", name: "Outside 'V' Shape", type: "ball_mastery", category: "Level 3", drill: "Stationary Ball Mastery L3", video: "", image: "" },
+    // Level 4
+    { id: "bm_l4_1", name: "Roll Over & Stop", type: "ball_mastery", category: "Level 4", drill: "Stationary Ball Mastery L4", video: "", image: "" },
+    { id: "bm_l4_2", name: "Inside Taps (x4) & Roll Over", type: "ball_mastery", category: "Level 4", drill: "Stationary Ball Mastery L4", video: "", image: "" },
+    { id: "bm_l4_3", name: "Inside Cut & Outside Push", type: "ball_mastery", category: "Level 4", drill: "Stationary Ball Mastery L4", video: "", image: "" },
+    { id: "bm_l4_4", name: "Roll Over Stop & Inside Step Over", type: "ball_mastery", category: "Level 4", drill: "Stationary Ball Mastery L4", video: "", image: "" },
+    // Level 5 (Juggling)
+    { id: "bm_l5_1", name: "Juggle: Right (x1) & Bounce", type: "ball_mastery", category: "Level 5 Juggling", drill: "Stationary Ball Mastery L5", video: "", image: "" },
+    { id: "bm_l5_2", name: "Juggle: Left (x1) & Bounce", type: "ball_mastery", category: "Level 5 Juggling", drill: "Stationary Ball Mastery L5", video: "", image: "" },
+    { id: "bm_l5_3", name: "Juggle: Right (x2) & Bounce", type: "ball_mastery", category: "Level 5 Juggling", drill: "Stationary Ball Mastery L5", video: "", image: "" },
+    { id: "bm_l5_4", name: "Juggle: Left (x2) & Bounce", type: "ball_mastery", category: "Level 5 Juggling", drill: "Stationary Ball Mastery L5", video: "", image: "" },
+    // Level 6 (Advanced Juggling)
+    { id: "bm_l6_1", name: "Juggle: R(x1) + L(x1) & Bounce", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "" },
+    { id: "bm_l6_2", name: "Juggle: Right Foot (No Bounce)", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "" },
+    { id: "bm_l6_3", name: "Juggle: Left Foot (No Bounce)", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "" },
+    { id: "bm_l6_4", name: "Juggle: Both Feet (No Bounce)", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "" },
+
+    // --- BRILLIANT BASICS (Stage 3 - Foundation) ---
     { id: "fm_1", name: "1. Shift Right | Outside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Outside Right Foot", video: "https://youtu.be/imq7LHS_KwM", image: "" },
     { id: "fm_2", name: "2. Shift Left | Outside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Outside Left Foot", video: "", image: "" },
     { id: "fm_3", name: "3. Shift Left | Inside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Inside Right Foot", video: "", image: "" },

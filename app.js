@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -53,18 +53,14 @@ const setText = (id, text) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v29 Loaded (Popup Auth + Final Roster Logic)");
+    console.log("App v28 Loaded (3-Stage Builder)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
-        console.log("Attempting Popup Login...");
+        console.log("Redirecting to Google...");
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        
-        signInWithPopup(auth, provider).catch(e => {
-            console.error(e);
-            alert("Login Failed: " + e.message + "\n\n1. Check Firebase Authorized Domains.\n2. Check Popup Blocker.");
-        });
+        signInWithRedirect(auth, provider).catch(e => alert("Login Error: " + e.message));
     });
     
     safeBind("loginEmailBtn", "click", () => {
@@ -100,39 +96,81 @@ const initApp = () => {
         });
     });
 
-    // POPULATE DRILLS
-    const us = document.getElementById("unifiedSelect");
-    if(us && us.options.length <= 1) {
-        const cardio = document.createElement("optgroup"); cardio.label = "CARDIO";
-        const basic = document.createElement("optgroup"); basic.label = "BRILLIANT BASICS";
+    // --- POPULATE DRILLS (3-Stage Builder) ---
+    const sWarm = document.getElementById("selectWarmup");
+    const sBall = document.getElementById("selectBallWork");
+    const sBase = document.getElementById("selectBasics");
+    
+    if(sWarm && sBall && sBase && sWarm.options.length <= 1) {
+        sWarm.innerHTML = '<option value="" disabled selected>Choose Warm-up...</option>';
+        sBall.innerHTML = '<option value="" disabled selected>Choose Skill...</option>';
+        sBase.innerHTML = '<option value="" disabled selected>Choose Basic...</option>';
+        
         dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
-            if(s.type === 'cardio') cardio.appendChild(opt); else basic.appendChild(opt);
+            const opt = document.createElement("option");
+            opt.value = s.name;
+            opt.textContent = s.name;
+            
+            if(s.type === 'cardio') {
+                sWarm.appendChild(opt);
+            } else if (s.type === 'ball_mastery') {
+                sBall.appendChild(opt);
+            } else {
+                sBase.appendChild(opt);
+            }
         });
-        us.appendChild(cardio); us.appendChild(basic);
     }
 
-    // TRACKER EVENTS
-    safeBind("unifiedSelect", "change", (e) => {
-        const s = dbData.foundationSkills.find(x => x.name === e.target.value);
+    // --- TRACKER EVENTS ---
+    
+    // Helper to show info
+    const showDrillInfo = (drillName) => {
+        const s = dbData.foundationSkills.find(x => x.name === drillName);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
+            setText("drillTitle", s.name);
             setText("drillDesc", s.drill);
             const vb = document.getElementById("watchVideoBtn");
             if(s.video) { 
                 vb.style.display='inline-block'; 
-                safeBind("watchVideoBtn", "click", () => { 
+                const newBtn = vb.cloneNode(true);
+                vb.parentNode.replaceChild(newBtn, vb);
+                newBtn.addEventListener("click", () => { 
                     document.getElementById("videoPlayer").src = getEmbedUrl(s.video); 
                     document.getElementById("videoModal").style.display='block'; 
                 });
             } else vb.style.display='none';
         }
+    };
+
+    // 1. Warm Up
+    safeBind("selectWarmup", "change", (e) => showDrillInfo(e.target.value));
+    safeBind("addWarmupBtn", "click", () => {
+        const n = document.getElementById("selectWarmup").value;
+        if(!n) return alert("Select a Warm-up first");
+        currentSessionItems.push({ name: n, sets: 1, reps: "5 Mins" }); 
+        renderSession();
     });
-    
-    safeBind("addToSessionBtn", "click", () => {
-        const n = document.getElementById("unifiedSelect").value;
-        if(!n || n.includes("Loading")) return;
-        currentSessionItems.push({ name: n, sets: document.getElementById("inputSets").value||3, reps: document.getElementById("inputReps").value||20 });
+
+    // 2. Ball Handling
+    safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
+    safeBind("addBallWorkBtn", "click", () => {
+        const n = document.getElementById("selectBallWork").value;
+        if(!n) return alert("Select a Skill first");
+        const s = document.getElementById("setsBall").value || 3;
+        const r = document.getElementById("repsBall").value || 20;
+        currentSessionItems.push({ name: n, sets: s, reps: r });
+        renderSession();
+    });
+
+    // 3. Brilliant Basics
+    safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
+    safeBind("addBasicsBtn", "click", () => {
+        const n = document.getElementById("selectBasics").value;
+        if(!n) return alert("Select a Basic first");
+        const s = document.getElementById("setsBasics").value || 3;
+        const r = document.getElementById("repsBasics").value || 20;
+        currentSessionItems.push({ name: n, sets: s, reps: r });
         renderSession();
     });
 
@@ -152,7 +190,10 @@ const initApp = () => {
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
-    safeBind("addAssistantBtn", "click", addAssistant);
+    
+    // STAFF
+    safeBind("addAssistantBtn", "click", addAssistant); 
+
     safeBind("addTeamBtn", "click", addTeam);
     safeBind("addAdminBtn", "click", addAdmin);
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
@@ -197,7 +238,7 @@ const initApp = () => {
     }
 };
 
-// --- RUN INIT WHEN READY ---
+// --- RUN INIT ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
@@ -214,16 +255,11 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 1. ADMIN BYPASS
             if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } 
-            // 2. RETURNING USER
-            else if (userSnap.exists()) {
+            } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-            }
-            // 3. AUTO-LINK
-            else {
+            } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
@@ -239,7 +275,6 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
-                
                 loadStats();
                 checkRoles(user);
             } else {
@@ -292,7 +327,7 @@ function checkRoles(user) {
     const email = user.email.toLowerCase();
     const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
     
-    // Check if user is Head Coach OR Assistant
+    // Check if Head or Assistant
     const myTeams = globalTeams.filter(t => {
         const isHead = t.coachEmail.toLowerCase() === email;
         const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
@@ -365,29 +400,36 @@ async function loadStats() {
         setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
-        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName), orderBy("timestamp", "desc"), limit(50));
+        q = query(collection(db, "reps"), where("player", "==", userProfile.playerName));
     }
 
-    const snap = await getDocs(q);
-    const logs = []; let totalMins = 0;
-    snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
-    
-    const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
-    setText("statTotal", `${logs.length} ${countLabel}`);
-    setText("statTime", totalMins);
-    
-    let xp = totalMins + (logs.length * 10);
-    let lvl = "ROOKIE";
-    if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
-    
-    if (userProfile.role !== 'admin') {
-        setText("userLevelDisplay", lvl);
-        const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
-    }
-    
-    renderCalendar(logs);
-    renderPlayerTrendChart(logs);
-    renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs); 
+    try {
+        const snap = await getDocs(q);
+        const logs = []; let totalMins = 0;
+        snap.forEach(d => { 
+            logs.push(d.data()); 
+            totalMins += Number(d.data().minutes || 0); 
+        });
+        
+        logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
+        
+        const countLabel = userProfile.role === 'admin' ? "Club Workouts" : "Sessions";
+        setText("statTotal", `${logs.length} ${countLabel}`);
+        setText("statTime", totalMins);
+        
+        let xp = totalMins + (logs.length * 10);
+        let lvl = "ROOKIE";
+        if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+        
+        if (userProfile.role !== 'admin') {
+            setText("userLevelDisplay", lvl);
+            const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+        }
+        
+        renderCalendar(logs);
+        renderPlayerTrendChart(logs);
+        renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
+    } catch (e) { console.error("Stats Load Error", e); }
 }
 
 function renderCalendar(logs) {
@@ -432,7 +474,7 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     if (!tid) { // Director Mode
         logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); });
     } else { // Team Mode
-        const q = query(collection(db, "reps"), where("teamId", "==", tid), orderBy("timestamp", "desc"), limit(100));
+        const q = query(collection(db, "reps"), where("teamId", "==", tid));
         const snap = await getDocs(q);
         snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); });
     }
@@ -456,22 +498,20 @@ async function loadCoachDashboard(isDirector, teams) {
     if(!tid) return;
     currentCoachTeamId = tid; 
     
-// --- NEW: STAFF PERMISSION CHECK ---
+    // STAFF PERMISSION
     const userEmail = auth.currentUser.email.toLowerCase();
     const currentTeam = globalTeams.find(t => t.id === tid);
-    // You are manager if: Director OR Head Coach
     const isManager = isDirector || (currentTeam && currentTeam.coachEmail.toLowerCase() === userEmail);
-    
     const staffCard = document.getElementById("cardStaffManager");
     if(staffCard) {
         staffCard.style.display = isManager ? 'block' : 'none';
         if(isManager) renderAssistantList(currentTeam);
+    }
 
     const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Fetching roster data...";
+    if(listEl) listEl.innerHTML = "Fetching...";
 
     try {
-        // 1. Get Workout Stats
         const q = query(collection(db, "reps"), where("teamId", "==", tid));
         const snap = await getDocs(q);
         const players = {};
@@ -491,33 +531,23 @@ async function loadCoachDashboard(isDirector, teams) {
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
         
-        // 2. Get Roster Names
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
         
-        // 3. Get Linked Parents 
         const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
         const linkSnap = await getDocs(linkQuery);
         const linkedPlayers = new Set();
-        linkSnap.forEach(doc => {
-            linkedPlayers.add(doc.data().playerName); 
-        });
+        linkSnap.forEach(doc => linkedPlayers.add(doc.data().playerName));
 
-        // 4. Combine and Render
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
 
-        if (listEl) {
-            if (combinedList.length > 0) {
-                // --- RENDER LIST ---
+        if(listEl) {
+            if(combinedList.length > 0) {
                 listEl.innerHTML = combinedList.map(p => {
                     const stats = players[p] || { mins: 0, lastActive: null };
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
-                    
-                    // 1. Check if this specific player is in the 'linkedPlayers' set
                     const isLinked = linkedPlayers.has(p);
-                    
-                    // 2. Decide which button to show (Green vs Blue)
                     const linkButton = isLinked 
                         ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
                         : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
@@ -533,21 +563,18 @@ async function loadCoachDashboard(isDirector, teams) {
                     </div>`;
                 }).join("");
             } else {
-                // --- IF NO PLAYERS FOUND ---
                 listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
     } catch(e) {
         console.error(e);
-        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
+        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error loading roster: ${e.message}</div>`;
     } finally {
-        if(listEl && listEl.innerHTML === "Fetching roster data...") {
-             listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
-        }
+        if(listEl && listEl.innerHTML === "Fetching...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
     }
 }
 
-// --- STAFF MANAGEMENT ---
+// --- STAFF & ROSTER UTILS ---
 function renderAssistantList(team) {
     const c = document.getElementById("assistantList");
     if(!team || !team.assistants || team.assistants.length === 0) {
@@ -570,18 +597,14 @@ async function addAssistant() {
     const teamIdx = globalTeams.findIndex(t => t.id === tid);
     if(teamIdx === -1) return;
     
-    // Update local data
     if(!globalTeams[teamIdx].assistants) globalTeams[teamIdx].assistants = [];
     if(globalTeams[teamIdx].assistants.includes(email)) return alert("User already added.");
     globalTeams[teamIdx].assistants.push(email);
     
-    // Save to Cloud
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    
     alert("Assistant Added! They can now log in.");
     document.getElementById("newAssistantEmail").value = "";
     
-    // Refresh View
     const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
     loadCoachDashboard(isDirector, globalTeams);
 }
@@ -617,7 +640,8 @@ window.linkParent = async (playerName) => {
         const tid = document.getElementById("adminTeamSelect").value;
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
         alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
-        loadCoachDashboard(false, globalTeams);
+        const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
+        loadCoachDashboard(isDirector, globalTeams);
     }
 }
 
@@ -662,7 +686,7 @@ async function parsePDF(e) {
         
         const rows = {};
         textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5] / 20); // 20 tolerance for loose alignment
+            const y = Math.round(item.transform[5] / 20); 
             if(!rows[y]) rows[y] = [];
             rows[y].push(decodeURIComponent(item.str));
         });
@@ -670,14 +694,17 @@ async function parsePDF(e) {
         let extracted = [];
         Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
             const rowText = rows[y].join(" ").trim();
-            // Robust check: Does row have a date or ID?
             const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
             const idMatch = rowText.match(/\d{5}-\d{6}/);
             
             if (dateMatch || idMatch) {
-                // Remove the date and ID to isolate the name
-                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").trim();
-                let words = cleanRow.split(" ").filter(w => w.length > 2 && !/\d/.test(w));
+                let cleanRow = rowText
+                    .replace(/\d{5}-\d{6}/g, "")
+                    .replace(/\d{2}\/\d{2}\/\d{4}/g, "")
+                    .replace(/\d{5}/g, "")
+                    .trim();
+                
+                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
                 
                 if (cleanRow.includes(",")) {
                      let parts = cleanRow.split(",");
@@ -728,7 +755,8 @@ async function saveRosterList() {
     
     alert("Roster Saved!");
     document.getElementById("rosterReviewArea").style.display='none';
-    loadCoachDashboard(false, globalTeams);
+    const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
+    loadCoachDashboard(isDirector, globalTeams);
 }
 
 function exportSessionData() {

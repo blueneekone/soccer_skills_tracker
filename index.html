@@ -115,23 +115,56 @@
         </div>
 
         <div id="viewTracker" class="view-section">
+            
             <div class="card">
                 <div class="card-header">1. BUILD WORKOUT</div>
                 <div class="card-body">
-                    <label>Drill / Activity</label>
-                    <select id="unifiedSelect"><option>Loading Drills...</option></select>
-                    <div id="drillInfoBox" style="display:none; background:#f0f9ff; padding:10px; border-radius:6px; margin-bottom:10px; border-left: 3px solid #0ea5e9;">
-                        <p id="drillDesc" style="margin:0; font-size:13px; color:#0c4a6e;"></p>
-                        <button id="watchVideoBtn" style="margin-top:5px; border:1px solid #bae6fd; background:white; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px;">▶ Watch Demo</button>
+                    
+                    <div id="drillInfoBox" style="display:none; background:#f0f9ff; padding:10px; border-radius:6px; margin-bottom:20px; border-left: 4px solid #0ea5e9;">
+                        <h4 style="margin:0 0 5px 0; color:#00263A; font-size:14px;" id="drillTitle">Drill Info</h4>
+                        <p id="drillDesc" style="margin:0; font-size:12px; color:#0c4a6e;"></p>
+                        <button id="watchVideoBtn" style="margin-top:8px; border:1px solid #bae6fd; background:white; color:#0284c7; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; display:none;">▶ Watch Demo</button>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <div style="flex:1;"><label id="labelSets">Sets</label><input type="number" id="inputSets" placeholder="3"></div>
-                        <div style="flex:1;"><label id="labelReps">Reps</label><input type="number" id="inputReps" placeholder="20"></div>
+
+                    <div style="background:#fff7ed; padding:10px; border-radius:8px; border:1px solid #ffedd5; margin-bottom:15px;">
+                        <label style="color:#c2410c; font-size: 0.75rem; margin-bottom:4px;">Part A: Cardio Warm-Up</label>
+                        <div style="display:flex; gap:5px;">
+                            <select id="selectWarmup" style="margin:0; flex:1; font-size:13px;"><option>Loading...</option></select>
+                            <button id="addWarmupBtn" class="action-btn" style="background:#ea580c; color:white; border:none; width:auto; font-size:12px;">+ Add</button>
+                        </div>
                     </div>
-                    <button id="addToSessionBtn" class="secondary-btn" style="width:100%;">+ Add Drill to List</button>
-                    <ul id="sessionList" style="list-style:none; padding:0; margin-top:15px; color:#64748b; font-size:14px; text-align:center; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;"><li>No drills added yet.</li></ul>
+
+                    <div style="background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #dcfce7; margin-bottom:15px;">
+                        <label style="color:#15803d; font-size: 0.75rem; margin-bottom:4px;">Part B: Ball Mastery (Levels 1-6)</label>
+                        <select id="selectBallWork" style="margin-bottom:8px; font-size:13px;"><option>Loading...</option></select>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="number" id="setsBall" placeholder="Sets" style="margin:0; width:50px; font-size:12px; padding:8px;" value="3">
+                            <span style="font-size:10px; color:#666;">x</span>
+                            <input type="number" id="repsBall" placeholder="Reps" style="margin:0; flex:1; font-size:12px; padding:8px;" value="20">
+                            <button id="addBallWorkBtn" class="action-btn" style="background:#16a34a; color:white; border:none; width:auto; font-size:12px;">+ Add</button>
+                        </div>
+                    </div>
+
+                    <div style="background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #dbeafe; margin-bottom:20px;">
+                        <label style="color:#1d4ed8; font-size: 0.75rem; margin-bottom:4px;">Part C: Brilliant Basics</label>
+                        <select id="selectBasics" style="margin-bottom:8px; font-size:13px;"><option>Loading...</option></select>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="number" id="setsBasics" placeholder="Sets" style="margin:0; width:50px; font-size:12px; padding:8px;" value="3">
+                            <span style="font-size:10px; color:#666;">x</span>
+                            <input type="number" id="repsBasics" placeholder="Reps" style="margin:0; flex:1; font-size:12px; padding:8px;" value="20">
+                            <button id="addBasicsBtn" class="action-btn" style="background:#2563eb; color:white; border:none; width:auto; font-size:12px;">+ Add</button>
+                        </div>
+                    </div>
+
+                    <div style="border-top:1px dashed #cbd5e1; padding-top:10px;">
+                        <label>Your Session Plan:</label>
+                        <ul id="sessionList" style="list-style:none; padding:0; margin:0; color:#64748b; font-size:13px; text-align:center;">
+                            <li style="padding:10px; background:#f8fafc; border-radius:6px;">Empty. Select drills above to build your workout!</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
+
             <div class="card">
                 <div class="card-header">2. FINISH & EVALUATE</div>
                 <div class="card-body">
@@ -177,6 +210,19 @@
 
         <div id="viewCoach" class="view-section" style="display:none;">
             <div id="adminControls" style="margin-bottom:15px; display:none;"><label>Viewing Team:</label><select id="adminTeamSelect" style="width:100%; border:2px solid var(--aggie-blue); font-weight:bold;"></select></div>
+            
+            <div class="card">
+                <div class="card-header">TEAM STAFF</div>
+                <div class="card-body">
+                    <p style="font-size:11px; color:#64748b; margin-bottom:10px;">Grant view-only access to assistant coaches.</p>
+                    <div style="display:flex; gap:5px; margin-bottom:15px;">
+                        <input id="newAssistantEmail" placeholder="Assistant Email" style="margin:0; font-size:14px; flex:1;">
+                        <button id="addAssistantBtn" class="primary-btn" style="width:auto; margin:0; padding:8px;">Add</button>
+                    </div>
+                    <div id="assistantList" style="font-size:12px; color:#334155;"></div>
+                </div>
+            </div>
+
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                 <div class="card" style="margin:0; text-align:center;"><div class="card-body"><div id="coachActivePlayers" style="font-size:2rem; font-weight:800; color:var(--aggie-blue);">0</div><div style="font-size:10px; color:#64748b; font-weight:bold;">ACTIVE</div></div></div>
                 <div class="card" style="margin:0; text-align:center;"><div class="card-body"><div id="coachTotalReps" style="font-size:2rem; font-weight:800; color:var(--aggie-blue);">0</div><div style="font-size:10px; color:#64748b; font-weight:bold;">SESSIONS</div></div></div>
@@ -187,7 +233,7 @@
             <div class="card">
                 <div class="card-header">ROSTER MANAGEMENT</div>
                 <div class="card-body">
-                    <p style="font-size:11px; color:#64748b; margin-bottom:10px;"><b>Automation Tip:</b> Enter parent's email to auto-link them on login.</p>
+                    <p style="font-size:11px; color:#64748b; margin-bottom:10px;"><b>Automation Tip:</b> Upload Roster first. Then, click "Link Parent" below to add emails.</p>
                     <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
                         <div style="display:flex; gap:5px;">
                             <input id="coachAddPlayerName" placeholder="Player Name" style="margin:0; font-size:14px; flex:1;">
@@ -206,23 +252,6 @@
                     </div>
                 </div>
             </div>
-            <div class="card">
-                </div>
-
-            <div class="card" id="cardStaffManager" style="display:none;">
-                <div class="card-header">TEAM STAFF</div>
-                <div class="card-body">
-                    <p style="font-size:11px; color:#64748b; margin-bottom:10px;">Grant view-only access to assistant coaches.</p>
-                    <div style="display:flex; gap:5px; margin-bottom:15px;">
-                        <input id="newAssistantEmail" placeholder="Assistant Email" style="margin:0; font-size:14px; flex:1;">
-                        <button id="addAssistantBtn" class="primary-btn" style="width:auto; margin:0; padding:8px;">Add</button>
-                    </div>
-                    <div id="assistantList" style="font-size:12px; color:#334155;"></div>
-                </div>
-            </div>
-            
-            <div class="card">
-                </div>
             <div class="card">
                 <div class="card-header">CURRENT ROSTER <button id="forceRefreshRosterBtn" class="action-btn" style="font-size:10px;">↻ Refresh</button></div>
                 <div class="card-body" id="coachPlayerList">
