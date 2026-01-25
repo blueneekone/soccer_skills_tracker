@@ -145,11 +145,30 @@ const initApp = () => {
 
     // 1. Warm Up
     safeBind("selectWarmup", "change", (e) => showDrillInfo(e.target.value));
+    
     safeBind("addWarmupBtn", "click", () => {
         const n = document.getElementById("selectWarmup").value;
         if(!n) return alert("Select a Warm-up first");
-        currentSessionItems.push({ name: n, sets: 1, reps: "5 Mins" }); 
+        
+        // Grab inputs
+        const dist = document.getElementById("cardioDist").value;
+        const time = document.getElementById("cardioTime").value;
+        
+        // Format the "Reps" string nicely based on what they typed
+        let details = "";
+        if (dist) details += `${dist} mi`;
+        if (dist && time) details += " / ";
+        if (time) details += `${time} min`;
+        
+        // Fallback if they left both blank
+        if (!details) details = "Standard";
+
+        currentSessionItems.push({ name: n, sets: 1, reps: details }); 
         renderSession();
+        
+        // Clear inputs for next add
+        document.getElementById("cardioDist").value = "";
+        document.getElementById("cardioTime").value = "";
     });
 
     // 2. Ball Handling

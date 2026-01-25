@@ -128,9 +128,14 @@
 
                     <div style="background:#fff7ed; padding:10px; border-radius:8px; border:1px solid #ffedd5; margin-bottom:15px;">
                         <label style="color:#c2410c; font-size: 0.75rem; margin-bottom:4px;">Part A: Cardio Warm-Up</label>
-                        <div style="display:flex; gap:5px;">
-                            <select id="selectWarmup" style="margin:0; flex:1; font-size:13px;"><option>Loading...</option></select>
-                            <button id="addWarmupBtn" class="action-btn" style="background:#ea580c; color:white; border:none; width:auto; font-size:12px;">+ Add</button>
+                        
+                        <select id="selectWarmup" style="margin-bottom:8px; font-size:13px;"><option>Loading...</option></select>
+                        
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="number" id="cardioDist" placeholder="Miles" style="margin:0; flex:1; font-size:12px; padding:8px;">
+                            <span style="font-size:10px; color:#666;">/</span>
+                            <input type="number" id="cardioTime" placeholder="Mins" style="margin:0; flex:1; font-size:12px; padding:8px;">
+                            <button id="addWarmupBtn" class="action-btn" style="background:#ea580c; color:white; border:none; width:auto; font-size:12px; white-space:nowrap;">+ Add</button>
                         </div>
                     </div>
 
