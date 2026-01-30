@@ -53,11 +53,10 @@ const setText = (id, text) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v28 Loaded (3-Stage Builder)");
+    console.log("App v29 Loaded (Calendar + 3-Stage Builder)");
 
-    // AUTH BINDINGS
+    // 1. AUTHENTICATION
     safeBind("loginGoogleBtn", "click", () => {
-        console.log("Redirecting to Google...");
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         signInWithRedirect(auth, provider).catch(e => alert("Login Error: " + e.message));
@@ -77,10 +76,9 @@ const initApp = () => {
     
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
 
-    // SETUP
+    // 2. GLOBAL UI & NAVIGATION
     safeBind("completeSetupBtn", "click", completeUserSetup);
-
-    // NAVIGATION
+    
     const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
     const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
     navs.forEach((nid, i) => {
@@ -96,7 +94,7 @@ const initApp = () => {
         });
     });
 
-    // --- POPULATE DRILLS (3-Stage Builder) ---
+    // 3. TRACKER: POPULATE DROPDOWNS (3-Stage)
     const sWarm = document.getElementById("selectWarmup");
     const sBall = document.getElementById("selectBallWork");
     const sBase = document.getElementById("selectBasics");
@@ -121,9 +119,8 @@ const initApp = () => {
         });
     }
 
-    // --- TRACKER EVENTS ---
-    
-    // Helper to show info
+    // 4. TRACKER: EVENT LISTENERS
+    // Helper to show drill info
     const showDrillInfo = (drillName) => {
         const s = dbData.foundationSkills.find(x => x.name === drillName);
         if(s) {
@@ -143,35 +140,28 @@ const initApp = () => {
         }
     };
 
-    // 1. Warm Up
+    // A. Warm Up (Cardio)
     safeBind("selectWarmup", "change", (e) => showDrillInfo(e.target.value));
-    
     safeBind("addWarmupBtn", "click", () => {
         const n = document.getElementById("selectWarmup").value;
         if(!n) return alert("Select a Warm-up first");
         
-        // Grab inputs
         const dist = document.getElementById("cardioDist").value;
         const time = document.getElementById("cardioTime").value;
-        
-        // Format the "Reps" string nicely based on what they typed
         let details = "";
         if (dist) details += `${dist} mi`;
         if (dist && time) details += " / ";
         if (time) details += `${time} min`;
-        
-        // Fallback if they left both blank
         if (!details) details = "Standard";
 
         currentSessionItems.push({ name: n, sets: 1, reps: details }); 
         renderSession();
         
-        // Clear inputs for next add
         document.getElementById("cardioDist").value = "";
         document.getElementById("cardioTime").value = "";
     });
 
-    // 2. Ball Handling
+    // B. Ball Handling
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBallWorkBtn", "click", () => {
         const n = document.getElementById("selectBallWork").value;
@@ -182,7 +172,7 @@ const initApp = () => {
         renderSession();
     });
 
-    // 3. Brilliant Basics
+    // C. Brilliant Basics
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBasicsBtn", "click", () => {
         const n = document.getElementById("selectBasics").value;
@@ -193,9 +183,12 @@ const initApp = () => {
         renderSession();
     });
 
+    // D. Session & Calendar
     safeBind("submitWorkoutBtn", "click", submitWorkout);
+    safeBind("btnGCal", "click", addToGoogleCalendar);
+    safeBind("btnIcs", "click", downloadIcsFile);
 
-    // EVALUATION
+    // 5. EVALUATION
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".outcome-btn").forEach(x => x.classList.remove("active"));
@@ -203,16 +196,15 @@ const initApp = () => {
         }
     });
 
-    // ROSTER & ADMIN
+    // 6. ROSTER & COACHING
     safeBind("rosterPdfInput", "change", parsePDF);
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
     safeBind("exportXlsxBtn", "click", exportSessionData);
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
-    
-    // STAFF
     safeBind("addAssistantBtn", "click", addAssistant); 
 
+    // 7. ADMIN TOOLS
     safeBind("addTeamBtn", "click", addTeam);
     safeBind("addAdminBtn", "click", addAdmin);
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
@@ -220,7 +212,7 @@ const initApp = () => {
     safeBind("btnLogDebug", "click", runDebugLog);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
-    // MODALS
+    // 8. UTILS (Modals, Timer, Canvas)
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
@@ -228,14 +220,12 @@ const initApp = () => {
         }
     });
 
-    // TIMER
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
     safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
     safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
     safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
 
-    // CANVAS
     const canvas = document.getElementById("signatureCanvas");
     if(canvas) {
         const ctx = canvas.getContext('2d');
@@ -243,7 +233,6 @@ const initApp = () => {
         function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
         window.addEventListener('resize', resizeCanvas);
         setTimeout(resizeCanvas, 500); 
-
         function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
         function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
         function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
@@ -814,6 +803,67 @@ async function addAdmin() {
     globalAdmins.push(email);
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
     alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
+}
+
+// --- CALENDAR FEATURES ---
+
+function getSessionDescription() {
+    if (currentSessionItems.length === 0) return "";
+    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
+    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
+}
+
+function addToGoogleCalendar() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+
+    // Format: YYYYMMDDTHHMMSS (Local time)
+    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    // Default 45 min duration
+    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+    const title = encodeURIComponent("⚽ Soccer Training");
+    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); // Clean newlines for URL
+    
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
+    window.open(url, '_blank');
+}
+
+function downloadIcsFile() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+
+    // ICS Date Format: YYYYMMDDTHHMMSS
+    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
+    
+    const startDate = new Date(`${date}T${time}`);
+    const endDate = new Date(startDate.getTime() + (45 * 60000));
+
+    // Create .ics content
+    const icsContent = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        "SUMMARY:⚽ Soccer Training",
+        `DESCRIPTION:${getSessionDescription()}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ].join("\n");
+
+    // Create download link
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', 'training_session.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 async function loadLogs(col) {

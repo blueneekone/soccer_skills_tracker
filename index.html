@@ -170,6 +170,34 @@
                 </div>
             </div>
 
+            <div class="card" style="border-left: 4px solid #8b5cf6;">
+                <div class="card-header" style="background: #f5f3ff; color: #5b21b6;">OPTIONAL: SCHEDULE FOR LATER</div>
+                <div class="card-body">
+                    <p style="font-size:12px; color:#64748b; margin-bottom:10px;">Busy now? Save this routine to your calendar.</p>
+                    
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <div style="flex:1;">
+                            <label>Date</label>
+                            <input type="date" id="calDate" style="font-size:12px; padding:8px;">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Time</label>
+                            <input type="time" id="calTime" style="font-size:12px; padding:8px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button id="btnGCal" class="secondary-btn" style="flex:1; font-size:11px; display:flex; align-items:center; justify-content:center; gap:5px; background:white; border:1px solid #ddd;">
+                            <span style="color:#4285F4; font-weight:bold;">G</span> Google / Android
+                        </button>
+                        
+                        <button id="btnIcs" class="secondary-btn" style="flex:1; font-size:11px; display:flex; align-items:center; justify-content:center; gap:5px; background:white; border:1px solid #ddd;">
+                            <span style="font-size:14px;">📅</span> Apple / Outlook
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="card">
                 <div class="card-header">2. FINISH & EVALUATE</div>
                 <div class="card-body">
