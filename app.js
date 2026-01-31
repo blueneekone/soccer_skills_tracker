@@ -246,6 +246,27 @@ const initApp = () => {
     }
 };
 
+// --- EMAIL UTILS ---
+function openInviteEmail(email, type, name = "") {
+    const appLink = window.location.href; // Or hardcode "https://soccer-skills-tracker.web.app"
+    let subject = "";
+    let body = "";
+
+    if (type === "director") {
+        subject = "Aggies FC: Director Access";
+        body = `Hello,\n\nYou have been added as a Director for the Aggies FC Skills Tracker.\n\nAccess the dashboard here:\n${appLink}\n\nLog in with this email address.`;
+    } else if (type === "coach") {
+        subject = "Aggies FC: Coach Access";
+        body = `Hello,\n\nYou have been added as an Assistant Coach.\n\nAccess the team roster and stats here:\n${appLink}\n\nLog in with this email address.`;
+    } else if (type === "parent") {
+        subject = `Aggies FC: Skills Tracker for ${name}`;
+        body = `Hello,\n\nI have linked your email to ${name}'s profile on the Aggies FC Skills Tracker.\n\nPlease log in here to view their progress and help them track workouts:\n${appLink}\n\n(Log in with Google using this email address).`;
+    }
+
+    // Open default mail client
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 // --- RUN INIT ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
@@ -610,8 +631,9 @@ async function addAssistant() {
     globalTeams[teamIdx].assistants.push(email);
     
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Assistant Added! They can now log in.");
-    document.getElementById("newAssistantEmail").value = "";
+        if(confirm("Assistant Added! Draft an email invite?")) {
+        openInviteEmail(email, "coach");
+    }
     
     const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
     loadCoachDashboard(isDirector, globalTeams);
@@ -802,7 +824,9 @@ async function addAdmin() {
     if(!email) return;
     globalAdmins.push(email);
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
+        if(confirm("Admin Added! Draft an email invite to them now?")) {
+        openInviteEmail(email, "director");
+    logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
 }
 
 // --- CALENDAR FEATURES ---
