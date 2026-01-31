@@ -8,6 +8,7 @@ import { dbData } from "./data.js";
 // --- GLOBAL ERROR HANDLER ---
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
+    // Suppress the "null" errors in alert to avoid annoyance, just log them
     if (!message.includes("null")) alert(`System Error: ${message}`);
 };
 
@@ -53,7 +54,7 @@ const setText = (id, text) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v29 Loaded (Calendar + 3-Stage Builder)");
+    console.log("App v30 Loaded (Fixing Button Bindings)");
 
     // 1. AUTHENTICATION
     safeBind("loginGoogleBtn", "click", () => {
@@ -248,7 +249,7 @@ const initApp = () => {
 
 // --- EMAIL UTILS ---
 function openInviteEmail(email, type, name = "") {
-    const appLink = window.location.href; // Or hardcode "https://soccer-skills-tracker.web.app"
+    const appLink = window.location.href; 
     let subject = "";
     let body = "";
 
@@ -263,7 +264,6 @@ function openInviteEmail(email, type, name = "") {
         body = `Hello,\n\nI have linked your email to ${name}'s profile on the Aggies FC Skills Tracker.\n\nPlease log in here to view their progress and help them track workouts:\n${appLink}\n\n(Log in with Google using this email address).`;
     }
 
-    // Open default mail client
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
@@ -858,4 +858,59 @@ function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("L
 function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
 function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 
-function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/e
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
+function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
+
+// --- CALENDAR FEATURES ---
+function getSessionDescription() {
+    if (currentSessionItems.length === 0) return "";
+    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
+    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
+}
+
+function addToGoogleCalendar() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+
+    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+    const title = encodeURIComponent("⚽ Soccer Training");
+    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); 
+    
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
+    window.open(url, '_blank');
+}
+
+function downloadIcsFile() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+
+    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
+    const startDate = new Date(`${date}T${time}`);
+    const endDate = new Date(startDate.getTime() + (45 * 60000));
+
+    const icsContent = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        "SUMMARY:⚽ Soccer Training",
+        `DESCRIPTION:${getSessionDescription()}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ].join("\n");
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', 'training_session.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
