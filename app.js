@@ -631,9 +631,13 @@ async function addAssistant() {
     globalTeams[teamIdx].assistants.push(email);
     
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-        if(confirm("Assistant Added! Draft an email invite?")) {
+    
+    // EMAIL INVITE
+    if(confirm("Assistant Added! Draft an email invite?")) {
         openInviteEmail(email, "coach");
     }
+    
+    document.getElementById("newAssistantEmail").value = "";
     
     const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
     loadCoachDashboard(isDirector, globalTeams);
@@ -669,7 +673,12 @@ window.linkParent = async (playerName) => {
     if(email && email.includes("@")) {
         const tid = document.getElementById("adminTeamSelect").value;
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
-        alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
+        
+        // EMAIL INVITE
+        if(confirm(`Linked! Draft an invite email to ${email}?`)) {
+            openInviteEmail(email, "parent", playerName);
+        }
+
         const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
         loadCoachDashboard(isDirector, globalTeams);
     }
@@ -691,7 +700,10 @@ async function manualAddPlayer() {
     
     if(email) {
         await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-        alert(`Player Added! Parent (${email}) will be auto-connected.`);
+        // EMAIL INVITE
+        if(confirm(`Player Added! Draft invite to ${email}?`)) {
+            openInviteEmail(email, "parent", name);
+        }
     } else {
         alert("Player Added to Roster");
     }
@@ -824,70 +836,13 @@ async function addAdmin() {
     if(!email) return;
     globalAdmins.push(email);
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-        if(confirm("Admin Added! Draft an email invite to them now?")) {
+    
+    // EMAIL INVITE
+    if(confirm("Admin Added! Draft an email invite?")) {
         openInviteEmail(email, "director");
+    }
+    
     logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
-}
-
-// --- CALENDAR FEATURES ---
-
-function getSessionDescription() {
-    if (currentSessionItems.length === 0) return "";
-    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
-    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
-}
-
-function addToGoogleCalendar() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-
-    // Format: YYYYMMDDTHHMMSS (Local time)
-    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    // Default 45 min duration
-    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
-
-    const title = encodeURIComponent("⚽ Soccer Training");
-    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); // Clean newlines for URL
-    
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
-    window.open(url, '_blank');
-}
-
-function downloadIcsFile() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-
-    // ICS Date Format: YYYYMMDDTHHMMSS
-    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
-    
-    const startDate = new Date(`${date}T${time}`);
-    const endDate = new Date(startDate.getTime() + (45 * 60000));
-
-    // Create .ics content
-    const icsContent = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "BEGIN:VEVENT",
-        "SUMMARY:⚽ Soccer Training",
-        `DESCRIPTION:${getSessionDescription()}`,
-        `DTSTART:${formatICSDate(startDate)}`,
-        `DTEND:${formatICSDate(endDate)}`,
-        "END:VEVENT",
-        "END:VCALENDAR"
-    ].join("\n");
-
-    // Create download link
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'training_session.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
 
 async function loadLogs(col) {
@@ -903,5 +858,4 @@ function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("L
 function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
 function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 
-function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
-function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/e
