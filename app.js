@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -8,7 +8,6 @@ import { dbData } from "./data.js";
 // --- GLOBAL ERROR HANDLER ---
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
-    // Suppress the "null" errors in alert to avoid annoyance, just log them
     if (!message.includes("null")) alert(`System Error: ${message}`);
 };
 
@@ -54,13 +53,13 @@ const setText = (id, text) => {
 
 // --- INITIALIZATION LOGIC ---
 const initApp = () => {
-    console.log("App v30 Loaded (Fixing Button Bindings)");
+    console.log("App v30 Loaded (Popup Auth Fix)");
 
-    // 1. AUTHENTICATION
+    // 1. AUTHENTICATION (Switched back to Popup for stability)
     safeBind("loginGoogleBtn", "click", () => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        signInWithRedirect(auth, provider).catch(e => alert("Login Error: " + e.message));
+        signInWithPopup(auth, provider).catch(e => alert("Login Error: " + e.message));
     });
     
     safeBind("loginEmailBtn", "click", () => {
@@ -247,26 +246,6 @@ const initApp = () => {
     }
 };
 
-// --- EMAIL UTILS ---
-function openInviteEmail(email, type, name = "") {
-    const appLink = window.location.href; 
-    let subject = "";
-    let body = "";
-
-    if (type === "director") {
-        subject = "Aggies FC: Director Access";
-        body = `Hello,\n\nYou have been added as a Director for the Aggies FC Skills Tracker.\n\nAccess the dashboard here:\n${appLink}\n\nLog in with this email address.`;
-    } else if (type === "coach") {
-        subject = "Aggies FC: Coach Access";
-        body = `Hello,\n\nYou have been added as an Assistant Coach.\n\nAccess the team roster and stats here:\n${appLink}\n\nLog in with this email address.`;
-    } else if (type === "parent") {
-        subject = `Aggies FC: Skills Tracker for ${name}`;
-        body = `Hello,\n\nI have linked your email to ${name}'s profile on the Aggies FC Skills Tracker.\n\nPlease log in here to view their progress and help them track workouts:\n${appLink}\n\n(Log in with Google using this email address).`;
-    }
-
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
 // --- RUN INIT ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
@@ -280,28 +259,20 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("loginUI").style.display='none';
         
         try {
-            // 1. Fetch Config (Populates globalAdmins from Database)
-            await fetchConfig(); 
+            await fetchConfig(); // Load Admins from DB
             
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 2. CHECK IF ADMIN (The Fix)
-            // We check if the email is the Hardcoded Director OR exists in the Global Admin list
+            // CHECK ADMIN STATUS: Hardcoded OR Database
             const isAdmin = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
-                            globalAdmins.some(admin => admin.toLowerCase() === user.email.toLowerCase());
+                            globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
 
-            // A. ADMIN BYPASS
             if (isAdmin) {
-                // Force a temporary profile so they don't get stuck in "Setup"
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } 
-            // B. RETURNING USER
-            else if (userSnap.exists()) {
+            } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-            }
-            // C. AUTO-LINK (New Players)
-            else {
+            } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
@@ -312,24 +283,20 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
 
-            // 3. ROUTING
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
-                
                 loadStats();
                 checkRoles(user);
             } else {
-                // If they are NOT an admin and NOT a player, send to Setup
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
             }
         } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
         
     } else {
-        // Logged Out
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
         document.getElementById("bottomNav").style.display='none';
@@ -373,7 +340,6 @@ function checkRoles(user) {
     const email = user.email.toLowerCase();
     const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
     
-    // Check if Head or Assistant
     const myTeams = globalTeams.filter(t => {
         const isHead = t.coachEmail.toLowerCase() === email;
         const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
@@ -648,12 +614,7 @@ async function addAssistant() {
     globalTeams[teamIdx].assistants.push(email);
     
     await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    
-    // EMAIL INVITE
-    if(confirm("Assistant Added! Draft an email invite?")) {
-        openInviteEmail(email, "coach");
-    }
-    
+    alert("Assistant Added! They can now log in.");
     document.getElementById("newAssistantEmail").value = "";
     
     const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
@@ -690,12 +651,7 @@ window.linkParent = async (playerName) => {
     if(email && email.includes("@")) {
         const tid = document.getElementById("adminTeamSelect").value;
         await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
-        
-        // EMAIL INVITE
-        if(confirm(`Linked! Draft an invite email to ${email}?`)) {
-            openInviteEmail(email, "parent", playerName);
-        }
-
+        alert(`Linked! When ${email} logs in, they will be auto-connected to ${playerName}.`);
         const isDirector = (auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase());
         loadCoachDashboard(isDirector, globalTeams);
     }
@@ -717,10 +673,7 @@ async function manualAddPlayer() {
     
     if(email) {
         await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-        // EMAIL INVITE
-        if(confirm(`Player Added! Draft invite to ${email}?`)) {
-            openInviteEmail(email, "parent", name);
-        }
+        alert(`Player Added! Parent (${email}) will be auto-connected.`);
     } else {
         alert("Player Added to Roster");
     }
@@ -818,66 +771,6 @@ async function saveRosterList() {
     loadCoachDashboard(isDirector, globalTeams);
 }
 
-function exportSessionData() {
-    if(allSessionsCache.length === 0) return alert("No sessions to export.");
-    const formatted = allSessionsCache.map(r => ({
-        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-        Player: r.player,
-        Minutes: r.minutes,
-        Drills: r.drillSummary,
-        Feedback: r.outcome
-    }));
-    const ws = XLSX.utils.json_to_sheet(formatted);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
-    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
-}
-
-function renderAdminTables() {
-    const t = document.getElementById("teamTable"); 
-    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
-    const a = document.getElementById("adminTable");
-    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
-}
-async function addTeam() {
-    const id = document.getElementById("newTeamId").value;
-    const name = document.getElementById("newTeamName").value;
-    const email = document.getElementById("newCoachEmail").value;
-    if(!id || !name) return;
-    globalTeams.push({ id, name, coachEmail: email });
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
-}
-async function addAdmin() {
-    const email = document.getElementById("newAdminEmail").value;
-    if(!email) return;
-    globalAdmins.push(email);
-    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    
-    // EMAIL INVITE
-    if(confirm("Admin Added! Draft an email invite?")) {
-        openInviteEmail(email, "director");
-    }
-    
-    logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
-}
-
-async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
-    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
-    c.innerHTML = "";
-    snap.forEach(d => { 
-        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`; 
-    });
-}
-
-function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
-function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
-function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
-
-function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
-function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
-
 // --- CALENDAR FEATURES ---
 function getSessionDescription() {
     if (currentSessionItems.length === 0) return "";
@@ -908,6 +801,7 @@ function downloadIcsFile() {
     if (!date || !time) return alert("Select Date and Time.");
 
     const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
+    
     const startDate = new Date(`${date}T${time}`);
     const endDate = new Date(startDate.getTime() + (45 * 60000));
 
@@ -931,3 +825,42 @@ function downloadIcsFile() {
     link.click();
     document.body.removeChild(link);
 }
+
+function renderAdminTables() {
+    const t = document.getElementById("teamTable"); 
+    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    const a = document.getElementById("adminTable");
+    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+}
+async function addTeam() {
+    const id = document.getElementById("newTeamId").value;
+    const name = document.getElementById("newTeamName").value;
+    const email = document.getElementById("newCoachEmail").value;
+    if(!id || !name) return;
+    globalTeams.push({ id, name, coachEmail: email });
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
+}
+async function addAdmin() {
+    const email = document.getElementById("newAdminEmail").value;
+    if(!email) return;
+    globalAdmins.push(email);
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
+}
+
+async function loadLogs(col) {
+    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
+    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
+    c.innerHTML = "";
+    snap.forEach(d => { 
+        c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`; 
+    });
+}
+
+function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
+function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
+function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
+
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
+function logSystemEvent(type, detail) { addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' }); }
