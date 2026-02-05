@@ -280,15 +280,28 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("loginUI").style.display='none';
         
         try {
+            // 1. Fetch Config (Populates globalAdmins from Database)
             await fetchConfig(); 
+            
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
+            // 2. CHECK IF ADMIN (The Fix)
+            // We check if the email is the Hardcoded Director OR exists in the Global Admin list
+            const isAdmin = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
+                            globalAdmins.some(admin => admin.toLowerCase() === user.email.toLowerCase());
+
+            // A. ADMIN BYPASS
+            if (isAdmin) {
+                // Force a temporary profile so they don't get stuck in "Setup"
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
-            } else if (userSnap.exists()) {
+            } 
+            // B. RETURNING USER
+            else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-            } else {
+            }
+            // C. AUTO-LINK (New Players)
+            else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
@@ -299,20 +312,24 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
 
+            // 3. ROUTING
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 document.getElementById("bottomNav").style.display='flex';
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
+                
                 loadStats();
                 checkRoles(user);
             } else {
+                // If they are NOT an admin and NOT a player, send to Setup
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
             }
-        } catch (error) { console.error(error); alert("Data Error: " + error.message); }
+        } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
         
     } else {
+        // Logged Out
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
         document.getElementById("bottomNav").style.display='none';
