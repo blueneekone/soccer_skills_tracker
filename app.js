@@ -770,3 +770,27 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     else { const q = query(collection(db, "reps"), where("teamId", "==", tid)); const snap = await getDocs(q); snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); }); }
     table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
+async function fetchConfig() {
+    try {
+        const d = await getDoc(doc(db, "config", "teams"));
+        if(d.exists()) globalTeams = d.data().list; else globalTeams = dbData.teams;
+        const a = await getDoc(doc(db, "config", "admins"));
+        if(a.exists()) globalAdmins = a.data().list;
+    } catch(e) { globalTeams = dbData.teams; }
+    
+    // Update setup dropdown if visible
+    const ts = document.getElementById("teamSelect");
+    if(ts) {
+        ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
+        globalTeams.forEach(t => { const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; ts.appendChild(o); });
+    }
+}
+
+function logSystemEvent(type, detail) {
+    addDoc(collection(db, "logs_system"), { 
+        type: type, 
+        detail: detail, 
+        timestamp: new Date(), 
+        user: auth.currentUser ? auth.currentUser.email : 'system' 
+    });
+}
