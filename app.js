@@ -5,12 +5,14 @@ import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
-// --- 1. GLOBAL ERROR HANDLER (Visual) ---
+// ==========================================
+// 1. CONFIGURATION & STATE
+// ==========================================
+
+// Global Error Handler
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
-    if (message.includes("null")) return; // Ignore harmless null errors
-    
-    // Create visible toast
+    if (message.includes("null")) return;
     const toast = document.createElement("div");
     toast.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#fee2e2; color:#991b1b; padding:15px; border-radius:8px; border:1px solid #ef4444; z-index:99999; font-size:12px; box-shadow:0 10px 15px rgba(0,0,0,0.1); max-width:90%;";
     toast.innerHTML = `<strong>⚠️ Error:</strong><br>${message}<br><span style="font-size:10px; opacity:0.8;">Line: ${lineno}</span>`;
@@ -22,7 +24,6 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.body.appendChild(toast);
 };
 
-// --- 2. CONFIGURATION ---
 const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
@@ -37,7 +38,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- 3. STATE VARIABLES ---
+// State Variables
 let currentSessionItems = [];
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
@@ -48,9 +49,11 @@ let teamChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
-// --- 4. CORE FUNCTIONS (Defined FIRST to avoid ReferenceErrors) ---
+// ==========================================
+// 2. CORE FUNCTIONS (DEFINED FIRST)
+// ==========================================
 
-// HELPER: Safe Binding
+// Helper: Safe Binding
 const safeBind = (id, event, func) => {
     const el = document.getElementById(id);
     if(el) {
@@ -65,19 +68,15 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
-// HELPER: Fetch Config
+// Helper: Fetch Config
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
         if(d.exists()) globalTeams = d.data().list; else globalTeams = dbData.teams;
         const a = await getDoc(doc(db, "config", "admins"));
         if(a.exists()) globalAdmins = a.data().list;
-    } catch(e) { 
-        console.warn("Config fetch failed, using defaults", e);
-        globalTeams = dbData.teams; 
-    }
+    } catch(e) { globalTeams = dbData.teams; }
     
-    // Update setup dropdown if visible
     const ts = document.getElementById("teamSelect");
     if(ts) {
         ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
@@ -85,7 +84,7 @@ async function fetchConfig() {
     }
 }
 
-// HELPER: Log Event
+// Helper: Log System Event
 function logSystemEvent(type, detail) {
     try {
         addDoc(collection(db, "logs_system"), { 
@@ -94,146 +93,61 @@ function logSystemEvent(type, detail) {
             timestamp: new Date(), 
             user: auth.currentUser ? auth.currentUser.email : 'system' 
         });
-    } catch(e) { console.error("Log failed", e); }
+    } catch(e) { console.error("Log error", e); }
 }
 
-// --- 5. BUSINESS LOGIC FUNCTIONS ---
-
-// UTILS: EXPORT
-function exportSessionData() {
-    if(allSessionsCache.length === 0) return alert("No sessions to export.");
-    // Check if XLSX is loaded
-    if (typeof XLSX === 'undefined') return alert("Export library not loaded. Check internet connection.");
-    
-    const formatted = allSessionsCache.map(r => ({
-        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-        Player: r.player,
-        Minutes: r.minutes,
-        Drills: r.drillSummary,
-        Feedback: r.outcome
-    }));
-    const ws = XLSX.utils.json_to_sheet(formatted);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
-    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
+// --- SETUP FUNCTIONS ---
+function initSetupDropdowns() {
+    const sel = document.getElementById("setupTeamSelect");
+    if(!sel) return;
+    sel.innerHTML = '<option value="">Select Team...</option>';
+    globalTeams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
+    sel.onchange = async (e) => {
+        const tid = e.target.value;
+        const pSel = document.getElementById("setupPlayerDropdown");
+        pSel.disabled = false;
+        pSel.innerHTML = '<option value="">Loading Roster...</option>';
+        const snap = await getDoc(doc(db, "rosters", tid));
+        pSel.innerHTML = '<option value="">Select Your Child...</option>';
+        if(snap.exists() && snap.data().players) {
+            snap.data().players.sort().forEach(p => { const o = document.createElement("option"); o.value=p; o.textContent=p; pSel.appendChild(o); });
+        }
+        pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
+    };
+    const drop = document.getElementById("setupPlayerDropdown");
+    if(drop) drop.onchange = (e) => { document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none"; };
 }
 
-// UTILS: CALENDAR
-function getSessionDescription() {
-    if (currentSessionItems.length === 0) return "";
-    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
-    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
+async function completeUserSetup() {
+    const tid = document.getElementById("setupTeamSelect").value;
+    let pname = document.getElementById("setupPlayerDropdown").value;
+    if (pname === "manual") pname = document.getElementById("setupPlayerManual").value.trim();
+    if(!tid || !pname) return alert("Please select a team and player name.");
+    await setDoc(doc(db, "users", auth.currentUser.email), { teamId: tid, playerName: pname, joinedAt: new Date() });
+    location.reload();
 }
 
-function addToGoogleCalendar() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-
-    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const title = encodeURIComponent("⚽ Soccer Training");
-    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); 
-    
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
-    window.open(url, '_blank');
-}
-
-function downloadIcsFile() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-
-    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
-    const startDate = new Date(`${date}T${time}`);
-    const endDate = new Date(startDate.getTime() + (45 * 60000));
-
-    const icsContent = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "BEGIN:VEVENT",
-        "SUMMARY:⚽ Soccer Training",
-        `DESCRIPTION:${getSessionDescription()}`,
-        `DTSTART:${formatICSDate(startDate)}`,
-        `DTEND:${formatICSDate(endDate)}`,
-        "END:VEVENT",
-        "END:VCALENDAR"
-    ].join("\n");
-
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'training_session.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// UTILS: PARSERS
-async function parsePDF(e) {
-    const f = e.target.files[0]; if(!f) return;
-    const txtBox = document.getElementById("rosterTextRaw");
-    if(txtBox) txtBox.value = "Reading...";
-    document.getElementById("rosterReviewArea").style.display='block';
-
-    try {
-        const buf = await f.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(buf).promise;
-        const page = await pdf.getPage(1);
-        const textContent = await page.getTextContent();
-        
-        const rows = {};
-        textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5] / 20); 
-            if(!rows[y]) rows[y] = [];
-            rows[y].push(decodeURIComponent(item.str));
-        });
-
-        let extracted = [];
-        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
-            const rowText = rows[y].join(" ").trim();
-            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
-            const idMatch = rowText.match(/\d{5}-\d{6}/);
-            if (dateMatch || idMatch) {
-                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").replace(/\d{5}/g, "").trim();
-                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
-                if (cleanRow.includes(",")) {
-                     let parts = cleanRow.split(",");
-                     if(parts.length >= 2) extracted.push(`${parts[1].trim().split(" ")[0]} ${parts[0].trim()}`);
-                } else if(words.length >= 2) extracted.push(`${words[0]} ${words[1]}`);
-            }
-        });
-        if (extracted.length === 0) txtBox.value = "No player rows detected.";
-        else txtBox.value = extracted.join("\n");
-    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
-}
-
-async function saveRosterList() {
-    const tid = currentCoachTeamId;
-    if(!tid) return alert("No team selected");
-    const lines = document.getElementById("rosterTextRaw").value.split("\n");
-    const cleanNames = [];
-    const batch = writeBatch(db);
-    lines.forEach(line => {
-        if(line.includes("|")) {
-            const [name, email] = line.split("|").map(s=>s.trim());
-            cleanNames.push(name);
-            if(email.includes("@")) {
-                const ref = doc(db, "player_lookup", email.toLowerCase());
-                batch.set(ref, { teamId: tid, playerName: name });
-            }
-        } else if(line.trim()) cleanNames.push(line.trim());
+// --- ROLE MANAGEMENT ---
+function checkRoles(user) {
+    const email = user.email.toLowerCase();
+    const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
+    const myTeams = globalTeams.filter(t => {
+        const isHead = t.coachEmail.toLowerCase() === email;
+        const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
+        return isHead || isAsst;
     });
-    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
-    await batch.commit();
-    alert("Roster Saved!");
-    document.getElementById("rosterReviewArea").style.display='none';
-    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
+    if (isDirector) {
+        document.getElementById("navCoach").style.display='flex';
+        document.getElementById("navAdmin").style.display='flex';
+        initCoachDropdown(true, globalTeams); 
+        renderAdminTables();
+    } else if (myTeams.length > 0) {
+        document.getElementById("navCoach").style.display='flex';
+        initCoachDropdown(false, myTeams);
+    }
 }
 
-// LOGIC: TRACKER
+// --- TRACKER LOGIC ---
 function renderSession() {
     const l = document.getElementById("sessionList");
     if(currentSessionItems.length===0) l.innerHTML='<li>No drills added yet.</li>';
@@ -265,150 +179,7 @@ async function submitWorkout() {
     } catch(e) { alert("Save Failed: "+e.message); }
 }
 
-// LOGIC: ROSTER & STAFF
-async function loadCoachDashboard(isDirector, teams) {
-    const tid = document.getElementById("adminTeamSelect").value;
-    if(!tid) return;
-    currentCoachTeamId = tid; 
-    
-    // Permission Check
-    const userEmail = auth.currentUser.email.toLowerCase();
-    const currentTeam = globalTeams.find(t => t.id === tid);
-    const isManager = isDirector || (currentTeam && currentTeam.coachEmail.toLowerCase() === userEmail);
-    const staffCard = document.getElementById("cardStaffManager");
-    if(staffCard) {
-        staffCard.style.display = isManager ? 'block' : 'none';
-        if(isManager) renderAssistantList(currentTeam);
-    }
-
-    const listEl = document.getElementById("coachPlayerList");
-    if(listEl) listEl.innerHTML = "Fetching roster data...";
-
-    try {
-        // 1. Stats
-        const q = query(collection(db, "reps"), where("teamId", "==", tid));
-        const snap = await getDocs(q);
-        const players = {};
-        let count = 0;
-        allSessionsCache = [];
-        snap.forEach(doc => {
-            const d = doc.data();
-            allSessionsCache.push(d);
-            if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
-            players[d.player].mins += Number(d.minutes);
-            const logDate = d.timestamp.toDate();
-            if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
-            count++;
-        });
-        setText("coachActivePlayers", Object.keys(players).length);
-        setText("coachTotalReps", count);
-        
-        // 2. Roster
-        const rosterSnap = await getDoc(doc(db, "rosters", tid));
-        let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
-        const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
-        const linkSnap = await getDocs(linkQuery);
-        const linkedPlayers = new Set();
-        linkSnap.forEach(doc => linkedPlayers.add(doc.data().playerName));
-
-        const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
-        const combinedList = Array.from(combinedSet).sort();
-
-        if(listEl) {
-            if(combinedList.length > 0) {
-                listEl.innerHTML = combinedList.map(p => {
-                    const stats = players[p] || { mins: 0, lastActive: null };
-                    const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
-                    const isLinked = linkedPlayers.has(p);
-                    const linkButton = isLinked 
-                        ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
-                        : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
-                    return `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
-                        <div><span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>${linkButton}<button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button></div></div>`;
-                }).join("");
-            } else {
-                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
-            }
-        }
-    } catch(e) {
-        console.error(e);
-        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
-    } finally {
-        if(listEl && listEl.innerHTML === "Fetching roster data...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
-    }
-}
-
-function renderAssistantList(team) {
-    const c = document.getElementById("assistantList");
-    if(!team || !team.assistants || team.assistants.length === 0) { c.innerHTML = "No assistants added."; return; }
-    c.innerHTML = team.assistants.map(email => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;"><span>${email}</span><button class="delete-btn" onclick="window.removeAssistant('${email}')">Remove</button></div>`).join("");
-}
-
-async function addAssistant() {
-    const email = document.getElementById("newAssistantEmail").value.trim().toLowerCase();
-    if(!email || !email.includes("@")) return alert("Enter a valid email.");
-    const tid = currentCoachTeamId;
-    const teamIdx = globalTeams.findIndex(t => t.id === tid);
-    if(teamIdx === -1) return;
-    if(!globalTeams[teamIdx].assistants) globalTeams[teamIdx].assistants = [];
-    if(globalTeams[teamIdx].assistants.includes(email)) return alert("User already added.");
-    globalTeams[teamIdx].assistants.push(email);
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Assistant Added!");
-    document.getElementById("newAssistantEmail").value = "";
-    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
-}
-
-window.removeAssistant = async (email) => {
-    if(!confirm(`Revoke for ${email}?`)) return;
-    const tid = currentCoachTeamId;
-    const teamIdx = globalTeams.findIndex(t => t.id === tid);
-    globalTeams[teamIdx].assistants = globalTeams[teamIdx].assistants.filter(e => e !== email);
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
-};
-
-window.deletePlayer = async (name) => {
-    if(!confirm(`Remove ${name}?`)) return;
-    const tid = document.getElementById("adminTeamSelect").value;
-    const ref = doc(db, "rosters", tid);
-    const snap = await getDoc(ref);
-    if(snap.exists()) {
-        const newPlayers = snap.data().players.filter(p => p !== name);
-        await updateDoc(ref, { players: newPlayers });
-        loadCoachDashboard(false, globalTeams);
-    }
-}
-
-window.linkParent = async (playerName) => {
-    const email = prompt(`Enter parent email for ${playerName}:`);
-    if(email && email.includes("@")) {
-        const tid = document.getElementById("adminTeamSelect").value;
-        await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
-        alert(`Linked!`);
-        loadCoachDashboard(false, globalTeams);
-    }
-}
-
-async function manualAddPlayer() {
-    const name = document.getElementById("coachAddPlayerName").value.trim();
-    const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
-    if(!name) return alert("Enter name");
-    const tid = document.getElementById("adminTeamSelect").value;
-    const ref = doc(db, "rosters", tid);
-    const snap = await getDoc(ref);
-    let list = snap.exists() ? snap.data().players : [];
-    if(!list.includes(name)) list.push(name);
-    await setDoc(ref, { players: list }, { merge: true });
-    if(email) await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-    alert("Player Added");
-    document.getElementById("coachAddPlayerName").value = "";
-    document.getElementById("coachAddPlayerEmail").value = "";
-    loadCoachDashboard(false, globalTeams);
-}
-
-// LOGIC: STATS & CHARTS
+// --- STATS LOGIC ---
 async function loadStats() {
     if (!userProfile) return;
     let q;
@@ -482,7 +253,201 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
-// LOGIC: ADMIN
+// --- COACH & ADMIN LOGIC ---
+async function loadCoachDashboard(isDirector, teams) {
+    const tid = document.getElementById("adminTeamSelect").value;
+    if(!tid) return;
+    currentCoachTeamId = tid; 
+    
+    // Permission Check
+    const userEmail = auth.currentUser.email.toLowerCase();
+    const currentTeam = globalTeams.find(t => t.id === tid);
+    const isManager = isDirector || (currentTeam && currentTeam.coachEmail.toLowerCase() === userEmail);
+    const staffCard = document.getElementById("cardStaffManager");
+    if(staffCard) {
+        staffCard.style.display = isManager ? 'block' : 'none';
+        if(isManager) renderAssistantList(currentTeam);
+    }
+
+    const listEl = document.getElementById("coachPlayerList");
+    if(listEl) listEl.innerHTML = "Fetching...";
+
+    try {
+        const q = query(collection(db, "reps"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const players = {};
+        let count = 0;
+        allSessionsCache = [];
+        snap.forEach(doc => {
+            const d = doc.data();
+            allSessionsCache.push(d);
+            if(!players[d.player]) { players[d.player] = { mins: 0, lastActive: null }; }
+            players[d.player].mins += Number(d.minutes);
+            const logDate = d.timestamp.toDate();
+            if(!players[d.player].lastActive || logDate > players[d.player].lastActive) { players[d.player].lastActive = logDate; }
+            count++;
+        });
+        setText("coachActivePlayers", Object.keys(players).length);
+        setText("coachTotalReps", count);
+        
+        const rosterSnap = await getDoc(doc(db, "rosters", tid));
+        let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
+        const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
+        const linkSnap = await getDocs(linkQuery);
+        const linkedPlayers = new Set();
+        linkSnap.forEach(doc => linkedPlayers.add(doc.data().playerName));
+
+        const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
+        const combinedList = Array.from(combinedSet).sort();
+
+        if(listEl) {
+            if(combinedList.length > 0) {
+                listEl.innerHTML = combinedList.map(p => {
+                    const stats = players[p] || { mins: 0, lastActive: null };
+                    const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                    const isLinked = linkedPlayers.has(p);
+                    const linkButton = isLinked 
+                        ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
+                        : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
+                    return `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                        <div><span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>${linkButton}<button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button></div></div>`;
+                }).join("");
+            } else {
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually.</div>";
+            }
+        }
+    } catch(e) {
+        console.error(e);
+        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
+    } finally {
+        if(listEl && listEl.innerHTML === "Fetching...") listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
+    }
+}
+
+function initCoachDropdown(isDirector, teams) {
+    const sel = document.getElementById("adminTeamSelect");
+    if(!sel) return;
+    document.getElementById("adminControls").style.display = 'block';
+    sel.innerHTML = "";
+    teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
+    sel.onchange = () => loadCoachDashboard(isDirector, teams);
+    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
+}
+
+// --- UTILS: EXPORT & CALENDAR & PDF ---
+function exportSessionData() {
+    if(allSessionsCache.length === 0) return alert("No sessions to export.");
+    if (typeof XLSX === 'undefined') return alert("XLSX Library not loaded.");
+    const formatted = allSessionsCache.map(r => ({
+        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
+        Player: r.player,
+        Minutes: r.minutes,
+        Drills: r.drillSummary,
+        Feedback: r.outcome
+    }));
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
+    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
+}
+
+function getSessionDescription() {
+    if (currentSessionItems.length === 0) return "";
+    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
+    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
+}
+
+function addToGoogleCalendar() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const title = encodeURIComponent("⚽ Soccer Training");
+    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); 
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
+    window.open(url, '_blank');
+}
+
+function downloadIcsFile() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
+    const startDate = new Date(`${date}T${time}`);
+    const endDate = new Date(startDate.getTime() + (45 * 60000));
+    const icsContent = [ "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "SUMMARY:⚽ Soccer Training", `DESCRIPTION:${getSessionDescription()}`, `DTSTART:${formatICSDate(startDate)}`, `DTEND:${formatICSDate(endDate)}`, "END:VEVENT", "END:VCALENDAR" ].join("\n");
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', 'training_session.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+async function parsePDF(e) {
+    const f = e.target.files[0]; if(!f) return;
+    const txtBox = document.getElementById("rosterTextRaw");
+    if(txtBox) txtBox.value = "Reading...";
+    document.getElementById("rosterReviewArea").style.display='block';
+    try {
+        const buf = await f.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(buf).promise;
+        const page = await pdf.getPage(1);
+        const textContent = await page.getTextContent();
+        const rows = {};
+        textContent.items.forEach(item => {
+            const y = Math.round(item.transform[5] / 20); 
+            if(!rows[y]) rows[y] = [];
+            rows[y].push(decodeURIComponent(item.str));
+        });
+        let extracted = [];
+        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
+            const rowText = rows[y].join(" ").trim();
+            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
+            const idMatch = rowText.match(/\d{5}-\d{6}/);
+            if (dateMatch || idMatch) {
+                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").replace(/\d{5}/g, "").trim();
+                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
+                if (cleanRow.includes(",")) {
+                     let parts = cleanRow.split(",");
+                     if(parts.length >= 2) extracted.push(`${parts[1].trim().split(" ")[0]} ${parts[0].trim()}`);
+                } else if(words.length >= 2) extracted.push(`${words[0]} ${words[1]}`);
+            }
+        });
+        if (extracted.length === 0) txtBox.value = "No player rows detected.";
+        else txtBox.value = extracted.join("\n");
+    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
+}
+
+async function saveRosterList() {
+    const tid = currentCoachTeamId;
+    if(!tid) return alert("No team selected");
+    const lines = document.getElementById("rosterTextRaw").value.split("\n");
+    const cleanNames = [];
+    const batch = writeBatch(db);
+    lines.forEach(line => {
+        if(line.includes("|")) {
+            const [name, email] = line.split("|").map(s=>s.trim());
+            cleanNames.push(name);
+            if(email.includes("@")) {
+                const ref = doc(db, "player_lookup", email.toLowerCase());
+                batch.set(ref, { teamId: tid, playerName: name });
+            }
+        } else if(line.trim()) cleanNames.push(line.trim());
+    });
+    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
+    await batch.commit();
+    alert("Roster Saved!");
+    document.getElementById("rosterReviewArea").style.display='none';
+    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
+}
+
+// --- ADMIN UTILS ---
 function renderAdminTables() {
     const t = document.getElementById("teamTable"); 
     if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
@@ -516,11 +481,84 @@ function runSecurityScan() { const c = document.getElementById("logContainer"); 
 function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
 
-// --- 6. INITIALIZATION LOGIC (Runs Last) ---
-const initApp = () => {
-    console.log("App v32 Loaded (Reference Error Fix)");
+// --- HELPERS FOR COACH DASHBOARD ---
+function renderAssistantList(team) {
+    const c = document.getElementById("assistantList");
+    if(!team || !team.assistants || team.assistants.length === 0) { c.innerHTML = "No assistants added."; return; }
+    c.innerHTML = team.assistants.map(email => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;"><span>${email}</span><button class="delete-btn" onclick="window.removeAssistant('${email}')">Remove</button></div>`).join("");
+}
 
-    // AUTH
+async function addAssistant() {
+    const email = document.getElementById("newAssistantEmail").value.trim().toLowerCase();
+    if(!email || !email.includes("@")) return alert("Enter a valid email.");
+    const tid = currentCoachTeamId;
+    const teamIdx = globalTeams.findIndex(t => t.id === tid);
+    if(teamIdx === -1) return;
+    if(!globalTeams[teamIdx].assistants) globalTeams[teamIdx].assistants = [];
+    if(globalTeams[teamIdx].assistants.includes(email)) return alert("User already added.");
+    globalTeams[teamIdx].assistants.push(email);
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    alert("Assistant Added!");
+    document.getElementById("newAssistantEmail").value = "";
+    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
+}
+
+window.removeAssistant = async (email) => {
+    if(!confirm(`Revoke for ${email}?`)) return;
+    const tid = currentCoachTeamId;
+    const teamIdx = globalTeams.findIndex(t => t.id === tid);
+    globalTeams[teamIdx].assistants = globalTeams[teamIdx].assistants.filter(e => e !== email);
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
+};
+
+window.deletePlayer = async (name) => {
+    if(!confirm(`Remove ${name}?`)) return;
+    const tid = document.getElementById("adminTeamSelect").value;
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    if(snap.exists()) {
+        const newPlayers = snap.data().players.filter(p => p !== name);
+        await updateDoc(ref, { players: newPlayers });
+        loadCoachDashboard(false, globalTeams);
+    }
+}
+
+window.linkParent = async (playerName) => {
+    const email = prompt(`Enter parent email for ${playerName}:`);
+    if(email && email.includes("@")) {
+        const tid = document.getElementById("adminTeamSelect").value;
+        await setDoc(doc(db, "player_lookup", email.toLowerCase()), { teamId: tid, playerName: playerName });
+        alert(`Linked!`);
+        loadCoachDashboard(false, globalTeams);
+    }
+}
+
+async function manualAddPlayer() {
+    const name = document.getElementById("coachAddPlayerName").value.trim();
+    const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
+    if(!name) return alert("Enter name");
+    const tid = document.getElementById("adminTeamSelect").value;
+    const ref = doc(db, "rosters", tid);
+    const snap = await getDoc(ref);
+    let list = snap.exists() ? snap.data().players : [];
+    if(!list.includes(name)) list.push(name);
+    await setDoc(ref, { players: list }, { merge: true });
+    if(email) await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
+    alert("Player Added");
+    document.getElementById("coachAddPlayerName").value = "";
+    document.getElementById("coachAddPlayerEmail").value = "";
+    loadCoachDashboard(false, globalTeams);
+}
+
+// ==========================================
+// 3. APP INITIALIZATION (EXECUTED LAST)
+// ==========================================
+
+const initApp = () => {
+    console.log("App v33 Loaded (Defined First)");
+
+    // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
@@ -541,7 +579,7 @@ const initApp = () => {
     
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
 
-    // GLOBAL UI
+    // SETUP UI
     safeBind("completeSetupBtn", "click", completeUserSetup);
     
     const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
@@ -559,7 +597,7 @@ const initApp = () => {
         });
     });
 
-    // TRACKER POPULATION
+    // TRACKER UI POPULATION
     const sWarm = document.getElementById("selectWarmup");
     const sBall = document.getElementById("selectBallWork");
     const sBase = document.getElementById("selectBasics");
@@ -599,7 +637,6 @@ const initApp = () => {
         }
     };
 
-    // 1. Warm Up
     safeBind("selectWarmup", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addWarmupBtn", "click", () => {
         const n = document.getElementById("selectWarmup").value;
@@ -617,7 +654,6 @@ const initApp = () => {
         document.getElementById("cardioTime").value = "";
     });
 
-    // 2. Ball Handling
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBallWorkBtn", "click", () => {
         const n = document.getElementById("selectBallWork").value;
@@ -628,7 +664,6 @@ const initApp = () => {
         renderSession();
     });
 
-    // 3. Basics
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBasicsBtn", "click", () => {
         const n = document.getElementById("selectBasics").value;
@@ -643,7 +678,7 @@ const initApp = () => {
     safeBind("btnGCal", "click", addToGoogleCalendar);
     safeBind("btnIcs", "click", downloadIcsFile);
 
-    // OTHER
+    // EVALUATION
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".outcome-btn").forEach(x => x.classList.remove("active"));
@@ -651,10 +686,11 @@ const initApp = () => {
         }
     });
 
+    // COACH & ADMIN
     safeBind("rosterPdfInput", "change", parsePDF);
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
-    safeBind("exportXlsxBtn", "click", exportSessionData); 
+    safeBind("exportXlsxBtn", "click", exportSessionData);
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
     safeBind("addAssistantBtn", "click", addAssistant); 
     
@@ -665,6 +701,7 @@ const initApp = () => {
     safeBind("btnLogDebug", "click", runDebugLog);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
+    // UTILS
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
@@ -701,7 +738,7 @@ const initApp = () => {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
 else initApp();
 
-// --- 7. AUTH MONITOR ---
+// --- 4. AUTH MONITOR (TRIGGER) ---
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
@@ -710,7 +747,6 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // ROBUST ADMIN CHECK
             const isAdmin = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
                             globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
 
