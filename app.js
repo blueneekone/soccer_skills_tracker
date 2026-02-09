@@ -11,7 +11,7 @@ window.onerror = function(message, source, lineno, colno, error) {
     // Ignore harmless "null" errors
     if (message.includes("null")) return;
     
-    // Create visible toast
+    // Create visible toast for critical errors
     const toast = document.createElement("div");
     toast.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#fee2e2; color:#991b1b; padding:15px; border-radius:8px; border:1px solid #ef4444; z-index:99999; font-size:12px; box-shadow:0 10px 15px rgba(0,0,0,0.1); max-width:90%;";
     toast.innerHTML = `<strong>⚠️ System Error:</strong><br>${message}<br><span style="font-size:10px; opacity:0.8;">Line: ${lineno}</span>`;
