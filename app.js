@@ -556,7 +556,7 @@ async function manualAddPlayer() {
 // ==========================================
 
 const initApp = () => {
-    console.log("App v33 Loaded (Defined First)");
+    console.log("App v34 Loaded (Custom Cardio Added)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
@@ -597,7 +597,7 @@ const initApp = () => {
         });
     });
 
-    // TRACKER UI POPULATION
+    // --- TRACKER UI POPULATION ---
     const sWarm = document.getElementById("selectWarmup");
     const sBall = document.getElementById("selectBallWork");
     const sBase = document.getElementById("selectBasics");
@@ -615,9 +615,17 @@ const initApp = () => {
             else if (s.type === 'ball_mastery') sBall.appendChild(opt);
             else sBase.appendChild(opt);
         });
+
+        // *** NEW: Add Custom Option ***
+        const customOpt = document.createElement("option");
+        customOpt.value = "custom";
+        customOpt.textContent = "✎ Enter your own...";
+        customOpt.style.fontWeight = "bold"; 
+        customOpt.style.color = "#ea580c";
+        sWarm.appendChild(customOpt);
     }
 
-    // TRACKER EVENTS
+    // --- TRACKER EVENTS ---
     const showDrillInfo = (drillName) => {
         const s = dbData.foundationSkills.find(x => x.name === drillName);
         if(s) {
@@ -637,10 +645,31 @@ const initApp = () => {
         }
     };
 
-    safeBind("selectWarmup", "change", (e) => showDrillInfo(e.target.value));
+    // 1. Warm Up (Updated for Custom)
+    safeBind("selectWarmup", "change", (e) => {
+        const val = e.target.value;
+        const customContainer = document.getElementById("customWarmupContainer");
+        const infoBox = document.getElementById("drillInfoBox");
+        
+        if(val === "custom") {
+            customContainer.style.display = 'block';
+            infoBox.style.display = 'none';
+        } else {
+            customContainer.style.display = 'none';
+            showDrillInfo(val);
+        }
+    });
+
     safeBind("addWarmupBtn", "click", () => {
-        const n = document.getElementById("selectWarmup").value;
+        let n = document.getElementById("selectWarmup").value;
         if(!n) return alert("Select a Warm-up first");
+        
+        // Handle Custom
+        if (n === "custom") {
+            n = document.getElementById("customWarmupName").value.trim();
+            if(!n) return alert("Please type the name of your workout.");
+        }
+
         const dist = document.getElementById("cardioDist").value;
         const time = document.getElementById("cardioTime").value;
         let details = "";
@@ -648,12 +677,17 @@ const initApp = () => {
         if (dist && time) details += " / ";
         if (time) details += `${time} min`;
         if (!details) details = "Standard";
+        
         currentSessionItems.push({ name: n, sets: 1, reps: details }); 
         renderSession();
+        
+        // Clear inputs
         document.getElementById("cardioDist").value = "";
         document.getElementById("cardioTime").value = "";
+        document.getElementById("customWarmupName").value = "";
     });
 
+    // 2. Ball Handling
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBallWorkBtn", "click", () => {
         const n = document.getElementById("selectBallWork").value;
@@ -664,6 +698,7 @@ const initApp = () => {
         renderSession();
     });
 
+    // 3. Basics
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBasicsBtn", "click", () => {
         const n = document.getElementById("selectBasics").value;
@@ -708,6 +743,32 @@ const initApp = () => {
             document.getElementById("videoPlayer").src = "";
         }
     });
+
+    const timerEl = document.getElementById("timerDisplay");
+    function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
+    safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
+    safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
+    safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
+
+    const canvas = document.getElementById("signatureCanvas");
+    if(canvas) {
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 500); 
+        function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
+        function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
+        function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+        function checkSignature() { 
+            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
+            if (!pixelBuffer.some(color => color !== 0)) { isSignatureBlank = true; } else { isSignatureBlank = false; canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
+        }
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
+        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
+        safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
+    }
+};
 
     const timerEl = document.getElementById("timerDisplay");
     function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }

@@ -48,8 +48,8 @@ export const dbData = {
     // --- BRILLIANT BASICS (Stage 3 - Foundation) ---
     { id: "fm_1", name: "1. Shift Right | Outside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Outside Right Foot", video: "https://youtu.be/imq7LHS_KwM", image: "" },
     { id: "fm_2", name: "2. Shift Left | Outside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Outside Left Foot", video: "https://youtu.be/ply2uRiYik0", image: "" },
-    { id: "fm_3", name: "3. Shift Left | Inside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Inside Right Foot", video: "", image: "" },
-    { id: "fm_4", name: "4. Shift Right | Inside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Inside Left Foot", video: "", image: "" },
+    { id: "fm_3", name: "3. Shift Left | Inside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Inside Right Foot", video: "https://youtu.be/U1VJzIGovpE", image: "" },
+    { id: "fm_4", name: "4. Shift Right | Inside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Inside Left Foot", video: "https://youtu.be/YGl_KC0NjWA", image: "" },
     { id: "fm_5", name: "5. Step Left | Shift Right (Out R)", type: "foundation", category: "1v1 Take Ons F/S", drill: "Step Left, Shift Right (Outside Right)", video: "", image: "" },
     { id: "fm_6", name: "6. Step Right | Shift Left (Out L)", type: "foundation", category: "1v1 Take Ons F/S", drill: "Step Right, Shift Left (Outside Left)", video: "", image: "" },
     { id: "fm_7", name: "7. Step Over Left | Shift Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Step Over Left, Shift Right (Outside Right)", video: "", image: "" },
