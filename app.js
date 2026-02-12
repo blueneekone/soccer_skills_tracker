@@ -9,7 +9,7 @@ import { dbData } from "./data.js";
 // 1. CONFIGURATION & STATE
 // ==========================================
 
-// Global Error Handler
+// Visual Error Handler
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
     if (message.includes("null")) return;
@@ -53,7 +53,6 @@ let userProfile = null;
 // 2. CORE FUNCTIONS (DEFINED FIRST)
 // ==========================================
 
-// Helper: Safe Binding
 const safeBind = (id, event, func) => {
     const el = document.getElementById(id);
     if(el) {
@@ -68,14 +67,16 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
-// Helper: Fetch Config
+// Fetch Config
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
         if(d.exists()) globalTeams = d.data().list; else globalTeams = dbData.teams;
         const a = await getDoc(doc(db, "config", "admins"));
         if(a.exists()) globalAdmins = a.data().list;
-    } catch(e) { globalTeams = dbData.teams; }
+    } catch(e) { 
+        if(typeof dbData !== 'undefined') globalTeams = dbData.teams; 
+    }
     
     const ts = document.getElementById("teamSelect");
     if(ts) {
@@ -84,7 +85,6 @@ async function fetchConfig() {
     }
 }
 
-// Helper: Log System Event
 function logSystemEvent(type, detail) {
     try {
         addDoc(collection(db, "logs_system"), { 
@@ -96,7 +96,7 @@ function logSystemEvent(type, detail) {
     } catch(e) { console.error("Log error", e); }
 }
 
-// --- SETUP FUNCTIONS ---
+// Setup Logic
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
     if(!sel) return;
@@ -127,7 +127,7 @@ async function completeUserSetup() {
     location.reload();
 }
 
-// --- ROLE MANAGEMENT ---
+// Role Check
 function checkRoles(user) {
     const email = user.email.toLowerCase();
     const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
@@ -147,7 +147,7 @@ function checkRoles(user) {
     }
 }
 
-// --- TRACKER LOGIC ---
+// Tracker Logic
 function renderSession() {
     const l = document.getElementById("sessionList");
     if(currentSessionItems.length===0) l.innerHTML='<li>No drills added yet.</li>';
@@ -179,7 +179,7 @@ async function submitWorkout() {
     } catch(e) { alert("Save Failed: "+e.message); }
 }
 
-// --- STATS LOGIC ---
+// Stats Logic
 async function loadStats() {
     if (!userProfile) return;
     let q;
@@ -253,7 +253,17 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
-// --- COACH & ADMIN LOGIC ---
+// Coach Dashboard Logic
+function initCoachDropdown(isDirector, teams) {
+    const sel = document.getElementById("adminTeamSelect");
+    if(!sel) return;
+    document.getElementById("adminControls").style.display = 'block';
+    sel.innerHTML = "";
+    teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
+    sel.onchange = () => loadCoachDashboard(isDirector, teams);
+    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
+}
+
 async function loadCoachDashboard(isDirector, teams) {
     const tid = document.getElementById("adminTeamSelect").value;
     if(!tid) return;
@@ -314,7 +324,7 @@ async function loadCoachDashboard(isDirector, teams) {
                         <div><span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>${linkButton}<button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button></div></div>`;
                 }).join("");
             } else {
-                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found. Upload roster or add manually.</div>";
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
     } catch(e) {
@@ -325,163 +335,6 @@ async function loadCoachDashboard(isDirector, teams) {
     }
 }
 
-function initCoachDropdown(isDirector, teams) {
-    const sel = document.getElementById("adminTeamSelect");
-    if(!sel) return;
-    document.getElementById("adminControls").style.display = 'block';
-    sel.innerHTML = "";
-    teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
-    sel.onchange = () => loadCoachDashboard(isDirector, teams);
-    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
-}
-
-// --- UTILS: EXPORT & CALENDAR & PDF ---
-function exportSessionData() {
-    if(allSessionsCache.length === 0) return alert("No sessions to export.");
-    if (typeof XLSX === 'undefined') return alert("XLSX Library not loaded.");
-    const formatted = allSessionsCache.map(r => ({
-        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
-        Player: r.player,
-        Minutes: r.minutes,
-        Drills: r.drillSummary,
-        Feedback: r.outcome
-    }));
-    const ws = XLSX.utils.json_to_sheet(formatted);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
-    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
-}
-
-function getSessionDescription() {
-    if (currentSessionItems.length === 0) return "";
-    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
-    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
-}
-
-function addToGoogleCalendar() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const title = encodeURIComponent("⚽ Soccer Training");
-    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); 
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
-    window.open(url, '_blank');
-}
-
-function downloadIcsFile() {
-    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
-    const date = document.getElementById("calDate").value;
-    const time = document.getElementById("calTime").value;
-    if (!date || !time) return alert("Select Date and Time.");
-    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
-    const startDate = new Date(`${date}T${time}`);
-    const endDate = new Date(startDate.getTime() + (45 * 60000));
-    const icsContent = [ "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "SUMMARY:⚽ Soccer Training", `DESCRIPTION:${getSessionDescription()}`, `DTSTART:${formatICSDate(startDate)}`, `DTEND:${formatICSDate(endDate)}`, "END:VEVENT", "END:VCALENDAR" ].join("\n");
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'training_session.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-async function parsePDF(e) {
-    const f = e.target.files[0]; if(!f) return;
-    const txtBox = document.getElementById("rosterTextRaw");
-    if(txtBox) txtBox.value = "Reading...";
-    document.getElementById("rosterReviewArea").style.display='block';
-    try {
-        const buf = await f.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(buf).promise;
-        const page = await pdf.getPage(1);
-        const textContent = await page.getTextContent();
-        const rows = {};
-        textContent.items.forEach(item => {
-            const y = Math.round(item.transform[5] / 20); 
-            if(!rows[y]) rows[y] = [];
-            rows[y].push(decodeURIComponent(item.str));
-        });
-        let extracted = [];
-        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
-            const rowText = rows[y].join(" ").trim();
-            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
-            const idMatch = rowText.match(/\d{5}-\d{6}/);
-            if (dateMatch || idMatch) {
-                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").replace(/\d{5}/g, "").trim();
-                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
-                if (cleanRow.includes(",")) {
-                     let parts = cleanRow.split(",");
-                     if(parts.length >= 2) extracted.push(`${parts[1].trim().split(" ")[0]} ${parts[0].trim()}`);
-                } else if(words.length >= 2) extracted.push(`${words[0]} ${words[1]}`);
-            }
-        });
-        if (extracted.length === 0) txtBox.value = "No player rows detected.";
-        else txtBox.value = extracted.join("\n");
-    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
-}
-
-async function saveRosterList() {
-    const tid = currentCoachTeamId;
-    if(!tid) return alert("No team selected");
-    const lines = document.getElementById("rosterTextRaw").value.split("\n");
-    const cleanNames = [];
-    const batch = writeBatch(db);
-    lines.forEach(line => {
-        if(line.includes("|")) {
-            const [name, email] = line.split("|").map(s=>s.trim());
-            cleanNames.push(name);
-            if(email.includes("@")) {
-                const ref = doc(db, "player_lookup", email.toLowerCase());
-                batch.set(ref, { teamId: tid, playerName: name });
-            }
-        } else if(line.trim()) cleanNames.push(line.trim());
-    });
-    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
-    await batch.commit();
-    alert("Roster Saved!");
-    document.getElementById("rosterReviewArea").style.display='none';
-    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
-}
-
-// --- ADMIN UTILS ---
-function renderAdminTables() {
-    const t = document.getElementById("teamTable"); 
-    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
-    const a = document.getElementById("adminTable");
-    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
-}
-async function addTeam() {
-    const id = document.getElementById("newTeamId").value;
-    const name = document.getElementById("newTeamName").value;
-    const email = document.getElementById("newCoachEmail").value;
-    if(!id || !name) return;
-    globalTeams.push({ id, name, coachEmail: email });
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
-}
-async function addAdmin() {
-    const email = document.getElementById("newAdminEmail").value;
-    if(!email) return;
-    globalAdmins.push(email);
-    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
-}
-async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
-    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
-    c.innerHTML = "";
-    snap.forEach(d => c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`);
-}
-function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
-function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
-function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
-function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
-
-// --- HELPERS FOR COACH DASHBOARD ---
 function renderAssistantList(team) {
     const c = document.getElementById("assistantList");
     if(!team || !team.assistants || team.assistants.length === 0) { c.innerHTML = "No assistants added."; return; }
@@ -551,12 +404,157 @@ async function manualAddPlayer() {
     loadCoachDashboard(false, globalTeams);
 }
 
+// Utils
+async function parsePDF(e) {
+    const f = e.target.files[0]; if(!f) return;
+    const txtBox = document.getElementById("rosterTextRaw");
+    if(txtBox) txtBox.value = "Reading...";
+    document.getElementById("rosterReviewArea").style.display='block';
+    try {
+        const buf = await f.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(buf).promise;
+        const page = await pdf.getPage(1);
+        const textContent = await page.getTextContent();
+        const rows = {};
+        textContent.items.forEach(item => {
+            const y = Math.round(item.transform[5] / 20); 
+            if(!rows[y]) rows[y] = [];
+            rows[y].push(decodeURIComponent(item.str));
+        });
+        let extracted = [];
+        Object.keys(rows).sort((a,b)=>b-a).forEach(y => {
+            const rowText = rows[y].join(" ").trim();
+            const dateMatch = rowText.match(/\d{2}\/\d{2}\/\d{4}/);
+            const idMatch = rowText.match(/\d{5}-\d{6}/);
+            if (dateMatch || idMatch) {
+                let cleanRow = rowText.replace(/\d{5}-\d{6}/g, "").replace(/\d{2}\/\d{2}\/\d{4}/g, "").replace(/\d{5}/g, "").trim();
+                let words = cleanRow.split(" ").filter(w => w.length > 1 && !/\d/.test(w));
+                if (cleanRow.includes(",")) {
+                     let parts = cleanRow.split(",");
+                     if(parts.length >= 2) extracted.push(`${parts[1].trim().split(" ")[0]} ${parts[0].trim()}`);
+                } else if(words.length >= 2) extracted.push(`${words[0]} ${words[1]}`);
+            }
+        });
+        if (extracted.length === 0) txtBox.value = "No player rows detected.";
+        else txtBox.value = extracted.join("\n");
+    } catch(err) { console.error(err); alert("PDF Error: " + err.message); }
+}
+
+async function saveRosterList() {
+    const tid = currentCoachTeamId;
+    if(!tid) return alert("No team selected");
+    const lines = document.getElementById("rosterTextRaw").value.split("\n");
+    const cleanNames = [];
+    const batch = writeBatch(db);
+    lines.forEach(line => {
+        if(line.includes("|")) {
+            const [name, email] = line.split("|").map(s=>s.trim());
+            cleanNames.push(name);
+            if(email.includes("@")) {
+                const ref = doc(db, "player_lookup", email.toLowerCase());
+                batch.set(ref, { teamId: tid, playerName: name });
+            }
+        } else if(line.trim()) cleanNames.push(line.trim());
+    });
+    await setDoc(doc(db, "rosters", tid), { players: cleanNames, lastUpdated: new Date() });
+    await batch.commit();
+    alert("Roster Saved!");
+    document.getElementById("rosterReviewArea").style.display='none';
+    loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams);
+}
+
+function exportSessionData() {
+    if(allSessionsCache.length === 0) return alert("No sessions to export.");
+    if (typeof XLSX === 'undefined') return alert("XLSX Library not loaded.");
+    const formatted = allSessionsCache.map(r => ({
+        Date: new Date(r.timestamp.seconds*1000).toLocaleDateString(),
+        Player: r.player,
+        Minutes: r.minutes,
+        Drills: r.drillSummary,
+        Feedback: r.outcome
+    }));
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Workouts");
+    XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
+}
+
+function getSessionDescription() {
+    if (currentSessionItems.length === 0) return "";
+    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
+    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
+}
+
+function addToGoogleCalendar() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+    const start = new Date(`${date}T${time}`).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const end = new Date(new Date(`${date}T${time}`).getTime() + (45 * 60000)).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const title = encodeURIComponent("⚽ Soccer Training");
+    const details = encodeURIComponent(getSessionDescription().replace(/\\n/g, "\n")); 
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
+    window.open(url, '_blank');
+}
+
+function downloadIcsFile() {
+    if (currentSessionItems.length === 0) return alert("Add drills to the list first!");
+    const date = document.getElementById("calDate").value;
+    const time = document.getElementById("calTime").value;
+    if (!date || !time) return alert("Select Date and Time.");
+    const formatICSDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "").split("Z")[0];
+    const startDate = new Date(`${date}T${time}`);
+    const endDate = new Date(startDate.getTime() + (45 * 60000));
+    const icsContent = [ "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "SUMMARY:⚽ Soccer Training", `DESCRIPTION:${getSessionDescription()}`, `DTSTART:${formatICSDate(startDate)}`, `DTEND:${formatICSDate(endDate)}`, "END:VEVENT", "END:VCALENDAR" ].join("\n");
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', 'training_session.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function renderAdminTables() {
+    const t = document.getElementById("teamTable"); 
+    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    const a = document.getElementById("adminTable");
+    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+}
+async function addTeam() {
+    const id = document.getElementById("newTeamId").value;
+    const name = document.getElementById("newTeamName").value;
+    const email = document.getElementById("newCoachEmail").value;
+    if(!id || !name) return;
+    globalTeams.push({ id, name, coachEmail: email });
+    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
+}
+async function addAdmin() {
+    const email = document.getElementById("newAdminEmail").value;
+    if(!email) return;
+    globalAdmins.push(email);
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
+}
+async function loadLogs(col) {
+    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
+    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
+    c.innerHTML = "";
+    snap.forEach(d => c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`);
+}
+function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
+function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
+function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
+function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
+
 // ==========================================
 // 3. APP INITIALIZATION (EXECUTED LAST)
 // ==========================================
 
 const initApp = () => {
-    console.log("App v34 Loaded (Custom Cardio Added)");
+    console.log("App v35 Loaded (Custom Cardio + Auth Fix)");
 
     // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
@@ -770,36 +768,12 @@ const initApp = () => {
     }
 };
 
-    const timerEl = document.getElementById("timerDisplay");
-    function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
-    safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
-    safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
-    safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
-
-    const canvas = document.getElementById("signatureCanvas");
-    if(canvas) {
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500); 
-        function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
-        function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
-        function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
-        function checkSignature() { 
-            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
-            if (!pixelBuffer.some(color => color !== 0)) { isSignatureBlank = true; } else { isSignatureBlank = false; canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
-        }
-        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
-        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
-        safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
-    }
-};
-
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
 else initApp();
 
-// --- 4. AUTH MONITOR (TRIGGER) ---
+// ==========================================
+// 4. AUTH MONITOR (TRIGGER)
+// ==========================================
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
