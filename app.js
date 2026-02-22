@@ -753,22 +753,45 @@ function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.
 const initApp = () => {
     console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
 
+// Helper function to show errors on screen instead of alerts
+    const showAuthError = (msg) => {
+        const errEl = document.getElementById("authErrorMsg");
+        if(errEl) {
+            errEl.style.display = 'block';
+            errEl.innerText = msg;
+        } else {
+            alert(msg);
+        }
+    };
+
+    // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
+        console.log("Attempting Popup Login..."); 
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        signInWithPopup(auth, provider).catch(e => alert("Login Error: " + e.message));
+        
+        signInWithPopup(auth, provider).catch(e => {
+            console.error(e);
+            showAuthError("Google Login Failed: " + e.message);
+        });
     });
     
     safeBind("loginEmailBtn", "click", () => {
         const e = document.getElementById("authEmail").value;
         const p = document.getElementById("authPassword").value;
-        if(e && p) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+        
+        if(!e || !p) return showAuthError("Please enter both an email and password.");
+        
+        signInWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
     });
     
     safeBind("signupEmailBtn", "click", () => {
         const e = document.getElementById("authEmail").value;
         const p = document.getElementById("authPassword").value;
-        if(e && p) createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+        
+        if(!e || !p) return showAuthError("Please enter an email and a password to sign up.");
+        
+        createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
     });
     
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
