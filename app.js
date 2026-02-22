@@ -328,7 +328,25 @@ async function loadStats() {
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
             const bar = document.getElementById("xpBar"); 
-            if(bar) bar.style.width = `${Math.min((xp % 1000)/1000 * 100, 100)}%`;
+            
+            if(bar) {
+                let pct = 0;
+                
+                // Calculate percentage based on the current gap between levels
+                if(xp < 500) {
+                    pct = (xp / 500) * 100;                 // Rookie to Starter (500 point gap)
+                } else if(xp < 1000) {
+                    pct = ((xp - 500) / 500) * 100;         // Starter to Veteran (500 point gap)
+                } else if(xp < 2000) {
+                    pct = ((xp - 1000) / 1000) * 100;       // Veteran to Pro (1000 point gap)
+                } else if(xp < 3000) {
+                    pct = ((xp - 2000) / 1000) * 100;       // Pro to Legend (1000 point gap)
+                } else {
+                    pct = 100;                              // Legend (Maxed out)
+                }
+                
+                bar.style.width = `${Math.min(pct, 100)}%`;
+            }
         }
 
         renderCalendar(logs);
@@ -809,12 +827,10 @@ const initApp = () => {
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
     safeBind("btnOpenTrophyModal", "click", () => {
-        const tc = document.getElementById("trophyCaseCard");
-        const dt = document.getElementById("detailedTrophyList");
-        if(tc && dt) {
-            dt.innerHTML = tc.querySelector('.card-body').innerHTML;
-            document.getElementById("trophyModal").style.display = "block";
-        }
+        // Just navigate to the stats page where the real trophies are
+        window.navigateTo('viewStats', 'navStats');
+        // Scroll down slightly so the trophy case is centered
+        setTimeout(() => window.scrollTo({ top: 150, behavior: 'smooth' }), 100);
     });
 
     buildDropdowns(0);

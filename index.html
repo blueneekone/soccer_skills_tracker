@@ -200,7 +200,11 @@
 
                         <button id="submitWorkoutBtn" class="primary-btn">💾 Log Workout (+XP)</button>
                     </div>
-
+                    <label>Schedule This Workout</label>
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="date" id="calDate" style="flex:1; margin:0; padding:8px; font-size:12px;">
+                        <input type="time" id="calTime" style="flex:1; margin:0; padding:8px; font-size:12px;">
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button id="btnGCal" class="secondary-btn" style="flex:1; font-size:12px;">📅 Save to Google Cal</button>
                         <button id="btnIcs" class="secondary-btn" style="flex:1; font-size:12px;">🗓️ Download .ICS</button>
@@ -386,17 +390,6 @@
         <div class="modal-content">
             <div class="card-header"><span id="dayModalDate">Date</span><span class="close-btn" style="cursor:pointer; font-size:18px;">×</span></div>
             <div class="modal-body" id="dayModalContent" style="font-size:12px;"></div>
-        </div>
-    </div>
-
-    <div id="trophyModal" class="modal">
-        <div class="modal-content">
-            <div class="card-header" style="background:var(--aggie-gold); color:var(--aggie-blue);"><span>Trophy Room</span><span class="close-btn" style="cursor:pointer; font-size:18px;">×</span></div>
-            <div class="modal-body text-center" style="background:#f8fafc;">
-                <h3 style="color:var(--aggie-blue); margin-top:0;">Your Achievements</h3>
-                <p style="font-size:12px; color:#64748b;">Keep grinding to unlock higher tiers and earn your official certificate!</p>
-                <div id="detailedTrophyList" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;"></div>
-            </div>
         </div>
     </div>
 
