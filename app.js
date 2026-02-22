@@ -1,7 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+// Import from your brand new module!
+import { auth, db } from "./firebase-config.js"; 
+
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
+import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
@@ -23,19 +25,7 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.body.appendChild(toast);
 };
 
-const DIRECTOR_EMAIL = "ecwaechtler@gmail.com"; 
-const firebaseConfig = {
-  apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
-  authDomain: "soccer-skills-tracker.firebaseapp.com",
-  projectId: "soccer-skills-tracker",
-  storageBucket: "soccer-skills-tracker.firebasestorage.app",
-  messagingSenderId: "884044129977",
-  appId: "1:884044129977:web:47d54f59c891340e505d68"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const DIRECTOR_EMAIL = "ecwaechtler@gmail.com";
 
 let currentSessionItems = [];
 let currentVideoUrl = "";
@@ -796,15 +786,16 @@ const initApp = () => {
     };
 
     // AUTH BINDINGS
+    // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
-        console.log("Attempting Popup Login..."); 
+        console.log("Redirecting to Google..."); 
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        
-        signInWithPopup(auth, provider).catch(e => {
-            console.error(e);
-            showAuthError("Google Login Failed: " + e.message);
-        });
+        signInWithRedirect(auth, provider); // Mobile-safe! No popups!
+    });
+    
+    // Catch the result when the mobile browser redirects back to your app
+    getRedirectResult(auth).catch(e => {
+        showAuthError("Google Login Failed: " + e.message);
     });
     
     safeBind("loginEmailBtn", "click", () => {
