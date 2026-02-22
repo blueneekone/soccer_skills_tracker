@@ -274,11 +274,13 @@
                         <div><span style="font-size:11px; opacity:0.8; letter-spacing:1px;">CURRENT RANK</span><div id="userLevelDisplay" style="font-size:2rem; font-weight:900; color:var(--aggie-gold); line-height:1;">ROOKIE</div></div>
                         <div style="text-align:right;"><div id="statTime" style="font-size:2rem; font-weight:800; line-height:1;">0</div><span style="font-size:11px; opacity:0.8;">MINUTES</span></div>
                     </div>
-                    <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div></div>
+                    <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div>
+                </div>
                     <div style="text-align:right; font-size:10px; margin-top:5px; opacity:0.7;">Fill bar to level up!</div>
                 </div>
             </div>
-           <div class="card" id="trophyCaseCard">
+
+            <div class="card" id="trophyCaseCard">
                 <div class="card-header" style="background: #f8fafc; color: var(--aggie-blue); border-bottom: 2px solid #e2e8f0;">🏆 TROPHY CASE</div>
                 <div class="card-body" style="text-align: center; overflow-x: auto;">
                     
@@ -293,25 +295,25 @@
                         <div id="badgeStarter" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
                             <div class="medal-coin medal-starter"></div>
                             <div class="medal-title">STARTER</div>
-                            <div class="medal-xp">500 XP</div>
+                            <div class="medal-xp">750 XP</div>
                         </div>
 
                         <div id="badgeVeteran" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
                             <div class="medal-coin medal-veteran"></div>
                             <div class="medal-title">VETERAN</div>
-                            <div class="medal-xp">1000 XP</div>
+                            <div class="medal-xp">1500 XP</div>
                         </div>
 
                         <div id="badgePro" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
                             <div class="medal-coin medal-pro"></div>
                             <div class="medal-title">PRO</div>
-                            <div class="medal-xp">2000 XP</div>
+                            <div class="medal-xp">3000 XP</div>
                         </div>
 
                         <div id="badgeLegend" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
                             <div class="medal-coin medal-legend"></div>
                             <div class="medal-title" style="color: #0284c7;">LEGEND</div>
-                            <div class="medal-xp">3000 XP</div>
+                            <div class="medal-xp">6000 XP</div>
                         </div>
 
                     </div>
@@ -321,6 +323,41 @@
                     </button>
                 </div>
             </div>
+            
+            <div class="card">
+                <div class="card-header" style="background:var(--aggie-blue); color:white;">🏅 TEAM LEADERBOARD</div>
+                <div class="card-body" style="padding:0; overflow-x: auto;">
+                    <table id="teamLeaderboardTable" style="width:100%; text-align:left; border-collapse:collapse; font-size:0.9rem;">
+                        <thead>
+                            <tr style="background:#f1f5f9; color:#475569; border-bottom:2px solid #e2e8f0;">
+                                <th style="padding:10px;">Rank</th>
+                                <th style="padding:10px;">Player</th>
+                                <th style="padding:10px;">Total Minutes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="3" style="padding:10px; text-align:center;">Loading Leaderboard...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">📅 Activity Log</div>
+                <div class="card-body">
+                    <div style="text-align:center; font-weight:bold; margin-bottom:10px;" id="calMonthYear">Month Year</div>
+                    <div class="cal-grid" id="calendarDays">
+                        </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">📈 7-Day Trend</div>
+                <div class="card-body">
+                    <canvas id="playerTrendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
 
             <style>
                 .medal-container { display: flex; flex-direction: column; align-items: center; flex: 1; }
