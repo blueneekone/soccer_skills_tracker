@@ -238,15 +238,15 @@ window.removeSessionItem = (index) => {
 function renderSession() {
     const l = document.getElementById("sessionList");
     if(currentSessionItems.length === 0) {
-        l.innerHTML='<li style="padding:10px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1;">Empty. Select drills above to build your workout!</li>';
+        l.innerHTML='<li class="session-empty">Empty. Select drills above to build your workout!</li>';
     } else {
         l.innerHTML = currentSessionItems.map((i, idx) => `
-            <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:white; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                <div style="text-align:left; line-height:1.2;">
-                    <span style="font-weight:bold; color:var(--aggie-blue); font-size:13px;">${idx+1}. ${i.name}</span><br>
-                    <span style="font-size:11px; color:#64748b;">(${i.sets} x ${i.reps})</span>
+            <li class="session-item">
+                <div class="session-item-text">
+                    <span class="session-item-title">${idx+1}. ${i.name}</span><br>
+                    <span class="session-item-detail">(${i.sets} x ${i.reps})</span>
                 </div>
-                <button class="delete-btn" onclick="window.removeSessionItem(${idx})" style="padding:6px 12px; font-size:12px; background:#fee2e2; color:#b91c1c;">✕</button>
+                <button class="delete-btn" onclick="window.removeSessionItem(${idx})">✕</button>
             </li>`).join("");
     }
 }
