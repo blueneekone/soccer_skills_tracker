@@ -238,28 +238,42 @@
                     <div style="text-align:right; font-size:10px; margin-top:5px; opacity:0.7;">Fill bar to level up!</div>
                 </div>
             </div>
-            <div class="card" id="trophyCaseCard">
+           <div class="card" id="trophyCaseCard">
                 <div class="card-header" style="background: #f8fafc; color: var(--aggie-blue); border-bottom: 2px solid #e2e8f0;">🏆 TROPHY CASE</div>
-                <div class="card-body" style="text-align: center;">
-                    <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px;">
+                <div class="card-body" style="text-align: center; overflow-x: auto;">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; min-width: 320px; padding: 10px 0 20px 0;">
                         
-                        <div id="badgeStarter" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
-                            <div style="font-size: 35px;">🥉</div>
-                            <div style="font-size: 10px; font-weight: bold; color: #64748b;">STARTER</div>
-                            <div style="font-size: 9px; color: #94a3b8;">500 XP</div>
+                        <div id="badgeRookie" class="medal-container" style="opacity: 1; filter: none;">
+                            <div class="medal-coin medal-rookie"></div>
+                            <div class="medal-title">ROOKIE</div>
+                            <div class="medal-xp">0 XP</div>
                         </div>
 
-                        <div id="badgePro" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
-                            <div style="font-size: 35px;">🥈</div>
-                            <div style="font-size: 10px; font-weight: bold; color: #64748b;">PRO</div>
-                            <div style="font-size: 9px; color: #94a3b8;">1500 XP</div>
+                        <div id="badgeStarter" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
+                            <div class="medal-coin medal-starter"></div>
+                            <div class="medal-title">STARTER</div>
+                            <div class="medal-xp">500 XP</div>
                         </div>
 
-                        <div id="badgeLegend" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
-                            <div style="font-size: 35px;">🥇</div>
-                            <div style="font-size: 10px; font-weight: bold; color: #64748b;">LEGEND</div>
-                            <div style="font-size: 9px; color: #94a3b8;">3000 XP</div>
+                        <div id="badgeVeteran" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
+                            <div class="medal-coin medal-veteran"></div>
+                            <div class="medal-title">VETERAN</div>
+                            <div class="medal-xp">1000 XP</div>
                         </div>
+
+                        <div id="badgePro" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
+                            <div class="medal-coin medal-pro"></div>
+                            <div class="medal-title">PRO</div>
+                            <div class="medal-xp">2000 XP</div>
+                        </div>
+
+                        <div id="badgeLegend" class="medal-container" style="opacity: 0.3; filter: grayscale(100%); transition: 0.5s;">
+                            <div class="medal-coin medal-legend"></div>
+                            <div class="medal-title" style="color: #0284c7;">LEGEND</div>
+                            <div class="medal-xp">3000 XP</div>
+                        </div>
+
                     </div>
                     
                     <button id="claimCertificateBtn" class="primary-btn" style="display: none; background: linear-gradient(135deg, var(--aggie-gold) 0%, #d97706 100%); color: white; border: none; font-weight: 900; animation: pulse 2s infinite; margin-top: 15px;">
@@ -267,10 +281,46 @@
                     </button>
                 </div>
             </div>
-            <div class="card"><div class="card-header">ACTIVITY CALENDAR <span id="statTotal" style="font-size:12px; opacity:0.8;">0 Sessions</span></div><div class="card-body"><div id="calMonthYear" style="text-align:center; font-weight:bold; margin-bottom:10px; color:#64748b;"></div><div class="calendar-grid" id="calendarDays"></div></div></div>
-            <div class="card"><div class="card-header">TREND (7 DAYS)</div><div class="card-body"><canvas id="playerTrendChart" height="200"></canvas></div></div>
-            <div class="card"><div class="card-header">LEADERBOARD</div><div class="card-body" style="padding:0;"><table id="teamLeaderboardTable" class="admin-table"><tbody></tbody></table></div></div>
-        </div>
+
+            <style>
+                .medal-container { display: flex; flex-direction: column; align-items: center; flex: 1; }
+                .medal-title { font-size: 10px; font-weight: 900; color: #64748b; margin-top: 8px; }
+                .medal-xp { font-size: 9px; color: #94a3b8; font-weight: bold; }
+                
+                /* The Base Coin using your Logo */
+                .medal-coin {
+                    width: 45px; height: 45px; border-radius: 50%;
+                    background-image: url('Images/Phoenixes_Logo_2026.jpg'); 
+                    background-size: 120%; /* Zooms in slightly to fill the circle better */
+                    background-position: center;
+                    position: relative;
+                }
+                
+                /* The Ribbon Top */
+                .medal-coin::before {
+                    content: ''; position: absolute; top: -10px; left: 12.5px; width: 20px; height: 15px;
+                    background: var(--aggie-blue); 
+                    clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+                    z-index: -1;
+                }
+
+                /* Tier Colors and Glows */
+                .medal-rookie { border: 4px solid #64748b; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+                .medal-starter { border: 4px solid #b45309; box-shadow: 0 0 10px rgba(180,83,9,0.5); }
+                .medal-veteran { border: 4px solid #cbd5e1; box-shadow: 0 0 12px rgba(203,213,225,0.8); }
+                .medal-pro { border: 4px solid #fbbf24; box-shadow: 0 0 15px rgba(251,191,36,0.9); }
+                .medal-legend { 
+                    border: 4px solid #38bdf8; 
+                    box-shadow: 0 0 20px #38bdf8, inset 0 0 10px rgba(255,255,255,0.5); 
+                    animation: legend-glow 1.5s infinite alternate; 
+                }
+
+                @keyframes legend-glow {
+                    0% { box-shadow: 0 0 10px #38bdf8, inset 0 0 5px rgba(255,255,255,0.5); }
+                    100% { box-shadow: 0 0 25px #0284c7, inset 0 0 15px rgba(255,255,255,0.8); transform: scale(1.05); }
+                }
+                @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+            </style>
 
         <div id="viewCoach" class="view-section" style="display:none;">
             <div id="adminControls" style="margin-bottom:15px; display:none;"><label>Viewing Team:</label><select id="adminTeamSelect" style="width:100%; border:2px solid var(--aggie-blue); font-weight:bold;"></select></div>
