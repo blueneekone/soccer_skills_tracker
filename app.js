@@ -246,9 +246,11 @@ function renderSession() {
 }
 
 async function submitWorkout() {
-    if(currentSessionItems.length===0) return alert("Add drills!");
+    if(currentSessionItems.length === 0) return alert("Add drills!");
     
-    // Safely fallback without assuming DOM elements exist
+    // THE ACCOUNTABILITY CHECK
+    if(isSignatureBlank) return alert("A parent must sign to verify this workout.");
+    
     const tid = userProfile ? userProfile.teamId : null;
     const pname = userProfile ? userProfile.playerName : null;
     const mins = document.getElementById("totalMinutes").value;
@@ -264,13 +266,32 @@ async function submitWorkout() {
             minutes: parseInt(mins),
             drills: currentSessionItems,
             drillSummary: currentSessionItems.map(x=>x.name).join(", "),
-            outcome: document.querySelector(".outcome-btn.active").dataset.val,
+            outcome: document.querySelector(".outcome-btn.active")?.dataset.val || "Good",
             coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
         });
+        
         alert("Workout Logged! +XP");
         logSystemEvent("WORKOUT_SUBMIT", `Player: ${pname}, Mins: ${mins}`);
-        currentSessionItems=[]; renderSession(); loadStats();
-    } catch(e) { alert("Save Failed: "+e.message); }
+        
+        // Reset the form
+        currentSessionItems = []; 
+        renderSession(); 
+        document.getElementById("totalMinutes").value = "";
+        
+        // Wipe the canvas clean for the next workout
+        const canvas = document.getElementById("signatureCanvas");
+        if(canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            isSignatureBlank = true;
+            canvas.style.borderColor = "#cbd5e1"; 
+            canvas.style.backgroundColor = "#fcfcfc";
+        }
+        
+        loadStats();
+    } catch(e) { 
+        alert("Save Failed: " + e.message); 
+    }
 }
 
 async function loadStats() {
@@ -1039,6 +1060,84 @@ const initApp = () => {
         canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
         canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
         safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
+    }
+    // ==========================================
+    // PARENT SIGNATURE LOGIC
+    // ==========================================
+    const canvas = document.getElementById("signatureCanvas");
+    if(canvas) {
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        
+        function resizeCanvas() { 
+            if(canvas.parentElement) { 
+                canvas.width = canvas.parentElement.offsetWidth; 
+                canvas.height = 120; 
+                ctx.lineWidth = 2; 
+                ctx.lineCap = "round"; 
+                ctx.strokeStyle = "#00263A"; 
+            } 
+        }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 500); 
+
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        function startDraw(e) { 
+            isDrawing = true; 
+            ctx.beginPath(); 
+            draw(e); 
+        }
+
+        function endDraw() { 
+            isDrawing = false; 
+            ctx.beginPath(); 
+            checkSignature(); 
+        }
+
+        function draw(e) { 
+            if (!isDrawing) return; 
+            e.preventDefault(); // Prevents mobile screen from scrolling while signing
+            isSignatureBlank = false; 
+            const coords = getCoordinates(e);
+            ctx.lineTo(coords.x, coords.y); 
+            ctx.stroke(); 
+            ctx.beginPath(); 
+            ctx.moveTo(coords.x, coords.y); 
+        }
+
+        function checkSignature() { 
+            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
+            // If the canvas is completely blank, keep the flag true
+            if (!pixelBuffer.some(color => color !== 0)) { 
+                isSignatureBlank = true; 
+            } else { 
+                isSignatureBlank = false; 
+                canvas.style.borderColor = "#16a34a"; // Turn border green for success visual feedback
+                canvas.style.backgroundColor = "#f0fdf4"; 
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDraw); 
+        canvas.addEventListener('mouseup', endDraw); 
+        canvas.addEventListener('mousemove', draw); 
+        
+        // Mobile Touch Events (passive: false is required to block scrolling)
+        canvas.addEventListener('touchstart', startDraw, { passive: false }); 
+        canvas.addEventListener('touchend', endDraw); 
+        canvas.addEventListener('touchmove', draw, { passive: false });
+
+        safeBind("clearSigBtn", "click", () => { 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            isSignatureBlank = true; 
+            canvas.style.borderColor = "#cbd5e1"; 
+            canvas.style.backgroundColor = "#fcfcfc"; 
+        });
     }
 };
 

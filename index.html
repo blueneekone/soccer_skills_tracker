@@ -194,8 +194,13 @@
                             <div class="outcome-btn" data-val="Mastered"><span>🔥</span>Mastered</div>
                         </div>
 
-                        <label>Coach Notes (Optional)</label>
-                        <textarea id="notes" rows="2" placeholder="Any pain? Did you PR?"></textarea>
+                        <label>Parent Signature</label>
+                        <div style="position: relative; margin-bottom: 15px;">
+                            <canvas id="signatureCanvas" style="width:100%; height:120px; border:2px dashed #cbd5e1; border-radius:8px; background:#fcfcfc; touch-action:none;"></canvas>
+                            <button id="clearSigBtn" class="action-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); font-size: 10px; padding: 4px 8px;">Clear</button>
+                        </div>
+
+                        <button id="submitWorkoutBtn" class="primary-btn">💾 Log Workout (+XP)</button>
 
                         <button id="submitWorkoutBtn" class="primary-btn">💾 Log Workout (+XP)</button>
                     </div>
