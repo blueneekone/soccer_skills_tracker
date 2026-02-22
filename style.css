@@ -27,8 +27,8 @@ html, body {
 .logo-circle { width: 70px; height: 70px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 35px; border: 4px solid var(--aggie-gold); }
 .brand-title { color: var(--aggie-blue); margin: 0; }
 .brand-subtitle { color: #64748b; margin-top: 5px; margin-bottom: 25px; }
-.btn-google { background: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.google-g { font-size: 18px; font-weight: bold; color: #4285F4; }
+.btn-alt-login { background: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.auth-logo { font-size: 18px; font-weight: bold; color: #4285F4; }
 .divider { margin: 20px 0; border-top: 1px solid #eee; position: relative; }
 .divider-text { background: white; padding: 0 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); color: #999; font-size: 12px; }
 .auth-buttons { display: flex; gap: 10px; }

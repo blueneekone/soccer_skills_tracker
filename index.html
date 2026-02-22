@@ -10,7 +10,9 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <script type="module" src="app.js?v=2.0"></script>
+    <script type="module" src="data.js?v=2.0"></script>
 </head>
 <body>
 
@@ -19,9 +21,13 @@
             <div class="logo-circle">⚽</div> 
             <h2 class="brand-title">Aggies FC</h2>
             <p class="brand-subtitle">Skills & Fitness Tracker</p>
-            <button id="loginGoogleBtn" class="primary-btn btn-google">
-                <span class="google-g">G</span> Sign in with Google
-            </button>
+            <button id="loginGoogleBtn" class="primary-btn btn-alt-login">
+    <span class="auth-logo">G</span> Sign in with Google
+</button>
+
+<p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 15px;">
+    Logged in as: <b id="setupDebugEmail"></b>
+</p>
             <div class="divider">
                 <span class="divider-text">OR</span>
             </div>
