@@ -128,7 +128,7 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .medal-container { display: flex; flex-direction: column; align-items: center; flex: 1; }
 .medal-title { font-size: 10px; font-weight: 900; color: #64748b; margin-top: 8px; }
 .medal-xp { font-size: 9px; color: #94a3b8; font-weight: bold; }
-.medal-coin { width: 45px; height: 45px; border-radius: 50%; background-image: url('Images/Phoenixes_Logo_2026.jpg'); background-size: 120%; background-position: center; position: relative; }
+.medal-coin { width: 45px; height: 45px; border-radius: 50%; background-image: url('Images/Phoenixes_Logo_2026.png'); background-size: 120%; background-position: center; position: relative; }
 .medal-rookie { border: 4px solid #64748b; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
 .medal-starter { border: 4px solid #b45309; box-shadow: 0 0 10px rgba(180,83,9,0.5); }
 .medal-veteran { border: 4px solid #cbd5e1; box-shadow: 0 0 12px rgba(203,213,225,0.8); }
@@ -145,3 +145,117 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
     #printableCertificate { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 15px solid #00263A !important; margin: 0; padding: 40px; box-sizing: border-box; }
     .no-print { display: none !important; }
 }
+
+
+/* =======================================================
+   EXTRACTED INLINE STYLES AND UTILITIES
+   ======================================================= */
+
+/* Utility Classes */
+.d-none { display: none; }
+.flex-1 { flex: 1; }
+.w-100 { width: 100%; }
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.p-0 { padding: 0; }
+.font-bold { font-weight: bold; }
+.no-underline { text-decoration: none; }
+.overflow-x-auto { overflow-x: auto; }
+.text-sm { font-size: 12px; }
+
+/* Auth Views */
+.auth-title { color: var(--aggie-blue); margin-top: 0; }
+.auth-subtitle { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+.btn-google { background-color: white; color: #475569; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+.auth-divider { display: flex; align-items: center; margin-bottom: 20px; }
+.divider-line { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
+.divider-text { padding: 0 10px; color: #94a3b8; font-size: 12px; }
+.btn-mb-10 { margin-bottom: 10px; }
+.btn-mt-10 { margin-top: 10px; }
+
+/* App Header */
+.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.app-title { margin: 0; color: var(--aggie-blue); }
+.player-info { font-size: 12px; color: #64748b; }
+.nav-logout-btn { border: none; background: none; color: #64748b; text-decoration: underline; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+/* Home Dashboard */
+.icon-large { font-size: 40px; }
+.welcome-title { margin: 0 0 5px 0; font-size: 24px; }
+.welcome-subtitle { opacity: 0.9; font-size: 13px; margin-bottom: 5px; }
+
+/* Tracker Dashboard */
+.custom-warmup-container { margin-bottom: 8px; }
+.tracker-plan-header { margin-top: 20px; color: var(--aggie-blue); }
+.session-list { list-style: none; padding: 0; margin-bottom: 20px; }
+.workout-summary-box { background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 15px; }
+.time-input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+.btn-start-timer { background: var(--success); color: white; }
+.schedule-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.schedule-input { flex: 1; margin: 0; padding: 8px; font-size: 12px; }
+.export-row { display: flex; gap: 10px; }
+.btn-export { flex: 1; font-size: 12px; }
+
+/* Stats Dashboard */
+.view-title { color: var(--aggie-blue); margin-top: 0; }
+.level-display { margin: 0; font-size: 2rem; color: var(--aggie-gold); }
+.current-rank-label { margin: 5px 0 15px 0; color: #64748b; font-size: 0.9rem; }
+.stats-totals-row { display: flex; justify-content: space-around; margin-top: 15px; }
+.stat-number { font-size: 1.2rem; font-weight: bold; color: var(--aggie-blue); }
+.stat-label { font-size: 0.7rem; color: #64748b; }
+.trophy-header { background: #f8fafc !important; color: var(--aggie-blue) !important; border-bottom: 2px solid #e2e8f0 !important; }
+.trophy-flex { display: flex; justify-content: space-between; align-items: flex-end; min-width: 320px; padding: 10px 0 20px 0; }
+.medal-locked { opacity: 0.3; filter: grayscale(100%); transition: 0.5s; }
+.legend-title-color { color: #0284c7 !important; }
+.leaderboard-header { background: var(--aggie-blue) !important; color: white !important; }
+.calendar-month-label { font-weight: bold; margin-bottom: 10px; }
+
+/* Coach Dashboard */
+.roster-overview-header { background: var(--success) !important; }
+.roster-stats-box { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; }
+.roster-stat-val { font-size: 20px; }
+.roster-stat-val.active { color: var(--success); }
+.roster-stat-val.reps { color: var(--aggie-blue); }
+.btn-save-roster { background: var(--success); }
+.roster-divider { margin: 20px 0; border: none; border-top: 1px solid #e2e8f0; }
+.export-desc { font-size: 12px; color: #64748b; margin-top: 0; }
+.btn-export-excel { background: #10b981; }
+.staff-header { background: #334155 !important; }
+.assistant-list { margin-bottom: 15px; font-size: 13px; }
+.add-assistant-row { display: flex; gap: 10px; }
+.btn-auto-width { width: auto; }
+.btn-padding-10 { padding: 10px; }
+
+/* Admin Dashboard */
+.admin-input-row { display: flex; gap: 10px; margin-top: 15px; }
+.team-id-input { width: 60px; }
+.log-buttons-row { display: flex; gap: 10px; margin-bottom: 15px; }
+.log-container { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 10px; height: 200px; overflow-y: auto; border: 1px solid #cbd5e1; font-family: monospace; }
+
+/* Modals */
+.modal-close-icon { cursor: pointer; font-size: 18px; }
+
+/* Cert Modal */
+.cert-modal-bg { background-color: rgba(0,0,0,0.9); }
+.cert-content { max-width: 800px; width: 95%; background: transparent; box-shadow: none; margin: 5% auto; }
+.cert-border { position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px; border: 2px solid var(--aggie-gold); pointer-events: none; }
+.cert-icon { font-size: 50px; margin-bottom: 10px; }
+.cert-title { color: var(--aggie-blue); font-size: 36px; margin: 0 0 10px 0; font-family: 'Georgia', serif; text-transform: uppercase; }
+.cert-subtitle { color: #64748b; font-size: 16px; margin-bottom: 30px; }
+.cert-player-name { color: var(--aggie-gold); font-size: 40px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding: 0 40px 10px 40px; margin: 0 0 30px 0; }
+.cert-body-text { color: #334155; font-size: 18px; line-height: 1.6; max-width: 600px; margin: 0 auto 40px auto; }
+.cert-footer { display: flex; justify-content: space-around; align-items: flex-end; margin-top: 50px; }
+.cert-date-line { font-size: 16px; border-bottom: 1px solid #94a3b8; width: 150px; padding-bottom: 5px; margin-bottom: 5px; }
+.cert-label { font-size: 12px; color: #64748b; text-transform: uppercase; }
+.cert-signature-title { color: var(--aggie-blue); margin: 0; font-size: 24px; }
+.cert-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+.btn-print { width: auto; padding: 10px 20px; background: white; color: var(--aggie-blue); border: 2px solid white; }
+.btn-close-cert { width: auto; padding: 10px 20px; margin-top: 0; background: transparent; color: white; border: 1px solid white; }
+
+/* Drill Info Box */
+.drill-info-box { position: fixed; bottom: 80px; left: 15px; right: 15px; z-index: 2000; box-shadow: 0 -5px 20px rgba(0,0,0,0.15); }
+.drill-info-header { background: white !important; color: var(--aggie-blue) !important; border-bottom: 1px solid #e2e8f0 !important; }
+.drill-title { font-weight: 900; }
+.close-drill-btn { cursor: pointer; color: #94a3b8; }
+.drill-desc { font-size: 13px; margin-top: 0; color: #475569; }
+.btn-watch-video { background: #dbeafe; color: #1e40af; width: 100%; }
