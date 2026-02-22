@@ -38,6 +38,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentSessionItems = [];
+let currentVideoUrl = "";
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
@@ -252,11 +253,18 @@ function renderSession() {
 }
 
 async function submitWorkout() {
-    if(currentSessionItems.length===0) return alert("Add drills!");
-    const tid = userProfile ? userProfile.teamId : document.getElementById("teamSelect").value;
-    let pname = userProfile ? userProfile.playerName : "";
+    if(currentSessionItems.length === 0) return alert("Add drills!");
+    
+    // Safety check: ensure user profile is fully loaded before submitting
+    if(!userProfile || !userProfile.teamId || !userProfile.playerName) {
+        return alert("Profile loading... please wait a second and try again.");
+    }
+
+    const tid = userProfile.teamId;
+    const pname = userProfile.playerName;
     const mins = document.getElementById("totalMinutes").value;
-    if(!tid || !pname || !mins) return alert("Fill all info");
+    
+    if(!mins) return alert("Please enter Total Duration.");
 
     try {
         await addDoc(collection(db, "reps"), {
@@ -267,7 +275,6 @@ async function submitWorkout() {
             drills: currentSessionItems,
             drillSummary: currentSessionItems.map(x=>x.name).join(", "),
             outcome: document.querySelector(".outcome-btn.active").dataset.val,
-            notes: document.getElementById("notes")?.value || "",
             coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
         });
         alert("Workout Logged! +XP");
