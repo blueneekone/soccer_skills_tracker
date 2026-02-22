@@ -185,7 +185,6 @@
                         <label>Total Session Time (Minutes)</label>
                         <div class="time-input-row">
                             <input type="number" id="totalMinutes" class="flex-1 m-0" placeholder="e.g. 45">
-                            <button id="startTimer" class="secondary-btn btn-start-timer">▶ Start Timer</button>
                         </div>
                         
                         <label>How did you do?</label>
@@ -273,8 +272,27 @@
         </div>
 
         <div id="viewCoach" class="view-section d-none">
-            <h2 class="coach-header">Coach Tools</h2>
+            <h2 class="coach-header">Coaching Tools</h2>
             
+            <div class="card">
+                <div class="card-header">⏱️ Practice Stopwatch</div>
+                <div class="card-body text-center">
+                    <div id="stopwatchDisplay" style="font-size: 3rem; font-family: monospace; font-weight: 800; color: var(--aggie-blue); margin-bottom: 15px; font-variant-numeric: tabular-nums;">00:00.00</div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                        <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
+                        <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                        <button id="btnSwLap" class="secondary-btn flex-1">Lap Split</button>
+                        <button id="btnSwReset" class="secondary-btn flex-1">Reset</button>
+                    </div>
+                    
+                    <ul id="lapList" style="list-style: none; padding: 0; margin: 0; text-align: left; max-height: 150px; overflow-y: auto; font-size: 13px; color: #64748b;">
+                        </ul>
+                </div>
+            </div>
+
             <div class="card d-none" id="adminControls">
                 <div class="card-header">Director Access</div>
                 <div class="card-body">

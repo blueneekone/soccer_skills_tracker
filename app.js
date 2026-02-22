@@ -821,9 +821,20 @@ const initApp = () => {
         createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
     });
     
-    // --- 3. LOGOUT BUTTONS ---
-    safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
-    safeBind("appLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
+   // --- 3. LOGOUT BUTTONS ---
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            window.location.replace(window.location.pathname); // Forces a hard reload back to login
+        } catch (error) {
+            alert("Logout Failed: " + error.message);
+        }
+    };
+    
+    safeBind("globalLogoutBtn", "click", handleLogout);
+    safeBind("appLogoutBtn", "click", handleLogout);
+    
+    // --- 4. ACCOUNT SETUP ---
     safeBind("completeSetupBtn", "click", completeUserSetup);
     
     // NAVIGATION BINDINGS (Uses centralized API)
@@ -971,11 +982,62 @@ const initApp = () => {
         }
     });
 
-    const timerEl = document.getElementById("timerDisplay");
-    function updateTimer() { seconds++; const m = Math.floor(seconds/60).toString().padStart(2,"0"); const s = (seconds%60).toString().padStart(2,"0"); if(timerEl) timerEl.innerText = `${m}:${s}`; }
-    safeBind("startTimer", "click", () => { if (!timerInterval) timerInterval = setInterval(updateTimer, 1000); });
-    safeBind("stopTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; const m = Math.floor(seconds/60); document.getElementById("totalMinutes").value = m > 0 ? m : 1; });
-    safeBind("resetTimer", "click", () => { clearInterval(timerInterval); timerInterval = null; seconds = 0; if(timerEl) timerEl.innerText = "00:00"; });
+// ==========================================
+    // COACH STOPWATCH LOGIC
+    // ==========================================
+    let swInterval = null;
+    let swStartTime = 0;
+    let swElapsedTime = 0;
+    let swLapCount = 0;
+
+    // Helper to format milliseconds into mm:ss.ms
+    const formatTime = (ms) => {
+        const date = new Date(ms);
+        const m = date.getUTCMinutes().toString().padStart(2, '0');
+        const s = date.getUTCSeconds().toString().padStart(2, '0');
+        const msFormatted = Math.floor(date.getUTCMilliseconds() / 10).toString().padStart(2, '0');
+        return `${m}:${s}.${msFormatted}`;
+    };
+
+    safeBind("btnSwStart", "click", () => {
+        if (!swInterval) {
+            swStartTime = Date.now() - swElapsedTime;
+            swInterval = setInterval(() => {
+                swElapsedTime = Date.now() - swStartTime;
+                const disp = document.getElementById("stopwatchDisplay");
+                if(disp) disp.innerText = formatTime(swElapsedTime);
+            }, 10); // Updates every 10ms for smooth tracking
+        }
+    });
+
+    safeBind("btnSwStop", "click", () => {
+        clearInterval(swInterval);
+        swInterval = null;
+    });
+
+    safeBind("btnSwReset", "click", () => {
+        clearInterval(swInterval);
+        swInterval = null;
+        swElapsedTime = 0;
+        swLapCount = 0;
+        const disp = document.getElementById("stopwatchDisplay");
+        if(disp) disp.innerText = "00:00.00";
+        const laps = document.getElementById("lapList");
+        if(laps) laps.innerHTML = ""; // Clear laps
+    });
+
+    safeBind("btnSwLap", "click", () => {
+        if(swElapsedTime === 0) return; // Don't lap if it hasn't started
+        swLapCount++;
+        const laps = document.getElementById("lapList");
+        if(laps) {
+            const li = document.createElement("li");
+            li.style.cssText = "padding: 8px 5px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;";
+            li.innerHTML = `<strong>Lap ${swLapCount}</strong> <span style="font-family:monospace; font-weight:bold; color:var(--aggie-blue);">${formatTime(swElapsedTime)}</span>`;
+            // Prepend adds it to the top of the list so the newest lap is always visible
+            laps.prepend(li); 
+        }
+    });
 
     const canvas = document.getElementById("signatureCanvas");
     if(canvas) {
