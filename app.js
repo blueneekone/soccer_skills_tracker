@@ -96,6 +96,52 @@ function logSystemEvent(type, detail) {
     } catch(e) { console.error("Log error", e); }
 }
 
+// Helper: Build Dropdowns dynamically based on XP
+function buildDropdowns(currentXp) {
+    // Determine Numeric Level based on your existing XP logic
+    let currentLevelNum = 1; // Rookie
+    if (currentXp >= 5000) currentLevelNum = 5; // Legend
+    else if (currentXp >= 4000) currentLevelNum = 4; // All-star
+    else if (currentXp >= 2000) currentLevelNum = 3; // Pro
+    else if (currentXp >= 1000) currentLevelNum = 2; // Starter
+
+    const levelNames = { 1: "Rookie", 2: "Starter", 3: "Pro", 4: "All-star", 5: "Legend" };
+
+    const sWarm = document.getElementById("selectWarmup");
+    const sBall = document.getElementById("selectBallWork");
+    const sBase = document.getElementById("selectBasics");
+    
+    if(!sWarm || !sBall || !sBase) return;
+
+    // Reset dropdowns
+    sWarm.innerHTML = '<option value="" disabled selected>Choose Warm-up...</option>';
+    sBall.innerHTML = '<option value="" disabled selected>Choose Skill...</option>';
+    sBase.innerHTML = '<option value="" disabled selected>Choose Basic...</option>';
+
+    // Add Custom Option to Warmup
+    const customOpt = document.createElement("option");
+    customOpt.value = "custom";
+    customOpt.textContent = "✎ Enter your own...";
+    customOpt.style.fontWeight = "bold"; 
+    customOpt.style.color = "#ea580c";
+    sWarm.appendChild(customOpt);
+
+    // Populate with Locks
+    dbData.foundationSkills.forEach(s => {
+        const reqLvl = s.reqLevel || 1; // Default to 1 if not specified in data.js
+        const isLocked = reqLvl > currentLevelNum;
+        
+        const opt = document.createElement("option");
+        opt.value = s.name;
+        opt.textContent = isLocked ? `🔒 ${s.name} (Unlocks at ${levelNames[reqLvl]})` : s.name;
+        opt.disabled = isLocked;
+        
+        if(s.type === 'cardio') sWarm.appendChild(opt);
+        else if (s.type === 'ball_mastery') sBall.appendChild(opt);
+        else sBase.appendChild(opt);
+    });
+}
+
 // Setup Logic
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
@@ -200,6 +246,7 @@ async function loadStats() {
         
         let xp = totalMins + (logs.length * 10);
         let lvl = "ROOKIE"; if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+        buildDropdowns(xp);
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
             const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
@@ -595,33 +642,8 @@ const initApp = () => {
         });
     });
 
-    // --- TRACKER UI POPULATION ---
-    const sWarm = document.getElementById("selectWarmup");
-    const sBall = document.getElementById("selectBallWork");
-    const sBase = document.getElementById("selectBasics");
-    
-    if(sWarm && sBall && sBase && sWarm.options.length <= 1) {
-        sWarm.innerHTML = '<option value="" disabled selected>Choose Warm-up...</option>';
-        sBall.innerHTML = '<option value="" disabled selected>Choose Skill...</option>';
-        sBase.innerHTML = '<option value="" disabled selected>Choose Basic...</option>';
-        
-        dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option");
-            opt.value = s.name;
-            opt.textContent = s.name;
-            if(s.type === 'cardio') sWarm.appendChild(opt);
-            else if (s.type === 'ball_mastery') sBall.appendChild(opt);
-            else sBase.appendChild(opt);
-        });
-
-        // *** NEW: Add Custom Option ***
-        const customOpt = document.createElement("option");
-        customOpt.value = "custom";
-        customOpt.textContent = "✎ Enter your own...";
-        customOpt.style.fontWeight = "bold"; 
-        customOpt.style.color = "#ea580c";
-        sWarm.appendChild(customOpt);
-    }
+   // --- TRACKER UI POPULATION ---
+    buildDropdowns(0); // Load default (Rookie) list initially
 
     // --- TRACKER EVENTS ---
     const showDrillInfo = (drillName) => {
