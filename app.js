@@ -171,13 +171,17 @@ function checkRoles(user) {
         const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
         return isHead || isAsst;
     });
+    
     if (isDirector) {
         document.getElementById("navCoach").style.display='flex';
         document.getElementById("navAdmin").style.display='flex';
+        if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
+        if(document.getElementById("btnHomeAdmin")) document.getElementById("btnHomeAdmin").style.display='block';
         initCoachDropdown(true, globalTeams); 
         renderAdminTables();
     } else if (myTeams.length > 0) {
         document.getElementById("navCoach").style.display='flex';
+        if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
         initCoachDropdown(false, myTeams);
     }
 }
@@ -668,6 +672,10 @@ const initApp = () => {
 
     // HOME SCREEN ACTIONS
     safeBind("btnHomeStart", "click", () => document.getElementById("navTrack").click());
+    safeBind("btnHomeStats", "click", () => document.getElementById("navStats").click());
+    safeBind("btnHomeCoach", "click", () => document.getElementById("navCoach").click());
+    safeBind("btnHomeAdmin", "click", () => document.getElementById("navAdmin").click());
+    
     safeBind("btnOpenTrophyModal", "click", () => {
         const tc = document.getElementById("trophyCaseCard");
         const dt = document.getElementById("detailedTrophyList");

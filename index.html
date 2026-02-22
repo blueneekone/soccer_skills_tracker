@@ -65,27 +65,55 @@
                 <div class="card-body" style="text-align: center; padding: 30px 15px;">
                     <div style="font-size: 40px; margin-bottom: 10px;">⚽</div>
                     <h2 style="margin:0 0 5px 0; font-size:24px;">Welcome, <span id="homePlayerName">Athlete</span>!</h2>
-                    <p style="opacity: 0.9; font-size: 13px; margin-bottom: 20px;">Ready to get 1% better today?</p>
-                    <button id="btnHomeStart" class="primary-btn" style="background: var(--aggie-gold); color: var(--aggie-blue); border: none; font-weight:900;">START TRAINING</button>
+                    <p style="opacity: 0.9; font-size: 13px; margin-bottom: 5px;">Ready to get 1% better today?</p>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <div class="card" style="flex:1; margin:0; cursor:pointer; border: 2px solid var(--aggie-gold);" id="btnOpenTrophyModal">
-                    <div class="card-body" style="text-align:center; padding: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                
+                <div class="card" id="btnHomeStart" style="margin:0; cursor:pointer; border: 2px solid var(--aggie-blue);">
+                    <div class="card-body" style="text-align:center; padding: 20px 15px;">
+                        <div style="font-size:32px; margin-bottom:5px;">📋</div>
+                        <div style="font-size:12px; font-weight:bold; color:var(--aggie-blue);">Log Workout</div>
+                    </div>
+                </div>
+
+                <div class="card" id="btnHomeStats" style="margin:0; cursor:pointer; border: 2px solid var(--aggie-blue);">
+                    <div class="card-body" style="text-align:center; padding: 20px 15px;">
+                        <div style="font-size:32px; margin-bottom:5px;">📊</div>
+                        <div style="font-size:12px; font-weight:bold; color:var(--aggie-blue);">My Stats</div>
+                    </div>
+                </div>
+
+                <div class="card" id="btnOpenTrophyModal" style="margin:0; cursor:pointer; border: 2px solid var(--aggie-gold);">
+                    <div class="card-body" style="text-align:center; padding: 20px 15px;">
                         <div style="font-size:32px; margin-bottom:5px;">🏆</div>
                         <div style="font-size:12px; font-weight:bold; color:var(--aggie-blue);">Trophy Room</div>
                     </div>
                 </div>
                 
-                <a href="https://www.positionspecific.com/" target="_blank" style="text-decoration: none; flex: 1;">
-                    <div class="card" style="flex:1; margin:0; height:100%; display:flex; flex-direction:column; justify-content:center; background:#f8fafc; border: 2px solid #cbd5e1;">
-                        <div class="card-body" style="text-align:center; padding: 15px;">
+                <a href="https://www.positionspecific.com/" target="_blank" style="text-decoration: none;">
+                    <div class="card" style="margin:0; height:100%; border: 2px solid #cbd5e1; background:#f8fafc;">
+                        <div class="card-body" style="text-align:center; padding: 20px 15px;">
                             <div style="font-size:28px; margin-bottom:5px;">⚡</div>
-                            <div style="font-size:11px; font-weight:bold; color:var(--aggie-blue);">Official Workouts<br><span style="color:#64748b; font-weight:normal;">by Position Specific</span></div>
+                            <div style="font-size:11px; font-weight:bold; color:var(--aggie-blue);">Official Workouts</div>
                         </div>
                     </div>
                 </a>
+
+                <div class="card" id="btnHomeCoach" style="display:none; margin:0; cursor:pointer; border: 2px solid #64748b;">
+                    <div class="card-body" style="text-align:center; padding: 20px 15px;">
+                        <div style="font-size:32px; margin-bottom:5px;">哨</div>
+                        <div style="font-size:12px; font-weight:bold; color:var(--aggie-blue);">Coach Tools</div>
+                    </div>
+                </div>
+
+                <div class="card" id="btnHomeAdmin" style="display:none; margin:0; cursor:pointer; border: 2px solid #64748b;">
+                    <div class="card-body" style="text-align:center; padding: 20px 15px;">
+                        <div style="font-size:32px; margin-bottom:5px;">⚙️</div>
+                        <div style="font-size:12px; font-weight:bold; color:var(--aggie-blue);">Admin</div>
+                    </div>
+                </div>
             </div>
         </div>
 
