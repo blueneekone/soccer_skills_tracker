@@ -41,19 +41,21 @@
         </div>
     </div>
 
-    <div id="setupUI" class="full-screen-center hidden">
+    <div id="setupUI" class="full-screen-center" style="display:none;">
         <div class="auth-card">
-            <h2 class="brand-title">Welcome!</h2>
-            <p class="brand-subtitle">Let's find your athlete.</p>
-            <label class="left-label">1. Select Team</label>
+            <h2 style="color:var(--aggie-blue);">Welcome!</h2>
+            <p style="color:#64748b; margin-bottom: 20px;">Let's find your athlete.</p>
+            <label style="text-align:left;">1. Select Team</label>
             <select id="setupTeamSelect"><option>Loading...</option></select>
-            <label class="left-label">2. Select Athlete</label>
+            <label style="text-align:left;">2. Select Athlete</label>
             <select id="setupPlayerDropdown" disabled><option>Select Team First...</option></select>
-            <div id="setupManualEntry" class="hidden">
-                <label class="warning-label left-label">Not listed? Enter Name:</label>
+            <div id="setupManualEntry" style="display:none;">
+                <label style="text-align:left; color:#d97706;">Not listed? Enter Name:</label>
                 <input id="setupPlayerManual" placeholder="First & Last Name">
             </div>
-            <button id="completeSetupBtn" class="primary-btn mt-20">Connect Profile</button>
+            <button id="completeSetupBtn" class="primary-btn" style="margin-top:20px;">Connect Profile</button>
+            
+            <button id="cancelSetupBtn" style="background:none; border:none; color:#94a3b8; text-decoration:underline; font-size:12px; margin-top:15px; cursor:pointer;">Not you? Sign out</button>
         </div>
     </div>
 

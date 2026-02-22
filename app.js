@@ -212,10 +212,10 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 1. ADMIN BYPASS (UPDATED TO INCLUDE GLOBAL ADMINS)
+            // 1. ADMIN BYPASS (Restored to check global admins)
             const isAppDirector = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
                                   globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
-            
+
             if (isAppDirector) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
             } 
@@ -238,6 +238,7 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 document.getElementById("bottomNav").style.display='flex';
+                setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
                 
                 loadStats();
