@@ -1043,24 +1043,6 @@ const initApp = () => {
         }
     });
 
-    const canvas = document.getElementById("signatureCanvas");
-    if(canvas) {
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        function resizeCanvas() { if(canvas.parentElement) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 120; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#00263A"; } }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500); 
-        function startDraw(e) { isDrawing = true; ctx.beginPath(); draw(e); }
-        function endDraw() { isDrawing = false; ctx.beginPath(); checkSignature(); }
-        function draw(e) { if (!isDrawing) return; e.preventDefault(); isSignatureBlank = false; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
-        function checkSignature() { 
-            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
-            if (!pixelBuffer.some(color => color !== 0)) { isSignatureBlank = true; } else { isSignatureBlank = false; canvas.style.borderColor = "#16a34a"; canvas.style.backgroundColor = "#f0fdf4"; }
-        }
-        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', draw); 
-        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', draw);
-        safeBind("clearSigBtn", "click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); isSignatureBlank = true; canvas.style.borderColor = "#cbd5e1"; canvas.style.backgroundColor = "#fcfcfc"; });
-    }
     // ==========================================
     // PARENT SIGNATURE LOGIC
     // ==========================================
