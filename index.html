@@ -10,61 +10,7 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <style>
-        :root { --aggie-blue: #00263A; --aggie-gold: #BFAE5A; --bg-gray: #f8fafc; --text-dark: #1e293b; --white: #ffffff; --danger: #ef4444; --success: #10b981; }
-        html, body { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); color: var(--text-dark); }
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; padding-bottom: 90px; }
-        .hidden { display: none !important; }
-
-        /* AUTH & SETUP */
-        .full-screen-center { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--aggie-blue); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 340px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
-        .logo-circle { width: 70px; height: 70px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 15px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:35px; border: 4px solid var(--aggie-gold); }
-
-        /* CARDS */
-        .card { background: var(--white); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .card-header { background-color: var(--aggie-blue); color: white; padding: 12px 15px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.5px; }
-        .card-body { padding: 15px; }
-
-        /* INPUTS & BUTTONS */
-        label { display: block; margin-bottom: 6px; font-weight: 700; color: #475569; font-size: 0.75rem; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; }
-        .primary-btn { background-color: var(--aggie-blue); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; text-align: center; transition: opacity 0.2s; }
-        .primary-btn:active { opacity: 0.8; }
-        .secondary-btn { background-color: #e2e8f0; color: var(--text-dark); border: none; padding: 10px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        .action-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
-        .delete-btn { background: #fee2e2; color: #b91c1c; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;}
-        .link-btn { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; margin-right: 5px; }
-
-        /* UTILS */
-        #outcome { display: flex; gap: 8px; margin-bottom: 15px; }
-        .outcome-btn { flex: 1; padding: 15px 5px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; text-align: center; font-weight: bold; color: #64748b; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-direction: column; line-height: 1.2; }
-        .outcome-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); transform: scale(1.02); }
-        .xp-bar-container { width: 100%; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; margin-top: 10px; }
-        .xp-bar-fill { height: 100%; background: var(--aggie-gold); width: 0%; transition: width 0.5s ease; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
-        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; border-radius: 4px; background: #f8fafc; position: relative; cursor: default; }
-        .cal-day.today { border: 2px solid var(--aggie-blue); font-weight: bold; background: white; }
-        .cal-day.has-log { background: #dbeafe; color: #1e40af; font-weight: bold; cursor: pointer; }
-        .cal-dot { width: 4px; height: 4px; background: #1e40af; border-radius: 50%; margin-top: 2px; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .admin-table th { text-align: left; padding: 8px; background: #f1f5f9; color: #64748b; }
-        .admin-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
-        .log-tab { padding: 8px; flex: 1; text-align: center; cursor: pointer; font-size: 11px; background: #f1f5f9; border: 1px solid #e2e8f0; }
-        .log-tab:hover { background: #e2e8f0; }
-        .rank-1 td:nth-child(1) { color: #d97706; font-weight: 900; font-size: 1.2em; } 
-        .rank-2 td:nth-child(1) { color: #64748b; font-weight: 900; font-size: 1.2em; } 
-        .rank-3 td:nth-child(1) { color: #b45309; font-weight: 900; font-size: 1.2em; }
-        
-        /* NAV & MODAL */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #94a3b8; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .nav-item.active { color: var(--aggie-blue); }
-        .nav-icon { font-size: 20px; margin-bottom: 4px; }
-        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(2px); }
-        .modal-content { background-color: white; margin: 10% auto; width: 90%; max-width: 500px; border-radius: 12px; overflow: hidden; }
-        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -346,8 +292,7 @@
                 <div class="card-header">📅 Activity Log</div>
                 <div class="card-body">
                     <div style="text-align:center; font-weight:bold; margin-bottom:10px;" id="calMonthYear">Month Year</div>
-                    <div class="cal-grid" id="calendarDays">
-                        </div>
+                    <div class="cal-grid" id="calendarDays"></div>
                 </div>
             </div>
 
