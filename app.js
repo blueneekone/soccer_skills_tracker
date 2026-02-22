@@ -56,32 +56,41 @@ let userProfile = null;
 const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
 const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
 
-// Centralized Navigation Function (Handles Tabs, Bottom Nav Visibility, and History)
-window.navigateTo = (viewId, navId, addToHistory = true) => {
-    // Hide all views and deactivate tabs
-    navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
-    views.forEach(v => document.getElementById(v)?.style.setProperty('display', 'none'));
+// --- 1. NEW NAVIGATION LOGIC ---
+    window.navigateTo = (viewId, navId) => {
+        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+        const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
+        
+        // Hide all views and remove active classes
+        views.forEach(v => document.getElementById(v)?.classList.add('d-none'));
+        navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
+        
+        // Show selected view and highlight nav tab
+        document.getElementById(viewId)?.classList.remove('d-none');
+        if (navId) document.getElementById(navId)?.classList.add('active');
+        
+        // Trigger specific data loads if needed
+        if(viewId === 'viewStats') loadStats();
+        if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
+        if(viewId === 'viewAdmin') renderAdminTables();
+    };
+
+    // Bind the bottom navigation bar
+    safeBind('navHome', 'click', () => window.navigateTo('viewHome', 'navHome'));
+    safeBind('navTrack', 'click', () => window.navigateTo('viewTracker', 'navTrack'));
+    safeBind('navStats', 'click', () => window.navigateTo('viewStats', 'navStats'));
+    safeBind('navCoach', 'click', () => window.navigateTo('viewCoach', 'navCoach'));
+    safeBind('navAdmin', 'click', () => window.navigateTo('viewAdmin', 'navAdmin'));
+
+    // --- 2. HOME DASHBOARD BUTTONS ---
+    safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
+    safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
     
-    // Show requested view
-    document.getElementById(navId)?.classList.add('active');
-    document.getElementById(viewId)?.style.setProperty('display', 'block');
-    
-    // TOGGLE: Hide bottom nav on Home screen, show it everywhere else
-    const bottomNav = document.getElementById('bottomNav');
-    if (bottomNav) {
-        bottomNav.style.display = (viewId === 'viewHome') ? 'none' : 'flex';
-    }
-    
-    // Trigger view-specific loads
-    if(viewId === 'viewStats') loadStats();
-    if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
-    if(viewId === 'viewAdmin') renderAdminTables();
-    
-    // Push to browser history (for swipe-to-go-back)
-    if(addToHistory) {
-        history.pushState({ view: viewId, nav: navId }, '', `#${viewId}`);
-    }
-};
+    // Send Trophy Room clicks to the Stats page and scroll down
+    safeBind("btnOpenTrophyModal", "click", () => {
+        window.navigateTo('viewStats', 'navStats');
+        setTimeout(() => window.scrollTo({ top: 300, behavior: 'smooth' }), 100);
+    });
 
 // Listen for Native Phone Swipes / Back Button
 window.addEventListener('popstate', (event) => {
@@ -812,7 +821,9 @@ const initApp = () => {
         createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
     });
     
+    // --- 3. LOGOUT BUTTONS ---
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
+    safeBind("appLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
     safeBind("completeSetupBtn", "click", completeUserSetup);
     
     // NAVIGATION BINDINGS (Uses centralized API)
@@ -1024,6 +1035,7 @@ onAuthStateChanged(auth, async (user) => {
                 // Initialize text values first
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
+                setText("homePlayerName", userProfile.playerName.split(" ")[0]);
                 if(document.getElementById("homePlayerName")) {
                     setText("homePlayerName", userProfile.playerName.split(" ")[0]);
                 }
