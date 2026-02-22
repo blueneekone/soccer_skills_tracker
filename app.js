@@ -212,8 +212,11 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            // 1. ADMIN BYPASS
-            if (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) {
+            // 1. ADMIN BYPASS (UPDATED TO INCLUDE GLOBAL ADMINS)
+            const isAppDirector = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
+                                  globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
+            
+            if (isAppDirector) {
                 userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
             } 
             // 2. RETURNING USER
