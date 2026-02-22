@@ -365,13 +365,43 @@ function renderCalendar(logs) {
 }
 
 function renderPlayerTrendChart(logs) {
-    const cvs = document.getElementById('playerTrendChart'); if(!cvs) return;
-    const ctx = cvs.getContext('2d'); if(teamChart) teamChart.destroy();
-    if(playerChart) playerChart.destroy(); // Fix: Use separate variable
-    playerChart = new Chart(ctx, { ... }); // Fix: Assign to separate variable
-    const data = Array(7).fill(0); const labels = [];
-    for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); data[6-i] = logs.filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((s,l)=>s+Number(l.minutes),0); }
-    teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
+    const cvs = document.getElementById('playerTrendChart'); 
+    if(!cvs) return;
+    const ctx = cvs.getContext('2d'); 
+    
+    // 1. Destroy old player chart if it exists
+    if(playerChart) {
+        playerChart.destroy(); 
+    }
+    
+    // 2. Calculate the data for the last 7 days
+    const data = Array(7).fill(0); 
+    const labels = [];
+    for(let i=6; i>=0; i--) { 
+        const d = new Date(); 
+        d.setDate(new Date().getDate()-i); 
+        labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); 
+        data[6-i] = logs
+            .filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString())
+            .reduce((s,l)=>s+Number(l.minutes),0); 
+    }
+    
+    // 3. Render the player chart
+    playerChart = new Chart(ctx, { 
+        type: 'bar', 
+        data: { 
+            labels: labels, 
+            datasets: [{ 
+                data: data, 
+                backgroundColor: "#00263A", 
+                borderRadius: 4 
+            }] 
+        }, 
+        options: { 
+            plugins: { legend: {display:false} }, 
+            scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } 
+        } 
+    });
 }
 
 function renderTeamChart(logs) {
@@ -379,27 +409,24 @@ function renderTeamChart(logs) {
     if(!cvs) return;
     const ctx = cvs.getContext('2d'); 
     
-    // Destroy the existing chart to prevent overlapping glitches when switching teams
+    // 1. Destroy old team chart if it exists
     if(teamChart) {
         teamChart.destroy();
     }
 
+    // 2. Calculate the data for the last 7 days
     const data = Array(7).fill(0); 
     const labels = [];
-    
-    // Calculate totals for the last 7 days
     for(let i=6; i>=0; i--) { 
         const d = new Date(); 
         d.setDate(new Date().getDate() - i); 
         labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); 
-        
-        // Sum the minutes from all players for this specific day
         data[6-i] = logs
             .filter(l => new Date(l.timestamp.seconds * 1000).toDateString() === d.toDateString())
             .reduce((sum, l) => sum + Number(l.minutes), 0); 
     }
     
-    // Render the new chart using the official team navy blue
+    // 3. Render the team chart
     teamChart = new Chart(ctx, { 
         type: 'bar', 
         data: { 
@@ -412,13 +439,8 @@ function renderTeamChart(logs) {
             }] 
         }, 
         options: { 
-            plugins: { 
-                legend: { display: false } 
-            }, 
-            scales: { 
-                x: { grid: { display: false } }, 
-                y: { beginAtZero: true } 
-            } 
+            plugins: { legend: { display: false } }, 
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } 
         } 
     });
 }
