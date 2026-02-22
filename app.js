@@ -246,7 +246,43 @@ async function loadStats() {
         
         let xp = totalMins + (logs.length * 10);
         let lvl = "ROOKIE"; if(xp > 750) lvl = "STARTER"; if(xp > 1500) lvl = "VETERAN"; if(xp > 3000) lvl = "PRO"; if(xp > 6000) lvl = "LEGEND";
-        buildDropdowns(xp);
+
+// --- NEW: Badge & Certificate Logic ---
+        const bStarter = document.getElementById("badgeStarter");
+        const bVeteran = document.getElementById("badgeVeteran");
+        const bPro = document.getElementById("badgePro");
+        const bLegend = document.getElementById("badgeLegend");
+        const certBtn = document.getElementById("claimCertificateBtn");
+
+        // Reset all badges to grey first
+        if(bStarter) { bStarter.style.opacity = "0.3"; bStarter.style.filter = "grayscale(100%)"; }
+        if(bVeteran) { bVeteran.style.opacity = "0.3"; bVeteran.style.filter = "grayscale(100%)"; }
+        if(bPro) { bPro.style.opacity = "0.3"; bPro.style.filter = "grayscale(100%)"; }
+        if(bLegend) { bLegend.style.opacity = "0.3"; bLegend.style.filter = "grayscale(100%)"; }
+        if(certBtn) certBtn.style.display = "none";
+
+        // Light them up based on XP
+        if(xp >= 750) { 
+            lvl = "STARTER"; 
+            if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; }
+        }
+        if(xp >= 1500) { 
+            lvl = "Veteran"; 
+            if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; }
+        }
+        if(xp >= 3000) { 
+            lvl = "Pro"; 
+            if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; }
+        }
+            if(xp >= 6000) { 
+            lvl = "LEGEND"; 
+            if(bLegend) { bLegend.style.opacity = "1"; bLegend.style.filter = "none"; }
+           
+            // Only show the certificate button for actual players, not directors
+            if(certBtn && userProfile.role !== 'admin') certBtn.style.display = "block"; 
+        }
+        
+        if (typeof buildDropdowns === "function") buildDropdowns(xp); // Update dropdown locks
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
             const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
@@ -762,6 +798,17 @@ const initApp = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
             document.getElementById("videoPlayer").src = "";
         }
+    });
+
+// --- CERTIFICATE EVENTS ---
+    safeBind("claimCertificateBtn", "click", () => {
+        document.getElementById("certPlayerName").innerText = userProfile.playerName;
+        document.getElementById("certDate").innerText = new Date().toLocaleDateString();
+        document.getElementById("certModal").style.display = "block";
+    });
+
+    safeBind("closeCertModal", "click", () => {
+        document.getElementById("certModal").style.display = "none";
     });
 
     const timerEl = document.getElementById("timerDisplay");
