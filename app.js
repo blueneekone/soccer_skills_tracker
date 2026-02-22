@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc, updateDoc, writeBatch } 
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 
@@ -9,7 +9,6 @@ import { dbData } from "./data.js";
 // 1. CONFIGURATION & STATE
 // ==========================================
 
-// Visual Error Handler
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("System Error:", message); 
     if (message.includes("null")) return;
@@ -38,7 +37,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// State Variables
 let currentSessionItems = [];
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
@@ -50,7 +48,7 @@ let allSessionsCache = [];
 let userProfile = null; 
 
 // ==========================================
-// 2. CORE FUNCTIONS (DEFINED FIRST)
+// 2. CORE FUNCTIONS
 // ==========================================
 
 const safeBind = (id, event, func) => {
@@ -67,7 +65,6 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
-// Fetch Config
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -87,38 +84,32 @@ async function fetchConfig() {
 
 function logSystemEvent(type, detail) {
     try {
-        addDoc(collection(db, "logs_system"), { 
-            type: type, 
-            detail: detail, 
-            timestamp: new Date(), 
-            user: auth.currentUser ? auth.currentUser.email : 'system' 
-        });
+        addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
     } catch(e) { console.error("Log error", e); }
 }
 
 // Helper: Build Dropdowns dynamically based on XP
 function buildDropdowns(currentXp) {
-    // Determine Numeric Level based on your existing XP logic
     let currentLevelNum = 1; // Rookie
-    if (currentXp >= 6000) currentLevelNum = 5; // Legend
-    else if (currentXp >= 3000) currentLevelNum = 4; // Pro
-    else if (currentXp >= 1500) currentLevelNum = 3; // Veteran
-    else if (currentXp >= 750) currentLevelNum = 2; // Starter
+    if (currentXp >= 3000) currentLevelNum = 5; // Legend
+    else if (currentXp >= 2000) currentLevelNum = 4; // Pro
+    else if (currentXp >= 1000) currentLevelNum = 3; // Veteran
+    else if (currentXp >= 500) currentLevelNum = 2; // Starter
 
     const levelNames = { 1: "Rookie", 2: "Starter", 3: "Veteran", 4: "Pro", 5: "Legend" };
 
     const sWarm = document.getElementById("selectWarmup");
+    const sCore = document.getElementById("selectCore");
     const sBall = document.getElementById("selectBallWork");
     const sBase = document.getElementById("selectBasics");
     
-    if(!sWarm || !sBall || !sBase) return;
+    if(!sWarm || !sBall || !sBase || !sCore) return;
 
-    // Reset dropdowns
     sWarm.innerHTML = '<option value="" disabled selected>Choose Warm-up...</option>';
+    sCore.innerHTML = '<option value="" disabled selected>Choose Core...</option>';
     sBall.innerHTML = '<option value="" disabled selected>Choose Skill...</option>';
     sBase.innerHTML = '<option value="" disabled selected>Choose Basic...</option>';
 
-    // Add Custom Option to Warmup
     const customOpt = document.createElement("option");
     customOpt.value = "custom";
     customOpt.textContent = "✎ Enter your own...";
@@ -126,9 +117,8 @@ function buildDropdowns(currentXp) {
     customOpt.style.color = "#ea580c";
     sWarm.appendChild(customOpt);
 
-    // Populate with Locks
     dbData.foundationSkills.forEach(s => {
-        const reqLvl = s.reqLevel || 1; // Default to 1 if not specified in data.js
+        const reqLvl = s.reqLevel || 1; 
         const isLocked = reqLvl > currentLevelNum;
         
         const opt = document.createElement("option");
@@ -137,12 +127,12 @@ function buildDropdowns(currentXp) {
         opt.disabled = isLocked;
         
         if(s.type === 'cardio') sWarm.appendChild(opt);
+        else if (s.type === 'core') sCore.appendChild(opt);
         else if (s.type === 'ball_mastery') sBall.appendChild(opt);
         else sBase.appendChild(opt);
     });
 }
 
-// Setup Logic
 function initSetupDropdowns() {
     const sel = document.getElementById("setupTeamSelect");
     if(!sel) return;
@@ -173,7 +163,6 @@ async function completeUserSetup() {
     location.reload();
 }
 
-// Role Check
 function checkRoles(user) {
     const email = user.email.toLowerCase();
     const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
@@ -193,11 +182,26 @@ function checkRoles(user) {
     }
 }
 
-// Tracker Logic
+// Tracker Functions
+window.removeSessionItem = (index) => {
+    currentSessionItems.splice(index, 1);
+    renderSession();
+};
+
 function renderSession() {
     const l = document.getElementById("sessionList");
-    if(currentSessionItems.length===0) l.innerHTML='<li>No drills added yet.</li>';
-    else l.innerHTML = currentSessionItems.map((i,idx) => `<li>${idx+1}. ${i.name} (${i.sets}x${i.reps})</li>`).join("");
+    if(currentSessionItems.length === 0) {
+        l.innerHTML='<li style="padding:10px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1;">Empty. Select drills above to build your workout!</li>';
+    } else {
+        l.innerHTML = currentSessionItems.map((i, idx) => `
+            <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:white; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                <div style="text-align:left; line-height:1.2;">
+                    <span style="font-weight:bold; color:var(--aggie-blue); font-size:13px;">${idx+1}. ${i.name}</span><br>
+                    <span style="font-size:11px; color:#64748b;">(${i.sets} x ${i.reps})</span>
+                </div>
+                <button class="delete-btn" onclick="window.removeSessionItem(${idx})" style="padding:6px 12px; font-size:12px; background:#fee2e2; color:#b91c1c;">✕</button>
+            </li>`).join("");
+    }
 }
 
 async function submitWorkout() {
@@ -225,7 +229,6 @@ async function submitWorkout() {
     } catch(e) { alert("Save Failed: "+e.message); }
 }
 
-// Stats Logic
 async function loadStats() {
     if (!userProfile) return;
     let q;
@@ -245,54 +248,44 @@ async function loadStats() {
         setText("statTime", totalMins);
         
         let xp = totalMins + (logs.length * 10);
-        let lvl = "ROOKIE"; if(xp > 750) lvl = "STARTER"; if(xp > 1500) lvl = "VETERAN"; if(xp > 3000) lvl = "PRO"; if(xp > 6000) lvl = "LEGEND";
-
-// --- NEW: Badge & Certificate Logic ---
+        let lvl = "ROOKIE"; 
+        
         const bStarter = document.getElementById("badgeStarter");
         const bVeteran = document.getElementById("badgeVeteran");
         const bPro = document.getElementById("badgePro");
         const bLegend = document.getElementById("badgeLegend");
         const certBtn = document.getElementById("claimCertificateBtn");
 
-        // Reset all badges to grey first
         if(bStarter) { bStarter.style.opacity = "0.3"; bStarter.style.filter = "grayscale(100%)"; }
         if(bVeteran) { bVeteran.style.opacity = "0.3"; bVeteran.style.filter = "grayscale(100%)"; }
         if(bPro) { bPro.style.opacity = "0.3"; bPro.style.filter = "grayscale(100%)"; }
         if(bLegend) { bLegend.style.opacity = "0.3"; bLegend.style.filter = "grayscale(100%)"; }
         if(certBtn) certBtn.style.display = "none";
 
-        // Light them up based on XP
-        if(xp >= 750) { 
-            lvl = "STARTER"; 
-            if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; }
-        }
-        if(xp >= 1500) { 
-            lvl = "Veteran"; 
-            if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; }
-        }
+        if(xp >= 500) { lvl = "STARTER"; if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; } }
+        if(xp >= 1000) { lvl = "VETERAN"; if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; } }
+        if(xp >= 2000) { lvl = "PRO"; if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; } }
         if(xp >= 3000) { 
-            lvl = "Pro"; 
-            if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; }
-        }
-            if(xp >= 6000) { 
             lvl = "LEGEND"; 
             if(bLegend) { bLegend.style.opacity = "1"; bLegend.style.filter = "none"; }
-           
-            // Only show the certificate button for actual players, not directors
             if(certBtn && userProfile.role !== 'admin') certBtn.style.display = "block"; 
         }
         
-        if (typeof buildDropdowns === "function") buildDropdowns(xp); // Update dropdown locks
+        if (typeof buildDropdowns === "function") buildDropdowns(xp);
+
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
-            const bar = document.getElementById("xpBar"); if(bar) bar.style.width = `${Math.min((xp % 500)/500 * 100, 100)}%`;
+            const bar = document.getElementById("xpBar"); 
+            if(bar) bar.style.width = `${Math.min((xp % 1000)/1000 * 100, 100)}%`;
         }
+
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
         renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
     } catch (e) { console.error("Stats Load Error", e); }
 }
 
+// ... [Helper render functions, Admin functions, Export functions remain identical to v35] ...
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarDays");
     if(!grid) return;
@@ -336,7 +329,6 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
-// Coach Dashboard Logic
 function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
     if(!sel) return;
@@ -352,7 +344,6 @@ async function loadCoachDashboard(isDirector, teams) {
     if(!tid) return;
     currentCoachTeamId = tid; 
     
-    // Permission Check
     const userEmail = auth.currentUser.email.toLowerCase();
     const currentTeam = globalTeams.find(t => t.id === tid);
     const isManager = isDirector || (currentTeam && currentTeam.coachEmail.toLowerCase() === userEmail);
@@ -487,7 +478,6 @@ async function manualAddPlayer() {
     loadCoachDashboard(false, globalTeams);
 }
 
-// Utils
 async function parsePDF(e) {
     const f = e.target.files[0]; if(!f) return;
     const txtBox = document.getElementById("rosterTextRaw");
@@ -633,13 +623,12 @@ function runDebugLog() { const c = document.getElementById("logContainer"); if(c
 function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
 
 // ==========================================
-// 3. APP INITIALIZATION (EXECUTED LAST)
+// 3. APP INITIALIZATION
 // ==========================================
 
 const initApp = () => {
-    console.log("App v35 Loaded (Custom Cardio + Auth Fix)");
+    console.log("App v36 Loaded (Home Screen + Core + Remove from Cart)");
 
-    // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
@@ -659,18 +648,17 @@ const initApp = () => {
     });
     
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
-
-    // SETUP UI
     safeBind("completeSetupBtn", "click", completeUserSetup);
     
-    const navs = ['navTrack', 'navStats', 'navCoach', 'navAdmin'];
-    const views = ['viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+    // NAVIGATION WITH HOME
+    const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
+    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
     navs.forEach((nid, i) => {
         safeBind(nid, "click", () => {
             navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
-            views.forEach(v => document.getElementById(v).style.display='none');
-            document.getElementById(nid).classList.add('active');
-            document.getElementById(views[i]).style.display='block';
+            views.forEach(v => document.getElementById(v)?.style.setProperty('display', 'none'));
+            document.getElementById(nid)?.classList.add('active');
+            document.getElementById(views[i])?.style.setProperty('display', 'block');
             
             if(views[i] === 'viewStats') loadStats();
             if(views[i] === 'viewCoach') loadCoachDashboard(false, globalTeams);
@@ -678,10 +666,20 @@ const initApp = () => {
         });
     });
 
-   // --- TRACKER UI POPULATION ---
-    buildDropdowns(0); // Load default (Rookie) list initially
+    // HOME SCREEN ACTIONS
+    safeBind("btnHomeStart", "click", () => document.getElementById("navTrack").click());
+    safeBind("btnOpenTrophyModal", "click", () => {
+        const tc = document.getElementById("trophyCaseCard");
+        const dt = document.getElementById("detailedTrophyList");
+        if(tc && dt) {
+            dt.innerHTML = tc.querySelector('.card-body').innerHTML;
+            document.getElementById("trophyModal").style.display = "block";
+        }
+    });
 
-    // --- TRACKER EVENTS ---
+    // POPULATE DROPDOWNS INITIALLY
+    buildDropdowns(0);
+
     const showDrillInfo = (drillName) => {
         const s = dbData.foundationSkills.find(x => x.name === drillName);
         if(s) {
@@ -701,7 +699,7 @@ const initApp = () => {
         }
     };
 
-    // 1. Warm Up (Updated for Custom)
+    // 1. Warm Up
     safeBind("selectWarmup", "change", (e) => {
         const val = e.target.value;
         const customContainer = document.getElementById("customWarmupContainer");
@@ -719,13 +717,10 @@ const initApp = () => {
     safeBind("addWarmupBtn", "click", () => {
         let n = document.getElementById("selectWarmup").value;
         if(!n) return alert("Select a Warm-up first");
-        
-        // Handle Custom
         if (n === "custom") {
             n = document.getElementById("customWarmupName").value.trim();
             if(!n) return alert("Please type the name of your workout.");
         }
-
         const dist = document.getElementById("cardioDist").value;
         const time = document.getElementById("cardioTime").value;
         let details = "";
@@ -733,17 +728,25 @@ const initApp = () => {
         if (dist && time) details += " / ";
         if (time) details += `${time} min`;
         if (!details) details = "Standard";
-        
         currentSessionItems.push({ name: n, sets: 1, reps: details }); 
         renderSession();
-        
-        // Clear inputs
         document.getElementById("cardioDist").value = "";
         document.getElementById("cardioTime").value = "";
         document.getElementById("customWarmupName").value = "";
     });
 
-    // 2. Ball Handling
+    // 2. Core (NEW)
+    safeBind("selectCore", "change", (e) => showDrillInfo(e.target.value));
+    safeBind("addCoreBtn", "click", () => {
+        const n = document.getElementById("selectCore").value;
+        if(!n) return alert("Select a Core exercise first");
+        const s = document.getElementById("setsCore").value || 3;
+        const r = document.getElementById("repsCore").value || 20;
+        currentSessionItems.push({ name: n, sets: s, reps: r });
+        renderSession();
+    });
+
+    // 3. Ball Handling
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBallWorkBtn", "click", () => {
         const n = document.getElementById("selectBallWork").value;
@@ -754,7 +757,7 @@ const initApp = () => {
         renderSession();
     });
 
-    // 3. Basics
+    // 4. Basics
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBasicsBtn", "click", () => {
         const n = document.getElementById("selectBasics").value;
@@ -769,7 +772,6 @@ const initApp = () => {
     safeBind("btnGCal", "click", addToGoogleCalendar);
     safeBind("btnIcs", "click", downloadIcsFile);
 
-    // EVALUATION
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".outcome-btn").forEach(x => x.classList.remove("active"));
@@ -777,7 +779,16 @@ const initApp = () => {
         }
     });
 
-    // COACH & ADMIN
+    safeBind("claimCertificateBtn", "click", () => {
+        document.getElementById("certPlayerName").innerText = userProfile.playerName;
+        document.getElementById("certDate").innerText = new Date().toLocaleDateString();
+        document.getElementById("certModal").style.display = "block";
+    });
+
+    safeBind("closeCertModal", "click", () => {
+        document.getElementById("certModal").style.display = "none";
+    });
+
     safeBind("rosterPdfInput", "change", parsePDF);
     safeBind("saveParsedRosterBtn", "click", saveRosterList);
     safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
@@ -792,23 +803,11 @@ const initApp = () => {
     safeBind("btnLogDebug", "click", runDebugLog);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
-    // UTILS
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
             document.querySelectorAll(".modal").forEach(m => m.style.display='none');
             document.getElementById("videoPlayer").src = "";
         }
-    });
-
-// --- CERTIFICATE EVENTS ---
-    safeBind("claimCertificateBtn", "click", () => {
-        document.getElementById("certPlayerName").innerText = userProfile.playerName;
-        document.getElementById("certDate").innerText = new Date().toLocaleDateString();
-        document.getElementById("certModal").style.display = "block";
-    });
-
-    safeBind("closeCertModal", "click", () => {
-        document.getElementById("certModal").style.display = "none";
     });
 
     const timerEl = document.getElementById("timerDisplay");
@@ -841,7 +840,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else initApp();
 
 // ==========================================
-// 4. AUTH MONITOR (TRIGGER)
+// 4. AUTH MONITOR (ROUTING TO HOME)
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if(user) {
@@ -872,8 +871,24 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 document.getElementById("bottomNav").style.display='flex';
+                
+                // ROUTE TO HOME BY DEFAULT
+                document.querySelectorAll('.view-section').forEach(v => v.style.display='none');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                
+                const homeView = document.getElementById("viewHome");
+                const homeNav = document.getElementById("navHome");
+                
+                if(homeView) homeView.style.display = 'block';
+                if(homeNav) homeNav.classList.add('active');
+
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
+                // Set first name on Welcome screen
+                if(document.getElementById("homePlayerName")) {
+                    setText("homePlayerName", userProfile.playerName.split(" ")[0]);
+                }
+                
                 loadStats();
                 checkRoles(user);
             } else {

@@ -12,7 +12,13 @@ export const dbData = {
     { id: "fit_bike", name: "Biking", type: "cardio", category: "Endurance", drill: "Cycling", video: "", image: "" },
     { id: "fit_swim", name: "Swimming", type: "cardio", category: "Endurance", drill: "Swimming", video: "", image: "" },
 
-    // --- BALL MASTERY (Stage 2 - From PDF) ---
+    // --- CORE WORKOUTS (Stage 2) ---
+    { id: "core_1", name: "Push-ups", type: "core", category: "Strength", drill: "Standard push-ups. Keep your back straight.", video: "", image: "" },
+    { id: "core_2", name: "Sit-ups", type: "core", category: "Strength", drill: "Standard sit-ups.", video: "", image: "" },
+    { id: "core_3", name: "Plank", type: "core", category: "Strength", drill: "Hold a forearm plank.", video: "", image: "" },
+    { id: "core_4", name: "Lunges", type: "core", category: "Strength", drill: "Alternating forward lunges.", video: "", image: "" },
+
+    // --- BALL MASTERY (Stage 3) ---
     // Level 1
     { id: "bm_l1_1", name: "Sole Drag (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
     { id: "bm_l1_2", name: "Inside Taps (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
@@ -45,7 +51,7 @@ export const dbData = {
     { id: "bm_l6_3", name: "Juggle: Left Foot (No Bounce)", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "", reqLevel: 6 },
     { id: "bm_l6_4", name: "Juggle: Both Feet (No Bounce)", type: "ball_mastery", category: "Level 6 Juggling", drill: "Stationary Ball Mastery L6", video: "", image: "", reqLevel: 6 },
 
-    // --- BRILLIANT BASICS (Stage 3 - Foundation) ---
+    // --- BRILLIANT BASICS (Stage 4 Foundation) ---
     // --- Level 1 skills already unlocked for all players, no reqLevel needed ---
     { id: "fm_1", name: "Shift Right | Outside Right", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Right using Outside Right Foot", video: "https://youtu.be/imq7LHS_KwM", image: "" },
     { id: "fm_2", name: "Shift Left | Outside Left", type: "foundation", category: "1v1 Take Ons F/S", drill: "Shift Left using Outside Left Foot", video: "https://youtu.be/ply2uRiYik0", image: "" },
