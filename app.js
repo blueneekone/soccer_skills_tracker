@@ -48,7 +48,51 @@ let allSessionsCache = [];
 let userProfile = null; 
 
 // ==========================================
-// 2. CORE FUNCTIONS
+// 2. CORE NAVIGATION & ROUTING API
+// ==========================================
+
+const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
+const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+
+// Centralized Navigation Function (Handles Tabs, Bottom Nav Visibility, and History)
+window.navigateTo = (viewId, navId, addToHistory = true) => {
+    // Hide all views and deactivate tabs
+    navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
+    views.forEach(v => document.getElementById(v)?.style.setProperty('display', 'none'));
+    
+    // Show requested view
+    document.getElementById(navId)?.classList.add('active');
+    document.getElementById(viewId)?.style.setProperty('display', 'block');
+    
+    // TOGGLE: Hide bottom nav on Home screen, show it everywhere else
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) {
+        bottomNav.style.display = (viewId === 'viewHome') ? 'none' : 'flex';
+    }
+    
+    // Trigger view-specific loads
+    if(viewId === 'viewStats') loadStats();
+    if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
+    if(viewId === 'viewAdmin') renderAdminTables();
+    
+    // Push to browser history (for swipe-to-go-back)
+    if(addToHistory) {
+        history.pushState({ view: viewId, nav: navId }, '', `#${viewId}`);
+    }
+};
+
+// Listen for Native Phone Swipes / Back Button
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.view && event.state.nav) {
+        window.navigateTo(event.state.view, event.state.nav, false); // false prevents infinite loop
+    } else {
+        // Fallback to home
+        window.navigateTo('viewHome', 'navHome', false);
+    }
+});
+
+// ==========================================
+// 3. HELPERS
 // ==========================================
 
 const safeBind = (id, event, func) => {
@@ -88,13 +132,12 @@ function logSystemEvent(type, detail) {
     } catch(e) { console.error("Log error", e); }
 }
 
-// Helper: Build Dropdowns dynamically based on XP
 function buildDropdowns(currentXp) {
-    let currentLevelNum = 1; // Rookie
-    if (currentXp >= 3000) currentLevelNum = 5; // Legend
-    else if (currentXp >= 2000) currentLevelNum = 4; // Pro
-    else if (currentXp >= 1000) currentLevelNum = 3; // Veteran
-    else if (currentXp >= 500) currentLevelNum = 2; // Starter
+    let currentLevelNum = 1; 
+    if (currentXp >= 3000) currentLevelNum = 5; 
+    else if (currentXp >= 2000) currentLevelNum = 4; 
+    else if (currentXp >= 1000) currentLevelNum = 3; 
+    else if (currentXp >= 500) currentLevelNum = 2; 
 
     const levelNames = { 1: "Rookie", 2: "Starter", 3: "Veteran", 4: "Pro", 5: "Legend" };
 
@@ -289,7 +332,6 @@ async function loadStats() {
     } catch (e) { console.error("Stats Load Error", e); }
 }
 
-// ... [Helper render functions, Admin functions, Export functions remain identical to v35] ...
 function renderCalendar(logs) {
     const grid = document.getElementById("calendarDays");
     if(!grid) return;
@@ -623,15 +665,14 @@ async function loadLogs(col) {
 }
 function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
 function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
-function runDebugLog() { const c = document.getElementById("logContainer"); if(c) c.innerHTML = `<pre>${JSON.stringify({v:"7.0", u:auth.currentUser?.email}, null, 2)}</pre>`; }
 function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
 
 // ==========================================
-// 3. APP INITIALIZATION
+// 4. APP INITIALIZATION
 // ==========================================
 
 const initApp = () => {
-    console.log("App v36 Loaded (Home Screen + Core + Remove from Cart)");
+    console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
 
     safeBind("loginGoogleBtn", "click", () => {
         const provider = new GoogleAuthProvider();
@@ -654,27 +695,16 @@ const initApp = () => {
     safeBind("globalLogoutBtn", "click", () => signOut(auth).then(() => location.reload()));
     safeBind("completeSetupBtn", "click", completeUserSetup);
     
-    // NAVIGATION WITH HOME
-    const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
-    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+    // NAVIGATION BINDINGS (Uses centralized API)
     navs.forEach((nid, i) => {
-        safeBind(nid, "click", () => {
-            navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
-            views.forEach(v => document.getElementById(v)?.style.setProperty('display', 'none'));
-            document.getElementById(nid)?.classList.add('active');
-            document.getElementById(views[i])?.style.setProperty('display', 'block');
-            
-            if(views[i] === 'viewStats') loadStats();
-            if(views[i] === 'viewCoach') loadCoachDashboard(false, globalTeams);
-            if(views[i] === 'viewAdmin') renderAdminTables();
-        });
+        safeBind(nid, "click", () => window.navigateTo(views[i], nid));
     });
 
-    // HOME SCREEN ACTIONS
-    safeBind("btnHomeStart", "click", () => document.getElementById("navTrack").click());
-    safeBind("btnHomeStats", "click", () => document.getElementById("navStats").click());
-    safeBind("btnHomeCoach", "click", () => document.getElementById("navCoach").click());
-    safeBind("btnHomeAdmin", "click", () => document.getElementById("navAdmin").click());
+    // HOME SCREEN DASHBOARD ACTIONS
+    safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
+    safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
+    safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
+    safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
     safeBind("btnOpenTrophyModal", "click", () => {
         const tc = document.getElementById("trophyCaseCard");
@@ -685,7 +715,6 @@ const initApp = () => {
         }
     });
 
-    // POPULATE DROPDOWNS INITIALLY
     buildDropdowns(0);
 
     const showDrillInfo = (drillName) => {
@@ -707,7 +736,6 @@ const initApp = () => {
         }
     };
 
-    // 1. Warm Up
     safeBind("selectWarmup", "change", (e) => {
         const val = e.target.value;
         const customContainer = document.getElementById("customWarmupContainer");
@@ -743,7 +771,6 @@ const initApp = () => {
         document.getElementById("customWarmupName").value = "";
     });
 
-    // 2. Core (NEW)
     safeBind("selectCore", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addCoreBtn", "click", () => {
         const n = document.getElementById("selectCore").value;
@@ -754,7 +781,6 @@ const initApp = () => {
         renderSession();
     });
 
-    // 3. Ball Handling
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBallWorkBtn", "click", () => {
         const n = document.getElementById("selectBallWork").value;
@@ -765,7 +791,6 @@ const initApp = () => {
         renderSession();
     });
 
-    // 4. Basics
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
     safeBind("addBasicsBtn", "click", () => {
         const n = document.getElementById("selectBasics").value;
@@ -808,7 +833,6 @@ const initApp = () => {
     safeBind("addAdminBtn", "click", addAdmin);
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
     safeBind("btnLogSecurity", "click", runSecurityScan);
-    safeBind("btnLogDebug", "click", runDebugLog);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
     document.querySelectorAll(".close-btn").forEach(b => {
@@ -848,7 +872,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else initApp();
 
 // ==========================================
-// 4. AUTH MONITOR (ROUTING TO HOME)
+// 5. AUTH MONITOR & INITIAL ROUTE
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if(user) {
@@ -878,27 +902,22 @@ onAuthStateChanged(auth, async (user) => {
 
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
-                document.getElementById("bottomNav").style.display='flex';
                 
-                // ROUTE TO HOME BY DEFAULT
-                document.querySelectorAll('.view-section').forEach(v => v.style.display='none');
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                
-                const homeView = document.getElementById("viewHome");
-                const homeNav = document.getElementById("navHome");
-                
-                if(homeView) homeView.style.display = 'block';
-                if(homeNav) homeNav.classList.add('active');
-
+                // Initialize text values first
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
-                // Set first name on Welcome screen
                 if(document.getElementById("homePlayerName")) {
                     setText("homePlayerName", userProfile.playerName.split(" ")[0]);
                 }
                 
+                // Trigger initial load sequences safely
                 loadStats();
                 checkRoles(user);
+
+                // Start History at Home without duplicating
+                history.replaceState({ view: 'viewHome', nav: 'navHome' }, '', '#viewHome');
+                window.navigateTo('viewHome', 'navHome', false);
+
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
                 initSetupDropdowns();
