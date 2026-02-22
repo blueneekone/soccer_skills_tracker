@@ -18,7 +18,7 @@ export const dbData = {
     { id: "core_3", name: "Plank", type: "core", category: "Strength", drill: "Hold a forearm plank.", video: "", image: "" },
     { id: "core_4", name: "Lunges", type: "core", category: "Strength", drill: "Alternating forward lunges.", video: "", image: "" },
 
-    // --- BALL MASTERY (Stage 3) ---
+    // --- STATIONARY BALL MASTERY (Stage 3) ---
     // Level 1
     { id: "bm_l1_1", name: "Sole Drag (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
     { id: "bm_l1_2", name: "Inside Taps (Both Feet)", type: "ball_mastery", category: "Level 1", drill: "Stationary Ball Mastery L1", video: "", image: "" },
