@@ -45,6 +45,7 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let currentCoachTeamId = null;
 let teamChart = null;
+let playerChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
@@ -253,18 +254,15 @@ function renderSession() {
 }
 
 async function submitWorkout() {
-    if(currentSessionItems.length === 0) return alert("Add drills!");
+    if(currentSessionItems.length===0) return alert("Add drills!");
     
-    // Safety check: ensure user profile is fully loaded before submitting
-    if(!userProfile || !userProfile.teamId || !userProfile.playerName) {
-        return alert("Profile loading... please wait a second and try again.");
-    }
-
-    const tid = userProfile.teamId;
-    const pname = userProfile.playerName;
+    // Safely fallback without assuming DOM elements exist
+    const tid = userProfile ? userProfile.teamId : null;
+    const pname = userProfile ? userProfile.playerName : null;
     const mins = document.getElementById("totalMinutes").value;
     
-    if(!mins) return alert("Please enter Total Duration.");
+    if(!tid || !pname) return alert("User profile is incomplete. Please complete setup.");
+    if(!mins) return alert("Fill all info");
 
     try {
         await addDoc(collection(db, "reps"), {
@@ -369,9 +367,60 @@ function renderCalendar(logs) {
 function renderPlayerTrendChart(logs) {
     const cvs = document.getElementById('playerTrendChart'); if(!cvs) return;
     const ctx = cvs.getContext('2d'); if(teamChart) teamChart.destroy();
+    if(playerChart) playerChart.destroy(); // Fix: Use separate variable
+    playerChart = new Chart(ctx, { ... }); // Fix: Assign to separate variable
     const data = Array(7).fill(0); const labels = [];
     for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(new Date().getDate()-i); labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); data[6-i] = logs.filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString()).reduce((s,l)=>s+Number(l.minutes),0); }
     teamChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: "#00263A", borderRadius: 4 }] }, options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } });
+}
+
+function renderTeamChart(logs) {
+    const cvs = document.getElementById('teamChart'); 
+    if(!cvs) return;
+    const ctx = cvs.getContext('2d'); 
+    
+    // Destroy the existing chart to prevent overlapping glitches when switching teams
+    if(teamChart) {
+        teamChart.destroy();
+    }
+
+    const data = Array(7).fill(0); 
+    const labels = [];
+    
+    // Calculate totals for the last 7 days
+    for(let i=6; i>=0; i--) { 
+        const d = new Date(); 
+        d.setDate(new Date().getDate() - i); 
+        labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); 
+        
+        // Sum the minutes from all players for this specific day
+        data[6-i] = logs
+            .filter(l => new Date(l.timestamp.seconds * 1000).toDateString() === d.toDateString())
+            .reduce((sum, l) => sum + Number(l.minutes), 0); 
+    }
+    
+    // Render the new chart using the official team navy blue
+    teamChart = new Chart(ctx, { 
+        type: 'bar', 
+        data: { 
+            labels: labels, 
+            datasets: [{ 
+                label: 'Total Team Minutes',
+                data: data, 
+                backgroundColor: "#00263A", 
+                borderRadius: 4 
+            }] 
+        }, 
+        options: { 
+            plugins: { 
+                legend: { display: false } 
+            }, 
+            scales: { 
+                x: { grid: { display: false } }, 
+                y: { beginAtZero: true } 
+            } 
+        } 
+    });
 }
 
 async function renderTeamLeaderboard(tid, logsOverride = []) {
@@ -426,6 +475,7 @@ async function loadCoachDashboard(isDirector, teams) {
         });
         setText("coachActivePlayers", Object.keys(players).length);
         setText("coachTotalReps", count);
+        renderTeamChart(allSessionsCache);
         
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
