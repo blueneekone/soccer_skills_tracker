@@ -19,9 +19,7 @@ html, body {
 }
 
 .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-
-/* REMOVED !important so app.js can override this with inline styles */
-.hidden { display: none; } 
+.hidden { display: none; }
 
 /* --- AUTH & SETUP --- */
 .full-screen-center { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--aggie-blue); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
