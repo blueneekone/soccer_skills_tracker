@@ -75,23 +75,6 @@ const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin']
         if(viewId === 'viewAdmin') renderAdminTables();
     };
 
-    // Bind the bottom navigation bar
-    safeBind('navHome', 'click', () => window.navigateTo('viewHome', 'navHome'));
-    safeBind('navTrack', 'click', () => window.navigateTo('viewTracker', 'navTrack'));
-    safeBind('navStats', 'click', () => window.navigateTo('viewStats', 'navStats'));
-    safeBind('navCoach', 'click', () => window.navigateTo('viewCoach', 'navCoach'));
-    safeBind('navAdmin', 'click', () => window.navigateTo('viewAdmin', 'navAdmin'));
-
-    // --- 2. HOME DASHBOARD BUTTONS ---
-    safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
-    safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
-    
-    // Send Trophy Room clicks to the Stats page and scroll down
-    safeBind("btnOpenTrophyModal", "click", () => {
-        window.navigateTo('viewStats', 'navStats');
-        setTimeout(() => window.scrollTo({ top: 300, behavior: 'smooth' }), 100);
-    });
-
 // Listen for Native Phone Swipes / Back Button
 window.addEventListener('popstate', (event) => {
     if (event.state && event.state.view && event.state.nav) {
