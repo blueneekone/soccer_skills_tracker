@@ -100,12 +100,12 @@ function logSystemEvent(type, detail) {
 function buildDropdowns(currentXp) {
     // Determine Numeric Level based on your existing XP logic
     let currentLevelNum = 1; // Rookie
-    if (currentXp >= 5000) currentLevelNum = 5; // Legend
-    else if (currentXp >= 4000) currentLevelNum = 4; // All-star
-    else if (currentXp >= 2000) currentLevelNum = 3; // Pro
-    else if (currentXp >= 1000) currentLevelNum = 2; // Starter
+    if (currentXp >= 6000) currentLevelNum = 5; // Legend
+    else if (currentXp >= 3000) currentLevelNum = 4; // Pro
+    else if (currentXp >= 1500) currentLevelNum = 3; // Veteran
+    else if (currentXp >= 750) currentLevelNum = 2; // Starter
 
-    const levelNames = { 1: "Rookie", 2: "Starter", 3: "Pro", 4: "All-star", 5: "Legend" };
+    const levelNames = { 1: "Rookie", 2: "Starter", 3: "Veteran", 4: "Pro", 5: "Legend" };
 
     const sWarm = document.getElementById("selectWarmup");
     const sBall = document.getElementById("selectBallWork");
@@ -245,7 +245,7 @@ async function loadStats() {
         setText("statTime", totalMins);
         
         let xp = totalMins + (logs.length * 10);
-        let lvl = "ROOKIE"; if(xp > 500) lvl = "STARTER"; if(xp > 1500) lvl = "PRO"; if(xp > 3000) lvl = "LEGEND";
+        let lvl = "ROOKIE"; if(xp > 750) lvl = "STARTER"; if(xp > 1500) lvl = "VETERAN"; if(xp > 3000) lvl = "PRO"; if(xp > 6000) lvl = "LEGEND";
         buildDropdowns(xp);
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
