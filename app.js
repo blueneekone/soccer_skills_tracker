@@ -1,6 +1,4 @@
-// Import from your brand new module!
 import { auth, db } from "./firebase-config.js"; 
-
 import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
