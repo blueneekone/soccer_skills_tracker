@@ -787,7 +787,6 @@ const initApp = () => {
     };
 
     // AUTH BINDINGS
-    // AUTH BINDINGS
     safeBind("loginGoogleBtn", "click", () => {
         console.log("Redirecting to Google..."); 
         const provider = new GoogleAuthProvider();
@@ -817,6 +816,13 @@ const initApp = () => {
         createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
     });
     
+    // --- HOME NAVIGATION BINDINGS ---
+    // This handles the bottom navigation bar button
+    safeBind('navHome', 'click', () => window.navigateTo('viewHome', 'navHome'));
+
+    // This handles the "Aggies FC" title click
+    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
+
    // --- 3. LOGOUT BUTTONS ---
     const handleLogout = async () => {
         try {
