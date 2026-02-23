@@ -530,6 +530,7 @@ async function loadCoachDashboard(isDirector, teams) {
 
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
+        document.getElementById("hwPlayerSelect").innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
 
         if(listEl) {
             if(combinedList.length > 0) {
@@ -772,6 +773,105 @@ function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.
 // 4. APP INITIALIZATION
 // ==========================================
 
+// ==========================================
+// SCHEDULE & HOMEWORK LOGIC
+// ==========================================
+
+async function loadHomeDashboard() {
+    if(!userProfile) return;
+    
+    // 1. Load Team Schedule
+    const schedList = document.getElementById("homeScheduleList");
+    if(schedList) {
+        schedList.innerHTML = "<li class='session-empty'>Loading schedule...</li>";
+        const q = query(collection(db, "schedules"), where("teamId", "==", userProfile.teamId));
+        const snap = await getDocs(q);
+        const events = [];
+        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+        
+        // Sort by date chronologically
+        events.sort((a,b) => a.date.localeCompare(b.date));
+        
+        let html = "";
+        events.forEach(e => {
+            html += `<li class="session-item">
+                <div><b style="color:var(--aggie-blue);">${e.type}</b>: ${e.location}<br>
+                <span style="font-size:11px; color:#64748b;">${e.date} @ ${e.time}</span></div>
+            </li>`;
+        });
+        schedList.innerHTML = html || "<li class='session-empty'>No upcoming events.</li>";
+    }
+
+    // 2. Load Player Homework
+    const hwList = document.getElementById("homeHomeworkList");
+    if(hwList) {
+        hwList.innerHTML = "<li class='session-empty'>Loading assignments...</li>";
+        const q2 = query(collection(db, "assignments"), where("player", "==", userProfile.playerName));
+        const snap2 = await getDocs(q2);
+        let html = "";
+        snap2.forEach(d => {
+            const hw = d.data();
+            if(hw.status === "active") {
+                html += `<li class="session-item" style="border-left: 4px solid #ea580c;">
+                    <div><b>${hw.drill}</b><br><span style="font-size:11px; color:#64748b;">Due: ${hw.dueDate}</span></div>
+                    <button class="action-btn" style="background:#16a34a; padding:6px 10px;" onclick="window.completeHomework('${d.id}')">Done</button>
+                </li>`;
+            }
+        });
+        hwList.innerHTML = html || "<li class='session-empty'>No active assignments!</li>";
+    }
+}
+
+async function loadCoachScheduleAndHW() {
+    const tid = currentCoachTeamId;
+    if(!tid) return;
+
+    // Load Coach Schedule View
+    const cSched = document.getElementById("coachScheduleList");
+    if(cSched) {
+        const q = query(collection(db, "schedules"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const events = [];
+        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+        events.sort((a,b) => a.date.localeCompare(b.date));
+        
+        cSched.innerHTML = events.map(e => `<li class="session-item">
+            <div><b>${e.type}</b>: ${e.location}<br><span style="font-size:10px;">${e.date}</span></div>
+            <button class="delete-btn" onclick="window.deleteSchedule('${e.id}')">✕</button>
+        </li>`).join("") || "<li class='session-empty'>No events scheduled.</li>";
+    }
+
+    // Load Coach Homework View
+    const cHw = document.getElementById("coachHwList");
+    if(cHw) {
+        const q2 = query(collection(db, "assignments"), where("teamId", "==", tid));
+        const snap2 = await getDocs(q2);
+        let html = "";
+        snap2.forEach(d => {
+            const hw = d.data();
+            if(hw.status === "active") {
+                html += `<li class="session-item">
+                    <div><b>${hw.player}</b><br><span style="font-size:10px;">${hw.drill} (Due: ${hw.dueDate})</span></div>
+                    <button class="delete-btn" onclick="window.deleteHomework('${d.id}')">✕</button>
+                </li>`;
+            }
+        });
+        cHw.innerHTML = html || "<li class='session-empty'>No active homework.</li>";
+    }
+}
+
+// Global actions for the inline buttons
+window.completeHomework = async (id) => {
+    await updateDoc(doc(db, "assignments", id), { status: "completed" });
+    loadHomeDashboard();
+};
+window.deleteSchedule = async (id) => {
+    if(confirm("Delete this event?")) { await deleteDoc(doc(db, "schedules", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); }
+};
+window.deleteHomework = async (id) => {
+    if(confirm("Delete this assignment?")) { await deleteDoc(doc(db, "assignments", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); }
+};
+
 const initApp = () => {
     console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
 
@@ -984,7 +1084,53 @@ const initApp = () => {
         }
     });
 
-// ==========================================
+document.querySelectorAll(".close-btn").forEach(b => {
+        b.onclick = () => {
+            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
+            document.getElementById("videoPlayer").src = "";
+        }
+    });
+
+    // --- SCHEDULE & HOMEWORK BINDINGS ---
+    safeBind("addScheduleBtn", "click", async () => {
+        const date = document.getElementById("scheduleDate").value;
+        const time = document.getElementById("scheduleTime").value;
+        const type = document.getElementById("scheduleType").value;
+        const loc = document.getElementById("scheduleLocation").value;
+        const tid = currentCoachTeamId;
+        
+        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
+        
+        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
+        document.getElementById("scheduleLocation").value = ""; // Clear input
+        loadCoachScheduleAndHW();
+        loadHomeDashboard();
+    });
+
+    safeBind("assignHwBtn", "click", async () => {
+        const player = document.getElementById("hwPlayerSelect").value;
+        const drill = document.getElementById("hwDrillSelect").value;
+        const due = document.getElementById("hwDueDate").value;
+        const tid = currentCoachTeamId;
+        
+        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+        
+        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+        loadCoachScheduleAndHW();
+        loadHomeDashboard();
+    });
+
+    // Populate the Homework Drill Dropdown
+    const hwDrillSelect = document.getElementById("hwDrillSelect");
+    if(hwDrillSelect && hwDrillSelect.options.length <= 1) {
+        hwDrillSelect.innerHTML = '<option value="">Select Drill...</option>';
+        dbData.foundationSkills.forEach(s => {
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+            hwDrillSelect.appendChild(opt);
+        });
+    }
+
+    // ==========================================
     // COACH STOPWATCH LOGIC
     // ==========================================
     let swInterval = null;
@@ -1167,6 +1313,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 // Trigger initial load sequences safely
                 loadStats();
+                loadHomeDashboard();
                 checkRoles(user);
 
                 // Start History at Home without duplicating

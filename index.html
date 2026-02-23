@@ -85,6 +85,24 @@
                     </div>
                 </div>
 
+            <div class="card" style="margin-top: 20px; border-color: var(--aggie-blue);">
+                <div class="card-header">📅 Team Schedule</div>
+                <div class="card-body p-0">
+                    <ul id="homeScheduleList" class="session-list" style="margin:0; border:none; border-radius: 0 0 12px 12px;">
+                        <li class="session-empty">Loading schedule...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card" style="border-color: #ea580c;">
+                <div class="card-header" style="background: #ea580c;">🎯 My Homework</div>
+                <div class="card-body p-0">
+                    <ul id="homeHomeworkList" class="session-list" style="margin:0; border:none; border-radius: 0 0 12px 12px;">
+                        <li class="session-empty">Loading assignments...</li>
+                    </ul>
+                </div>
+            </div>
+
                 <div class="card dash-card" id="btnHomeStats">
                     <div class="dash-card-body">
                         <div class="dash-icon">📊</div>
@@ -293,6 +311,45 @@
                     
                     <ul id="lapList" style="list-style: none; padding: 0; margin: 0; text-align: left; max-height: 150px; overflow-y: auto; font-size: 13px; color: #64748b;">
                         </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">📅 Manage Schedule</div>
+                <div class="card-body">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="date" id="scheduleDate" style="flex:1; margin:0; font-size: 12px; padding: 10px;">
+                        <input type="time" id="scheduleTime" style="flex:1; margin:0; font-size: 12px; padding: 10px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="scheduleType" style="flex: 1; margin:0; font-size: 12px; padding: 10px;">
+                            <option value="Practice">Practice</option>
+                            <option value="Game">Game</option>
+                            <option value="Event">Event</option>
+                        </select>
+                        <input type="text" id="scheduleLocation" placeholder="Location / Opponent" style="flex:2; margin:0; font-size: 12px; padding: 10px;">
+                    </div>
+                    <button id="addScheduleBtn" class="primary-btn btn-blue" style="padding: 10px; font-size: 14px;">+ Add Event</button>
+                    
+                    <ul id="coachScheduleList" class="session-list" style="margin-top: 15px;"></ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" style="background: #ea580c;">🎯 Assign Homework</div>
+                <div class="card-body">
+                    <label>Select Player</label>
+                    <select id="hwPlayerSelect" style="font-size: 12px; padding: 10px;"><option>Loading...</option></select>
+                    
+                    <label>Select Drill</label>
+                    <select id="hwDrillSelect" style="font-size: 12px; padding: 10px;"><option>Loading...</option></select>
+                    
+                    <label>Due Date</label>
+                    <input type="date" id="hwDueDate" style="font-size: 12px; padding: 10px;">
+                    
+                    <button id="assignHwBtn" class="primary-btn btn-orange" style="padding: 10px; font-size: 14px; background: #ea580c;">+ Assign Drill</button>
+                    
+                    <ul id="coachHwList" class="session-list" style="margin-top: 15px;"></ul>
                 </div>
             </div>
 
