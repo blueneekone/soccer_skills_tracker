@@ -785,14 +785,29 @@ const initApp = () => {
     };
 
     // AUTH BINDINGS
-    safeBind("loginGoogleBtn", "click", () => {
-        console.log("Redirecting to Google..."); 
+    safeBind("loginGoogleBtn", "click", async () => {
         const provider = new GoogleAuthProvider();
-        signInWithRedirect(auth, provider); // Mobile-safe! No popups!
+        
+        // Detect if the user is on a mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        try {
+            if (isMobile) {
+                // Mobile: Bypasses strict Safari/Chrome popup blockers
+                signInWithRedirect(auth, provider); 
+            } else {
+                // Desktop: Uses a clean popup for a faster experience
+                await signInWithPopup(auth, provider); 
+            }
+        } catch (error) {
+            showAuthError("Google Login Failed: " + error.message);
+        }
     });
     
     // Catch the result when the mobile browser redirects back to your app
-    getRedirectResult(auth).catch(e => {
+    getRedirectResult(auth).then((result) => {
+        if (result) console.log("Mobile redirect successful!");
+    }).catch(e => {
         showAuthError("Google Login Failed: " + e.message);
     });
     
