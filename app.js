@@ -1124,16 +1124,6 @@ document.querySelectorAll(".close-btn").forEach(b => {
         loadHomeDashboard();
     });
 
-    // Populate the Homework Drill Dropdown
-    const hwDrillSelect = document.getElementById("hwDrillSelect");
-    if(hwDrillSelect && hwDrillSelect.options.length <= 1) {
-        hwDrillSelect.innerHTML = '<option value="">Select Drill...</option>';
-        dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
-            hwDrillSelect.appendChild(opt);
-        });
-    }
-
     // --- SCHEDULE & HOMEWORK BINDINGS ---
     
     // 1. Populate the Homework Drill Dropdown
