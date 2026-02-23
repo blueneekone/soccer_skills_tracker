@@ -63,6 +63,7 @@ const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin']
         if(viewId === 'viewStats') loadStats();
         if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
         if(viewId === 'viewAdmin') renderAdminTables();
+        if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
     };
 
 // Listen for Native Phone Swipes / Back Button
@@ -1042,8 +1043,9 @@ const initApp = () => {
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
         
-        function resizeCanvas() { 
-            if(canvas.parentElement) { 
+       function resizeCanvas() { 
+            // ADDED: && canvas.parentElement.offsetWidth > 0
+            if(canvas.parentElement && canvas.parentElement.offsetWidth > 0) { 
                 canvas.width = canvas.parentElement.offsetWidth; 
                 canvas.height = 120; 
                 ctx.lineWidth = 2; 
