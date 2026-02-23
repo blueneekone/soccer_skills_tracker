@@ -4,6 +4,10 @@ import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvi
 import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
+import { 
+    handleGoogleLogin, checkMobileRedirect, handleEmailLogin, 
+    handleEmailSignup, handleLogout, initSetupDropdowns, completeUserSetup 
+} from "./modules/auth.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -157,36 +161,6 @@ function buildDropdowns(currentXp) {
         else if (s.type === 'ball_mastery') sBall.appendChild(opt);
         else sBase.appendChild(opt);
     });
-}
-
-function initSetupDropdowns() {
-    const sel = document.getElementById("setupTeamSelect");
-    if(!sel) return;
-    sel.innerHTML = '<option value="">Select Team...</option>';
-    globalTeams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
-    sel.onchange = async (e) => {
-        const tid = e.target.value;
-        const pSel = document.getElementById("setupPlayerDropdown");
-        pSel.disabled = false;
-        pSel.innerHTML = '<option value="">Loading Roster...</option>';
-        const snap = await getDoc(doc(db, "rosters", tid));
-        pSel.innerHTML = '<option value="">Select Your Child...</option>';
-        if(snap.exists() && snap.data().players) {
-            snap.data().players.sort().forEach(p => { const o = document.createElement("option"); o.value=p; o.textContent=p; pSel.appendChild(o); });
-        }
-        pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
-    };
-    const drop = document.getElementById("setupPlayerDropdown");
-    if(drop) drop.onchange = (e) => { document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none"; };
-}
-
-async function completeUserSetup() {
-    const tid = document.getElementById("setupTeamSelect").value;
-    let pname = document.getElementById("setupPlayerDropdown").value;
-    if (pname === "manual") pname = document.getElementById("setupPlayerManual").value.trim();
-    if(!tid || !pname) return alert("Please select a team and player name.");
-    await setDoc(doc(db, "users", auth.currentUser.email), { teamId: tid, playerName: pname, joinedAt: new Date() });
-    location.reload();
 }
 
 function checkRoles(user) {
@@ -528,11 +502,6 @@ async function loadCoachDashboard(isDirector, teams) {
 
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
-        const hwPlayer = document.getElementById("hwPlayerSelect");
-        if(hwPlayer) {
-            hwPlayer.innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
-        }
-        document.getElementById("hwPlayerSelect").innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
 
         if(listEl) {
             if(combinedList.length > 0) {
@@ -775,187 +744,18 @@ function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.
 // 4. APP INITIALIZATION
 // ==========================================
 
-// ==========================================
-// SCHEDULE & HOMEWORK LOGIC
-// ==========================================
-
-async function loadHomeDashboard() {
-    if(!userProfile) return;
-    
-    // 1. Load Team Schedule
-    const schedList = document.getElementById("homeScheduleList");
-    if(schedList) {
-        schedList.innerHTML = "<li class='session-empty'>Loading schedule...</li>";
-        const q = query(collection(db, "schedules"), where("teamId", "==", userProfile.teamId));
-        const snap = await getDocs(q);
-        const events = [];
-        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
-        
-        // Sort by date chronologically
-        events.sort((a,b) => a.date.localeCompare(b.date));
-        
-        let html = "";
-        events.forEach(e => {
-            html += `<li class="session-item">
-                <div><b style="color:var(--aggie-blue);">${e.type}</b>: ${e.location}<br>
-                <span style="font-size:11px; color:#64748b;">${e.date} @ ${e.time}</span></div>
-            </li>`;
-        });
-        schedList.innerHTML = html || "<li class='session-empty'>No upcoming events.</li>";
-    }
-
-    // 2. Load Player Homework
-    const hwList = document.getElementById("homeHomeworkList");
-    if(hwList) {
-        hwList.innerHTML = "<li class='session-empty'>Loading assignments...</li>";
-        const q2 = query(collection(db, "assignments"), where("player", "==", userProfile.playerName));
-        const snap2 = await getDocs(q2);
-        let html = "";
-        snap2.forEach(d => {
-            const hw = d.data();
-            if(hw.status === "active") {
-                html += `<li class="session-item" style="border-left: 4px solid #ea580c;">
-                    <div><b>${hw.drill}</b><br><span style="font-size:11px; color:#64748b;">Due: ${hw.dueDate}</span></div>
-                    <button class="action-btn" style="background:#16a34a; padding:6px 10px;" onclick="window.completeHomework('${d.id}')">Done</button>
-                </li>`;
-            }
-        });
-        hwList.innerHTML = html || "<li class='session-empty'>No active assignments!</li>";
-    }
-}
-
-async function loadCoachScheduleAndHW() {
-    const tid = currentCoachTeamId;
-    if(!tid) return;
-
-    // Load Coach Schedule View
-    const cSched = document.getElementById("coachScheduleList");
-    if(cSched) {
-        const q = query(collection(db, "schedules"), where("teamId", "==", tid));
-        const snap = await getDocs(q);
-        const events = [];
-        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
-        events.sort((a,b) => a.date.localeCompare(b.date));
-        
-        cSched.innerHTML = events.map(e => `<li class="session-item">
-            <div><b>${e.type}</b>: ${e.location}<br><span style="font-size:10px;">${e.date}</span></div>
-            <button class="delete-btn" onclick="window.deleteSchedule('${e.id}')">✕</button>
-        </li>`).join("") || "<li class='session-empty'>No events scheduled.</li>";
-    }
-
-    // Load Coach Homework View
-    const cHw = document.getElementById("coachHwList");
-    if(cHw) {
-        const q2 = query(collection(db, "assignments"), where("teamId", "==", tid));
-        const snap2 = await getDocs(q2);
-        let html = "";
-        snap2.forEach(d => {
-            const hw = d.data();
-            if(hw.status === "active") {
-                html += `<li class="session-item">
-                    <div><b>${hw.player}</b><br><span style="font-size:10px;">${hw.drill} (Due: ${hw.dueDate})</span></div>
-                    <button class="delete-btn" onclick="window.deleteHomework('${d.id}')">✕</button>
-                </li>`;
-            }
-        });
-        cHw.innerHTML = html || "<li class='session-empty'>No active homework.</li>";
-    }
-}
-
-// Global actions for the inline buttons
-window.completeHomework = async (id) => {
-    await updateDoc(doc(db, "assignments", id), { status: "completed" });
-    loadHomeDashboard();
-};
-window.deleteSchedule = async (id) => {
-    if(confirm("Delete this event?")) { await deleteDoc(doc(db, "schedules", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); }
-};
-window.deleteHomework = async (id) => {
-    if(confirm("Delete this assignment?")) { await deleteDoc(doc(db, "assignments", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); }
-};
-
 const initApp = () => {
     console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
 
-// Helper function to show errors on screen instead of alerts
-    const showAuthError = (msg) => {
-        const errEl = document.getElementById("authErrorMsg");
-        if(errEl) {
-            errEl.style.display = 'block';
-            errEl.innerText = msg;
-        } else {
-            alert(msg);
-        }
-    };
-
-    // AUTH BINDINGS
-    safeBind("loginGoogleBtn", "click", async () => {
-        const provider = new GoogleAuthProvider();
-        
-        // Detect if the user is on a mobile device
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        try {
-            if (isMobile) {
-                // Mobile: Bypasses strict Safari/Chrome popup blockers
-                signInWithRedirect(auth, provider); 
-            } else {
-                // Desktop: Uses a clean popup for a faster experience
-                await signInWithPopup(auth, provider); 
-            }
-        } catch (error) {
-            showAuthError("Google Login Failed: " + error.message);
-        }
-    });
-    
-    // Catch the result when the mobile browser redirects back to your app
-    getRedirectResult(auth).then((result) => {
-        if (result) console.log("Mobile redirect successful!");
-    }).catch(e => {
-        showAuthError("Google Login Failed: " + e.message);
-    });
-    
-    safeBind("loginEmailBtn", "click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        
-        if(!e || !p) return showAuthError("Please enter both an email and password.");
-        
-        signInWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
-    });
-    
-    safeBind("signupEmailBtn", "click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        
-        if(!e || !p) return showAuthError("Please enter an email and a password to sign up.");
-        
-        createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
-    });
-    
-    // --- HOME NAVIGATION BINDINGS ---
-    // This handles the bottom navigation bar button
-    safeBind('navHome', 'click', () => window.navigateTo('viewHome', 'navHome'));
-
-    // This handles the "Aggies FC" title click
-    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
-
-   // --- 3. LOGOUT BUTTONS ---
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            window.location.replace(window.location.pathname); // Forces a hard reload back to login
-        } catch (error) {
-            alert("Logout Failed: " + error.message);
-        }
-    };
-    
+    // --- 1. AUTH BINDINGS (via modules/auth.js) ---
+    checkMobileRedirect();
+    safeBind("loginGoogleBtn", "click", handleGoogleLogin);
+    safeBind("loginEmailBtn", "click", handleEmailLogin);
+    safeBind("signupEmailBtn", "click", handleEmailSignup);
     safeBind("globalLogoutBtn", "click", handleLogout);
     safeBind("appLogoutBtn", "click", handleLogout);
-    
-    // --- 4. ACCOUNT SETUP ---
     safeBind("completeSetupBtn", "click", completeUserSetup);
-    
+
     // NAVIGATION BINDINGS (Uses centralized API)
     navs.forEach((nid, i) => {
         safeBind(nid, "click", () => window.navigateTo(views[i], nid));
@@ -1109,82 +909,6 @@ const initApp = () => {
             if (drillInfoBox) drillInfoBox.style.display = 'none';
         }
     });
-
-    // --- SCHEDULE & HOMEWORK BINDINGS ---
-    safeBind("addScheduleBtn", "click", async () => {
-        const date = document.getElementById("scheduleDate").value;
-        const time = document.getElementById("scheduleTime").value;
-        const type = document.getElementById("scheduleType").value;
-        const loc = document.getElementById("scheduleLocation").value;
-        const tid = currentCoachTeamId;
-        
-        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
-        
-        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
-        document.getElementById("scheduleLocation").value = ""; // Clear input
-        loadCoachScheduleAndHW();
-        loadHomeDashboard();
-    });
-
-    safeBind("assignHwBtn", "click", async () => {
-        const player = document.getElementById("hwPlayerSelect").value;
-        const drill = document.getElementById("hwDrillSelect").value;
-        const due = document.getElementById("hwDueDate").value;
-        const tid = currentCoachTeamId;
-        
-        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
-        
-        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
-        loadCoachScheduleAndHW();
-        loadHomeDashboard();
-    });
-
-    // --- SCHEDULE & HOMEWORK BINDINGS ---
-    
-    // 1. Populate the Homework Drill Dropdown
-    const hwDrillSelect = document.getElementById("hwDrillSelect");
-    if(hwDrillSelect) {
-        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
-        dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); 
-            opt.value = s.name; 
-            opt.textContent = s.name;
-            hwDrillSelect.appendChild(opt);
-        });
-    }
-
-    // 2. Bind the Schedule Button
-    safeBind("addScheduleBtn", "click", async () => {
-        const date = document.getElementById("scheduleDate").value;
-        const time = document.getElementById("scheduleTime").value;
-        const type = document.getElementById("scheduleType").value;
-        const loc = document.getElementById("scheduleLocation").value;
-        const tid = currentCoachTeamId;
-        
-        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
-        
-        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
-        document.getElementById("scheduleLocation").value = ""; 
-        alert("Event Added!");
-        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
-        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
-    });
-
-    // 3. Bind the Assign Homework Button
-    safeBind("assignHwBtn", "click", async () => {
-        const player = document.getElementById("hwPlayerSelect").value;
-        const drill = document.getElementById("hwDrillSelect").value;
-        const due = document.getElementById("hwDueDate").value;
-        const tid = currentCoachTeamId;
-        
-        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
-        
-        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
-        alert("Homework Assigned!");
-        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
-        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
-    });
-
     // ==========================================
     // COACH STOPWATCH LOGIC
     // ==========================================
@@ -1368,7 +1092,6 @@ onAuthStateChanged(auth, async (user) => {
                 
                 // Trigger initial load sequences safely
                 loadStats();
-                loadHomeDashboard();
                 checkRoles(user);
 
                 // Start History at Home without duplicating
@@ -1377,7 +1100,7 @@ onAuthStateChanged(auth, async (user) => {
 
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
-                initSetupDropdowns();
+                initSetupDropdowns(globalTeams);
             }
         } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
     } else {
