@@ -4,6 +4,10 @@ import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvi
 import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
+import { 
+    handleGoogleLogin, checkMobileRedirect, handleEmailLogin, 
+    handleEmailSignup, handleLogout, initSetupDropdowns, completeUserSetup 
+} from "./modules/auth.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -157,36 +161,6 @@ function buildDropdowns(currentXp) {
         else if (s.type === 'ball_mastery') sBall.appendChild(opt);
         else sBase.appendChild(opt);
     });
-}
-
-function initSetupDropdowns() {
-    const sel = document.getElementById("setupTeamSelect");
-    if(!sel) return;
-    sel.innerHTML = '<option value="">Select Team...</option>';
-    globalTeams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
-    sel.onchange = async (e) => {
-        const tid = e.target.value;
-        const pSel = document.getElementById("setupPlayerDropdown");
-        pSel.disabled = false;
-        pSel.innerHTML = '<option value="">Loading Roster...</option>';
-        const snap = await getDoc(doc(db, "rosters", tid));
-        pSel.innerHTML = '<option value="">Select Your Child...</option>';
-        if(snap.exists() && snap.data().players) {
-            snap.data().players.sort().forEach(p => { const o = document.createElement("option"); o.value=p; o.textContent=p; pSel.appendChild(o); });
-        }
-        pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
-    };
-    const drop = document.getElementById("setupPlayerDropdown");
-    if(drop) drop.onchange = (e) => { document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none"; };
-}
-
-async function completeUserSetup() {
-    const tid = document.getElementById("setupTeamSelect").value;
-    let pname = document.getElementById("setupPlayerDropdown").value;
-    if (pname === "manual") pname = document.getElementById("setupPlayerManual").value.trim();
-    if(!tid || !pname) return alert("Please select a team and player name.");
-    await setDoc(doc(db, "users", auth.currentUser.email), { teamId: tid, playerName: pname, joinedAt: new Date() });
-    location.reload();
 }
 
 function checkRoles(user) {
@@ -773,85 +747,15 @@ function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.
 const initApp = () => {
     console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
 
-// Helper function to show errors on screen instead of alerts
-    const showAuthError = (msg) => {
-        const errEl = document.getElementById("authErrorMsg");
-        if(errEl) {
-            errEl.style.display = 'block';
-            errEl.innerText = msg;
-        } else {
-            alert(msg);
-        }
-    };
-
-    // AUTH BINDINGS
-    safeBind("loginGoogleBtn", "click", async () => {
-        const provider = new GoogleAuthProvider();
-        
-        // Detect if the user is on a mobile device
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        try {
-            if (isMobile) {
-                // Mobile: Bypasses strict Safari/Chrome popup blockers
-                signInWithRedirect(auth, provider); 
-            } else {
-                // Desktop: Uses a clean popup for a faster experience
-                await signInWithPopup(auth, provider); 
-            }
-        } catch (error) {
-            showAuthError("Google Login Failed: " + error.message);
-        }
-    });
-    
-    // Catch the result when the mobile browser redirects back to your app
-    getRedirectResult(auth).then((result) => {
-        if (result) console.log("Mobile redirect successful!");
-    }).catch(e => {
-        showAuthError("Google Login Failed: " + e.message);
-    });
-    
-    safeBind("loginEmailBtn", "click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        
-        if(!e || !p) return showAuthError("Please enter both an email and password.");
-        
-        signInWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
-    });
-    
-    safeBind("signupEmailBtn", "click", () => {
-        const e = document.getElementById("authEmail").value;
-        const p = document.getElementById("authPassword").value;
-        
-        if(!e || !p) return showAuthError("Please enter an email and a password to sign up.");
-        
-        createUserWithEmailAndPassword(auth, e, p).catch(err => showAuthError(err.message));
-    });
-    
-    // --- HOME NAVIGATION BINDINGS ---
-    // This handles the bottom navigation bar button
-    safeBind('navHome', 'click', () => window.navigateTo('viewHome', 'navHome'));
-
-    // This handles the "Aggies FC" title click
-    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
-
-   // --- 3. LOGOUT BUTTONS ---
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            window.location.replace(window.location.pathname); // Forces a hard reload back to login
-        } catch (error) {
-            alert("Logout Failed: " + error.message);
-        }
-    };
-    
+    // --- 1. AUTH BINDINGS (via modules/auth.js) ---
+    checkMobileRedirect();
+    safeBind("loginGoogleBtn", "click", handleGoogleLogin);
+    safeBind("loginEmailBtn", "click", handleEmailLogin);
+    safeBind("signupEmailBtn", "click", handleEmailSignup);
     safeBind("globalLogoutBtn", "click", handleLogout);
     safeBind("appLogoutBtn", "click", handleLogout);
-    
-    // --- 4. ACCOUNT SETUP ---
     safeBind("completeSetupBtn", "click", completeUserSetup);
-    
+
     // NAVIGATION BINDINGS (Uses centralized API)
     navs.forEach((nid, i) => {
         safeBind(nid, "click", () => window.navigateTo(views[i], nid));
@@ -1196,7 +1100,7 @@ onAuthStateChanged(auth, async (user) => {
 
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
-                initSetupDropdowns();
+                initSetupDropdowns(globalTeams);
             }
         } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
     } else {
