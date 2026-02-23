@@ -889,14 +889,29 @@ const initApp = () => {
     };
 
     // AUTH BINDINGS
-    safeBind("loginGoogleBtn", "click", () => {
-        console.log("Redirecting to Google..."); 
+    safeBind("loginGoogleBtn", "click", async () => {
         const provider = new GoogleAuthProvider();
-        signInWithRedirect(auth, provider); // Mobile-safe! No popups!
+        
+        // Detect if the user is on a mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        try {
+            if (isMobile) {
+                // Mobile: Bypasses strict Safari/Chrome popup blockers
+                signInWithRedirect(auth, provider); 
+            } else {
+                // Desktop: Uses a clean popup for a faster experience
+                await signInWithPopup(auth, provider); 
+            }
+        } catch (error) {
+            showAuthError("Google Login Failed: " + error.message);
+        }
     });
     
     // Catch the result when the mobile browser redirects back to your app
-    getRedirectResult(auth).catch(e => {
+    getRedirectResult(auth).then((result) => {
+        if (result) console.log("Mobile redirect successful!");
+    }).catch(e => {
         showAuthError("Google Login Failed: " + e.message);
     });
     
@@ -1079,17 +1094,19 @@ const initApp = () => {
     safeBind("btnLogSecurity", "click", runSecurityScan);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
+    // --- MODAL & POPUP CLOSE BUTTONS ---
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
-            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
-            document.getElementById("videoPlayer").src = "";
-        }
-    });
-
-document.querySelectorAll(".close-btn").forEach(b => {
-        b.onclick = () => {
-            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
-            document.getElementById("videoPlayer").src = "";
+            // 1. Hide all standard modals (like the Video Player, Day View, and Certificate)
+            document.querySelectorAll(".modal").forEach(m => m.style.display = 'none');
+            
+            // 2. Stop the YouTube video from playing in the background
+            const videoPlayer = document.getElementById("videoPlayer");
+            if (videoPlayer) videoPlayer.src = "";
+            
+            // 3. Hide the Drill Info Box (which is a card, not a modal)
+            const drillInfoBox = document.getElementById("drillInfoBox");
+            if (drillInfoBox) drillInfoBox.style.display = 'none';
         }
     });
 
