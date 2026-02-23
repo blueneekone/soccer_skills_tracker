@@ -975,14 +975,22 @@ const initApp = () => {
     safeBind("btnLogSecurity", "click", runSecurityScan);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
+    // --- MODAL & POPUP CLOSE BUTTONS ---
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
-            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
-            document.getElementById("videoPlayer").src = "";
+            // 1. Hide all standard modals (like the Video Player, Day View, and Certificate)
+            document.querySelectorAll(".modal").forEach(m => m.style.display = 'none');
+            
+            // 2. Stop the YouTube video from playing in the background
+            const videoPlayer = document.getElementById("videoPlayer");
+            if (videoPlayer) videoPlayer.src = "";
+            
+            // 3. Hide the Drill Info Box (which is a card, not a modal)
+            const drillInfoBox = document.getElementById("drillInfoBox");
+            if (drillInfoBox) drillInfoBox.style.display = 'none';
         }
     });
-
-// ==========================================
+    // ==========================================
     // COACH STOPWATCH LOGIC
     // ==========================================
     let swInterval = null;
