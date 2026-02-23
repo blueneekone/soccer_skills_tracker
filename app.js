@@ -757,6 +757,8 @@ const initApp = () => {
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION BINDINGS (Uses centralized API)
+    // Make the top "Aggies FC" title return to the home dashboard
+    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
     navs.forEach((nid, i) => {
         safeBind(nid, "click", () => window.navigateTo(views[i], nid));
     });

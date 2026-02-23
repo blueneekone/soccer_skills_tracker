@@ -5,7 +5,7 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
-  authDomain: "soccer-skills-tracker.firebaseapp.com",
+  authDomain: "soccer.sstracker.app",
   projectId: "soccer-skills-tracker",
   storageBucket: "soccer-skills-tracker.firebasestorage.app",
   messagingSenderId: "884044129977",
