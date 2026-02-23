@@ -530,6 +530,10 @@ async function loadCoachDashboard(isDirector, teams) {
 
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
+        const hwPlayer = document.getElementById("hwPlayerSelect");
+        if(hwPlayer) {
+            hwPlayer.innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
+        }
         document.getElementById("hwPlayerSelect").innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
 
         if(listEl) {
@@ -1129,6 +1133,52 @@ document.querySelectorAll(".close-btn").forEach(b => {
             hwDrillSelect.appendChild(opt);
         });
     }
+
+    // --- SCHEDULE & HOMEWORK BINDINGS ---
+    
+    // 1. Populate the Homework Drill Dropdown
+    const hwDrillSelect = document.getElementById("hwDrillSelect");
+    if(hwDrillSelect) {
+        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
+        dbData.foundationSkills.forEach(s => {
+            const opt = document.createElement("option"); 
+            opt.value = s.name; 
+            opt.textContent = s.name;
+            hwDrillSelect.appendChild(opt);
+        });
+    }
+
+    // 2. Bind the Schedule Button
+    safeBind("addScheduleBtn", "click", async () => {
+        const date = document.getElementById("scheduleDate").value;
+        const time = document.getElementById("scheduleTime").value;
+        const type = document.getElementById("scheduleType").value;
+        const loc = document.getElementById("scheduleLocation").value;
+        const tid = currentCoachTeamId;
+        
+        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
+        
+        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
+        document.getElementById("scheduleLocation").value = ""; 
+        alert("Event Added!");
+        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
+        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
+    });
+
+    // 3. Bind the Assign Homework Button
+    safeBind("assignHwBtn", "click", async () => {
+        const player = document.getElementById("hwPlayerSelect").value;
+        const drill = document.getElementById("hwDrillSelect").value;
+        const due = document.getElementById("hwDueDate").value;
+        const tid = currentCoachTeamId;
+        
+        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+        
+        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+        alert("Homework Assigned!");
+        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
+        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
+    });
 
     // ==========================================
     // COACH STOPWATCH LOGIC
