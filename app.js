@@ -447,6 +447,101 @@ async function renderTeamLeaderboard(tid, logsOverride = []) {
     table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
+// ==========================================
+// SCHEDULE & HOMEWORK LOGIC
+// ==========================================
+
+async function loadHomeDashboard() {
+    if(!userProfile) return;
+    
+    // Admin uses the team selected in Coach Tools. Players use their assigned team.
+    const targetTeamId = userProfile.role === 'admin' && currentCoachTeamId ? currentCoachTeamId : userProfile.teamId;
+    const targetPlayer = userProfile.role === 'admin' ? null : userProfile.playerName;
+
+    const schedList = document.getElementById("homeScheduleList");
+    if(schedList) {
+        if(!targetTeamId) {
+            schedList.innerHTML = "<li class='session-empty'>Select a team in Coach Tools to view schedule.</li>";
+        } else {
+            schedList.innerHTML = "<li class='session-empty'>Loading schedule...</li>";
+            const q = query(collection(db, "schedules"), where("teamId", "==", targetTeamId));
+            const snap = await getDocs(q);
+            const events = [];
+            snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+            events.sort((a,b) => a.date.localeCompare(b.date));
+            let html = "";
+            events.forEach(e => {
+                html += `<li class="session-item">
+                    <div><b style="color:var(--aggie-blue);">${e.type}</b>: ${e.location}<br>
+                    <span style="font-size:11px; color:#64748b;">${e.date} @ ${e.time}</span></div>
+                </li>`;
+            });
+            schedList.innerHTML = html || "<li class='session-empty'>No upcoming events.</li>";
+        }
+    }
+
+    const hwList = document.getElementById("homeHomeworkList");
+    if(hwList) {
+        if(userProfile.role === 'admin') {
+            hwList.innerHTML = "<li class='session-empty' style='color:#ea580c;'>Admins don't receive personal homework. Assign it in Coach Tools!</li>";
+        } else {
+            hwList.innerHTML = "<li class='session-empty'>Loading assignments...</li>";
+            const q2 = query(collection(db, "assignments"), where("player", "==", targetPlayer));
+            const snap2 = await getDocs(q2);
+            let html = "";
+            snap2.forEach(d => {
+                const hw = d.data();
+                if(hw.status === "active") {
+                    html += `<li class="session-item" style="border-left: 4px solid #ea580c;">
+                        <div><b>${hw.drill}</b><br><span style="font-size:11px; color:#64748b;">Due: ${hw.dueDate}</span></div>
+                        <button class="action-btn" style="background:#16a34a; padding:6px 10px;" onclick="window.completeHomework('${d.id}')">Done</button>
+                    </li>`;
+                }
+            });
+            hwList.innerHTML = html || "<li class='session-empty'>No active assignments!</li>";
+        }
+    }
+}
+
+async function loadCoachScheduleAndHW() {
+    const tid = currentCoachTeamId;
+    if(!tid) return;
+
+    const cSched = document.getElementById("coachScheduleList");
+    if(cSched) {
+        const q = query(collection(db, "schedules"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const events = [];
+        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+        events.sort((a,b) => a.date.localeCompare(b.date));
+        cSched.innerHTML = events.map(e => `<li class="session-item">
+            <div><b>${e.type}</b>: ${e.location}<br><span style="font-size:10px;">${e.date}</span></div>
+            <button class="delete-btn" onclick="window.deleteSchedule('${e.id}')">✕</button>
+        </li>`).join("") || "<li class='session-empty'>No events scheduled.</li>";
+    }
+
+    const cHw = document.getElementById("coachHwList");
+    if(cHw) {
+        const q2 = query(collection(db, "assignments"), where("teamId", "==", tid));
+        const snap2 = await getDocs(q2);
+        let html = "";
+        snap2.forEach(d => {
+            const hw = d.data();
+            if(hw.status === "active") {
+                html += `<li class="session-item">
+                    <div><b>${hw.player}</b><br><span style="font-size:10px;">${hw.drill} (Due: ${hw.dueDate})</span></div>
+                    <button class="delete-btn" onclick="window.deleteHomework('${d.id}')">✕</button>
+                </li>`;
+            }
+        });
+        cHw.innerHTML = html || "<li class='session-empty'>No active homework.</li>";
+    }
+}
+
+window.completeHomework = async (id) => { await updateDoc(doc(db, "assignments", id), { status: "completed" }); loadHomeDashboard(); };
+window.deleteSchedule = async (id) => { if(confirm("Delete event?")) { await deleteDoc(doc(db, "schedules", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); } };
+window.deleteHomework = async (id) => { if(confirm("Delete assignment?")) { await deleteDoc(doc(db, "assignments", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); } };
+
 function initCoachDropdown(isDirector, teams) {
     const sel = document.getElementById("adminTeamSelect");
     if(!sel) return;
@@ -502,6 +597,20 @@ async function loadCoachDashboard(isDirector, teams) {
 
         const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
         const combinedList = Array.from(combinedSet).sort();
+
+// Populate Homework Player Dropdown with fallback for empty rosters
+        const hwPlayer = document.getElementById("hwPlayerSelect");
+        if(hwPlayer) {
+            if(combinedList.length > 0) {
+                hwPlayer.innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
+            } else {
+                hwPlayer.innerHTML = `<option value="">No players on roster</option>`;
+            }
+        }
+        
+        // Refresh the Coach lists AND the Home Dashboard when the team changes
+        loadCoachScheduleAndHW();
+        loadHomeDashboard();
 
         if(listEl) {
             if(combinedList.length > 0) {
@@ -895,6 +1004,51 @@ const initApp = () => {
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
     safeBind("btnLogSecurity", "click", runSecurityScan);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
+// --- SCHEDULE & HOMEWORK BINDINGS ---
+    
+    // 1. Populate the Homework Drill Dropdown
+    const hwDrillSelect = document.getElementById("hwDrillSelect");
+    if(hwDrillSelect) {
+        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
+        dbData.foundationSkills.forEach(s => {
+            const opt = document.createElement("option"); 
+            opt.value = s.name; 
+            opt.textContent = s.name;
+            hwDrillSelect.appendChild(opt);
+        });
+    }
+
+    // 2. Bind the Schedule Button
+    safeBind("addScheduleBtn", "click", async () => {
+        const date = document.getElementById("scheduleDate").value;
+        const time = document.getElementById("scheduleTime").value;
+        const type = document.getElementById("scheduleType").value;
+        const loc = document.getElementById("scheduleLocation").value;
+        const tid = currentCoachTeamId;
+        
+        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
+        
+        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
+        document.getElementById("scheduleLocation").value = ""; 
+        alert("Event Added!");
+        loadCoachScheduleAndHW();
+        loadHomeDashboard();
+    });
+
+    // 3. Bind the Assign Homework Button
+    safeBind("assignHwBtn", "click", async () => {
+        const player = document.getElementById("hwPlayerSelect").value;
+        const drill = document.getElementById("hwDrillSelect").value;
+        const due = document.getElementById("hwDueDate").value;
+        const tid = currentCoachTeamId;
+        
+        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+        
+        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+        alert("Homework Assigned!");
+        loadCoachScheduleAndHW();
+        loadHomeDashboard();
+    });
 
     // --- MODAL & POPUP CLOSE BUTTONS ---
     document.querySelectorAll(".close-btn").forEach(b => {
@@ -1094,6 +1248,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 // Trigger initial load sequences safely
                 loadStats();
+                loadHomeDashboard();
                 checkRoles(user);
 
                 // Start History at Home without duplicating
