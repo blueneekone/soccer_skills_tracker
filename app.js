@@ -1,21 +1,10 @@
-import { auth, db } from "./firebase-config.js"; 
-import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, addDoc, deleteDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { dbData } from "./data.js";
-import { 
-    handleGoogleLogin, checkMobileRedirect, handleEmailLogin, 
-    handleEmailSignup, handleLogout, initSetupDropdowns, completeUserSetup
-} from "./modules/auth.js";
-import { 
-    renderCalendar, renderPlayerTrendChart, 
-    renderTeamChart, renderTeamLeaderboard, loadPlayerFeedback 
-} from "./modules/stats.js";
-import { 
-    initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, 
-    addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId 
-} from "./modules/coach.js";
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
+import { renderCalendar, renderPlayerTrendChart, renderTeamChart, renderTeamLeaderboard, loadPlayerFeedback } from "./modules/stats.js";
+import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId } from "./modules/coach.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -43,8 +32,6 @@ let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
 let isSignatureBlank = true;
-let currentCoachTeamId = null;
-let allSessionsCache = [];
 let userProfile = null; 
 
 // ==========================================
