@@ -8,12 +8,12 @@
   "icons": [
     {
       "src": "Images/Phoenixes_Logo_2026.png",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/png"
     },
     {
       "src": "Images/Phoenixes_Logo_2026.png",
-      "sizes": "512x512",
+      "sizes": "any",
       "type": "image/png"
     }
   ]
