@@ -49,7 +49,7 @@ const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
 const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
 
 // --- 1. NEW NAVIGATION LOGIC ---
-    window.navigateTo = (viewId, navId) => {
+    window.navigateTo = (viewId, navId, addToHistory = true) => {
         const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
         const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
         
@@ -66,6 +66,11 @@ const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin']
         if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
         if(viewId === 'viewAdmin') renderAdminTables();
         if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
+
+        // Push to phone history so the native back swipe works!
+        if (addToHistory) {
+            history.pushState({ view: viewId, nav: navId }, '', `#${viewId}`);
+        }
     };
 
 // Listen for Native Phone Swipes / Back Button
