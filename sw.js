@@ -1,16 +1,20 @@
-// sw.js
 self.addEventListener('install', (e) => {
-    console.log('[Service Worker] Installed');
-    // Forces the waiting service worker to become the active service worker
     self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
-    console.log('[Service Worker] Activated');
+    // Take immediate control of the page
+    e.waitUntil(self.clients.claim());
 });
 
-// The browser REQUIRES a fetch listener to officially install the PWA
 self.addEventListener('fetch', (e) => {
-    // For now, just let all network requests pass through normally
-    return;
+    // 1. DO NOT INTERCEPT FIREBASE AUTHENTICATION
+    // This allows Google Login to work perfectly
+    if (e.request.url.includes('/__/')) {
+        return false; 
+    }
+
+    // 2. PASS EVERYTHING ELSE TO THE NETWORK
+    // This satisfies Chrome's requirement for a valid PWA
+    e.respondWith(fetch(e.request));
 });

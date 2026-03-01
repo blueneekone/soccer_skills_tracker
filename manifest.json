@@ -1,7 +1,7 @@
 {
   "name": "Aggies FC Skills Tracker",
   "short_name": "Aggies FC",
-  "start_url": "/index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#00263A",
   "theme_color": "#00263A",
