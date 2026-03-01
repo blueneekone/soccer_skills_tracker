@@ -492,9 +492,20 @@ async function loadHomeDashboard() {
             snap2.forEach(d => {
                 const hw = d.data();
                 if(hw.status === "active") {
-                    html += `<li class="session-item" style="border-left: 4px solid #ea580c;">
-                        <div><b>${hw.drill}</b><br><span style="font-size:11px; color:#64748b;">Due: ${hw.dueDate}</span></div>
-                        <button class="action-btn" style="background:#16a34a; padding:6px 10px;" onclick="window.completeHomework('${d.id}')">Done</button>
+                    // Support both the new Array format and the old String format
+                    let drillSummary = "";
+                    if (Array.isArray(hw.drills)) {
+                        drillSummary = hw.drills.map(d => `• ${d.name} <span style="color:#64748b;">(${d.sets}x${d.reps})</span>`).join("<br>");
+                    } else {
+                        drillSummary = hw.drill; // Fallback for old assignments
+                    }
+
+                    html += `<li class="session-item" style="border-left: 4px solid #ea580c; align-items: flex-start;">
+                        <div style="flex:1;">
+                            <span style="font-size:11px; color:#ea580c; font-weight:bold; text-transform:uppercase;">Due: ${hw.dueDate}</span><br>
+                            <div style="font-size:13px; margin-top:4px; line-height:1.4;">${drillSummary}</div>
+                        </div>
+                        <button class="action-btn" style="background:#16a34a; padding:8px 12px; height:fit-content; margin-top:10px;" onclick="window.completeHomework('${d.id}')">Done</button>
                     </li>`;
                 }
             });
@@ -1040,24 +1051,68 @@ const initApp = () => {
         }
     });
 
-    // 3. Bind the Assign Homework Button
+    // 3. Bind the Homework Builder
+    window.currentHomeworkBuilder = []; // Global staging array
+
+    safeBind("addHwDrillBtn", "click", () => {
+        const d = document.getElementById("hwDrillSelect").value;
+        const s = document.getElementById("hwSets").value || 3;
+        const r = document.getElementById("hwReps").value || 20;
+        if(!d) return alert("Select a drill!");
+        
+        window.currentHomeworkBuilder.push({ name: d, sets: s, reps: r });
+        
+        const list = document.getElementById("hwBuilderList");
+        list.innerHTML = window.currentHomeworkBuilder.map((item, idx) => 
+            `<li style="padding:5px; border-bottom:1px solid #eee; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span><b>${idx+1}.</b> ${item.name} <span style="color:#64748b;">(${item.sets}x${item.reps})</span></span>
+                <button class="delete-btn" onclick="window.removeHwDrill(${idx})">✕</button>
+            </li>`
+        ).join("");
+    });
+
+    // Helper to remove a staged drill before sending
+    window.removeHwDrill = (idx) => {
+        window.currentHomeworkBuilder.splice(idx, 1);
+        const list = document.getElementById("hwBuilderList");
+        if(window.currentHomeworkBuilder.length === 0) {
+            list.innerHTML = '<li class="session-empty" style="font-size:11px;">No drills added to this assignment yet.</li>';
+        } else {
+            list.innerHTML = window.currentHomeworkBuilder.map((item, i) => 
+                `<li style="padding:5px; border-bottom:1px solid #eee; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><b>${i+1}.</b> ${item.name} <span style="color:#64748b;">(${item.sets}x${item.reps})</span></span>
+                    <button class="delete-btn" onclick="window.removeHwDrill(${i})">✕</button>
+                </li>`
+            ).join("");
+        }
+    };
+
+    // 4. Bind the Send Assignment Button
     safeBind("assignHwBtn", "click", async () => {
         try {
             const player = document.getElementById("hwPlayerSelect").value;
-            const drill = document.getElementById("hwDrillSelect").value;
             const due = document.getElementById("hwDueDate").value;
             const tid = currentCoachTeamId;
+            const drills = window.currentHomeworkBuilder;
             
-            if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+            if(!player || !due || !tid) return alert("Please select a player and due date.");
+            if(drills.length === 0) return alert("Please add at least one drill to the assignment.");
             
-            await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+            // Save the entire array of drills to the database
+            await addDoc(collection(db, "assignments"), { 
+                teamId: tid, player: player, dueDate: due, status: "active",
+                drills: drills 
+            });
+            
             alert("Homework Assigned!");
+            
+            // Reset the builder UI
+            window.currentHomeworkBuilder = [];
+            document.getElementById("hwBuilderList").innerHTML = '<li class="session-empty" style="font-size:11px;">No drills added to this assignment yet.</li>';
+            
             loadCoachScheduleAndHW();
             loadHomeDashboard();
-        } catch (err) {
-            alert("Database Error: " + err.message);
-            console.error(err);
-        }
+        } catch (err) { alert("Database Error: " + err.message); console.error(err); }
     });
 
     // --- MODAL & POPUP CLOSE BUTTONS ---

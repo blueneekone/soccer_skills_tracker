@@ -335,20 +335,33 @@
                 </div>
             </div>
 
-            <div class="card">
+           <div class="card">
                 <div class="card-header" style="background: #ea580c;">🎯 Assign Homework</div>
                 <div class="card-body">
-                    <label>Select Player</label>
-                    <select id="hwPlayerSelect" style="font-size: 12px; padding: 10px;"><option>Loading...</option></select>
+                    <label>1. Select Player & Due Date</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="hwPlayerSelect" style="flex:2; font-size: 12px; padding: 10px; margin:0;"><option>Loading...</option></select>
+                        <input type="date" id="hwDueDate" style="flex:1; font-size: 12px; padding: 10px; margin:0;">
+                    </div>
                     
-                    <label>Select Drill</label>
-                    <select id="hwDrillSelect" style="font-size: 12px; padding: 10px;"><option>Loading...</option></select>
+                    <label>2. Build the Workout</label>
+                    <select id="hwDrillSelect" style="font-size: 12px; padding: 10px; margin-bottom: 5px;"><option>Loading...</option></select>
                     
-                    <label>Due Date</label>
-                    <input type="date" id="hwDueDate" style="font-size: 12px; padding: 10px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="number" id="hwSets" placeholder="Sets" value="3" style="flex:1; margin:0; padding:10px; font-size:12px;">
+                        <span style="display:flex; align-items:center; color:#64748b; font-weight:bold;">x</span>
+                        <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" style="flex:1; margin:0; padding:10px; font-size:12px;">
+                        <button id="addHwDrillBtn" class="secondary-btn" style="flex:1;">+ Add Drill</button>
+                    </div>
                     
-                    <button id="assignHwBtn" class="primary-btn btn-orange" style="padding: 10px; font-size: 14px; background: #ea580c;">+ Assign Drill</button>
+                    <ul id="hwBuilderList" class="session-list" style="margin-bottom: 15px; background:#f8fafc; border:1px dashed #cbd5e1; padding: 10px;">
+                        <li class="session-empty" style="font-size:11px;">No drills added to this assignment yet.</li>
+                    </ul>
                     
+                    <button id="assignHwBtn" class="primary-btn btn-orange" style="padding: 10px; font-size: 14px; background: #ea580c;">Send Assignment</button>
+                    
+                    <hr style="margin:15px 0; border:none; border-top:1px solid #e2e8f0;">
+                    <label>Active Assignments</label>
                     <ul id="coachHwList" class="session-list" style="margin-top: 15px;"></ul>
                 </div>
             </div>
@@ -521,8 +534,8 @@
         <div class="nav-item d-none" id="navAdmin"><span class="nav-icon">⚙️</span>Admin</div>
     </div>
 
-    <script type="module" src="app.js?v=2.0.6"></script>
-    <script type="module" src="data.js?v=2.0.6"></script>
+    <script type="module" src="app.js?v=2.0.7"></script>
+    <script type="module" src="data.js?v=2.0.7"></script>
 
 </body>
 </html>
