@@ -623,7 +623,16 @@ async function loadCoachDashboard(isDirector, teams) {
                 hwPlayer.innerHTML = `<option value="">No players on roster</option>`;
             }
         }
-        
+     
+        // Populate Evaluation Player Dropdown
+        const evalPlayer = document.getElementById("evalPlayerSelect");
+        if(evalPlayer) {
+            if(combinedList.length > 0) {
+                evalPlayer.innerHTML = '<option value="" disabled selected>Select Player...</option>' + combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
+            } else {
+                evalPlayer.innerHTML = `<option value="">No players on roster</option>`;
+            }
+        }
         // Refresh the Coach lists AND the Home Dashboard when the team changes
         loadCoachScheduleAndHW();
         loadHomeDashboard();
@@ -1020,6 +1029,7 @@ const initApp = () => {
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
     safeBind("btnLogSecurity", "click", runSecurityScan);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
+
 // --- SCHEDULE & HOMEWORK BINDINGS ---
     
     // 1. Populate the Homework Drill Dropdown
@@ -1075,6 +1085,92 @@ const initApp = () => {
             </li>`
         ).join("");
     });
+
+// --- SKILL EVALUATION BINDINGS ---
+    
+    // 1. Populate the Brilliant Basics Dropdown
+    const evalSkillSelect = document.getElementById("evalSkillSelect");
+    if(evalSkillSelect) {
+        evalSkillSelect.innerHTML = '<option value="" disabled selected>Select Skill...</option>';
+        dbData.foundationSkills.forEach(s => {
+            // Filter to ONLY include Brilliant Basics (matches your existing logic)
+            if(s.type !== 'cardio' && s.type !== 'core' && s.type !== 'ball_mastery') {
+                const opt = document.createElement("option"); 
+                opt.value = s.name; 
+                opt.textContent = s.name;
+                evalSkillSelect.appendChild(opt);
+            }
+        });
+    }
+
+    // 2. Fetch History when a new player is selected
+    window.loadPlayerEvaluations = async (playerName) => {
+        const list = document.getElementById("coachEvalList");
+        if(!playerName) return list.innerHTML = '<li class="session-empty" style="font-size:11px;">Select a player above.</li>';
+        
+        list.innerHTML = '<li class="session-empty" style="font-size:11px;">Loading history...</li>';
+        try {
+            const q = query(collection(db, "evaluations"), where("teamId", "==", currentCoachTeamId), where("player", "==", playerName));
+            const snap = await getDocs(q);
+            const evals = [];
+            snap.forEach(d => evals.push({ id: d.id, ...d.data() }));
+            
+            // Sort by newest first
+            evals.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+            
+            if(evals.length === 0) {
+                list.innerHTML = '<li class="session-empty" style="font-size:11px;">No evaluations logged yet.</li>';
+                return;
+            }
+            
+            list.innerHTML = evals.map(e => `
+                <li class="session-item" style="border-left: 4px solid #16a34a;">
+                    <div style="flex:1;">
+                        <b>${e.skill}</b> <span style="font-weight:bold; color:#16a34a; float:right;">Score: ${e.score}/5</span><br>
+                        <span style="font-size:10px; color:#64748b;">${e.timestamp.toDate().toLocaleDateString()} ${e.notes ? ' - ' + e.notes : ''}</span>
+                    </div>
+                    <button class="delete-btn" style="margin-left:10px;" onclick="window.deleteEval('${e.id}', '${playerName}')">✕</button>
+                </li>
+            `).join("");
+        } catch(err) {
+            console.error(err);
+            list.innerHTML = '<li class="session-empty" style="color:red; font-size:11px;">Error loading history. Check database rules.</li>';
+        }
+    };
+
+    safeBind("evalPlayerSelect", "change", (e) => window.loadPlayerEvaluations(e.target.value));
+
+    // 3. Bind the Save Button
+    safeBind("saveEvalBtn", "click", async () => {
+        try {
+            const player = document.getElementById("evalPlayerSelect").value;
+            const skill = document.getElementById("evalSkillSelect").value;
+            const score = document.getElementById("evalScore").value;
+            const notes = document.getElementById("evalNotes").value;
+            const tid = currentCoachTeamId;
+            
+            if(!player || !skill || !score || !tid) return alert("Please select a player, skill, and score.");
+            
+            await addDoc(collection(db, "evaluations"), { 
+                teamId: tid, player: player, skill: skill, score: parseInt(score), notes: notes,
+                timestamp: new Date(), coach: auth.currentUser.email
+            });
+            
+            alert("Evaluation Saved!");
+            document.getElementById("evalNotes").value = "";
+            document.getElementById("evalScore").value = "";
+            
+            window.loadPlayerEvaluations(player);
+        } catch (err) { alert("Database Error: " + err.message); console.error(err); }
+    });
+
+    // 4. Global Delete Function
+    window.deleteEval = async (id, playerName) => {
+        if(confirm("Delete this evaluation?")) {
+            await deleteDoc(doc(db, "evaluations", id));
+            window.loadPlayerEvaluations(playerName);
+        }
+    };
 
     // Helper to remove a staged drill before sending
     window.removeHwDrill = (idx) => {

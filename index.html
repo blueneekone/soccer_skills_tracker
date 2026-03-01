@@ -372,6 +372,36 @@
                 </div>
             </div>
 
+<div class="card">
+                <div class="card-header" style="background: #16a34a;">📋 Skill Evaluation</div>
+                <div class="card-body">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="evalPlayerSelect" style="flex:2; font-size: 12px; padding: 10px; margin:0;"><option>Loading...</option></select>
+                        <select id="evalScore" style="flex:1; font-size: 12px; padding: 10px; margin:0; background:#f0fdf4; border-color:#86efac;">
+                            <option value="" disabled selected>Score</option>
+                            <option value="1">1 - Struggling</option>
+                            <option value="2">2 - Needs Work</option>
+                            <option value="3">3 - Capable</option>
+                            <option value="4">4 - Strong</option>
+                            <option value="5">5 - Mastered</option>
+                        </select>
+                    </div>
+                    
+                    <label>Brilliant Basics Skill</label>
+                    <select id="evalSkillSelect" style="font-size: 12px; padding: 10px; margin-bottom: 10px;"><option>Loading...</option></select>
+                    
+                    <input type="text" id="evalNotes" placeholder="Optional coach notes..." style="font-size: 12px; padding: 10px; margin-bottom: 10px;">
+                    
+                    <button id="saveEvalBtn" class="primary-btn btn-green" style="padding: 10px; font-size: 14px; background: #16a34a;">Save Evaluation</button>
+                    
+                    <hr style="margin:15px 0; border:none; border-top:1px solid #e2e8f0;">
+                    <label>Player History</label>
+                    <ul id="coachEvalList" class="session-list" style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
+                        <li class="session-empty" style="font-size:11px;">Select a player above to view their history.</li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="card d-none" id="adminControls">
                 <div class="card-header">Director Access</div>
                 <div class="card-body">
