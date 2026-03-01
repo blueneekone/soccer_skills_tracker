@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase-config.js"; 
 import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
+import { collection, addDoc, deleteDoc, query, where, getDocs, orderBy, limit, doc, setDoc, getDoc, updateDoc, writeBatch } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { dbData } from "./data.js";
 import { 
@@ -1020,34 +1020,44 @@ const initApp = () => {
 
     // 2. Bind the Schedule Button
     safeBind("addScheduleBtn", "click", async () => {
-        const date = document.getElementById("scheduleDate").value;
-        const time = document.getElementById("scheduleTime").value;
-        const type = document.getElementById("scheduleType").value;
-        const loc = document.getElementById("scheduleLocation").value;
-        const tid = currentCoachTeamId;
-        
-        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
-        
-        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
-        document.getElementById("scheduleLocation").value = ""; 
-        alert("Event Added!");
-        loadCoachScheduleAndHW();
-        loadHomeDashboard();
+        try {
+            const date = document.getElementById("scheduleDate").value;
+            const time = document.getElementById("scheduleTime").value;
+            const type = document.getElementById("scheduleType").value;
+            const loc = document.getElementById("scheduleLocation").value;
+            const tid = currentCoachTeamId;
+            
+            if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
+            
+            await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
+            document.getElementById("scheduleLocation").value = ""; 
+            alert("Event Added!");
+            loadCoachScheduleAndHW();
+            loadHomeDashboard();
+        } catch (err) {
+            alert("Database Error: " + err.message);
+            console.error(err);
+        }
     });
 
     // 3. Bind the Assign Homework Button
     safeBind("assignHwBtn", "click", async () => {
-        const player = document.getElementById("hwPlayerSelect").value;
-        const drill = document.getElementById("hwDrillSelect").value;
-        const due = document.getElementById("hwDueDate").value;
-        const tid = currentCoachTeamId;
-        
-        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
-        
-        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
-        alert("Homework Assigned!");
-        loadCoachScheduleAndHW();
-        loadHomeDashboard();
+        try {
+            const player = document.getElementById("hwPlayerSelect").value;
+            const drill = document.getElementById("hwDrillSelect").value;
+            const due = document.getElementById("hwDueDate").value;
+            const tid = currentCoachTeamId;
+            
+            if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+            
+            await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+            alert("Homework Assigned!");
+            loadCoachScheduleAndHW();
+            loadHomeDashboard();
+        } catch (err) {
+            alert("Database Error: " + err.message);
+            console.error(err);
+        }
     });
 
     // --- MODAL & POPUP CLOSE BUTTONS ---
