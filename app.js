@@ -6,8 +6,12 @@ import { collection, addDoc, deleteDoc, query, where, getDocs, orderBy, limit, d
 import { dbData } from "./data.js";
 import { 
     handleGoogleLogin, checkMobileRedirect, handleEmailLogin, 
-    handleEmailSignup, handleLogout, initSetupDropdowns, completeUserSetup 
+    handleEmailSignup, handleLogout, initSetupDropdowns, completeUserSetup
 } from "./modules/auth.js";
+import { 
+    renderCalendar, renderPlayerTrendChart, 
+    renderTeamChart, renderTeamLeaderboard, loadPlayerFeedback 
+} from "./modules/stats.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -36,8 +40,6 @@ let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let currentCoachTeamId = null;
-let teamChart = null;
-let playerChart = null;
 let allSessionsCache = [];
 let userProfile = null; 
 
@@ -333,123 +335,8 @@ async function loadStats() {
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
         renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
+        loadPlayerFeedback(userProfile);
     } catch (e) { console.error("Stats Load Error", e); }
-}
-
-function renderCalendar(logs) {
-    const grid = document.getElementById("calendarDays");
-    if(!grid) return;
-    const header = document.getElementById("calMonthYear");
-    const now = new Date();
-    if(header) header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
-    grid.innerHTML = "";
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-    for(let i=1; i<=daysInMonth; i++) {
-        const dStr = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
-        const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-        const dayDiv = document.createElement("div");
-        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
-        dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
-        if(hasLog) {
-            dayDiv.onclick = () => {
-                const daily = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-                setText("dayModalDate", dStr);
-                const content = document.getElementById("dayModalContent");
-                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary} (${l.minutes}m)</div>`).join("");
-                document.getElementById("dayModal").style.display='block';
-            };
-        }
-        grid.appendChild(dayDiv);
-    }
-}
-
-function renderPlayerTrendChart(logs) {
-    const cvs = document.getElementById('playerTrendChart'); 
-    if(!cvs) return;
-    const ctx = cvs.getContext('2d'); 
-    
-    // 1. Destroy old player chart if it exists
-    if(playerChart) {
-        playerChart.destroy(); 
-    }
-    
-    // 2. Calculate the data for the last 7 days
-    const data = Array(7).fill(0); 
-    const labels = [];
-    for(let i=6; i>=0; i--) { 
-        const d = new Date(); 
-        d.setDate(new Date().getDate()-i); 
-        labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); 
-        data[6-i] = logs
-            .filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString())
-            .reduce((s,l)=>s+Number(l.minutes),0); 
-    }
-    
-    // 3. Render the player chart
-    playerChart = new Chart(ctx, { 
-        type: 'bar', 
-        data: { 
-            labels: labels, 
-            datasets: [{ 
-                data: data, 
-                backgroundColor: "#00263A", 
-                borderRadius: 4 
-            }] 
-        }, 
-        options: { 
-            plugins: { legend: {display:false} }, 
-            scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } 
-        } 
-    });
-}
-
-function renderTeamChart(logs) {
-    const cvs = document.getElementById('teamChart'); 
-    if(!cvs) return;
-    const ctx = cvs.getContext('2d'); 
-    
-    // 1. Destroy old team chart if it exists
-    if(teamChart) {
-        teamChart.destroy();
-    }
-
-    // 2. Calculate the data for the last 7 days
-    const data = Array(7).fill(0); 
-    const labels = [];
-    for(let i=6; i>=0; i--) { 
-        const d = new Date(); 
-        d.setDate(new Date().getDate() - i); 
-        labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); 
-        data[6-i] = logs
-            .filter(l => new Date(l.timestamp.seconds * 1000).toDateString() === d.toDateString())
-            .reduce((sum, l) => sum + Number(l.minutes), 0); 
-    }
-    
-    // 3. Render the team chart
-    teamChart = new Chart(ctx, { 
-        type: 'bar', 
-        data: { 
-            labels: labels, 
-            datasets: [{ 
-                label: 'Total Team Minutes',
-                data: data, 
-                backgroundColor: "#00263A", 
-                borderRadius: 4 
-            }] 
-        }, 
-        options: { 
-            plugins: { legend: { display: false } }, 
-            scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } 
-        } 
-    });
-}
-
-async function renderTeamLeaderboard(tid, logsOverride = []) {
-    const table = document.getElementById("teamLeaderboardTable"); if(!table) return;
-    let stats = {};
-    if (!tid) { logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); } 
-    else { const q = query(collection(db, "reps"), where("teamId", "==", tid)); const snap = await getDocs(q); snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); }); }
-    table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
 }
 
 // ==========================================
