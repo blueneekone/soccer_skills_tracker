@@ -269,3 +269,41 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .bg-green-header { background-color: #16a34a !important; color: white !important; }
 .bg-blue-header { background-color: #0ea5e9 !important; color: white !important; }
 .flush-list { margin: 0; border: none; border-radius: 0 0 12px 12px; }
+
+/* =======================================================
+   COACH STOPWATCH STYLES
+   ======================================================= */
+.stopwatch-display {
+    font-size: 3rem;
+    font-family: 'Courier New', Courier, monospace; /* Monospace keeps numbers from jumping around */
+    font-weight: 900;
+    color: var(--aggie-blue);
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 15px 10px;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.flex-gap-8 {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px; /* Adds breathing room between the rows of buttons */
+}
+
+.lap-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 15px 0 0 0;
+    max-height: 200px;
+    overflow-y: auto; /* Makes the list scrollable if there are too many laps */
+    border-top: 2px solid #e2e8f0;
+    text-align: left;
+}
+
+/* Optional: Make the lap times monospace too so they line up perfectly */
+.lap-list li span {
+    font-family: 'Courier New', Courier, monospace;
+}
