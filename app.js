@@ -5,7 +5,7 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy
 // --- BRING IN YOUR MODULES ---
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
-import { renderCalendar, renderPlayerTrendChart, renderTeamChart, renderTeamLeaderboard, loadPlayerFeedback } from "./modules/stats.js";
+import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, loadPlayerFeedback } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId } from "./modules/coach.js";
 
 // ==========================================
