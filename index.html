@@ -15,7 +15,7 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.0.0">
 </head>
 <body>
 
@@ -73,7 +73,7 @@
             <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
         </div>
 
-        <div id="viewHome" class="view-section">
+       <div id="viewHome" class="view-section">
             <div class="card dashboard-header">
                 <div class="card-body text-center">
                     <div class="dash-icon icon-large">⚽</div>
@@ -89,24 +89,6 @@
                         <div class="dash-label">Log Workout</div>
                     </div>
                 </div>
-
-            <div class="card mt-20 border-aggie-blue">
-                <div class="card-header">📅 Team Schedule</div>
-                <div class="card-body p-0">
-                    <ul id="homeScheduleList" class="session-list flush-list">
-                        <li class="session-empty">Loading schedule...</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card border-orange">
-                <div class="card-header bg-orange-header">🎯 My Homework</div>
-                <div class="card-body p-0">
-                    <ul id="homeHomeworkList" class="session-list flush-list">
-                        <li class="session-empty">Loading assignments...</li>
-                    </ul>
-                </div>
-            </div>
 
                 <div class="card dash-card" id="btnHomeStats">
                     <div class="dash-card-body">
@@ -143,6 +125,24 @@
                         <div class="dash-icon">⚙️</div>
                         <div class="dash-label">Admin</div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card mt-20 border-aggie-blue">
+                <div class="card-header">📅 Team Schedule</div>
+                <div class="card-body p-0">
+                    <ul id="homeScheduleList" class="session-list flush-list">
+                        <li class="session-empty">Loading schedule...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-orange">
+                <div class="card-header bg-orange-header">🎯 My Homework</div>
+                <div class="card-body p-0">
+                    <ul id="homeHomeworkList" class="session-list flush-list">
+                        <li class="session-empty">Loading assignments...</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -531,7 +531,7 @@
         <div class="modal-content">
             <div class="card-header"><span>Drill Video</span><span class="close-btn modal-close-icon">×</span></div>
             <div class="modal-body p-0">
-                <iframe id="videoPlayer" width="100%" height="250" src="" frameborder="0" allowfullscreen></iframe>
+                <iframe id="videoPlayer" width="100%" height="250" src="" frameborder="0" allowfullscreen title="Drill Video Player"></iframe>
             </div>
         </div>
     </div>
