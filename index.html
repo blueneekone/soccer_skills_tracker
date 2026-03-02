@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aggies FC | Skills Tracker</title>
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00263A">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="Images/Phoenixes_Logo_2026.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -48,10 +47,10 @@
             <h2 class="auth-title">Complete Setup</h2>
             <p class="auth-subtitle">Link your account to a player profile.</p>
             
-            <label>Select Team</label>
+            <label for="setupTeamSelect">Select Team</label>
             <select id="setupTeamSelect"><option>Loading...</option></select>
             
-            <label>Select Player</label>
+            <label for="setupPlayerDropdown">Select Player</label>
             <select id="setupPlayerDropdown" disabled><option>Select a Team First</option></select>
             
             <div id="setupManualEntry" class="d-none">
@@ -123,7 +122,7 @@
                     </div>
                 </div>
                 
-                <a href="https://www.positionspecific.com/" target="_blank" class="no-underline">
+                <a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
                     <div class="card dash-card border-slate">
                         <div class="dash-card-body">
                             <div class="dash-icon">⚡</div>
@@ -155,6 +154,7 @@
                     
                     <div class="tracker-box bg-orange">
                         <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
+                        <label for="selectWarmup">Select Warm-Up</label>
                         <select id="selectWarmup"><option>Loading...</option></select>
                         <div id="customWarmupContainer" class="d-none custom-warmup-container">
                             <input type="text" id="customWarmupName" placeholder="Type workout name (e.g. Jump Rope)">
@@ -169,6 +169,7 @@
 
                     <div class="tracker-box bg-red">
                         <span class="section-label text-red">Part B: Core Strength</span>
+                        <label for="selectCore">Select Core Exercise</label>
                         <select id="selectCore"><option>Loading...</option></select>
                         <div class="input-row">
                             <input type="number" id="setsCore" class="w-50" placeholder="Sets" value="3">
@@ -180,6 +181,7 @@
 
                     <div class="tracker-box bg-blue">
                         <span class="section-label text-blue">Part C: Ball Handling</span>
+                        <label for="selectBallWork">Select Ball Work Exercise</label>
                         <select id="selectBallWork"><option>Loading...</option></select>
                         <div class="input-row">
                             <input type="number" id="setsBall" class="w-50" placeholder="Sets" value="3">
@@ -191,6 +193,7 @@
 
                     <div class="tracker-box bg-green">
                         <span class="section-label text-green">Part D: Brilliant Basics</span>
+                        <label for="selectBasics">Select Brilliant Basics Exercise</label>
                         <select id="selectBasics"><option>Loading...</option></select>
                         <div class="input-row">
                             <input type="number" id="setsBasics" class="w-50" placeholder="Sets" value="3">
@@ -219,9 +222,9 @@
                         </div>
 
                         <label>Parent Signature</label>
-                        <div style="position: relative; margin-bottom: 15px;">
-                            <canvas id="signatureCanvas" style="width:100%; height:120px; border:2px dashed #cbd5e1; border-radius:8px; background:#fcfcfc; touch-action:none;"></canvas>
-                            <button id="clearSigBtn" class="action-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); font-size: 10px; padding: 4px 8px;">Clear</button>
+                        <div class="signature-canvas-container">
+                            <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                            <button id="clearSigBtn" class="action-btn clear-sig-btn">Clear</button>
                         </div>
 
                         <button id="submitWorkoutBtn" class="primary-btn">💾 Log Workout (+XP)</button>
@@ -229,8 +232,8 @@
                     
                     <label>Schedule This Workout</label>
                     <div class="schedule-row">
-                        <input type="date" id="calDate" class="schedule-input">
-                        <input type="time" id="calTime" class="schedule-input">
+                        <input type="date" id="calDate" class="schedule-input" title="Select workout date">
+                        <input type="time" id="calTime" class="schedule-input" title="Select workout time">
                     </div>
                     
                     <div class="export-row">
@@ -304,18 +307,18 @@
             <div class="card">
                 <div class="card-header">⏱️ Practice Stopwatch</div>
                 <div class="card-body text-center">
-                    <div id="stopwatchDisplay" style="font-size: 3rem; font-family: monospace; font-weight: 800; color: var(--aggie-blue); margin-bottom: 15px; font-variant-numeric: tabular-nums;">00:00.00</div>
+                    <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
                     
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <div class="flex-gap-8">
                         <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
                         <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                        <button id="btnSwLap" class="secondary-btn flex-1">Lap Split</button>
-                        <button id="btnSwReset" class="secondary-btn flex-1">Reset</button>
+                    <div class="flex-gap-8">
+                        <button id="btnSwLap" class="secondary-btn flex-1" type="button">Lap Split</button>
+                        <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
                     </div>
                     
-                    <ul id="lapList" style="list-style: none; padding: 0; margin: 0; text-align: left; max-height: 150px; overflow-y: auto; font-size: 13px; color: #64748b;">
+                    <ul id="lapList" class="lap-list">
                         </ul>
                 </div>
             </div>
@@ -323,50 +326,50 @@
             <div class="card">
                 <div class="card-header">📅 Manage Schedule</div>
                 <div class="card-body">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input type="date" id="scheduleDate" style="flex:1; margin:0; font-size: 12px; padding: 10px;">
-                        <input type="time" id="scheduleTime" style="flex:1; margin:0; font-size: 12px; padding: 10px;">
+                    <div class="schedule-input-row">
+                        <input type="date" id="scheduleDate" class="schedule-date-input" title="Select event date">
+                        <input type="time" id="scheduleTime" class="schedule-time-input" title="Select event time">
                     </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <select id="scheduleType" style="flex: 1; margin:0; font-size: 12px; padding: 10px;">
+                    <div class="schedule-type-row">
+                        <select id="scheduleType" class="schedule-type-select" title="Select event type">
                             <option value="Practice">Practice</option>
                             <option value="Game">Game</option>
                             <option value="Event">Event</option>
                         </select>
-                        <input type="text" id="scheduleLocation" placeholder="Location / Opponent" style="flex:2; margin:0; font-size: 12px; padding: 10px;">
+                        <input type="text" id="scheduleLocation" placeholder="Location / Opponent" class="schedule-location-input">
                     </div>
-                    <button id="addScheduleBtn" class="primary-btn btn-blue" style="padding: 10px; font-size: 14px;">+ Add Event</button>
+                    <button id="addScheduleBtn" class="primary-btn btn-blue btn-add-schedule" type="button">+ Add Event</button>
                     
-                    <ul id="coachScheduleList" class="session-list" style="margin-top: 15px;"></ul>
+                    <ul id="coachScheduleList" class="session-list coach-schedule-list"></ul>
                 </div>
             </div>
 
            <div class="card">
-                <div class="card-header" style="background: #ea580c;">🎯 Assign Homework</div>
+                <div class="card-header hw-header">🎯 Assign Homework</div>
                 <div class="card-body">
                     <label>1. Select Player & Due Date</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <select id="hwPlayerSelect" style="flex:2; font-size: 12px; padding: 10px; margin:0;"><option>Loading...</option></select>
-                        <input type="date" id="hwDueDate" style="flex:1; font-size: 12px; padding: 10px; margin:0;">
+                    <div class="flex-gap-10">
+                        <select id="hwPlayerSelect" class="hw-player-select" title="Select a player for homework assignment"><option>Loading...</option></select>
+                        <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment">
                     </div>
                     
                     <label>2. Build the Workout</label>
-                    <select id="hwDrillSelect" style="font-size: 12px; padding: 10px; margin-bottom: 5px;"><option>Loading...</option></select>
+                    <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
                     
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input type="number" id="hwSets" placeholder="Sets" value="3" style="flex:1; margin:0; padding:10px; font-size:12px;">
-                        <span style="display:flex; align-items:center; color:#64748b; font-weight:bold;">x</span>
-                        <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" style="flex:1; margin:0; padding:10px; font-size:12px;">
-                        <button id="addHwDrillBtn" class="secondary-btn" style="flex:1;">+ Add Drill</button>
+                    <div class="hw-drill-input-row">
+                        <input type="number" id="hwSets" placeholder="Sets" value="3">
+                        <span>x</span>
+                        <input type="number" id="hwReps" placeholder="Reps/Mins" value="20">
+                        <button id="addHwDrillBtn" class="secondary-btn">+ Add Drill</button>
                     </div>
                     
-                    <ul id="hwBuilderList" class="session-list" style="margin-bottom: 15px; background:#f8fafc; border:1px dashed #cbd5e1; padding: 10px;">
-                        <li class="session-empty" style="font-size:11px;">No drills added to this assignment yet.</li>
+                    <ul id="hwBuilderList" class="session-list hw-builder-list">
+                        <li class="session-empty">No drills added to this assignment yet.</li>
                     </ul>
                     
-                    <button id="assignHwBtn" class="primary-btn btn-orange" style="padding: 10px; font-size: 14px; background: #ea580c;">Send Assignment</button>
+                    <button id="assignHwBtn" class="primary-btn btn-orange btn-assign-hw">Send Assignment</button>
                     
-                    <hr style="margin:15px 0; border:none; border-top:1px solid #e2e8f0;">
+                    <hr class="section-divider">
                     <label>Active Assignments</label>
                     <ul id="coachHwList" class="session-list" style="margin-top: 15px;"></ul>
                 </div>
@@ -375,9 +378,9 @@
 <div class="card">
                 <div class="card-header" style="background: #16a34a;">📋 Skill Evaluation</div>
                 <div class="card-body">
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <select id="evalPlayerSelect" style="flex:2; font-size: 12px; padding: 10px; margin:0;"><option>Loading...</option></select>
-                        <select id="evalScore" style="flex:1; font-size: 12px; padding: 10px; margin:0; background:#f0fdf4; border-color:#86efac;">
+                    <div class="eval-input-row">
+                        <select id="evalPlayerSelect" class="eval-player-select" title="Select a player for skill evaluation"><option>Loading...</option></select>
+                        <select id="evalScore" class="eval-score-select" title="Select a score for skill evaluation">
                             <option value="" disabled selected>Score</option>
                             <option value="1">1 - Struggling</option>
                             <option value="2">2 - Needs Work</option>
@@ -388,16 +391,16 @@
                     </div>
                     
                     <label>Brilliant Basics Skill</label>
-                    <select id="evalSkillSelect" style="font-size: 12px; padding: 10px; margin-bottom: 10px;"><option>Loading...</option></select>
+                    <select id="evalSkillSelect" class="eval-skill-select" title="Select a skill for evaluation"><option>Loading...</option></select>
                     
-                    <input type="text" id="evalNotes" placeholder="Optional coach notes..." style="font-size: 12px; padding: 10px; margin-bottom: 10px;">
+                    <input type="text" id="evalNotes" placeholder="Optional coach notes..." class="eval-notes-input">
                     
-                    <button id="saveEvalBtn" class="primary-btn btn-green" style="padding: 10px; font-size: 14px; background: #16a34a;">Save Evaluation</button>
+                    <button id="saveEvalBtn" class="primary-btn btn-green btn-save-eval">Save Evaluation</button>
                     
-                    <hr style="margin:15px 0; border:none; border-top:1px solid #e2e8f0;">
+                    <hr class="section-divider">
                     <label>Player History</label>
-                    <ul id="coachEvalList" class="session-list" style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
-                        <li class="session-empty" style="font-size:11px;">Select a player above to view their history.</li>
+                    <ul id="coachEvalList" class="session-list eval-history-list">
+                        <li class="session-empty">Select a player above to view their history.</li>
                     </ul>
                 </div>
             </div>
@@ -406,7 +409,7 @@
                 <div class="card-header">Director Access</div>
                 <div class="card-body">
                     <label>View Team Data</label>
-                    <select id="adminTeamSelect"></select>
+                    <select id="adminTeamSelect" title="Select a team to view data"></select>
                 </div>
             </div>
 
@@ -417,11 +420,11 @@
                         <div class="text-center"><b>Active Players</b><br><span id="coachActivePlayers" class="roster-stat-val active">0</span></div>
                         <div class="text-center"><b>Total Reps Logged</b><br><span id="coachTotalReps" class="roster-stat-val reps">0</span></div>
                     </div>
-                    <label>Import Team Roster (PDF)</label>
-                    <input type="file" id="rosterPdfInput" accept="application/pdf">
+                    <label for="rosterPdfInput">Import Team Roster (PDF)</label>
+                    <input type="file" id="rosterPdfInput" accept="application/pdf" title="Upload a PDF file to import team roster">
                     <div id="rosterReviewArea" class="d-none">
                         <label>Review Extracted Names</label>
-                        <textarea id="rosterTextRaw" rows="8"></textarea>
+                        <textarea id="rosterTextRaw" rows="8" title="Review and edit extracted player names from roster"></textarea>
                         <button id="saveParsedRosterBtn" class="primary-btn btn-save-roster">Save Roster</button>
                     </div>
                     <hr class="roster-divider">
@@ -598,8 +601,8 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=2.0.15"></script>
-    <script type="module" src="data.js?v=2.0.15"></script>
+    <script type="module" src="app.js?v=2.0.16"></script>
+    <script type="module" src="data.js?v=2.0.16"></script>
 
 </body>
 </html>
