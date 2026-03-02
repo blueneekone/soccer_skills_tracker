@@ -8,6 +8,7 @@ import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSi
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, loadPlayerFeedback } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId } from "./modules/coach.js";
+import { logSystemEvent, renderAdminTables, addTeam, addAdmin, loadLogs, generateSampleLogs, runSecurityScan } from "./modules/admin.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -60,7 +61,7 @@ const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin']
         // Trigger specific data loads if needed
         if(viewId === 'viewStats') loadStats();
         if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
-        if(viewId === 'viewAdmin') renderAdminTables();
+        if(viewId === 'viewAdmin') renderAdminTables(globalTeams, globalAdmins);
         if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
 
         // Push to phone history so the native back swipe works!
@@ -112,12 +113,6 @@ async function fetchConfig() {
         ts.innerHTML = '<option value="" disabled selected>Select Team...</option>';
         globalTeams.forEach(t => { const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; ts.appendChild(o); });
     }
-}
-
-function logSystemEvent(type, detail) {
-    try {
-        addDoc(collection(db, "logs_system"), { type: type, detail: detail, timestamp: new Date(), user: auth.currentUser ? auth.currentUser.email : 'system' });
-    } catch(e) { console.error("Log error", e); }
 }
 
 function buildDropdowns(currentXp) {
@@ -179,7 +174,7 @@ function checkRoles(user) {
         if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
         if(document.getElementById("btnHomeAdmin")) document.getElementById("btnHomeAdmin").style.display='block';
         initCoachDropdown(true, globalTeams, loadHomeDashboard);
-        renderAdminTables();
+        renderAdminTables(globalTeams, globalAdmins);
     } else if (myTeams.length > 0) {
         document.getElementById("navCoach").style.display='flex';
         if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
@@ -633,8 +628,8 @@ const initApp = () => {
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams, loadHomeDashboard)); 
     safeBind("addAssistantBtn", "click", () => addAssistant(globalTeams, () => loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams, loadHomeDashboard)));
     
-    safeBind("addTeamBtn", "click", addTeam);
-    safeBind("addAdminBtn", "click", addAdmin);
+    safeBind("addTeamBtn", "click", () => addTeam(globalTeams, () => renderAdminTables(globalTeams, globalAdmins)));
+    safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => renderAdminTables(globalTeams, globalAdmins)));
     safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
     safeBind("btnLogSecurity", "click", runSecurityScan);
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
