@@ -401,38 +401,6 @@ function getSessionDescription() {
     return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
 }
 
-function renderAdminTables() {
-    const t = document.getElementById("teamTable"); 
-    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
-    const a = document.getElementById("adminTable");
-    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
-}
-async function addTeam() {
-    const id = document.getElementById("newTeamId").value;
-    const name = document.getElementById("newTeamName").value;
-    const email = document.getElementById("newCoachEmail").value;
-    if(!id || !name) return;
-    globalTeams.push({ id, name, coachEmail: email });
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    alert("Team Added"); logSystemEvent("ADMIN_ADD_TEAM", `ID: ${id}`); renderAdminTables();
-}
-async function addAdmin() {
-    const email = document.getElementById("newAdminEmail").value;
-    if(!email) return;
-    globalAdmins.push(email);
-    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    alert("Admin Added"); logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); renderAdminTables();
-}
-async function loadLogs(col) {
-    const c = document.getElementById("logContainer"); if(!c) return; c.innerHTML = "Fetching...";
-    const snap = await getDocs(query(collection(db, col), orderBy("timestamp", "desc"), limit(20)));
-    c.innerHTML = "";
-    snap.forEach(d => c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px;"><span style="font-size:9px; color:#999;">${new Date(d.data().timestamp.seconds*1000).toLocaleString()}</span><br><b>${d.data().type}</b>: ${d.data().detail}</div>`);
-}
-function generateSampleLogs() { logSystemEvent("SYSTEM_START", "Init"); alert("Log Added"); }
-function runSecurityScan() { const c = document.getElementById("logContainer"); if(c) { c.innerHTML="Scanning..."; setTimeout(() => c.innerHTML="<div>✔ Auth: Secure</div>", 800); } }
-function getEmbedUrl(url) { if(!url)return""; let id=""; if(url.includes("youtu.be/"))id=url.split("youtu.be/")[1]; else if(url.includes("v="))id=url.split("v=")[1].split("&")[0]; else if(url.includes("embed/"))return url; if(id.includes("?"))id=id.split("?")[0]; return id?`https://www.youtube.com/embed/${id}`:""; }
-
 // ==========================================
 // 4. APP INITIALIZATION
 // ==========================================
