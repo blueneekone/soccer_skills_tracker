@@ -66,7 +66,7 @@
     <div id="appUI" class="container d-none">
         
         <div class="app-header">
-            <div id="headerHomeLink" style="cursor:pointer;">
+            <div id="headerHomeLink" class="cursor-pointer">
                 <h3 class="app-title">Aggies FC</h3>
                 <div class="player-info">Player: <span id="activePlayerName" class="font-bold">Loading...</span></div>
             </div>
@@ -90,19 +90,19 @@
                     </div>
                 </div>
 
-            <div class="card" style="margin-top: 20px; border-color: var(--aggie-blue);">
+            <div class="card mt-20 border-aggie-blue">
                 <div class="card-header">📅 Team Schedule</div>
                 <div class="card-body p-0">
-                    <ul id="homeScheduleList" class="session-list" style="margin:0; border:none; border-radius: 0 0 12px 12px;">
+                    <ul id="homeScheduleList" class="session-list flush-list">
                         <li class="session-empty">Loading schedule...</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="card" style="border-color: #ea580c;">
-                <div class="card-header" style="background: #ea580c;">🎯 My Homework</div>
+            <div class="card border-orange">
+                <div class="card-header bg-orange-header">🎯 My Homework</div>
                 <div class="card-body p-0">
-                    <ul id="homeHomeworkList" class="session-list" style="margin:0; border:none; border-radius: 0 0 12px 12px;">
+                    <ul id="homeHomeworkList" class="session-list flush-list">
                         <li class="session-empty">Loading assignments...</li>
                     </ul>
                 </div>
@@ -371,12 +371,12 @@
                     
                     <hr class="section-divider">
                     <label>Active Assignments</label>
-                    <ul id="coachHwList" class="session-list" style="margin-top: 15px;"></ul>
+                    <ul id="coachHwList" class="session-list mt-15"></ul>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header" style="background: #16a34a;">📋 Skill Evaluation</div>
+<div class="card">
+                <div class="card-header bg-green-header">📋 Skill Evaluation</div>
                 <div class="card-body">
                     <div class="eval-input-row">
                         <select id="evalPlayerSelect" class="eval-player-select" title="Select a player for skill evaluation"><option>Loading...</option></select>
@@ -436,7 +436,7 @@
             </div>
 
             <div class="card" id="weeklySummaryCard">
-                <div class="card-header" style="background: #0ea5e9;">📅 7-Day Practice Summary</div>
+                <div class="card-header bg-blue-header">📅 7-Day Practice Summary</div>
                 <div class="card-body p-0 overflow-x-auto">
                     <table id="weeklySummaryTable" class="admin-table">
                         <thead>
@@ -601,8 +601,8 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=2.0.19"></script>
-    <script type="module" src="data.js?v=2.0.19"></script>
+    <script type="module" src="app.js?v=2.0.20"></script>
+    <script type="module" src="data.js?v=2.0.20"></script>
 
 </body>
 </html>

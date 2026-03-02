@@ -146,7 +146,6 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
     .no-print { display: none !important; }
 }
 
-
 /* =======================================================
    EXTRACTED INLINE STYLES AND UTILITIES
    ======================================================= */
@@ -259,3 +258,14 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .close-drill-btn { cursor: pointer; color: #94a3b8; }
 .drill-desc { font-size: 13px; margin-top: 0; color: #475569; }
 .btn-watch-video { background: #dbeafe; color: #1e40af; width: 100%; }
+
+/* --- INLINE STYLE REPLACEMENTS --- */
+.cursor-pointer { cursor: pointer; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.border-aggie-blue { border-color: var(--aggie-blue) !important; }
+.border-orange { border-color: #ea580c !important; }
+.bg-orange-header { background-color: #ea580c !important; color: white !important; }
+.bg-green-header { background-color: #16a34a !important; color: white !important; }
+.bg-blue-header { background-color: #0ea5e9 !important; color: white !important; }
+.flush-list { margin: 0; border: none; border-radius: 0 0 12px 12px; }
