@@ -464,6 +464,51 @@ const initApp = () => {
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
+// --- TRACKER MODULE BINDINGS ---
+    initSignatureCanvas();
+
+    safeBind("addWarmupBtn", "click", () => {
+        let n = document.getElementById("selectWarmup")?.value;
+        if(!n) return alert("Select a Warm-up first");
+        if (n === "custom") {
+            n = document.getElementById("customWarmupName")?.value.trim();
+            if(!n) return alert("Please type the name of your workout.");
+        }
+        const dist = document.getElementById("cardioDist")?.value;
+        const time = document.getElementById("cardioTime")?.value;
+        let details = (dist ? `${dist} mi` : "") + (dist && time ? " / " : "") + (time ? `${time} min` : "");
+        addDrillToSession({ name: n, sets: 1, reps: details || "Standard" });
+        if(document.getElementById("cardioDist")) document.getElementById("cardioDist").value = "";
+        if(document.getElementById("cardioTime")) document.getElementById("cardioTime").value = "";
+        if(document.getElementById("customWarmupName")) document.getElementById("customWarmupName").value = "";
+    });
+
+    safeBind("addCoreBtn", "click", () => {
+        const n = document.getElementById("selectCore")?.value;
+        if(!n) return alert("Select a Core exercise first");
+        addDrillToSession({ name: n, sets: document.getElementById("setsCore")?.value || 3, reps: document.getElementById("repsCore")?.value || 20 });
+    });
+
+    safeBind("addBallWorkBtn", "click", () => {
+        const n = document.getElementById("selectBallWork")?.value;
+        if(!n) return alert("Select a Skill first");
+        addDrillToSession({ name: n, sets: document.getElementById("setsBall")?.value || 3, reps: document.getElementById("repsBall")?.value || 20 });
+    });
+
+    safeBind("addBasicsBtn", "click", () => {
+        const n = document.getElementById("selectBasics")?.value;
+        if(!n) return alert("Select a Basic first");
+        addDrillToSession({ name: n, sets: document.getElementById("setsBasics")?.value || 3, reps: document.getElementById("repsBasics")?.value || 20 });
+    });
+
+    safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => {
+        if(document.getElementById("viewStats") && !document.getElementById("viewStats").classList.contains("d-none")) {
+            loadStats(); // Trigger your stats reload if they are looking at it
+        }
+    }));
+    safeBind("btnGCal", "click", addToGoogleCalendar);
+    safeBind("btnIcs", "click", downloadIcsFile);
+
     safeBind("btnOpenTrophyModal", "click", () => {
         // Just navigate to the stats page where the real trophies are
         window.navigateTo('viewStats', 'navStats');
