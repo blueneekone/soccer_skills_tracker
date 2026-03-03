@@ -320,26 +320,33 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .signature-canvas {
     width: 100%;
     height: 120px;
-    border: 2px dashed #cbd5e1; /* Professional dashed line for signing */
+    /* Made the border much darker so you can actually see the box */
+    border: 2px solid #94a3b8; 
     border-radius: 8px;
-    background-color: #fcfcfc;
+    /* Pure white background so it pops off the gray container */
+    background-color: #ffffff; 
     cursor: crosshair;
-    touch-action: none; /* CRITICAL: Prevents the phone screen from scrolling while they sign! */
+    touch-action: none;
+    /* Added an inner shadow to make it look deeply inset like a form field */
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.08); 
 }
 
 .clear-sig-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #e2e8f0;
-    color: #475569;
-    border: 1px solid #cbd5e1;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 10px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    width: auto !important; /* Prevents it from stretching to 100% width */
+    margin: 0 !important;
+    z-index: 10 !important; /* Forces it to sit on top of the canvas */
 }
 
 .clear-sig-btn:active {
