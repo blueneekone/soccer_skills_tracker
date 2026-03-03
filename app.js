@@ -30,7 +30,6 @@ window.onerror = function(message, source, lineno, colno, error) {
 
 const DIRECTOR_EMAIL = "ecwaechtler@gmail.com";
 
-let currentSessionItems = [];
 let currentVideoUrl = "";
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
@@ -183,76 +182,6 @@ function checkRoles(user) {
 }
 
 // Tracker Functions
-window.removeSessionItem = (index) => {
-    currentSessionItems.splice(index, 1);
-    renderSession();
-};
-
-function renderSession() {
-    const l = document.getElementById("sessionList");
-    if(currentSessionItems.length === 0) {
-        l.innerHTML='<li class="session-empty">Empty. Select drills above to build your workout!</li>';
-    } else {
-        l.innerHTML = currentSessionItems.map((i, idx) => `
-            <li class="session-item">
-                <div class="session-item-text">
-                    <span class="session-item-title">${idx+1}. ${i.name}</span><br>
-                    <span class="session-item-detail">(${i.sets} x ${i.reps})</span>
-                </div>
-                <button class="delete-btn" onclick="window.removeSessionItem(${idx})">✕</button>
-            </li>`).join("");
-    }
-}
-
-async function submitWorkout() {
-    if(currentSessionItems.length === 0) return alert("Add drills!");
-    
-    // THE ACCOUNTABILITY CHECK
-    if(isSignatureBlank) return alert("A parent must sign to verify this workout.");
-    
-    const tid = userProfile ? userProfile.teamId : null;
-    const pname = userProfile ? userProfile.playerName : null;
-    const mins = document.getElementById("totalMinutes").value;
-    
-    if(!tid || !pname) return alert("User profile is incomplete. Please complete setup.");
-    if(!mins) return alert("Fill all info");
-
-    try {
-        await addDoc(collection(db, "reps"), {
-            timestamp: new Date(),
-            teamId: tid,
-            player: pname,
-            minutes: parseInt(mins),
-            drills: currentSessionItems,
-            drillSummary: currentSessionItems.map(x=>x.name).join(", "),
-            outcome: document.querySelector(".outcome-btn.active")?.dataset.val || "Good",
-            coachEmail: globalTeams.find(t=>t.id===tid)?.coachEmail || DIRECTOR_EMAIL
-        });
-        
-        alert("Workout Logged! +XP");
-        logSystemEvent("WORKOUT_SUBMIT", `Player: ${pname}, Mins: ${mins}`);
-        
-        // Reset the form
-        currentSessionItems = []; 
-        renderSession(); 
-        document.getElementById("totalMinutes").value = "";
-        
-        // Wipe the canvas clean for the next workout
-        const canvas = document.getElementById("signatureCanvas");
-        if(canvas) {
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            isSignatureBlank = true;
-            canvas.style.borderColor = "#cbd5e1"; 
-            canvas.style.backgroundColor = "#fcfcfc";
-        }
-        
-        loadStats();
-    } catch(e) { 
-        alert("Save Failed: " + e.message); 
-    }
-}
-
 async function loadStats() {
     if (!userProfile) return;
     let q;
@@ -469,20 +398,24 @@ const initApp = () => {
 
     safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => {
         if(document.getElementById("viewStats") && !document.getElementById("viewStats").classList.contains("d-none")) {
-            loadStats(); // Trigger your stats reload if they are looking at it
+            loadStats(); 
         }
     }));
     safeBind("btnGCal", "click", addToGoogleCalendar);
     safeBind("btnIcs", "click", downloadIcsFile);
 
     safeBind("btnOpenTrophyModal", "click", () => {
-        // Just navigate to the stats page where the real trophies are
         window.navigateTo('viewStats', 'navStats');
-        // Scroll down slightly so the trophy case is centered
         setTimeout(() => window.scrollTo({ top: 150, behavior: 'smooth' }), 100);
     });
 
     buildDropdowns(0);
+
+const getEmbedUrl = (url) => {
+        if (!url) return "";
+        const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+        return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : url;
+    };
 
     const showDrillInfo = (drillName) => {
         const s = dbData.foundationSkills.find(x => x.name === drillName);
@@ -517,60 +450,9 @@ const initApp = () => {
         }
     });
 
-    safeBind("addWarmupBtn", "click", () => {
-        let n = document.getElementById("selectWarmup").value;
-        if(!n) return alert("Select a Warm-up first");
-        if (n === "custom") {
-            n = document.getElementById("customWarmupName").value.trim();
-            if(!n) return alert("Please type the name of your workout.");
-        }
-        const dist = document.getElementById("cardioDist").value;
-        const time = document.getElementById("cardioTime").value;
-        let details = "";
-        if (dist) details += `${dist} mi`;
-        if (dist && time) details += " / ";
-        if (time) details += `${time} min`;
-        if (!details) details = "Standard";
-        currentSessionItems.push({ name: n, sets: 1, reps: details }); 
-        renderSession();
-        document.getElementById("cardioDist").value = "";
-        document.getElementById("cardioTime").value = "";
-        document.getElementById("customWarmupName").value = "";
-    });
-
     safeBind("selectCore", "change", (e) => showDrillInfo(e.target.value));
-    safeBind("addCoreBtn", "click", () => {
-        const n = document.getElementById("selectCore").value;
-        if(!n) return alert("Select a Core exercise first");
-        const s = document.getElementById("setsCore").value || 3;
-        const r = document.getElementById("repsCore").value || 20;
-        currentSessionItems.push({ name: n, sets: s, reps: r });
-        renderSession();
-    });
-
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
-    safeBind("addBallWorkBtn", "click", () => {
-        const n = document.getElementById("selectBallWork").value;
-        if(!n) return alert("Select a Skill first");
-        const s = document.getElementById("setsBall").value || 3;
-        const r = document.getElementById("repsBall").value || 20;
-        currentSessionItems.push({ name: n, sets: s, reps: r });
-        renderSession();
-    });
-
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
-    safeBind("addBasicsBtn", "click", () => {
-        const n = document.getElementById("selectBasics").value;
-        if(!n) return alert("Select a Basic first");
-        const s = document.getElementById("setsBasics").value || 3;
-        const r = document.getElementById("repsBasics").value || 20;
-        currentSessionItems.push({ name: n, sets: s, reps: r });
-        renderSession();
-    });
-
-    safeBind("submitWorkoutBtn", "click", submitWorkout);
-    safeBind("btnGCal", "click", addToGoogleCalendar);
-    safeBind("btnIcs", "click", downloadIcsFile);
 
     document.querySelectorAll(".outcome-btn").forEach(b => {
         b.onclick = () => {
@@ -604,7 +486,6 @@ const initApp = () => {
 
 // --- SCHEDULE & HOMEWORK BINDINGS ---
     
-    // 1. Populate the Homework Drill Dropdown
     const hwDrillSelect = document.getElementById("hwDrillSelect");
     if(hwDrillSelect) {
         hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
@@ -616,7 +497,6 @@ const initApp = () => {
         });
     }
 
-    // 2. Bind the Schedule Button
     safeBind("addScheduleBtn", "click", async () => {
         try {
             const date = document.getElementById("scheduleDate").value;
@@ -638,8 +518,7 @@ const initApp = () => {
         }
     });
 
-    // 3. Bind the Homework Builder
-    window.currentHomeworkBuilder = []; // Global staging array
+    window.currentHomeworkBuilder = []; 
 
     safeBind("addHwDrillBtn", "click", () => {
         const d = document.getElementById("hwDrillSelect").value;
@@ -660,12 +539,10 @@ const initApp = () => {
 
 // --- SKILL EVALUATION BINDINGS ---
     
-    // 1. Populate the Brilliant Basics Dropdown
     const evalSkillSelect = document.getElementById("evalSkillSelect");
     if(evalSkillSelect) {
         evalSkillSelect.innerHTML = '<option value="" disabled selected>Select Skill...</option>';
         dbData.foundationSkills.forEach(s => {
-            // Filter to ONLY include Brilliant Basics (matches your existing logic)
             if(s.type !== 'cardio' && s.type !== 'core' && s.type !== 'ball_mastery') {
                 const opt = document.createElement("option"); 
                 opt.value = s.name; 
@@ -675,7 +552,6 @@ const initApp = () => {
         });
     }
 
-    // 2. Fetch History when a new player is selected
     window.loadPlayerEvaluations = async (playerName) => {
         const list = document.getElementById("coachEvalList");
         if(!playerName) return list.innerHTML = '<li class="session-empty" style="font-size:11px;">Select a player above.</li>';
@@ -687,7 +563,6 @@ const initApp = () => {
             const evals = [];
             snap.forEach(d => evals.push({ id: d.id, ...d.data() }));
             
-            // Sort by newest first
             evals.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
             
             if(evals.length === 0) {
@@ -712,7 +587,6 @@ const initApp = () => {
 
     safeBind("evalPlayerSelect", "change", (e) => window.loadPlayerEvaluations(e.target.value));
 
-    // 3. Bind the Save Button
     safeBind("saveEvalBtn", "click", async () => {
         try {
             const player = document.getElementById("evalPlayerSelect").value;
@@ -736,7 +610,6 @@ const initApp = () => {
         } catch (err) { alert("Database Error: " + err.message); console.error(err); }
     });
 
-    // 4. Global Delete Function
     window.deleteEval = async (id, playerName) => {
         if(confirm("Delete this evaluation?")) {
             await deleteDoc(doc(db, "evaluations", id));
@@ -744,7 +617,6 @@ const initApp = () => {
         }
     };
 
-    // Helper to remove a staged drill before sending
     window.removeHwDrill = (idx) => {
         window.currentHomeworkBuilder.splice(idx, 1);
         const list = document.getElementById("hwBuilderList");
@@ -760,7 +632,6 @@ const initApp = () => {
         }
     };
 
-    // 4. Bind the Send Assignment Button
     safeBind("assignHwBtn", "click", async () => {
         try {
             const player = document.getElementById("hwPlayerSelect").value;
@@ -771,7 +642,6 @@ const initApp = () => {
             if(!player || !due || !tid) return alert("Please select a player and due date.");
             if(drills.length === 0) return alert("Please add at least one drill to the assignment.");
             
-            // Save the entire array of drills to the database
             await addDoc(collection(db, "assignments"), { 
                 teamId: tid, player: player, dueDate: due, status: "active",
                 drills: drills 
@@ -779,7 +649,6 @@ const initApp = () => {
             
             alert("Homework Assigned!");
             
-            // Reset the builder UI
             window.currentHomeworkBuilder = [];
             document.getElementById("hwBuilderList").innerHTML = '<li class="session-empty" style="font-size:11px;">No drills added to this assignment yet.</li>';
             
@@ -788,30 +657,25 @@ const initApp = () => {
         } catch (err) { alert("Database Error: " + err.message); console.error(err); }
     });
 
-    // --- MODAL & POPUP CLOSE BUTTONS ---
+// --- MODAL & POPUP CLOSE BUTTONS ---
     document.querySelectorAll(".close-btn").forEach(b => {
         b.onclick = () => {
-            // 1. Hide all standard modals (like the Video Player, Day View, and Certificate)
             document.querySelectorAll(".modal").forEach(m => m.style.display = 'none');
-            
-            // 2. Stop the YouTube video from playing in the background
             const videoPlayer = document.getElementById("videoPlayer");
             if (videoPlayer) videoPlayer.src = "";
-            
-            // 3. Hide the Drill Info Box (which is a card, not a modal)
             const drillInfoBox = document.getElementById("drillInfoBox");
             if (drillInfoBox) drillInfoBox.style.display = 'none';
         }
     });
-    // ==========================================
-    // COACH STOPWATCH LOGIC
-    // ==========================================
+
+// ==========================================
+// COACH STOPWATCH LOGIC
+// ==========================================
     let swInterval = null;
     let swStartTime = 0;
     let swElapsedTime = 0;
     let swLapCount = 0;
 
-    // Helper to format milliseconds into mm:ss.ms
     const formatTime = (ms) => {
         const date = new Date(ms);
         const m = date.getUTCMinutes().toString().padStart(2, '0');
@@ -827,7 +691,7 @@ const initApp = () => {
                 swElapsedTime = Date.now() - swStartTime;
                 const disp = document.getElementById("stopwatchDisplay");
                 if(disp) disp.innerText = formatTime(swElapsedTime);
-            }, 10); // Updates every 10ms for smooth tracking
+            }, 10); 
         }
     });
 
@@ -844,101 +708,20 @@ const initApp = () => {
         const disp = document.getElementById("stopwatchDisplay");
         if(disp) disp.innerText = "00:00.00";
         const laps = document.getElementById("lapList");
-        if(laps) laps.innerHTML = ""; // Clear laps
+        if(laps) laps.innerHTML = ""; 
     });
 
     safeBind("btnSwLap", "click", () => {
-        if(swElapsedTime === 0) return; // Don't lap if it hasn't started
+        if(swElapsedTime === 0) return; 
         swLapCount++;
         const laps = document.getElementById("lapList");
         if(laps) {
             const li = document.createElement("li");
             li.style.cssText = "padding: 8px 5px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;";
             li.innerHTML = `<strong>Lap ${swLapCount}</strong> <span style="font-family:monospace; font-weight:bold; color:var(--aggie-blue);">${formatTime(swElapsedTime)}</span>`;
-            // Prepend adds it to the top of the list so the newest lap is always visible
             laps.prepend(li); 
         }
     });
-
-    // ==========================================
-    // PARENT SIGNATURE LOGIC
-    // ==========================================
-    const canvas = document.getElementById("signatureCanvas");
-    if(canvas) {
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        
-       function resizeCanvas() { 
-            // ADDED: && canvas.parentElement.offsetWidth > 0
-            if(canvas.parentElement && canvas.parentElement.offsetWidth > 0) { 
-                canvas.width = canvas.parentElement.offsetWidth; 
-                canvas.height = 120; 
-                ctx.lineWidth = 2; 
-                ctx.lineCap = "round"; 
-                ctx.strokeStyle = "#00263A"; 
-            } 
-        }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500); 
-
-        function getCoordinates(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        function startDraw(e) { 
-            isDrawing = true; 
-            ctx.beginPath(); 
-            draw(e); 
-        }
-
-        function endDraw() { 
-            isDrawing = false; 
-            ctx.beginPath(); 
-            checkSignature(); 
-        }
-
-        function draw(e) { 
-            if (!isDrawing) return; 
-            e.preventDefault(); // Prevents mobile screen from scrolling while signing
-            isSignatureBlank = false; 
-            const coords = getCoordinates(e);
-            ctx.lineTo(coords.x, coords.y); 
-            ctx.stroke(); 
-            ctx.beginPath(); 
-            ctx.moveTo(coords.x, coords.y); 
-        }
-
-        function checkSignature() { 
-            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer); 
-            // If the canvas is completely blank, keep the flag true
-            if (!pixelBuffer.some(color => color !== 0)) { 
-                isSignatureBlank = true; 
-            } else { 
-                isSignatureBlank = false; 
-                canvas.style.borderColor = "#16a34a"; // Turn border green for success visual feedback
-                canvas.style.backgroundColor = "#f0fdf4"; 
-            }
-        }
-
-        canvas.addEventListener('mousedown', startDraw); 
-        canvas.addEventListener('mouseup', endDraw); 
-        canvas.addEventListener('mousemove', draw); 
-        
-        // Mobile Touch Events (passive: false is required to block scrolling)
-        canvas.addEventListener('touchstart', startDraw, { passive: false }); 
-        canvas.addEventListener('touchend', endDraw); 
-        canvas.addEventListener('touchmove', draw, { passive: false });
-
-        safeBind("clearSigBtn", "click", () => { 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            isSignatureBlank = true; 
-            canvas.style.borderColor = "#cbd5e1"; 
-            canvas.style.backgroundColor = "#fcfcfc"; 
-        });
-    }
 };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
