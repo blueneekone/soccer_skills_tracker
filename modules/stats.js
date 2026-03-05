@@ -136,3 +136,29 @@ export const loadPlayerFeedback = async (userProfile) => {
         list.innerHTML = '<li class="session-empty" style="color:red;">Error loading feedback.</li>';
     }
 };
+
+export const renderPlayerTrials = async (playerName) => {
+    const table = document.querySelector("#statsTrialTable tbody");
+    if(!table) return;
+    try {
+        const q = query(collection(db, "trials"), where("player", "==", playerName));
+        const snap = await getDocs(q);
+        const trials = [];
+        snap.forEach(d => trials.push({ id: d.id, ...d.data() }));
+        trials.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
+        
+        if(trials.length === 0) {
+            table.innerHTML = "<tr><td colspan='4' class='text-center'>No trials completed yet.</td></tr>";
+            return;
+        }
+        
+        table.innerHTML = trials.map(t => `
+            <tr>
+                <td style="font-size:11px;">${new Date(t.timestamp.seconds*1000).toLocaleDateString()}</td>
+                <td style="font-weight:bold; color:var(--aggie-gold);">${t.type}</td>
+                <td style="font-size:11px;">${t.skill}</td>
+                <td style="font-weight:bold; color:var(--aggie-blue);">${t.result} ${t.isCoach ? '⭐' : ''}</td>
+            </tr>
+        `).join("");
+    } catch(e) { console.error(e); }
+};

@@ -82,6 +82,13 @@
                 </div>
             </div>
 
+            <div id="challenge250Banner" class="card d-none" style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; cursor: pointer; transform: scale(1.02); box-shadow: 0 10px 20px rgba(234,88,12,0.3);">
+                <div class="card-body text-center" style="padding: 20px 15px;">
+                    <h3 style="margin: 0 0 5px 0; font-weight: 900; letter-spacing: 1px;">🔥 NEW CHALLENGE UNLOCKED! 🔥</h3>
+                    <p style="margin: 0; font-size: 13px; opacity: 0.9;">You hit 250 XP. Tap here to view your Brilliant Basics trial.</p>
+                </div>
+            </div>
+
             <div class="dashboard-grid">
                 <div class="card dash-card" id="btnHomeStart">
                     <div class="dash-card-body">
@@ -94,6 +101,13 @@
                     <div class="dash-card-body">
                         <div class="dash-icon">📊</div>
                         <div class="dash-label">My Stats</div>
+                    </div>
+                </div>
+
+                <div class="card dash-card border-gold d-none" id="btnHomeChallenge">
+                    <div class="dash-card-body">
+                        <div class="dash-icon" style="font-size: 36px;">🔥⚽</div>
+                        <div class="dash-label" style="color: var(--aggie-gold);">Trials</div>
                     </div>
                 </div>
 
@@ -244,6 +258,67 @@
             </div>
         </div>
 
+        <div id="viewChallenge" class="view-section d-none">
+            <div class="card-header" style="background: var(--aggie-gold); color: var(--aggie-blue); border-radius: 8px 8px 0 0; padding: 15px;">
+                <h2 style="margin:0;">🔥 Challenge Mode</h2>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--aggie-blue); opacity: 0.8;">Watch the video, perform the reps, and log your official score.</p>
+            </div>
+            
+            <div class="card mt-15" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                <div class="card-header bg-blue-header">1. Passing Points</div>
+                <div class="card-body">
+                    <iframe id="chalPageVid1" width="100%" height="200" src="" frameborder="0" allowfullscreen style="border-radius: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1;"></iframe>
+                    <input type="text" id="passSkillName" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
+                    <div class="input-row" style="margin-bottom: 10px;">
+                        <input type="number" id="passScore1" class="flex-1" placeholder="Score 1">
+                        <input type="number" id="passScore2" class="flex-1" placeholder="Score 2">
+                        <input type="number" id="passScore3" class="flex-1" placeholder="Score 3">
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Total Passing Score</span><br>
+                        <span id="passTotal" style="font-size: 24px; font-weight: 900; color: var(--aggie-blue);">0</span>
+                    </div>
+                    <button id="submitPassBtn" class="primary-btn btn-blue text-sm">Submit Passing Score</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-orange-header">2. Shot Scoring</div>
+                <div class="card-body">
+                    <iframe id="chalPageVid2" width="100%" height="200" src="" frameborder="0" allowfullscreen style="border-radius: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1;"></iframe>
+                    <input type="text" id="shotSkillName" placeholder="Skill/Action Name">
+                    <div class="input-row" style="margin-bottom: 10px;">
+                        <input type="number" id="shotScore1" class="flex-1" placeholder="Score 1">
+                        <input type="number" id="shotScore2" class="flex-1" placeholder="Score 2">
+                        <input type="number" id="shotScore3" class="flex-1" placeholder="Score 3">
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Total Shot Score</span><br>
+                        <span id="shotTotal" style="font-size: 24px; font-weight: 900; color: #ea580c;">0</span>
+                    </div>
+                    <button id="submitShotBtn" class="primary-btn btn-orange text-sm">Submit Shot Score</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-green-header">3. Time Trial</div>
+                <div class="card-body">
+                    <iframe id="chalPageVid3" width="100%" height="200" src="" frameborder="0" allowfullscreen style="border-radius: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1;"></iframe>
+                    <input type="text" id="timeSkillName" placeholder="Skill/Action Name">
+                    <div class="input-row" style="margin-bottom: 10px;">
+                        <input type="number" id="timeScore1" class="flex-1" placeholder="Time 1 (s)">
+                        <input type="number" id="timeScore2" class="flex-1" placeholder="Time 2 (s)">
+                        <input type="number" id="timeScore3" class="flex-1" placeholder="Time 3 (s)">
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <span style="font-size: 11px; color: #64748b; text-transform: uppercase;">Best Time</span><br>
+                        <span id="timeTotal" style="font-size: 24px; font-weight: 900; color: #16a34a;">0s</span>
+                    </div>
+                    <button id="submitTimeBtn" class="primary-btn btn-green text-sm">Submit Best Time</button>
+                </div>
+            </div>
+        </div>
+
         <div id="viewStats" class="view-section d-none">
             <h2 class="view-title">Player Stats</h2>
             
@@ -258,6 +333,16 @@
                         <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span class="stat-label">Sessions</span></div>
                         <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span class="stat-label">Minutes</span></div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card" id="statsTrialsCard">
+                <div class="card-header" style="background: var(--aggie-gold); color: var(--aggie-blue);">⭐ Challenge Progress</div>
+                <div class="card-body p-0 overflow-x-auto">
+                    <table id="statsTrialTable" class="admin-table">
+                        <thead><tr><th>Date</th><th>Type</th><th>Skill</th><th>Result</th></tr></thead>
+                        <tbody><tr><td colspan="4" class="text-center">Loading Trials...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -303,7 +388,34 @@
 
         <div id="viewCoach" class="view-section d-none">
             <h2 class="coach-header">Coaching Tools</h2>
-            
+            <div class="card" id="coachRecentTrialsCard">
+                <div class="card-header" style="background: #dc2626; color: white;">🚨 Recent Trial Submissions</div>
+                <div class="card-body p-0">
+                    <ul id="coachRecentTrialList" class="session-list flush-list">
+                        <li class="session-empty">Loading recent submissions...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card" id="coachLogTrialCard">
+                <div class="card-header" style="background: var(--aggie-gold); color: var(--aggie-blue);">⏱️ Log Official In-Person Trial</div>
+                <div class="card-body">
+                    <select id="coachTrialPlayerSelect" style="margin-bottom: 10px;"><option>Loading Players...</option></select>
+                    <select id="coachTrialType" style="margin-bottom: 10px;">
+                        <option value="Passing">Passing Points</option>
+                        <option value="Shooting">Shot Scoring</option>
+                        <option value="Time">Time Trial</option>
+                    </select>
+                    <input type="text" id="coachTrialSkill" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
+                    <div class="input-row" style="margin-bottom:15px;">
+                        <input type="number" id="coachTrial1" class="flex-1" placeholder="Score 1">
+                        <input type="number" id="coachTrial2" class="flex-1" placeholder="Score 2">
+                        <input type="number" id="coachTrial3" class="flex-1" placeholder="Score 3">
+                    </div>
+                    <button id="coachSubmitTrialBtn" class="primary-btn" style="background: var(--aggie-gold); color: var(--aggie-blue);">Save Official Coach Trial</button>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">⏱️ Practice Stopwatch</div>
                 <div class="card-body text-center">
@@ -536,6 +648,46 @@
         </div>
     </div>
 
+    <div id="challengeModal" class="modal cert-modal-bg">
+        <div class="modal-content" style="background: var(--aggie-blue); color: white; border: 2px solid var(--aggie-gold); width: 95%; max-width: 600px;">
+            <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <span style="color: var(--aggie-gold); font-weight: 900;">⭐ CHALLENGES UNLOCKED ⭐</span>
+                <span class="close-btn modal-close-icon" style="color: white;">×</span>
+            </div>
+            
+            <div class="modal-body p-0">
+                <div id="stepIntro" class="challenge-pane" style="padding: 20px;">
+                    <h3 style="margin-top: 0;">Welcome to Challenge Mode</h3>
+                    <p style="font-size: 13px; color: #cbd5e1;">Coach Simon Collins has created specific trials to test your mastery. Watch the intro below.</p>
+                    <iframe id="vidIntro" width="100%" height="250" src="" frameborder="0" allowfullscreen style="border-radius: 8px; border: 2px solid #cbd5e1; margin-bottom: 15px;"></iframe>
+                    <button class="primary-btn" style="background: var(--aggie-gold); color: var(--aggie-blue);" onclick="window.nextChallengeStep('Ch1')">Next: View Challenges ➔</button>
+                </div>
+
+                <div id="stepCh1" class="challenge-pane d-none" style="padding: 20px;">
+                    <h3 style="margin-top: 0; color: var(--aggie-gold);">The Standards</h3>
+                    <p style="font-size: 13px; color: #cbd5e1;">Review the three challenges you will be evaluated on.</p>
+                    
+                    <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;">
+                        <iframe id="vidCh1" style="flex: 0 0 85%; height: 180px; border-radius: 8px; border: 1px solid #64748b;" src="" frameborder="0" allowfullscreen></iframe>
+                        <iframe id="vidCh2" style="flex: 0 0 85%; height: 180px; border-radius: 8px; border: 1px solid #64748b;" src="" frameborder="0" allowfullscreen></iframe>
+                        <iframe id="vidCh3" style="flex: 0 0 85%; height: 180px; border-radius: 8px; border: 1px solid #64748b;" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+
+                    <label class="challenge-checkbox" style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:12px; background:rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
+                        <input type="checkbox" id="chkWatched" onchange="window.verifyChallengeReadiness()"> 
+                        <span>Yes, I have watched the challenge videos and understand the standards.</span>
+                    </label>
+                    <label class="challenge-checkbox" style="display:flex; align-items:flex-start; gap:10px; margin-bottom:20px; font-size:12px; background:rgba(255,255,255,0.1); padding:10px; border-radius:6px;">
+                        <input type="checkbox" id="chkReady" onchange="window.verifyChallengeReadiness()"> 
+                        <span>Yes, I am ready to start my challenges and log my official scores.</span>
+                    </label>
+
+                    <button id="imReadyBtn" class="primary-btn" style="background: #475569; color: #94a3b8;" disabled>I'M READY</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="dayModal" class="modal">
         <div class="modal-content">
             <div class="card-header"><span id="dayModalDate">Date</span><span class="close-btn modal-close-icon">×</span></div>
@@ -601,8 +753,8 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=2.0.29"></script>
-    <script type="module" src="data.js?v=2.0.29"></script>
+    <script type="module" src="app.js?v=2.0.30"></script>
+    <script type="module" src="data.js?v=2.0.30"></script>
 
 </body>
 </html>

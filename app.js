@@ -6,9 +6,10 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy
 import { dbData } from "./data.js";
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
-import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, loadPlayerFeedback } from "./modules/stats.js";
+import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId } from "./modules/coach.js";
 import { logSystemEvent, renderAdminTables, addTeam, addAdmin, loadLogs, generateSampleLogs, runSecurityScan } from "./modules/admin.js";
+import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -202,7 +203,40 @@ async function loadStats() {
         
         let xp = totalMins + (logs.length * 10);
         let lvl = "ROOKIE"; 
+
+        // --- LEVEL CAP & PROGRESSION LOGIC ---
+        const approved = userProfile.approvedLevels || {};
+        let isCapped = false;
+
+        if (xp >= 3000) {
+            if (approved.legend) { lvl = "LEGEND"; } else { lvl = "PRO"; isCapped = true; }
+        } else if (xp >= 2000) {
+            if (approved.pro) { lvl = "PRO"; } else { lvl = "VETERAN"; isCapped = true; }
+        } else if (xp >= 1000) {
+            if (approved.veteran) { lvl = "VETERAN"; } else { lvl = "STARTER"; isCapped = true; }
+        } else if (xp >= 500) {
+            if (approved.starter) { lvl = "STARTER"; } else { lvl = "ROOKIE"; isCapped = true; }
+        } else if (xp >= 250) {
+            if (!approved.midRookie) { isCapped = true; }
+        }
         
+        const warningEl = document.getElementById("pendingEvalWarning");
+        if(warningEl) {
+            if(isCapped && userProfile.role !== 'admin') warningEl.classList.remove("d-none");
+            else warningEl.classList.add("d-none");
+        }
+
+      // --- CHALLENGE DASHBOARD UNLOCK LOGIC ---
+        const challengeDashBtn = document.getElementById("btnHomeChallenge");
+        if (challengeDashBtn) {
+            // Unlock the dashboard button if they have >= 250 XP
+            if (xp >= 250 && userProfile.role !== 'admin') {
+                challengeDashBtn.classList.remove("d-none");
+            } else {
+                challengeDashBtn.classList.add("d-none");
+            }
+        }
+
         const bStarter = document.getElementById("badgeStarter");
         const bVeteran = document.getElementById("badgeVeteran");
         const bPro = document.getElementById("badgePro");
@@ -215,15 +249,14 @@ async function loadStats() {
         if(bLegend) { bLegend.style.opacity = "0.3"; bLegend.style.filter = "grayscale(100%)"; }
         if(certBtn) certBtn.style.display = "none";
 
-        if(xp >= 500) { lvl = "STARTER"; if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; } }
-        if(xp >= 1000) { lvl = "VETERAN"; if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; } }
-        if(xp >= 2000) { lvl = "PRO"; if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; } }
-        if(xp >= 3000) { 
-            lvl = "LEGEND"; 
+        if(lvl === "STARTER" || lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; } }
+        if(lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; } }
+        if(lvl === "PRO" || lvl === "LEGEND") { if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; } }
+        if(lvl === "LEGEND") { 
             if(bLegend) { bLegend.style.opacity = "1"; bLegend.style.filter = "none"; }
             if(certBtn && userProfile.role !== 'admin') certBtn.style.display = "block"; 
         }
-        
+
         if (typeof buildDropdowns === "function") buildDropdowns(xp);
 
         if (userProfile.role !== 'admin') {
@@ -232,20 +265,11 @@ async function loadStats() {
             
             if(bar) {
                 let pct = 0;
-                
-                // Calculate percentage based on the current gap between levels
-                if(xp < 500) {
-                    pct = (xp / 500) * 100;                 // Rookie to Starter (500 point gap)
-                } else if(xp < 1000) {
-                    pct = ((xp - 500) / 500) * 100;         // Starter to Veteran (500 point gap)
-                } else if(xp < 2000) {
-                    pct = ((xp - 1000) / 1000) * 100;       // Veteran to Pro (1000 point gap)
-                } else if(xp < 3000) {
-                    pct = ((xp - 2000) / 1000) * 100;       // Pro to Legend (1000 point gap)
-                } else {
-                    pct = 100;                              // Legend (Maxed out)
-                }
-                
+                if(xp < 500) { pct = (xp / 500) * 100; } 
+                else if(xp < 1000) { pct = ((xp - 500) / 500) * 100; } 
+                else if(xp < 2000) { pct = ((xp - 1000) / 1000) * 100; } 
+                else if(xp < 3000) { pct = ((xp - 2000) / 1000) * 100; } 
+                else { pct = 100; }
                 bar.style.width = `${Math.min(pct, 100)}%`;
             }
         }
@@ -253,6 +277,7 @@ async function loadStats() {
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
         renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
+        renderPlayerTrials(userProfile.playerName);
         loadPlayerFeedback(userProfile);
     } catch (e) { console.error("Stats Load Error", e); }
 }
@@ -359,6 +384,7 @@ const initApp = () => {
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
+
 // --- TRACKER MODULE BINDINGS ---
     initSignatureCanvas();
 
@@ -668,6 +694,35 @@ const getEmbedUrl = (url) => {
         }
     });
 
+// --- CHALLENGES MODULE BINDINGS ---
+    setupChallengeCalculators(); 
+
+    safeBind("challenge250Banner", "click", () => {
+        document.getElementById("vidIntro").src = getEmbedUrl("https://youtu.be/Cmd3CzHv2Mc"); 
+        document.getElementById("vidCh1").src = getEmbedUrl("[PASTE PASSING VIDEO URL]"); 
+        document.getElementById("vidCh2").src = getEmbedUrl("[PASTE SHOOTING VIDEO URL]"); 
+        document.getElementById("vidCh3").src = getEmbedUrl("[PASTE TIME TRIAL VIDEO URL]"); 
+        
+        document.getElementById("stepIntro").classList.remove("d-none");
+        document.getElementById("stepCh1").classList.add("d-none");
+        document.getElementById("challengeModal").style.display = "block";
+    });
+
+    safeBind("imReadyBtn", "click", () => finalizeChallengeUnlock(userProfile, getEmbedUrl));
+    
+    safeBind("btnHomeChallenge", "click", () => {
+        if (!userProfile.hasViewedBasicsChallenge) {
+            document.getElementById("challenge250Banner").click(); 
+        } else {
+            window.navigateTo('viewChallenge', null); 
+        }
+    });
+
+    safeBind("submitPassBtn", "click", () => submitTrialScore('Passing', userProfile));
+    safeBind("submitShotBtn", "click", () => submitTrialScore('Shooting', userProfile));
+    safeBind("submitTimeBtn", "click", () => submitTrialScore('Time', userProfile));
+    safeBind("coachSubmitTrialBtn", "click", window.submitCoachTrial);
+    
 // ==========================================
 // COACH STOPWATCH LOGIC
 // ==========================================

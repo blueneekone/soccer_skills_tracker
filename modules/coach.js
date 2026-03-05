@@ -153,6 +153,9 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
         if(evalPlayer) evalPlayer.innerHTML = combinedList.length > 0 ? '<option value="" disabled selected>Select Player...</option>' + combinedList.map(p => `<option value="${p}">${p}</option>`).join("") : `<option value="">No players on roster</option>`;
 
         loadCoachScheduleAndHW();
+        loadRecentTrials(tid);
+        const cPlayerSelect = document.getElementById("coachTrialPlayerSelect");
+        if(cPlayerSelect) cPlayerSelect.innerHTML = combinedList.length > 0 ? combinedList.map(p => `<option value="${p}">${p}</option>`).join("") : `<option value="">No players on roster</option>`;
         if(updateCallback) updateCallback();
 
         if(listEl) {
@@ -307,4 +310,69 @@ export const exportSessionData = () => {
     const wb = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(wb, ws, "Workouts");
     window.XLSX.writeFile(wb, "Aggies_Workouts.xlsx");
+};
+
+export const loadRecentTrials = async (tid) => {
+    const list = document.getElementById("coachRecentTrialList");
+    if(!list) return;
+    if(!tid) return list.innerHTML = "<li class='session-empty'>Select a team.</li>";
+    
+    try {
+        const q = query(collection(db, "trials"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const trials = [];
+        snap.forEach(d => trials.push({ id: d.id, ...d.data() }));
+        trials.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
+        const recent = trials.slice(0, 10); 
+
+        if(recent.length === 0) return list.innerHTML = "<li class='session-empty'>No recent trials submitted.</li>";
+
+        list.innerHTML = recent.map(t => `
+            <li class="session-item" style="border-left: 4px solid #dc2626; align-items:center;">
+                <div style="flex:1;">
+                    <b style="color:var(--aggie-blue);">${t.player}</b> <span style="font-size:10px; color:#64748b;">(${new Date(t.timestamp.seconds*1000).toLocaleDateString()})</span><br>
+                    <span style="font-size:12px; font-weight:bold;">${t.type}:</span> <span style="font-size:12px;">${t.skill}</span>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-size:10px; color:#94a3b8;">[${t.a1}, ${t.a2}, ${t.a3}]</span><br>
+                    <b style="color:#dc2626; font-size:14px;">${t.result} ${t.isCoach ? '⭐' : ''}</b>
+                </div>
+            </li>
+        `).join("");
+    } catch(e) { console.error(e); }
+};
+
+window.submitCoachTrial = async () => {
+    const tid = currentCoachTeamId;
+    const player = document.getElementById("coachTrialPlayerSelect").value;
+    const type = document.getElementById("coachTrialType").value;
+    const skill = document.getElementById("coachTrialSkill").value;
+    const a1 = parseFloat(document.getElementById("coachTrial1").value) || 0;
+    const a2 = parseFloat(document.getElementById("coachTrial2").value) || 0;
+    const a3 = parseFloat(document.getElementById("coachTrial3").value) || 0;
+    
+    if(!player || !skill || a1 === 0) return alert("Please fill out the player, skill, and at least Score 1.");
+
+    let result = "0";
+    if(type === "Time") {
+        const times = [a1, a2, a3].filter(t => t > 0);
+        result = (times.length > 0 ? Math.min(...times) : 0) + "s";
+    } else {
+        result = (a1 + a2 + a3).toString();
+    }
+
+    try {
+        await addDoc(collection(db, "trials"), {
+            player: player, teamId: tid, type: type, skill: skill,
+            a1: a1, a2: a2, a3: a3, result: result,
+            timestamp: new Date(),
+            isCoach: true 
+        });
+        alert("Official Coach Trial Logged!");
+        document.getElementById("coachTrialSkill").value = "";
+        document.getElementById("coachTrial1").value = "";
+        document.getElementById("coachTrial2").value = "";
+        document.getElementById("coachTrial3").value = "";
+        loadRecentTrials(tid);
+    } catch(e) { alert("Error saving: " + e.message); }
 };
