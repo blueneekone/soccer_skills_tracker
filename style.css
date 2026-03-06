@@ -410,7 +410,7 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 /* =======================================================
    COACH DASHBOARD TABS
    ======================================================= */
-.coach-tabs-container { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+.coach-tabs-container { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
 .coach-tabs-container::-webkit-scrollbar { display: none; }
 .coach-tab-btn { flex: 1; min-width: 80px; padding: 10px; background: #e2e8f0; border: none; border-radius: 8px; color: #475569; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .coach-tab-btn.active { background: var(--aggie-blue); color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }

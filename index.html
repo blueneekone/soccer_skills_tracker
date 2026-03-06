@@ -106,7 +106,7 @@
 
                 <div class="card dash-card border-gold d-none" id="btnHomeChallenge">
                     <div class="dash-card-body">
-                        <div class="dash-icon" style="font-size: 36px;">🔥⚽</div>
+                        <div class="dash-icon dash-icon-large">🔥⚽</div>
                         <div class="dash-label challenge-title-gold">Trials</div>
                     </div>
                 </div>
@@ -267,7 +267,7 @@
             <div class="card mt-15 flush-top">
                 <div class="card-header bg-blue-header">1. Passing Points</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 1 - Passing Points"></iframe>
                     <input type="text" id="passSkillName" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
                     <div class="input-row mb-10">
                         <input type="number" id="passScore1" class="flex-1" placeholder="Score 1">
@@ -285,7 +285,7 @@
             <div class="card">
                 <div class="card-header bg-orange-header">2. Shot Scoring</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 2 - Shot Scoring"></iframe>
                     <input type="text" id="shotSkillName" placeholder="Skill/Action Name">
                     <div class="input-row mb-10">
                         <input type="number" id="shotScore1" class="flex-1" placeholder="Score 1">
@@ -303,7 +303,7 @@
             <div class="card">
                 <div class="card-header bg-green-header">3. Time Trial</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 3 - Time Trial"></iframe>
                     <input type="text" id="timeSkillName" placeholder="Skill/Action Name">
                     <div class="input-row mb-10">
                         <input type="number" id="timeScore1" class="flex-1" placeholder="Time 1 (s)">
@@ -520,8 +520,8 @@
                 <div class="card" id="coachLogTrialCard">
                     <div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
                     <div class="card-body">
-                        <select id="coachTrialPlayerSelect" class="mb-10"><option>Loading Players...</option></select>
-                        <select id="coachTrialType" class="mb-10">
+                        <select id="coachTrialPlayerSelect" class="mb-10" title="Select a player for trial logging"><option>Loading Players...</option></select>
+                        <select id="coachTrialType" class="mb-10" title="Select trial type">
                             <option value="Passing">Passing Points</option>
                             <option value="Shooting">Shot Scoring</option>
                             <option value="Time">Time Trial</option>
@@ -591,18 +591,6 @@
             </div>
         </div>
 
-            <div class="card" id="cardStaffManager">
-                <div class="card-header staff-header">Team Staff (Assistants)</div>
-                <div class="card-body">
-                    <div id="assistantList" class="assistant-list"></div>
-                    <div class="add-assistant-row">
-                        <input type="email" id="newAssistantEmail" class="m-0" placeholder="Assistant's Email">
-                        <button id="addAssistantBtn" class="primary-btn btn-auto-width btn-padding-10">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div id="viewAdmin" class="view-section d-none">
             <h2 class="admin-header">Global Admin</h2>
             <div class="card">
@@ -667,7 +655,7 @@
                 <div id="stepIntro" class="p-20">
                     <h3 class="mt-0">Welcome to Challenge Mode</h3>
                     <p class="challenge-desc">Coach Simon Collins has created specific trials to test your mastery. Watch the intro below.</p>
-                    <iframe id="vidIntro" class="video-frame" src="" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="vidIntro" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Introduction Video"></iframe>
                     <button class="primary-btn btn-gold" onclick="window.nextChallengeStep('Ch1')">Next: View Challenges ➔</button>
                 </div>
 
@@ -676,9 +664,9 @@
                     <p class="challenge-desc">Review the three challenges you will be evaluated on.</p>
                     
                     <div class="video-scroller">
-                        <iframe id="vidCh1" class="scroller-vid" src="" frameborder="0" allowfullscreen></iframe>
-                        <iframe id="vidCh2" class="scroller-vid" src="" frameborder="0" allowfullscreen></iframe>
-                        <iframe id="vidCh3" class="scroller-vid" src="" frameborder="0" allowfullscreen></iframe>
+                        <iframe id="vidCh1" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 1"></iframe>
+                        <iframe id="vidCh2" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 2"></iframe>
+                        <iframe id="vidCh3" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 3"></iframe>
                     </div>
 
                     <label class="checkbox-panel">
