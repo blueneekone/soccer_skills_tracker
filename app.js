@@ -709,10 +709,10 @@ const getEmbedUrl = (url) => {
     setupChallengeCalculators(); 
 
     safeBind("challenge250Banner", "click", () => {
-        document.getElementById("vidIntro").src = getEmbedUrl("https://youtu.be/Cmd3CzHv2Mc"); 
-        document.getElementById("vidCh1").src = getEmbedUrl("[PASTE PASSING VIDEO URL]"); 
-        document.getElementById("vidCh2").src = getEmbedUrl("[PASTE SHOOTING VIDEO URL]"); 
-        document.getElementById("vidCh3").src = getEmbedUrl("[PASTE TIME TRIAL VIDEO URL]"); 
+        document.getElementById("vidIntro").src = "https://www.youtube.com/embed/Cmd3CzHv2Mc"; 
+        document.getElementById("vidCh1").src = "https://www.youtube.com/embed/QytqZ-zieSc"; 
+        document.getElementById("vidCh2").src = "https://www.youtube.com/embed/p-75lxTdksg"; 
+        document.getElementById("vidCh3").src = "https://www.youtube.com/embed/u51A9mWPBXo"; 
         
         document.getElementById("stepIntro").classList.remove("d-none");
         document.getElementById("stepCh1").classList.add("d-none");
