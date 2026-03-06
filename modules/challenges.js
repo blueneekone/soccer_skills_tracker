@@ -41,9 +41,9 @@ export const finalizeChallengeUnlock = async (userProfile, getEmbedUrl) => {
         });
 
         // Load the videos directly into the actual Challenge Page
-        document.getElementById("chalPageVid1").src = ("https://youtu.be/QytqZ-zieSc");
-        document.getElementById("chalPageVid2").src = ("https://youtu.be/p-75lxTdksg");
-        document.getElementById("chalPageVid3").src = ("https://youtu.be/u51A9mWPBXo");
+        document.getElementById("chalPageVid1").src = getEmbedUrl("https://youtu.be/QytqZ-zieSc");
+        document.getElementById("chalPageVid2").src = getEmbedUrl("https://youtu.be/p-75lxTdksg");
+        document.getElementById("chalPageVid3").src = getEmbedUrl("https://youtu.be/u51A9mWPBXo");
         
         // Teleport them
         window.navigateTo('viewChallenge', null);

@@ -378,3 +378,15 @@ window.submitCoachTrial = async () => {
         loadRecentTrials(tid);
     } catch(e) { alert("Error saving: " + e.message); }
 };
+
+// --- COACH DASHBOARD TABS ---
+window.switchCoachTab = (tabId) => {
+    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabTools'].forEach(id => {
+        const pane = document.getElementById(id);
+        const btn = document.getElementById(`btn-${id}`);
+        if(pane) pane.classList.add('d-none');
+        if(btn) btn.classList.remove('active');
+    });
+    document.getElementById(tabId).classList.remove('d-none');
+    document.getElementById(`btn-${tabId}`).classList.add('active');
+};

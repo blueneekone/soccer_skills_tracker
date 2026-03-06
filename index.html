@@ -386,137 +386,8 @@
             </div>
         </div>
 
-        <div id="viewCoach" class="view-section d-none">
+       <div id="viewCoach" class="view-section d-none">
             <h2 class="coach-header">Coaching Tools</h2>
-
-            <div class="card" id="coachRecentTrialsCard">
-                <div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
-                <div class="card-body p-0">
-                    <ul id="coachRecentTrialList" class="session-list flush-list">
-                        <li class="session-empty">Loading recent submissions...</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card" id="coachLogTrialCard">
-                <div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
-                <div class="card-body">
-                    <select id="coachTrialPlayerSelect" class="mb-10"><option>Loading Players...</option></select>
-                    <select id="coachTrialType" class="mb-10">
-                        <option value="Passing">Passing Points</option>
-                        <option value="Shooting">Shot Scoring</option>
-                        <option value="Time">Time Trial</option>
-                    </select>
-                    <input type="text" id="coachTrialSkill" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
-                    <div class="input-row mb-15">
-                        <input type="number" id="coachTrial1" class="flex-1" placeholder="Score 1">
-                        <input type="number" id="coachTrial2" class="flex-1" placeholder="Score 2">
-                        <input type="number" id="coachTrial3" class="flex-1" placeholder="Score 3">
-                    </div>
-                    <button id="coachSubmitTrialBtn" class="primary-btn btn-gold">Save Official Coach Trial</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">⏱️ Practice Stopwatch</div>
-                <div class="card-body text-center">
-                    <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
-                    
-                    <div class="flex-gap-8">
-                        <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
-                        <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
-                    </div>
-                    <div class="flex-gap-8">
-                        <button id="btnSwLap" class="secondary-btn flex-1" type="button">Lap Split</button>
-                        <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
-                    </div>
-                    
-                    <ul id="lapList" class="lap-list">
-                        </ul>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">📅 Manage Schedule</div>
-                <div class="card-body">
-                    <div class="schedule-input-row">
-                        <input type="date" id="scheduleDate" class="schedule-date-input" title="Select event date">
-                        <input type="time" id="scheduleTime" class="schedule-time-input" title="Select event time">
-                    </div>
-                    <div class="schedule-type-row">
-                        <select id="scheduleType" class="schedule-type-select" title="Select event type">
-                            <option value="Practice">Practice</option>
-                            <option value="Game">Game</option>
-                            <option value="Event">Event</option>
-                        </select>
-                        <input type="text" id="scheduleLocation" placeholder="Location / Opponent" class="schedule-location-input">
-                    </div>
-                    <button id="addScheduleBtn" class="primary-btn btn-blue btn-add-schedule" type="button">+ Add Event</button>
-                    
-                    <ul id="coachScheduleList" class="session-list coach-schedule-list"></ul>
-                </div>
-            </div>
-
-           <div class="card">
-                <div class="card-header hw-header">🎯 Assign Homework</div>
-                <div class="card-body">
-                    <label>1. Select Player & Due Date</label>
-                    <div class="flex-gap-10">
-                        <select id="hwPlayerSelect" class="hw-player-select" title="Select a player for homework assignment"><option>Loading...</option></select>
-                        <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment">
-                    </div>
-                    
-                    <label>2. Build the Workout</label>
-                    <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
-                    
-                    <div class="hw-drill-input-row">
-                        <input type="number" id="hwSets" placeholder="Sets" value="3">
-                        <span>x</span>
-                        <input type="number" id="hwReps" placeholder="Reps/Mins" value="20">
-                        <button id="addHwDrillBtn" class="secondary-btn">+ Add Drill</button>
-                    </div>
-                    
-                    <ul id="hwBuilderList" class="session-list hw-builder-list">
-                        <li class="session-empty">No drills added to this assignment yet.</li>
-                    </ul>
-                    
-                    <button id="assignHwBtn" class="primary-btn btn-orange btn-assign-hw">Send Assignment</button>
-                    
-                    <hr class="section-divider">
-                    <label>Active Assignments</label>
-                    <ul id="coachHwList" class="session-list mt-15"></ul>
-                </div>
-            </div>
-
-<div class="card">
-                <div class="card-header bg-green-header">📋 Skill Evaluation</div>
-                <div class="card-body">
-                    <div class="eval-input-row">
-                        <select id="evalPlayerSelect" class="eval-player-select" title="Select a player for skill evaluation"><option>Loading...</option></select>
-                        <select id="evalScore" class="eval-score-select" title="Select a score for skill evaluation">
-                            <option value="" disabled selected>Score</option>
-                            <option value="1">1 - Struggling</option>
-                            <option value="2">2 - Needs Work</option>
-                            <option value="3">3 - Capable</option>
-                            <option value="4">4 - Strong</option>
-                            <option value="5">5 - Mastered</option>
-                        </select>
-                    </div>
-                    
-                    <label>Brilliant Basics Skill</label>
-                    <select id="evalSkillSelect" class="eval-skill-select" title="Select a skill for evaluation"><option>Loading...</option></select>
-                    
-                    <input type="text" id="evalNotes" placeholder="Optional coach notes..." class="eval-notes-input">
-                    
-                    <button id="saveEvalBtn" class="primary-btn btn-green btn-save-eval">Save Evaluation</button>
-                    
-                    <hr class="section-divider">
-                    <label>Player History</label>
-                    <ul id="coachEvalList" class="session-list eval-history-list">
-                        <li class="session-empty">Select a player above to view their history.</li>
-                    </ul>
-                </div>
-            </div>
 
             <div class="card d-none" id="adminControls">
                 <div class="card-header">Director Access</div>
@@ -526,63 +397,199 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header roster-overview-header">Roster Overview</div>
-                <div class="card-body">
-                    <div class="roster-stats-box">
-                        <div class="text-center"><b>Active Players</b><br><span id="coachActivePlayers" class="roster-stat-val active">0</span></div>
-                        <div class="text-center"><b>Total Reps Logged</b><br><span id="coachTotalReps" class="roster-stat-val reps">0</span></div>
+            <div class="coach-tabs-container">
+                <button id="btn-coachTabRoster" class="coach-tab-btn active" onclick="window.switchCoachTab('coachTabRoster')">👥 Roster</button>
+                <button id="btn-coachTabPlan" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabPlan')">📅 Plan</button>
+                <button id="btn-coachTabEvals" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabEvals')">📋 Evals</button>
+                <button id="btn-coachTabTools" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabTools')">⚙️ Tools</button>
+            </div>
+
+            <div id="coachTabRoster">
+                <div class="card">
+                    <div class="card-header roster-overview-header">Roster Overview</div>
+                    <div class="card-body">
+                        <div class="roster-stats-box">
+                            <div class="text-center"><b>Active Players</b><br><span id="coachActivePlayers" class="roster-stat-val active">0</span></div>
+                            <div class="text-center"><b>Total Reps Logged</b><br><span id="coachTotalReps" class="roster-stat-val reps">0</span></div>
+                        </div>
+                        <label for="rosterPdfInput">Import Team Roster (PDF)</label>
+                        <input type="file" id="rosterPdfInput" accept="application/pdf" title="Upload a PDF file to import team roster">
+                        <div id="rosterReviewArea" class="d-none">
+                            <label>Review Extracted Names</label>
+                            <textarea id="rosterTextRaw" rows="8" title="Review and edit extracted player names from roster"></textarea>
+                            <button id="saveParsedRosterBtn" class="primary-btn btn-save-roster">Save Roster</button>
+                        </div>
+                        <hr class="roster-divider">
+                        <label>Manual Add Player</label>
+                        <input type="text" id="coachAddPlayerName" placeholder="Player Name">
+                        <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
+                        <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
                     </div>
-                    <label for="rosterPdfInput">Import Team Roster (PDF)</label>
-                    <input type="file" id="rosterPdfInput" accept="application/pdf" title="Upload a PDF file to import team roster">
-                    <div id="rosterReviewArea" class="d-none">
-                        <label>Review Extracted Names</label>
-                        <textarea id="rosterTextRaw" rows="8" title="Review and edit extracted player names from roster"></textarea>
-                        <button id="saveParsedRosterBtn" class="primary-btn btn-save-roster">Save Roster</button>
+                </div>
+
+                <div class="card" id="weeklySummaryCard">
+                    <div class="card-header bg-blue-header">📅 7-Day Practice Summary</div>
+                    <div class="card-body p-0 overflow-x-auto">
+                        <table id="weeklySummaryTable" class="admin-table">
+                            <thead><tr><th>Player</th><th>7-Day Mins</th><th>Status</th></tr></thead>
+                            <tbody><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        </table>
                     </div>
-                    <hr class="roster-divider">
-                    <label>Manual Add Player</label>
-                    <input type="text" id="coachAddPlayerName" placeholder="Player Name">
-                    <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
-                    <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
+                </div>
+
+                <div class="card" id="coachPlayerListCard">
+                    <div class="card-header"><span>Team Roster</span><button id="forceRefreshRosterBtn" class="action-btn">↻ Refresh</button></div>
+                    <div class="card-body p-0"><div id="coachPlayerList">Loading...</div></div>
+                </div>
+
+                <div class="card" id="cardStaffManager">
+                    <div class="card-header staff-header">Team Staff (Assistants)</div>
+                    <div class="card-body">
+                        <div id="assistantList" class="assistant-list"></div>
+                        <div class="add-assistant-row">
+                            <input type="email" id="newAssistantEmail" class="m-0" placeholder="Assistant's Email">
+                            <button id="addAssistantBtn" class="primary-btn btn-auto-width btn-padding-10">Add</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card" id="weeklySummaryCard">
-                <div class="card-header bg-blue-header">📅 7-Day Practice Summary</div>
-                <div class="card-body p-0 overflow-x-auto">
-                    <table id="weeklySummaryTable" class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Player</th>
-                                <th>7-Day Mins</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="3" class="text-center">Loading...</td></tr>
-                        </tbody>
-                    </table>
+            <div id="coachTabPlan" class="d-none">
+                <div class="card">
+                    <div class="card-header">📅 Manage Schedule</div>
+                    <div class="card-body">
+                        <div class="schedule-input-row">
+                            <input type="date" id="scheduleDate" class="schedule-date-input" title="Select event date">
+                            <input type="time" id="scheduleTime" class="schedule-time-input" title="Select event time">
+                        </div>
+                        <div class="schedule-type-row">
+                            <select id="scheduleType" class="schedule-type-select" title="Select event type">
+                                <option value="Practice">Practice</option>
+                                <option value="Game">Game</option>
+                                <option value="Event">Event</option>
+                            </select>
+                            <input type="text" id="scheduleLocation" placeholder="Location / Opponent" class="schedule-location-input">
+                        </div>
+                        <button id="addScheduleBtn" class="primary-btn btn-blue btn-add-schedule" type="button">+ Add Event</button>
+                        <ul id="coachScheduleList" class="session-list coach-schedule-list mt-15"></ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header hw-header">🎯 Assign Homework</div>
+                    <div class="card-body">
+                        <label>1. Select Player & Due Date</label>
+                        <div class="flex-gap-10">
+                            <select id="hwPlayerSelect" class="hw-player-select" title="Select a player for homework assignment"><option>Loading...</option></select>
+                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment">
+                        </div>
+                        
+                        <label>2. Build the Workout</label>
+                        <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
+                        
+                        <div class="hw-drill-input-row">
+                            <input type="number" id="hwSets" placeholder="Sets" value="3">
+                            <span>x</span>
+                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20">
+                            <button id="addHwDrillBtn" class="secondary-btn">+ Add Drill</button>
+                        </div>
+                        
+                        <ul id="hwBuilderList" class="session-list hw-builder-list">
+                            <li class="session-empty">No drills added to this assignment yet.</li>
+                        </ul>
+                        
+                        <button id="assignHwBtn" class="primary-btn btn-orange btn-assign-hw">Send Assignment</button>
+                        
+                        <hr class="section-divider">
+                        <label>Active Assignments</label>
+                        <ul id="coachHwList" class="session-list mt-15"></ul>
+                    </div>
                 </div>
             </div>
 
-            <div class="card" id="coachPlayerListCard">
-                <div class="card-header">
-                    <span>Team Roster</span>
-                    <button id="forceRefreshRosterBtn" class="action-btn">↻ Refresh</button>
+            <div id="coachTabEvals" class="d-none">
+                <div class="card" id="coachRecentTrialsCard">
+                    <div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
+                    <div class="card-body p-0">
+                        <ul id="coachRecentTrialList" class="session-list flush-list">
+                            <li class="session-empty">Loading recent submissions...</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div id="coachPlayerList">Loading...</div>
+
+                <div class="card" id="coachLogTrialCard">
+                    <div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
+                    <div class="card-body">
+                        <select id="coachTrialPlayerSelect" class="mb-10"><option>Loading Players...</option></select>
+                        <select id="coachTrialType" class="mb-10">
+                            <option value="Passing">Passing Points</option>
+                            <option value="Shooting">Shot Scoring</option>
+                            <option value="Time">Time Trial</option>
+                        </select>
+                        <input type="text" id="coachTrialSkill" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
+                        <div class="input-row mb-15">
+                            <input type="number" id="coachTrial1" class="flex-1" placeholder="Score 1">
+                            <input type="number" id="coachTrial2" class="flex-1" placeholder="Score 2">
+                            <input type="number" id="coachTrial3" class="flex-1" placeholder="Score 3">
+                        </div>
+                        <button id="coachSubmitTrialBtn" class="primary-btn btn-gold">Save Official Coach Trial</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-green-header">📋 Skill Evaluation</div>
+                    <div class="card-body">
+                        <div class="eval-input-row">
+                            <select id="evalPlayerSelect" class="eval-player-select" title="Select a player for skill evaluation"><option>Loading...</option></select>
+                            <select id="evalScore" class="eval-score-select" title="Select a score for skill evaluation">
+                                <option value="" disabled selected>Score</option>
+                                <option value="1">1 - Struggling</option>
+                                <option value="2">2 - Needs Work</option>
+                                <option value="3">3 - Capable</option>
+                                <option value="4">4 - Strong</option>
+                                <option value="5">5 - Mastered</option>
+                            </select>
+                        </div>
+                        <label>Brilliant Basics Skill</label>
+                        <select id="evalSkillSelect" class="eval-skill-select" title="Select a skill for evaluation"><option>Loading...</option></select>
+                        <input type="text" id="evalNotes" placeholder="Optional coach notes..." class="eval-notes-input">
+                        <button id="saveEvalBtn" class="primary-btn btn-green btn-save-eval">Save Evaluation</button>
+                        
+                        <hr class="section-divider">
+                        <label>Player History</label>
+                        <ul id="coachEvalList" class="session-list eval-history-list mt-10">
+                            <li class="session-empty">Select a player above to view history.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">Export Data</div>
-                <div class="card-body text-center">
-                    <p class="export-desc">Download full team workout history to Excel.</p>
-                    <button id="exportXlsxBtn" class="primary-btn btn-export-excel">📥 Export to .XLSX</button>
+            <div id="coachTabTools" class="d-none">
+                <div class="card">
+                    <div class="card-header">⏱️ Practice Stopwatch</div>
+                    <div class="card-body text-center">
+                        <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
+                        <div class="flex-gap-8">
+                            <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
+                            <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
+                        </div>
+                        <div class="flex-gap-8">
+                            <button id="btnSwLap" class="secondary-btn flex-1" type="button">Lap Split</button>
+                            <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
+                        </div>
+                        <ul id="lapList" class="lap-list"></ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Export Data</div>
+                    <div class="card-body text-center">
+                        <p class="export-desc">Download full team workout history to Excel.</p>
+                        <button id="exportXlsxBtn" class="primary-btn btn-export-excel">📥 Export to .XLSX</button>
+                    </div>
                 </div>
             </div>
+        </div>
 
             <div class="card" id="cardStaffManager">
                 <div class="card-header staff-header">Team Staff (Assistants)</div>

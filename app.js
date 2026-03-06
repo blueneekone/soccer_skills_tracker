@@ -43,11 +43,11 @@ let userProfile = null;
 // ==========================================
 
 const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
-const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin', 'viewChallenge'];
 
 // --- 1. NEW NAVIGATION LOGIC ---
     window.navigateTo = (viewId, navId, addToHistory = true) => {
-        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin'];
+        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin', 'viewChallenge'];
         const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
         
         // Hide all views and remove active classes
