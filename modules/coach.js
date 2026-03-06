@@ -328,14 +328,16 @@ export const loadRecentTrials = async (tid) => {
         if(recent.length === 0) return list.innerHTML = "<li class='session-empty'>No recent trials submitted.</li>";
 
         list.innerHTML = recent.map(t => `
-            <li class="session-item" style="border-left: 4px solid #dc2626; align-items:center;">
-                <div style="flex:1;">
-                    <b style="color:var(--aggie-blue);">${t.player}</b> <span style="font-size:10px; color:#64748b;">(${new Date(t.timestamp.seconds*1000).toLocaleDateString()})</span><br>
-                    <span style="font-size:12px; font-weight:bold;">${t.type}:</span> <span style="font-size:12px;">${t.skill}</span>
+            <li class="session-item recent-trial-item">
+                <div class="flex-1">
+                    <span class="recent-trial-name">${t.player}</span> 
+                    <span class="recent-trial-date">(${new Date(t.timestamp.seconds*1000).toLocaleDateString()})</span><br>
+                    <span class="recent-trial-label">${t.type}:</span> 
+                    <span class="recent-trial-val">${t.skill}</span>
                 </div>
-                <div style="text-align:right;">
-                    <span style="font-size:10px; color:#94a3b8;">[${t.a1}, ${t.a2}, ${t.a3}]</span><br>
-                    <b style="color:#dc2626; font-size:14px;">${t.result} ${t.isCoach ? '⭐' : ''}</b>
+                <div class="recent-trial-right">
+                    <span class="recent-trial-scores">[${t.a1}, ${t.a2}, ${t.a3}]</span>
+                    <span class="recent-trial-final">${t.result} ${t.isCoach ? '⭐' : ''}</span>
                 </div>
             </li>
         `).join("");

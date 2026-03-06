@@ -352,3 +352,57 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .clear-sig-btn:active {
     background: #cbd5e1;
 }
+
+/* =======================================================
+   CHALLENGES UI STYLES
+   ======================================================= */
+.bg-gold-header { background-color: var(--aggie-gold) !important; color: var(--aggie-blue) !important; border-radius: 8px 8px 0 0; padding: 15px; }
+.flush-top { border-top-left-radius: 0; border-top-right-radius: 0; }
+.video-frame { width: 100%; height: 200px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #cbd5e1; }
+.score-display-box { background: #f8fafc; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.score-label { font-size: 11px; color: #64748b; text-transform: uppercase; display: block; }
+.score-value { font-size: 24px; font-weight: 900; }
+.score-blue { color: var(--aggie-blue); }
+.score-orange { color: #ea580c; }
+.score-green { color: #16a34a; }
+.text-sm-sub { margin: 5px 0 0 0; font-size: 12px; color: var(--aggie-blue); opacity: 0.8; }
+
+/* Challenge Wizard Modal */
+.challenge-modal-content { background: var(--aggie-blue); color: white; border: 2px solid var(--aggie-gold); width: 95%; max-width: 600px; margin: 5% auto; border-radius: 12px; }
+.challenge-modal-header { background: transparent; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
+.challenge-modal-title { color: var(--aggie-gold); font-weight: 900; margin: 0; }
+.challenge-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 15px; }
+.challenge-title-gold { margin-top: 0; color: var(--aggie-gold); }
+.video-scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
+.scroller-vid { flex: 0 0 85%; height: 180px; border-radius: 8px; border: 1px solid #64748b; }
+.checkbox-panel { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 12px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; cursor: pointer; }
+.checkbox-panel.mb-20 { margin-bottom: 20px; }
+.btn-gold { background: var(--aggie-gold); color: var(--aggie-blue); }
+.btn-disabled { background: #475569; color: #94a3b8; }
+.p-20 { padding: 20px; }
+
+/* Challenge Home Screen Banner */
+.challenge-banner { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; cursor: pointer; transform: scale(1.02); box-shadow: 0 10px 20px rgba(234,88,12,0.3); }
+.challenge-banner-body { padding: 20px 15px; text-align: center; }
+.challenge-banner-title { margin: 0 0 5px 0; font-weight: 900; letter-spacing: 1px; }
+.challenge-banner-text { margin: 0; font-size: 13px; opacity: 0.9; }
+
+/* Tracking Boards & Lists */
+.bg-red-header { background-color: #dc2626 !important; color: white !important; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+
+/* Dynamic Table & List Styles */
+.trial-row-date { font-size: 11px; }
+.trial-row-type { font-weight: bold; color: var(--aggie-gold); }
+.trial-row-skill { font-size: 11px; }
+.trial-row-result { font-weight: bold; color: var(--aggie-blue); }
+
+.recent-trial-item { border-left: 4px solid #dc2626; align-items: center; }
+.recent-trial-name { color: var(--aggie-blue); font-weight: bold; }
+.recent-trial-date { font-size: 10px; color: #64748b; }
+.recent-trial-label { font-size: 12px; font-weight: bold; }
+.recent-trial-val { font-size: 12px; }
+.recent-trial-right { text-align: right; }
+.recent-trial-scores { font-size: 10px; color: #94a3b8; display: block; }
+.recent-trial-final { color: #dc2626; font-size: 14px; font-weight: bold; }

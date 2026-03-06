@@ -12,12 +12,12 @@ window.verifyChallengeReadiness = () => {
     const btn = document.getElementById("imReadyBtn");
     if(document.getElementById("chkWatched").checked && document.getElementById("chkReady").checked) {
         btn.disabled = false;
-        btn.style.background = "var(--aggie-gold)";
-        btn.style.color = "var(--aggie-blue)";
+        btn.classList.remove("btn-disabled");
+        btn.classList.add("btn-gold");
     } else {
         btn.disabled = true;
-        btn.style.background = "#475569";
-        btn.style.color = "#94a3b8";
+        btn.classList.remove("btn-gold");
+        btn.classList.add("btn-disabled");
     }
 };
 

@@ -154,10 +154,10 @@ export const renderPlayerTrials = async (playerName) => {
         
         table.innerHTML = trials.map(t => `
             <tr>
-                <td style="font-size:11px;">${new Date(t.timestamp.seconds*1000).toLocaleDateString()}</td>
-                <td style="font-weight:bold; color:var(--aggie-gold);">${t.type}</td>
-                <td style="font-size:11px;">${t.skill}</td>
-                <td style="font-weight:bold; color:var(--aggie-blue);">${t.result} ${t.isCoach ? '⭐' : ''}</td>
+                <td class="trial-row-date">${new Date(t.timestamp.seconds*1000).toLocaleDateString()}</td>
+                <td class="trial-row-type">${t.type}</td>
+                <td class="trial-row-skill">${t.skill}</td>
+                <td class="trial-row-result">${t.result} ${t.isCoach ? '⭐' : ''}</td>
             </tr>
         `).join("");
     } catch(e) { console.error(e); }
