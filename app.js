@@ -226,14 +226,25 @@ async function loadStats() {
             else warningEl.classList.add("d-none");
         }
 
-      // --- CHALLENGE DASHBOARD UNLOCK LOGIC ---
+      // --- CHALLENGE DASHBOARD & BANNER UNLOCK LOGIC ---
         const challengeDashBtn = document.getElementById("btnHomeChallenge");
+        const challengeBanner = document.getElementById("challenge250Banner");
+        
+        // 1. Unhide the permanent Dashboard Grid Button if they have >= 250 XP
         if (challengeDashBtn) {
-            // Unlock the dashboard button if they have >= 250 XP
             if (xp >= 250 && userProfile.role !== 'admin') {
                 challengeDashBtn.classList.remove("d-none");
             } else {
                 challengeDashBtn.classList.add("d-none");
+            }
+        }
+
+        // 2. The "Boss Fight" Trigger: Show the aggressive banner ONLY if they haven't beaten it yet
+        if (challengeBanner) {
+            if (xp >= 250 && !userProfile.hasViewedBasicsChallenge && userProfile.role !== 'admin') {
+                challengeBanner.classList.remove("d-none");
+            } else {
+                challengeBanner.classList.add("d-none");
             }
         }
 
