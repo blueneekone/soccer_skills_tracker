@@ -139,7 +139,7 @@
 
                 <div class="card dash-card border-gray d-none" id="btnHomeCoach">
                     <div class="dash-card-body">
-                        <div class="dash-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5H4V9H7A5 5 0 0 0 12 14c2.76 0 5-2.24 5-5A5 5 0 0 0 12 2zM12 4C13.66 4 15 5.34 15 7s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zM21 16H3v2H21v-2zM4 19H20v2H4v-2z"/></svg></div>
+                        <div class="dash-icon">📣</div>
                         <div class="dash-label">Coach Tools</div>
                     </div>
                 </div>
@@ -172,11 +172,12 @@
         </div>
 
         <div id="viewTracker" class="view-section d-none">
-            <!-- Nested Div: Workout Builder -->
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0;">
-                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
-                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
+            <h2 class="view-title">Log Workout</h2>
+            <div class="card" style="margin-bottom: 20px; overflow:hidden;">
+                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0; display:flex;">
+                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1; padding:12px 5px;" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
+                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1; padding:12px 5px;" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
+                    <button id="btnTrackerReview" class="coach-tab-btn" style="flex:1.2; padding:12px 5px; background:#f0fdf4;" onclick="window.switchTrackerTab('trackerReview')">📋 Review & Sign</button>
                 </div>
                 
                 <div id="trackerWarmup" class="card-body">
@@ -233,12 +234,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Persistent Review Card -->
-            <div class="card border-aggie-blue">
-                <div id="trackerReview" class="card-body bg-light-blue" style="border-radius: 8px;">
-                    <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Plan</h4>
+                <div id="trackerReview" class="card-body d-none bg-light-blue">
+                    <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Cart</h4>
                     <ul id="sessionList" class="session-list">
                         <li class="session-empty">Empty. Select drills above to build your workout!</li>
                     </ul>
@@ -265,7 +262,7 @@
                         <button id="submitWorkoutBtn" class="primary-btn mt-15" style="box-shadow: 0 4px 10px rgba(18, 163, 74, 0.4);">💾 Log Workout (+XP)</button>
                     </div>
                     
-                    <label>Schedule This Workout</label>
+                    <label>Schedule This Workout instead?</label>
                     <div class="schedule-row">
                         <input type="date" id="calDate" class="schedule-input" title="Select workout date">
                         <input type="time" id="calTime" class="schedule-input" title="Select workout time">
@@ -648,13 +645,13 @@
                     </div>
                     <div class="card-body">
                         <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items:center; flex-wrap:wrap;">
-                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 36px; height: 36px; margin: 0; border: none; background: none; cursor: pointer;">
-                            <button id="strategyToolPen" class="secondary-btn active" style="margin: 0; padding:6px 10px; background:#e2e8f0;">✎ Pen</button>
-                            <button id="strategyToolArrow" class="secondary-btn" style="margin: 0; padding:6px 10px;">➔ Arrow</button>
-                            <button id="strategyToolX" class="secondary-btn" style="margin: 0; padding:6px 10px;">❌ X</button>
-                            <button id="strategyToolO" class="secondary-btn" style="margin: 0; padding:6px 10px;">⭕ O</button>
-                            <button id="strategyUndoBtn" class="secondary-btn" style="margin: 0; padding:6px 10px;">⏪ Undo</button>
-                            <button id="strategyClearBtn" class="secondary-btn" style="margin: 0; background:#fee2e2; color:#b91c1c; padding:6px 10px;">🗑️</button>
+                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 36px; height: 36px; margin: 0; border: none; background: none; cursor: pointer; border-radius:50%;">
+                            <button id="strategyToolPen" class="secondary-btn active" style="margin:0; padding:6px; background:#e2e8f0; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">✎</button>
+                            <button id="strategyToolArrow" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">➔</button>
+                            <button id="strategyToolX" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">X</button>
+                            <button id="strategyToolO" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">O</button>
+                            <button id="strategyUndoBtn" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">⏪</button>
+                            <button id="strategyClearBtn" class="secondary-btn" style="margin:0; background:#fee2e2; color:#b91c1c; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;">🗑️</button>
                             <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
                                 <label class="switch" title="Toggle Whiteboard Mode">
                                     <input type="checkbox" id="strategyBoardStyleToggle">

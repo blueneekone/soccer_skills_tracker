@@ -590,7 +590,7 @@ function getSessionDescription() {
 // ==========================================
 
 window.switchTrackerTab = (tabId) => {
-    ['trackerWarmup', 'trackerDrills'].forEach(id => {
+    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn${id.charAt(0).toUpperCase() + id.slice(1)}`);
         if(pane) pane.classList.add('d-none');
@@ -644,6 +644,7 @@ const initApp = () => {
     // HOME SCREEN DASHBOARD ACTIONS
     safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
     safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
+    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy'));
     safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy', 'navTrophy'));
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
@@ -1064,7 +1065,24 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
 
+            // Auto-patch orphan reps explicitly for developer migration
+            if(user.email === "ecwaechtler@gmail.com" && userProfile.teamId) {
+                try {
+                    const snap = await getDocs(collection(db, "reps"));
+                    const promises = [];
+                    snap.forEach(d => {
+                        if(!d.data().teamId) promises.push(setDoc(doc(db, "reps", d.id), { ...d.data(), teamId: userProfile.teamId }));
+                    });
+                    if(promises.length > 0) {
+                        await Promise.all(promises);
+                        console.log(`Auto-Patched ${promises.length} orphaned logs!`);
+                        if(window.syncDefaultWorkouts) await window.syncDefaultWorkouts(userProfile.teamId);
+                    }
+                } catch(e) { console.error("Auto patch err", e); }
+            }
+
             if (userProfile) {
+                renderApp(userProfile);
                 document.getElementById("appUI").style.display='block';
                 
                 // Apply team branding specifically for this user's team or admin view

@@ -681,19 +681,34 @@ export const initStrategyBoard = () => {
             const isFS = !!document.fullscreenElement;
             const bg = document.getElementById("strategyPitchBg");
             if(isFS) {
+                const screenHeight = window.innerHeight;
+                const screenWidth = window.innerWidth;
+                const isLandscape = screenWidth > screenHeight;
+                
                 bg.style.aspectRatio = "unset";
-                bg.style.flex = "1";
-                bg.parentElement.style.display = "flex";
-                bg.parentElement.style.flexDirection = "column";
-                bg.parentElement.style.height = "100vh";
+                if (isLandscape) {
+                    const h = screenHeight - 70; // Header offset
+                    const w = h * (4/3);
+                    bg.style.height = h + "px";
+                    bg.style.width = w + "px";
+                    bg.style.margin = "0 auto";
+                    bg.parentElement.style.display = "flex";
+                    bg.parentElement.style.flexDirection = "column";
+                    bg.parentElement.style.alignItems = "center";
+                } else {
+                    bg.style.width = "100%";
+                    bg.style.height = "auto";
+                    bg.style.aspectRatio = "4/3";
+                    bg.style.margin = "0";
+                    bg.parentElement.style.display = "block";
+                }
             } else {
                 bg.style.aspectRatio = "4/3";
-                bg.style.flex = "";
-                bg.parentElement.style.display = "";
-                bg.parentElement.style.flexDirection = "";
-                bg.parentElement.style.height = "";
+                bg.style.height = "auto";
+                bg.style.width = "100%";
+                bg.style.margin = "0";
+                bg.parentElement.style.display = "block";
             }
-            // Trigger 2 resizes because CSS flex-box sometimes delays
             setTimeout(resizeCanvas, 50);
             setTimeout(resizeCanvas, 200);
         });
