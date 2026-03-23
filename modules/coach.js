@@ -153,9 +153,9 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
         if(hwList) {
             if(combinedList.length > 0) {
                 hwList.innerHTML = combinedList.map(p => `
-                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; text-transform:none; font-weight:normal; font-size:14px; color:#334155; cursor:pointer;">
-                        <input type="checkbox" class="hw-player-cb" value="${p}"> <span style="margin:0;">${p}</span>
-                    </label>
+                    <div style="display:flex; align-items:center; justify-content:flex-start; gap:8px; margin-bottom:8px; text-transform:none; font-weight:normal; font-size:14px; color:#334155; cursor:pointer;" onclick="const cb = this.querySelector('input'); if(event.target !== cb) cb.checked = !cb.checked;">
+                        <input type="checkbox" class="hw-player-cb" value="${p}" style="margin:0;"> <span style="margin:0; text-align:left; flex:1;">${p}</span>
+                    </div>
                 `).join("");
             } else {
                 hwList.innerHTML = "<div style='color:#999; font-size:12px;'>No players on roster</div>";

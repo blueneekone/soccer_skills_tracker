@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="data.js"></script>
     
     <link rel="stylesheet" href="style.css?v=2.0.5">
 </head>
@@ -229,7 +230,7 @@
             </div>
 
             <!-- Persistent Review Card -->
-            <div class="card border-aggie-blue">
+            <div class="card">
                 <div id="trackerReview" class="card-body bg-light-blue" style="border-radius: 8px;">
                     <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Cart</h4>
                     <ul id="sessionList" class="session-list">
@@ -485,6 +486,16 @@
                         </div>
                         <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
                         <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
+                        
+                        <hr class="roster-divider">
+                        <label>Team Jersey Numbers</label>
+                        <button id="editJerseysBtn" class="secondary-btn w-100">🔢 Set Jersey Numbers</button>
+                        <div id="jerseyEditorModal" class="d-none" style="margin-top:15px; padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                            <h4 style="margin:0 0 10px 0; color:#0f172a;">Assign Jersey Numbers</h4>
+                            <div id="jerseyEditorList" style="display:flex; flex-direction:column; gap:8px;"></div>
+                            <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
+                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100" style="background:transparent; border:none; color:#64748b;">Close</button>
+                        </div>
                     </div>
                 </div>
 
@@ -646,8 +657,8 @@
                             <button id="strategyToolArrow" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">➔</button>
                             <button id="strategyToolX" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">X</button>
                             <button id="strategyToolO" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">O</button>
-                            <button id="strategyUndoBtn" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">⏪</button>
-                            <button id="strategyClearBtn" class="secondary-btn" style="margin:0; background:#fee2e2; color:#b91c1c; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;">🗑️</button>
+                            <button id="strategyUndoBtn" class="secondary-btn" style="margin:0; padding:6px 10px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; text-shadow:none; font-weight:bold; font-size:12px;">Undo</button>
+                            <button id="strategyClearBtn" class="secondary-btn" style="margin:0; background:#fee2e2; color:#b91c1c; padding:6px 10px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; text-shadow:none; font-weight:bold; font-size:12px;">Clear</button>
                             <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
                                 <label class="switch" title="Toggle Whiteboard Mode">
                                     <input type="checkbox" id="strategyBoardStyleToggle">
@@ -673,14 +684,6 @@
                         <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
                             <select id="benchSelect" style="flex:1; padding:12px; border-radius:8px; border:1px solid #cbd5e1;"><option>Loading...</option></select>
                             <button id="addToPitchBtn" class="primary-btn btn-green" style="padding:12px 15px;">+ Add to Pitch</button>
-                            <button id="editJerseysBtn" class="secondary-btn" style="padding:12px 15px;">🔢 Set Jerseys</button>
-                        </div>
-                        
-                        <div id="jerseyEditorModal" class="d-none" style="margin-bottom:15px; padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-                            <h4 style="margin:0 0 10px 0; color:#0f172a;">Assign Jersey Numbers</h4>
-                            <div id="jerseyEditorList" style="display:flex; flex-direction:column; gap:8px;"></div>
-                            <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
-                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100" style="background:transparent; border:none; color:#64748b;">Close</button>
                         </div>
                         
                         <label>Starting Lineup <span style="font-weight:normal; font-size:11px; color:#475569;">(Drag & Drop, Tap to Remove)</span></label>
