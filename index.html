@@ -42,14 +42,14 @@
             <button id="signupEmailBtn" class="secondary-btn w-100">Create Account</button>
         </div>
         
-        <div id="pwaInstallPrompt" style="display:none; position:absolute; bottom:0; left:0; right:0; background:#00263A; color:white; padding:20px; border-top-left-radius:15px; border-top-right-radius:15px; box-shadow:0 -5px 15px rgba(0,0,0,0.3); z-index:100; text-align:center;">
-            <h3 style="margin-top:0; color:#BFAE5A;">📲 Install the App!</h3>
-            <p style="font-size:13px; margin-bottom:15px; line-height:1.4;">To login and save your stats securely, you must install the app to your device.</p>
-            <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; font-size:13px; margin-bottom:15px;">
+        <div id="pwaInstallPrompt" class="pwa-prompt">
+            <h3 class="pwa-title">📲 Install the App!</h3>
+            <p class="pwa-text">To login and save your stats securely, you must install the app to your device.</p>
+            <div class="pwa-box">
                 <b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then scroll down and tap <b>Add to Home Screen</b>.<br><br>
                 <b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
             </div>
-            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'" class="secondary-btn w-100" style="background:#f8fafc; color:#0f172a; border:none;">Continue in Browser (Not Recommended)</button>
+            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'" class="secondary-btn w-100 pwa-btn-continue">Continue in Browser (Not Recommended)</button>
         </div>
     </div>
 
@@ -174,9 +174,9 @@
 
         <div id="viewTracker" class="view-section d-none">
             <h2 class="view-title">Log Workout</h2>
-            <div class="card" style="margin-bottom: 20px;">
+            <div class="card mb-20-imp">
                 <div class="card-body">
-                    <div class="tracker-box bg-orange m-0" style="margin-bottom: 20px !important;">
+                    <div class="tracker-box bg-orange m-0 mb-20-imp">
                         <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
                         <label for="selectWarmup">Select Warm-Up</label>
                         <select id="selectWarmup"><option>Loading...</option></select>
@@ -191,7 +191,7 @@
                         </div>
                     </div>
 
-                    <div class="tracker-box bg-red" style="margin-bottom: 20px !important;">
+                    <div class="tracker-box bg-red mb-20-imp">
                         <span class="section-label text-red">Part B: Core Strength</span>
                         <label for="selectCore">Select Core Exercise</label>
                         <select id="selectCore"><option>Loading...</option></select>
@@ -203,7 +203,7 @@
                         </div>
                     </div>
 
-                    <div class="tracker-box bg-blue" style="margin-bottom: 20px !important;">
+                    <div class="tracker-box bg-blue mb-20-imp">
                         <span class="section-label text-blue">Part C: Ball Handling</span>
                         <label for="selectBallWork">Select Ball Work Exercise</label>
                         <select id="selectBallWork"><option>Loading...</option></select>
@@ -229,10 +229,9 @@
                 </div>
             </div>
 
-            <!-- Persistent Review Card -->
             <div class="card">
-                <div id="trackerReview" class="card-body bg-light-blue" style="border-radius: 8px;">
-                    <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Cart</h4>
+                <div id="trackerReview" class="card-body bg-light-blue rounded-8">
+                    <h4 class="tracker-plan-header mt-0 tracker-cart-header">Your Training Cart</h4>
                     <ul id="sessionList" class="session-list">
                         <li class="session-empty">Empty. Select drills above to build your workout!</li>
                     </ul>
@@ -256,7 +255,7 @@
                             <button id="clearSigBtn" class="clear-sig-btn">✕ Clear</button>
                         </div>
 
-                        <button id="submitWorkoutBtn" class="primary-btn mt-15" style="box-shadow: 0 4px 10px rgba(18, 163, 74, 0.4);">💾 Log Workout (+XP)</button>
+                        <button id="submitWorkoutBtn" class="primary-btn mt-15 btn-log-workout">💾 Log Workout (+XP)</button>
                     </div>
                     
                     <label>Schedule This Workout instead?</label>
@@ -335,11 +334,11 @@
         </div>
 
         <div id="viewStats" class="view-section d-none">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
-                <h2 class="view-title" style="margin-bottom:0;">Player Stats</h2>
+            <div class="flex-between-wrap">
+                <h2 class="view-title m-0">Player Stats</h2>
                 <div>
-                    <button id="btnExportStatsCSV" class="secondary-btn" style="padding: 6px 12px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark); margin-right: 5px;">📥 Export Detailed CSV</button>
-                    <button id="btnPrintStats" class="secondary-btn" style="padding: 6px 12px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark);">🖨️ Print Stats</button>
+                    <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export Detailed CSV</button>
+                    <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Stats</button>
                 </div>
             </div>
             
@@ -368,9 +367,9 @@
             </div>
 
             <div class="card" id="teamLeaderboardCard">
-                <div class="card-header leaderboard-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="card-header leaderboard-header-flex leaderboard-header">
                     <span>🏅 TEAM LEADERBOARD</span>
-                    <select id="leaderboardFilter" style="font-size:12px; padding:4px; border-radius:4px; border:1px solid #ccc; max-width:100px;">
+                    <select id="leaderboardFilter" class="leaderboard-filter">
                         <option value="weekly">Weekly</option>
                         <option value="daily">Daily</option>
                         <option value="monthly">Monthly</option>
@@ -402,9 +401,9 @@
         </div>
 
         <div id="viewTrophy" class="view-section d-none">
-            <h2 class="view-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 class="view-title view-title-flex">
                 🏆 TROPHY ROOM
-                <button class="secondary-btn" style="margin:0; font-size:12px; padding:6px 12px;" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
+                <button class="secondary-btn trophy-back-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
             </h2>
             <div class="card">
                 <div class="card-header trophy-header">RANK MEDALS</div>
@@ -420,27 +419,27 @@
             </div>
             
             <div class="card">
-                <div class="card-header" style="background:#0ea5e9; color:white;">MILESTONE BADGES</div>
+                <div class="card-header milestone-header">MILESTONE BADGES</div>
                 <div class="card-body text-center overflow-x-auto">
-                    <div class="trophy-flex" style="justify-content:space-around;">
+                    <div class="trophy-flex milestone-flex">
                         <div id="badge7Day" class="medal-container medal-locked">
-                            <div style="font-size:35px; margin-bottom:5px;">🔥</div>
+                            <div class="milestone-icon">🔥</div>
                             <div class="medal-title">7-DAY STREAK</div>
                         </div>
                         <div id="badge100Sessions" class="medal-container medal-locked">
-                            <div style="font-size:35px; margin-bottom:5px;">💯</div>
+                            <div class="milestone-icon">💯</div>
                             <div class="medal-title">100 SESSIONS</div>
                         </div>
                         <div id="badge1000Mins" class="medal-container medal-locked">
-                            <div style="font-size:35px; margin-bottom:5px;">⏱️</div>
+                            <div class="milestone-icon">⏱️</div>
                             <div class="medal-title">1000 MINS</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="text-center" style="margin-top:20px;">
-                <button id="claimCertificateBtn" class="primary-btn btn-claim-cert" style="display:none;">🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
+            <div class="text-center mt-20">
+                <button id="claimCertificateBtn" class="primary-btn btn-claim-cert">🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
             </div>
         </div>
 
@@ -490,11 +489,11 @@
                         <hr class="roster-divider">
                         <label>Team Jersey Numbers</label>
                         <button id="editJerseysBtn" class="secondary-btn w-100">🔢 Set Jersey Numbers</button>
-                        <div id="jerseyEditorModal" class="d-none" style="margin-top:15px; padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-                            <h4 style="margin:0 0 10px 0; color:#0f172a;">Assign Jersey Numbers</h4>
-                            <div id="jerseyEditorList" style="display:flex; flex-direction:column; gap:8px;"></div>
+                        <div id="jerseyEditorModal" class="jersey-modal d-none">
+                            <h4 class="jersey-modal-title">Assign Jersey Numbers</h4>
+                            <div id="jerseyEditorList" class="jersey-list"></div>
                             <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
-                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100" style="background:transparent; border:none; color:#64748b;">Close</button>
+                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100 btn-close-transparent">Close</button>
                         </div>
                     </div>
                 </div>
@@ -551,27 +550,27 @@
                     <div class="card-header hw-header">🎯 Assign Homework</div>
                     <div class="card-body">
                         <label>1. Select Players & Due Date</label>
-                        <div style="margin-bottom:15px;">
-                            <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
-                                <label style="display:flex; align-items:center; gap:8px; margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid #cbd5e1;">
-                                    <input type="checkbox" id="hwSelectAllPlayers"> <b style="text-transform:none; margin:0; font-size:13px;">Select All Players</b>
+                        <div class="mb-15">
+                            <div class="hw-select-box">
+                                <label class="hw-select-all-label">
+                                    <input type="checkbox" id="hwSelectAllPlayers"> <b class="hw-select-all-text">Select All Players</b>
                                 </label>
-                                <div id="hwPlayerChecklistItems" style="max-height:120px; overflow-y:auto; font-size:13px; display:flex; flex-direction:column; gap:6px;"></div>
+                                <div id="hwPlayerChecklistItems" class="hw-player-list"></div>
                             </div>
                         </div>
-                        <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                            <label style="margin:0;">Due Date:</label>
-                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment" style="flex:1; margin:0;">
+                        <div class="hw-due-row">
+                            <label class="m-0">Due Date:</label>
+                            <input type="date" id="hwDueDate" class="hw-due-date flex-1 m-0" title="Select due date for homework assignment">
                         </div>
                         
                         <label>2. Build the Workout</label>
                         <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
                         
-                        <div style="display:flex; gap:10px; align-items:center; margin-top:10px; margin-bottom:15px; flex-wrap:wrap;">
-                            <input type="number" id="hwSets" placeholder="Sets" value="3" style="width:80px; margin:0;">
+                        <div class="hw-drill-row">
+                            <input type="number" id="hwSets" placeholder="Sets" value="3" class="hw-input-sets">
                             <span>x</span>
-                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" style="width:100px; margin:0;">
-                            <button id="addHwDrillBtn" class="secondary-btn" style="margin:0; flex:1; min-width:100px;">+ Add Drill</button>
+                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" class="hw-input-reps">
+                            <button id="addHwDrillBtn" class="secondary-btn hw-btn-add">+ Add Drill</button>
                         </div>
                         
                         <ul id="hwBuilderList" class="session-list hw-builder-list">
@@ -646,30 +645,30 @@
 
             <div id="coachTabStrategy" class="d-none">
                 <div class="card" id="strategyBoardCard">
-                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="card-header strategy-header">
                         <span>🖌️ Strategy Board</span>
-                        <button id="strategyFullscreenBtn" class="action-btn" style="margin:0;">⛶ Fullscreen</button>
+                        <button id="strategyFullscreenBtn" class="action-btn m-0">⛶ Fullscreen</button>
                     </div>
                     <div class="card-body">
-                        <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items:center; flex-wrap:wrap;">
-                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 36px; height: 36px; margin: 0; border: none; background: none; cursor: pointer; border-radius:50%;">
-                            <button id="strategyToolPen" class="secondary-btn active" style="margin:0; padding:6px; background:#e2e8f0; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">✎</button>
-                            <button id="strategyToolArrow" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-shadow:none;">➔</button>
-                            <button id="strategyToolX" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">X</button>
-                            <button id="strategyToolO" class="secondary-btn" style="margin:0; padding:6px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-family:sans-serif; text-shadow:none;">O</button>
-                            <button id="strategyUndoBtn" class="secondary-btn" style="margin:0; padding:6px 10px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; text-shadow:none; font-weight:bold; font-size:12px;">Undo</button>
-                            <button id="strategyClearBtn" class="secondary-btn" style="margin:0; background:#fee2e2; color:#b91c1c; padding:6px 10px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; text-shadow:none; font-weight:bold; font-size:12px;">Clear</button>
-                            <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+                        <div class="strategy-toolbar">
+                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" class="strategy-color">
+                            <button id="strategyToolPen" class="secondary-btn active strategy-tool-btn">✎</button>
+                            <button id="strategyToolArrow" class="secondary-btn strategy-tool-btn">➔</button>
+                            <button id="strategyToolX" class="secondary-btn strategy-tool-btn strategy-tool-txt">X</button>
+                            <button id="strategyToolO" class="secondary-btn strategy-tool-btn strategy-tool-txt">O</button>
+                            <button id="strategyUndoBtn" class="secondary-btn strategy-action-btn">Undo</button>
+                            <button id="strategyClearBtn" class="secondary-btn strategy-action-btn strategy-clear-btn">Clear</button>
+                            <div class="wb-toggle-row">
                                 <label class="switch" title="Toggle Whiteboard Mode">
                                     <input type="checkbox" id="strategyBoardStyleToggle">
                                     <span class="slider"></span>
                                 </label>
-                                <span style="font-size:11px; color:#475569; font-weight:bold; cursor:pointer;" onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
+                                <span class="wb-toggle-txt" onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
                             </div>
                         </div>
-                        <div id="strategyPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
-                            <div id="strategyPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
-                            <canvas id="strategyCanvas" style="position: absolute; top:0; left:0; width: 100%; height: 100%; cursor: crosshair; touch-action: none;"></canvas>
+                        <div id="strategyPitchBg" class="pitch-container">
+                            <div id="strategyPitchLines" class="pitch-lines"></div>
+                            <canvas id="strategyCanvas" class="pitch-canvas"></canvas>
                         </div>
                     </div>
                 </div>
@@ -681,15 +680,15 @@
                     <div class="card-header">📋 Gameday Roster</div>
                     <div class="card-body">
                         <label>Bench Players</label>
-                        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
-                            <select id="benchSelect" style="flex:1; padding:12px; border-radius:8px; border:1px solid #cbd5e1;"><option>Loading...</option></select>
-                            <button id="addToPitchBtn" class="primary-btn btn-green" style="padding:12px 15px;">+ Add to Pitch</button>
+                        <div class="gameday-bench-row">
+                            <select id="benchSelect" class="gameday-bench-sel"><option>Loading...</option></select>
+                            <button id="addToPitchBtn" class="primary-btn btn-green gameday-add-btn">+ Add to Pitch</button>
                         </div>
                         
-                        <label>Starting Lineup <span style="font-weight:normal; font-size:11px; color:#475569;">(Drag & Drop, Tap to Remove)</span></label>
-                        <div id="gamedayPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
-                            <div id="gamedayPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
-                            <div id="pitchPinsContainer" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
+                        <label>Starting Lineup <span class="hint-text">(Drag & Drop, Tap to Remove)</span></label>
+                        <div id="gamedayPitchBg" class="pitch-container">
+                            <div id="gamedayPitchLines" class="pitch-lines"></div>
+                            <div id="pitchPinsContainer" class="pitch-pins"></div>
                         </div>
                         <button id="saveGamedayRosterBtn" class="primary-btn btn-blue mt-15 w-100">Save Pitch Layout</button>
                     </div>
@@ -722,13 +721,13 @@
                             <option value="foundation">Brilliant Basics / Foundation</option>
                         </select>
                         <input type="text" id="manageWorkoutName" placeholder="Workout Name (e.g. 10 Yard Shuttles)">
-                        <input type="number" id="manageWorkoutLevel" placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1" class="mb-10" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2" class="mb-10" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px;"></textarea>
+                        <input type="number" id="manageWorkoutLevel" placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1" class="mb-10 manage-workout-input">
+                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2" class="mb-10 manage-workout-txt"></textarea>
                         <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
                         <button id="addTeamWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
                         
                         <hr class="section-divider">
-                        <label>Existing Workouts <button id="syncDefaultWorkoutsBtn" class="secondary-btn" style="float:right; width: auto; font-size: 10px; padding: 4px 8px; margin-top:-5px;">Sync Defaults</button></label>
+                        <label>Existing Workouts <button id="syncDefaultWorkoutsBtn" class="secondary-btn sync-btn">Sync Defaults</button></label>
                         <ul id="teamWorkoutList" class="session-list mt-10">
                             <li class="session-empty">Loading workouts...</li>
                         </ul>
@@ -768,11 +767,11 @@
                     <table id="teamTable" class="admin-table">
                         <thead><tr><th>ID</th><th>Team Name</th><th>Parent Club</th><th>Coach Email</th></tr></thead><tbody></tbody>
                     </table>
-                    <div class="admin-input-row" style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <div class="admin-flex-row mt-15">
                         <input type="text" id="newTeamId" class="team-id-input" placeholder="Team ID (e.g. b2015)">
-                        <input type="text" id="newTeamName" placeholder="Team Name">
-                        <select id="newTeamClubId" style="flex:1; min-width:120px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit;"></select>
-                        <input type="text" id="newCoachEmail" placeholder="Coach Email">
+                        <input type="text" id="newTeamName" placeholder="Team Name" class="flex-1">
+                        <select id="newTeamClubId" class="admin-flex-sel"></select>
+                        <input type="text" id="newCoachEmail" placeholder="Coach Email" class="flex-1">
                     </div>
                     <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>
                 </div>
@@ -781,18 +780,18 @@
             <div class="card" id="adminUserRoleManager">
                 <div class="card-header bg-blue-header">👥 Assign Club Director</div>
                 <div class="card-body">
-                    <p style="font-size:13px; color:#475569; margin-top:0;">To assign a user as a Club Director, enter their email below and select the Club.</p>
-                    <div class="admin-input-row" style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <input type="email" id="assignDirEmail" placeholder="Director Email">
-                        <select id="assignDirClubId" style="flex:1; min-width:120px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit;">
+                    <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and select the Club.</p>
+                    <div class="admin-flex-row">
+                        <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
+                        <select id="assignDirClubId" class="admin-flex-sel m-0">
                             <option value="">Select Club</option>
                         </select>
                     </div>
-                    <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10">Assign Director Role</button>
+                    <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10 mb-15">Assign Director Role</button>
                     
                     <hr class="section-divider">
-                    <div style="background:#fefce8; padding:10px; border-radius:8px; border:1px solid #fef08a;">
-                        <p style="font-size:12px; margin:0; color:#854d0e;"><b>Note:</b> If the user is currently a Global Admin, you must click the 'X' button in the Global Directors table below to revoke their global access before they function purely as a Club-level Director.</p>
+                    <div class="admin-warning-box mt-15">
+                        <p class="admin-warning-txt"><b>Note:</b> If the user is currently a Global Admin, you must click the 'X' button in the Global Directors table below to revoke their global access before they function purely as a Club-level Director.</p>
                     </div>
                 </div>
             </div>
@@ -800,10 +799,10 @@
             <div class="card" id="adminMigrateCard">
                 <div class="card-header bg-red-header">🛠️ Support Migration Tools</div>
                 <div class="card-body">
-                    <p class="export-desc" style="text-align:left; margin-bottom:10px;">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
-                    <select id="migrateTargetTeam" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"><option value="">Loading Teams...</option></select>
-                    <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100" style="background:#dc2626;">Execute Legacy Fix</button>
-                    <p style="font-size:11px; margin-top:10px; color:#64748b;">(Select "Legacy Team (misc)" if you are trying to recover the old default DB)</p>
+                    <p class="export-desc text-left mb-10">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
+                    <select id="migrateTargetTeam" class="admin-full-sel"><option value="">Loading Teams...</option></select>
+                    <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100 bg-danger">Execute Legacy Fix</button>
+                    <p class="hint-text mt-10">(Select "Legacy Team (misc)" if you are trying to recover the old default DB)</p>
                 </div>
             </div>
 
@@ -833,7 +832,7 @@
                     <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
                     
                     <label>Sport Selection</label>
-                    <select id="brandCourtType" class="mb-15" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <select id="brandCourtType" class="admin-full-sel mb-15">
                         <option value="soccer">Soccer</option>
                         <option value="basketball">Basketball</option>
                         <option value="football">Football</option>
@@ -845,11 +844,11 @@
                     <div class="input-row mb-15">
                         <div class="flex-1">
                             <label>Primary Color</label>
-                            <input type="color" id="brandPrimaryColor" value="#00263A" style="height:45px; padding:2px;">
+                            <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input">
                         </div>
                         <div class="flex-1">
                             <label>Secondary Color (Gold)</label>
-                            <input type="color" id="brandSecondaryColor" value="#BFAE5A" style="height:45px; padding:2px;">
+                            <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input">
                         </div>
                     </div>
                     
@@ -898,7 +897,7 @@
                         <input type="checkbox" id="chkWatched" onchange="window.verifyChallengeReadiness()"> 
                         <span>Yes, I have watched the challenge videos and understand the standards.</span>
                     </label>
-                    <label class="checkbox-panel mb-20">
+                    <label class="checkbox-panel mb-20-imp">
                         <input type="checkbox" id="chkReady" onchange="window.verifyChallengeReadiness()"> 
                         <span>Yes, I am ready to start my challenges and log my official scores.</span>
                     </label>

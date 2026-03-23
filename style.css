@@ -438,3 +438,86 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .switch .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 .switch input:checked + .slider { background-color: var(--aggie-blue, #00263A); }
 .switch input:checked + .slider:before { transform: translateX(16px); }
+
+/* =======================================================
+   CLEANUP & UTILITY CLASSES
+   ======================================================= */
+/* PWA Prompt */
+.pwa-prompt { display:none; position:absolute; bottom:0; left:0; right:0; background:var(--aggie-blue); color:white; padding:20px; border-radius:15px 15px 0 0; box-shadow:0 -5px 15px rgba(0,0,0,0.3); z-index:100; text-align:center; }
+.pwa-title { margin-top:0; color:var(--aggie-gold); }
+.pwa-text { font-size:13px; margin-bottom:15px; line-height:1.4; }
+.pwa-box { background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; font-size:13px; margin-bottom:15px; }
+.pwa-btn-continue { background:#f8fafc; color:#0f172a; border:none; }
+
+/* General Utilities */
+.mb-20-imp { margin-bottom: 20px !important; }
+.mt-5 { margin-top: 5px; }
+.mr-5 { margin-right: 5px; }
+.m-0 { margin: 0; }
+.text-left { text-align: left; }
+.bg-danger { background: #dc2626 !important; }
+.hint-text { font-weight: normal; font-size: 11px; color: #475569; }
+
+/* Flex Layouts */
+.flex-between-wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.leaderboard-header-flex { display: flex; justify-content: space-between; align-items: center; }
+.view-title-flex { display: flex; justify-content: space-between; align-items: center; }
+.strategy-header { display: flex; justify-content: space-between; align-items: center; }
+
+/* Component Specific */
+.tracker-cart-header { color: var(--aggie-blue); margin-top: 0; }
+.btn-log-workout { box-shadow: 0 4px 10px rgba(18, 163, 74, 0.4); }
+.btn-stats-export { padding: 6px 12px; font-size: 14px; background: white; border: 1px solid #94a3b8; color: var(--text-dark); }
+.leaderboard-filter { font-size: 12px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; max-width: 100px; }
+.trophy-back-btn { margin: 0; font-size: 12px; padding: 6px 12px; }
+.milestone-header { background: #0ea5e9 !important; color: white !important; }
+.milestone-flex { justify-content: space-around; }
+.milestone-icon { font-size: 35px; margin-bottom: 5px; }
+
+/* Coach Tab Specifics */
+.jersey-modal { margin-top: 15px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+.jersey-modal-title { margin: 0 0 10px 0; color: #0f172a; }
+.jersey-list { display: flex; flex-direction: column; gap: 8px; }
+.btn-close-transparent { background: transparent; border: none; color: #64748b; }
+
+.hw-select-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; }
+.hw-select-all-label { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #cbd5e1; }
+.hw-select-all-text { text-transform: none; margin: 0; font-size: 13px; }
+.hw-player-list { max-height: 120px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.hw-due-row { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.hw-drill-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+.hw-input-sets { width: 80px; margin: 0; }
+.hw-input-reps { width: 100px; margin: 0; }
+.hw-btn-add { margin: 0; flex: 1; min-width: 100px; }
+
+.strategy-toolbar { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+.strategy-color { padding: 0; width: 36px; height: 36px; margin: 0; border: none; background: none; cursor: pointer; border-radius: 50%; }
+.strategy-tool-btn { margin: 0; padding: 6px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-shadow: none; }
+.strategy-tool-btn.active { background: #e2e8f0; }
+.strategy-tool-txt { font-weight: bold; font-family: sans-serif; }
+.strategy-action-btn { margin: 0; padding: 6px 10px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-family: sans-serif; text-shadow: none; font-weight: bold; font-size: 12px; }
+.strategy-clear-btn { background: #fee2e2; color: #b91c1c; }
+.wb-toggle-row { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.wb-toggle-txt { font-size: 11px; color: #475569; font-weight: bold; cursor: pointer; }
+
+.pitch-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none; }
+.pitch-lines { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: 5%; pointer-events: none; }
+.pitch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+.pitch-pins { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+.gameday-bench-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+.gameday-bench-sel { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
+.gameday-add-btn { padding: 12px 15px; }
+
+.manage-workout-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+.manage-workout-txt { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+.sync-btn { float: right; width: auto; font-size: 10px; padding: 4px 8px; margin-top: -5px; }
+
+/* Admin Tab Specifics */
+.admin-flex-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-flex-sel { flex: 1; min-width: 120px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; }
+.admin-note-txt { font-size: 13px; color: #475569; margin-top: 0; }
+.admin-warning-box { background: #fefce8; padding: 10px; border-radius: 8px; border: 1px solid #fef08a; }
+.admin-warning-txt { font-size: 12px; margin: 0; color: #854d0e; }
+.admin-full-sel { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; }
+.color-picker-input { height: 45px; padding: 2px; }
