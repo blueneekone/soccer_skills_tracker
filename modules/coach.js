@@ -542,11 +542,10 @@ window.switchCoachTab = (tabId) => {
 };
 
 window.initGamedayRoster = async (tid, playerList, jerseys) => {
-    const bench = document.getElementById("rosterBench");
+    const benchSel = document.getElementById("benchSelect");
     const pitch = document.getElementById("pitchPinsContainer");
-    if(!bench || !pitch) return;
+    if(!benchSel || !pitch) return;
     
-    bench.innerHTML = "";
     pitch.innerHTML = "";
     
     let saved = {};
@@ -555,87 +554,122 @@ window.initGamedayRoster = async (tid, playerList, jerseys) => {
         if(snap.exists()) saved = snap.data().positions || {};
     } catch(e) { console.warn("Could not load pitch layout", e); }
     
+    const updateBenchDropdown = () => {
+        const onPitch = Array.from(pitch.children).map(x => x.dataset.player);
+        const available = playerList.filter(p => !onPitch.includes(p));
+        if(available.length === 0) {
+            benchSel.innerHTML = "<option value=''>All players on pitch</option>";
+            benchSel.disabled = true;
+        } else {
+            benchSel.innerHTML = "<option value=''>-- Select Player --</option>" + 
+                available.map(p => `<option value="${p}">${p} #${jerseys[p]||''}</option>`).join("");
+            benchSel.disabled = false;
+        }
+    };
+    
     let activePin = null;
+    let dragDidMove = false;
     
     const onMove = (e) => {
         if(!activePin) return;
+        dragDidMove = true;
         e.preventDefault();
         const pt = e.touches ? e.touches[0] : e;
         const pitchRect = pitch.getBoundingClientRect();
-        
         let x = pt.clientX - pitchRect.left;
         let y = pt.clientY - pitchRect.top;
-        
         activePin.style.left = `${(x / pitchRect.width) * 100}%`;
         activePin.style.top = `${(y / pitchRect.height) * 100}%`;
     };
     
     const onEnd = () => {
         if(!activePin) return;
-        const pitchRect = pitch.getBoundingClientRect();
-        const pinRect = activePin.getBoundingClientRect();
-        const px = pinRect.left + pinRect.width/2;
-        const py = pinRect.top + pinRect.height/2;
-
-        if (px < pitchRect.left || px > pitchRect.right || py < pitchRect.top || py > pitchRect.bottom) {
-            activePin.style.position = "relative";
-            activePin.style.left = ""; activePin.style.top = ""; activePin.style.transform = "none";
-            bench.appendChild(activePin);
-        } else {
-            activePin.style.transform = `translate(-50%, -50%) scale(1)`;
-        }
-
+        activePin.style.transform = `translate(-50%, -50%) scale(1)`;
         activePin.style.zIndex = "10";
         activePin = null;
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onEnd);
         document.removeEventListener("touchmove", onMove);
         document.removeEventListener("touchend", onEnd);
+        
+        // Reset move flag after a short delay so click listeners can evaluate standard taps
+        setTimeout(() => { dragDidMove = false; }, 50);
     };
     
-    const onStart = (e, pin) => {
+    const startDrag = (e, pin) => {
         activePin = pin;
-        if (pin.parentElement === bench) {
-            const pitchRect = pitch.getBoundingClientRect();
-            const pt = e.touches ? e.touches[0] : e;
-            pin.style.position = "absolute";
-            pin.style.left = `${((pt.clientX - pitchRect.left) / pitchRect.width) * 100}%`;
-            pin.style.top = `${((pt.clientY - pitchRect.top) / pitchRect.height) * 100}%`;
-            bench.removeChild(pin);
-            pitch.appendChild(pin);
-        }
-        
+        dragDidMove = false;
         activePin.style.zIndex = 100;
         activePin.style.transform = `translate(-50%, -50%) scale(1.2)`;
-        
         document.addEventListener("mousemove", onMove, {passive: false});
         document.addEventListener("mouseup", onEnd);
         document.addEventListener("touchmove", onMove, {passive: false});
         document.addEventListener("touchend", onEnd);
     };
-    
-    playerList.forEach(p => {
+
+    const spawnPin = (p, x, y) => {
         const pin = document.createElement("div");
         pin.className = "player-pin";
         pin.innerHTML = `${jerseys[p] || p.substring(0,2).toUpperCase()}<div style="position:absolute; top:110%; left:50%; transform:translateX(-50%); font-size:10px; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:4px; white-space:nowrap; pointer-events:none; font-weight:normal;">${p}</div>`;
         pin.title = p;
         pin.dataset.player = p;
+        pin.style.position = "absolute";
+        pin.style.left = x || "50%";
+        pin.style.top = y || "50%";
+        pin.style.transform = `translate(-50%, -50%)`;
+        pin.style.zIndex = "10";
         
-        if (saved[p]) {
-            pin.style.position = "absolute";
-            pin.style.left = saved[p].x;
-            pin.style.top = saved[p].y;
-            pin.style.transform = `translate(-50%, -50%)`;
-            pitch.appendChild(pin);
-        } else {
-            pin.style.position = "relative";
-            pin.style.transform = "none";
-            bench.appendChild(pin);
-        }
+        pin.addEventListener("mousedown", (e) => startDrag(e, pin));
+        pin.addEventListener("touchstart", (e) => startDrag(e, pin), {passive: false});
         
-        pin.addEventListener("mousedown", (e) => onStart(e, pin));
-        pin.addEventListener("touchstart", (e) => onStart(e, pin), {passive: false});
+        pin.onclick = (e) => {
+            if(!dragDidMove && confirm(`Send ${p} to bench?`)) {
+                pin.remove();
+                updateBenchDropdown();
+            }
+        };
+        
+        pitch.appendChild(pin);
+        updateBenchDropdown();
+    };
+
+    playerList.forEach(p => {
+        if (saved[p]) spawnPin(p, saved[p].x, saved[p].y);
     });
+    updateBenchDropdown();
+
+    const addBtn = document.getElementById("addToPitchBtn");
+    if(addBtn) addBtn.onclick = () => {
+        const p = benchSel.value;
+        if(p) spawnPin(p, "50%", "50%");
+    };
+    
+    const ejBtn = document.getElementById("editJerseysBtn");
+    if(ejBtn) ejBtn.onclick = () => {
+        const m = document.getElementById("jerseyEditorModal");
+        const list = document.getElementById("jerseyEditorList");
+        list.innerHTML = playerList.map(p => `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px;">${p}</span>
+                <input type="text" id="jinp_${p.replace(/[^a-zA-Z0-9]/g,'')}" value="${jerseys[p]||''}" style="width:60px; padding:4px; text-align:center;">
+            </div>
+        `).join("");
+        m.classList.remove("d-none");
+    };
+    
+    const sjBtn = document.getElementById("saveJerseysBtn");
+    if(sjBtn) sjBtn.onclick = async () => {
+        sjBtn.innerText = "Saving...";
+        const newJ = { ...jerseys };
+        playerList.forEach(p => {
+            const val = document.getElementById("jinp_" + p.replace(/[^a-zA-Z0-9]/g,''))?.value;
+            if(val !== undefined) newJ[p] = val.trim();
+        });
+        await setDoc(doc(db, "team_jerseys", tid), { map: newJ });
+        alert("Jerseys saved! Return to the Dashboard and reload to see updates.");
+        document.getElementById("jerseyEditorModal").classList.add("d-none");
+        sjBtn.innerText = "Save Numbers";
+    };
 
     const saveBtn = document.getElementById("saveGamedayRosterBtn");
     if(saveBtn) saveBtn.onclick = async () => {
@@ -646,7 +680,7 @@ window.initGamedayRoster = async (tid, playerList, jerseys) => {
         saveBtn.innerText = "Saving...";
         await setDoc(doc(db, "gameday_rosters", tid), { positions, updated: new Date() });
         saveBtn.innerText = "Saved!";
-        setTimeout(() => saveBtn.innerText = "Save Layout", 2000);
+        setTimeout(() => saveBtn.innerText = "Save Pitch Layout", 2000);
     };
 };
 
@@ -681,32 +715,19 @@ export const initStrategyBoard = () => {
             const isFS = !!document.fullscreenElement;
             const bg = document.getElementById("strategyPitchBg");
             if(isFS) {
-                const screenHeight = window.innerHeight;
-                const screenWidth = window.innerWidth;
-                const isLandscape = screenWidth > screenHeight;
-                
                 bg.style.aspectRatio = "unset";
-                if (isLandscape) {
-                    const h = screenHeight - 70; // Header offset
-                    const w = h * (4/3);
-                    bg.style.height = h + "px";
-                    bg.style.width = w + "px";
-                    bg.style.margin = "0 auto";
-                    bg.parentElement.style.display = "flex";
-                    bg.parentElement.style.flexDirection = "column";
-                    bg.parentElement.style.alignItems = "center";
-                } else {
-                    bg.style.width = "100%";
-                    bg.style.height = "auto";
-                    bg.style.aspectRatio = "4/3";
-                    bg.style.margin = "0";
-                    bg.parentElement.style.display = "block";
-                }
+                bg.style.height = "100vh";
+                bg.style.width = "100%";
+                bg.style.display = "flex";
+                bg.style.justifyContent = "center";
+                bg.style.alignItems = "center";
+                
+                // Allow the pitch image to scale naturally
+                bg.parentElement.style.display = "block";
             } else {
                 bg.style.aspectRatio = "4/3";
                 bg.style.height = "auto";
                 bg.style.width = "100%";
-                bg.style.margin = "0";
                 bg.parentElement.style.display = "block";
             }
             setTimeout(resizeCanvas, 50);
@@ -728,6 +749,12 @@ export const initStrategyBoard = () => {
             };
         }
     });
+    
+    const uBtn = document.getElementById("strategyUndoBtn");
+    if(uBtn) uBtn.onclick = () => { strokes.pop(); redrawStrokes(); };
+    
+    const cBtn = document.getElementById("strategyClearBtn");
+    if(cBtn) cBtn.onclick = () => { strokes = []; redrawStrokes(); };
 
     const resizeCanvas = () => {
         const rect = canvas.parentElement.getBoundingClientRect();
@@ -826,15 +853,25 @@ export const initStrategyBoard = () => {
             }
         }
     };
-    
     const startDrawing = (e) => {
         if(e.button !== undefined && e.button !== 0) return;
-        if(e.type.startsWith('touch')) e.preventDefault();
+        // Do not prevent default completely on touch devices immediately, 
+        // to allow standard screen taps, but prevent scrolling.
         
-        if(canvas.width === 0 || canvas.height === 0) resizeCanvas();
+        if(canvas.width === 0) resizeCanvas();
+        
+        const pt = e.touches ? e.touches[0] : e;
+        const color = document.getElementById("strategyColor").value || "#ffeb3b";
+        let r = canvas.getBoundingClientRect();
+        
+        let p = { 
+            nx: (pt.clientX - r.left) / canvas.width, 
+            ny: (pt.clientY - r.top) / canvas.height 
+        };
+        
+        currentStroke = { tool: currentTool, color: color, points: [p] };
         isDrawing = true;
-        currentStroke = { tool: currentTool, color: document.getElementById("strategyColor").value, points: [getNormalizedPos(e)] };
-        
+
         if (currentTool === 'x' || currentTool === 'o') {
             strokes.push(currentStroke);
             currentStroke = null;
@@ -842,12 +879,19 @@ export const initStrategyBoard = () => {
             redrawStrokes();
         }
     };
-    
+
     const draw = (e) => {
-        if (!isDrawing || !currentStroke) return;
-        e.preventDefault();
-        const pos = getNormalizedPos(e);
-        currentStroke.points.push(pos);
+        if (!isDrawing) return;
+        if(e.type.startsWith('touch')) e.preventDefault(); // Only prevent default if actively dragging/drawing
+        
+        const pt = e.touches ? e.touches[0] : e;
+        let r = canvas.getBoundingClientRect();
+        let p = { 
+            nx: (pt.clientX - r.left) / canvas.width, 
+            ny: (pt.clientY - r.top) / canvas.height 
+        };
+        
+        currentStroke.points.push(p);
         redrawStrokes();
     };
     

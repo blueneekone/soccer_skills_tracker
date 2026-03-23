@@ -173,11 +173,11 @@
 
         <div id="viewTracker" class="view-section d-none">
             <h2 class="view-title">Log Workout</h2>
-            <div class="card" style="margin-bottom: 20px; overflow:hidden;">
-                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0; display:flex;">
-                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1; padding:12px 5px;" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
-                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1; padding:12px 5px;" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
-                    <button id="btnTrackerReview" class="coach-tab-btn" style="flex:1.2; padding:12px 5px; background:#f0fdf4;" onclick="window.switchTrackerTab('trackerReview')">📋 Review & Sign</button>
+            <!-- Nested Div: Workout Builder -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0;">
+                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
+                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
                 </div>
                 
                 <div id="trackerWarmup" class="card-body">
@@ -234,7 +234,11 @@
                         </div>
                     </div>
                 </div>
-                <div id="trackerReview" class="card-body d-none bg-light-blue">
+            </div>
+
+            <!-- Persistent Review Card -->
+            <div class="card border-aggie-blue">
+                <div id="trackerReview" class="card-body bg-light-blue" style="border-radius: 8px;">
                     <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Cart</h4>
                     <ul id="sessionList" class="session-list">
                         <li class="session-empty">Empty. Select drills above to build your workout!</li>
@@ -674,9 +678,20 @@
                     <div class="card-header">📋 Gameday Roster</div>
                     <div class="card-body">
                         <label>Bench Players</label>
-                        <div id="rosterBench" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 40px; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px;"></div>
+                        <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
+                            <select id="benchSelect" style="flex:1; padding:12px; border-radius:8px; border:1px solid #cbd5e1;"><option>Loading...</option></select>
+                            <button id="addToPitchBtn" class="primary-btn btn-green" style="padding:12px 15px;">+ Add to Pitch</button>
+                            <button id="editJerseysBtn" class="secondary-btn" style="padding:12px 15px;">🔢 Set Jerseys</button>
+                        </div>
                         
-                        <label>Starting Lineup <span style="font-weight:normal; font-size:11px; color:#475569;">(Drag & Drop, or Double-Tap to Bench)</span></label>
+                        <div id="jerseyEditorModal" class="d-none" style="margin-bottom:15px; padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                            <h4 style="margin:0 0 10px 0; color:#0f172a;">Assign Jersey Numbers</h4>
+                            <div id="jerseyEditorList" style="display:flex; flex-direction:column; gap:8px;"></div>
+                            <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
+                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100" style="background:transparent; border:none; color:#64748b;">Close</button>
+                        </div>
+                        
+                        <label>Starting Lineup <span style="font-weight:normal; font-size:11px; color:#475569;">(Drag & Drop, Tap to Remove)</span></label>
                         <div id="gamedayPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
                             <div id="gamedayPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
                             <div id="pitchPinsContainer" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
@@ -768,12 +783,32 @@
                 </div>
             </div>
             
+            <div class="card" id="adminUserRoleManager">
+                <div class="card-header bg-blue-header">👥 Assign Club Director</div>
+                <div class="card-body">
+                    <p style="font-size:13px; color:#475569; margin-top:0;">To assign a user as a Club Director, enter their email below and select the Club.</p>
+                    <div class="admin-input-row" style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <input type="email" id="assignDirEmail" placeholder="Director Email">
+                        <select id="assignDirClubId" style="flex:1; min-width:120px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit;">
+                            <option value="">Select Club</option>
+                        </select>
+                    </div>
+                    <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10">Assign Director Role</button>
+                    
+                    <hr class="section-divider">
+                    <div style="background:#fefce8; padding:10px; border-radius:8px; border:1px solid #fef08a;">
+                        <p style="font-size:12px; margin:0; color:#854d0e;"><b>Note:</b> If the user is currently a Global Admin, you must click the 'X' button in the Global Directors table below to revoke their global access before they function purely as a Club-level Director.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="card" id="adminMigrateCard">
                 <div class="card-header bg-red-header">🛠️ Support Migration Tools</div>
                 <div class="card-body">
                     <p class="export-desc" style="text-align:left; margin-bottom:10px;">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
                     <select id="migrateTargetTeam" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"><option value="">Loading Teams...</option></select>
                     <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100" style="background:#dc2626;">Execute Legacy Fix</button>
+                    <p style="font-size:11px; margin-top:10px; color:#64748b;">(Select "Legacy Team (misc)" if you are trying to recover the old default DB)</p>
                 </div>
             </div>
 

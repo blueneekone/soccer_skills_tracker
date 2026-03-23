@@ -78,8 +78,32 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     if(a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${e}</td><td><button class="delete-btn" style="float:right;" onclick="window.removeAdmin('${e}')">X</button></td></tr>`).join("");
     
     const migSel = document.getElementById("migrateTargetTeam");
-    if(migSel) migSel.innerHTML = "<option value=''>Select Target Team...</option>" + (globalTeams||[]).map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("");
+    if(migSel) migSel.innerHTML = "<option value=''>Select Target Team...</option>" + (globalTeams||[]).map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("") + "<option value='misc'>Unassigned Legacy (misc)</option>";
     
+    const assignClubSel = document.getElementById("assignDirClubId");
+    if(assignClubSel) assignClubSel.innerHTML = "<option value=''>Select Club...</option>" + (globalClubs||[]).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+    
+    const assignBtn = document.getElementById("assignDirBtn");
+    if(assignBtn && assignBtn.dataset.bound !== "true") {
+        assignBtn.dataset.bound = "true";
+        assignBtn.addEventListener("click", async () => {
+            const email = document.getElementById("assignDirEmail").value.trim().toLowerCase();
+            const cid = assignClubSel.value;
+            if(!email || !cid) return alert("Fill out both email and club.");
+            
+            const cObj = globalClubs.find(x => x.id === cid);
+            if(!cObj) return;
+            cObj.directorEmail = email;
+            
+            assignBtn.innerText = "Saving...";
+            await setDoc(doc(db, "config", "clubs"), { list: globalClubs });
+            renderAdminTables(globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail);
+            alert(`Success! ${email} is now the Director of ${cObj.name}.`);
+            document.getElementById("assignDirEmail").value = "";
+            assignBtn.innerText = "Assign Director Role";
+        });
+    }
+
     const migBtn = document.getElementById("migrateLegacyBtn");
     if(migBtn && migBtn.dataset.bound !== "true") {
         migBtn.addEventListener("click", async () => {

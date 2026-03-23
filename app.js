@@ -590,7 +590,7 @@ function getSessionDescription() {
 // ==========================================
 
 window.switchTrackerTab = (tabId) => {
-    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
+    ['trackerWarmup', 'trackerDrills'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn${id.charAt(0).toUpperCase() + id.slice(1)}`);
         if(pane) pane.classList.add('d-none');
