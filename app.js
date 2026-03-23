@@ -602,14 +602,6 @@ window.switchTrackerTab = (tabId) => {
     if(targetBtn) targetBtn.classList.add('active');
 };
 
-const checkStandalone = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (isMobile && !isStandalone) {
-        document.getElementById('pwaInstallPrompt').style.display = 'block';
-    }
-};
-
 const initApp = () => {
     console.log("App v39 Loaded (Firebase PWA Webview Fix)");
     
