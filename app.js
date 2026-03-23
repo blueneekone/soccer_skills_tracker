@@ -8,7 +8,7 @@ import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSi
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard } from "./modules/coach.js";
-import { logSystemEvent, renderAdminTables, addTeam, addAdmin, loadLogs, generateSampleLogs, runSecurityScan } from "./modules/admin.js";
+import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
@@ -39,6 +39,7 @@ let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
+window.globalClubs = [];
 
 window.teamWorkouts = [];
 window.fetchTeamWorkouts = async (tid) => {
@@ -248,6 +249,10 @@ async function requestPushPermissions(userEmail) {
 
 async function fetchConfig() {
     try {
+        const c = await getDoc(doc(db, "config", "clubs"));
+        const cList = c.exists() ? c.data().list : null;
+        window.globalClubs = (cList && cList.length > 0) ? cList : [{id: "aggiesfc", name: "Aggies FC", directorEmail: DIRECTOR_EMAIL}];
+
         const d = await getDoc(doc(db, "config", "teams"));
         const tList = d.exists() ? d.data().list : null;
         globalTeams = (tList && tList.length > 0) ? tList : (typeof dbData !== 'undefined' ? dbData.teams : []);
@@ -325,7 +330,7 @@ function checkRoles(user) {
         if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
         if(document.getElementById("btnHomeAdmin")) document.getElementById("btnHomeAdmin").style.display='block';
         initCoachDropdown(true, globalTeams, loadHomeDashboard);
-        renderAdminTables(globalTeams, globalAdmins);
+        renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, DIRECTOR_EMAIL);
     } else if (myTeams.length > 0) {
         document.getElementById("navCoach").style.display='flex';
         if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
@@ -336,6 +341,9 @@ function checkRoles(user) {
 // Tracker Functions
 async function loadStats() {
     if (!userProfile) return;
+    let logs = [];
+    let totalMins = 0;
+    
     let q;
     if (userProfile.role === 'admin') {
         setText("userLevelDisplay", "DIRECTOR");
@@ -738,11 +746,9 @@ const getEmbedUrl = (url) => {
     safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams, loadHomeDashboard)); 
     safeBind("addAssistantBtn", "click", () => addAssistant(globalTeams, () => loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams, loadHomeDashboard)));
     
-    safeBind("addTeamBtn", "click", () => addTeam(globalTeams, () => renderAdminTables(globalTeams, globalAdmins)));
-    safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => renderAdminTables(globalTeams, globalAdmins)));
-    safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
-    safeBind("btnLogSecurity", "click", runSecurityScan);
-    safeBind("generateTestLogBtn", "click", generateSampleLogs);
+    safeBind("addClubBtn", "click", () => addClub(window.globalClubs, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
+    safeBind("addTeamBtn", "click", () => addTeam(globalTeams, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
+    safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
 
 // --- SCHEDULE & HOMEWORK BINDINGS ---
 

@@ -718,19 +718,35 @@
         </div>
 
         <div id="viewAdmin" class="view-section d-none">
-            <h2 class="admin-header">Global Admin</h2>
-            <div class="card">
-                <div class="card-header">Teams</div>
+            <h2 class="admin-header">Admin Dashboard</h2>
+            <div class="card" id="adminClubsCard">
+                <div class="card-header">Clubs (Super Admin Only)</div>
                 <div class="card-body">
-                    <table id="teamTable" class="admin-table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Coach</th></tr></thead><tbody></tbody>
+                    <table id="clubTable" class="admin-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Director Email</th></tr></thead><tbody></tbody>
                     </table>
                     <div class="admin-input-row">
-                        <input type="text" id="newTeamId" class="team-id-input" placeholder="ID">
+                        <input type="text" id="newClubId" class="team-id-input" placeholder="ID (e.g. aggies)">
+                        <input type="text" id="newClubName" placeholder="Club Name">
+                        <input type="text" id="newClubDirector" placeholder="Director Email">
+                    </div>
+                    <button id="addClubBtn" class="primary-btn">Add Club</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Groups & Teams</div>
+                <div class="card-body">
+                    <table id="teamTable" class="admin-table">
+                        <thead><tr><th>ID</th><th>Team Name</th><th>Parent Club</th><th>Coach Email</th></tr></thead><tbody></tbody>
+                    </table>
+                    <div class="admin-input-row" style="flex-wrap: wrap; gap: 6px;">
+                        <input type="text" id="newTeamId" class="team-id-input" placeholder="Team ID (e.g. b2015)">
                         <input type="text" id="newTeamName" placeholder="Team Name">
+                        <select id="newTeamClubId" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"></select>
                         <input type="text" id="newCoachEmail" placeholder="Coach Email">
                     </div>
-                    <button id="addTeamBtn" class="primary-btn">Add Team</button>
+                    <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>
                 </div>
             </div>
             <div class="card">
@@ -781,19 +797,6 @@
                     
                     <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
                     <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to Default</button>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">System Logs</div>
-                <div class="card-body">
-                    <div class="log-buttons-row">
-                        <button id="btnLogSystem" class="log-tab">App Logs</button>
-                        <button id="btnLogSecurity" class="log-tab">Security Scan</button>
-                    </div>
-                    <div id="logContainer" class="log-container">
-                        Select a log type above.
-                    </div>
-                    <button id="generateTestLogBtn" class="secondary-btn w-100 btn-mt-10">+ Generate Test Log</button>
                 </div>
             </div>
         </div>

@@ -205,7 +205,13 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
                     
                     return `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                         <div><b>${jerseyStr}${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
-                        <div><span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>${linkButton}<button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button></div></div>`;
+                        <div>
+                            <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
+                            ${linkButton}
+                            <button class="secondary-btn" style="padding: 2px 6px; font-size: 10px; margin-left:5px;" onclick="window.editPlayerJersey('${p}', '${rosterJerseys[p]||''}')">#</button>
+                            <button class="delete-btn" style="margin-left:5px;" onclick="window.deletePlayer('${p}')">x</button>
+                        </div>
+                    </div>`;
                 }).join("");
                 
                 // Initialize Gameday Roster Pitch Layout
@@ -255,6 +261,29 @@ window.deletePlayer = async (name, reloadCallback) => {
     if(snap.exists()) {
         await updateDoc(ref, { players: snap.data().players.filter(p => p !== name) });
         if(reloadCallback) reloadCallback();
+    }
+};
+
+window.editPlayerJersey = async (name, currentJersey) => {
+    let num = prompt(`Enter new jersey number for ${name} (or leave blank to clear):`, currentJersey);
+    if(num === null) return; // User cancelled
+    num = num.trim();
+    
+    // We update the DB document for current roster
+    const ref = doc(db, "rosters", currentCoachTeamId);
+    const snap = await getDoc(ref);
+    if(snap.exists()) {
+        const data = snap.data();
+        let jerseys = data.jerseys || {};
+        if(num === "") {
+            delete jerseys[name];
+        } else {
+            jerseys[name] = num;
+        }
+        await updateDoc(ref, { jerseys: jerseys });
+        
+        // Reload dashboard roster efficiently
+        window.loadCoachDashboard(false, window.globalTeams); // use false so it uses current dropdown state
     }
 };
 
