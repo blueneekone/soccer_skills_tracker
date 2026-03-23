@@ -12,7 +12,8 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-const CACHE_NAME = 'aggies-fc-v1';
+// BUMPED TO V2 - This forces the browser to update the service worker
+const CACHE_NAME = 'aggies-fc-v2';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -21,26 +22,33 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (e) => {
-    // Save the core files to the phone during install
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS_TO_CACHE);
         })
     );
-    self.skipWaiting();
+    self.skipWaiting(); // Force the new worker to activate immediately
 });
 
+// THE NUCLEAR OPTION: Delete any old, broken caches from v1
 self.addEventListener('activate', (e) => {
+    e.waitUntil(
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (key !== CACHE_NAME) {
+                    console.log('Destroying old cache:', key);
+                    return caches.delete(key);
+                }
+            }));
+        })
+    );
     e.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('fetch', (e) => {
-    // 1. Ignore Firebase Auth routes completely
     if (e.request.url.includes('/__/')) {
         return; 
     }
-
-    // 2. Try the network first. If offline, load from the phone's cache!
     e.respondWith(
         fetch(e.request).catch(() => caches.match(e.request))
     );
