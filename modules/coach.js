@@ -1,7 +1,8 @@
 // modules/coach.js
 import { auth, db } from "../firebase-config.js";
-import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { renderTeamChart } from "./stats.js"; // Pulls chart visual from the stats module!
+import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { renderTeamChart } from "./stats.js"; 
+import { dbData } from "../data.js";
 
 export let currentCoachTeamId = null;
 export let allSessionsCache = [];
@@ -104,6 +105,8 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
         
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
         let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
+        let rosterJerseys = (rosterSnap.exists() && rosterSnap.data().jerseys) ? rosterSnap.data().jerseys : {};
+        
         const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
         const linkSnap = await getDocs(linkQuery);
         const linkedPlayers = new Set();
@@ -146,8 +149,41 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
         // --- END WEEKLY SUMMARY ---
 
         // Dropdowns
-        const hwPlayer = document.getElementById("hwPlayerSelect");
-        if(hwPlayer) hwPlayer.innerHTML = combinedList.length > 0 ? combinedList.map(p => `<option value="${p}">${p}</option>`).join("") : `<option value="">No players on roster</option>`;
+        const hwList = document.getElementById("hwPlayerChecklistItems");
+        if(hwList) {
+            if(combinedList.length > 0) {
+                hwList.innerHTML = combinedList.map(p => `
+                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; text-transform:none; font-weight:normal; font-size:14px; color:#334155; cursor:pointer;">
+                        <input type="checkbox" class="hw-player-cb" value="${p}"> <span style="margin:0;">${p}</span>
+                    </label>
+                `).join("");
+            } else {
+                hwList.innerHTML = "<div style='color:#999; font-size:12px;'>No players on roster</div>";
+            }
+        }
+
+        const checkAll = document.getElementById("hwSelectAllPlayers");
+        if (checkAll && checkAll.dataset.bound !== "true") {
+            checkAll.addEventListener("change", (e) => {
+                document.querySelectorAll(".hw-player-cb").forEach(cb => cb.checked = e.target.checked);
+            });
+            checkAll.dataset.bound = "true";
+        }
+        
+        const selBtn = document.getElementById("hwPlayerSelectBtn");
+        const selList = document.getElementById("hwPlayerChecklist");
+        if (selBtn && selList && selBtn.dataset.bound !== "true") {
+            selBtn.addEventListener("click", () => {
+                selList.style.display = selList.style.display === "none" ? "block" : "none";
+            });
+            // Close when clicking outside
+            document.addEventListener("click", (e) => {
+                if(!selBtn.contains(e.target) && !selList.contains(e.target)) {
+                    selList.style.display = "none";
+                }
+            });
+            selBtn.dataset.bound = "true";
+        }
         
         const evalPlayer = document.getElementById("evalPlayerSelect");
         if(evalPlayer) evalPlayer.innerHTML = combinedList.length > 0 ? '<option value="" disabled selected>Select Player...</option>' + combinedList.map(p => `<option value="${p}">${p}</option>`).join("") : `<option value="">No players on roster</option>`;
@@ -165,14 +201,21 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
                     const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
                     const isLinked = linkedPlayers.has(p);
                     const linkButton = isLinked ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>` : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
+                    const jerseyStr = rosterJerseys[p] ? `<span style="background:var(--aggie-gold); color:var(--aggie-blue); border-radius:3px; padding:1px 5px; font-size:10px; margin-right:5px; font-weight:bold;">#${rosterJerseys[p]}</span>` : "";
+                    
                     return `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                        <div><b>${jerseyStr}${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
                         <div><span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>${linkButton}<button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button></div></div>`;
                 }).join("");
+                
+                // Initialize Gameday Roster Pitch Layout
+                if (window.initGamedayRoster) window.initGamedayRoster(tid, combinedList, rosterJerseys);
             } else {
                 listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
             }
         }
+        
+        window.loadTeamWorkouts();
     } catch(e) { console.error(e); }
 };
 
@@ -215,6 +258,75 @@ window.deletePlayer = async (name, reloadCallback) => {
     }
 };
 
+window.loadTeamWorkouts = () => {
+    const list = document.getElementById("teamWorkoutList");
+    if(!list) return;
+    if(!window.teamWorkouts || window.teamWorkouts.length === 0 || window.teamWorkouts === dbData.foundationSkills) {
+        list.innerHTML = "<li class='session-empty'>Using default app workouts. Click 'Sync Defaults' to copy them so you can edit and add your own!</li>";
+        return;
+    }
+    list.innerHTML = window.teamWorkouts.map(w => `
+        <li class="session-item" style="border-left: 4px solid var(--aggie-blue); align-items: flex-start;">
+            <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <b style="color:var(--text-dark);">${w.name}</b> 
+                    <span style="font-weight:bold; color:white; background:var(--aggie-blue); padding:2px 8px; border-radius:10px; font-size:11px;">Lvl ${w.reqLevel || 1}</span>
+                </div>
+                <div style="font-size:11px; color:#64748b; margin-bottom:2px;"><b>Type:</b> ${w.type}</div>
+                ${w.drill ? `<div style="font-size:12px; color:#475569; margin-top:4px;">${w.drill}</div>` : ''}
+                ${w.video ? `<a href="${w.video}" target="_blank" style="font-size:11px; color:var(--orange-primary); font-weight:bold; display:inline-block; margin-top:6px;">▶ Watch Video</a>` : ''}
+            </div>
+            <button class="delete-btn" style="margin-left:10px;" onclick="window.deleteTeamWorkout('${w.id}')">✕</button>
+        </li>
+    `).join("");
+};
+
+window.deleteTeamWorkout = async (id) => {
+    if(!confirm("Delete this workout?")) return;
+    if(!id) return alert("Cannot delete a workout without an ID.");
+    await deleteDoc(doc(db, "team_workouts", id));
+    await window.fetchTeamWorkouts(currentCoachTeamId);
+    window.buildCoachDropdowns();
+    window.loadTeamWorkouts();
+};
+
+window.syncDefaultWorkouts = async () => {
+    if(!confirm("This will copy all default app workouts into your team's custom DB so you can edit them. Proceed?")) return;
+    const batch = writeBatch(db);
+    dbData.foundationSkills.forEach(w => {
+        const newRef = doc(collection(db, "team_workouts"));
+        batch.set(newRef, { ...w, teamId: currentCoachTeamId });
+    });
+    await batch.commit();
+    alert("Defaults Synced!");
+    await window.fetchTeamWorkouts(currentCoachTeamId);
+    window.buildCoachDropdowns();
+    window.loadTeamWorkouts();
+};
+
+window.addTeamWorkout = async () => {
+    const name = document.getElementById("manageWorkoutName").value.trim();
+    const type = document.getElementById("manageWorkoutType").value;
+    const reqLevel = parseInt(document.getElementById("manageWorkoutLevel").value) || 1;
+    const drill = document.getElementById("manageWorkoutDesc").value.trim();
+    const video = document.getElementById("manageWorkoutVideo").value.trim();
+    
+    if(!name || !type) return alert("Workout Name and Category are required.");
+    
+    await addDoc(collection(db, "team_workouts"), {
+        name, type, reqLevel, drill, video, teamId: currentCoachTeamId
+    });
+    
+    alert("Workout Saved!");
+    document.getElementById("manageWorkoutName").value = "";
+    document.getElementById("manageWorkoutDesc").value = "";
+    document.getElementById("manageWorkoutVideo").value = "";
+    
+    await window.fetchTeamWorkouts(currentCoachTeamId);
+    window.buildCoachDropdowns();
+    window.loadTeamWorkouts();
+};
+
 window.linkParent = async (playerName, reloadCallback) => {
     const email = prompt(`Enter parent email for ${playerName}:`);
     if(email && email.includes("@")) {
@@ -227,17 +339,26 @@ window.linkParent = async (playerName, reloadCallback) => {
 export const manualAddPlayer = async (reloadCallback) => {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
+    const jerseyEl = document.getElementById("coachAddPlayerJersey");
+    const jersey = jerseyEl ? jerseyEl.value.trim() : "";
+    
     if(!name) return alert("Enter name");
     const tid = document.getElementById("adminTeamSelect").value;
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
-    let list = snap.exists() ? snap.data().players : [];
+    let list = snap.exists() ? snap.data().players || [] : [];
+    let jerseys = snap.exists() ? snap.data().jerseys || {} : {};
+    
     if(!list.includes(name)) list.push(name);
-    await setDoc(ref, { players: list }, { merge: true });
+    if(jersey) jerseys[name] = jersey;
+    
+    await setDoc(ref, { players: list, jerseys: jerseys }, { merge: true });
     if(email) await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
+    
     alert("Player Added");
     document.getElementById("coachAddPlayerName").value = "";
     document.getElementById("coachAddPlayerEmail").value = "";
+    if (jerseyEl) jerseyEl.value = "";
     if(reloadCallback) reloadCallback();
 };
 
@@ -389,4 +510,216 @@ window.switchCoachTab = (tabId) => {
     });
     document.getElementById(tabId).classList.remove('d-none');
     document.getElementById(`btn-${tabId}`).classList.add('active');
+};
+
+window.initGamedayRoster = async (tid, playerList, jerseys) => {
+    const bench = document.getElementById("rosterBench");
+    const pitch = document.getElementById("pitchPinsContainer");
+    if(!bench || !pitch) return;
+    
+    bench.innerHTML = "";
+    pitch.innerHTML = "";
+    
+    let saved = {};
+    try {
+        const snap = await getDoc(doc(db, "gameday_rosters", tid));
+        if(snap.exists()) saved = snap.data().positions || {};
+    } catch(e) { console.warn("Could not load pitch layout", e); }
+    
+    let activePin = null;
+    
+    const onMove = (e) => {
+        if(!activePin) return;
+        e.preventDefault();
+        const pt = e.touches ? e.touches[0] : e;
+        const pitchRect = pitch.getBoundingClientRect();
+        
+        let x = pt.clientX - pitchRect.left;
+        let y = pt.clientY - pitchRect.top;
+        
+        x = Math.max(0, Math.min(x, pitchRect.width));
+        y = Math.max(0, Math.min(y, pitchRect.height));
+        
+        activePin.style.left = `${(x / pitchRect.width) * 100}%`;
+        activePin.style.top = `${(y / pitchRect.height) * 100}%`;
+    };
+    
+    const onEnd = () => {
+        if(!activePin) return;
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onEnd);
+        document.removeEventListener("touchmove", onMove);
+        document.removeEventListener("touchend", onEnd);
+        activePin.style.transform = `translate(-50%, -50%) scale(1)`;
+        activePin.style.zIndex = 10;
+        activePin = null;
+    };
+    
+    const onStart = (e, pin) => {
+        activePin = pin;
+        if (pin.parentElement === bench) {
+            const pitchRect = pitch.getBoundingClientRect();
+            const pt = e.touches ? e.touches[0] : e;
+            pin.style.position = "absolute";
+            pin.style.left = `${((pt.clientX - pitchRect.left) / pitchRect.width) * 100}%`;
+            pin.style.top = `${((pt.clientY - pitchRect.top) / pitchRect.height) * 100}%`;
+            bench.removeChild(pin);
+            pitch.appendChild(pin);
+        }
+        
+        activePin.style.zIndex = 100;
+        activePin.style.transform = `translate(-50%, -50%) scale(1.2)`;
+        
+        document.addEventListener("mousemove", onMove, {passive: false});
+        document.addEventListener("mouseup", onEnd);
+        document.addEventListener("touchmove", onMove, {passive: false});
+        document.addEventListener("touchend", onEnd);
+    };
+    
+    playerList.forEach(p => {
+        const pin = document.createElement("div");
+        pin.className = "player-pin";
+        pin.innerHTML = jerseys[p] || p.substring(0,2).toUpperCase();
+        pin.title = p;
+        pin.dataset.player = p;
+        
+        if (saved[p]) {
+            pin.style.position = "absolute";
+            pin.style.left = saved[p].x;
+            pin.style.top = saved[p].y;
+            pin.style.transform = `translate(-50%, -50%)`;
+            pitch.appendChild(pin);
+        } else {
+            pin.style.position = "relative";
+            pin.style.transform = "none";
+            bench.appendChild(pin);
+        }
+        
+        pin.addEventListener("mousedown", (e) => onStart(e, pin));
+        pin.addEventListener("touchstart", (e) => onStart(e, pin), {passive: false});
+    });
+    
+    let lastTap = 0;
+    pitch.addEventListener("touchend", (e) => {
+        const t = new Date().getTime();
+        if(t - lastTap < 300 && e.target.classList.contains("player-pin")) {
+            const pin = e.target;
+            pin.style.position = "relative";
+            pin.style.left = ""; pin.style.top = ""; pin.style.transform = "none";
+            bench.appendChild(pin);
+        }
+        lastTap = t;
+    });
+    pitch.addEventListener("dblclick", (e) => {
+        if(e.target.classList.contains("player-pin")) {
+            const pin = e.target;
+            pin.style.position = "relative";
+            pin.style.left = ""; pin.style.top = ""; pin.style.transform = "none";
+            bench.appendChild(pin);
+        }
+    });
+    
+    const saveBtn = document.getElementById("saveGamedayRosterBtn");
+    if(saveBtn) saveBtn.onclick = async () => {
+        const positions = {};
+        document.querySelectorAll("#pitchPinsContainer .player-pin").forEach(pin => {
+            positions[pin.dataset.player] = { x: pin.style.left, y: pin.style.top };
+        });
+        saveBtn.innerText = "Saving...";
+        await setDoc(doc(db, "gameday_rosters", tid), { positions, updated: new Date() });
+        saveBtn.innerText = "Saved!";
+        setTimeout(() => saveBtn.innerText = "Save Layout", 2000);
+    };
+};
+
+export const initStrategyBoard = () => {
+    const canvas = document.getElementById("strategyCanvas");
+    if (!canvas) return;
+    
+    const styleToggle = document.getElementById("strategyBoardStyleToggle");
+    if(styleToggle && styleToggle.dataset.bound !== "true") {
+        styleToggle.addEventListener("change", (e) => {
+            const mode = e.target.checked ? 'whiteboard' : 'realistic';
+            if(window.applySportCourt) window.applySportCourt(window.currentCourtType, mode, ["strategyPitchBg"], ["strategyPitchLines"]);
+        });
+        styleToggle.dataset.bound = "true";
+    }
+    
+    const resizeCanvas = () => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        if(rect.width > 0) { canvas.width = rect.width; canvas.height = rect.height; redrawStrokes(); }
+    };
+    
+    const ctx = canvas.getContext("2d");
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    let isDrawing = false;
+    let strokes = [];
+    let currentStroke = [];
+    
+    const getPos = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const evt = e.touches ? e.touches[0] : e;
+        return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+    };
+    
+    const drawLine = (p1, p2, color) => {
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+    };
+    
+    const redrawStrokes = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        strokes.forEach(stroke => {
+            const color = stroke.color;
+            for(let i=1; i<stroke.points.length; i++){
+                drawLine(stroke.points[i-1], stroke.points[i], color);
+            }
+        });
+    };
+    
+    const startDrawing = (e) => {
+        if(e.button !== undefined && e.button !== 0) return;
+        resizeCanvas();
+        isDrawing = true;
+        currentStroke = { color: document.getElementById("strategyColor").value, points: [getPos(e)] };
+    };
+    
+    const draw = (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        const lastPos = currentStroke.points[currentStroke.points.length - 1];
+        drawLine(lastPos, pos, currentStroke.color);
+        currentStroke.points.push(pos);
+    };
+    
+    const stopDrawing = () => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        if(currentStroke.points.length > 1) strokes.push(currentStroke);
+    };
+    
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    window.addEventListener("mouseup", stopDrawing);
+    
+    canvas.addEventListener("touchstart", startDrawing, {passive: false});
+    canvas.addEventListener("touchmove", draw, {passive: false});
+    window.addEventListener("touchend", stopDrawing);
+    
+    document.getElementById("strategyUndoBtn")?.addEventListener("click", () => {
+        strokes.pop();
+        redrawStrokes();
+    });
+    
+    document.getElementById("strategyClearBtn")?.addEventListener("click", () => {
+        strokes = [];
+        redrawStrokes();
+    });
 };

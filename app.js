@@ -7,9 +7,11 @@ import { dbData } from "./data.js";
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback } from "./modules/stats.js";
-import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId } from "./modules/coach.js";
+import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard } from "./modules/coach.js";
 import { logSystemEvent, renderAdminTables, addTeam, addAdmin, loadLogs, generateSampleLogs, runSecurityScan } from "./modules/admin.js";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
+import { messaging } from "./firebase-config.js";
+import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 // ==========================================
 // 1. CONFIGURATION & STATE
@@ -38,17 +40,53 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
 
+window.teamWorkouts = [];
+window.fetchTeamWorkouts = async (tid) => {
+    try {
+        if (!tid || tid === "admin" || tid === "misc") { 
+            window.teamWorkouts = dbData.foundationSkills; 
+        } else {
+            const q = query(collection(db, "team_workouts"), where("teamId", "==", tid));
+            const snap = await getDocs(q);
+            window.teamWorkouts = [];
+            snap.forEach(d => window.teamWorkouts.push({ id: d.id, ...d.data() }));
+            if(window.teamWorkouts.length === 0) window.teamWorkouts = dbData.foundationSkills;
+        }
+    } catch(e) { console.error(e); window.teamWorkouts = dbData.foundationSkills; }
+};
+
+window.buildCoachDropdowns = () => {
+    const hwDrillSelect = document.getElementById("hwDrillSelect");
+    if(hwDrillSelect) {
+        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
+        window.teamWorkouts.forEach(s => {
+            const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+            hwDrillSelect.appendChild(opt);
+        });
+    }
+
+    const evalSkillSelect = document.getElementById("evalSkillSelect");
+    if(evalSkillSelect) {
+        evalSkillSelect.innerHTML = '<option value="" disabled selected>Select Skill...</option>';
+        window.teamWorkouts.forEach(s => {
+            if(s.type !== 'cardio' && s.type !== 'core' && s.type !== 'ball_mastery') {
+                const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
+                evalSkillSelect.appendChild(opt);
+            }
+        });
+    }
+};
 // ==========================================
 // 2. CORE NAVIGATION & ROUTING API
 // ==========================================
 
-const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
-const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin', 'viewChallenge'];
+const navs = ['navHome', 'navTrack', 'navStats', 'navTrophy', 'navCoach', 'navAdmin'];
+const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'];
 
 // --- 1. NEW NAVIGATION LOGIC ---
     window.navigateTo = (viewId, navId, addToHistory = true) => {
-        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewCoach', 'viewAdmin', 'viewChallenge'];
-        const navs = ['navHome', 'navTrack', 'navStats', 'navCoach', 'navAdmin'];
+        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'];
+        const navs = ['navHome', 'navTrack', 'navStats', 'navTrophy', 'navCoach', 'navAdmin'];
         
         // Hide all views and remove active classes
         views.forEach(v => document.getElementById(v)?.classList.add('d-none'));
@@ -98,6 +136,105 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
+window.currentCourtType = "soccer";
+
+window.applySportCourt = (courtType, targetMode, targetBgIds, targetLineIds) => {
+    let bgCol = "#ffffff", lineCol = targetMode === 'whiteboard' ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.4)";
+    if (targetMode !== 'whiteboard') {
+        if (courtType === "basketball") bgCol = "#d97706";
+        else if (courtType === "football") bgCol = "#15803d";
+        else if (courtType === "baseball") bgCol = "#166534";
+        else if (courtType === "lacrosse") bgCol = "#2f855a";
+        else if (courtType === "generic") bgCol = "#475569";
+        else bgCol = "#2f855a"; // soccer
+    }
+
+    let linesHtml = "";
+    if(courtType === "basketball") {
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px solid ${lineCol};"></div>
+<div style="position: absolute; top: 50%; left: 50%; height: 25%; aspect-ratio: 1; border: 2px solid ${lineCol}; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none;"></div>
+<div style="position: absolute; top: 30%; bottom: 30%; left: 0; width: 25%; border: 2px solid ${lineCol}; border-left: none; pointer-events: none;"></div>
+<div style="position: absolute; top: 30%; bottom: 30%; right: 0; width: 25%; border: 2px solid ${lineCol}; border-right: none; pointer-events: none;"></div>
+<div style="position: absolute; top: 10%; bottom: 10%; left: 0; width: 35%; border: 2px solid ${lineCol}; border-radius: 0 50% 50% 0; border-left: none; pointer-events: none;"></div>
+<div style="position: absolute; top: 10%; bottom: 10%; right: 0; width: 35%; border: 2px solid ${lineCol}; border-radius: 50% 0 0 50%; border-right: none; pointer-events: none;"></div>`;
+    } else if(courtType === "football") {
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; left:12%; border-left: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; right:12%; border-right: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; left:50%; border-left: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; left:31%; border-left: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; right:31%; border-right: 2px solid ${lineCol}; pointer-events: none;"></div>`;
+    } else if(courtType === "baseball") {
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; bottom: 10%; left: 50%; width: 45%; aspect-ratio: 1; border: 2px solid ${lineCol}; transform: translate(-50%, 50%) rotate(45deg); pointer-events: none;"></div>
+<div style="position: absolute; bottom: 35%; left: 50%; width: 8%; aspect-ratio: 1; border: 2px solid ${lineCol}; border-radius: 50%; transform: translate(-50%, 50%); pointer-events: none;"></div>`;
+    } else if(courtType === "lacrosse") {
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; left:50%; border-left: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; left:33%; border-left: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:0; bottom:0; right:33%; border-right: 2px solid ${lineCol}; pointer-events: none;"></div>
+<div style="position: absolute; top:40%; bottom:40%; left:5%; aspect-ratio: 1; border: 2px solid ${lineCol}; border-radius: 50%; pointer-events: none;"></div>
+<div style="position: absolute; top:40%; bottom:40%; right:5%; aspect-ratio: 1; border: 2px solid ${lineCol}; border-radius: 50%; pointer-events: none;"></div>`;
+    } else if(courtType === "generic") {
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; border-radius: 4px; pointer-events: none;"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px solid ${lineCol};"></div>`;
+    } else { // soccer
+        linesHtml = `<div style="position: absolute; top:0; bottom:0; left:0; right:0; border: 2px solid ${lineCol}; border-radius: 4px; pointer-events: none;"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px solid ${lineCol};"></div>
+<div style="position: absolute; top: 50%; left: 50%; height: 30%; aspect-ratio: 1; border: 2px solid ${lineCol}; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none;"></div>
+<div style="position: absolute; top: 20%; bottom: 20%; left: 0; width: 15%; border: 2px solid ${lineCol}; border-left: none; pointer-events: none;"></div>
+<div style="position: absolute; top: 20%; bottom: 20%; right: 0; width: 15%; border: 2px solid ${lineCol}; border-right: none; pointer-events: none;"></div>`;
+    }
+
+    targetBgIds.forEach(id => { const el = document.getElementById(id); if(el) el.style.backgroundColor = bgCol; });
+    targetLineIds.forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = linesHtml; });
+};
+
+async function applyTeamBranding(teamId) {
+    if(!teamId) return;
+    try {
+        const snap = await getDoc(doc(db, "config", `branding_${teamId}`));
+        if(snap.exists()) {
+            const data = snap.data();
+            if(data.primaryColor) document.documentElement.style.setProperty('--aggie-blue', data.primaryColor);
+            if(data.secondaryColor) document.documentElement.style.setProperty('--aggie-gold', data.secondaryColor);
+            if(data.appName && data.appName.trim() !== "") {
+                document.title = data.appName;
+                document.querySelectorAll('.app-title, .auth-title').forEach(el => el.innerText = data.appName);
+            }
+            if(data.logoUrl && data.logoUrl.trim() !== "") {
+                document.querySelectorAll('.logo-circle').forEach(el => {
+                    el.innerHTML = `<img src="${data.logoUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                    el.style.border = `4px solid ${data.secondaryColor || 'var(--aggie-gold)'}`;
+                });
+            }
+            
+            // Apply court type
+            const ct = data.courtType || "soccer";
+            window.currentCourtType = ct;
+            
+            const styleToggle = document.getElementById("strategyBoardStyleToggle");
+            const strategyMode = (styleToggle && styleToggle.checked) ? 'whiteboard' : 'realistic';
+            window.applySportCourt(ct, strategyMode, ["strategyPitchBg"], ["strategyPitchLines"]);
+            window.applySportCourt(ct, 'realistic', ["gamedayPitchBg"], ["gamedayPitchLines"]);
+        }
+    } catch(e) { console.error("Error applying branding", e); }
+}
+
+async function requestPushPermissions(userEmail) {
+    if (!('Notification' in window)) return;
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            // Note: A VAPID key is required to actually get a token for FCM Web Push.
+            // const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY_HERE' });
+            // if(token) { await setDoc(doc(db, "users", userEmail), { fcmToken: token }, { merge: true }); }
+            console.log("Notification permission granted. Ready for VAPID key insertion.");
+        }
+    } catch(e) { console.warn("FCM Error:", e); }
+}
+
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
@@ -143,7 +280,7 @@ function buildDropdowns(currentXp) {
     customOpt.style.color = "#ea580c";
     sWarm.appendChild(customOpt);
 
-    dbData.foundationSkills.forEach(s => {
+    window.teamWorkouts.forEach(s => {
         const reqLvl = s.reqLevel || 1; 
         const isLocked = reqLvl > currentLevelNum;
         
@@ -194,14 +331,38 @@ async function loadStats() {
     }
     try {
         const snap = await getDocs(q);
-        const logs = []; let totalMins = 0;
-        snap.forEach(d => { logs.push(d.data()); totalMins += Number(d.data().minutes || 0); });
+        const monthlyXpMap = {};
+        
+        snap.forEach(d => { 
+            const data = d.data();
+            logs.push(data); 
+            const mins = Number(data.minutes || 0);
+            totalMins += mins; 
+            
+            if (!data.timestamp) return;
+            const date = new Date(data.timestamp.seconds * 1000);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            
+            if(!monthlyXpMap[monthKey]) monthlyXpMap[monthKey] = { mins: 0, workouts: 0 };
+            monthlyXpMap[monthKey].mins += mins;
+            monthlyXpMap[monthKey].workouts++;
+        });
         logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
         
-        setText("statTotal", `${logs.length} ${userProfile.role === 'admin' ? "Club Workouts" : "Sessions"}`);
+        setText("statTotal", `${logs.length} ${userProfile.role === 'admin' ? "Club Workouts" : "All-Time Sessions"}`);
         setText("statTime", totalMins);
         
-        let xp = totalMins + (logs.length * 10);
+        let maxMonthlyXp = 0;
+        for (const key in monthlyXpMap) {
+            const mXp = monthlyXpMap[key].mins + (monthlyXpMap[key].workouts * 10);
+            if (mXp > maxMonthlyXp) maxMonthlyXp = mXp;
+        }
+
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
+        const currentM = monthlyXpMap[currentMonthKey] || { mins: 0, workouts: 0 };
+        
+        let xp = currentM.mins + (currentM.workouts * 10); // current month xp
         let lvl = "ROOKIE"; 
 
         // --- LEVEL CAP & PROGRESSION LOGIC ---
@@ -254,21 +415,47 @@ async function loadStats() {
         const bLegend = document.getElementById("badgeLegend");
         const certBtn = document.getElementById("claimCertificateBtn");
 
-        if(bStarter) { bStarter.style.opacity = "0.3"; bStarter.style.filter = "grayscale(100%)"; }
-        if(bVeteran) { bVeteran.style.opacity = "0.3"; bVeteran.style.filter = "grayscale(100%)"; }
-        if(bPro) { bPro.style.opacity = "0.3"; bPro.style.filter = "grayscale(100%)"; }
-        if(bLegend) { bLegend.style.opacity = "0.3"; bLegend.style.filter = "grayscale(100%)"; }
+        if(bStarter) { bStarter.classList.add("medal-locked"); }
+        if(bVeteran) { bVeteran.classList.add("medal-locked"); }
+        if(bPro) { bPro.classList.add("medal-locked"); }
+        if(bLegend) { bLegend.classList.add("medal-locked"); }
         if(certBtn) certBtn.style.display = "none";
 
-        if(lvl === "STARTER" || lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bStarter) { bStarter.style.opacity = "1"; bStarter.style.filter = "none"; } }
-        if(lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bVeteran) { bVeteran.style.opacity = "1"; bVeteran.style.filter = "none"; } }
-        if(lvl === "PRO" || lvl === "LEGEND") { if(bPro) { bPro.style.opacity = "1"; bPro.style.filter = "none"; } }
+        if(lvl === "STARTER" || lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bStarter) { bStarter.classList.remove("medal-locked"); } }
+        if(lvl === "VETERAN" || lvl === "PRO" || lvl === "LEGEND") { if(bVeteran) { bVeteran.classList.remove("medal-locked"); } }
+        if(lvl === "PRO" || lvl === "LEGEND") { if(bPro) { bPro.classList.remove("medal-locked"); } }
         if(lvl === "LEGEND") { 
-            if(bLegend) { bLegend.style.opacity = "1"; bLegend.style.filter = "none"; }
+            if(bLegend) { bLegend.classList.remove("medal-locked"); }
             if(certBtn && userProfile.role !== 'admin') certBtn.style.display = "block"; 
         }
 
-        if (typeof buildDropdowns === "function") buildDropdowns(xp);
+        // --- MILESTONE BADGES ---
+        let has7DayStreak = false;
+        if (logs.length > 0) {
+            let streak = 1;
+            let lastDate = new Date(logs[0].timestamp.seconds * 1000);
+            lastDate.setHours(0,0,0,0);
+            for(let i=1; i<logs.length; i++) {
+                if(!logs[i].timestamp) continue;
+                let d = new Date(logs[i].timestamp.seconds * 1000);
+                d.setHours(0,0,0,0);
+                let diff = Math.round((lastDate - d) / (1000 * 60 * 60 * 24));
+                if (diff === 1) { streak++; lastDate = d; }
+                else if (diff > 1) { break; }
+            }
+            if(streak >= 7) has7DayStreak = true;
+        }
+
+        const b7Day = document.getElementById("badge7Day");
+        if(b7Day) { b7Day.classList.toggle("medal-locked", !has7DayStreak); }
+        
+        const b100S = document.getElementById("badge100Sessions");
+        if(b100S) { b100S.classList.toggle("medal-locked", logs.length < 100); }
+        
+        const b1000M = document.getElementById("badge1000Mins");
+        if(b1000M) { b1000M.classList.toggle("medal-locked", totalMins < 1000); }
+
+        if (typeof buildDropdowns === "function") buildDropdowns(maxMonthlyXp);
 
         if (userProfile.role !== 'admin') {
             setText("userLevelDisplay", lvl);
@@ -367,8 +554,19 @@ function getSessionDescription() {
 }
 
 // ==========================================
-// 4. APP INITIALIZATION
+// 4. MAIN INIT & UI LOGIC
 // ==========================================
+
+window.switchTrackerTab = (tabId) => {
+    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
+        const pane = document.getElementById(id);
+        const btn = document.getElementById(`btn${id.charAt(0).toUpperCase() + id.slice(1)}`);
+        if(pane) pane.classList.add('d-none');
+        if(btn) btn.classList.remove('active');
+    });
+    document.getElementById(tabId).classList.remove('d-none');
+    document.getElementById(`btn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+};
 
 const initApp = () => {
     console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
@@ -398,6 +596,7 @@ const initApp = () => {
 
 // --- TRACKER MODULE BINDINGS ---
     initSignatureCanvas();
+    initStrategyBoard();
 
     safeBind("addWarmupBtn", "click", () => {
         let n = document.getElementById("selectWarmup")?.value;
@@ -455,7 +654,7 @@ const getEmbedUrl = (url) => {
     };
 
     const showDrillInfo = (drillName) => {
-        const s = dbData.foundationSkills.find(x => x.name === drillName);
+        const s = window.teamWorkouts.find(x => x.name === drillName);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
             setText("drillTitle", s.name);
@@ -487,6 +686,10 @@ const getEmbedUrl = (url) => {
         }
     });
 
+    safeBind("addTeamWorkoutBtn", "click", window.addTeamWorkout);
+    safeBind("syncDefaultWorkoutsBtn", "click", window.syncDefaultWorkouts);
+    safeBind("leaderboardFilter", "change", loadStats);
+
     safeBind("selectCore", "change", (e) => showDrillInfo(e.target.value));
     safeBind("selectBallWork", "change", (e) => showDrillInfo(e.target.value));
     safeBind("selectBasics", "change", (e) => showDrillInfo(e.target.value));
@@ -502,6 +705,12 @@ const getEmbedUrl = (url) => {
         document.getElementById("certPlayerName").innerText = userProfile.playerName;
         document.getElementById("certDate").innerText = new Date().toLocaleDateString();
         document.getElementById("certModal").style.display = "block";
+    });
+
+    safeBind("btnPrintStats", "click", () => {
+        document.body.classList.add("printing-stats");
+        window.print();
+        setTimeout(() => document.body.classList.remove("printing-stats"), 1000);
     });
 
     safeBind("closeCertModal", "click", () => {
@@ -522,17 +731,6 @@ const getEmbedUrl = (url) => {
     safeBind("generateTestLogBtn", "click", generateSampleLogs);
 
 // --- SCHEDULE & HOMEWORK BINDINGS ---
-    
-    const hwDrillSelect = document.getElementById("hwDrillSelect");
-    if(hwDrillSelect) {
-        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
-        dbData.foundationSkills.forEach(s => {
-            const opt = document.createElement("option"); 
-            opt.value = s.name; 
-            opt.textContent = s.name;
-            hwDrillSelect.appendChild(opt);
-        });
-    }
 
     safeBind("addScheduleBtn", "click", async () => {
         try {
@@ -575,19 +773,6 @@ const getEmbedUrl = (url) => {
     });
 
 // --- SKILL EVALUATION BINDINGS ---
-    
-    const evalSkillSelect = document.getElementById("evalSkillSelect");
-    if(evalSkillSelect) {
-        evalSkillSelect.innerHTML = '<option value="" disabled selected>Select Skill...</option>';
-        dbData.foundationSkills.forEach(s => {
-            if(s.type !== 'cardio' && s.type !== 'core' && s.type !== 'ball_mastery') {
-                const opt = document.createElement("option"); 
-                opt.value = s.name; 
-                opt.textContent = s.name;
-                evalSkillSelect.appendChild(opt);
-            }
-        });
-    }
 
     window.loadPlayerEvaluations = async (playerName) => {
         const list = document.getElementById("coachEvalList");
@@ -671,18 +856,20 @@ const getEmbedUrl = (url) => {
 
     safeBind("assignHwBtn", "click", async () => {
         try {
-            const player = document.getElementById("hwPlayerSelect").value;
+            const selectedPlayers = Array.from(document.querySelectorAll(".hw-player-cb:checked")).map(cb => cb.value);
             const due = document.getElementById("hwDueDate").value;
             const tid = currentCoachTeamId;
             const drills = window.currentHomeworkBuilder;
             
-            if(!player || !due || !tid) return alert("Please select a player and due date.");
+            if(selectedPlayers.length === 0 || !due || !tid) return alert("Please select player(s) and due date.");
             if(drills.length === 0) return alert("Please add at least one drill to the assignment.");
             
-            await addDoc(collection(db, "assignments"), { 
-                teamId: tid, player: player, dueDate: due, status: "active",
-                drills: drills 
-            });
+            await Promise.all(selectedPlayers.map(player => 
+                addDoc(collection(db, "assignments"), { 
+                    teamId: tid, player: player, dueDate: due, status: "active",
+                    drills: drills 
+                })
+            ));
             
             alert("Homework Assigned!");
             
@@ -825,6 +1012,9 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 
+                // Apply team branding specifically for this user's team or admin view
+                await applyTeamBranding(userProfile.teamId);
+                
                 // Initialize text values first
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
@@ -833,6 +1023,13 @@ onAuthStateChanged(auth, async (user) => {
                     setText("homePlayerName", userProfile.playerName.split(" ")[0]);
                 }
                 
+                // Fetch push notification permissions
+                requestPushPermissions(user.email);
+                
+                // Fetch workouts first
+                await window.fetchTeamWorkouts(userProfile.teamId);
+                window.buildCoachDropdowns();
+
                 // Trigger initial load sequences safely
                 loadStats();
                 loadHomeDashboard();

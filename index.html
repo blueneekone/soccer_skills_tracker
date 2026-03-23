@@ -162,11 +162,15 @@
         </div>
 
         <div id="viewTracker" class="view-section d-none">
+            <div class="coach-tabs-container" style="margin-bottom: 10px;">
+                <button id="btnTrackerWarmup" class="coach-tab-btn active" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
+                <button id="btnTrackerDrills" class="coach-tab-btn" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
+                <button id="btnTrackerReview" class="coach-tab-btn" onclick="window.switchTrackerTab('trackerReview')">✅ Review</button>
+            </div>
+
             <div class="card">
-                <div class="card-header">Log a Session</div>
-                <div class="card-body">
-                    
-                    <div class="tracker-box bg-orange">
+                <div id="trackerWarmup" class="card-body">
+                    <div class="tracker-box bg-orange m-0">
                         <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
                         <label for="selectWarmup">Select Warm-Up</label>
                         <select id="selectWarmup"><option>Loading...</option></select>
@@ -180,7 +184,10 @@
                             <button id="addWarmupBtn" class="action-btn btn-orange">+ Add</button>
                         </div>
                     </div>
+                    <button class="primary-btn mt-15 w-100" onclick="window.switchTrackerTab('trackerDrills')">Next: Drills ➔</button>
+                </div>
 
+                <div id="trackerDrills" class="card-body d-none">
                     <div class="tracker-box bg-red">
                         <span class="section-label text-red">Part B: Core Strength</span>
                         <label for="selectCore">Select Core Exercise</label>
@@ -205,7 +212,7 @@
                         </div>
                     </div>
 
-                    <div class="tracker-box bg-green">
+                    <div class="tracker-box bg-green m-0">
                         <span class="section-label text-green">Part D: Brilliant Basics</span>
                         <label for="selectBasics">Select Brilliant Basics Exercise</label>
                         <select id="selectBasics"><option>Loading...</option></select>
@@ -216,8 +223,11 @@
                             <button id="addBasicsBtn" class="action-btn btn-green">+ Add</button>
                         </div>
                     </div>
+                    <button class="primary-btn mt-15 w-100" onclick="window.switchTrackerTab('trackerReview')">Next: Plan Review ➔</button>
+                </div>
 
-                    <h4 class="tracker-plan-header">Your Training Plan</h4>
+                <div id="trackerReview" class="card-body d-none">
+                    <h4 class="tracker-plan-header mt-0">Your Training Plan</h4>
                     <ul id="sessionList" class="session-list">
                         <li class="session-empty">Empty. Select drills above to build your workout!</li>
                     </ul>
@@ -320,7 +330,10 @@
         </div>
 
         <div id="viewStats" class="view-section d-none">
-            <h2 class="view-title">Player Stats</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="view-title" style="margin-bottom:0;">Player Stats</h2>
+                <button id="btnPrintStats" class="secondary-btn" style="padding: 6px 12px; margin-bottom: 20px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark);">🖨️ Print Stats</button>
+            </div>
             
             <div class="card">
                 <div class="card-body text-center">
@@ -346,22 +359,16 @@
                 </div>
             </div>
 
-            <div class="card" id="trophyCaseCard">
-                <div class="card-header trophy-header">🏆 TROPHY CASE</div>
-                <div class="card-body text-center overflow-x-auto">
-                    <div class="trophy-flex">
-                        <div id="badgeRookie" class="medal-container"><div class="medal-coin medal-rookie"></div><div class="medal-title">ROOKIE</div><div class="medal-xp">0 XP</div></div>
-                        <div id="badgeStarter" class="medal-container medal-locked"><div class="medal-coin medal-starter"></div><div class="medal-title">STARTER</div><div class="medal-xp">500 XP</div></div>
-                        <div id="badgeVeteran" class="medal-container medal-locked"><div class="medal-coin medal-veteran"></div><div class="medal-title">VETERAN</div><div class="medal-xp">1000 XP</div></div>
-                        <div id="badgePro" class="medal-container medal-locked"><div class="medal-coin medal-pro"></div><div class="medal-title">PRO</div><div class="medal-xp">2000 XP</div></div>
-                        <div id="badgeLegend" class="medal-container medal-locked"><div class="medal-coin medal-legend"></div><div class="medal-title legend-title-color">LEGEND</div><div class="medal-xp">3000 XP</div></div>
-                    </div>
-                    <button id="claimCertificateBtn" class="primary-btn btn-claim-cert">🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
-                </div>
-            </div>
-
             <div class="card" id="teamLeaderboardCard">
-                <div class="card-header leaderboard-header">🏅 TEAM LEADERBOARD</div>
+                <div class="card-header leaderboard-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🏅 TEAM LEADERBOARD</span>
+                    <select id="leaderboardFilter" style="font-size:12px; padding:4px; border-radius:4px; border:1px solid #ccc; max-width:100px;">
+                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="alltime">All-Time</option>
+                    </select>
+                </div>
                 <div class="card-body p-0 overflow-x-auto">
                     <table id="teamLeaderboardTable" class="admin-table">
                         <thead><tr><th>Rank</th><th>Player</th><th>Total Minutes</th></tr></thead>
@@ -383,6 +390,46 @@
                 <div class="card-body">
                     <canvas id="playerTrendChart" width="400" height="200"></canvas>
                 </div>
+            </div>
+        </div>
+
+        <div id="viewTrophy" class="view-section d-none">
+            <h2 class="view-title">Trophy Room</h2>
+            <div class="card">
+                <div class="card-header trophy-header">RANK MEDALS</div>
+                <div class="card-body text-center overflow-x-auto">
+                    <div class="trophy-flex">
+                        <div id="badgeRookie" class="medal-container"><div class="medal-coin medal-rookie"></div><div class="medal-title">ROOKIE</div><div class="medal-xp">0 XP</div></div>
+                        <div id="badgeStarter" class="medal-container medal-locked"><div class="medal-coin medal-starter"></div><div class="medal-title">STARTER</div><div class="medal-xp">500 XP</div></div>
+                        <div id="badgeVeteran" class="medal-container medal-locked"><div class="medal-coin medal-veteran"></div><div class="medal-title">VETERAN</div><div class="medal-xp">1000 XP</div></div>
+                        <div id="badgePro" class="medal-container medal-locked"><div class="medal-coin medal-pro"></div><div class="medal-title">PRO</div><div class="medal-xp">2000 XP</div></div>
+                        <div id="badgeLegend" class="medal-container medal-locked"><div class="medal-coin medal-legend"></div><div class="medal-title legend-title-color">LEGEND</div><div class="medal-xp">3000 XP</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header" style="background:#0ea5e9; color:white;">MILESTONE BADGES</div>
+                <div class="card-body text-center overflow-x-auto">
+                    <div class="trophy-flex" style="justify-content:space-around;">
+                        <div id="badge7Day" class="medal-container medal-locked">
+                            <div style="font-size:35px; margin-bottom:5px;">🔥</div>
+                            <div class="medal-title">7-DAY STREAK</div>
+                        </div>
+                        <div id="badge100Sessions" class="medal-container medal-locked">
+                            <div style="font-size:35px; margin-bottom:5px;">💯</div>
+                            <div class="medal-title">100 SESSIONS</div>
+                        </div>
+                        <div id="badge1000Mins" class="medal-container medal-locked">
+                            <div style="font-size:35px; margin-bottom:5px;">⏱️</div>
+                            <div class="medal-title">1000 MINS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center" style="margin-top:20px;">
+                <button id="claimCertificateBtn" class="primary-btn btn-claim-cert" style="display:none;">🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
             </div>
         </div>
 
@@ -421,7 +468,10 @@
                         </div>
                         <hr class="roster-divider">
                         <label>Manual Add Player</label>
-                        <input type="text" id="coachAddPlayerName" placeholder="Player Name">
+                        <div class="input-row">
+                            <input type="text" id="coachAddPlayerName" class="flex-1" placeholder="Player Name">
+                            <input type="number" id="coachAddPlayerJersey" class="w-50" placeholder="#">
+                        </div>
                         <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
                         <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
                     </div>
@@ -478,10 +528,18 @@
                 <div class="card">
                     <div class="card-header hw-header">🎯 Assign Homework</div>
                     <div class="card-body">
-                        <label>1. Select Player & Due Date</label>
+                        <label>1. Select Players & Due Date</label>
                         <div class="flex-gap-10">
-                            <select id="hwPlayerSelect" class="hw-player-select" title="Select a player for homework assignment"><option>Loading...</option></select>
-                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment">
+                            <div class="multi-select-container flex-1" style="position:relative;">
+                                <div id="hwPlayerSelectBtn" style="padding:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; cursor:pointer; font-size:14px; color:#475569;">Select Players... ⏷</div>
+                                <div id="hwPlayerChecklist" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; z-index:1000; max-height:200px; overflow-y:auto; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-top:5px; padding:10px;">
+                                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #eee;">
+                                        <input type="checkbox" id="hwSelectAllPlayers"> <b style="text-transform:none; margin:0;">Select All</b>
+                                    </label>
+                                    <div id="hwPlayerChecklistItems"></div>
+                                </div>
+                            </div>
+                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment" style="width:140px; margin-bottom:0;">
                         </div>
                         
                         <label>2. Build the Workout</label>
@@ -566,6 +624,45 @@
 
             <div id="coachTabTools" class="d-none">
                 <div class="card">
+                    <div class="card-header">🖌️ Strategy Board</div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items:center;">
+                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 40px; height: 36px; margin: 0; border: none; background: none; cursor: pointer;">
+                            <button id="strategyUndoBtn" class="secondary-btn flex-1" style="margin: 0;">Undo</button>
+                            <button id="strategyClearBtn" class="secondary-btn flex-1" style="margin: 0; background:#fee2e2; color:#b91c1c;">Clear</button>
+                            <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+                                <label class="switch" title="Toggle Whiteboard Mode">
+                                    <input type="checkbox" id="strategyBoardStyleToggle">
+                                    <span class="slider"></span>
+                                </label>
+                                <span style="font-size:11px; color:#475569; font-weight:bold; cursor:pointer;" onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
+                            </div>
+                        </div>
+                        <div id="strategyPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
+                            <div id="strategyPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
+                            <canvas id="strategyCanvas" style="position: absolute; top:0; left:0; width: 100%; height: 100%; cursor: crosshair; touch-action: none;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">📋 Gameday Roster</div>
+                    <div class="card-body">
+                        <label>Bench Players</label>
+                        <div id="rosterBench" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 40px; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px;"></div>
+                        
+                        <label>Starting Lineup (Drag & Drop)</label>
+                        <div id="gamedayPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
+                            <div id="gamedayPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
+                            <div id="pitchPinsContainer" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
+                        </div>
+                        <button id="saveGamedayRosterBtn" class="primary-btn btn-blue mt-15 w-100">Save Pitch Layout</button>
+                    </div>
+                </div>
+                    </div>
+                </div>
+
+                <div class="card">
                     <div class="card-header">⏱️ Practice Stopwatch</div>
                     <div class="card-body text-center">
                         <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
@@ -578,6 +675,30 @@
                             <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
                         </div>
                         <ul id="lapList" class="lap-list"></ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">📋 Manage Team Workouts</div>
+                    <div class="card-body">
+                        <label>Category</label>
+                        <select id="manageWorkoutType" class="mb-10">
+                            <option value="cardio">Warm-Up / Cardio</option>
+                            <option value="core">Core / Strength</option>
+                            <option value="ball_mastery">Ball Mastery / Skill</option>
+                            <option value="foundation">Brilliant Basics / Foundation</option>
+                        </select>
+                        <input type="text" id="manageWorkoutName" placeholder="Workout Name (e.g. 10 Yard Shuttles)">
+                        <input type="number" id="manageWorkoutLevel" placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1" class="mb-10" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2" class="mb-10" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px;"></textarea>
+                        <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
+                        <button id="addTeamWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
+                        
+                        <hr class="section-divider">
+                        <label>Existing Workouts <button id="syncDefaultWorkoutsBtn" class="secondary-btn" style="float:right; width: auto; font-size: 10px; padding: 4px 8px; margin-top:-5px;">Sync Defaults</button></label>
+                        <ul id="teamWorkoutList" class="session-list mt-10">
+                            <li class="session-empty">Loading workouts...</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -617,6 +738,44 @@
                         <input type="email" id="newAdminEmail" placeholder="Director Email">
                         <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
                     </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">🎨 Club Branding</div>
+                <div class="card-body">
+                    <label>Select Team/Club to Edit</label>
+                    <select id="brandingTeamSelect" class="mb-10"><option>Loading...</option></select>
+                    
+                    <label>App Name</label>
+                    <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
+                    
+                    <label>Logo URL (PNG/JPG)</label>
+                    <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
+                    
+                    <label>Sport Selection</label>
+                    <select id="brandCourtType" class="mb-15" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                        <option value="soccer">Soccer</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="football">Football</option>
+                        <option value="baseball">Baseball</option>
+                        <option value="lacrosse">Lacrosse</option>
+                        <option value="generic">Generic Gym/Field</option>
+                    </select>
+
+                    <div class="input-row mb-15">
+                        <div class="flex-1">
+                            <label>Primary Color</label>
+                            <input type="color" id="brandPrimaryColor" value="#00263A" style="height:45px; padding:2px;">
+                        </div>
+                        <div class="flex-1">
+                            <label>Secondary Color (Gold)</label>
+                            <input type="color" id="brandSecondaryColor" value="#BFAE5A" style="height:45px; padding:2px;">
+                        </div>
+                    </div>
+                    
+                    <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
+                    <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to Default</button>
                 </div>
             </div>
             <div class="card">
@@ -735,6 +894,7 @@
         <div class="nav-item active" id="navHome"><span class="nav-icon">🏠</span>Home</div>
         <div class="nav-item" id="navTrack"><span class="nav-icon">⚽</span>Track</div>
         <div class="nav-item" id="navStats"><span class="nav-icon">📊</span>Stats</div>
+        <div class="nav-item" id="navTrophy"><span class="nav-icon">🏆</span>Trophies</div>
         <div class="nav-item d-none" id="navCoach"><span class="nav-icon">📋</span>Coach</div>
         <div class="nav-item d-none" id="navAdmin"><span class="nav-icon">⚙️</span>Admin</div>
     </div>

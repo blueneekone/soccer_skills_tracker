@@ -140,9 +140,16 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 @keyframes legend-glow { 0% { box-shadow: 0 0 10px #38bdf8, inset 0 0 5px rgba(255,255,255,0.5); } 100% { box-shadow: 0 0 25px #0284c7, inset 0 0 15px rgba(255,255,255,0.8); transform: scale(1.05); } }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 @media print {
-    body * { visibility: hidden; }
-    #printableCertificate, #printableCertificate * { visibility: visible; }
-    #printableCertificate { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 15px solid #00263A !important; margin: 0; padding: 40px; box-sizing: border-box; }
+    body:not(.printing-stats) * { visibility: hidden; }
+    body:not(.printing-stats) #printableCertificate, body:not(.printing-stats) #printableCertificate * { visibility: visible; }
+    body:not(.printing-stats) #printableCertificate { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 15px solid #00263A !important; margin: 0; padding: 40px; box-sizing: border-box; }
+    
+    body.printing-stats * { visibility: hidden; }
+    body.printing-stats #viewStats, body.printing-stats #viewStats * { visibility: visible; }
+    body.printing-stats #viewStats { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-sizing: border-box; }
+    body.printing-stats .bottom-nav, body.printing-stats .top-nav, body.printing-stats #btnPrintStats, body.printing-stats .view-title { display: none !important; }
+    body.printing-stats .card { box-shadow: none !important; border: 1px solid #ddd !important; margin-bottom: 20px !important; page-break-inside: avoid; }
+    
     .no-print { display: none !important; }
 }
 
@@ -414,3 +421,20 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .coach-tabs-container::-webkit-scrollbar { display: none; }
 .coach-tab-btn { flex: 1; min-width: 80px; padding: 10px; background: #e2e8f0; border: none; border-radius: 8px; color: #475569; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .coach-tab-btn.active { background: var(--aggie-blue); color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+
+/* GAMEDAY ROSTER */
+.player-pin {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--aggie-gold); color: var(--aggie-blue);
+    display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px;
+    cursor: grab; user-select: none; z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid #fff;
+}
+.player-pin:active { cursor: grabbing; opacity: 0.9; }
+
+/* Toggle Switch */
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; margin: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 20px; }
+.switch .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.switch input:checked + .slider { background-color: var(--aggie-blue, #00263A); }
+.switch input:checked + .slider:before { transform: translateX(16px); }

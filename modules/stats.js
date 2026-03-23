@@ -88,15 +88,33 @@ export const renderTeamChart = (logs) => {
 
 export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
     const table = document.getElementById("teamLeaderboardTable"); if(!table) return;
+    const filter = document.getElementById("leaderboardFilter")?.value || "weekly";
+    
     let stats = {};
+    let filteredLogs = [];
+    
+    const now = new Date();
+    const filterDate = new Date();
+    if(filter === 'daily') filterDate.setDate(now.getDate() - 1);
+    else if(filter === 'weekly') filterDate.setDate(now.getDate() - 7);
+    else if(filter === 'monthly') filterDate.setMonth(now.getMonth() - 1);
+    else filterDate.setFullYear(2000); // alltime
+
     if (!tid) { 
-        logsOverride.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); 
+        filteredLogs = logsOverride.filter(d => new Date(d.timestamp.seconds * 1000) >= filterDate);
+        filteredLogs.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); 
     } else { 
         const q = query(collection(db, "reps"), where("teamId", "==", tid)); 
         const snap = await getDocs(q); 
-        snap.forEach(d => { const p = d.data().player; stats[p] = (stats[p] || 0) + Number(d.data().minutes); }); 
+        snap.forEach(d => {
+            const data = d.data();
+            if(new Date(data.timestamp.seconds * 1000) >= filterDate) {
+                const p = data.player; stats[p] = (stats[p] || 0) + Number(data.minutes);
+            }
+        }); 
     }
-    table.querySelector("tbody").innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+    const html = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
+    table.querySelector("tbody").innerHTML = html || '<tr><td colspan="3" class="text-center">No data for this time period</td></tr>';
 };
 
 export const loadPlayerFeedback = async (userProfile) => {

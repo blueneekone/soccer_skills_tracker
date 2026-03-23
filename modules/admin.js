@@ -1,6 +1,6 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
-import { collection, query, orderBy, limit, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- 1. SYSTEM LOGGING ---
 export const logSystemEvent = async (type, detail) => {
@@ -43,6 +43,72 @@ export const renderAdminTables = (globalTeams, globalAdmins) => {
     
     const a = document.getElementById("adminTable");
     if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+    
+    initBrandingPanel(globalTeams);
+};
+
+export const initBrandingPanel = async (globalTeams) => {
+    const sel = document.getElementById("brandingTeamSelect");
+    if(!sel) return;
+    sel.innerHTML = globalTeams.map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("");
+    
+    const loadTeamBranding = async () => {
+        const tid = sel.value;
+        if(!tid) return;
+        const snap = await getDoc(doc(db, "config", `branding_${tid}`));
+        if(snap.exists()) {
+            const data = snap.data();
+            document.getElementById("brandAppName").value = data.appName || "";
+            document.getElementById("brandLogoUrl").value = data.logoUrl || "";
+            document.getElementById("brandPrimaryColor").value = data.primaryColor || "#00263A";
+            document.getElementById("brandSecondaryColor").value = data.secondaryColor || "#BFAE5A";
+            if(document.getElementById("brandCourtType")) document.getElementById("brandCourtType").value = data.courtType || "soccer";
+        } else {
+            document.getElementById("brandAppName").value = "";
+            document.getElementById("brandLogoUrl").value = "";
+            document.getElementById("brandPrimaryColor").value = "#00263A";
+            document.getElementById("brandSecondaryColor").value = "#BFAE5A";
+            if(document.getElementById("brandCourtType")) document.getElementById("brandCourtType").value = "soccer";
+        }
+    };
+    
+    sel.addEventListener("change", loadTeamBranding);
+    if(globalTeams.length > 0) loadTeamBranding();
+    
+    const saveBtn = document.getElementById("saveBrandingBtn");
+    if (saveBtn && saveBtn.dataset.bound !== "true") {
+        saveBtn.addEventListener("click", async () => {
+            const tid = sel.value;
+            if(!tid) return;
+            const data = {
+                appName: document.getElementById("brandAppName").value.trim(),
+                logoUrl: document.getElementById("brandLogoUrl").value.trim(),
+                primaryColor: document.getElementById("brandPrimaryColor").value,
+                secondaryColor: document.getElementById("brandSecondaryColor").value,
+                courtType: document.getElementById("brandCourtType") ? document.getElementById("brandCourtType").value : "soccer",
+                updatedAt: new Date()
+            };
+            saveBtn.innerText = "Saving...";
+            await setDoc(doc(db, "config", `branding_${tid}`), data);
+            saveBtn.innerText = "Saved!";
+            setTimeout(() => saveBtn.innerText = "Save Branding", 2000);
+        });
+        saveBtn.dataset.bound = "true";
+    }
+    
+    const resetBtn = document.getElementById("resetBrandingBtn");
+    if (resetBtn && resetBtn.dataset.bound !== "true") {
+        resetBtn.addEventListener("click", async () => {
+            const tid = sel.value;
+            if(!tid) return;
+            if(confirm("Reset this team's branding to default?")) {
+                await deleteDoc(doc(db, "config", `branding_${tid}`));
+                loadTeamBranding();
+                alert("Branding reset.");
+            }
+        });
+        resetBtn.dataset.bound = "true";
+    }
 };
 
 // --- 3. GLOBAL MANAGEMENT ---

@@ -1,3 +1,17 @@
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
+  authDomain: "soccer.sstracker.app",
+  projectId: "soccer-skills-tracker",
+  storageBucket: "soccer-skills-tracker.firebasestorage.app",
+  messagingSenderId: "884044129977",
+  appId: "1:884044129977:web:47d54f59c891340e505d68"
+});
+
+const messaging = firebase.messaging();
+
 const CACHE_NAME = 'aggies-fc-v1';
 const ASSETS_TO_CACHE = [
     '/',
