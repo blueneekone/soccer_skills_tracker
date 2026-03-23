@@ -6,7 +6,7 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy
 import { dbData } from "./data.js";
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
-import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback } from "./modules/stats.js";
+import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, loadCoachScheduleAndHW, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard } from "./modules/coach.js";
 import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
@@ -40,6 +40,7 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
 window.globalClubs = [];
+window.globalStatsLogs = [];
 
 window.teamWorkouts = [];
 window.fetchTeamWorkouts = async (tid) => {
@@ -499,6 +500,7 @@ async function loadStats() {
         renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
         renderPlayerTrials(userProfile.playerName);
         loadPlayerFeedback(userProfile);
+        window.globalStatsLogs = logs;
     } catch (e) { console.error("Stats Load Error", e); }
 }
 
@@ -580,14 +582,18 @@ function getSessionDescription() {
 // ==========================================
 
 window.switchTrackerTab = (tabId) => {
-    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
+    ['trackerWarmup', 'trackerDrills'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn${id.charAt(0).toUpperCase() + id.slice(1)}`);
         if(pane) pane.classList.add('d-none');
         if(btn) btn.classList.remove('active');
     });
-    document.getElementById(tabId).classList.remove('d-none');
-    document.getElementById(`btn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+    
+    const targetPane = document.getElementById(tabId);
+    const targetBtn = document.getElementById(`btn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
+    
+    if(targetPane) targetPane.classList.remove('d-none');
+    if(targetBtn) targetBtn.classList.add('active');
 };
 
 const initApp = () => {
@@ -612,6 +618,7 @@ const initApp = () => {
     // HOME SCREEN DASHBOARD ACTIONS
     safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
     safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
+    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy', 'navTrophy'));
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
@@ -728,6 +735,8 @@ const getEmbedUrl = (url) => {
         document.getElementById("certDate").innerText = new Date().toLocaleDateString();
         document.getElementById("certModal").style.display = "block";
     });
+
+    safeBind("btnExportStatsCSV", "click", () => exportStatsCSV(window.globalStatsLogs, userProfile.playerName));
 
     safeBind("btnPrintStats", "click", () => {
         document.body.classList.add("printing-stats");

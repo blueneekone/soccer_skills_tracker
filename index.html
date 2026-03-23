@@ -162,13 +162,13 @@
         </div>
 
         <div id="viewTracker" class="view-section d-none">
-            <div class="coach-tabs-container" style="margin-bottom: 10px;">
-                <button id="btnTrackerWarmup" class="coach-tab-btn active" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
-                <button id="btnTrackerDrills" class="coach-tab-btn" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
-                <button id="btnTrackerReview" class="coach-tab-btn" onclick="window.switchTrackerTab('trackerReview')">✅ Review</button>
-            </div>
-
-            <div class="card">
+            <!-- Nested Div: Workout Builder -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0;">
+                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
+                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
+                </div>
+                
                 <div id="trackerWarmup" class="card-body">
                     <div class="tracker-box bg-orange m-0">
                         <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
@@ -184,7 +184,6 @@
                             <button id="addWarmupBtn" class="action-btn btn-orange">+ Add</button>
                         </div>
                     </div>
-                    <button class="primary-btn mt-15 w-100" onclick="window.switchTrackerTab('trackerDrills')">Next: Drills ➔</button>
                 </div>
 
                 <div id="trackerDrills" class="card-body d-none">
@@ -223,11 +222,13 @@
                             <button id="addBasicsBtn" class="action-btn btn-green">+ Add</button>
                         </div>
                     </div>
-                    <button class="primary-btn mt-15 w-100" onclick="window.switchTrackerTab('trackerReview')">Next: Plan Review ➔</button>
                 </div>
+            </div>
 
-                <div id="trackerReview" class="card-body d-none">
-                    <h4 class="tracker-plan-header mt-0">Your Training Plan</h4>
+            <!-- Persistent Review Card -->
+            <div class="card border-aggie-blue">
+                <div id="trackerReview" class="card-body bg-light-blue" style="border-radius: 8px;">
+                    <h4 class="tracker-plan-header mt-0" style="color:#00263A;">Your Training Plan</h4>
                     <ul id="sessionList" class="session-list">
                         <li class="session-empty">Empty. Select drills above to build your workout!</li>
                     </ul>
@@ -245,13 +246,13 @@
                             <div class="outcome-btn" data-val="Mastered"><span>🔥</span>Mastered</div>
                         </div>
 
-                        <label>Parent Signature</label>
+                        <label>Parent/Coach Signature</label>
                         <div class="signature-canvas-container">
                             <canvas id="signatureCanvas" class="signature-canvas"></canvas>
                             <button id="clearSigBtn" class="clear-sig-btn">✕ Clear</button>
                         </div>
 
-                        <button id="submitWorkoutBtn" class="primary-btn">💾 Log Workout (+XP)</button>
+                        <button id="submitWorkoutBtn" class="primary-btn mt-15" style="box-shadow: 0 4px 10px rgba(18, 163, 74, 0.4);">💾 Log Workout (+XP)</button>
                     </div>
                     
                     <label>Schedule This Workout</label>
@@ -330,9 +331,12 @@
         </div>
 
         <div id="viewStats" class="view-section d-none">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
                 <h2 class="view-title" style="margin-bottom:0;">Player Stats</h2>
-                <button id="btnPrintStats" class="secondary-btn" style="padding: 6px 12px; margin-bottom: 20px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark);">🖨️ Print Stats</button>
+                <div>
+                    <button id="btnExportStatsCSV" class="secondary-btn" style="padding: 6px 12px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark); margin-right: 5px;">📥 Export Detailed CSV</button>
+                    <button id="btnPrintStats" class="secondary-btn" style="padding: 6px 12px; font-size: 14px; background: white; border: 1px solid var(--text-muted); color: var(--text-dark);">🖨️ Print Stats</button>
+                </div>
             </div>
             
             <div class="card">
@@ -630,10 +634,14 @@
                         <button id="strategyFullscreenBtn" class="action-btn" style="margin:0;">⛶ Fullscreen</button>
                     </div>
                     <div class="card-body">
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items:center;">
-                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 40px; height: 36px; margin: 0; border: none; background: none; cursor: pointer;">
-                            <button id="strategyUndoBtn" class="secondary-btn flex-1" style="margin: 0;">Undo</button>
-                            <button id="strategyClearBtn" class="secondary-btn flex-1" style="margin: 0; background:#fee2e2; color:#b91c1c;">Clear</button>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items:center; flex-wrap:wrap;">
+                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" style="padding: 0; width: 36px; height: 36px; margin: 0; border: none; background: none; cursor: pointer;">
+                            <button id="strategyToolPen" class="secondary-btn active" style="margin: 0; padding:6px 10px; background:#e2e8f0;">✎ Pen</button>
+                            <button id="strategyToolArrow" class="secondary-btn" style="margin: 0; padding:6px 10px;">➔ Arrow</button>
+                            <button id="strategyToolX" class="secondary-btn" style="margin: 0; padding:6px 10px;">❌ X</button>
+                            <button id="strategyToolO" class="secondary-btn" style="margin: 0; padding:6px 10px;">⭕ O</button>
+                            <button id="strategyUndoBtn" class="secondary-btn" style="margin: 0; padding:6px 10px;">⏪ Undo</button>
+                            <button id="strategyClearBtn" class="secondary-btn" style="margin: 0; background:#fee2e2; color:#b91c1c; padding:6px 10px;">🗑️</button>
                             <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
                                 <label class="switch" title="Toggle Whiteboard Mode">
                                     <input type="checkbox" id="strategyBoardStyleToggle">
@@ -740,10 +748,10 @@
                     <table id="teamTable" class="admin-table">
                         <thead><tr><th>ID</th><th>Team Name</th><th>Parent Club</th><th>Coach Email</th></tr></thead><tbody></tbody>
                     </table>
-                    <div class="admin-input-row" style="flex-wrap: wrap; gap: 6px;">
+                    <div class="admin-input-row" style="display:flex; flex-wrap:wrap; gap:8px;">
                         <input type="text" id="newTeamId" class="team-id-input" placeholder="Team ID (e.g. b2015)">
                         <input type="text" id="newTeamName" placeholder="Team Name">
-                        <select id="newTeamClubId" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"></select>
+                        <select id="newTeamClubId" style="flex:1; min-width:120px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit;"></select>
                         <input type="text" id="newCoachEmail" placeholder="Coach Email">
                     </div>
                     <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>

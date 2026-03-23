@@ -689,72 +689,150 @@ export const initStrategyBoard = () => {
         fsBtn.dataset.bound = "true";
     }
     
+    let currentTool = "pen";
+    ['Pen', 'Arrow', 'X', 'O'].forEach(t => {
+        const btn = document.getElementById(`strategyTool${t}`);
+        if(btn) {
+            btn.onclick = () => {
+                document.querySelectorAll("#coachTabStrategy .secondary-btn").forEach(b => {
+                    if(b.id && b.id.startsWith("strategyTool")) { b.classList.remove("active"); b.style.background = ""; }
+                });
+                btn.classList.add("active");
+                btn.style.background = "#e2e8f0";
+                currentTool = t.toLowerCase();
+            };
+        }
+    });
+
     const resizeCanvas = () => {
         const rect = canvas.parentElement.getBoundingClientRect();
-        if(rect.width > 0) { canvas.width = rect.width; canvas.height = rect.height; redrawStrokes(); }
+        if(rect.width > 0 && rect.height > 0) { 
+            canvas.width = rect.width; 
+            canvas.height = rect.height; 
+            redrawStrokes(); 
+        }
     };
     
     window.addEventListener("resize", resizeCanvas);
+    if(window.ResizeObserver) new ResizeObserver(resizeCanvas).observe(canvas.parentElement);
     
     const ctx = canvas.getContext("2d");
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    
     let isDrawing = false;
     let strokes = [];
-    let currentStroke = [];
+    let currentStroke = null;
     
-    const getPos = (e) => {
+    const getNormalizedPos = (e) => {
         const r = canvas.getBoundingClientRect();
         const evt = e.touches ? e.touches[0] : e;
-        return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+        return { 
+            nx: (evt.clientX - r.left) / canvas.width, 
+            ny: (evt.clientY - r.top) / canvas.height 
+        };
     };
     
     const drawLine = (p1, p2, color) => {
         ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
+        ctx.moveTo(p1.nx * canvas.width, p1.ny * canvas.height);
+        ctx.lineTo(p2.nx * canvas.width, p2.ny * canvas.height);
         ctx.strokeStyle = color;
         ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke();
+    };
+
+    const drawDashedArrow = (p1, p2, color) => {
+        const startX = p1.nx * canvas.width; const startY = p1.ny * canvas.height;
+        const endX = p2.nx * canvas.width; const endY = p2.ny * canvas.height;
+        ctx.beginPath();
+        ctx.setLineDash([10, 10]);
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        const angle = Math.atan2(endY - startY, endX - startX);
+        const headlen = 15;
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.lineTo(endX, endY);
+        ctx.fillStyle = color;
+        ctx.fill();
+    };
+
+    const drawStamp = (p, type, color) => {
+        const x = p.nx * canvas.width;
+        const y = p.ny * canvas.height;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        if (type === 'x') {
+            ctx.moveTo(x - 10, y - 10); ctx.lineTo(x + 10, y + 10);
+            ctx.moveTo(x + 10, y - 10); ctx.lineTo(x - 10, y + 10);
+        } else if (type === 'o') {
+            ctx.arc(x, y, 12, 0, 2 * Math.PI);
+        }
         ctx.stroke();
     };
     
     const redrawStrokes = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        strokes.forEach(stroke => {
-            const color = stroke.color;
-            for(let i=1; i<stroke.points.length; i++){
-                drawLine(stroke.points[i-1], stroke.points[i], color);
+        strokes.forEach(s => {
+            if (s.tool === 'pen') {
+                for(let i=1; i<s.points.length; i++) drawLine(s.points[i-1], s.points[i], s.color);
+            } else if (s.tool === 'arrow') {
+                if(s.points.length >= 2) drawDashedArrow(s.points[0], s.points[s.points.length-1], s.color);
+            } else if (s.tool === 'x' || s.tool === 'o') {
+                drawStamp(s.points[0], s.tool, s.color);
             }
         });
+        if (isDrawing && currentStroke) {
+            if (currentStroke.tool === 'pen') {
+                for(let i=1; i<currentStroke.points.length; i++) drawLine(currentStroke.points[i-1], currentStroke.points[i], currentStroke.color);
+            } else if (currentStroke.tool === 'arrow') {
+                if(currentStroke.points.length >= 2) drawDashedArrow(currentStroke.points[0], currentStroke.points[currentStroke.points.length-1], currentStroke.color);
+            }
+        }
     };
     
     const startDrawing = (e) => {
         if(e.button !== undefined && e.button !== 0) return;
-        resizeCanvas();
+        if(canvas.width === 0) resizeCanvas();
         isDrawing = true;
-        currentStroke = { color: document.getElementById("strategyColor").value, points: [getPos(e)] };
+        currentStroke = { tool: currentTool, color: document.getElementById("strategyColor").value, points: [getNormalizedPos(e)] };
+        
+        if (currentTool === 'x' || currentTool === 'o') {
+            strokes.push(currentStroke);
+            currentStroke = null;
+            isDrawing = false;
+            redrawStrokes();
+        }
     };
     
     const draw = (e) => {
-        if (!isDrawing) return;
+        if (!isDrawing || !currentStroke) return;
         e.preventDefault();
-        const pos = getPos(e);
-        const lastPos = currentStroke.points[currentStroke.points.length - 1];
-        drawLine(lastPos, pos, currentStroke.color);
+        const pos = getNormalizedPos(e);
         currentStroke.points.push(pos);
+        redrawStrokes();
     };
     
     const stopDrawing = () => {
         if (!isDrawing) return;
         isDrawing = false;
-        if(currentStroke.points.length > 1) strokes.push(currentStroke);
+        if (currentStroke && currentStroke.points.length > 0) strokes.push(currentStroke);
+        currentStroke = null;
+        redrawStrokes();
     };
     
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     window.addEventListener("mouseup", stopDrawing);
-    
     canvas.addEventListener("touchstart", startDrawing, {passive: false});
     canvas.addEventListener("touchmove", draw, {passive: false});
     window.addEventListener("touchend", stopDrawing);
@@ -768,4 +846,6 @@ export const initStrategyBoard = () => {
         strokes = [];
         redrawStrokes();
     });
+    
+    setTimeout(resizeCanvas, 300);
 };

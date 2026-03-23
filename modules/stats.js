@@ -180,3 +180,33 @@ export const renderPlayerTrials = async (playerName) => {
         `).join("");
     } catch(e) { console.error(e); }
 };
+
+export const exportStatsCSV = (logs, playerName) => {
+    if (!logs || logs.length === 0) return alert("No logs found to export.");
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Time,Player,Minutes,Drills / Workout Type\n";
+    logs.forEach(log => {
+        const d = log.timestamp ? log.timestamp.toDate() : new Date();
+        const dateStr = d.toLocaleDateString();
+        const timeStr = d.toLocaleTimeString();
+        let drills = "";
+        if (log.drills && Array.isArray(log.drills)) {
+            drills = log.drills.map(x => x.name).join("; ");
+        } else if (typeof log.drill === "string") {
+            drills = log.drill;
+        } else {
+            drills = log.workoutType || "Custom Session";
+        }
+        
+        drills = drills.replace(/"/g, '""');
+        csvContent += `"${dateStr}","${timeStr}","${log.player}","${log.minutes}","${drills}"\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${(playerName||"Export").replace(/\s+/g, '_')}_Stats_Export.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
