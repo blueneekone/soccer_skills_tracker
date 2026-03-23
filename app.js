@@ -157,9 +157,22 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
+window.checkStandalone = () => {
+    // Check if the app is running in a browser OR installed on the home screen
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const pwaPrompt = document.getElementById("pwaInstallPrompt");
+    
+    if (pwaPrompt) {
+        // Only show the prompt if they are NOT installed AND they are on the login screen
+        if (!isStandalone) {
+            pwaPrompt.style.display = 'block';
+        } else {
+            pwaPrompt.style.display = 'none';
+        }
+    }
+};
+
 window.currentCourtType = "soccer";
-
-
 
 window.applySportCourt = (courtType, targetMode, targetBgIds, targetLineIds) => {
     let bgCol = "#ffffff", lineCol = targetMode === 'whiteboard' ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.4)";
@@ -607,6 +620,7 @@ const initApp = () => {
     
     checkMobileRedirect();
     checkStandalone();
+    window.checkStandalone();
 
     // --- 1. AUTH BINDINGS (via modules/auth.js) ---
     safeBind("loginGoogleBtn", "click", handleGoogleLogin);
@@ -1024,6 +1038,7 @@ else initApp();
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
+        document.getElementById("pwaInstallPrompt").style.display='none'; // <--- ADD THIS LINE
         try {
             await fetchConfig();
             const userRef = doc(db, "users", user.email);
