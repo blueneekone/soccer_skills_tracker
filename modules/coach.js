@@ -566,22 +566,31 @@ window.initGamedayRoster = async (tid, playerList, jerseys) => {
         let x = pt.clientX - pitchRect.left;
         let y = pt.clientY - pitchRect.top;
         
-        x = Math.max(0, Math.min(x, pitchRect.width));
-        y = Math.max(0, Math.min(y, pitchRect.height));
-        
         activePin.style.left = `${(x / pitchRect.width) * 100}%`;
         activePin.style.top = `${(y / pitchRect.height) * 100}%`;
     };
     
     const onEnd = () => {
         if(!activePin) return;
+        const pitchRect = pitch.getBoundingClientRect();
+        const pinRect = activePin.getBoundingClientRect();
+        const px = pinRect.left + pinRect.width/2;
+        const py = pinRect.top + pinRect.height/2;
+
+        if (px < pitchRect.left || px > pitchRect.right || py < pitchRect.top || py > pitchRect.bottom) {
+            activePin.style.position = "relative";
+            activePin.style.left = ""; activePin.style.top = ""; activePin.style.transform = "none";
+            bench.appendChild(activePin);
+        } else {
+            activePin.style.transform = `translate(-50%, -50%) scale(1)`;
+        }
+
+        activePin.style.zIndex = "10";
+        activePin = null;
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onEnd);
         document.removeEventListener("touchmove", onMove);
         document.removeEventListener("touchend", onEnd);
-        activePin.style.transform = `translate(-50%, -50%) scale(1)`;
-        activePin.style.zIndex = 10;
-        activePin = null;
     };
     
     const onStart = (e, pin) => {
@@ -627,27 +636,7 @@ window.initGamedayRoster = async (tid, playerList, jerseys) => {
         pin.addEventListener("mousedown", (e) => onStart(e, pin));
         pin.addEventListener("touchstart", (e) => onStart(e, pin), {passive: false});
     });
-    
-    let lastTap = 0;
-    pitch.addEventListener("touchend", (e) => {
-        const t = new Date().getTime();
-        if(t - lastTap < 300 && e.target.classList.contains("player-pin")) {
-            const pin = e.target;
-            pin.style.position = "relative";
-            pin.style.left = ""; pin.style.top = ""; pin.style.transform = "none";
-            bench.appendChild(pin);
-        }
-        lastTap = t;
-    });
-    pitch.addEventListener("dblclick", (e) => {
-        if(e.target.classList.contains("player-pin")) {
-            const pin = e.target;
-            pin.style.position = "relative";
-            pin.style.left = ""; pin.style.top = ""; pin.style.transform = "none";
-            bench.appendChild(pin);
-        }
-    });
-    
+
     const saveBtn = document.getElementById("saveGamedayRosterBtn");
     if(saveBtn) saveBtn.onclick = async () => {
         const positions = {};
@@ -687,6 +676,27 @@ export const initStrategyBoard = () => {
             }
         });
         fsBtn.dataset.bound = "true";
+        
+        document.addEventListener('fullscreenchange', () => {
+            const isFS = !!document.fullscreenElement;
+            const bg = document.getElementById("strategyPitchBg");
+            if(isFS) {
+                bg.style.aspectRatio = "unset";
+                bg.style.flex = "1";
+                bg.parentElement.style.display = "flex";
+                bg.parentElement.style.flexDirection = "column";
+                bg.parentElement.style.height = "100vh";
+            } else {
+                bg.style.aspectRatio = "4/3";
+                bg.style.flex = "";
+                bg.parentElement.style.display = "";
+                bg.parentElement.style.flexDirection = "";
+                bg.parentElement.style.height = "";
+            }
+            // Trigger 2 resizes because CSS flex-box sometimes delays
+            setTimeout(resizeCanvas, 50);
+            setTimeout(resizeCanvas, 200);
+        });
     }
     
     let currentTool = "pen";
@@ -767,25 +777,19 @@ export const initStrategyBoard = () => {
     const drawStamp = (p, type, color) => {
         const x = p.nx * canvas.width;
         const y = p.ny * canvas.height;
-        ctx.save();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 6;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        ctx.shadowColor = 'rgba(0,0,0,0.3)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
         ctx.beginPath();
         if (type === 'x') {
-            const s = 12;
+            const s = 14;
             ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s);
             ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s);
         } else if (type === 'o') {
-            ctx.arc(x, y, 14, 0, 2 * Math.PI);
+            ctx.arc(x, y, 16, 0, 2 * Math.PI);
         }
         ctx.stroke();
-        ctx.restore();
     };
     
     const redrawStrokes = () => {
@@ -810,7 +814,9 @@ export const initStrategyBoard = () => {
     
     const startDrawing = (e) => {
         if(e.button !== undefined && e.button !== 0) return;
-        if(canvas.width === 0) resizeCanvas();
+        if(e.type.startsWith('touch')) e.preventDefault();
+        
+        if(canvas.width === 0 || canvas.height === 0) resizeCanvas();
         isDrawing = true;
         currentStroke = { tool: currentTool, color: document.getElementById("strategyColor").value, points: [getNormalizedPos(e)] };
         

@@ -596,19 +596,37 @@ window.switchTrackerTab = (tabId) => {
         if(pane) pane.classList.add('d-none');
         if(btn) btn.classList.remove('active');
     });
-    
     const targetPane = document.getElementById(tabId);
     const targetBtn = document.getElementById(`btn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
-    
     if(targetPane) targetPane.classList.remove('d-none');
     if(targetBtn) targetBtn.classList.add('active');
 };
 
+const checkStandalone = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isMobile && !isStandalone) {
+        document.getElementById('pwaInstallPrompt').style.display = 'block';
+    }
+};
+
 const initApp = () => {
-    console.log("App v38 Loaded (History API + Clean Nav + No Debug)");
+    console.log("App v39 Loaded (Firebase PWA Webview Fix)");
+    
+    checkMobileRedirect();
+    
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            checkStandalone(); // Check post-login too just in case
+            await loadUserRole(user.email);
+        } else {
+            document.getElementById("loginUI").classList.remove('d-none');
+            document.getElementById("appUI").classList.add('d-none');
+            checkStandalone();
+        }
+    });
 
     // --- 1. AUTH BINDINGS (via modules/auth.js) ---
-    checkMobileRedirect();
     safeBind("loginGoogleBtn", "click", handleGoogleLogin);
     safeBind("loginEmailBtn", "click", handleEmailLogin);
     safeBind("signupEmailBtn", "click", handleEmailSignup);

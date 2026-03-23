@@ -40,6 +40,16 @@
             <button id="loginEmailBtn" class="primary-btn btn-mb-10">Sign In</button>
             <button id="signupEmailBtn" class="secondary-btn w-100">Create Account</button>
         </div>
+        
+        <div id="pwaInstallPrompt" style="display:none; position:absolute; bottom:0; left:0; right:0; background:#00263A; color:white; padding:20px; border-top-left-radius:15px; border-top-right-radius:15px; box-shadow:0 -5px 15px rgba(0,0,0,0.3); z-index:100; text-align:center;">
+            <h3 style="margin-top:0; color:#BFAE5A;">📲 Install the App!</h3>
+            <p style="font-size:13px; margin-bottom:15px; line-height:1.4;">To login and save your stats securely, you must install the app to your device.</p>
+            <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; font-size:13px; margin-bottom:15px;">
+                <b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then scroll down and tap <b>Add to Home Screen</b>.<br><br>
+                <b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
+            </div>
+            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'" class="secondary-btn w-100" style="background:#f8fafc; color:#0f172a; border:none;">Continue in Browser (Not Recommended)</button>
+        </div>
     </div>
 
     <div id="setupUI" class="full-screen-center d-none">
@@ -129,7 +139,7 @@
 
                 <div class="card dash-card border-gray d-none" id="btnHomeCoach">
                     <div class="dash-card-body">
-                        <div class="dash-icon">👟</div>
+                        <div class="dash-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5H4V9H7A5 5 0 0 0 12 14c2.76 0 5-2.24 5-5A5 5 0 0 0 12 2zM12 4C13.66 4 15 5.34 15 7s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zM21 16H3v2H21v-2zM4 19H20v2H4v-2z"/></svg></div>
                         <div class="dash-label">Coach Tools</div>
                     </div>
                 </div>
@@ -398,7 +408,10 @@
         </div>
 
         <div id="viewTrophy" class="view-section d-none">
-            <h2 class="view-title">Trophy Room</h2>
+            <h2 class="view-title" style="display:flex; justify-content:space-between; align-items:center;">
+                🏆 TROPHY ROOM
+                <button class="secondary-btn" style="margin:0; font-size:12px; padding:6px 12px;" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
+            </h2>
             <div class="card">
                 <div class="card-header trophy-header">RANK MEDALS</div>
                 <div class="card-body text-center overflow-x-auto">

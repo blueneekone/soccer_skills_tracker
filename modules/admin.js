@@ -13,25 +13,25 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     window.editClubDirector = async (cid) => {
         const cObj = globalClubs.find(x => x.id === cid);
         if(!cObj) return;
-        const e = prompt(`Assign new Director Email for ${cObj.name}:`, cObj.directorEmail || "");
-        if(e !== null) {
-            cObj.directorEmail = e.trim().toLowerCase();
-            await setDoc(doc(db, "config", "clubs"), { list: globalClubs });
-            renderAdminTables(globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail);
-            alert("Director Role Updated.");
-        }
+        const e = document.getElementById('clubDirInp_' + cid).value;
+        cObj.directorEmail = e.trim().toLowerCase();
+        await setDoc(doc(db, "config", "clubs"), { list: globalClubs });
+        renderAdminTables(globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail);
+        alert("Director Role Updated.");
     };
     
     window.editTeamCoach = async (tid) => {
         const tObj = globalTeams.find(x => x.id === tid);
         if(!tObj) return;
-        const e = prompt(`Assign new Head Coach Email for ${tObj.name}:`, tObj.coachEmail || "");
-        if(e !== null) {
-            tObj.coachEmail = e.trim().toLowerCase();
-            await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-            renderAdminTables(globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail);
-            alert("Coach Role Updated.");
-        }
+        const e = document.getElementById('teamCoachInp_' + tid).value;
+        tObj.coachEmail = e.trim().toLowerCase();
+        
+        const csl = document.getElementById('teamClubSel_' + tid);
+        if(csl) tObj.clubId = csl.value;
+        
+        await setDoc(doc(db, "config", "teams"), { list: globalTeams });
+        renderAdminTables(globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail);
+        alert("Team Assigned updated.");
     };
     
     window.removeAdmin = async (email) => {
@@ -46,12 +46,14 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     };
 
     const c = document.getElementById("clubTable");
-    if (c) c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${cl.id}</td><td>${cl.name}</td><td>${cl.directorEmail || ''} <button class="action-btn text-blue" style="font-size:10px; padding:2px 4px; border-radius:4px; float:right;" onclick="window.editClubDirector('${cl.id}')">✎</button></td></tr>`).join("");
+    if (c) {
+        c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${cl.id}</td><td>${cl.name}</td><td><div style="display:flex; gap:4px;"><input type="email" id="clubDirInp_${cl.id}" value="${cl.directorEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue" style="padding:4px 8px; border-radius:4px;" onclick="window.editClubDirector('${cl.id}')">💾</button></div></td></tr>`).join("");
+    }
 
     const tc = document.getElementById("newTeamClubId");
     if (tc) {
         const cList = isSuper ? (globalClubs || []) : (globalClubs || []).filter(cl => cl.directorEmail && cl.directorEmail.toLowerCase() === (userEmail||"").toLowerCase());
-        tc.innerHTML = cList.map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("");
+        tc.innerHTML = `<option value="">-- Select Parent Club --</option>` + cList.map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("");
     }
 
     const t = document.getElementById("teamTable"); 
@@ -60,7 +62,16 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
             const club = (globalClubs || []).find(cb => cb.id === tm.clubId);
             return club && club.directorEmail && club.directorEmail.toLowerCase() === (userEmail||"").toLowerCase();
         });
-        t.querySelector("tbody").innerHTML = tList.map(tm => `<tr><td>${tm.name} <span class="text-sm-sub">(${tm.id})</span></td><td>${tm.clubId || 'N/A'}</td><td>${tm.coachEmail} <button class="action-btn text-blue" style="font-size:10px; padding:2px 4px; border-radius:4px; float:right;" onclick="window.editTeamCoach('${tm.id}')">✎</button></td></tr>`).join("");
+        
+        const clubOptionsHtml = isSuper ? (globalClubs || []).map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("") : "";
+        
+        t.querySelector("tbody").innerHTML = tList.map(tm => {
+            let clubSelectHtml = tm.clubId || 'N/A';
+            if (isSuper) {
+                clubSelectHtml = `<select id="teamClubSel_${tm.id}" style="margin:0; padding:4px; max-width:80px;"><option value="${tm.clubId}">${tm.clubId||'UNASSIGNED'}</option><option disabled>---</option>${clubOptionsHtml}</select>`;
+            }
+            return `<tr><td>${tm.name} <span class="text-sm-sub">(${tm.id})</span></td><td>${clubSelectHtml}</td><td><div style="display:flex; gap:4px;"><input type="email" id="teamCoachInp_${tm.id}" value="${tm.coachEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue" style="padding:4px 8px; border-radius:4px;" onclick="window.editTeamCoach('${tm.id}')">💾</button></div></td></tr>`;
+        }).join("");
     }
     
     const a = document.getElementById("adminTable");
