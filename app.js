@@ -138,6 +138,19 @@ const setText = (id, text) => {
 
 window.currentCourtType = "soccer";
 
+window.switchTrackerTab = (tabId) => {
+    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
+        const pane = document.getElementById(id);
+        const btn = document.getElementById(`btn-${id}`);
+        if(pane) pane.classList.add('d-none');
+        if(btn) btn.classList.remove('active');
+    });
+    const activePane = document.getElementById(tabId);
+    const activeBtn = document.getElementById(`btn-${tabId}`);
+    if (activePane) activePane.classList.remove('d-none');
+    if (activeBtn) activeBtn.classList.add('active');
+};
+
 window.applySportCourt = (courtType, targetMode, targetBgIds, targetLineIds) => {
     let bgCol = "#ffffff", lineCol = targetMode === 'whiteboard' ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.4)";
     if (targetMode !== 'whiteboard') {
@@ -195,6 +208,7 @@ async function applyTeamBranding(teamId) {
     if(!teamId) return;
     try {
         const snap = await getDoc(doc(db, "config", `branding_${teamId}`));
+        let ct = "soccer";
         if(snap.exists()) {
             const data = snap.data();
             if(data.primaryColor) document.documentElement.style.setProperty('--aggie-blue', data.primaryColor);
@@ -209,16 +223,13 @@ async function applyTeamBranding(teamId) {
                     el.style.border = `4px solid ${data.secondaryColor || 'var(--aggie-gold)'}`;
                 });
             }
-            
-            // Apply court type
-            const ct = data.courtType || "soccer";
-            window.currentCourtType = ct;
-            
-            const styleToggle = document.getElementById("strategyBoardStyleToggle");
-            const strategyMode = (styleToggle && styleToggle.checked) ? 'whiteboard' : 'realistic';
-            window.applySportCourt(ct, strategyMode, ["strategyPitchBg"], ["strategyPitchLines"]);
-            window.applySportCourt(ct, 'realistic', ["gamedayPitchBg"], ["gamedayPitchLines"]);
+            ct = data.courtType || "soccer";
         }
+        window.currentCourtType = ct;
+        const styleToggle = document.getElementById("strategyBoardStyleToggle");
+        const strategyMode = (styleToggle && styleToggle.checked) ? 'whiteboard' : 'realistic';
+        window.applySportCourt(ct, strategyMode, ["strategyPitchBg"], ["strategyPitchLines"]);
+        window.applySportCourt(ct, 'realistic', ["gamedayPitchBg"], ["gamedayPitchLines"]);
     } catch(e) { console.error("Error applying branding", e); }
 }
 
@@ -238,9 +249,12 @@ async function requestPushPermissions(userEmail) {
 async function fetchConfig() {
     try {
         const d = await getDoc(doc(db, "config", "teams"));
-        if(d.exists()) globalTeams = d.data().list; else globalTeams = dbData.teams;
+        const tList = d.exists() ? d.data().list : null;
+        globalTeams = (tList && tList.length > 0) ? tList : (typeof dbData !== 'undefined' ? dbData.teams : []);
+        
         const a = await getDoc(doc(db, "config", "admins"));
-        if(a.exists()) globalAdmins = a.data().list;
+        const aList = a.exists() ? a.data().list : null;
+        globalAdmins = (aList && aList.length > 0) ? aList : [DIRECTOR_EMAIL];
     } catch(e) { 
         if(typeof dbData !== 'undefined') globalTeams = dbData.teams; 
     }

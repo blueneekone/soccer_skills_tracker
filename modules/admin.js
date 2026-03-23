@@ -39,10 +39,10 @@ export const runSecurityScan = () => {
 // --- 2. ADMIN DASHBOARD TABLES ---
 export const renderAdminTables = (globalTeams, globalAdmins) => {
     const t = document.getElementById("teamTable"); 
-    if(t) t.querySelector("tbody").innerHTML = globalTeams.map(t => `<tr><td>${t.id}</td><td>${t.name}</td><td>${t.coachEmail}</td></tr>`).join("");
+    if(t) t.querySelector("tbody").innerHTML = (globalTeams || []).map(tm => `<tr><td>${tm.id}</td><td>${tm.name}</td><td>${tm.coachEmail}</td></tr>`).join("");
     
     const a = document.getElementById("adminTable");
-    if(a) a.querySelector("tbody").innerHTML = globalAdmins.map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
+    if(a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${e}</td><td><button class="delete-btn">Del</button></td></tr>`).join("");
     
     initBrandingPanel(globalTeams);
 };
@@ -50,7 +50,7 @@ export const renderAdminTables = (globalTeams, globalAdmins) => {
 export const initBrandingPanel = async (globalTeams) => {
     const sel = document.getElementById("brandingTeamSelect");
     if(!sel) return;
-    sel.innerHTML = globalTeams.map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("");
+    sel.innerHTML = (globalTeams || []).map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("");
     
     const loadTeamBranding = async () => {
         const tid = sel.value;

@@ -502,7 +502,7 @@ window.submitCoachTrial = async () => {
 
 // --- COACH DASHBOARD TABS ---
 window.switchCoachTab = (tabId) => {
-    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabTools'].forEach(id => {
+    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabStrategy', 'coachTabTools'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn-${id}`);
         if(pane) pane.classList.add('d-none');
@@ -644,11 +644,28 @@ export const initStrategyBoard = () => {
         });
         styleToggle.dataset.bound = "true";
     }
+
+    const fsBtn = document.getElementById("strategyFullscreenBtn");
+    if(fsBtn && fsBtn.dataset.bound !== "true") {
+        fsBtn.addEventListener("click", () => {
+            const el = document.getElementById("strategyBoardCard");
+            if (!document.fullscreenElement) {
+                if (el.requestFullscreen) el.requestFullscreen().catch(err => console.log(err));
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+        fsBtn.dataset.bound = "true";
+    }
     
     const resizeCanvas = () => {
         const rect = canvas.parentElement.getBoundingClientRect();
         if(rect.width > 0) { canvas.width = rect.width; canvas.height = rect.height; redrawStrokes(); }
     };
+    
+    window.addEventListener("resize", resizeCanvas);
     
     const ctx = canvas.getContext("2d");
     ctx.lineCap = "round";
