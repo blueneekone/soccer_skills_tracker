@@ -608,7 +608,7 @@ window.initGamedayRoster = async (tid, playerList, jerseys) => {
     playerList.forEach(p => {
         const pin = document.createElement("div");
         pin.className = "player-pin";
-        pin.innerHTML = jerseys[p] || p.substring(0,2).toUpperCase();
+        pin.innerHTML = `${jerseys[p] || p.substring(0,2).toUpperCase()}<div style="position:absolute; top:110%; left:50%; transform:translateX(-50%); font-size:10px; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:4px; white-space:nowrap; pointer-events:none; font-weight:normal;">${p}</div>`;
         pin.title = p;
         pin.dataset.player = p;
         
@@ -767,17 +767,25 @@ export const initStrategyBoard = () => {
     const drawStamp = (p, type, color) => {
         const x = p.nx * canvas.width;
         const y = p.ny * canvas.height;
+        ctx.save();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
         ctx.beginPath();
         if (type === 'x') {
-            ctx.moveTo(x - 10, y - 10); ctx.lineTo(x + 10, y + 10);
-            ctx.moveTo(x + 10, y - 10); ctx.lineTo(x - 10, y + 10);
+            const s = 12;
+            ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s);
+            ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s);
         } else if (type === 'o') {
-            ctx.arc(x, y, 12, 0, 2 * Math.PI);
+            ctx.arc(x, y, 14, 0, 2 * Math.PI);
         }
         ctx.stroke();
+        ctx.restore();
     };
     
     const redrawStrokes = () => {

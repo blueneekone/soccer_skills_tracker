@@ -129,7 +129,7 @@
 
                 <div class="card dash-card border-gray d-none" id="btnHomeCoach">
                     <div class="dash-card-body">
-                        <div class="dash-icon">哨</div>
+                        <div class="dash-icon">👟</div>
                         <div class="dash-label">Coach Tools</div>
                     </div>
                 </div>
@@ -534,8 +534,8 @@
                     <div class="card-header hw-header">🎯 Assign Homework</div>
                     <div class="card-body">
                         <label>1. Select Players & Due Date</label>
-                        <div class="flex-gap-10">
-                            <div class="multi-select-container flex-1" style="position:relative;">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center;">
+                            <div class="multi-select-container" style="flex:1; min-width:200px; position:relative;">
                                 <div id="hwPlayerSelectBtn" style="padding:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; cursor:pointer; font-size:14px; color:#475569;">Select Players... ⏷</div>
                                 <div id="hwPlayerChecklist" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; z-index:1000; max-height:200px; overflow-y:auto; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-top:5px; padding:10px;">
                                     <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #eee;">
@@ -550,11 +550,11 @@
                         <label>2. Build the Workout</label>
                         <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
                         
-                        <div class="hw-drill-input-row">
-                            <input type="number" id="hwSets" placeholder="Sets" value="3">
+                        <div style="display:flex; gap:10px; align-items:center; margin-top:10px; margin-bottom:15px; flex-wrap:wrap;">
+                            <input type="number" id="hwSets" placeholder="Sets" value="3" style="width:80px; margin:0;">
                             <span>x</span>
-                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20">
-                            <button id="addHwDrillBtn" class="secondary-btn">+ Add Drill</button>
+                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" style="width:100px; margin:0;">
+                            <button id="addHwDrillBtn" class="secondary-btn" style="margin:0; flex:1; min-width:100px;">+ Add Drill</button>
                         </div>
                         
                         <ul id="hwBuilderList" class="session-list hw-builder-list">
@@ -666,7 +666,7 @@
                         <label>Bench Players</label>
                         <div id="rosterBench" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 40px; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px;"></div>
                         
-                        <label>Starting Lineup (Drag & Drop)</label>
+                        <label>Starting Lineup <span style="font-weight:normal; font-size:11px; color:#475569;">(Drag & Drop, or Double-Tap to Bench)</span></label>
                         <div id="gamedayPitchBg" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #2f855a; border: 2px solid #fff; border-radius: 8px; overflow: hidden; touch-action: none;">
                             <div id="gamedayPitchLines" style="position: absolute; top:0; bottom:0; left:0; right:0; margin: 5%; pointer-events: none;"></div>
                             <div id="pitchPinsContainer" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
@@ -757,6 +757,16 @@
                     <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>
                 </div>
             </div>
+            
+            <div class="card" id="adminMigrateCard">
+                <div class="card-header bg-red-header">🛠️ Support Migration Tools</div>
+                <div class="card-body">
+                    <p class="export-desc" style="text-align:left; margin-bottom:10px;">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
+                    <select id="migrateTargetTeam" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;"><option value="">Loading Teams...</option></select>
+                    <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100" style="background:#dc2626;">Execute Legacy Fix</button>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">Global Directors</div>
                 <div class="card-body">

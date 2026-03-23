@@ -39,6 +39,25 @@ let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
+window.syncDefaultWorkouts = async (overrideTeamId) => {
+    const tid = overrideTeamId || currentCoachTeamId;
+    if (!tid) return alert("Select a team in Coach Tools first!");
+    if (!overrideTeamId && !confirm("Add 30+ default drills from legacy data.js to this team?")) return;
+    try {
+        const promises = dbData.foundationSkills.map(drill => {
+            return addDoc(collection(db, "workouts"), {
+                ...drill,
+                teamId: tid,
+                createdBy: "System Migration"
+            });
+        });
+        await Promise.all(promises);
+        if(!overrideTeamId) {
+            alert("Defaults synced! Reloading workouts...");
+            if(window.loadTeamWorkouts) window.loadTeamWorkouts(tid);
+        }
+    } catch(e) { console.error(e); alert("Error syncing defaults."); }
+};
 window.globalClubs = [];
 window.globalStatsLogs = [];
 
@@ -140,18 +159,7 @@ const setText = (id, text) => {
 
 window.currentCourtType = "soccer";
 
-window.switchTrackerTab = (tabId) => {
-    ['trackerWarmup', 'trackerDrills', 'trackerReview'].forEach(id => {
-        const pane = document.getElementById(id);
-        const btn = document.getElementById(`btn-${id}`);
-        if(pane) pane.classList.add('d-none');
-        if(btn) btn.classList.remove('active');
-    });
-    const activePane = document.getElementById(tabId);
-    const activeBtn = document.getElementById(`btn-${tabId}`);
-    if (activePane) activePane.classList.remove('d-none');
-    if (activeBtn) activeBtn.classList.add('active');
-};
+
 
 window.applySportCourt = (courtType, targetMode, targetBgIds, targetLineIds) => {
     let bgCol = "#ffffff", lineCol = targetMode === 'whiteboard' ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.4)";
