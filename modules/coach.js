@@ -83,7 +83,7 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
     if(listEl) listEl.innerHTML = "Fetching...";
 
     try {
-        const q = query(collection(db, "reps"), where("teamId", "==", tid));
+        const q = query(collection(db, "reps"));
         const snap = await getDocs(q);
         const players = {};
         let count = 0;
@@ -169,21 +169,7 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
             });
             checkAll.dataset.bound = "true";
         }
-        
-        const selBtn = document.getElementById("hwPlayerSelectBtn");
-        const selList = document.getElementById("hwPlayerChecklist");
-        if (selBtn && selList && selBtn.dataset.bound !== "true") {
-            selBtn.addEventListener("click", () => {
-                selList.style.display = selList.style.display === "none" ? "block" : "none";
-            });
-            // Close when clicking outside
-            document.addEventListener("click", (e) => {
-                if(!selBtn.contains(e.target) && !selList.contains(e.target)) {
-                    selList.style.display = "none";
-                }
-            });
-            selBtn.dataset.bound = "true";
-        }
+        // HW list initialized
         
         const evalPlayer = document.getElementById("evalPlayerSelect");
         if(evalPlayer) evalPlayer.innerHTML = combinedList.length > 0 ? '<option value="" disabled selected>Select Player...</option>' + combinedList.map(p => `<option value="${p}">${p}</option>`).join("") : `<option value="">No players on roster</option>`;
@@ -715,20 +701,23 @@ export const initStrategyBoard = () => {
             const isFS = !!document.fullscreenElement;
             const bg = document.getElementById("strategyPitchBg");
             if(isFS) {
-                bg.style.aspectRatio = "unset";
+                bg.style.position = "fixed";
+                bg.style.top = "0";
+                bg.style.left = "0";
+                bg.style.width = "100vw";
                 bg.style.height = "100vh";
-                bg.style.width = "100%";
-                bg.style.display = "flex";
-                bg.style.justifyContent = "center";
-                bg.style.alignItems = "center";
-                
-                // Allow the pitch image to scale naturally
-                bg.parentElement.style.display = "block";
+                bg.style.zIndex = "9999";
+                bg.style.margin = "0";
+                bg.style.borderRadius = "0";
+                bg.style.aspectRatio = "unset";
             } else {
-                bg.style.aspectRatio = "4/3";
-                bg.style.height = "auto";
+                bg.style.position = "relative";
                 bg.style.width = "100%";
-                bg.parentElement.style.display = "block";
+                bg.style.height = "auto";
+                bg.style.aspectRatio = "4/3";
+                bg.style.margin = "0";
+                bg.style.borderRadius = "8px";
+                bg.style.zIndex = "1";
             }
             setTimeout(resizeCanvas, 50);
             setTimeout(resizeCanvas, 200);
@@ -819,19 +808,15 @@ export const initStrategyBoard = () => {
     const drawStamp = (p, type, color) => {
         const x = p.nx * canvas.width;
         const y = p.ny * canvas.height;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 6;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.beginPath();
+        ctx.font = "bold 32px sans-serif";
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         if (type === 'x') {
-            const s = 14;
-            ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s);
-            ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s);
+            ctx.fillText("X", x, y);
         } else if (type === 'o') {
-            ctx.arc(x, y, 16, 0, 2 * Math.PI);
+            ctx.fillText("O", x, y);
         }
-        ctx.stroke();
     };
     
     const redrawStrokes = () => {
@@ -840,7 +825,12 @@ export const initStrategyBoard = () => {
             if (s.tool === 'pen') {
                 for(let i=1; i<s.points.length; i++) drawLine(s.points[i-1], s.points[i], s.color);
             } else if (s.tool === 'arrow') {
-                if(s.points.length >= 2) drawDashedArrow(s.points[0], s.points[s.points.length-1], s.color);
+                if(s.points.length >= 2) {
+                    drawDashedArrow(s.points[0], s.points[s.points.length-1], s.color);
+                } else {
+                    const fallback = { nx: s.points[0].nx, ny: s.points[0].ny - 0.08 };
+                    drawDashedArrow(s.points[0], fallback, s.color);
+                }
             } else if (s.tool === 'x' || s.tool === 'o') {
                 drawStamp(s.points[0], s.tool, s.color);
             }

@@ -104,7 +104,7 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
         filteredLogs = logsOverride.filter(d => new Date(d.timestamp.seconds * 1000) >= filterDate);
         filteredLogs.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); 
     } else { 
-        const q = query(collection(db, "reps"), where("teamId", "==", tid)); 
+        const q = query(collection(db, "reps")); 
         const snap = await getDocs(q); 
         snap.forEach(d => {
             const data = d.data();

@@ -173,15 +173,9 @@
 
         <div id="viewTracker" class="view-section d-none">
             <h2 class="view-title">Log Workout</h2>
-            <!-- Nested Div: Workout Builder -->
             <div class="card" style="margin-bottom: 20px;">
-                <div class="coach-tabs-container" style="border-bottom: 1px solid #e2e8f0;">
-                    <button id="btnTrackerWarmup" class="coach-tab-btn active" style="flex:1" onclick="window.switchTrackerTab('trackerWarmup')">🏃 Warm-Up</button>
-                    <button id="btnTrackerDrills" class="coach-tab-btn" style="flex:1" onclick="window.switchTrackerTab('trackerDrills')">⚽ Drills</button>
-                </div>
-                
-                <div id="trackerWarmup" class="card-body">
-                    <div class="tracker-box bg-orange m-0">
+                <div class="card-body">
+                    <div class="tracker-box bg-orange m-0" style="margin-bottom: 20px !important;">
                         <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
                         <label for="selectWarmup">Select Warm-Up</label>
                         <select id="selectWarmup"><option>Loading...</option></select>
@@ -195,10 +189,8 @@
                             <button id="addWarmupBtn" class="action-btn btn-orange">+ Add</button>
                         </div>
                     </div>
-                </div>
 
-                <div id="trackerDrills" class="card-body d-none">
-                    <div class="tracker-box bg-red">
+                    <div class="tracker-box bg-red" style="margin-bottom: 20px !important;">
                         <span class="section-label text-red">Part B: Core Strength</span>
                         <label for="selectCore">Select Core Exercise</label>
                         <select id="selectCore"><option>Loading...</option></select>
@@ -210,7 +202,7 @@
                         </div>
                     </div>
 
-                    <div class="tracker-box bg-blue">
+                    <div class="tracker-box bg-blue" style="margin-bottom: 20px !important;">
                         <span class="section-label text-blue">Part C: Ball Handling</span>
                         <label for="selectBallWork">Select Ball Work Exercise</label>
                         <select id="selectBallWork"><option>Loading...</option></select>
@@ -548,17 +540,17 @@
                     <div class="card-header hw-header">🎯 Assign Homework</div>
                     <div class="card-body">
                         <label>1. Select Players & Due Date</label>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center;">
-                            <div class="multi-select-container" style="flex:1; min-width:200px; position:relative;">
-                                <div id="hwPlayerSelectBtn" style="padding:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; cursor:pointer; font-size:14px; color:#475569;">Select Players... ⏷</div>
-                                <div id="hwPlayerChecklist" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; z-index:1000; max-height:200px; overflow-y:auto; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-top:5px; padding:10px;">
-                                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #eee;">
-                                        <input type="checkbox" id="hwSelectAllPlayers"> <b style="text-transform:none; margin:0;">Select All</b>
-                                    </label>
-                                    <div id="hwPlayerChecklistItems"></div>
-                                </div>
+                        <div style="margin-bottom:15px;">
+                            <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
+                                <label style="display:flex; align-items:center; gap:8px; margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid #cbd5e1;">
+                                    <input type="checkbox" id="hwSelectAllPlayers"> <b style="text-transform:none; margin:0; font-size:13px;">Select All Players</b>
+                                </label>
+                                <div id="hwPlayerChecklistItems" style="max-height:120px; overflow-y:auto; font-size:13px; display:flex; flex-direction:column; gap:6px;"></div>
                             </div>
-                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment" style="width:140px; margin-bottom:0;">
+                        </div>
+                        <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                            <label style="margin:0;">Due Date:</label>
+                            <input type="date" id="hwDueDate" class="hw-due-date" title="Select due date for homework assignment" style="flex:1; margin:0;">
                         </div>
                         
                         <label>2. Build the Workout</label>
