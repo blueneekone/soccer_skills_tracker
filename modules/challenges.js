@@ -47,9 +47,6 @@ export const finalizeChallengeUnlock = async (userProfile, getEmbedUrl) => {
         
         // Teleport them
         window.navigateTo('viewChallenge', null);
-        
-        // Teleport them
-        window.navigateTo('viewChallenge', null);
     } catch (err) { alert("Error unlocking challenges: " + err.message); }
 };
 

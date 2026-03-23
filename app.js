@@ -614,17 +614,7 @@ const initApp = () => {
     console.log("App v39 Loaded (Firebase PWA Webview Fix)");
     
     checkMobileRedirect();
-    
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            checkStandalone(); // Check post-login too just in case
-            await loadUserRole(user.email);
-        } else {
-            document.getElementById("loginUI").classList.remove('d-none');
-            document.getElementById("appUI").classList.add('d-none');
-            checkStandalone();
-        }
-    });
+    checkStandalone();
 
     // --- 1. AUTH BINDINGS (via modules/auth.js) ---
     safeBind("loginGoogleBtn", "click", handleGoogleLogin);
@@ -1082,7 +1072,6 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             if (userProfile) {
-                renderApp(userProfile);
                 document.getElementById("appUI").style.display='block';
                 
                 // Apply team branding specifically for this user's team or admin view
