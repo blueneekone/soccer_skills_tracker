@@ -120,7 +120,7 @@ const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach'
         // Trigger specific data loads if needed
         if(viewId === 'viewStats') loadStats();
         if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
-        if(viewId === 'viewAdmin') renderAdminTables(globalTeams, globalAdmins);
+        if(viewId === 'viewAdmin') renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser?.email, DIRECTOR_EMAIL);
         if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
 
         // Push to phone history so the native back swipe works!
