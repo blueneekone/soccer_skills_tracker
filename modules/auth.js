@@ -17,10 +17,9 @@ export const showAuthError = (msg) => {
 // --- LOGIN & SIGNUP ACTIONS ---
 export const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     try {
-        if (isMobile) signInWithRedirect(auth, provider); 
-        else await signInWithPopup(auth, provider); 
+        // Force ALL devices to use Popup. Redirect breaks iOS/Android PWAs!
+        await signInWithPopup(auth, provider); 
     } catch (error) {
         showAuthError("Google Login Failed: " + error.message);
     }
