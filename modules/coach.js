@@ -517,7 +517,7 @@ window.submitCoachTrial = async () => {
 
 // --- COACH DASHBOARD TABS ---
 window.switchCoachTab = (tabId) => {
-    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabStrategy', 'coachTabTools'].forEach(id => {
+    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabTools'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn-${id}`);
         if(pane) pane.classList.add('d-none');
@@ -526,6 +526,7 @@ window.switchCoachTab = (tabId) => {
     document.getElementById(tabId).classList.remove('d-none');
     document.getElementById(`btn-${tabId}`).classList.add('active');
 };
+
 
 window.initGamedayRoster = async (tid, playerList, jerseys) => {
     const benchSel = document.getElementById("benchSelect");
