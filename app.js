@@ -619,7 +619,6 @@ const initApp = () => {
     console.log("App v39 Loaded (Firebase PWA Webview Fix)");
     
     checkMobileRedirect();
-    checkStandalone();
     window.checkStandalone();
 
     // --- 1. AUTH BINDINGS (via modules/auth.js) ---
@@ -640,8 +639,6 @@ const initApp = () => {
     // HOME SCREEN DASHBOARD ACTIONS
     safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
     safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
-    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy'));
-    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy', 'navTrophy'));
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
     
@@ -692,10 +689,7 @@ const initApp = () => {
     safeBind("btnGCal", "click", addToGoogleCalendar);
     safeBind("btnIcs", "click", downloadIcsFile);
 
-    safeBind("btnOpenTrophyModal", "click", () => {
-        window.navigateTo('viewStats', 'navStats');
-        setTimeout(() => window.scrollTo({ top: 150, behavior: 'smooth' }), 100);
-    });
+    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy', 'navTrophy'));
 
     buildDropdowns(0);
 
