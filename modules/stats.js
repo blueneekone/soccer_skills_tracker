@@ -104,7 +104,6 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
         filteredLogs = logsOverride.filter(d => new Date(d.timestamp.seconds * 1000) >= filterDate);
         filteredLogs.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); 
     } else { 
-        // FIX: Added the teamId filter so it doesn't download the entire global database!
         const q = query(collection(db, "reps"), where("teamId", "==", tid)); 
         const snap = await getDocs(q); 
         snap.forEach(d => {
@@ -115,9 +114,9 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
         }); 
     }
  
-    }
     const html = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
     table.querySelector("tbody").innerHTML = html || '<tr><td colspan="3" class="text-center">No data for this time period</td></tr>';
+};
 
 export const loadPlayerFeedback = async (userProfile) => {
     if (!userProfile || userProfile.role === 'admin') return; 
