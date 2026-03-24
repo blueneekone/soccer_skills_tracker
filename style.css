@@ -426,7 +426,7 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 .player-pin {
     width: 32px; height: 32px; border-radius: 50%; background: var(--aggie-gold); color: var(--aggie-blue);
     display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px;
-    cursor: grab; user-select: none; z-index: 10;
+    cursor: grab; -webkit-user-select: none; user-select: none; z-index: 10;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid #fff;
 }
 .player-pin:active { cursor: grabbing; opacity: 0.9; }

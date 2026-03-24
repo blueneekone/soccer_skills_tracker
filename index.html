@@ -369,7 +369,7 @@
             <div class="card" id="teamLeaderboardCard">
                 <div class="card-header leaderboard-header-flex leaderboard-header">
                     <span>🏅 TEAM LEADERBOARD</span>
-                    <select id="leaderboardFilter" class="leaderboard-filter">
+                    <select id="leaderboardFilter" class="leaderboard-filter" title="Filter leaderboard by time period">
                         <option value="weekly">Weekly</option>
                         <option value="daily">Daily</option>
                         <option value="monthly">Monthly</option>
@@ -664,7 +664,7 @@
                             <button id="strategyClearBtn" class="secondary-btn strategy-action-btn strategy-clear-btn">Clear</button>
                             <div class="wb-toggle-row">
                                 <label class="switch" title="Toggle Whiteboard Mode">
-                                    <input type="checkbox" id="strategyBoardStyleToggle">
+                                    <input type="checkbox" id="strategyBoardStyleToggle" title="Toggle Whiteboard Mode">
                                     <span class="slider"></span>
                                 </label>
                                 <span class="wb-toggle-txt" onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
@@ -685,7 +685,7 @@
                     <div class="card-body">
                         <label>Bench Players</label>
                         <div class="gameday-bench-row">
-                            <select id="benchSelect" class="gameday-bench-sel"><option>Loading...</option></select>
+                            <select id="benchSelect" class="gameday-bench-sel" title="Select a player to add to pitch"><option>Loading...</option></select>
                             <button id="addToPitchBtn" class="primary-btn btn-green gameday-add-btn">+ Add to Pitch</button>
                         </div>
                         
@@ -718,7 +718,7 @@
                     <div class="card-header">📋 Manage Team Workouts</div>
                     <div class="card-body">
                         <label>Category</label>
-                        <select id="manageWorkoutType" class="mb-10">
+                        <select id="manageWorkoutType" class="mb-10" title="Select workout category">
                             <option value="cardio">Warm-Up / Cardio</option>
                             <option value="core">Core / Strength</option>
                             <option value="ball_mastery">Ball Mastery / Skill</option>
@@ -774,7 +774,7 @@
                     <div class="admin-flex-row mt-15">
                         <input type="text" id="newTeamId" class="team-id-input" placeholder="Team ID (e.g. b2015)">
                         <input type="text" id="newTeamName" placeholder="Team Name" class="flex-1">
-                        <select id="newTeamClubId" class="admin-flex-sel"></select>
+                        <select id="newTeamClubId" class="admin-flex-sel" title="Select parent club for team"></select>
                         <input type="text" id="newCoachEmail" placeholder="Coach Email" class="flex-1">
                     </div>
                     <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>
@@ -787,7 +787,7 @@
                     <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and select the Club.</p>
                     <div class="admin-flex-row">
                         <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
-                        <select id="assignDirClubId" class="admin-flex-sel m-0">
+                        <select id="assignDirClubId" class="admin-flex-sel m-0" title="Select a club for director assignment">
                             <option value="">Select Club</option>
                         </select>
                     </div>
@@ -804,7 +804,7 @@
                 <div class="card-header bg-red-header">🛠️ Support Migration Tools</div>
                 <div class="card-body">
                     <p class="export-desc text-left mb-10">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
-                    <select id="migrateTargetTeam" class="admin-full-sel"><option value="">Loading Teams...</option></select>
+                    <select id="migrateTargetTeam" class="admin-full-sel" title="Select a team for migration"><option value="">Loading Teams...</option></select>
                     <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100 bg-danger">Execute Legacy Fix</button>
                     <p class="hint-text mt-10">(Select "Legacy Team (misc)" if you are trying to recover the old default DB)</p>
                 </div>
@@ -827,7 +827,7 @@
                 <div class="card-header">🎨 Club Branding</div>
                 <div class="card-body">
                     <label>Select Team/Club to Edit</label>
-                    <select id="brandingTeamSelect" class="mb-10"><option>Loading...</option></select>
+                    <select id="brandingTeamSelect" class="mb-10" title="Select a team or club to edit branding"><option>Loading...</option></select>
                     
                     <label>App Name</label>
                     <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
@@ -978,8 +978,8 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=3.0.0"></script>
-    <script type="module" src="data.js?v=3.0.0"></script>
+    <script type="module" src="app.js?v=3.0.1"></script>
+    <script type="module" src="data.js?v=3.0.1"></script>
 
 </body>
 </html>
