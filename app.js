@@ -474,47 +474,57 @@ async function loadStats() {
         }
 
         // --- MILESTONE BADGES ---
-        let has7DayStreak = false;
+        let maxStreak = 0;
+        let currentStreak = 1;
+        let hasWeekendWarrior = false;
+
         if (logs.length > 0) {
-            let streak = 1;
             let lastDate = new Date(logs[0].timestamp.seconds * 1000);
             lastDate.setHours(0,0,0,0);
-            for(let i=1; i<logs.length; i++) {
+            
+            const weekendDays = new Set();
+
+            for(let i = 0; i < logs.length; i++) {
                 if(!logs[i].timestamp) continue;
                 let d = new Date(logs[i].timestamp.seconds * 1000);
                 d.setHours(0,0,0,0);
+                
+                // Track if they worked out on a Saturday (6) or Sunday (0)
+                if (d.getDay() === 0 || d.getDay() === 6) {
+                    weekendDays.add(d.toDateString());
+                }
+                
+                if (i === 0) continue; // Skip first log for streak math
+
                 let diff = Math.round((lastDate - d) / (1000 * 60 * 60 * 24));
-                if (diff === 1) { streak++; lastDate = d; }
-                else if (diff > 1) { break; }
+                if (diff === 1) { 
+                    currentStreak++; 
+                    lastDate = d; 
+                } else if (diff > 1) { 
+                    if (currentStreak > maxStreak) maxStreak = currentStreak;
+                    currentStreak = 1; 
+                    lastDate = d;
+                }
             }
-            if(streak >= 7) has7DayStreak = true;
+            if (currentStreak > maxStreak) maxStreak = currentStreak;
+
+            // Weekend Warrior: Logged at least one Saturday and one Sunday
+            const hasSat = Array.from(weekendDays).some(dateStr => new Date(dateStr).getDay() === 6);
+            const hasSun = Array.from(weekendDays).some(dateStr => new Date(dateStr).getDay() === 0);
+            if (hasSat && hasSun) hasWeekendWarrior = true;
         }
 
         const b7Day = document.getElementById("badge7Day");
-        if(b7Day) { b7Day.classList.toggle("medal-locked", !has7DayStreak); }
+        if(b7Day) b7Day.classList.toggle("medal-locked", maxStreak < 7);
         
         const b100S = document.getElementById("badge100Sessions");
-        if(b100S) { b100S.classList.toggle("medal-locked", logs.length < 100); }
+        if(b100S) b100S.classList.toggle("medal-locked", logs.length < 100);
         
         const b1000M = document.getElementById("badge1000Mins");
-        if(b1000M) { b1000M.classList.toggle("medal-locked", totalMins < 1000); }
+        if(b1000M) b1000M.classList.toggle("medal-locked", totalMins < 1000);
 
-        if (typeof buildDropdowns === "function") buildDropdowns(maxMonthlyXp);
-
-        if (userProfile.role !== 'admin') {
-            setText("userLevelDisplay", lvl);
-            const bar = document.getElementById("xpBar"); 
-            
-            if(bar) {
-                let pct = 0;
-                if(xp < 500) { pct = (xp / 500) * 100; } 
-                else if(xp < 1000) { pct = ((xp - 500) / 500) * 100; } 
-                else if(xp < 2000) { pct = ((xp - 1000) / 1000) * 100; } 
-                else if(xp < 3000) { pct = ((xp - 2000) / 1000) * 100; } 
-                else { pct = 100; }
-                bar.style.width = `${Math.min(pct, 100)}%`;
-            }
-        }
+        const bWeekend = document.getElementById("badgeWeekend");
+        if(bWeekend) bWeekend.classList.toggle("medal-locked", !hasWeekendWarrior);
 
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
