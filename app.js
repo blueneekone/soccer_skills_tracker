@@ -3,7 +3,6 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { dbData } from "./data.js";
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js";
@@ -87,16 +86,21 @@ window.globalStatsLogs = [];
 window.Workouts = [];
 window.fetchWorkouts = async (tid) => {
     try {
-        if (!tid || tid === "admin" || tid === "misc") { 
-            window.Workouts = dbData.foundationSkills; 
+        // If an Admin logs in, fetch drills for the currently selected Coach team, or default to aggiesfc
+        let targetTid = tid === "admin" ? (currentCoachTeamId || "aggiesfc") : tid;
+        
+        if (!targetTid || targetTid === "misc") { 
+            window.Workouts = []; 
         } else {
-            const q = query(collection(db, "workouts"), where("teamId", "==", tid));
+            const q = query(collection(db, "workouts"), where("teamId", "==", targetTid));
             const snap = await getDocs(q);
             window.Workouts = [];
             snap.forEach(d => window.Workouts.push({ id: d.id, ...d.data() }));
-            if(window.Workouts.length === 0) window.Workouts = dbData.foundationSkills;
         }
-    } catch(e) { console.error(e); window.Workouts = dbData.foundationSkills; }
+    } catch(e) { 
+        console.error("Fetch Workouts Error:", e); 
+        window.Workouts = []; 
+    }
 };
 
 window.buildCoachDropdowns = () => {
@@ -300,8 +304,7 @@ async function fetchConfig() {
 
         const d = await getDoc(doc(db, "config", "teams"));
         const tList = d.exists() ? d.data().list : null;
-        globalTeams = (tList && tList.length > 0) ? tList : (typeof dbData !== 'undefined' ? dbData.teams : []);
-        
+        globalTeams = (tList && tList.length > 0) ? tList : [];        
         const a = await getDoc(doc(db, "config", "admins"));
         const aList = a.exists() ? a.data().list : null;
         globalAdmins = (aList && aList.length > 0) ? aList : [DIRECTOR_EMAIL];
