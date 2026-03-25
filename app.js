@@ -90,7 +90,7 @@ window.fetchWorkouts = async (tid) => {
         if (!tid || tid === "admin" || tid === "misc") { 
             window.Workouts = dbData.foundationSkills; 
         } else {
-            const q = query(collection(db, "team_workouts"), where("teamId", "==", tid));
+            const q = query(collection(db, "workouts"), where("teamId", "==", tid));
             const snap = await getDocs(q);
             window.Workouts = [];
             snap.forEach(d => window.Workouts.push({ id: d.id, ...d.data() }));
