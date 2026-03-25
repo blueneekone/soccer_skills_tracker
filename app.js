@@ -41,20 +41,27 @@ let isSignatureBlank = true;
 let userProfile = null; 
 
 window.syncDefaultWorkouts = async (overrideTeamId) => {
-    const tid = overrideTeamId || currentCoachTeamId;
+    // 1. Intercept the button click event so it doesn't get saved as a Team ID!
+    let tid = currentCoachTeamId;
+    let isAutoSync = false;
+    
+    if (typeof overrideTeamId === 'string') {
+        tid = overrideTeamId;
+        isAutoSync = true;
+    }
+
     if (!tid) return alert("Select a team in Coach Tools first!");
-    if (!overrideTeamId && !confirm("Add 30+ default drills from legacy data.js to this team?")) return;
+    if (!isAutoSync && !confirm("Add 30+ default drills from legacy data.js to this team?")) return;
     
     try {
-        // Fallback in case the array structure varies
         const drillsToSync = dbData.foundationSkills || dbData; 
         
         const promises = drillsToSync.map(drill => {
-            // 1. Strip out 'undefined' properties (Firestore strictly rejects them!)
+            // 2. Strip undefined values to prevent Firebase crashes
             const cleanDrill = JSON.parse(JSON.stringify(drill));
             
-            // 2. Save to the correct 'team_workouts' collection
-            return addDoc(collection(db, "team_workouts"), {
+            // 3. Save to "workouts" to respect your Security Rules
+            return addDoc(collection(db, "workouts"), {
                 ...cleanDrill,
                 teamId: tid,
                 createdBy: "System Migration"
@@ -63,15 +70,14 @@ window.syncDefaultWorkouts = async (overrideTeamId) => {
         
         await Promise.all(promises);
         
-        if(!overrideTeamId) {
+        if(!isAutoSync) {
             alert("Defaults synced! Reloading workouts...");
-            // 3. Fire the correct fetch functions to update the UI instantly
             await window.fetchTeamWorkouts(tid); 
             window.buildCoachDropdowns(); 
         }
     } catch(e) { 
         console.error("SYNC ERROR:", e); 
-        alert("Error syncing defaults. Please check your browser's Developer Console (F12) for the exact error."); 
+        alert("Error syncing defaults: " + e.message); 
     }
 };
 
@@ -79,7 +85,7 @@ window.globalClubs = [];
 window.globalStatsLogs = [];
 
 window.teamWorkouts = [];
-window.fetchTeamWorkouts = async (tid) => {
+window.fetchWorkouts = async (tid) => {
     try {
         if (!tid || tid === "admin" || tid === "misc") { 
             window.teamWorkouts = dbData.foundationSkills; 
@@ -1117,7 +1123,7 @@ onAuthStateChanged(auth, async (user) => {
                 requestPushPermissions(user.email);
                 
                 // Fetch workouts first
-                await window.fetchTeamWorkouts(userProfile.teamId);
+                await window.fetchWorkouts(userProfile.teamId);
                 window.buildCoachDropdowns();
 
                 // Trigger initial load sequences safely
