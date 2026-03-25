@@ -299,7 +299,7 @@ window.loadWorkouts = () => {
 window.deleteWorkout = async (id) => {
     if(!confirm("Delete this workout?")) return;
     if(!id) return alert("Cannot delete a workout without an ID.");
-    await deleteDoc(doc(db, "team_workouts", id));
+    await deleteDoc(doc(db, "workouts", id));
     await window.fetchWorkouts(currentCoachTeamId);
     window.buildCoachDropdowns();
     window.loadWorkouts();
@@ -309,7 +309,7 @@ window.syncDefaultWorkouts = async () => {
     if(!confirm("This will copy all default app workouts into your team's custom DB so you can edit them. Proceed?")) return;
     const batch = writeBatch(db);
     dbData.foundationSkills.forEach(w => {
-        const newRef = doc(collection(db, "team_workouts"));
+        const newRef = doc(collection(db, "workouts"));
         batch.set(newRef, { ...w, teamId: currentCoachTeamId });
     });
     await batch.commit();
@@ -328,7 +328,7 @@ window.addWorkout = async () => {
     
     if(!name || !type) return alert("Workout Name and Category are required.");
     
-    await addDoc(collection(db, "team_workouts"), {
+    await addDoc(collection(db, "workouts"), {
         name, type, reqLevel, drill, video, teamId: currentCoachTeamId
     });
     
