@@ -727,11 +727,11 @@
                         <input type="number" id="manageWorkoutLevel" placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1" class="mb-10 manage-workout-input">
                         <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2" class="mb-10 manage-workout-txt"></textarea>
                         <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
-                        <button id="addTeamWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
+                        <button id="addWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
                         
                         <hr class="section-divider">
                         <label>Existing Workouts <button id="syncDefaultWorkoutsBtn" class="secondary-btn sync-btn">Sync Defaults</button></label>
-                        <ul id="teamWorkoutList" class="session-list mt-10">
+                        <ul id="WorkoutList" class="session-list mt-10">
                             <li class="session-empty">Loading workouts...</li>
                         </ul>
                     </div>
@@ -977,7 +977,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=3.0.4"></script>
+    <script type="module" src="app.js?v=3.0.5"></script>
 
 </body>
 </html>

@@ -207,7 +207,7 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
             }
         }
         
-        window.loadTeamWorkouts();
+        window.loadWorkouts();
     } catch(e) { console.error(e); }
 };
 
@@ -273,14 +273,14 @@ window.editPlayerJersey = async (name, currentJersey) => {
     }
 };
 
-window.loadTeamWorkouts = () => {
-    const list = document.getElementById("teamWorkoutList");
+window.loadWorkouts = () => {
+    const list = document.getElementById("WorkoutList");
     if(!list) return;
-    if(!window.teamWorkouts || window.teamWorkouts.length === 0 || window.teamWorkouts === dbData.foundationSkills) {
+    if(!window.Workouts || window.Workouts.length === 0 || window.Workouts === dbData.foundationSkills) {
         list.innerHTML = "<li class='session-empty'>Using default app workouts. Click 'Sync Defaults' to copy them so you can edit and add your own!</li>";
         return;
     }
-    list.innerHTML = window.teamWorkouts.map(w => `
+    list.innerHTML = window.Workouts.map(w => `
         <li class="session-item" style="border-left: 4px solid var(--aggie-blue); align-items: flex-start;">
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
@@ -291,18 +291,18 @@ window.loadTeamWorkouts = () => {
                 ${w.drill ? `<div style="font-size:12px; color:#475569; margin-top:4px;">${w.drill}</div>` : ''}
                 ${w.video ? `<a href="${w.video}" target="_blank" style="font-size:11px; color:var(--orange-primary); font-weight:bold; display:inline-block; margin-top:6px;">▶ Watch Video</a>` : ''}
             </div>
-            <button class="delete-btn" style="margin-left:10px;" onclick="window.deleteTeamWorkout('${w.id}')">✕</button>
+            <button class="delete-btn" style="margin-left:10px;" onclick="window.deleteWorkout('${w.id}')">✕</button>
         </li>
     `).join("");
 };
 
-window.deleteTeamWorkout = async (id) => {
+window.deleteWorkout = async (id) => {
     if(!confirm("Delete this workout?")) return;
     if(!id) return alert("Cannot delete a workout without an ID.");
     await deleteDoc(doc(db, "team_workouts", id));
-    await window.fetchTeamWorkouts(currentCoachTeamId);
+    await window.fetchWorkouts(currentCoachTeamId);
     window.buildCoachDropdowns();
-    window.loadTeamWorkouts();
+    window.loadWorkouts();
 };
 
 window.syncDefaultWorkouts = async () => {
@@ -314,12 +314,12 @@ window.syncDefaultWorkouts = async () => {
     });
     await batch.commit();
     alert("Defaults Synced!");
-    await window.fetchTeamWorkouts(currentCoachTeamId);
+    await window.fetchWorkouts(currentCoachTeamId);
     window.buildCoachDropdowns();
-    window.loadTeamWorkouts();
+    window.loadWorkouts();
 };
 
-window.addTeamWorkout = async () => {
+window.addWorkout = async () => {
     const name = document.getElementById("manageWorkoutName").value.trim();
     const type = document.getElementById("manageWorkoutType").value;
     const reqLevel = parseInt(document.getElementById("manageWorkoutLevel").value) || 1;
@@ -337,9 +337,9 @@ window.addTeamWorkout = async () => {
     document.getElementById("manageWorkoutDesc").value = "";
     document.getElementById("manageWorkoutVideo").value = "";
     
-    await window.fetchTeamWorkouts(currentCoachTeamId);
+    await window.fetchWorkouts(currentCoachTeamId);
     window.buildCoachDropdowns();
-    window.loadTeamWorkouts();
+    window.loadWorkouts();
 };
 
 window.linkParent = async (playerName, reloadCallback) => {

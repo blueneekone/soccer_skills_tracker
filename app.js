@@ -72,7 +72,7 @@ window.syncDefaultWorkouts = async (overrideTeamId) => {
         
         if(!isAutoSync) {
             alert("Defaults synced! Reloading workouts...");
-            await window.fetchTeamWorkouts(tid); 
+            await window.fetchWorkouts(tid); 
             window.buildCoachDropdowns(); 
         }
     } catch(e) { 
@@ -84,26 +84,26 @@ window.syncDefaultWorkouts = async (overrideTeamId) => {
 window.globalClubs = [];
 window.globalStatsLogs = [];
 
-window.teamWorkouts = [];
+window.Workouts = [];
 window.fetchWorkouts = async (tid) => {
     try {
         if (!tid || tid === "admin" || tid === "misc") { 
-            window.teamWorkouts = dbData.foundationSkills; 
+            window.Workouts = dbData.foundationSkills; 
         } else {
             const q = query(collection(db, "team_workouts"), where("teamId", "==", tid));
             const snap = await getDocs(q);
-            window.teamWorkouts = [];
-            snap.forEach(d => window.teamWorkouts.push({ id: d.id, ...d.data() }));
-            if(window.teamWorkouts.length === 0) window.teamWorkouts = dbData.foundationSkills;
+            window.Workouts = [];
+            snap.forEach(d => window.Workouts.push({ id: d.id, ...d.data() }));
+            if(window.Workouts.length === 0) window.Workouts = dbData.foundationSkills;
         }
-    } catch(e) { console.error(e); window.teamWorkouts = dbData.foundationSkills; }
+    } catch(e) { console.error(e); window.Workouts = dbData.foundationSkills; }
 };
 
 window.buildCoachDropdowns = () => {
     const hwDrillSelect = document.getElementById("hwDrillSelect");
     if(hwDrillSelect) {
         hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
-        window.teamWorkouts.forEach(s => {
+        window.Workouts.forEach(s => {
             const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
             hwDrillSelect.appendChild(opt);
         });
@@ -112,7 +112,7 @@ window.buildCoachDropdowns = () => {
     const evalSkillSelect = document.getElementById("evalSkillSelect");
     if(evalSkillSelect) {
         evalSkillSelect.innerHTML = '<option value="" disabled selected>Select Skill...</option>';
-        window.teamWorkouts.forEach(s => {
+        window.Workouts.forEach(s => {
             if(s.type !== 'cardio' && s.type !== 'core' && s.type !== 'ball_mastery') {
                 const opt = document.createElement("option"); opt.value = s.name; opt.textContent = s.name;
                 evalSkillSelect.appendChild(opt);
@@ -344,7 +344,7 @@ function buildDropdowns(currentXp) {
     customOpt.style.color = "#ea580c";
     sWarm.appendChild(customOpt);
 
-    window.teamWorkouts.forEach(s => {
+    window.Workouts.forEach(s => {
         const reqLvl = s.reqLevel || 1; 
         const isLocked = reqLvl > currentLevelNum;
         
@@ -733,7 +733,7 @@ const getEmbedUrl = (url) => {
     };
 
     const showDrillInfo = (drillName) => {
-        const s = window.teamWorkouts.find(x => x.name === drillName);
+        const s = window.Workouts.find(x => x.name === drillName);
         if(s) {
             document.getElementById("drillInfoBox").style.display='block';
             setText("drillTitle", s.name);
@@ -765,7 +765,7 @@ const getEmbedUrl = (url) => {
         }
     });
 
-    safeBind("addTeamWorkoutBtn", "click", window.addTeamWorkout);
+    safeBind("addWorkoutBtn", "click", window.addWorkout);
     safeBind("syncDefaultWorkoutsBtn", "click", window.syncDefaultWorkouts);
     safeBind("leaderboardFilter", "change", loadStats);
 
