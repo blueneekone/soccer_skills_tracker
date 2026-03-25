@@ -72,7 +72,7 @@ window.syncDefaultWorkouts = async (overrideTeamId) => {
         
         if(!isAutoSync) {
             alert("Defaults synced! Reloading workouts...");
-            await window.fetchTeamWorkouts(tid); 
+            await window.fetchWorkouts(tid); 
             window.buildCoachDropdowns(); 
         }
     } catch(e) { 
