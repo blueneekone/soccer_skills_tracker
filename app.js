@@ -39,25 +39,42 @@ let globalAdmins = [DIRECTOR_EMAIL];
 let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
+
 window.syncDefaultWorkouts = async (overrideTeamId) => {
     const tid = overrideTeamId || currentCoachTeamId;
     if (!tid) return alert("Select a team in Coach Tools first!");
     if (!overrideTeamId && !confirm("Add 30+ default drills from legacy data.js to this team?")) return;
+    
     try {
-        const promises = dbData.foundationSkills.map(drill => {
-            return addDoc(collection(db, "workouts"), {
-                ...drill,
+        // Fallback in case the array structure varies
+        const drillsToSync = dbData.foundationSkills || dbData; 
+        
+        const promises = drillsToSync.map(drill => {
+            // 1. Strip out 'undefined' properties (Firestore strictly rejects them!)
+            const cleanDrill = JSON.parse(JSON.stringify(drill));
+            
+            // 2. Save to the correct 'team_workouts' collection
+            return addDoc(collection(db, "team_workouts"), {
+                ...cleanDrill,
                 teamId: tid,
                 createdBy: "System Migration"
             });
         });
+        
         await Promise.all(promises);
+        
         if(!overrideTeamId) {
             alert("Defaults synced! Reloading workouts...");
-            if(window.loadTeamWorkouts) window.loadTeamWorkouts(tid);
+            // 3. Fire the correct fetch functions to update the UI instantly
+            await window.fetchTeamWorkouts(tid); 
+            window.buildCoachDropdowns(); 
         }
-    } catch(e) { console.error(e); alert("Error syncing defaults."); }
+    } catch(e) { 
+        console.error("SYNC ERROR:", e); 
+        alert("Error syncing defaults. Please check your browser's Developer Console (F12) for the exact error."); 
+    }
 };
+
 window.globalClubs = [];
 window.globalStatsLogs = [];
 
