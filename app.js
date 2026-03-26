@@ -435,6 +435,8 @@ async function loadStats() {
         let xp = currentM.mins + (currentM.workouts * 10); // current month xp
         let lvl = "ROOKIE"; 
 
+        buildDropdowns(xp);
+
         // --- LEVEL CAP & PROGRESSION LOGIC ---
         const approved = userProfile.approvedLevels || {};
         let isCapped = false;
@@ -726,8 +728,6 @@ const initApp = () => {
     safeBind("btnIcs", "click", downloadIcsFile);
 
     safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy', 'navTrophy'));
-
-    buildDropdowns(0);
 
 const getEmbedUrl = (url) => {
         if (!url) return "";
