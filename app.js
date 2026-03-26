@@ -235,9 +235,11 @@ async function fetchConfig() {
         const cList = c.exists() ? c.data().list : null;
         window.globalClubs = (cList && cList.length > 0) ? cList : [{id: "aggiesfc", name: "Aggies FC", directorEmail: DIRECTOR_EMAIL}];
 
-        const d = await getDoc(doc(db, "config", "teams"));
+       const d = await getDoc(doc(db, "config", "teams"));
         const tList = d.exists() ? d.data().list : null;
-        globalTeams = (tList && tList.length > 0) ? tList : [];        
+        // PERFECTLY CLEAN: Only pull from the database, no fallbacks.
+        globalTeams = (tList && tList.length > 0) ? tList : [];
+        
         const a = await getDoc(doc(db, "config", "admins"));
         const aList = a.exists() ? a.data().list : null;
         globalAdmins = (aList && aList.length > 0) ? aList : [DIRECTOR_EMAIL];
@@ -598,6 +600,8 @@ const initApp = () => {
     safeBind("signupEmailBtn", "click", handleEmailSignup);
     safeBind("globalLogoutBtn", "click", handleLogout);
     safeBind("appLogoutBtn", "click", handleLogout);
+    safeBind("setupLogoutBtn", "click", handleLogout);
+    safeBind("setupCancelBtn", "click", handleLogout);
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION BINDINGS (Uses centralized API)
