@@ -49,7 +49,7 @@ body {
 }
 
 .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-.d-none { display: none !important; }
+.d-none { display: none; }
 .text-center { text-align: center; }
 
 /* =======================================================
@@ -99,8 +99,7 @@ button {
     background: linear-gradient(135deg, var(--aggie-blue) 0%, #1e293b 100%);
     color: white; 
     padding: 16px; 
-    border-radius: 16px; 
-    font-size: 1rem; 
+    border-radius: var(--btn-radius, 16px);    font-size: 1rem; 
     width: 100%; 
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
@@ -111,7 +110,7 @@ button {
     background-color: rgba(15, 23, 42, 0.05); 
     color: var(--text-dark); 
     padding: 14px; 
-    border-radius: 14px; 
+    border-radius: var(--btn-radius, 14px); 
     font-size: 0.95rem; 
     border: 1px solid rgba(15, 23, 42, 0.1);
 }
@@ -137,7 +136,7 @@ input, select, textarea {
     padding: 16px; 
     margin-bottom: 20px; 
     border: 2px solid transparent; 
-    border-radius: 16px; 
+    border-radius: var(--btn-radius, 16px);
     font-size: 16px; 
     background: #f8fafc; 
     color: var(--text-dark);
@@ -363,3 +362,23 @@ input:focus, select:focus, textarea:focus {
 .flex-1 { flex: 1; }
 .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 10px 0; }
 .nav-logout-btn { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* =======================================================
+   PWA INSTALL PROMPT
+   ======================================================= */
+.pwa-prompt { 
+    display:none; position:fixed; bottom:0; left:0; right:0; 
+    background:var(--aggie-blue); color:white; padding:24px; 
+    border-radius:24px 24px 0 0; box-shadow:0 -10px 25px rgba(0,0,0,0.3); 
+    z-index:10000; text-align:center; 
+}
+.pwa-title { margin-top:0; color:var(--aggie-gold); font-weight: 900; }
+.pwa-text { font-size:14px; margin-bottom:16px; line-height:1.5; color: #e2e8f0; }
+.pwa-box { 
+    background:rgba(255,255,255,0.1); padding:16px; border-radius:16px; 
+    font-size:13px; margin-bottom:20px; text-align: left; 
+}
+.pwa-btn-continue { 
+    background:transparent; color:#94a3b8; border:1px solid #64748b; 
+    width: 100%; padding: 14px; border-radius: 14px; font-weight: 700;
+}

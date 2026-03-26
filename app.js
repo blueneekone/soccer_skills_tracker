@@ -8,6 +8,7 @@ import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIc
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js";
 import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js";
 import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js";
+import { applyTeamBranding } from "./modules/branding.js";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
@@ -212,35 +213,6 @@ window.applySportCourt = (courtType, targetMode, targetBgIds, targetLineIds) => 
     targetBgIds.forEach(id => { const el = document.getElementById(id); if(el) el.style.backgroundColor = bgCol; });
     targetLineIds.forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = linesHtml; });
 };
-
-async function applyTeamBranding(teamId) {
-    if(!teamId) return;
-    try {
-        const snap = await getDoc(doc(db, "config", `branding_${teamId}`));
-        let ct = "soccer";
-        if(snap.exists()) {
-            const data = snap.data();
-            if(data.primaryColor) document.documentElement.style.setProperty('--aggie-blue', data.primaryColor);
-            if(data.secondaryColor) document.documentElement.style.setProperty('--aggie-gold', data.secondaryColor);
-            if(data.appName && data.appName.trim() !== "") {
-                document.title = data.appName;
-                document.querySelectorAll('.app-title, .auth-title').forEach(el => el.innerText = data.appName);
-            }
-            if(data.logoUrl && data.logoUrl.trim() !== "") {
-                document.querySelectorAll('.logo-circle').forEach(el => {
-                    el.innerHTML = `<img src="${data.logoUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-                    el.style.border = `4px solid ${data.secondaryColor || 'var(--aggie-gold)'}`;
-                });
-            }
-            ct = data.courtType || "soccer";
-        }
-        window.currentCourtType = ct;
-        const styleToggle = document.getElementById("strategyBoardStyleToggle");
-        const strategyMode = (styleToggle && styleToggle.checked) ? 'whiteboard' : 'realistic';
-        window.applySportCourt(ct, strategyMode, ["strategyPitchBg"], ["strategyPitchLines"]);
-        window.applySportCourt(ct, 'realistic', ["gamedayPitchBg"], ["gamedayPitchLines"]);
-    } catch(e) { console.error("Error applying branding", e); }
-}
 
 async function requestPushPermissions(userEmail) {
     if (!('Notification' in window)) return;
@@ -629,7 +601,6 @@ const initApp = () => {
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION BINDINGS (Uses centralized API)
-    // Make the top "Aggies FC" title return to the home dashboard
     safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
     navs.forEach((nid, i) => {
         safeBind(nid, "click", () => window.navigateTo(views[i], nid));

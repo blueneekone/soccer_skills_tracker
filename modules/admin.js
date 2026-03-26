@@ -1,6 +1,7 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
 import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initBrandingPanel } from "./branding.js";
 
 // --- 2. ADMIN DASHBOARD TABLES ---
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail) => {

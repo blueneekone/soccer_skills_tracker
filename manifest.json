@@ -1,6 +1,6 @@
 {
-  "name": "Aggies FC Skills Tracker",
-  "short_name": "Aggies FC",
+  "name": "Sports Skills Tracker",
+  "short_name": "SSTRACKER",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#00263A",
