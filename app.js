@@ -1067,6 +1067,19 @@ onAuthStateChanged(auth, async (user) => {
                 await window.fetchWorkouts(userProfile.teamId);
                 window.buildCoachDropdowns();
 
+// TEMPORARY RESCUE SCRIPT: Assign orphaned drills to Aggies FC
+                if (userProfile && userProfile.role === 'admin') {
+                    const workoutSnap = await getDocs(collection(db, "workouts"));
+                    workoutSnap.forEach(d => {
+                        if (d.data().teamId !== "aggiesfc") {
+                            setDoc(doc(db, "workouts", d.id), { teamId: "aggiesfc" }, { merge: true });
+                        }
+                    });
+                    // Re-fetch the newly fixed drills
+                    await window.fetchWorkouts(userProfile.teamId);
+                    window.buildCoachDropdowns();
+                }
+
                 loadStats();
                 loadHomeDashboard();
                 checkRoles(user);
