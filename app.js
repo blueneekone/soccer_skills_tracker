@@ -246,11 +246,13 @@ async function requestPushPermissions(userEmail) {
     if (!('Notification' in window)) return;
     try {
         const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            // Note: A VAPID key is required to actually get a token for FCM Web Push.
-            // const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY_HERE' });
-            // if(token) { await setDoc(doc(db, "users", userEmail), { fcmToken: token }, { merge: true }); }
-            console.log("Notification permission granted. Ready for VAPID key insertion.");
+        // Check if permission is granted AND if the browser actually supports messaging
+        if (permission === 'granted' && messaging) {
+            const token = await getToken(messaging, { vapidKey: 'BJKLATXlylzSd8o93BSCoPRqr3ePdQGbT5aPXiIVtESpm7JI0DZibMXx6IVaJjfwul0P2FHUMJFbMDVtWzJ5EEU' });
+            if(token) { 
+                await setDoc(doc(db, "users", userEmail), { fcmToken: token }, { merge: true }); 
+                console.log("Push Token Generated & Saved!");
+            }
         }
     } catch(e) { console.warn("FCM Error:", e); }
 }
