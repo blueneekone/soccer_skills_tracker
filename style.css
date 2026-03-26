@@ -1,18 +1,58 @@
 /* --- GLOBAL STANDARDS --- */
 *, *::before, *::after { box-sizing: border-box; }
 
-:root { 
-    --aggie-blue: #00263A; 
-    --aggie-gold: #BFAE5A; 
-    --bg-gray: #f8fafc; 
-    --text-dark: #1e293b; 
-    --white: #ffffff; 
+/* IMPORT PREMIUM FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* DEEP, MODERN COLOR PALETTE */
+    --aggie-blue: #0f172a; /* Deeper, richer slate blue */
+    --aggie-gold: #eab308;
+    --orange-primary: #ea580c;
+    --bg-light: #f8fafc; /* Cooler, modern off-white */
+    --text-dark: #1e293b;
+    --text-light: #64748b;
+    
+    /* GLASSMORPHISM & SHADOWS */
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    
+    /* MICRO-INTERACTIONS */
+    --transition-fast: 0.15s ease-in-out;
 }
 
-html, body { 
-    height: 100%; margin: 0; padding: 0; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    background-color: var(--bg-gray); color: var(--text-dark); 
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    padding-bottom: 70px;
+    -webkit-font-smoothing: antialiased; 
+    letter-spacing: -0.01em; 
+}
+
+/* UPGRADE THE MAIN CARDS (GLASSMORPHISM) */
+.card, .auth-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* ADD INTERACTION DEPTH TO BUTTONS */
+button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all var(--transition-fast);
+}
+
+button:active {
+    transform: scale(0.96); /* Buttons physically press into the screen */
 }
 
 .container { max-width: 600px; margin: 0 auto; padding: 15px; padding-bottom: 90px; }
@@ -193,7 +233,40 @@ input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; borde
 /* Tracker Dashboard */
 .custom-warmup-container { margin-bottom: 8px; }
 .tracker-plan-header { margin-top: 20px; color: var(--aggie-blue); }
-.session-list { list-style: none; padding: 0; margin-bottom: 20px; }
+
+/* SESSION LIST & COMPACT GRID UPGRADE */
+.session-list { 
+    list-style: none; 
+    padding: 0; 
+    margin-bottom: 20px; 
+    /* Turn lists into responsive grids */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+}
+.session-empty { 
+    padding: 10px; 
+    background: #f8fafc; 
+    border-radius: 6px; 
+    border: 1px dashed #cbd5e1; 
+    grid-column: 1 / -1; /* Make empty state span full width */
+}
+.session-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    padding: 12px; 
+    background: white; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 8px; 
+    margin-bottom: 0; /* Handled by grid gap now */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+    transition: box-shadow var(--transition-fast);
+}
+.session-item:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
 .workout-summary-box { background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 15px; }
 .time-input-row { display: flex; gap: 10px; margin-bottom: 15px; }
 .btn-start-timer { background: var(--success); color: white; }
