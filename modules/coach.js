@@ -2,7 +2,6 @@
 import { auth, db } from "../firebase-config.js";
 import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { renderTeamChart } from "./stats.js"; 
-import { dbData } from "../data.js";
 
 export let currentCoachTeamId = null;
 export let allSessionsCache = [];
@@ -276,8 +275,8 @@ window.editPlayerJersey = async (name, currentJersey) => {
 window.loadWorkouts = () => {
     const list = document.getElementById("WorkoutList");
     if(!list) return;
-    if(!window.Workouts || window.Workouts.length === 0 || window.Workouts === dbData.foundationSkills) {
-        list.innerHTML = "<li class='session-empty'>Using default app workouts. Click 'Sync Defaults' to copy them so you can edit and add your own!</li>";
+    if(!window.Workouts || window.Workouts.length === 0) {
+        list.innerHTML = "<li class='session-empty'>No custom workouts found for this team.</li>";
         return;
     }
     list.innerHTML = window.Workouts.map(w => `
@@ -300,20 +299,6 @@ window.deleteWorkout = async (id) => {
     if(!confirm("Delete this workout?")) return;
     if(!id) return alert("Cannot delete a workout without an ID.");
     await deleteDoc(doc(db, "workouts", id));
-    await window.fetchWorkouts(currentCoachTeamId);
-    window.buildCoachDropdowns();
-    window.loadWorkouts();
-};
-
-window.syncDefaultWorkouts = async () => {
-    if(!confirm("This will copy all default app workouts into your team's custom DB so you can edit them. Proceed?")) return;
-    const batch = writeBatch(db);
-    dbData.foundationSkills.forEach(w => {
-        const newRef = doc(collection(db, "workouts"));
-        batch.set(newRef, { ...w, teamId: currentCoachTeamId });
-    });
-    await batch.commit();
-    alert("Defaults Synced!");
     await window.fetchWorkouts(currentCoachTeamId);
     window.buildCoachDropdowns();
     window.loadWorkouts();
