@@ -12,8 +12,7 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// BUMPED TO V2 - This forces the browser to update the service worker
-const CACHE_NAME = 'aggies-fc-v3.4';
+const CACHE_NAME = 'sstracker-v3.5';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
