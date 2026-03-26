@@ -14,8 +14,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <link rel="stylesheet" href="style.css?v=2.0.5">
+    <link rel="stylesheet" href="style.css?v=3.4">
 </head>
 <body>
 
@@ -86,7 +87,7 @@
        <div id="viewHome" class="view-section">
             <div class="card dashboard-header">
                 <div class="card-body text-center">
-                    <div class="dash-icon icon-large">⚽</div>
+                    <i class="ph ph-football dash-icon icon-large"></i>
                     <h2 class="welcome-title">Welcome, <span id="homePlayerName">Athlete</span>!</h2>
                     <p class="welcome-subtitle">Ready to get 1% better today?</p>
                 </div>
@@ -102,28 +103,28 @@
             <div class="dashboard-grid">
                 <div class="card dash-card" id="btnHomeStart">
                     <div class="dash-card-body">
-                        <div class="dash-icon">📋</div>
+                        <i class="ph ph-list dash-icon"></i>
                         <div class="dash-label">Log Workout</div>
                     </div>
                 </div>
 
                 <div class="card dash-card" id="btnHomeStats">
                     <div class="dash-card-body">
-                        <div class="dash-icon">📊</div>
+                        <i class="ph ph-chart-bar dash-icon"></i>
                         <div class="dash-label">My Stats</div>
                     </div>
                 </div>
 
                 <div class="card dash-card border-gold d-none" id="btnHomeChallenge">
                     <div class="dash-card-body">
-                        <div class="dash-icon dash-icon-large">🔥⚽</div>
+                        <i class="ph ph-trophy dash-icon"></i>
                         <div class="dash-label challenge-title-gold">Trials</div>
                     </div>
                 </div>
 
                 <div class="card dash-card border-gold" id="btnOpenTrophyModal">
                     <div class="dash-card-body">
-                        <div class="dash-icon">🏆</div>
+                        <i class="ph ph-trophy dash-icon"></i>
                         <div class="dash-label">Trophy Room</div>
                     </div>
                 </div>
@@ -131,7 +132,7 @@
                 <a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
                     <div class="card dash-card border-slate">
                         <div class="dash-card-body">
-                            <div class="dash-icon">⚡</div>
+                            <i class="ph ph-lightning-bolt dash-icon"></i>
                             <div class="dash-label">Position Specific</div>
                         </div>
                     </div>
@@ -139,14 +140,14 @@
 
                 <div class="card dash-card border-gray d-none" id="btnHomeCoach">
                     <div class="dash-card-body">
-                        <div class="dash-icon">📣</div>
+                        <i class="ph ph-megaphone dash-icon"></i>
                         <div class="dash-label">Coach Tools</div>
                     </div>
                 </div>
 
                 <div class="card dash-card border-gray d-none" id="btnHomeAdmin">
                     <div class="dash-card-body">
-                        <div class="dash-icon">⚙️</div>
+                        <i class="ph ph-gear dash-icon"></i>
                         <div class="dash-label">Admin</div>
                     </div>
                 </div>
@@ -977,6 +978,6 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=3.3"></script>
+    <script type="module" src="app.js?v=3.4"></script>
 </body>
 </html>
