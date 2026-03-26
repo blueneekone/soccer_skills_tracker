@@ -39,47 +39,6 @@ let timerInterval, seconds = 0;
 let isSignatureBlank = true;
 let userProfile = null; 
 
-window.syncDefaultWorkouts = async (overrideTeamId) => {
-    // 1. Intercept the button click event so it doesn't get saved as a Team ID!
-    let tid = currentCoachTeamId;
-    let isAutoSync = false;
-    
-    if (typeof overrideTeamId === 'string') {
-        tid = overrideTeamId;
-        isAutoSync = true;
-    }
-
-    if (!tid) return alert("Select a team in Coach Tools first!");
-    if (!isAutoSync && !confirm("Add 30+ default drills from legacy data.js to this team?")) return;
-    
-    try {
-        const drillsToSync = dbData.foundationSkills || dbData; 
-        
-        const promises = drillsToSync.map(drill => {
-            // 2. Strip undefined values to prevent Firebase crashes
-            const cleanDrill = JSON.parse(JSON.stringify(drill));
-            
-            // 3. Save to "workouts" to respect your Security Rules
-            return addDoc(collection(db, "workouts"), {
-                ...cleanDrill,
-                teamId: tid,
-                createdBy: "System Migration"
-            });
-        });
-        
-        await Promise.all(promises);
-        
-        if(!isAutoSync) {
-            alert("Defaults synced! Reloading workouts...");
-            await window.fetchWorkouts(tid); 
-            window.buildCoachDropdowns(); 
-        }
-    } catch(e) { 
-        console.error("SYNC ERROR:", e); 
-        alert("Error syncing defaults: " + e.message); 
-    }
-};
-
 window.globalClubs = [];
 window.globalStatsLogs = [];
 
@@ -309,7 +268,7 @@ async function fetchConfig() {
         const aList = a.exists() ? a.data().list : null;
         globalAdmins = (aList && aList.length > 0) ? aList : [DIRECTOR_EMAIL];
     } catch(e) { 
-        if(typeof dbData !== 'undefined') globalTeams = dbData.teams; 
+        globalTeams = []; 
     }
     
     const ts = document.getElementById("teamSelect");
@@ -769,7 +728,6 @@ const getEmbedUrl = (url) => {
     });
 
     safeBind("addWorkoutBtn", "click", window.addWorkout);
-    safeBind("syncDefaultWorkoutsBtn", "click", window.syncDefaultWorkouts);
     safeBind("leaderboardFilter", "change", loadStats);
 
     safeBind("selectCore", "change", (e) => showDrillInfo(e.target.value));
@@ -1090,22 +1048,6 @@ onAuthStateChanged(auth, async (user) => {
                     await setDoc(userRef, newProfile);
                     userProfile = newProfile;
                 }
-            }
-
-            // Auto-patch orphan reps explicitly for developer migration
-            if(user.email === "ecwaechtler@gmail.com" && userProfile.teamId) {
-                try {
-                    const snap = await getDocs(collection(db, "reps"));
-                    const promises = [];
-                    snap.forEach(d => {
-                        if(!d.data().teamId) promises.push(setDoc(doc(db, "reps", d.id), { ...d.data(), teamId: userProfile.teamId }));
-                    });
-                    if(promises.length > 0) {
-                        await Promise.all(promises);
-                        console.log(`Auto-Patched ${promises.length} orphaned logs!`);
-                        if(window.syncDefaultWorkouts) await window.syncDefaultWorkouts(userProfile.teamId);
-                    }
-                } catch(e) { console.error("Auto patch err", e); }
             }
 
             if (userProfile) {
