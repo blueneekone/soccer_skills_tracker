@@ -1068,39 +1068,6 @@ onAuthStateChanged(auth, async (user) => {
                 
                 await window.fetchWorkouts(userProfile.teamId);
                 window.buildCoachDropdowns();
-
-// TEMPORARY INJECTION SCRIPT: Run once, then delete!
-                if (userProfile && userProfile.role === 'admin') {
-                    const coreDrills = [
-                        { name: "1 Mile Run", type: "cardio", reqLevel: 1 },
-                        { name: "Sprints (10x40yd)", type: "cardio", reqLevel: 1 },
-                        { name: "Plank", type: "core", reqLevel: 1 },
-                        { name: "Crunches", type: "core", reqLevel: 1 },
-                        { name: "Russian Twists", type: "core", reqLevel: 2 },
-                        { name: "Juggling - Freestyle", type: "ball_mastery", reqLevel: 1 },
-                        { name: "Juggling - Right Foot Only", type: "ball_mastery", reqLevel: 2 },
-                        { name: "Juggling - Left Foot Only", type: "ball_mastery", reqLevel: 2 },
-                        { name: "Toe Taps", type: "ball_mastery", reqLevel: 1 },
-                        { name: "Foundations (Tic-Tacs)", type: "ball_mastery", reqLevel: 1 },
-                        { name: "Pull-Push", type: "ball_mastery", reqLevel: 1 },
-                        { name: "Wall Passing - Right Foot", type: "foundation", reqLevel: 1 },
-                        { name: "Wall Passing - Left Foot", type: "foundation", reqLevel: 1 },
-                        { name: "Cone Dribbling - Slalom", type: "foundation", reqLevel: 1 },
-                        { name: "Figure 8 Dribbling", type: "foundation", reqLevel: 2 },
-                        { name: "Step-Overs", type: "ball_mastery", reqLevel: 2 }
-                    ];
-                    
-                    const promises = coreDrills.map(drill => 
-                        addDoc(collection(db, "workouts"), { ...drill, teamId: "aggiesfc" })
-                    );
-                    
-                    await Promise.all(promises);
-                    alert("BOOM! Core Drills Injected. Delete this script now!");
-                    
-                    await window.fetchWorkouts(userProfile.teamId);
-                    window.buildCoachDropdowns();
-                }
-
                 loadStats();
                 loadHomeDashboard();
                 checkRoles(user);
