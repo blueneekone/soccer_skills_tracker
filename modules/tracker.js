@@ -54,40 +54,6 @@ const clearTrackerForm = () => {
     }
 };
 
-// --- 2. DATABASE SUBMISSION ---
-
-export const handleWorkoutSubmit = async (userProfile, globalTeams, onSuccessCallback) => {
-    if(currentSessionItems.length === 0) return alert("Add drills to your session first!");
-    if(isSignatureBlank) return alert("A parent must sign to verify this workout.");
-    
-    const tid = userProfile ? userProfile.teamId : null;
-    const pname = userProfile ? userProfile.playerName : null;
-    const mins = document.getElementById("totalMinutes")?.value;
-    
-    if(!tid || !pname) return alert("User profile is incomplete. Please complete setup in your profile.");
-    if(!mins) return alert("Please enter your total minutes.");
-
-    // ADDED: Fallback for globalTeams if it's not fully loaded or structured differently
-    let coachEmailToSave = "";
-    if (globalTeams && Array.isArray(globalTeams)) {
-        const foundTeam = globalTeams.find(t => t.id === tid);
-        if (foundTeam) {
-            coachEmailToSave = foundTeam.coachEmail || "";
-        }
-    }
-
-    try {
-        await addDoc(collection(db, "reps"), {
-            timestamp: new Date(),
-            teamId: tid,
-            player: pname,
-            minutes: parseInt(mins),
-            drills: currentSessionItems,
-            drillSummary: currentSessionItems.map(x=>x.name).join(", "),
-            outcome: document.querySelector(".outcome-btn.active")?.dataset.val || "Good",
-            coachEmail: coachEmailToSave
-        });
-
 // --- 3. CALENDAR EXPORTS ---
 const getSessionDescription = () => {
     if (currentSessionItems.length === 0) return "";

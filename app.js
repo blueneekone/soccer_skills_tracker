@@ -1026,7 +1026,7 @@ else initApp();
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
-        document.getElementById("pwaInstallPrompt").style.display='none'; // <--- ADD THIS LINE
+        document.getElementById("pwaInstallPrompt").style.display='none';
         try {
             await fetchConfig();
             const userRef = doc(db, "users", user.email);
@@ -1053,10 +1053,8 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 
-                // Apply team branding specifically for this user's team or admin view
                 await applyTeamBranding(userProfile.teamId);
                 
-                // Initialize text values first
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
                 setText("homePlayerName", userProfile.playerName.split(" ")[0]);
@@ -1064,19 +1062,15 @@ onAuthStateChanged(auth, async (user) => {
                     setText("homePlayerName", userProfile.playerName.split(" ")[0]);
                 }
                 
-                // Fetch push notification permissions
                 requestPushPermissions(user.email);
                 
-                // Fetch workouts first
                 await window.fetchWorkouts(userProfile.teamId);
                 window.buildCoachDropdowns();
 
-                // Trigger initial load sequences safely
                 loadStats();
                 loadHomeDashboard();
                 checkRoles(user);
 
-                // Start History at Home without duplicating
                 history.replaceState({ view: 'viewHome', nav: 'navHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', 'navHome', false);
 
