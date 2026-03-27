@@ -1,7 +1,6 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
 import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { initBrandingPanel } from "./branding.js";
 
 // --- 2. ADMIN DASHBOARD TABLES ---
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail) => {
@@ -134,34 +133,6 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
         });
         migBtn.dataset.bound = "true";
     }
-
-    initBrandingPanel(globalTeams);
-};
-
-export const initBrandingPanel = async (globalTeams) => {
-    const sel = document.getElementById("brandingTeamSelect");
-    if(!sel) return;
-    sel.innerHTML = (globalTeams || []).map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("");
-    
-    const loadTeamBranding = async () => {
-        const tid = sel.value;
-        if(!tid) return;
-        const snap = await getDoc(doc(db, "config", `branding_${tid}`));
-        if(snap.exists()) {
-            const data = snap.data();
-            document.getElementById("brandAppName").value = data.appName || "";
-            document.getElementById("brandLogoUrl").value = data.logoUrl || "";
-            document.getElementById("brandPrimaryColor").value = data.primaryColor || "#00263A";
-            document.getElementById("brandSecondaryColor").value = data.secondaryColor || "#BFAE5A";
-            if(document.getElementById("brandCourtType")) document.getElementById("brandCourtType").value = data.courtType || "soccer";
-        } else {
-            document.getElementById("brandAppName").value = "";
-            document.getElementById("brandLogoUrl").value = "";
-            document.getElementById("brandPrimaryColor").value = "#00263A";
-            document.getElementById("brandSecondaryColor").value = "#BFAE5A";
-            if(document.getElementById("brandCourtType")) document.getElementById("brandCourtType").value = "soccer";
-        }
-    };
     
     sel.addEventListener("change", loadTeamBranding);
     if(globalTeams.length > 0) loadTeamBranding();
