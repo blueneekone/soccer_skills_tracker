@@ -1,6 +1,7 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
 import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initBrandingPanel } from "./branding.js";
 
 // --- 2. ADMIN DASHBOARD TABLES ---
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail) => {
@@ -133,44 +134,8 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
         });
         migBtn.dataset.bound = "true";
     }
-    
-    sel.addEventListener("change", loadTeamBranding);
-    if(globalTeams.length > 0) loadTeamBranding();
-    
-    const saveBtn = document.getElementById("saveBrandingBtn");
-    if (saveBtn && saveBtn.dataset.bound !== "true") {
-        saveBtn.addEventListener("click", async () => {
-            const tid = sel.value;
-            if(!tid) return;
-            const data = {
-                appName: document.getElementById("brandAppName").value.trim(),
-                logoUrl: document.getElementById("brandLogoUrl").value.trim(),
-                primaryColor: document.getElementById("brandPrimaryColor").value,
-                secondaryColor: document.getElementById("brandSecondaryColor").value,
-                courtType: document.getElementById("brandCourtType") ? document.getElementById("brandCourtType").value : "soccer",
-                updatedAt: new Date()
-            };
-            saveBtn.innerText = "Saving...";
-            await setDoc(doc(db, "config", `branding_${tid}`), data);
-            saveBtn.innerText = "Saved!";
-            setTimeout(() => saveBtn.innerText = "Save Branding", 2000);
-        });
-        saveBtn.dataset.bound = "true";
-    }
-    
-    const resetBtn = document.getElementById("resetBrandingBtn");
-    if (resetBtn && resetBtn.dataset.bound !== "true") {
-        resetBtn.addEventListener("click", async () => {
-            const tid = sel.value;
-            if(!tid) return;
-            if(confirm("Reset this team's branding to default?")) {
-                await deleteDoc(doc(db, "config", `branding_${tid}`));
-                loadTeamBranding();
-                alert("Branding reset.");
-            }
-        });
-        resetBtn.dataset.bound = "true";
-    }
+
+    initBrandingPanel(globalTeams);
 };
 
 // --- 3. GLOBAL MANAGEMENT ---
@@ -218,7 +183,6 @@ export const addAdmin = async (globalAdmins, reloadCallback) => {
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
     
     alert("Director Added!"); 
-    logSystemEvent("ADMIN_ADD_DIRECTOR", `Email: ${email}`); 
     document.getElementById("newAdminEmail").value = "";
     
     if(reloadCallback) reloadCallback();
