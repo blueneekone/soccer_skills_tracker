@@ -57,27 +57,61 @@ export const handleLogout = async () => {
 };
 
 // --- ACCOUNT SETUP ACTIONS ---
-export const initSetupDropdowns = (globalTeams) => {
-    const sel = document.getElementById("setupTeamSelect");
-    if(!sel) return;
-    sel.innerHTML = '<option value="">Select Team...</option>';
-    globalTeams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
-    
-    sel.onchange = async (e) => {
-        const tid = e.target.value;
-        const pSel = document.getElementById("setupPlayerDropdown");
-        pSel.disabled = false;
-        pSel.innerHTML = '<option value="">Loading Roster...</option>';
-        const snap = await getDoc(doc(db, "rosters", tid));
-        pSel.innerHTML = '<option value="">Select Your Child...</option>';
-        if(snap.exists() && snap.data().players) {
-            snap.data().players.sort().forEach(p => { const o = document.createElement("option"); o.value=p; o.textContent=p; pSel.appendChild(o); });
-        }
-        pSel.innerHTML += '<option value="manual">Not Listed? (Type Name)</option>';
-    };
-    
-    const drop = document.getElementById("setupPlayerDropdown");
-    if(drop) drop.onchange = (e) => { document.getElementById("setupManualEntry").style.display = (e.target.value === "manual") ? "block" : "none"; };
+export const initSetupDropdowns = (teams) => {
+    const clubSelect = document.getElementById('setupClubSelect');
+    const teamSelect = document.getElementById('setupTeamSelect');
+    const playerSelect = document.getElementById('setupPlayerDropdown');
+
+    // 1. DATA EXTRACTION: Get unique clubs
+    const uniqueClubs = [...new Set(teams.map(team => team.club || 'Independent'))];
+
+    // 2. POPULATE CLUBS
+    clubSelect.innerHTML = '<option value="">Select your club...</option>';
+    uniqueClubs.forEach(club => {
+        const option = document.createElement('option');
+        option.value = club;
+        option.textContent = club;
+        clubSelect.appendChild(option);
+    });
+
+    // 3. THE TRIPWIRE: Club Selection -> Unlocks Teams
+    clubSelect.addEventListener('change', (event) => {
+        const selectedClub = event.target.value;
+
+        // Reset the downstream dropdowns
+        teamSelect.innerHTML = '<option value="">Select a team...</option>';
+        playerSelect.innerHTML = '<option value="">Select a team first...</option>';
+        teamSelect.disabled = true;
+        playerSelect.disabled = true;
+
+        if (!selectedClub) return; 
+
+        // 4. THE FILTER: Grab only the teams belonging to the chosen club
+        const filteredTeams = teams.filter(team => (team.club || 'Independent') === selectedClub);
+
+        // Populate the Team dropdown
+        filteredTeams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team.id;       
+            option.textContent = team.name; 
+            teamSelect.appendChild(option);
+        });
+
+        // Unlock the Team dropdown!
+        teamSelect.disabled = false;
+    });
+
+    // 5. THE TRIPWIRE: Team Selection -> Unlocks Players
+    teamSelect.addEventListener('change', async (event) => {
+        const selectedTeamId = event.target.value;
+        
+        playerSelect.innerHTML = '<option value="">Loading players...</option>';
+        playerSelect.disabled = true;
+
+        if (!selectedTeamId) return;
+        
+        // --- WE WILL ADD THE PLAYER POPULATION LOGIC NEXT ---
+    });
 };
 
 export const completeUserSetup = async () => {

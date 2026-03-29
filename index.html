@@ -53,27 +53,44 @@
         </div>
     </div>
 
-    <div id="setupUI" class="full-screen-center d-none">
-        <div class="auth-card">
-            <h2 class="auth-title">Complete Setup</h2>
-            <p class="auth-subtitle">Link your account to a player profile.</p>
+    <div id="setupUI" class="auth-container d-none setup-theme">
+        <div class="auth-box setup-content-box">
+            <img src="Images/Phoenixes_Logo_2026.png" alt="Phoenix Logo" class="setup-logo">
+            <h2>Complete Player Profile</h2>
+            <p class="setup-subtitle">Link your account to your organization.</p>
             
-            <label for="setupTeamSelect">Select Team</label>
-            <select id="setupTeamSelect"><option>Loading...</option></select>
-            
-            <label for="setupPlayerDropdown">Select Player</label>
-            <select id="setupPlayerDropdown" disabled><option>Select a Team First</option></select>
-            
-            <div id="setupManualEntry" class="d-none">
-                <label>Player Name</label>
-                <input type="text" id="setupPlayerManual" placeholder="First Last">
+            <div class="setup-form-group">
+                <label class="setup-label">Select Your Club / Organization</label>
+                <select id="setupClubSelect" class="form-input setup-input">
+                    <option value="">Loading Clubs...</option>
+                </select>
+            </div>
+
+            <div class="setup-form-group">
+                <label class="setup-label">Select Your Team</label>
+                <select id="setupTeamSelect" class="form-input setup-input" disabled>
+                    <option value="">Select a club first...</option>
+                </select>
             </div>
             
-            <button id="completeSetupBtn" class="primary-btn">Complete Profile</button>
-            <button id="globalLogoutBtn" class="secondary-btn w-100 btn-mt-10">Sign Out</button>
+            <div class="setup-form-group">
+                <label class="setup-label">Select Player Name</label>
+                <select id="setupPlayerDropdown" class="form-input setup-input" disabled>
+                    <option value="">Select a team first...</option>
+                </select>
+            </div>
+
+            <div id="setupManualEntry" class="setup-form-group d-none manual-entry-spacing">
+                <label class="setup-label">Type Player Name</label>
+                <input type="text" id="setupPlayerManual" class="form-input setup-input" placeholder="First and Last Name">
+                <p class="setup-helper-text">Your coach will need to approve this entry before your XP counts toward the team leaderboard.</p>
+            </div>
+
+            <button id="completeSetupBtn" class="primary-btn setup-submit-btn">Complete Setup</button>
+            <button id="setupLogoutBtn" class="action-btn setup-cancel-btn">Cancel & Logout</button>
         </div>
     </div>
-
+    
     <div id="appUI" class="container d-none">
         
         <div class="app-header">
