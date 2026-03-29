@@ -1,7 +1,7 @@
 /* eslint-disable quotes */
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { defineString } = require('firebase-functions/params');
+const {defineString} = require('firebase-functions/params');
 
 admin.initializeApp();
 const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
@@ -19,7 +19,7 @@ exports.syncUserClaims = functions.firestore
       const userEmail = context.params.email;
       const superAdmin = ADMIN_EMAIL.value();
 
-      let customClaims = {
+      const customClaims = {
         teamId: userData.teamId || null,
         role: userData.role || 'player',
       };
