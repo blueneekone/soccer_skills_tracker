@@ -16,7 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <link rel="stylesheet" href="style.css?v=3.10">
+    <link rel="stylesheet" href="style.css?v=3.11">
 </head>
 <body>
 
@@ -53,41 +53,41 @@
         </div>
     </div>
 
-    <div id="setupUI" class="auth-container d-none setup-theme">
-        <div class="auth-box setup-content-box">
-            <img src="Images/Phoenixes_Logo_2026.png" alt="Phoenix Logo" class="setup-logo">
-            <h2>Complete Player Profile</h2>
-            <p class="setup-subtitle">Link your account to your organization.</p>
+    <div id="setupUI" class="full-screen-center d-none">
+        <div class="auth-card">
+            <div class="logo-circle">⚽</div>
+            <h2 class="auth-title">Complete Profile</h2>
+            <p class="auth-subtitle mb-20-imp">Link your account to your organization.</p>
             
-            <div class="setup-form-group">
-                <label class="setup-label">Select Your Club / Organization</label>
-                <select id="setupClubSelect" class="form-input setup-input">
+            <div class="text-left mb-10">
+                <label>Select Your Club / Organization</label>
+                <select id="setupClubSelect">
                     <option value="">Loading Clubs...</option>
                 </select>
             </div>
 
-            <div class="setup-form-group">
-                <label class="setup-label">Select Your Team</label>
-                <select id="setupTeamSelect" class="form-input setup-input" disabled>
+            <div class="text-left mb-10">
+                <label>Select Your Team</label>
+                <select id="setupTeamSelect" disabled>
                     <option value="">Select a club first...</option>
                 </select>
             </div>
             
-            <div class="setup-form-group">
-                <label class="setup-label">Select Player Name</label>
-                <select id="setupPlayerDropdown" class="form-input setup-input" disabled>
+            <div class="text-left mb-10">
+                <label>Select Player Name</label>
+                <select id="setupPlayerDropdown" disabled>
                     <option value="">Select a team first...</option>
                 </select>
             </div>
 
-            <div id="setupManualEntry" class="setup-form-group d-none manual-entry-spacing">
-                <label class="setup-label">Type Player Name</label>
-                <input type="text" id="setupPlayerManual" class="form-input setup-input" placeholder="First and Last Name">
-                <p class="setup-helper-text">Your coach will need to approve this entry before your XP counts toward the team leaderboard.</p>
+            <div id="setupManualEntry" class="text-left mb-20-imp d-none">
+                <label>Type Player Name</label>
+                <input type="text" id="setupPlayerManual" placeholder="First and Last Name">
+                <p style="font-size:11px; color:var(--text-muted); margin-top:-10px;">Your coach will need to approve this entry before your XP counts toward the team leaderboard.</p>
             </div>
 
-            <button id="completeSetupBtn" class="primary-btn setup-submit-btn">Complete Setup</button>
-            <button id="setupLogoutBtn" class="action-btn setup-cancel-btn">Cancel & Logout</button>
+            <button id="completeSetupBtn" class="primary-btn btn-orange mb-10">Complete Setup</button>
+            <button id="setupLogoutBtn" class="secondary-btn w-100">Cancel & Logout</button>
         </div>
     </div>
     
@@ -995,6 +995,6 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=3.10"></script>
+    <script type="module" src="app.js?v=3.11"></script>
 </body>
 </html>

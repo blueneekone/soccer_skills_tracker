@@ -57,61 +57,95 @@ export const handleLogout = async () => {
 };
 
 // --- ACCOUNT SETUP ACTIONS ---
-export const initSetupDropdowns = (teams) => {
+// --- ACCOUNT SETUP ACTIONS ---
+export const initSetupDropdowns = (clubs, teams) => {
     const clubSelect = document.getElementById('setupClubSelect');
     const teamSelect = document.getElementById('setupTeamSelect');
     const playerSelect = document.getElementById('setupPlayerDropdown');
+    const manualEntry = document.getElementById('setupManualEntry');
 
-    // 1. DATA EXTRACTION: Get unique clubs
-    const uniqueClubs = [...new Set(teams.map(team => team.club || 'Independent'))];
+    if(!clubSelect || !teamSelect || !playerSelect) return;
 
-    // 2. POPULATE CLUBS
+    // 1. POPULATE CLUBS
     clubSelect.innerHTML = '<option value="">Select your club...</option>';
-    uniqueClubs.forEach(club => {
+    (clubs || []).forEach(club => {
         const option = document.createElement('option');
-        option.value = club;
-        option.textContent = club;
+        option.value = club.id;
+        option.textContent = club.name;
         clubSelect.appendChild(option);
     });
+    clubSelect.innerHTML += '<option value="independent">Independent / Unattached</option>';
 
-    // 3. THE TRIPWIRE: Club Selection -> Unlocks Teams
-    clubSelect.addEventListener('change', (event) => {
-        const selectedClub = event.target.value;
-
-        // Reset the downstream dropdowns
+    // 2. THE TRIPWIRE: Club Selection -> Unlocks Teams
+    clubSelect.onchange = (e) => {
+        const selectedClubId = e.target.value;
+        
         teamSelect.innerHTML = '<option value="">Select a team...</option>';
         playerSelect.innerHTML = '<option value="">Select a team first...</option>';
         teamSelect.disabled = true;
         playerSelect.disabled = true;
+        manualEntry.classList.add('d-none');
 
-        if (!selectedClub) return; 
+        if (!selectedClubId) return;
 
-        // 4. THE FILTER: Grab only the teams belonging to the chosen club
-        const filteredTeams = teams.filter(team => (team.club || 'Independent') === selectedClub);
+        // Filter Teams by Club ID
+        const filteredTeams = (teams || []).filter(team => {
+            if (selectedClubId === "independent") return !team.clubId;
+            return team.clubId === selectedClubId;
+        });
 
-        // Populate the Team dropdown
         filteredTeams.forEach(team => {
             const option = document.createElement('option');
             option.value = team.id;       
             option.textContent = team.name; 
             teamSelect.appendChild(option);
         });
-
-        // Unlock the Team dropdown!
+        
         teamSelect.disabled = false;
-    });
+    };
 
-    // 5. THE TRIPWIRE: Team Selection -> Unlocks Players
-    teamSelect.addEventListener('change', async (event) => {
-        const selectedTeamId = event.target.value;
+    // 3. THE TRIPWIRE: Team Selection -> Unlocks Players
+    teamSelect.onchange = async (e) => {
+        const selectedTeamId = e.target.value;
         
         playerSelect.innerHTML = '<option value="">Loading players...</option>';
         playerSelect.disabled = true;
+        manualEntry.classList.add('d-none');
 
         if (!selectedTeamId) return;
-        
-        // --- WE WILL ADD THE PLAYER POPULATION LOGIC NEXT ---
-    });
+
+        try {
+            // Fetch the specific team's roster from the database
+            const rosterSnap = await getDoc(doc(db, "rosters", selectedTeamId));
+            let players = [];
+            if (rosterSnap.exists()) {
+                players = rosterSnap.data().players || [];
+            }
+
+            playerSelect.innerHTML = '<option value="">Select your name...</option>';
+            players.sort().forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;       
+                option.textContent = p; 
+                playerSelect.appendChild(option);
+            });
+            
+            playerSelect.innerHTML += '<option value="manual">My name is not listed (Type it manually)</option>';
+            playerSelect.disabled = false;
+        } catch (err) {
+            console.error("Error loading roster:", err);
+            playerSelect.innerHTML = '<option value="">Error loading. Try again.</option>';
+        }
+    };
+
+    // 4. THE TRIPWIRE: Player Selection -> Manual Entry
+    playerSelect.onchange = (e) => {
+        if (e.target.value === "manual") {
+            manualEntry.classList.remove('d-none');
+        } else {
+            manualEntry.classList.add('d-none');
+        }
+    };
 };
 
 export const completeUserSetup = async () => {

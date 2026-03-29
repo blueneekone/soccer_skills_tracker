@@ -3,13 +3,14 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
-import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
-import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js";
-import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js";
-import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js";
-import { applyTeamBranding } from "./modules/branding.js";
-import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
+// --- BRING IN YOUR MODULES ---
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=3.11";
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=3.11";
+import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=3.11";
+import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=3.11";
+import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js?v=3.11";
+import { applyTeamBranding } from "./modules/branding.js?v=3.11";
+import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=3.11";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
@@ -1000,9 +1001,6 @@ else initApp();
 // ==========================================
 // 5. AUTH MONITOR & INITIAL ROUTE
 // ==========================================
-// ==========================================
-// 5. AUTH MONITOR & INITIAL ROUTE
-// ==========================================
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
@@ -1058,7 +1056,8 @@ onAuthStateChanged(auth, async (user) => {
 
             } else {
                 document.getElementById("setupUI").style.display = 'flex';
-                initSetupDropdowns(globalTeams);
+                // Pass both Clubs and Teams to the setup screen
+                initSetupDropdowns(window.globalClubs, globalTeams);
             }
         } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
     } else {
