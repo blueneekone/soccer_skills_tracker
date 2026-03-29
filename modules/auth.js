@@ -149,10 +149,39 @@ export const initSetupDropdowns = (clubs, teams) => {
 };
 
 export const completeUserSetup = async () => {
+    // 1. Grab the new IDs we created for the cascading flow
+    const clubId = document.getElementById("setupClubSelect").value;
     const tid = document.getElementById("setupTeamSelect").value;
     let pname = document.getElementById("setupPlayerDropdown").value;
-    if (pname === "manual") pname = document.getElementById("setupPlayerManual").value.trim();
-    if(!tid || !pname) return alert("Please select a team and player name.");
-    await setDoc(doc(db, "users", auth.currentUser.email), { teamId: tid, playerName: pname, joinedAt: new Date() });
-    location.reload();
+
+    // Handle the manual name entry if they chose that option
+    if (pname === "manual") {
+        pname = document.getElementById("setupPlayerManual").value.trim();
+    }
+
+    // 2. Comprehensive Validation
+    if (!clubId || !tid || !pname) {
+        return alert("Please ensure Club, Team, and Player Name are all selected.");
+    }
+
+    try {
+        const userEmail = auth.currentUser.email.toLowerCase();
+        
+        // 3. The Database Write
+        // We are now explicitly adding clubId to the profile
+        await setDoc(doc(db, "users", userEmail), { 
+            clubId: clubId,
+            teamId: tid, 
+            playerName: pname, 
+            joinedAt: new Date() 
+        }, { merge: true });
+
+        console.log("Profile saved successfully for:", userEmail);
+        
+        // 4. Only reload ONCE the database confirms success
+        window.location.reload(); 
+    } catch (error) {
+        console.error("Error saving profile:", error);
+        alert("Failed to save profile: " + error.message);
+    }
 };
