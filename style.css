@@ -387,13 +387,24 @@ input:focus, select:focus, textarea:focus {
    SaaS ONBOARDING UI (SETUP SCREEN)
    ========================================== */
 #setupUI.setup-theme {
+    display: flex; /* THE MISSING MAGIC WORD */
     min-height: 100vh;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 20px; /* Prevents the box from touching the edges on mobile */
 }
 
+/* The Floating Auth Card */
 .setup-content-box {
+    width: 100%;
+    max-width: 420px; /* Locks the width on laptops/desktops */
+    background: rgba(30, 41, 59, 0.7); /* Slightly transparent dark card */
+    backdrop-filter: blur(10px); /* Apple-style frosted glass effect */
+    padding: 40px 30px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Deep pro drop-shadow */
     text-align: center;
 }
 
