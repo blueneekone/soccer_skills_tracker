@@ -1000,28 +1000,34 @@ else initApp();
 // ==========================================
 // 5. AUTH MONITOR & INITIAL ROUTE
 // ==========================================
+// ==========================================
+// 5. AUTH MONITOR & INITIAL ROUTE
+// ==========================================
 onAuthStateChanged(auth, async (user) => {
     if(user) {
         document.getElementById("loginUI").style.display='none';
         document.getElementById("pwaInstallPrompt").style.display='none';
         try {
+            // 1. FORCE REFRESH THE TOKEN TO GRAB THE SECURE BACKEND BADGE
+            const tokenResult = await user.getIdTokenResult(true);
+            const userRole = tokenResult.claims.role || 'player';
+            
             await fetchConfig();
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
             
-            const isAdmin = (user.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase()) || 
-                            globalAdmins.some(a => a.toLowerCase() === user.email.toLowerCase());
-
-            if (isAdmin) {
-                userProfile = { teamId: "admin", playerName: "Director", role: "admin" }; 
+            // 2. USE THE SECURE ROLE INSTEAD OF HARDCODED EMAILS
+            if (userRole === 'super_admin' || userRole === 'director') {
+                userProfile = { teamId: "admin", playerName: "Director", role: userRole }; 
             } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
+                userProfile.role = userRole; // Attach secure role to profile
             } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if(inviteSnap.exists()) {
                     const data = inviteSnap.data();
-                    const newProfile = { teamId: data.teamId, playerName: data.playerName, joinedAt: new Date() };
+                    const newProfile = { teamId: data.teamId, playerName: data.playerName, joinedAt: new Date(), role: userRole };
                     await setDoc(userRef, newProfile);
                     userProfile = newProfile;
                 }
@@ -1030,14 +1036,14 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile) {
                 document.getElementById("appUI").style.display='block';
                 
-                await applyTeamBranding(userProfile.teamId);
+                // If they are a Super Admin, we don't need team branding
+                if(userProfile.teamId !== "admin") {
+                    await applyTeamBranding(userProfile.teamId);
+                }
                 
                 setText("coachName", user.email);
                 setText("activePlayerName", userProfile.playerName);
                 setText("homePlayerName", userProfile.playerName.split(" ")[0]);
-                if(document.getElementById("homePlayerName")) {
-                    setText("homePlayerName", userProfile.playerName.split(" ")[0]);
-                }
                 
                 requestPushPermissions(user.email);
                 
