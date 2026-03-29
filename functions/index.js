@@ -1,32 +1,45 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+/* eslint-disable quotes */
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const { defineString } = require('firebase-functions/params');
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const logger = require("firebase-functions/logger");
+admin.initializeApp();
+const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+exports.syncUserClaims = functions.firestore
+    .document('users/{email}')
+    .onWrite(async (change, context) => {
+      const userData = change.after.data();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+      if (!userData) {
+        functions.logger.info('User profile deleted. Exiting function.');
+        return null;
+      }
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+      const userEmail = context.params.email;
+      const superAdmin = ADMIN_EMAIL.value();
+
+      let customClaims = {
+        teamId: userData.teamId || null,
+        role: userData.role || 'player',
+      };
+
+      functions.logger.info(`Intercepted profile update for: ${userEmail}`);
+
+      // 1. The Gatekeeper
+      if (userEmail.toLowerCase() === superAdmin.toLowerCase()) {
+        customClaims.role = 'super_admin';
+        functions.logger.info('Super Admin detected! Upgrading badge.');
+      }
+
+      // 2. The Stamper
+      try {
+        const userRecord = await admin.auth().getUserByEmail(userEmail);
+        await admin.auth().setCustomUserClaims(userRecord.uid, customClaims);
+        functions.logger.info('Successfully stamped claims!');
+      } catch (error) {
+        functions.logger.error('Error stamping claims:', error);
+      }
+
+      return null;
+    });
