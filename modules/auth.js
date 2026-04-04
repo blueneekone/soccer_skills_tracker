@@ -149,14 +149,19 @@ export const initSetupDropdowns = (clubs, teams) => {
 };
 
 export const completeUserSetup = async () => {
-    // 1. Grab the new IDs we created for the cascading flow
-    const clubId = document.getElementById("setupClubSelect").value;
-    const tid = document.getElementById("setupTeamSelect").value;
-    let pname = document.getElementById("setupPlayerDropdown").value;
+    // 1. Grab values from the new cascading IDs we built
+    const clubSelect = document.getElementById("setupClubSelect");
+    const teamSelect = document.getElementById("setupTeamSelect");
+    const playerSelect = document.getElementById("setupPlayerDropdown");
+    const manualInput = document.getElementById("setupPlayerManual");
+
+    const clubId = clubSelect ? clubSelect.value : null;
+    const tid = teamSelect ? teamSelect.value : null;
+    let pname = playerSelect ? playerSelect.value : null;
 
     // Handle the manual name entry if they chose that option
-    if (pname === "manual") {
-        pname = document.getElementById("setupPlayerManual").value.trim();
+    if (pname === "manual" && manualInput) {
+        pname = manualInput.value.trim();
     }
 
     // 2. Comprehensive Validation
@@ -168,7 +173,7 @@ export const completeUserSetup = async () => {
         const userEmail = auth.currentUser.email.toLowerCase();
         
         // 3. The Database Write
-        // We are now explicitly adding clubId to the profile
+        // We use { merge: true } so we don't overwrite your 'super_admin' role
         await setDoc(doc(db, "users", userEmail), { 
             clubId: clubId,
             teamId: tid, 

@@ -1055,6 +1055,7 @@ onAuthStateChanged(auth, async (user) => {
                 window.navigateTo('viewHome', 'navHome', false);
 
             } else {
+                ocument.getElementById("setupUI").classList.remove("d-none"); 
                 document.getElementById("setupUI").style.display = 'flex';
                 // Pass both Clubs and Teams to the setup screen
                 initSetupDropdowns(window.globalClubs, globalTeams);
