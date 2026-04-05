@@ -16,7 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <link rel="stylesheet" href="style.css?v=3.12">
+    <link rel="stylesheet" href="style.css?v=3.15">
 </head>
 <body>
 
@@ -764,22 +764,96 @@
             </div>
         </div>
 
-        <div id="viewAdmin" class="view-section d-none">
-            <h2 class="admin-header">Admin Dashboard</h2>
-            <div class="card" id="adminClubsCard">
-                <div class="card-header">Clubs (Super Admin Only)</div>
-                <div class="card-body">
-                    <table id="clubTable" class="admin-table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Director Email</th></tr></thead><tbody></tbody>
-                    </table>
-                    <div class="admin-input-row">
-                        <input type="text" id="newClubId" class="team-id-input" placeholder="ID (e.g. aggies)">
-                        <input type="text" id="newClubName" placeholder="Club Name">
-                        <input type="text" id="newClubDirector" placeholder="Director Email">
-                    </div>
-                    <button id="addClubBtn" class="primary-btn">Add Club</button>
+     <div id="viewAdmin" class="view-section d-none">
+    <div class="admin-sticky-header">
+        <h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
+        
+        <div class="admin-tab-bar">
+            <button class="admin-tab active" data-target="admin-section-overview"><i class="ph ph-chart-line"></i> Overview</button>
+            <button class="admin-tab" data-target="admin-section-sports"><i class="ph ph-trophy"></i> Sports Modules</button>
+            <button class="admin-tab" data-target="admin-section-accounts"><i class="ph ph-users-three"></i> Accounts</button>
+            <button class="admin-tab" data-target="admin-section-billing"><i class="ph ph-credit-card"></i> Licensing</button>
+            <button class="admin-tab" data-target="admin-section-security"><i class="ph ph-shield-check"></i> Security</button>
+        </div>
+    </div>
+
+    <div id="admin-section-overview" class="admin-pane">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Athletes</h3>
+                <p id="global-player-count">0</p>
+                <span class="stat-trend positive"><i class="ph ph-trend-up"></i> +12% this month</span>
+            </div>
+            <div class="stat-card">
+                <h3>Active Organizations</h3>
+                <p id="global-club-count">0</p>
+            </div>
+            <div class="stat-card stat-card-gold">
+                <h3>Active Licenses</h3>
+                <p id="global-license-count">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-section-sports" class="admin-pane d-none">
+        <div class="card">
+            <div class="card-header">Provision New Sport Module</div>
+            <div class="card-body">
+                <div class="admin-input-row">
+                    <input type="text" id="newSportName" placeholder="e.g., Volleyball">
+                    <button id="btn-provision-sport" class="primary-btn btn-blue">Initialize Schema</button>
                 </div>
             </div>
+        </div>
+        <div class="card mt-15">
+            <div class="card-header">Active Platform Sports</div>
+            <div class="card-body" id="active-sport-tags">
+                </div>
+        </div>
+    </div>
+
+    <div id="admin-section-accounts" class="admin-pane d-none">
+        <div class="card" id="adminClubsCard">
+            </div>
+        <div class="card mt-15" id="adminTeamsCard">
+            </div>
+    </div>
+
+    <div id="admin-section-billing" class="admin-pane d-none">
+        <div class="card border-gold">
+            <div class="card-header bg-gold-header"><i class="ph ph-credit-card"></i> License Generator</div>
+            <div class="card-body">
+                <label>Target Organization</label>
+                <select id="billingOrgSelect" class="mb-15"><option value="">Loading...</option></select>
+
+                <div class="input-row mb-15">
+                    <div class="flex-1">
+                        <label>License Type</label>
+                        <select id="licenseType">
+                            <option value="tutoring">Tutoring (Pay-per-seat)</option>
+                            <option value="subscription">Monthly Subscription</option>
+                            <option value="trial">Free Trial</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label>Seat Limit</label>
+                        <input type="number" id="licenseSeats" value="10">
+                    </div>
+                </div>
+                <button id="btn-update-license" class="primary-btn btn-gold">Generate & Sync License</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-section-security" class="admin-pane d-none">
+        <div class="card">
+            <div class="card-header bg-red-header"><i class="ph ph-warning"></i> Super Admin Audit Log</div>
+            <div class="card-body" id="admin-audit-log">
+                <p class="text-muted">Fetching security logs...</p>
+            </div>
+        </div>
+    </div>
+</div>
             
             <div class="card">
                 <div class="card-header">Groups & Teams</div>
@@ -994,6 +1068,6 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=3.14"></script>
+    <script type="module" src="app.js?v=3.15"></script>
 </body>
 </html>

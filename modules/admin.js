@@ -4,6 +4,27 @@ import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, addDoc
 import { initBrandingPanel } from "./branding.js";
 
 // --- 2. ADMIN DASHBOARD TABLES ---
+export const initAdminTabs = () => {
+    const tabs = document.querySelectorAll('.admin-tab');
+    const panes = document.querySelectorAll('.admin-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            // 1. Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // 2. Hide all panes
+            panes.forEach(p => p.classList.add('d-none'));
+
+            // 3. Activate clicked tab
+            e.currentTarget.classList.add('active');
+            
+            // 4. Show target pane
+            const targetId = e.currentTarget.getAttribute('data-target');
+            document.getElementById(targetId).classList.remove('d-none');
+        });
+    });
+};
+
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail) => {
     const isSuper = (userEmail || "").toLowerCase() === superAdminEmail.toLowerCase();
     

@@ -748,6 +748,24 @@ const getEmbedUrl = (url) => {
     safeBind("addTeamBtn", "click", () => addTeam(globalTeams, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
     safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
 
+    // --- GOD MODE ADMIN TABS (Linear Execution) ---
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    const adminPanes = document.querySelectorAll('.admin-pane');
+    
+    adminTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            // 1. Clear active states
+            adminTabs.forEach(t => t.classList.remove('active'));
+            adminPanes.forEach(p => p.classList.add('d-none'));
+            
+            // 2. Set new active tab and pane
+            e.currentTarget.classList.add('active');
+            const targetId = e.currentTarget.getAttribute('data-target');
+            const targetPane = document.getElementById(targetId);
+            if(targetPane) targetPane.classList.remove('d-none');
+        });
+    });
+    
 // --- SCHEDULE & HOMEWORK BINDINGS ---
 
     safeBind("addScheduleBtn", "click", async () => {
