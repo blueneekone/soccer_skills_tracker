@@ -479,22 +479,25 @@ input:focus, select:focus, textarea:focus {
 
 .admin-tab-bar {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 5px;
+    gap: 8px;
+    flex-wrap: wrap; /* THE FIX: Allows tabs to drop to the next line */
+    justify-content: center; /* Centers the tabs nicely */
+    padding-bottom: 10px;
 }
 
 .admin-tab {
-    background: transparent;
+   background: transparent;
     border: none;
-    padding: 10px 15px;
-    font-size: 0.95rem;
+    flex: 1 1 calc(33% - 10px); /* Forces tabs to share the space (3 per row) */
+    padding: 8px 5px;
+    font-size: 0.8rem; /* Slightly smaller text for mobile */
     font-weight: 600;
     color: #666;
     cursor: pointer;
     border-bottom: 3px solid transparent;
     transition: all 0.2s ease;
-    white-space: nowrap;
+    white-space: normal; /* Allows text to wrap inside the button if needed */
+    text-align: center;
 }
 
 .admin-tab:hover { color: #333; }
