@@ -7,6 +7,7 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=3.12";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=3.11";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=3.11";
+import { initDirectorModule } from "./modules/director.js?v=4.0.1";
 import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=3.11";
 import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js?v=3.11";
 import { applyTeamBranding } from "./modules/branding.js?v=3.11";
@@ -741,11 +742,8 @@ const getEmbedUrl = (url) => {
     safeBind("saveParsedRosterBtn", "click", () => saveRosterList(() => loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams, loadHomeDashboard)));
     safeBind("coachAddPlayerBtn", "click", () => manualAddPlayer(() => loadCoachDashboard(false, globalTeams, loadHomeDashboard)));
     safeBind("exportXlsxBtn", "click", exportSessionData);
-    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams, loadHomeDashboard)); 
-    safeBind("addAssistantBtn", "click", () => addAssistant(globalTeams, () => loadCoachDashboard(auth.currentUser.email.toLowerCase() === DIRECTOR_EMAIL.toLowerCase(), globalTeams, loadHomeDashboard)));
-    
+    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams, loadHomeDashboard));     
     safeBind("addClubBtn", "click", () => addClub(window.globalClubs, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
-    safeBind("addTeamBtn", "click", () => addTeam(globalTeams, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
     safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => renderAdminTables(window.globalClubs, globalTeams, globalAdmins, userProfile ? userProfile.email : null, DIRECTOR_EMAIL)));
 
     // --- GOD MODE ADMIN TABS (Linear Execution) ---
@@ -765,7 +763,7 @@ const getEmbedUrl = (url) => {
             if(targetPane) targetPane.classList.remove('d-none');
         });
     });
-    
+
 // --- SCHEDULE & HOMEWORK BINDINGS ---
 
     safeBind("addScheduleBtn", "click", async () => {
@@ -1068,6 +1066,8 @@ onAuthStateChanged(auth, async (user) => {
                 loadStats();
                 loadHomeDashboard();
                 checkRoles(user);
+
+                initDirectorModule(db, userProfile);
 
                 history.replaceState({ view: 'viewHome', nav: 'navHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', 'navHome', false);

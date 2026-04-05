@@ -218,20 +218,6 @@ const renderAssistantList = (team) => {
     c.innerHTML = team.assistants.map(email => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;"><span>${email}</span><button class="delete-btn" onclick="window.removeAssistant('${email}')">Remove</button></div>`).join("");
 };
 
-export const addAssistant = async (teams, reloadDashboardCallback) => {
-    const email = document.getElementById("newAssistantEmail").value.trim().toLowerCase();
-    if(!email || !email.includes("@")) return alert("Enter a valid email.");
-    const teamIdx = teams.findIndex(t => t.id === currentCoachTeamId);
-    if(teamIdx === -1) return;
-    if(!teams[teamIdx].assistants) teams[teamIdx].assistants = [];
-    if(teams[teamIdx].assistants.includes(email)) return alert("User already added.");
-    teams[teamIdx].assistants.push(email);
-    await setDoc(doc(db, "config", "teams"), { list: teams });
-    alert("Assistant Added!");
-    document.getElementById("newAssistantEmail").value = "";
-    reloadDashboardCallback();
-};
-
 window.removeAssistant = async (email, teams, reloadDashboardCallback) => {
     if(!confirm(`Revoke for ${email}?`)) return;
     const teamIdx = teams.findIndex(t => t.id === currentCoachTeamId);

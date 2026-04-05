@@ -177,25 +177,6 @@ export const addClub = async (globalClubs, reloadCallback) => {
     if(reloadCallback) reloadCallback();
 };
 
-export const addTeam = async (globalTeams, reloadCallback) => {
-    const id = document.getElementById("newTeamId").value;
-    const name = document.getElementById("newTeamName").value;
-    const email = document.getElementById("newCoachEmail").value;
-    const clubId = document.getElementById("newTeamClubId").value;
-    if(!id || !name) return alert("Please enter at least an ID and a Team Name.");
-    if(!clubId) return alert("Please select a parent club for the team.");
-    
-    globalTeams.push({ id, name, coachEmail: email, clubId });
-    await setDoc(doc(db, "config", "teams"), { list: globalTeams });
-    
-    alert("Team Added!"); 
-    document.getElementById("newTeamId").value = "";
-    document.getElementById("newTeamName").value = "";
-    document.getElementById("newCoachEmail").value = "";
-    
-    if(reloadCallback) reloadCallback();
-};
-
 export const addAdmin = async (globalAdmins, reloadCallback) => {
     const email = document.getElementById("newAdminEmail").value;
     if(!email) return alert("Please enter an email.");
