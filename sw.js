@@ -52,3 +52,14 @@ self.addEventListener('fetch', (e) => {
         fetch(e.request).catch(() => caches.match(e.request))
     );
 });
+
+messaging.onBackgroundMessage((payload) => {
+  console.log('[sw.js] Received background message ', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: '/Images/Phoenixes_Logo_2026.png'
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});

@@ -99,9 +99,6 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     const a = document.getElementById("adminTable");
     if(a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${e}</td><td><button class="delete-btn" style="float:right;" onclick="window.removeAdmin('${e}')">X</button></td></tr>`).join("");
     
-    const migSel = document.getElementById("migrateTargetTeam");
-    if(migSel) migSel.innerHTML = "<option value=''>Select Target Team...</option>" + (globalTeams||[]).map(t => `<option value="${t.id}">${t.name} (${t.id})</option>`).join("") + "<option value='misc'>Unassigned Legacy (misc)</option>";
-    
     const assignClubSel = document.getElementById("assignDirClubId");
     if(assignClubSel) assignClubSel.innerHTML = "<option value=''>Select Club...</option>" + (globalClubs||[]).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
     
@@ -124,36 +121,6 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
             document.getElementById("assignDirEmail").value = "";
             assignBtn.innerText = "Assign Director Role";
         });
-    }
-
-    const migBtn = document.getElementById("migrateLegacyBtn");
-    if(migBtn && migBtn.dataset.bound !== "true") {
-        migBtn.addEventListener("click", async () => {
-            const tid = document.getElementById("migrateTargetTeam").value;
-            if(!tid) return alert("Select a Team.");
-            if(!confirm("Attempt to patch all unassigned legacy logs and duplicate defaults into " + tid + "?")) return;
-            migBtn.innerText = "Working...";
-            try {
-                const snap = await getDocs(collection(db, "reps"));
-                let repsCount = 0;
-                const promises = [];
-                snap.forEach(d => {
-                    const data = d.data();
-                    if(!data.teamId) {
-                        promises.push(setDoc(doc(db, "reps", d.id), { ...data, teamId: tid }));
-                        repsCount++;
-                    }
-                });
-                await Promise.all(promises);
-                
-                if(window.syncDefaultWorkouts) await window.syncDefaultWorkouts(tid);
-                
-                migBtn.innerText = "Done!";
-                alert(`Migration Complete! Patched ${repsCount} legacy logs and injected defaults.`);
-                setTimeout(()=> migBtn.innerText = "Execute Legacy Fix", 2000);
-            } catch(e) { console.error(e); alert("Failed."); migBtn.innerText = "Execute Legacy Fix"; }
-        });
-        migBtn.dataset.bound = "true";
     }
 
     initBrandingPanel(globalTeams);

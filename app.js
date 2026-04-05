@@ -1,9 +1,9 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.0.";
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=4.0.0";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
@@ -47,10 +47,10 @@ window.globalStatsLogs = [];
 window.Workouts = [];
 window.fetchWorkouts = async (tid) => {
     try {
-        // If an Admin logs in, fetch drills for the currently selected Coach team, or default to aggiesfc
         let targetTid = tid === "admin" ? (currentCoachTeamId || "aggiesfc") : tid;
         
-        if (!targetTid || targetTid === "misc") { 
+        // You can now remove the "misc" check if all data is properly assigned
+        if (!targetTid) { 
             window.Workouts = []; 
         } else {
             const q = query(collection(db, "workouts"), where("teamId", "==", targetTid));
@@ -85,6 +85,21 @@ window.buildCoachDropdowns = () => {
         });
     }
 };
+
+// Centralized state manager for Team Context
+window.getEffectiveTeamId = () => {
+    if (!userProfile) return null;
+    
+    // If the user is an admin/director, use the team selected in the dropdown
+    // Defaults to "aggiesfc" if no team is selected yet
+    if (userProfile.role === 'super_admin' || userProfile.role === 'director') {
+        return currentCoachTeamId || "aggiesfc";
+    }
+    
+    // Otherwise, return the player's assigned team
+    return userProfile.teamId;
+};
+
 // ==========================================
 // 2. CORE NAVIGATION & ROUTING API
 // ==========================================
@@ -93,51 +108,37 @@ const navs = ['navHome', 'navTrack', 'navStats', 'navTrophy', 'navCoach', 'navAd
 const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'];
 
 // --- NEW NAVIGATION LOGIC ---
+
+// In app.js - Consolidate your navigation
 window.navigateTo = (viewId, addToHistory = true) => {
     const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector'];
     
-    // Hide all views
     views.forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('d-none');
     });
     
-    // Show selected view
     const targetEl = document.getElementById(viewId);
     if (targetEl) targetEl.classList.remove('d-none');
-    
-    // Trigger specific data loads if needed
-    if(viewId === 'viewStats') loadStats();
-    if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
-    if(viewId === 'viewAdmin') renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser?.email, DIRECTOR_EMAIL);
-    if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
 
-    // Push to phone history so the native back swipe works!
+    // Update bottom nav active state
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    // Map view IDs to Nav IDs if they differ
+    const navId = viewId.replace('view', 'nav').replace('Tracker', 'Track');
+    const activeNav = document.getElementById(navId);
+    if(activeNav) activeNav.classList.add('active');
+
     if (addToHistory) {
         history.pushState({ view: viewId }, '', `#${viewId}`);
     }
-    
-    // Scroll to the top of the page smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// Listen for Native Phone Swipes / Back Button
 window.addEventListener('popstate', (event) => {
     if (event.state && event.state.view) {
-        window.navigateTo(event.state.view, false); // false prevents infinite loop
+        window.navigateTo(event.state.view, false);
     } else {
-        // Fallback to home
         window.navigateTo('viewHome', false);
-    }
-});
-
-// Listen for Native Phone Swipes / Back Button
-window.addEventListener('popstate', (event) => {
-    if (event.state && event.state.view && event.state.nav) {
-        window.navigateTo(event.state.view, event.state.nav, false); // false prevents infinite loop
-    } else {
-        // Fallback to home
-        window.navigateTo('viewHome', 'navHome', false);
     }
 });
 
@@ -351,7 +352,7 @@ async function loadStats() {
     let totalMins = 0;
     
     let q;
-    if (userProfile.role === 'admin') {
+    if (userProfile.role === 'super_admin') {
         setText("userLevelDisplay", "DIRECTOR");
         q = query(collection(db, "reps"), orderBy("timestamp", "desc"), limit(100));
     } else {
@@ -377,7 +378,7 @@ async function loadStats() {
         });
         logs.sort((a,b) => b.timestamp.seconds - a.timestamp.seconds);
         
-        setText("statTotal", `${logs.length} ${userProfile.role === 'admin' ? "Club Workouts" : "All-Time Sessions"}`);
+        setText("statTotal", `${logs.length} ${userProfile.role === 'super_admin' ? "Club Workouts" : "All-Time Sessions"}`);
         setText("statTime", totalMins);
         
         let maxMonthlyXp = 0;
@@ -413,7 +414,7 @@ async function loadStats() {
         
         const warningEl = document.getElementById("pendingEvalWarning");
         if(warningEl) {
-            if(isCapped && userProfile.role !== 'admin') warningEl.classList.remove("d-none");
+            if(isCapped && userProfile.role !== 'super_admin') warningEl.classList.remove("d-none");
             else warningEl.classList.add("d-none");
         }
 
@@ -423,7 +424,7 @@ async function loadStats() {
         
         // 1. Unhide the permanent Dashboard Grid Button if they have >= 250 XP
         if (challengeDashBtn) {
-            if (xp >= 250 && userProfile.role !== 'admin') {
+            if (xp >= 250 && userProfile.role !== 'super_admin') {
                 challengeDashBtn.classList.remove("d-none");
             } else {
                 challengeDashBtn.classList.add("d-none");
@@ -432,7 +433,7 @@ async function loadStats() {
 
         // 2. The "Boss Fight" Trigger: Show the aggressive banner ONLY if they haven't beaten it yet
         if (challengeBanner) {
-            if (xp >= 250 && !userProfile.hasViewedBasicsChallenge && userProfile.role !== 'admin') {
+            if (xp >= 250 && !userProfile.hasViewedBasicsChallenge && userProfile.role !== 'super_admin') {
                 challengeBanner.classList.remove("d-none");
             } else {
                 challengeBanner.classList.add("d-none");
@@ -456,7 +457,7 @@ async function loadStats() {
         if(lvl === "PRO" || lvl === "LEGEND") { if(bPro) { bPro.classList.remove("medal-locked"); } }
         if(lvl === "LEGEND") { 
             if(bLegend) { bLegend.classList.remove("medal-locked"); }
-            if(certBtn && userProfile.role !== 'admin') certBtn.style.display = "block"; 
+            if(certBtn && userProfile.role !== 'super_admin') certBtn.style.display = "block"; 
         }
 
         // --- MILESTONE BADGES ---
@@ -514,7 +515,7 @@ async function loadStats() {
 
         renderCalendar(logs);
         renderPlayerTrendChart(logs);
-        renderTeamLeaderboard(userProfile.role === 'admin' ? null : userProfile.teamId, logs);
+        renderTeamLeaderboard(userProfile.role === 'super_admin' ? null : userProfile.teamId, logs);
         renderPlayerTrials(userProfile.playerName);
         loadPlayerFeedback(userProfile);
         window.globalStatsLogs = logs;
@@ -529,8 +530,8 @@ async function loadHomeDashboard() {
     if(!userProfile) return;
     
     // Admin uses the team selected in Coach Tools. Players use their assigned team.
-    const targetTeamId = userProfile.role === 'admin' && currentCoachTeamId ? currentCoachTeamId : userProfile.teamId;
-    const targetPlayer = userProfile.role === 'admin' ? null : userProfile.playerName;
+    const targetTeamId = userProfile.role === 'super_admin' && currentCoachTeamId ? currentCoachTeamId : userProfile.teamId;
+    const targetPlayer = userProfile.role === 'super_admin' ? null : userProfile.playerName;
 
     const schedList = document.getElementById("homeScheduleList");
     if(schedList) {
@@ -556,7 +557,7 @@ async function loadHomeDashboard() {
 
     const hwList = document.getElementById("homeHomeworkList");
     if(hwList) {
-        if(userProfile.role === 'admin') {
+        if(userProfile.role === 'super_admin') {
             hwList.innerHTML = "<li class='session-empty' style='color:#ea580c;'>Admins don't receive personal homework. Assign it in Coach Tools!</li>";
         } else {
             hwList.innerHTML = "<li class='session-empty'>Loading assignments...</li>";
@@ -588,11 +589,7 @@ async function loadHomeDashboard() {
     }
 }
 
-function getSessionDescription() {
-    if (currentSessionItems.length === 0) return "";
-    const list = currentSessionItems.map((i, idx) => `${idx + 1}. ${i.name} (${i.sets} x ${i.reps})`).join("\\n");
-    return `Aggies FC Training Plan:\\n\\n${list}\\n\\nLog results here: https://soccer-skills-tracker.web.app`;
-}
+// getSessionDescription removed — lives in modules/tracker.js
 
 // ==========================================
 // 4. MAIN INIT & UI LOGIC
@@ -628,9 +625,9 @@ const initApp = () => {
     safeBind("completeSetupBtn", "click", completeUserSetup);
 
     // NAVIGATION BINDINGS (Uses centralized API)
-    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome', 'navHome'));
+    safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome'));
     navs.forEach((nid, i) => {
-        safeBind(nid, "click", () => window.navigateTo(views[i], nid));
+        safeBind(nid, "click", () => window.navigateTo(views[i]));
     });
 
     // HOME SCREEN DASHBOARD ACTIONS
@@ -698,7 +695,7 @@ const getEmbedUrl = (url) => {
     const showDrillInfo = (drillName) => {
         const s = window.Workouts.find(x => x.name === drillName);
         if(s) {
-            document.getElementById("drillInfoBox").style.display='block';
+            document.getElementById("drillInfoBox").classList.remove('d-none');
             setText("drillTitle", s.name);
             setText("drillDesc", s.drill);
             const vb = document.getElementById("watchVideoBtn");
@@ -721,7 +718,7 @@ const getEmbedUrl = (url) => {
         
         if(val === "custom") {
             customContainer.style.display = 'block';
-            infoBox.style.display = 'none';
+            infoBox.classList.add('d-none');
         } else {
             customContainer.style.display = 'none';
             showDrillInfo(val);
@@ -944,7 +941,7 @@ const getEmbedUrl = (url) => {
             const videoPlayer = document.getElementById("videoPlayer");
             if (videoPlayer) videoPlayer.src = "";
             const drillInfoBox = document.getElementById("drillInfoBox");
-            if (drillInfoBox) drillInfoBox.style.display = 'none';
+            if (drillInfoBox) drillInfoBox.classList.add('d-none');
         }
     });
 
@@ -1091,20 +1088,17 @@ onAuthStateChanged(auth, async (user) => {
 
                 initDirectorModule(db, userProfile);
 
-                history.replaceState({ view: 'viewHome', nav: 'navHome' }, '', '#viewHome');
-                window.navigateTo('viewHome', 'navHome', false);
+                history.replaceState({ view: 'viewHome' }, '', '#viewHome');
+                window.navigateTo('viewHome', false);
 
             } else {
                 document.getElementById("setupUI").classList.remove("d-none"); 
-                document.getElementById("setupUI").style.display = 'flex';
-                // Pass both Clubs and Teams to the setup screen
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
         } catch (error) { console.error(error); alert("Auth Data Error: " + error.message); }
     } else {
         document.getElementById("loginUI").style.display='flex';
         document.getElementById("appUI").style.display='none';
-        document.getElementById("bottomNav").style.display='none';
         document.getElementById("setupUI").style.display='none';
     }
 });

@@ -218,21 +218,28 @@ const renderAssistantList = (team) => {
     c.innerHTML = team.assistants.map(email => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;"><span>${email}</span><button class="delete-btn" onclick="window.removeAssistant('${email}')">Remove</button></div>`).join("");
 };
 
-window.removeAssistant = async (email, teams, reloadDashboardCallback) => {
-    if(!confirm(`Revoke for ${email}?`)) return;
+window.removeAssistant = async (email) => {
+    if(!confirm(`Revoke access for ${email}?`)) return;
+    const teams = window.globalTeams; // Reference the global window object
     const teamIdx = teams.findIndex(t => t.id === currentCoachTeamId);
-    teams[teamIdx].assistants = teams[teamIdx].assistants.filter(e => e !== email);
-    await setDoc(doc(db, "config", "teams"), { list: teams });
-    if(reloadDashboardCallback) reloadDashboardCallback();
+    if (teamIdx > -1) {
+        teams[teamIdx].assistants = teams[teamIdx].assistants.filter(e => e !== email);
+        await setDoc(doc(db, "config", "teams"), { list: teams });
+        loadCoachDashboard(false, teams);
+    }
 };
 
-window.deletePlayer = async (name, reloadCallback) => {
+window.deletePlayer = async (name) => {
     if(!confirm(`Remove ${name}?`)) return;
-    const ref = doc(db, "rosters", document.getElementById("adminTeamSelect").value);
+    const tid = currentCoachTeamId; // Use module-level variable
+    const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
     if(snap.exists()) {
-        await updateDoc(ref, { players: snap.data().players.filter(p => p !== name) });
-        if(reloadCallback) reloadCallback();
+        await updateDoc(ref, { 
+            players: snap.data().players.filter(p => p !== name) 
+        });
+        // Call the dashboard refresh directly
+        loadCoachDashboard(false, window.globalTeams); 
     }
 };
 
@@ -872,15 +879,6 @@ export const initStrategyBoard = () => {
     canvas.addEventListener("touchmove", draw, {passive: false});
     window.addEventListener("touchend", stopDrawing);
     
-    document.getElementById("strategyUndoBtn")?.addEventListener("click", () => {
-        strokes.pop();
-        redrawStrokes();
-    });
-    
-    document.getElementById("strategyClearBtn")?.addEventListener("click", () => {
-        strokes = [];
-        redrawStrokes();
-    });
     
     setTimeout(resizeCanvas, 300);
 };

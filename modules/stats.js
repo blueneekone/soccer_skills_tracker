@@ -119,7 +119,7 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
 };
 
 export const loadPlayerFeedback = async (userProfile) => {
-    if (!userProfile || userProfile.role === 'admin') return; 
+    if (!userProfile || userProfile.role === 'super_admin') return; 
 
     const list = document.getElementById("playerEvalList");
     if (!list) return;

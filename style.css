@@ -224,11 +224,12 @@ input:focus, select:focus, textarea:focus {
 .welcome-title, .level-display, .challenge-title-gold {
     background: linear-gradient(135deg, var(--aggie-blue) 0%, #3b82f6 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .level-display { font-size: 2.5rem; margin: 10px 0; }
-.challenge-title-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); -webkit-background-clip: text; }
+.challenge-title-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); -webkit-background-clip: text; background-clip: text; }
 
 .dashboard-header { 
     background: linear-gradient(135deg, var(--aggie-blue) 0%, #0f172a 100%); 
@@ -558,3 +559,88 @@ input:focus, select:focus, textarea:focus {
     gap: 10px;
 }
 .admin-input-row input { flex: 1; }
+
+/* --- DIRECTOR TAB STYLES --- */
+.director-tab {
+    background: transparent;
+    border: none;
+    flex: 1 1 calc(50% - 10px);
+    padding: 10px 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.director-tab:hover { color: #333; }
+.director-tab.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+}
+
+/* --- PENDING EVAL WARNING --- */
+.pending-eval-warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid #fbbf24;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* --- MISC UTILITIES --- */
+.overflow-x-auto { overflow-x: auto; }
+.flush-list { margin: 0; padding: 0; display: block; }
+.flush-list .session-item { border-radius: 0; border-left: none; border-right: none; border-top: none; }
+.flush-list .session-empty { border-radius: 0; border: none; border-bottom: 1px dashed #e2e8f0; }
+.section-divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+.mr-5 { margin-right: 5px; }
+.mt-0 { margin-top: 0; }
+.p-20 { padding: 20px; }
+.text-sm { font-size: 0.85rem; }
+.text-sm-sub { font-size: 0.7rem; color: var(--text-muted); }
+.font-bold { font-weight: 700; }
+.cursor-pointer { cursor: pointer; }
+.no-underline { text-decoration: none; color: inherit; }
+.w-50 { width: 50px; }
+.border-gray { border-color: #cbd5e1; }
+.border-purple { border-color: #a78bfa; background: linear-gradient(to bottom right, white, #f5f3ff); }
+.border-orange { border-color: rgba(234, 88, 12, 0.3); }
+
+/* Header Colors */
+.bg-blue-header { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; }
+.bg-orange-header { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; }
+.bg-green-header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+.bg-red-header { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; }
+.bg-gold-header { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; }
+.btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
+.btn-disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+
+/* Coach Tools Tabs */
+.coach-tabs-container { display: flex; gap: 4px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.coach-tab-btn { flex: 1; min-width: fit-content; background: rgba(15,23,42,0.05); border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: var(--transition-fast); white-space: nowrap; }
+.coach-tab-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
+
+/* Strategy Board */
+.pitch-container { position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+.pitch-lines { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1; }
+.pitch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; cursor: crosshair; touch-action: none; }
+.player-pin { width: 36px; height: 36px; background: var(--aggie-blue); color: var(--aggie-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px; cursor: grab; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3); user-select: none; -webkit-user-select: none; }
+
+/* Print styles */
+@media print {
+    body.printing-stats * { visibility: hidden; }
+    body.printing-stats #viewStats, body.printing-stats #viewStats * { visibility: visible; }
+    body.printing-stats #viewStats { position: absolute; left: 0; top: 0; }
+    .no-print { display: none !important; }
+}

@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <div id="setupUI" class="full-screen-center d-none">
+    <div id="setupUI" class="full-screen-center setup-theme d-none">
         <div class="auth-card">
             <div class="logo-circle">⚽</div>
             <h2 class="auth-title">Complete Profile</h2>
@@ -375,6 +375,10 @@
                         <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span class="stat-label">Sessions</span></div>
                         <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span class="stat-label">Minutes</span></div>
                     </div>
+
+                    <div id="pendingEvalWarning" class="pending-eval-warning d-none">
+                        <span>⚠️ <strong>Evaluation Required</strong> — Your XP is capped until your coach approves your next rank.</span>
+                    </div>
                 </div>
             </div>
 
@@ -418,6 +422,15 @@
                 <div class="card-header">📈 7-Day Trend</div>
                 <div class="card-body">
                     <canvas id="playerTrendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="card" id="playerFeedbackCard">
+                <div class="card-header bg-green-header">📋 Coach Feedback</div>
+                <div class="card-body p-0">
+                    <ul id="playerEvalList" class="session-list flush-list">
+                        <li class="session-empty">No coach evaluations yet. Keep working hard!</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -818,25 +831,88 @@
         </div>
     </div>
 
-    <div id="admin-section-accounts" class="admin-pane d-none">
+<div id="admin-section-accounts" class="admin-pane d-none">
         <div class="card" id="adminClubsCard">
+            <div class="card-header">🏢 Registered Organizations</div>
+            <div class="card-body">
+                <div class="overflow-x-auto">
+                    <table id="clubTable" class="admin-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Director</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <hr class="section-divider">
+                <label>Add New Club</label>
+                <div class="admin-input-row mb-10">
+                    <input type="text" id="newClubId" placeholder="Club ID (e.g. aggiesfc)" class="m-0">
+                    <input type="text" id="newClubName" placeholder="Club Name" class="m-0">
+                </div>
+                <input type="email" id="newClubDirector" placeholder="Director Email (Optional)">
+                <button id="addClubBtn" class="primary-btn btn-blue">+ Add Club</button>
             </div>
-        <div class="card mt-15" id="adminTeamsCard">
-            </div>
-    </div>
+        </div>
 
-    <div id="admin-section-billing" class="admin-pane d-none">
+        <div class="card mt-15" id="adminTeamsCard">
+            <div class="card-header">👥 Registered Teams</div>
+            <div class="card-body">
+                <label>Add New Team</label>
+                <div class="admin-input-row mb-10">
+                    <select id="newTeamClubId" class="m-0"><option value="">-- Select Parent Club --</option></select>
+                    <input type="text" id="newTeamName" placeholder="Team Name" class="m-0">
+                </div>
+                <input type="email" id="newTeamCoach" placeholder="Head Coach Email">
+                <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
+                <hr class="section-divider">
+                <div class="overflow-x-auto">
+                    <table id="teamTable" class="admin-table">
+                        <thead><tr><th>Team</th><th>Club</th><th>Coach</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="adminUserRoleManager">
+            <div class="card-header bg-blue-header">👥 Assign Club Director</div>
+            <div class="card-body">
+                <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and select the Club.</p>
+                <div class="admin-flex-row">
+                    <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
+                    <select id="assignDirClubId" class="admin-flex-sel m-0" title="Select a club for director assignment">
+                        <option value="">Select Club</option>
+                    </select>
+                </div>
+                <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10 mb-15">Assign Director Role</button>
+                
+                <hr class="section-divider">
+                <div class="admin-warning-box mt-15">
+                    <p class="admin-warning-txt"><b>Note:</b> If the user is currently a Global Admin, revoke global access first.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Global Directors</div>
+            <div class="card-body">
+                <table id="adminTable" class="admin-table">
+                    <thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody>
+                </table>
+                <div class="admin-input-row">
+                    <input type="email" id="newAdminEmail" placeholder="Director Email">
+                    <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
+                </div>
+            </div>
+        </div>
+    </div> <div id="admin-section-billing" class="admin-pane d-none">
         <div class="card border-gold">
             <div class="card-header bg-gold-header"><i class="ph ph-credit-card"></i> License Generator</div>
             <div class="card-body">
                 <label>Target Organization</label>
                 <select id="billingOrgSelect" class="mb-15"><option value="">Loading...</option></select>
-
                 <div class="input-row mb-15">
                     <div class="flex-1">
                         <label>License Type</label>
                         <select id="licenseType">
-                            <option value="tutoring">Tutoring (Pay-per-seat)</option>
                             <option value="subscription">Monthly Subscription</option>
                             <option value="trial">Free Trial</option>
                         </select>
@@ -849,61 +925,14 @@
                 <button id="btn-update-license" class="primary-btn btn-gold">Generate & Sync License</button>
             </div>
         </div>
-    </div>
-
-    <div id="admin-section-security" class="admin-pane d-none">
+    </div> <div id="admin-section-security" class="admin-pane d-none">
         <div class="card">
             <div class="card-header bg-red-header"><i class="ph ph-warning"></i> Super Admin Audit Log</div>
             <div class="card-body" id="admin-audit-log">
                 <p class="text-muted">Fetching security logs...</p>
             </div>
         </div>
-    </div>
-</div>
-            
-            <div class="card" id="adminUserRoleManager">
-                <div class="card-header bg-blue-header">👥 Assign Club Director</div>
-                <div class="card-body">
-                    <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and select the Club.</p>
-                    <div class="admin-flex-row">
-                        <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
-                        <select id="assignDirClubId" class="admin-flex-sel m-0" title="Select a club for director assignment">
-                            <option value="">Select Club</option>
-                        </select>
-                    </div>
-                    <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10 mb-15">Assign Director Role</button>
-                    
-                    <hr class="section-divider">
-                    <div class="admin-warning-box mt-15">
-                        <p class="admin-warning-txt"><b>Note:</b> If the user is currently a Global Admin, you must click the 'X' button in the Global Directors table below to revoke their global access before they function purely as a Club-level Director.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card" id="adminMigrateCard">
-                <div class="card-header bg-red-header">🛠️ Support Migration Tools</div>
-                <div class="card-body">
-                    <p class="export-desc text-left mb-10">Patch orphaned V1 player logs and legacy data.js over to the V2 Database hierarchy.</p>
-                    <select id="migrateTargetTeam" class="admin-full-sel" title="Select a team for migration"><option value="">Loading Teams...</option></select>
-                    <button id="migrateLegacyBtn" class="primary-btn mt-10 w-100 bg-danger">Execute Legacy Fix</button>
-                    <p class="hint-text mt-10">(Select "Legacy Team (misc)" if you are trying to recover the old default DB)</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">Global Directors</div>
-                <div class="card-body">
-                    <table id="adminTable" class="admin-table">
-                        <thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody>
-                    </table>
-                    <div class="admin-input-row">
-                        <input type="email" id="newAdminEmail" placeholder="Director Email">
-                        <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
-                    </div>
-                </div>
-            </div>
-
-<div id="viewDirector" class="view-section d-none">
+    </div> </div> <div id="viewDirector" class="view-section d-none">
     <h2 class="view-title view-title-flex">
         👔 Director Portal
         <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
@@ -936,45 +965,46 @@
         </div>
     </div>
 
-   <div class="card">
-                <div class="card-header">🎨 Club Branding</div>
-                <div class="card-body">
-                    <label>Select Team/Club to Edit</label>
-                    <select id="brandingTeamSelect" class="mb-10" title="Select a team or club to edit branding"><option>Loading...</option></select>
-                    
-                    <label>App Name</label>
-                    <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
-                    
-                    <label>Logo URL (PNG/JPG)</label>
-                    <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
-                    
-                    <label>Sport Selection</label>
-                    <select id="brandCourtType" class="admin-full-sel mb-15">
-                        <option value="soccer">Soccer</option>
-                        <option value="basketball">Basketball</option>
-                        <option value="football">Football</option>
-                        <option value="baseball">Baseball</option>
-                        <option value="lacrosse">Lacrosse</option>
-                        <option value="generic">Generic Gym/Field</option>
-                    </select>
+    <div id="dir-section-brand" class="director-pane d-none">
+        <div class="card">
+            <div class="card-header">🎨 Club Branding</div>
+            <div class="card-body">
+                <label>Select Team/Club to Edit</label>
+                <select id="brandingTeamSelect" class="mb-10" title="Select a team or club to edit branding"><option>Loading...</option></select>
+                
+                <label>App Name</label>
+                <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
+                
+                <label>Logo URL (PNG/JPG)</label>
+                <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
+                
+                <label>Sport Selection</label>
+                <select id="brandCourtType" class="admin-full-sel mb-15">
+                    <option value="soccer">Soccer</option>
+                    <option value="basketball">Basketball</option>
+                    <option value="football">Football</option>
+                    <option value="baseball">Baseball</option>
+                    <option value="lacrosse">Lacrosse</option>
+                    <option value="generic">Generic Gym/Field</option>
+                </select>
 
-                    <div class="input-row mb-15">
-                        <div class="flex-1">
-                            <label>Primary Color</label>
-                            <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input">
-                        </div>
-                        <div class="flex-1">
-                            <label>Secondary Color (Gold)</label>
-                            <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input">
-                        </div>
+                <div class="input-row mb-15">
+                    <div class="flex-1">
+                        <label>Primary Color</label>
+                        <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input">
                     </div>
-                    
-                    <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
-                    <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to Default</button>
+                    <div class="flex-1">
+                        <label>Secondary Color (Gold)</label>
+                        <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input">
+                    </div>
                 </div>
+                
+                <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
+                <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to Default</button>
             </div>
         </div>
     </div>
+</div>
 
     <div id="videoModal" class="modal">
         <div class="modal-content">

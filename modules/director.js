@@ -75,7 +75,7 @@ export async function inviteCoach(db, targetTeamId, coachEmail) {
 // ==========================================
 export const initDirectorModule = (db, userProfile) => {
     // 1. Security Gate: Only run this if the user is a Director or Super Admin
-    if (!userProfile || (userProfile.role !== 'director' && userProfile.role !== 'admin')) {
+    if (!userProfile || (userProfile.role !== 'director' && userProfile.role !== 'super_admin')) {
         return; 
     }
 
@@ -104,12 +104,7 @@ export const initDirectorModule = (db, userProfile) => {
         inviteCoach(db, teamId, coachEmail);
     });
 
-    safeBind("btnSaveBranding", "click", () => {
-        const primary = document.getElementById("brandPrimaryColor").value;
-        const secondary = document.getElementById("brandSecondaryColor").value;
-        const logo = document.getElementById("brandLogoUrl").value;
-        saveClubBranding(db, clubId, primary, secondary, logo);
-    });
+    // Branding is handled by branding.js via the saveBrandingBtn element
 
     // 3. Tabbed UI Logic for the Club Management Dashboard
     const directorTabs = document.querySelectorAll('.director-tab');
