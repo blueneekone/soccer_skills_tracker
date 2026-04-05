@@ -92,30 +92,44 @@ window.buildCoachDropdowns = () => {
 const navs = ['navHome', 'navTrack', 'navStats', 'navTrophy', 'navCoach', 'navAdmin'];
 const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'];
 
-// --- 1. NEW NAVIGATION LOGIC ---
-    window.navigateTo = (viewId, navId, addToHistory = true) => {
-        const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'];
-        const navs = ['navHome', 'navTrack', 'navStats', 'navTrophy', 'navCoach', 'navAdmin'];
-        
-        // Hide all views and remove active classes
-        views.forEach(v => document.getElementById(v)?.classList.add('d-none'));
-        navs.forEach(n => document.getElementById(n)?.classList.remove('active'));
-        
-        // Show selected view and highlight nav tab
-        document.getElementById(viewId)?.classList.remove('d-none');
-        if (navId) document.getElementById(navId)?.classList.add('active');
-        
-        // Trigger specific data loads if needed
-        if(viewId === 'viewStats') loadStats();
-        if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
-        if(viewId === 'viewAdmin') renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser?.email, DIRECTOR_EMAIL);
-        if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
+// --- NEW NAVIGATION LOGIC ---
+window.navigateTo = (viewId, addToHistory = true) => {
+    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector'];
+    
+    // Hide all views
+    views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('d-none');
+    });
+    
+    // Show selected view
+    const targetEl = document.getElementById(viewId);
+    if (targetEl) targetEl.classList.remove('d-none');
+    
+    // Trigger specific data loads if needed
+    if(viewId === 'viewStats') loadStats();
+    if(viewId === 'viewCoach') loadCoachDashboard(false, globalTeams);
+    if(viewId === 'viewAdmin') renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser?.email, DIRECTOR_EMAIL);
+    if(viewId === 'viewTracker') window.dispatchEvent(new Event('resize'));
 
-        // Push to phone history so the native back swipe works!
-        if (addToHistory) {
-            history.pushState({ view: viewId, nav: navId }, '', `#${viewId}`);
-        }
-    };
+    // Push to phone history so the native back swipe works!
+    if (addToHistory) {
+        history.pushState({ view: viewId }, '', `#${viewId}`);
+    }
+    
+    // Scroll to the top of the page smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Listen for Native Phone Swipes / Back Button
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.view) {
+        window.navigateTo(event.state.view, false); // false prevents infinite loop
+    } else {
+        // Fallback to home
+        window.navigateTo('viewHome', false);
+    }
+});
 
 // Listen for Native Phone Swipes / Back Button
 window.addEventListener('popstate', (event) => {
@@ -301,24 +315,32 @@ function buildDropdowns(currentXp) {
 
 function checkRoles(user) {
     const email = user.email.toLowerCase();
-    const isDirector = (email === DIRECTOR_EMAIL.toLowerCase()) || globalAdmins.some(a => a.toLowerCase() === email);
+    
+    // Super Admins get the Command Center AND the Director Portal
+    if (userProfile && userProfile.role === 'super_admin') {
+        const adminBtn = document.getElementById("btnHomeAdmin");
+        const dirBtn = document.getElementById("btnHomeDirector");
+        if(adminBtn) adminBtn.classList.remove("d-none");
+        if(dirBtn) dirBtn.classList.remove("d-none");
+        renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, DIRECTOR_EMAIL);
+    } 
+    // Club Directors get the Director Portal
+    else if (userProfile && userProfile.role === 'director') {
+        const dirBtn = document.getElementById("btnHomeDirector");
+        if(dirBtn) dirBtn.classList.remove("d-none");
+    }
+
+    // Check if they are a Coach
     const myTeams = globalTeams.filter(t => {
         const isHead = t.coachEmail.toLowerCase() === email;
         const isAsst = (t.assistants || []).some(a => a.toLowerCase() === email);
         return isHead || isAsst;
     });
     
-    if (isDirector) {
-        document.getElementById("navCoach").style.display='flex';
-        document.getElementById("navAdmin").style.display='flex';
-        if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
-        if(document.getElementById("btnHomeAdmin")) document.getElementById("btnHomeAdmin").style.display='block';
-        initCoachDropdown(true, globalTeams, loadHomeDashboard);
-        renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, DIRECTOR_EMAIL);
-    } else if (myTeams.length > 0) {
-        document.getElementById("navCoach").style.display='flex';
-        if(document.getElementById("btnHomeCoach")) document.getElementById("btnHomeCoach").style.display='block';
-        initCoachDropdown(false, myTeams, loadHomeDashboard);
+    if (myTeams.length > 0 || userProfile.role === 'super_admin' || userProfile.role === 'director') {
+        const coachBtn = document.getElementById("btnHomeCoach");
+        if(coachBtn) coachBtn.classList.remove("d-none");
+        initCoachDropdown((userProfile.role === 'super_admin' || userProfile.role === 'director'), myTeams, loadHomeDashboard);
     }
 }
 
@@ -612,10 +634,11 @@ const initApp = () => {
     });
 
     // HOME SCREEN DASHBOARD ACTIONS
-    safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker', 'navTrack'));
-    safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats', 'navStats'));
-    safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach', 'navCoach'));
-    safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin', 'navAdmin'));
+    safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker'));
+    safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats'));
+    safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach'));
+    safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin'));
+    safeBind("btnHomeDirector", "click", () => window.navigateTo('viewDirector'));
     
 
 // --- TRACKER MODULE BINDINGS ---

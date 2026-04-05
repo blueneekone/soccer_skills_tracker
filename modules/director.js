@@ -71,28 +71,6 @@ export async function inviteCoach(db, targetTeamId, coachEmail) {
 }
 
 // ==========================================
-// 2. CLUB BRANDING (THEME ENGINE)
-// ==========================================
-export async function saveClubBranding(db, clubId, primaryColor, secondaryColor, logoUrl) {
-    if (!clubId) return alert("Missing Club ID.");
-    
-    try {
-        const brandingRef = doc(db, "branding", clubId);
-        await setDoc(brandingRef, {
-            primaryColor: primaryColor,
-            secondaryColor: secondaryColor,
-            logoUrl: logoUrl,
-            lastUpdated: new Date()
-        }, { merge: true });
-
-        alert("✅ Branding updated successfully! Changes will apply on the next login.");
-    } catch (error) {
-        console.error("Error saving branding:", error);
-        alert("System Error: Could not save branding.");
-    }
-}
-
-// ==========================================
 // 3. INITIALIZATION & EVENT BINDING
 // ==========================================
 export const initDirectorModule = (db, userProfile) => {

@@ -164,10 +164,16 @@
                 <div class="card dash-card border-gray d-none" id="btnHomeAdmin">
                     <div class="dash-card-body">
                         <i class="ph ph-gear dash-icon"></i>
-                        <div class="dash-label">Admin</div>
+                        <div class="dash-label">Command Center</div>
                     </div>
                 </div>
-            </div>
+
+                <div class="card dash-card border-purple d-none" id="btnHomeDirector">
+                    <div class="dash-card-body">
+                        <i class="ph ph-briefcase dash-icon"></i>
+                        <div class="dash-label">Director Portal</div>
+                    </div>
+                </div>
 
             <div class="card mt-20 border-aggie-blue">
                 <div class="card-header">📅 Team Schedule</div>
@@ -764,7 +770,7 @@
             </div>
         </div>
 
-     <div id="viewAdmin" class="view-section d-none">
+<div id="viewAdmin" class="view-section d-none">
     <div class="admin-sticky-header">
         <h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
         
@@ -855,22 +861,6 @@
     </div>
 </div>
             
-            <div class="card">
-                <div class="card-header">Groups & Teams</div>
-                <div class="card-body">
-                    <table id="teamTable" class="admin-table">
-                        <thead><tr><th>ID</th><th>Team Name</th><th>Parent Club</th><th>Coach Email</th></tr></thead><tbody></tbody>
-                    </table>
-                    <div class="admin-flex-row mt-15">
-                        <input type="text" id="newTeamId" class="team-id-input" placeholder="Team ID (e.g. b2015)">
-                        <input type="text" id="newTeamName" placeholder="Team Name" class="flex-1">
-                        <select id="newTeamClubId" class="admin-flex-sel" title="Select parent club for team"></select>
-                        <input type="text" id="newCoachEmail" placeholder="Coach Email" class="flex-1">
-                    </div>
-                    <button id="addTeamBtn" class="primary-btn w-100 btn-mt-10">Add Team</button>
-                </div>
-            </div>
-            
             <div class="card" id="adminUserRoleManager">
                 <div class="card-header bg-blue-header">👥 Assign Club Director</div>
                 <div class="card-body">
@@ -913,7 +903,40 @@
                 </div>
             </div>
 
-            <div class="card">
+<div id="viewDirector" class="view-section d-none">
+    <h2 class="view-title view-title-flex">
+        👔 Director Portal
+        <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
+    </h2>
+
+    <div class="admin-tab-bar">
+        <button class="director-tab active" data-target="dir-section-teams"><i class="ph ph-users"></i> Teams & Coaches</button>
+        <button class="director-tab" data-target="dir-section-brand"><i class="ph ph-palette"></i> Club Branding</button>
+    </div>
+
+    <div id="dir-section-teams" class="director-pane">
+        <div class="card">
+            <div class="card-header bg-blue-header">Create Sub-Team</div>
+            <div class="card-body">
+                <div class="input-row mb-10">
+                    <input type="text" id="newClubTeamName" class="flex-1 m-0" placeholder="Team Name (e.g. U12 Gold)">
+                    <input type="email" id="newClubCoachEmail" class="flex-1 m-0" placeholder="Coach Email">
+                </div>
+                <button id="btnCreateClubTeam" class="primary-btn btn-blue w-100">Create Team</button>
+            </div>
+        </div>
+
+        <div class="card mt-15">
+            <div class="card-header bg-orange-header">Assign Coach to Existing Team</div>
+            <div class="card-body">
+                <select id="directorTeamSelect" class="mb-10"><option value="">Loading Teams...</option></select>
+                <input type="email" id="inviteCoachEmail" placeholder="Coach Email">
+                <button id="btnInviteCoach" class="primary-btn btn-orange w-100">Invite / Assign Coach</button>
+            </div>
+        </div>
+    </div>
+
+   <div class="card">
                 <div class="card-header">🎨 Club Branding</div>
                 <div class="card-body">
                     <label>Select Team/Club to Edit</label>
@@ -1047,15 +1070,6 @@
             <p id="drillDesc" class="drill-desc"></p>
             <button id="watchVideoBtn" class="secondary-btn btn-watch-video">▶ Watch Video Example</button>
         </div>
-    </div>
-
-    <div id="bottomNav" class="bottom-nav d-none">
-        <div class="nav-item active" id="navHome"><span class="nav-icon">🏠</span>Home</div>
-        <div class="nav-item" id="navTrack"><span class="nav-icon">⚽</span>Track</div>
-        <div class="nav-item" id="navStats"><span class="nav-icon">📊</span>Stats</div>
-        <div class="nav-item" id="navTrophy"><span class="nav-icon">🏆</span>Trophies</div>
-        <div class="nav-item d-none" id="navCoach"><span class="nav-icon">📋</span>Coach</div>
-        <div class="nav-item d-none" id="navAdmin"><span class="nav-icon">⚙️</span>Admin</div>
     </div>
 
 <script>
