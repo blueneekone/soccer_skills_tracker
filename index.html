@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Skill Tracker</title>
-    
+
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="Images/Phoenixes_Logo_2026.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <link rel="stylesheet" href="style.css?v=4.0.1">
+
+    <link rel="stylesheet" href="style.css?v=4.0.2">
 </head>
+
 <body>
 
     <div id="loginUI" class="full-screen-center">
@@ -25,11 +27,12 @@
             <div class="logo-circle">⚽</div>
             <h2 class="auth-title">Sports Skill Tracker</h2>
             <p class="auth-subtitle">Skills & Workout Tracker</p>
-            
+
             <button id="loginGoogleBtn" class="primary-btn btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> Continue with Google
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+                Continue with Google
             </button>
-            
+
             <div class="auth-divider">
                 <hr class="divider-line">
                 <span class="divider-text">OR</span>
@@ -41,15 +44,17 @@
             <button id="loginEmailBtn" class="primary-btn btn-mb-10">Sign In</button>
             <button id="signupEmailBtn" class="secondary-btn w-100">Create Account</button>
         </div>
-        
+
         <div id="pwaInstallPrompt" class="pwa-prompt">
             <h3 class="pwa-title">📲 Install the App!</h3>
             <p class="pwa-text">To login and save your stats securely, you must install the app to your device.</p>
             <div class="pwa-box">
-                <b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then scroll down and tap <b>Add to Home Screen</b>.<br><br>
+                <b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then scroll down and tap <b>Add to Home
+                    Screen</b>.<br><br>
                 <b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
             </div>
-            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'" class="secondary-btn w-100 pwa-btn-continue">Continue in Browser (Not Recommended)</button>
+            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'"
+                class="secondary-btn w-100 pwa-btn-continue">Continue in Browser (Not Recommended)</button>
         </div>
     </div>
 
@@ -58,7 +63,7 @@
             <div class="logo-circle">⚽</div>
             <h2 class="auth-title">Complete Profile</h2>
             <p class="auth-subtitle mb-20-imp">Link your account to your organization.</p>
-            
+
             <div class="text-left mb-10">
                 <label>Select Your Club / Organization</label>
                 <select id="setupClubSelect">
@@ -72,7 +77,7 @@
                     <option value="">Select a club first...</option>
                 </select>
             </div>
-            
+
             <div class="text-left mb-10">
                 <label>Select Player Name</label>
                 <select id="setupPlayerDropdown" disabled>
@@ -83,15 +88,17 @@
             <div id="setupManualEntry" class="text-left mb-20-imp d-none">
                 <label>Type Player Name</label>
                 <input type="text" id="setupPlayerManual" placeholder="First and Last Name">
-                    <p class="setup-helper-text mt-0">Your coach will need to approve this entry before your XP counts toward the team leaderboard.</p>            </div>
+                <p class="setup-helper-text mt-0">Your coach will need to approve this entry before your XP counts
+                    toward the team leaderboard.</p>
+            </div>
 
             <button id="completeSetupBtn" class="primary-btn btn-orange mb-10">Complete Setup</button>
             <button id="setupLogoutBtn" class="secondary-btn w-100">Cancel & Logout</button>
         </div>
     </div>
-    
+
     <div id="appUI" class="container d-none">
-        
+
         <div class="app-header">
             <div id="headerHomeLink" class="cursor-pointer">
                 <h3 class="app-title">SSTRACKER</h3>
@@ -100,7 +107,7 @@
             <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
         </div>
 
-       <div id="viewHome" class="view-section">
+        <div id="viewHome" class="view-section">
             <div class="card dashboard-header">
                 <div class="card-body text-center">
                     <i class="ph ph-football dash-icon icon-large"></i>
@@ -144,7 +151,7 @@
                         <div class="dash-label">Trophy Room</div>
                     </div>
                 </div>
-                
+
                 <a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
                     <div class="card dash-card border-slate">
                         <div class="dash-card-body">
@@ -175,943 +182,1128 @@
                     </div>
                 </div>
 
-            <div class="card mt-20 border-aggie-blue">
-                <div class="card-header">📅 Team Schedule</div>
-                <div class="card-body p-0">
-                    <ul id="homeScheduleList" class="session-list flush-list">
-                        <li class="session-empty">Loading schedule...</li>
-                    </ul>
+                <div class="card mt-20 border-aggie-blue">
+                    <div class="card-header">📅 Team Schedule</div>
+                    <div class="card-body p-0">
+                        <ul id="homeScheduleList" class="session-list flush-list">
+                            <li class="session-empty">Loading schedule...</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card border-orange">
-                <div class="card-header bg-orange-header">🎯 My Homework</div>
-                <div class="card-body p-0">
-                    <ul id="homeHomeworkList" class="session-list flush-list">
-                        <li class="session-empty">Loading assignments...</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div id="viewTracker" class="view-section d-none">
-            <h2 class="view-title">Log Workout</h2>
-            <div class="card mb-20-imp">
-                <div class="card-body">
-                    <div class="tracker-box bg-orange m-0 mb-20-imp">
-                        <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
-                        <label for="selectWarmup">Select Warm-Up</label>
-                        <select id="selectWarmup"><option>Loading...</option></select>
-                        <div id="customWarmupContainer" class="d-none custom-warmup-container">
-                            <input type="text" id="customWarmupName" placeholder="Type workout name (e.g. Jump Rope)">
-                        </div>
-                        <div class="input-row">
-                            <input type="number" id="cardioDist" class="flex-1" placeholder="Miles">
-                            <span class="input-divider">/</span>
-                            <input type="number" id="cardioTime" class="flex-1" placeholder="Mins">
-                            <button id="addWarmupBtn" class="action-btn btn-orange">+ Add</button>
-                        </div>
-                    </div>
-
-                    <div class="tracker-box bg-red mb-20-imp">
-                        <span class="section-label text-red">Part B: Core Strength</span>
-                        <label for="selectCore">Select Core Exercise</label>
-                        <select id="selectCore"><option>Loading...</option></select>
-                        <div class="input-row">
-                            <input type="number" id="setsCore" class="w-50" placeholder="Sets" value="3">
-                            <span class="input-divider">x</span>
-                            <input type="number" id="repsCore" class="flex-1" placeholder="Reps" value="20">
-                            <button id="addCoreBtn" class="action-btn btn-red">+ Add</button>
-                        </div>
-                    </div>
-
-                    <div class="tracker-box bg-blue mb-20-imp">
-                        <span class="section-label text-blue">Part C: Ball Handling</span>
-                        <label for="selectBallWork">Select Ball Work Exercise</label>
-                        <select id="selectBallWork"><option>Loading...</option></select>
-                        <div class="input-row">
-                            <input type="number" id="setsBall" class="w-50" placeholder="Sets" value="3">
-                            <span class="input-divider">x</span>
-                            <input type="number" id="repsBall" class="flex-1" placeholder="Reps" value="20">
-                            <button id="addBallWorkBtn" class="action-btn btn-blue">+ Add</button>
-                        </div>
-                    </div>
-
-                    <div class="tracker-box bg-green m-0">
-                        <span class="section-label text-green">Part D: Brilliant Basics</span>
-                        <label for="selectBasics">Select Brilliant Basics Exercise</label>
-                        <select id="selectBasics"><option>Loading...</option></select>
-                        <div class="input-row">
-                            <input type="number" id="setsBasics" class="w-50" placeholder="Sets" value="3">
-                            <span class="input-divider">x</span>
-                            <input type="number" id="repsBasics" class="flex-1" placeholder="Reps" value="20">
-                            <button id="addBasicsBtn" class="action-btn btn-green">+ Add</button>
-                        </div>
+                <div class="card border-orange">
+                    <div class="card-header bg-orange-header">🎯 My Homework</div>
+                    <div class="card-body p-0">
+                        <ul id="homeHomeworkList" class="session-list flush-list">
+                            <li class="session-empty">Loading assignments...</li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div id="trackerReview" class="card-body bg-light-blue rounded-8">
-                    <h4 class="tracker-plan-header mt-0 tracker-cart-header">Your Training Cart</h4>
-                    <ul id="sessionList" class="session-list">
-                        <li class="session-empty">Empty. Select drills above to build your workout!</li>
-                    </ul>
-
-                    <div class="workout-summary-box">
-                        <label>Total Session Time (Minutes)</label>
-                        <div class="time-input-row">
-                            <input type="number" id="totalMinutes" class="flex-1 m-0" placeholder="e.g. 45">
-                        </div>
-                        
-                        <label>How did you do?</label>
-                        <div id="outcome">
-                            <div class="outcome-btn" data-val="Struggled"><span>🥵</span>Struggled</div>
-                            <div class="outcome-btn active" data-val="Good"><span>👍</span>Good</div>
-                            <div class="outcome-btn" data-val="Mastered"><span>🔥</span>Mastered</div>
-                        </div>
-
-                        <label>Parent/Coach Signature</label>
-                        <div class="signature-canvas-container">
-                            <canvas id="signatureCanvas" class="signature-canvas"></canvas>
-                            <button id="clearSigBtn" class="clear-sig-btn">✕ Clear</button>
-                        </div>
-
-                        <button id="submitWorkoutBtn" class="primary-btn mt-15 btn-log-workout">💾 Log Workout (+XP)</button>
-                    </div>
-                    
-                    <label>Schedule This Workout instead?</label>
-                    <div class="schedule-row">
-                        <input type="date" id="calDate" class="schedule-input" title="Select workout date">
-                        <input type="time" id="calTime" class="schedule-input" title="Select workout time">
-                    </div>
-                    
-                    <div class="export-row">
-                        <button id="btnGCal" class="secondary-btn btn-export">📅 Save to Google Cal</button>
-                        <button id="btnIcs" class="secondary-btn btn-export">🗓️ Download .ICS</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="viewChallenge" class="view-section d-none">
-            <div class="card-header bg-gold-header">
-                <h2 class="mt-0">🔥 Challenge Mode</h2>
-                <p class="text-sm-sub">Watch the video, perform the reps, and log your official score.</p>
-            </div>
-            
-            <div class="card mt-15 flush-top">
-                <div class="card-header bg-blue-header">1. Passing Points</div>
-                <div class="card-body">
-                    <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 1 - Passing Points"></iframe>
-                    <input type="text" id="passSkillName" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
-                    <div class="input-row mb-10">
-                        <input type="number" id="passScore1" class="flex-1" placeholder="Score 1">
-                        <input type="number" id="passScore2" class="flex-1" placeholder="Score 2">
-                        <input type="number" id="passScore3" class="flex-1" placeholder="Score 3">
-                    </div>
-                    <div class="score-display-box">
-                        <span class="score-label">Total Passing Score</span>
-                        <span id="passTotal" class="score-value score-blue">0</span>
-                    </div>
-                    <button id="submitPassBtn" class="primary-btn btn-blue text-sm">Submit Passing Score</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-orange-header">2. Shot Scoring</div>
-                <div class="card-body">
-                    <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 2 - Shot Scoring"></iframe>
-                    <input type="text" id="shotSkillName" placeholder="Skill/Action Name">
-                    <div class="input-row mb-10">
-                        <input type="number" id="shotScore1" class="flex-1" placeholder="Score 1">
-                        <input type="number" id="shotScore2" class="flex-1" placeholder="Score 2">
-                        <input type="number" id="shotScore3" class="flex-1" placeholder="Score 3">
-                    </div>
-                    <div class="score-display-box">
-                        <span class="score-label">Total Shot Score</span>
-                        <span id="shotTotal" class="score-value score-orange">0</span>
-                    </div>
-                    <button id="submitShotBtn" class="primary-btn btn-orange text-sm">Submit Shot Score</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-green-header">3. Time Trial</div>
-                <div class="card-body">
-                    <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 3 - Time Trial"></iframe>
-                    <input type="text" id="timeSkillName" placeholder="Skill/Action Name">
-                    <div class="input-row mb-10">
-                        <input type="number" id="timeScore1" class="flex-1" placeholder="Time 1 (s)">
-                        <input type="number" id="timeScore2" class="flex-1" placeholder="Time 2 (s)">
-                        <input type="number" id="timeScore3" class="flex-1" placeholder="Time 3 (s)">
-                    </div>
-                    <div class="score-display-box">
-                        <span class="score-label">Best Time</span>
-                        <span id="timeTotal" class="score-value score-green">0s</span>
-                    </div>
-                    <button id="submitTimeBtn" class="primary-btn btn-green text-sm">Submit Best Time</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="viewStats" class="view-section d-none">
-            <div class="flex-between-wrap">
-                <h2 class="view-title m-0">Player Stats</h2>
-                <div>
-                    <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export Detailed CSV</button>
-                    <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Stats</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-body text-center">
-                    <h1 id="userLevelDisplay" class="level-display">ROOKIE</h1>
-                    <p class="current-rank-label">Current Rank</p>
-                    <div class="xp-bar-container">
-                        <div id="xpBar" class="xp-bar-fill"></div>
-                    </div>
-                    <div class="stats-totals-row">
-                        <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span class="stat-label">Sessions</span></div>
-                        <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span class="stat-label">Minutes</span></div>
-                    </div>
-
-                    <div id="pendingEvalWarning" class="pending-eval-warning d-none">
-                        <span>⚠️ <strong>Evaluation Required</strong> — Your XP is capped until your coach approves your next rank.</span>
-                    </div>
-                </div>
-            </div>
-
-           <div class="card" id="statsTrialsCard">
-                <div class="card-header bg-gold-header">⭐ Challenge Progress</div>
-                <div class="card-body p-0 overflow-x-auto">
-                    <table id="statsTrialTable" class="admin-table">
-                        <thead><tr><th>Date</th><th>Type</th><th>Skill</th><th>Result</th></tr></thead>
-                        <tbody><tr><td colspan="4" class="text-center">Loading Trials...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card" id="teamLeaderboardCard">
-                <div class="card-header leaderboard-header-flex leaderboard-header">
-                    <span>🏅 TEAM LEADERBOARD</span>
-                    <select id="leaderboardFilter" class="leaderboard-filter" title="Filter leaderboard by time period">
-                        <option value="weekly">Weekly</option>
-                        <option value="daily">Daily</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="alltime">All-Time</option>
-                    </select>
-                </div>
-                <div class="card-body p-0 overflow-x-auto">
-                    <table id="teamLeaderboardTable" class="admin-table">
-                        <thead><tr><th>Rank</th><th>Player</th><th>Total Minutes</th></tr></thead>
-                        <tbody><tr><td colspan="3" class="text-center">Loading Leaderboard...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">📅 Activity Log</div>
-                <div class="card-body">
-                    <div class="text-center calendar-month-label" id="calMonthYear">Month Year</div>
-                    <div class="cal-grid" id="calendarDays"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">📈 7-Day Trend</div>
-                <div class="card-body">
-                    <canvas id="playerTrendChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-
-            <div class="card" id="playerFeedbackCard">
-                <div class="card-header bg-green-header">📋 Coach Feedback</div>
-                <div class="card-body p-0">
-                    <ul id="playerEvalList" class="session-list flush-list">
-                        <li class="session-empty">No coach evaluations yet. Keep working hard!</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div id="viewTrophy" class="view-section d-none">
-            <h2 class="view-title view-title-flex">
-                🏆 TROPHY ROOM
-                <button class="secondary-btn trophy-back-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
-            </h2>
-            <div class="card">
-                <div class="card-header trophy-header">RANK MEDALS</div>
-                <div class="card-body text-center overflow-x-auto">
-                    <div class="trophy-flex">
-                        <div id="badgeRookie" class="medal-container"><div class="medal-coin medal-rookie"></div><div class="medal-title">ROOKIE</div><div class="medal-xp">0 XP</div></div>
-                        <div id="badgeStarter" class="medal-container medal-locked"><div class="medal-coin medal-starter"></div><div class="medal-title">STARTER</div><div class="medal-xp">500 XP</div></div>
-                        <div id="badgeVeteran" class="medal-container medal-locked"><div class="medal-coin medal-veteran"></div><div class="medal-title">VETERAN</div><div class="medal-xp">1000 XP</div></div>
-                        <div id="badgePro" class="medal-container medal-locked"><div class="medal-coin medal-pro"></div><div class="medal-title">PRO</div><div class="medal-xp">2000 XP</div></div>
-                        <div id="badgeLegend" class="medal-container medal-locked"><div class="medal-coin medal-legend"></div><div class="medal-title legend-title-color">LEGEND</div><div class="medal-xp">3000 XP</div></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header milestone-header">MILESTONE BADGES</div>
-                <div class="card-body text-center overflow-x-auto">
-                    <div class="trophy-flex milestone-flex">
-                        <div id="badge7Day" class="medal-container medal-locked">
-                            <div class="milestone-icon">🔥</div>
-                            <div class="medal-title">7-DAY STREAK</div>
-                        </div>
-                        <div id="badge100Sessions" class="medal-container medal-locked">
-                            <div class="milestone-icon">💯</div>
-                            <div class="medal-title">100 SESSIONS</div>
-                        </div>
-                        <div id="badge1000Mins" class="medal-container medal-locked">
-                            <div class="milestone-icon">⏱️</div>
-                            <div class="medal-title">1000 MINS</div>
-                        </div>
-                        <div id="badgeWeekend" class="medal-container medal-locked">
-                            <div class="milestone-icon">⚔️</div>
-                            <div class="medal-title">WEEKEND WARRIOR</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-20">
-                <button id="claimCertificateBtn" class="primary-btn btn-claim-cert">🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
-            </div>
-        </div>
-
-       <div id="viewCoach" class="view-section d-none">
-            <h2 class="coach-header">Coaching Tools</h2>
-
-            <div class="card d-none" id="adminControls">
-                <div class="card-header">Director Access</div>
-                <div class="card-body">
-                    <label>View Team Data</label>
-                    <select id="adminTeamSelect" title="Select a team to view data"></select>
-                </div>
-            </div>
-
-            <div class="coach-tabs-container">
-                <button id="btn-coachTabRoster" class="coach-tab-btn active" onclick="window.switchCoachTab('coachTabRoster')">👥 Roster</button>
-                <button id="btn-coachTabPlan" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabPlan')">📅 Plan</button>
-                <button id="btn-coachTabEvals" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabEvals')">📋 Evals</button>
-                <button id="btn-coachTabStrategy" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabStrategy')">🖌️ Strategy</button>
-                <button id="btn-coachTabTools" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabTools')">⚙️ Tools</button>
-            </div>
-
-            <div id="coachTabRoster">
-                <div class="card">
-                    <div class="card-header roster-overview-header">Roster Overview</div>
+            <div id="viewTracker" class="view-section d-none">
+                <h2 class="view-title">Log Workout</h2>
+                <div class="card mb-20-imp">
                     <div class="card-body">
-                        <div class="roster-stats-box">
-                            <div class="text-center"><b>Active Players</b><br><span id="coachActivePlayers" class="roster-stat-val active">0</span></div>
-                            <div class="text-center"><b>Total Reps Logged</b><br><span id="coachTotalReps" class="roster-stat-val reps">0</span></div>
+                        <div class="tracker-box bg-orange m-0 mb-20-imp">
+                            <span class="section-label text-orange">Part A: Cardio Warm-Up</span>
+                            <label for="selectWarmup">Select Warm-Up</label>
+                            <select id="selectWarmup">
+                                <option>Loading...</option>
+                            </select>
+                            <div id="customWarmupContainer" class="d-none custom-warmup-container">
+                                <input type="text" id="customWarmupName"
+                                    placeholder="Type workout name (e.g. Jump Rope)">
+                            </div>
+                            <div class="input-row">
+                                <input type="number" id="cardioDist" class="flex-1" placeholder="Miles">
+                                <span class="input-divider">/</span>
+                                <input type="number" id="cardioTime" class="flex-1" placeholder="Mins">
+                                <button id="addWarmupBtn" class="action-btn btn-orange">+ Add</button>
+                            </div>
                         </div>
-                        <label for="rosterPdfInput">Import Team Roster (PDF)</label>
-                        <input type="file" id="rosterPdfInput" accept="application/pdf" title="Upload a PDF file to import team roster">
-                        <div id="rosterReviewArea" class="d-none">
-                            <label>Review Extracted Names</label>
-                            <textarea id="rosterTextRaw" rows="8" title="Review and edit extracted player names from roster"></textarea>
-                            <button id="saveParsedRosterBtn" class="primary-btn btn-save-roster">Save Roster</button>
+
+                        <div class="tracker-box bg-red mb-20-imp">
+                            <span class="section-label text-red">Part B: Core Strength</span>
+                            <label for="selectCore">Select Core Exercise</label>
+                            <select id="selectCore">
+                                <option>Loading...</option>
+                            </select>
+                            <div class="input-row">
+                                <input type="number" id="setsCore" class="w-50" placeholder="Sets" value="3">
+                                <span class="input-divider">x</span>
+                                <input type="number" id="repsCore" class="flex-1" placeholder="Reps" value="20">
+                                <button id="addCoreBtn" class="action-btn btn-red">+ Add</button>
+                            </div>
                         </div>
-                        <hr class="roster-divider">
-                        <label>Manual Add Player</label>
-                        <div class="input-row">
-                            <input type="text" id="coachAddPlayerName" class="flex-1" placeholder="Player Name">
-                            <input type="number" id="coachAddPlayerJersey" class="w-50" placeholder="#">
+
+                        <div class="tracker-box bg-blue mb-20-imp">
+                            <span class="section-label text-blue">Part C: Ball Handling</span>
+                            <label for="selectBallWork">Select Ball Work Exercise</label>
+                            <select id="selectBallWork">
+                                <option>Loading...</option>
+                            </select>
+                            <div class="input-row">
+                                <input type="number" id="setsBall" class="w-50" placeholder="Sets" value="3">
+                                <span class="input-divider">x</span>
+                                <input type="number" id="repsBall" class="flex-1" placeholder="Reps" value="20">
+                                <button id="addBallWorkBtn" class="action-btn btn-blue">+ Add</button>
+                            </div>
                         </div>
-                        <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
-                        <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
-                        
-                        <hr class="roster-divider">
-                        <label>Team Jersey Numbers</label>
-                        <button id="editJerseysBtn" class="secondary-btn w-100">🔢 Set Jersey Numbers</button>
-                        <div id="jerseyEditorModal" class="jersey-modal d-none">
-                            <h4 class="jersey-modal-title">Assign Jersey Numbers</h4>
-                            <div id="jerseyEditorList" class="jersey-list"></div>
-                            <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
-                            <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')" class="secondary-btn mt-5 w-100 btn-close-transparent">Close</button>
+
+                        <div class="tracker-box bg-green m-0">
+                            <span class="section-label text-green">Part D: Brilliant Basics</span>
+                            <label for="selectBasics">Select Brilliant Basics Exercise</label>
+                            <select id="selectBasics">
+                                <option>Loading...</option>
+                            </select>
+                            <div class="input-row">
+                                <input type="number" id="setsBasics" class="w-50" placeholder="Sets" value="3">
+                                <span class="input-divider">x</span>
+                                <input type="number" id="repsBasics" class="flex-1" placeholder="Reps" value="20">
+                                <button id="addBasicsBtn" class="action-btn btn-green">+ Add</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card" id="weeklySummaryCard">
-                    <div class="card-header bg-blue-header">📅 7-Day Practice Summary</div>
+                <div class="card">
+                    <div id="trackerReview" class="card-body bg-light-blue rounded-8">
+                        <h4 class="tracker-plan-header mt-0 tracker-cart-header">Your Training Cart</h4>
+                        <ul id="sessionList" class="session-list">
+                            <li class="session-empty">Empty. Select drills above to build your workout!</li>
+                        </ul>
+
+                        <div class="workout-summary-box">
+                            <label>Total Session Time (Minutes)</label>
+                            <div class="time-input-row">
+                                <input type="number" id="totalMinutes" class="flex-1 m-0" placeholder="e.g. 45">
+                            </div>
+
+                            <label>How did you do?</label>
+                            <div id="outcome">
+                                <div class="outcome-btn" data-val="Struggled"><span>🥵</span>Struggled</div>
+                                <div class="outcome-btn active" data-val="Good"><span>👍</span>Good</div>
+                                <div class="outcome-btn" data-val="Mastered"><span>🔥</span>Mastered</div>
+                            </div>
+
+                            <label>Parent/Coach Signature</label>
+                            <div class="signature-canvas-container">
+                                <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                                <button id="clearSigBtn" class="clear-sig-btn">✕ Clear</button>
+                            </div>
+
+                            <button id="submitWorkoutBtn" class="primary-btn mt-15 btn-log-workout">💾 Log Workout
+                                (+XP)</button>
+                        </div>
+
+                        <label>Schedule This Workout instead?</label>
+                        <div class="schedule-row">
+                            <input type="date" id="calDate" class="schedule-input" title="Select workout date">
+                            <input type="time" id="calTime" class="schedule-input" title="Select workout time">
+                        </div>
+
+                        <div class="export-row">
+                            <button id="btnGCal" class="secondary-btn btn-export">📅 Save to Google Cal</button>
+                            <button id="btnIcs" class="secondary-btn btn-export">🗓️ Download .ICS</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewChallenge" class="view-section d-none">
+                <div class="card-header bg-gold-header">
+                    <h2 class="mt-0">🔥 Challenge Mode</h2>
+                    <p class="text-sm-sub">Watch the video, perform the reps, and log your official score.</p>
+                </div>
+
+                <div class="card mt-15 flush-top">
+                    <div class="card-header bg-blue-header">1. Passing Points</div>
+                    <div class="card-body">
+                        <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen
+                            title="Challenge Video 1 - Passing Points"></iframe>
+                        <input type="text" id="passSkillName" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
+                        <div class="input-row mb-10">
+                            <input type="number" id="passScore1" class="flex-1" placeholder="Score 1">
+                            <input type="number" id="passScore2" class="flex-1" placeholder="Score 2">
+                            <input type="number" id="passScore3" class="flex-1" placeholder="Score 3">
+                        </div>
+                        <div class="score-display-box">
+                            <span class="score-label">Total Passing Score</span>
+                            <span id="passTotal" class="score-value score-blue">0</span>
+                        </div>
+                        <button id="submitPassBtn" class="primary-btn btn-blue text-sm">Submit Passing Score</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-orange-header">2. Shot Scoring</div>
+                    <div class="card-body">
+                        <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen
+                            title="Challenge Video 2 - Shot Scoring"></iframe>
+                        <input type="text" id="shotSkillName" placeholder="Skill/Action Name">
+                        <div class="input-row mb-10">
+                            <input type="number" id="shotScore1" class="flex-1" placeholder="Score 1">
+                            <input type="number" id="shotScore2" class="flex-1" placeholder="Score 2">
+                            <input type="number" id="shotScore3" class="flex-1" placeholder="Score 3">
+                        </div>
+                        <div class="score-display-box">
+                            <span class="score-label">Total Shot Score</span>
+                            <span id="shotTotal" class="score-value score-orange">0</span>
+                        </div>
+                        <button id="submitShotBtn" class="primary-btn btn-orange text-sm">Submit Shot Score</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-green-header">3. Time Trial</div>
+                    <div class="card-body">
+                        <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen
+                            title="Challenge Video 3 - Time Trial"></iframe>
+                        <input type="text" id="timeSkillName" placeholder="Skill/Action Name">
+                        <div class="input-row mb-10">
+                            <input type="number" id="timeScore1" class="flex-1" placeholder="Time 1 (s)">
+                            <input type="number" id="timeScore2" class="flex-1" placeholder="Time 2 (s)">
+                            <input type="number" id="timeScore3" class="flex-1" placeholder="Time 3 (s)">
+                        </div>
+                        <div class="score-display-box">
+                            <span class="score-label">Best Time</span>
+                            <span id="timeTotal" class="score-value score-green">0s</span>
+                        </div>
+                        <button id="submitTimeBtn" class="primary-btn btn-green text-sm">Submit Best Time</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewStats" class="view-section d-none">
+                <div class="flex-between-wrap">
+                    <h2 class="view-title m-0">Player Stats</h2>
+                    <div>
+                        <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export Detailed
+                            CSV</button>
+                        <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Stats</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h1 id="userLevelDisplay" class="level-display">ROOKIE</h1>
+                        <p class="current-rank-label">Current Rank</p>
+                        <div class="xp-bar-container">
+                            <div id="xpBar" class="xp-bar-fill"></div>
+                        </div>
+                        <div class="stats-totals-row">
+                            <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span
+                                    class="stat-label">Sessions</span></div>
+                            <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span
+                                    class="stat-label">Minutes</span></div>
+                        </div>
+
+                        <div id="pendingEvalWarning" class="pending-eval-warning d-none">
+                            <span>⚠️ <strong>Evaluation Required</strong> — Your XP is capped until your coach approves
+                                your next rank.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="statsTrialsCard">
+                    <div class="card-header bg-gold-header">⭐ Challenge Progress</div>
                     <div class="card-body p-0 overflow-x-auto">
-                        <table id="weeklySummaryTable" class="admin-table">
-                            <thead><tr><th>Player</th><th>7-Day Mins</th><th>Status</th></tr></thead>
-                            <tbody><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        <table id="statsTrialTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Skill</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading Trials...</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="card" id="coachPlayerListCard">
-                    <div class="card-header"><span>Team Roster</span><button id="forceRefreshRosterBtn" class="action-btn">↻ Refresh</button></div>
-                    <div class="card-body p-0"><div id="coachPlayerList">Loading...</div></div>
-                </div>
-
-                <div class="card" id="cardStaffManager">
-                    <div class="card-header staff-header">Team Staff (Assistants)</div>
-                    <div class="card-body">
-                        <div id="assistantList" class="assistant-list"></div>
-                        <div class="add-assistant-row">
-                            <input type="email" id="newAssistantEmail" class="m-0" placeholder="Assistant's Email">
-                            <button id="addAssistantBtn" class="primary-btn btn-auto-width btn-padding-10">Add</button>
-                        </div>
+                <div class="card" id="teamLeaderboardCard">
+                    <div class="card-header leaderboard-header-flex leaderboard-header">
+                        <span>🏅 TEAM LEADERBOARD</span>
+                        <select id="leaderboardFilter" class="leaderboard-filter"
+                            title="Filter leaderboard by time period">
+                            <option value="weekly">Weekly</option>
+                            <option value="daily">Daily</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="alltime">All-Time</option>
+                        </select>
                     </div>
-                </div>
-            </div>
-
-            <div id="coachTabPlan" class="d-none">
-                <div class="card">
-                    <div class="card-header">📅 Manage Schedule</div>
-                    <div class="card-body">
-                        <div class="schedule-input-row">
-                            <input type="date" id="scheduleDate" class="schedule-date-input" title="Select event date">
-                            <input type="time" id="scheduleTime" class="schedule-time-input" title="Select event time">
-                        </div>
-                        <div class="schedule-type-row">
-                            <select id="scheduleType" class="schedule-type-select" title="Select event type">
-                                <option value="Practice">Practice</option>
-                                <option value="Game">Game</option>
-                                <option value="Event">Event</option>
-                            </select>
-                            <input type="text" id="scheduleLocation" placeholder="Location / Opponent" class="schedule-location-input">
-                        </div>
-                        <button id="addScheduleBtn" class="primary-btn btn-blue btn-add-schedule" type="button">+ Add Event</button>
-                        <ul id="coachScheduleList" class="session-list coach-schedule-list mt-15"></ul>
+                    <div class="card-body p-0 overflow-x-auto">
+                        <table id="teamLeaderboardTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Player</th>
+                                    <th>Total Minutes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading Leaderboard...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header hw-header">🎯 Assign Homework</div>
+                    <div class="card-header">📅 Activity Log</div>
                     <div class="card-body">
-                        <label>1. Select Players & Due Date</label>
-                        <div class="mb-15">
-                            <div class="hw-select-box">
-                                <label class="hw-select-all-label">
-                                    <input type="checkbox" id="hwSelectAllPlayers"> <b class="hw-select-all-text">Select All Players</b>
-                                </label>
-                                <div id="hwPlayerChecklistItems" class="hw-player-list"></div>
-                            </div>
-                        </div>
-                        <div class="hw-due-row">
-                            <label class="m-0">Due Date:</label>
-                            <input type="date" id="hwDueDate" class="hw-due-date flex-1 m-0" title="Select due date for homework assignment">
-                        </div>
-                        
-                        <label>2. Build the Workout</label>
-                        <select id="hwDrillSelect" class="hw-drill-select" title="Select a drill for homework assignment"><option>Loading...</option></select>
-                        
-                        <div class="hw-drill-row">
-                            <input type="number" id="hwSets" placeholder="Sets" value="3" class="hw-input-sets">
-                            <span>x</span>
-                            <input type="number" id="hwReps" placeholder="Reps/Mins" value="20" class="hw-input-reps">
-                            <button id="addHwDrillBtn" class="secondary-btn hw-btn-add">+ Add Drill</button>
-                        </div>
-                        
-                        <ul id="hwBuilderList" class="session-list hw-builder-list">
-                            <li class="session-empty">No drills added to this assignment yet.</li>
-                        </ul>
-                        
-                        <button id="assignHwBtn" class="primary-btn btn-orange btn-assign-hw">Send Assignment</button>
-                        
-                        <hr class="section-divider">
-                        <label>Active Assignments</label>
-                        <ul id="coachHwList" class="session-list mt-15"></ul>
+                        <div class="text-center calendar-month-label" id="calMonthYear">Month Year</div>
+                        <div class="cal-grid" id="calendarDays"></div>
                     </div>
                 </div>
-            </div>
 
-            <div id="coachTabEvals" class="d-none">
-                <div class="card" id="coachRecentTrialsCard">
-                    <div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
+                <div class="card">
+                    <div class="card-header">📈 7-Day Trend</div>
+                    <div class="card-body">
+                        <canvas id="playerTrendChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="card" id="playerFeedbackCard">
+                    <div class="card-header bg-green-header">📋 Coach Feedback</div>
                     <div class="card-body p-0">
-                        <ul id="coachRecentTrialList" class="session-list flush-list">
-                            <li class="session-empty">Loading recent submissions...</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card" id="coachLogTrialCard">
-                    <div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
-                    <div class="card-body">
-                        <select id="coachTrialPlayerSelect" class="mb-10" title="Select a player for trial logging"><option>Loading Players...</option></select>
-                        <select id="coachTrialType" class="mb-10" title="Select trial type">
-                            <option value="Passing">Passing Points</option>
-                            <option value="Shooting">Shot Scoring</option>
-                            <option value="Time">Time Trial</option>
-                        </select>
-                        <input type="text" id="coachTrialSkill" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
-                        <div class="input-row mb-15">
-                            <input type="number" id="coachTrial1" class="flex-1" placeholder="Score 1">
-                            <input type="number" id="coachTrial2" class="flex-1" placeholder="Score 2">
-                            <input type="number" id="coachTrial3" class="flex-1" placeholder="Score 3">
-                        </div>
-                        <button id="coachSubmitTrialBtn" class="primary-btn btn-gold">Save Official Coach Trial</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header bg-green-header">📋 Skill Evaluation</div>
-                    <div class="card-body">
-                        <div class="eval-input-row">
-                            <select id="evalPlayerSelect" class="eval-player-select" title="Select a player for skill evaluation"><option>Loading...</option></select>
-                            <select id="evalScore" class="eval-score-select" title="Select a score for skill evaluation">
-                                <option value="" disabled selected>Score</option>
-                                <option value="1">1 - Struggling</option>
-                                <option value="2">2 - Needs Work</option>
-                                <option value="3">3 - Capable</option>
-                                <option value="4">4 - Strong</option>
-                                <option value="5">5 - Mastered</option>
-                            </select>
-                        </div>
-                        <label>Brilliant Basics Skill</label>
-                        <select id="evalSkillSelect" class="eval-skill-select" title="Select a skill for evaluation"><option>Loading...</option></select>
-                        <input type="text" id="evalNotes" placeholder="Optional coach notes..." class="eval-notes-input">
-                        <button id="saveEvalBtn" class="primary-btn btn-green btn-save-eval">Save Evaluation</button>
-                        
-                        <hr class="section-divider">
-                        <label>Player History</label>
-                        <ul id="coachEvalList" class="session-list eval-history-list mt-10">
-                            <li class="session-empty">Select a player above to view history.</li>
+                        <ul id="playerEvalList" class="session-list flush-list">
+                            <li class="session-empty">No coach evaluations yet. Keep working hard!</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <div id="coachTabStrategy" class="d-none">
-                <div class="card" id="strategyBoardCard">
-                    <div class="card-header strategy-header">
-                        <span>🖌️ Strategy Board</span>
-                        <button id="strategyFullscreenBtn" class="action-btn m-0">⛶ Fullscreen</button>
-                    </div>
-                    <div class="card-body">
-                        <div class="strategy-toolbar">
-                            <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color" class="strategy-color">
-                            <button id="strategyToolPen" class="secondary-btn active strategy-tool-btn">✎</button>
-                            <button id="strategyToolArrow" class="secondary-btn strategy-tool-btn">➔</button>
-                            <button id="strategyToolX" class="secondary-btn strategy-tool-btn strategy-tool-txt">X</button>
-                            <button id="strategyToolO" class="secondary-btn strategy-tool-btn strategy-tool-txt">O</button>
-                            <button id="strategyUndoBtn" class="secondary-btn strategy-action-btn">Undo</button>
-                            <button id="strategyClearBtn" class="secondary-btn strategy-action-btn strategy-clear-btn">Clear</button>
-                            <div class="wb-toggle-row">
-                                <label class="switch" title="Toggle Whiteboard Mode">
-                                    <input type="checkbox" id="strategyBoardStyleToggle" title="Toggle Whiteboard Mode">
-                                    <span class="slider"></span>
-                                </label>
-                                <span class="wb-toggle-txt" onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
+            <div id="viewTrophy" class="view-section d-none">
+                <h2 class="view-title view-title-flex">
+                    🏆 TROPHY ROOM
+                    <button class="secondary-btn trophy-back-btn" onclick="window.navigateTo('viewHome')">🔙
+                        Dashboard</button>
+                </h2>
+                <div class="card">
+                    <div class="card-header trophy-header">RANK MEDALS</div>
+                    <div class="card-body text-center overflow-x-auto">
+                        <div class="trophy-flex">
+                            <div id="badgeRookie" class="medal-container">
+                                <div class="medal-coin medal-rookie"></div>
+                                <div class="medal-title">ROOKIE</div>
+                                <div class="medal-xp">0 XP</div>
+                            </div>
+                            <div id="badgeStarter" class="medal-container medal-locked">
+                                <div class="medal-coin medal-starter"></div>
+                                <div class="medal-title">STARTER</div>
+                                <div class="medal-xp">500 XP</div>
+                            </div>
+                            <div id="badgeVeteran" class="medal-container medal-locked">
+                                <div class="medal-coin medal-veteran"></div>
+                                <div class="medal-title">VETERAN</div>
+                                <div class="medal-xp">1000 XP</div>
+                            </div>
+                            <div id="badgePro" class="medal-container medal-locked">
+                                <div class="medal-coin medal-pro"></div>
+                                <div class="medal-title">PRO</div>
+                                <div class="medal-xp">2000 XP</div>
+                            </div>
+                            <div id="badgeLegend" class="medal-container medal-locked">
+                                <div class="medal-coin medal-legend"></div>
+                                <div class="medal-title legend-title-color">LEGEND</div>
+                                <div class="medal-xp">3000 XP</div>
                             </div>
                         </div>
-                        <div id="strategyPitchBg" class="pitch-container">
-                            <div id="strategyPitchLines" class="pitch-lines"></div>
-                            <canvas id="strategyCanvas" class="pitch-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header milestone-header">MILESTONE BADGES</div>
+                    <div class="card-body text-center overflow-x-auto">
+                        <div class="trophy-flex milestone-flex">
+                            <div id="badge7Day" class="medal-container medal-locked">
+                                <div class="milestone-icon">🔥</div>
+                                <div class="medal-title">7-DAY STREAK</div>
+                            </div>
+                            <div id="badge100Sessions" class="medal-container medal-locked">
+                                <div class="milestone-icon">💯</div>
+                                <div class="medal-title">100 SESSIONS</div>
+                            </div>
+                            <div id="badge1000Mins" class="medal-container medal-locked">
+                                <div class="milestone-icon">⏱️</div>
+                                <div class="medal-title">1000 MINS</div>
+                            </div>
+                            <div id="badgeWeekend" class="medal-container medal-locked">
+                                <div class="milestone-icon">⚔️</div>
+                                <div class="medal-title">WEEKEND WARRIOR</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="text-center mt-20">
+                    <button id="claimCertificateBtn" class="primary-btn btn-claim-cert">🎉 CLAIM OFFICIAL CERTIFICATE
+                        🎉</button>
+                </div>
             </div>
 
-            <div id="coachTabTools" class="d-none">
+            <div id="viewCoach" class="view-section d-none">
+                <h2 class="coach-header">Coaching Tools</h2>
 
-                <div class="card">
-                    <div class="card-header">📋 Gameday Roster</div>
+                <div class="card d-none" id="adminControls">
+                    <div class="card-header">Director Access</div>
                     <div class="card-body">
-                        <label>Bench Players</label>
-                        <div class="gameday-bench-row">
-                            <select id="benchSelect" class="gameday-bench-sel" title="Select a player to add to pitch"><option>Loading...</option></select>
-                            <button id="addToPitchBtn" class="primary-btn btn-green gameday-add-btn">+ Add to Pitch</button>
+                        <label>View Team Data</label>
+                        <select id="adminTeamSelect" title="Select a team to view data"></select>
+                    </div>
+                </div>
+
+                <div class="coach-tabs-container">
+                    <button id="btn-coachTabRoster" class="coach-tab-btn active"
+                        onclick="window.switchCoachTab('coachTabRoster')">👥 Roster</button>
+                    <button id="btn-coachTabPlan" class="coach-tab-btn"
+                        onclick="window.switchCoachTab('coachTabPlan')">📅 Plan</button>
+                    <button id="btn-coachTabEvals" class="coach-tab-btn"
+                        onclick="window.switchCoachTab('coachTabEvals')">📋 Evals</button>
+                    <button id="btn-coachTabStrategy" class="coach-tab-btn"
+                        onclick="window.switchCoachTab('coachTabStrategy')">🖌️ Strategy</button>
+                    <button id="btn-coachTabTools" class="coach-tab-btn"
+                        onclick="window.switchCoachTab('coachTabTools')">⚙️ Tools</button>
+                </div>
+
+                <div id="coachTabRoster">
+                    <div class="card">
+                        <div class="card-header roster-overview-header">Roster Overview</div>
+                        <div class="card-body">
+                            <div class="roster-stats-box">
+                                <div class="text-center"><b>Active Players</b><br><span id="coachActivePlayers"
+                                        class="roster-stat-val active">0</span></div>
+                                <div class="text-center"><b>Total Reps Logged</b><br><span id="coachTotalReps"
+                                        class="roster-stat-val reps">0</span></div>
+                            </div>
+                            <label for="rosterPdfInput">Import Team Roster (PDF)</label>
+                            <input type="file" id="rosterPdfInput" accept="application/pdf"
+                                title="Upload a PDF file to import team roster">
+                            <div id="rosterReviewArea" class="d-none">
+                                <label>Review Extracted Names</label>
+                                <textarea id="rosterTextRaw" rows="8"
+                                    title="Review and edit extracted player names from roster"></textarea>
+                                <button id="saveParsedRosterBtn" class="primary-btn btn-save-roster">Save
+                                    Roster</button>
+                            </div>
+                            <hr class="roster-divider">
+                            <label>Manual Add Player</label>
+                            <div class="input-row">
+                                <input type="text" id="coachAddPlayerName" class="flex-1" placeholder="Player Name">
+                                <input type="number" id="coachAddPlayerJersey" class="w-50" placeholder="#">
+                            </div>
+                            <input type="email" id="coachAddPlayerEmail" placeholder="Parent Email (Optional)">
+                            <button id="coachAddPlayerBtn" class="secondary-btn w-100">+ Add Player</button>
+
+                            <hr class="roster-divider">
+                            <label>Team Jersey Numbers</label>
+                            <button id="editJerseysBtn" class="secondary-btn w-100">🔢 Set Jersey Numbers</button>
+                            <div id="jerseyEditorModal" class="jersey-modal d-none">
+                                <h4 class="jersey-modal-title">Assign Jersey Numbers</h4>
+                                <div id="jerseyEditorList" class="jersey-list"></div>
+                                <button id="saveJerseysBtn" class="primary-btn btn-blue mt-10">Save Numbers</button>
+                                <button onclick="document.getElementById('jerseyEditorModal').classList.add('d-none')"
+                                    class="secondary-btn mt-5 w-100 btn-close-transparent">Close</button>
+                            </div>
                         </div>
-                        
-                        <label>Starting Lineup <span class="hint-text">(Drag & Drop, Tap to Remove)</span></label>
-                        <div id="gamedayPitchBg" class="pitch-container">
-                            <div id="gamedayPitchLines" class="pitch-lines"></div>
-                            <div id="pitchPinsContainer" class="pitch-pins"></div>
+                    </div>
+
+                    <div class="card" id="weeklySummaryCard">
+                        <div class="card-header bg-blue-header">📅 7-Day Practice Summary</div>
+                        <div class="card-body p-0 overflow-x-auto">
+                            <table id="weeklySummaryTable" class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>7-Day Mins</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="3" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <button id="saveGamedayRosterBtn" class="primary-btn btn-blue mt-15 w-100">Save Pitch Layout</button>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-header">⏱️ Practice Stopwatch</div>
-                    <div class="card-body text-center">
-                        <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
-                        <div class="flex-gap-8">
-                            <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
-                            <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
+                    <div class="card" id="coachPlayerListCard">
+                        <div class="card-header"><span>Team Roster</span><button id="forceRefreshRosterBtn"
+                                class="action-btn">↻ Refresh</button></div>
+                        <div class="card-body p-0">
+                            <div id="coachPlayerList">Loading...</div>
                         </div>
-                        <div class="flex-gap-8">
-                            <button id="btnSwLap" class="secondary-btn flex-1" type="button">Lap Split</button>
-                            <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
+                    </div>
+
+                    <div class="card" id="cardStaffManager">
+                        <div class="card-header staff-header">Team Staff (Assistants)</div>
+                        <div class="card-body">
+                            <div id="assistantList" class="assistant-list"></div>
+                            <div class="add-assistant-row">
+                                <input type="email" id="newAssistantEmail" class="m-0" placeholder="Assistant's Email">
+                                <button id="addAssistantBtn"
+                                    class="primary-btn btn-auto-width btn-padding-10">Add</button>
+                            </div>
                         </div>
-                        <ul id="lapList" class="lap-list"></ul>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">📋 Manage Team Workouts</div>
-                    <div class="card-body">
-                        <label>Category</label>
-                        <select id="manageWorkoutType" class="mb-10" title="Select workout category">
-                            <option value="cardio">Warm-Up / Cardio</option>
-                            <option value="core">Core / Strength</option>
-                            <option value="ball_mastery">Ball Mastery / Skill</option>
-                            <option value="foundation">Brilliant Basics / Foundation</option>
-                        </select>
-                        <input type="text" id="manageWorkoutName" placeholder="Workout Name (e.g. 10 Yard Shuttles)">
-                        <input type="number" id="manageWorkoutLevel" placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1" class="mb-10 manage-workout-input">
-                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2" class="mb-10 manage-workout-txt"></textarea>
-                        <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
-                        <button id="addWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
-                        
-                        <hr class="section-divider">
-                        <label>Existing Workouts</label>
-                        <ul id="WorkoutList" class="session-list mt-10">
-                            <li class="session-empty">Loading workouts...</li>
-                        </ul>
+                <div id="coachTabPlan" class="d-none">
+                    <div class="card">
+                        <div class="card-header">📅 Manage Schedule</div>
+                        <div class="card-body">
+                            <div class="schedule-input-row">
+                                <input type="date" id="scheduleDate" class="schedule-date-input"
+                                    title="Select event date">
+                                <input type="time" id="scheduleTime" class="schedule-time-input"
+                                    title="Select event time">
+                            </div>
+                            <div class="schedule-type-row">
+                                <select id="scheduleType" class="schedule-type-select" title="Select event type">
+                                    <option value="Practice">Practice</option>
+                                    <option value="Game">Game</option>
+                                    <option value="Event">Event</option>
+                                </select>
+                                <input type="text" id="scheduleLocation" placeholder="Location / Opponent"
+                                    class="schedule-location-input">
+                            </div>
+                            <button id="addScheduleBtn" class="primary-btn btn-blue btn-add-schedule" type="button">+
+                                Add Event</button>
+                            <ul id="coachScheduleList" class="session-list coach-schedule-list mt-15"></ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header hw-header">🎯 Assign Homework</div>
+                        <div class="card-body">
+                            <label>1. Select Players & Due Date</label>
+                            <div class="mb-15">
+                                <div class="hw-select-box">
+                                    <label class="hw-select-all-label">
+                                        <input type="checkbox" id="hwSelectAllPlayers"> <b
+                                            class="hw-select-all-text">Select All Players</b>
+                                    </label>
+                                    <div id="hwPlayerChecklistItems" class="hw-player-list"></div>
+                                </div>
+                            </div>
+                            <div class="hw-due-row">
+                                <label class="m-0">Due Date:</label>
+                                <input type="date" id="hwDueDate" class="hw-due-date flex-1 m-0"
+                                    title="Select due date for homework assignment">
+                            </div>
+
+                            <label>2. Build the Workout</label>
+                            <select id="hwDrillSelect" class="hw-drill-select"
+                                title="Select a drill for homework assignment">
+                                <option>Loading...</option>
+                            </select>
+
+                            <div class="hw-drill-row">
+                                <input type="number" id="hwSets" placeholder="Sets" value="3" class="hw-input-sets">
+                                <span>x</span>
+                                <input type="number" id="hwReps" placeholder="Reps/Mins" value="20"
+                                    class="hw-input-reps">
+                                <button id="addHwDrillBtn" class="secondary-btn hw-btn-add">+ Add Drill</button>
+                            </div>
+
+                            <ul id="hwBuilderList" class="session-list hw-builder-list">
+                                <li class="session-empty">No drills added to this assignment yet.</li>
+                            </ul>
+
+                            <button id="assignHwBtn" class="primary-btn btn-orange btn-assign-hw">Send
+                                Assignment</button>
+
+                            <hr class="section-divider">
+                            <label>Active Assignments</label>
+                            <ul id="coachHwList" class="session-list mt-15"></ul>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">Export Data</div>
-                    <div class="card-body text-center">
-                        <p class="export-desc">Download full team workout history to Excel.</p>
-                        <button id="exportXlsxBtn" class="primary-btn btn-export-excel">📥 Export to .XLSX</button>
+                <div id="coachTabEvals" class="d-none">
+                    <div class="card" id="coachRecentTrialsCard">
+                        <div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
+                        <div class="card-body p-0">
+                            <ul id="coachRecentTrialList" class="session-list flush-list">
+                                <li class="session-empty">Loading recent submissions...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card" id="coachLogTrialCard">
+                        <div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
+                        <div class="card-body">
+                            <select id="coachTrialPlayerSelect" class="mb-10" title="Select a player for trial logging">
+                                <option>Loading Players...</option>
+                            </select>
+                            <select id="coachTrialType" class="mb-10" title="Select trial type">
+                                <option value="Passing">Passing Points</option>
+                                <option value="Shooting">Shot Scoring</option>
+                                <option value="Time">Time Trial</option>
+                            </select>
+                            <input type="text" id="coachTrialSkill" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
+                            <div class="input-row mb-15">
+                                <input type="number" id="coachTrial1" class="flex-1" placeholder="Score 1">
+                                <input type="number" id="coachTrial2" class="flex-1" placeholder="Score 2">
+                                <input type="number" id="coachTrial3" class="flex-1" placeholder="Score 3">
+                            </div>
+                            <button id="coachSubmitTrialBtn" class="primary-btn btn-gold">Save Official Coach
+                                Trial</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header bg-green-header">📋 Skill Evaluation</div>
+                        <div class="card-body">
+                            <div class="eval-input-row">
+                                <select id="evalPlayerSelect" class="eval-player-select"
+                                    title="Select a player for skill evaluation">
+                                    <option>Loading...</option>
+                                </select>
+                                <select id="evalScore" class="eval-score-select"
+                                    title="Select a score for skill evaluation">
+                                    <option value="" disabled selected>Score</option>
+                                    <option value="1">1 - Struggling</option>
+                                    <option value="2">2 - Needs Work</option>
+                                    <option value="3">3 - Capable</option>
+                                    <option value="4">4 - Strong</option>
+                                    <option value="5">5 - Mastered</option>
+                                </select>
+                            </div>
+                            <label>Brilliant Basics Skill</label>
+                            <select id="evalSkillSelect" class="eval-skill-select"
+                                title="Select a skill for evaluation">
+                                <option>Loading...</option>
+                            </select>
+                            <input type="text" id="evalNotes" placeholder="Optional coach notes..."
+                                class="eval-notes-input">
+                            <button id="saveEvalBtn" class="primary-btn btn-green btn-save-eval">Save
+                                Evaluation</button>
+
+                            <hr class="section-divider">
+                            <label>Player History</label>
+                            <ul id="coachEvalList" class="session-list eval-history-list mt-10">
+                                <li class="session-empty">Select a player above to view history.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="coachTabStrategy" class="d-none">
+                    <div class="card" id="strategyBoardCard">
+                        <div class="card-header strategy-header">
+                            <span>🖌️ Strategy Board</span>
+                            <button id="strategyFullscreenBtn" class="action-btn m-0">⛶ Fullscreen</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="strategy-toolbar">
+                                <input type="color" id="strategyColor" value="#ffeb3b" title="Pen Color"
+                                    class="strategy-color">
+                                <button id="strategyToolPen" class="secondary-btn active strategy-tool-btn">✎</button>
+                                <button id="strategyToolArrow" class="secondary-btn strategy-tool-btn">➔</button>
+                                <button id="strategyToolX"
+                                    class="secondary-btn strategy-tool-btn strategy-tool-txt">X</button>
+                                <button id="strategyToolO"
+                                    class="secondary-btn strategy-tool-btn strategy-tool-txt">O</button>
+                                <button id="strategyUndoBtn" class="secondary-btn strategy-action-btn">Undo</button>
+                                <button id="strategyClearBtn"
+                                    class="secondary-btn strategy-action-btn strategy-clear-btn">Clear</button>
+                                <div class="wb-toggle-row">
+                                    <label class="switch" title="Toggle Whiteboard Mode">
+                                        <input type="checkbox" id="strategyBoardStyleToggle"
+                                            title="Toggle Whiteboard Mode">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="wb-toggle-txt"
+                                        onclick="document.getElementById('strategyBoardStyleToggle').click()">WB</span>
+                                </div>
+                            </div>
+                            <div id="strategyPitchBg" class="pitch-container">
+                                <div id="strategyPitchLines" class="pitch-lines"></div>
+                                <canvas id="strategyCanvas" class="pitch-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="coachTabTools" class="d-none">
+
+                    <div class="card">
+                        <div class="card-header">📋 Gameday Roster</div>
+                        <div class="card-body">
+                            <label>Bench Players</label>
+                            <div class="gameday-bench-row">
+                                <select id="benchSelect" class="gameday-bench-sel"
+                                    title="Select a player to add to pitch">
+                                    <option>Loading...</option>
+                                </select>
+                                <button id="addToPitchBtn" class="primary-btn btn-green gameday-add-btn">+ Add to
+                                    Pitch</button>
+                            </div>
+
+                            <label>Starting Lineup <span class="hint-text">(Drag & Drop, Tap to Remove)</span></label>
+                            <div id="gamedayPitchBg" class="pitch-container">
+                                <div id="gamedayPitchLines" class="pitch-lines"></div>
+                                <div id="pitchPinsContainer" class="pitch-pins"></div>
+                            </div>
+                            <button id="saveGamedayRosterBtn" class="primary-btn btn-blue mt-15 w-100">Save Pitch
+                                Layout</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">⏱️ Practice Stopwatch</div>
+                        <div class="card-body text-center">
+                            <div id="stopwatchDisplay" class="stopwatch-display">00:00.00</div>
+                            <div class="flex-gap-8">
+                                <button id="btnSwStart" class="primary-btn btn-green flex-1">Start</button>
+                                <button id="btnSwStop" class="primary-btn btn-red flex-1">Stop</button>
+                            </div>
+                            <div class="flex-gap-8">
+                                <button id="btnSwLap" class="secondary-btn flex-1" type="button">Lap Split</button>
+                                <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
+                            </div>
+                            <ul id="lapList" class="lap-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">📋 Manage Team Workouts</div>
+                        <div class="card-body">
+                            <label>Category</label>
+                            <select id="manageWorkoutType" class="mb-10" title="Select workout category">
+                                <option value="cardio">Warm-Up / Cardio</option>
+                                <option value="core">Core / Strength</option>
+                                <option value="ball_mastery">Ball Mastery / Skill</option>
+                                <option value="foundation">Brilliant Basics / Foundation</option>
+                            </select>
+                            <input type="text" id="manageWorkoutName"
+                                placeholder="Workout Name (e.g. 10 Yard Shuttles)">
+                            <input type="number" id="manageWorkoutLevel"
+                                placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1"
+                                class="mb-10 manage-workout-input">
+                            <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2"
+                                class="mb-10 manage-workout-txt"></textarea>
+                            <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
+                            <button id="addWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
+
+                            <hr class="section-divider">
+                            <label>Existing Workouts</label>
+                            <ul id="WorkoutList" class="session-list mt-10">
+                                <li class="session-empty">Loading workouts...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Export Data</div>
+                        <div class="card-body text-center">
+                            <p class="export-desc">Download full team workout history to Excel.</p>
+                            <button id="exportXlsxBtn" class="primary-btn btn-export-excel">📥 Export to .XLSX</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-<div id="viewAdmin" class="view-section d-none">
-    <div class="admin-sticky-header">
-        <h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
-        
-        <div class="admin-tab-bar">
-            <button class="admin-tab active" data-target="admin-section-overview"><i class="ph ph-chart-line"></i> Overview</button>
-            <button class="admin-tab" data-target="admin-section-sports"><i class="ph ph-trophy"></i> Sports Modules</button>
-            <button class="admin-tab" data-target="admin-section-accounts"><i class="ph ph-users-three"></i> Accounts</button>
-            <button class="admin-tab" data-target="admin-section-billing"><i class="ph ph-credit-card"></i> Licensing</button>
-            <button class="admin-tab" data-target="admin-section-security"><i class="ph ph-shield-check"></i> Security</button>
-        </div>
-    </div>
+            <div id="viewAdmin" class="view-section d-none">
+                <div class="admin-sticky-header">
+                    <h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
 
-    <div id="admin-section-overview" class="admin-pane">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Athletes</h3>
-                <p id="global-player-count">0</p>
-                <span class="stat-trend positive"><i class="ph ph-trend-up"></i> +12% this month</span>
-            </div>
-            <div class="stat-card">
-                <h3>Active Organizations</h3>
-                <p id="global-club-count">0</p>
-            </div>
-            <div class="stat-card stat-card-gold">
-                <h3>Active Licenses</h3>
-                <p id="global-license-count">0</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-section-sports" class="admin-pane d-none">
-        <div class="card">
-            <div class="card-header">Provision New Sport Module</div>
-            <div class="card-body">
-                <div class="admin-input-row">
-                    <input type="text" id="newSportName" placeholder="e.g., Volleyball">
-                    <button id="btn-provision-sport" class="primary-btn btn-blue">Initialize Schema</button>
-                </div>
-            </div>
-        </div>
-        <div class="card mt-15">
-            <div class="card-header">Active Platform Sports</div>
-            <div class="card-body" id="active-sport-tags">
-                </div>
-        </div>
-    </div>
-
-<div id="admin-section-accounts" class="admin-pane d-none">
-        <div class="card" id="adminClubsCard">
-            <div class="card-header">🏢 Registered Organizations</div>
-            <div class="card-body">
-                <div class="overflow-x-auto">
-                    <table id="clubTable" class="admin-table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Director</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <hr class="section-divider">
-                <label>Add New Club</label>
-                <div class="admin-input-row mb-10">
-                    <input type="text" id="newClubId" placeholder="Club ID (e.g. aggiesfc)" class="m-0">
-                    <input type="text" id="newClubName" placeholder="Club Name" class="m-0">
-                </div>
-                <input type="email" id="newClubDirector" placeholder="Director Email (Optional)">
-                <button id="addClubBtn" class="primary-btn btn-blue">+ Add Club</button>
-            </div>
-        </div>
-
-        <div class="card mt-15" id="adminTeamsCard">
-            <div class="card-header">👥 Registered Teams</div>
-            <div class="card-body">
-                <label>Add New Team</label>
-                <div class="admin-input-row mb-10">
-                    <select id="newTeamClubId" class="m-0"><option value="">-- Select Parent Club --</option></select>
-                    <input type="text" id="newTeamName" placeholder="Team Name" class="m-0">
-                </div>
-                <input type="email" id="newTeamCoach" placeholder="Head Coach Email">
-                <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
-                <hr class="section-divider">
-                <div class="overflow-x-auto">
-                    <table id="teamTable" class="admin-table">
-                        <thead><tr><th>Team</th><th>Club</th><th>Coach</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="card" id="adminUserRoleManager">
-            <div class="card-header bg-blue-header">👥 Assign Club Director</div>
-            <div class="card-body">
-                <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and select the Club.</p>
-                <div class="admin-flex-row">
-                    <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
-                    <select id="assignDirClubId" class="admin-flex-sel m-0" title="Select a club for director assignment">
-                        <option value="">Select Club</option>
-                    </select>
-                </div>
-                <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10 mb-15">Assign Director Role</button>
-                
-                <hr class="section-divider">
-                <div class="admin-warning-box mt-15">
-                    <p class="admin-warning-txt"><b>Note:</b> If the user is currently a Global Admin, revoke global access first.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Global Directors</div>
-            <div class="card-body">
-                <table id="adminTable" class="admin-table">
-                    <thead><tr><th>Email</th><th>Action</th></tr></thead><tbody></tbody>
-                </table>
-                <div class="admin-input-row">
-                    <input type="email" id="newAdminEmail" placeholder="Director Email">
-                    <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
-                </div>
-            </div>
-        </div>
-    </div> <div id="admin-section-billing" class="admin-pane d-none">
-        <div class="card border-gold">
-            <div class="card-header bg-gold-header"><i class="ph ph-credit-card"></i> License Generator</div>
-            <div class="card-body">
-                <label>Target Organization</label>
-                <select id="billingOrgSelect" class="mb-15"><option value="">Loading...</option></select>
-                <div class="input-row mb-15">
-                    <div class="flex-1">
-                        <label>License Type</label>
-                        <select id="licenseType">
-                            <option value="subscription">Monthly Subscription</option>
-                            <option value="trial">Free Trial</option>
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label>Seat Limit</label>
-                        <input type="number" id="licenseSeats" value="10">
+                    <div class="admin-tab-bar">
+                        <button class="admin-tab active" data-target="admin-section-overview"><i
+                                class="ph ph-chart-line"></i> Overview</button>
+                        <button class="admin-tab" data-target="admin-section-sports"><i class="ph ph-trophy"></i> Sports
+                            Modules</button>
+                        <button class="admin-tab" data-target="admin-section-accounts"><i class="ph ph-users-three"></i>
+                            Accounts</button>
+                        <button class="admin-tab" data-target="admin-section-billing"><i class="ph ph-credit-card"></i>
+                            Licensing</button>
+                        <button class="admin-tab" data-target="admin-section-security"><i
+                                class="ph ph-shield-check"></i> Security</button>
                     </div>
                 </div>
-                <button id="btn-update-license" class="primary-btn btn-gold">Generate & Sync License</button>
-            </div>
-        </div>
-    </div> <div id="admin-section-security" class="admin-pane d-none">
-        <div class="card">
-            <div class="card-header bg-red-header"><i class="ph ph-warning"></i> Super Admin Audit Log</div>
-            <div class="card-body" id="admin-audit-log">
-                <p class="text-muted">Fetching security logs...</p>
-            </div>
-        </div>
-    </div> </div> <div id="viewDirector" class="view-section d-none">
-    <h2 class="view-title view-title-flex">
-        👔 Director Portal
-        <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
-    </h2>
 
-    <div class="admin-tab-bar">
-        <button class="director-tab active" data-target="dir-section-teams"><i class="ph ph-users"></i> Teams & Coaches</button>
-        <button class="director-tab" data-target="dir-section-brand"><i class="ph ph-palette"></i> Club Branding</button>
-    </div>
-
-    <div id="dir-section-teams" class="director-pane">
-        <div class="card">
-            <div class="card-header bg-blue-header">Create Sub-Team</div>
-            <div class="card-body">
-                <div class="input-row mb-10">
-                    <input type="text" id="newClubTeamName" class="flex-1 m-0" placeholder="Team Name (e.g. U12 Gold)">
-                    <input type="email" id="newClubCoachEmail" class="flex-1 m-0" placeholder="Coach Email">
-                </div>
-                <button id="btnCreateClubTeam" class="primary-btn btn-blue w-100">Create Team</button>
-            </div>
-        </div>
-
-        <div class="card mt-15">
-            <div class="card-header bg-orange-header">Assign Coach to Existing Team</div>
-            <div class="card-body">
-                <select id="directorTeamSelect" class="mb-10"><option value="">Loading Teams...</option></select>
-                <input type="email" id="inviteCoachEmail" placeholder="Coach Email">
-                <button id="btnInviteCoach" class="primary-btn btn-orange w-100">Invite / Assign Coach</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="dir-section-brand" class="director-pane d-none">
-        <div class="card">
-            <div class="card-header">🎨 Club Branding</div>
-            <div class="card-body">
-                <label>Select Team/Club to Edit</label>
-                <select id="brandingTeamSelect" class="mb-10" title="Select a team or club to edit branding"><option>Loading...</option></select>
-                
-                <label>App Name</label>
-                <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
-                
-                <label>Logo URL (PNG/JPG)</label>
-                <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
-                
-                <label>Sport Selection</label>
-                <select id="brandCourtType" class="admin-full-sel mb-15">
-                    <option value="soccer">Soccer</option>
-                    <option value="basketball">Basketball</option>
-                    <option value="football">Football</option>
-                    <option value="baseball">Baseball</option>
-                    <option value="lacrosse">Lacrosse</option>
-                    <option value="generic">Generic Gym/Field</option>
-                </select>
-
-                <div class="input-row mb-15">
-                    <div class="flex-1">
-                        <label>Primary Color</label>
-                        <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input">
-                    </div>
-                    <div class="flex-1">
-                        <label>Secondary Color (Gold)</label>
-                        <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input">
+                <div id="admin-section-overview" class="admin-pane">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Athletes</h3>
+                            <p id="global-player-count">0</p>
+                            <span class="stat-trend positive"><i class="ph ph-trend-up"></i> +12% this month</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Active Organizations</h3>
+                            <p id="global-club-count">0</p>
+                        </div>
+                        <div class="stat-card stat-card-gold">
+                            <h3>Active Licenses</h3>
+                            <p id="global-license-count">0</p>
+                        </div>
                     </div>
                 </div>
-                
-                <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
-                <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to Default</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-    <div id="videoModal" class="modal">
-        <div class="modal-content">
-            <div class="card-header"><span>Drill Video</span><span class="close-btn modal-close-icon">×</span></div>
-            <div class="modal-body p-0">
-                <iframe id="videoPlayer" width="100%" height="250" src="" frameborder="0" allowfullscreen title="Drill Video Player"></iframe>
-            </div>
-        </div>
-    </div>
-
-  <div id="challengeModal" class="modal cert-modal-bg">
-        <div class="challenge-modal-content">
-            <div class="challenge-modal-header">
-                <span class="challenge-modal-title">⭐ CHALLENGES UNLOCKED ⭐</span>
-                <span class="close-btn modal-close-icon text-white">×</span>
-            </div>
-            
-            <div class="modal-body p-0">
-                <div id="stepIntro" class="p-20">
-                    <h3 class="mt-0">Welcome to Challenge Mode</h3>
-                    <p class="challenge-desc">Coach Simon Collins has created specific trials to test your mastery. Watch the intro below.</p>
-                    <iframe id="vidIntro" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Introduction Video"></iframe>
-                    <button class="primary-btn btn-gold" onclick="window.nextChallengeStep('Ch1')">Next: View Challenges ➔</button>
+                <div id="admin-section-sports" class="admin-pane d-none">
+                    <div class="card">
+                        <div class="card-header">Provision New Sport Module</div>
+                        <div class="card-body">
+                            <div class="admin-input-row">
+                                <input type="text" id="newSportName" placeholder="e.g., Volleyball">
+                                <button id="btn-provision-sport" class="primary-btn btn-blue">Initialize Schema</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-15">
+                        <div class="card-header">Active Platform Sports</div>
+                        <div class="card-body" id="active-sport-tags">
+                        </div>
+                    </div>
                 </div>
 
-                <div id="stepCh1" class="d-none p-20">
-                    <h3 class="challenge-title-gold">The Standards</h3>
-                    <p class="challenge-desc">Review the three challenges you will be evaluated on.</p>
-                    
-                    <div class="video-scroller">
-                        <iframe id="vidCh1" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 1"></iframe>
-                        <iframe id="vidCh2" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 2"></iframe>
-                        <iframe id="vidCh3" class="scroller-vid" src="" frameborder="0" allowfullscreen title="Challenge Standards Video 3"></iframe>
+                <div id="admin-section-accounts" class="admin-pane d-none">
+                    <div class="card" id="adminClubsCard">
+                        <div class="card-header">🏢 Registered Organizations</div>
+                        <div class="card-body">
+                            <div class="overflow-x-auto">
+                                <table id="clubTable" class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Director</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <hr class="section-divider">
+                            <label>Add New Club</label>
+                            <div class="admin-input-row mb-10">
+                                <input type="text" id="newClubId" placeholder="Club ID (e.g. aggiesfc)" class="m-0">
+                                <input type="text" id="newClubName" placeholder="Club Name" class="m-0">
+                            </div>
+                            <input type="email" id="newClubDirector" placeholder="Director Email (Optional)">
+                            <button id="addClubBtn" class="primary-btn btn-blue">+ Add Club</button>
+                        </div>
                     </div>
 
-                    <label class="checkbox-panel">
-                        <input type="checkbox" id="chkWatched" onchange="window.verifyChallengeReadiness()"> 
-                        <span>Yes, I have watched the challenge videos and understand the standards.</span>
-                    </label>
-                    <label class="checkbox-panel mb-20-imp">
-                        <input type="checkbox" id="chkReady" onchange="window.verifyChallengeReadiness()"> 
-                        <span>Yes, I am ready to start my challenges and log my official scores.</span>
-                    </label>
+                    <div class="card mt-15" id="adminTeamsCard">
+                        <div class="card-header">👥 Registered Teams</div>
+                        <div class="card-body">
+                            <label>Add New Team</label>
+                            <div class="admin-input-row mb-10">
+                                <select id="newTeamClubId" class="m-0">
+                                    <option value="">-- Select Parent Club --</option>
+                                </select>
+                                <input type="text" id="newTeamName" placeholder="Team Name" class="m-0">
+                            </div>
+                            <input type="email" id="newTeamCoach" placeholder="Head Coach Email">
+                            <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
+                            <hr class="section-divider">
+                            <div class="overflow-x-auto">
+                                <table id="teamTable" class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team</th>
+                                            <th>Club</th>
+                                            <th>Coach</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-                    <button id="imReadyBtn" class="primary-btn btn-disabled" disabled>I'M READY</button>
+                    <div class="card" id="adminUserRoleManager">
+                        <div class="card-header bg-blue-header">👥 Assign Club Director</div>
+                        <div class="card-body">
+                            <p class="admin-note-txt">To assign a user as a Club Director, enter their email below and
+                                select the Club.</p>
+                            <div class="admin-flex-row">
+                                <input type="email" id="assignDirEmail" placeholder="Director Email" class="flex-1 m-0">
+                                <select id="assignDirClubId" class="admin-flex-sel m-0"
+                                    title="Select a club for director assignment">
+                                    <option value="">Select Club</option>
+                                </select>
+                            </div>
+                            <button id="assignDirBtn" class="primary-btn w-100 btn-mt-10 mb-15">Assign Director
+                                Role</button>
+
+                            <hr class="section-divider">
+                            <div class="admin-warning-box mt-15">
+                                <p class="admin-warning-txt"><b>Note:</b> If the user is currently a Global Admin,
+                                    revoke global access first.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Global Directors</div>
+                        <div class="card-body">
+                            <table id="adminTable" class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <div class="admin-input-row">
+                                <input type="email" id="newAdminEmail" placeholder="Director Email">
+                                <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="dayModal" class="modal">
-        <div class="modal-content">
-            <div class="card-header"><span id="dayModalDate">Date</span><span class="close-btn modal-close-icon">×</span></div>
-            <div class="modal-body text-sm" id="dayModalContent"></div>
-        </div>
-    </div>
-
-    <div id="certModal" class="modal cert-modal-bg">
-        <div class="modal-content cert-content">
-            <div id="printableCertificate">
-                <div class="cert-border"></div>
-                <div class="cert-icon">⚽🏆🥇</div>
-                <h1 class="cert-title">Certificate of Achievement</h1>
-                <p class="cert-subtitle">This certifies that</p>
-                <h2 id="certPlayerName" class="cert-player-name">Player Name</h2>
-                <p class="cert-body-text">
-                    Has successfully completed the rigorous training requirements to achieve the rank of <strong>LEGEND</strong>. Through dedication, consistency, and hard work, they have mastered the brilliant basics of the game.
-                </p>
-                <div class="cert-footer">
-                    <div class="text-center">
-                        <div id="certDate" class="cert-date-line">Date</div>
-                        <div class="cert-label">Awarded On</div>
+                <div id="admin-section-billing" class="admin-pane d-none">
+                    <div class="card border-gold">
+                        <div class="card-header bg-gold-header"><i class="ph ph-credit-card"></i> License Generator
+                        </div>
+                        <div class="card-body">
+                            <label>Target Organization</label>
+                            <select id="billingOrgSelect" class="mb-15">
+                                <option value="">Loading...</option>
+                            </select>
+                            <div class="input-row mb-15">
+                                <div class="flex-1">
+                                    <label>License Type</label>
+                                    <select id="licenseType">
+                                        <option value="subscription">Monthly Subscription</option>
+                                        <option value="trial">Free Trial</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label>Seat Limit</label>
+                                    <input type="number" id="licenseSeats" value="10">
+                                </div>
+                            </div>
+                            <button id="btn-update-license" class="primary-btn btn-gold">Generate & Sync
+                                License</button>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <h3 class="cert-signature-title">Aggies FC</h3>
-                        <div class="cert-label">Official Club Record</div>
+                </div>
+                <div id="admin-section-security" class="admin-pane d-none">
+                    <div class="card">
+                        <div class="card-header bg-red-header"><i class="ph ph-warning"></i> Super Admin Audit Log</div>
+                        <div class="card-body" id="admin-audit-log">
+                            <p class="text-muted">Fetching security logs...</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center no-print cert-buttons">
-                <button onclick="window.print()" class="primary-btn btn-print">🖨️ Print Certificate</button>
-                <button id="closeCertModal" class="secondary-btn close-btn btn-close-cert">Close</button>
+            <div id="viewDirector" class="view-section d-none">
+                <h2 class="view-title view-title-flex">
+                    👔 Director Portal
+                    <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
+                </h2>
+
+                <div class="admin-tab-bar">
+                    <button class="director-tab active" data-target="dir-section-teams"><i class="ph ph-users"></i>
+                        Teams & Coaches</button>
+                    <button class="director-tab" data-target="dir-section-brand"><i class="ph ph-palette"></i> Club
+                        Branding</button>
+                </div>
+
+                <div id="dir-section-teams" class="director-pane">
+                    <div class="card">
+                        <div class="card-header bg-blue-header">Create Sub-Team</div>
+                        <div class="card-body">
+                            <div class="input-row mb-10">
+                                <input type="text" id="newClubTeamName" class="flex-1 m-0"
+                                    placeholder="Team Name (e.g. U12 Gold)">
+                                <input type="email" id="newClubCoachEmail" class="flex-1 m-0" placeholder="Coach Email">
+                            </div>
+                            <button id="btnCreateClubTeam" class="primary-btn btn-blue w-100">Create Team</button>
+                        </div>
+                    </div>
+
+                    <div class="card mt-15">
+                        <div class="card-header bg-orange-header">Assign Coach to Existing Team</div>
+                        <div class="card-body">
+                            <select id="directorTeamSelect" class="mb-10">
+                                <option value="">Loading Teams...</option>
+                            </select>
+                            <input type="email" id="inviteCoachEmail" placeholder="Coach Email">
+                            <button id="btnInviteCoach" class="primary-btn btn-orange w-100">Invite / Assign
+                                Coach</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dir-section-brand" class="director-pane d-none">
+                    <div class="card">
+                        <div class="card-header">🎨 Club Branding</div>
+                        <div class="card-body">
+                            <label>Select Team/Club to Edit</label>
+                            <select id="brandingTeamSelect" class="mb-10"
+                                title="Select a team or club to edit branding">
+                                <option>Loading...</option>
+                            </select>
+
+                            <label>App Name</label>
+                            <input type="text" id="brandAppName" placeholder="e.g. Phoenix Hoops Tracker">
+
+                            <label>Logo URL (PNG/JPG)</label>
+                            <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
+
+                            <label>Sport Selection</label>
+                            <select id="brandCourtType" class="admin-full-sel mb-15">
+                                <option value="soccer">Soccer</option>
+                                <option value="basketball">Basketball</option>
+                                <option value="football">Football</option>
+                                <option value="baseball">Baseball</option>
+                                <option value="lacrosse">Lacrosse</option>
+                                <option value="generic">Generic Gym/Field</option>
+                            </select>
+
+                            <div class="input-row mb-15">
+                                <div class="flex-1">
+                                    <label>Primary Color</label>
+                                    <input type="color" id="brandPrimaryColor" value="#00263A"
+                                        class="color-picker-input">
+                                </div>
+                                <div class="flex-1">
+                                    <label>Secondary Color (Gold)</label>
+                                    <input type="color" id="brandSecondaryColor" value="#BFAE5A"
+                                        class="color-picker-input">
+                                </div>
+                            </div>
+
+                            <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
+                            <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to
+                                Default</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="drillInfoBox" class="card d-none drill-info-box">
-        <div class="card-header drill-info-header">
-            <span id="drillTitle" class="drill-title">Drill Name</span>
-            <span class="close-btn close-drill-btn">▼ Close</span>
-        </div>
-        <div class="card-body">
-            <p id="drillDesc" class="drill-desc"></p>
-            <button id="watchVideoBtn" class="secondary-btn btn-watch-video">▶ Watch Video Example</button>
-        </div>
-    </div>
+            <div id="videoModal" class="modal">
+                <div class="modal-content">
+                    <div class="card-header"><span>Drill Video</span><span class="close-btn modal-close-icon">×</span>
+                    </div>
+                    <div class="modal-body p-0">
+                        <iframe id="videoPlayer" width="100%" height="250" src="" frameborder="0" allowfullscreen
+                            title="Drill Video Player"></iframe>
+                    </div>
+                </div>
+            </div>
 
-<script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker registered!', reg))
-                    .catch(err => console.error('Service Worker failed', err));
-            });
-        }
-    </script>
+            <div id="challengeModal" class="modal cert-modal-bg">
+                <div class="challenge-modal-content">
+                    <div class="challenge-modal-header">
+                        <span class="challenge-modal-title">⭐ CHALLENGES UNLOCKED ⭐</span>
+                        <span class="close-btn modal-close-icon text-white">×</span>
+                    </div>
 
-    <script type="module" src="app.js?v=4.0.3"></script>
+                    <div class="modal-body p-0">
+                        <div id="stepIntro" class="p-20">
+                            <h3 class="mt-0">Welcome to Challenge Mode</h3>
+                            <p class="challenge-desc">Coach Simon Collins has created specific trials to test your
+                                mastery. Watch the intro below.</p>
+                            <iframe id="vidIntro" class="video-frame" src="" frameborder="0" allowfullscreen
+                                title="Challenge Introduction Video"></iframe>
+                            <button class="primary-btn btn-gold" onclick="window.nextChallengeStep('Ch1')">Next: View
+                                Challenges ➔</button>
+                        </div>
+
+                        <div id="stepCh1" class="d-none p-20">
+                            <h3 class="challenge-title-gold">The Standards</h3>
+                            <p class="challenge-desc">Review the three challenges you will be evaluated on.</p>
+
+                            <div class="video-scroller">
+                                <iframe id="vidCh1" class="scroller-vid" src="" frameborder="0" allowfullscreen
+                                    title="Challenge Standards Video 1"></iframe>
+                                <iframe id="vidCh2" class="scroller-vid" src="" frameborder="0" allowfullscreen
+                                    title="Challenge Standards Video 2"></iframe>
+                                <iframe id="vidCh3" class="scroller-vid" src="" frameborder="0" allowfullscreen
+                                    title="Challenge Standards Video 3"></iframe>
+                            </div>
+
+                            <label class="checkbox-panel">
+                                <input type="checkbox" id="chkWatched" onchange="window.verifyChallengeReadiness()">
+                                <span>Yes, I have watched the challenge videos and understand the standards.</span>
+                            </label>
+                            <label class="checkbox-panel mb-20-imp">
+                                <input type="checkbox" id="chkReady" onchange="window.verifyChallengeReadiness()">
+                                <span>Yes, I am ready to start my challenges and log my official scores.</span>
+                            </label>
+
+                            <button id="imReadyBtn" class="primary-btn btn-disabled" disabled>I'M READY</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dayModal" class="modal">
+                <div class="modal-content">
+                    <div class="card-header"><span id="dayModalDate">Date</span><span
+                            class="close-btn modal-close-icon">×</span></div>
+                    <div class="modal-body text-sm" id="dayModalContent"></div>
+                </div>
+            </div>
+
+            <div id="certModal" class="modal cert-modal-bg">
+                <div class="modal-content cert-content">
+                    <div id="printableCertificate">
+                        <div class="cert-border"></div>
+                        <div class="cert-icon">⚽🏆🥇</div>
+                        <h1 class="cert-title">Certificate of Achievement</h1>
+                        <p class="cert-subtitle">This certifies that</p>
+                        <h2 id="certPlayerName" class="cert-player-name">Player Name</h2>
+                        <p class="cert-body-text">
+                            Has successfully completed the rigorous training requirements to achieve the rank of
+                            <strong>LEGEND</strong>. Through dedication, consistency, and hard work, they have mastered
+                            the brilliant basics of the game.
+                        </p>
+                        <div class="cert-footer">
+                            <div class="text-center">
+                                <div id="certDate" class="cert-date-line">Date</div>
+                                <div class="cert-label">Awarded On</div>
+                            </div>
+                            <div class="text-center">
+                                <h3 class="cert-signature-title">Aggies FC</h3>
+                                <div class="cert-label">Official Club Record</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center no-print cert-buttons">
+                        <button onclick="window.print()" class="primary-btn btn-print">🖨️ Print Certificate</button>
+                        <button id="closeCertModal" class="secondary-btn close-btn btn-close-cert">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="drillInfoBox" class="card d-none drill-info-box">
+                <div class="card-header drill-info-header">
+                    <span id="drillTitle" class="drill-title">Drill Name</span>
+                    <span class="close-btn close-drill-btn">▼ Close</span>
+                </div>
+                <div class="card-body">
+                    <p id="drillDesc" class="drill-desc"></p>
+                    <button id="watchVideoBtn" class="secondary-btn btn-watch-video">▶ Watch Video Example</button>
+                </div>
+            </div>
+
+            <script>
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('/sw.js')
+                            .then(reg => console.log('Service Worker registered!', reg))
+                            .catch(err => console.error('Service Worker failed', err));
+                    });
+                }
+            </script>
+
+            <script type="module" src="app.js?v=4.0.4"></script>
 </body>
+
 </html>
