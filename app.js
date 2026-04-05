@@ -3,15 +3,14 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-// --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=3.12";
-import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=3.11";
-import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=3.11";
-import { initDirectorModule } from "./modules/director.js?v=4.0.1";
-import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=3.11";
-import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js?v=3.11";
-import { applyTeamBranding } from "./modules/branding.js?v=3.11";
-import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=3.11";
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.0.";
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
+import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=4.0.0";
+import { initDirectorModule } from "./modules/director.js?v=4.0.0";
+import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=4.0.0";
+import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js?v=4.0.0";
+import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
+import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
