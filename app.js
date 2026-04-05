@@ -7,8 +7,8 @@ import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSi
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=4.0.0";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
-import { initCoachDropdown, loadCoachDashboard, addAssistant, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=4.0.0";
-import { renderAdminTables, addTeam, addAdmin, addClub } from "./modules/admin.js?v=4.0.0";
+import { initCoachDropdown, loadCoachDashboard, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=4.0.0";
+import { renderAdminTables, addAdmin, addClub } from "./modules/admin.js?v=4.0.0";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
 import { messaging } from "./firebase-config.js";
