@@ -53,14 +53,21 @@ window.fetchWorkouts = async (tid) => {
         if (!targetTid) { 
             window.Workouts = []; 
         } else {
-            const q = query(collection(db, "workouts"), where("teamId", "==", targetTid));
+            const q = query(collection(db, "team_workouts"), where("teamId", "==", targetTid));
             const snap = await getDocs(q);
             window.Workouts = [];
             snap.forEach(d => window.Workouts.push({ id: d.id, ...d.data() }));
+            
+            // Legacy Fallback
+            if(window.Workouts.length === 0) {
+                if(window.dbData && window.dbData.workouts) {
+                    window.Workouts = window.dbData.workouts;
+                }
+            }
         }
     } catch(e) { 
         console.error("Fetch Workouts Error:", e); 
-        window.Workouts = []; 
+        window.Workouts = window.dbData && window.dbData.workouts ? window.dbData.workouts : []; 
     }
 };
 
@@ -636,6 +643,7 @@ const initApp = () => {
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach'));
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin'));
     safeBind("btnHomeDirector", "click", () => window.navigateTo('viewDirector'));
+    safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy'));
     
 
 // --- TRACKER MODULE BINDINGS ---
