@@ -306,10 +306,18 @@ onAuthStateChanged(auth, async (user) => {
             // 2. FETCH PROFILE: We still need the playerName for the UI
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
+            let baseProfile = userSnap.exists() ? userSnap.data() : { clubId: window.globalClubs[0]?.id || "aggiesfc" };
             
-            if (userSnap.exists()) {
+            // Admin Bypass
+            if (userRole === 'super_admin' || userRole === 'director') {
+                userProfile = { 
+                    ...baseProfile, 
+                    teamId: "admin", 
+                    playerName: baseProfile.playerName || "Director", 
+                    role: userRole 
+                };
+            } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
-                // We override the local 'role' with the 'userRole' from the secure token
                 userProfile.role = userRole; 
             } else {
                 // If no profile exists, check for an invite
