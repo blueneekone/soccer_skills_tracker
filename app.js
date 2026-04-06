@@ -296,19 +296,23 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById("loginUI").style.display = 'none';
         try {
+            // 1. THE TRUTH: Get the cryptographically signed token
+            // Setting 'true' forces a refresh to catch the latest claims from your Cloud Function
             const tokenResult = await user.getIdTokenResult(true);
-            const userRole = tokenResult.claims.role || 'player';
+            const userRole = tokenResult.claims.role || 'player'; 
 
             await fetchConfig();
+            
+            // 2. FETCH PROFILE: We still need the playerName for the UI
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
-            let baseProfile = userSnap.exists() ? userSnap.data() : { clubId: window.globalClubs[0]?.id || "aggiesfc" };
-
-            if (userRole === 'super_admin' || userRole === 'director') {
-                userProfile = { ...baseProfile, teamId: "admin", playerName: "Director", role: userRole };
-            } else if (userSnap.exists()) {
-                userProfile = userSnap.data(); userProfile.role = userRole;
+            
+            if (userSnap.exists()) {
+                userProfile = userSnap.data();
+                // We override the local 'role' with the 'userRole' from the secure token
+                userProfile.role = userRole; 
             } else {
+                // If no profile exists, check for an invite
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if (inviteSnap.exists()) {
@@ -319,6 +323,7 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
 
+            // 3. UI INITIALIZATION
             if (userProfile && userProfile.playerName) {
                 document.getElementById("appUI").style.display = 'block';
                 if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
@@ -335,10 +340,14 @@ onAuthStateChanged(auth, async (user) => {
                 history.replaceState({ view: 'viewHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', false);
             } else {
+                // No playerName found = incomplete profile
                 document.getElementById("setupUI").classList.remove("d-none");
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
-        } catch (error) { console.error(error); alert("Auth Error: " + error.message); }
+        } catch (error) { 
+            console.error("Auth Error:", error); 
+            alert("Security Error: Unable to verify credentials."); 
+        }
     } else {
         document.getElementById("loginUI").style.display = 'flex';
         document.getElementById("appUI").style.display = 'none';
