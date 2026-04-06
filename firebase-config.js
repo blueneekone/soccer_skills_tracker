@@ -4,8 +4,8 @@
 // THE MASTER SWITCH
 // Comment out DEV and uncomment PROD before deploying!
 // ==========================================
-import { devConfig as activeConfig } from "./firebase-config.dev.js";
-// import { prodConfig as activeConfig } from "./firebase-config.prod.js";
+//import { devConfig as activeConfig } from "./firebase-config.dev.js";
+import { prodConfig as activeConfig } from "./firebase-config.prod.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
