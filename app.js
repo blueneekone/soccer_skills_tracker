@@ -77,9 +77,26 @@ window.buildCoachDropdowns = () => {
 };
 
 // ==========================================
-// 2. CORE ROUTING & UI API
+// 2. SECURE CORE ROUTING API
 // ==========================================
 window.navigateTo = (viewId, addToHistory = true) => {
+    // 1. ROUTE GUARD: Check Authorization Before Navigation
+    const role = userProfile ? userProfile.role : 'guest';
+
+    if (viewId === 'viewAdmin' && role !== 'super_admin') {
+        alert("Unauthorized Access: Super Admin required.");
+        return window.navigateTo('viewHome', false);
+    }
+    if (viewId === 'viewDirector' && role !== 'super_admin' && role !== 'director') {
+        alert("Unauthorized Access: Director required.");
+        return window.navigateTo('viewHome', false);
+    }
+    if (viewId === 'viewCoach' && role === 'player') {
+        alert("Unauthorized Access: Coach credentials required.");
+        return window.navigateTo('viewHome', false);
+    }
+
+    // 2. Perform Navigation
     const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector'];
     views.forEach(v => {
         const el = document.getElementById(v);
@@ -103,18 +120,6 @@ window.navigateTo = (viewId, addToHistory = true) => {
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
-
-window.addEventListener('popstate', (event) => {
-    if (event.state && event.state.view) window.navigateTo(event.state.view, false);
-    else window.navigateTo('viewHome', false);
-});
-
-const safeBind = (id, event, func) => {
-    const el = document.getElementById(id);
-    if (el && el.dataset.bound !== "true") { el.addEventListener(event, func); el.dataset.bound = "true"; }
-};
-
-const setText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
 
 // ==========================================
 // 3. SECURE CONFIGURATION FETCH
