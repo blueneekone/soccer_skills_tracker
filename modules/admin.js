@@ -3,12 +3,13 @@ import { auth, db } from "../firebase-config.js";
 import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initBrandingPanel } from "./branding.js";
 
-export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, superAdminEmail) => {
-    const isSuper = (userEmail || "").toLowerCase() === superAdminEmail.toLowerCase();
-
+// ENTERPRISE UPGRADE: Rely on userRole, not a hardcoded email
+export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, userRole) => {
+    const isSuper = userRole === 'super_admin';
+    
     const clubsCard = document.getElementById("adminClubsCard");
-    if (clubsCard) clubsCard.style.display = isSuper ? "block" : "none";
-
+    if(clubsCard) clubsCard.style.display = isSuper ? "block" : "none";
+    
     // Build Clubs Table
     const c = document.getElementById("clubTable");
     if (c) {
@@ -129,5 +130,26 @@ export const addClub = async (globalClubs, reloadCallback) => {
     document.getElementById("newClubName").value = "";
     document.getElementById("newClubDirector").value = "";
 
+    if (reloadCallback) reloadCallback();
+};
+
+export const addAdmin = async (globalAdmins, reloadCallback) => {
+    const emailInput = document.getElementById("newAdminEmail");
+    if (!emailInput) return;
+    const email = emailInput.value.trim().toLowerCase();
+    
+    if (!email) return alert("Please enter an email address.");
+    if (globalAdmins.includes(email)) return alert("User is already a Global Admin.");
+    
+    // 1. Save to the config array
+    globalAdmins.push(email);
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    
+    // 2. Assign the secure role to the user's profile
+    await setDoc(doc(db, "users", email), { role: "super_admin" }, { merge: true });
+    
+    alert("Global Admin Added Securely!"); 
+    emailInput.value = "";
+    
     if (reloadCallback) reloadCallback();
 };

@@ -15,7 +15,6 @@ import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } 
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-const DIRECTOR_EMAIL = "ecwaechtler@gmail.com";
 let globalTeams = [];
 let globalAdmins = [DIRECTOR_EMAIL];
 let isSignatureBlank = true;
@@ -129,7 +128,6 @@ async function fetchConfig() {
         const clubsSnap = await getDocs(collection(db, "clubs"));
         window.globalClubs = [];
         clubsSnap.forEach(d => window.globalClubs.push(d.data()));
-        if (window.globalClubs.length === 0) window.globalClubs = [{ id: "aggiesfc", name: "Aggies FC", directorEmail: DIRECTOR_EMAIL }];
 
         const teamsColSnap = await getDocs(collection(db, "teams"));
         globalTeams = [];
@@ -158,7 +156,7 @@ function checkRoles(user) {
         const dirBtn = document.getElementById("btnHomeDirector");
         if (adminBtn) adminBtn.classList.remove("d-none");
         if (dirBtn) dirBtn.classList.remove("d-none");
-        renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, DIRECTOR_EMAIL);
+        renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, userProfile.role);
     } else if (userProfile && userProfile.role === 'director') {
         const dirBtn = document.getElementById("btnHomeDirector");
         if (dirBtn) dirBtn.classList.remove("d-none");
@@ -254,6 +252,10 @@ const initApp = () => {
     safeBind("btnHomeDirector", "click", () => window.navigateTo('viewDirector'));
     safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy'));
 
+// Admin Action Bindings
+    safeBind("addClubBtn", "click", () => addClub(window.globalClubs, fetchConfig));
+    safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => { fetchConfig(); renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser.email, userProfile.role); }));
+    
     // ENTERPRISE DELEGATION FOR DYNAMIC APP.JS ELEMENTS
     document.body.addEventListener("click", async (e) => {
         const target = e.target;
