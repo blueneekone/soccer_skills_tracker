@@ -397,14 +397,12 @@ onAuthStateChanged(auth, async (user) => {
             if (userProfile && userProfile.playerName) {
                 document.getElementById("appUI").style.display = 'block';
                 
-                // --- FIX: THE MISSING BRACE IS RESTORED HERE ---
                 const supportBtn = document.getElementById("btnOpenSupport");
                 if (supportBtn) {
                     if (userRole === 'super_admin') supportBtn.classList.add("d-none");
                     else supportBtn.classList.remove("d-none");
-                } 
-                // -----------------------------------------------
-
+                } // <--- THE MISSING BRACE IS RESTORED HERE
+                
                 if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
 
                 setText("activePlayerName", userProfile.playerName);
