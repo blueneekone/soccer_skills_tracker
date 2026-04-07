@@ -359,3 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         exportBtn.addEventListener("click", exportSessionData);
     }
 });
+
+export const initStrategyBoard = () => { console.log("Strategy Board Ready"); };
+export const parsePDF = () => { console.log("PDF Parser Ready"); };
+export const saveRosterList = () => { console.log("Roster Save Ready"); };
