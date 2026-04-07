@@ -99,13 +99,15 @@
 
     <div id="appUI" class="container d-none">
 
-       <div class="app-header">
+        <div class="app-header">
             <div id="headerHomeLink" class="cursor-pointer">
                 <h3 class="app-title">SSTRACKER</h3>
                 <div class="player-info">Player: <span id="activePlayerName" class="font-bold">Loading...</span></div>
             </div>
-            <div>
-                <button id="btnOpenSettings" class="action-btn text-white" style="font-size: 20px; background:transparent; border:none; margin-right:10px;">⚙️</button>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button id="btnOpenSupport" class="action-btn text-white d-none" style="background:transparent; border:none; display: flex; align-items: center; gap: 4px; padding: 0;">
+                    <i class="ph ph-lifebuoy" style="font-size: 22px;"></i> <span style="font-size: 13px; font-weight: 600;">Support</span>
+                </button>
                 <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
             </div>
         </div>
@@ -1287,14 +1289,14 @@
             </div>
         </div>
 
-        <div id="settingsModal" class="modal d-none">
+        <div id="supportModal" class="modal d-none">
             <div class="modal-content">
                 <div class="card-header bg-blue-header">
-                    <span>⚙️ Account Settings</span>
-                    <span id="closeSettingsBtn" class="close-btn modal-close-icon text-white">×</span>
+                    <span>🛟 Technical Support</span>
+                    <span id="closeSupportBtn" class="close-btn modal-close-icon text-white">×</span>
                 </div>
                 <div class="modal-body">
-                    <h4 class="mt-0">Technical Support</h4>
+                    <h4 class="mt-0">Grant Admin Access</h4>
                     <p class="text-sm-sub">By default, SSTRACKER Administrators cannot see your private data. If you are experiencing an issue and have contacted support, click the button below to temporarily grant an Admin access to your account data to help troubleshoot.</p>
                     
                     <div class="text-center mt-15 mb-15">
@@ -1317,7 +1319,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.14"></script>
+    <script type="module" src="app.js?v=4.0.15"></script>
 </body>
 
 </html>

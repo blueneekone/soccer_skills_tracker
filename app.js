@@ -148,7 +148,6 @@ async function fetchConfig() {
         const adminsSnap = await getDocs(query(collection(db, "users"), where("role", "==", "super_admin")));
         globalAdmins = [];
         adminsSnap.forEach(doc => globalAdmins.push(doc.id));
-        // Removed the line trying to push DIRECTOR_EMAIL here
     } catch (e) { console.error("Config fetch error:", e); globalTeams = []; }
 
     const ts = document.getElementById("teamSelect");
@@ -269,12 +268,12 @@ const initApp = () => {
     safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => { fetchConfig(); renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser.email, userProfile.role); }));
     
 // --- SETTINGS & PRIVACY SHIELD LOGIC ---
-    safeBind("btnOpenSettings", "click", () => {
-        document.getElementById("settingsModal").classList.remove("d-none");
+    safeBind("btnOpenSupport", "click", () => {
+        document.getElementById("supportModal").classList.remove("d-none");
     });
     
-    safeBind("closeSettingsBtn", "click", () => {
-        document.getElementById("settingsModal").classList.add("d-none");
+    safeBind("closeSupportBtn", "click", () => {
+        document.getElementById("supportModal").classList.add("d-none");
     });
 
     safeBind("btnGrantSupportAccess", "click", async () => {
@@ -399,6 +398,10 @@ onAuthStateChanged(auth, async (user) => {
             // 3. UI INITIALIZATION
             if (userProfile && userProfile.playerName) {
                 document.getElementById("appUI").style.display = 'block';
+                const supportBtn = document.getElementById("btnOpenSupport");
+                if (supportBtn) {
+                    if (userRole === 'super_admin') supportBtn.classList.add("d-none");
+                    else supportBtn.classList.remove("d-none");
                 if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
 
                 setText("activePlayerName", userProfile.playerName);
