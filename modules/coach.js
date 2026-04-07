@@ -323,3 +323,39 @@ window.switchCoachTab = (tabId) => {
     document.getElementById(tabId).classList.remove('d-none');
     document.getElementById(`btn-${tabId}`).classList.add('active');
 };
+
+// Add to the bottom of modules/coach.js
+export const exportSessionData = () => {
+    try {
+        if (!window.Workouts || window.Workouts.length === 0) {
+            return alert("No workout data found to export.");
+        }
+        
+        // Map the database fields into clean Excel columns
+        const exportData = window.Workouts.map(w => ({
+            Date: w.date || "N/A",
+            Player: w.playerName || "Unknown",
+            Category: w.type || "Workout",
+            Minutes: w.minutes || 0,
+            Notes: w.notes || ""
+        }));
+
+        // Generate and download the Excel file
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Team_Data");
+        XLSX.writeFile(workbook, "Team_Export.xlsx");
+        
+    } catch (error) {
+        console.error("Export Error:", error);
+        alert("Error exporting data. Please check the console.");
+    }
+};
+
+// Bind the export button securely
+document.addEventListener("DOMContentLoaded", () => {
+    const exportBtn = document.getElementById("exportXlsxBtn");
+    if(exportBtn) {
+        exportBtn.addEventListener("click", exportSessionData);
+    }
+});
