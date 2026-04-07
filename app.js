@@ -1,8 +1,7 @@
 // app.js
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // --- BRING IN YOUR MODULES ---
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
@@ -269,9 +268,62 @@ const initApp = () => {
     safeBind("addClubBtn", "click", () => addClub(window.globalClubs, fetchConfig));
     safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => { fetchConfig(); renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser.email, userProfile.role); }));
     
+// --- SETTINGS & PRIVACY SHIELD LOGIC ---
+    safeBind("btnOpenSettings", "click", () => {
+        document.getElementById("settingsModal").classList.remove("d-none");
+    });
+    
+    safeBind("closeSettingsBtn", "click", () => {
+        document.getElementById("settingsModal").classList.add("d-none");
+    });
+
+    safeBind("btnGrantSupportAccess", "click", async () => {
+        const btn = document.getElementById("btnGrantSupportAccess");
+        const status = document.getElementById("supportStatusMsg");
+        
+        try {
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+            
+            const userEmail = auth.currentUser.email.toLowerCase();
+            
+            // Calculate exactly 60 minutes from right now
+            const oneHourFromNow = new Date(Date.now() + (60 * 60 * 1000));
+            
+            // Write the expiration timestamp to the user's profile
+            await updateDoc(doc(db, "users", userEmail), {
+                supportAccessUntil: Timestamp.fromDate(oneHourFromNow)
+            });
+
+            btn.style.display = "none";
+            status.innerText = "✅ Secure Access Granted. Auto-locks in 60 minutes.";
+            
+        } catch (error) {
+            console.error("Support Access Error:", error);
+            btn.innerText = "🛡️ Grant Support Access (1 Hour)";
+            btn.disabled = false;
+            alert("Error granting access: " + error.message);
+        }
+    });
+
     // ENTERPRISE DELEGATION FOR DYNAMIC APP.JS ELEMENTS
     document.body.addEventListener("click", async (e) => {
         const target = e.target;
+
+        const tab = target.closest('.admin-tab, .director-tab, .coach-tab-btn');
+        if (tab && !tab.id.startsWith('btn-coachTab')) { 
+            // Handle Admin & Director Tabs
+            const isAdmin = tab.classList.contains('admin-tab');
+            const tabClass = isAdmin ? '.admin-tab' : '.director-tab';
+            const paneClass = isAdmin ? '.admin-pane' : '.director-pane';
+            
+            document.querySelectorAll(tabClass).forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(paneClass).forEach(p => p.classList.add('d-none'));
+            
+            tab.classList.add('active');
+            const targetId = tab.getAttribute('data-target');
+            if (document.getElementById(targetId)) document.getElementById(targetId).classList.remove('d-none');
+        }
 
         if (target.classList.contains("action-complete-hw")) {
             const id = target.getAttribute("data-id");

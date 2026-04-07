@@ -99,12 +99,15 @@
 
     <div id="appUI" class="container d-none">
 
-        <div class="app-header">
+       <div class="app-header">
             <div id="headerHomeLink" class="cursor-pointer">
                 <h3 class="app-title">SSTRACKER</h3>
                 <div class="player-info">Player: <span id="activePlayerName" class="font-bold">Loading...</span></div>
             </div>
-            <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
+            <div>
+                <button id="btnOpenSettings" class="action-btn text-white" style="font-size: 20px; background:transparent; border:none; margin-right:10px;">⚙️</button>
+                <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
+            </div>
         </div>
 
         <div id="viewHome" class="view-section">
@@ -1284,6 +1287,24 @@
             </div>
         </div>
 
+        <div id="settingsModal" class="modal d-none">
+            <div class="modal-content">
+                <div class="card-header bg-blue-header">
+                    <span>⚙️ Account Settings</span>
+                    <span id="closeSettingsBtn" class="close-btn modal-close-icon text-white">×</span>
+                </div>
+                <div class="modal-body">
+                    <h4 class="mt-0">Technical Support</h4>
+                    <p class="text-sm-sub">By default, SSTRACKER Administrators cannot see your private data. If you are experiencing an issue and have contacted support, click the button below to temporarily grant an Admin access to your account data to help troubleshoot.</p>
+                    
+                    <div class="text-center mt-15 mb-15">
+                        <button id="btnGrantSupportAccess" class="primary-btn btn-orange w-100">🛡️ Grant Support Access (1 Hour)</button>
+                        <div id="supportStatusMsg" class="mt-10" style="font-size: 12px; font-weight: bold; color: #16a34a;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div> <!-- END appUI -->
 
     <script>
@@ -1296,7 +1317,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.13"></script>
+    <script type="module" src="app.js?v=4.0.14"></script>
 </body>
 
 </html>
