@@ -16,13 +16,26 @@ import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 let globalTeams = [];
-let globalAdmins = [DIRECTOR_EMAIL];
+let globalAdmins = [];
 let isSignatureBlank = true;
 let userProfile = null;
 
 window.globalClubs = [];
 window.globalStatsLogs = [];
 window.Workouts = [];
+
+// ==========================================
+// 0. UI HELPER FUNCTIONS (Restored)
+// ==========================================
+const safeBind = (id, event, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(event, fn);
+};
+
+const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+};
 
 // ==========================================
 // 1. ENTERPRISE "SMART CONTEXT"
@@ -136,7 +149,7 @@ async function fetchConfig() {
         const adminsSnap = await getDocs(query(collection(db, "users"), where("role", "==", "super_admin")));
         globalAdmins = [];
         adminsSnap.forEach(doc => globalAdmins.push(doc.id));
-        if (!globalAdmins.includes(DIRECTOR_EMAIL)) globalAdmins.push(DIRECTOR_EMAIL);
+        // Removed the line trying to push DIRECTOR_EMAIL here
     } catch (e) { console.error("Config fetch error:", e); globalTeams = []; }
 
     const ts = document.getElementById("teamSelect");
