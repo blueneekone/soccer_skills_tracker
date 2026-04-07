@@ -361,7 +361,6 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("loginUI").style.display = 'none';
         try {
             // 1. THE TRUTH: Get the cryptographically signed token
-            // Setting 'true' forces a refresh to catch the latest claims from your Cloud Function
             const tokenResult = await user.getIdTokenResult(true);
             const userRole = tokenResult.claims.role || 'player'; 
 
@@ -384,7 +383,6 @@ onAuthStateChanged(auth, async (user) => {
                 userProfile = userSnap.data();
                 userProfile.role = userRole; 
             } else {
-                // If no profile exists, check for an invite
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
                 if (inviteSnap.exists()) {
@@ -398,10 +396,15 @@ onAuthStateChanged(auth, async (user) => {
             // 3. UI INITIALIZATION
             if (userProfile && userProfile.playerName) {
                 document.getElementById("appUI").style.display = 'block';
+                
+                // --- FIX: THE MISSING BRACE IS RESTORED HERE ---
                 const supportBtn = document.getElementById("btnOpenSupport");
                 if (supportBtn) {
                     if (userRole === 'super_admin') supportBtn.classList.add("d-none");
                     else supportBtn.classList.remove("d-none");
+                } 
+                // -----------------------------------------------
+
                 if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
 
                 setText("activePlayerName", userProfile.playerName);
