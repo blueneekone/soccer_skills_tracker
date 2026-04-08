@@ -85,6 +85,20 @@ window.buildCoachDropdowns = () => {
             }
         });
     }
+
+    // --- ROUTE DATA TO TRACKER DROPDOWNS ---
+    const populate = (id, type) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const filtered = window.Workouts.filter(w => w.type === type);
+        el.innerHTML = '<option value="" disabled selected>Select Workout...</option>' + 
+                       filtered.map(w => `<option value="${w.name}">${w.name}</option>`).join("");
+    };
+    
+    populate("selectWarmup", "cardio");
+    populate("selectCore", "core");
+    populate("selectBallWork", "ball_mastery");
+    populate("selectBasics", "foundation");
 };
 
 // ==========================================
@@ -305,6 +319,26 @@ const initApp = () => {
         }
     });
 
+// --- THE FIX: ACTIVATE TRACKER BUTTONS ---
+    const bindTrackerBtn = (btnId, selectId, setsId, repsId) => {
+        safeBind(btnId, "click", () => {
+            const selectEl = document.getElementById(selectId);
+            const name = selectEl ? selectEl.value : "";
+            if (!name || name === "Select Workout...") return alert("Please select a drill first.");
+            const sets = document.getElementById(setsId) ? document.getElementById(setsId).value : "";
+            const reps = document.getElementById(repsId) ? document.getElementById(repsId).value : "";
+            addDrillToSession({ name, sets: sets || 1, reps: reps || 1 });
+        });
+    };
+
+    bindTrackerBtn("addWarmupBtn", "selectWarmup", "cardioDist", "cardioTime");
+    bindTrackerBtn("addCoreBtn", "selectCore", "setsCore", "repsCore");
+    bindTrackerBtn("addBallWorkBtn", "selectBallWork", "setsBall", "repsBall");
+    bindTrackerBtn("addBasicsBtn", "selectBasics", "setsBasics", "repsBasics");
+    
+    safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => window.navigateTo('viewHome')));
+    // -----------------------------------------
+
     // ENTERPRISE DELEGATION FOR DYNAMIC APP.JS ELEMENTS
     document.body.addEventListener("click", async (e) => {
         const target = e.target;
@@ -344,7 +378,40 @@ const initApp = () => {
             if (window.currentHomeworkBuilder.length === 0) list.innerHTML = '<li class="session-empty">No drills added.</li>';
             else list.innerHTML = window.currentHomeworkBuilder.map((item, i) => `<li style="padding:5px; border-bottom:1px solid #eee; font-size:12px; display:flex; justify-content:space-between; align-items:center;"><span><b>${i + 1}.</b> ${item.name}</span><button class="delete-btn action-remove-hw-drill" data-index="${i}">✕</button></li>`).join("");
         }
-    });
+
+        // --- THE FIX: ACTIVATE 'SAVE WORKOUT' BUTTON (Inside the Listener!) ---
+        if (target.id === "addWorkoutBtn") {
+            const { tid } = window.getAppContext();
+            if(!tid) return alert("Select a team in the Roster tab first.");
+            
+            const type = document.getElementById("manageWorkoutType").value;
+            const name = document.getElementById("manageWorkoutName").value.trim();
+            const level = document.getElementById("manageWorkoutLevel").value;
+            const desc = document.getElementById("manageWorkoutDesc").value.trim();
+            
+            if(!name) return alert("Workout Name is required.");
+            
+            target.innerText = "Saving...";
+            try {
+                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                await addDoc(collection(db, "team_workouts"), {
+                    teamId: tid, type: type, name: name, reqLevel: parseInt(level), drill: desc, createdAt: new Date()
+                });
+                
+                alert("Workout Added!");
+                document.getElementById("manageWorkoutName").value = "";
+                document.getElementById("manageWorkoutDesc").value = "";
+                
+                await window.fetchWorkouts();
+                window.buildCoachDropdowns();
+                
+                const { loadCoachDashboard } = await import("./modules/coach.js?v=4.0.1");
+                loadCoachDashboard(false, globalTeams);
+            } catch(e) { alert("Error: " + e.message); }
+            target.innerText = "Save Workout";
+        }
+        // -----------------------------------------------
+    }); // <--- The event listener closes HERE now!
 
     initSignatureCanvas();
     initStrategyBoard();
