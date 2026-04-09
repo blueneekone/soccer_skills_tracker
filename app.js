@@ -11,7 +11,7 @@ import { initCoachDropdown, loadCoachDashboard, manualAddPlayer, parsePDF, saveR
 import { renderAdminTables, addAdmin, addClub } from "./modules/admin.js?v=4.0.0";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
-import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js";
+import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0.0";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
