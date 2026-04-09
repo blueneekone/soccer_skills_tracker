@@ -1166,6 +1166,7 @@
                     Teams & Coaches</button>
                 <button class="director-tab" data-target="dir-section-brand"><i class="ph ph-palette"></i> Club
                     Branding</button>
+                    <button class="director-tab" data-target="dir-section-compliance"><i class="ph ph-shield-check"></i> Compliance & Clearances</button>
             </div>
 
             <div id="dir-section-teams" class="director-pane">
@@ -1233,6 +1234,25 @@
                         <button id="saveBrandingBtn" class="primary-btn btn-blue">Save Branding</button>
                         <button id="resetBrandingBtn" class="secondary-btn btn-mt-10 w-100">Reset to
                             Default</button>
+                    </div>
+                </div>
+            </div> <div id="dir-section-compliance" class="director-pane d-none">
+                <div class="card">
+                    <div class="card-header bg-red-header">🛂 Player Compliance Dashboard</div>
+                    <div class="card-body p-0 overflow-x-auto">
+                        <table id="complianceTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Medical Info</th>
+                                    <th>Waiver Signed</th>
+                                    <th>Official Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4" class="text-center">Loading passports...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

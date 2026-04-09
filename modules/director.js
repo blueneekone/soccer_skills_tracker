@@ -122,3 +122,68 @@ export const initDirectorModule = (db, userProfile) => {
         });
     });
 };
+
+// Add to the bottom of modules/director.js
+import { collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+export const loadComplianceDashboard = async (db, clubId) => {
+    const tbody = document.querySelector("#complianceTable tbody");
+    if (!tbody || !clubId) return;
+
+    try {
+        // 1. Get all passports
+        const passSnap = await getDocs(collection(db, "passports"));
+        
+        // 2. Get all users to match names and filter by Club
+        const userSnap = await getDocs(collection(db, "users"));
+        const users = {};
+        userSnap.forEach(d => {
+            if(d.data().clubId === clubId) users[d.id] = d.data().playerName || d.id;
+        });
+
+        let html = "";
+        passSnap.forEach(doc => {
+            const email = doc.id;
+            // Only show players in this Director's club
+            if (!users[email]) return; 
+            
+            const data = doc.data();
+            const signed = data.hasSignedWaiver ? "✅ Yes" : "❌ No";
+            const currentStatus = data.clearanceStatus || "CLEARED";
+            
+            html += `
+            <tr>
+                <td style="font-weight:bold;">${users[email]}<br><span style="font-size:10px; font-weight:normal; color:#64748b;">${email}</span></td>
+                <td style="font-size:11px;"><b>Contact:</b> ${data.emergencyName} (${data.emergencyPhone})<br><b>Notes:</b> ${data.medicalNotes || "None"}</td>
+                <td>${signed}</td>
+                <td>
+                    <select class="status-changer" data-email="${email}" style="padding:4px; margin:0; border-radius:4px; font-weight:bold; color:${currentStatus === 'RED_CARD' ? '#b91c1c' : '#047857'};">
+                        <option value="CLEARED" ${currentStatus === 'CLEARED' ? 'selected' : ''}>✅ CLEARED</option>
+                        <option value="PENDING_SAFESPORT" ${currentStatus === 'PENDING_SAFESPORT' ? 'selected' : ''}>🟨 SAFESPORT PENDING</option>
+                        <option value="RED_CARD" ${currentStatus === 'RED_CARD' ? 'selected' : ''}>🟥 SUSPENDED (Red Card)</option>
+                    </select>
+                </td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html || "<tr><td colspan='4' class='text-center'>No passports found for your club.</td></tr>";
+    } catch (e) {
+        console.error("Compliance Error:", e);
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center text-red'>Error loading compliance data.</td></tr>";
+    }
+};
+
+// Bind the dropdowns to instantly update the database
+document.addEventListener("change", async (e) => {
+    if (e.target.classList.contains("status-changer")) {
+        const email = e.target.getAttribute("data-email");
+        const newStatus = e.target.value;
+        try {
+            await updateDoc(doc(db, "passports", email), { clearanceStatus: newStatus });
+            e.target.style.color = newStatus === 'RED_CARD' ? '#b91c1c' : '#047857';
+            alert(`Player status updated to ${newStatus}`);
+        } catch(err) {
+            alert("Error updating status: " + err.message);
+        }
+    }
+});

@@ -371,6 +371,11 @@ const initApp = () => {
             tab.classList.add('active');
             const targetId = tab.getAttribute('data-target');
             if (document.getElementById(targetId)) document.getElementById(targetId).classList.remove('d-none');
+            if (targetId === 'dir-section-compliance') {
+                import("./modules/director.js?v=4.0.0").then(module => {
+                    if(module.loadComplianceDashboard) module.loadComplianceDashboard(db, userProfile.clubId);
+                });
+            }
         }
 
         if (target.classList.contains("action-complete-hw")) {
