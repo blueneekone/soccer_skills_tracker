@@ -1,8 +1,62 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
-import { collection, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, orderBy, limit, getDocs, doc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initBrandingPanel } from "./branding.js";
 
+// ==========================================
+// 1. SECURITY AUDIT LOGGING ENGINE
+// ==========================================
+export const logSecurityEvent = async (action, target, details) => {
+    try {
+        await addDoc(collection(db, "security_audit"), {
+            timestamp: new Date(),
+            admin: auth.currentUser.email,
+            action: action,
+            target: target,
+            details: details || ""
+        });
+    } catch(e) { console.error("Audit Log Failed:", e); }
+};
+
+export const loadSecurityLogs = async () => {
+    const container = document.getElementById("admin-audit-log");
+    if(!container) return;
+    
+    container.innerHTML = "<p>Decrypting secure audit logs...</p>";
+    try {
+        const q = query(collection(db, "security_audit"), orderBy("timestamp", "desc"), limit(50));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            container.innerHTML = "<p>No security events recorded yet.</p>";
+            return;
+        }
+        
+        let html = `<div class="overflow-x-auto"><table class="admin-table">
+            <thead><tr><th>Date</th><th>Admin Identity</th><th>Action Taken</th><th>Target Entity</th></tr></thead><tbody>`;
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            const dateStr = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
+            html += `<tr>
+                <td style="font-size:11px; color:#64748b;">${dateStr}</td>
+                <td style="color:#0ea5e9; font-weight:bold;">${data.admin}</td>
+                <td><span style="background:#fef2f2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:0.5px;">${data.action}</span></td>
+                <td><b>${data.target}</b> <br><span style="font-size:10px; color:#64748b;">${data.details}</span></td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+        
+    } catch(e) {
+        container.innerHTML = `<p class="text-red">Error reading logs: You do not have Super Admin decryption rights.</p>`;
+    }
+};
+
+// ==========================================
+// 2. CORE ADMIN FUNCTIONS
+// ==========================================
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, userRole) => {
     const isSuper = userRole === 'super_admin';
     const clubsCard = document.getElementById("adminClubsCard");
@@ -50,21 +104,25 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
         adminView.addEventListener("click", async (e) => {
             const target = e.target;
 
-            // --- DELETE LOGIC ---
             if (target.classList.contains("action-delete-club")) {
                 const cid = target.getAttribute("data-id");
                 if (!confirm(`WARNING: Are you sure you want to delete club '${cid}'? This cannot be undone.`)) return;
-                try { await deleteDoc(doc(db, "clubs", cid)); alert("Club deleted. Refresh to update."); } 
-                catch(err) { alert("Error deleting club: " + err.message); }
+                try { 
+                    await deleteDoc(doc(db, "clubs", cid)); 
+                    logSecurityEvent("DELETE_CLUB", cid, "Club deleted permanently");
+                    alert("Club deleted. Refresh to update."); 
+                } catch(err) { alert("Error deleting club: " + err.message); }
             }
 
             if (target.classList.contains("action-delete-team")) {
                 const tid = target.getAttribute("data-id");
                 if (!confirm(`WARNING: Are you sure you want to delete team '${tid}'? This cannot be undone.`)) return;
-                try { await deleteDoc(doc(db, "teams", tid)); alert("Team deleted. Refresh to update."); } 
-                catch(err) { alert("Error deleting team: " + err.message); }
+                try { 
+                    await deleteDoc(doc(db, "teams", tid)); 
+                    logSecurityEvent("DELETE_TEAM", tid, "Team deleted permanently");
+                    alert("Team deleted. Refresh to update."); 
+                } catch(err) { alert("Error deleting team: " + err.message); }
             }
-            // --------------------
 
             if (target.classList.contains("action-edit-club-dir")) {
                 const cid = target.getAttribute("data-id");
@@ -72,6 +130,7 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
                 if (!cObj) return;
                 cObj.directorEmail = document.getElementById('clubDirInp_' + cid).value.trim().toLowerCase();
                 await setDoc(doc(db, "clubs", cid), { directorEmail: cObj.directorEmail }, { merge: true });
+                logSecurityEvent("ASSIGN_DIRECTOR", cObj.directorEmail, `Assigned to Club: ${cid}`);
                 alert("Director Role Updated.");
             }
 
@@ -93,6 +152,7 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
                 if (idx > -1) {
                     globalAdmins.splice(idx, 1);
                     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+                    logSecurityEvent("REVOKE_SUPER_ADMIN", email, "Removed from global config");
                     target.closest("tr").remove();
                     alert("Global Director Removed.");
                 }
@@ -115,6 +175,7 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
             assignBtn.innerText = "Saving...";
             await setDoc(doc(db, "clubs", cid), { directorEmail: email }, { merge: true });
             await setDoc(doc(db, "users", email), { role: "director", clubId: cid }, { merge: true });
+            logSecurityEvent("ASSIGN_DIRECTOR", email, `Club ID: ${cid}`);
             alert(`Success! ${email} is now the Director of ${cObj.name}.`);
             document.getElementById("assignDirEmail").value = "";
             assignBtn.innerText = "Assign Director Role";
@@ -123,8 +184,6 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
 
     initBrandingPanel(globalTeams);
 };
-
-// At the bottom of modules/admin.js
 
 export const addClub = async (globalClubs, reloadCallback) => {
     const id = document.getElementById("newClubId").value.trim().toLowerCase();
@@ -137,22 +196,38 @@ export const addClub = async (globalClubs, reloadCallback) => {
         await setDoc(doc(db, "users", email), { role: "director", clubId: id }, { merge: true });
     }
 
+    logSecurityEvent("CREATE_CLUB", id, name);
     alert("Club Added Securely!");
-    // FIX 3: Force a full app sync so the Setup screen gets the new Club
     window.location.reload(); 
+};
+
+export const addAdmin = async (globalAdmins, reloadCallback) => {
+    const emailInput = document.getElementById("newAdminEmail");
+    if (!emailInput) return;
+    const email = emailInput.value.trim().toLowerCase();
+    
+    if (!email) return alert("Please enter an email address.");
+    if (globalAdmins.includes(email)) return alert("User is already a Global Admin.");
+    
+    globalAdmins.push(email);
+    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
+    await setDoc(doc(db, "users", email), { role: "super_admin" }, { merge: true });
+    
+    logSecurityEvent("GRANT_SUPER_ADMIN", email, "Added to global config");
+    alert("Global Admin Added Securely!"); 
+    emailInput.value = "";
+    
+    if (reloadCallback) reloadCallback();
 };
 
 export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
     const clubId = document.getElementById("adminTeamClubSelect").value;
-    
-    // FIX 4: Removed the restrictive regex. You can now type "15bew" or anything else.
     const teamIdInput = document.getElementById("adminTeamId").value.trim();
     const teamName = document.getElementById("adminTeamName").value.trim();
     const coachEmail = document.getElementById("adminTeamCoach").value.trim().toLowerCase();
 
     if (!clubId || !teamName || !teamIdInput) return alert("Please select a parent club, enter a Team ID, and a team name.");
 
-    // This creates your clean ID: e.g. "aggiesfc_15bew"
     const tid = `${clubId}_${teamIdInput}`;
 
     try {
@@ -170,8 +245,8 @@ export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
             await setDoc(doc(db, "coach_lookup", coachEmail), { role: "coach", clubId: clubId, teamId: tid }, { merge: true });
         }
 
+        logSecurityEvent("CREATE_TEAM", tid, teamName);
         alert(`Team '${teamName}' added successfully!`);
-        // FIX 5: Force a full app sync so the Setup screen gets the new Team
         window.location.reload(); 
     } catch (e) {
         console.error(e);
