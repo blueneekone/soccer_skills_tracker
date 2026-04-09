@@ -1101,25 +1101,28 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">Global Directors</div>
+                <div class="card border-gold mt-15">
+                    <div class="card-header bg-gold-header">👑 Super Admins (App Managers)</div>
                     <div class="card-body">
-                        <table id="adminTable" class="admin-table">
+                        <p class="text-sm-sub mb-10">Super Admins have unrestricted access to create clubs, manage billing, and view security logs. They do not manage specific teams.</p>
+                        <table id="adminTable" class="admin-table mb-15">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
+                                    <th>Admin Email</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
+                        
+                        <label>Grant Super Admin Access</label>
                         <div class="admin-input-row">
-                            <input type="email" id="newAdminEmail" placeholder="Director Email">
-                            <button id="addAdminBtn" class="primary-btn w-auto">Add</button>
+                            <input type="email" id="newAdminEmail" placeholder="Enter new admin email..." class="m-0 flex-1">
+                            <button id="addAdminBtn" class="primary-btn btn-gold w-auto">Grant Access</button>
                         </div>
                     </div>
                 </div>
-            </div>
+
             <div id="admin-section-billing" class="admin-pane d-none">
                 <div class="card border-gold">
                     <div class="card-header bg-gold-header"><i class="ph ph-credit-card"></i> License Generator
