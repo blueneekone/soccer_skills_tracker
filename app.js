@@ -11,6 +11,7 @@ import { initCoachDropdown, loadCoachDashboard, manualAddPlayer, parsePDF, saveR
 import { renderAdminTables, addAdmin, addClub } from "./modules/admin.js?v=4.0.0";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
+import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js";
 import { messaging } from "./firebase-config.js";
 import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
@@ -122,8 +123,7 @@ window.navigateTo = (viewId, addToHistory = true) => {
     }
 
     // 2. Perform Navigation
-    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector'];
-    views.forEach(v => {
+    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector', 'viewPassport'];    views.forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('d-none');
     });
@@ -276,7 +276,11 @@ const initApp = () => {
     safeBind("btnHomeAdmin", "click", () => window.navigateTo('viewAdmin'));
     safeBind("btnHomeDirector", "click", () => window.navigateTo('viewDirector'));
     safeBind("btnOpenTrophyModal", "click", () => window.navigateTo('viewTrophy'));
-
+    safeBind("btnHomePassport", "click", () => {
+        window.navigateTo('viewPassport');
+        loadPlayerPassport();
+    });
+    safeBind("savePassportBtn", "click", savePlayerPassport);
 // Admin Action Bindings
     safeBind("addClubBtn", "click", () => addClub(window.globalClubs, fetchConfig));
     safeBind("addAdminBtn", "click", () => addAdmin(globalAdmins, () => { fetchConfig(); renderAdminTables(window.globalClubs, globalTeams, globalAdmins, auth.currentUser.email, userProfile.role); }));
@@ -414,6 +418,7 @@ const initApp = () => {
     }); // <--- The event listener closes HERE now!
 
     initSignatureCanvas();
+    initPassportCanvas();
     initStrategyBoard();
 };
 

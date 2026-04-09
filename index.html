@@ -136,6 +136,13 @@
                     </div>
                 </div>
 
+                <div class="card dash-card border-green" id="btnHomePassport">
+                    <div class="dash-card-body">
+                        <i class="ph ph-identification-card dash-icon"></i>
+                        <div class="dash-label">Player Passport</div>
+                    </div>
+                </div>
+
                 <div class="card dash-card" id="btnHomeStats">
                     <div class="dash-card-body">
                         <i class="ph ph-chart-bar dash-icon"></i>
@@ -187,8 +194,8 @@
                     </div>
                 </div>
 
-            </div> <!-- END dashboard-grid -->
-
+            </div> 
+            
             <div class="card mt-20 border-aggie-blue">
                 <div class="card-header">📅 Team Schedule</div>
                 <div class="card-body p-0">
@@ -204,6 +211,56 @@
                     <ul id="homeHomeworkList" class="session-list flush-list">
                         <li class="session-empty">Loading assignments...</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="viewPassport" class="view-section d-none">
+            <h2 class="view-title view-title-flex">
+                🛂 Player Passport
+                <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
+            </h2>
+
+            <div class="card mb-20-imp border-green">
+                <div class="card-header bg-green-header">Official Clearance Status</div>
+                <div class="card-body text-center">
+                    <div id="passportStatusBadge" style="font-size: 24px; font-weight: 900; padding: 15px; border-radius: 12px; background: #f8fafc; border: 2px dashed #cbd5e1; color: #64748b;">
+                        Checking Status...
+                    </div>
+                    <p class="text-sm-sub mt-10">This status is controlled by your Club Director. A Green "Cleared" status is required to participate in official matches.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Medical & Emergency Info</div>
+                <div class="card-body">
+                    <label>Emergency Contact Name</label>
+                    <input type="text" id="passEmergencyName" placeholder="e.g. Jane Doe">
+                    
+                    <label>Emergency Contact Phone</label>
+                    <input type="tel" id="passEmergencyPhone" placeholder="(555) 555-5555">
+                    
+                    <label>Known Allergies / Medical Conditions</label>
+                    <textarea id="passMedicalNotes" rows="3" placeholder="List any allergies (e.g. Peanuts) or conditions (e.g. Asthma)..."></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-red-header">Season Liability Waiver</div>
+                <div class="card-body">
+                    <div style="height: 150px; overflow-y: scroll; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 11px; margin-bottom: 15px;">
+                        <strong>RELEASE OF LIABILITY AND ASSUMPTION OF RISK</strong><br><br>
+                        By signing below, I acknowledge that soccer is a physical sport that carries inherent risks of injury. I agree to hold the club, its directors, coaches, and SSTRACKER harmless from any liability, claims, or demands arising from my child's participation in training or matches.<br><br>
+                        I certify that the medical information provided above is accurate and I authorize the coaching staff to seek emergency medical treatment if necessary.
+                    </div>
+
+                    <label>Parent/Guardian Digital Signature</label>
+                    <div class="signature-canvas-container">
+                        <canvas id="passportSignatureCanvas" class="signature-canvas"></canvas>
+                        <button id="clearPassportSigBtn" class="clear-sig-btn">✕ Clear</button>
+                    </div>
+
+                    <button id="savePassportBtn" class="primary-btn btn-green mt-15 w-100">💾 Securely Sign & Save Passport</button>
                 </div>
             </div>
         </div>
@@ -489,8 +546,6 @@
         <div id="viewTrophy" class="view-section d-none">
             <h2 class="view-title view-title-flex">
                 🏆 TROPHY ROOM
-                <button class="secondary-btn trophy-back-btn" onclick="window.navigateTo('viewHome')">🔙
-                    Dashboard</button>
             </h2>
             <div class="card">
                 <div class="card-header trophy-header">RANK MEDALS</div>
@@ -1102,7 +1157,6 @@
         <div id="viewDirector" class="view-section d-none">
             <h2 class="view-title view-title-flex">
                 👔 Director Portal
-                <button class="secondary-btn" onclick="window.navigateTo('viewHome')">🔙 Dashboard</button>
             </h2>
 
             <div class="admin-tab-bar">
@@ -1319,7 +1373,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.17"></script>
+    <script type="module" src="app.js?v=4.0.18"></script>
 </body>
 
 </html>
