@@ -1,28 +1,26 @@
 // modules/admin.js
 import { auth, db } from "../firebase-config.js";
-import { collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initBrandingPanel } from "./branding.js";
 
-// ENTERPRISE UPGRADE: Rely on userRole, not a hardcoded email
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, userRole) => {
     const isSuper = userRole === 'super_admin';
-    
     const clubsCard = document.getElementById("adminClubsCard");
     if(clubsCard) clubsCard.style.display = isSuper ? "block" : "none";
     
-    // Build Clubs Table
+    // Build Clubs Table WITH DELETE BUTTON
     const c = document.getElementById("clubTable");
     if (c) {
-        c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${cl.id}</td><td>${cl.name}</td><td><div style="display:flex; gap:4px;"><input type="email" id="clubDirInp_${cl.id}" value="${cl.directorEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-club-dir" data-id="${cl.id}" style="padding:4px 8px; border-radius:4px;">💾</button></div></td></tr>`).join("");
+        c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${cl.id}</td><td>${cl.name}</td><td><div style="display:flex; gap:4px;"><input type="email" id="clubDirInp_${cl.id}" value="${cl.directorEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-club-dir" data-id="${cl.id}" title="Save Director" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-club" data-id="${cl.id}" title="Delete Club" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`).join("");
     }
 
-    // Build Teams Table
-    const tc = document.getElementById("nadminTeamClubSelect");
+    const tc = document.getElementById("adminTeamClubSelect");
     if (tc) {
         const cList = isSuper ? (globalClubs || []) : (globalClubs || []).filter(cl => cl.directorEmail && cl.directorEmail.toLowerCase() === (userEmail || "").toLowerCase());
         tc.innerHTML = `<option value="">-- Select Parent Club --</option>` + cList.map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("");
     }
 
+    // Build Teams Table WITH DELETE BUTTON
     const t = document.getElementById("teamTable");
     if (t) {
         const tList = isSuper ? (globalTeams || []) : (globalTeams || []).filter(tm => {
@@ -37,22 +35,36 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
             if (isSuper) {
                 clubSelectHtml = `<select id="teamClubSel_${tm.id}" style="margin:0; padding:4px; max-width:80px;"><option value="${tm.clubId}">${tm.clubId || 'UNASSIGNED'}</option><option disabled>---</option>${clubOptionsHtml}</select>`;
             }
-            return `<tr><td>${tm.name} <span class="text-sm-sub">(${tm.id})</span></td><td>${clubSelectHtml}</td><td><div style="display:flex; gap:4px;"><input type="email" id="teamCoachInp_${tm.id}" value="${tm.coachEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-team-coach" data-id="${tm.id}" style="padding:4px 8px; border-radius:4px;">💾</button></div></td></tr>`;
+            return `<tr><td>${tm.name} <span class="text-sm-sub">(${tm.id})</span></td><td>${clubSelectHtml}</td><td><div style="display:flex; gap:4px;"><input type="email" id="teamCoachInp_${tm.id}" value="${tm.coachEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-team-coach" data-id="${tm.id}" title="Save Coach" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-team" data-id="${tm.id}" title="Delete Team" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`;
         }).join("");
     }
 
-    // Build Admins Table
     const a = document.getElementById("adminTable");
     if (a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${e}</td><td><button class="delete-btn action-remove-admin" data-email="${e}" style="float:right;">X</button></td></tr>`).join("");
 
     const assignClubSel = document.getElementById("assignDirClubId");
     if (assignClubSel) assignClubSel.innerHTML = "<option value=''>Select Club...</option>" + (globalClubs || []).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 
-    // ENTERPRISE DELEGATION: Secure Data Modification
     const adminView = document.getElementById("viewAdmin");
     if (adminView && adminView.dataset.tablesBound !== "true") {
         adminView.addEventListener("click", async (e) => {
             const target = e.target;
+
+            // --- DELETE LOGIC ---
+            if (target.classList.contains("action-delete-club")) {
+                const cid = target.getAttribute("data-id");
+                if (!confirm(`WARNING: Are you sure you want to delete club '${cid}'? This cannot be undone.`)) return;
+                try { await deleteDoc(doc(db, "clubs", cid)); alert("Club deleted. Refresh to update."); } 
+                catch(err) { alert("Error deleting club: " + err.message); }
+            }
+
+            if (target.classList.contains("action-delete-team")) {
+                const tid = target.getAttribute("data-id");
+                if (!confirm(`WARNING: Are you sure you want to delete team '${tid}'? This cannot be undone.`)) return;
+                try { await deleteDoc(doc(db, "teams", tid)); alert("Team deleted. Refresh to update."); } 
+                catch(err) { alert("Error deleting team: " + err.message); }
+            }
+            // --------------------
 
             if (target.classList.contains("action-edit-club-dir")) {
                 const cid = target.getAttribute("data-id");
@@ -89,7 +101,6 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
         adminView.dataset.tablesBound = "true";
     }
 
-    // Role Assignment
     const assignBtn = document.getElementById("assignDirBtn");
     if (assignBtn && assignBtn.dataset.bound !== "true") {
         assignBtn.dataset.bound = "true";
@@ -119,7 +130,6 @@ export const addClub = async (globalClubs, reloadCallback) => {
     const email = document.getElementById("newClubDirector").value.trim().toLowerCase();
     if (!id || !name) return alert("Please enter at least an ID and a Club Name.");
 
-    // Write directly to the new scalable collection
     await setDoc(doc(db, "clubs", id), { id: id, name: name, directorEmail: email, createdAt: new Date() });
     if (email) {
         await setDoc(doc(db, "users", email), { role: "director", clubId: id }, { merge: true });
@@ -141,11 +151,8 @@ export const addAdmin = async (globalAdmins, reloadCallback) => {
     if (!email) return alert("Please enter an email address.");
     if (globalAdmins.includes(email)) return alert("User is already a Global Admin.");
     
-    // 1. Save to the config array
     globalAdmins.push(email);
     await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    
-    // 2. Assign the secure role to the user's profile
     await setDoc(doc(db, "users", email), { role: "super_admin" }, { merge: true });
     
     alert("Global Admin Added Securely!"); 
@@ -156,13 +163,14 @@ export const addAdmin = async (globalAdmins, reloadCallback) => {
 
 export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
     const clubId = document.getElementById("adminTeamClubSelect").value;
+    const teamIdInput = document.getElementById("adminTeamId").value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     const teamName = document.getElementById("adminTeamName").value.trim();
     const coachEmail = document.getElementById("adminTeamCoach").value.trim().toLowerCase();
 
-    if (!clubId || !teamName) return alert("Please select a parent club and enter a team name.");
+    if (!clubId || !teamName || !teamIdInput) return alert("Please select a parent club, enter a Team ID, and a team name.");
 
-    // Generate a clean system ID (e.g., "aggiesfc_u12boys")
-    const tid = `${clubId}_${teamName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    // NEW: Use the manually provided Team ID to create the database folder
+    const tid = `${clubId}_${teamIdInput}`;
 
     try {
         document.getElementById("addTeamBtn").innerText = "Saving...";
@@ -174,13 +182,13 @@ export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
             createdAt: new Date()
         });
 
-        // Auto-assign the coach role if an email was provided
         if (coachEmail) {
             await setDoc(doc(db, "users", coachEmail), { role: "coach", clubId: clubId, teamId: tid }, { merge: true });
             await setDoc(doc(db, "coach_lookup", coachEmail), { role: "coach", clubId: clubId, teamId: tid }, { merge: true });
         }
 
         alert(`Team '${teamName}' added successfully!`);
+        document.getElementById("adminTeamId").value = "";
         document.getElementById("adminTeamName").value = "";
         document.getElementById("adminTeamCoach").value = "";
         document.getElementById("addTeamBtn").innerText = "+ Add Team";

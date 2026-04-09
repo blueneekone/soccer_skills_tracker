@@ -1051,10 +1051,11 @@
     <div class="card-header">👥 Registered Teams</div>
     <div class="card-body">
         <label>Add New Team</label>
-        <div class="admin-input-row mb-10">
+       <div class="admin-input-row mb-10">
             <select id="adminTeamClubSelect" class="m-0">
-                <option value="">-- Select Parent Club --</option>
+                <option value="">-- Parent Club --</option>
             </select>
+            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. u12boys)" class="m-0" title="Short, no spaces">
             <input type="text" id="adminTeamName" placeholder="Team Name" class="m-0">
         </div>
         <input type="email" id="adminTeamCoach" placeholder="Head Coach Email">
@@ -1373,7 +1374,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.19"></script>
+    <script type="module" src="app.js?v=4.0.20"></script>
 </body>
 
 </html>
