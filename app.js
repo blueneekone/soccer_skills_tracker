@@ -8,7 +8,7 @@ import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIc
 import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=4.0.0";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
 import { initCoachDropdown, loadCoachDashboard, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=4.0.1";
-import { renderAdminTables, addAdmin, addClub } from "./modules/admin.js?v=4.0.1";
+import { renderAdminTables, addAdmin, addClub } from "./modules/admin.js?v=4.0.2";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0.0";
