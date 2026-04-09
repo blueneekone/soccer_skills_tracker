@@ -124,6 +124,8 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     initBrandingPanel(globalTeams);
 };
 
+// At the bottom of modules/admin.js
+
 export const addClub = async (globalClubs, reloadCallback) => {
     const id = document.getElementById("newClubId").value.trim().toLowerCase();
     const name = document.getElementById("newClubName").value.trim();
@@ -136,40 +138,21 @@ export const addClub = async (globalClubs, reloadCallback) => {
     }
 
     alert("Club Added Securely!");
-    document.getElementById("newClubId").value = "";
-    document.getElementById("newClubName").value = "";
-    document.getElementById("newClubDirector").value = "";
-
-    if (reloadCallback) reloadCallback();
-};
-
-export const addAdmin = async (globalAdmins, reloadCallback) => {
-    const emailInput = document.getElementById("newAdminEmail");
-    if (!emailInput) return;
-    const email = emailInput.value.trim().toLowerCase();
-    
-    if (!email) return alert("Please enter an email address.");
-    if (globalAdmins.includes(email)) return alert("User is already a Global Admin.");
-    
-    globalAdmins.push(email);
-    await setDoc(doc(db, "config", "admins"), { list: globalAdmins });
-    await setDoc(doc(db, "users", email), { role: "super_admin" }, { merge: true });
-    
-    alert("Global Admin Added Securely!"); 
-    emailInput.value = "";
-    
-    if (reloadCallback) reloadCallback();
+    // FIX 3: Force a full app sync so the Setup screen gets the new Club
+    window.location.reload(); 
 };
 
 export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
     const clubId = document.getElementById("adminTeamClubSelect").value;
-    const teamIdInput = document.getElementById("adminTeamId").value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    
+    // FIX 4: Removed the restrictive regex. You can now type "15bew" or anything else.
+    const teamIdInput = document.getElementById("adminTeamId").value.trim();
     const teamName = document.getElementById("adminTeamName").value.trim();
     const coachEmail = document.getElementById("adminTeamCoach").value.trim().toLowerCase();
 
     if (!clubId || !teamName || !teamIdInput) return alert("Please select a parent club, enter a Team ID, and a team name.");
 
-    // NEW: Use the manually provided Team ID to create the database folder
+    // This creates your clean ID: e.g. "aggiesfc_15bew"
     const tid = `${clubId}_${teamIdInput}`;
 
     try {
@@ -188,12 +171,8 @@ export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
         }
 
         alert(`Team '${teamName}' added successfully!`);
-        document.getElementById("adminTeamId").value = "";
-        document.getElementById("adminTeamName").value = "";
-        document.getElementById("adminTeamCoach").value = "";
-        document.getElementById("addTeamBtn").innerText = "+ Add Team";
-        
-        if (reloadCallback) reloadCallback();
+        // FIX 5: Force a full app sync so the Setup screen gets the new Team
+        window.location.reload(); 
     } catch (e) {
         console.error(e);
         alert("Error adding team: " + e.message);

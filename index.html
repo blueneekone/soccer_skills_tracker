@@ -1051,13 +1051,15 @@
     <div class="card-header">👥 Registered Teams</div>
     <div class="card-body">
         <label>Add New Team</label>
-       <div class="admin-input-row mb-10">
-            <select id="adminTeamClubSelect" class="m-0">
-                <option value="">-- Parent Club --</option>
-            </select>
-            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. u12boys)" class="m-0" title="Short, no spaces">
-            <input type="text" id="adminTeamName" placeholder="Team Name" class="m-0">
+        <select id="adminTeamClubSelect" class="mb-10 w-100">
+            <option value="">-- Select Parent Club --</option>
+        </select>
+        
+        <div class="admin-input-row mb-10">
+            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. 15bew)" class="m-0" style="flex: 1;" title="Type whatever you want">
+            <input type="text" id="adminTeamName" placeholder="Full Team Name" class="m-0" style="flex: 2;">
         </div>
+        
         <input type="email" id="adminTeamCoach" placeholder="Head Coach Email">
         
         <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
