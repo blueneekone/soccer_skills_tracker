@@ -17,7 +17,7 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     }
 
     // Build Teams Table
-    const tc = document.getElementById("newTeamClubId");
+    const tc = document.getElementById("nadminTeamClubSelect");
     if (tc) {
         const cList = isSuper ? (globalClubs || []) : (globalClubs || []).filter(cl => cl.directorEmail && cl.directorEmail.toLowerCase() === (userEmail || "").toLowerCase());
         tc.innerHTML = `<option value="">-- Select Parent Club --</option>` + cList.map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("");
@@ -152,4 +152,43 @@ export const addAdmin = async (globalAdmins, reloadCallback) => {
     emailInput.value = "";
     
     if (reloadCallback) reloadCallback();
+};
+
+export const addTeam = async (globalClubs, globalTeams, reloadCallback) => {
+    const clubId = document.getElementById("adminTeamClubSelect").value;
+    const teamName = document.getElementById("adminTeamName").value.trim();
+    const coachEmail = document.getElementById("adminTeamCoach").value.trim().toLowerCase();
+
+    if (!clubId || !teamName) return alert("Please select a parent club and enter a team name.");
+
+    // Generate a clean system ID (e.g., "aggiesfc_u12boys")
+    const tid = `${clubId}_${teamName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+
+    try {
+        document.getElementById("addTeamBtn").innerText = "Saving...";
+        
+        await setDoc(doc(db, "teams", tid), {
+            clubId: clubId,
+            name: teamName,
+            coachEmail: coachEmail,
+            createdAt: new Date()
+        });
+
+        // Auto-assign the coach role if an email was provided
+        if (coachEmail) {
+            await setDoc(doc(db, "users", coachEmail), { role: "coach", clubId: clubId, teamId: tid }, { merge: true });
+            await setDoc(doc(db, "coach_lookup", coachEmail), { role: "coach", clubId: clubId, teamId: tid }, { merge: true });
+        }
+
+        alert(`Team '${teamName}' added successfully!`);
+        document.getElementById("adminTeamName").value = "";
+        document.getElementById("adminTeamCoach").value = "";
+        document.getElementById("addTeamBtn").innerText = "+ Add Team";
+        
+        if (reloadCallback) reloadCallback();
+    } catch (e) {
+        console.error(e);
+        alert("Error adding team: " + e.message);
+        document.getElementById("addTeamBtn").innerText = "+ Add Team";
+    }
 };
