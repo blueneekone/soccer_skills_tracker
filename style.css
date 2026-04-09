@@ -693,3 +693,72 @@ input:focus, select:focus, textarea:focus {
 .clear-sig-btn:hover {
     background: #fee2e2;
 }
+/* =======================================================
+   CLEANUP: ISOLATED INLINE STYLES
+   ======================================================= */
+
+/* Header Action Group */
+.header-action-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-support {
+    background: transparent !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 !important;
+}
+
+.support-icon { font-size: 22px; }
+.support-text { font-size: 13px; font-weight: 600; }
+
+/* Player Passport Modals */
+.passport-status-badge {
+    font-size: 24px;
+    font-weight: 900;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    color: #64748b;
+}
+
+.waiver-text-box {
+    height: 150px;
+    overflow-y: scroll;
+    padding: 10px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-bottom: 15px;
+}
+
+/* Tracker Review Wrapper */
+.tracker-review-wrapper {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+/* Strategy Board Tools */
+.strategy-btn-clear {
+    color: #b91c1c !important;
+    border-color: #fca5a5 !important;
+    background: #fef2f2 !important;
+}
+
+/* Support Modal */
+.support-status-msg {
+    font-size: 12px;
+    font-weight: bold;
+    color: #16a34a;
+}
+
+/* Utilities */
+.flex-2 { flex: 2; }

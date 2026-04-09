@@ -17,7 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="style.css?v=4.0.2">
+    <link rel="stylesheet" href="style.css?v=4.0.22">
 </head>
 
 <body>
@@ -104,9 +104,9 @@
                 <h3 class="app-title">SSTRACKER</h3>
                 <div class="player-info">Player: <span id="activePlayerName" class="font-bold">Loading...</span></div>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <button id="btnOpenSupport" class="action-btn text-white d-none" style="background:transparent; border:none; display: flex; align-items: center; gap: 4px; padding: 0;">
-                    <i class="ph ph-lifebuoy" style="font-size: 22px;"></i> <span style="font-size: 13px; font-weight: 600;">Support</span>
+            <div class="header-action-group">
+                <button id="btnOpenSupport" class="action-btn text-white btn-support d-none">
+                    <i class="ph ph-lifebuoy support-icon"></i> <span class="support-text">Support</span>
                 </button>
                 <button id="appLogoutBtn" class="nav-logout-btn">Sign Out</button>
             </div>
@@ -223,7 +223,7 @@
             <div class="card mb-20-imp border-green">
                 <div class="card-header bg-green-header">Official Clearance Status</div>
                 <div class="card-body text-center">
-                    <div id="passportStatusBadge" style="font-size: 24px; font-weight: 900; padding: 15px; border-radius: 12px; background: #f8fafc; border: 2px dashed #cbd5e1; color: #64748b;">
+                    <div id="passportStatusBadge" class="passport-status-badge">
                         Checking Status...
                     </div>
                     <p class="text-sm-sub mt-10">This status is controlled by your Club Director. A Green "Cleared" status is required to participate in official matches.</p>
@@ -247,7 +247,7 @@
             <div class="card">
                 <div class="card-header bg-red-header">Season Liability Waiver</div>
                 <div class="card-body">
-                    <div style="height: 150px; overflow-y: scroll; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 11px; margin-bottom: 15px;">
+                    <div class="waiver-text-box">
                         <strong>RELEASE OF LIABILITY AND ASSUMPTION OF RISK</strong><br><br>
                         By signing below, I acknowledge that soccer is a physical sport that carries inherent risks of injury. I agree to hold the club, its directors, coaches, and SSTRACKER harmless from any liability, claims, or demands arising from my child's participation in training or matches.<br><br>
                         I certify that the medical information provided above is accurate and I authorize the coaching staff to seek emergency medical treatment if necessary.
@@ -329,7 +329,7 @@
                 </div>
             </div>
 
-            <div style="border:none; background:transparent; padding:0; margin-bottom:20px;">
+            <div class="tracker-review-wrapper">
                 <div id="trackerReview" class="tracker-box bg-light-blue">
                     <span class="section-label text-blue">Your Training Cart</span>
                     <ul id="sessionList" class="session-list">
@@ -870,9 +870,8 @@
                                 class="secondary-btn strategy-tool-btn strategy-tool-txt">O</button>
                             <button id="strategyUndoBtn" class="secondary-btn strategy-tool-btn strategy-tool-txt"
                                 title="Undo">↺</button>
-                            <button id="strategyClearBtn" class="secondary-btn strategy-tool-btn strategy-tool-txt"
-                                title="Clear All"
-                                style="color:#b91c1c; border-color:#fca5a5; background:#fef2f2;">🗑️</button>
+                            <button id="strategyClearBtn" class="secondary-btn strategy-tool-btn strategy-tool-txt strategy-btn-clear"
+                                title="Clear All">🗑️</button>
                             <div class="wb-toggle-row">
                                 <label class="switch" title="Toggle Whiteboard Mode">
                                     <input type="checkbox" id="strategyBoardStyleToggle" title="Toggle Whiteboard Mode">
@@ -1056,8 +1055,8 @@
         </select>
         
         <div class="admin-input-row mb-10">
-            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. 15bew)" class="m-0" style="flex: 1;" title="Type whatever you want">
-            <input type="text" id="adminTeamName" placeholder="Full Team Name" class="m-0" style="flex: 2;">
+            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. 15bew)" class="m-0 flex-1" title="Type whatever you want">
+            <input type="text" id="adminTeamName" placeholder="Full Team Name" class="m-0 flex-2">
         </div>
         
         <input type="email" id="adminTeamCoach" placeholder="Head Coach Email">
@@ -1358,15 +1357,13 @@
                     
                     <div class="text-center mt-15 mb-15">
                         <button id="btnGrantSupportAccess" class="primary-btn btn-orange w-100">🛡️ Grant Support Access (1 Hour)</button>
-                        <div id="supportStatusMsg" class="mt-10" style="font-size: 12px; font-weight: bold; color: #16a34a;"></div>
+                        <div id="supportStatusMsg" class="mt-10 support-status-msg"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div> <!-- END appUI -->
-
-    <script>
+    </div> <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
