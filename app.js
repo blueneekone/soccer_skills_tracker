@@ -455,7 +455,11 @@ else initApp();
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        // 🟢 THE FIX: Instantly hide ALL screens during the loading phase to prevent flickering
         document.getElementById("loginUI").style.display = 'none';
+        document.getElementById("setupUI").style.display = 'none';
+        document.getElementById("appUI").style.display = 'none';
+
         try {
             // 1. THE TRUTH: Get the cryptographically signed token
             const tokenResult = await user.getIdTokenResult(true);
@@ -492,13 +496,14 @@ onAuthStateChanged(auth, async (user) => {
 
             // 3. UI INITIALIZATION
             if (userProfile && userProfile.playerName) {
+                // Profile is valid: ONLY show the App UI
                 document.getElementById("appUI").style.display = 'block';
                 
                 const supportBtn = document.getElementById("btnOpenSupport");
                 if (supportBtn) {
                     if (userRole === 'super_admin') supportBtn.classList.add("d-none");
                     else supportBtn.classList.remove("d-none");
-                } // <--- THE MISSING BRACE IS RESTORED HERE
+                } 
                 
                 if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
 
@@ -514,7 +519,8 @@ onAuthStateChanged(auth, async (user) => {
                 history.replaceState({ view: 'viewHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', false);
             } else {
-                // No playerName found = incomplete profile
+                // Profile is missing: ONLY show the Setup UI
+                document.getElementById("setupUI").style.display = 'flex';
                 document.getElementById("setupUI").classList.remove("d-none");
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
@@ -523,6 +529,7 @@ onAuthStateChanged(auth, async (user) => {
             alert("Security Error: Unable to verify credentials."); 
         }
     } else {
+        // User is logged out: ONLY show the Login UI
         document.getElementById("loginUI").style.display = 'flex';
         document.getElementById("appUI").style.display = 'none';
         document.getElementById("setupUI").style.display = 'none';
