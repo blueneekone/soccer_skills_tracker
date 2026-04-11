@@ -418,10 +418,10 @@ else initApp();
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // 🟢 THE FIX: Instantly hide ALL screens during the loading phase to prevent flickering
-        document.getElementById("loginUI").style.display = 'none';
-        document.getElementById("setupUI").style.display = 'none';
-        document.getElementById("appUI").style.display = 'none';
+        // 🟢 THE FIX: Safely hide all screens using classList instead of style.display
+        document.getElementById("loginUI").classList.add("d-none");
+        document.getElementById("setupUI").classList.add("d-none");
+        document.getElementById("appUI").classList.add("d-none");
 
         try {
             // 1. THE TRUTH: Get the cryptographically signed token
@@ -459,8 +459,8 @@ onAuthStateChanged(auth, async (user) => {
 
             // 3. UI INITIALIZATION
             if (userProfile && userProfile.playerName) {
-                // Profile is valid: ONLY show the App UI
-                document.getElementById("appUI").style.display = 'block';
+                // 🟢 THE FIX: Remove the d-none class to reveal the dashboard
+                document.getElementById("appUI").classList.remove("d-none");
                 
                 const supportBtn = document.getElementById("btnOpenSupport");
                 if (supportBtn) {
@@ -483,7 +483,6 @@ onAuthStateChanged(auth, async (user) => {
                 window.navigateTo('viewHome', false);
             } else {
                 // Profile is missing: ONLY show the Setup UI
-                document.getElementById("setupUI").style.display = 'flex';
                 document.getElementById("setupUI").classList.remove("d-none");
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
@@ -492,9 +491,9 @@ onAuthStateChanged(auth, async (user) => {
             alert("Security Error: Unable to verify credentials."); 
         }
     } else {
-        // User is logged out: ONLY show the Login UI
-        document.getElementById("loginUI").style.display = 'flex';
-        document.getElementById("appUI").style.display = 'none';
-        document.getElementById("setupUI").style.display = 'none';
+        // 🟢 THE FIX: Toggle classes for the logged-out state
+        document.getElementById("loginUI").classList.remove("d-none");
+        document.getElementById("appUI").classList.add("d-none");
+        document.getElementById("setupUI").classList.add("d-none");
     }
 });
