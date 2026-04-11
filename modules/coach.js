@@ -73,6 +73,34 @@ document.addEventListener("DOMContentLoaded", () => {
                     loadCoachDashboard(false, window.globalTeams);
                 }
             }
+
+            if (target.id === "addWorkoutBtn") {
+                if(!currentCoachTeamId) return alert("Select a team in the Roster tab first.");
+                
+                const type = document.getElementById("manageWorkoutType").value;
+                const name = document.getElementById("manageWorkoutName").value.trim();
+                const level = document.getElementById("manageWorkoutLevel").value;
+                const desc = document.getElementById("manageWorkoutDesc").value.trim();
+                
+                if(!name) return alert("Workout Name is required.");
+                
+                target.innerText = "Saving...";
+                try {
+                    await addDoc(collection(db, "team_workouts"), {
+                        teamId: currentCoachTeamId, type: type, name: name, reqLevel: parseInt(level), drill: desc, createdAt: new Date()
+                    });
+                    
+                    alert("Workout Added!");
+                    document.getElementById("manageWorkoutName").value = "";
+                    document.getElementById("manageWorkoutDesc").value = "";
+                    
+                    if(window.fetchWorkouts) await window.fetchWorkouts();
+                    if(window.buildCoachDropdowns) window.buildCoachDropdowns();
+                    loadCoachDashboard(false, window.globalTeams); 
+                } catch(err) { alert("Error: " + err.message); }
+                target.innerText = "Save Workout";
+            }
+
         });
         coachView.dataset.bound = "true";
     }

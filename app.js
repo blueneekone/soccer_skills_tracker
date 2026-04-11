@@ -18,7 +18,6 @@ import { loadStatsDashboard } from "./modules/stats.js?v=4.0.1"; // Only importi
 
 let globalTeams = [];
 let globalAdmins = [];
-let isSignatureBlank = true;
 let userProfile = null;
 
 window.globalClubs = [];
@@ -139,10 +138,6 @@ window.navigateTo = (viewId, addToHistory = true) => {
 
     if (viewId === 'viewTracker' || viewId === 'viewCoach' || viewId === 'viewChallenge') {
         setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
-    }
-
-    if (viewId === 'viewStats' && window.loadStatsDashboard) {
-        window.loadStatsDashboard();
     }
 
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -407,38 +402,6 @@ const initApp = () => {
             const list = document.getElementById("hwBuilderList");
             if (window.currentHomeworkBuilder.length === 0) list.innerHTML = '<li class="session-empty">No drills added.</li>';
             else list.innerHTML = window.currentHomeworkBuilder.map((item, i) => `<li style="padding:5px; border-bottom:1px solid #eee; font-size:12px; display:flex; justify-content:space-between; align-items:center;"><span><b>${i + 1}.</b> ${item.name}</span><button class="delete-btn action-remove-hw-drill" data-index="${i}">✕</button></li>`).join("");
-        }
-
-        // --- THE FIX: ACTIVATE 'SAVE WORKOUT' BUTTON (Inside the Listener!) ---
-        if (target.id === "addWorkoutBtn") {
-            const { tid } = window.getAppContext();
-            if(!tid) return alert("Select a team in the Roster tab first.");
-            
-            const type = document.getElementById("manageWorkoutType").value;
-            const name = document.getElementById("manageWorkoutName").value.trim();
-            const level = document.getElementById("manageWorkoutLevel").value;
-            const desc = document.getElementById("manageWorkoutDesc").value.trim();
-            
-            if(!name) return alert("Workout Name is required.");
-            
-            target.innerText = "Saving...";
-            try {
-                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                await addDoc(collection(db, "team_workouts"), {
-                    teamId: tid, type: type, name: name, reqLevel: parseInt(level), drill: desc, createdAt: new Date()
-                });
-                
-                alert("Workout Added!");
-                document.getElementById("manageWorkoutName").value = "";
-                document.getElementById("manageWorkoutDesc").value = "";
-                
-                await window.fetchWorkouts();
-                window.buildCoachDropdowns();
-
-                const { loadCoachDashboard } = await import("./modules/coach.js?v=4.0.1");
-                loadCoachDashboard(false, globalTeams);
-            } catch(e) { alert("Error: " + e.message); }
-            target.innerText = "Save Workout";
         }
     });
 
