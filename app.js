@@ -2,18 +2,19 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 // --- BRING IN YOUR MODULES ---
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
-import { renderCalendar, renderPlayerTrendChart, renderTeamLeaderboard, renderPlayerTrials, loadPlayerFeedback, exportStatsCSV } from "./modules/stats.js?v=4.0.0";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
 import { initCoachDropdown, loadCoachDashboard, manualAddPlayer, parsePDF, saveRosterList, exportSessionData, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW } from "./modules/coach.js?v=4.0.1";
 import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js?v=4.0.4";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
-import { finalizeChallengeUnlock, setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0.11";
-import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0.0";
-import { messaging } from "./firebase-config.js";
-import { getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";
+
+// --- SIDE-EFFECT & DYNAMIC IMPORTS ---
+import "./modules/challenges.js?v=4.0.0"; 
+import { loadStatsDashboard } from "./modules/stats.js?v=4.0.1"; // Only importing what the router needs!
 
 let globalTeams = [];
 let globalAdmins = [];
@@ -131,8 +132,17 @@ window.navigateTo = (viewId, addToHistory = true) => {
     const targetEl = document.getElementById(viewId);
     if (targetEl) targetEl.classList.remove('d-none');
 
+    if (viewId === 'viewStats') {
+        const { tid, playerName } = window.getAppContext();
+        loadStatsDashboard(tid, playerName, userProfile);
+    }
+
     if (viewId === 'viewTracker' || viewId === 'viewCoach' || viewId === 'viewChallenge') {
         setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+    }
+
+    if (viewId === 'viewStats' && window.loadStatsDashboard) {
+        window.loadStatsDashboard();
     }
 
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -424,14 +434,13 @@ const initApp = () => {
                 
                 await window.fetchWorkouts();
                 window.buildCoachDropdowns();
-                
+
                 const { loadCoachDashboard } = await import("./modules/coach.js?v=4.0.1");
                 loadCoachDashboard(false, globalTeams);
             } catch(e) { alert("Error: " + e.message); }
             target.innerText = "Save Workout";
         }
-        // -----------------------------------------------
-    }); // <--- The event listener closes HERE now!
+    });
 
     initSignatureCanvas();
     initPassportCanvas();

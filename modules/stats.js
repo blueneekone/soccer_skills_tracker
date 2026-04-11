@@ -211,3 +211,41 @@ export const exportStatsCSV = (logs, playerName) => {
     link.click();
     document.body.removeChild(link);
 };
+
+// --- Place at the bottom of modules/stats.js ---
+export const loadStatsDashboard = async (tid, playerName, userProfile) => {
+    if (!tid || !playerName) return;
+
+    try {
+        const q = query(collection(db, "reps"), where("player", "==", playerName), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const logs = [];
+        snap.forEach(d => logs.push(d.data()));
+        
+        // Save to window for the CSV Exporter to use later
+        window.globalStatsLogs = logs;
+
+        // Render UI Components
+        renderCalendar(logs);
+        renderPlayerTrendChart(logs);
+        renderTeamLeaderboard(tid);
+        renderPlayerTrials(playerName);
+        loadPlayerFeedback(userProfile);
+
+        // Update the Top Display Numbers
+        const myTotalMins = logs.reduce((sum, l) => sum + (Number(l.minutes) || 0), 0);
+        const statTotalEl = document.getElementById("statTotal");
+        const statTimeEl = document.getElementById("statTime");
+        if(statTotalEl) statTotalEl.innerText = logs.length;
+        if(statTimeEl) statTimeEl.innerText = myTotalMins;
+
+        // Bind the Team Leaderboard Filter Dropdown
+        const filter = document.getElementById("leaderboardFilter");
+        if(filter && filter.dataset.bound !== "true") {
+            filter.addEventListener("change", () => renderTeamLeaderboard(tid));
+            filter.dataset.bound = "true";
+        }
+    } catch (e) {
+        console.error("Error loading stats:", e);
+    }
+};
