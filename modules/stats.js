@@ -11,26 +11,50 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
-export const renderCalendar = (logs) => {
+let currentCalOffset = 0; // Tracks which month we are viewing
+
+export const renderCalendar = (logs, offsetChange = 0) => {
+    currentCalOffset += offsetChange;
     const grid = document.getElementById("calendarDays");
     if(!grid) return;
     const header = document.getElementById("calMonthYear");
-    const now = new Date();
-    if(header) header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+    
+    // Calculate the target month to display
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() + currentCalOffset);
+    
+    if(header) header.innerText = targetDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     grid.innerHTML = "";
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-    for(let i=1; i<=daysInMonth; i++) {
-        const dStr = new Date(now.getFullYear(), now.getMonth(), i).toDateString();
+    
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
+    
+    // Find what day of the week the 1st starts on
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Pad empty days at the start of the month
+    for(let i = 0; i < firstDay; i++) {
+        grid.innerHTML += `<div class="cal-day" style="background:transparent; border:none; box-shadow:none;"></div>`;
+    }
+    
+    const today = new Date();
+    for(let i = 1; i <= daysInMonth; i++) {
+        const currentIterDate = new Date(year, month, i);
+        const dStr = currentIterDate.toDateString();
         const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
+        const isToday = currentIterDate.toDateString() === today.toDateString();
+        
         const dayDiv = document.createElement("div");
-        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
+        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''} ${isToday ? 'today' : ''}`;
         dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
+        
         if(hasLog) {
             dayDiv.onclick = () => {
                 const daily = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
                 setText("dayModalDate", dStr);
                 const content = document.getElementById("dayModalContent");
-                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary} (${l.minutes}m)</div>`).join("");
+                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary || l.drill || l.workoutType || 'Workout'} (${l.minutes}m)</div>`).join("");
                 document.getElementById("dayModal").style.display='block';
             };
         }
@@ -38,27 +62,61 @@ export const renderCalendar = (logs) => {
     }
 };
 
-export const renderPlayerTrendChart = (logs) => {
+export const renderPlayerTrendChart = (logs, range = '7') => {
     const cvs = document.getElementById('playerTrendChart'); 
     if(!cvs) return;
     const ctx = cvs.getContext('2d'); 
     if(playerChart) playerChart.destroy(); 
     
-    const data = Array(7).fill(0); 
-    const labels = [];
-    for(let i=6; i>=0; i--) { 
-        const d = new Date(); 
-        d.setDate(new Date().getDate()-i); 
-        labels.push(d.toLocaleDateString('en-US',{weekday:'short'})); 
-        data[6-i] = logs
-            .filter(l=>new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString())
-            .reduce((s,l)=>s+Number(l.minutes),0); 
+    let labels = [];
+    let data = [];
+    const now = new Date();
+
+    if (range === '7' || range === '30') {
+        const days = parseInt(range);
+        data = Array(days).fill(0);
+        for(let i = days - 1; i >= 0; i--) { 
+            const d = new Date(); 
+            d.setDate(now.getDate() - i); 
+            labels.push(range === '7' ? d.toLocaleDateString('en-US',{weekday:'short'}) : `${d.getMonth()+1}/${d.getDate()}`); 
+            data[(days-1)-i] = logs
+                .filter(l => new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString())
+                .reduce((s,l) => s + Number(l.minutes), 0); 
+        }
+    } else if (range === '90') {
+        data = Array(12).fill(0);
+        for(let i = 11; i >= 0; i--) {
+            const weekEnd = new Date();
+            weekEnd.setDate(now.getDate() - (i * 7));
+            const weekStart = new Date(weekEnd);
+            weekStart.setDate(weekEnd.getDate() - 6);
+            labels.push(`${weekStart.getMonth()+1}/${weekStart.getDate()}`);
+            data[11-i] = logs.filter(l => {
+                const d = new Date(l.timestamp.seconds*1000);
+                return d >= weekStart && d <= weekEnd;
+            }).reduce((s,l) => s + Number(l.minutes), 0);
+        }
+    } else if (range === 'all') {
+        data = Array(12).fill(0);
+        for(let i = 11; i >= 0; i--) {
+            const targetMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(targetMonth.toLocaleDateString('en-US',{month:'short'}));
+            data[11-i] = logs.filter(l => {
+                const d = new Date(l.timestamp.seconds*1000);
+                return d.getMonth() === targetMonth.getMonth() && d.getFullYear() === targetMonth.getFullYear();
+            }).reduce((s,l) => s + Number(l.minutes), 0);
+        }
     }
     
     playerChart = new window.Chart(ctx, { 
         type: 'bar', 
         data: { labels: labels, datasets: [{ data: data, backgroundColor: "#00263A", borderRadius: 4 }] }, 
-        options: { plugins: { legend: {display:false} }, scales: { x: {grid:{display:false}}, y:{beginAtZero:true} } } 
+        options: { 
+            plugins: { legend: {display:false} }, 
+            scales: { x: {grid:{display:false}}, y:{beginAtZero:true} },
+            responsive: true,
+            maintainAspectRatio: false
+        } 
     });
 };
 
@@ -212,7 +270,6 @@ export const exportStatsCSV = (logs, playerName) => {
     document.body.removeChild(link);
 };
 
-// --- Place at the bottom of modules/stats.js ---
 export const loadStatsDashboard = async (tid, playerName, userProfile) => {
     if (!tid || !playerName) return;
 
@@ -222,29 +279,62 @@ export const loadStatsDashboard = async (tid, playerName, userProfile) => {
         const logs = [];
         snap.forEach(d => logs.push(d.data()));
         
-        // Save to window for the CSV Exporter to use later
         window.globalStatsLogs = logs;
 
-        // Render UI Components
-        renderCalendar(logs);
-        renderPlayerTrendChart(logs);
+        // Render Initial UI Components
+        currentCalOffset = 0; // Reset calendar to current month on load
+        renderCalendar(logs, 0);
+        renderPlayerTrendChart(logs, document.getElementById('playerTrendFilter')?.value || '7');
         renderTeamLeaderboard(tid);
         renderPlayerTrials(playerName);
         loadPlayerFeedback(userProfile);
 
-        // Update the Top Display Numbers
+        // Update Top Displays
         const myTotalMins = logs.reduce((sum, l) => sum + (Number(l.minutes) || 0), 0);
         const statTotalEl = document.getElementById("statTotal");
         const statTimeEl = document.getElementById("statTime");
         if(statTotalEl) statTotalEl.innerText = logs.length;
         if(statTimeEl) statTimeEl.innerText = myTotalMins;
 
-        // Bind the Team Leaderboard Filter Dropdown
+        // --- BIND EVENT LISTENERS ---
+        
+        // Calendar Arrows
+        const prevBtn = document.getElementById("calPrevMonth");
+        const nextBtn = document.getElementById("calNextMonth");
+        if(prevBtn && prevBtn.dataset.bound !== "true") {
+            prevBtn.addEventListener("click", () => renderCalendar(window.globalStatsLogs, -1));
+            prevBtn.dataset.bound = "true";
+        }
+        if(nextBtn && nextBtn.dataset.bound !== "true") {
+            nextBtn.addEventListener("click", () => renderCalendar(window.globalStatsLogs, 1));
+            nextBtn.dataset.bound = "true";
+        }
+
+        // Trend Filter Dropdown
+        const trendFilter = document.getElementById("playerTrendFilter");
+        if(trendFilter && trendFilter.dataset.bound !== "true") {
+            trendFilter.addEventListener("change", (e) => renderPlayerTrendChart(window.globalStatsLogs, e.target.value));
+            trendFilter.dataset.bound = "true";
+        }
+
+        // Print Report Button
+        const printBtn = document.getElementById("btnPrintStats");
+        if(printBtn && printBtn.dataset.bound !== "true") {
+            printBtn.addEventListener("click", () => {
+                document.body.classList.add("printing-stats");
+                window.print(); // Triggers the browser print dialog
+                document.body.classList.remove("printing-stats");
+            });
+            printBtn.dataset.bound = "true";
+        }
+
+        // Team Leaderboard Dropdown
         const filter = document.getElementById("leaderboardFilter");
         if(filter && filter.dataset.bound !== "true") {
             filter.addEventListener("change", () => renderTeamLeaderboard(tid));
             filter.dataset.bound = "true";
         }
+
     } catch (e) {
         console.error("Error loading stats:", e);
     }

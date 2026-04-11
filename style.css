@@ -845,3 +845,5 @@ input:checked + .slider:before {
     color: var(--text-muted);
     cursor: pointer;
 }
+
+.w-auto { width: auto !important; }

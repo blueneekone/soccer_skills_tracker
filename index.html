@@ -438,12 +438,11 @@
         </div>
 
         <div id="viewStats" class="view-section d-none">
-            <div class="flex-between-wrap">
+            <div class="flex-between-wrap no-print">
                 <h2 class="view-title m-0">Player Stats</h2>
                 <div>
-                    <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export Detailed
-                        CSV</button>
-                    <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Stats</button>
+                    <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export CSV</button>
+                    <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Report</button>
                 </div>
             </div>
 
@@ -518,17 +517,34 @@
             </div>
 
             <div class="card">
-                <div class="card-header">📅 Activity Log</div>
+                <div class="card-header no-print">📅 Activity Log</div>
                 <div class="card-body">
-                    <div class="text-center calendar-month-label" id="calMonthYear">Month Year</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <button id="calPrevMonth" class="secondary-btn no-print" style="padding:4px 12px; width:auto;">◀</button>
+                        <div class="text-center calendar-month-label font-bold" id="calMonthYear" style="font-size:1.1rem; color:var(--aggie-blue);">Month Year</div>
+                        <button id="calNextMonth" class="secondary-btn no-print" style="padding:4px 12px; width:auto;">▶</button>
+                    </div>
+                    <div class="cal-grid" style="font-size:10px; color:#64748b; margin-bottom:5px; margin-top:0;">
+                        <div class="text-center">S</div><div class="text-center">M</div><div class="text-center">T</div><div class="text-center">W</div><div class="text-center">T</div><div class="text-center">F</div><div class="text-center">S</div>
+                    </div>
                     <div class="cal-grid" id="calendarDays"></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header">📈 7-Day Trend</div>
+                <div class="card-header leaderboard-header-flex">
+                    <span>📈 Activity Trend</span>
+                    <select id="playerTrendFilter" class="leaderboard-filter no-print" title="Filter trend graph">
+                        <option value="7">7 Days</option>
+                        <option value="30">30 Days</option>
+                        <option value="90">Quarterly</option>
+                        <option value="all">All-Time</option>
+                    </select>
+                </div>
                 <div class="card-body">
-                    <canvas id="playerTrendChart" width="400" height="200"></canvas>
+                    <div style="height: 200px; position: relative;">
+                        <canvas id="playerTrendChart"></canvas>
+                    </div>
                 </div>
             </div>
 
