@@ -360,6 +360,194 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-export const initStrategyBoard = () => { console.log("Strategy Board Ready"); };
-export const parsePDF = () => { console.log("PDF Parser Ready"); };
-export const saveRosterList = () => { console.log("Roster Save Ready"); };
+export const initStrategyBoard = () => {
+    const canvas = document.getElementById("strategyCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let currentTool = 'pen'; 
+    
+    // Size the canvas correctly
+    const resize = () => {
+        const container = canvas.parentElement;
+        if(container && container.offsetWidth > 0) {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight || (container.offsetWidth * 0.75);
+        }
+    };
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 500);
+
+    // Toolbar Logic
+    document.querySelectorAll('.strategy-tool-btn').forEach(btn => {
+        if(btn.id === 'strategyClearBtn' || btn.id === 'strategyUndoBtn') return;
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.strategy-tool-btn').forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            if(btn.id.includes('Pen')) currentTool = 'pen';
+            if(btn.id.includes('Arrow')) currentTool = 'arrow';
+            if(btn.id.includes('X')) currentTool = 'X';
+            if(btn.id.includes('O')) currentTool = 'O';
+        });
+    });
+
+    document.getElementById("strategyClearBtn")?.addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Drawing Logic
+    const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    };
+
+    const startDraw = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        const color = document.getElementById("strategyColor").value;
+        
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        
+        if(currentTool === 'pen' || currentTool === 'arrow') {
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        } else if (currentTool === 'X') {
+            ctx.font = "bold 24px Inter";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("X", pos.x, pos.y);
+            isDrawing = false; 
+        } else if (currentTool === 'O') {
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 12, 0, 2 * Math.PI);
+            ctx.stroke();
+            isDrawing = false; 
+        }
+    };
+
+    const draw = (e) => {
+        if (!isDrawing) return;
+        e.preventDefault(); 
+        if(currentTool === 'pen' || currentTool === 'arrow') {
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+    };
+
+    const endDraw = () => { isDrawing = false; };
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseout', endDraw);
+    
+    canvas.addEventListener('touchstart', startDraw, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    canvas.addEventListener('touchend', endDraw);
+    
+    // Background Toggler
+    const styleToggle = document.getElementById("strategyBoardStyleToggle");
+    const pitchBg = document.getElementById("strategyPitchBg");
+    if(styleToggle && pitchBg) {
+        styleToggle.addEventListener("change", (e) => {
+            if(e.target.checked) {
+                pitchBg.style.background = "#ffffff"; 
+            } else {
+                pitchBg.style.background = "var(--aggie-blue)"; 
+            }
+        });
+    }
+};
+
+// --- PDF ROSTER IMPORT LOGIC ---
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Listen for a file upload
+    const pdfInput = document.getElementById("rosterPdfInput");
+    if (pdfInput) {
+        pdfInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reviewArea = document.getElementById("rosterReviewArea");
+            const textArea = document.getElementById("rosterTextRaw");
+            
+            textArea.value = "Extracting text... please wait.";
+            reviewArea.classList.remove("d-none");
+
+            try {
+                // Read the PDF using the pdfjsLib from your index.html
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = "";
+
+                // Loop through every page and pull the raw text
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(" ");
+                    fullText += pageText + "\n";
+                }
+
+                // PDFs are messy. We split by wide spaces to try and isolate names.
+                const cleanedText = fullText.split("  ").filter(s => s.trim().length > 2).join("\n");
+                textArea.value = cleanedText;
+                
+            } catch (error) {
+                console.error("PDF Parsing Error:", error);
+                textArea.value = "Error extracting text. Make sure it is a text-based PDF, not a scanned image.";
+            }
+        });
+    }
+
+    // 2. Listen for the Save button
+    const saveRosterBtn = document.getElementById("saveParsedRosterBtn");
+    if (saveRosterBtn) {
+        saveRosterBtn.addEventListener("click", async () => {
+            const textArea = document.getElementById("rosterTextRaw");
+            // Clean up the text area into an array of names
+            const rawNames = textArea.value.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+            
+            if (rawNames.length === 0) return alert("No valid names found in the text box.");
+            if (!currentCoachTeamId) return alert("Select a team first.");
+
+            saveRosterBtn.innerText = "Saving...";
+            try {
+                const ref = doc(db, "rosters", currentCoachTeamId);
+                const snap = await getDoc(ref);
+                let currentPlayers = snap.exists() ? (snap.data().players || []) : [];
+                
+                // Add new names while preventing duplicates
+                rawNames.forEach(name => {
+                    if (!currentPlayers.includes(name)) {
+                        currentPlayers.push(name);
+                    }
+                });
+
+                // Write to the database
+                await setDoc(ref, { players: currentPlayers }, { merge: true });
+                
+                // Reset the UI
+                document.getElementById("rosterReviewArea").classList.add("d-none");
+                textArea.value = "";
+                document.getElementById("rosterPdfInput").value = ""; 
+                
+                // Refresh the roster board
+                loadCoachDashboard(false, window.globalTeams);
+                alert(`Successfully merged ${rawNames.length} names into the roster!`);
+            } catch (error) {
+                console.error("Save Roster Error:", error);
+                alert("Error saving roster.");
+            }
+            saveRosterBtn.innerText = "Save Roster";
+        });
+    }
+});
