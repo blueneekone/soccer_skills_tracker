@@ -2,16 +2,25 @@
 import { db } from "../firebase-config.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-let teamChart = null;
-let playerChart = null;
+let currentCalOffset = 0; 
 
-// Local helper to set text
 const setText = (id, text) => {
     const el = document.getElementById(id);
     if(el) el.innerText = text;
 };
 
-let currentCalOffset = 0; // Tracks which month we are viewing
+// 🟢 THE FIX: Universal Date Helper for Legacy V1 & Enterprise V2 Data
+const safeGetDate = (l) => {
+    if (!l) return new Date();
+    if (l.timestamp && l.timestamp.seconds) return new Date(l.timestamp.seconds * 1000);
+    if (l.timestamp && l.timestamp.toDate) return l.timestamp.toDate();
+    if (l.date) {
+        const parsed = new Date(l.date);
+        if (!isNaN(parsed.getTime())) return parsed;
+    }
+    if (l.createdAt && l.createdAt.seconds) return new Date(l.createdAt.seconds * 1000);
+    return new Date(); // Fallback prevents fatal crashes
+};
 
 export const renderCalendar = (logs, offsetChange = 0) => {
     currentCalOffset += offsetChange;
@@ -19,7 +28,6 @@ export const renderCalendar = (logs, offsetChange = 0) => {
     if(!grid) return;
     const header = document.getElementById("calMonthYear");
     
-    // Calculate the target month to display
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + currentCalOffset);
     
@@ -29,20 +37,21 @@ export const renderCalendar = (logs, offsetChange = 0) => {
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth();
     
-    // Find what day of the week the 1st starts on
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    // Pad empty days at the start of the month
     for(let i = 0; i < firstDay; i++) {
         grid.innerHTML += `<div class="cal-day" style="background:transparent; border:none; box-shadow:none;"></div>`;
     }
     
     const today = new Date();
+    
     for(let i = 1; i <= daysInMonth; i++) {
         const currentIterDate = new Date(year, month, i);
         const dStr = currentIterDate.toDateString();
-        const hasLog = logs.some(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
+        
+        // Safely check logs
+        const hasLog = logs.some(l => safeGetDate(l).toDateString() === dStr);
         const isToday = currentIterDate.toDateString() === today.toDateString();
         
         const dayDiv = document.createElement("div");
@@ -51,10 +60,10 @@ export const renderCalendar = (logs, offsetChange = 0) => {
         
         if(hasLog) {
             dayDiv.onclick = () => {
-                const daily = logs.filter(l => new Date(l.timestamp.seconds*1000).toDateString() === dStr);
-                setText("dayModalDate", dStr);
+                const daily = logs.filter(l => safeGetDate(l).toDateString() === dStr);
+                const t = document.getElementById("dayModalDate"); if(t) t.innerText = dStr;
                 const content = document.getElementById("dayModalContent");
-                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player}</b><br>${l.drillSummary || l.drill || l.workoutType || 'Workout'} (${l.minutes}m)</div>`).join("");
+                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player || 'Unknown'}</b><br>${l.drillSummary || l.drill || l.workoutType || 'Workout'} (${l.minutes || l.time || 0}m)</div>`).join("");
                 document.getElementById("dayModal").style.display='block';
             };
         }
@@ -66,7 +75,8 @@ export const renderPlayerTrendChart = (logs, range = '7') => {
     const cvs = document.getElementById('playerTrendChart'); 
     if(!cvs) return;
     const ctx = cvs.getContext('2d'); 
-    if(playerChart) playerChart.destroy(); 
+    
+    if(window.globalPlayerChart) window.globalPlayerChart.destroy(); 
     
     let labels = [];
     let data = [];
@@ -80,8 +90,8 @@ export const renderPlayerTrendChart = (logs, range = '7') => {
             d.setDate(now.getDate() - i); 
             labels.push(range === '7' ? d.toLocaleDateString('en-US',{weekday:'short'}) : `${d.getMonth()+1}/${d.getDate()}`); 
             data[(days-1)-i] = logs
-                .filter(l => new Date(l.timestamp.seconds*1000).toDateString() === d.toDateString())
-                .reduce((s,l) => s + Number(l.minutes), 0); 
+                .filter(l => safeGetDate(l).toDateString() === d.toDateString())
+                .reduce((s,l) => s + Number(l.minutes || l.time || 0), 0); 
         }
     } else if (range === '90') {
         data = Array(12).fill(0);
@@ -92,9 +102,9 @@ export const renderPlayerTrendChart = (logs, range = '7') => {
             weekStart.setDate(weekEnd.getDate() - 6);
             labels.push(`${weekStart.getMonth()+1}/${weekStart.getDate()}`);
             data[11-i] = logs.filter(l => {
-                const d = new Date(l.timestamp.seconds*1000);
+                const d = safeGetDate(l);
                 return d >= weekStart && d <= weekEnd;
-            }).reduce((s,l) => s + Number(l.minutes), 0);
+            }).reduce((s,l) => s + Number(l.minutes || l.time || 0), 0);
         }
     } else if (range === 'all') {
         data = Array(12).fill(0);
@@ -102,13 +112,13 @@ export const renderPlayerTrendChart = (logs, range = '7') => {
             const targetMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
             labels.push(targetMonth.toLocaleDateString('en-US',{month:'short'}));
             data[11-i] = logs.filter(l => {
-                const d = new Date(l.timestamp.seconds*1000);
+                const d = safeGetDate(l);
                 return d.getMonth() === targetMonth.getMonth() && d.getFullYear() === targetMonth.getFullYear();
-            }).reduce((s,l) => s + Number(l.minutes), 0);
+            }).reduce((s,l) => s + Number(l.minutes || l.time || 0), 0);
         }
     }
     
-    playerChart = new window.Chart(ctx, { 
+    window.globalPlayerChart = new window.Chart(ctx, { 
         type: 'bar', 
         data: { labels: labels, datasets: [{ data: data, backgroundColor: "#00263A", borderRadius: 4 }] }, 
         options: { 
@@ -117,30 +127,6 @@ export const renderPlayerTrendChart = (logs, range = '7') => {
             responsive: true,
             maintainAspectRatio: false
         } 
-    });
-};
-
-export const renderTeamChart = (logs) => {
-    const cvs = document.getElementById('teamChart'); 
-    if(!cvs) return;
-    const ctx = cvs.getContext('2d'); 
-    if(teamChart) teamChart.destroy();
-
-    const data = Array(7).fill(0); 
-    const labels = [];
-    for(let i=6; i>=0; i--) { 
-        const d = new Date(); 
-        d.setDate(new Date().getDate() - i); 
-        labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); 
-        data[6-i] = logs
-            .filter(l => new Date(l.timestamp.seconds * 1000).toDateString() === d.toDateString())
-            .reduce((sum, l) => sum + Number(l.minutes), 0); 
-    }
-    
-    teamChart = new window.Chart(ctx, { 
-        type: 'bar', 
-        data: { labels: labels, datasets: [{ label: 'Total Team Minutes', data: data, backgroundColor: "#00263A", borderRadius: 4 }] }, 
-        options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } } 
     });
 };
 
@@ -156,18 +142,19 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
     if(filter === 'daily') filterDate.setDate(now.getDate() - 1);
     else if(filter === 'weekly') filterDate.setDate(now.getDate() - 7);
     else if(filter === 'monthly') filterDate.setMonth(now.getMonth() - 1);
-    else filterDate.setFullYear(2000); // alltime
+    else filterDate.setFullYear(2000); 
 
     if (!tid) { 
-        filteredLogs = logsOverride.filter(d => new Date(d.timestamp.seconds * 1000) >= filterDate);
-        filteredLogs.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes); }); 
+        filteredLogs = logsOverride.filter(d => safeGetDate(d) >= filterDate);
+        filteredLogs.forEach(d => { const p = d.player; stats[p] = (stats[p] || 0) + Number(d.minutes || d.time || 0); }); 
     } else { 
         const q = query(collection(db, "reps"), where("teamId", "==", tid)); 
         const snap = await getDocs(q); 
         snap.forEach(d => {
             const data = d.data();
-            if(new Date(data.timestamp.seconds * 1000) >= filterDate) {
-                const p = data.player; stats[p] = (stats[p] || 0) + Number(data.minutes);
+            if(safeGetDate(data) >= filterDate) {
+                const p = data.player || "Unknown"; 
+                stats[p] = (stats[p] || 0) + Number(data.minutes || data.time || 0);
             }
         }); 
     }
@@ -175,6 +162,8 @@ export const renderTeamLeaderboard = async (tid, logsOverride = []) => {
     const html = Object.entries(stats).sort((a,b)=>b[1]-a[1]).slice(0,5).map((e,i) => `<tr><td class="rank-${i+1}">${i+1}</td><td>${e[0]}</td><td>${e[1]}m</td></tr>`).join("");
     table.querySelector("tbody").innerHTML = html || '<tr><td colspan="3" class="text-center">No data for this time period</td></tr>';
 };
+
+// ... Keep your loadPlayerFeedback, renderPlayerTrials, and exportStatsCSV below this line exactly as they are ...
 
 export const loadPlayerFeedback = async (userProfile) => {
     if (!userProfile || userProfile.role === 'super_admin') return; 
