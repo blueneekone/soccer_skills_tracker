@@ -1,7 +1,6 @@
 // modules/coach.js
 import { auth, db } from "../firebase-config.js";
 import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { renderTeamChart } from "./stats.js";
 
 export let currentCoachTeamId = null;
 export let allSessionsCache = [];
