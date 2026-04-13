@@ -586,11 +586,17 @@ input:checked + .slider:before { transform: translateX(20px); }
 .workout-summary-box { 
     display: flex; 
     flex-direction: column; 
-    gap: 20px; 
+    gap: 12px; /* Pulls the signature box, outcome buttons, and Log button closer together */
     margin-top: 25px; 
+    margin-bottom: 40px; /* Pushes the "Schedule this workout instead?" text way down */
 }
 .workout-summary-box label { margin-bottom: 0; }
 .workout-summary-box input { margin-bottom: 0; }
+
+/* Override the HTML margin to pull the Log button snug against the signature canvas */
+.btn-log-workout {
+    margin-top: 5px !important; 
+}
 
 .export-row, .schedule-row { 
     display: flex; 
