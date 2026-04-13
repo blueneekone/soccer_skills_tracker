@@ -14,7 +14,7 @@ import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./mo
 
 // --- SIDE-EFFECT & DYNAMIC IMPORTS ---
 import "./modules/challenges.js?v=4.0.0"; 
-import { loadStatsDashboard } from "./modules/stats.js?v=4.0.2"; // Only importing what the router needs!
+import { loadStatsDashboard } from "./modules/stats.js?v=4.0.3"; // Only importing what the router needs!
 
 let globalTeams = [];
 let globalAdmins = [];
@@ -458,8 +458,9 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             // 3. UI INITIALIZATION
+            
+// 3. UI INITIALIZATION (FAULT-TOLERANT ENGINE)
             if (userProfile && userProfile.playerName) {
-                // 🟢 THE FIX: Remove the d-none class to reveal the dashboard
                 document.getElementById("appUI").classList.remove("d-none");
                 
                 const supportBtn = document.getElementById("btnOpenSupport");
@@ -468,16 +469,38 @@ onAuthStateChanged(auth, async (user) => {
                     else supportBtn.classList.remove("d-none");
                 } 
                 
-                if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId);
-
                 setText("activePlayerName", userProfile.playerName);
                 setText("homePlayerName", userProfile.playerName.split(" ")[0]);
 
-                await window.fetchWorkouts();
-                window.buildCoachDropdowns();
-                loadHomeDashboard();
-                checkRoles(user);
-                initDirectorModule(db, userProfile, globalTeams);
+                // 🛡️ The Graceful Degradation Wrapper
+                const safeLoad = async (moduleName, fn) => {
+                    try { 
+                        await fn(); 
+                    } catch (err) {
+                        console.error(`[MODULE CRASH] ${moduleName} failed to load:`, err);
+                        try {
+                            // Silently alert the Admins in the database
+                            const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                            await addDoc(collection(db, "admin_audit_log"), {
+                                action: "Module Crash Bypass", 
+                                module: moduleName, 
+                                error: err.message, 
+                                user: user.email, 
+                                timestamp: new Date()
+                            });
+                        } catch(e) { /* Failsafe if DB write also fails */ }
+                    }
+                };
+
+                // Boot modules independently. If one fails, the others survive.
+                await safeLoad("Branding", async () => { if (userProfile.teamId !== "admin") await applyTeamBranding(userProfile.teamId); });
+                await safeLoad("Workouts", async () => { if (window.fetchWorkouts) await window.fetchWorkouts(); });
+                await safeLoad("Coach Tools", async () => { if (window.buildCoachDropdowns) window.buildCoachDropdowns(); });
+                await safeLoad("Director", async () => { if (typeof initDirectorModule !== 'undefined') initDirectorModule(db, userProfile, globalTeams); });
+
+                // These are safe, synchronous UI updates
+                if (typeof loadHomeDashboard !== 'undefined') loadHomeDashboard();
+                if (typeof checkRoles !== 'undefined') checkRoles(user);
 
                 history.replaceState({ view: 'viewHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', false);
@@ -486,6 +509,7 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("setupUI").classList.remove("d-none");
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
+
         } catch (error) { 
             console.error("Auth Error:", error); 
             alert("Security Error: Unable to verify credentials."); 

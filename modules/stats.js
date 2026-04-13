@@ -58,13 +58,30 @@ export const renderCalendar = (logs, offsetChange = 0) => {
         dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''} ${isToday ? 'today' : ''}`;
         dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
         
-        if(hasLog) {
+   if(hasLog) {
             dayDiv.onclick = () => {
                 const daily = logs.filter(l => safeGetDate(l).toDateString() === dStr);
                 const t = document.getElementById("dayModalDate"); if(t) t.innerText = dStr;
                 const content = document.getElementById("dayModalContent");
-                if(content) content.innerHTML = daily.map(l => `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${l.player || 'Unknown'}</b><br>${l.drillSummary || l.drill || l.workoutType || 'Workout'} (${l.minutes || l.time || 0}m)</div>`).join("");
-                document.getElementById("dayModal").style.display='block';
+                
+                if(content) {
+                    content.innerHTML = daily.map(l => {
+                        // Bulletproof mapping for V1, V2, and Custom Workouts
+                        const wName = l.name || l.title || l.workoutName || l.type || l.category || 'Logged Session';
+                        const pName = l.player || l.playerName || 'Unknown Player';
+                        const mins = l.minutes || l.time || 0;
+                        
+                        return `<div style="border-bottom:1px solid #eee; padding:8px 5px;">
+                            <b style="color:var(--aggie-blue);">${pName}</b><br>
+                            <span style="font-size:12px; color:#64748b;">${wName} (${mins}m)</span>
+                        </div>`;
+                    }).join("");
+                }
+                
+                const modal = document.getElementById("dayModal");
+                modal.style.display = 'block';
+                // Ensure the close button always works
+                modal.querySelector('.close-btn').onclick = () => { modal.style.display = 'none'; };
             };
         }
         grid.appendChild(dayDiv);
