@@ -14,7 +14,7 @@ import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./mo
 
 // --- SIDE-EFFECT & DYNAMIC IMPORTS ---
 import "./modules/challenges.js?v=4.0.0"; 
-import { loadStatsDashboard } from "./modules/stats.js?v=4.0.3"; // Only importing what the router needs!
+import { loadStatsDashboard } from "./modules/stats.js?v=4.0.4"; // Only importing what the router needs!
 
 let globalTeams = [];
 let globalAdmins = [];

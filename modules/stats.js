@@ -9,69 +9,48 @@ const setText = (id, text) => {
     if(el) el.innerText = text;
 };
 
-// 🟢 THE FIX: Universal Date Helper for Legacy V1 & Enterprise V2 Data
+// 🟢 UNIVERSAL DATE HELPER
 const safeGetDate = (l) => {
     if (!l) return new Date();
     if (l.timestamp && l.timestamp.seconds) return new Date(l.timestamp.seconds * 1000);
     if (l.timestamp && l.timestamp.toDate) return l.timestamp.toDate();
-    if (l.date) {
-        const parsed = new Date(l.date);
-        if (!isNaN(parsed.getTime())) return parsed;
-    }
+    if (l.date) { const parsed = new Date(l.date); if (!isNaN(parsed.getTime())) return parsed; }
     if (l.createdAt && l.createdAt.seconds) return new Date(l.createdAt.seconds * 1000);
-    return new Date(); // Fallback prevents fatal crashes
+    return new Date();
 };
 
-export const renderCalendar = (logs, offsetChange = 0) => {
-    currentCalOffset += offsetChange;
+export const renderCalendar = (logs) => {
     const grid = document.getElementById("calendarDays");
     if(!grid) return;
     const header = document.getElementById("calMonthYear");
-    
-    const targetDate = new Date();
-    targetDate.setMonth(targetDate.getMonth() + currentCalOffset);
-    
-    if(header) header.innerText = targetDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+    const now = new Date();
+    if(header) header.innerText = now.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     grid.innerHTML = "";
     
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
     
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    for(let i = 0; i < firstDay; i++) {
-        grid.innerHTML += `<div class="cal-day" style="background:transparent; border:none; box-shadow:none;"></div>`;
-    }
-    
-    const today = new Date();
-    
-    for(let i = 1; i <= daysInMonth; i++) {
-        const currentIterDate = new Date(year, month, i);
+    for(let i=1; i<=daysInMonth; i++) {
+        const currentIterDate = new Date(now.getFullYear(), now.getMonth(), i);
         const dStr = currentIterDate.toDateString();
         
-        // Safely check logs
+        // Use safeGetDate to prevent crashes on legacy data
         const hasLog = logs.some(l => safeGetDate(l).toDateString() === dStr);
-        const isToday = currentIterDate.toDateString() === today.toDateString();
         
         const dayDiv = document.createElement("div");
-        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''} ${isToday ? 'today' : ''}`;
+        dayDiv.className = `cal-day ${hasLog ? 'has-log' : ''}`;
         dayDiv.innerHTML = `${i} ${hasLog ? '<div class="cal-dot"></div>' : ''}`;
         
-   if(hasLog) {
+        if(hasLog) {
             dayDiv.onclick = () => {
                 const daily = logs.filter(l => safeGetDate(l).toDateString() === dStr);
-                const t = document.getElementById("dayModalDate"); if(t) t.innerText = dStr;
+                setText("dayModalDate", dStr);
                 const content = document.getElementById("dayModalContent");
-                
                 if(content) {
                     content.innerHTML = daily.map(l => {
-                        // Bulletproof mapping for V1, V2, and Custom Workouts
-                        const wName = l.name || l.title || l.workoutName || l.type || l.category || 'Logged Session';
+                        const wName = l.name || l.drillSummary || l.drill || l.type || 'Workout';
                         const pName = l.player || l.playerName || 'Unknown Player';
                         const mins = l.minutes || l.time || 0;
-                        
-                        return `<div style="border-bottom:1px solid #eee; padding:8px 5px;">
+                        return `<div style="border-bottom:1px solid #eee; padding:10px 5px;">
                             <b style="color:var(--aggie-blue);">${pName}</b><br>
                             <span style="font-size:12px; color:#64748b;">${wName} (${mins}m)</span>
                         </div>`;
@@ -80,7 +59,7 @@ export const renderCalendar = (logs, offsetChange = 0) => {
                 
                 const modal = document.getElementById("dayModal");
                 modal.style.display = 'block';
-                // Ensure the close button always works
+                // Bind close button dynamically
                 modal.querySelector('.close-btn').onclick = () => { modal.style.display = 'none'; };
             };
         }
