@@ -535,7 +535,7 @@ export const initStrategyBoard = () => {
             if(e.target.checked) {
                 pitchBg.style.background = "#ffffff"; 
             } else {
-                pitchBg.style.background = "var(--aggie-blue)"; 
+                pitchBg.style.background = ""; 
             }
         });
     }

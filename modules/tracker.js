@@ -179,7 +179,29 @@ export const handleWorkoutSubmit = async (userProfile, globalTeams, onSuccessCal
 
         await batch.commit(); // Saves everything at exactly the same time
 
-        alert("Workout Logged successfully!");
+        Enterprise Success Modal & Confetti
+        if (typeof confetti !== 'undefined') {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#0f172a', '#fbbf24', '#3b82f6'] // Aggie Blue, Gold, and Light Blue
+            });
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Workout Logged!',
+                text: `Awesome job! +XP added to your profile.`,
+                icon: 'success',
+                confirmButtonColor: '#0f172a',
+                confirmButtonText: 'Keep Grinding',
+                customClass: { popup: 'card' } // Uses your glassmorphism CSS
+            });
+        } else {
+            alert("Workout Logged successfully!"); // Fallback just in case
+        }
+
         clearTrackerForm();
         if (onSuccessCallback) onSuccessCallback();
     } catch (e) { alert("Database Error: " + e.message); console.error(e); }
