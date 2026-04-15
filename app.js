@@ -122,10 +122,71 @@ window.navigateTo = (viewId, addToHistory = true) => {
         return window.navigateTo('viewHome', false);
     }
 
-    // 2. Perform Navigation
-    const views = ['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge', 'viewDirector', 'viewPassport'];    views.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('d-none');
+    // ROSTER & ADMIN
+    safeBind("rosterPdfInput", "change", parsePDF);
+    safeBind("saveParsedRosterBtn", "click", saveRosterList);
+    safeBind("coachAddPlayerBtn", "click", manualAddPlayer);
+    safeBind("exportXlsxBtn", "click", exportSessionData);
+    safeBind("forceRefreshRosterBtn", "click", () => loadCoachDashboard(true, globalTeams)); 
+    
+    safeBind("addTeamBtn", "click", addTeam);
+    safeBind("addAdminBtn", "click", addAdmin);
+    safeBind("btnLogSystem", "click", () => loadLogs("logs_system"));
+    safeBind("btnLogSecurity", "click", runSecurityScan);
+    safeBind("btnLogDebug", "click", runDebugLog);
+    safeBind("generateTestLogBtn", "click", generateSampleLogs);
+    // --- SCHEDULE & HOMEWORK BINDINGS ---
+    
+    // 1. Populate the Homework Drill Dropdown
+    const hwDrillSelect = document.getElementById("hwDrillSelect");
+    if(hwDrillSelect) {
+        hwDrillSelect.innerHTML = '<option value="" disabled selected>Select Drill...</option>';
+        dbData.foundationSkills.forEach(s => {
+            const opt = document.createElement("option"); 
+            opt.value = s.name; 
+            opt.textContent = s.name;
+            hwDrillSelect.appendChild(opt);
+        });
+    }
+
+    // 2. Bind the Schedule Button
+    safeBind("addScheduleBtn", "click", async () => {
+        const date = document.getElementById("scheduleDate").value;
+        const time = document.getElementById("scheduleTime").value;
+        const type = document.getElementById("scheduleType").value;
+        const loc = document.getElementById("scheduleLocation").value;
+        const tid = currentCoachTeamId;
+        
+        if(!date || !time || !loc || !tid) return alert("Please fill out all schedule fields.");
+        
+        await addDoc(collection(db, "schedules"), { teamId: tid, date, time, type, location: loc });
+        document.getElementById("scheduleLocation").value = ""; 
+        alert("Event Added!");
+        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
+        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
+    });
+
+    // 3. Bind the Assign Homework Button
+    safeBind("assignHwBtn", "click", async () => {
+        const player = document.getElementById("hwPlayerSelect").value;
+        const drill = document.getElementById("hwDrillSelect").value;
+        const due = document.getElementById("hwDueDate").value;
+        const tid = currentCoachTeamId;
+        
+        if(!player || !drill || !due || !tid) return alert("Please fill out all homework fields.");
+        
+        await addDoc(collection(db, "assignments"), { teamId: tid, player, drill, dueDate: due, status: "active" });
+        alert("Homework Assigned!");
+        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
+        if(typeof loadHomeDashboard === "function") loadHomeDashboard();
+    });
+
+    // MODALS
+    document.querySelectorAll(".close-btn").forEach(b => {
+        b.onclick = () => {
+            document.querySelectorAll(".modal").forEach(m => m.style.display='none');
+            document.getElementById("videoPlayer").src = "";
+        }
     });
 
     const targetEl = document.getElementById(viewId);
@@ -136,8 +197,26 @@ window.navigateTo = (viewId, addToHistory = true) => {
         loadStatsDashboard(tid, playerName, userProfile);
     }
 
-    if (viewId === 'viewTracker' || viewId === 'viewCoach' || viewId === 'viewChallenge') {
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+            if (userProfile) {
+                document.getElementById("appUI").style.display='block';
+                document.getElementById("bottomNav").style.display='flex';
+                setText("coachName", user.email);
+                setText("activePlayerName", userProfile.playerName);
+                
+                loadStats();
+                if (typeof loadHomeDashboard === "function") loadHomeDashboard();
+                checkRoles(user);
+            } else {
+                document.getElementById("setupUI").style.display = 'flex';
+                initSetupDropdowns();
+            }
+        } catch (error) { console.error(error); alert("Data Error: " + error.message); }
+        
+    } else {
+        document.getElementById("loginUI").style.display='flex';
+        document.getElementById("appUI").style.display='none';
+        document.getElementById("bottomNav").style.display='none';
+        document.getElementById("setupUI").style.display='none';
     }
 
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -270,14 +349,98 @@ const initApp = () => {
         }
     });
 
-    // Auth Bindings
-    safeBind("loginGoogleBtn", "click", handleGoogleLogin);
-    safeBind("loginEmailBtn", "click", handleEmailLogin);
-    safeBind("signupEmailBtn", "click", handleEmailSignup);
-    safeBind("globalLogoutBtn", "click", handleLogout);
-    safeBind("appLogoutBtn", "click", handleLogout);
-    safeBind("setupLogoutBtn", "click", handleLogout);
-    safeBind("completeSetupBtn", "click", completeUserSetup);
+// --- COACH DASHBOARD ---
+
+// ==========================================
+// SCHEDULE & HOMEWORK LOGIC
+// ==========================================
+
+async function loadHomeDashboard() {
+    if(!userProfile) return;
+    const schedList = document.getElementById("homeScheduleList");
+    if(schedList) {
+        schedList.innerHTML = "<li class='session-empty'>Loading schedule...</li>";
+        const q = query(collection(db, "schedules"), where("teamId", "==", userProfile.teamId));
+        const snap = await getDocs(q);
+        const events = [];
+        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+        events.sort((a,b) => a.date.localeCompare(b.date));
+        let html = "";
+        events.forEach(e => {
+            html += `<li class="session-item">
+                <div><b style="color:var(--aggie-blue);">${e.type}</b>: ${e.location}<br>
+                <span style="font-size:11px; color:#64748b;">${e.date} @ ${e.time}</span></div>
+            </li>`;
+        });
+        schedList.innerHTML = html || "<li class='session-empty'>No upcoming events.</li>";
+    }
+
+    const hwList = document.getElementById("homeHomeworkList");
+    if(hwList) {
+        hwList.innerHTML = "<li class='session-empty'>Loading assignments...</li>";
+        const q2 = query(collection(db, "assignments"), where("player", "==", userProfile.playerName));
+        const snap2 = await getDocs(q2);
+        let html = "";
+        snap2.forEach(d => {
+            const hw = d.data();
+            if(hw.status === "active") {
+                html += `<li class="session-item" style="border-left: 4px solid #ea580c;">
+                    <div><b>${hw.drill}</b><br><span style="font-size:11px; color:#64748b;">Due: ${hw.dueDate}</span></div>
+                    <button class="action-btn" style="background:#16a34a; padding:6px 10px;" onclick="window.completeHomework('${d.id}')">Done</button>
+                </li>`;
+            }
+        });
+        hwList.innerHTML = html || "<li class='session-empty'>No active assignments!</li>";
+    }
+}
+
+async function loadCoachScheduleAndHW() {
+    const tid = currentCoachTeamId;
+    if(!tid) return;
+    const cSched = document.getElementById("coachScheduleList");
+    if(cSched) {
+        const q = query(collection(db, "schedules"), where("teamId", "==", tid));
+        const snap = await getDocs(q);
+        const events = [];
+        snap.forEach(d => events.push({ id: d.id, ...d.data() }));
+        events.sort((a,b) => a.date.localeCompare(b.date));
+        cSched.innerHTML = events.map(e => `<li class="session-item">
+            <div><b>${e.type}</b>: ${e.location}<br><span style="font-size:10px;">${e.date}</span></div>
+            <button class="delete-btn" onclick="window.deleteSchedule('${e.id}')">✕</button>
+        </li>`).join("") || "<li class='session-empty'>No events scheduled.</li>";
+    }
+
+    const cHw = document.getElementById("coachHwList");
+    if(cHw) {
+        const q2 = query(collection(db, "assignments"), where("teamId", "==", tid));
+        const snap2 = await getDocs(q2);
+        let html = "";
+        snap2.forEach(d => {
+            const hw = d.data();
+            if(hw.status === "active") {
+                html += `<li class="session-item">
+                    <div><b>${hw.player}</b><br><span style="font-size:10px;">${hw.drill} (Due: ${hw.dueDate})</span></div>
+                    <button class="delete-btn" onclick="window.deleteHomework('${d.id}')">✕</button>
+                </li>`;
+            }
+        });
+        cHw.innerHTML = html || "<li class='session-empty'>No active homework.</li>";
+    }
+}
+
+window.completeHomework = async (id) => { await updateDoc(doc(db, "assignments", id), { status: "completed" }); loadHomeDashboard(); };
+window.deleteSchedule = async (id) => { if(confirm("Delete event?")) { await deleteDoc(doc(db, "schedules", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); } };
+window.deleteHomework = async (id) => { if(confirm("Delete assignment?")) { await deleteDoc(doc(db, "assignments", id)); loadCoachScheduleAndHW(); loadHomeDashboard(); } };
+
+function initCoachDropdown(isDirector, teams) {
+    const sel = document.getElementById("adminTeamSelect");
+    if(!sel) return;
+    document.getElementById("adminControls").style.display = 'block';
+    sel.innerHTML = "";
+    teams.forEach(t => { const o = document.createElement("option"); o.value=t.id; o.textContent=t.name; sel.appendChild(o); });
+    sel.onchange = () => loadCoachDashboard(isDirector, teams);
+    if(teams.length > 0) { sel.value = teams[0].id; loadCoachDashboard(isDirector, teams); }
+}
 
     // Nav Bindings
     safeBind('headerHomeLink', 'click', () => window.navigateTo('viewHome'));
@@ -328,14 +491,52 @@ const initApp = () => {
                 supportAccessUntil: Timestamp.fromDate(oneHourFromNow)
             });
 
-            btn.style.display = "none";
-            status.innerText = "✅ Secure Access Granted. Auto-locks in 60 minutes.";
-            
-        } catch (error) {
-            console.error("Support Access Error:", error);
-            btn.innerText = "🛡️ Grant Support Access (1 Hour)";
-            btn.disabled = false;
-            alert("Error granting access: " + error.message);
+        // 4. Combine and Render
+        const combinedSet = new Set([...rosterNames, ...Object.keys(players)]);
+        const combinedList = Array.from(combinedSet).sort();
+        // Populate Homework Player Dropdown
+        const hwPlayer = document.getElementById("hwPlayerSelect");
+        if(hwPlayer) hwPlayer.innerHTML = combinedList.map(p => `<option value="${p}">${p}</option>`).join("");
+        
+        // Refresh Schedule & Homework for the coach view
+        if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
+
+        if (listEl) {
+            if (combinedList.length > 0) {
+                // --- RENDER LIST ---
+                listEl.innerHTML = combinedList.map(p => {
+                    const stats = players[p] || { mins: 0, lastActive: null };
+                    const lastDate = stats.lastActive ? stats.lastActive.toLocaleDateString() : "Inactive";
+                    
+                    // 1. Check if this specific player is in the 'linkedPlayers' set
+                    const isLinked = linkedPlayers.has(p);
+                    
+                    // 2. Decide which button to show (Green vs Blue)
+                    const linkButton = isLinked 
+                        ? `<button class="link-btn" style="background:#dcfce7; color:#166534; border-color:#86efac; cursor:default;">✔ Linked</button>`
+                        : `<button class="link-btn" onclick="window.linkParent('${p}')">Link Parent</button>`;
+
+                    return `
+                    <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${p}</b> <div style="font-size:10px; color:#666;">Last: ${lastDate}</div></div>
+                        <div>
+                            <span style="font-size:12px; font-weight:bold; color:#00263A; margin-right:5px;">${stats.mins}m</span>
+                            ${linkButton}
+                            <button class="delete-btn" onclick="window.deletePlayer('${p}')">x</button>
+                        </div>
+                    </div>`;
+                }).join("");
+            } else {
+                // --- IF NO PLAYERS FOUND ---
+                listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found in database. Upload a PDF roster or add manually above.</div>";
+            }
+        }
+    } catch(e) {
+        console.error(e);
+        if(listEl) listEl.innerHTML = `<div style='color:red; padding:10px;'>Error: ${e.message}</div>`;
+    } finally {
+        if(listEl && listEl.innerHTML === "Fetching roster data...") {
+             listEl.innerHTML = "<div style='padding:10px; color:#999;'>No players found.</div>";
         }
     });
 
