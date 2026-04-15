@@ -291,7 +291,7 @@ input:focus, select:focus, textarea:focus {
 .director-tab { background: transparent; border: none; flex: 1 1 calc(50% - 10px); padding: 10px 5px; font-size: 0.85rem; font-weight: 600; color: #666; border-bottom: 3px solid transparent; }
 .director-tab.active { color: #7c3aed; border-bottom-color: #7c3aed; }
 .coach-tabs-container { display: flex; gap: 4px; margin-bottom: 16px; overflow-x: auto; scroll-behavior: smooth; }
-.coach-tab-btn { flex: 1; min-width: fit-content; background: rgba(15,23,42,0.05); border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.coach-tab-btn { flex: 1; min-width: -webkit-fill-available; min-width: fit-content; background: rgba(15,23,42,0.05); border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; font-size: 12px; font-weight: 700; color: var(--text-muted); }
 .coach-tab-btn.active { background: var(--aggie-blue); color: white; border-color: var(--aggie-blue); }
 
 /* =======================================================
@@ -332,7 +332,7 @@ input:focus, select:focus, textarea:focus {
 /* =======================================================
    14. PREMIUM STADIUM LOGIN SCREEN
    ======================================================= */
-.full-screen-center { 
+.full-screen-center  { 
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
     background: url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;    z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; 
 }

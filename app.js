@@ -13,7 +13,7 @@ import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";
 
 // --- SIDE-EFFECT & DYNAMIC IMPORTS ---
-import "./modules/challenges.js?v=4.0.0"; 
+import { setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0";
 import { loadStatsDashboard } from "./modules/stats.js?v=4.0.5"; 
 
 let globalTeams = [];
@@ -325,7 +325,15 @@ const initApp = () => {
     bindTrackerBtn("addCoreBtn", "selectCore", "setsCore", "repsCore");
     bindTrackerBtn("addBallWorkBtn", "selectBallWork", "setsBall", "repsBall");
     bindTrackerBtn("addBasicsBtn", "selectBasics", "setsBasics", "repsBasics");
+       safeBind("btnGCal", "click", addToGoogleCalendar);
+    safeBind("btnIcs", "click", downloadIcsFile);
     
+    setupChallengeCalculators(); // Initializes the dynamic math for Challenge Mode
+    safeBind("submitPassBtn", "click", () => submitTrialScore('Passing', userProfile));
+    safeBind("submitShotBtn", "click", () => submitTrialScore('Shooting', userProfile));
+    safeBind("submitTimeBtn", "click", () => submitTrialScore('Time', userProfile));
+
+
     safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => window.navigateTo('viewHome')));
 
     document.body.addEventListener("click", async (e) => {

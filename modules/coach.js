@@ -74,6 +74,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+// Coach Logging an Official Trial Logic
+            if (target.id === "coachSubmitTrialBtn") {
+                const cPlayer = document.getElementById("coachTrialPlayerSelect").value;
+                const cType = document.getElementById("coachTrialType").value;
+                const cSkill = document.getElementById("coachTrialSkill").value.trim();
+                const a1 = document.getElementById("coachTrial1").value;
+                const a2 = document.getElementById("coachTrial2").value || 0;
+                const a3 = document.getElementById("coachTrial3").value || 0;
+
+                if(!cPlayer || !cSkill || !a1) return alert("Select player, skill, and at least Score 1.");
+
+                let result = 0;
+                if(cType === "Time") {
+                    const times = [parseFloat(a1), parseFloat(a2), parseFloat(a3)].filter(t => t > 0);
+                    result = times.length > 0 ? Math.min(...times) + "s" : "0s";
+                } else {
+                    result = (parseFloat(a1)||0) + (parseFloat(a2)||0) + (parseFloat(a3)||0);
+                }
+
+                try {
+                    target.innerText = "Saving...";
+                    await addDoc(collection(db, "trials"), {
+                        player: cPlayer, teamId: currentCoachTeamId, type: cType, skill: cSkill,
+                        a1, a2, a3, result: result, isCoach: true, timestamp: new Date()
+                    });
+                    alert("Official Coach Trial Logged!");
+                    target.innerText = "Save Official Coach Trial";
+                    document.getElementById("coachTrialSkill").value = "";
+                    document.getElementById("coachTrial1").value = "";
+                    loadRecentTrials(currentCoachTeamId);
+                } catch(err) { alert("Error: " + err.message); target.innerText = "Save Official Coach Trial"; }
+            }
+
             if (target.id === "addWorkoutBtn") {
                 if(!currentCoachTeamId) return alert("Select a team in the Roster tab first.");
                 

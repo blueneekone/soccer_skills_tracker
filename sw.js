@@ -1,13 +1,23 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
+//firebase.initializeApp({
+  //apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
+  //authDomain: "soccer.sstracker.app",
+  //projectId: "soccer-skills-tracker",
+  //storageBucket: "soccer-skills-tracker.firebasestorage.app",
+  //messagingSenderId: "884044129977",
+  //appId: "1:884044129977:web:47d54f59c891340e505d68"
+//});
+
 firebase.initializeApp({
-  apiKey: "AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w",
-  authDomain: "soccer.sstracker.app",
-  projectId: "soccer-skills-tracker",
-  storageBucket: "soccer-skills-tracker.firebasestorage.app",
-  messagingSenderId: "884044129977",
-  appId: "1:884044129977:web:47d54f59c891340e505d68"
+     apiKey: "AIzaSyCiBoemXJHTkTnujTwM1vOJc4FrVZF8Lw8",
+    authDomain: "sports-skill-tracker-dev.firebaseapp.com",
+    projectId: "sports-skill-tracker-dev",
+    storageBucket: "sports-skill-tracker-dev.firebasestorage.app",
+    messagingSenderId: "4624204181",
+    appId: "1:4624204181:web:d6c576088f0eb7d3d0f69c",
+    measurementId: "G-1YX13X6DQ6"
 });
 
 const messaging = firebase.messaging();

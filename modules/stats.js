@@ -313,6 +313,12 @@ export const loadStatsDashboard = async (tid, playerName, userProfile) => {
             printBtn.dataset.bound = "true";
         }
 
+        const btnExport = document.getElementById("btnExportStatsCSV");
+        if(btnExport && btnExport.dataset.bound !== "true") {
+            btnExport.addEventListener("click", () => exportStatsCSV(window.globalStatsLogs, playerName));
+            btnExport.dataset.bound = "true";
+        }
+
         // Team Leaderboard Dropdown
         const filter = document.getElementById("leaderboardFilter");
         if(filter && filter.dataset.bound !== "true") {
