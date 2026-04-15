@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Handle Workout Deletions
             if (target.classList.contains("action-delete-workout")) {
                 if (!confirm("Delete this workout?")) return;
-                await deleteDoc(doc(db, "workouts", target.getAttribute("data-id")));
+                await deleteDoc(doc(db, "team_workouts", target.getAttribute("data-id")));
                 await window.fetchWorkouts();
                 window.buildCoachDropdowns();
                 loadWorkouts();
