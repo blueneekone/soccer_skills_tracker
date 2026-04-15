@@ -1,0 +1,20 @@
+{
+  "name": "Sports Skills Tracker",
+  "short_name": "SSTRACKER",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#00263A",
+  "theme_color": "#00263A",
+  "icons": [
+    {
+      "src": "Images/Phoenixes_Logo_2026.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "Images/Phoenixes_Logo_2026.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
