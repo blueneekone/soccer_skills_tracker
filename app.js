@@ -261,6 +261,13 @@ const initApp = () => {
         safeBind(nid, "click", () => window.navigateTo(['viewHome', 'viewTracker', 'viewStats', 'viewTrophy', 'viewCoach', 'viewAdmin', 'viewChallenge'][i]));
     });
 
+    safeBind("loginGoogleBtn", "click", handleGoogleLogin);
+    safeBind("loginEmailBtn", "click", handleEmailLogin);
+    safeBind("signupEmailBtn", "click", handleEmailSignup);
+    safeBind("appLogoutBtn", "click", handleLogout);
+    safeBind("setupLogoutBtn", "click", handleLogout);
+    safeBind("completeSetupBtn", "click", completeUserSetup);
+
     safeBind("btnHomeStart", "click", () => window.navigateTo('viewTracker'));
     safeBind("btnHomeStats", "click", () => window.navigateTo('viewStats'));
     safeBind("btnHomeCoach", "click", () => window.navigateTo('viewCoach'));
