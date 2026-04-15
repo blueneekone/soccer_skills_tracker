@@ -345,3 +345,12 @@ input:focus, select:focus, textarea:focus {
 .auth-card { z-index: 1; padding: 50px 40px; background: rgba(255, 255, 255, 0.85); box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); }
 .logo-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; border: 4px solid var(--aggie-gold); }
 .auth-title { font-size: 28px; font-weight: 900; margin-bottom: 5px; }
+
+/* =======================================================
+   21. CALENDAR & CHART UTILITIES (Replaces Inline CSS)
+   ======================================================= */
+.cal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.btn-cal-nav { padding: 4px 12px; width: auto; }
+.calendar-month-label { font-size: 1.1rem; color: var(--aggie-blue); }
+.cal-days-header { font-size: 10px; color: #64748b; margin-bottom: 5px; margin-top: 0; }
+.chart-container { height: 200px; position: relative; }

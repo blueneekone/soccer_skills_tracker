@@ -1,6 +1,7 @@
 // modules/coach.js
 import { auth, db } from "../firebase-config.js";
 import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// 🟢 THE CRASH-INDUCING RENDERTEAMCHART IMPORT IS GONE!
 
 export let currentCoachTeamId = null;
 export let allSessionsCache = [];
@@ -341,7 +342,7 @@ export const loadRecentTrials = async (tid) => {
 };
 
 window.switchCoachTab = (tabId) => {
-    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabStrategy', 'coachTabTools'].forEach(id => {
+    ['coachTabRoster', 'coachTabPlan', 'coachTabEvals', 'coachTabStrategy', 'coachTabTools', 'coachTabDesign'].forEach(id => {
         const pane = document.getElementById(id);
         const btn = document.getElementById(`btn-${id}`);
         if (pane) pane.classList.add('d-none');
@@ -349,6 +350,18 @@ window.switchCoachTab = (tabId) => {
     });
     document.getElementById(tabId).classList.remove('d-none');
     document.getElementById(`btn-${tabId}`).classList.add('active');
+
+    // 🟢 WAKE UP THE CANVAS WHEN TAB IS CLICKED
+    if (tabId === 'coachTabDesign' && spatialCanvas) {
+        setTimeout(() => {
+            const dropzone = document.getElementById('spatialPitchDropzone');
+            if(dropzone) {
+                spatialCanvas.setWidth(dropzone.offsetWidth);
+                spatialCanvas.setHeight(dropzone.offsetHeight);
+                spatialCanvas.renderAll();
+            }
+        }, 50); 
+    }
 };
 
 // Add to the bottom of modules/coach.js
@@ -495,86 +508,55 @@ export const initStrategyBoard = () => {
     }
 };
 
-// --- PDF ROSTER IMPORT LOGIC ---
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Listen for a file upload
-    const pdfInput = document.getElementById("rosterPdfInput");
-    if (pdfInput) {
-        pdfInput.addEventListener("change", async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+// ==========================================
+// EPIC 2: SPATIAL SCHEDULER (FABRIC.JS ENGINE)
+// ==========================================
+export let spatialCanvas = null;
 
-            const reviewArea = document.getElementById("rosterReviewArea");
-            const textArea = document.getElementById("rosterTextRaw");
-            
-            textArea.value = "Extracting text... please wait.";
-            reviewArea.classList.remove("d-none");
+export const initSpatialScheduler = () => {
+    const canvasEl = document.getElementById('spatialCanvas');
+    const dropzone = document.getElementById('spatialPitchDropzone');
+    if (!canvasEl || !dropzone || spatialCanvas || typeof fabric === 'undefined') return;
 
-            try {
-                // Read the PDF using the pdfjsLib from your index.html
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let fullText = "";
+    spatialCanvas = new fabric.Canvas('spatialCanvas', {
+        selection: false,
+        preserveObjectStacking: true
+    });
 
-                // Loop through every page and pull the raw text
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(item => item.str).join(" ");
-                    fullText += pageText + "\n";
-                }
+    const spawnObject = (type, x, y) => {
+        let text = "🟠"; let color = "#000"; let size = 24;
 
-                // PDFs are messy. We split by wide spaces to try and isolate names.
-                const cleanedText = fullText.split("  ").filter(s => s.trim().length > 2).join("\n");
-                textArea.value = cleanedText;
-                
-            } catch (error) {
-                console.error("PDF Parsing Error:", error);
-                textArea.value = "Error extracting text. Make sure it is a text-based PDF, not a scanned image.";
-            }
+        if (type === 'cone') { text = "🟠"; size = 20; }
+        else if (type === 'ball') { text = "⚽"; size = 18; }
+        else if (type === 'goal') { text = "🥅"; size = 32; }
+        else if (type === 'player_x') { text = "X"; color = "#b91c1c"; }
+        else if (type === 'player_o') { text = "O"; color = "#0284c7"; }
+
+        const obj = new fabric.Text(text, {
+            left: x, top: y,
+            fontSize: size, fill: color,
+            fontFamily: 'Inter', fontWeight: '900',
+            originX: 'center', originY: 'center',
+            hasControls: false, hasBorders: true, borderColor: '#fbbf24',
+            transparentCorners: false, hoverCursor: 'grab', moveCursor: 'grabbing'
         });
-    }
 
-    // 2. Listen for the Save button
-    const saveRosterBtn = document.getElementById("saveParsedRosterBtn");
-    if (saveRosterBtn) {
-        saveRosterBtn.addEventListener("click", async () => {
-            const textArea = document.getElementById("rosterTextRaw");
-            // Clean up the text area into an array of names
-            const rawNames = textArea.value.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-            
-            if (rawNames.length === 0) return alert("No valid names found in the text box.");
-            if (!currentCoachTeamId) return alert("Select a team first.");
+        spatialCanvas.add(obj);
+        spatialCanvas.setActiveObject(obj);
+    };
 
-            saveRosterBtn.innerText = "Saving...";
-            try {
-                const ref = doc(db, "rosters", currentCoachTeamId);
-                const snap = await getDoc(ref);
-                let currentPlayers = snap.exists() ? (snap.data().players || []) : [];
-                
-                // Add new names while preventing duplicates
-                rawNames.forEach(name => {
-                    if (!currentPlayers.includes(name)) {
-                        currentPlayers.push(name);
-                    }
-                });
+    dropzone.addEventListener('dragover', (e) => e.preventDefault());
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('text/plain');
+        if (type) spawnObject(type, e.offsetX, e.offsetY);
+    });
 
-                // Write to the database
-                await setDoc(ref, { players: currentPlayers }, { merge: true });
-                
-                // Reset the UI
-                document.getElementById("rosterReviewArea").classList.add("d-none");
-                textArea.value = "";
-                document.getElementById("rosterPdfInput").value = ""; 
-                
-                // Refresh the roster board
-                loadCoachDashboard(false, window.globalTeams);
-                alert(`Successfully merged ${rawNames.length} names into the roster!`);
-            } catch (error) {
-                console.error("Save Roster Error:", error);
-                alert("Error saving roster.");
-            }
-            saveRosterBtn.innerText = "Save Roster";
-        });
-    }
-});
+    document.querySelectorAll('.spatial-drag-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', e.target.getAttribute('data-type')));
+        item.addEventListener('click', (e) => spawnObject(e.target.getAttribute('data-type'), spatialCanvas.width / 2, spatialCanvas.height / 2));
+    });
+
+    const clearBtn = document.getElementById('spatialClearBtn');
+    if (clearBtn) clearBtn.addEventListener('click', () => spatialCanvas.clear());
+};

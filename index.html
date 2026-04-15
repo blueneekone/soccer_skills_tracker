@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-    <link rel="stylesheet" href="style.css?v=4.0.8">
+    <link rel="stylesheet" href="style.css?v=4.0.9">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
                     Screen</b>.<br><br>
                 <b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
             </div>
-            <button onclick="document.getElementById('pwaInstallPrompt').style.display='none'"
+            <button onclick="document.getElementById('pwaInstallPrompt').classList.add('d-none')"
                 class="secondary-btn w-100 pwa-btn-continue">Continue in Browser (Not Recommended)</button>
         </div>
     </div>
@@ -359,8 +359,7 @@
                             <button id="clearSigBtn" class="clear-sig-btn">✕ Clear</button>
                         </div>
 
-                        <button id="submitWorkoutBtn" class="primary-btn mt-15 btn-log-workout">💾 Log Workout
-                            (+XP)</button>
+                        <button id="submitWorkoutBtn" class="primary-btn mt-15 btn-log-workout">💾 Log Workout (+XP)</button>
                     </div>
 
                     <label>Schedule This Workout instead?</label>
@@ -386,8 +385,7 @@
             <div class="card mt-15 flush-top">
                 <div class="card-header bg-blue-header">1. Passing Points</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen
-                        title="Challenge Video 1 - Passing Points"></iframe>
+                    <iframe id="chalPageVid1" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 1 - Passing Points"></iframe>
                     <input type="text" id="passSkillName" placeholder="Skill/Action Name (e.g. 1v1 Take On)">
                     <div class="input-row mb-10">
                         <input type="number" id="passScore1" class="flex-1" placeholder="Score 1">
@@ -405,8 +403,7 @@
             <div class="card">
                 <div class="card-header bg-orange-header">2. Shot Scoring</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen
-                        title="Challenge Video 2 - Shot Scoring"></iframe>
+                    <iframe id="chalPageVid2" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 2 - Shot Scoring"></iframe>
                     <input type="text" id="shotSkillName" placeholder="Skill/Action Name">
                     <div class="input-row mb-10">
                         <input type="number" id="shotScore1" class="flex-1" placeholder="Score 1">
@@ -424,8 +421,7 @@
             <div class="card">
                 <div class="card-header bg-green-header">3. Time Trial</div>
                 <div class="card-body">
-                    <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen
-                        title="Challenge Video 3 - Time Trial"></iframe>
+                    <iframe id="chalPageVid3" class="video-frame" src="" frameborder="0" allowfullscreen title="Challenge Video 3 - Time Trial"></iframe>
                     <input type="text" id="timeSkillName" placeholder="Skill/Action Name">
                     <div class="input-row mb-10">
                         <input type="number" id="timeScore1" class="flex-1" placeholder="Time 1 (s)">
@@ -442,11 +438,11 @@
         </div>
 
         <div id="viewStats" class="view-section d-none">
-            <div class="flex-between-wrap no-print">
+            <div class="cal-header-row no-print">
                 <h2 class="view-title m-0">Player Stats</h2>
                 <div>
-                    <button id="btnExportStatsCSV" class="secondary-btn btn-stats-export mr-5">📥 Export CSV</button>
-                    <button id="btnPrintStats" class="secondary-btn btn-stats-export">🖨️ Print Report</button>
+                    <button id="btnExportStatsCSV" class="secondary-btn btn-cal-nav mr-5">📥 Export CSV</button>
+                    <button id="btnPrintStats" class="secondary-btn btn-cal-nav">🖨️ Print Report</button>
                 </div>
             </div>
 
@@ -458,15 +454,12 @@
                         <div id="xpBar" class="xp-bar-fill"></div>
                     </div>
                     <div class="stats-totals-row">
-                        <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span
-                                class="stat-label">Sessions</span></div>
-                        <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span
-                                class="stat-label">Minutes</span></div>
+                        <div class="text-center"><span id="statTotal" class="stat-number">0</span><br><span class="stat-label">Sessions</span></div>
+                        <div class="text-center"><span id="statTime" class="stat-number">0</span><br><span class="stat-label">Minutes</span></div>
                     </div>
 
                     <div id="pendingEvalWarning" class="pending-eval-warning d-none">
-                        <span>⚠️ <strong>Evaluation Required</strong> — Your XP is capped until your coach approves
-                            your next rank.</span>
+                        <span>⚠️ <strong>Evaluation Required</strong> — Your XP is capped until your coach approves your next rank.</span>
                     </div>
                 </div>
             </div>
@@ -476,17 +469,10 @@
                 <div class="card-body p-0 overflow-x-auto">
                     <table id="statsTrialTable" class="admin-table">
                         <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Skill</th>
-                                <th>Result</th>
-                            </tr>
+                            <tr><th>Date</th><th>Type</th><th>Skill</th><th>Result</th></tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="4" class="text-center">Loading Trials...</td>
-                            </tr>
+                            <tr><td colspan="4" class="text-center">Loading Trials...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -505,16 +491,10 @@
                 <div class="card-body p-0 overflow-x-auto">
                     <table id="teamLeaderboardTable" class="admin-table">
                         <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Player</th>
-                                <th>Total Minutes</th>
-                            </tr>
+                            <tr><th>Rank</th><th>Player</th><th>Total Minutes</th></tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="3" class="text-center">Loading Leaderboard...</td>
-                            </tr>
+                            <tr><td colspan="3" class="text-center">Loading Leaderboard...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -523,12 +503,12 @@
             <div class="card">
                 <div class="card-header no-print">📅 Activity Log</div>
                 <div class="card-body">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <button id="calPrevMonth" class="secondary-btn no-print" style="padding:4px 12px; width:auto;">◀</button>
-                        <div class="text-center calendar-month-label font-bold" id="calMonthYear" style="font-size:1.1rem; color:var(--aggie-blue);">Month Year</div>
-                        <button id="calNextMonth" class="secondary-btn no-print" style="padding:4px 12px; width:auto;">▶</button>
+                    <div class="cal-header-row no-print">
+                        <button id="calPrevMonth" class="secondary-btn btn-cal-nav">◀</button>
+                        <div class="text-center calendar-month-label font-bold" id="calMonthYear">Month Year</div>
+                        <button id="calNextMonth" class="secondary-btn btn-cal-nav">▶</button>
                     </div>
-                    <div class="cal-grid" style="font-size:10px; color:#64748b; margin-bottom:5px; margin-top:0;">
+                    <div class="cal-grid cal-days-header">
                         <div class="text-center">S</div><div class="text-center">M</div><div class="text-center">T</div><div class="text-center">W</div><div class="text-center">T</div><div class="text-center">F</div><div class="text-center">S</div>
                     </div>
                     <div class="cal-grid" id="calendarDays"></div>
@@ -546,7 +526,7 @@
                     </select>
                 </div>
                 <div class="card-body">
-                    <div style="height: 200px; position: relative;">
+                    <div class="chart-container">
                         <canvas id="playerTrendChart"></canvas>
                     </div>
                 </div>
@@ -563,9 +543,7 @@
         </div>
 
         <div id="viewTrophy" class="view-section d-none">
-            <h2 class="view-title view-title-flex">
-                🏆 TROPHY ROOM
-            </h2>
+            <h2 class="view-title view-title-flex">🏆 TROPHY ROOM</h2>
             <div class="card">
                 <div class="card-header trophy-header">RANK MEDALS</div>
                 <div class="card-body text-center overflow-x-auto">
@@ -649,7 +627,9 @@
                     Evals</button>
                 <button id="btn-coachTabStrategy" class="coach-tab-btn"
                     onclick="window.switchCoachTab('coachTabStrategy')">🖌️ Strategy</button>
+                
                 <button id="btn-coachTabDesign" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabDesign')">📐 Drill Designer</button>
+                
                 <button id="btn-coachTabTools" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabTools')">⚙️
                     Tools</button>
             </div>
