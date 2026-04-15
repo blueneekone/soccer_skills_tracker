@@ -334,8 +334,7 @@ input:focus, select:focus, textarea:focus {
    ======================================================= */
 .full-screen-center { 
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-    background: url('https://images.unsplash.com/photo-1518605368461-1e1e38cad07a?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat;
-    z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; 
+    background: url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;    z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; 
 }
 .full-screen-center::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -343,6 +342,10 @@ input:focus, select:focus, textarea:focus {
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: 0;
 }
 .auth-card { z-index: 1; padding: 50px 40px; background: rgba(255, 255, 255, 0.85); box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); }
+.auth-card label {
+    text-align: left;
+    margin-top: 10px;
+}
 .logo-circle { width: 80px; height: 80px; background: var(--aggie-blue); border-radius: 50%; margin: 0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; border: 4px solid var(--aggie-gold); }
 .auth-title { font-size: 28px; font-weight: 900; margin-bottom: 5px; }
 
