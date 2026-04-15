@@ -7,14 +7,14 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, upda
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
-import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.3";
+import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.4";
 import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js?v=4.0.4";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";
 
 // --- SIDE-EFFECT & DYNAMIC IMPORTS ---
-import { setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.0";
-import { loadStatsDashboard } from "./modules/stats.js?v=4.0.5"; 
+import { setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.1";
+import { loadStatsDashboard } from "./modules/stats.js?v=4.0.6"; 
 
 let globalTeams = [];
 let globalAdmins = [];
