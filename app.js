@@ -5,9 +5,9 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, upda
 
 // --- BRING IN YOUR MODULES ---
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
-import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.0";
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.1";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
-import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.4";
+import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.5";
 import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js?v=4.0.4";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";

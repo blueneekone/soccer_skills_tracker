@@ -179,7 +179,7 @@ export const handleWorkoutSubmit = async (userProfile, globalTeams, onSuccessCal
 
         await batch.commit(); // Saves everything at exactly the same time
 
-        Enterprise Success Modal & Confetti
+//Enterprise Success Modal & Confetti
         if (typeof confetti !== 'undefined') {
             confetti({
                 particleCount: 100,
