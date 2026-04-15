@@ -430,6 +430,7 @@ onAuthStateChanged(auth, async (user) => {
                 history.replaceState({ view: 'viewHome' }, '', '#viewHome');
                 window.navigateTo('viewHome', false);
             } else {
+                // THE FIX: Use classList, NOT style.display
                 document.getElementById("setupUI").classList.remove("d-none");
                 initSetupDropdowns(window.globalClubs, globalTeams);
             }
@@ -438,6 +439,7 @@ onAuthStateChanged(auth, async (user) => {
             alert("Security Error: Unable to verify credentials."); 
         }
     } else {
+        // THE FIX: Use classList, NOT style.display
         document.getElementById("loginUI").classList.remove("d-none");
         document.getElementById("appUI").classList.add("d-none");
         document.getElementById("setupUI").classList.add("d-none");

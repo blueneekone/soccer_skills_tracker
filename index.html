@@ -17,6 +17,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
     <link rel="stylesheet" href="style.css?v=4.0.8">
 </head>
 
@@ -645,6 +649,7 @@
                     Evals</button>
                 <button id="btn-coachTabStrategy" class="coach-tab-btn"
                     onclick="window.switchCoachTab('coachTabStrategy')">🖌️ Strategy</button>
+                <button id="btn-coachTabDesign" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabDesign')">📐 Drill Designer</button>
                 <button id="btn-coachTabTools" class="coach-tab-btn" onclick="window.switchCoachTab('coachTabTools')">⚙️
                     Tools</button>
             </div>
@@ -905,8 +910,59 @@
                 </div>
             </div>
 
-            <div id="coachTabTools" class="d-none">
+            <div id="coachTabDesign" class="d-none">
+                <div class="card">
+                    <div class="card-header">📋 Manage Team Workouts</div>
+                    <div class="card-body">
+                        <label>Category</label>
+                        <select id="manageWorkoutType" class="mb-10" title="Select workout category">
+                            <option value="cardio">Warm-Up / Cardio</option>
+                            <option value="core">Core / Strength</option>
+                            <option value="ball_mastery">Ball Mastery / Skill</option>
+                            <option value="foundation">Brilliant Basics / Foundation</option>
+                        </select>
+                        <input type="text" id="manageWorkoutName" placeholder="Workout Name (e.g. 10 Yard Shuttles)">
+                        <input type="number" id="manageWorkoutLevel"
+                            placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1"
+                            class="mb-10 manage-workout-input">
+                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2"
+                            class="mb-10 manage-workout-txt"></textarea>
+                        <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
+                        <button id="addWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
 
+                        <hr class="section-divider">
+                        <label>Existing Workouts</label>
+                        <ul id="WorkoutList" class="session-list mt-10">
+                            <li class="session-empty">Loading workouts...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-gold-header">📐 Spatial Drill Designer</div>
+                    <div class="card-body p-0">
+                        <div class="spatial-designer-wrapper">
+                            <div class="spatial-toolbar">
+                                <span class="text-sm-sub font-bold text-center w-100 mb-10">DRAG ITEMS</span>
+                                <div class="spatial-drag-item" draggable="true" data-type="cone" title="Cone">🟠</div>
+                                <div class="spatial-drag-item" draggable="true" data-type="ball" title="Ball">⚽</div>
+                                <div class="spatial-drag-item" draggable="true" data-type="goal" title="Goal">🥅</div>
+                                <div class="spatial-drag-item" draggable="true" data-type="player_x" title="Attacker">X</div>
+                                <div class="spatial-drag-item" draggable="true" data-type="player_o" title="Defender">O</div>
+                                <hr class="section-divider w-100">
+                                <button id="spatialClearBtn" class="action-btn bg-red text-white w-100">Clear</button>
+                            </div>
+                            
+                            <div id="spatialPitchDropzone" class="pitch-container spatial-dropzone">
+                                <div class="pitch-lines"></div>
+                                <canvas id="spatialCanvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="coachTabTools" class="d-none">
                 <div class="card">
                     <div class="card-header">📋 Gameday Roster</div>
                     <div class="card-body">
@@ -942,33 +998,6 @@
                             <button id="btnSwReset" class="secondary-btn flex-1" type="button">Reset</button>
                         </div>
                         <ul id="lapList" class="lap-list"></ul>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">📋 Manage Team Workouts</div>
-                    <div class="card-body">
-                        <label>Category</label>
-                        <select id="manageWorkoutType" class="mb-10" title="Select workout category">
-                            <option value="cardio">Warm-Up / Cardio</option>
-                            <option value="core">Core / Strength</option>
-                            <option value="ball_mastery">Ball Mastery / Skill</option>
-                            <option value="foundation">Brilliant Basics / Foundation</option>
-                        </select>
-                        <input type="text" id="manageWorkoutName" placeholder="Workout Name (e.g. 10 Yard Shuttles)">
-                        <input type="number" id="manageWorkoutLevel"
-                            placeholder="Required Rank to Unlock (1=Rookie, 5=Legend)" min="1" max="5" value="1"
-                            class="mb-10 manage-workout-input">
-                        <textarea id="manageWorkoutDesc" placeholder="Description / Instructions" rows="2"
-                            class="mb-10 manage-workout-txt"></textarea>
-                        <input type="url" id="manageWorkoutVideo" placeholder="YouTube Video URL (Optional)">
-                        <button id="addWorkoutBtn" class="primary-btn btn-blue">Save Workout</button>
-
-                        <hr class="section-divider">
-                        <label>Existing Workouts</label>
-                        <ul id="WorkoutList" class="session-list mt-10">
-                            <li class="session-empty">Loading workouts...</li>
-                        </ul>
                     </div>
                 </div>
 
@@ -1063,36 +1092,36 @@
                 </div>
 
                 <div class="card mt-15" id="adminTeamsCard">
-    <div class="card-header">👥 Registered Teams</div>
-    <div class="card-body">
-        <label>Add New Team</label>
-        <select id="adminTeamClubSelect" class="mb-10 w-100">
-            <option value="">-- Select Parent Club --</option>
-        </select>
-        
-        <div class="admin-input-row mb-10">
-            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. 15bew)" class="m-0 flex-1" title="Type whatever you want">
-            <input type="text" id="adminTeamName" placeholder="Full Team Name" class="m-0 flex-2">
-        </div>
-        
-        <input type="email" id="adminTeamCoach" placeholder="Head Coach Email">
-        
-        <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
-        <hr class="section-divider">
-        <div class="overflow-x-auto">
-            <table id="teamTable" class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Team</th>
-                        <th>Club</th>
-                        <th>Coach</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                    <div class="card-header">👥 Registered Teams</div>
+                    <div class="card-body">
+                        <label>Add New Team</label>
+                        <select id="adminTeamClubSelect" class="mb-10 w-100">
+                            <option value="">-- Select Parent Club --</option>
+                        </select>
+                        
+                        <div class="admin-input-row mb-10">
+                            <input type="text" id="adminTeamId" placeholder="Team ID (e.g. 15bew)" class="m-0 flex-1" title="Type whatever you want">
+                            <input type="text" id="adminTeamName" placeholder="Full Team Name" class="m-0 flex-2">
+                        </div>
+                        
+                        <input type="email" id="adminTeamCoach" placeholder="Head Coach Email">
+                        
+                        <button id="addTeamBtn" class="primary-btn btn-blue">+ Add Team</button>
+                        <hr class="section-divider">
+                        <div class="overflow-x-auto">
+                            <table id="teamTable" class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <th>Club</th>
+                                        <th>Coach</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="card" id="adminUserRoleManager">
                     <div class="card-header bg-blue-header">👥 Assign Club Director</div>
@@ -1138,6 +1167,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
             <div id="admin-section-billing" class="admin-pane d-none">
                 <div class="card border-gold">
@@ -1166,6 +1196,7 @@
                     </div>
                 </div>
             </div>
+            
             <div id="admin-section-security" class="admin-pane d-none">
                 <div class="card">
                     <div class="card-header bg-red-header"><i class="ph ph-warning"></i> Super Admin Audit Log</div>
@@ -1175,6 +1206,7 @@
                 </div>
             </div>
         </div>
+
         <div id="viewDirector" class="view-section d-none">
             <h2 class="view-title view-title-flex">
                 👔 Director Portal
@@ -1255,7 +1287,9 @@
                             Default</button>
                     </div>
                 </div>
-            </div> <div id="dir-section-compliance" class="director-pane d-none">
+            </div> 
+
+            <div id="dir-section-compliance" class="director-pane d-none">
                 <div class="card">
                     <div class="card-header bg-red-header">🛂 Player Compliance Dashboard</div>
                     <div class="card-body p-0 overflow-x-auto">
@@ -1277,7 +1311,7 @@
             </div>
         </div>
 
-        <div id="videoModal" class="modal">
+        <div id="videoModal" class="modal d-none">
             <div class="modal-content">
                 <div class="card-header"><span>Drill Video</span><span class="close-btn modal-close-icon">×</span>
                 </div>
@@ -1288,7 +1322,7 @@
             </div>
         </div>
 
-        <div id="challengeModal" class="modal cert-modal-bg">
+        <div id="challengeModal" class="modal cert-modal-bg d-none">
             <div class="challenge-modal-content">
                 <div class="challenge-modal-header">
                     <span class="challenge-modal-title">⭐ CHALLENGES UNLOCKED ⭐</span>
@@ -1334,7 +1368,7 @@
             </div>
         </div>
 
-        <div id="dayModal" class="modal">
+        <div id="dayModal" class="modal d-none">
             <div class="modal-content">
                 <div class="card-header"><span id="dayModalDate">Date</span><span
                         class="close-btn modal-close-icon">×</span></div>
@@ -1342,7 +1376,7 @@
             </div>
         </div>
 
-        <div id="certModal" class="modal cert-modal-bg">
+        <div id="certModal" class="modal cert-modal-bg d-none">
             <div class="modal-content cert-content">
                 <div id="printableCertificate">
                     <div class="cert-border"></div>
@@ -1402,7 +1436,9 @@
             </div>
         </div>
 
-    </div> <script>
+    </div> 
+    
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -1412,7 +1448,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.27"></script>
+    <script type="module" src="app.js?v=4.0.28"></script>
 </body>
 
 </html>
