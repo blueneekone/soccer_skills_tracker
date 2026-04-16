@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-    <link rel="stylesheet" href="style.css?v=4.0.13">
+    <link rel="stylesheet" href="style.css?v=4.0.14">
 </head>
 
 <body>
@@ -70,21 +70,21 @@
 
             <div class="text-left mb-10">
                 <label>Select Your Club / Organization</label>
-                <select id="setupClubSelect">
+                <select id="setupClubSelect" title="Select your club or organization">
                     <option value="">Loading Clubs...</option>
                 </select>
             </div>
 
             <div class="text-left mb-10">
                 <label>Select Your Team</label>
-                <select id="setupTeamSelect" disabled>
+                <select id="setupTeamSelect" disabled title="Select your team">
                     <option value="">Select a club first...</option>
                 </select>
             </div>
 
             <div class="text-left mb-10">
                 <label>Select Player Name</label>
-                <select id="setupPlayerDropdown" disabled>
+                <select id="setupPlayerDropdown" disabled title="Select player name">
                     <option value="">Select a team first...</option>
                 </select>
             </div>
@@ -1075,7 +1075,7 @@
                     <div class="card-header">👥 Registered Teams</div>
                     <div class="card-body">
                         <label>Add New Team</label>
-                        <select id="adminTeamClubSelect" class="mb-10 w-100">
+                        <select id="adminTeamClubSelect" class="mb-10 w-100" title="Select parent club for new team">
                             <option value="">-- Select Parent Club --</option>
                         </select>
                         
@@ -1155,20 +1155,20 @@
                     </div>
                     <div class="card-body">
                         <label>Target Organization</label>
-                        <select id="billingOrgSelect" class="mb-15">
+                        <select id="billingOrgSelect" class="mb-15" title="Select target organization for license">
                             <option value="">Loading...</option>
                         </select>
                         <div class="input-row mb-15">
                             <div class="flex-1">
                                 <label>License Type</label>
-                                <select id="licenseType">
+                                <select id="licenseType" title="Select license type">
                                     <option value="subscription">Monthly Subscription</option>
                                     <option value="trial">Free Trial</option>
                                 </select>
                             </div>
                             <div class="flex-1">
                                 <label>Seat Limit</label>
-                                <input type="number" id="licenseSeats" value="10">
+                                <input type="number" id="licenseSeats" value="10" title="Maximum number of seats for this license">
                             </div>
                         </div>
                         <button id="btn-update-license" class="primary-btn btn-gold">Generate & Sync
@@ -1216,7 +1216,7 @@
                 <div class="card mt-15">
                     <div class="card-header bg-orange-header">Assign Coach to Existing Team</div>
                     <div class="card-body">
-                        <select id="directorTeamSelect" class="mb-10">
+                        <select id="directorTeamSelect" class="mb-10" title="Select a team to assign coach">
                             <option value="">Loading Teams...</option>
                         </select>
                         <input type="email" id="inviteCoachEmail" placeholder="Coach Email">
@@ -1242,7 +1242,7 @@
                         <input type="url" id="brandLogoUrl" placeholder="https://example.com/logo.png">
 
                         <label>Sport Selection</label>
-                        <select id="brandCourtType" class="admin-full-sel mb-15">
+                        <select id="brandCourtType" class="admin-full-sel mb-15" title="Select sport type for branding">
                             <option value="soccer">Soccer</option>
                             <option value="basketball">Basketball</option>
                             <option value="football">Football</option>
@@ -1254,11 +1254,11 @@
                         <div class="input-row mb-15">
                             <div class="flex-1">
                                 <label>Primary Color</label>
-                                <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input">
+                                <input type="color" id="brandPrimaryColor" value="#00263A" class="color-picker-input" title="Select primary color">
                             </div>
                             <div class="flex-1">
                                 <label>Secondary Color (Gold)</label>
-                                <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input">
+                                <input type="color" id="brandSecondaryColor" value="#BFAE5A" class="color-picker-input" title="Select secondary color">
                             </div>
                         </div>
 
@@ -1428,7 +1428,7 @@
         }
     </script>
 
-    <script type="module" src="app.js?v=4.0.32"></script>
+    <script type="module" src="app.js?v=4.0.33"></script>
 </body>
 
 </html>

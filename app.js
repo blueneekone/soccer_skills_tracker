@@ -4,10 +4,10 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.2";
-import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.1";
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.3";
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.2";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
-import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.6";
+import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.7";
 import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js?v=4.0.4";
 import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";
