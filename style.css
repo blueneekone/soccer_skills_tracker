@@ -121,29 +121,67 @@ body {
 .border-orange { border-color: rgba(234, 88, 12, 0.3); }
 
 /* =======================================================
-   3. GLASSMORPHISM CARDS 
+  3.  PREMIUM GLASSMORPHISM & BENTO GRID
    ======================================================= */
-.card, .auth-card, .view-section > h2 { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
-.card:nth-child(1) { animation-delay: 0.05s; }
-.card:nth-child(2) { animation-delay: 0.1s; }
-.card:nth-child(3) { animation-delay: 0.15s; }
-.card:nth-child(4) { animation-delay: 0.2s; }
+:root {
+    /* Dynamic padding ensures elements are never squished on any screen size */
+    --padding-card: clamp(20px, 4vw, 32px); 
+    --radius-card: 24px;
+    --shadow-liquid: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 
+                     inset 0 2px 4px rgba(255, 255, 255, 0.8), 
+                     inset 0 -2px 4px rgba(0, 0, 0, 0.02);
+}
 
-.card, .auth-card {
-    background: var(--card-bg);
-    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+.card,.auth-card {
+    background: rgba(255, 255, 255, 0.75);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 24px; box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
-    margin-bottom: 24px; overflow: hidden;
+    border-radius: var(--radius-card);
+    
+    /* Inset shadow visually softens the sharp edges by creating 3D depth */
+    box-shadow: var(--shadow-liquid);
+    padding: var(--padding-card);
+    
+    /* Flexbox prevents internal elements from crashing into each other */
+    display: flex;
+    flex-direction: column;
+    gap: 16px; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.card:hover { box-shadow: var(--shadow-float); }
+
 .card-header { 
-    background: rgba(15, 23, 42, 0.03); border-bottom: 1px solid rgba(15, 23, 42, 0.05);
-    color: var(--text-dark); padding: 16px 20px; font-weight: 800; font-size: 0.95rem; 
-    display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.5px; 
+    background: transparent; 
+    border-bottom: none; 
+    padding: 0; 
+    font-size: 1.15rem; 
 }
-.card-body { padding: 20px; }
+
+.card-body { 
+    padding: 0; 
+}
+
+/* Perfected Bento Grid */
+.dashboard-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: clamp(16px, 3vw, 24px); 
+    margin-bottom: 32px; 
+}
+
+/* Plush Inputs with generous spacing */
+input, select, textarea {
+    padding: clamp(14px, 2vw, 18px);
+    border-radius: 16px;
+    margin-bottom: 0; /* Margin is now handled by the parent card's gap */
+    box-shadow: inset 0 2px 5px rgba(15, 23, 42, 0.03);
+}
+
+.admin-input-row,.input-row {
+    display: flex;
+    gap: 16px; /* Increased gap for breathing room */
+    flex-wrap: wrap; /* Prevents inputs from squishing on mobile */
+}
 
 /* =======================================================
    4. TACTILE BUTTONS
@@ -166,24 +204,6 @@ button { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0.0
 .btn-blue { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); }
 .btn-green { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
 .btn-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
-
-/* =======================================================
-   5. PLUSH INPUTS & FORMS
-   ======================================================= */
-label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
-input, select, textarea { 
-    width: 100%; padding: 16px 18px; margin-bottom: 20px; border: 1px solid rgba(15, 23, 42, 0.1); border-radius: var(--btn-radius);
-    font-size: 16px; background: rgba(255, 255, 255, 0.9); color: var(--text-dark); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Inter', sans-serif; box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.02);
-}
-select {
-    -webkit-appearance: none; appearance: none;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto; padding-right: 2.5rem;
-}
-input:focus, select:focus, textarea:focus {
-    background: #ffffff; border-color: var(--aggie-gold); box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15), inset 0 1px 2px rgba(15, 23, 42, 0.02); outline: none; transform: translateY(-1px);
-}
 
 /* =======================================================
    6. THE "WONKY DROPDOWN" FIX: PILL/CHIP MULTI-SELECT

@@ -4,7 +4,7 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.1";
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.2";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.1";
 import { initDirectorModule } from "./modules/director.js?v=4.0.0";
 import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.5";
@@ -335,6 +335,35 @@ const initApp = () => {
 
 
     safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => window.navigateTo('viewHome')));
+
+// 🟢 DYNAMIC STATE TRANSITION (Prevents the Infinite Setup Loop)
+    window.addEventListener('profileSetupComplete', async (e) => {
+        const newProfileData = e.detail;
+        
+        // Update local state
+        userProfile = {...userProfile,...newProfileData };
+        
+        // Hide Setup, Show App smoothly
+        document.getElementById("setupUI").classList.add("d-none");
+        document.getElementById("appUI").classList.remove("d-none");
+        
+        // Update UI Names
+        setText("activePlayerName", userProfile.playerName);
+        setText("homePlayerName", userProfile.playerName.split(" "));
+        
+        // Run Module Initializers
+        if (userProfile.teamId!== "admin" && typeof applyTeamBranding!== 'undefined') {
+            await applyTeamBranding(userProfile.teamId);
+        }
+        if (window.fetchWorkouts) await window.fetchWorkouts();
+        if (window.buildCoachDropdowns) window.buildCoachDropdowns();
+        if (typeof loadHomeDashboard!== 'undefined') loadHomeDashboard();
+        if (typeof checkRoles!== 'undefined') checkRoles(auth.currentUser);
+        
+        // Route to home
+        history.replaceState({ view: 'viewHome' }, '', '#viewHome');
+        window.navigateTo('viewHome', false);
+    });
 
     document.body.addEventListener("click", async (e) => {
         const target = e.target;
