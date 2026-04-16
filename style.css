@@ -361,7 +361,17 @@ button { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0.0
     background: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(2, 132, 199, 0.4) 100%);
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: 0;
 }
-.auth-card { z-index: 1; padding: 50px 40px; background: rgba(255, 255, 255, 0.85); box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); }
+.auth-card { 
+    z-index: 1; 
+    padding: 50px 40px; 
+    background: rgba(255, 255, 255, 0.85); 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6); 
+    border: 1px solid rgba(255, 255, 255, 0.6); 
+    width: 90%; 
+    max-width: 550px; /* 🟢 Increased from 400px to fix the squished look */
+    text-align: center; 
+    border-radius: 24px;
+}
 .auth-card label {
     text-align: left;
     margin-top: 10px;
