@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } catch(err) { alert("Error: " + err.message); target.innerText = "Save Official Coach Trial"; }
             }
 
+            // Handle Adding New Custom Workouts
             if (target.id === "addWorkoutBtn") {
                 if(!currentCoachTeamId) return alert("Select a team in the Roster tab first.");
                 
@@ -117,23 +118,49 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if(!name) return alert("Workout Name is required.");
                 
+                // 🟢 SPRINT 2.2: Extract the Spatial Canvas Data
+                let layoutData = null;
+                if (spatialCanvas && spatialCanvas.getObjects().length > 0) {
+                    layoutData = JSON.stringify(spatialCanvas.toJSON());
+                }
+                
                 target.innerText = "Saving...";
                 try {
                     await addDoc(collection(db, "team_workouts"), {
-                        teamId: currentCoachTeamId, type: type, name: name, reqLevel: parseInt(level), drill: desc, createdAt: new Date()
+                        teamId: currentCoachTeamId, 
+                        type: type, 
+                        name: name, 
+                        reqLevel: parseInt(level), 
+                        drill: desc, 
+                        spatialLayout: layoutData, // 🟢 Saves the exact coordinates to Firebase
+                        createdAt: new Date()
                     });
                     
-                    alert("Workout Added!");
+                    // Use the premium SweetAlert2 plugin we added
+                    if (typeof Swal!== 'undefined') {
+                        Swal.fire({
+                            title: 'Drill Saved!',
+                            text: 'Your workout and spatial layout have been securely saved.',
+                            icon: 'success',
+                            confirmButtonColor: '#0f172a',
+                            customClass: { popup: 'card' }
+                        });
+                    } else {
+                        alert("Workout Added!");
+                    }
+                    
+                    // Reset the form and clear the canvas
                     document.getElementById("manageWorkoutName").value = "";
                     document.getElementById("manageWorkoutDesc").value = "";
+                    if (spatialCanvas) spatialCanvas.clear();
                     
+                    // Refresh global arrays and local UI
                     if(window.fetchWorkouts) await window.fetchWorkouts();
                     if(window.buildCoachDropdowns) window.buildCoachDropdowns();
                     loadCoachDashboard(false, window.globalTeams); 
                 } catch(err) { alert("Error: " + err.message); }
                 target.innerText = "Save Workout";
             }
-
         });
         coachView.dataset.bound = "true";
     }
