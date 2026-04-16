@@ -23,9 +23,9 @@ const renderSession = () => {
 };
 
 // ENTERPRISE DELEGATION FOR SESSION LIST
-document.addEventListener("DOMContentLoaded", () => {
+const initTrackerBindings = () => {
     const list = document.getElementById("sessionList");
-    if (list) {
+    if (list && list.dataset.bound!== "true") {
         list.addEventListener("click", (e) => {
             if (e.target.classList.contains("action-remove-drill")) {
                 const idx = parseInt(e.target.getAttribute("data-index"));
@@ -33,8 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderSession();
             }
         });
+        list.dataset.bound = "true";
     }
-});
+};
+
+// 🟢 FIX: Safely execute the binder
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initTrackerBindings);
+} else {
+    initTrackerBindings();
+}
 
 export const addDrillToSession = (drill) => {
     currentSessionItems.push(drill);

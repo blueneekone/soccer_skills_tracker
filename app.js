@@ -105,13 +105,13 @@ window.buildCoachDropdowns = () => {
 // 2. SECURE CORE ROUTING API
 // ==========================================
 window.navigateTo = (viewId, addToHistory = true) => {
-    const role = userProfile ? userProfile.role : 'guest';
+    const role = userProfile? userProfile.role : 'guest';
 
-    if (viewId === 'viewAdmin' && role !== 'super_admin') {
+    if (viewId === 'viewAdmin' && role!== 'super_admin') {
         alert("Unauthorized Access: Super Admin required.");
         return window.navigateTo('viewHome', false);
     }
-    if (viewId === 'viewDirector' && role !== 'super_admin' && role !== 'director') {
+    if (viewId === 'viewDirector' && role!== 'super_admin' && role!== 'director') {
         alert("Unauthorized Access: Director required.");
         return window.navigateTo('viewHome', false);
     }
@@ -132,9 +132,19 @@ window.navigateTo = (viewId, addToHistory = true) => {
     const targetEl = document.getElementById(viewId);
     if (targetEl) targetEl.classList.remove('d-none');
 
+// 🟢 FIX: Added viewPassport to the resize trigger
+if (viewId === 'viewTracker' ||
+    viewId === 'viewCoach' ||
+    viewId === 'viewChallenge' ||
+    viewId === 'viewPassport') {
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+    }
+
     if (viewId === 'viewStats') {
         const { tid, playerName } = window.getAppContext();
-        loadStatsDashboard(tid, playerName, userProfile);
+        import("./modules/stats.js?v=4.0.5").then(module => {
+            if(module.loadStatsDashboard) module.loadStatsDashboard(tid, playerName, userProfile);
+        });
     }
 
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -264,9 +274,8 @@ const initApp = () => {
         document.getElementById("setupUI").classList.add("d-none");
         document.getElementById("appUI").classList.remove("d-none");
         
-        const displayName = userProfile.playerName |
-
-| (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
+const displayName = userProfile.playerName ||
+    (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
         setText("activePlayerName", displayName);
         setText("homePlayerName", displayName.split(" "));
         
@@ -447,9 +456,7 @@ onAuthStateChanged(auth, async (user) => {
 
         try {
             const tokenResult = await user.getIdTokenResult(true);
-            const userRole = tokenResult.claims.role |
-
-| 'player'; 
+            const userRole = tokenResult.claims.role || 'player'; 
 
             await fetchConfig();
             
@@ -457,17 +464,24 @@ onAuthStateChanged(auth, async (user) => {
             const userSnap = await getDoc(userRef);
             let baseProfile = userSnap.exists()? userSnap.data() : null;
             
-            // Assign profile based on database truth
-            if (userRole === 'super_admin' |
+// 🟢 FIX: Safely parse legacy names using correct OR (||) syntax
+let fallbackName = (baseProfile && baseProfile.playerName) ||
+                   (baseProfile && baseProfile.name) ||
+                   (baseProfile && baseProfile.player) ||
+                   user.email.split('@')[0];
 
-| userRole === 'director') {
-                userProfile = {...baseProfile, clubId: baseProfile?.clubId |
-
-| window.globalClubs?.id |
-| "aggiesfc", teamId: "admin", role: userRole };
+if (userRole === 'super_admin' || userRole === 'director') {
+                userProfile = { 
+                   ...baseProfile, 
+clubId: (baseProfile && baseProfile.clubId) || (window.globalClubs && window.globalClubs[0]?.id ? window.globalClubs[0].id : "aggiesfc"),
+                    teamId: "admin", 
+                    playerName: fallbackName, 
+                    role: userRole 
+                };
             } else if (userSnap.exists()) {
                 userProfile = userSnap.data();
                 userProfile.role = userRole; 
+                userProfile.playerName = fallbackName;
             } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
@@ -479,21 +493,18 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
 
-            // 🟢 FIX 2: True Role-Based Validation Logic
+            // True Role-Based Validation Logic
             let isProfileComplete = false;
             if (userProfile) {
-                if (userProfile.role === 'super_admin' |
-
-| userProfile.role === 'director') {
+if (userProfile.role === 'super_admin' || userProfile.role === 'director') {
                     isProfileComplete = true;
                 } else if (userProfile.role === 'coach' && userProfile.teamId) {
-                    isProfileComplete = true; // Coaches only need a teamId, no player name required!
+                    isProfileComplete = true; 
                 } else if (userProfile.playerName && userProfile.teamId) {
-                    isProfileComplete = true; // Players must have both
+                    isProfileComplete = true; 
                 }
             }
 
-            // 3. UI INITIALIZATION
             if (isProfileComplete) {
                 document.getElementById("appUI").classList.remove("d-none");
                 
@@ -507,10 +518,7 @@ onAuthStateChanged(auth, async (user) => {
                     await applyTeamBranding(userProfile.teamId);
                 }
 
-                // Dynamically display "Coach" or "Director" in the header if they aren't a player
-                const displayName = userProfile.playerName |
-
-| (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
+const displayName = userProfile.playerName || (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
                 setText("activePlayerName", displayName);
                 setText("homePlayerName", displayName.split(" "));
 
@@ -522,7 +530,7 @@ onAuthStateChanged(auth, async (user) => {
 
                 await safeLoad("Workouts", async () => { if (window.fetchWorkouts) await window.fetchWorkouts(); });
                 await safeLoad("Coach Tools", async () => { if (window.buildCoachDropdowns) window.buildCoachDropdowns(); });
-                await safeLoad("Director", async () => { if (typeof initDirectorModule!== 'undefined') initDirectorModule(db, userProfile, globalTeams); });
+                await safeLoad("Director", async () => { if (typeof initDirectorModule!== 'undefined') initDirectorModule(db, userProfile, window.globalTeams); });
 
                 if (typeof loadHomeDashboard!== 'undefined') loadHomeDashboard();
                 if (typeof checkRoles!== 'undefined') checkRoles(user);
@@ -531,7 +539,7 @@ onAuthStateChanged(auth, async (user) => {
                 window.navigateTo('viewHome', false);
             } else {
                 document.getElementById("setupUI").classList.remove("d-none");
-                if (typeof initSetupDropdowns!== 'undefined') initSetupDropdowns(window.globalClubs, globalTeams);
+                if (typeof initSetupDropdowns!== 'undefined') initSetupDropdowns(window.globalClubs, window.globalTeams);
             }
         } catch (error) { 
             console.error("Auth Error:", error); 

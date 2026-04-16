@@ -1,5 +1,4 @@
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
-
+import { doc, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // ==========================================
 // 1. TEAM & COACH MANAGEMENT
 // ==========================================
@@ -41,25 +40,35 @@ export async function createClubTeam(db, clubId, teamName, coachEmail) {
 // 1.5 INVITE / ASSIGN COACH (Replaces addAssistant)
 // ==========================================
 export async function inviteCoach(db, targetTeamId, coachEmail) {
-    if (!targetTeamId || !coachEmail) return alert("Please select a team and enter a coach email.");
+    if (!targetTeamId ||!coachEmail) return alert("Please select a team and enter a coach email.");
     
     try {
         const emailLower = coachEmail.toLowerCase().trim();
+        const { writeBatch } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
         
-        // 1. Get the target team to find its clubId
         const teamRef = doc(db, "teams", targetTeamId);
         const teamSnap = await getDoc(teamRef);
         
         if (!teamSnap.exists()) return alert("Error: Team not found.");
         const clubId = teamSnap.data().clubId;
 
-        // 2. Add the coach to the lookup table
-        await setDoc(doc(db, "coach_lookup", emailLower), { 
+        // 🟢 FIX: Use a batch to write to BOTH collections instantly
+        const batch = writeBatch(db);
+        
+        batch.set(doc(db, "coach_lookup", emailLower), { 
             teamId: targetTeamId, 
             clubId: clubId,
             role: "coach",
             invitedAt: new Date()
         }, { merge: true });
+
+        batch.set(doc(db, "users", emailLower), { 
+            teamId: targetTeamId, 
+            clubId: clubId,
+            role: "coach"
+        }, { merge: true });
+
+        await batch.commit();
 
         alert(`✅ Coach invite sent! When ${emailLower} logs in, they will be automatically assigned to the team.`);
         document.getElementById("inviteCoachEmail").value = "";

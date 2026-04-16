@@ -9,43 +9,39 @@ export let allSessionsCache = [];
 const setText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
 
 // --- 1. ENTERPRISE DELEGATION FOR COACH DASHBOARD ---
-// We attach one secure listener to the entire ViewCoach panel
-document.addEventListener("DOMContentLoaded", () => {
+const bindCoachView = () => {
     const coachView = document.getElementById("viewCoach");
-    if (coachView && coachView.dataset.bound !== "true") {
+    if (coachView && coachView.dataset.bound!== "true") {
         coachView.addEventListener("click", async (e) => {
             const target = e.target;
 
-            // Handle Roster Deletions
             if (target.classList.contains("action-delete-player")) {
                 const pName = target.getAttribute("data-player");
                 if (!confirm(`Remove ${pName}?`)) return;
                 const ref = doc(db, "rosters", currentCoachTeamId);
                 const snap = await getDoc(ref);
                 if (snap.exists()) {
-                    await updateDoc(ref, { players: snap.data().players.filter(p => p !== pName) });
+                    await updateDoc(ref, { players: snap.data().players.filter(p => p!== pName) });
                     loadCoachDashboard(false, window.globalTeams);
                 }
             }
 
-            // Handle Jersey Edits
             if (target.classList.contains("action-edit-jersey")) {
                 const pName = target.getAttribute("data-player");
                 const currentJersey = target.getAttribute("data-jersey");
                 let num = prompt(`Enter new jersey number for ${pName} (or leave blank to clear):`, currentJersey);
                 if (num === null) return;
                 num = num.trim();
-                const ref = doc(db, "rosters", currentCoachTeamId);
-                const snap = await getDoc(ref);
-                if (snap.exists()) {
-                    let jerseys = snap.data().jerseys || {};
+const ref = doc(db, "rosters", currentCoachTeamId);
+const snap = await getDoc(ref);
+if (snap.exists()) {
+    let jerseys = snap.data().jerseys || {};
                     if (num === "") delete jerseys[pName]; else jerseys[pName] = num;
                     await updateDoc(ref, { jerseys: jerseys });
                     loadCoachDashboard(false, window.globalTeams);
                 }
             }
 
-            // Handle Schedule & HW Deletions
             if (target.classList.contains("action-delete-schedule")) {
                 if (confirm("Delete event?")) { await deleteDoc(doc(db, "schedules", target.getAttribute("data-id"))); loadCoachScheduleAndHW(); }
             }
@@ -53,61 +49,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (confirm("Delete assignment?")) { await deleteDoc(doc(db, "assignments", target.getAttribute("data-id"))); loadCoachScheduleAndHW(); }
             }
 
-            // Handle Workout Deletions
             if (target.classList.contains("action-delete-workout")) {
                 if (!confirm("Delete this workout?")) return;
                 await deleteDoc(doc(db, "team_workouts", target.getAttribute("data-id")));
-                await window.fetchWorkouts();
-                window.buildCoachDropdowns();
+                if (window.fetchWorkouts) await window.fetchWorkouts();
+                if (window.buildCoachDropdowns) window.buildCoachDropdowns();
                 loadWorkouts();
             }
 
-            // Handle Assistant Deletion
             if (target.classList.contains("action-remove-assistant")) {
                 const email = target.getAttribute("data-email");
                 if (!confirm(`Revoke access for ${email}?`)) return;
                 const teamIdx = window.globalTeams.findIndex(t => t.id === currentCoachTeamId);
                 if (teamIdx > -1) {
-                    window.globalTeams[teamIdx].assistants = window.globalTeams[teamIdx].assistants.filter(e => e !== email);
+                    window.globalTeams[teamIdx].assistants = window.globalTeams[teamIdx].assistants.filter(e => e!== email);
                     await setDoc(doc(db, "teams", currentCoachTeamId), { assistants: window.globalTeams[teamIdx].assistants }, { merge: true });
                     loadCoachDashboard(false, window.globalTeams);
                 }
             }
 
-// Coach Logging an Official Trial Logic
-            if (target.id === "coachSubmitTrialBtn") {
-                const cPlayer = document.getElementById("coachTrialPlayerSelect").value;
-                const cType = document.getElementById("coachTrialType").value;
-                const cSkill = document.getElementById("coachTrialSkill").value.trim();
-                const a1 = document.getElementById("coachTrial1").value;
-                const a2 = document.getElementById("coachTrial2").value || 0;
-                const a3 = document.getElementById("coachTrial3").value || 0;
-
-                if(!cPlayer || !cSkill || !a1) return alert("Select player, skill, and at least Score 1.");
-
-                let result = 0;
-                if(cType === "Time") {
-                    const times = [parseFloat(a1), parseFloat(a2), parseFloat(a3)].filter(t => t > 0);
-                    result = times.length > 0 ? Math.min(...times) + "s" : "0s";
-                } else {
-                    result = (parseFloat(a1)||0) + (parseFloat(a2)||0) + (parseFloat(a3)||0);
-                }
-
-                try {
-                    target.innerText = "Saving...";
-                    await addDoc(collection(db, "trials"), {
-                        player: cPlayer, teamId: currentCoachTeamId, type: cType, skill: cSkill,
-                        a1, a2, a3, result: result, isCoach: true, timestamp: new Date()
-                    });
-                    alert("Official Coach Trial Logged!");
-                    target.innerText = "Save Official Coach Trial";
-                    document.getElementById("coachTrialSkill").value = "";
-                    document.getElementById("coachTrial1").value = "";
-                    loadRecentTrials(currentCoachTeamId);
-                } catch(err) { alert("Error: " + err.message); target.innerText = "Save Official Coach Trial"; }
-            }
-
-            // Handle Adding New Custom Workouts
             if (target.id === "addWorkoutBtn") {
                 if(!currentCoachTeamId) return alert("Select a team in the Roster tab first.");
                 
@@ -118,25 +78,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if(!name) return alert("Workout Name is required.");
                 
-                // 🟢 SPRINT 2.2: Extract the Spatial Canvas Data
                 let layoutData = null;
-                if (spatialCanvas && spatialCanvas.getObjects().length > 0) {
-                    layoutData = JSON.stringify(spatialCanvas.toJSON());
+                if (window.spatialCanvas && window.spatialCanvas.getObjects().length > 0) {
+                    layoutData = JSON.stringify(window.spatialCanvas.toJSON());
                 }
                 
                 target.innerText = "Saving...";
                 try {
                     await addDoc(collection(db, "team_workouts"), {
-                        teamId: currentCoachTeamId, 
-                        type: type, 
-                        name: name, 
-                        reqLevel: parseInt(level), 
-                        drill: desc, 
-                        spatialLayout: layoutData, // 🟢 Saves the exact coordinates to Firebase
-                        createdAt: new Date()
+                        teamId: currentCoachTeamId, type: type, name: name, reqLevel: parseInt(level), drill: desc, spatialLayout: layoutData, createdAt: new Date()
                     });
                     
-                    // Use the premium SweetAlert2 plugin we added
                     if (typeof Swal!== 'undefined') {
                         Swal.fire({
                             title: 'Drill Saved!',
@@ -149,12 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         alert("Workout Added!");
                     }
                     
-                    // Reset the form and clear the canvas
                     document.getElementById("manageWorkoutName").value = "";
                     document.getElementById("manageWorkoutDesc").value = "";
-                    if (spatialCanvas) spatialCanvas.clear();
+                    if (window.spatialCanvas) window.spatialCanvas.clear();
                     
-                    // Refresh global arrays and local UI
                     if(window.fetchWorkouts) await window.fetchWorkouts();
                     if(window.buildCoachDropdowns) window.buildCoachDropdowns();
                     loadCoachDashboard(false, window.globalTeams); 
@@ -164,7 +114,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         coachView.dataset.bound = "true";
     }
-});
+};
+
+// 🟢 FIX: Safely execute the binder regardless of ES6 module load time
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", bindCoachView);
+} else {
+    bindCoachView();
+}
 
 // --- SCHEDULE & HOMEWORK VIEW ---
 export const loadCoachScheduleAndHW = async () => {
