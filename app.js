@@ -4,17 +4,17 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
-import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js?v=4.0.3";
-import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js?v=4.0.2";
-import { initDirectorModule } from "./modules/director.js?v=4.0.0";
-import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js?v=4.0.7";
-import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js?v=4.0.4";
-import { applyTeamBranding } from "./modules/branding.js?v=4.0.0";
-import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js?v=4.0.0";
+import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
+import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
+import { initDirectorModule } from "./modules/director.js";
+import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js";
+import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js";
+import { applyTeamBranding } from "./modules/branding.js";
+import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js";
 
 // --- SIDE-EFFECT & DYNAMIC IMPORTS ---
-import { setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js?v=4.0.1";
-import { loadStatsDashboard } from "./modules/stats.js?v=4.0.6"; 
+import { setupChallengeCalculators, submitTrialScore } from "./modules/challenges.js";
+import { loadStatsDashboard } from "./modules/stats.js"; 
 
 let globalTeams = [];
 let globalAdmins = [];
@@ -142,9 +142,7 @@ if (viewId === 'viewTracker' ||
 
     if (viewId === 'viewStats') {
         const { tid, playerName } = window.getAppContext();
-        import("./modules/stats.js?v=4.0.5").then(module => {
-            if(module.loadStatsDashboard) module.loadStatsDashboard(tid, playerName, userProfile);
-        });
+        loadStatsDashboard(tid, playerName, userProfile);
     }
 
     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -266,7 +264,6 @@ const initApp = () => {
         else window.navigateTo('viewHome', false);
     });
 
-// 🟢 FIX 1: Listen for Setup Completion and Transition the UI
     window.addEventListener('profileSetupComplete', async (e) => {
         const newProfileData = e.detail;
         userProfile = {...userProfile,...newProfileData };
@@ -274,10 +271,10 @@ const initApp = () => {
         document.getElementById("setupUI").classList.add("d-none");
         document.getElementById("appUI").classList.remove("d-none");
         
-const displayName = userProfile.playerName ||
-    (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
+        const displayName = userProfile.playerName ||
+            (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
         setText("activePlayerName", displayName);
-        setText("homePlayerName", displayName.split(" "));
+        setText("homePlayerName", (displayName || "").split(" ")[0] || displayName);
         
         if (userProfile.teamId!== "admin" && typeof applyTeamBranding!== 'undefined') {
             await applyTeamBranding(userProfile.teamId);
@@ -371,35 +368,6 @@ const displayName = userProfile.playerName ||
 
     safeBind("submitWorkoutBtn", "click", () => handleWorkoutSubmit(userProfile, globalTeams, () => window.navigateTo('viewHome')));
 
-// 🟢 DYNAMIC STATE TRANSITION (Prevents the Infinite Setup Loop)
-    window.addEventListener('profileSetupComplete', async (e) => {
-        const newProfileData = e.detail;
-        
-        // Update local state
-        userProfile = {...userProfile,...newProfileData };
-        
-        // Hide Setup, Show App smoothly
-        document.getElementById("setupUI").classList.add("d-none");
-        document.getElementById("appUI").classList.remove("d-none");
-        
-        // Update UI Names
-        setText("activePlayerName", userProfile.playerName);
-        setText("homePlayerName", userProfile.playerName.split(" "));
-        
-        // Run Module Initializers
-        if (userProfile.teamId!== "admin" && typeof applyTeamBranding!== 'undefined') {
-            await applyTeamBranding(userProfile.teamId);
-        }
-        if (window.fetchWorkouts) await window.fetchWorkouts();
-        if (window.buildCoachDropdowns) window.buildCoachDropdowns();
-        if (typeof loadHomeDashboard!== 'undefined') loadHomeDashboard();
-        if (typeof checkRoles!== 'undefined') checkRoles(auth.currentUser);
-        
-        // Route to home
-        history.replaceState({ view: 'viewHome' }, '', '#viewHome');
-        window.navigateTo('viewHome', false);
-    });
-
     document.body.addEventListener("click", async (e) => {
         const target = e.target;
         const tab = target.closest('.admin-tab, .director-tab, .coach-tab-btn');
@@ -415,7 +383,7 @@ const displayName = userProfile.playerName ||
             const targetId = tab.getAttribute('data-target');
             if (document.getElementById(targetId)) document.getElementById(targetId).classList.remove('d-none');
             if (targetId === 'dir-section-compliance') {
-                import("./modules/director.js?v=4.0.0").then(module => {
+                import("./modules/director.js").then(module => {
                     if(module.loadComplianceDashboard) module.loadComplianceDashboard(db, userProfile.clubId);
                 });
             }
@@ -520,7 +488,7 @@ if (userProfile.role === 'super_admin' || userProfile.role === 'director') {
 
 const displayName = userProfile.playerName || (userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1));
                 setText("activePlayerName", displayName);
-                setText("homePlayerName", displayName.split(" "));
+                setText("homePlayerName", (displayName || "").split(" ")[0] || displayName);
 
                 const safeLoad = async (moduleName, fn) => {
                     try { await fn(); } catch (err) {
@@ -530,7 +498,7 @@ const displayName = userProfile.playerName || (userProfile.role.charAt(0).toUppe
 
                 await safeLoad("Workouts", async () => { if (window.fetchWorkouts) await window.fetchWorkouts(); });
                 await safeLoad("Coach Tools", async () => { if (window.buildCoachDropdowns) window.buildCoachDropdowns(); });
-                await safeLoad("Director", async () => { if (typeof initDirectorModule!== 'undefined') initDirectorModule(db, userProfile, window.globalTeams); });
+                await safeLoad("Director", async () => { if (typeof initDirectorModule!== 'undefined') initDirectorModule(db, userProfile, globalTeams); });
 
                 if (typeof loadHomeDashboard!== 'undefined') loadHomeDashboard();
                 if (typeof checkRoles!== 'undefined') checkRoles(user);
@@ -539,7 +507,7 @@ const displayName = userProfile.playerName || (userProfile.role.charAt(0).toUppe
                 window.navigateTo('viewHome', false);
             } else {
                 document.getElementById("setupUI").classList.remove("d-none");
-                if (typeof initSetupDropdowns!== 'undefined') initSetupDropdowns(window.globalClubs, window.globalTeams);
+                if (typeof initSetupDropdowns!== 'undefined') initSetupDropdowns(window.globalClubs, globalTeams);
             }
         } catch (error) { 
             console.error("Auth Error:", error); 
