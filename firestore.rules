@@ -83,15 +83,16 @@ service cloud.firestore {
         || parentHouseholdAllowsChildEmail(lower(userId))
       );
 
-      allow create: if authed() && emailKey() == lower(userId)
-        && !request.resource.data.keys().hasAny(['role']);
+      allow create: if isSuper()
+        || (authed() && emailKey() == lower(userId)
+            && !request.resource.data.keys().hasAny(['role']));
 
       allow update: if authed() && (
         (emailKey() == lower(userId)
-          && request.resource.data.role == resource.data.role
-          && request.resource.data.teamId == resource.data.teamId
-          && request.resource.data.clubId == resource.data.clubId
-          && request.resource.data.householdId == resource.data.householdId)
+          && request.resource.data.get('role', null) == resource.data.get('role', null)
+          && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
+          && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+          && request.resource.data.get('householdId', null) == resource.data.get('householdId', null))
         || isSuper()
       );
 
