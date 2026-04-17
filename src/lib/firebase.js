@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 import { getMessaging, isSupported } from 'firebase/messaging';
 
 const devConfig = {
@@ -28,6 +29,8 @@ const activeConfig = useProd ? prodConfig : devConfig;
 export const app = initializeApp(activeConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+/** Matches Cloud Functions region in functions/index.js */
+export const functions = getFunctions(app, 'us-central1');
 
 enableIndexedDbPersistence(db).catch((err) => {
 	if (err.code === 'failed-precondition') {

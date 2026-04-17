@@ -4,11 +4,13 @@
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
 	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
+	import HouseholdComplianceTab from '$lib/components/director/HouseholdComplianceTab.svelte';
 
 	const TABS = [
 		{ id: 'teams', label: 'Teams & Coaches', icon: 'ph-users' },
 		{ id: 'brand', label: 'Club Branding', icon: 'ph-palette' },
-		{ id: 'compliance', label: 'Compliance & Clearances', icon: 'ph-shield-check' }
+		{ id: 'compliance', label: 'Compliance & Clearances', icon: 'ph-shield-check' },
+		{ id: 'household', label: 'Households & COPPA', icon: 'ph-house-line' }
 	];
 
 	let activeTab = $state('teams');
@@ -28,6 +30,8 @@
 			<BrandingTab {clubId} />
 		{:else if activeTab === 'compliance'}
 			<ComplianceTab {clubId} />
+		{:else if activeTab === 'household'}
+			<HouseholdComplianceTab {clubId} />
 		{/if}
 	</div>
 </div>

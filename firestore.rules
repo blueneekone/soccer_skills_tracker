@@ -31,6 +31,15 @@ service cloud.firestore {
       return request.auth.token.householdId;
     }
 
+    // Synced from users/{email} via Cloud Function syncUserClaims (COPPA / VPC).
+    function tokenMinor() {
+      return request.auth.token.minor == true;
+    }
+
+    function tokenVpcOk() {
+      return request.auth.token.vpcVerified == true;
+    }
+
     function isSuper() {
       return tokenRole() == 'super_admin';
     }
@@ -85,6 +94,19 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(playerEmail)).data.get('clubId', null) == tokenClub();
     }
 
+    // Minors without verified VPC may not self-assert waiver on create.
+    function passportSelfCreateOk() {
+      return !(tokenMinor() && !tokenVpcOk()
+        && request.resource.data.get('hasSignedWaiver', false) == true);
+    }
+
+    // Minors without verified VPC may not flip hasSignedWaiver to true.
+    function passportSelfUpdateOk() {
+      let waiverFlippedToTrue = request.resource.data.get('hasSignedWaiver', false) == true
+        && resource.data.get('hasSignedWaiver', false) != true;
+      return !(tokenMinor() && !tokenVpcOk() && waiverFlippedToTrue);
+    }
+
     match /users/{userId} {
       allow read: if authed() && (
         emailKey() == userId.lower()
@@ -98,6 +120,8 @@ service cloud.firestore {
         || (authed() && emailKey() == userId.lower()
             // householdId is always server-only; never written by clients.
             && !request.resource.data.keys().hasAny(['householdId'])
+            // COPPA fields are director/function only.
+            && !request.resource.data.keys().hasAny(['dateOfBirth', 'vpcStatus', 'isMinor'])
             // role: allowed only when it matches an admin-managed coach_lookup entry.
             && (!request.resource.data.keys().hasAny(['role'])
                 || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
@@ -118,7 +142,9 @@ service cloud.firestore {
           && request.resource.data.get('role', null) == resource.data.get('role', null)
           && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
           && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
-          && request.resource.data.get('householdId', null) == resource.data.get('householdId', null))
+          && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']))
         || isSuper()
       );
 
@@ -283,8 +309,13 @@ service cloud.firestore {
         || isSuper()
         || directorScopedToPlayer(emailId.lower())
       );
-      allow create, update: if authed() && (
-        emailKey() == emailId.lower()
+      allow create: if authed() && (
+        (emailKey() == emailId.lower() && passportSelfCreateOk())
+        || isSuper()
+        || directorScopedToPlayer(emailId.lower())
+      );
+      allow update: if authed() && (
+        (emailKey() == emailId.lower() && passportSelfUpdateOk())
         || isSuper()
         || directorScopedToPlayer(emailId.lower())
       );
