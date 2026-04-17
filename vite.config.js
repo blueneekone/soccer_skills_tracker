@@ -30,7 +30,7 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff2}', 'prerendered/**/*.{html,json}'],
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff2}'],
 				maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
 				navigateFallback: '/index.html',
 				navigateFallbackDenylist: [/^\/api\//]
