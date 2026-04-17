@@ -81,11 +81,10 @@ function createAuthStore() {
 						teamId: data.teamId,
 						clubId: data.clubId,
 						playerName: data.playerName,
-						joinedAt: new Date(),
-						role
+						joinedAt: new Date()
 					};
 					await setDoc(userRef, newProfile);
-					setProfile(newProfile);
+					setProfile({ ...newProfile, role });
 				} else {
 					// New user with no profile yet
 					setProfile({ role, playerName: fallbackName });
