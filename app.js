@@ -1,7 +1,7 @@
 // app.js
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- BRING IN YOUR MODULES ---
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
@@ -115,7 +115,7 @@ window.navigateTo = (viewId, addToHistory = true) => {
         alert("Unauthorized Access: Director required.");
         return window.navigateTo('viewHome', false);
     }
-    if (viewId === 'viewCoach' && role === 'player') {
+    if (viewId === 'viewCoach' && (role === 'player' || role === 'parent')) {
         alert("Unauthorized Access: Coach credentials required.");
         return window.navigateTo('viewHome', false);
     }
@@ -179,14 +179,15 @@ async function fetchConfig() {
 // 4. ROLE & DASHBOARD MANAGEMENT
 // ==========================================
 function checkRoles(user) {
+    if (!userProfile) return;
     const email = user.email.toLowerCase();
-    if (userProfile && userProfile.role === 'super_admin') {
+    if (userProfile.role === 'super_admin') {
         const adminBtn = document.getElementById("btnHomeAdmin");
         const dirBtn = document.getElementById("btnHomeDirector");
         if (adminBtn) adminBtn.classList.remove("d-none");
         if (dirBtn) dirBtn.classList.remove("d-none");
         renderAdminTables(window.globalClubs, globalTeams, globalAdmins, email, userProfile.role);
-    } else if (userProfile && userProfile.role === 'director') {
+    } else if (userProfile.role === 'director') {
         const dirBtn = document.getElementById("btnHomeDirector");
         if (dirBtn) dirBtn.classList.remove("d-none");
     }
@@ -383,8 +384,8 @@ const initApp = () => {
             const targetId = tab.getAttribute('data-target');
             if (document.getElementById(targetId)) document.getElementById(targetId).classList.remove('d-none');
             if (targetId === 'dir-section-compliance') {
-                import("./modules/director.js").then(module => {
-                    if(module.loadComplianceDashboard) module.loadComplianceDashboard(db, userProfile.clubId);
+                import("./modules/director.js").then((module) => {
+                    if (module.loadComplianceDashboard) module.loadComplianceDashboard(db, userProfile.clubId);
                 });
             }
         }
@@ -430,7 +431,7 @@ onAuthStateChanged(auth, async (user) => {
             
             const userRef = doc(db, "users", user.email);
             const userSnap = await getDoc(userRef);
-            let baseProfile = userSnap.exists()? userSnap.data() : null;
+            let baseProfile = userSnap.exists ? userSnap.data() : null;
             
 // 🟢 FIX: Safely parse legacy names using correct OR (||) syntax
 let fallbackName = (baseProfile && baseProfile.playerName) ||
@@ -446,14 +447,14 @@ clubId: (baseProfile && baseProfile.clubId) || (window.globalClubs && window.glo
                     playerName: fallbackName, 
                     role: userRole 
                 };
-            } else if (userSnap.exists()) {
+            } else if (userSnap.exists) {
                 userProfile = userSnap.data();
                 userProfile.role = userRole; 
                 userProfile.playerName = fallbackName;
             } else {
                 const inviteRef = doc(db, "player_lookup", user.email.toLowerCase());
                 const inviteSnap = await getDoc(inviteRef);
-                if (inviteSnap.exists()) {
+                if (inviteSnap.exists) {
                     const data = inviteSnap.data();
                     const newProfile = { teamId: data.teamId, clubId: data.clubId, playerName: data.playerName, joinedAt: new Date(), role: userRole };
                     await setDoc(userRef, newProfile);
@@ -468,6 +469,8 @@ if (userProfile.role === 'super_admin' || userProfile.role === 'director') {
                     isProfileComplete = true;
                 } else if (userProfile.role === 'coach' && userProfile.teamId) {
                     isProfileComplete = true; 
+                } else if (userProfile.role === 'parent' && userProfile.teamId) {
+                    isProfileComplete = true;
                 } else if (userProfile.playerName && userProfile.teamId) {
                     isProfileComplete = true; 
                 }

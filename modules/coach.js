@@ -20,7 +20,7 @@ const bindCoachView = () => {
                 if (!confirm(`Remove ${pName}?`)) return;
                 const ref = doc(db, "rosters", currentCoachTeamId);
                 const snap = await getDoc(ref);
-                if (snap.exists()) {
+                if (snap.exists) {
                     await updateDoc(ref, { players: snap.data().players.filter(p => p!== pName) });
                     loadCoachDashboard(false, window.globalTeams);
                 }
@@ -34,7 +34,7 @@ const bindCoachView = () => {
                 num = num.trim();
 const ref = doc(db, "rosters", currentCoachTeamId);
 const snap = await getDoc(ref);
-if (snap.exists()) {
+if (snap.exists) {
     let jerseys = snap.data().jerseys || {};
                     if (num === "") delete jerseys[pName]; else jerseys[pName] = num;
                     await updateDoc(ref, { jerseys: jerseys });
@@ -204,8 +204,8 @@ export const loadCoachDashboard = async (isDirector, teams, updateCallback) => {
         setText("coachTotalReps", "Aggregated");
 
         const rosterSnap = await getDoc(doc(db, "rosters", tid));
-        let rosterNames = (rosterSnap.exists() && rosterSnap.data().players) ? rosterSnap.data().players : [];
-        let rosterJerseys = (rosterSnap.exists() && rosterSnap.data().jerseys) ? rosterSnap.data().jerseys : {};
+        let rosterNames = (rosterSnap.exists && rosterSnap.data().players) ? rosterSnap.data().players : [];
+        let rosterJerseys = (rosterSnap.exists && rosterSnap.data().jerseys) ? rosterSnap.data().jerseys : {};
 
         const linkQuery = query(collection(db, "player_lookup"), where("teamId", "==", tid));
         const linkSnap = await getDocs(linkQuery);
@@ -310,8 +310,8 @@ export const manualAddPlayer = async (reloadCallback) => {
     const tid = document.getElementById("adminTeamSelect").value;
     const ref = doc(db, "rosters", tid);
     const snap = await getDoc(ref);
-    let list = snap.exists() ? snap.data().players || [] : [];
-    let jerseys = snap.exists() ? snap.data().jerseys || {} : {};
+    let list = snap.exists ? snap.data().players || [] : [];
+    let jerseys = snap.exists ? snap.data().jerseys || {} : {};
 
     if (!list.includes(name)) list.push(name);
     if (jersey) jerseys[name] = jersey;

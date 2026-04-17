@@ -1,0 +1,254 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Assumed model: users keyed by lower(email). households have parentEmails[], playerEmails[],
+    // optional playerNames[] (display names linked to child accounts for read-only parent views).
+
+    function authed() {
+      return request.auth != null;
+    }
+
+    function emailKey() {
+      return authed() && request.auth.token.email != null
+        ? lower(request.auth.token.email)
+        : '';
+    }
+
+    function tokenRole() {
+      return request.auth.token.role != null ? request.auth.token.role : 'player';
+    }
+
+    function tokenTeam() {
+      return request.auth.token.teamId;
+    }
+
+    function tokenClub() {
+      return request.auth.token.clubId;
+    }
+
+    function tokenHousehold() {
+      return request.auth.token.householdId;
+    }
+
+    function isSuper() {
+      return tokenRole() == 'super_admin';
+    }
+
+    function isDirector() {
+      return tokenRole() == 'director';
+    }
+
+    function isCoach() {
+      return tokenRole() == 'coach';
+    }
+
+    function isParent() {
+      return tokenRole() == 'parent';
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(emailKey())).data;
+    }
+
+    function parentHouseholdAllowsChildEmail(childKey) {
+      return isParent()
+        && tokenHousehold() != null
+        && exists(/databases/$(database)/documents/households/$(tokenHousehold()))
+        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.playerEmails.hasAny([childKey]);
+    }
+
+    function parentCanSeePlayerName(name) {
+      return isParent()
+        && tokenHousehold() != null
+        && exists(/databases/$(database)/documents/households/$(tokenHousehold()))
+        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.keys().hasAll(['playerNames'])
+        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.playerNames.hasAny([name]);
+    }
+
+    function sameTeam(teamId) {
+      return authed() && tokenTeam() != null && tokenTeam() == teamId;
+    }
+
+    function teamClubId(tid) {
+      return get(/databases/$(database)/documents/teams/$(tid)).data.clubId;
+    }
+
+    match /users/{userId} {
+      allow read: if authed() && (
+        emailKey() == lower(userId)
+        || isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || (isCoach() && resource.data.teamId == tokenTeam())
+        || parentHouseholdAllowsChildEmail(lower(userId))
+      );
+
+      allow create: if authed() && emailKey() == lower(userId)
+        && (!request.resource.data.keys().hasAny(['role'])
+            || request.resource.data.role in ['player', 'parent', 'coach']);
+
+      allow update: if authed() && (
+        (emailKey() == lower(userId)
+          && request.resource.data.role == resource.data.role)
+        || isSuper()
+      );
+
+      allow delete: if isSuper();
+    }
+
+    match /households/{householdId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.parentEmails != null && resource.data.parentEmails.hasAny([emailKey()]))
+        || (tokenHousehold() != null && tokenHousehold() == householdId)
+      );
+      allow create, update, delete: if isSuper();
+    }
+
+    match /clubs/{clubId} {
+      allow read: if authed();
+      allow create, update, delete: if isSuper();
+    }
+
+    match /teams/{teamId} {
+      allow read: if authed();
+      allow create: if isSuper()
+        || (isDirector() && request.resource.data.clubId == tokenClub())
+        || (isCoach() && sameTeam(teamId));
+      allow update, delete: if isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || (isCoach() && sameTeam(teamId));
+    }
+
+    match /rosters/{teamId} {
+      allow read: if authed() && (
+        isSuper()
+        || sameTeam(teamId)
+        || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
+          && teamClubId(teamId) == tokenClub())
+      );
+      allow write: if isSuper()
+        || (isCoach() && sameTeam(teamId))
+        || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
+          && teamClubId(teamId) == tokenClub());
+    }
+
+    match /coach_lookup/{coachId} {
+      allow read: if authed() && (emailKey() == lower(coachId) || isSuper() || isDirector());
+      allow write: if isSuper() || isDirector();
+    }
+
+    match /player_lookup/{inviteId} {
+      allow read: if authed() && (emailKey() == lower(inviteId) || isSuper() || isCoach() || isDirector());
+      allow write: if isSuper() || isCoach() || isDirector();
+    }
+
+    match /team_workouts/{docId} {
+      allow read: if authed();
+      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update, delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+    }
+
+    match /schedules/{docId} {
+      allow read: if authed();
+      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update, delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+    }
+
+    match /assignments/{docId} {
+      allow read: if authed();
+      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update: if isSuper() || isDirector()
+        || (isCoach() && sameTeam(resource.data.teamId))
+        || (resource.data.player == userDoc().playerName);
+      allow delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+    }
+
+    match /reps/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || isDirector()
+        || sameTeam(resource.data.teamId)
+        || resource.data.player == userDoc().playerName
+        || parentCanSeePlayerName(resource.data.player)
+      );
+      allow create: if authed() && request.resource.data.teamId == userDoc().teamId
+        && request.resource.data.player == userDoc().playerName;
+      allow update, delete: if isSuper();
+    }
+
+    match /trials/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || isDirector()
+        || sameTeam(resource.data.teamId)
+        || resource.data.player == userDoc().playerName
+        || parentCanSeePlayerName(resource.data.player)
+      );
+      allow create, update: if authed() && (
+        isSuper()
+        || (request.resource.data.teamId == userDoc().teamId && request.resource.data.player == userDoc().playerName)
+        || (isCoach() && sameTeam(request.resource.data.teamId))
+      );
+      allow delete: if isSuper();
+    }
+
+    match /player_stats/{playerKey} {
+      allow read: if authed() && (
+        isSuper()
+        || playerKey == userDoc().playerName
+        || parentCanSeePlayerName(playerKey)
+        || isDirector()
+        || (isCoach() && sameTeam(resource.data.teamId))
+      );
+      allow create, update: if authed() && (
+        isSuper()
+        || (request.resource.data.teamId == userDoc().teamId && playerKey == userDoc().playerName)
+        || (isCoach() && sameTeam(request.resource.data.teamId))
+      );
+      allow delete: if isSuper();
+    }
+
+    match /evaluations/{docId} {
+      allow read: if authed();
+      allow write: if isSuper() || isCoach() || isDirector();
+    }
+
+    match /passports/{emailId} {
+      allow read: if authed() && (emailKey() == lower(emailId) || isSuper() || isDirector());
+      allow create, update: if authed() && (emailKey() == lower(emailId) || isSuper() || isDirector());
+      allow delete: if isSuper();
+    }
+
+    match /security_audit/{docId} {
+      allow read: if isSuper();
+      allow create: if authed();
+      allow update, delete: if isSuper();
+    }
+
+    match /config/{docId} {
+      allow read: if authed();
+      allow write: if isSuper() || (isCoach() && docId == 'branding_' + tokenTeam());
+    }
+
+    match /consent_records/{docId} {
+      allow read: if authed() && (resource.data.subjectEmail == emailKey() || isSuper());
+      allow write: if isSuper();
+    }
+
+    match /minor_retention_queue/{docId} {
+      allow read, write: if isSuper();
+    }
+
+    // SafeSport / Epic 2.3: store mirrored copies when coach messages a minor (server or client enqueue).
+    match /messaging_audit/{docId} {
+      allow read: if isSuper();
+      allow create: if authed() && (isCoach() || isSuper());
+      allow update, delete: if isSuper();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

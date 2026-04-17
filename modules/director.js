@@ -1,4 +1,5 @@
-import { doc, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "../firebase-config.js";
+import { doc, getDoc, setDoc, writeBatch, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // ==========================================
 // 1. TEAM & COACH MANAGEMENT
 // ==========================================
@@ -44,12 +45,11 @@ export async function inviteCoach(db, targetTeamId, coachEmail) {
     
     try {
         const emailLower = coachEmail.toLowerCase().trim();
-        const { writeBatch } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        
+
         const teamRef = doc(db, "teams", targetTeamId);
         const teamSnap = await getDoc(teamRef);
         
-        if (!teamSnap.exists()) return alert("Error: Team not found.");
+        if (!teamSnap.exists) return alert("Error: Team not found.");
         const clubId = teamSnap.data().clubId;
 
         // 🟢 FIX: Use a batch to write to BOTH collections instantly
@@ -132,9 +132,6 @@ export const initDirectorModule = (db, userProfile) => {
     });
 };
 
-// Add to the bottom of modules/director.js
-import { collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 export const loadComplianceDashboard = async (db, clubId) => {
     const tbody = document.querySelector("#complianceTable tbody");
     if (!tbody || !clubId) return;
@@ -151,12 +148,12 @@ export const loadComplianceDashboard = async (db, clubId) => {
         });
 
         let html = "";
-        passSnap.forEach(doc => {
-            const email = doc.id;
+        passSnap.forEach((passDoc) => {
+            const email = passDoc.id;
             // Only show players in this Director's club
             if (!users[email]) return; 
             
-            const data = doc.data();
+            const data = passDoc.data();
             const signed = data.hasSignedWaiver ? "✅ Yes" : "❌ No";
             const currentStatus = data.clearanceStatus || "CLEARED";
             

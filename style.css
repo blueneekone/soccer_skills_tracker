@@ -47,6 +47,13 @@ body::before {
 
 /* Utilities */
 .d-none { display: none !important; }
+.auth-error-msg {
+    color: var(--danger-red);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 10px 0 0;
+    text-align: center;
+}
 .w-100 { width: 100%; box-sizing: border-box; }
 .w-50 { width: 50px; text-align: center; }
 .flex-1 { flex: 1; }
