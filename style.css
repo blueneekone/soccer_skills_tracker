@@ -61,13 +61,7 @@ body::before {
 .w-50 { width: 50px; text-align: center; }
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
-.mb-10 { margin-bottom: 10px; }
-.mb-15 { margin-bottom: 15px; }
-.mb-20-imp { margin-bottom: 20px !important; }
-.mt-0 { margin-top: 0; }
-.mt-10 { margin-top: 10px; }
-.mt-15 { margin-top: 15px; }
-.mt-20 { margin-top: 20px; }
+/* Legacy spacing shim — use gap/clamp() in new Svelte components; keep only for backward compatibility */
 .m-0 { margin: 0 !important; }
 .p-0 { padding: 0 !important; }
 .p-20 { padding: 20px; }
@@ -192,7 +186,7 @@ input:focus, select:focus, textarea:focus {
 .challenge-banner-text { margin: 0; font-weight: 600; font-size: 0.95rem; }
 
 /* Grid Layout */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--spacing-element); }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--spacing-element); }
 .dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 20px; margin-bottom: 0; }
 .dash-icon { font-size: 3rem; margin-bottom: 15px; color: var(--aggie-blue); }
 .icon-large { font-size: 4rem; margin-bottom: 20px; }
@@ -376,7 +370,6 @@ input:focus, select:focus, textarea:focus {
    15. RESPONSIVE ADJUSTMENTS
    ========================================== */
 @media (max-width: 768px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
     .input-row, .admin-input-row, .admin-flex-row, .hw-drill-row, .gameday-bench-row { flex-direction: column; align-items: stretch; }
     .w-50 { width: 100%; }
     .cal-header-row { flex-direction: column; align-items: center; text-align: center; }

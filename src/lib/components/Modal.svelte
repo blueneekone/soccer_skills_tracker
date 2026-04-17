@@ -25,7 +25,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="modal" onclick={handleBackdrop} role="dialog" aria-modal="true">
-		<div class="modal-content" class:cert-content={certStyle} style="max-width: {maxWidth}">
+		<div class="modal-content" class:cert-content={certStyle} style:--modal-max-width={maxWidth}>
 			{#if title || titleSlot}
 				<div class="card-header" class:cert-modal-header={certStyle}>
 					{#if titleSlot}
@@ -42,3 +42,10 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* max-width driven by CSS custom property passed from the parent */
+	.modal-content {
+		max-width: var(--modal-max-width, 500px);
+	}
+</style>

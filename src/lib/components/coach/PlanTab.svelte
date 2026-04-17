@@ -149,7 +149,7 @@
 			<ul class="session-list">
 				{#each hwItems as hw}
 					<li class="session-item">
-						<div><b>{hw.player}</b><br /><span class="text-sm-sub" style="color:#ea580c;">Due: {hw.dueDate}</span></div>
+						<div><b>{hw.player}</b><br /><span class="hw-due-label">Due: {hw.dueDate}</span></div>
 						<button class="delete-btn" onclick={() => deleteHw(hw.id)}>✕</button>
 					</li>
 				{:else}
@@ -177,4 +177,5 @@
 	select, input { margin-bottom: 10px; }
 	.section-divider { border: none; border-top: 1px solid rgba(15,23,42,0.1); margin: 16px 0; }
 	.delete-btn { background: none; border: none; cursor: pointer; color: var(--danger-red); font-size: 1rem; }
+	.hw-due-label { font-size: 0.8rem; color: #ea580c; font-weight: 700; }
 </style>

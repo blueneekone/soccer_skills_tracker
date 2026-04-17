@@ -96,7 +96,7 @@
 			<div class="auth-error-msg" role="alert">{errorMsg}</div>
 		{/if}
 
-		<button class="primary-btn btn-mb-10 w-100" onclick={handleEmailLogin}>Sign In</button>
+		<button class="primary-btn sign-in-btn w-100" onclick={handleEmailLogin}>Sign In</button>
 		<button class="secondary-btn w-100" onclick={handleEmailSignup}>Create Account</button>
 	</div>
 
@@ -114,7 +114,7 @@
 </div>
 
 <style>
-	.btn-mb-10 {
+	.sign-in-btn {
 		margin-bottom: 10px;
 	}
 	input {

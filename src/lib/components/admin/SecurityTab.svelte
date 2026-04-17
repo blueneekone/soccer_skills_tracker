@@ -39,7 +39,7 @@
 						{#each logs as log}
 							<tr>
 								<td class="text-sm-sub">{safeGetDate(log.timestamp).toLocaleString()}</td>
-								<td style="color:#0ea5e9; font-weight:bold;">{log.admin}</td>
+								<td class="admin-identity">{log.admin}</td>
 								<td><span class="action-badge">{log.action}</span></td>
 								<td><b>{log.target}</b><br /><span class="text-sm-sub">{log.details}</span></td>
 							</tr>
@@ -52,5 +52,17 @@
 </div>
 
 <style>
-	.action-badge { background: #fef2f2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; }
+	.action-badge {
+		background: #fef2f2;
+		color: #b91c1c;
+		padding: 4px 8px;
+		border-radius: 6px;
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0.5px;
+	}
+	.admin-identity {
+		color: #0ea5e9;
+		font-weight: 700;
+	}
 </style>

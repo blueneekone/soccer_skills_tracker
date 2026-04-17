@@ -136,7 +136,7 @@
 					{#each scheduleItems as evt}
 						<li class="session-item">
 							<div>
-								<b style="color:var(--aggie-blue)">{evt.type}</b>: {evt.location}<br />
+								<b class="evt-type">{evt.type}</b>: {evt.location}<br />
 								<span class="text-sm-sub">{evt.date} @ {evt.time}</span>
 							</div>
 						</li>
@@ -151,7 +151,7 @@
 		<div class="card-header bg-orange-header">🎯 My Homework</div>
 		<div class="card-body p-0">
 			{#if role === 'super_admin' || role === 'director'}
-				<ul class="session-list"><li class="session-empty" style="color:#ea580c">Admins don't receive personal homework.</li></ul>
+				<ul class="session-list"><li class="session-empty admin-hw-note">Admins don't receive personal homework.</li></ul>
 			{:else if hwLoading}
 				<ul class="session-list"><li class="session-empty">Loading assignments...</li></ul>
 			{:else if homeworkItems.length === 0}
@@ -213,5 +213,11 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+	}
+	.evt-type {
+		color: var(--aggie-blue);
+	}
+	.admin-hw-note {
+		color: #ea580c;
 	}
 </style>

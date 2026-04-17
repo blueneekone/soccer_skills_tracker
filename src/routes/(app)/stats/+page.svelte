@@ -181,8 +181,8 @@
 		<div class="card-body text-center">
 			<h1 class="level-display">{currentRank.name}</h1>
 			<p class="current-rank-label">Current Rank</p>
-			<div class="xp-bar-container">
-				<div class="xp-bar-fill" style="width: {xpPct}%"></div>
+			<div class="xp-bar-container" style:--xp-pct="{xpPct}%">
+				<div class="xp-bar-fill"></div>
 			</div>
 			<div class="stats-totals-row">
 				<div class="text-center"><span class="stat-number">{logs.length}</span><br /><span class="stat-label">Sessions</span></div>
@@ -322,6 +322,10 @@
 </div>
 
 <style>
+	/* XP bar width driven by CSS custom property set on the container */
+	.xp-bar-fill {
+		width: var(--xp-pct, 0%);
+	}
 	.header-btns {
 		display: flex;
 		gap: 8px;

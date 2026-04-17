@@ -19,11 +19,20 @@
 	let isSigBlank = $state(true);
 	let isDrawing = false;
 
-	const statusConfig = $derived({
-		'RED_CARD': { label: '🟥 SUSPENDED (Red Card)', bg: '#fef2f2', border: '#ef4444', color: '#b91c1c' },
-		'PENDING_SAFESPORT': { label: '🟨 PENDING SAFESPORT', bg: '#fffbeb', border: '#fbbf24', color: '#b45309' },
-		'CLEARED': { label: '✅ CLEARED TO PLAY', bg: '#f0fdf4', border: '#10b981', color: '#047857' }
-	}[clearanceStatus] || { label: '✅ CLEARED TO PLAY', bg: '#f0fdf4', border: '#10b981', color: '#047857' });
+	const statusLabel = $derived(
+		clearanceStatus === 'RED_CARD'
+			? '🟥 SUSPENDED (Red Card)'
+			: clearanceStatus === 'PENDING_SAFESPORT'
+				? '🟨 PENDING SAFESPORT'
+				: '✅ CLEARED TO PLAY'
+	);
+	const statusClass = $derived(
+		clearanceStatus === 'RED_CARD'
+			? 'badge-red'
+			: clearanceStatus === 'PENDING_SAFESPORT'
+				? 'badge-gold'
+				: 'badge-green'
+	);
 
 	const loadPassport = async () => {
 		if (!auth.currentUser) return;
@@ -101,13 +110,10 @@
 	<div class="card border-green">
 		<div class="card-header bg-green-header">Official Clearance Status</div>
 		<div class="card-body text-center">
-			<div
-				class="passport-status-badge"
-				style="background:{statusConfig.bg}; border-color:{statusConfig.border}; color:{statusConfig.color}; font-size:1.5rem; font-weight:900; padding:15px; border-radius:12px; border:2px solid; display:inline-block;"
-			>
-				{statusConfig.label}
+			<div class="clearance-badge {statusClass}">
+				{statusLabel}
 			</div>
-			<p class="text-sm-sub" style="margin-top:12px;">This status is controlled by your Club Director. A Green "Cleared" status is required to participate in official matches.</p>
+			<p class="clearance-note">This status is controlled by your Club Director. A Green "Cleared" status is required to participate in official matches.</p>
 		</div>
 	</div>
 
@@ -158,6 +164,35 @@
 </div>
 
 <style>
+	.clearance-badge {
+		display: inline-block;
+		font-size: 1.5rem;
+		font-weight: 900;
+		padding: 15px clamp(16px, 3vw, 24px);
+		border-radius: 12px;
+		border: 2px solid transparent;
+	}
+	.badge-green {
+		background: #f0fdf4;
+		border-color: #10b981;
+		color: #047857;
+	}
+	.badge-gold {
+		background: #fffbeb;
+		border-color: #fbbf24;
+		color: #b45309;
+	}
+	.badge-red {
+		background: #fef2f2;
+		border-color: #ef4444;
+		color: #b91c1c;
+	}
+	.clearance-note {
+		font-size: 0.85rem;
+		color: var(--muted-slate);
+		line-height: 1.5;
+		margin-top: clamp(8px, 2vw, 12px);
+	}
 	input, textarea {
 		margin-bottom: 12px;
 	}

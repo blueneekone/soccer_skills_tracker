@@ -2,7 +2,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
-	import { db, auth } from '$lib/firebase.js';
+	import { db } from '$lib/firebase.js';
 	import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 	import TabBar from '$lib/components/TabBar.svelte';
 	import RosterTab from '$lib/components/coach/RosterTab.svelte';
@@ -28,24 +28,25 @@
 	const role = $derived(authStore.role);
 	const userEmail = $derived(authStore.user?.email || '');
 
-	// Which teams to show
-	const myTeams = $derived(() => {
-		if (!teamsStore.loaded || !userEmail) return [];
-		if (role === 'super_admin' || role === 'director') return teamsStore.teams;
-		return teamsStore.getCoachTeams(userEmail);
-	});
+	// Plain $derived value — reactive to teamsStore.loaded, role, userEmail
+	const myTeams = $derived(
+		!teamsStore.loaded || !userEmail
+			? []
+			: role === 'super_admin' || role === 'director'
+				? teamsStore.teams
+				: teamsStore.getCoachTeams(userEmail)
+	);
 
 	const isDirectorView = $derived(role === 'super_admin' || role === 'director');
 
-	// Auto-select first team
+	// Auto-select first team once myTeams is populated
 	$effect(() => {
-		const teams = myTeams();
-		if (teams.length > 0 && !selectedTeamId) {
-			selectedTeamId = teams[0].id;
+		if (myTeams.length > 0 && !selectedTeamId) {
+			selectedTeamId = myTeams[0].id;
 		}
 	});
 
-	// Load players when team changes
+	// Reload workouts and players when selected team changes
 	$effect(() => {
 		if (!selectedTeamId) return;
 		workoutsStore.loadForTeam(selectedTeamId);
@@ -62,7 +63,9 @@
 			statsSnap.forEach((d) => names.add(d.id));
 			if (rosterSnap.exists()) (rosterSnap.data().players || []).forEach((p) => names.add(p));
 			players = Array.from(names).sort();
-		} catch (e) { console.error(e); }
+		} catch (e) {
+			console.error(e);
+		}
 	};
 
 	const onWorkoutSaved = () => workoutsStore.loadForTeam(selectedTeamId);
@@ -71,39 +74,42 @@
 <div class="view-section">
 	<h2 class="coach-header">Coaching Tools</h2>
 
-	<!-- Director team selector -->
 	{#if isDirectorView}
+		<!-- Super Admin / Director: pick any team -->
 		<div class="card">
 			<div class="card-header">Director Access</div>
 			<div class="card-body">
-				<label>View Team Data</label>
-				<select bind:value={selectedTeamId}>
-					{#each myTeams() as t}
+				<label for="dirTeamSelect">View Team Data</label>
+				<select id="dirTeamSelect" bind:value={selectedTeamId}>
+					{#if myTeams.length === 0}
+						<option value="">Loading teams...</option>
+					{:else}
+						{#each myTeams as t}
+							<option value={t.id}>{t.name}</option>
+						{/each}
+					{/if}
+				</select>
+			</div>
+		</div>
+	{:else if myTeams.length > 1}
+		<!-- Coach with multiple teams -->
+		<div class="card">
+			<div class="card-body">
+				<label for="coachTeamSelect">Select Team</label>
+				<select id="coachTeamSelect" bind:value={selectedTeamId}>
+					{#each myTeams as t}
 						<option value={t.id}>{t.name}</option>
 					{/each}
 				</select>
 			</div>
 		</div>
-	{:else}
-		<!-- Coach can only see their own teams -->
-		{#if myTeams().length > 1}
-			<div class="card">
-				<div class="card-body">
-					<select bind:value={selectedTeamId}>
-						{#each myTeams() as t}
-							<option value={t.id}>{t.name}</option>
-						{/each}
-					</select>
-				</div>
-			</div>
-		{/if}
 	{/if}
 
 	<TabBar tabs={TABS} bind:activeTab variant="coach" />
 
 	<div class="tab-content">
 		{#if activeTab === 'roster'}
-			<RosterTab teamId={selectedTeamId} teams={myTeams()} />
+			<RosterTab teamId={selectedTeamId} teams={myTeams} />
 		{:else if activeTab === 'plan'}
 			<PlanTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {players} />
 		{:else if activeTab === 'evals'}
@@ -124,6 +130,10 @@
 		font-weight: 900;
 		margin-bottom: clamp(12px, 2vw, 20px);
 	}
-	select { margin-bottom: 0; }
-	.tab-content { margin-top: clamp(12px, 2vw, 20px); }
+	select {
+		margin-bottom: 0;
+	}
+	.tab-content {
+		margin-top: clamp(12px, 2vw, 20px);
+	}
 </style>

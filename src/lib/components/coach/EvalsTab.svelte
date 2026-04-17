@@ -69,7 +69,7 @@
 						<div class="flex-1">
 							<b>{t.player}</b>
 							<span class="text-sm-sub"> ({t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleDateString() : ''})</span><br />
-							<span style="color:#ea580c;">{t.type}:</span> {t.skill}
+							<span class="trial-type">{t.type}:</span> {t.skill}
 						</div>
 						<div class="text-right">
 							<span class="text-sm-sub">[{t.a1}, {t.a2}, {t.a3}]</span><br />
@@ -130,4 +130,5 @@
 	select, input, textarea { margin-bottom: 10px; }
 	.score-range { padding: 0; margin-bottom: 12px; cursor: pointer; }
 	.text-right { text-align: right; }
+	.trial-type { color: #ea580c; font-weight: 700; }
 </style>
