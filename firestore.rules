@@ -84,12 +84,14 @@ service cloud.firestore {
       );
 
       allow create: if authed() && emailKey() == lower(userId)
-        && (!request.resource.data.keys().hasAny(['role'])
-            || request.resource.data.role in ['player', 'parent', 'coach']);
+        && !request.resource.data.keys().hasAny(['role']);
 
       allow update: if authed() && (
         (emailKey() == lower(userId)
-          && request.resource.data.role == resource.data.role)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.teamId == resource.data.teamId
+          && request.resource.data.clubId == resource.data.clubId
+          && request.resource.data.householdId == resource.data.householdId)
         || isSuper()
       );
 
@@ -160,7 +162,8 @@ service cloud.firestore {
       allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
       allow update: if isSuper() || isDirector()
         || (isCoach() && sameTeam(resource.data.teamId))
-        || (resource.data.player == userDoc().playerName);
+        || (resource.data.player == userDoc().playerName
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
     }
 
@@ -211,7 +214,10 @@ service cloud.firestore {
 
     match /evaluations/{docId} {
       allow read: if authed();
-      allow write: if isSuper() || isCoach() || isDirector();
+      allow create: if isSuper() || isDirector()
+        || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update, delete: if isSuper() || isDirector()
+        || (isCoach() && sameTeam(resource.data.teamId));
     }
 
     match /passports/{emailId} {

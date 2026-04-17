@@ -11,7 +11,7 @@ export const initBrandingPanel = async (globalTeams) => {
         const tid = sel.value;
         if(!tid) return;
         const snap = await getDoc(doc(db, "config", `branding_${tid}`));
-        if(snap.exists) {
+        if(snap.exists()) {
             const data = snap.data();
             document.getElementById("brandAppName").value = data.appName || "";
             document.getElementById("brandLogoUrl").value = data.logoUrl || "";
@@ -82,7 +82,7 @@ export const applyTeamBranding = async (teamId) => {
     try {
         const snap = await getDoc(doc(db, "config", `branding_${teamId}`));
         let ct = "soccer";
-        if(snap.exists) {
+        if(snap.exists()) {
             const data = snap.data();
             if(data.primaryColor) document.documentElement.style.setProperty('--aggie-blue', data.primaryColor);
             if(data.secondaryColor) document.documentElement.style.setProperty('--aggie-gold', data.secondaryColor);

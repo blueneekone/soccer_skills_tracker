@@ -189,8 +189,19 @@ window.navigateTo = (viewId, addToHistory = true) => {
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-async function fetchConfig() {
+/** @param {string | undefined} [claimRoleFromToken] Custom-claim role from getIdTokenResult; if omitted, resolved from auth (no force refresh). */
+async function fetchConfig(claimRoleFromToken) {
 	try {
+		let claimRole = claimRoleFromToken;
+		if (claimRole === undefined || claimRole === null) {
+			if (auth.currentUser) {
+				const tr = await auth.currentUser.getIdTokenResult(false);
+				claimRole = tr.claims.role || 'player';
+			} else {
+				claimRole = 'player';
+			}
+		}
+
 		const clubsSnap = await getDocs(collection(db, 'clubs'));
 		window.globalClubs = [];
 		clubsSnap.forEach((d) => window.globalClubs.push(d.data()));
@@ -199,14 +210,17 @@ async function fetchConfig() {
 		globalTeams = [];
 		teamsColSnap.forEach((d) => globalTeams.push({ id: d.id, ...d.data() }));
 
-		const adminsSnap = await getDocs(
-			query(collection(db, 'users'), where('role', '==', 'super_admin'))
-		);
 		globalAdmins = [];
-		adminsSnap.forEach((d) => globalAdmins.push(d.id));
+		if (claimRole === 'super_admin') {
+			const adminsSnap = await getDocs(
+				query(collection(db, 'users'), where('role', '==', 'super_admin'))
+			);
+			adminsSnap.forEach((d) => globalAdmins.push(d.id));
+		}
 	} catch (e) {
 		console.error('Config fetch error:', e);
 		globalTeams = [];
+		globalAdmins = [];
 	}
 }
 
@@ -311,14 +325,22 @@ const initApp = () => {
 
 	window.addEventListener('profileSetupComplete', async (e) => {
 		const newProfileData = e.detail;
-		userProfile = { ...userProfile, ...newProfileData };
+		const tokenResult = await auth.currentUser.getIdTokenResult(true);
+		const claimRole = tokenResult.claims.role || 'player';
+		userProfile = {
+			...(userProfile || {}),
+			...newProfileData,
+			role: newProfileData.role || claimRole
+		};
 
 		document.getElementById('setupUI').classList.add('d-none');
 		document.getElementById('appUI').classList.remove('d-none');
 
 		const displayName =
 			userProfile.playerName ||
-			userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1);
+			(userProfile.role
+				? userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1)
+				: 'Player');
 		setText('activePlayerName', displayName);
 		setText('homePlayerName', (displayName || '').split(' ')[0] || displayName);
 
@@ -504,11 +526,11 @@ onAuthStateChanged(auth, async (user) => {
 			const tokenResult = await user.getIdTokenResult(true);
 			const userRole = tokenResult.claims.role || 'player';
 
-			await fetchConfig();
+			await fetchConfig(userRole);
 
 			const userRef = doc(db, 'users', user.email);
 			const userSnap = await getDoc(userRef);
-			let baseProfile = userSnap.exists ? userSnap.data() : null;
+			let baseProfile = userSnap.exists() ? userSnap.data() : null;
 
 			let fallbackName =
 				(baseProfile && baseProfile.playerName) ||
@@ -529,7 +551,7 @@ onAuthStateChanged(auth, async (user) => {
 					role: userRole,
 					claimsRole: userRole
 				};
-			} else if (userSnap.exists) {
+			} else if (userSnap.exists()) {
 				userProfile = userSnap.data();
 				userProfile.role = userRole;
 				userProfile.claimsRole = userRole;
@@ -537,18 +559,16 @@ onAuthStateChanged(auth, async (user) => {
 			} else {
 				const inviteRef = doc(db, 'player_lookup', user.email.toLowerCase());
 				const inviteSnap = await getDoc(inviteRef);
-				if (inviteSnap.exists) {
+				if (inviteSnap.exists()) {
 					const data = inviteSnap.data();
-					const newProfile = {
-						teamId: data.teamId,
-						clubId: data.clubId,
-						playerName: data.playerName,
-						joinedAt: new Date(),
-						role: userRole,
-						claimsRole: userRole
-					};
-					await setDoc(userRef, newProfile);
-					userProfile = newProfile;
+				const newProfile = {
+					teamId: data.teamId,
+					clubId: data.clubId,
+					playerName: data.playerName,
+					joinedAt: new Date()
+				};
+				await setDoc(userRef, newProfile);
+				userProfile = { ...newProfile, role: userRole };
 				}
 			}
 

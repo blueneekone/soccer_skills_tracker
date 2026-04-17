@@ -49,7 +49,7 @@ export async function inviteCoach(db, targetTeamId, coachEmail) {
         const teamRef = doc(db, "teams", targetTeamId);
         const teamSnap = await getDoc(teamRef);
         
-        if (!teamSnap.exists) return alert("Error: Team not found.");
+        if (!teamSnap.exists()) return alert("Error: Team not found.");
         const clubId = teamSnap.data().clubId;
 
         // 🟢 FIX: Use a batch to write to BOTH collections instantly

@@ -45,6 +45,9 @@ body::before {
 .view-section { padding: var(--spacing-fluid) 16px; width: 100%; box-sizing: border-box; }
 .full-screen-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
 
+/* SvelteKit root wrapper: no layout box so app content participates in body flow */
+.sveltekit-body-root { display: contents; }
+
 /* Utilities */
 .d-none { display: none !important; }
 .auth-error-msg {

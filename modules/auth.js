@@ -105,7 +105,7 @@ export const initSetupDropdowns = (clubs, teams) => {
 			const snap = await getDoc(rosterRef);
 			playerSelect.innerHTML = '<option value="">Select your name...</option>';
 			let players = [];
-			if (snap.exists && snap.data().players) {
+			if (snap.exists() && snap.data().players) {
 				players = [...snap.data().players];
 			}
 			players.sort();
@@ -161,6 +161,9 @@ export const completeUserSetup = async () => {
 		const userEmail = auth.currentUser.email.toLowerCase();
 		const userRef = doc(db, 'users', userEmail);
 
+		const tokenResult = await auth.currentUser.getIdTokenResult(true);
+		const claimRole = tokenResult.claims.role || 'player';
+
 		const newProfileData = {
 			clubId: clubId,
 			teamId: teamId,
@@ -169,10 +172,12 @@ export const completeUserSetup = async () => {
 			privacyProfile: 'strict_minor_defaults',
 			telemetryOptIn: false,
 			biometricOrVideoConsentAt: null,
-			consentPolicyVersion: '2026-04'
+			consentPolicyVersion: '2026-04',
+			role: claimRole
 		};
 
-		await setDoc(userRef, newProfileData, { merge: true });
+		const { role: _omitRole, ...payloadForFirestore } = newProfileData;
+		await setDoc(userRef, payloadForFirestore, { merge: true });
 
 		window.dispatchEvent(new CustomEvent('profileSetupComplete', { detail: newProfileData }));
 	} catch (error) {

@@ -54,7 +54,7 @@ export const loadPlayerPassport = async () => {
     
     try {
         const snap = await getDoc(doc(db, "passports", userEmail));
-        if (snap.exists) {
+        if (snap.exists()) {
             const data = snap.data();
             document.getElementById("passEmergencyName").value = data.emergencyName || "";
             document.getElementById("passEmergencyPhone").value = data.emergencyPhone || "";
