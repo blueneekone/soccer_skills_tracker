@@ -454,7 +454,7 @@ onAuthStateChanged(auth, async (user) => {
 
             await fetchConfig(userRole);
             
-            const userRef = doc(db, "users", user.email);
+            const userRef = doc(db, "users", user.email.toLowerCase());
             const userSnap = await getDoc(userRef);
             let baseProfile = userSnap.exists() ? userSnap.data() : null;
             
