@@ -5,7 +5,9 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import Modal from '$lib/components/Modal.svelte';
-	import Chart from 'chart.js/auto';
+	import { Chart, registerables } from 'chart.js';
+
+	Chart.register(...registerables);
 
 	const profile = $derived(authStore.userProfile);
 
