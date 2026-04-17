@@ -209,9 +209,4 @@
 		margin-top: 10px;
 		font-size: 0.85rem;
 	}
-	.dash-card-body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
 </style>

@@ -11,7 +11,7 @@ service cloud.firestore {
 
     function emailKey() {
       return authed() && request.auth.token.email != null
-        ? lower(request.auth.token.email)
+        ? request.auth.token.email.lower()
         : '';
     }
 
@@ -74,21 +74,47 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/teams/$(tid)).data.clubId;
     }
 
+    // Director scoping helpers — require tokenClub() claim to be set.
+    function directorScopedToTeam(tid) {
+      return isDirector() && tokenClub() != null && teamClubId(tid) == tokenClub();
+    }
+
+    function directorScopedToPlayer(playerEmail) {
+      return isDirector() && tokenClub() != null
+        && exists(/databases/$(database)/documents/users/$(playerEmail))
+        && get(/databases/$(database)/documents/users/$(playerEmail)).data.get('clubId', null) == tokenClub();
+    }
+
     match /users/{userId} {
       allow read: if authed() && (
-        emailKey() == lower(userId)
+        emailKey() == userId.lower()
         || isSuper()
         || (isDirector() && resource.data.clubId == tokenClub())
         || (isCoach() && resource.data.teamId == tokenTeam())
-        || parentHouseholdAllowsChildEmail(lower(userId))
+        || parentHouseholdAllowsChildEmail(userId.lower())
       );
 
       allow create: if isSuper()
-        || (authed() && emailKey() == lower(userId)
-            && !request.resource.data.keys().hasAny(['role']));
+        || (authed() && emailKey() == userId.lower()
+            // householdId is always server-only; never written by clients.
+            && !request.resource.data.keys().hasAny(['householdId'])
+            // role: allowed only when it matches an admin-managed coach_lookup entry.
+            && (!request.resource.data.keys().hasAny(['role'])
+                || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
+                    && request.resource.data.role
+                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('role', 'coach')))
+            // teamId must match the invite record. clubId is org-context only and is
+            // not stored in player_lookup, so only teamId is validated here.
+            && (!request.resource.data.keys().hasAny(['teamId'])
+                || (exists(/databases/$(database)/documents/player_lookup/$(userId.lower()))
+                    && request.resource.data.get('teamId', null)
+                       == get(/databases/$(database)/documents/player_lookup/$(userId.lower())).data.get('teamId', null))
+                || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
+                    && request.resource.data.get('teamId', null)
+                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('teamId', null))));
 
       allow update: if authed() && (
-        (emailKey() == lower(userId)
+        (emailKey() == userId.lower()
           && request.resource.data.get('role', null) == resource.data.get('role', null)
           && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
           && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
@@ -137,41 +163,63 @@ service cloud.firestore {
     }
 
     match /coach_lookup/{coachId} {
-      allow read: if authed() && (emailKey() == lower(coachId) || isSuper() || isDirector());
+      allow read: if authed() && (emailKey() == coachId.lower() || isSuper() || isDirector());
       allow write: if isSuper() || isDirector();
     }
 
     match /player_lookup/{inviteId} {
-      allow read: if authed() && (emailKey() == lower(inviteId) || isSuper() || isCoach() || isDirector());
+      allow read: if authed() && (emailKey() == inviteId.lower() || isSuper() || isCoach() || isDirector());
       allow write: if isSuper() || isCoach() || isDirector();
     }
 
     match /team_workouts/{docId} {
       allow read: if authed();
-      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
-      allow update, delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+      allow create: if isSuper()
+        || directorScopedToTeam(request.resource.data.teamId)
+        || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update, delete: if isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId));
     }
 
     match /schedules/{docId} {
       allow read: if authed();
-      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
-      allow update, delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+      allow create: if isSuper()
+        || directorScopedToTeam(request.resource.data.teamId)
+        || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update, delete: if isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId));
     }
 
     match /assignments/{docId} {
-      allow read: if authed();
-      allow create: if isSuper() || isDirector() || (isCoach() && sameTeam(request.resource.data.teamId));
-      allow update: if isSuper() || isDirector()
+      allow read: if authed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
         || (isCoach() && sameTeam(resource.data.teamId))
-        || (resource.data.player == userDoc().playerName
+        || resource.data.player == userDoc().playerName
+        || parentCanSeePlayerName(resource.data.player)
+      );
+      allow create: if isSuper()
+        || directorScopedToTeam(request.resource.data.teamId)
+        || (isCoach() && sameTeam(request.resource.data.teamId));
+      allow update: if isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId))
+        // Players may only flip their own assignment's status; team membership
+        // is also verified to prevent cross-team name-collision exploits.
+        || (sameTeam(resource.data.teamId)
+            && resource.data.player == userDoc().playerName
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
-      allow delete: if isSuper() || isDirector() || (isCoach() && sameTeam(resource.data.teamId));
+      allow delete: if isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId));
     }
 
     match /reps/{docId} {
       allow read: if authed() && (
         isSuper()
-        || isDirector()
+        || directorScopedToTeam(resource.data.teamId)
         || sameTeam(resource.data.teamId)
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
@@ -184,7 +232,7 @@ service cloud.firestore {
     match /trials/{docId} {
       allow read: if authed() && (
         isSuper()
-        || isDirector()
+        || directorScopedToTeam(resource.data.teamId)
         || sameTeam(resource.data.teamId)
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
@@ -202,7 +250,7 @@ service cloud.firestore {
         isSuper()
         || playerKey == userDoc().playerName
         || parentCanSeePlayerName(playerKey)
-        || isDirector()
+        || directorScopedToTeam(resource.data.teamId)
         || (isCoach() && sameTeam(resource.data.teamId))
       );
       allow create, update: if authed() && (
@@ -214,16 +262,32 @@ service cloud.firestore {
     }
 
     match /evaluations/{docId} {
-      allow read: if authed();
-      allow create: if isSuper() || isDirector()
+      allow read: if authed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId))
+        || resource.data.player == userDoc().playerName
+        || parentCanSeePlayerName(resource.data.player)
+      );
+      allow create: if isSuper()
+        || directorScopedToTeam(request.resource.data.teamId)
         || (isCoach() && sameTeam(request.resource.data.teamId));
-      allow update, delete: if isSuper() || isDirector()
+      allow update, delete: if isSuper()
+        || directorScopedToTeam(resource.data.teamId)
         || (isCoach() && sameTeam(resource.data.teamId));
     }
 
     match /passports/{emailId} {
-      allow read: if authed() && (emailKey() == lower(emailId) || isSuper() || isDirector());
-      allow create, update: if authed() && (emailKey() == lower(emailId) || isSuper() || isDirector());
+      allow read: if authed() && (
+        emailKey() == emailId.lower()
+        || isSuper()
+        || directorScopedToPlayer(emailId.lower())
+      );
+      allow create, update: if authed() && (
+        emailKey() == emailId.lower()
+        || isSuper()
+        || directorScopedToPlayer(emailId.lower())
+      );
       allow delete: if isSuper();
     }
 

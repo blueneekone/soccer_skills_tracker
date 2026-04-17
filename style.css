@@ -192,8 +192,9 @@ input:focus, select:focus, textarea:focus {
 .challenge-banner-text { margin: 0; font-weight: 600; font-size: 0.95rem; }
 
 /* Grid Layout */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--spacing-element); }
-.dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 20px; margin-bottom: 0; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--spacing-element); }
+.dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: clamp(20px, 4vw, 30px) 16px; margin-bottom: 0; }
+.dash-card-body { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
 .dash-icon { font-size: 3rem; margin-bottom: 15px; color: var(--aggie-blue); }
 .icon-large { font-size: 4rem; margin-bottom: 20px; }
 .dash-label { font-weight: 800; font-size: 1.1rem; }
@@ -376,11 +377,17 @@ input:focus, select:focus, textarea:focus {
    15. RESPONSIVE ADJUSTMENTS
    ========================================== */
 @media (max-width: 768px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
+    /* dashboard-grid intentionally NOT overridden: auto-fill with minmax(160px,1fr)
+       gives 2 columns on all phones, 3+ on tablets — no single-col collapse needed */
     .input-row, .admin-input-row, .admin-flex-row, .hw-drill-row, .gameday-bench-row { flex-direction: column; align-items: stretch; }
     .w-50 { width: 100%; }
     .cal-header-row { flex-direction: column; align-items: center; text-align: center; }
     .cert-title { font-size: 2rem; }
     .cert-player-name { font-size: 2.5rem; }
     .cert-footer { flex-direction: column; gap: 30px; align-items: center; }
+}
+
+/* Extra small phones: ensure grid stays 2-col minimum */
+@media (max-width: 360px) {
+    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
 }

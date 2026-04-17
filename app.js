@@ -481,7 +481,14 @@ clubId: (baseProfile && baseProfile.clubId) || (window.globalClubs && window.glo
                 const inviteSnap = await getDoc(inviteRef);
                 if (inviteSnap.exists()) {
                     const data = inviteSnap.data();
-                    const newProfile = { teamId: data.teamId, clubId: data.clubId, playerName: data.playerName, joinedAt: new Date() };
+                    // player_lookup only stores {teamId, playerName}; clubId is absent.
+                    // Omit it rather than writing undefined (Firestore rejects undefined values).
+                    const newProfile = {
+                        teamId: data.teamId,
+                        playerName: data.playerName,
+                        joinedAt: new Date(),
+                        ...(data.clubId != null ? { clubId: data.clubId } : {})
+                    };
                     await setDoc(userRef, newProfile);
                     userProfile = { ...newProfile, role: userRole };
                 }

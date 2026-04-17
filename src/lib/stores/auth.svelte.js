@@ -72,22 +72,44 @@ function createAuthStore() {
 			} else if (userSnap.exists()) {
 				setProfile({ ...baseProfile, role, playerName: fallbackName });
 			} else {
-				// Check player_lookup invite
-				const inviteRef = doc(db, 'player_lookup', firebaseUser.email.toLowerCase());
-				const inviteSnap = await getDoc(inviteRef);
-				if (inviteSnap.exists()) {
-					const data = inviteSnap.data();
+				// Check coach_lookup first (coaches are never in player_lookup)
+				const coachRef = doc(db, 'coach_lookup', firebaseUser.email.toLowerCase());
+				const coachSnap = await getDoc(coachRef);
+				if (coachSnap.exists()) {
+					const data = coachSnap.data();
+					const coachRole = data.role || 'coach';
 					const newProfile = {
 						teamId: data.teamId,
-						clubId: data.clubId,
-						playerName: data.playerName,
+						...(data.clubId ? { clubId: data.clubId } : {}),
+						role: coachRole,
+						playerName: data.playerName || firebaseUser.displayName || fallbackName,
 						joinedAt: new Date()
 					};
 					await setDoc(userRef, newProfile);
+					// syncUserClaims fires async; force-refresh token so role is correct
+					const refreshed = await getIdTokenResult(firebaseUser, true);
+					role = refreshed.claims.role || coachRole;
 					setProfile({ ...newProfile, role });
 				} else {
-					// New user with no profile yet
-					setProfile({ role, playerName: fallbackName });
+					// Check player_lookup invite
+					const inviteRef = doc(db, 'player_lookup', firebaseUser.email.toLowerCase());
+					const inviteSnap = await getDoc(inviteRef);
+					if (inviteSnap.exists()) {
+						const data = inviteSnap.data();
+					// player_lookup only stores {teamId, playerName}; clubId is absent.
+					// Omit it rather than writing undefined (Firestore rejects undefined values).
+					const newProfile = {
+						teamId: data.teamId,
+						playerName: data.playerName,
+						joinedAt: new Date(),
+						...(data.clubId != null ? { clubId: data.clubId } : {})
+					};
+					await setDoc(userRef, newProfile);
+						setProfile({ ...newProfile, role });
+					} else {
+						// New user with no profile yet — send to setup
+						setProfile({ role, playerName: fallbackName });
+					}
 				}
 			}
 		} catch (err) {
