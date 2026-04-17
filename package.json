@@ -20,6 +20,12 @@
     "vite": "^6.0.6"
   },
   "dependencies": {
-    "firebase": "^10.14.1"
+    "canvas-confetti": "^1.9.4",
+    "chart.js": "^4.5.1",
+    "fabric": "^7.2.0",
+    "firebase": "^10.14.1",
+    "pdfjs-dist": "^5.6.205",
+    "sweetalert2": "^11.26.24",
+    "xlsx": "^0.18.5"
   }
 }

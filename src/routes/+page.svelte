@@ -1,12 +1,39 @@
 <script>
-	import { onMount } from 'svelte';
-	import legacyHtml from '$lib/legacy-body.html?raw';
+	import { goto } from '$app/navigation';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 
-	onMount(async () => {
-		await import('$lib/legacy/app.js');
+	$effect(() => {
+		if (authStore.isLoading) return;
+		if (authStore.isAuthenticated && authStore.isProfileComplete) {
+			goto('/home', { replaceState: true });
+		} else if (authStore.isAuthenticated && !authStore.isProfileComplete) {
+			goto('/setup', { replaceState: true });
+		} else {
+			goto('/login', { replaceState: true });
+		}
 	});
 </script>
 
-<div class="legacy-root">
-	{@html legacyHtml}
+<div class="splash-loading">
+	<div class="splash-spinner"></div>
 </div>
+
+<style>
+	.splash-loading {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+	}
+	.splash-spinner {
+		width: 48px;
+		height: 48px;
+		border: 4px solid rgba(255,255,255,0.2);
+		border-top-color: var(--aggie-gold);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+</style>

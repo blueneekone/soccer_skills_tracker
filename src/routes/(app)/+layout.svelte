@@ -1,0 +1,95 @@
+<script>
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import AppHeader from '$lib/components/AppHeader.svelte';
+	import BottomNav from '$lib/components/BottomNav.svelte';
+
+	let { children } = $props();
+
+	const ROLE_ROUTES = {
+		'/admin': ['super_admin'],
+		'/director': ['super_admin', 'director'],
+		'/coach': ['super_admin', 'director', 'coach']
+	};
+
+	// Auth guard + role guard
+	$effect(() => {
+		if (authStore.isLoading) return;
+		if (!authStore.isAuthenticated) {
+			goto('/login', { replaceState: true });
+			return;
+		}
+		if (!authStore.isProfileComplete) {
+			goto('/setup', { replaceState: true });
+			return;
+		}
+		// Role-based route protection
+		const currentPath = $page.url.pathname;
+		for (const [route, allowedRoles] of Object.entries(ROLE_ROUTES)) {
+			if (currentPath.startsWith(route) && !allowedRoles.includes(authStore.role)) {
+				goto('/home', { replaceState: true });
+				return;
+			}
+		}
+	});
+
+	// Load teams + workouts once auth is ready
+	$effect(() => {
+		if (!authStore.isAuthenticated || authStore.isLoading) return;
+		if (!teamsStore.loaded) teamsStore.load(authStore.role);
+		if (authStore.userProfile?.teamId) {
+			const effectiveTid =
+				authStore.role === 'super_admin' || authStore.role === 'director'
+					? null
+					: authStore.userProfile.teamId;
+			if (effectiveTid) workoutsStore.loadForTeam(effectiveTid);
+		}
+		if (authStore.userProfile?.teamId && authStore.userProfile.teamId !== 'admin') {
+			brandingStore.loadForTeam(authStore.userProfile.teamId);
+		}
+	});
+</script>
+
+{#if authStore.isLoading}
+	<div class="splash-loading">
+		<div class="splash-spinner"></div>
+	</div>
+{:else if authStore.isAuthenticated && authStore.isProfileComplete}
+	<AppHeader />
+	<main class="container app-main">
+		{@render children()}
+	</main>
+	<BottomNav />
+{/if}
+
+<style>
+	.app-main {
+		padding-top: 80px;
+		padding-bottom: 100px;
+		min-height: 100vh;
+	}
+
+	.splash-loading {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+	}
+
+	.splash-spinner {
+		width: 48px;
+		height: 48px;
+		border: 4px solid var(--glass-border);
+		border-top-color: var(--aggie-gold);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+</style>
