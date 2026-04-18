@@ -14,10 +14,9 @@
 	let hasSignedWaiver = $state(false);
 	let saving = $state(false);
 
-	let sigCanvas = $state.raw(null);
-	let sigCtx = null;
-	let isSigBlank = $state(true);
-	let isDrawing = false;
+	/** Typed parent/guardian attestation (13+); replaces canvas signature. */
+	let attestorLegalName = $state('');
+	let waiverAcknowledged = $state(false);
 
 	const statusClass = $derived(
 		clearanceStatus === 'RED_CARD'
@@ -57,6 +56,11 @@
 
 	const vpcVerified = $derived(profile?.vpcStatus === 'verified');
 
+	const fullNameOk = (raw) => {
+		const parts = raw.trim().split(/\s+/).filter(Boolean);
+		return parts.length >= 2 && raw.trim().length >= 4;
+	};
+
 	const loadPassport = async () => {
 		if (!auth.currentUser) return;
 		try {
@@ -68,6 +72,8 @@
 				medicalNotes = data.medicalNotes || '';
 				clearanceStatus = data.clearanceStatus || 'CLEARED';
 				hasSignedWaiver = data.hasSignedWaiver || false;
+				attestorLegalName = String(data.waiverSignerLegalName || '');
+				waiverAcknowledged = hasSignedWaiver;
 			}
 		} catch (e) {
 			console.error('Error loading passport', e);
@@ -79,9 +85,15 @@
 			alert('Emergency contact name and phone are required.');
 			return;
 		}
-		if (!isMinorPlayer && isSigBlank) {
-			alert('You must sign the liability waiver.');
-			return;
+		if (!isMinorPlayer) {
+			if (!waiverAcknowledged) {
+				alert('Confirm the waiver by checking the acknowledgment box.');
+				return;
+			}
+			if (!fullNameOk(attestorLegalName)) {
+				alert('Enter the signing parent or guardian’s full legal name (first and last).');
+				return;
+			}
 		}
 		saving = true;
 		try {
@@ -93,12 +105,15 @@
 					'Medical / emergency details saved. The season waiver for minors is completed only after your club records verifiable parental consent (VPC).'
 				);
 			} else {
+				const signer = attestorLegalName.trim().replace(/\s+/g, ' ');
 				await setDoc(
 					doc(db, 'passports', email),
 					{
 						...base,
 						hasSignedWaiver: true,
-						waiverSignedAt: new Date()
+						waiverSignedAt: new Date(),
+						waiverSignerLegalName: signer,
+						waiverMethod: 'typed_parent_attestation'
 					},
 					{ merge: true }
 				);
@@ -114,52 +129,6 @@
 		}
 	};
 
-	const resizeCanvas = () => {
-		if (!sigCanvas?.parentElement?.offsetWidth) return;
-		sigCanvas.width = sigCanvas.parentElement.offsetWidth;
-		sigCanvas.height = 140;
-		sigCtx = sigCanvas.getContext('2d');
-		sigCtx.lineWidth = 2;
-		sigCtx.lineCap = 'round';
-		sigCtx.strokeStyle = '#00263A';
-	};
-
-	const getCoords = (e) => {
-		const rect = sigCanvas.getBoundingClientRect();
-		return {
-			x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-			y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-		};
-	};
-	const startDraw = (e) => {
-		isDrawing = true;
-		sigCtx.beginPath();
-		drawOn(e);
-	};
-	const endDraw = () => {
-		isDrawing = false;
-		isSigBlank = false;
-	};
-	const drawOn = (e) => {
-		if (!isDrawing) return;
-		e.preventDefault();
-		const { x, y } = getCoords(e);
-		sigCtx.lineTo(x, y);
-		sigCtx.stroke();
-		sigCtx.beginPath();
-		sigCtx.moveTo(x, y);
-	};
-	const clearSig = () => {
-		sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-		isSigBlank = true;
-	};
-
-	$effect(() => {
-		if (!isMinorPlayer) {
-			resizeCanvas();
-		}
-	});
-
 	onMount(() => {
 		(async () => {
 			if (auth.currentUser) {
@@ -172,8 +141,6 @@
 			}
 			await loadPassport();
 		})();
-		window.addEventListener('resize', resizeCanvas);
-		return () => window.removeEventListener('resize', resizeCanvas);
 	});
 </script>
 
@@ -212,11 +179,11 @@
 		<div class="card-body">
 			<div class="waiver-text-box">
 				<strong>RELEASE OF LIABILITY AND ASSUMPTION OF RISK</strong><br /><br />
-				By signing below, I acknowledge that soccer is a physical sport that carries inherent risks of injury.
-				I agree to hold the club, its directors, coaches, and SSTRACKER harmless from any liability, claims,
-				or demands arising from my child's participation in training or matches.<br /><br />
-				I certify that the medical information provided above is accurate and I authorize the coaching staff
-				to seek emergency medical treatment if necessary.
+				By entering my full legal name below, I acknowledge that soccer is a physical sport that carries inherent
+				risks of injury. I agree to hold the club, its directors, coaches, and SSTRACKER harmless from any
+				liability, claims, or demands arising from my child’s participation in training or matches.<br /><br />
+				I certify that the medical information provided above is accurate and I authorize the coaching staff to
+				seek emergency medical treatment if necessary.
 			</div>
 
 			{#if isMinorPlayer}
@@ -230,30 +197,30 @@
 						<p class="minor-ok">Parental consent is verified. Save this page after medical details are complete.</p>
 					{:else}
 						<p class="minor-pending">
-							For athletes under 13, a digital canvas signature is not used. Your parent or guardian must
-							complete verifiable parental consent through your club. You can still save medical and emergency
-							information above.
+							For athletes under 13, waiver completion uses verifiable parental consent through your club
+							(VPC), not a self-serve signature in the app. You can still save medical and emergency information
+							above.
 						</p>
 					{/if}
 				</div>
 			{:else}
-				<label>Parent/Guardian Digital Signature</label>
-				<div class="signature-canvas-container">
-					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-					<canvas
-						bind:this={sigCanvas}
-						class="signature-canvas"
-						onmousedown={startDraw}
-						onmouseup={endDraw}
-						onmousemove={drawOn}
-						onmouseout={endDraw}
-						ontouchstart={startDraw}
-						ontouchend={endDraw}
-						ontouchmove={drawOn}
-						role="img"
-						aria-label="Signature canvas"
-					></canvas>
-					<button type="button" class="clear-sig-btn" onclick={clearSig}>✕ Clear</button>
+				<div class="attestation-panel">
+					<label class="attest-label" for="waiver-legal-name">Parent / guardian full legal name</label>
+					<input
+						id="waiver-legal-name"
+						class="attest-input"
+						type="text"
+						autocomplete="name"
+						placeholder="First and last name (must match person accepting liability)"
+						bind:value={attestorLegalName}
+					/>
+					<label class="attest-check">
+						<input type="checkbox" bind:checked={waiverAcknowledged} />
+						<span
+							>I have read and agree to the release above. I understand this typed attestation is recorded
+							with my account for compliance.</span
+						>
+					</label>
 				</div>
 			{/if}
 
@@ -353,5 +320,42 @@
 
 	:global(html.dark) .minor-ok {
 		color: #6ee7b7;
+	}
+
+	.attestation-panel {
+		margin-top: clamp(12px, 2vw, 16px);
+		display: flex;
+		flex-direction: column;
+		gap: clamp(10px, 2vw, 14px);
+	}
+
+	.attest-label {
+		font-weight: 800;
+		font-size: 0.9rem;
+	}
+
+	.attest-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: clamp(10px, 2vw, 14px);
+		border-radius: 16px;
+		border: 1px solid var(--glass-border);
+		font: inherit;
+		background: var(--glass-bg);
+		color: inherit;
+	}
+
+	.attest-check {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 0.88rem;
+		font-weight: 600;
+		line-height: 1.45;
+		cursor: pointer;
+	}
+
+	.attest-check input {
+		margin-top: 4px;
 	}
 </style>

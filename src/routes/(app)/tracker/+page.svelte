@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { db } from '$lib/firebase.js';
 	import { collection, doc, writeBatch, increment } from 'firebase/firestore';
@@ -17,11 +16,9 @@
 	let calDate = $state('');
 	let calTime = $state('');
 
-	// Signature canvas state
-	let sigCanvas;
-	let sigCtx;
-	let isSignatureBlank = $state(true);
-	let isDrawing = false;
+	/** Parent/guardian typed attestation (replaces signature canvas). */
+	let verifierLegalName = $state('');
+	let workoutVerifiedAck = $state(false);
 
 	// Workout selects
 	let selectWarmup = $state('');
@@ -51,14 +48,17 @@
 		sessionItems = sessionItems.filter((_, i) => i !== idx);
 	};
 
+	const fullNameOk = (raw) => {
+		const parts = raw.trim().split(/\s+/).filter(Boolean);
+		return parts.length >= 2 && raw.trim().length >= 4;
+	};
+
 	const clearForm = () => {
 		sessionItems = [];
 		totalMinutes = '';
 		outcome = 'Good';
-		if (sigCtx && sigCanvas) {
-			sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-			isSignatureBlank = true;
-		}
+		verifierLegalName = '';
+		workoutVerifiedAck = false;
 	};
 
 	const getSessionDescription = () => {
@@ -91,7 +91,12 @@
 
 	const submitWorkout = async () => {
 		if (sessionItems.length === 0) return alert('Add drills to your session first!');
-		if (isSignatureBlank) return alert('A parent must sign to verify this workout.');
+		if (!workoutVerifiedAck) {
+			return alert('A parent or guardian must confirm the verification box for this workout.');
+		}
+		if (!fullNameOk(verifierLegalName)) {
+			return alert('Enter the verifier’s full legal name (first and last).');
+		}
 		const mins = parseInt(totalMinutes || 0);
 		if (mins <= 0) return alert('Please enter valid total minutes.');
 		if (!profile?.teamId || !profile?.playerName) return alert('User profile is incomplete.');
@@ -99,6 +104,7 @@
 		try {
 			const batch = writeBatch(db);
 			const repRef = doc(collection(db, 'reps'));
+			const verifier = verifierLegalName.trim().replace(/\s+/g, ' ');
 			batch.set(repRef, {
 				timestamp: new Date(),
 				teamId: profile.teamId,
@@ -106,7 +112,10 @@
 				minutes: mins,
 				drills: sessionItems,
 				drillSummary: sessionItems.map((x) => x.name).join(', '),
-				outcome
+				outcome,
+				verifiedByLegalName: verifier,
+				verificationMethod: 'typed_parent_attestation',
+				verifiedAt: new Date()
 			});
 			const statsRef = doc(db, 'player_stats', profile.playerName);
 			batch.set(statsRef, { teamId: profile.teamId, totalMins: increment(mins), totalWorkouts: increment(1), lastActive: new Date() }, { merge: true });
@@ -120,53 +129,6 @@
 			alert('Database Error: ' + e.message);
 		}
 	};
-
-	// Signature canvas setup
-	const resizeCanvas = () => {
-		if (!sigCanvas) return;
-		if (sigCanvas.parentElement?.offsetWidth > 0) {
-			sigCanvas.width = sigCanvas.parentElement.offsetWidth;
-			sigCanvas.height = 120;
-			sigCtx = sigCanvas.getContext('2d');
-			sigCtx.lineWidth = 2;
-			sigCtx.lineCap = 'round';
-			sigCtx.strokeStyle = '#00263A';
-		}
-	};
-
-	const getCoords = (e) => {
-		const rect = sigCanvas.getBoundingClientRect();
-		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-		const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-		return { x: clientX - rect.left, y: clientY - rect.top };
-	};
-
-	const startDraw = (e) => { isDrawing = true; sigCtx.beginPath(); drawSig(e); };
-	const endDraw = () => { isDrawing = false; sigCtx.beginPath(); checkSig(); };
-	const drawSig = (e) => {
-		if (!isDrawing) return;
-		e.preventDefault();
-		const { x, y } = getCoords(e);
-		sigCtx.lineTo(x, y);
-		sigCtx.stroke();
-		sigCtx.beginPath();
-		sigCtx.moveTo(x, y);
-		isSignatureBlank = false;
-	};
-	const checkSig = () => {
-		const buf = new Uint32Array(sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data.buffer);
-		isSignatureBlank = !buf.some((c) => c !== 0);
-	};
-	const clearSig = () => {
-		sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-		isSignatureBlank = true;
-	};
-
-	onMount(() => {
-		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas);
-		return () => window.removeEventListener('resize', resizeCanvas);
-	});
 </script>
 
 <div class="view-section">
@@ -273,23 +235,27 @@
 				{/each}
 			</div>
 
-			<label>Parent/Coach Signature</label>
-			<div class="signature-canvas-container">
-				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-				<canvas
-					bind:this={sigCanvas}
-					class="signature-canvas"
-					onmousedown={startDraw}
-					onmouseup={endDraw}
-					onmousemove={drawSig}
-					onmouseout={endDraw}
-					ontouchstart={startDraw}
-					ontouchend={endDraw}
-					ontouchmove={drawSig}
-					aria-label="Signature canvas"
-					role="img"
-				></canvas>
-				<button class="clear-sig-btn" onclick={clearSig}>✕ Clear</button>
+			<div class="verify-panel">
+				<span class="verify-heading">Parent / guardian verification</span>
+				<p class="verify-help">
+					A parent or guardian must attest that this session was completed as logged. Typed name is stored with
+					the workout record.
+				</p>
+				<label class="verify-label" for="verify-legal-name">Full legal name of person verifying</label>
+				<input
+					id="verify-legal-name"
+					class="verify-input"
+					type="text"
+					autocomplete="name"
+					placeholder="First and last name"
+					bind:value={verifierLegalName}
+				/>
+				<label class="verify-check">
+					<input type="checkbox" bind:checked={workoutVerifiedAck} />
+					<span
+						>I confirm this workout log is accurate and I am authorized to verify on behalf of the athlete.</span
+					>
+				</label>
 			</div>
 
 			<button class="primary-btn btn-log-workout" onclick={submitWorkout}>💾 Log Workout (+XP)</button>
@@ -358,6 +324,55 @@
 	}
 	.btn-export {
 		flex: 1;
+	}
+	.verify-panel {
+		margin-bottom: clamp(14px, 2.5vw, 18px);
+		padding: clamp(12px, 2vw, 16px);
+		border-radius: 16px;
+		border: 1px solid var(--glass-border);
+		background: rgba(15, 23, 42, 0.03);
+		display: flex;
+		flex-direction: column;
+		gap: clamp(8px, 1.5vw, 12px);
+	}
+	:global(html.dark) .verify-panel {
+		background: rgba(15, 23, 42, 0.35);
+	}
+	.verify-heading {
+		font-weight: 800;
+		font-size: 0.95rem;
+	}
+	.verify-help {
+		margin: 0;
+		font-size: 0.85rem;
+		line-height: 1.45;
+		opacity: 0.9;
+	}
+	.verify-label {
+		font-weight: 800;
+		font-size: 0.82rem;
+	}
+	.verify-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: clamp(10px, 2vw, 12px);
+		border-radius: 14px;
+		border: 1px solid var(--glass-border);
+		font: inherit;
+		background: var(--glass-bg);
+		color: inherit;
+	}
+	.verify-check {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 0.86rem;
+		font-weight: 600;
+		line-height: 1.45;
+		cursor: pointer;
+	}
+	.verify-check input {
+		margin-top: 4px;
 	}
 	.session-item-title { font-weight: 700; }
 	.session-item-detail { font-size: 0.85rem; color: var(--muted-slate); }
