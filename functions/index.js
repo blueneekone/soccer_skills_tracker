@@ -93,6 +93,46 @@ function assertClubStaff(request) {
 }
 
 /**
+ * Coach / director / super_admin — allowed to send guarded athlete messages.
+ * @param {any} request Callable request
+ * @return {Object} Actor with role, teamId, clubId, email.
+ */
+function assertCoachMessageSender(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role;
+  const email = normEmail(request.auth.token.email);
+  const teamId = request.auth.token.teamId || null;
+  const clubId = request.auth.token.clubId || null;
+  if (role === 'super_admin') {
+    return {role, teamId, clubId, email};
+  }
+  if (role === 'director') {
+    if (!clubId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is missing club scope; sign out and back in.',
+      );
+    }
+    return {role, teamId, clubId, email};
+  }
+  if (role === 'coach') {
+    if (!teamId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is missing team scope; sign out and back in.',
+      );
+    }
+    return {role, teamId, clubId, email};
+  }
+  throw new HttpsError(
+      'permission-denied',
+      'Only coaches, directors, or admins may send staff messages.',
+  );
+}
+
+/**
  * @param {unknown} e
  * @return {string|null}
  */
@@ -527,6 +567,162 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
   });
 
   return {ok: true, playerEmail};
+});
+
+/**
+ * SafeSport / Epic 1.4: coach or director sends in-app message to a rostered
+ * athlete. Minors get parent emails denormalized for CC visibility; audit log
+ * mirrors metadata (not full body in messaging_audit).
+ */
+exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
+  const actor = assertCoachMessageSender(request);
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const playerName =
+      typeof data.playerName === 'string' ? data.playerName.trim() : '';
+  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
+  if (!teamId || !playerName || !bodyRaw) {
+    throw new HttpsError(
+        'invalid-argument',
+        'teamId, playerName, and body are required.',
+    );
+  }
+  if (bodyRaw.length > 4000) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Message too long (max 4000 characters).',
+    );
+  }
+
+  const tSnap = await db.collection('teams').doc(teamId).get();
+  if (!tSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const teamClubId = tSnap.data().clubId || null;
+
+  if (actor.role === 'coach' && actor.teamId !== teamId) {
+    throw new HttpsError(
+        'permission-denied',
+        'You can only message your team.',
+    );
+  }
+  if (actor.role === 'director') {
+    if (!teamClubId || teamClubId !== actor.clubId) {
+      throw new HttpsError(
+          'permission-denied',
+          'Team is not in your club.',
+      );
+    }
+  }
+
+  const lookupSnap = await db.collection('player_lookup')
+      .where('teamId', '==', teamId)
+      .where('playerName', '==', playerName)
+      .limit(2)
+      .get();
+
+  if (lookupSnap.empty) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Add the athlete login email on the roster before messaging.',
+    );
+  }
+  if (lookupSnap.size > 1) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Duplicate roster links for this name; resolve in Firestore.',
+    );
+  }
+
+  const toPlayerEmail = normEmail(lookupSnap.docs[0].id);
+  if (!toPlayerEmail) {
+    throw new HttpsError('failed-precondition', 'Invalid player email key.');
+  }
+
+  const uSnap = await db.collection('users').doc(toPlayerEmail).get();
+  if (!uSnap.exists) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Athlete has not finished account setup.',
+    );
+  }
+  const u = uSnap.data();
+  if (u.teamId !== teamId) {
+    throw new HttpsError('failed-precondition', 'Athlete is not on this team.');
+  }
+
+  const actorEmail = actor.email || '';
+  if (normEmail(actorEmail) === toPlayerEmail) {
+    throw new HttpsError('invalid-argument', 'Cannot message yourself.');
+  }
+
+  let minorRecipient = u.isMinor === true;
+  if (!minorRecipient && u.dateOfBirth) {
+    try {
+      minorRecipient = computeAgeYears(u.dateOfBirth) < 13;
+    } catch (e) {
+      logger.warn('sendCoachPlayerMessage: age check failed', e);
+    }
+  }
+
+  /** @type {string[]} */
+  let ccParentEmails = [];
+  if (minorRecipient && u.householdId) {
+    const hSnap = await db.collection('households').doc(u.householdId).get();
+    if (hSnap.exists) {
+      const pe = hSnap.data().parentEmails || [];
+      ccParentEmails = [...new Set(
+          pe.map((x) => normEmail(String(x))).filter(Boolean),
+      )];
+    }
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const bodyPreview = bodyRaw.length > 200 ?
+    bodyRaw.slice(0, 200) + '…' :
+    bodyRaw;
+
+  const msgRef = db.collection('in_app_messages').doc();
+  const batch = db.batch();
+
+  batch.set(msgRef, {
+    teamId,
+    teamClubId: teamClubId || null,
+    fromEmail: actorEmail,
+    toPlayerEmail,
+    toPlayerName: playerName,
+    body: bodyRaw,
+    bodyPreview,
+    minorRecipient,
+    ccParentEmails,
+    createdAt: now,
+    createdByRole: actor.role,
+  });
+
+  batch.set(db.collection('messaging_audit').doc(), {
+    action: 'coach_player_message',
+    messageId: msgRef.id,
+    teamId,
+    fromEmail: actorEmail,
+    toPlayerEmail,
+    toPlayerName: playerName,
+    minorRecipient,
+    ccParentEmails,
+    bodyPreview,
+    bodyLength: bodyRaw.length,
+    actorUid: request.auth.uid,
+    at: now,
+  });
+
+  await batch.commit();
+
+  return {
+    ok: true,
+    messageId: msgRef.id,
+    minorRecipient,
+    ccCount: ccParentEmails.length,
+    warnNoCc: minorRecipient && ccParentEmails.length === 0,
+  };
 });
 
 /**

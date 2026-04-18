@@ -31,6 +31,46 @@
         { "fieldPath": "playerEmail", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "player_lookup",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "playerName", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "in_app_messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "toPlayerEmail", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "in_app_messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ccParentEmails", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "in_app_messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fromEmail", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "in_app_messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamClubId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

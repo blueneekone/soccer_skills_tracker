@@ -106,6 +106,13 @@
 		<DashCard icon="ph-list" label="Log Workout" onclick={() => goto('/tracker')} />
 		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" onclick={() => goto('/passport')} />
 		<DashCard icon="ph-chart-bar" label="My Stats" onclick={() => goto('/stats')} />
+		<DashCard
+			icon="ph-chat-circle"
+			label="Messages"
+			borderVariant="gray"
+			hidden={role !== 'player' && role !== 'parent'}
+			onclick={() => goto('/messages')}
+		/>
 		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={role === 'super_admin' || role === 'director' || role === 'registrar'} onclick={() => goto('/challenges')} />
 		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" onclick={() => goto('/trophies')} />
 

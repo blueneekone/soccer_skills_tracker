@@ -413,6 +413,25 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Epic 1.4: coach/staff → athlete messages (writes via sendCoachPlayerMessage only).
+    match /in_app_messages/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['fromEmail'])
+            && emailKey() == resource.data.fromEmail.lower())
+        || (resource.data.keys().hasAll(['toPlayerEmail'])
+            && emailKey() == resource.data.toPlayerEmail.lower())
+        || (isParent() && resource.data.keys().hasAll(['ccParentEmails'])
+            && resource.data.ccParentEmails.hasAny([emailKey()]))
+        || (isDirector() && resource.data.keys().hasAll(['teamClubId'])
+            && resource.data.teamClubId == tokenClub())
+        || (isCoach() && resource.data.teamId == tokenTeam()
+            && resource.data.keys().hasAll(['fromEmail'])
+            && emailKey() == resource.data.fromEmail.lower())
+      );
+      allow create, update, delete: if false;
+    }
+
     // SafeSport / Epic 2.3: store mirrored copies when coach messages a minor (server or client enqueue).
     match /messaging_audit/{docId} {
       allow read: if isSuper();

@@ -11,9 +11,11 @@
 	import StrategyTab from '$lib/components/coach/StrategyTab.svelte';
 	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 	import ToolsTab from '$lib/components/coach/ToolsTab.svelte';
+	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 
 	const TABS = [
 		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
+		{ id: 'messages', label: '💬 Messages', icon: 'ph-chat-circle' },
 		{ id: 'plan', label: '📅 Plan', icon: 'ph-calendar' },
 		{ id: 'evals', label: '📋 Evals', icon: 'ph-clipboard-text' },
 		{ id: 'strategy', label: '🖌️ Strategy', icon: 'ph-paint-brush' },
@@ -104,6 +106,8 @@
 	<div class="tab-content">
 		{#if activeTab === 'roster'}
 			<RosterTab teamId={selectedTeamId} teams={myTeams()} />
+		{:else if activeTab === 'messages'}
+			<MessagesTab teamId={selectedTeamId} {players} />
 		{:else if activeTab === 'plan'}
 			<PlanTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {players} />
 		{:else if activeTab === 'evals'}

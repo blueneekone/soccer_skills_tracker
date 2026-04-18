@@ -82,7 +82,11 @@
 				<input type="text" bind:value={addName} placeholder="Player Name" class="flex-1" />
 				<input type="number" bind:value={addJersey} placeholder="#" class="w-50" />
 			</div>
-			<input type="email" bind:value={addEmail} placeholder="Parent Email (Optional)" />
+			<input
+				type="email"
+				bind:value={addEmail}
+				placeholder="Athlete login email (optional; required for SafeSport messaging)"
+			/>
 			<button class="secondary-btn w-100" onclick={addPlayer}>+ Add Player</button>
 		</div>
 	</div>
