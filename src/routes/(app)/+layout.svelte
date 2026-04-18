@@ -13,7 +13,8 @@
 	const ROLE_ROUTES = {
 		'/admin': ['super_admin'],
 		'/director': ['super_admin', 'director'],
-		'/coach': ['super_admin', 'director', 'coach']
+		'/coach': ['super_admin', 'director', 'coach'],
+		'/registrar': ['super_admin', 'director', 'registrar']
 	};
 
 	// Auth guard + role guard
@@ -43,7 +44,9 @@
 		if (!teamsStore.loaded) teamsStore.load(authStore.role);
 		if (authStore.userProfile?.teamId) {
 			const effectiveTid =
-				authStore.role === 'super_admin' || authStore.role === 'director'
+				authStore.role === 'super_admin' ||
+				authStore.role === 'director' ||
+				authStore.role === 'registrar'
 					? null
 					: authStore.userProfile.teamId;
 			if (effectiveTid) workoutsStore.loadForTeam(effectiveTid);

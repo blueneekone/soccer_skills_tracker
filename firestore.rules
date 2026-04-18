@@ -56,6 +56,30 @@ service cloud.firestore {
       return tokenRole() == 'parent';
     }
 
+    function isRegistrar() {
+      return tokenRole() == 'registrar';
+    }
+
+    function registrarTeamInClub(tid) {
+      return isRegistrar() && tokenClub() != null
+        && exists(/databases/$(database)/documents/teams/$(tid))
+        && teamClubId(tid) == tokenClub();
+    }
+
+    // In-club team change only (cross-club / multi-doc roster moves: registrarTransferPlayer).
+    function registrarUserTeamPatchOk(userId) {
+      return isRegistrar() && tokenClub() != null
+        && exists(/databases/$(database)/documents/users/$(userId))
+        && resource.data.clubId == tokenClub()
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+        && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
+        && exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId))
+        && teamClubId(request.resource.data.teamId) == resource.data.clubId
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']);
+    }
+
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(emailKey())).data;
     }
@@ -112,6 +136,7 @@ service cloud.firestore {
         emailKey() == userId.lower()
         || isSuper()
         || (isDirector() && resource.data.clubId == tokenClub())
+        || (isRegistrar() && resource.data.clubId == tokenClub())
         || (isCoach() && resource.data.teamId == tokenTeam())
         || parentHouseholdAllowsChildEmail(userId.lower())
       );
@@ -126,7 +151,11 @@ service cloud.firestore {
             && (!request.resource.data.keys().hasAny(['role'])
                 || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
                     && request.resource.data.role
-                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('role', 'coach')))
+                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('role', 'coach'))
+                || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
+                    && request.resource.data.role == 'registrar'
+                    && request.resource.data.get('clubId', null)
+                       == get(/databases/$(database)/documents/registrar_lookup/$(userId.lower())).data.get('clubId', null)))
             // teamId must match the invite record. clubId is org-context only and is
             // not stored in player_lookup, so only teamId is validated here.
             && (!request.resource.data.keys().hasAny(['teamId'])
@@ -135,7 +164,10 @@ service cloud.firestore {
                        == get(/databases/$(database)/documents/player_lookup/$(userId.lower())).data.get('teamId', null))
                 || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
                     && request.resource.data.get('teamId', null)
-                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('teamId', null))));
+                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('teamId', null))
+                || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
+                    && (!request.resource.data.keys().hasAny(['teamId'])
+                        || request.resource.data.get('teamId', null) == null))));
 
       allow update: if authed() && (
         (emailKey() == userId.lower()
@@ -146,6 +178,7 @@ service cloud.firestore {
           && !request.resource.data.diff(resource.data).affectedKeys()
                .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']))
         || isSuper()
+        || registrarUserTeamPatchOk(userId)
       );
 
       allow delete: if isSuper();
@@ -181,11 +214,13 @@ service cloud.firestore {
         || sameTeam(teamId)
         || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
           && teamClubId(teamId) == tokenClub())
+        || registrarTeamInClub(teamId)
       );
       allow write: if isSuper()
         || (isCoach() && sameTeam(teamId))
         || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
-          && teamClubId(teamId) == tokenClub());
+          && teamClubId(teamId) == tokenClub())
+        || registrarTeamInClub(teamId);
     }
 
     match /coach_lookup/{coachId} {
@@ -193,9 +228,36 @@ service cloud.firestore {
       allow write: if isSuper() || isDirector();
     }
 
+    match /registrar_lookup/{registrarId} {
+      allow read: if authed() && (
+        emailKey() == registrarId.lower()
+        || isSuper()
+        || isDirector()
+      );
+      allow create, update: if isSuper()
+        || (isDirector() && request.resource.data.clubId == tokenClub());
+      allow delete: if isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub());
+    }
+
     match /player_lookup/{inviteId} {
-      allow read: if authed() && (emailKey() == inviteId.lower() || isSuper() || isCoach() || isDirector());
-      allow write: if isSuper() || isCoach() || isDirector();
+      allow read: if authed() && (
+        emailKey() == inviteId.lower()
+        || isSuper()
+        || isCoach()
+        || isDirector()
+        || isRegistrar()
+      );
+      allow create, update: if isSuper()
+        || isDirector()
+        || isCoach()
+        || (isRegistrar() && tokenClub() != null
+          && teamClubId(request.resource.data.teamId) == tokenClub());
+      allow delete: if isSuper()
+        || isDirector()
+        || isCoach()
+        || (isRegistrar() && resource.data.teamId != null
+          && teamClubId(resource.data.teamId) == tokenClub());
     }
 
     match /team_workouts/{docId} {

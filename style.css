@@ -391,3 +391,38 @@ input:focus, select:focus, textarea:focus {
 @media (max-width: 360px) {
     .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ==========================================
+   16. DARK MODE (themeStore: html.dark)
+   ========================================== */
+html.dark {
+    --aggie-blue: #e2e8f0;
+    --muted-slate: #94a3b8;
+    --light-blue: #1e293b;
+    --glass-bg: rgba(15, 23, 42, 0.88);
+    --glass-border: rgba(148, 163, 184, 0.22);
+    --shadow-premium: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.06);
+}
+
+html.dark body {
+    color: var(--aggie-blue);
+    background: #0f172a url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat fixed;
+}
+
+html.dark body::before {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.97) 0%, rgba(30, 41, 59, 0.88) 100%);
+}
+
+html.dark .card-header {
+    border-bottom-color: rgba(226, 232, 240, 0.12);
+}
+
+html.dark .nav-item:hover {
+    background: rgba(226, 232, 240, 0.08);
+}
+
+html.dark .nav-item.active {
+    color: var(--aggie-gold);
+    background: rgba(251, 191, 36, 0.12);
+}

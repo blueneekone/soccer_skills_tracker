@@ -80,7 +80,7 @@
 			};
 
 			await setDoc(userRef, profileData, { merge: true });
-			await authStore.refresh();
+			await authStore.refresh({ silent: true });
 			goto('/home', { replaceState: true });
 		} catch (err) {
 			errorMsg = 'Error saving profile: ' + err.message;

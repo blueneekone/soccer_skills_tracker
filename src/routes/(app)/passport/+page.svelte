@@ -163,7 +163,7 @@
 			if (auth.currentUser) {
 				try {
 					await getIdTokenResult(auth.currentUser, true);
-					await authStore.refresh();
+					await authStore.refresh({ silent: true });
 				} catch (_) {
 					/* ignore */
 				}

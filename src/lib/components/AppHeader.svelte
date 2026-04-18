@@ -24,6 +24,14 @@
 		<div class="player-info">Player: <span class="font-bold">{displayName}</span></div>
 	</button>
 	<div class="header-action-group">
+		<button
+			class="header-icon-btn"
+			type="button"
+			onclick={() => goto('/settings')}
+			aria-label="Profile and settings"
+		>
+			<i class="ph ph-gear"></i>
+		</button>
 		{#if authStore.role !== 'super_admin'}
 			<button class="action-btn btn-support text-white" onclick={() => goto('/support')}>
 				<i class="ph ph-lifebuoy support-icon"></i>
@@ -41,5 +49,22 @@
 		padding: 0;
 		cursor: pointer;
 		text-align: left;
+	}
+
+	.header-icon-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		border: 1px solid var(--glass-border);
+		background: var(--glass-bg);
+		color: var(--aggie-blue);
+		cursor: pointer;
+	}
+
+	.header-icon-btn i {
+		font-size: 1.25rem;
 	}
 </style>

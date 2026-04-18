@@ -35,6 +35,35 @@ function assertDirectorOrSuper(request) {
 }
 
 /**
+ * Assert caller is club staff for roster transfers.
+ * @param {any} request Callable request
+ * @return {Object} Actor with role, clubId, email
+ */
+function assertClubStaff(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role;
+  const clubId = request.auth.token.clubId || null;
+  if (role === 'super_admin') {
+    return {role, clubId, email: request.auth.token.email};
+  }
+  if (role === 'director' || role === 'registrar') {
+    if (!clubId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is missing club scope; sign out and back in.',
+      );
+    }
+    return {role, clubId, email: request.auth.token.email};
+  }
+  throw new HttpsError(
+      'permission-denied',
+      'Only club staff may perform this action.',
+  );
+}
+
+/**
  * @param {unknown} e
  * @return {string|null}
  */
@@ -371,6 +400,150 @@ exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
   await batch.commit();
 
   return {playerEmail, vpcStatus: 'verified'};
+});
+
+/**
+ * Move a player (users + player_lookup + rosters) to another team/club.
+ * Caller must be super_admin or club staff for the player's current club
+ * (outbound) or the destination club (inbound).
+ */
+exports.registrarTransferPlayer = onCall({region: REGION}, async (request) => {
+  const actor = assertClubStaff(request);
+  const data = request.data || {};
+  const playerEmail = normEmail(data.playerEmail);
+  const targetTeamId =
+      typeof data.targetTeamId === 'string' ? data.targetTeamId.trim() : '';
+  if (!playerEmail || !targetTeamId) {
+    throw new HttpsError(
+        'invalid-argument',
+        'playerEmail and targetTeamId are required.',
+    );
+  }
+
+  const tSnap = await db.collection('teams').doc(targetTeamId).get();
+  if (!tSnap.exists) {
+    throw new HttpsError('not-found', 'Target team not found.');
+  }
+  const newClubId = tSnap.data().clubId || null;
+  if (!newClubId) {
+    throw new HttpsError('failed-precondition', 'Target team missing clubId.');
+  }
+
+  const uRef = db.collection('users').doc(playerEmail);
+  const plRef = db.collection('player_lookup').doc(playerEmail);
+  const [uSnap, plSnap] = await Promise.all([uRef.get(), plRef.get()]);
+
+  let playerName;
+  let oldTeamId;
+  let oldClubId = null;
+
+  if (uSnap.exists) {
+    const u = uSnap.data();
+    playerName = u.playerName;
+    oldTeamId = u.teamId || null;
+    oldClubId = u.clubId || null;
+  }
+  if (!playerName && plSnap.exists) {
+    const pl = plSnap.data();
+    playerName = pl.playerName;
+    oldTeamId = oldTeamId || pl.teamId || null;
+  }
+  if (!playerName) {
+    throw new HttpsError(
+        'not-found',
+        'No player account or invite found for that email.',
+    );
+  }
+
+  if (!oldClubId && oldTeamId) {
+    const ot = await db.collection('teams').doc(oldTeamId).get();
+    if (ot.exists) {
+      oldClubId = ot.data().clubId || null;
+    }
+  }
+
+  if (actor.role !== 'super_admin') {
+    const ac = actor.clubId;
+    const canOut = oldClubId != null && ac === oldClubId;
+    const canIn = ac === newClubId;
+    if (!canOut && !canIn) {
+      throw new HttpsError(
+          'permission-denied',
+          'Staff must belong to the player current club or destination club.',
+      );
+    }
+  }
+
+  const uClub = uSnap.exists ? (uSnap.data().clubId || null) : null;
+  if (oldTeamId === targetTeamId &&
+      (uClub === newClubId || !uSnap.exists)) {
+    return {
+      ok: true,
+      noop: true,
+      playerEmail,
+      targetTeamId,
+      playerName,
+    };
+  }
+
+  const batch = db.batch();
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  if (uSnap.exists) {
+    batch.set(uRef, {
+      teamId: targetTeamId,
+      clubId: newClubId,
+    }, {merge: true});
+  }
+
+  batch.set(plRef, {
+    teamId: targetTeamId,
+    playerName,
+  }, {merge: true});
+
+  if (oldTeamId && oldTeamId !== targetTeamId) {
+    const oldR = db.collection('rosters').doc(oldTeamId);
+    const oldRs = await oldR.get();
+    if (oldRs.exists) {
+      const d = oldRs.data();
+      const players = (d.players || []).filter((p) => p !== playerName);
+      const jerseys = {...(d.jerseys || {})};
+      delete jerseys[playerName];
+      batch.set(oldR, {players, jerseys}, {merge: true});
+    }
+  }
+
+  const newR = db.collection('rosters').doc(targetTeamId);
+  const newRs = await newR.get();
+  const players = newRs.exists ? [...(newRs.data().players || [])] : [];
+  const jerseys = newRs.exists ? {...(newRs.data().jerseys || {})} : {};
+  if (!players.includes(playerName)) {
+    players.push(playerName);
+  }
+  batch.set(newR, {players, jerseys}, {merge: true});
+
+  batch.set(db.collection('security_audit').doc(), {
+    action: 'registrarTransferPlayer',
+    playerEmail,
+    playerName,
+    oldTeamId: oldTeamId || null,
+    oldClubId: oldClubId || null,
+    targetTeamId,
+    newClubId,
+    actorEmail: actor.email || null,
+    actorUid: request.auth.uid,
+    at: now,
+  });
+
+  await batch.commit();
+
+  return {
+    ok: true,
+    playerEmail,
+    targetTeamId,
+    newClubId,
+    playerName,
+  };
 });
 
 /**

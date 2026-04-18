@@ -16,7 +16,9 @@
 	const firstName = $derived((displayName || '').split(' ')[0] || displayName);
 
 	const effectiveTid = $derived(
-		role === 'super_admin' || role === 'director' ? null : profile?.teamId
+		role === 'super_admin' || role === 'director' || role === 'registrar'
+			? null
+			: profile?.teamId
 	);
 
 	let scheduleItems = $state([]);
@@ -50,7 +52,7 @@
 
 	// Load homework
 	$effect(() => {
-		if (!profile?.playerName || role === 'super_admin' || role === 'director') {
+		if (!profile?.playerName || role === 'super_admin' || role === 'director' || role === 'registrar') {
 			hwLoading = false;
 			return;
 		}
@@ -104,7 +106,7 @@
 		<DashCard icon="ph-list" label="Log Workout" onclick={() => goto('/tracker')} />
 		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" onclick={() => goto('/passport')} />
 		<DashCard icon="ph-chart-bar" label="My Stats" onclick={() => goto('/stats')} />
-		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={role === 'super_admin' || role === 'director'} onclick={() => goto('/challenges')} />
+		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={role === 'super_admin' || role === 'director' || role === 'registrar'} onclick={() => goto('/challenges')} />
 		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" onclick={() => goto('/trophies')} />
 
 		<a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
@@ -119,6 +121,13 @@
 		<DashCard icon="ph-megaphone" label="Coach Tools" borderVariant="gray" hidden={!hasCoachAccess} onclick={() => goto('/coach')} />
 		<DashCard icon="ph-gear" label="Command Center" borderVariant="gray" hidden={role !== 'super_admin'} onclick={() => goto('/admin')} />
 		<DashCard icon="ph-briefcase" label="Director Portal" borderVariant="purple" hidden={role !== 'super_admin' && role !== 'director'} onclick={() => goto('/director')} />
+		<DashCard
+			icon="ph-swap"
+			label="Registrar console"
+			borderVariant="purple"
+			hidden={role !== 'registrar' && role !== 'director' && role !== 'super_admin'}
+			onclick={() => goto('/registrar')}
+		/>
 	</div>
 
 	<!-- Team schedule -->
@@ -128,7 +137,15 @@
 			{#if scheduleLoading}
 				<ul class="session-list"><li class="session-empty">Loading schedule...</li></ul>
 			{:else if !effectiveTid}
-				<ul class="session-list"><li class="session-empty">Select a team to view schedule.</li></ul>
+				<ul class="session-list">
+					<li class="session-empty">
+						{#if role === 'registrar' || role === 'director' || role === 'super_admin'}
+							No personal team schedule. Use Coach or Registrar tools for team calendars.
+						{:else}
+							Select a team to view schedule.
+						{/if}
+					</li>
+				</ul>
 			{:else if scheduleItems.length === 0}
 				<ul class="session-list"><li class="session-empty">No upcoming events.</li></ul>
 			{:else}
@@ -150,8 +167,8 @@
 	<div class="card border-orange">
 		<div class="card-header bg-orange-header">🎯 My Homework</div>
 		<div class="card-body p-0">
-			{#if role === 'super_admin' || role === 'director'}
-				<ul class="session-list"><li class="session-empty" style="color:#ea580c">Admins don't receive personal homework.</li></ul>
+			{#if role === 'super_admin' || role === 'director' || role === 'registrar'}
+				<ul class="session-list"><li class="session-empty" style="color:#ea580c">Staff accounts don't receive player homework.</li></ul>
 			{:else if hwLoading}
 				<ul class="session-list"><li class="session-empty">Loading assignments...</li></ul>
 			{:else if homeworkItems.length === 0}

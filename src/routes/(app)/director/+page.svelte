@@ -5,9 +5,11 @@
 	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import HouseholdComplianceTab from '$lib/components/director/HouseholdComplianceTab.svelte';
+	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 
 	const TABS = [
 		{ id: 'teams', label: 'Teams & Coaches', icon: 'ph-users' },
+		{ id: 'registrars', label: 'Registrars', icon: 'ph-swap' },
 		{ id: 'brand', label: 'Club Branding', icon: 'ph-palette' },
 		{ id: 'compliance', label: 'Compliance & Clearances', icon: 'ph-shield-check' },
 		{ id: 'household', label: 'Households & COPPA', icon: 'ph-house-line' }
@@ -26,6 +28,8 @@
 	<div class="tab-content">
 		{#if activeTab === 'teams'}
 			<TeamsTab {clubId} />
+		{:else if activeTab === 'registrars'}
+			<RegistrarInviteTab {clubId} />
 		{:else if activeTab === 'brand'}
 			<BrandingTab {clubId} />
 		{:else if activeTab === 'compliance'}
