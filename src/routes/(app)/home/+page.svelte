@@ -101,8 +101,8 @@
 		</div>
 	{/if}
 
-	<!-- Bento grid dashboard -->
-	<div class="dashboard-grid">
+	<!-- Bento grid dashboard (Epic 1.2 + Phase 0.2 shared tokens in style.css) -->
+	<div class="dashboard-grid bento-grid">
 		<DashCard icon="ph-list" label="Log Workout" onclick={() => goto('/tracker')} />
 		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" onclick={() => goto('/passport')} />
 		<DashCard icon="ph-chart-bar" label="My Stats" onclick={() => goto('/stats')} />
@@ -153,7 +153,7 @@
 					{#each scheduleItems as evt}
 						<li class="session-item">
 							<div>
-								<b style="color:var(--aggie-blue)">{evt.type}</b>: {evt.location}<br />
+								<b class="schedule-evt-type">{evt.type}</b>: {evt.location}<br />
 								<span class="text-sm-sub">{evt.date} @ {evt.time}</span>
 							</div>
 						</li>
@@ -168,7 +168,7 @@
 		<div class="card-header bg-orange-header">🎯 My Homework</div>
 		<div class="card-body p-0">
 			{#if role === 'super_admin' || role === 'director' || role === 'registrar'}
-				<ul class="session-list"><li class="session-empty" style="color:#ea580c">Staff accounts don't receive player homework.</li></ul>
+				<ul class="session-list"><li class="session-empty staff-hw-msg">Staff accounts don't receive player homework.</li></ul>
 			{:else if hwLoading}
 				<ul class="session-list"><li class="session-empty">Loading assignments...</li></ul>
 			{:else if homeworkItems.length === 0}
@@ -199,6 +199,12 @@
 </div>
 
 <style>
+	.schedule-evt-type {
+		color: var(--aggie-blue);
+	}
+	.staff-hw-msg {
+		color: #ea580c;
+	}
 	.hw-item {
 		border-left: 4px solid #ea580c;
 		align-items: flex-start;

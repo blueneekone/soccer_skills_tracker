@@ -20,7 +20,9 @@
     --radius-premium: 24px; 
     --spacing-fluid: clamp(20px, 4vw, 32px); /* Dynamically resizes padding */
     --spacing-element: 20px;
-    --shadow-premium: 0 20px 40px -10px rgba(0, 0, 0, 0.15), inset 0 1px 1px var(--glass-border);
+    /* Liquid Glass specular (aligned with .cursorrules) */
+    --shadow-premium: 0 20px 40px -10px rgba(15, 23, 42, 0.08),
+        inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 /* ==========================================
@@ -191,8 +193,13 @@ input:focus, select:focus, textarea:focus {
 .challenge-banner-title { margin: 0 0 5px 0; font-weight: 900; }
 .challenge-banner-text { margin: 0; font-weight: 600; font-size: 0.95rem; }
 
-/* Grid Layout */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--spacing-element); }
+/* Grid Layout — Bento / roadmap: auto-fit + fluid gap */
+.dashboard-grid,
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: clamp(16px, 3vw, 24px);
+}
 .dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: clamp(20px, 4vw, 30px) 16px; margin-bottom: 0; }
 .dash-card-body { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
 .dash-icon { font-size: 3rem; margin-bottom: 15px; color: var(--aggie-blue); }
@@ -389,7 +396,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Extra small phones: ensure grid stays 2-col minimum */
 @media (max-width: 360px) {
-    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid,
+    .bento-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ==========================================

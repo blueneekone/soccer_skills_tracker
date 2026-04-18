@@ -6,6 +6,7 @@ export default defineConfig({
 	plugins: [
 		sveltekit(),
 		SvelteKitPWA({
+			// Epic 1.1: precache is content-addressed via Vite build output (hashed JS/CSS in client/).
 			registerType: 'autoUpdate',
 			strategies: 'generateSW',
 			includeAssets: ['manifest.json', 'Images/**/*.png'],
@@ -32,6 +33,9 @@ export default defineConfig({
 			workbox: {
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff2}'],
 				maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+				cleanupOutdatedCaches: true,
+				clientsClaim: true,
+				skipWaiting: true,
 				navigateFallback: '/index.html',
 				navigateFallbackDenylist: [/^\/api\//]
 			},
