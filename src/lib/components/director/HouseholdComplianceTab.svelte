@@ -8,7 +8,7 @@
 
 	const linkHousehold = httpsCallable(functions, 'linkHousehold');
 	const setPlayerDateOfBirth = httpsCallable(functions, 'setPlayerDateOfBirth');
-	const verifyVpcForMinor = httpsCallable(functions, 'verifyVpcForMinor');
+	const directorApproveVpc = httpsCallable(functions, 'directorApproveVpc');
 	const enqueueMinorRetentionPurge = httpsCallable(functions, 'enqueueMinorRetentionPurge');
 
 	let parentEmailsInput = $state('');
@@ -138,7 +138,7 @@
 		}
 		busy = 'vpc';
 		try {
-			await verifyVpcForMinor({ playerEmail });
+			await directorApproveVpc({ playerEmail });
 			pendingVpc = pendingVpc.filter((r) => (r.playerEmail || '').toLowerCase() !== playerEmail);
 			alert(
 				'VPC recorded. The player should refresh the session (reload app) so passport rules see updated claims.'

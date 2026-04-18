@@ -312,8 +312,8 @@ service cloud.firestore {
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
       );
-      allow create: if authed() && request.resource.data.teamId == userDoc().teamId
-        && request.resource.data.player == userDoc().playerName;
+      // Epic 1: creates only via submitWorkoutRep (Admin SDK) + HMAC attestationDigest.
+      allow create: if false;
       allow update, delete: if isSuper();
     }
 
@@ -413,7 +413,9 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Epic 1.4: coach/staff → athlete messages (writes via sendCoachPlayerMessage only).
+    // Epic 1.4: coach/staff → athlete messages. Client writes forbidden; callable
+    // sendCoachPlayerMessage loads household parentEmails for minors into ccParentEmails
+    // (SafeSport visibility) and batch-writes in_app_messages + messaging_audit.
     match /in_app_messages/{docId} {
       allow read: if authed() && (
         isSuper()

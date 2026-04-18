@@ -8,6 +8,8 @@
 
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
+	/** Aligns with route-policies athlete-only routes (player + troubleshooting admin). */
+	const showAthleteHomeCards = $derived(role === 'player' || role === 'super_admin');
 
 	const displayName = $derived(
 		profile?.playerName ||
@@ -92,7 +94,7 @@
 	</div>
 
 	<!-- 250 XP challenge banner -->
-	{#if show250Banner}
+	{#if show250Banner && showAthleteHomeCards}
 		<div class="card challenge-banner" role="button" tabindex="0" onclick={() => goto('/challenges')} onkeydown={(e) => e.key === 'Enter' && goto('/challenges')}>
 			<div class="challenge-banner-body">
 				<h3 class="challenge-banner-title">🔥 NEW CHALLENGE UNLOCKED! 🔥</h3>
@@ -103,9 +105,9 @@
 
 	<!-- Bento grid dashboard (Epic 1.2 + Phase 0.2 shared tokens in style.css) -->
 	<div class="dashboard-grid bento-grid">
-		<DashCard icon="ph-list" label="Log Workout" onclick={() => goto('/tracker')} />
-		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" onclick={() => goto('/passport')} />
-		<DashCard icon="ph-chart-bar" label="My Stats" onclick={() => goto('/stats')} />
+		<DashCard icon="ph-list" label="Log Workout" hidden={!showAthleteHomeCards} onclick={() => goto('/tracker')} />
+		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" hidden={!showAthleteHomeCards} onclick={() => goto('/passport')} />
+		<DashCard icon="ph-chart-bar" label="My Stats" hidden={!showAthleteHomeCards} onclick={() => goto('/stats')} />
 		<DashCard
 			icon="ph-chat-circle"
 			label="Messages"
@@ -113,8 +115,8 @@
 			hidden={role !== 'player' && role !== 'parent'}
 			onclick={() => goto('/messages')}
 		/>
-		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={role === 'super_admin' || role === 'director' || role === 'registrar'} onclick={() => goto('/challenges')} />
-		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" onclick={() => goto('/trophies')} />
+		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/challenges')} />
+		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/trophies')} />
 
 		<a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
 			<div class="card dash-card border-slate">
@@ -131,6 +133,13 @@
 			borderVariant="green"
 			hidden={role !== 'parent'}
 			onclick={() => goto('/parent/vpc')}
+		/>
+		<DashCard
+			icon="ph-user-check"
+			label="Log workout (parent)"
+			borderVariant="green"
+			hidden={role !== 'parent'}
+			onclick={() => goto('/parent/log-workout')}
 		/>
 		<DashCard icon="ph-megaphone" label="Coach Tools" borderVariant="gray" hidden={!hasCoachAccess} onclick={() => goto('/coach')} />
 		<DashCard icon="ph-gear" label="Command Center" borderVariant="gray" hidden={role !== 'super_admin'} onclick={() => goto('/admin')} />

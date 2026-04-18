@@ -1,16 +1,71 @@
 /* eslint-disable quotes */
+const crypto = require('crypto');
 const {onDocumentWritten} = require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
-const {defineString} = require('firebase-functions/params');
+const {defineString, defineSecret} = require('firebase-functions/params');
 
 admin.initializeApp();
 const db = admin.firestore();
 const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
+/** Set via: firebase functions:secrets:set WORKOUT_ATTESTATION_HMAC_SECRET */
+const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
+    'WORKOUT_ATTESTATION_HMAC_SECRET',
+);
 
 const REGION = 'us-central1';
+
+/**
+ * @param {string} secret
+ * @param {Record<string, unknown>} fields
+ * @return {string} hex HMAC-SHA256
+ */
+function workoutAttestationHmac(secret, fields) {
+  const sortedKeys = Object.keys(fields).sort();
+  const sorted = {};
+  for (const k of sortedKeys) {
+    sorted[k] = fields[k];
+  }
+  const canonical = JSON.stringify(sorted);
+  return crypto.createHmac('sha256', secret).update(canonical).digest('hex');
+}
+
+/**
+ * @param {unknown} raw
+ * @return {Array<{name: string, sets: number, reps: number}>}
+ */
+function parseDrillsPayload(raw) {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Add at least one drill to the session.',
+    );
+  }
+  if (raw.length > 80) {
+    throw new HttpsError('invalid-argument', 'Too many drills in one session.');
+  }
+  return raw.map((d) => {
+    if (!d || typeof d !== 'object') {
+      throw new HttpsError('invalid-argument', 'Invalid drill row.');
+    }
+    const name = typeof d.name === 'string' ? d.name.trim() : '';
+    if (!name || name.length > 220) {
+      throw new HttpsError(
+          'invalid-argument',
+          'Each drill needs a valid name.',
+      );
+    }
+    let sets = Number(d.sets);
+    let reps = Number(d.reps);
+    if (!Number.isFinite(sets) || sets < 1) sets = 1;
+    if (!Number.isFinite(reps) || reps < 1) reps = 1;
+    sets = Math.min(Math.floor(sets), 999);
+    reps = Math.min(Math.floor(reps), 99999);
+    return {name, sets, reps};
+  });
+}
 
 /**
  * @param {any} request Callable request
@@ -390,8 +445,12 @@ exports.setPlayerDateOfBirth = onCall({region: REGION}, async (request) => {
  * Director / super_admin: after offline / gateway VPC, mark minor verified and
  * attest passport waiver (replaces canvas for U13). Real payment/KBA webhooks
  * should call the same internal logic later.
+ *
+ * @param {any} request
+ * @param {string} auditAction security_audit.action value
+ * @return {Promise<{playerEmail: string, vpcStatus: string}>}
  */
-exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
+async function executeDirectorVpcApproval(request, auditAction) {
   const actor = assertDirectorOrSuper(request);
   const data = request.data || {};
   const playerEmail = normEmail(data.playerEmail);
@@ -468,7 +527,7 @@ exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
   });
 
   batch.set(db.collection('security_audit').doc(), {
-    action: 'verifyVpcForMinor',
+    action: auditAction,
     playerEmail,
     actorEmail: actor.email || null,
     actorUid: request.auth.uid,
@@ -478,11 +537,24 @@ exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
   await batch.commit();
 
   return {playerEmail, vpcStatus: 'verified'};
-});
+}
+
+// Legacy name; prefer directorApproveVpc for new clients (identical behavior).
+exports.verifyVpcForMinor = onCall({region: REGION}, (request) =>
+  executeDirectorVpcApproval(request, 'verifyVpcForMinor'),
+);
+
+/**
+ * Sprint 1.3: director/super_admin VPC approval (syncUserClaims → vpcVerified).
+ */
+exports.directorApproveVpc = onCall({region: REGION}, (request) =>
+  executeDirectorVpcApproval(request, 'directorApproveVpc'),
+);
 
 /**
  * Parent: after completing the club's VPC process offline, notify the club so
- * a director can run verifyVpcForMinor. Does not grant consent by itself.
+ * a director can run directorApproveVpc (legacy: verifyVpcForMinor).
+ * Does not grant consent by itself.
  */
 exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
   const actor = assertParent(request);
@@ -724,6 +796,202 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
     warnNoCc: minorRecipient && ccParentEmails.length === 0,
   };
 });
+
+/**
+ * Epic 1: Server-side workout log + HMAC integrity digest (tamper-evident).
+ * — Parent: must be linked household; writes verifiedByUid / verifiedByEmail.
+ * — Player: self-log only; verificationMethod player_self_log.
+ * Client direct writes to `reps` are disabled in Firestore rules.
+ */
+exports.submitWorkoutRep = onCall(
+    {
+      region: REGION,
+      secrets: [WORKOUT_ATTESTATION_HMAC_SECRET],
+    },
+    async (request) => {
+      if (!request.auth || !request.auth.uid) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+      const secret = WORKOUT_ATTESTATION_HMAC_SECRET.value();
+      if (!secret || typeof secret !== 'string' || secret.length < 16) {
+        logger.error('WORKOUT_ATTESTATION_HMAC_SECRET missing or too short.');
+        throw new HttpsError(
+            'failed-precondition',
+            'Server configuration error. Ask an admin to set the ' +
+                'attestation secret.',
+        );
+      }
+
+      const data = request.data || {};
+      const role = request.auth.token.role || 'player';
+      const mins = parseInt(String(data.minutes), 10);
+      if (!Number.isFinite(mins) || mins <= 0 || mins > 1440) {
+        throw new HttpsError(
+            'invalid-argument',
+            'minutes must be between 1 and 1440.',
+        );
+      }
+      const outcomeRaw =
+          typeof data.outcome === 'string' ? data.outcome.trim() : '';
+      if (!outcomeRaw || outcomeRaw.length > 80) {
+        throw new HttpsError('invalid-argument', 'outcome is required.');
+      }
+      const drills = parseDrillsPayload(data.drills);
+      const drillSummary = drills.map((x) => x.name).join(', ');
+
+      /** @type {string} */
+      let playerEmail;
+      /** @type {string|null} */
+      let verifiedByUid = null;
+      /** @type {string|null} */
+      let verifiedByEmail = null;
+      /** @type {string|null} */
+      let verifiedByLegalName = null;
+      /** @type {string} */
+      let verificationMethod;
+
+      if (role === 'parent') {
+        const actor = assertParent(request);
+        playerEmail = normEmail(data.playerEmail);
+        if (!playerEmail) {
+          throw new HttpsError(
+              'invalid-argument',
+              'playerEmail (athlete account) is required.',
+          );
+        }
+        const hRef = db.collection('households').doc(actor.householdId);
+        const hSnap = await hRef.get();
+        if (!hSnap.exists) {
+          throw new HttpsError('failed-precondition', 'Household not found.');
+        }
+        const h = hSnap.data();
+        const playerSet = new Set(
+            (h.playerEmails || [])
+                .map((e) => normEmail(String(e)))
+                .filter(Boolean),
+        );
+        if (!playerSet.has(playerEmail)) {
+          throw new HttpsError(
+              'permission-denied',
+              'That athlete is not linked to your household.',
+          );
+        }
+        const legal =
+            typeof data.verifierLegalName === 'string' ?
+              data.verifierLegalName.trim().replace(/\s+/g, ' ') :
+              '';
+        const parts = legal.split(/\s+/).filter(Boolean);
+        if (parts.length < 2 || legal.length < 4) {
+          throw new HttpsError(
+              'invalid-argument',
+              'Enter your full legal name (first and last).',
+          );
+        }
+        verifiedByUid = request.auth.uid;
+        verifiedByEmail = actor.email;
+        verifiedByLegalName = legal;
+        verificationMethod = 'parent_auth_callable';
+      } else if (role === 'player') {
+        playerEmail = normEmail(request.auth.token.email);
+        if (!playerEmail) {
+          throw new HttpsError('failed-precondition', 'Missing auth email.');
+        }
+        verificationMethod = 'player_self_log';
+      } else {
+        throw new HttpsError(
+            'permission-denied',
+            'Only player or parent accounts may log workouts here.',
+        );
+      }
+
+      const uRef = db.collection('users').doc(playerEmail);
+      const uSnap = await uRef.get();
+      if (!uSnap.exists) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Athlete profile not found. Complete setup first.',
+        );
+      }
+      const u = uSnap.data();
+      const teamId = u.teamId || null;
+      const playerName = u.playerName || null;
+      if (!teamId || teamId === 'admin' || !playerName) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Athlete profile is missing team or display name.',
+        );
+      }
+
+      const repRef = db.collection('reps').doc();
+      const repId = repRef.id;
+      const tsSeconds = Math.floor(Date.now() / 1000);
+      const attestationPayload = {
+        v: 1,
+        repId,
+        teamId,
+        player: playerName,
+        minutes: mins,
+        outcome: outcomeRaw,
+        drillSummary,
+        ts: tsSeconds,
+        verificationMethod,
+      };
+      const attestationDigest =
+          workoutAttestationHmac(secret, attestationPayload);
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      const repDoc = {
+        timestamp: now,
+        teamId,
+        player: playerName,
+        playerEmail,
+        minutes: mins,
+        drills,
+        drillSummary,
+        outcome: outcomeRaw,
+        verificationMethod,
+        attestationAlg: 'HMAC-SHA256-v1',
+        attestationDigest,
+        attestationPayload: attestationPayload,
+        submittedByUid: request.auth.uid,
+        submittedAt: now,
+      };
+      if (verifiedByUid) {
+        repDoc.verifiedByUid = verifiedByUid;
+        repDoc.verifiedByEmail = verifiedByEmail;
+        repDoc.verifiedByLegalName = verifiedByLegalName;
+        repDoc.verifiedAt = now;
+      }
+
+      const statsRef = db.collection('player_stats').doc(playerName);
+      const batch = db.batch();
+      batch.set(repRef, repDoc);
+      batch.set(
+          statsRef,
+          {
+            teamId,
+            totalMins: admin.firestore.FieldValue.increment(mins),
+            totalWorkouts: admin.firestore.FieldValue.increment(1),
+            lastActive: now,
+          },
+          {merge: true},
+      );
+      batch.set(db.collection('security_audit').doc(), {
+        action: 'submitWorkoutRep',
+        repId,
+        teamId,
+        playerEmail,
+        playerName,
+        verificationMethod,
+        actorUid: request.auth.uid,
+        at: now,
+      });
+
+      await batch.commit();
+
+      return {ok: true, repId, verificationMethod};
+    },
+);
 
 /**
  * Move a player (users + player_lookup + rosters) to another team/club.

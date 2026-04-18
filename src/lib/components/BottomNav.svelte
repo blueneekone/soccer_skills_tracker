@@ -5,6 +5,8 @@
 
 	const role = $derived(authStore.role);
 	const path = $derived($page.url.pathname);
+	/** Matches route-policies athlete-only prefixes (+ /trophies). */
+	const showAthleteNav = $derived(role === 'player' || role === 'super_admin');
 
 	const nav = (href) => goto(href);
 </script>
@@ -14,18 +16,20 @@
 		<i class="ph ph-house-simple nav-icon"></i>
 		<span class="nav-label">Home</span>
 	</button>
-	<button class="nav-item" class:active={path === '/tracker'} onclick={() => nav('/tracker')} aria-label="Log Workout">
-		<i class="ph ph-list nav-icon"></i>
-		<span class="nav-label">Track</span>
-	</button>
-	<button class="nav-item" class:active={path === '/stats'} onclick={() => nav('/stats')} aria-label="Stats">
-		<i class="ph ph-chart-bar nav-icon"></i>
-		<span class="nav-label">Stats</span>
-	</button>
-	<button class="nav-item" class:active={path === '/trophies'} onclick={() => nav('/trophies')} aria-label="Trophy Room">
-		<i class="ph ph-trophy nav-icon"></i>
-		<span class="nav-label">Trophies</span>
-	</button>
+	{#if showAthleteNav}
+		<button class="nav-item" class:active={path === '/tracker'} onclick={() => nav('/tracker')} aria-label="Log Workout">
+			<i class="ph ph-list nav-icon"></i>
+			<span class="nav-label">Track</span>
+		</button>
+		<button class="nav-item" class:active={path === '/stats'} onclick={() => nav('/stats')} aria-label="Stats">
+			<i class="ph ph-chart-bar nav-icon"></i>
+			<span class="nav-label">Stats</span>
+		</button>
+		<button class="nav-item" class:active={path === '/trophies'} onclick={() => nav('/trophies')} aria-label="Trophy Room">
+			<i class="ph ph-trophy nav-icon"></i>
+			<span class="nav-label">Trophies</span>
+		</button>
+	{/if}
 	{#if role === 'coach' || role === 'super_admin' || role === 'director'}
 		<button class="nav-item" class:active={path === '/coach'} onclick={() => nav('/coach')} aria-label="Coach Tools">
 			<i class="ph ph-megaphone nav-icon"></i>

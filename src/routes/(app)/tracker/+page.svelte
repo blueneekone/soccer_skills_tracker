@@ -1,13 +1,21 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { db } from '$lib/firebase.js';
-	import { collection, doc, writeBatch, increment } from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
 
+	const submitWorkoutRep = httpsCallable(functions, 'submitWorkoutRep');
+
 	const profile = $derived(authStore.userProfile);
+
+	$effect(() => {
+		if (!authStore.isLoading && authStore.role === 'parent') {
+			goto('/parent/log-workout', { replaceState: true });
+		}
+	});
 
 	// Session state
 	let sessionItems = $state([]);
@@ -16,9 +24,8 @@
 	let calDate = $state('');
 	let calTime = $state('');
 
-	/** Parent/guardian typed attestation (replaces signature canvas). */
-	let verifierLegalName = $state('');
-	let workoutVerifiedAck = $state(false);
+	/** Athlete acknowledgment (self-log; parent-verified logs use /parent/log-workout). */
+	let workoutAccuracyAck = $state(false);
 
 	// Workout selects
 	let selectWarmup = $state('');
@@ -48,17 +55,11 @@
 		sessionItems = sessionItems.filter((_, i) => i !== idx);
 	};
 
-	const fullNameOk = (raw) => {
-		const parts = raw.trim().split(/\s+/).filter(Boolean);
-		return parts.length >= 2 && raw.trim().length >= 4;
-	};
-
 	const clearForm = () => {
 		sessionItems = [];
 		totalMinutes = '';
 		outcome = 'Good';
-		verifierLegalName = '';
-		workoutVerifiedAck = false;
+		workoutAccuracyAck = false;
 	};
 
 	const getSessionDescription = () => {
@@ -91,42 +92,30 @@
 
 	const submitWorkout = async () => {
 		if (sessionItems.length === 0) return alert('Add drills to your session first!');
-		if (!workoutVerifiedAck) {
-			return alert('A parent or guardian must confirm the verification box for this workout.');
-		}
-		if (!fullNameOk(verifierLegalName)) {
-			return alert('Enter the verifier’s full legal name (first and last).');
+		if (!workoutAccuracyAck) {
+			return alert('Confirm the accuracy checkbox to submit your workout log.');
 		}
 		const mins = parseInt(totalMinutes || 0);
 		if (mins <= 0) return alert('Please enter valid total minutes.');
 		if (!profile?.teamId || !profile?.playerName) return alert('User profile is incomplete.');
+		if (authStore.role !== 'player') {
+			return alert('Use the parent workout log for guardian-verified sessions.');
+		}
 
 		try {
-			const batch = writeBatch(db);
-			const repRef = doc(collection(db, 'reps'));
-			const verifier = verifierLegalName.trim().replace(/\s+/g, ' ');
-			batch.set(repRef, {
-				timestamp: new Date(),
-				teamId: profile.teamId,
-				player: profile.playerName,
+			await submitWorkoutRep({
 				minutes: mins,
-				drills: sessionItems,
-				drillSummary: sessionItems.map((x) => x.name).join(', '),
 				outcome,
-				verifiedByLegalName: verifier,
-				verificationMethod: 'typed_parent_attestation',
-				verifiedAt: new Date()
+				drills: sessionItems
 			});
-			const statsRef = doc(db, 'player_stats', profile.playerName);
-			batch.set(statsRef, { teamId: profile.teamId, totalMins: increment(mins), totalWorkouts: increment(1), lastActive: new Date() }, { merge: true });
-			await batch.commit();
 
 			confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#0f172a', '#fbbf24', '#3b82f6'] });
 			await Swal.fire({ title: 'Workout Logged!', text: 'Awesome job! +XP added to your profile.', icon: 'success', confirmButtonColor: '#0f172a', confirmButtonText: 'Keep Grinding', customClass: { popup: 'card' } });
 			clearForm();
 			goto('/home');
 		} catch (e) {
-			alert('Database Error: ' + e.message);
+			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
+			alert('Could not log workout: ' + msg);
 		}
 	};
 </script>
@@ -236,25 +225,16 @@
 			</div>
 
 			<div class="verify-panel">
-				<span class="verify-heading">Parent / guardian verification</span>
+				<span class="verify-heading">Submit workout (player account)</span>
 				<p class="verify-help">
-					A parent or guardian must attest that this session was completed as logged. Typed name is stored with
-					the workout record.
+					Logs are written by a secure server function with an integrity digest. This path is a
+					<strong>self-log</strong> (not guardian-verified). For a parent-verified session, a guardian must sign
+					in and use
+					<a class="parent-log-link" href="/parent/log-workout">Log workout for athlete</a>.
 				</p>
-				<label class="verify-label" for="verify-legal-name">Full legal name of person verifying</label>
-				<input
-					id="verify-legal-name"
-					class="verify-input"
-					type="text"
-					autocomplete="name"
-					placeholder="First and last name"
-					bind:value={verifierLegalName}
-				/>
 				<label class="verify-check">
-					<input type="checkbox" bind:checked={workoutVerifiedAck} />
-					<span
-						>I confirm this workout log is accurate and I am authorized to verify on behalf of the athlete.</span
-					>
+					<input type="checkbox" bind:checked={workoutAccuracyAck} />
+					<span>I confirm this workout log is accurate to the best of my knowledge.</span>
 				</label>
 			</div>
 
@@ -348,19 +328,10 @@
 		line-height: 1.45;
 		opacity: 0.9;
 	}
-	.verify-label {
+	.parent-log-link {
 		font-weight: 800;
-		font-size: 0.82rem;
-	}
-	.verify-input {
-		width: 100%;
-		box-sizing: border-box;
-		padding: clamp(10px, 2vw, 12px);
-		border-radius: 14px;
-		border: 1px solid var(--glass-border);
-		font: inherit;
-		background: var(--glass-bg);
-		color: inherit;
+		color: var(--aggie-blue);
+		text-decoration: underline;
 	}
 	.verify-check {
 		display: flex;
