@@ -35,6 +35,35 @@ function assertDirectorOrSuper(request) {
 }
 
 /**
+ * @param {any} request Callable request
+ * @return {{ email: string, householdId: string }}
+ */
+function assertParent(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if (request.auth.token.role !== 'parent') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only parent accounts may use this action.',
+    );
+  }
+  const email = normEmail(request.auth.token.email);
+  const householdId =
+    typeof request.auth.token.householdId === 'string' ?
+      request.auth.token.householdId.trim() :
+      '';
+  if (!email || !householdId) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Your account must be linked to a household. ' +
+        'Ask your director to connect parent and player emails.',
+    );
+  }
+  return {email, householdId};
+}
+
+/**
  * Assert caller is club staff for roster transfers.
  * @param {any} request Callable request
  * @return {Object} Actor with role, clubId, email
@@ -366,8 +395,17 @@ exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
     );
   }
 
+  const pendingReqs = await db.collection('vpc_requests')
+      .where('playerEmail', '==', playerEmail)
+      .where('status', '==', 'pending')
+      .get();
+
   const batch = db.batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
+
+  pendingReqs.forEach((d) => {
+    batch.set(d.ref, {status: 'completed', completedAt: now}, {merge: true});
+  });
 
   batch.set(uRef, {vpcStatus: 'verified'}, {merge: true});
 
@@ -400,6 +438,95 @@ exports.verifyVpcForMinor = onCall({region: REGION}, async (request) => {
   await batch.commit();
 
   return {playerEmail, vpcStatus: 'verified'};
+});
+
+/**
+ * Parent: after completing the club's VPC process offline, notify the club so
+ * a director can run verifyVpcForMinor. Does not grant consent by itself.
+ */
+exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
+  const actor = assertParent(request);
+  const data = request.data || {};
+  const playerEmail = normEmail(data.playerEmail);
+  if (!playerEmail) {
+    throw new HttpsError('invalid-argument', 'playerEmail is required.');
+  }
+
+  const hRef = db.collection('households').doc(actor.householdId);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    throw new HttpsError('failed-precondition', 'Household not found.');
+  }
+  const h = hSnap.data();
+  const parentSet = new Set(
+      (h.parentEmails || [])
+          .map((e) => normEmail(String(e)))
+          .filter(Boolean),
+  );
+  if (!parentSet.has(actor.email)) {
+    throw new HttpsError(
+        'permission-denied',
+        'You are not listed on this household.',
+    );
+  }
+  const playerSet = new Set(
+      (h.playerEmails || [])
+          .map((e) => normEmail(String(e)))
+          .filter(Boolean),
+  );
+  if (!playerSet.has(playerEmail)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'That player email is not linked to your household.',
+    );
+  }
+
+  const uRef = db.collection('users').doc(playerEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'Player profile not found.');
+  }
+  const u = uSnap.data();
+  if (u.isMinor !== true) {
+    throw new HttpsError(
+        'failed-precondition',
+        'VPC intake applies to minors (under 13) only.',
+    );
+  }
+  if (u.vpcStatus === 'verified') {
+    return {ok: true, alreadyVerified: true, playerEmail};
+  }
+
+  const dup = await db.collection('vpc_requests')
+      .where('playerEmail', '==', playerEmail)
+      .where('status', '==', 'pending')
+      .limit(1)
+      .get();
+  if (!dup.empty) {
+    return {ok: true, duplicate: true, playerEmail};
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await db.collection('vpc_requests').add({
+    playerEmail,
+    parentEmail: actor.email,
+    householdId: actor.householdId,
+    clubId: u.clubId || null,
+    status: 'pending',
+    createdAt: now,
+  });
+
+  await db.collection('security_audit').add({
+    action: 'parentSubmitVpcIntent',
+    playerEmail,
+    parentEmail: actor.email,
+    householdId: actor.householdId,
+    clubId: u.clubId || null,
+    actorUid: request.auth.uid,
+    at: now,
+  });
+
+  return {ok: true, playerEmail};
 });
 
 /**

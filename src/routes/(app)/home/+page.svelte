@@ -118,6 +118,13 @@
 			</div>
 		</a>
 
+		<DashCard
+			icon="ph-shield-check"
+			label="Parental consent"
+			borderVariant="green"
+			hidden={role !== 'parent'}
+			onclick={() => goto('/parent/vpc')}
+		/>
 		<DashCard icon="ph-megaphone" label="Coach Tools" borderVariant="gray" hidden={!hasCoachAccess} onclick={() => goto('/coach')} />
 		<DashCard icon="ph-gear" label="Command Center" borderVariant="gray" hidden={role !== 'super_admin'} onclick={() => goto('/admin')} />
 		<DashCard icon="ph-briefcase" label="Director Portal" borderVariant="purple" hidden={role !== 'super_admin' && role !== 'director'} onclick={() => goto('/director')} />

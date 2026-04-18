@@ -1,6 +1,7 @@
 <script>
 	import { httpsCallable } from 'firebase/functions';
-	import { functions } from '$lib/firebase.js';
+	import { collection, getDocs, query, where } from 'firebase/firestore';
+	import { db, functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	let { clubId = '' } = $props();
@@ -21,6 +22,11 @@
 	let vpcPlayerEmail = $state('');
 	let retentionPlayerEmail = $state('');
 
+	/** @type {Array<{ id: string, playerEmail?: string, parentEmail?: string, createdAt?: import('firebase/firestore').Timestamp }>} */
+	let pendingVpc = $state([]);
+
+	const scopeClub = $derived(String(clubId || authStore.userProfile?.clubId || ''));
+
 	const canUse = $derived(
 		authStore.role === 'director' || authStore.role === 'super_admin'
 	);
@@ -30,6 +36,45 @@
 			.split(/[\s,;]+/)
 			.map((s) => s.trim().toLowerCase())
 			.filter(Boolean);
+
+	$effect(() => {
+		if (!canUse || !scopeClub) {
+			pendingVpc = [];
+			return;
+		}
+		let cancelled = false;
+		getDocs(
+			query(
+				collection(db, 'vpc_requests'),
+				where('clubId', '==', scopeClub),
+				where('status', '==', 'pending')
+			)
+		)
+			.then((snap) => {
+				if (cancelled) return;
+				const rows = [];
+				snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+				rows.sort((a, b) => {
+					const ta = a.createdAt?.toMillis?.() ?? 0;
+					const tb = b.createdAt?.toMillis?.() ?? 0;
+					return tb - ta;
+				});
+				pendingVpc = rows;
+			})
+			.catch(() => {
+				if (!cancelled) pendingVpc = [];
+			});
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	const formatTs = (ts) => {
+		if (ts && typeof ts.toDate === 'function') {
+			return ts.toDate().toLocaleString();
+		}
+		return '—';
+	};
 
 	const onLinkHousehold = async () => {
 		const parentEmails = parseEmails(parentEmailsInput);
@@ -94,6 +139,7 @@
 		busy = 'vpc';
 		try {
 			await verifyVpcForMinor({ playerEmail });
+			pendingVpc = pendingVpc.filter((r) => (r.playerEmail || '').toLowerCase() !== playerEmail);
 			alert(
 				'VPC recorded. The player should refresh the session (reload app) so passport rules see updated claims.'
 			);
@@ -142,6 +188,37 @@
 		<p class="muted">You do not have permission to use household tools.</p>
 	{:else}
 		<div class="bento-section">
+		{#if scopeClub && pendingVpc.length > 0}
+			<div class="card">
+				<div class="card-header bg-gold-header">Pending parent VPC notifications</div>
+				<div class="card-body">
+					<p class="help">
+						Parents submitted these after completing your external VPC step. Confirm records, then use
+						<strong>Record VPC &amp; attest waiver</strong> below.
+					</p>
+					<ul class="vpc-pending-list">
+						{#each pendingVpc as row}
+							<li class="vpc-pending-row">
+								<div class="vpc-pending-meta">
+									<div><span class="lbl">Athlete</span> {row.playerEmail || '—'}</div>
+									<div><span class="lbl">Parent</span> {row.parentEmail || '—'}</div>
+									<div><span class="lbl">Submitted</span> {formatTs(row.createdAt)}</div>
+								</div>
+								<button
+									type="button"
+									class="secondary-btn"
+									onclick={() => {
+										vpcPlayerEmail = String(row.playerEmail || '');
+									}}
+								>
+									Use in verify form
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			</div>
+		{/if}
 		<div class="card">
 			<div class="card-header bg-blue-header">Link parent ↔ minor (household)</div>
 			<div class="card-body">
@@ -260,5 +337,62 @@
 	}
 	.muted {
 		opacity: 0.85;
+	}
+
+	.vpc-pending-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(10px, 2vw, 12px);
+	}
+
+	.vpc-pending-row {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(8px, 1.5vw, 10px);
+		padding: clamp(10px, 2vw, 14px);
+		border-radius: 16px;
+		border: 1px solid rgba(15, 23, 42, 0.1);
+		background: rgba(15, 23, 42, 0.03);
+	}
+
+	:global(html.dark) .vpc-pending-row {
+		border-color: rgba(226, 232, 240, 0.12);
+		background: rgba(15, 23, 42, 0.35);
+	}
+
+	.vpc-pending-meta {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.lbl {
+		font-weight: 800;
+		margin-right: 6px;
+		text-transform: uppercase;
+		font-size: 0.72rem;
+		letter-spacing: 0.04em;
+		opacity: 0.85;
+	}
+
+	.secondary-btn {
+		align-self: flex-start;
+		padding: clamp(8px, 1.5vw, 10px) 14px;
+		border-radius: 14px;
+		border: 1px solid var(--glass-border);
+		background: var(--glass-bg);
+		color: inherit;
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.secondary-btn:hover {
+		filter: brightness(1.05);
 	}
 </style>

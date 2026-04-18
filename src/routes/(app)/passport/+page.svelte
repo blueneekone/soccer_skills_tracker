@@ -104,6 +104,8 @@
 				);
 				alert('Passport & waiver securely saved!');
 			}
+			await getIdTokenResult(auth.currentUser, true);
+			await authStore.refresh({ silent: true });
 			await loadPassport();
 		} catch (e) {
 			alert('Error saving passport: ' + e.message);

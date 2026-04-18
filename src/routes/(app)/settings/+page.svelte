@@ -15,6 +15,25 @@
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
 
+	const isMinorAccount = $derived.by(() => {
+		const p = profile;
+		if (!p) return false;
+		if (p.isMinor === true) return true;
+		if (p.isMinor === false) return false;
+		const dob = p.dateOfBirth;
+		if (dob && typeof dob.toDate === 'function') {
+			const d = dob.toDate();
+			const now = new Date();
+			let age = now.getFullYear() - d.getFullYear();
+			const m = now.getMonth() - d.getMonth();
+			if (m < 0 || (m === 0 && now.getDate() < d.getDate())) {
+				age--;
+			}
+			return age < 13;
+		}
+		return false;
+	});
+
 	const clubLabel = $derived.by(() => {
 		const cid = profile?.clubId;
 		if (!cid) return '—';
@@ -44,6 +63,10 @@
 		playerName = String(profile.playerName ?? '');
 		privacyProfile = String(profile.privacyProfile ?? 'strict_minor_defaults');
 		telemetryOptIn = Boolean(profile.telemetryOptIn);
+		if (isMinorAccount) {
+			privacyProfile = 'strict_minor_defaults';
+			telemetryOptIn = false;
+		}
 	});
 
 	async function saveProfile() {
@@ -61,10 +84,12 @@
 		saving = true;
 		try {
 			const userRef = doc(db, 'users', auth.currentUser.email.toLowerCase());
+			const privacy = isMinorAccount ? 'strict_minor_defaults' : privacyProfile;
+			const telemetry = isMinorAccount ? false : telemetryOptIn;
 			const payload = {
 				playerName: trimmed || profile?.playerName || auth.currentUser.email.split('@')[0],
-				privacyProfile,
-				telemetryOptIn,
+				privacyProfile: privacy,
+				telemetryOptIn: telemetry,
 				settingsUpdatedAt: new Date()
 			};
 			await updateDoc(userRef, payload);
@@ -119,14 +144,21 @@
 				bind:value={playerName}
 			/>
 
-			<label class="settings-label-block" for="privacy">Privacy profile</label>
-			<select id="privacy" class="settings-input" bind:value={privacyProfile}>
-				<option value="strict_minor_defaults">Strict defaults (recommended for youth)</option>
-				<option value="standard">Standard</option>
-			</select>
+			{#if isMinorAccount}
+				<span class="settings-label-block">Privacy profile</span>
+				<p class="minor-privacy-note">
+					Minor accounts use maximum privacy defaults (Epic 1.4). Only your director can adjust COPPA fields.
+				</p>
+			{:else}
+				<label class="settings-label-block" for="privacy">Privacy profile</label>
+				<select id="privacy" class="settings-input" bind:value={privacyProfile}>
+					<option value="strict_minor_defaults">Strict defaults (recommended for youth)</option>
+					<option value="standard">Standard</option>
+				</select>
+			{/if}
 
-			<label class="settings-checkbox-row">
-				<input type="checkbox" bind:checked={telemetryOptIn} />
+			<label class="settings-checkbox-row" class:disabled-row={isMinorAccount}>
+				<input type="checkbox" bind:checked={telemetryOptIn} disabled={isMinorAccount} />
 				<span>Allow optional telemetry / analytics sharing (separate from core app use)</span>
 			</label>
 
@@ -287,5 +319,25 @@
 		font-weight: 700;
 		font-size: 0.9rem;
 		text-align: center;
+	}
+
+	.minor-privacy-note {
+		margin: 0;
+		padding: clamp(10px, 2vw, 14px);
+		border-radius: 16px;
+		border: 1px solid var(--glass-border);
+		background: rgba(15, 23, 42, 0.04);
+		font-size: 0.9rem;
+		font-weight: 600;
+		line-height: 1.45;
+	}
+
+	:global(html.dark) .minor-privacy-note {
+		background: rgba(15, 23, 42, 0.35);
+	}
+
+	.disabled-row {
+		opacity: 0.65;
+		cursor: not-allowed;
 	}
 </style>

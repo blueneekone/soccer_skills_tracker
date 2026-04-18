@@ -6,7 +6,8 @@ export const ROLE_ROUTE_POLICIES = {
 	'/admin': ['super_admin'],
 	'/director': ['super_admin', 'director'],
 	'/coach': ['super_admin', 'director', 'coach'],
-	'/registrar': ['super_admin', 'director', 'registrar']
+	'/registrar': ['super_admin', 'director', 'registrar'],
+	'/parent': ['parent']
 };
 
 /**

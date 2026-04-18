@@ -404,6 +404,15 @@ service cloud.firestore {
       allow read, write: if isSuper();
     }
 
+    // Epic 1.3: parent-submitted VPC intake queue (writes via Cloud Function only).
+    match /vpc_requests/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.clubId != null && resource.data.clubId == tokenClub())
+      );
+      allow create, update, delete: if false;
+    }
+
     // SafeSport / Epic 2.3: store mirrored copies when coach messages a minor (server or client enqueue).
     match /messaging_audit/{docId} {
       allow read: if isSuper();
