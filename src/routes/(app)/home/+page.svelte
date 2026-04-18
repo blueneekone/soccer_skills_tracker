@@ -130,7 +130,8 @@
 		/>
 	</div>
 
-	<!-- Team schedule -->
+	<!-- Team schedule + homework (Epic 1.2 bento row) -->
+	<div class="bento-section">
 	<div class="card border-aggie-blue">
 		<div class="card-header">📅 Team Schedule</div>
 		<div class="card-body p-0">
@@ -163,7 +164,6 @@
 		</div>
 	</div>
 
-	<!-- Homework -->
 	<div class="card border-orange">
 		<div class="card-header bg-orange-header">🎯 My Homework</div>
 		<div class="card-body p-0">
@@ -196,14 +196,16 @@
 			{/if}
 		</div>
 	</div>
+	</div>
 </div>
 
 <style>
 	.schedule-evt-type {
-		color: var(--aggie-blue);
+		color: var(--text-primary);
+		font-weight: 800;
 	}
 	.staff-hw-msg {
-		color: #ea580c;
+		color: var(--accent-orange-soft);
 	}
 	.hw-item {
 		border-left: 4px solid #ea580c;
@@ -214,7 +216,7 @@
 	}
 	.hw-due {
 		font-size: 0.8rem;
-		color: #ea580c;
+		color: var(--accent-orange-soft);
 		font-weight: 800;
 		text-transform: uppercase;
 		display: block;

@@ -73,7 +73,7 @@
 </script>
 
 <div class="plan-tab">
-	<!-- Schedule -->
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header">📅 Manage Schedule</div>
 		<div class="card-body">
@@ -103,7 +103,6 @@
 		</div>
 	</div>
 
-	<!-- Homework Builder -->
 	<div class="card">
 		<div class="card-header bg-orange-header">🎯 Assign Homework</div>
 		<div class="card-body">
@@ -149,7 +148,7 @@
 			<ul class="session-list">
 				{#each hwItems as hw}
 					<li class="session-item">
-						<div><b>{hw.player}</b><br /><span class="text-sm-sub" style="color:#ea580c;">Due: {hw.dueDate}</span></div>
+						<div><b>{hw.player}</b><br /><span class="text-sm-sub text-accent-orange">Due: {hw.dueDate}</span></div>
 						<button class="delete-btn" onclick={() => deleteHw(hw.id)}>✕</button>
 					</li>
 				{:else}
@@ -157,6 +156,7 @@
 				{/each}
 			</ul>
 		</div>
+	</div>
 	</div>
 </div>
 

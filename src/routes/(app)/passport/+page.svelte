@@ -178,28 +178,30 @@
 <div class="view-section">
 	<h2 class="view-title">🛂 Player Passport</h2>
 
-	<div class="card border-green">
-		<div class="card-header bg-green-header">Official Clearance Status</div>
-		<div class="card-body text-center">
-			<div class="passport-status-badge {statusClass}">
-				{statusLabel}
+	<div class="bento-section">
+		<div class="card border-green">
+			<div class="card-header bg-green-header">Official Clearance Status</div>
+			<div class="card-body text-center">
+				<div class="passport-status-badge {statusClass}">
+					{statusLabel}
+				</div>
+				<p class="status-note">
+					This status is controlled by your Club Director. A Green "Cleared" status is required to participate in
+					official matches.
+				</p>
 			</div>
-			<p class="status-note">
-				This status is controlled by your Club Director. A Green "Cleared" status is required to participate in
-				official matches.
-			</p>
 		</div>
-	</div>
 
-	<div class="card">
-		<div class="card-header">Medical &amp; Emergency Info</div>
-		<div class="card-body">
-			<label>Emergency Contact Name</label>
-			<input type="text" placeholder="e.g. Jane Doe" bind:value={emergencyName} />
-			<label>Emergency Contact Phone</label>
-			<input type="tel" placeholder="(555) 555-5555" bind:value={emergencyPhone} />
-			<label>Known Allergies / Medical Conditions</label>
-			<textarea rows="3" placeholder="List any allergies or conditions..." bind:value={medicalNotes}></textarea>
+		<div class="card">
+			<div class="card-header">Medical &amp; Emergency Info</div>
+			<div class="card-body">
+				<label>Emergency Contact Name</label>
+				<input type="text" placeholder="e.g. Jane Doe" bind:value={emergencyName} />
+				<label>Emergency Contact Phone</label>
+				<input type="tel" placeholder="(555) 555-5555" bind:value={emergencyPhone} />
+				<label>Known Allergies / Medical Conditions</label>
+				<textarea rows="3" placeholder="List any allergies or conditions..." bind:value={medicalNotes}></textarea>
+			</div>
 		</div>
 	</div>
 
@@ -277,20 +279,20 @@
 
 	.status-red {
 		background: #fef2f2;
-		border-color: #ef4444;
-		color: #b91c1c;
+		border-color: #dc2626;
+		color: #7f1d1d;
 	}
 
 	.status-amber {
 		background: #fffbeb;
-		border-color: #fbbf24;
-		color: #b45309;
+		border-color: #d97706;
+		color: #78350f;
 	}
 
 	.status-green {
-		background: #f0fdf4;
-		border-color: #10b981;
-		color: #047857;
+		background: #ecfdf5;
+		border-color: #059669;
+		color: #14532d;
 	}
 
 	.status-note {
@@ -311,12 +313,43 @@
 	.minor-pending {
 		margin: 0;
 		line-height: 1.5;
-		color: #b45309;
+		color: #78350f;
 	}
 
 	.minor-ok {
 		margin: 0;
 		line-height: 1.5;
-		color: #047857;
+		color: #14532d;
+	}
+
+	:global(html.dark) .status-red {
+		background: rgba(254, 226, 226, 0.1);
+		border-color: rgba(248, 113, 113, 0.45);
+		color: #fecaca;
+	}
+
+	:global(html.dark) .status-amber {
+		background: rgba(253, 230, 138, 0.1);
+		border-color: rgba(251, 191, 36, 0.45);
+		color: #fde68a;
+	}
+
+	:global(html.dark) .status-green {
+		background: rgba(52, 211, 153, 0.1);
+		border-color: rgba(52, 211, 153, 0.4);
+		color: #6ee7b7;
+	}
+
+	:global(html.dark) .minor-waiver-panel {
+		background: rgba(241, 245, 249, 0.06);
+		border-color: rgba(226, 232, 240, 0.12);
+	}
+
+	:global(html.dark) .minor-pending {
+		color: #fde68a;
+	}
+
+	:global(html.dark) .minor-ok {
+		color: #6ee7b7;
 	}
 </style>

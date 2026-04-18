@@ -53,7 +53,7 @@
 </script>
 
 <div class="teams-tab">
-	<!-- Create Sub-Team -->
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header bg-blue-header">Create Sub-Team</div>
 		<div class="card-body">
@@ -65,7 +65,6 @@
 		</div>
 	</div>
 
-	<!-- Assign Coach -->
 	<div class="card">
 		<div class="card-header bg-orange-header">Assign Coach to Existing Team</div>
 		<div class="card-body">
@@ -78,6 +77,7 @@
 			<input type="email" bind:value={inviteCoachEmail} placeholder="Coach Email" />
 			<button class="primary-btn btn-orange w-100" onclick={inviteCoach} disabled={saving}>Invite / Assign Coach</button>
 		</div>
+	</div>
 	</div>
 </div>
 

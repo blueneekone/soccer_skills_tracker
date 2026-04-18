@@ -141,6 +141,7 @@
 	{#if !canUse}
 		<p class="muted">You do not have permission to use household tools.</p>
 	{:else}
+		<div class="bento-section">
 		<div class="card">
 			<div class="card-header bg-blue-header">Link parent ↔ minor (household)</div>
 			<div class="card-body">
@@ -231,6 +232,7 @@
 					{busy === 'retention' ? 'Queueing…' : 'Queue retention purge'}
 				</button>
 			</div>
+		</div>
 		</div>
 	{/if}
 </div>

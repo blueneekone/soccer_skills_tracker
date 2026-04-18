@@ -60,7 +60,7 @@
 		border-radius: 12px;
 		border: 1px solid var(--glass-border);
 		background: var(--glass-bg);
-		color: var(--aggie-blue);
+		color: var(--text-primary);
 		cursor: pointer;
 	}
 

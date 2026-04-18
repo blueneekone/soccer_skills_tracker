@@ -66,13 +66,15 @@
 </script>
 
 <div class="view-section">
-	<div class="card-header bg-gold-header">
-		<h2 class="mt-0">🔥 Challenge Mode</h2>
-		<p class="challenge-subtitle">Watch the video, perform the reps, and log your official score.</p>
+	<div class="card">
+		<div class="card-header bg-gold-header">
+			<h2 class="mt-0">🔥 Challenge Mode</h2>
+			<p class="challenge-subtitle">Watch the video, perform the reps, and log your official score.</p>
+		</div>
 	</div>
 
-	<!-- Passing Points -->
-	<div class="card flush-top">
+	<div class="bento-section bento-section-tight">
+		<div class="card">
 		<div class="card-header bg-blue-header">1. Passing Points</div>
 		<div class="card-body">
 			<iframe
@@ -144,6 +146,7 @@
 			</div>
 			<button class="primary-btn btn-green" onclick={() => submitTrial('Time')}>Submit Best Time</button>
 		</div>
+	</div>
 	</div>
 </div>
 

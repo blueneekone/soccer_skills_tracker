@@ -68,6 +68,7 @@
 </script>
 
 <div class="roster-tab">
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header roster-overview-header">Roster Overview</div>
 		<div class="card-body">
@@ -105,13 +106,14 @@
 						</div>
 						<div class="player-actions">
 							<span class="player-mins">{playerStats[p]?.totalMins || 0}m</span>
-							{#if linkedPlayers.has(p)}<span class="linked-badge">✔ Linked</span>{/if}
+							{#if linkedPlayers.has(p)}<span class="linked-badge-ui">✔ Linked</span>{/if}
 							<button class="delete-btn" onclick={() => removePlayer(p)}>x</button>
 						</div>
 					</div>
 				{/each}
 			{/if}
 		</div>
+	</div>
 	</div>
 </div>
 
@@ -131,7 +133,7 @@
 		display: block;
 	}
 	.roster-stat-val.active { color: var(--success-green); }
-	.roster-stat-val.reps { color: var(--aggie-blue); }
+	.roster-stat-val.reps { color: var(--text-primary); }
 	.player-row {
 		display: flex;
 		justify-content: space-between;
@@ -140,8 +142,7 @@
 		border-bottom: 1px solid rgba(15,23,42,0.05);
 	}
 	.player-actions { display: flex; align-items: center; gap: 8px; }
-	.player-mins { font-size: 0.85rem; font-weight: 700; color: var(--aggie-blue); }
-	.linked-badge { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: 800; }
-	.delete-btn { background: none; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
+	.player-mins { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); }
+	.delete-btn { background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
 	input { margin-bottom: 10px; }
 </style>

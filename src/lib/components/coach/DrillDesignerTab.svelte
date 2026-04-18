@@ -80,6 +80,7 @@
 </script>
 
 <div class="designer-tab">
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header">📐 Drill Designer</div>
 		<div class="card-body">
@@ -124,7 +125,6 @@
 		</div>
 	</div>
 
-	<!-- Workout list -->
 	<div class="card">
 		<div class="card-header">Saved Drills for This Team</div>
 		<div class="card-body p-0">
@@ -146,6 +146,7 @@
 			</ul>
 		</div>
 	</div>
+	</div>
 </div>
 
 <style>
@@ -158,5 +159,5 @@
 	#spatialCanvasEl { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; z-index: 10; }
 	.workout-item { border-left: 4px solid var(--aggie-blue); align-items: flex-start; }
 	.level-badge { background: var(--aggie-blue); color: white; border-radius: 10px; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; margin-left: 8px; }
-	.workout-desc { font-size: 0.8rem; color: #475569; margin-top: 4px; }
+	.workout-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
 </style>

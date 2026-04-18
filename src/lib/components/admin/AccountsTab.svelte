@@ -98,7 +98,7 @@
 </script>
 
 <div class="accounts-tab">
-	<!-- Clubs table -->
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header">🏢 Registered Organizations</div>
 		<div class="card-body">
@@ -130,7 +130,6 @@
 		</div>
 	</div>
 
-	<!-- Teams table -->
 	<div class="card">
 		<div class="card-header">👥 Registered Teams</div>
 		<div class="card-body">
@@ -161,7 +160,6 @@
 		</div>
 	</div>
 
-	<!-- Assign Director -->
 	<div class="card">
 		<div class="card-header bg-blue-header">👥 Assign Club Director</div>
 		<div class="card-body">
@@ -176,7 +174,6 @@
 		</div>
 	</div>
 
-	<!-- Super Admins -->
 	<div class="card border-gold">
 		<div class="card-header bg-gold-header">👑 Super Admins</div>
 		<div class="card-body">
@@ -200,11 +197,12 @@
 			</div>
 		</div>
 	</div>
+	</div>
 </div>
 
 <style>
 	select, input { margin-bottom: 10px; }
-	.section-divider { border: none; border-top: 1px solid rgba(15,23,42,0.1); margin: 16px 0; }
+	.section-divider { border: none; border-top: 1px solid var(--border-subtle); margin: 16px 0; }
 	.admin-flex-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-	.delete-btn { background: none; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
+	.delete-btn { background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
 </style>

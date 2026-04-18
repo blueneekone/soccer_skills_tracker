@@ -57,42 +57,42 @@
 <div class="view-section">
 	<h2 class="view-title">🏆 TROPHY ROOM</h2>
 
-	<!-- Rank Medals -->
-	<div class="card">
-		<div class="card-header trophy-header">RANK MEDALS</div>
-		<div class="card-body text-center overflow-x-auto">
-			<div class="trophy-flex">
-				{#each RANKS as rank, i}
-					<div class="medal-container" class:medal-locked={i > unlockedRankIdx}>
-						<div class="medal-coin {rank.cls}"></div>
-						<div class="medal-title" class:legend-title-color={rank.name === 'LEGEND'}>{rank.name}</div>
-						<div class="medal-xp">{rank.xp} XP</div>
-					</div>
-				{/each}
+	<div class="bento-section">
+		<div class="card">
+			<div class="card-header trophy-header">RANK MEDALS</div>
+			<div class="card-body text-center overflow-x-auto">
+				<div class="trophy-flex">
+					{#each RANKS as rank, i}
+						<div class="medal-container" class:medal-locked={i > unlockedRankIdx}>
+							<div class="medal-coin {rank.cls}"></div>
+							<div class="medal-title" class:legend-title-color={rank.name === 'LEGEND'}>{rank.name}</div>
+							<div class="medal-xp">{rank.xp} XP</div>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<!-- Milestone Badges -->
-	<div class="card">
-		<div class="card-header milestone-header">MILESTONE BADGES</div>
-		<div class="card-body text-center overflow-x-auto">
-			<div class="trophy-flex milestone-flex">
-				<div class="medal-container" class:medal-locked={!badge7Day}>
-					<div class="milestone-icon">🔥</div>
-					<div class="medal-title">7-DAY STREAK</div>
-				</div>
-				<div class="medal-container" class:medal-locked={!badge100Sessions}>
-					<div class="milestone-icon">💯</div>
-					<div class="medal-title">100 SESSIONS</div>
-				</div>
-				<div class="medal-container" class:medal-locked={!badge1000Mins}>
-					<div class="milestone-icon">⏱️</div>
-					<div class="medal-title">1000 MINS</div>
-				</div>
-				<div class="medal-container medal-locked">
-					<div class="milestone-icon">⚔️</div>
-					<div class="medal-title">WEEKEND WARRIOR</div>
+		<div class="card">
+			<div class="card-header milestone-header">MILESTONE BADGES</div>
+			<div class="card-body text-center overflow-x-auto">
+				<div class="trophy-flex milestone-flex">
+					<div class="medal-container" class:medal-locked={!badge7Day}>
+						<div class="milestone-icon">🔥</div>
+						<div class="medal-title">7-DAY STREAK</div>
+					</div>
+					<div class="medal-container" class:medal-locked={!badge100Sessions}>
+						<div class="milestone-icon">💯</div>
+						<div class="medal-title">100 SESSIONS</div>
+					</div>
+					<div class="medal-container" class:medal-locked={!badge1000Mins}>
+						<div class="milestone-icon">⏱️</div>
+						<div class="medal-title">1000 MINS</div>
+					</div>
+					<div class="medal-container medal-locked">
+						<div class="milestone-icon">⚔️</div>
+						<div class="medal-title">WEEKEND WARRIOR</div>
+					</div>
 				</div>
 			</div>
 		</div>

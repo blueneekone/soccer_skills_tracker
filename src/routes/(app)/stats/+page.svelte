@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -57,10 +58,31 @@
 		dayModalOpen = true;
 	};
 
-	// Chart
+	// Chart (colors follow CSS vars for WCAG AAA in light + dark)
 	let chartEl;
 	let chartInstance;
 	let chartRange = $state('7');
+	let chartThemeKey = $state(0);
+
+	onMount(() => {
+		if (!browser) return;
+		const mo = new MutationObserver(() => chartThemeKey++);
+		mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+		return () => mo.disconnect();
+	});
+
+	const chartColors = () => {
+		if (!browser) {
+			return { bar: '#0f172a', tick: '#334155', grid: 'rgba(15,23,42,0.12)' };
+		}
+		const cs = getComputedStyle(document.documentElement);
+		const pick = (name, fallback) => (cs.getPropertyValue(name).trim() || fallback);
+		return {
+			bar: pick('--chart-bar', '#0f172a'),
+			tick: pick('--chart-tick', '#334155'),
+			grid: pick('--chart-grid', 'rgba(15,23,42,0.12)')
+		};
+	};
 
 	const buildChartData = (range) => {
 		let labels = [], data = [];
@@ -94,13 +116,30 @@
 	};
 
 	$effect(() => {
+		chartThemeKey;
 		if (!chartEl || loading) return;
 		const { labels, data } = buildChartData(chartRange);
+		const { bar, tick, grid } = chartColors();
 		if (chartInstance) chartInstance.destroy();
 		chartInstance = new Chart(chartEl, {
 			type: 'bar',
-			data: { labels, datasets: [{ data, backgroundColor: '#0f172a', borderRadius: 4 }] },
-			options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
+			data: { labels, datasets: [{ data, backgroundColor: bar, borderRadius: 4 }] },
+			options: {
+				plugins: { legend: { display: false } },
+				scales: {
+					x: {
+						ticks: { color: tick },
+						grid: { display: false }
+					},
+					y: {
+						beginAtZero: true,
+						ticks: { color: tick },
+						grid: { color: grid }
+					}
+				},
+				responsive: true,
+				maintainAspectRatio: false
+			}
 		});
 	});
 
@@ -178,89 +217,88 @@
 		</div>
 	</div>
 
-	<!-- XP & Rank Card -->
-	<div class="card">
-		<div class="card-body text-center">
-			<h1 class="level-display">{currentRank.name}</h1>
-			<p class="current-rank-label">Current Rank</p>
-			<div class="xp-bar-container">
-				<div class="xp-bar-fill" style="width: {xpPct}%"></div>
+	<div class="bento-section">
+		<div class="card">
+			<div class="card-body text-center">
+				<h1 class="level-display">{currentRank.name}</h1>
+				<p class="current-rank-label">Current Rank</p>
+				<div class="xp-bar-container">
+					<div class="xp-bar-fill" style="width: {xpPct}%"></div>
+				</div>
+				<div class="stats-totals-row">
+					<div class="text-center"><span class="stat-number">{logs.length}</span><br /><span class="stat-label">Sessions</span></div>
+					<div class="text-center"><span class="stat-number">{totalMins}</span><br /><span class="stat-label">Minutes</span></div>
+				</div>
 			</div>
-			<div class="stats-totals-row">
-				<div class="text-center"><span class="stat-number">{logs.length}</span><br /><span class="stat-label">Sessions</span></div>
-				<div class="text-center"><span class="stat-number">{totalMins}</span><br /><span class="stat-label">Minutes</span></div>
-			</div>
 		</div>
-	</div>
 
-	<!-- Trials Table -->
-	<div class="card">
-		<div class="card-header bg-gold-header">⭐ Challenge Progress</div>
-		<div class="card-body p-0 overflow-x-auto">
-			<table class="admin-table">
-				<thead><tr><th>Date</th><th>Type</th><th>Skill</th><th>Result</th></tr></thead>
-				<tbody>
-					{#if trials.length === 0}
-						<tr><td colspan="4" class="text-center">No trials completed yet.</td></tr>
-					{:else}
-						{#each trials as t}
-							<tr>
-								<td>{t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
-								<td>{t.type}</td>
-								<td>{t.skill}</td>
-								<td>{t.result} {t.isCoach ? '⭐' : ''}</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
-	</div>
-
-	<!-- Leaderboard -->
-	<div class="card">
-		<div class="card-header leaderboard-header-flex">
-			<span>🏅 TEAM LEADERBOARD</span>
-			<select bind:value={lbFilter} class="leaderboard-filter">
-				<option value="weekly">Weekly</option>
-				<option value="daily">Daily</option>
-				<option value="monthly">Monthly</option>
-				<option value="alltime">All-Time</option>
-			</select>
-		</div>
-		<div class="card-body p-0 overflow-x-auto">
-			<table class="admin-table">
-				<thead><tr><th>Rank</th><th>Player</th><th>Total Minutes</th></tr></thead>
-				<tbody>
-					{#if lbEntries.length === 0}
-						<tr><td colspan="3" class="text-center">No data for this time period</td></tr>
-					{:else}
-						{#each lbEntries as [player, mins], i}
-							<tr><td>{i + 1}</td><td>{player}</td><td>{mins}m</td></tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
-	</div>
-
-	<!-- Trend Chart -->
-	<div class="card">
-		<div class="card-header">📈 Training Trend</div>
-		<div class="card-body">
-			<select bind:value={chartRange} class="trend-filter">
-				<option value="7">Last 7 Days</option>
-				<option value="30">Last 30 Days</option>
-				<option value="90">Last 90 Days</option>
-				<option value="all">All Time (Monthly)</option>
-			</select>
-			<div class="chart-container">
-				<canvas bind:this={chartEl}></canvas>
+		<div class="card">
+			<div class="card-header bg-gold-header">⭐ Challenge Progress</div>
+			<div class="card-body p-0 overflow-x-auto">
+				<table class="admin-table">
+					<thead><tr><th>Date</th><th>Type</th><th>Skill</th><th>Result</th></tr></thead>
+					<tbody>
+						{#if trials.length === 0}
+							<tr><td colspan="4" class="text-center">No trials completed yet.</td></tr>
+						{:else}
+							{#each trials as t}
+								<tr>
+									<td>{t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+									<td>{t.type}</td>
+									<td>{t.skill}</td>
+									<td>{t.result} {t.isCoach ? '⭐' : ''}</td>
+								</tr>
+							{/each}
+						{/if}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
 
-	<!-- Calendar -->
+	<div class="bento-section">
+		<div class="card">
+			<div class="card-header leaderboard-header-flex">
+				<span>🏅 TEAM LEADERBOARD</span>
+				<select bind:value={lbFilter} class="leaderboard-filter">
+					<option value="weekly">Weekly</option>
+					<option value="daily">Daily</option>
+					<option value="monthly">Monthly</option>
+					<option value="alltime">All-Time</option>
+				</select>
+			</div>
+			<div class="card-body p-0 overflow-x-auto">
+				<table class="admin-table">
+					<thead><tr><th>Rank</th><th>Player</th><th>Total Minutes</th></tr></thead>
+					<tbody>
+						{#if lbEntries.length === 0}
+							<tr><td colspan="3" class="text-center">No data for this time period</td></tr>
+						{:else}
+							{#each lbEntries as [player, mins], i}
+								<tr><td>{i + 1}</td><td>{player}</td><td>{mins}m</td></tr>
+							{/each}
+						{/if}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-header">📈 Training Trend</div>
+			<div class="card-body">
+				<select bind:value={chartRange} class="trend-filter">
+					<option value="7">Last 7 Days</option>
+					<option value="30">Last 30 Days</option>
+					<option value="90">Last 90 Days</option>
+					<option value="all">All Time (Monthly)</option>
+				</select>
+				<div class="chart-container">
+					<canvas bind:this={chartEl}></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="card">
 		<div class="card-header">
 			<button class="action-btn" onclick={() => calOffset--}>◀</button>
@@ -347,20 +385,22 @@
 		width: auto;
 	}
 	.eval-item {
-		border-left: 4px solid #16a34a;
+		border-left: 4px solid #065f46;
 		align-items: flex-start;
 	}
 	.eval-content { flex: 1; }
 	.eval-note {
 		font-size: 0.8rem;
-		background: #f0fdf4;
+		background: #ecfdf5;
+		color: #14532d;
 		padding: 4px 8px;
 		border-radius: 4px;
 		margin-top: 4px;
+		border: 1px solid #a7f3d0;
 	}
 	.eval-score {
-		background: #16a34a;
-		color: white;
+		background: #065f46;
+		color: #ffffff;
 		padding: 2px 8px;
 		border-radius: 10px;
 		font-size: 0.75rem;
@@ -369,7 +409,20 @@
 	}
 	.day-log-item {
 		padding: 8px 0;
-		border-bottom: 1px solid #eee;
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	:global(html.dark) .eval-item {
+		border-left-color: #34d399;
+	}
+	:global(html.dark) .eval-note {
+		background: rgba(52, 211, 153, 0.12);
+		color: #d1fae5;
+		border-color: rgba(52, 211, 153, 0.35);
+	}
+	:global(html.dark) .eval-score {
+		background: #047857;
+		color: #ffffff;
 	}
 	.day-log-item:last-child { border-bottom: none; }
 </style>

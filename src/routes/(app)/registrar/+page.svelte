@@ -181,7 +181,8 @@
 		from a roster clears matching invites for this team; it does not delete Firebase Auth accounts.
 	</p>
 
-	<div class="card">
+	<div class="bento-section">
+		<div class="card">
 		<div class="card-header">Add player to team</div>
 		<div class="card-body grid-form">
 			<label class="field-label" for="add-team">Team</label>
@@ -207,6 +208,40 @@
 			<button class="primary-btn btn-orange" type="button" onclick={addPlayerInvite} disabled={addBusy}>
 				{addBusy ? 'Saving…' : 'Add to roster'}
 			</button>
+		</div>
+		</div>
+
+		<div class="card">
+		<div class="card-header">Transfer / trade player</div>
+		<div class="card-body grid-form">
+			<p class="text-sm-sub">
+				Uses the secure server function so rosters, invites, and player club assignment stay in sync.
+				Super admins may select any destination team; club staff see teams in their organization only—use
+				destination-club login for inbound moves.
+			</p>
+
+			<label class="field-label" for="xfer-email">Player login email</label>
+			<input id="xfer-email" class="field-input" type="email" bind:value={xferEmail} />
+
+			<label class="field-label" for="xfer-team">Destination team</label>
+			<select id="xfer-team" class="field-input" bind:value={xferTeamId}>
+				<option value="">Select team…</option>
+				{#each xferTeamChoices as t}
+					<option value={t.id}>{t.name || t.id} ({t.clubId})</option>
+				{/each}
+			</select>
+
+			{#if xferErr}
+				<div class="auth-error-msg" role="alert">{xferErr}</div>
+			{/if}
+			{#if xferMsg}
+				<p class="ok-msg" role="status">{xferMsg}</p>
+			{/if}
+
+			<button class="primary-btn btn-orange" type="button" onclick={runTransfer} disabled={xferBusy}>
+				{xferBusy ? 'Transferring…' : 'Run transfer'}
+			</button>
+		</div>
 		</div>
 	</div>
 
@@ -252,39 +287,6 @@
 					</ul>
 				{/if}
 			{/if}
-		</div>
-	</div>
-
-	<div class="card">
-		<div class="card-header">Transfer / trade player</div>
-		<div class="card-body grid-form">
-			<p class="text-sm-sub">
-				Uses the secure server function so rosters, invites, and player club assignment stay in sync.
-				Super admins may select any destination team; club staff see teams in their organization only—use
-				destination-club login for inbound moves.
-			</p>
-
-			<label class="field-label" for="xfer-email">Player login email</label>
-			<input id="xfer-email" class="field-input" type="email" bind:value={xferEmail} />
-
-			<label class="field-label" for="xfer-team">Destination team</label>
-			<select id="xfer-team" class="field-input" bind:value={xferTeamId}>
-				<option value="">Select team…</option>
-				{#each xferTeamChoices as t}
-					<option value={t.id}>{t.name || t.id} ({t.clubId})</option>
-				{/each}
-			</select>
-
-			{#if xferErr}
-				<div class="auth-error-msg" role="alert">{xferErr}</div>
-			{/if}
-			{#if xferMsg}
-				<p class="ok-msg" role="status">{xferMsg}</p>
-			{/if}
-
-			<button class="primary-btn btn-orange" type="button" onclick={runTransfer} disabled={xferBusy}>
-				{xferBusy ? 'Transferring…' : 'Run transfer'}
-			</button>
 		</div>
 	</div>
 </div>

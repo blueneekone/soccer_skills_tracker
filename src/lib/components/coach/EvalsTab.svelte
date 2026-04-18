@@ -59,7 +59,7 @@
 </script>
 
 <div class="evals-tab">
-	<!-- Recent Trials -->
+	<div class="bento-section">
 	<div class="card">
 		<div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
 		<div class="card-body p-0">
@@ -69,7 +69,7 @@
 						<div class="flex-1">
 							<b>{t.player}</b>
 							<span class="text-sm-sub"> ({t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleDateString() : ''})</span><br />
-							<span style="color:#ea580c;">{t.type}:</span> {t.skill}
+							<span class="text-accent-orange">{t.type}:</span> {t.skill}
 						</div>
 						<div class="text-right">
 							<span class="text-sm-sub">[{t.a1}, {t.a2}, {t.a3}]</span><br />
@@ -83,7 +83,6 @@
 		</div>
 	</div>
 
-	<!-- Log Official Trial -->
 	<div class="card">
 		<div class="card-header bg-gold-header">⏱️ Log Official In-Person Trial</div>
 		<div class="card-body">
@@ -106,7 +105,6 @@
 		</div>
 	</div>
 
-	<!-- Player Evaluations -->
 	<div class="card">
 		<div class="card-header bg-blue-header">📋 Submit Player Evaluation</div>
 		<div class="card-body">
@@ -123,6 +121,7 @@
 			<textarea bind:value={evalNotes} rows="2" placeholder="Optional coaching notes..."></textarea>
 			<button class="primary-btn btn-blue w-100" onclick={submitEval}>Submit Evaluation</button>
 		</div>
+	</div>
 	</div>
 </div>
 

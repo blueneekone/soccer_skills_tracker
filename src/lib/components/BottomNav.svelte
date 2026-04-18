@@ -70,13 +70,13 @@
 	}
 
 	.nav-item:hover {
-		background: rgba(15, 23, 42, 0.05);
-		color: var(--aggie-blue);
+		background: var(--surface-subtle);
+		color: var(--text-primary);
 	}
 
 	.nav-item.active {
-		color: var(--aggie-blue);
-		background: rgba(251, 191, 36, 0.15);
+		color: var(--text-primary);
+		background: rgba(251, 191, 36, 0.2);
 	}
 
 	.nav-icon {
