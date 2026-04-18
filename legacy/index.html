@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Skill Tracker</title>
 
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="Images/Phoenixes_Logo_2026.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../Images/Phoenixes_Logo_2026.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -1419,17 +1419,7 @@
 
     </div> 
     
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker registered!', reg))
-                    .catch(err => console.error('Service Worker failed', err));
-            });
-        }
-    </script>
-
-    <script type="module" src="app.js"></script>
+    <script type="module" src="./app.js"></script>
 </body>
 
 </html>

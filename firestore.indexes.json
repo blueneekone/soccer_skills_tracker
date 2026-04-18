@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "minor_retention_queue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerEmail", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "reps",
       "queryScope": "COLLECTION",
       "fields": [

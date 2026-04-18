@@ -547,12 +547,190 @@ exports.registrarTransferPlayer = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Epic 2 placeholder: wire to minor_retention_queue / club offboarding jobs.
- * SafeSport messaging CC should enqueue parent copies here when implemented.
+ * Director / super_admin: queue COPPA-style purge for an offboarded minor.
+ * Processing runs in processMinorRetentionQueue (scheduled).
  */
-exports.purgeLeaverDataStub = onSchedule('every 24 hours', async () => {
-  logger.info(
-      'TTL purge stub: process minor_retention_queue on club offboarding.',
-  );
+exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
+  const actor = assertDirectorOrSuper(req);
+  const data = req.data || {};
+  const playerEmail = normEmail(data.playerEmail);
+  if (!playerEmail) {
+    throw new HttpsError(
+        'invalid-argument',
+        'playerEmail is required.',
+    );
+  }
+
+  const uRef = db.collection('users').doc(playerEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'User not found.');
+  }
+  const u = uSnap.data();
+  if (actor.role === 'director') {
+    if (!actor.clubId || u.clubId !== actor.clubId) {
+      throw new HttpsError('permission-denied', 'Out of club scope.');
+    }
+  }
+  if (u.isMinor !== true && actor.role !== 'super_admin') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Retention queue is for minors; admins may override.',
+    );
+  }
+
+  const dup = await db.collection('minor_retention_queue')
+      .where('playerEmail', '==', playerEmail)
+      .where('status', '==', 'pending')
+      .limit(1)
+      .get();
+  if (!dup.empty) {
+    return {ok: true, duplicate: true, playerEmail};
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await db.collection('minor_retention_queue').add({
+    playerEmail,
+    clubId: u.clubId || null,
+    status: 'pending',
+    enqueuedAt: now,
+    actorEmail: actor.email || null,
+    actorUid: req.auth.uid,
+  });
+
+  await db.collection('security_audit').add({
+    action: 'enqueueMinorRetentionPurge',
+    playerEmail,
+    clubId: u.clubId || null,
+    actorEmail: actor.email || null,
+    actorUid: req.auth.uid,
+    at: now,
+  });
+
+  return {ok: true, playerEmail};
+});
+
+/**
+ * Scheduled worker: anonymize Firestore data for queued minor leavers.
+ */
+exports.processMinorRetentionQueue = onSchedule('every 24 hours', async () => {
+  const pending = await db.collection('minor_retention_queue')
+      .where('status', '==', 'pending')
+      .limit(20)
+      .get();
+
+  if (pending.empty) {
+    logger.info('minor_retention_queue: no pending jobs.');
+    return null;
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  for (const jobSnap of pending.docs) {
+    const jobRef = jobSnap.ref;
+    const job = jobSnap.data();
+    const email = typeof job.playerEmail === 'string' ?
+      job.playerEmail.trim().toLowerCase() : '';
+    if (!email) {
+      await jobRef.update({
+        status: 'failed',
+        completedAt: now,
+        error: 'missing_playerEmail',
+      });
+      continue;
+    }
+
+    try {
+      const uRef = db.collection('users').doc(email);
+      const uSnap = await uRef.get();
+      if (!uSnap.exists) {
+        await jobRef.update({
+          status: 'completed',
+          completedAt: now,
+          note: 'user_already_deleted',
+        });
+        continue;
+      }
+
+      const u = uSnap.data();
+      if (job.clubId && u.clubId && job.clubId !== u.clubId) {
+        await jobRef.update({
+          status: 'failed',
+          completedAt: now,
+          error: 'club_mismatch',
+        });
+        continue;
+      }
+
+      const playerName = u.playerName || null;
+      const teamId = u.teamId || null;
+      const householdId = u.householdId || null;
+
+      const batch = db.batch();
+
+      batch.delete(db.collection('passports').doc(email));
+      batch.delete(db.collection('player_lookup').doc(email));
+
+      if (teamId && teamId !== 'admin' && playerName) {
+        const rRef = db.collection('rosters').doc(teamId);
+        const rSnap = await rRef.get();
+        if (rSnap.exists) {
+          const d = rSnap.data();
+          const players = (d.players || []).filter((p) => p !== playerName);
+          const jerseys = {...(d.jerseys || {})};
+          delete jerseys[playerName];
+          batch.set(rRef, {players, jerseys}, {merge: true});
+        }
+      }
+
+      if (householdId) {
+        const hRef = db.collection('households').doc(householdId);
+        const hSnap = await hRef.get();
+        if (hSnap.exists) {
+          const hd = hSnap.data();
+          const playerEmails = (hd.playerEmails || [])
+              .filter((e) => (e || '').toLowerCase() !== email);
+          const playerNames = (hd.playerNames || [])
+              .filter((n) => n !== playerName);
+          batch.set(hRef, {
+            playerEmails,
+            playerNames,
+            updatedAt: now,
+          }, {merge: true});
+        }
+      }
+
+      batch.set(uRef, {
+        playerName: '[removed]',
+        teamId: null,
+        clubId: null,
+        role: 'player',
+        householdId: admin.firestore.FieldValue.delete(),
+        dateOfBirth: admin.firestore.FieldValue.delete(),
+        isMinor: admin.firestore.FieldValue.delete(),
+        vpcStatus: 'not_required',
+        privacyProfile: admin.firestore.FieldValue.delete(),
+        telemetryOptIn: admin.firestore.FieldValue.delete(),
+        settingsUpdatedAt: admin.firestore.FieldValue.delete(),
+        retentionPurgedAt: now,
+      }, {merge: true});
+
+      batch.set(jobRef, {
+        status: 'completed',
+        completedAt: now,
+      }, {merge: true});
+
+      await batch.commit();
+      logger.info(`minor_retention_queue: completed job for ${email}`);
+    } catch (err) {
+      logger.error(`minor_retention_queue: failed for ${email}`, err);
+      await jobRef.update({
+        status: 'failed',
+        completedAt: now,
+        error: err.message || String(err),
+      });
+    }
+  }
+
   return null;
 });

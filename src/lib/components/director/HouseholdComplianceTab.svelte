@@ -8,6 +8,7 @@
 	const linkHousehold = httpsCallable(functions, 'linkHousehold');
 	const setPlayerDateOfBirth = httpsCallable(functions, 'setPlayerDateOfBirth');
 	const verifyVpcForMinor = httpsCallable(functions, 'verifyVpcForMinor');
+	const enqueueMinorRetentionPurge = httpsCallable(functions, 'enqueueMinorRetentionPurge');
 
 	let parentEmailsInput = $state('');
 	let playerEmailsInput = $state('');
@@ -18,6 +19,7 @@
 	let dobValue = $state('');
 
 	let vpcPlayerEmail = $state('');
+	let retentionPlayerEmail = $state('');
 
 	const canUse = $derived(
 		authStore.role === 'director' || authStore.role === 'super_admin'
@@ -101,6 +103,38 @@
 			busy = '';
 		}
 	};
+
+	const onEnqueueRetention = async () => {
+		const playerEmail = retentionPlayerEmail.trim().toLowerCase();
+		if (!playerEmail) {
+			alert('Enter the minor player email to queue for data purge.');
+			return;
+		}
+		if (
+			!confirm(
+				'Queue this minor for automated COPPA retention purge? Within ~24h the job removes roster/passport/lookup PII and redacts their user profile. This cannot be undone from the app.'
+			)
+		) {
+			return;
+		}
+		busy = 'retention';
+		try {
+			const res = await enqueueMinorRetentionPurge({ playerEmail });
+			const d = /** @type {{ duplicate?: boolean }} */ (res.data || {});
+			if (d.duplicate) {
+				alert('A pending purge job already exists for this email.');
+			} else {
+				alert(
+					'Queued. The scheduled worker processes pending jobs daily. The account should sign out; after purge, they may need a fresh club invite to return.'
+				);
+			}
+			retentionPlayerEmail = '';
+		} catch (e) {
+			alert(e instanceof Error ? e.message : String(e));
+		} finally {
+			busy = '';
+		}
+	};
 </script>
 
 <div class="household-compliance">
@@ -173,6 +207,28 @@
 					disabled={busy !== ''}
 				>
 					{busy === 'vpc' ? 'Recording…' : 'Record VPC &amp; attest waiver'}
+				</button>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-header bg-blue-header">Minor offboarding (TTL purge queue)</div>
+			<div class="card-body">
+				<p class="help">
+					Epic 1.3: after a minor leaves the club, queue automated redaction. A daily Cloud Function clears
+					<code>passports</code>, <code>player_lookup</code>, roster slots, household links, and scrubs the
+					<code>users</code> doc. Directors may only queue minors in their club; application admins may queue
+					any minor.
+				</p>
+				<label>Minor player email</label>
+				<input type="email" bind:value={retentionPlayerEmail} placeholder="minor@example.com" />
+
+				<button
+					class="primary-btn btn-blue w-100"
+					onclick={onEnqueueRetention}
+					disabled={busy !== ''}
+				>
+					{busy === 'retention' ? 'Queueing…' : 'Queue retention purge'}
 				</button>
 			</div>
 		</div>

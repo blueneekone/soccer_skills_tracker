@@ -5,17 +5,11 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 
 	let { children } = $props();
-
-	const ROLE_ROUTES = {
-		'/admin': ['super_admin'],
-		'/director': ['super_admin', 'director'],
-		'/coach': ['super_admin', 'director', 'coach'],
-		'/registrar': ['super_admin', 'director', 'registrar']
-	};
 
 	// Auth guard + role guard
 	$effect(() => {
@@ -28,13 +22,10 @@
 			goto('/setup', { replaceState: true });
 			return;
 		}
-		// Role-based route protection
 		const currentPath = $page.url.pathname;
-		for (const [route, allowedRoles] of Object.entries(ROLE_ROUTES)) {
-			if (currentPath.startsWith(route) && !allowedRoles.includes(authStore.role)) {
-				goto('/home', { replaceState: true });
-				return;
-			}
+		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
+			goto('/home', { replaceState: true });
+			return;
 		}
 	});
 
