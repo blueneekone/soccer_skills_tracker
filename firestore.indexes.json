@@ -9,6 +9,14 @@
       ]
     },
     {
+      "collectionGroup": "minor_retention_queue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "expireAt", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "reps",
       "queryScope": "COLLECTION",
       "fields": [

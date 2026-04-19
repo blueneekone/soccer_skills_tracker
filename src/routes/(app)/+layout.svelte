@@ -32,7 +32,10 @@
 	// Load teams + workouts once auth is ready
 	$effect(() => {
 		if (!authStore.isAuthenticated || authStore.isLoading) return;
-		if (!teamsStore.loaded) teamsStore.load(authStore.role);
+		teamsStore.load(authStore.role, {
+			clubId: authStore.userProfile?.clubId,
+			coachEmail: authStore.user?.email
+		});
 		if (authStore.userProfile?.teamId) {
 			const effectiveTid =
 				authStore.role === 'super_admin' ||

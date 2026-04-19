@@ -198,6 +198,40 @@ function normEmail(e) {
 }
 
 /**
+ * vpc_requests.clubId must match director queue filters (child, household,
+ * team, or parent profile fallback).
+ * @param {Record<string, unknown>} u Minor users doc
+ * @param {Record<string, unknown>} h Household doc
+ * @param {string} parentEmail Caller (parent) email key
+ * @return {Promise<string|null>}
+ */
+async function resolveClubIdForVpcIntent(u, h, parentEmail) {
+  const fromUser =
+      typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : null;
+  if (fromUser) return fromUser;
+  const fromHousehold =
+      typeof h.clubId === 'string' && h.clubId.trim() ? h.clubId.trim() : null;
+  if (fromHousehold) return fromHousehold;
+  const tid = typeof u.teamId === 'string' ? u.teamId.trim() : '';
+  if (tid && tid !== 'admin') {
+    const tSnap = await db.collection('teams').doc(tid).get();
+    if (tSnap.exists) {
+      const tc = tSnap.data().clubId;
+      if (typeof tc === 'string' && tc.trim()) return tc.trim();
+    }
+  }
+  const pEm = normEmail(parentEmail);
+  if (pEm) {
+    const pSnap = await db.collection('users').doc(pEm).get();
+    if (pSnap.exists) {
+      const pc = pSnap.data().clubId;
+      if (typeof pc === 'string' && pc.trim()) return pc.trim();
+    }
+  }
+  return null;
+}
+
+/**
  * @param {admin.firestore.Timestamp} dob
  * @return {number}
  */
@@ -248,6 +282,59 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
   }
 
   return null;
+});
+
+/**
+ * Onboarding: teams in one club (Firestore team reads are club-scoped).
+ */
+exports.listTeamsForClub = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const raw = request.data && request.data.clubId;
+  const clubId = typeof raw === 'string' ? raw.trim() : '';
+  if (!clubId) {
+    throw new HttpsError('invalid-argument', 'clubId is required.');
+  }
+  const snap = await db.collection('teams')
+      .where('clubId', '==', clubId)
+      .limit(200)
+      .get();
+  const teams = snap.docs.map((d) => ({id: d.id, ...d.data()}));
+  return {teams};
+});
+
+/**
+ * super_admin only (client direct security_audit writes disabled in rules).
+ */
+exports.logSecurityAudit = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if (request.auth.token.role !== 'super_admin') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only application admins may log security audits.',
+    );
+  }
+  const data = request.data || {};
+  const action =
+      typeof data.action === 'string' ? data.action.slice(0, 120) : '';
+  const target =
+      typeof data.target === 'string' ? data.target.slice(0, 500) : '';
+  const details =
+      typeof data.details === 'string' ? data.details.slice(0, 2000) : '';
+  if (!action) {
+    throw new HttpsError('invalid-argument', 'action is required.');
+  }
+  await db.collection('security_audit').add({
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    admin: normEmail(request.auth.token.email) || 'unknown',
+    action,
+    target,
+    details,
+  });
+  return {ok: true};
 });
 
 /**
@@ -545,7 +632,8 @@ exports.verifyVpcForMinor = onCall({region: REGION}, (request) =>
 );
 
 /**
- * Sprint 1.3: director/super_admin VPC approval (syncUserClaims → vpcVerified).
+ * Director / super_admin: finalize VPC. Sets users.vpcStatus = verified;
+ * onWrite syncUserClaims stamps custom claim vpcVerified for Firestore rules.
  */
 exports.directorApproveVpc = onCall({region: REGION}, (request) =>
   executeDirectorVpcApproval(request, 'directorApproveVpc'),
@@ -618,12 +706,22 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
     return {ok: true, duplicate: true, playerEmail};
   }
 
+  const clubIdResolved = await resolveClubIdForVpcIntent(u, h, actor.email);
+  if (!clubIdResolved) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Club context is missing for this athlete. Ask your director to set ' +
+        'the player’s club, link a household with a club, or ensure your ' +
+        'parent profile includes a club.',
+    );
+  }
+
   const now = admin.firestore.FieldValue.serverTimestamp();
   await db.collection('vpc_requests').add({
     playerEmail,
     parentEmail: actor.email,
     householdId: actor.householdId,
-    clubId: u.clubId || null,
+    clubId: clubIdResolved,
     status: 'pending',
     createdAt: now,
   });
@@ -633,7 +731,7 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
     playerEmail,
     parentEmail: actor.email,
     householdId: actor.householdId,
-    clubId: u.clubId || null,
+    clubId: clubIdResolved,
     actorUid: request.auth.uid,
     at: now,
   });
@@ -1139,7 +1237,8 @@ exports.registrarTransferPlayer = onCall({region: REGION}, async (request) => {
 
 /**
  * Director / super_admin: queue COPPA-style purge for an offboarded minor.
- * Processing runs in processMinorRetentionQueue (scheduled).
+ * Jobs include expireAt; purgeExpiredMinorData runs daily when due.
+ * Legacy rows without expireAt are still handled by processMinorRetentionQueue.
  */
 exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
   const actor = assertDirectorOrSuper(req);
@@ -1179,11 +1278,21 @@ exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
     return {ok: true, duplicate: true, playerEmail};
   }
 
+  const rawDays = data.purgeAfterDays;
+  let days = 30;
+  if (typeof rawDays === 'number' && Number.isFinite(rawDays)) {
+    days = Math.max(0, Math.min(Math.floor(rawDays), 3650));
+  }
+  const expireAt = admin.firestore.Timestamp.fromMillis(
+      Date.now() + days * 86400000,
+  );
+
   const now = admin.firestore.FieldValue.serverTimestamp();
   await db.collection('minor_retention_queue').add({
     playerEmail,
     clubId: u.clubId || null,
     status: 'pending',
+    expireAt,
     enqueuedAt: now,
     actorEmail: actor.email || null,
     actorUid: req.auth.uid,
@@ -1202,12 +1311,138 @@ exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
 });
 
 /**
- * Scheduled worker: anonymize Firestore data for queued minor leavers.
+ * @param {admin.firestore.QueryDocumentSnapshot} jobSnap Queue row.
+ * @param {boolean} deleteQueueDoc If true, delete job doc after purge (TTL).
+ */
+async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
+  const jobRef = jobSnap.ref;
+  const job = jobSnap.data();
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const email = typeof job.playerEmail === 'string' ?
+    job.playerEmail.trim().toLowerCase() :
+    '';
+  if (!email) {
+    if (deleteQueueDoc) {
+      await jobRef.delete();
+    } else {
+      await jobRef.update({
+        status: 'failed',
+        completedAt: now,
+        error: 'missing_playerEmail',
+      });
+    }
+    return;
+  }
+
+  try {
+    const uRef = db.collection('users').doc(email);
+    const uSnap = await uRef.get();
+    if (!uSnap.exists) {
+      if (deleteQueueDoc) {
+        await jobRef.delete();
+      } else {
+        await jobRef.update({
+          status: 'completed',
+          completedAt: now,
+          note: 'user_already_deleted',
+        });
+      }
+      return;
+    }
+
+    const u = uSnap.data();
+    if (job.clubId && u.clubId && job.clubId !== u.clubId) {
+      await jobRef.update({
+        status: 'failed',
+        completedAt: now,
+        error: 'club_mismatch',
+      });
+      return;
+    }
+
+    const playerName = u.playerName || null;
+    const teamId = u.teamId || null;
+    const householdId = u.householdId || null;
+
+    const batch = db.batch();
+
+    batch.delete(db.collection('passports').doc(email));
+    batch.delete(db.collection('player_lookup').doc(email));
+
+    if (teamId && teamId !== 'admin' && playerName) {
+      const rRef = db.collection('rosters').doc(teamId);
+      const rSnap = await rRef.get();
+      if (rSnap.exists) {
+        const d = rSnap.data();
+        const players = (d.players || []).filter((p) => p !== playerName);
+        const jerseys = {...(d.jerseys || {})};
+        delete jerseys[playerName];
+        batch.set(rRef, {players, jerseys}, {merge: true});
+      }
+    }
+
+    if (householdId) {
+      const hRef = db.collection('households').doc(householdId);
+      const hSnap = await hRef.get();
+      if (hSnap.exists) {
+        const hd = hSnap.data();
+        const playerEmails = (hd.playerEmails || [])
+            .filter((e) => (e || '').toLowerCase() !== email);
+        const playerNames = (hd.playerNames || [])
+            .filter((n) => n !== playerName);
+        batch.set(hRef, {
+          playerEmails,
+          playerNames,
+          updatedAt: now,
+        }, {merge: true});
+      }
+    }
+
+    batch.set(uRef, {
+      playerName: '[removed]',
+      teamId: null,
+      clubId: null,
+      role: 'player',
+      householdId: admin.firestore.FieldValue.delete(),
+      dateOfBirth: admin.firestore.FieldValue.delete(),
+      isMinor: admin.firestore.FieldValue.delete(),
+      vpcStatus: 'not_required',
+      privacyProfile: admin.firestore.FieldValue.delete(),
+      telemetryOptIn: admin.firestore.FieldValue.delete(),
+      settingsUpdatedAt: admin.firestore.FieldValue.delete(),
+      retentionPurgedAt: now,
+    }, {merge: true});
+
+    if (deleteQueueDoc) {
+      batch.delete(jobRef);
+    } else {
+      batch.set(jobRef, {
+        status: 'completed',
+        completedAt: now,
+      }, {merge: true});
+    }
+
+    await batch.commit();
+    logger.info(
+        `minor_retention_queue: purged ${email} (ttl=${deleteQueueDoc})`,
+    );
+  } catch (err) {
+    logger.error(`minor_retention_queue: failed for ${email}`, err);
+    await jobRef.update({
+      status: 'failed',
+      completedAt: now,
+      error: err.message || String(err),
+    });
+  }
+}
+
+/**
+ * Legacy / immediate: pending jobs with no expireAt (pre-TTL enqueue).
  */
 exports.processMinorRetentionQueue = onSchedule('every 24 hours', async () => {
   const pending = await db.collection('minor_retention_queue')
       .where('status', '==', 'pending')
-      .limit(20)
+      .limit(30)
       .get();
 
   if (pending.empty) {
@@ -1215,113 +1450,37 @@ exports.processMinorRetentionQueue = onSchedule('every 24 hours', async () => {
     return null;
   }
 
-  const now = admin.firestore.FieldValue.serverTimestamp();
-
+  let ran = 0;
   for (const jobSnap of pending.docs) {
-    const jobRef = jobSnap.ref;
     const job = jobSnap.data();
-    const email = typeof job.playerEmail === 'string' ?
-      job.playerEmail.trim().toLowerCase() : '';
-    if (!email) {
-      await jobRef.update({
-        status: 'failed',
-        completedAt: now,
-        error: 'missing_playerEmail',
-      });
-      continue;
-    }
+    if (job.expireAt != null) continue;
+    await runMinorRetentionPurgeJob(jobSnap, false);
+    ran++;
+  }
+  if (ran === 0) {
+    logger.info('minor_retention_queue: no legacy (non-TTL) jobs.');
+  }
+  return null;
+});
 
-    try {
-      const uRef = db.collection('users').doc(email);
-      const uSnap = await uRef.get();
-      if (!uSnap.exists) {
-        await jobRef.update({
-          status: 'completed',
-          completedAt: now,
-          note: 'user_already_deleted',
-        });
-        continue;
-      }
+/**
+ * Epic 1.3: TTL-based purge when expireAt <= now (COPPA retention).
+ */
+exports.purgeExpiredMinorData = onSchedule('every 24 hours', async () => {
+  const nowTs = admin.firestore.Timestamp.now();
+  const snap = await db.collection('minor_retention_queue')
+      .where('status', '==', 'pending')
+      .where('expireAt', '<=', nowTs)
+      .limit(25)
+      .get();
 
-      const u = uSnap.data();
-      if (job.clubId && u.clubId && job.clubId !== u.clubId) {
-        await jobRef.update({
-          status: 'failed',
-          completedAt: now,
-          error: 'club_mismatch',
-        });
-        continue;
-      }
-
-      const playerName = u.playerName || null;
-      const teamId = u.teamId || null;
-      const householdId = u.householdId || null;
-
-      const batch = db.batch();
-
-      batch.delete(db.collection('passports').doc(email));
-      batch.delete(db.collection('player_lookup').doc(email));
-
-      if (teamId && teamId !== 'admin' && playerName) {
-        const rRef = db.collection('rosters').doc(teamId);
-        const rSnap = await rRef.get();
-        if (rSnap.exists) {
-          const d = rSnap.data();
-          const players = (d.players || []).filter((p) => p !== playerName);
-          const jerseys = {...(d.jerseys || {})};
-          delete jerseys[playerName];
-          batch.set(rRef, {players, jerseys}, {merge: true});
-        }
-      }
-
-      if (householdId) {
-        const hRef = db.collection('households').doc(householdId);
-        const hSnap = await hRef.get();
-        if (hSnap.exists) {
-          const hd = hSnap.data();
-          const playerEmails = (hd.playerEmails || [])
-              .filter((e) => (e || '').toLowerCase() !== email);
-          const playerNames = (hd.playerNames || [])
-              .filter((n) => n !== playerName);
-          batch.set(hRef, {
-            playerEmails,
-            playerNames,
-            updatedAt: now,
-          }, {merge: true});
-        }
-      }
-
-      batch.set(uRef, {
-        playerName: '[removed]',
-        teamId: null,
-        clubId: null,
-        role: 'player',
-        householdId: admin.firestore.FieldValue.delete(),
-        dateOfBirth: admin.firestore.FieldValue.delete(),
-        isMinor: admin.firestore.FieldValue.delete(),
-        vpcStatus: 'not_required',
-        privacyProfile: admin.firestore.FieldValue.delete(),
-        telemetryOptIn: admin.firestore.FieldValue.delete(),
-        settingsUpdatedAt: admin.firestore.FieldValue.delete(),
-        retentionPurgedAt: now,
-      }, {merge: true});
-
-      batch.set(jobRef, {
-        status: 'completed',
-        completedAt: now,
-      }, {merge: true});
-
-      await batch.commit();
-      logger.info(`minor_retention_queue: completed job for ${email}`);
-    } catch (err) {
-      logger.error(`minor_retention_queue: failed for ${email}`, err);
-      await jobRef.update({
-        status: 'failed',
-        completedAt: now,
-        error: err.message || String(err),
-      });
-    }
+  if (snap.empty) {
+    logger.info('minor_retention_queue: no expired TTL jobs.');
+    return null;
   }
 
+  for (const doc of snap.docs) {
+    await runMinorRetentionPurgeJob(doc, true);
+  }
   return null;
 });

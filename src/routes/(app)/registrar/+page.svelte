@@ -47,9 +47,11 @@
 	);
 
 	$effect(() => {
-		if (authStore.isAuthenticated && !teamsStore.loaded) {
-			teamsStore.load(authStore.role);
-		}
+		if (!authStore.isAuthenticated) return;
+		teamsStore.load(authStore.role, {
+			clubId: authStore.userProfile?.clubId,
+			coachEmail: authStore.user?.email
+		});
 	});
 
 	$effect(() => {

@@ -1,14 +1,14 @@
-import { auth, db } from '$lib/firebase.js';
-import { collection, addDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
+
+const logSecurityAuditFn = httpsCallable(functions, 'logSecurityAudit');
 
 export const logSecurityEvent = async (action, target, details = '') => {
 	try {
-		await addDoc(collection(db, 'security_audit'), {
-			timestamp: new Date(),
-			admin: auth.currentUser?.email || 'unknown',
+		await logSecurityAuditFn({
 			action,
-			target,
-			details
+			target: String(target ?? ''),
+			details: String(details ?? '')
 		});
 	} catch (e) {
 		console.error('Audit Log Failed:', e);

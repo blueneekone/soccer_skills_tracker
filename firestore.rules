@@ -118,6 +118,37 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(playerEmail)).data.get('clubId', null) == tokenClub();
     }
 
+    // coach_lookup / player_lookup: club on row or derived via teamId → teams.clubId.
+    function lookupRowInActorClub() {
+      return tokenClub() != null
+        && (resource.data.get('clubId', null) == tokenClub()
+          || (resource.data.keys().hasAll(['teamId'])
+              && exists(/databases/$(database)/documents/teams/$(resource.data.teamId))
+              && teamClubId(resource.data.teamId) == tokenClub()));
+    }
+
+    function coachStaffCanAccessTeam(tid) {
+      return isCoach() && tid != null
+        && exists(/databases/$(database)/documents/teams/$(tid))
+        && (sameTeam(tid)
+          || get(/databases/$(database)/documents/teams/$(tid)).data.get('coachEmail', '').lower()
+               == emailKey()
+          || (get(/databases/$(database)/documents/teams/$(tid)).data.keys().hasAll(['assistants'])
+              && get(/databases/$(database)/documents/teams/$(tid)).data.assistants.hasAny([emailKey()])));
+    }
+
+    // schedules / team_workouts: team-scoped reads (no global enumeration).
+    function canReadScheduleOrWorkoutDoc() {
+      return resource.data.keys().hasAll(['teamId'])
+        && (isSuper()
+          || sameTeam(resource.data.teamId)
+          || directorScopedToTeam(resource.data.teamId)
+          || registrarTeamInClub(resource.data.teamId)
+          || coachStaffCanAccessTeam(resource.data.teamId)
+          || (isParent() && userDoc().keys().hasAll(['teamId'])
+              && userDoc().teamId == resource.data.teamId));
+    }
+
     // Minors without verified VPC may not self-assert waiver on create.
     function passportSelfCreateOk() {
       return !(tokenMinor() && !tokenVpcOk()
@@ -147,7 +178,7 @@ service cloud.firestore {
             && !request.resource.data.keys().hasAny(['householdId'])
             // COPPA fields are director/function only.
             && !request.resource.data.keys().hasAny(['dateOfBirth', 'vpcStatus', 'isMinor'])
-            // role: allowed only when it matches an admin-managed coach_lookup entry.
+            // role: coach/registrar from lookup; parent self-onboarding (club only, no team).
             && (!request.resource.data.keys().hasAny(['role'])
                 || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
                     && request.resource.data.role
@@ -155,7 +186,10 @@ service cloud.firestore {
                 || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
                     && request.resource.data.role == 'registrar'
                     && request.resource.data.get('clubId', null)
-                       == get(/databases/$(database)/documents/registrar_lookup/$(userId.lower())).data.get('clubId', null)))
+                       == get(/databases/$(database)/documents/registrar_lookup/$(userId.lower())).data.get('clubId', null))
+                || (request.resource.data.role == 'parent'
+                    && !request.resource.data.keys().hasAny(['teamId'])
+                    && request.resource.data.get('clubId', null) != null))
             // teamId must match the invite record. clubId is org-context only and is
             // not stored in player_lookup, so only teamId is validated here.
             && (!request.resource.data.keys().hasAny(['teamId'])
@@ -199,7 +233,15 @@ service cloud.firestore {
     }
 
     match /teams/{teamId} {
-      allow read: if authed();
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || (isRegistrar() && resource.data.clubId == tokenClub())
+        || sameTeam(teamId)
+        || (isCoach() && resource.data.get('coachEmail', '').lower() == emailKey())
+        || (isCoach() && resource.data.keys().hasAll(['assistants'])
+            && resource.data.assistants.hasAny([emailKey()]))
+      );
       allow create: if isSuper()
         || (isDirector() && request.resource.data.clubId == tokenClub())
         || (isCoach() && sameTeam(teamId));
@@ -224,7 +266,11 @@ service cloud.firestore {
     }
 
     match /coach_lookup/{coachId} {
-      allow read: if authed() && (emailKey() == coachId.lower() || isSuper() || isDirector());
+      allow read: if authed() && (
+        emailKey() == coachId.lower()
+        || isSuper()
+        || (isDirector() && tokenClub() != null && lookupRowInActorClub())
+      );
       allow write: if isSuper() || isDirector();
     }
 
@@ -244,9 +290,10 @@ service cloud.firestore {
       allow read: if authed() && (
         emailKey() == inviteId.lower()
         || isSuper()
-        || isCoach()
-        || isDirector()
-        || isRegistrar()
+        || (isDirector() && tokenClub() != null && lookupRowInActorClub())
+        || (isRegistrar() && tokenClub() != null && lookupRowInActorClub())
+        || (isCoach() && resource.data.keys().hasAll(['teamId'])
+            && coachStaffCanAccessTeam(resource.data.teamId))
       );
       allow create, update: if isSuper()
         || isDirector()
@@ -261,7 +308,7 @@ service cloud.firestore {
     }
 
     match /team_workouts/{docId} {
-      allow read: if authed();
+      allow read: if authed() && canReadScheduleOrWorkoutDoc();
       allow create: if isSuper()
         || directorScopedToTeam(request.resource.data.teamId)
         || (isCoach() && sameTeam(request.resource.data.teamId));
@@ -271,7 +318,7 @@ service cloud.firestore {
     }
 
     match /schedules/{docId} {
-      allow read: if authed();
+      allow read: if authed() && canReadScheduleOrWorkoutDoc();
       allow create: if isSuper()
         || directorScopedToTeam(request.resource.data.teamId)
         || (isCoach() && sameTeam(request.resource.data.teamId));
@@ -386,7 +433,7 @@ service cloud.firestore {
 
     match /security_audit/{docId} {
       allow read: if isSuper();
-      allow create: if authed();
+      allow create: if false;
       allow update, delete: if isSuper();
     }
 
@@ -434,10 +481,10 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // SafeSport / Epic 2.3: store mirrored copies when coach messages a minor (server or client enqueue).
+    // SafeSport: server-only (sendCoachPlayerMessage); no client creates.
     match /messaging_audit/{docId} {
       allow read: if isSuper();
-      allow create: if authed() && (isCoach() || isSuper());
+      allow create: if false;
       allow update, delete: if isSuper();
     }
 

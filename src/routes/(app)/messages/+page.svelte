@@ -1,5 +1,5 @@
 <script>
-	import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 

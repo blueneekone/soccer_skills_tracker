@@ -28,7 +28,7 @@
 			}
 			alert(`✅ Team '${newTeamName}' created!`);
 			newTeamName = ''; newCoachEmail = '';
-			await teamsStore.load('director');
+			await teamsStore.load('director', { clubId });
 		} catch (e) { alert('Error: ' + e.message); }
 		finally { saving = false; }
 	};

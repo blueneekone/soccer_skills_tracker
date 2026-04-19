@@ -26,7 +26,7 @@ export function isProfileComplete(profile) {
 	if (profile.role === 'super_admin' || profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
 	if (profile.role === 'coach' && profile.teamId) return true;
-	if (profile.role === 'parent' && profile.teamId) return true;
+	if (profile.role === 'parent' && profile.clubId) return true;
 	if (profile.playerName && profile.teamId) return true;
 	return false;
 }
