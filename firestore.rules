@@ -137,6 +137,25 @@ service cloud.firestore {
               && get(/databases/$(database)/documents/teams/$(tid)).data.assistants.hasAny([emailKey()])));
     }
 
+    // Epic 2.4: team drill library + structured workouts (read for players/parents).
+    function canReadTeamPracticeLibrary(tid) {
+      return authed() && tid != null
+        && (isSuper()
+          || directorScopedToTeam(tid)
+          || coachStaffCanAccessTeam(tid)
+          || registrarTeamInClub(tid)
+          || sameTeam(tid)
+          || (isParent() && userDoc().keys().hasAll(['teamId'])
+              && userDoc().teamId == tid));
+    }
+
+    function canWriteTeamPracticeLibrary(tid) {
+      return authed() && tid != null
+        && (isSuper()
+          || directorScopedToTeam(tid)
+          || coachStaffCanAccessTeam(tid));
+    }
+
     // schedules / team_workouts: team-scoped reads (no global enumeration).
     function canReadScheduleOrWorkoutDoc() {
       return resource.data.keys().hasAll(['teamId'])
@@ -279,6 +298,80 @@ service cloud.firestore {
           || directorScopedToTeam(teamId)
           || coachStaffCanAccessTeam(teamId)
         );
+      }
+
+      // Epic 2.4: reusable drills (AI / gamification–ready metadata).
+      match /drills/{drillId} {
+        allow read: if canReadTeamPracticeLibrary(teamId);
+        allow create: if canWriteTeamPracticeLibrary(teamId)
+          && request.resource.data.keys().hasAll(
+            ['name', 'durationMinutes', 'description', 'focusArea', 'createdBy']
+          )
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200
+          && request.resource.data.description is string
+          && request.resource.data.description.size() <= 8000
+          && request.resource.data.focusArea is string
+          && request.resource.data.focusArea.size() > 0
+          && request.resource.data.focusArea.size() <= 120
+          && request.resource.data.durationMinutes is int
+          && request.resource.data.durationMinutes >= 1
+          && request.resource.data.durationMinutes <= 999;
+        allow update: if canWriteTeamPracticeLibrary(teamId)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200
+          && request.resource.data.description is string
+          && request.resource.data.description.size() <= 8000
+          && request.resource.data.focusArea is string
+          && request.resource.data.focusArea.size() > 0
+          && request.resource.data.focusArea.size() <= 120
+          && request.resource.data.durationMinutes is int
+          && request.resource.data.durationMinutes >= 1
+          && request.resource.data.durationMinutes <= 999;
+        allow delete: if canWriteTeamPracticeLibrary(teamId);
+      }
+
+      // Epic 2.4: ordered workout sessions (embedded drill snapshots).
+      match /workouts/{workoutId} {
+        allow read: if canReadTeamPracticeLibrary(teamId);
+        allow create: if canWriteTeamPracticeLibrary(teamId)
+          && request.resource.data.keys().hasAll(
+            ['name', 'drills', 'totalMinutes', 'createdBy']
+          )
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200
+          && request.resource.data.drills is list
+          && request.resource.data.drills.size() > 0
+          && request.resource.data.drills.size() <= 100
+          && request.resource.data.totalMinutes is int
+          && request.resource.data.totalMinutes >= 0
+          && request.resource.data.totalMinutes <= 100000
+          && (!request.resource.data.keys().hasAny(['scheduledDate'])
+              || request.resource.data.scheduledDate == null
+              || (request.resource.data.scheduledDate is string
+                  && request.resource.data.scheduledDate.size() <= 32));
+        allow update: if canWriteTeamPracticeLibrary(teamId)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200
+          && request.resource.data.drills is list
+          && request.resource.data.drills.size() > 0
+          && request.resource.data.drills.size() <= 100
+          && request.resource.data.totalMinutes is int
+          && request.resource.data.totalMinutes >= 0
+          && request.resource.data.totalMinutes <= 100000
+          && (!request.resource.data.keys().hasAny(['scheduledDate'])
+              || request.resource.data.scheduledDate == null
+              || (request.resource.data.scheduledDate is string
+                  && request.resource.data.scheduledDate.size() <= 32));
+        allow delete: if canWriteTeamPracticeLibrary(teamId);
       }
     }
 
