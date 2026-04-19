@@ -488,6 +488,53 @@ service cloud.firestore {
       allow update, delete: if isSuper();
     }
 
+    // Epic 2.1: governing-body season metadata (functions/director setup only).
+    match /seasons/{seasonId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || (isRegistrar() && resource.data.clubId == tokenClub())
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && resource.data.clubId == teamClubId(tokenTeam()))
+      );
+      allow create, update, delete: if false;
+    }
+
+    // Epic 2.1–2.2: eligibility (webhook + overrides); coach/registrar read team.
+    match /player_eligibility/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && resource.data.teamId == tokenTeam())
+        || registrarTeamInClub(resource.data.teamId)
+      );
+      allow create, update, delete: if false;
+    }
+
+    // Epic 2.1: external ID ↔ roster / users bridge (functions only).
+    match /roster_links/{docId} {
+      allow read: if authed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && resource.data.teamId == tokenTeam())
+        || registrarTeamInClub(resource.data.teamId)
+      );
+      allow create, update, delete: if false;
+    }
+
+    // Epic 2.1: raw webhook bodies (audit).
+    match /affinity_ingest_raw/{docId} {
+      allow read: if isSuper();
+      allow create, update, delete: if false;
+    }
+
+    // Epic 2.1: idempotency + webhook status (audit).
+    match /affinity_webhook_events/{docId} {
+      allow read: if isSuper();
+      allow create, update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -2,7 +2,7 @@
 const crypto = require('crypto');
 const {onDocumentWritten} = require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
-const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineString, defineSecret} = require('firebase-functions/params');
@@ -13,6 +13,10 @@ const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
 /** Set via: firebase functions:secrets:set WORKOUT_ATTESTATION_HMAC_SECRET */
 const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
     'WORKOUT_ATTESTATION_HMAC_SECRET',
+);
+/** Webhook: firebase functions:secrets:set AFFINITY_WEBHOOK_HMAC_SECRET */
+const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret(
+    'AFFINITY_WEBHOOK_HMAC_SECRET',
 );
 
 const REGION = 'us-central1';
@@ -1483,4 +1487,496 @@ exports.purgeExpiredMinorData = onSchedule('every 24 hours', async () => {
     await runMinorRetentionPurgeJob(doc, true);
   }
   return null;
+});
+
+// ---------------------------------------------------------------------------
+// Epic 2.1: Affinity-ready webhook (HTTP) + mock callable. Fail-closed
+// eligibility; client writes forbidden on integration collections (rules).
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {number} status
+ * @param {string} msg
+ */
+function throwAffinityHttp(status, msg) {
+  const err = new Error(msg);
+  err.status = status;
+  throw err;
+}
+
+/**
+ * @param {Buffer} rawBuffer
+ * @param {string|undefined} signatureHeader Header value after colon;
+ *     expected form sha256=hex
+ * @param {string} secret
+ */
+function verifyAffinityHmac(rawBuffer, signatureHeader, secret) {
+  const expected = crypto.createHmac('sha256', secret)
+      .update(rawBuffer)
+      .digest();
+  const sig = (signatureHeader || '').trim();
+  const prefix = 'sha256=';
+  if (!sig.startsWith(prefix)) {
+    throw new Error('Invalid signature header (expected sha256=hex)');
+  }
+  let provided;
+  try {
+    provided = Buffer.from(sig.slice(prefix.length), 'hex');
+  } catch (e) {
+    throw new Error('Invalid signature hex');
+  }
+  if (provided.length !== expected.length ||
+      !crypto.timingSafeEqual(provided, expected)) {
+    throw new Error('HMAC verification failed');
+  }
+}
+
+/**
+ * @param {string} eventId
+ * @return {string}
+ */
+function sanitizeAffinityEventDocId(eventId) {
+  const s = String(eventId).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const out = s.slice(0, 400);
+  return out || 'invalid_event';
+}
+
+/**
+ * @param {string} teamId
+ * @param {string|null} extId
+ * @param {string|null} emailKey
+ * @param {string} displayName
+ * @return {string}
+ */
+function makeEligibilityDocId(teamId, extId, emailKey, displayName) {
+  let part = '';
+  if (extId) part = 'ext_' + extId;
+  else if (emailKey) part = 'em_' + emailKey;
+  else {
+    const h = crypto.createHash('sha256')
+        .update(String(displayName || '') + '|' + teamId)
+        .digest('hex')
+        .slice(0, 16);
+    part = 'nm_' + h;
+  }
+  const safe = part.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 220);
+  return ('elig_' + teamId + '_' + safe).slice(0, 750);
+}
+
+/**
+ * @param {string} teamId
+ * @param {string|null} extId
+ * @param {string|null} emailKey
+ * @param {string} displayName
+ * @return {string}
+ */
+function makeRosterLinkDocId(teamId, extId, emailKey, displayName) {
+  let part = '';
+  if (extId) part = 'ext_' + extId;
+  else if (emailKey) part = 'em_' + emailKey;
+  else {
+    const h = crypto.createHash('sha256')
+        .update(String(displayName || '') + '|' + teamId)
+        .digest('hex')
+        .slice(0, 16);
+    part = 'nm_' + h;
+  }
+  const safe = part.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 220);
+  return ('rlink_' + teamId + '_' + safe).slice(0, 750);
+}
+
+/**
+ * @param {string} sidCode
+ * @param {string} [seasonExternalId]
+ * @return {!Promise<!Object>}
+ */
+async function resolveTeamBySidCode(sidCode, seasonExternalId) {
+  const code = typeof sidCode === 'string' ? sidCode.trim() : '';
+  if (!code) {
+    throwAffinityHttp(400, 'sidCode is required in payload');
+  }
+  const snap = await db.collection('teams')
+      .where('externalSidCode', '==', code)
+      .limit(25)
+      .get();
+  if (snap.empty) {
+    throwAffinityHttp(
+        404,
+        'No team found with externalSidCode; set teams.externalSidCode first.',
+    );
+  }
+  if (snap.size === 1) {
+    const d = snap.docs[0];
+    const t = d.data();
+    return {teamId: d.id, clubId: t.clubId || null};
+  }
+  const season = typeof seasonExternalId === 'string' ?
+    seasonExternalId.trim() :
+    '';
+  if (!season) {
+    throwAffinityHttp(
+        409,
+        'Multiple teams match sidCode; include seasonExternalId in payload.',
+    );
+  }
+  for (const d of snap.docs) {
+    const t = d.data();
+    if (t.externalSeasonId === season) {
+      return {teamId: d.id, clubId: t.clubId || null};
+    }
+  }
+  throwAffinityHttp(
+      409,
+      'Multiple teams match sidCode; no team has matching externalSeasonId.',
+  );
+}
+
+/**
+ * Fail-closed eligibility row for one player payload object.
+ * @param {Record<string, unknown>} p
+ * @param {string} teamId
+ * @param {string|null} clubId
+ * @param {string} seasonExternalId
+ * @param {string} sidCode
+ * @param {string} sourceTag
+ * @param {string} eventId
+ * @return {!Promise<!Object>}
+ */
+async function buildEligibilityRow(
+    p, teamId, clubId, seasonExternalId, sidCode, sourceTag, eventId,
+) {
+  const emailKey = normEmail(
+      typeof p.email === 'string' ? p.email : null,
+  );
+  const extId =
+      typeof p.externalMemberId === 'string' && p.externalMemberId.trim() ?
+        p.externalMemberId.trim() :
+        null;
+  const displayName =
+      typeof p.displayName === 'string' ? p.displayName.trim() : '';
+
+  const identityVerified = !!(emailKey || extId);
+  const identityStatus = identityVerified ? 'verified' : 'unverified';
+
+  const safeSportVerified =
+      p.safeSport === true || p.safeSportVerified === true;
+  const concussionClearanceVerified =
+      p.concussionClearance === true ||
+      p.concussionClearanceVerified === true;
+
+  const rawGb =
+      typeof p.governingBodyStatus === 'string' ?
+        p.governingBodyStatus.trim().toLowerCase() :
+        '';
+  let governingBodyStatus = 'unknown';
+  if (rawGb === 'clear') governingBodyStatus = 'clear';
+  else if (rawGb === 'red_card' || rawGb === 'red card') {
+    governingBodyStatus = 'red_card';
+  } else if (rawGb === 'suspended') governingBodyStatus = 'suspended';
+  const governingBodyClear = governingBodyStatus === 'clear';
+
+  let vpcSatisfied = false;
+  if (!identityVerified) {
+    vpcSatisfied = false;
+  } else if (emailKey) {
+    const uSnap = await db.collection('users').doc(emailKey).get();
+    if (!uSnap.exists) {
+      vpcSatisfied = false;
+    } else {
+      const ud = uSnap.data();
+      if (ud.isMinor === true) {
+        vpcSatisfied = ud.vpcStatus === 'verified';
+      } else {
+        vpcSatisfied = true;
+      }
+    }
+  } else {
+    vpcSatisfied = false;
+  }
+
+  const eligible =
+      safeSportVerified &&
+      concussionClearanceVerified &&
+      governingBodyClear &&
+      vpcSatisfied &&
+      identityVerified;
+
+  const reasons = [];
+  if (!identityVerified) reasons.push('identity_unverified');
+  if (!safeSportVerified) reasons.push('safesport_not_verified');
+  if (!concussionClearanceVerified) {
+    reasons.push('concussion_not_verified');
+  }
+  if (!governingBodyClear) reasons.push('governing_body_not_clear');
+  if (!vpcSatisfied) reasons.push('vpc_not_satisfied');
+
+  const eligibilityDocId = makeEligibilityDocId(
+      teamId, extId, emailKey, displayName,
+  );
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const eligibilityData = {
+    teamId,
+    clubId: clubId || null,
+    seasonExternalId: seasonExternalId || null,
+    sidCode,
+    externalMemberId: extId,
+    emailKey: emailKey || null,
+    displayName: displayName || null,
+    safeSportVerified,
+    concussionClearanceVerified,
+    governingBodyClear,
+    governingBodyStatus,
+    vpcSatisfied,
+    identityVerified,
+    identityStatus,
+    eligible,
+    ineligibilityReasons: reasons,
+    source: sourceTag,
+    lastEventId: eventId,
+    updatedAt: now,
+  };
+
+  const linkId = makeRosterLinkDocId(teamId, extId, emailKey, displayName);
+  const rosterLinkData = {
+    id: linkId,
+    data: {
+      teamId,
+      clubId: clubId || null,
+      seasonExternalId: seasonExternalId || null,
+      sidCode,
+      externalMemberId: extId,
+      emailKey: emailKey || null,
+      displayName: displayName || null,
+      updatedAt: now,
+      lastEventId: eventId,
+    },
+  };
+
+  return {eligibilityDocId, eligibilityData, rosterLinkData};
+}
+
+/**
+ * @param {Record<string, unknown>} payload
+ * @param {{sourceTag: string, rawString: string}} opts
+ * @return {!Promise<!Object>}
+ */
+async function runAffinityIngestCore(payload, opts) {
+  const eventId =
+      typeof payload.eventId === 'string' ? payload.eventId.trim() : '';
+  if (!eventId) {
+    throwAffinityHttp(400, 'eventId is required');
+  }
+  const sidCode =
+      typeof payload.sidCode === 'string' ? payload.sidCode.trim() : '';
+  const seasonExternalId =
+      typeof payload.seasonExternalId === 'string' ?
+        payload.seasonExternalId.trim() :
+        '';
+  const players = Array.isArray(payload.players) ? payload.players : [];
+  if (players.length > 120) {
+    throwAffinityHttp(400, 'At most 120 players per payload');
+  }
+
+  const eventDocId = sanitizeAffinityEventDocId(eventId);
+  const eventRef = db.collection('affinity_webhook_events').doc(eventDocId);
+
+  const duplicate = await db.runTransaction(async (t) => {
+    const es = await t.get(eventRef);
+    if (es.exists) return true;
+    t.set(eventRef, {
+      eventId,
+      status: 'processing',
+      receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+      source: opts.sourceTag,
+    });
+    return false;
+  });
+
+  if (duplicate) {
+    return {ok: true, duplicate: true, eventId};
+  }
+
+  const rawRef = db.collection('affinity_ingest_raw').doc();
+  await rawRef.set({
+    eventId,
+    bodyPreview: (opts.rawString || '').slice(0, 80000),
+    byteLength: Buffer.byteLength(opts.rawString || '', 'utf8'),
+    receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+    source: opts.sourceTag,
+  });
+
+  let teamId;
+  let clubId;
+  try {
+    const resolved = await resolveTeamBySidCode(sidCode, seasonExternalId);
+    teamId = resolved.teamId;
+    clubId = resolved.clubId;
+  } catch (err) {
+    await eventRef.set({
+      status: 'failed',
+      error: err.message || String(err),
+      completedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+    throw err;
+  }
+
+  const built = [];
+  for (const p of players) {
+    if (!p || typeof p !== 'object') continue;
+    built.push(
+        await buildEligibilityRow(
+            /** @type {Record<string, unknown>} */ (p),
+            teamId,
+            clubId,
+            seasonExternalId,
+            sidCode,
+            opts.sourceTag,
+            eventId,
+        ),
+    );
+  }
+
+  let batch = db.batch();
+  let ops = 0;
+  for (const row of built) {
+    batch.set(
+        db.collection('player_eligibility').doc(row.eligibilityDocId),
+        row.eligibilityData,
+        {merge: true},
+    );
+    ops++;
+    batch.set(
+        db.collection('roster_links').doc(row.rosterLinkData.id),
+        row.rosterLinkData.data,
+        {merge: true},
+    );
+    ops++;
+    if (ops >= 450) {
+      await batch.commit();
+      batch = db.batch();
+      ops = 0;
+    }
+  }
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  await eventRef.set({
+    status: 'completed',
+    completedAt: admin.firestore.FieldValue.serverTimestamp(),
+    teamId,
+    playerCount: built.length,
+    ingestRawId: rawRef.id,
+  }, {merge: true});
+
+  return {
+    ok: true,
+    eventId,
+    teamId,
+    playerCount: built.length,
+  };
+}
+
+/**
+ * POST JSON body. Header: X-SSTRACKER-Signature: sha256=<hmac-sha256-hex>
+ * over raw bytes. Requires teams.externalSidCode (and optional
+ * teams.externalSeasonId when multiple teams share a sid).
+ */
+exports.affinityWebhook = onRequest(
+    {
+      region: REGION,
+      secrets: [AFFINITY_WEBHOOK_HMAC_SECRET],
+      invoker: 'public',
+    },
+    async (req, res) => {
+      if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed');
+        return;
+      }
+      const secret = AFFINITY_WEBHOOK_HMAC_SECRET.value();
+      const raw = req.rawBody;
+      if (!raw || !Buffer.isBuffer(raw)) {
+        res.status(400).json({error: 'Missing raw body buffer'});
+        return;
+      }
+      try {
+        verifyAffinityHmac(raw, req.get('X-SSTRACKER-Signature'), secret);
+      } catch (e) {
+        logger.warn('affinityWebhook: bad signature', e);
+        res.status(401).json({error: 'Unauthorized'});
+        return;
+      }
+      let payload;
+      try {
+        payload = JSON.parse(raw.toString('utf8'));
+      } catch (e) {
+        res.status(400).json({error: 'Invalid JSON'});
+        return;
+      }
+      try {
+        const out = await runAffinityIngestCore(
+            /** @type {Record<string, unknown>} */ (payload),
+            {
+              sourceTag: 'affinity_webhook',
+              rawString: raw.toString('utf8'),
+            },
+        );
+        res.status(200).json(out);
+      } catch (err) {
+        const status = err.status || 500;
+        logger.error('affinityWebhook: ingest failed', err);
+        res.status(status).json({error: err.message || String(err)});
+      }
+    },
+);
+
+/**
+ * Director / super_admin: run same ingest as webhook without HMAC (local QA).
+ */
+exports.mockAffinityPush = onCall({region: REGION}, async (request) => {
+  const actor = assertDirectorOrSuper(request);
+  const data = request.data || {};
+  const eventIdRaw = data.eventId;
+  const fallbackEv =
+      `mock_${Date.now()}_` +
+      (actor.email || 'unknown').replace(/[^a-z0-9]+/gi, '_');
+  const eventId =
+      typeof eventIdRaw === 'string' && eventIdRaw.trim() ?
+        eventIdRaw.trim() :
+        fallbackEv;
+  const sidCode =
+      typeof data.sidCode === 'string' ? data.sidCode.trim() : '';
+  if (!sidCode) {
+    throw new HttpsError('invalid-argument', 'sidCode is required.');
+  }
+  const seasonExternalId =
+      typeof data.seasonExternalId === 'string' ?
+        data.seasonExternalId.trim() :
+        '';
+  const players = Array.isArray(data.players) ? data.players : [];
+  const payload = {
+    eventId,
+    sidCode,
+    seasonExternalId,
+    players,
+  };
+  const rawString = JSON.stringify(payload);
+  try {
+    return await runAffinityIngestCore(
+        /** @type {Record<string, unknown>} */ (payload),
+        {
+          sourceTag: 'mock_affinity_push',
+          rawString,
+        },
+    );
+  } catch (err) {
+    if (err.status) {
+      throw new HttpsError(
+          err.status === 400 ? 'invalid-argument' :
+            err.status === 404 ? 'not-found' : 'failed-precondition',
+          err.message || String(err),
+      );
+    }
+    throw err;
+  }
 });
