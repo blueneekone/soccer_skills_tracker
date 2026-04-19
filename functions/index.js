@@ -18,8 +18,12 @@ const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
 const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret(
     'AFFINITY_WEBHOOK_HMAC_SECRET',
 );
+/** Epic 4: Gemini Developer API key (Secret Manager). */
+const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 
 const REGION = 'us-central1';
+
+const {GoogleGenAI} = require('@google/genai');
 
 /**
  * @param {string} secret
@@ -189,6 +193,44 @@ function assertCoachMessageSender(request) {
       'permission-denied',
       'Only coaches, directors, or admins may send staff messages.',
   );
+}
+
+/**
+ * Coach / director / super_admin access to a team doc (tactics, AI, etc.).
+ * @param {Object} actor assertCoachMessageSender result
+ * @param {string} teamId
+ * @param {Object} tSnap teams/{teamId} doc snapshot
+ */
+function assertActorCanAccessTeam(actor, teamId, tSnap) {
+  if (!tSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const teamClubId =
+      typeof tSnap.data().clubId === 'string' ?
+        tSnap.data().clubId.trim() :
+        null;
+  if (actor.role === 'super_admin') {
+    return;
+  }
+  if (actor.role === 'coach') {
+    if (!actor.teamId || actor.teamId !== teamId) {
+      throw new HttpsError(
+          'permission-denied',
+          'You can only access your assigned team.',
+      );
+    }
+    return;
+  }
+  if (actor.role === 'director') {
+    if (!actor.clubId || !teamClubId || teamClubId !== actor.clubId) {
+      throw new HttpsError(
+          'permission-denied',
+          'Team is not in your club.',
+      );
+    }
+    return;
+  }
+  throw new HttpsError('permission-denied', 'Not allowed.');
 }
 
 /**
@@ -2550,3 +2592,154 @@ exports.logPlayerActivity = onCall({region: REGION}, async (request) => {
 
   return out.result;
 });
+
+/** Max JSON chars sent to Gemini (prompt budget guard). */
+const TACTIC_CANVAS_JSON_MAX_CHARS = 120000;
+
+/**
+ * Epic 4.1: Gemini analysis of a saved tactical board (server-only API key).
+ * Callers: coach, director, super_admin (team scoped like tactics rules).
+ */
+exports.analyzeTacticWithAI = onCall(
+    {
+      region: REGION,
+      secrets: [GEMINI_API_KEY],
+    },
+    async (request) => {
+      const actor = assertCoachMessageSender(request);
+      const data = request.data || {};
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      const tacticId =
+          typeof data.tacticId === 'string' ? data.tacticId.trim() : '';
+      if (!teamId || !tacticId) {
+        throw new HttpsError(
+            'invalid-argument',
+            'teamId and tacticId are required.',
+        );
+      }
+
+      const tSnap = await db.collection('teams').doc(teamId).get();
+      assertActorCanAccessTeam(actor, teamId, tSnap);
+
+      const tacRef = db.collection('teams').doc(teamId)
+          .collection('tactics').doc(tacticId);
+      const tacSnap = await tacRef.get();
+      if (!tacSnap.exists) {
+        throw new HttpsError('not-found', 'Tactic not found.');
+      }
+      const tac = tacSnap.data();
+      const name =
+          typeof tac.name === 'string' && tac.name.trim() ?
+            tac.name.trim() :
+            'Untitled tactic';
+      const canvasState = tac.canvasState;
+
+      let canvasJson;
+      try {
+        const forJson =
+            canvasState === undefined || canvasState === null ?
+              null :
+              canvasState;
+        canvasJson =
+            typeof canvasState === 'string' ?
+              canvasState :
+              JSON.stringify(forJson, null, 0);
+      } catch (e) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Tactic canvasState could not be serialized.',
+        );
+      }
+      if (canvasJson.length > TACTIC_CANVAS_JSON_MAX_CHARS) {
+        canvasJson =
+            canvasJson.slice(0, TACTIC_CANVAS_JSON_MAX_CHARS) +
+            '\n...[truncated for model context]';
+      }
+
+      const apiKey = GEMINI_API_KEY.value();
+      if (!apiKey || typeof apiKey !== 'string' || apiKey.length < 16) {
+        logger.error('GEMINI_API_KEY missing or too short.');
+        throw new HttpsError(
+            'failed-precondition',
+            'AI is not configured. Ask an admin to set GEMINI_API_KEY.',
+        );
+      }
+
+      const systemPersona = [
+        'You are an Expert UEFA Pro License Soccer Coach. You read',
+        'structured tactical board data (normalized coordinates, objects,',
+        'and layers) and give concise, practical coaching feedback.',
+        'Stay evidence-based; do not invent players or formations not',
+        'implied by the data. Use football terminology appropriate for',
+        'elite youth and semi-pro coaches.',
+      ].join(' ');
+
+      const userPrompt = [
+        systemPersona,
+        '',
+        '---',
+        'Tactic name: ' + name,
+        '',
+        'Canvas state JSON (spatial layout, normalized X/Y where',
+        'applicable):',
+        canvasJson,
+        '',
+        'Respond with:',
+        '1) Two or three short bullets on spatial distribution (width,',
+        '   depth, compactness, rest-defence if visible).',
+        '2) One bullet naming a plausible tactical weakness (e.g.',
+        '   vulnerable to counters on the wings, half-space underloaded).',
+        '3) One bullet with a single concrete improvement for the next',
+        '   session (drill or positional tweak).',
+        'Keep total under ~220 words. No AI self-introduction.',
+      ].join('\n');
+
+      const ai = new GoogleGenAI({apiKey});
+
+      let analysisText = '';
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: userPrompt,
+        });
+        if (response && typeof response.text === 'string') {
+          analysisText = response.text;
+        } else if (
+          response &&
+          response.candidates &&
+          response.candidates[0] &&
+          response.candidates[0].content &&
+          response.candidates[0].content.parts
+        ) {
+          const parts = response.candidates[0].content.parts;
+          analysisText = parts
+              .map((p) => (typeof p.text === 'string' ? p.text : ''))
+              .join('');
+        }
+      } catch (err) {
+        logger.error('analyzeTacticWithAI: Gemini request failed', err);
+        throw new HttpsError(
+            'internal',
+            'AI analysis failed. Try again later.',
+        );
+      }
+
+      analysisText = (analysisText || '').trim();
+      if (!analysisText) {
+        throw new HttpsError(
+            'internal',
+            'AI returned an empty analysis.',
+        );
+      }
+
+      return {
+        ok: true,
+        tacticId,
+        teamId,
+        tacticName: name,
+        analysis: analysisText,
+        model: 'gemini-2.5-flash',
+      };
+    },
+);
