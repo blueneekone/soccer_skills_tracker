@@ -168,6 +168,66 @@ service cloud.firestore {
               && userDoc().teamId == resource.data.teamId));
     }
 
+    // Epic 3.1: longitudinal player metrics (users/{playerKey} must match teamId on doc).
+    function metricsPlayerUserTeamMatches(playerKey, tid) {
+      return exists(/databases/$(database)/documents/users/$(playerKey))
+        && get(/databases/$(database)/documents/users/$(playerKey)).data.get('teamId', null)
+             == tid;
+    }
+
+    function canReadPlayerSeasonMetrics(playerKey) {
+      return authed() && (
+        isSuper()
+        || emailKey() == playerKey
+        || (isParent() && parentHouseholdAllowsChildEmail(playerKey))
+        || (resource.data.keys().hasAll(['teamId', 'seasonLabel', 'physical', 'technical'])
+            && metricsPlayerUserTeamMatches(playerKey, resource.data.teamId)
+            && (directorScopedToTeam(resource.data.teamId)
+              || coachStaffCanAccessTeam(resource.data.teamId)))
+      );
+    }
+
+    function canWritePlayerSeasonMetrics(playerKey) {
+      return authed()
+        && request.resource.data.keys().hasAll(['teamId', 'seasonLabel', 'physical', 'technical'])
+        && request.resource.data.physical.keys().hasAll(['pace', 'stamina', 'strength'])
+        && request.resource.data.technical.keys().hasAll(
+          ['passing', 'shooting', 'dribbling', 'defending']
+        )
+        && request.resource.data.physical.pace is int
+        && request.resource.data.physical.pace >= 0
+        && request.resource.data.physical.pace <= 100
+        && request.resource.data.physical.stamina is int
+        && request.resource.data.physical.stamina >= 0
+        && request.resource.data.physical.stamina <= 100
+        && request.resource.data.physical.strength is int
+        && request.resource.data.physical.strength >= 0
+        && request.resource.data.physical.strength <= 100
+        && request.resource.data.technical.passing is int
+        && request.resource.data.technical.passing >= 0
+        && request.resource.data.technical.passing <= 100
+        && request.resource.data.technical.shooting is int
+        && request.resource.data.technical.shooting >= 0
+        && request.resource.data.technical.shooting <= 100
+        && request.resource.data.technical.dribbling is int
+        && request.resource.data.technical.dribbling >= 0
+        && request.resource.data.technical.dribbling <= 100
+        && request.resource.data.technical.defending is int
+        && request.resource.data.technical.defending >= 0
+        && request.resource.data.technical.defending <= 100
+        && request.resource.data.seasonLabel is string
+        && request.resource.data.seasonLabel.size() > 0
+        && request.resource.data.seasonLabel.size() <= 120
+        && metricsPlayerUserTeamMatches(playerKey, request.resource.data.teamId)
+        && (isSuper()
+          || directorScopedToTeam(request.resource.data.teamId)
+          || coachStaffCanAccessTeam(request.resource.data.teamId))
+        && (!request.resource.data.keys().hasAny(['verifiedBy'])
+            || request.resource.data.verifiedBy == null
+            || (request.resource.data.verifiedBy is string
+                && request.resource.data.verifiedBy.size() <= 128));
+    }
+
     // Minors without verified VPC may not self-assert waiver on create.
     function passportSelfCreateOk() {
       return !(tokenMinor() && !tokenVpcOk()
@@ -658,6 +718,59 @@ service cloud.firestore {
     match /affinity_webhook_events/{docId} {
       allow read: if isSuper();
       allow create, update, delete: if false;
+    }
+
+    // Epic 3.1: pro-style verified metrics per season (playerKey = users doc id / email lower).
+    match /player_metrics/{playerKey}/seasons/{seasonId} {
+      allow read: if canReadPlayerSeasonMetrics(playerKey);
+      allow create: if canWritePlayerSeasonMetrics(playerKey);
+      allow update: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['teamId', 'seasonLabel', 'physical', 'technical'])
+            && request.resource.data.teamId == resource.data.teamId
+            && request.resource.data.seasonLabel is string
+            && request.resource.data.seasonLabel.size() > 0
+            && request.resource.data.seasonLabel.size() <= 120
+            && metricsPlayerUserTeamMatches(playerKey, resource.data.teamId)
+            && (directorScopedToTeam(resource.data.teamId)
+              || coachStaffCanAccessTeam(resource.data.teamId))
+            && request.resource.data.physical.keys().hasAll(['pace', 'stamina', 'strength'])
+            && request.resource.data.technical.keys().hasAll(
+              ['passing', 'shooting', 'dribbling', 'defending']
+            )
+            && request.resource.data.physical.pace is int
+            && request.resource.data.physical.pace >= 0
+            && request.resource.data.physical.pace <= 100
+            && request.resource.data.physical.stamina is int
+            && request.resource.data.physical.stamina >= 0
+            && request.resource.data.physical.stamina <= 100
+            && request.resource.data.physical.strength is int
+            && request.resource.data.physical.strength >= 0
+            && request.resource.data.physical.strength <= 100
+            && request.resource.data.technical.passing is int
+            && request.resource.data.technical.passing >= 0
+            && request.resource.data.technical.passing <= 100
+            && request.resource.data.technical.shooting is int
+            && request.resource.data.technical.shooting >= 0
+            && request.resource.data.technical.shooting <= 100
+            && request.resource.data.technical.dribbling is int
+            && request.resource.data.technical.dribbling >= 0
+            && request.resource.data.technical.dribbling <= 100
+            && request.resource.data.technical.defending is int
+            && request.resource.data.technical.defending >= 0
+            && request.resource.data.technical.defending <= 100
+            && (!request.resource.data.keys().hasAny(['verifiedBy'])
+                || request.resource.data.verifiedBy == null
+                || (request.resource.data.verifiedBy is string
+                    && request.resource.data.verifiedBy.size() <= 128)))
+      );
+      allow delete: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['teamId'])
+            && metricsPlayerUserTeamMatches(playerKey, resource.data.teamId)
+            && (directorScopedToTeam(resource.data.teamId)
+              || coachStaffCanAccessTeam(resource.data.teamId)))
+      );
     }
 
     match /{document=**} {

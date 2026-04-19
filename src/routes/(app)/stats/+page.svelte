@@ -6,11 +6,17 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import Modal from '$lib/components/Modal.svelte';
-	import { Chart, registerables } from 'chart.js';
+	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
 
-	Chart.register(...registerables);
+	/** @type {null | typeof import('chart.js').Chart} */
+	let ChartCtor = null;
+	let chartJsReady = $state(false);
 
 	const profile = $derived(authStore.userProfile);
+
+	const playerEmailKey = $derived(
+		(authStore.user?.email || '').trim().toLowerCase(),
+	);
 
 	let logs = $state([]);
 	let trials = $state([]);
@@ -66,6 +72,12 @@
 
 	onMount(() => {
 		if (!browser) return;
+		(async () => {
+			const mod = await import('chart.js');
+			ChartCtor = mod.Chart;
+			mod.Chart.register(...mod.registerables);
+			chartJsReady = true;
+		})();
 		const mo = new MutationObserver(() => chartThemeKey++);
 		mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 		return () => mo.disconnect();
@@ -117,11 +129,12 @@
 
 	$effect(() => {
 		chartThemeKey;
-		if (!chartEl || loading) return;
+		chartJsReady;
+		if (!ChartCtor || !chartEl || loading) return;
 		const { labels, data } = buildChartData(chartRange);
 		const { bar, tick, grid } = chartColors();
 		if (chartInstance) chartInstance.destroy();
-		chartInstance = new Chart(chartEl, {
+		chartInstance = new ChartCtor(chartEl, {
 			type: 'bar',
 			data: { labels, datasets: [{ data, backgroundColor: bar, borderRadius: 4 }] },
 			options: {
@@ -141,6 +154,12 @@
 				maintainAspectRatio: false
 			}
 		});
+		return () => {
+			if (chartInstance) {
+				chartInstance.destroy();
+				chartInstance = null;
+			}
+		};
 	});
 
 	// Leaderboard
@@ -216,6 +235,11 @@
 			<button class="secondary-btn" onclick={() => window.print()}>🖨️ Print Report</button>
 		</div>
 	</div>
+
+	<ProPlayerCard
+		playerEmailKey={playerEmailKey}
+		playerDisplayName={profile?.playerName || ''}
+	/>
 
 	<div class="bento-section">
 		<div class="card">
