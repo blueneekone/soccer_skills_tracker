@@ -1,6 +1,7 @@
 <script>
 	import { onMount, tick } from 'svelte';
-	import { auth, db } from '$lib/firebase.js';
+	import { auth, db, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,
 		collection,
@@ -28,6 +29,16 @@
 
 	let tacticName = $state('');
 	let selectedTacticId = $state('');
+	/** Set after a successful Load — matches Firestore doc the AI callable reads. */
+	let loadedTacticId = $state('');
+
+	const analyzeTacticWithAI = httpsCallable(functions, 'analyzeTacticWithAI');
+
+	let aiBusy = $state(false);
+	let aiError = $state('');
+	let aiAnalysis = $state('');
+	let aiInsightsOpen = $state(false);
+	let aiModelLabel = $state('');
 	/** @type {Array<{ id: string, name: string, updatedAt: import('firebase/firestore').Timestamp | null }>} */
 	let tacticsList = $state([]);
 	let libraryLoading = $state(false);
@@ -161,9 +172,60 @@
 
 	function clearBoard() {
 		strokes = [];
+		loadedTacticId = '';
 		if (ctx && canvas) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
+	}
+
+	$effect(() => {
+		if (loadedTacticId && selectedTacticId !== loadedTacticId) {
+			loadedTacticId = '';
+		}
+	});
+
+	const canAnalyzeTactic = $derived(
+		Boolean(teamId && loadedTacticId && !aiBusy),
+	);
+
+	async function runAiAnalysis() {
+		if (!teamId || !loadedTacticId || aiBusy) return;
+		aiBusy = true;
+		aiError = '';
+		aiAnalysis = '';
+		aiModelLabel = '';
+		try {
+			const res = await analyzeTacticWithAI({
+				teamId,
+				tacticId: loadedTacticId,
+			});
+			const data = /** @type {{ analysis?: string, model?: string }} */ (res.data);
+			const text = typeof data?.analysis === 'string' ? data.analysis.trim() : '';
+			if (text) {
+				aiAnalysis = text;
+				aiModelLabel = typeof data?.model === 'string' ? data.model : '';
+				aiInsightsOpen = true;
+			} else {
+				aiError = 'The AI returned no analysis. Try again.';
+				aiInsightsOpen = true;
+			}
+		} catch (err) {
+			const msg =
+				err && typeof err === 'object' && 'message' in err ?
+					String(err.message) :
+					'Analysis failed.';
+			aiError = msg;
+			aiInsightsOpen = true;
+		} finally {
+			aiBusy = false;
+		}
+	}
+
+	function dismissAiInsights() {
+		aiInsightsOpen = false;
+		aiAnalysis = '';
+		aiError = '';
+		aiModelLabel = '';
 	}
 
 	async function refreshTacticsList() {
@@ -276,6 +338,7 @@
 			const nextStrokes = Array.isArray(parsed.strokes) ? parsed.strokes : [];
 			whiteboard = wb;
 			strokes = nextStrokes;
+			loadedTacticId = selectedTacticId;
 			await tick();
 			resize();
 		} catch (err) {
@@ -345,6 +408,27 @@
 						</button>
 					</div>
 
+					<div class="strategy-ai-trigger">
+						<button
+							type="button"
+							class="primary-btn strategy-ai-analyze-btn"
+							disabled={!canAnalyzeTactic}
+							onclick={runAiAnalysis}
+							aria-busy={aiBusy}
+						>
+							✨ Analyze Tactic
+						</button>
+						<p class="strategy-ai-trigger-hint">
+							{#if !loadedTacticId}
+								Load a saved tactic to analyze the board stored in your library (the AI
+								reads the saved version).
+							{:else}
+								Analyzes the saved tactic linked to this canvas. Save again if you changed
+								the board.
+							{/if}
+						</p>
+					</div>
+
 					{#if libraryLoading}
 						<p class="strategy-hint">Loading library…</p>
 					{/if}
@@ -357,7 +441,7 @@
 
 		<div class="card strategy-board-card">
 			<div class="card-header strategy-card-head">Strategy canvas</div>
-			<div class="card-body strategy-board-body">
+			<div class="card-body strategy-board-body strategy-board-body--canvas">
 				<div class="strategy-toolbar">
 					{#each [['pen', 'Pen'], ['arrow', 'Arrow'], ['X', 'X Player'], ['O', 'O Player']] as [tool, label]}
 						<button
@@ -399,10 +483,53 @@
 						ontouchmove={draw}
 						aria-label="Strategy board canvas"
 					></canvas>
+					{#if aiBusy}
+						<div class="strategy-ai-overlay" aria-live="polite" aria-busy="true">
+							<div class="strategy-ai-overlay-glass">
+								<div class="strategy-ai-spinner" aria-hidden="true"></div>
+								<p class="strategy-ai-overlay-title">Tactical engine</p>
+								<p class="strategy-ai-overlay-sub">Processing spatial layout…</p>
+								<div class="strategy-ai-skeleton" aria-hidden="true">
+									<div class="strategy-ai-skel-line"></div>
+									<div class="strategy-ai-skel-line strategy-ai-skel-line--mid"></div>
+									<div class="strategy-ai-skel-line strategy-ai-skel-line--short"></div>
+								</div>
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>
 	</div>
+
+	{#if aiInsightsOpen && (aiAnalysis || aiError)}
+		<div class="bento-section strategy-ai-bento">
+			<div class="card strategy-ai-insights">
+				<div class="strategy-ai-insights-head">
+					<div>
+						<h3 class="strategy-ai-insights-title">AI insights</h3>
+						{#if aiModelLabel}
+							<p class="strategy-ai-insights-meta">{aiModelLabel}</p>
+						{/if}
+					</div>
+					<button
+						type="button"
+						class="secondary-btn strategy-ai-dismiss"
+						onclick={dismissAiInsights}
+					>
+						Clear analysis
+					</button>
+				</div>
+				<div class="card-body strategy-ai-insights-body">
+					{#if aiError}
+						<p class="strategy-ai-insights-error" role="alert">{aiError}</p>
+					{:else}
+						<div class="strategy-ai-prose">{aiAnalysis}</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -590,5 +717,226 @@
 		height: 100%;
 		touch-action: none;
 		z-index: 10;
+	}
+
+	.strategy-board-body--canvas {
+		position: relative;
+	}
+
+	.strategy-ai-trigger {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(8px, 1.5vw, 10px);
+		padding: clamp(12px, 2.5vw, 16px);
+		border-radius: var(--radius-premium);
+		border: 1px solid var(--glass-border);
+		background: var(--glass-bg);
+		-webkit-backdrop-filter: blur(14px) saturate(150%);
+		backdrop-filter: blur(14px) saturate(150%);
+		box-shadow: var(--shadow-premium);
+	}
+
+	.strategy-ai-analyze-btn {
+		width: 100%;
+		margin: 0;
+		padding: clamp(12px, 2.5vw, 14px) clamp(16px, 3vw, 20px);
+		border-radius: var(--radius-premium);
+		font-weight: 900;
+		font-size: clamp(0.92rem, 2.4vw, 1rem);
+		letter-spacing: -0.01em;
+	}
+
+	.strategy-ai-trigger-hint {
+		margin: 0;
+		font-size: clamp(0.78rem, 2vw, 0.84rem);
+		font-weight: 600;
+		color: var(--text-secondary);
+		line-height: 1.5;
+	}
+
+	.strategy-ai-overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 30;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: clamp(16px, 3vw, 24px);
+		background: rgba(15, 23, 42, 0.35);
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+		border-radius: inherit;
+		box-sizing: border-box;
+	}
+
+	.strategy-ai-overlay-glass {
+		width: min(100%, 320px);
+		padding: clamp(20px, 4vw, 28px);
+		border-radius: var(--radius-premium);
+		background: rgba(255, 255, 255, 0.82);
+		border: 1px solid rgba(255, 255, 255, 0.55);
+		box-shadow: 0 24px 48px -16px rgba(15, 23, 42, 0.25),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+		text-align: center;
+		-webkit-backdrop-filter: blur(20px) saturate(160%);
+		backdrop-filter: blur(20px) saturate(160%);
+	}
+
+	.strategy-ai-spinner {
+		width: 48px;
+		height: 48px;
+		margin: 0 auto clamp(14px, 2.5vw, 18px);
+		border-radius: 50%;
+		border: 3px solid rgba(15, 23, 42, 0.12);
+		border-top-color: var(--aggie-blue);
+		animation: strategy-ai-spin 0.85s linear infinite;
+	}
+
+	@keyframes strategy-ai-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.strategy-ai-overlay-title {
+		margin: 0 0 6px;
+		font-size: 0.72rem;
+		font-weight: 900;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--text-secondary);
+	}
+
+	.strategy-ai-overlay-sub {
+		margin: 0 0 clamp(14px, 2.5vw, 18px);
+		font-size: clamp(0.9rem, 2.4vw, 0.98rem);
+		font-weight: 800;
+		color: var(--text-primary);
+	}
+
+	.strategy-ai-skeleton {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		text-align: left;
+	}
+
+	.strategy-ai-skel-line {
+		height: 10px;
+		border-radius: 999px;
+		background: linear-gradient(
+			90deg,
+			rgba(15, 23, 42, 0.08) 0%,
+			rgba(15, 23, 42, 0.18) 50%,
+			rgba(15, 23, 42, 0.08) 100%
+		);
+		background-size: 200% 100%;
+		animation: strategy-ai-shimmer 1.25s ease-in-out infinite;
+	}
+
+	.strategy-ai-skel-line--mid {
+		width: 88%;
+	}
+
+	.strategy-ai-skel-line--short {
+		width: 62%;
+	}
+
+	@keyframes strategy-ai-shimmer {
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
+	}
+
+	.strategy-ai-bento {
+		grid-template-columns: 1fr;
+		gap: clamp(16px, 3vw, 24px);
+		margin-top: clamp(8px, 2vw, 12px);
+		margin-bottom: clamp(16px, 3vw, 24px);
+	}
+
+	.strategy-ai-insights {
+		margin-bottom: 0;
+		padding: var(--spacing-fluid);
+		border-radius: var(--radius-premium);
+		overflow: hidden;
+	}
+
+	.strategy-ai-insights-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: clamp(12px, 2vw, 16px);
+		margin-bottom: clamp(12px, 2vw, 16px);
+		padding-bottom: clamp(12px, 2vw, 16px);
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.strategy-ai-insights-title {
+		margin: 0;
+		font-size: clamp(1.05rem, 3vw, 1.25rem);
+		font-weight: 900;
+		letter-spacing: -0.02em;
+	}
+
+	.strategy-ai-insights-meta {
+		margin: 6px 0 0;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.strategy-ai-dismiss {
+		width: auto;
+		margin: 0;
+		padding: clamp(8px, 2vw, 10px) clamp(14px, 2.5vw, 18px);
+		border-radius: var(--radius-premium);
+		font-size: 0.82rem;
+		font-weight: 800;
+	}
+
+	.strategy-ai-insights-body {
+		padding: 0;
+		padding-top: clamp(4px, 1vw, 8px);
+	}
+
+	.strategy-ai-insights-error {
+		margin: 0;
+		font-weight: 700;
+		color: var(--danger-red);
+		line-height: 1.55;
+	}
+
+	.strategy-ai-prose {
+		margin: 0;
+		white-space: pre-wrap;
+		word-break: break-word;
+		line-height: 1.65;
+		font-size: clamp(0.9rem, 2.2vw, 0.98rem);
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .strategy-ai-overlay-glass {
+		background: rgba(15, 23, 42, 0.72);
+		border-color: rgba(255, 255, 255, 0.14);
+		box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	:global(html.dark) .strategy-ai-skel-line {
+		background: linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			rgba(255, 255, 255, 0.14) 50%,
+			rgba(255, 255, 255, 0.06) 100%
+		);
+		background-size: 200% 100%;
 	}
 </style>
