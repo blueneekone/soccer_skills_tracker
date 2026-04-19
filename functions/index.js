@@ -2164,3 +2164,82 @@ exports.mockAffinityPush = onCall({region: REGION}, async (request) => {
     throw err;
   }
 });
+
+/**
+ * Public (no auth): recruit/scout-safe snapshot when player opted in and
+ * is 16+.
+ * Callable: allow unauthenticated invoke in GCP IAM for production.
+ */
+exports.getPublicRecruitProfile = onCall(
+    {region: REGION, invoker: 'public'},
+    async (request) => {
+      const data = request.data || {};
+      const rawKey =
+          typeof data.playerKey === 'string' ? data.playerKey.trim() : '';
+      const playerKey = normEmail(rawKey);
+      if (!playerKey) {
+        throw new HttpsError('invalid-argument', 'playerKey is required.');
+      }
+
+      const uRef = db.collection('users').doc(playerKey);
+      const uSnap = await uRef.get();
+      if (!uSnap.exists) {
+        throw new HttpsError('not-found', 'Profile not found.');
+      }
+      const u = uSnap.data();
+      if (u.recruitProfilePublic !== true) {
+        throw new HttpsError(
+            'permission-denied',
+            'Public recruit profile is not enabled for this player.',
+        );
+      }
+
+      const isMinor = u.isMinor === true;
+      const dob = u.dateOfBirth;
+      if (isMinor || !dob || !(dob instanceof admin.firestore.Timestamp)) {
+        throw new HttpsError(
+            'permission-denied',
+            'Public profile requires verified age (16+) on file.',
+        );
+      }
+      const age = computeAgeYears(dob);
+      if (age < 16) {
+        throw new HttpsError(
+            'permission-denied',
+            'Public recruit profiles are only for players 16+.',
+        );
+      }
+
+      const metricsSnap = await db.collection('player_metrics').doc(playerKey)
+          .collection('seasons')
+          .get();
+
+      /** @type {Array<Record<string, unknown>>} */
+      const seasons = [];
+      metricsSnap.forEach((d) => {
+        const x = d.data();
+        const vb = x.verifiedBy;
+        if (typeof vb === 'string' && vb.length > 0) {
+          const row = {
+            id: d.id,
+            seasonLabel: x.seasonLabel || null,
+            physical: x.physical || null,
+            technical: x.technical || null,
+            verifiedBy: vb,
+          };
+          const ua = x.updatedAt;
+          if (ua && typeof ua.toDate === 'function') {
+            row.updatedAt = ua.toDate().toISOString();
+          }
+          seasons.push(row);
+        }
+      });
+
+      return {
+        ok: true,
+        playerKey,
+        displayName: typeof u.playerName === 'string' ? u.playerName : null,
+        seasons,
+      };
+    },
+);
