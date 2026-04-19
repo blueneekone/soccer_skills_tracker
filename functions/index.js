@@ -192,6 +192,63 @@ function assertCoachMessageSender(request) {
 }
 
 /**
+ * Sprint 3.3: authenticated player only (JWT role).
+ * @param {any} request Callable request
+ * @return {string} Normalized users/{emailKey} document id
+ */
+function assertPlayer(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role || 'player';
+  if (role !== 'player') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only player accounts may perform this action.',
+    );
+  }
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError(
+        'failed-precondition',
+        'A verified email is required.',
+    );
+  }
+  return email;
+}
+
+/**
+ * @param {string} ymd yyyy-mm-dd (UTC calendar)
+ * @param {number} deltaDays
+ * @return {string}
+ */
+function utcYmdAddDays(ymd, deltaDays) {
+  const parts = ymd.split('-').map(Number);
+  const y = parts[0];
+  const m = parts[1];
+  const d = parts[2];
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + deltaDays);
+  return dt.toISOString().slice(0, 10);
+}
+
+/**
+ * @param {unknown} value Firestore field
+ * @return {string|null} yyyy-mm-dd UTC or null
+ */
+function lastActivityToUtcYmd(value) {
+  if (!value) return null;
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString().slice(0, 10);
+  }
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  }
+  return null;
+}
+
+/**
  * @param {unknown} e
  * @return {string|null}
  */
@@ -2243,3 +2300,86 @@ exports.getPublicRecruitProfile = onCall(
       };
     },
 );
+
+/** XP granted per calendar day (UTC) when `logPlayerActivity` awards. */
+const DAILY_ACTIVITY_XP = 50;
+
+/**
+ * Player-only: idempotent daily XP + streak update (UTC dates).
+ * At most one award per UTC day per user (`lastActivityDate`).
+ */
+exports.logPlayerActivity = onCall({region: REGION}, async (request) => {
+  const emailKey = assertPlayer(request);
+  const uRef = db.collection('users').doc(emailKey);
+
+  /** @type {{ result: Record<string, unknown> }} */
+  const out = {result: {}};
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(uRef);
+    if (!snap.exists) {
+      throw new HttpsError('not-found', 'User profile not found.');
+    }
+    const u = snap.data();
+    const docRole = typeof u.role === 'string' ? u.role : 'player';
+    if (docRole !== 'player') {
+      throw new HttpsError(
+          'permission-denied',
+          'Gamification is only for player profiles.',
+      );
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const yesterdayStr = utcYmdAddDays(todayStr, -1);
+    const lastStr = lastActivityToUtcYmd(u.lastActivityDate);
+
+    const prevXp = Number(u.xp);
+    const safeXp = Number.isFinite(prevXp) ? Math.floor(prevXp) : 0;
+    const prevCur = Number(u.currentStreak);
+    const safeCur = Number.isFinite(prevCur) ? Math.floor(prevCur) : 0;
+    const prevLong = Number(u.longestStreak);
+    const safeLong = Number.isFinite(prevLong) ? Math.floor(prevLong) : 0;
+
+    if (lastStr === todayStr) {
+      out.result = {
+        ok: true,
+        awarded: false,
+        xp: safeXp,
+        xpDelta: 0,
+        currentStreak: safeCur,
+        longestStreak: safeLong,
+        lastActivityDate: lastStr,
+      };
+      return;
+    }
+
+    let newStreak;
+    if (lastStr === yesterdayStr) {
+      newStreak = safeCur + 1;
+    } else {
+      newStreak = 1;
+    }
+
+    const newXp = safeXp + DAILY_ACTIVITY_XP;
+    const newLongest = Math.max(safeLong, newStreak);
+
+    tx.update(uRef, {
+      xp: newXp,
+      currentStreak: newStreak,
+      longestStreak: newLongest,
+      lastActivityDate: todayStr,
+    });
+
+    out.result = {
+      ok: true,
+      awarded: true,
+      xp: newXp,
+      xpDelta: DAILY_ACTIVITY_XP,
+      currentStreak: newStreak,
+      longestStreak: newLongest,
+      lastActivityDate: todayStr,
+    };
+  });
+
+  return out.result;
+});

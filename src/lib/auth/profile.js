@@ -1,6 +1,13 @@
 /**
  * Single source of truth for client-side user profile shape, completeness,
  * and Firestore hydration (users + coach_lookup + player_lookup).
+ *
+ * Firestore `users/{emailKey}` — gamification (Sprint 3.3, server-written only):
+ * - `xp` (number, int): total experience; default 0.
+ * - `currentStreak` (number, int): consecutive active days; default 0.
+ * - `longestStreak` (number, int): best streak; optional until first award.
+ * - `lastActivityDate` (string `YYYY-MM-DD` UTC or Timestamp): last day daily
+ *   XP was granted via `logPlayerActivity`.
  */
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getIdTokenResult } from 'firebase/auth';

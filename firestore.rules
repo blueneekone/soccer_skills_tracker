@@ -77,7 +77,16 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId))
         && teamClubId(request.resource.data.teamId) == resource.data.clubId
         && !request.resource.data.diff(resource.data).affectedKeys()
-             .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']);
+             .hasAny([
+               'dateOfBirth', 'vpcStatus', 'isMinor',
+               'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'
+             ]);
+    }
+
+    // Sprint 3.3: XP / streaks are server-only (Cloud Functions / Admin SDK).
+    function userGamificationFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['xp', 'currentStreak', 'longestStreak', 'lastActivityDate']);
     }
 
     function userDoc() {
@@ -266,7 +275,10 @@ service cloud.firestore {
             // householdId is always server-only; never written by clients.
             && !request.resource.data.keys().hasAny(['householdId'])
             // COPPA fields are director/function only.
-            && !request.resource.data.keys().hasAny(['dateOfBirth', 'vpcStatus', 'isMinor'])
+            && !request.resource.data.keys().hasAny([
+                 'dateOfBirth', 'vpcStatus', 'isMinor',
+                 'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'
+               ])
             // role: coach/registrar from lookup; parent self-onboarding (club only, no team).
             && (!request.resource.data.keys().hasAny(['role'])
                 || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
@@ -299,7 +311,8 @@ service cloud.firestore {
           && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
           && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
           && !request.resource.data.diff(resource.data).affectedKeys()
-               .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']))
+               .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor'])
+          && userGamificationFieldsUnchanged())
         || playerRecruitProfilePublicSelfPatch(userId)
         || isSuper()
         || registrarUserTeamPatchOk(userId)
