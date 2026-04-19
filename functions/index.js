@@ -249,6 +249,32 @@ function lastActivityToUtcYmd(value) {
 }
 
 /**
+ * Stable opaque id for leaderboard payloads (not raw email / PII).
+ * @param {string} emailKey
+ * @return {string}
+ */
+function leaderboardPublicPlayerKey(emailKey) {
+  return crypto
+      .createHash('sha256')
+      .update('sst_lb_v1|' + emailKey)
+      .digest('hex')
+      .slice(0, 24);
+}
+
+/**
+ * @param {Record<string, unknown>} u
+ * @return {boolean}
+ */
+function isLeaderboardPlayerRow(u) {
+  const r = typeof u.role === 'string' ? u.role : '';
+  if (r === 'coach' || r === 'director' || r === 'registrar' ||
+      r === 'parent' || r === 'super_admin') {
+    return false;
+  }
+  return true;
+}
+
+/**
  * @param {unknown} e
  * @return {string|null}
  */
@@ -2300,6 +2326,147 @@ exports.getPublicRecruitProfile = onCall(
       };
     },
 );
+
+/**
+ * Sanitized team XP board (no emails, COPPA, or compliance fields).
+ * Players use their profile teamId; staff may pass teamId when permitted.
+ */
+exports.getTeamLeaderboard = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role || 'player';
+  const tokenTeamId =
+      typeof request.auth.token.teamId === 'string' ?
+        request.auth.token.teamId.trim() :
+        '';
+  const tokenClubId =
+      typeof request.auth.token.clubId === 'string' ?
+        request.auth.token.clubId.trim() :
+        '';
+  const callerEmail = normEmail(request.auth.token.email);
+  const data = request.data || {};
+  const requestedTeamRaw =
+      typeof data.teamId === 'string' ? data.teamId.trim() : '';
+
+  let targetTeamId = '';
+
+  if (role === 'player') {
+    if (!callerEmail) {
+      throw new HttpsError(
+          'failed-precondition',
+          'A verified email is required.',
+      );
+    }
+    const uSnap = await db.collection('users').doc(callerEmail).get();
+    if (!uSnap.exists) {
+      throw new HttpsError('not-found', 'Profile not found.');
+    }
+    const u = uSnap.data();
+    const tid = typeof u.teamId === 'string' ? u.teamId.trim() : '';
+    if (!tid || tid === 'admin') {
+      throw new HttpsError(
+          'failed-precondition',
+          'Team is not set on your profile.',
+      );
+    }
+    targetTeamId = tid;
+  } else if (role === 'super_admin') {
+    if (!requestedTeamRaw || requestedTeamRaw === 'admin') {
+      throw new HttpsError('invalid-argument', 'teamId is required.');
+    }
+    const tSnap = await db.collection('teams').doc(requestedTeamRaw).get();
+    if (!tSnap.exists) {
+      throw new HttpsError('not-found', 'Team not found.');
+    }
+    targetTeamId = requestedTeamRaw;
+  } else if (role === 'coach') {
+    if (!tokenTeamId || tokenTeamId === 'admin') {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is missing team scope; sign out and back in.',
+      );
+    }
+    if (requestedTeamRaw && requestedTeamRaw !== tokenTeamId) {
+      throw new HttpsError(
+          'permission-denied',
+          'You can only load your assigned team leaderboard.',
+      );
+    }
+    targetTeamId = tokenTeamId;
+  } else if (role === 'director') {
+    if (!tokenClubId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Club scope missing; sign out and back in.',
+      );
+    }
+    if (!requestedTeamRaw || requestedTeamRaw === 'admin') {
+      throw new HttpsError('invalid-argument', 'teamId is required.');
+    }
+    const tSnap = await db.collection('teams').doc(requestedTeamRaw).get();
+    if (!tSnap.exists) {
+      throw new HttpsError('not-found', 'Team not found.');
+    }
+    const teamClub =
+        typeof tSnap.data().clubId === 'string' ?
+          tSnap.data().clubId.trim() :
+          '';
+    if (!teamClub || teamClub !== tokenClubId) {
+      throw new HttpsError(
+          'permission-denied',
+          'Team is not in your club.',
+      );
+    }
+    targetTeamId = requestedTeamRaw;
+  } else {
+    throw new HttpsError(
+        'permission-denied',
+        'Leaderboard is not available for this account.',
+    );
+  }
+
+  const snap = await db.collection('users')
+      .where('teamId', '==', targetTeamId)
+      .orderBy('xp', 'desc')
+      .limit(60)
+      .get();
+
+  /** @type {Array<{docId: string, xp: number, u: Record<string, unknown>}>} */
+  const raw = [];
+  snap.forEach((doc) => {
+    const u = doc.data();
+    if (!isLeaderboardPlayerRow(u)) return;
+    const x = Number(u.xp);
+    const xpVal = Number.isFinite(x) ? Math.floor(x) : 0;
+    raw.push({docId: doc.id, xp: xpVal, u});
+  });
+  raw.sort((a, b) => b.xp - a.xp);
+
+  /** @type {Array<Record<string, unknown>>} */
+  const entries = [];
+  const limit = 15;
+  for (let i = 0; i < raw.length && entries.length < limit; i++) {
+    const row = raw[i];
+    const u = row.u;
+    const streak = Number(u.currentStreak);
+    const streakVal = Number.isFinite(streak) ? Math.floor(streak) : 0;
+    const name =
+        typeof u.playerName === 'string' && u.playerName.trim() ?
+          u.playerName.trim() :
+          'Player';
+    entries.push({
+      rank: entries.length + 1,
+      playerKey: leaderboardPublicPlayerKey(row.docId),
+      displayName: name,
+      xp: row.xp,
+      currentStreak: streakVal,
+      isCurrentUser: callerEmail ? row.docId === callerEmail : false,
+    });
+  }
+
+  return {ok: true, teamId: targetTeamId, entries};
+});
 
 /** XP granted per calendar day (UTC) when `logPlayerActivity` awards. */
 const DAILY_ACTIVITY_XP = 50;

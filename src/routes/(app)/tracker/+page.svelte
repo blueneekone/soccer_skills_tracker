@@ -1,13 +1,16 @@
 <script>
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
 
 	const submitWorkoutRep = httpsCallable(functions, 'submitWorkoutRep');
+	const logPlayerActivity = httpsCallable(functions, 'logPlayerActivity');
 
 	const profile = $derived(authStore.userProfile);
 
@@ -15,6 +18,26 @@
 		if (!authStore.isLoading && authStore.role === 'parent') {
 			goto('/parent/log-workout', { replaceState: true });
 		}
+	});
+
+	/** Silent daily XP / streak when a player opens the tracker. */
+	$effect(() => {
+		if (!browser) return;
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		if (authStore.role !== 'player') return;
+		let cancelled = false;
+		(async () => {
+			try {
+				await logPlayerActivity({});
+				if (cancelled) return;
+				await authStore.refresh({ silent: true });
+			} catch (e) {
+				console.warn('[tracker] logPlayerActivity', e);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	// Session state
@@ -122,6 +145,10 @@
 
 <div class="view-section">
 	<h2 class="view-title">Log Workout</h2>
+
+	{#if authStore.role === 'player' && profile?.teamId && profile.teamId !== 'admin'}
+		<TeamLeaderboard />
+	{/if}
 
 	<div class="card">
 		<div class="card-body">
