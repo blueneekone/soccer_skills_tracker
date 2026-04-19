@@ -248,6 +248,38 @@ service cloud.firestore {
       allow update, delete: if isSuper()
         || (isDirector() && resource.data.clubId == tokenClub())
         || (isCoach() && sameTeam(teamId));
+
+      // Epic 2.3: saved tactical boards (coaches / directors / super_admin only).
+      match /tactics/{tacticId} {
+        allow read: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        );
+        allow create: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        )
+          && request.resource.data.keys().hasAll(
+            ['name', 'canvasState', 'createdBy', 'updatedAt']
+          )
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200;
+        allow update: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        )
+          && request.resource.data.createdBy == resource.data.createdBy;
+        allow delete: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        );
+      }
     }
 
     match /rosters/{teamId} {

@@ -124,7 +124,7 @@
 		{:else if activeTab === 'evals'}
 			<EvalsTab teamId={selectedTeamId} {players} workouts={workoutsStore.workouts} />
 		{:else if activeTab === 'strategy'}
-			<StrategyTab />
+			<StrategyTab teamId={selectedTeamId} />
 		{:else if activeTab === 'design'}
 			<DrillDesignerTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {onWorkoutSaved} />
 		{:else if activeTab === 'tools'}
