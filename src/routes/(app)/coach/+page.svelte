@@ -12,9 +12,11 @@
 	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 	import ToolsTab from '$lib/components/coach/ToolsTab.svelte';
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
+	import MatchDayTab from '$lib/components/coach/MatchDayTab.svelte';
 
 	const TABS = [
 		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
+		{ id: 'matchday', label: '⚽ Match Day', icon: 'ph-soccer-ball' },
 		{ id: 'messages', label: '💬 Messages', icon: 'ph-chat-circle' },
 		{ id: 'plan', label: '📅 Plan', icon: 'ph-calendar' },
 		{ id: 'evals', label: '📋 Evals', icon: 'ph-clipboard-text' },
@@ -38,6 +40,10 @@
 	});
 
 	const isDirectorView = $derived(role === 'super_admin' || role === 'director');
+
+	const canOverrideEligibility = $derived(
+		role === 'super_admin' || role === 'director',
+	);
 
 	// Auto-select first team
 	$effect(() => {
@@ -106,6 +112,11 @@
 	<div class="tab-content">
 		{#if activeTab === 'roster'}
 			<RosterTab teamId={selectedTeamId} teams={myTeams()} />
+		{:else if activeTab === 'matchday'}
+			<MatchDayTab
+				teamId={selectedTeamId}
+				canOverride={canOverrideEligibility}
+			/>
 		{:else if activeTab === 'messages'}
 			<MessagesTab teamId={selectedTeamId} {players} />
 		{:else if activeTab === 'plan'}

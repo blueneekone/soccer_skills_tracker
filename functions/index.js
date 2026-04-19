@@ -1756,6 +1756,190 @@ async function buildEligibilityRow(
 }
 
 /**
+ * Recompute vpc + aggregate eligibility from stored doc fields (post-override).
+ * @param {Record<string, unknown>} d
+ * @return {!Promise<{vpcSatisfied: boolean, eligible: boolean,
+ *     ineligibilityReasons: string[]}>}
+ */
+async function recomputeEligibilityDerived(d) {
+  const identityVerified = d.identityVerified === true;
+  const safeSportVerified = d.safeSportVerified === true;
+  const concussionClearanceVerified = d.concussionClearanceVerified === true;
+  const governingBodyClear = d.governingBodyClear === true;
+  const emailKey = typeof d.emailKey === 'string' ? d.emailKey : null;
+
+  let vpcSatisfied = false;
+  if (!identityVerified) {
+    vpcSatisfied = false;
+  } else if (emailKey) {
+    const uSnap = await db.collection('users').doc(emailKey).get();
+    if (!uSnap.exists) {
+      vpcSatisfied = false;
+    } else {
+      const ud = uSnap.data();
+      if (ud.isMinor === true) {
+        vpcSatisfied = ud.vpcStatus === 'verified';
+      } else {
+        vpcSatisfied = true;
+      }
+    }
+  } else {
+    vpcSatisfied = false;
+  }
+
+  const eligible =
+      safeSportVerified &&
+      concussionClearanceVerified &&
+      governingBodyClear &&
+      vpcSatisfied &&
+      identityVerified;
+
+  const reasons = [];
+  if (!identityVerified) reasons.push('identity_unverified');
+  if (!safeSportVerified) reasons.push('safesport_not_verified');
+  if (!concussionClearanceVerified) {
+    reasons.push('concussion_not_verified');
+  }
+  if (!governingBodyClear) reasons.push('governing_body_not_clear');
+  if (!vpcSatisfied) reasons.push('vpc_not_satisfied');
+
+  return {vpcSatisfied, eligible, ineligibilityReasons: reasons};
+}
+
+/**
+ * Director / super_admin: manual SafeSport / concussion / identity flags.
+ */
+exports.directorOverrideEligibility = onCall(
+    {region: REGION},
+    async (request) => {
+      const actor = assertDirectorOrSuper(request);
+      if (actor.role === 'director' && !actor.clubId) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Your account is missing club scope; sign out and back in.',
+        );
+      }
+      const data = request.data || {};
+      const eligibilityDocId =
+          typeof data.eligibilityDocId === 'string' ?
+            data.eligibilityDocId.trim() :
+            '';
+      if (!eligibilityDocId) {
+        throw new HttpsError(
+            'invalid-argument',
+            'eligibilityDocId is required.',
+        );
+      }
+
+      const ref = db.collection('player_eligibility').doc(eligibilityDocId);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        throw new HttpsError('not-found', 'Eligibility record not found.');
+      }
+      const cur = snap.data();
+      const docClubId = cur.clubId || null;
+      if (actor.role === 'director') {
+        if (!docClubId || actor.clubId !== docClubId) {
+          throw new HttpsError(
+              'permission-denied',
+              'You can only override eligibility for your club.',
+          );
+        }
+      }
+
+      /** @type {Record<string, boolean>} */
+      const changes = {};
+      if (data.safeSportVerified !== undefined) {
+        if (typeof data.safeSportVerified !== 'boolean') {
+          throw new HttpsError(
+              'invalid-argument',
+              'safeSportVerified must be a boolean.',
+          );
+        }
+        changes.safeSportVerified = data.safeSportVerified;
+      }
+      if (data.concussionClearanceVerified !== undefined) {
+        if (typeof data.concussionClearanceVerified !== 'boolean') {
+          throw new HttpsError(
+              'invalid-argument',
+              'concussionClearanceVerified must be a boolean.',
+          );
+        }
+        changes.concussionClearanceVerified =
+            data.concussionClearanceVerified;
+      }
+      if (data.identityVerified !== undefined) {
+        if (typeof data.identityVerified !== 'boolean') {
+          throw new HttpsError(
+              'invalid-argument',
+              'identityVerified must be a boolean.',
+          );
+        }
+        changes.identityVerified = data.identityVerified;
+      }
+      if (Object.keys(changes).length === 0) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Provide at least one of safeSportVerified, ' +
+            'concussionClearanceVerified, identityVerified.',
+        );
+      }
+
+      /** @type {Record<string, unknown>} */
+      const merged = {...cur, ...changes};
+      merged.identityVerified = merged.identityVerified === true;
+      merged.safeSportVerified = merged.safeSportVerified === true;
+      merged.concussionClearanceVerified =
+          merged.concussionClearanceVerified === true;
+      merged.governingBodyClear = merged.governingBodyClear === true;
+      if (changes.identityVerified !== undefined) {
+        merged.identityStatus =
+            merged.identityVerified === true ? 'verified' : 'unverified';
+      }
+
+      const derived = await recomputeEligibilityDerived(merged);
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      /** @type {Record<string, unknown>} */
+      const writePayload = {
+        ...changes,
+        vpcSatisfied: derived.vpcSatisfied,
+        eligible: derived.eligible,
+        ineligibilityReasons: derived.ineligibilityReasons,
+        directorEligibilityOverrideAt: now,
+        directorEligibilityOverrideBy:
+            normEmail(actor.email) || actor.email || null,
+        updatedAt: now,
+      };
+      if (changes.identityVerified !== undefined) {
+        writePayload.identityStatus = merged.identityStatus;
+      }
+
+      await ref.set(writePayload, {merge: true});
+
+      await db.collection('security_audit').add({
+        action: 'directorOverrideEligibility',
+        eligibilityDocId,
+        teamId: cur.teamId || null,
+        clubId: docClubId,
+        actorEmail: actor.email || null,
+        actorUid: request.auth.uid,
+        changes,
+        resultingEligible: derived.eligible,
+        at: now,
+      });
+
+      return {
+        ok: true,
+        eligibilityDocId,
+        eligible: derived.eligible,
+        vpcSatisfied: derived.vpcSatisfied,
+        ineligibilityReasons: derived.ineligibilityReasons,
+      };
+    },
+);
+
+/**
  * @param {Record<string, unknown>} payload
  * @param {{sourceTag: string, rawString: string}} opts
  * @return {!Promise<!Object>}
