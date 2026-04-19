@@ -4,7 +4,12 @@
 	import { collection, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 
-	let { playerEmailKey = '', playerDisplayName = '' } = $props();
+	let {
+		playerEmailKey = '',
+		playerDisplayName = '',
+		/** Pre-loaded seasons (e.g. public callable). When set, skips Firestore. */
+		prefetchedSeasons = undefined,
+	} = $props();
 
 	/** @type {null | typeof import('chart.js').Chart} */
 	let ChartCtor = null;
@@ -28,6 +33,17 @@
 	});
 
 	$effect(() => {
+		if (Array.isArray(prefetchedSeasons)) {
+			const list = prefetchedSeasons.map((s) => ({ ...s }));
+			list.sort((a, b) =>
+				String(a.seasonLabel || '').localeCompare(String(b.seasonLabel || '')),
+			);
+			seasons = list;
+			selectedId = list.length ? list[list.length - 1].id : '';
+			loading = false;
+			return;
+		}
+
 		const key = playerEmailKey;
 		if (!key) {
 			seasons = [];

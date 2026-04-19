@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
-	import { collection, query, where, getDocs } from 'firebase/firestore';
+	import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import Modal from '$lib/components/Modal.svelte';
@@ -17,6 +17,99 @@
 	const playerEmailKey = $derived(
 		(authStore.user?.email || '').trim().toLowerCase(),
 	);
+
+	const isPlayerRole = $derived(authStore.role === 'player');
+
+	/** @param {string} link */
+	function publicRecruitOriginForLink(link) {
+		try {
+			return new URL(link).origin;
+		} catch {
+			return '';
+		}
+	}
+
+	function publicRecruitProfileUrl() {
+		if (!browser || !playerEmailKey) return '';
+		const env = import.meta.env.VITE_PUBLIC_SITE_URL;
+		const origin =
+			typeof env === 'string' && env.trim().length > 0
+				? env.replace(/\/$/, '')
+				: window.location.origin;
+		return `${origin}/recruit/${encodeURIComponent(playerEmailKey)}`;
+	}
+
+	let recruitToggle = $state(false);
+	let recruitSaving = $state(false);
+	let recruitErr = $state('');
+	let qrDataUrl = $state('');
+	let copyFeedback = $state('');
+
+	$effect(() => {
+		recruitToggle = !!profile?.recruitProfilePublic;
+	});
+
+	/**
+	 * @param {boolean} next
+	 */
+	async function onRecruitToggle(next) {
+		if (!playerEmailKey || !isPlayerRole || recruitSaving) return;
+		recruitSaving = true;
+		recruitErr = '';
+		try {
+			await updateDoc(doc(db, 'users', playerEmailKey), {
+				recruitProfilePublic: next,
+			});
+			await authStore.refresh({ silent: true });
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : 'Could not update recruiting preference.';
+			recruitErr = msg;
+			recruitToggle = !next;
+		} finally {
+			recruitSaving = false;
+		}
+	}
+
+	$effect(() => {
+		if (!browser || !recruitToggle || !playerEmailKey) {
+			qrDataUrl = '';
+			return;
+		}
+		const url = publicRecruitProfileUrl();
+		let cancelled = false;
+		(async () => {
+			try {
+				const QR = (await import('qrcode')).default;
+				const dataUrl = await QR.toDataURL(url, {
+					width: 220,
+					margin: 2,
+					color: { dark: '#0f172a', light: '#ffffff' },
+				});
+				if (!cancelled) qrDataUrl = dataUrl;
+			} catch (e) {
+				console.error(e);
+				if (!cancelled) qrDataUrl = '';
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	async function copyRecruitLink() {
+		const url = publicRecruitProfileUrl();
+		if (!url) return;
+		copyFeedback = '';
+		try {
+			await navigator.clipboard.writeText(url);
+			copyFeedback = 'Copied';
+			setTimeout(() => {
+				copyFeedback = '';
+			}, 2000);
+		} catch {
+			copyFeedback = 'Copy failed';
+		}
+	}
 
 	let logs = $state([]);
 	let trials = $state([]);
@@ -241,6 +334,75 @@
 		playerDisplayName={profile?.playerName || ''}
 	/>
 
+	{#if isPlayerRole && playerEmailKey}
+		<div class="recruit-center-outer bento-section">
+			<div class="card recruit-center-shell">
+				<div class="recruit-center-header">
+					<div>
+						<h2 class="recruit-center-title">Recruiting center</h2>
+						<p class="recruit-center-sub">
+							Share a public link with college scouts. Only coach-verified Pro Card
+							metrics are exposed, and you must be 16+ with a public profile enabled
+							server-side.
+						</p>
+					</div>
+					<label class="recruit-switch" title="Public recruiting profile">
+						<input
+							type="checkbox"
+							role="switch"
+							checked={recruitToggle}
+							disabled={recruitSaving}
+							onchange={(e) => onRecruitToggle(e.currentTarget.checked)}
+						/>
+						<span class="recruit-switch-ui" aria-hidden="true"></span>
+						<span class="recruit-switch-label">
+							{recruitToggle ? 'Public' : 'Private'}
+						</span>
+					</label>
+				</div>
+				{#if recruitErr}
+					<p class="recruit-err" role="alert">{recruitErr}</p>
+				{/if}
+				{#if recruitToggle}
+					<div class="recruit-qr-row">
+						<div class="recruit-qr-frame">
+							{#if qrDataUrl}
+								<img
+									src={qrDataUrl}
+									width="220"
+									height="220"
+									alt="QR code linking to your public recruiting profile"
+									class="recruit-qr-img"
+								/>
+							{:else}
+								<p class="recruit-qr-placeholder">Generating QR code…</p>
+							{/if}
+						</div>
+						<div class="recruit-link-actions">
+							<p class="recruit-url-hint">
+								QR and copy use
+								<strong>{publicRecruitOriginForLink(publicRecruitProfileUrl()) || '—'}</strong>.
+								Set <code class="recruit-code">VITE_PUBLIC_SITE_URL</code> in production
+								if the app is served from a different host than your public domain.
+							</p>
+							<button
+								type="button"
+								class="secondary-btn"
+								onclick={copyRecruitLink}
+								disabled={!qrDataUrl}
+							>
+								Copy profile link
+							</button>
+							{#if copyFeedback}
+								<span class="recruit-copy-feedback">{copyFeedback}</span>
+							{/if}
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<div class="bento-section">
 		<div class="card">
 			<div class="card-body text-center">
@@ -449,4 +611,188 @@
 		color: #ffffff;
 	}
 	.day-log-item:last-child { border-bottom: none; }
+
+	.recruit-center-outer {
+		grid-template-columns: 1fr;
+		gap: clamp(16px, 3vw, 24px);
+		margin-bottom: clamp(16px, 3vw, 24px);
+	}
+
+	.recruit-center-shell {
+		margin-bottom: 0;
+		padding: var(--spacing-fluid);
+		border-radius: var(--radius-premium);
+	}
+
+	.recruit-center-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: clamp(14px, 3vw, 20px);
+		margin-bottom: clamp(12px, 2vw, 16px);
+		padding-bottom: clamp(12px, 2vw, 16px);
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.recruit-center-title {
+		margin: 0;
+		font-size: clamp(1.1rem, 3.2vw, 1.35rem);
+		font-weight: 900;
+		letter-spacing: -0.02em;
+	}
+
+	.recruit-center-sub {
+		margin: 8px 0 0;
+		max-width: 52ch;
+		font-size: clamp(0.86rem, 2.4vw, 0.92rem);
+		color: var(--text-secondary);
+		font-weight: 600;
+		line-height: 1.55;
+	}
+
+	.recruit-switch {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		cursor: pointer;
+		font-weight: 800;
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		margin: 0;
+	}
+
+	.recruit-switch input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.recruit-switch-ui {
+		position: relative;
+		width: 48px;
+		height: 28px;
+		border-radius: 999px;
+		background: var(--surface-subtle);
+		border: 1px solid var(--border-subtle);
+		transition: background 0.2s ease;
+		flex-shrink: 0;
+	}
+
+	.recruit-switch-ui::after {
+		content: '';
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+		transition: transform 0.2s ease;
+	}
+
+	.recruit-switch input:checked + .recruit-switch-ui {
+		background: linear-gradient(135deg, var(--aggie-blue) 0%, #1e3a5f 100%);
+		border-color: rgba(15, 23, 42, 0.35);
+	}
+
+	.recruit-switch input:checked + .recruit-switch-ui::after {
+		transform: translateX(20px);
+	}
+
+	.recruit-switch input:focus-visible + .recruit-switch-ui {
+		outline: 2px solid var(--focus-ring-color);
+		outline-offset: 2px;
+	}
+
+	.recruit-switch input:disabled + .recruit-switch-ui {
+		opacity: 0.55;
+	}
+
+	.recruit-switch-label {
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		font-size: 0.72rem;
+	}
+
+	.recruit-err {
+		margin: 0 0 12px;
+		color: var(--danger-red);
+		font-weight: 700;
+		font-size: 0.9rem;
+	}
+
+	.recruit-qr-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: clamp(20px, 4vw, 28px);
+		align-items: flex-start;
+	}
+
+	.recruit-qr-frame {
+		padding: clamp(12px, 2vw, 16px);
+		border-radius: var(--radius-premium);
+		background: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+
+	.recruit-qr-img {
+		display: block;
+		border-radius: 12px;
+	}
+
+	.recruit-qr-placeholder {
+		margin: 0;
+		width: 220px;
+		height: 220px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		text-align: center;
+		padding: 12px;
+		box-sizing: border-box;
+	}
+
+	.recruit-link-actions {
+		flex: 1;
+		min-width: min(100%, 240px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.recruit-url-hint {
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--text-secondary);
+		font-weight: 600;
+		line-height: 1.5;
+	}
+
+	.recruit-code {
+		font-size: 0.78em;
+		padding: 2px 6px;
+		border-radius: 6px;
+		background: var(--surface-subtle);
+		border: 1px solid var(--border-subtle);
+	}
+
+	.recruit-copy-feedback {
+		font-size: 0.82rem;
+		font-weight: 800;
+		color: var(--success-green);
+	}
+
+	:global(html.dark) .recruit-qr-frame {
+		background: rgba(15, 23, 42, 0.55);
+		border-color: rgba(255, 255, 255, 0.12);
+	}
 </style>

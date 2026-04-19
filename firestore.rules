@@ -241,6 +241,16 @@ service cloud.firestore {
       return !(tokenMinor() && !tokenVpcOk() && waiverFlippedToTrue);
     }
 
+    // Sprint 3.2: players may toggle public recruit profile opt-in only.
+    function playerRecruitProfilePublicSelfPatch(userId) {
+      return authed()
+        && emailKey() == userId.lower()
+        && tokenRole() == 'player'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['recruitProfilePublic'])
+        && request.resource.data.recruitProfilePublic is bool;
+    }
+
     match /users/{userId} {
       allow read: if authed() && (
         emailKey() == userId.lower()
@@ -290,6 +300,7 @@ service cloud.firestore {
           && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
           && !request.resource.data.diff(resource.data).affectedKeys()
                .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor']))
+        || playerRecruitProfilePublicSelfPatch(userId)
         || isSuper()
         || registrarUserTeamPatchOk(userId)
       );
