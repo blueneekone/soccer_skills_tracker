@@ -1,14 +1,25 @@
 <script>
-	import { db } from '$lib/firebase.js';
-	import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+	import { db, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
+	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+	import Swal from 'sweetalert2';
 
 	let { teamId = '', teams = [] } = $props();
+
+	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
+	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
 
 	let players = $state([]);
 	let playerStats = $state({});
 	let jerseys = $state({});
 	let linkedPlayers = $state(new Set());
 	let loading = $state(false);
+	let addSaving = $state(false);
+	let removeBusy = $state(false);
+	/** @type {string | null} */
+	let removingName = $state(null);
+	/** @type {{ type: 'error' | 'success' | 'info'; text: string } | null} */
+	let feedback = $state(null);
 	let addName = $state('');
 	let addEmail = $state('');
 	let addJersey = $state('');
@@ -25,10 +36,12 @@
 			]);
 
 			playerStats = {};
-			statsSnap.forEach((d) => { playerStats[d.id] = d.data(); });
+			statsSnap.forEach((d) => {
+				playerStats[d.id] = d.data();
+			});
 
-			const rosterNames = rosterSnap.exists() ? (rosterSnap.data().players || []) : [];
-			jerseys = rosterSnap.exists() ? (rosterSnap.data().jerseys || {}) : {};
+			const rosterNames = rosterSnap.exists() ? rosterSnap.data().players || [] : [];
+			jerseys = rosterSnap.exists() ? rosterSnap.data().jerseys || {} : {};
 
 			linkedPlayers = new Set();
 			linkSnap.forEach((d) => linkedPlayers.add(d.data().playerName));
@@ -36,88 +49,301 @@
 			const combined = new Set([...rosterNames, ...Object.keys(playerStats)]);
 			players = Array.from(combined).sort();
 			totalReps = players.reduce((s, p) => s + (playerStats[p]?.totalMins || 0), 0);
-		} catch (e) { console.error(e); }
-		finally { loading = false; }
+		} catch (e) {
+			console.error('[RosterTab] loadRoster:', e);
+			feedback = {
+				type: 'error',
+				text: 'Could not load roster. Check your connection and try Refresh.'
+			};
+		} finally {
+			loading = false;
+		}
 	};
 
-	$effect(() => { if (teamId) loadRoster(); });
+	$effect(() => {
+		if (teamId) loadRoster();
+	});
+
+	function showSeatHardLockModal() {
+		Swal.fire({
+			title: 'Roster seats at capacity',
+			html:
+				'<p style="margin:0;font-size:clamp(0.9rem, 2.5vw, 1.05rem);line-height:1.5;">Your organization has used all licensed roster seats. Contact your <strong>Director</strong> to upgrade the club license.</p>',
+			icon: 'warning',
+			iconColor: '#b45309',
+			confirmButtonText: 'Understood',
+			allowOutsideClick: false,
+			allowEscapeKey: true,
+			focusConfirm: true,
+			customClass: {
+				popup: 'swal-liquid-hardlock',
+				confirmButton: 'swal-liquid-hardlock__btn'
+			},
+			buttonsStyling: false,
+			backdrop: 'rgba(15, 23, 42, 0.72)'
+		});
+	}
+
+	function mapCallableErrorToMessage(code, message) {
+		if (code === 'functions/already-exists' || code === 'already-exists') {
+			return (
+				message ||
+				'That email is already linked to a player on another team.'
+			);
+		}
+		if (code === 'functions/failed-precondition' || code === 'failed-precondition') {
+			return (
+				message ||
+				'Club license is not configured yet. Contact your platform administrator.'
+			);
+		}
+		if (code === 'functions/invalid-argument' || code === 'invalid-argument') {
+			return message || 'Invalid input. Check the name and email and try again.';
+		}
+		if (code === 'functions/permission-denied' || code === 'permission-denied') {
+			return (
+				message ||
+				'You do not have permission to change this team roster.'
+			);
+		}
+		if (code === 'functions/unauthenticated' || code === 'unauthenticated') {
+			return 'Sign in required.';
+		}
+		return message || 'Could not update roster. Try again or contact support.';
+	}
+
+	function normalizePlayerName(s) {
+		return s.trim().replace(/\s+/g, ' ');
+	}
 
 	const addPlayer = async () => {
-		if (!addName.trim()) return alert('Enter name');
-		const ref = doc(db, 'rosters', teamId);
-		const snap = await getDoc(ref);
-		const list = snap.exists() ? snap.data().players || [] : [];
-		const j = snap.exists() ? snap.data().jerseys || {} : {};
-		if (!list.includes(addName)) list.push(addName);
-		if (addJersey) j[addName] = addJersey;
-		await setDoc(ref, { players: list, jerseys: j }, { merge: true });
-		if (addEmail) await setDoc(doc(db, 'player_lookup', addEmail.toLowerCase()), { teamId, playerName: addName });
-		addName = ''; addEmail = ''; addJersey = '';
-		loadRoster();
+		feedback = null;
+		const rawName = addName.trim();
+		if (!rawName) {
+			feedback = { type: 'error', text: 'Enter a player name.' };
+			return;
+		}
+		if (!teamId) {
+			feedback = { type: 'error', text: 'Select a team first.' };
+			return;
+		}
+
+		const normalizedName = rawName.replace(/\s+/g, ' ');
+		const emailTrim = addEmail.trim().toLowerCase();
+		const jerseyStr =
+			addJersey !== '' && addJersey !== null && String(addJersey).trim() !== ''
+				? String(addJersey).trim().slice(0, 16)
+				: '';
+
+		addSaving = true;
+		try {
+			const res = await secureAddPlayer({
+				teamId,
+				playerName: normalizedName,
+				...(emailTrim ? { playerEmail: emailTrim } : {}),
+				...(jerseyStr ? { jersey: jerseyStr } : {})
+			});
+			const data = res.data;
+
+			if (data?.duplicate) {
+				feedback = {
+					type: 'info',
+					text: 'That player name is already on this team roster.'
+				};
+				return;
+			}
+
+			if (!players.includes(normalizedName)) {
+				players = [...players, normalizedName].sort();
+			}
+			jerseys = jerseyStr
+				? { ...jerseys, [normalizedName]: jerseyStr }
+				: { ...jerseys };
+			if (emailTrim) {
+				linkedPlayers = new Set([...linkedPlayers, normalizedName]);
+			}
+
+			addName = '';
+			addEmail = '';
+			addJersey = '';
+			feedback = { type: 'success', text: 'Player added.' };
+		} catch (err) {
+			const code = /** @type {{ code?: string }} */ (err).code || '';
+			const msg = /** @type {{ message?: string }} */ (err).message || '';
+
+			if (code === 'functions/resource-exhausted' || code === 'resource-exhausted') {
+				showSeatHardLockModal();
+				return;
+			}
+
+			feedback = {
+				type: 'error',
+				text: mapCallableErrorToMessage(code, msg)
+			};
+			console.error('[RosterTab] secureAddPlayer:', code, msg);
+		} finally {
+			addSaving = false;
+		}
 	};
 
 	const removePlayer = async (name) => {
 		if (!confirm(`Remove ${name}?`)) return;
-		const ref = doc(db, 'rosters', teamId);
-		const snap = await getDoc(ref);
-		if (snap.exists()) {
-			await updateDoc(ref, { players: snap.data().players.filter((p) => p !== name) });
-			loadRoster();
+		if (!teamId) {
+			feedback = { type: 'error', text: 'Select a team first.' };
+			return;
+		}
+		feedback = null;
+		const normalized = normalizePlayerName(name);
+		removeBusy = true;
+		removingName = normalized;
+		try {
+			const res = await secureRemovePlayer({
+				teamId,
+				playerName: normalized
+			});
+			const data = res.data;
+
+			if (data?.notFound) {
+				feedback = {
+					type: 'info',
+					text:
+						'That player was not on this roster. It may have been updated elsewhere — refreshed from the server.'
+				};
+				await loadRoster();
+				return;
+			}
+
+			players = players.filter((p) => p !== normalized);
+			jerseys = Object.fromEntries(
+				Object.entries(jerseys).filter(([k]) => k !== normalized)
+			);
+			linkedPlayers = new Set(
+				[...linkedPlayers].filter((n) => n !== normalized)
+			);
+			totalReps = players.reduce(
+				(s, p) => s + (playerStats[p]?.totalMins || 0),
+				0
+			);
+			feedback = { type: 'success', text: 'Player removed.' };
+		} catch (err) {
+			const code = /** @type {{ code?: string }} */ (err).code || '';
+			const msg = /** @type {{ message?: string }} */ (err).message || '';
+			feedback = {
+				type: 'error',
+				text: mapCallableErrorToMessage(code, msg)
+			};
+			console.error('[RosterTab] secureRemovePlayer:', code, msg);
+		} finally {
+			removeBusy = false;
+			removingName = null;
 		}
 	};
 </script>
 
 <div class="roster-tab">
 	<div class="bento-section">
-	<div class="card">
-		<div class="card-header roster-overview-header">Roster Overview</div>
-		<div class="card-body">
-			<div class="roster-stats-box">
-				<div class="text-center"><b>Active Players</b><br /><span class="roster-stat-val active">{players.length}</span></div>
-				<div class="text-center"><b>Total Minutes</b><br /><span class="roster-stat-val reps">{totalReps}</span></div>
-			</div>
-
-			<label>Manual Add Player</label>
-			<div class="input-row">
-				<input type="text" bind:value={addName} placeholder="Player Name" class="flex-1" />
-				<input type="number" bind:value={addJersey} placeholder="#" class="w-50" />
-			</div>
-			<input
-				type="email"
-				bind:value={addEmail}
-				placeholder="Athlete login email (optional; required for SafeSport messaging)"
-			/>
-			<button class="secondary-btn w-100" onclick={addPlayer}>+ Add Player</button>
-		</div>
-	</div>
-
-	<div class="card">
-		<div class="card-header">
-			<span>Team Roster</span>
-			<button class="action-btn" onclick={loadRoster}>↻ Refresh</button>
-		</div>
-		<div class="card-body p-0">
-			{#if loading}
-				<div class="session-empty">Loading...</div>
-			{:else if players.length === 0}
-				<div class="session-empty">No players found.</div>
-			{:else}
-				{#each players as p}
-					<div class="player-row">
-						<div>
-							<b>{jerseys[p] ? `#${jerseys[p]} ` : ''}{p}</b>
-							<div class="text-sm-sub">Last: {playerStats[p]?.lastActive ? playerStats[p].lastActive.toDate?.().toLocaleDateString?.() || 'N/A' : 'Inactive'}</div>
-						</div>
-						<div class="player-actions">
-							<span class="player-mins">{playerStats[p]?.totalMins || 0}m</span>
-							{#if linkedPlayers.has(p)}<span class="linked-badge-ui">✔ Linked</span>{/if}
-							<button class="delete-btn" onclick={() => removePlayer(p)}>x</button>
-						</div>
+		<div class="card">
+			<div class="card-header roster-overview-header">Roster Overview</div>
+			<div class="card-body">
+				<div class="roster-stats-box">
+					<div class="text-center">
+						<b>Active Players</b><br />
+						<span class="roster-stat-val active">{players.length}</span>
 					</div>
-				{/each}
-			{/if}
+					<div class="text-center">
+						<b>Total Minutes</b><br />
+						<span class="roster-stat-val reps">{totalReps}</span>
+					</div>
+				</div>
+
+				<label for="roster-add-name">Manual Add Player</label>
+				{#if feedback}
+					<p
+						class="roster-feedback roster-feedback--{feedback.type}"
+						role={feedback.type === 'error' ? 'alert' : 'status'}
+					>
+						{feedback.text}
+					</p>
+				{/if}
+				<div class="input-row">
+					<input
+						id="roster-add-name"
+						type="text"
+						bind:value={addName}
+						placeholder="Player Name"
+						class="flex-1"
+						disabled={addSaving || removeBusy}
+						autocomplete="off"
+					/>
+					<input
+						type="number"
+						bind:value={addJersey}
+						placeholder="#"
+						class="w-50"
+						disabled={addSaving || removeBusy}
+					/>
+				</div>
+				<input
+					type="email"
+					bind:value={addEmail}
+					placeholder="Athlete login email (optional; required for SafeSport messaging)"
+					disabled={addSaving || removeBusy}
+					autocomplete="off"
+				/>
+				<button
+					class="secondary-btn w-100"
+					onclick={addPlayer}
+					disabled={addSaving || removeBusy || !teamId}
+				>
+					{addSaving ? 'Adding…' : '+ Add Player'}
+				</button>
+			</div>
 		</div>
-	</div>
+
+		<div class="card">
+			<div class="card-header">
+				<span>Team Roster</span>
+				<button
+					type="button"
+					class="action-btn"
+					onclick={loadRoster}
+					disabled={loading || removeBusy}
+				>
+					↻ Refresh
+				</button>
+			</div>
+			<div class="card-body p-0">
+				{#if loading}
+					<div class="session-empty">Loading...</div>
+				{:else if players.length === 0}
+					<div class="session-empty">No players found.</div>
+				{:else}
+					{#each players as p}
+						<div class="player-row">
+							<div>
+								<b>{jerseys[p] ? `#${jerseys[p]} ` : ''}{p}</b>
+								<div class="text-sm-sub">
+									Last: {playerStats[p]?.lastActive
+										? playerStats[p].lastActive.toDate?.().toLocaleDateString?.() || 'N/A'
+										: 'Inactive'}
+								</div>
+							</div>
+							<div class="player-actions">
+								<span class="player-mins">{playerStats[p]?.totalMins || 0}m</span>
+								{#if linkedPlayers.has(p)}<span class="linked-badge-ui">✔ Linked</span>{/if}
+								<button
+									type="button"
+									class="delete-btn"
+									onclick={() => removePlayer(p)}
+									disabled={removeBusy}
+									aria-busy={removingName === p}
+								>{removingName === p ? '…' : 'x'}</button>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -127,7 +353,7 @@
 		gap: 20px;
 		justify-content: space-around;
 		padding: 16px;
-		background: rgba(15,23,42,0.05);
+		background: rgba(15, 23, 42, 0.05);
 		border-radius: 12px;
 		margin-bottom: 16px;
 	}
@@ -136,17 +362,61 @@
 		font-weight: 900;
 		display: block;
 	}
-	.roster-stat-val.active { color: var(--success-green); }
-	.roster-stat-val.reps { color: var(--text-primary); }
+	.roster-stat-val.active {
+		color: var(--success-green);
+	}
+	.roster-stat-val.reps {
+		color: var(--text-primary);
+	}
+	.roster-feedback {
+		margin: 0 0 12px;
+		padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.65rem, 2vw, 0.85rem);
+		border-radius: clamp(0.45rem, 1.5vw, 0.65rem);
+		font-size: clamp(0.8rem, 2.1vw, 0.9rem);
+		line-height: 1.45;
+	}
+	.roster-feedback--error {
+		background: rgba(220, 38, 38, 0.1);
+		color: var(--danger-red, #b91c1c);
+		border: 1px solid rgba(220, 38, 38, 0.25);
+	}
+	.roster-feedback--success {
+		background: rgba(22, 163, 74, 0.12);
+		color: var(--success-green, #15803d);
+		border: 1px solid rgba(22, 163, 74, 0.28);
+	}
+	.roster-feedback--info {
+		background: rgba(59, 130, 246, 0.1);
+		color: var(--text-secondary, #334155);
+		border: 1px solid rgba(59, 130, 246, 0.22);
+	}
 	.player-row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: 12px var(--spacing-fluid);
-		border-bottom: 1px solid rgba(15,23,42,0.05);
+		border-bottom: 1px solid rgba(15, 23, 42, 0.05);
 	}
-	.player-actions { display: flex; align-items: center; gap: 8px; }
-	.player-mins { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); }
-	.delete-btn { background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
-	input { margin-bottom: 10px; }
+	.player-actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.player-mins {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--text-secondary);
+	}
+	.delete-btn {
+		background: none;
+		border: 1px solid var(--border-strong);
+		border-radius: 6px;
+		cursor: pointer;
+		color: var(--danger-red);
+		padding: 2px 8px;
+		font-size: 0.85rem;
+	}
+	input {
+		margin-bottom: 10px;
+	}
 </style>

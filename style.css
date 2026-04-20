@@ -935,3 +935,55 @@ html.dark select {
 html.dark .medal-locked {
     opacity: 0.55;
 }
+
+/* Epic 3: license seat cap — SweetAlert2 “liquid glass” hard lock */
+.swal2-container.swal2-backdrop-show {
+    scrollbar-gutter: stable both-edges;
+}
+
+.swal2-popup.swal-liquid-hardlock {
+    max-width: min(96vw, 28rem);
+    padding: clamp(1rem, 3vw, 1.75rem);
+    border-radius: clamp(0.75rem, 2vw, 1.25rem);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(241, 245, 249, 0.08) 100%
+    );
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    box-shadow:
+        0 8px 32px rgba(15, 23, 42, 0.28),
+        0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.swal2-popup.swal-liquid-hardlock .swal2-title {
+    font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+    font-weight: 700;
+    color: var(--text-dark, #0f172a);
+}
+
+.swal2-popup.swal-liquid-hardlock .swal2-html-container {
+    margin: 0.5rem 0 1rem;
+}
+
+button.swal2-confirm.swal-liquid-hardlock__btn {
+    border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    padding: clamp(0.5rem, 1.5vw, 0.65rem) clamp(1.25rem, 4vw, 2rem);
+    font-size: clamp(0.875rem, 2.2vw, 1rem);
+    font-weight: 600;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.swal2-confirm.swal-liquid-hardlock__btn:hover {
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.28);
+}
+
+button.swal2-confirm.swal-liquid-hardlock__btn:active {
+    transform: scale(0.98);
+}

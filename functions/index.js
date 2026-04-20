@@ -139,6 +139,53 @@ function isAlreadyExistsError(err) {
 }
 
 /**
+ * Coach / director / registrar / super_admin: may add roster rows for teamId.
+ * @param {any} request Callable request
+ * @param {string} teamId Team document id
+ * @return {Promise<{clubId: string}>}
+ */
+async function assertCanSecureAddPlayer(request, teamId) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if (!teamId || typeof teamId !== 'string' || !teamId.trim()) {
+    throw new HttpsError('invalid-argument', 'teamId is required.');
+  }
+  const role = request.auth.token.role || 'player';
+  const tokenClub = request.auth.token.clubId || null;
+  const tokenTeam = request.auth.token.teamId || null;
+  const tid = teamId.trim();
+  const teamSnap = await db.collection('teams').doc(tid).get();
+  if (!teamSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const clubIdRaw = teamSnap.data().clubId;
+  const clubId =
+      typeof clubIdRaw === 'string' && clubIdRaw.trim() ?
+        clubIdRaw.trim() :
+        '';
+  if (!clubId) {
+    throw new HttpsError('failed-precondition', 'Team has no club scope.');
+  }
+  if (role === 'super_admin') {
+    return {clubId};
+  }
+  if (role === 'director' && tokenClub && tokenClub === clubId) {
+    return {clubId};
+  }
+  if (role === 'registrar' && tokenClub && tokenClub === clubId) {
+    return {clubId};
+  }
+  if (role === 'coach' && tokenTeam === tid) {
+    return {clubId};
+  }
+  throw new HttpsError(
+      'permission-denied',
+      'Only club staff assigned to this team may add players.',
+  );
+}
+
+/**
  * @param {any} request Callable request
  * @return {{ email: string, householdId: string }}
  */
@@ -547,6 +594,48 @@ exports.generateLicense = onCall({region: REGION}, async (request) => {
     const ref = db.collection('licenses').doc(licenseKey);
     try {
       await ref.create(basePayload(licenseKey));
+      if (clubId) {
+        try {
+          const entRef = db.collection('license_entitlements').doc(clubId);
+          const adminEmail = normEmail(request.auth.token.email) || 'unknown';
+          await db.runTransaction(async (t) => {
+            const snap = await t.get(entRef);
+            const cur =
+                snap.exists &&
+                typeof snap.data().seats_limit === 'number' &&
+                !Number.isNaN(snap.data().seats_limit) ?
+                  snap.data().seats_limit :
+                  0;
+            const active =
+                snap.exists &&
+                typeof snap.data().active_seats === 'number' &&
+                !Number.isNaN(snap.data().active_seats) ?
+                  snap.data().active_seats :
+                  0;
+            t.set(
+                entRef,
+                {
+                  schemaVersion: 1,
+                  clubId,
+                  seats_limit: cur + maxSeats,
+                  active_seats: active,
+                  seatDefinition: 'players_in_club',
+                  lastReconciledAt: null,
+                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                  updatedBy: adminEmail,
+                },
+                {merge: true},
+            );
+          });
+        } catch (entErr) {
+          logger.error('generateLicense entitlement upsert failed', entErr);
+          throw new HttpsError(
+              'internal',
+              'License key was created but seat entitlement sync failed. ' +
+              'Contact support.',
+          );
+        }
+      }
       return {ok: true, licenseKey};
     } catch (err) {
       if (isAlreadyExistsError(err)) continue;
@@ -559,6 +648,234 @@ exports.generateLicense = onCall({region: REGION}, async (request) => {
     }
   }
   throw new HttpsError('internal', 'Could not allocate a unique license key.');
+});
+
+/**
+ * Atomic roster add with license_entitlements seat check
+ * (no direct client writes).
+ */
+exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  let playerName =
+      typeof data.playerName === 'string' ? data.playerName.trim() : '';
+  playerName = playerName.replace(/\s+/g, ' ');
+  if (!playerName || playerName.length > 200) {
+    throw new HttpsError(
+        'invalid-argument',
+        'playerName is required (1–200 characters).',
+    );
+  }
+
+  let playerEmail = '';
+  if (typeof data.playerEmail === 'string' && data.playerEmail.trim()) {
+    playerEmail = normEmail(data.playerEmail.trim().slice(0, 320));
+    if (!playerEmail || !playerEmail.includes('@')) {
+      throw new HttpsError(
+          'invalid-argument',
+          'playerEmail must be a valid email when provided.',
+      );
+    }
+  }
+
+  let jersey = '';
+  if (typeof data.jersey === 'string' && data.jersey.trim()) {
+    jersey = data.jersey.trim().slice(0, 16);
+  }
+
+  const {clubId} = await assertCanSecureAddPlayer(request, teamId);
+
+  const rosterRef = db.collection('rosters').doc(teamId);
+  const entRef = db.collection('license_entitlements').doc(clubId);
+  const lookupRef = playerEmail ?
+    db.collection('player_lookup').doc(playerEmail) :
+    null;
+
+  const txnResult = await db.runTransaction(async (transaction) => {
+    const rosterSnap = await transaction.get(rosterRef);
+    const list = rosterSnap.exists ?
+      (Array.isArray(rosterSnap.data().players) ?
+        rosterSnap.data().players :
+        []) :
+      [];
+    if (list.includes(playerName)) {
+      return {kind: 'duplicate'};
+    }
+
+    if (lookupRef) {
+      const lkSnap = await transaction.get(lookupRef);
+      if (lkSnap.exists) {
+        const existingTid = lkSnap.data().teamId;
+        if (existingTid && existingTid !== teamId) {
+          return {kind: 'email_in_use'};
+        }
+      }
+    }
+
+    const entSnap = await transaction.get(entRef);
+    if (!entSnap.exists) {
+      return {kind: 'no_entitlement'};
+    }
+    const ent = entSnap.data() || {};
+    const seatsLimit =
+        typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ?
+          ent.seats_limit :
+          0;
+    const activeSeats =
+        typeof ent.active_seats === 'number' &&
+        !Number.isNaN(ent.active_seats) ?
+          ent.active_seats :
+          0;
+    if (activeSeats >= seatsLimit) {
+      return {kind: 'full'};
+    }
+
+    const jerseys =
+        rosterSnap.exists &&
+        rosterSnap.data().jerseys &&
+        typeof rosterSnap.data().jerseys === 'object' ?
+          {...rosterSnap.data().jerseys} :
+          {};
+    if (jersey) {
+      jerseys[playerName] = jersey;
+    }
+
+    const newPlayers = [...list, playerName];
+
+    transaction.update(entRef, {
+      active_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:secureAddPlayer',
+    });
+    transaction.set(
+        rosterRef,
+        {players: newPlayers, jerseys},
+        {merge: true},
+    );
+    if (lookupRef) {
+      transaction.set(
+          lookupRef,
+          {
+            teamId,
+            playerName,
+            clubId,
+          },
+          {merge: true},
+      );
+    }
+    return {kind: 'ok'};
+  });
+
+  if (txnResult.kind === 'duplicate') {
+    return {ok: true, duplicate: true};
+  }
+  if (txnResult.kind === 'email_in_use') {
+    throw new HttpsError(
+        'already-exists',
+        'That email is already linked to a player on another team.',
+    );
+  }
+  if (txnResult.kind === 'no_entitlement') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Club license is not configured yet. ' +
+        'Contact your platform administrator.',
+    );
+  }
+  if (txnResult.kind === 'full') {
+    throw new HttpsError(
+        'resource-exhausted',
+        'Licensed roster seats are fully allocated. ' +
+        'Contact your Director to upgrade.',
+    );
+  }
+  return {ok: true};
+});
+
+/**
+ * Atomic roster remove + license_entitlements seat release + player_lookup
+ * cleanup (Admin SDK only).
+ */
+exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  let playerName =
+      typeof data.playerName === 'string' ? data.playerName.trim() : '';
+  playerName = playerName.replace(/\s+/g, ' ');
+  if (!playerName || playerName.length > 200) {
+    throw new HttpsError(
+        'invalid-argument',
+        'playerName is required (1–200 characters).',
+    );
+  }
+
+  const {clubId} = await assertCanSecureAddPlayer(request, teamId);
+
+  const rosterRef = db.collection('rosters').doc(teamId);
+  const entRef = db.collection('license_entitlements').doc(clubId);
+  const lookupQuery = db.collection('player_lookup')
+      .where('teamId', '==', teamId)
+      .where('playerName', '==', playerName)
+      .limit(10);
+
+  const txnResult = await db.runTransaction(async (transaction) => {
+    const rosterSnap = await transaction.get(rosterRef);
+    const list = rosterSnap.exists ?
+      (Array.isArray(rosterSnap.data().players) ?
+        rosterSnap.data().players :
+        []) :
+      [];
+    if (!list.includes(playerName)) {
+      return {kind: 'not_found'};
+    }
+
+    const entSnap = await transaction.get(entRef);
+    const lookupSnap = await transaction.get(lookupQuery);
+
+    const jerseys =
+        rosterSnap.exists &&
+        rosterSnap.data().jerseys &&
+        typeof rosterSnap.data().jerseys === 'object' ?
+          {...rosterSnap.data().jerseys} :
+          {};
+    if (Object.prototype.hasOwnProperty.call(jerseys, playerName)) {
+      delete jerseys[playerName];
+    }
+
+    const newPlayers = list.filter((p) => p !== playerName);
+
+    transaction.set(
+        rosterRef,
+        {players: newPlayers, jerseys},
+        {merge: true},
+    );
+
+    lookupSnap.forEach((d) => transaction.delete(d.ref));
+
+    if (entSnap.exists) {
+      const ent = entSnap.data() || {};
+      const activeSeats =
+          typeof ent.active_seats === 'number' &&
+          !Number.isNaN(ent.active_seats) ?
+            ent.active_seats :
+            0;
+      const newActive = Math.max(0, activeSeats - 1);
+      transaction.update(entRef, {
+        active_seats: newActive,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: 'system:secureRemovePlayer',
+      });
+    }
+
+    return {kind: 'ok'};
+  });
+
+  if (txnResult.kind === 'not_found') {
+    return {ok: true, notFound: true};
+  }
+  return {ok: true};
 });
 
 /** super_admin: create sport module (no client writes). */

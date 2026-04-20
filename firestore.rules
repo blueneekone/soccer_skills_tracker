@@ -116,6 +116,17 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/teams/$(tid)).data.clubId;
     }
 
+    // Epic 3 Sprint 5: per-club seat caps (read-only for clients; writes via Cloud Functions only).
+    function canReadLicenseEntitlement(clubPathId) {
+      return isSuper()
+        || (isDirector() && tokenClub() == clubPathId)
+        || (isRegistrar() && tokenClub() != null && tokenClub() == clubPathId)
+        || (isCoach() && tokenClub() != null && tokenClub() == clubPathId)
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && teamClubId(tokenTeam()) == clubPathId);
+    }
+
     // Epic 12: club campaigns — members of the club can read; no client writes.
     function canReadClubCampaign(clubPathId) {
       return authed() && (
@@ -764,6 +775,12 @@ service cloud.firestore {
     // Epic 2.1: idempotency + webhook status (audit).
     match /affinity_webhook_events/{docId} {
       allow read: if isSuper();
+      allow create, update, delete: if false;
+    }
+
+    // Epic 3 Sprint 5: aggregated seat usage vs purchased cap (Admin SDK / callable only).
+    match /license_entitlements/{clubId} {
+      allow read: if authed() && canReadLicenseEntitlement(clubId);
       allow create, update, delete: if false;
     }
 

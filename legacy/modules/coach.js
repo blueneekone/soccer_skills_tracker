@@ -1,6 +1,11 @@
 // modules/coach.js
-import { auth, db } from "../firebase-config.js";
+import { auth, db, app } from "../firebase-config.js";
 import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+
+const functions = getFunctions(app, "us-central1");
+const secureAddPlayerFn = httpsCallable(functions, "secureAddPlayer");
+const secureRemovePlayerFn = httpsCallable(functions, "secureRemovePlayer");
 // 🟢 THE CRASH-INDUCING RENDERTEAMCHART IMPORT IS GONE!
 
 export let currentCoachTeamId = null;
@@ -18,11 +23,35 @@ const bindCoachView = () => {
             if (target.classList.contains("action-delete-player")) {
                 const pName = target.getAttribute("data-player");
                 if (!confirm(`Remove ${pName}?`)) return;
-                const ref = doc(db, "rosters", currentCoachTeamId);
-                const snap = await getDoc(ref);
-                if (snap.exists()) {
-                    await updateDoc(ref, { players: snap.data().players.filter(p => p!== pName) });
+                if (!currentCoachTeamId) return alert("Select a team first.");
+                try {
+                    const res = await secureRemovePlayerFn({
+                        teamId: currentCoachTeamId,
+                        playerName: pName
+                    });
+                    const data = res && res.data ? res.data : {};
+                    if (data.notFound) {
+                        if (typeof Swal !== "undefined") {
+                            Swal.fire({
+                                title: "Not on roster",
+                                text: "That player was not found on this team roster.",
+                                icon: "info",
+                                confirmButtonColor: "#0f172a"
+                            });
+                        } else {
+                            alert("Player was not on the roster.");
+                        }
+                    }
                     loadCoachDashboard(false, window.globalTeams);
+                } catch (err) {
+                    const code = err && err.code ? String(err.code) : "";
+                    console.error("[coach.js] secureRemovePlayer failed:", code, err && err.message);
+                    const msg = err && err.message ? err.message : "Could not remove player.";
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({ title: "Could not remove player", text: msg, icon: "error", confirmButtonColor: "#0f172a" });
+                    } else {
+                        alert(msg);
+                    }
                 }
             }
 
@@ -164,6 +193,7 @@ export const loadCoachScheduleAndHW = async () => {
 export const initCoachDropdown = (isDirector, teams, updateCallback) => {
     const sel = document.getElementById("adminTeamSelect");
     if (!sel) return;
+    window.globalTeams = teams;
     document.getElementById("adminControls").style.display = 'block';
     sel.innerHTML = "";
     teams.forEach(t => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
@@ -300,6 +330,29 @@ const loadWorkouts = () => {
     `).join("");
 };
 
+const showSeatHardLockModal = () => {
+    if (typeof Swal === "undefined") {
+        alert("Licensed roster seats are fully allocated. Contact your Director to upgrade.");
+        return;
+    }
+    Swal.fire({
+        title: "Roster seats at capacity",
+        html: "<p style=\"margin:0;font-size:clamp(0.9rem, 2.5vw, 1.05rem);line-height:1.5;\">Your organization has used all licensed roster seats. Contact your <strong>Director</strong> to upgrade the club license.</p>",
+        icon: "warning",
+        iconColor: "#b45309",
+        confirmButtonText: "Understood",
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        focusConfirm: true,
+        customClass: {
+            popup: "swal-liquid-hardlock",
+            confirmButton: "swal-liquid-hardlock__btn",
+        },
+        buttonsStyling: false,
+        backdrop: "rgba(15, 23, 42, 0.72)",
+    });
+};
+
 export const manualAddPlayer = async (reloadCallback) => {
     const name = document.getElementById("coachAddPlayerName").value.trim();
     const email = document.getElementById("coachAddPlayerEmail").value.trim().toLowerCase();
@@ -308,22 +361,56 @@ export const manualAddPlayer = async (reloadCallback) => {
 
     if (!name) return alert("Enter name");
     const tid = document.getElementById("adminTeamSelect").value;
-    const ref = doc(db, "rosters", tid);
-    const snap = await getDoc(ref);
-    let list = snap.exists() ? snap.data().players || [] : [];
-    let jerseys = snap.exists() ? snap.data().jerseys || {} : {};
+    if (!tid) return alert("Select a team first.");
 
-    if (!list.includes(name)) list.push(name);
-    if (jersey) jerseys[name] = jersey;
-
-    await setDoc(ref, { players: list, jerseys: jerseys }, { merge: true });
-    if (email) await setDoc(doc(db, "player_lookup", email), { teamId: tid, playerName: name });
-
-    alert("Player Added");
-    document.getElementById("coachAddPlayerName").value = "";
-    document.getElementById("coachAddPlayerEmail").value = "";
-    if (jerseyEl) jerseyEl.value = "";
-    if (reloadCallback) reloadCallback();
+    try {
+        const res = await secureAddPlayerFn({
+            teamId: tid,
+            playerName: name,
+            playerEmail: email || undefined,
+            jersey: jersey || undefined,
+        });
+        const data = res && res.data ? res.data : {};
+        if (data.duplicate) {
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    title: "Already on roster",
+                    text: "That player name is already listed for this team.",
+                    icon: "info",
+                    confirmButtonColor: "#0f172a",
+                });
+            } else {
+                alert("That player is already on the roster.");
+            }
+        } else {
+            alert("Player Added");
+        }
+        document.getElementById("coachAddPlayerName").value = "";
+        document.getElementById("coachAddPlayerEmail").value = "";
+        if (jerseyEl) jerseyEl.value = "";
+        if (reloadCallback) reloadCallback();
+    } catch (err) {
+        const code = err && err.code ? String(err.code) : "";
+        if (code === "functions/resource-exhausted" || code === "resource-exhausted") {
+            showSeatHardLockModal();
+            return;
+        }
+        console.error("[coach.js] secureAddPlayer failed:", code, err && err.message);
+        const msg =
+            err && err.message ?
+                err.message :
+                "Could not add player. Try again or contact support.";
+        if (typeof Swal !== "undefined") {
+            Swal.fire({
+                title: "Could not add player",
+                text: msg,
+                icon: "error",
+                confirmButtonColor: "#0f172a",
+            });
+        } else {
+            alert(msg);
+        }
+    }
 };
 
 export const loadRecentTrials = async (tid) => {

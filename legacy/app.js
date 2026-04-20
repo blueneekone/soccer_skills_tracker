@@ -7,7 +7,7 @@ import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, addD
 import { checkMobileRedirect, handleGoogleLogin, handleEmailLogin, handleEmailSignup, handleLogout, completeUserSetup, initSetupDropdowns } from "./modules/auth.js";
 import { addDrillToSession, handleWorkoutSubmit, addToGoogleCalendar, downloadIcsFile, initSignatureCanvas } from "./modules/tracker.js";
 import { initDirectorModule } from "./modules/director.js";
-import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler } from "./modules/coach.js";
+import { initCoachDropdown, loadCoachDashboard, currentCoachTeamId, initStrategyBoard, loadCoachScheduleAndHW, initSpatialScheduler, manualAddPlayer } from "./modules/coach.js";
 import { renderAdminTables, addAdmin, addClub, addTeam } from "./modules/admin.js";
 import { applyTeamBranding } from "./modules/branding.js";
 import { initPassportCanvas, loadPlayerPassport, savePlayerPassport } from "./modules/passport.js";
@@ -366,6 +366,12 @@ const initApp = () => {
         alert("Homework Assigned!");
         if(typeof loadCoachScheduleAndHW === "function") loadCoachScheduleAndHW();
         if(typeof loadHomeDashboard === "function") loadHomeDashboard();
+    });
+
+    safeBind("coachAddPlayerBtn", "click", async () => {
+        await manualAddPlayer(() =>
+            loadCoachDashboard(true, globalTeams, loadHomeDashboard),
+        );
     });
 
     const bindTrackerBtn = (btnId, selectId, setsId, repsId) => {
