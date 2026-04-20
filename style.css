@@ -177,7 +177,7 @@ html.dark .linked-badge-ui {
 .bento-span-full {
     grid-column: 1 / -1;
 }
-.card-header { font-size: 1.25rem; font-weight: 900; padding-bottom: 15px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 20px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.card-header { font-size: 1.25rem; font-weight: 900; padding-bottom: 15px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 20px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-radius: var(--radius-premium) var(--radius-premium) 0 0; }
 .card-body > * + * { margin-top: var(--spacing-element); }
 
 /* Themed Borders & Headers */
@@ -305,7 +305,12 @@ input[type="file"] {
 /* ==========================================
    5. APP HEADER & DASHBOARD GRID
    ========================================== */
-.app-header { display: flex; justify-content: space-between; align-items: center; padding-block: clamp(18px, 2.2vw, 26px); padding-inline: var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
+.app-header { display: flex; justify-content: space-between; align-items: center; padding-block: clamp(18px, 2.2vw, 26px); padding-inline: var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; margin-bottom: 20px; }
+.app-header, .admin-sticky-header {
+    border-bottom-left-radius: var(--radius-premium);
+    border-bottom-right-radius: var(--radius-premium);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
 .app-title { margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; color: var(--text-primary); }
 .player-info { font-size: 0.85rem; color: var(--text-secondary); }
 .header-action-group { display: flex; gap: 10px; align-items: center; }
@@ -490,7 +495,19 @@ html.dark .current-rank-label {
     letter-spacing: -0.04em;
     color: rgba(255, 255, 255, 0.95);
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    z-index: 3;
+    pointer-events: none;
+}
+.medal-club-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 45%;
+    height: 45%;
+    object-fit: contain;
     z-index: 2;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
     pointer-events: none;
 }
 .medal-rookie {
@@ -904,6 +921,11 @@ html.dark .cal-day.has-log:hover {
 
 html.dark .challenge-banner {
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .app-header,
+html.dark .admin-sticky-header {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
 }
 
 html.dark select {
