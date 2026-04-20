@@ -13,6 +13,9 @@
     /* Brand — navy & gold stay fixed on light accent bands */
     --aggie-blue: #0f172a;
     --aggie-gold: #f59e0b;
+    /* Phoenix: director-injected club identity (defaults mirror core brand) */
+    --brand-primary: #6366f1;
+    --brand-accent: #10b981;
     --success-green: #047857;
     --danger-red: #991b1b;
     --muted-slate: #334155;
@@ -47,6 +50,10 @@
     --spacing-element: 20px;
     --shadow-premium: 0 20px 40px -10px rgba(15, 23, 42, 0.08),
         inset 0 1px 1px rgba(255, 255, 255, 0.82);
+    /* Director OS / liquid glass depth */
+    --shadow-liquid: 0 12px 40px -8px rgba(15, 23, 42, 0.18),
+        0 4px 14px -4px rgba(15, 23, 42, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 /* ==========================================

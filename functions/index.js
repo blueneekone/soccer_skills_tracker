@@ -415,6 +415,44 @@ function normEmail(e) {
 }
 
 /**
+ * Deterministic id for coach invite dedupe
+ * (one pending invite per club+team+email).
+ * @param {string} clubId
+ * @param {string} teamId
+ * @param {string} coachEmail
+ * @return {string}
+ */
+function coachInviteDocId(clubId, teamId, coachEmail) {
+  const safe = (s) =>
+    String(s || '')
+        .replace(/[/\s]/g, '_')
+        .replace(/[^a-zA-Z0-9_@-]/g, '')
+        .slice(0, 200);
+  return `${safe(clubId)}__${safe(teamId)}__${safe(coachEmail)}`;
+}
+
+/**
+ * Director must operate only on their token club
+ * (super_admin may pass any club).
+ * @param {any} request
+ * @param {string} clubId
+ * @return {{role: string, clubId: ?string, email: ?string}}
+ */
+function assertDirectorClubOrSuper(request, clubId) {
+  const actor = assertDirectorOrSuper(request);
+  if (actor.role === 'super_admin') {
+    return actor;
+  }
+  if (!clubId || actor.clubId !== clubId) {
+    throw new HttpsError(
+        'permission-denied',
+        'You can only manage resources for your own club.',
+    );
+  }
+  return actor;
+}
+
+/**
  * vpc_requests.clubId must match director queue filters (child, household,
  * team, or parent profile fallback).
  * @param {Record<string, unknown>} u Minor users doc
@@ -612,6 +650,12 @@ exports.generateLicense = onCall({region: REGION}, async (request) => {
                 !Number.isNaN(snap.data().active_seats) ?
                   snap.data().active_seats :
                   0;
+            const reserved =
+                snap.exists &&
+                typeof snap.data().reserved_seats === 'number' &&
+                !Number.isNaN(snap.data().reserved_seats) ?
+                  snap.data().reserved_seats :
+                  0;
             t.set(
                 entRef,
                 {
@@ -619,6 +663,7 @@ exports.generateLicense = onCall({region: REGION}, async (request) => {
                   clubId,
                   seats_limit: cur + maxSeats,
                   active_seats: active,
+                  reserved_seats: reserved,
                   seatDefinition: 'players_in_club',
                   lastReconciledAt: null,
                   updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -648,6 +693,360 @@ exports.generateLicense = onCall({region: REGION}, async (request) => {
     }
   }
   throw new HttpsError('internal', 'Could not allocate a unique license key.');
+});
+
+/**
+ * Epic Phoenix: director persists club accent colors
+ * (Admin SDK; clients cannot write clubs/).
+ */
+exports.directorSaveClubBranding = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const clubId =
+      typeof data.clubId === 'string' ? data.clubId.trim().slice(0, 128) : '';
+  const primaryHex =
+      typeof data.brandPrimaryHex === 'string' ?
+        data.brandPrimaryHex.trim() :
+        '';
+  const accentHex =
+      typeof data.brandAccentHex === 'string' ?
+        data.brandAccentHex.trim() :
+        '';
+  const logoUrl = typeof data.logoUrl === 'string' ?
+    data.logoUrl.trim().slice(0, 2000) :
+    '';
+
+  if (!clubId) {
+    throw new HttpsError('invalid-argument', 'clubId is required.');
+  }
+  const hexOk = (h) => /^#[0-9A-Fa-f]{6}$/.test(h);
+  if (!hexOk(primaryHex) || !hexOk(accentHex)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'brandPrimaryHex and brandAccentHex must be #RRGGBB.',
+    );
+  }
+
+  const actor = assertDirectorClubOrSuper(request, clubId);
+  const by = normEmail(actor.email) || 'unknown';
+
+  const payload = {
+    brandPrimaryHex: primaryHex,
+    brandAccentHex: accentHex,
+    brandingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    brandingUpdatedBy: by,
+  };
+  if (logoUrl) {
+    payload.brandLogoUrl = logoUrl;
+  }
+
+  await db.collection('clubs').doc(clubId).set(payload, {merge: true});
+  return {ok: true};
+});
+
+/**
+ * Reserve one licensed seat + create pending coach invite (atomic).
+ * Does not touch active_seats until claimCoachInvite.
+ */
+exports.directorInviteCoach = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  const coachEmailRaw =
+      typeof data.coachEmail === 'string' ? data.coachEmail.trim() : '';
+  const coachEmail = normEmail(coachEmailRaw.slice(0, 320));
+  if (!teamId || !coachEmail || !coachEmail.includes('@')) {
+    throw new HttpsError(
+        'invalid-argument',
+        'teamId and a valid coachEmail are required.',
+    );
+  }
+
+  const teamRef = db.collection('teams').doc(teamId);
+  const teamSnap = await teamRef.get();
+  if (!teamSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const clubId =
+      typeof teamSnap.data().clubId === 'string' ?
+        teamSnap.data().clubId.trim() :
+        '';
+  if (!clubId) {
+    throw new HttpsError('failed-precondition', 'Team has no clubId.');
+  }
+
+  assertDirectorClubOrSuper(request, clubId);
+
+  const entRef = db.collection('license_entitlements').doc(clubId);
+  const inviteId = coachInviteDocId(clubId, teamId, coachEmail);
+  const inviteRef = db.collection('coach_invites').doc(inviteId);
+
+  const existingUser = await db.collection('users').doc(coachEmail).get();
+  if (existingUser.exists) {
+    const r = existingUser.data().role;
+    if (r === 'coach' && existingUser.data().teamId === teamId) {
+      throw new HttpsError(
+          'already-exists',
+          'This coach is already assigned to this team.',
+      );
+    }
+  }
+
+  const result = await db.runTransaction(async (transaction) => {
+    const entSnap = await transaction.get(entRef);
+    if (!entSnap.exists) {
+      return {kind: 'no_entitlement'};
+    }
+    const ent = entSnap.data() || {};
+    const seatsLimit =
+        typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ?
+          ent.seats_limit :
+          0;
+    const activeSeats =
+        typeof ent.active_seats === 'number' &&
+        !Number.isNaN(ent.active_seats) ?
+          ent.active_seats :
+          0;
+    const reservedSeats =
+        typeof ent.reserved_seats === 'number' &&
+        !Number.isNaN(ent.reserved_seats) ?
+          ent.reserved_seats :
+          0;
+
+    if (activeSeats + reservedSeats >= seatsLimit) {
+      return {kind: 'full'};
+    }
+
+    const inviteSnap = await transaction.get(inviteRef);
+    if (inviteSnap.exists) {
+      const st = inviteSnap.data().status;
+      if (st === 'pending') {
+        return {kind: 'duplicate_invite'};
+      }
+    }
+
+    transaction.set(entRef, {
+      reserved_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:directorInviteCoach',
+    }, {merge: true});
+
+    transaction.set(inviteRef, {
+      clubId,
+      teamId,
+      coachEmail,
+      status: 'pending',
+      kind: 'coach',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: normEmail(request.auth.token.email) || 'unknown',
+    });
+
+    return {kind: 'ok'};
+  });
+
+  if (result.kind === 'no_entitlement') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Club license is not configured yet.',
+    );
+  }
+  if (result.kind === 'full') {
+    throw new HttpsError(
+        'resource-exhausted',
+        'No licensed seats available for pending invites. Upgrade or wait ' +
+        'for invites to expire.',
+    );
+  }
+  if (result.kind === 'duplicate_invite') {
+    throw new HttpsError(
+        'already-exists',
+        'A pending invite already exists for this coach and team.',
+    );
+  }
+  return {ok: true, inviteId};
+});
+
+/**
+ * Coach accepts oldest pending invite — moves one seat from reserved to active.
+ */
+exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.token.email) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'Authenticated email missing.');
+  }
+
+  const pendingSnap = await db.collection('coach_invites')
+      .where('coachEmail', '==', email)
+      .where('status', '==', 'pending')
+      .orderBy('createdAt', 'asc')
+      .limit(1)
+      .get();
+
+  if (pendingSnap.empty) {
+    return {ok: true, claimed: false};
+  }
+
+  const inviteDoc = pendingSnap.docs[0];
+  const inv = inviteDoc.data();
+  const clubId = typeof inv.clubId === 'string' ? inv.clubId : '';
+  const teamId = typeof inv.teamId === 'string' ? inv.teamId : '';
+  if (!clubId || !teamId) {
+    logger.error('claimCoachInvite: malformed invite', inviteDoc.id);
+    throw new HttpsError('internal', 'Invite data is invalid.');
+  }
+
+  const entRef = db.collection('license_entitlements').doc(clubId);
+  const teamRef = db.collection('teams').doc(teamId);
+  const userRef = db.collection('users').doc(email);
+  const lookupRef = db.collection('coach_lookup').doc(email);
+
+  const out = await db.runTransaction(async (transaction) => {
+    const inviteSnap = await transaction.get(inviteDoc.ref);
+    if (!inviteSnap.exists || inviteSnap.data().status !== 'pending') {
+      return {kind: 'stale'};
+    }
+    const userSnap = await transaction.get(userRef);
+    if (userSnap.exists) {
+      const role = userSnap.data().role;
+      if (role === 'coach' && userSnap.data().teamId === teamId) {
+        transaction.update(inviteSnap.ref, {
+          status: 'accepted',
+          acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+          note: 'reconciled_existing_coach',
+        });
+        transaction.update(entRef, {
+          reserved_seats: admin.firestore.FieldValue.increment(-1),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'system:claimCoachInvite_reconcile',
+        });
+        return {kind: 'already_coach'};
+      }
+      if (role && role !== 'player') {
+        return {kind: 'role_conflict'};
+      }
+    }
+
+    const entSnap = await transaction.get(entRef);
+    const reserved =
+        entSnap.exists &&
+        typeof entSnap.data().reserved_seats === 'number' &&
+        !Number.isNaN(entSnap.data().reserved_seats) ?
+          entSnap.data().reserved_seats :
+          0;
+    if (reserved < 1) {
+      return {kind: 'no_reserved'};
+    }
+
+    transaction.update(entRef, {
+      reserved_seats: admin.firestore.FieldValue.increment(-1),
+      active_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:claimCoachInvite',
+    });
+
+    transaction.update(inviteSnap.ref, {
+      status: 'accepted',
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    transaction.set(userRef, {
+      email,
+      teamId,
+      clubId,
+      role: 'coach',
+      coachInviteAcceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    transaction.set(lookupRef, {
+      teamId,
+      clubId,
+      role: 'coach',
+    }, {merge: true});
+
+    transaction.set(teamRef, {
+      coachEmail: email,
+      coachAssignedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    return {kind: 'ok'};
+  });
+
+  if (out.kind === 'role_conflict') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Your account already has a non-player role. Contact support.',
+    );
+  }
+  if (out.kind === 'no_reserved') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Seat reservation out of sync. Ask your director to resend an invite.',
+    );
+  }
+  if (out.kind === 'stale') {
+    return {ok: true, claimed: false};
+  }
+  if (out.kind === 'already_coach') {
+    return {ok: true, claimed: true, teamId, reconciled: true};
+  }
+  if (out.kind === 'ok') {
+    return {ok: true, claimed: true, teamId};
+  }
+  return {ok: true, claimed: false};
+});
+
+/**
+ * Scheduled: release reserved seats for coach invites older than 168 hours.
+ */
+exports.expireCoachInvites = onSchedule('every 60 minutes', async () => {
+  const cutoffMs = Date.now() - 168 * 60 * 60 * 1000;
+  const cutoff = admin.firestore.Timestamp.fromMillis(cutoffMs);
+  const snap = await db.collection('coach_invites')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<=', cutoff)
+      .limit(400)
+      .get();
+
+  let released = 0;
+  for (const doc of snap.docs) {
+    try {
+      await db.runTransaction(async (transaction) => {
+        const invSnap = await transaction.get(doc.ref);
+        if (!invSnap.exists || invSnap.data().status !== 'pending') {
+          return;
+        }
+        const clubId = invSnap.data().clubId;
+        if (typeof clubId !== 'string' || !clubId) {
+          transaction.delete(doc.ref);
+          return;
+        }
+        const entRef = db.collection('license_entitlements').doc(clubId);
+        const entSnap = await transaction.get(entRef);
+        const reserved =
+                entSnap.exists &&
+                typeof entSnap.data().reserved_seats === 'number' &&
+                !Number.isNaN(entSnap.data().reserved_seats) ?
+                  entSnap.data().reserved_seats :
+                  0;
+        if (reserved >= 1) {
+          transaction.update(entRef, {
+            reserved_seats: admin.firestore.FieldValue.increment(-1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'system:expireCoachInvites',
+          });
+        }
+        transaction.delete(doc.ref);
+      });
+      released++;
+    } catch (e) {
+      logger.error('expireCoachInvites doc failed', doc.id, e);
+    }
+  }
+  if (released > 0) {
+    logger.info(`expireCoachInvites released ${released} pending invite(s).`);
+  }
 });
 
 /**
@@ -727,7 +1126,12 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
         !Number.isNaN(ent.active_seats) ?
           ent.active_seats :
           0;
-    if (activeSeats >= seatsLimit) {
+    const reservedSeats =
+        typeof ent.reserved_seats === 'number' &&
+        !Number.isNaN(ent.reserved_seats) ?
+          ent.reserved_seats :
+          0;
+    if (activeSeats + reservedSeats >= seatsLimit) {
       return {kind: 'full'};
     }
 

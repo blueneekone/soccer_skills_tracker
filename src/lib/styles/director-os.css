@@ -1,0 +1,231 @@
+/**
+ * Epic 4 · Director OS — Tailwind utilities only (no preflight) + scoped shell tokens.
+ * Imported from src/routes/(app)/director/+layout.svelte only.
+ */
+@tailwind utilities;
+
+/* Shell scroll stability (pairs with global scrollbar styling in style.css) */
+.director-os-shell {
+	scrollbar-gutter: stable both-edges;
+}
+
+.director-os-shell::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+.director-os-shell::-webkit-scrollbar-track {
+	background: rgba(15, 23, 42, 0.06);
+	border-radius: 9999px;
+}
+.director-os-shell::-webkit-scrollbar-thumb {
+	background: rgba(15, 23, 42, 0.28);
+	border-radius: 9999px;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+
+/* Bento grid: fluid gap per roadmap */
+.director-bento-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: clamp(16px, 3vw, 32px);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+@media (min-width: 52rem) {
+	.director-bento-grid--lg {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* Full-width row (entitlement strip) */
+.director-bento-full {
+	grid-column: 1 / -1;
+}
+
+/* @container targets for self-adjusting cards */
+.dir-bento-card {
+	container-type: inline-size;
+	container-name: dir-bento;
+}
+
+/* Liquid glass panel (theme vars from :root in style.css) */
+.glass-panel {
+	border-radius: var(--radius-premium, 1.25rem);
+	border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.35));
+	background: linear-gradient(
+		145deg,
+		rgba(255, 255, 255, 0.22) 0%,
+		rgba(248, 250, 252, 0.12) 100%
+	);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	box-shadow: var(--shadow-liquid, var(--shadow-premium));
+}
+
+/* Premium CTA buttons (Director OS only) */
+.dir-os-btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: clamp(0.65rem, 2vw, 0.85rem) clamp(1rem, 3vw, 1.35rem);
+	font-weight: 700;
+	font-size: clamp(0.875rem, 2.2vw, 1rem);
+	border-radius: clamp(0.65rem, 2vw, 0.85rem);
+	border: 1px solid rgba(15, 23, 42, 0.12);
+	cursor: pointer;
+	color: #f8fafc;
+	background: linear-gradient(180deg, var(--aggie-blue, #0f172a) 0%, #1e293b 100%);
+	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.22);
+	transition:
+		transform 0.18s ease,
+		box-shadow 0.18s ease,
+		translate 0.18s ease;
+}
+
+.dir-os-btn-primary:hover:not(:disabled) {
+	translate: 0 -2px;
+	box-shadow: 0 10px 26px rgba(15, 23, 42, 0.28);
+}
+
+.dir-os-btn-primary:active:not(:disabled) {
+	transform: scale(0.98);
+	translate: 0 0;
+}
+
+.dir-os-btn-primary:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* Entitlement meter */
+.dir-ent-track {
+	position: relative;
+	height: clamp(0.65rem, 2vw, 0.85rem);
+	border-radius: 9999px;
+	overflow: hidden;
+	background: rgba(15, 23, 42, 0.08);
+	border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.dir-ent-fill {
+	height: 100%;
+	width: var(--dir-ent-pct, 0%);
+	border-radius: 9999px;
+	transition:
+		width 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+		filter 0.35s ease;
+	background: var(
+		--dir-ent-gradient,
+		linear-gradient(90deg, #6366f1 0%, #10b981 100%)
+	);
+	background-size: 200% 100%;
+	animation: dir-ent-shimmer 2.8s ease-in-out infinite;
+}
+
+.dir-ent-fill[data-stress='high'] {
+	--dir-ent-gradient: linear-gradient(90deg, #f59e0b 0%, #dc2626 100%);
+}
+
+.dir-ent-fill[data-stress='medium'] {
+	--dir-ent-gradient: linear-gradient(90deg, #a855f7 0%, #f59e0b 100%);
+}
+
+.dir-ent-fill[data-stress='low'] {
+	--dir-ent-gradient: linear-gradient(90deg, #6366f1 0%, #10b981 100%);
+}
+
+@keyframes dir-ent-shimmer {
+	0%,
+	100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+/* Three-segment meter: active | reserved (striped) | available */
+.dir-ent-track--segments {
+	display: grid;
+	align-items: stretch;
+	min-height: clamp(0.65rem, 2vw, 0.85rem);
+}
+
+.dir-ent-seg {
+	min-width: 0;
+	transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dir-ent-seg--active {
+	background: var(
+		--dir-ent-gradient,
+		linear-gradient(90deg, #6366f1 0%, #10b981 100%)
+	);
+	background-size: 200% 100%;
+	animation: dir-ent-shimmer 2.8s ease-in-out infinite;
+}
+
+.dir-ent-seg--active[data-stress='high'] {
+	--dir-ent-gradient: linear-gradient(90deg, #f59e0b 0%, #dc2626 100%);
+}
+
+.dir-ent-seg--active[data-stress='medium'] {
+	--dir-ent-gradient: linear-gradient(90deg, #a855f7 0%, #f59e0b 100%);
+}
+
+.dir-ent-seg--active[data-stress='low'] {
+	--dir-ent-gradient: linear-gradient(90deg, #6366f1 0%, #10b981 100%);
+}
+
+.dir-ent-seg--reserved {
+	background: repeating-linear-gradient(
+		-45deg,
+		rgba(15, 23, 42, 0.22),
+		rgba(15, 23, 42, 0.22) 6px,
+		rgba(148, 163, 184, 0.35) 6px,
+		rgba(148, 163, 184, 0.35) 12px
+	);
+	filter: saturate(0.85) brightness(1.05);
+}
+
+.dir-ent-seg--empty {
+	background: transparent;
+}
+
+.dir-ent-legend {
+	display: inline-block;
+	width: 0.55rem;
+	height: 0.55rem;
+	border-radius: 9999px;
+	vertical-align: middle;
+}
+
+.dir-ent-legend--active {
+	background: linear-gradient(90deg, #6366f1, #10b981);
+}
+
+.dir-ent-legend--reserved {
+	background: repeating-linear-gradient(
+		-45deg,
+		rgba(15, 23, 42, 0.35),
+		rgba(15, 23, 42, 0.35) 2px,
+		rgba(148, 163, 184, 0.5) 2px,
+		rgba(148, 163, 184, 0.5) 4px
+	);
+}
+
+.dir-ent-legend--empty {
+	border: 1px dashed rgba(15, 23, 42, 0.2);
+	background: transparent;
+}
+
+@container dir-bento (max-width: 22rem) {
+	.dir-ent-label-row {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}

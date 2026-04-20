@@ -2,7 +2,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
-	import { db, auth } from '$lib/firebase.js';
+	import { db, auth, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 	import TabBar from '$lib/components/TabBar.svelte';
 	import RosterTab from '$lib/components/coach/RosterTab.svelte';
@@ -13,6 +14,8 @@
 	import ToolsTab from '$lib/components/coach/ToolsTab.svelte';
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 	import MatchDayTab from '$lib/components/coach/MatchDayTab.svelte';
+
+	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
 	const TABS = [
 		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
@@ -28,6 +31,7 @@
 	let activeTab = $state('roster');
 	let selectedTeamId = $state('');
 	let players = $state([]);
+	let coachInviteClaimTried = $state(false);
 
 	const role = $derived(authStore.role);
 	const userEmail = $derived(authStore.user?.email || '');
@@ -51,6 +55,13 @@
 		if (teams.length > 0 && !selectedTeamId) {
 			selectedTeamId = teams[0].id;
 		}
+	});
+
+	// Phoenix: accept pending director invite — reserves → active seat + profile
+	$effect(() => {
+		if (role !== 'coach' || !userEmail || coachInviteClaimTried) return;
+		coachInviteClaimTried = true;
+		void claimCoachInvite({}).catch(() => {});
 	});
 
 	// Load players when team changes

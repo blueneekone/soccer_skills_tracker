@@ -774,6 +774,22 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Phoenix Sprint 7.2: coach invite holds — reads club-scoped; writes via Cloud Functions only.
+    match /coach_invites/{inviteId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && tokenClub() != null
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (isRegistrar() && tokenClub() != null
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (resource.data.keys().hasAll(['coachEmail'])
+            && emailKey() == resource.data.coachEmail.lower())
+      );
+      allow create, update, delete: if false;
+    }
+
     // Sprint 2.5.3: licenses & sport modules — super_admin read only; all writes via Cloud Functions.
     match /licenses/{docId} {
       allow read: if isSuper();

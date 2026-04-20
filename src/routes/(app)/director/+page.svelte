@@ -1,6 +1,7 @@
 <script>
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import TabBar from '$lib/components/TabBar.svelte';
+	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
 	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
@@ -20,10 +21,16 @@
 	let activeTab = $state('teams');
 
 	const clubId = $derived(authStore.userProfile?.clubId || authStore.userProfile?.teamId || '');
+
+	function navigateDirectorTab(/** @type {string} */ id) {
+		if (TABS.some((t) => t.id === id)) activeTab = id;
+	}
 </script>
 
 <div class="view-section locked-dashboard-view">
 	<h2 class="view-title">👔 Director Portal</h2>
+
+	<DirectorCommandCenter {clubId} onNavigateTab={navigateDirectorTab} />
 
 	<TabBar tabs={TABS} bind:activeTab variant="director" />
 
