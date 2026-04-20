@@ -1,6 +1,22 @@
 {
   "indexes": [
     {
+      "collectionGroup": "assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "player_stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "xp_this_week", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
@@ -120,6 +136,39 @@
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "public_player_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ageGroup", "order": "ASCENDING" },
+        { "fieldPath": "current_level", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "public_player_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "position", "order": "ASCENDING" },
+        { "fieldPath": "current_level", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "public_player_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ageGroup", "order": "ASCENDING" },
+        { "fieldPath": "position", "order": "ASCENDING" },
+        { "fieldPath": "current_level", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "playerName", "order": "ASCENDING" }
       ]
     }
   ],

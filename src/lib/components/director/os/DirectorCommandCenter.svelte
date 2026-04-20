@@ -1,6 +1,7 @@
 <script>
 	import ClubIdentityModule from './ClubIdentityModule.svelte';
 	import QuickActionsModule from './QuickActionsModule.svelte';
+	import CoachAccountabilityModule from './CoachAccountabilityModule.svelte';
 	import EntitlementModule from './EntitlementModule.svelte';
 	import FieldOpsModule from './FieldOpsModule.svelte';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
@@ -55,7 +56,16 @@
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
 		>
 			<div class="tw-relative tw-z-10">
-				<EntitlementModule {clubId} />
+				<CoachAccountabilityModule {clubId} />
+			</div>
+		</article>
+
+		<article
+			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+		>
+			<div class="tw-relative tw-z-10">
+			<EntitlementModule {clubId} />
 			</div>
 		</article>
 

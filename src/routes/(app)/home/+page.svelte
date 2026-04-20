@@ -1,13 +1,18 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { db } from '$lib/firebase.js';
-	import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+	import { db, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
+	import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
 	import DashCard from '$lib/components/DashCard.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import ElitePlayerDashboard from '$lib/components/ElitePlayerDashboard.svelte';
+	import ActiveAssignmentsInbox from '$lib/components/ActiveAssignmentsInbox.svelte';
+
+	const completeAssignmentStatus = httpsCallable(functions, 'completeAssignmentStatus');
 
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
@@ -39,6 +44,9 @@
 	const welcomeSportIcon = $derived(sportPhosphorIcon(brandingStore.courtType));
 	const showPlayerStatsBento = $derived(
 		showAthleteHomeCards && role === 'player' && profile?.playerName && profile?.teamId && profile.teamId !== 'admin'
+	);
+	const showElitePlayerDash = $derived(
+		role === 'player' && profile?.teamId && profile.teamId !== 'admin'
 	);
 	const statsMiniXp = $derived(Math.floor(statsMiniMins * 2));
 
@@ -91,9 +99,15 @@
 			});
 	});
 
-	// Load homework
+	// Load homework (legacy name-based rows — parents + older assignments)
 	$effect(() => {
-		if (!profile?.playerName || role === 'super_admin' || role === 'director' || role === 'registrar') {
+		if (
+			!profile?.playerName ||
+			role === 'super_admin' ||
+			role === 'director' ||
+			role === 'registrar' ||
+			role === 'player'
+		) {
 			hwLoading = false;
 			return;
 		}
@@ -103,7 +117,10 @@
 				homeworkItems = [];
 				snap.forEach((d) => {
 					const hw = d.data();
-					if (hw.status === 'active') homeworkItems.push({ id: d.id, ...hw });
+					const st = hw.status;
+					if (st === 'active' || st === 'pending') {
+						homeworkItems.push({ id: d.id, ...hw });
+					}
 				});
 			})
 			.catch(console.error)
@@ -111,8 +128,16 @@
 	});
 
 	const markHwDone = async (id) => {
-		await updateDoc(doc(db, 'assignments', id), { status: 'completed' });
-		homeworkItems = homeworkItems.filter((h) => h.id !== id);
+		try {
+			await completeAssignmentStatus({ assignmentId: id });
+			homeworkItems = homeworkItems.filter((h) => h.id !== id);
+		} catch (e) {
+			alert(
+				e && typeof e === 'object' && 'message' in e ?
+					String(e.message) :
+					'Could not update assignment.',
+			);
+		}
 	};
 
 	const hasCoachAccess = $derived(
@@ -137,6 +162,12 @@
 			<p class="welcome-subtitle">Ready to get 1% better today?</p>
 		</div>
 	</div>
+
+	{#if showElitePlayerDash}
+		<ElitePlayerDashboard />
+	{/if}
+
+	<ActiveAssignmentsInbox />
 
 	<!-- 250 XP challenge banner -->
 	{#if show250Banner && showAthleteHomeCards}
@@ -222,38 +253,40 @@
 		</div>
 	</div>
 
-	<div class="card border-orange">
-		<div class="card-header bg-orange-header">🎯 My Homework</div>
-		<div class="card-body p-0">
-			{#if role === 'super_admin' || role === 'director' || role === 'registrar'}
-				<ul class="session-list"><li class="session-empty staff-hw-msg">Staff accounts don't receive player homework.</li></ul>
-			{:else if hwLoading}
-				<ul class="session-list"><li class="session-empty">Loading assignments...</li></ul>
-			{:else if homeworkItems.length === 0}
-				<ul class="session-list"><li class="session-empty">No active assignments!</li></ul>
-			{:else}
-				<ul class="session-list">
-					{#each homeworkItems as hw}
-						<li class="session-item hw-item">
-							<div class="hw-content">
-								<span class="hw-due">Due: {hw.dueDate}</span>
-								<div class="hw-drills">
-									{#if Array.isArray(hw.drills)}
-										{#each hw.drills as dr}
-											<div>• {dr.name} <span class="text-sm-sub">({dr.sets}x{dr.reps})</span></div>
-										{/each}
-									{:else}
-										{hw.drill}
-									{/if}
+	{#if role !== 'player'}
+		<div class="card border-orange">
+			<div class="card-header bg-orange-header">🎯 My Homework</div>
+			<div class="card-body p-0">
+				{#if role === 'super_admin' || role === 'director' || role === 'registrar'}
+					<ul class="session-list"><li class="session-empty staff-hw-msg">Staff accounts don't receive player homework.</li></ul>
+				{:else if hwLoading}
+					<ul class="session-list"><li class="session-empty">Loading assignments...</li></ul>
+				{:else if homeworkItems.length === 0}
+					<ul class="session-list"><li class="session-empty">No active assignments!</li></ul>
+				{:else}
+					<ul class="session-list">
+						{#each homeworkItems as hw}
+							<li class="session-item hw-item">
+								<div class="hw-content">
+									<span class="hw-due">Due: {hw.dueDate}</span>
+									<div class="hw-drills">
+										{#if Array.isArray(hw.drills)}
+											{#each hw.drills as dr}
+												<div>• {dr.name} <span class="text-sm-sub">({dr.sets}x{dr.reps})</span></div>
+											{/each}
+										{:else}
+											{hw.drill}
+										{/if}
+									</div>
 								</div>
-							</div>
-							<button class="action-btn hw-done-btn" onclick={() => markHwDone(hw.id)}>Done</button>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+								<button type="button" class="action-btn hw-done-btn" onclick={() => markHwDone(hw.id)}>Done</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	{#if showPlayerStatsBento}
 		<button

@@ -1,10 +1,25 @@
 <script>
+	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
+	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
 
 	let { clubId = '' } = $props();
+
+	const isReadOnly = $derived(
+		isSubscriptionReadOnly(
+			authStore.role,
+			licenseEntitlementStore.clubIdResolved,
+			licenseEntitlementStore.entitlement
+		)
+	);
+
+	/** @type {() => void} */
+	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
 
 	const directorUpsertField = httpsCallable(functions, 'directorUpsertField');
 	const secureBookField = httpsCallable(functions, 'secureBookField');
@@ -170,6 +185,10 @@
 	}
 
 	async function addField() {
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		if (!clubId || !newFieldName.trim()) return;
 		savingField = true;
 		try {
@@ -197,6 +216,10 @@
 	}
 
 	async function submitBooking() {
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		if (!fieldId || !bookingTeamId || !scheduleDate) return;
 		const startD = parseTimeOnDate(startTimeInput);
 		const endD = parseTimeOnDate(endTimeInput);
@@ -232,6 +255,11 @@
 	}
 
 	function onDragStart(teamId, e) {
+		if (isReadOnly) {
+			e.preventDefault();
+			openReadOnlyUpgrade();
+			return;
+		}
 		dragTeamId = teamId;
 		e.dataTransfer?.setData('text/plain', teamId);
 		e.dataTransfer.effectAllowed = 'copy';
@@ -248,6 +276,10 @@
 
 	function onDrop(slotIdx, e) {
 		e.preventDefault();
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		dropHintSlot = null;
 		const tid =
 			dragTeamId ||
@@ -325,6 +357,7 @@
 				<button
 					type="button"
 					class="dir-os-btn-primary md:tw-col-span-2"
+					class:dir-os-btn--readonly={isReadOnly}
 					disabled={savingField || !newFieldName.trim()}
 					onclick={addField}
 				>
@@ -383,7 +416,8 @@
 					<button
 						type="button"
 						class="dir-field-team-chip"
-						draggable="true"
+						class:dir-field-team-chip--readonly={isReadOnly}
+						draggable={!isReadOnly}
 						ondragstart={(e) => onDragStart(t.id, e)}
 					>
 						{t.name}
@@ -422,6 +456,7 @@
 				<button
 					type="button"
 					class="dir-os-btn-primary sm:tw-col-span-2 lg:tw-col-span-4"
+					class:dir-os-btn--readonly={isReadOnly}
 					disabled={booking || !!conflictMsg || !bookingTeamId}
 					onclick={submitBooking}
 				>

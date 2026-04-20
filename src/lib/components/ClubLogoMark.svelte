@@ -8,8 +8,16 @@
 	let {
 		size = 'md',
 		alt = 'Club logo',
+		/** When set (e.g. recruiter cards), overrides global club branding. */
+		logoUrl: logoUrlOverride = '',
 		class: className = ''
 	} = $props();
+
+	const effectiveUrl = $derived(
+		typeof logoUrlOverride === 'string' && logoUrlOverride.trim() ?
+			logoUrlOverride.trim() :
+			clubBrandingStore.logoUrl
+	);
 
 	const dim = $derived(
 		(
@@ -23,10 +31,10 @@
 	);
 </script>
 
-{#if clubBrandingStore.logoUrl}
+{#if effectiveUrl}
 	<img
 		class="club-logo-mark-img {className}"
-		src={clubBrandingStore.logoUrl}
+		src={effectiveUrl}
 		{alt}
 		width={dim}
 		height={dim}

@@ -44,6 +44,15 @@ service cloud.firestore {
       return tokenRole() == 'super_admin';
     }
 
+    // Epic 16: recruiter marketplace — active Stripe recruiter tier (JWT clubId → license_entitlements).
+    function recruiterSubscriptionActive() {
+      return authed()
+        && tokenClub() != null
+        && exists(/databases/$(database)/documents/license_entitlements/$(tokenClub()))
+        && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('tier', '') == 'recruiter'
+        && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('subscription_status', '') == 'active';
+    }
+
     function isDirector() {
       return tokenRole() == 'director';
     }
@@ -124,7 +133,13 @@ service cloud.firestore {
         || (isCoach() && tokenClub() != null && tokenClub() == clubPathId)
         || (isCoach() && tokenTeam() != null
             && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
-            && teamClubId(tokenTeam()) == clubPathId);
+            && teamClubId(tokenTeam()) == clubPathId)
+        || (isParent() && userDoc().keys().hasAll(['clubId'])
+            && userDoc().clubId == clubPathId)
+        || (tokenRole() == 'player'
+            && userDoc().keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(userDoc().teamId))
+            && teamClubId(userDoc().teamId) == clubPathId);
     }
 
     // Epic 12: club campaigns — members of the club can read; no client writes.
@@ -347,6 +362,18 @@ service cloud.firestore {
       );
 
       allow delete: if isSuper();
+
+      // Epic 2/3: training session logs (writes via logTrainingSession only).
+      match /workout_logs/{logId} {
+        allow read: if authed() && (
+          isSuper()
+          || emailKey() == userId.lower()
+          || parentHouseholdAllowsChildEmail(userId.lower())
+          || directorScopedToTeam(resource.data.teamId)
+          || (isCoach() && sameTeam(resource.data.teamId))
+        );
+        allow create, update, delete: if false;
+      }
     }
 
     match /households/{householdId} {
@@ -560,28 +587,29 @@ service cloud.firestore {
         || (isCoach() && sameTeam(resource.data.teamId));
     }
 
+    // Epic 16: sanitized athlete index for recruiter search (Admin SDK triggers only).
+    match /public_player_profiles/{uid} {
+      allow read: if isSuper() || recruiterSubscriptionActive();
+      allow create, update, delete: if false;
+    }
+
+    // Epic 11: global drill catalog (seeded / admin only via Admin SDK).
+    match /drills/{drillId} {
+      allow read: if authed();
+      allow create, update, delete: if false;
+    }
+
+    // Epic 11: homework — all writes via Cloud Functions (secureAssignHomework, etc.).
     match /assignments/{docId} {
       allow read: if authed() && (
         isSuper()
         || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId))
+        || sameTeam(resource.data.teamId)
+        || resource.data.playerId == request.auth.uid
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
       );
-      allow create: if isSuper()
-        || directorScopedToTeam(request.resource.data.teamId)
-        || (isCoach() && sameTeam(request.resource.data.teamId));
-      allow update: if isSuper()
-        || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId))
-        // Players may only flip their own assignment's status; team membership
-        // is also verified to prevent cross-team name-collision exploits.
-        || (sameTeam(resource.data.teamId)
-            && resource.data.player == userDoc().playerName
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
-      allow delete: if isSuper()
-        || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId));
+      allow create, update, delete: if false;
     }
 
     match /reps/{docId} {
@@ -614,19 +642,19 @@ service cloud.firestore {
     }
 
     match /player_stats/{playerKey} {
+      // playerKey is Firebase Auth uid (Elite aggregate) or legacy display-name key.
+      // Peers on the same team (token.teamId) may read for leaderboard — no emails exposed.
       allow read: if authed() && (
         isSuper()
+        || sameTeam(resource.data.teamId)
+        || playerKey == request.auth.uid
         || playerKey == userDoc().playerName
-        || parentCanSeePlayerName(playerKey)
+        || (resource.data.keys().hasAll(['playerName'])
+            && parentCanSeePlayerName(resource.data.playerName))
         || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId))
       );
-      allow create, update: if authed() && (
-        isSuper()
-        || (request.resource.data.teamId == userDoc().teamId && playerKey == userDoc().playerName)
-        || (isCoach() && sameTeam(request.resource.data.teamId))
-      );
-      allow delete: if isSuper();
+      // Server-only (Cloud Functions / Admin SDK). Legacy client writes removed.
+      allow create, update, delete: if false;
     }
 
     match /evaluations/{docId} {
@@ -787,6 +815,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Phoenix Sprint 10: aggregated practice activity (Cloud Functions only).
+    match /team_stats/{teamId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub()
+            && (isDirector() || isRegistrar()))
+        || directorScopedToTeam(teamId)
+        || coachStaffCanAccessTeam(teamId)
+      );
+      allow write: if false;
+    }
+
     // Phoenix Sprint 8.2: physical fields + schedules (writes via Cloud Functions only).
     function fieldDocClub(fid) {
       return get(/databases/$(database)/documents/fields/$(fid)).data.clubId;
@@ -891,6 +932,13 @@ service cloud.firestore {
             && (directorScopedToTeam(resource.data.teamId)
               || coachStaffCanAccessTeam(resource.data.teamId)))
       );
+    }
+
+    // Epic 13: FCM device tokens — Admin SDK reads for sends; users write own doc only.
+    match /device_tokens/{uid} {
+      allow read: if false;
+      allow create, update: if authed() && request.auth.uid == uid;
+      allow delete: if authed() && request.auth.uid == uid;
     }
 
     match /{document=**} {

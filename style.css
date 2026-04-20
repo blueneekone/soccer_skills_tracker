@@ -57,6 +57,30 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
+/* Elite Player Portal — deep slate shell (athlete / PWA) */
+html.player-elite.dark body {
+    background: #020617;
+}
+html.player-elite.dark body::before {
+    background: linear-gradient(
+        165deg,
+        rgba(2, 6, 23, 0.97) 0%,
+        rgba(15, 23, 42, 0.88) 45%,
+        rgba(15, 23, 42, 0.72) 100%
+    );
+}
+
+/* Athlete / Elite shell — premium dark tokens (html.player-portal-theme) */
+html.player-portal-theme {
+    --pp-bg: #020617;
+    --pp-surface: rgba(15, 23, 42, 0.55);
+    --pp-surface-elevated: rgba(30, 41, 59, 0.72);
+    --pp-border: rgba(51, 65, 85, 0.55);
+    --pp-text: #f8fafc;
+    --pp-text-muted: rgba(148, 163, 184, 0.95);
+    --pp-accent: var(--brand-primary);
+}
+
 /* ==========================================
    1. GLOBAL FOUNDATION & UTILITIES
    ========================================== */
@@ -994,4 +1018,18 @@ button.swal2-confirm.swal-liquid-hardlock__btn:hover {
 
 button.swal2-confirm.swal-liquid-hardlock__btn:active {
     transform: scale(0.98);
+}
+
+/* Epic 16: recruiter marketplace — analytical dark shell */
+html.recruiter-scout-theme {
+    --scout-fg: #f8fafc;
+    --scout-muted: #94a3b8;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --glass-bg: rgba(15, 23, 42, 0.72);
+    --glass-border: rgba(148, 163, 184, 0.22);
+    background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(251, 191, 36, 0.08), transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.07), transparent 50%),
+        #020617;
 }

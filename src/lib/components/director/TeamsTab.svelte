@@ -1,10 +1,25 @@
 <script>
+	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
+	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
 
 	let { clubId = '' } = $props();
+
+	/** @type {() => void} */
+	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
+
+	const isReadOnly = $derived(
+		isSubscriptionReadOnly(
+			authStore.role,
+			licenseEntitlementStore.clubIdResolved,
+			licenseEntitlementStore.entitlement
+		)
+	);
 
 	const directorInviteCoach = httpsCallable(functions, 'directorInviteCoach');
 	const secureAllocateTeamSeats = httpsCallable(functions, 'secureAllocateTeamSeats');
@@ -125,6 +140,10 @@
 
 	/** @param {string} tid */
 	async function saveTeamSeats(tid) {
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		const raw = seatDraft[tid];
 		const v = typeof raw === 'number' ? raw : parseInt(String(raw), 10);
 		if (!Number.isFinite(v) || v < 1) {
@@ -148,6 +167,10 @@
 	}
 
 	const createTeam = async () => {
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		if (!clubId) return alert('No club on your profile.');
 		if (!newTeamName.trim()) return alert('Please enter a team name.');
 		const slug = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -190,6 +213,10 @@
 	};
 
 	const inviteCoach = async () => {
+		if (isReadOnly) {
+			openReadOnlyUpgrade();
+			return;
+		}
 		if (!selectedTeamId || !inviteCoachEmail.trim()) {
 			return alert('Select a team and enter a coach email.');
 		}
@@ -238,7 +265,12 @@
 					>Optional — head coach email</label
 				>
 				<input type="email" bind:value={newCoachEmail} placeholder="coach@club.com" class="w-100 m-0" />
-				<button class="primary-btn btn-blue w-100 tw-mt-4" onclick={createTeam} disabled={saving}>
+				<button
+					class="primary-btn btn-blue w-100 tw-mt-4"
+					class:primary-btn--readonly={isReadOnly}
+					onclick={createTeam}
+					disabled={saving}
+				>
 					Create team
 				</button>
 			</div>
@@ -258,7 +290,12 @@
 					{/each}
 				</select>
 				<input type="email" bind:value={inviteCoachEmail} placeholder="Coach email" class="w-100" />
-				<button class="primary-btn btn-orange w-100 tw-mt-2" onclick={inviteCoach} disabled={saving}>
+				<button
+					class="primary-btn btn-orange w-100 tw-mt-2"
+					class:primary-btn--readonly={isReadOnly}
+					onclick={inviteCoach}
+					disabled={saving}
+				>
 					Send coach invite
 				</button>
 			</div>
@@ -344,6 +381,7 @@
 										<button
 											type="button"
 											class="primary-btn btn-blue team-seat-save"
+											class:primary-btn--readonly={isReadOnly}
 											disabled={seatBusy === tid}
 											onclick={() => saveTeamSeats(tid)}
 										>
@@ -478,5 +516,11 @@
 
 	.team-seat-save {
 		margin-bottom: 0;
+	}
+
+	:global(.primary-btn.primary-btn--readonly) {
+		opacity: 0.72;
+		filter: grayscale(0.12);
+		cursor: not-allowed;
 	}
 </style>

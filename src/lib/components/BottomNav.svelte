@@ -2,11 +2,20 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 
 	const role = $derived(authStore.role);
 	const path = $derived($page.url.pathname);
 	/** Matches route-policies athlete-only prefixes (+ /trophies). */
 	const showAthleteNav = $derived(role === 'player' || role === 'super_admin');
+	const showRecruiterNav = $derived(
+		role === 'super_admin' ||
+			(role === 'director' &&
+				licenseEntitlementStore.entitlement &&
+				String(licenseEntitlementStore.entitlement.tier || '').toLowerCase() === 'recruiter' &&
+				String(licenseEntitlementStore.entitlement.subscription_status || '').toLowerCase() ===
+					'active'),
+	);
 
 	const nav = (href) => goto(href);
 </script>
@@ -34,6 +43,12 @@
 		<button class="nav-item" class:active={path === '/coach'} onclick={() => nav('/coach')} aria-label="Coach Tools">
 			<i class="ph ph-megaphone nav-icon"></i>
 			<span class="nav-label">Coach</span>
+		</button>
+	{/if}
+	{#if showRecruiterNav}
+		<button class="nav-item" class:active={path.startsWith('/recruiter')} onclick={() => nav('/recruiter')} aria-label="Recruiter marketplace">
+			<i class="ph ph-binoculars nav-icon"></i>
+			<span class="nav-label">Scout</span>
 		</button>
 	{/if}
 </nav>

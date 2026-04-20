@@ -1,6 +1,7 @@
 /* eslint-disable quotes */
 const crypto = require('crypto');
-const {onDocumentWritten} = require('firebase-functions/v2/firestore');
+const {onDocumentCreated, onDocumentWritten} =
+    require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
@@ -20,6 +21,19 @@ const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret(
 );
 /** Epic 4: Gemini Developer API key (Secret Manager). */
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
+
+/** Epic 9: Stripe billing (Secret Manager). */
+const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
+const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
+const STRIPE_PRICE_TUTOR = defineString('STRIPE_PRICE_TUTOR', {default: ''});
+const STRIPE_PRICE_TEAM = defineString('STRIPE_PRICE_TEAM', {default: ''});
+const STRIPE_PRICE_CLUB = defineString('STRIPE_PRICE_CLUB', {default: ''});
+const STRIPE_PRICE_RECRUITER = defineString(
+    'STRIPE_PRICE_RECRUITER',
+    {default: ''},
+);
+
+const stripeLib = require('stripe');
 
 const REGION = 'us-central1';
 
@@ -95,6 +109,43 @@ function assertDirectorOrSuper(request) {
     clubId: request.auth.token.clubId || null,
     email: request.auth.token.email,
   };
+}
+
+const READONLY_SUBSCRIPTION_MSG =
+    'Subscription inactive. Account is in read-only mode.';
+
+/**
+ * Epic 9: block mutating callables when subscription is not active (past_due /
+ * canceled). Legacy: missing entitlement doc or empty subscription_status
+ * still allowed. super_admin bypass.
+ * @param {string} clubId
+ * @param {any} request Callable request
+ * @return {Promise<void>}
+ */
+async function assertClubSubscriptionWritable(clubId, request) {
+  if (!clubId || typeof clubId !== 'string' || !clubId.trim()) {
+    return;
+  }
+  if (request.auth && request.auth.token.role === 'super_admin') {
+    return;
+  }
+  const snap =
+      await db.collection('license_entitlements').doc(clubId.trim()).get();
+  if (!snap.exists) {
+    return;
+  }
+  const d = snap.data() || {};
+  if (d.billing_exempt === true || d.grandfathered === true) {
+    return;
+  }
+  const raw = d.subscription_status;
+  if (raw === undefined || raw === null || String(raw).trim() === '') {
+    return;
+  }
+  if (String(raw).toLowerCase() === 'active') {
+    return;
+  }
+  throw new HttpsError('permission-denied', READONLY_SUBSCRIPTION_MSG);
 }
 
 /**
@@ -555,15 +606,370 @@ function computeAgeYears(dob) {
   return age;
 }
 
+/**
+ * Epic 16: age band label for recruiter filters (no DOB exposed on public doc).
+ * @param {number} ageYears
+ * @return {string}
+ */
+function ageGroupLabel(ageYears) {
+  if (!Number.isFinite(ageYears) || ageYears < 0) return 'Unknown';
+  if (ageYears <= 10) return 'U10';
+  if (ageYears <= 12) return 'U12';
+  if (ageYears <= 14) return 'U14';
+  if (ageYears <= 16) return 'U16';
+  if (ageYears <= 18) return 'U18';
+  return 'U19+';
+}
+
+/**
+ * @param {string} playerName
+ * @param {boolean} isMinor
+ * @return {string}
+ */
+function sanitizePublicDisplayName(playerName, isMinor) {
+  const raw = typeof playerName === 'string' ? playerName.trim() : '';
+  if (!raw) return 'Athlete';
+  if (!isMinor) return raw.slice(0, 80);
+  const parts = raw.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'Athlete';
+  if (parts.length === 1) return parts[0].slice(0, 40);
+  const last = parts[parts.length - 1];
+  const initial = last.length > 0 ? last.charAt(0).toUpperCase() : '';
+  return `${parts[0]} ${initial}.`.slice(0, 80);
+}
+
+/**
+ * @param {Record<string, unknown>} physical
+ * @param {Record<string, unknown>} technical
+ * @return {string[]}
+ */
+function topAttributesFromMetrics(physical, technical) {
+  /** @type {Array<{k: string, v: number}>} */
+  const pairs = [];
+  const phys = physical && typeof physical === 'object' ? physical : {};
+  const tech = technical && typeof technical === 'object' ? technical : {};
+  for (const [k, v] of Object.entries(phys)) {
+    const n = typeof v === 'number' && !Number.isNaN(v) ? v : null;
+    if (n !== null) {
+      pairs.push({
+        k: k.charAt(0).toUpperCase() + k.slice(1),
+        v: n,
+      });
+    }
+  }
+  for (const [k, v] of Object.entries(tech)) {
+    const n = typeof v === 'number' && !Number.isNaN(v) ? v : null;
+    if (n !== null) {
+      pairs.push({
+        k: k.charAt(0).toUpperCase() + k.slice(1),
+        v: n,
+      });
+    }
+  }
+  pairs.sort((a, b) => b.v - a.v);
+  return pairs.slice(0, 3).map((p) => p.k);
+}
+
+/**
+ * @param {string} uid
+ * @return {Promise<void>}
+ */
+async function syncPublicPlayerProfile(uid) {
+  if (!uid || typeof uid !== 'string') return;
+  const pubRef = db.collection('public_player_profiles').doc(uid);
+
+  let email = '';
+  try {
+    const au = await admin.auth().getUser(uid);
+    email = normEmail(au.email);
+  } catch (e) {
+    logger.warn('syncPublicPlayerProfile: invalid uid', uid, e);
+    return;
+  }
+  if (!email) return;
+
+  const uRef = db.collection('users').doc(email);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+  const u = uSnap.data() || {};
+  const role = typeof u.role === 'string' ? u.role : 'player';
+  if (role !== 'player') {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+
+  if (u.recruitProfilePublic !== true) {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+
+  const dob = u.dateOfBirth;
+  const dobBad =
+      u.isMinor === true ||
+      !dob ||
+      !(dob instanceof admin.firestore.Timestamp);
+  if (dobBad) {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+  const age = computeAgeYears(dob);
+  if (age < 16) {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+
+  const psSnap = await db.collection('player_stats').doc(uid).get();
+  if (!psSnap.exists) {
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+  const ps = psSnap.data() || {};
+  const totalXp =
+      typeof ps.total_xp === 'number' && !Number.isNaN(ps.total_xp) ?
+        Math.floor(ps.total_xp) :
+        0;
+  const currentLevel =
+      typeof ps.current_level === 'number' && !Number.isNaN(ps.current_level) ?
+        Math.floor(ps.current_level) :
+        1;
+
+  const playerName =
+      typeof ps.playerName === 'string' && ps.playerName.trim() ?
+        ps.playerName.trim() :
+        (typeof u.playerName === 'string' ? u.playerName.trim() : 'Athlete');
+  const displayName = sanitizePublicDisplayName(
+      playerName,
+      u.isMinor === true,
+  );
+  const ageGroup = ageGroupLabel(age);
+  const position =
+      typeof u.primaryPosition === 'string' && u.primaryPosition.trim() ?
+        u.primaryPosition.trim().slice(0, 64) :
+        'Unlisted';
+
+  /** @type {string[]} */
+  let topAttributes = [];
+  const metricsSnap = await db.collection('player_metrics').doc(email)
+      .collection('seasons')
+      .get();
+  /**
+   * @type {{
+   *   physical?: object,
+   *   technical?: object,
+   *   ua?: admin.firestore.Timestamp
+   * } | null}
+   */
+  let best = null;
+  metricsSnap.forEach((d) => {
+    const x = d.data() || {};
+    const vb = x.verifiedBy;
+    if (typeof vb !== 'string' || !vb.length) return;
+    const ua = x.updatedAt;
+    if (!(ua instanceof admin.firestore.Timestamp)) return;
+    if (!best || ua.toMillis() > best.ua.toMillis()) {
+      best = {
+        physical: x.physical,
+        technical: x.technical,
+        ua,
+      };
+    }
+  });
+  if (best) {
+    topAttributes = topAttributesFromMetrics(
+        /** @type {Record<string, unknown>} */ (best.physical || {}),
+        /** @type {Record<string, unknown>} */ (best.technical || {}),
+    );
+  }
+
+  const teamId =
+      typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ?
+        u.teamId.trim() :
+        '';
+  /** @type {Record<string, string>} */
+  const verifiedTrialScores = {};
+  if (teamId && playerName) {
+    const trialSnap = await db.collection('trials')
+        .where('teamId', '==', teamId)
+        .where('player', '==', playerName)
+        .limit(80)
+        .get();
+    trialSnap.forEach((d) => {
+      const t = d.data() || {};
+      if (t.isCoach !== true) return;
+      const skill =
+          typeof t.skill === 'string' && t.skill.trim() ?
+            t.skill.trim() :
+            '';
+      const res =
+          typeof t.result === 'string' ? t.result.trim() : '';
+      if (!skill || !res) return;
+      verifiedTrialScores[skill] = res;
+    });
+  }
+
+  const now = new Date();
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setUTCMonth(sixMonthsAgo.getUTCMonth() - 6);
+  const logsSnap = await uRef.collection('workout_logs')
+      .orderBy('timestamp', 'desc')
+      .limit(400)
+      .get();
+
+  /** @type {Record<string, number>} */
+  const monthXp = {};
+  logsSnap.forEach((doc) => {
+    const lg = doc.data() || {};
+    const ts = lg.timestamp;
+    const t =
+        ts instanceof admin.firestore.Timestamp ?
+          ts.toDate() :
+          null;
+    if (!t || t < sixMonthsAgo) return;
+    const earned =
+        typeof lg.earnedXP === 'number' && !Number.isNaN(lg.earnedXP) ?
+          Math.floor(lg.earnedXP) :
+          0;
+    const key =
+        `${t.getUTCFullYear()}-` +
+        `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
+    monthXp[key] = (monthXp[key] || 0) + earned;
+  });
+
+  /** @type {Array<{ month: string, xp: number }>} */
+  const monthlyXp = Object.keys(monthXp)
+      .sort()
+      .map((month) => ({month, xp: monthXp[month]}));
+
+  let brandLogoUrl = null;
+  let clubNameShort = null;
+  if (teamId) {
+    const teamSnap = await db.collection('teams').doc(teamId).get();
+    const tData = teamSnap.exists ? teamSnap.data() : null;
+    const tidClub =
+        tData &&
+        typeof tData.clubId === 'string' &&
+        tData.clubId.trim() ?
+          tData.clubId.trim() :
+          '';
+    const userClub =
+        typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
+    const clubId = tidClub || userClub;
+    if (clubId) {
+      const clubSnap = await db.collection('clubs').doc(clubId).get();
+      if (clubSnap.exists) {
+        const c = clubSnap.data() || {};
+        const logo =
+            typeof c.brandLogoUrl === 'string' ? c.brandLogoUrl.trim() : '';
+        if (logo) brandLogoUrl = logo;
+        const cn =
+            typeof c.name === 'string' && c.name.trim() ?
+              c.name.trim().slice(0, 80) :
+              '';
+        if (cn) clubNameShort = cn;
+      }
+    }
+  }
+
+  await pubRef.set(
+      {
+        displayName,
+        ageGroup,
+        position,
+        current_level: currentLevel,
+        total_xp: totalXp,
+        top_attributes: topAttributes,
+        verified_trial_scores: verifiedTrialScores,
+        monthly_performance: monthlyXp,
+        brandLogoUrl: brandLogoUrl || null,
+        clubDisplayName: clubNameShort || null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      {merge: true},
+  );
+}
+
+/**
+ * Epic 16: sanitized global index for recruiter search (Admin SDK only writes).
+ */
+exports.updatePublicProfile = onDocumentWritten(
+    {
+      document: 'player_stats/{uid}',
+      region: REGION,
+    },
+    async (event) => {
+      const uid = event.params.uid;
+      if (!uid) return;
+      try {
+        await syncPublicPlayerProfile(uid);
+      } catch (e) {
+        logger.error('updatePublicProfile player_stats', e);
+      }
+    },
+);
+
+/**
+ * Epic 16: refresh public index when coach-verified trials change.
+ */
+exports.updatePublicProfileOnTrial = onDocumentWritten(
+    {
+      document: 'trials/{scoreId}',
+      region: REGION,
+    },
+    async (event) => {
+      const after = event.data && event.data.after ?
+        event.data.after.data() :
+        null;
+      const before = event.data && event.data.before ?
+        event.data.before.data() :
+        null;
+      const data = after || before;
+      if (!data) return;
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      const playerName =
+          typeof data.player === 'string' ? data.player.trim() : '';
+      if (!teamId || !playerName) return;
+      try {
+        const snap = await db.collection('users')
+            .where('teamId', '==', teamId)
+            .where('playerName', '==', playerName)
+            .limit(3)
+            .get();
+        if (snap.empty) return;
+        for (const doc of snap.docs) {
+          const em = normEmail(doc.id);
+          if (!em) continue;
+          try {
+            const ur = await admin.auth().getUserByEmail(em);
+            await syncPublicPlayerProfile(ur.uid);
+          } catch (e) {
+            logger.warn('updatePublicProfileOnTrial uid', e);
+          }
+        }
+      } catch (e) {
+        logger.error('updatePublicProfileOnTrial', e);
+      }
+    },
+);
+
 exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
   const userData = event.data.after.data();
+  const userEmail = event.params.email;
 
   if (!userData) {
     logger.info('User profile deleted. Exiting function.');
+    try {
+      const ur = await admin.auth().getUserByEmail(userEmail);
+      await db.collection('public_player_profiles').doc(ur.uid).delete();
+    } catch (e) {
+      logger.warn('syncUserClaims public profile delete', e);
+    }
     return null;
   }
 
-  const userEmail = event.params.email;
   const superAdmin = ADMIN_EMAIL.value();
 
   const customClaims = {
@@ -573,7 +979,31 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     householdId: userData.householdId || null,
     minor: userData.isMinor === true,
     vpcVerified: userData.vpcStatus === 'verified',
+    tier: null,
+    subscription_status: null,
   };
+
+  const cid =
+      typeof userData.clubId === 'string' && userData.clubId.trim() ?
+        userData.clubId.trim() :
+        '';
+  if (cid) {
+    try {
+      const entSnap = await db.collection('license_entitlements')
+          .doc(cid)
+          .get();
+      if (entSnap.exists) {
+        const ed = entSnap.data() || {};
+        const tr = ed.tier;
+        const ss = ed.subscription_status;
+        customClaims.tier = typeof tr === 'string' ? tr : null;
+        customClaims.subscription_status =
+            typeof ss === 'string' ? ss : null;
+      }
+    } catch (e) {
+      logger.warn('syncUserClaims entitlement read', e);
+    }
+  }
 
   logger.info(`Intercepted profile update for: ${userEmail}`);
 
@@ -586,6 +1016,19 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     const userRecord = await admin.auth().getUserByEmail(userEmail);
     await admin.auth().setCustomUserClaims(userRecord.uid, customClaims);
     logger.info('Successfully stamped claims!');
+    const r = userData.role || 'player';
+    if (r !== 'player') {
+      await db.collection('public_player_profiles')
+          .doc(userRecord.uid)
+          .delete()
+          .catch(() => {});
+    } else {
+      try {
+        await syncPublicPlayerProfile(userRecord.uid);
+      } catch (e) {
+        logger.error('syncUserClaims syncPublicPlayerProfile', e);
+      }
+    }
   } catch (error) {
     logger.error('Error stamping claims:', error);
   }
@@ -836,6 +1279,7 @@ exports.directorInviteCoach = onCall({region: REGION}, async (request) => {
   }
 
   assertDirectorClubOrSuper(request, clubId);
+  await assertClubSubscriptionWritable(clubId, request);
 
   const entRef = db.collection('license_entitlements').doc(clubId);
   const inviteId = coachInviteDocId(clubId, teamId, coachEmail);
@@ -1194,6 +1638,20 @@ exports.secureBookField = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
+
+  const fieldPre = await db.collection('fields').doc(fieldId).get();
+  if (!fieldPre.exists) {
+    throw new HttpsError('not-found', 'Field not found.');
+  }
+  const preClub =
+      typeof fieldPre.data().clubId === 'string' ?
+        fieldPre.data().clubId.trim() :
+        '';
+  if (!preClub) {
+    throw new HttpsError('failed-precondition', 'Field has no clubId.');
+  }
+  await assertClubSubscriptionWritable(preClub, request);
+
   const role = request.auth.token.role;
   const tokenClub = request.auth.token.clubId || null;
   const tokenTeam = request.auth.token.teamId || null;
@@ -1451,6 +1909,8 @@ exports.secureAllocateTeamSeats = onCall({region: REGION}, async (request) => {
     }
   }
 
+  await assertClubSubscriptionWritable(clubId, request);
+
   const rosterRef = db.collection('rosters').doc(teamId);
   const masterRef = db.collection('license_entitlements').doc(clubId);
   const teamEntRef = db.collection('team_entitlements').doc(teamId);
@@ -1561,6 +2021,7 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
   }
 
   const {clubId} = await assertCanSecureAddPlayer(request, teamId);
+  await assertClubSubscriptionWritable(clubId, request);
 
   const rosterRef = db.collection('rosters').doc(teamId);
   const entRef = db.collection('license_entitlements').doc(clubId);
@@ -2678,6 +3139,872 @@ exports.submitWorkoutRep = onCall(
       return {ok: true, repId, verificationMethod};
     },
 );
+
+/**
+ * XP band: level L → L+1 requires this much XP earned at level L.
+ * @param {number} level
+ * @return {number}
+ */
+function xpToAdvanceFromTrainingLevel(level) {
+  const L = Math.floor(level);
+  if (L < 1) return 100;
+  if (L === 1) return 100;
+  if (L === 2) return 250;
+  if (L === 3) return 500;
+  return Math.floor(500 * Math.pow(2, L - 3));
+}
+
+/**
+ * @param {number} totalXp
+ * @return {{ level: number }}
+ */
+function trainingLevelFromTotalXp(totalXp) {
+  const xp = Math.max(0, Math.floor(totalXp));
+  let level = 1;
+  let at = 0;
+  for (let guard = 0; guard < 5000; guard++) {
+    const need = xpToAdvanceFromTrainingLevel(level);
+    if (xp < at + need) {
+      return {level};
+    }
+    at += need;
+    level++;
+  }
+  return {level};
+}
+
+/**
+ * Monday UTC date key for weekly counters.
+ * @return {string}
+ */
+function utcWeekMondayKey() {
+  const now = new Date();
+  const utc = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  const dow = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() - (dow - 1));
+  return utc.toISOString().slice(0, 10);
+}
+
+/**
+ * @param {string} raw
+ * @return {number}
+ */
+function intensityMultiplierTraining(raw) {
+  const s = String(raw || '').toLowerCase();
+  if (s === 'high') return 1.35;
+  if (s === 'medium') return 1.15;
+  return 1.0;
+}
+
+/**
+ * Epic 2/3: server-side XP, workout_logs, player_stats/{uid}, team_stats.
+ */
+exports.logTrainingSession = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const role = request.auth.token.role || 'player';
+
+  const duration = parseInt(String(data.duration), 10);
+  const reps = parseInt(String(data.reps), 10);
+  if (!Number.isFinite(duration) || duration < 1 || duration > 1440) {
+    throw new HttpsError(
+        'invalid-argument',
+        'duration must be 1–1440 minutes.',
+    );
+  }
+  if (!Number.isFinite(reps) || reps < 0 || reps > 100000) {
+    throw new HttpsError(
+        'invalid-argument',
+        'reps must be 0–100000.',
+    );
+  }
+
+  const drillType =
+      typeof data.drillType === 'string' ?
+        data.drillType.trim().slice(0, 200) :
+        '';
+  if (!drillType) {
+    throw new HttpsError('invalid-argument', 'drillType is required.');
+  }
+
+  const intensityRaw =
+      typeof data.intensity === 'string' ?
+        data.intensity.trim().toLowerCase() :
+        '';
+  if (!['low', 'medium', 'high'].includes(intensityRaw)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'intensity must be low, medium, or high.',
+    );
+  }
+
+  const assignmentIdRaw =
+      typeof data.assignmentId === 'string' ?
+        data.assignmentId.trim() :
+        '';
+
+  /** @type {string} */
+  let playerEmail;
+  /** @type {string|null} */
+  let verifiedByUid = null;
+  /** @type {string|null} */
+  let verifiedByEmail = null;
+  /** @type {string|null} */
+  let verifiedByLegalName = null;
+  /** @type {string} */
+  let verificationMethod;
+
+  if (role === 'parent') {
+    const actor = assertParent(request);
+    playerEmail = normEmail(data.playerEmail);
+    if (!playerEmail) {
+      throw new HttpsError(
+          'invalid-argument',
+          'playerEmail (athlete account) is required.',
+      );
+    }
+    const hRef = db.collection('households').doc(actor.householdId);
+    const hSnap = await hRef.get();
+    if (!hSnap.exists) {
+      throw new HttpsError('failed-precondition', 'Household not found.');
+    }
+    const h = hSnap.data();
+    const playerSet = new Set(
+        (h.playerEmails || [])
+            .map((e) => normEmail(String(e)))
+            .filter(Boolean),
+    );
+    if (!playerSet.has(playerEmail)) {
+      throw new HttpsError(
+          'permission-denied',
+          'That athlete is not linked to your household.',
+      );
+    }
+    const legal =
+        typeof data.verifierLegalName === 'string' ?
+          data.verifierLegalName.trim().replace(/\s+/g, ' ') :
+          '';
+    const parts = legal.split(/\s+/).filter(Boolean);
+    if (parts.length < 2 || legal.length < 4) {
+      throw new HttpsError(
+          'invalid-argument',
+          'Enter your full legal name (first and last).',
+      );
+    }
+    verifiedByUid = request.auth.uid;
+    verifiedByEmail = actor.email;
+    verifiedByLegalName = legal;
+    verificationMethod = 'parent_auth_callable';
+  } else if (role === 'player') {
+    playerEmail = normEmail(request.auth.token.email);
+    if (!playerEmail) {
+      throw new HttpsError('failed-precondition', 'Missing auth email.');
+    }
+    verificationMethod = 'player_self_log';
+  } else {
+    throw new HttpsError(
+        'permission-denied',
+        'Only player or parent accounts may log training.',
+    );
+  }
+
+  const uRef = db.collection('users').doc(playerEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Athlete profile not found. Complete setup first.',
+    );
+  }
+  const u = uSnap.data();
+  const teamId = u.teamId || null;
+  const playerName = u.playerName || null;
+  if (!teamId || teamId === 'admin' || !playerName) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Athlete profile is missing team or display name.',
+    );
+  }
+
+  let athleteUid = '';
+  try {
+    const au = await admin.auth().getUserByEmail(playerEmail);
+    athleteUid = au.uid;
+  } catch (e) {
+    logger.error('logTrainingSession: getUserByEmail failed', e);
+    throw new HttpsError(
+        'failed-precondition',
+        'Could not resolve athlete account.',
+    );
+  }
+
+  const baseXp = duration * 10 + reps * 2;
+  const earned = Math.floor(
+      baseXp * intensityMultiplierTraining(intensityRaw),
+  );
+  if (earned < 1) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Earned XP would be zero; increase duration or reps.',
+    );
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const yesterdayStr = utcYmdAddDays(todayStr, -1);
+  const weekKey = utcWeekMondayKey();
+
+  const logRef = db.collection('users').doc(playerEmail)
+      .collection('workout_logs').doc();
+  const logId = logRef.id;
+  const psRef = db.collection('player_stats').doc(athleteUid);
+  const tsRef = db.collection('team_stats').doc(teamId);
+  const teamRef = db.collection('teams').doc(teamId);
+
+  /**
+   * @type {{
+   *   earnedXP: number,
+   *   totalXp: number,
+   *   level: number,
+   *   streak: number
+   * }}
+   */
+  const out = {
+    earnedXP: earned,
+    totalXp: 0,
+    level: 1,
+    streak: 1,
+  };
+
+  await db.runTransaction(async (tx) => {
+    const [psSnap, tsSnap, teamSnap, uSnapTx] = await Promise.all([
+      tx.get(psRef),
+      tx.get(tsRef),
+      tx.get(teamRef),
+      tx.get(uRef),
+    ]);
+    if (!uSnapTx.exists) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Athlete profile not found.',
+      );
+    }
+    const uTx = uSnapTx.data();
+
+    const prevTotal =
+        psSnap.exists &&
+        typeof psSnap.data().total_xp === 'number' &&
+        !Number.isNaN(psSnap.data().total_xp) ?
+          Math.floor(psSnap.data().total_xp) :
+          0;
+    const newTotal = prevTotal + earned;
+
+    const prevWeek =
+        psSnap.exists && typeof psSnap.data().stats_week_key === 'string' ?
+          psSnap.data().stats_week_key :
+          '';
+    let repsWeek = 0;
+    let minsWeek = 0;
+    let xpWeek = 0;
+    if (prevWeek === weekKey && psSnap.exists) {
+      const d = psSnap.data();
+      const rw = d.reps_this_week;
+      repsWeek =
+          typeof rw === 'number' && !Number.isNaN(rw) ?
+            rw :
+            0;
+      minsWeek =
+          typeof d.minutes_this_week === 'number' &&
+          !Number.isNaN(d.minutes_this_week) ?
+            d.minutes_this_week :
+            0;
+      const xw = d.xp_this_week;
+      xpWeek =
+          typeof xw === 'number' && !Number.isNaN(xw) ?
+            Math.floor(xw) :
+            0;
+    }
+    repsWeek += reps;
+    minsWeek += duration;
+    xpWeek += earned;
+
+    const lastTr =
+        psSnap.exists && typeof psSnap.data().last_training_utc === 'string' ?
+          psSnap.data().last_training_utc :
+          '';
+    let streakDays = 1;
+    if (psSnap.exists) {
+      const sd = psSnap.data();
+      const prevSt =
+          typeof sd.streak_days === 'number' && !Number.isNaN(sd.streak_days) ?
+            Math.floor(sd.streak_days) :
+            0;
+      if (lastTr === todayStr) {
+        streakDays = Math.max(1, prevSt);
+      } else if (lastTr === yesterdayStr) {
+        streakDays = Math.max(1, prevSt + 1);
+      } else if (lastTr) {
+        streakDays = 1;
+      } else {
+        streakDays = 1;
+      }
+    }
+
+    const lv = trainingLevelFromTotalXp(newTotal);
+
+    const logDoc = {
+      drillType,
+      duration,
+      reps,
+      intensity: intensityRaw,
+      earnedXP: earned,
+      teamId,
+      playerName,
+      playerEmail,
+      verificationMethod,
+      submittedByUid: request.auth.uid,
+      timestamp: now,
+    };
+    if (verifiedByUid) {
+      logDoc.verifiedByUid = verifiedByUid;
+      logDoc.verifiedByEmail = verifiedByEmail;
+      logDoc.verifiedByLegalName = verifiedByLegalName;
+      logDoc.verifiedAt = now;
+    }
+
+    tx.set(logRef, logDoc);
+
+    tx.set(
+        psRef,
+        {
+          teamId,
+          playerName,
+          total_xp: newTotal,
+          current_level: lv.level,
+          reps_this_week: repsWeek,
+          minutes_this_week: minsWeek,
+          xp_this_week: xpWeek,
+          streak_days: streakDays,
+          stats_week_key: weekKey,
+          last_training_utc: todayStr,
+          updatedAt: now,
+        },
+        {merge: true},
+    );
+
+    const prevUserXp =
+        typeof uTx.xp === 'number' && !Number.isNaN(uTx.xp) ?
+          Math.floor(uTx.xp) :
+          0;
+    tx.update(uRef, {
+      xp: prevUserXp + earned,
+    });
+
+    const clubId =
+        teamSnap.exists &&
+        typeof teamSnap.data().clubId === 'string' &&
+        teamSnap.data().clubId.trim() ?
+          teamSnap.data().clubId.trim() :
+          null;
+
+    const nowDate = new Date();
+    const monthKey =
+        `${nowDate.getUTCFullYear()}-` +
+        `${String(nowDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+    let totalSessions = 1;
+    if (tsSnap.exists) {
+      const sd = tsSnap.data() || {};
+      const prevKey = sd.stats_month_key;
+      if (prevKey === monthKey) {
+        const prev =
+            typeof sd.total_sessions_this_month === 'number' &&
+            !Number.isNaN(sd.total_sessions_this_month) ?
+              sd.total_sessions_this_month :
+              0;
+        totalSessions = prev + 1;
+      }
+    }
+
+    tx.set(
+        tsRef,
+        {
+          teamId,
+          clubId: clubId || null,
+          last_activity_timestamp: now,
+          total_sessions_this_month: totalSessions,
+          stats_month_key: monthKey,
+          updatedAt: now,
+        },
+        {merge: true},
+    );
+
+    out.totalXp = newTotal;
+    out.level = lv.level;
+    out.streak = streakDays;
+  });
+
+  await db.collection('security_audit').add({
+    action: 'logTrainingSession',
+    logId,
+    teamId,
+    playerEmail,
+    playerName,
+    earnedXP: earned,
+    verificationMethod,
+    actorUid: request.auth.uid,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  if (assignmentIdRaw) {
+    try {
+      const asRef = db.collection('assignments').doc(assignmentIdRaw);
+      const asSnap = await asRef.get();
+      if (asSnap.exists) {
+        const a = asSnap.data();
+        const st = a.status;
+        const open = st === 'pending' || st === 'active';
+        if (
+          open &&
+          a.teamId === teamId &&
+          typeof a.playerId === 'string' &&
+          a.playerId === athleteUid
+        ) {
+          await asRef.update({
+            status: 'completed',
+            completedAt: admin.firestore.FieldValue.serverTimestamp(),
+            completedViaLogSession: true,
+          });
+        }
+      }
+    } catch (e) {
+      logger.error('logTrainingSession assignment completion', e);
+    }
+  }
+
+  return {
+    ok: true,
+    earnedXP: out.earnedXP,
+    totalXp: out.totalXp,
+    level: out.level,
+    streakDays: out.streak,
+  };
+});
+
+/**
+ * Epic 11: coach/director assigns homework from global drills catalog.
+ * @param {string[]} playerEmails Athlete account emails on the roster.
+ */
+exports.secureAssignHomework = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const drillId =
+      typeof data.drillId === 'string' ? data.drillId.trim() : '';
+  const dueRaw = data.dueDate;
+  const emailsRaw = data.playerEmails;
+
+  if (!teamId || teamId === 'admin') {
+    throw new HttpsError('invalid-argument', 'teamId is required.');
+  }
+  if (!drillId) {
+    throw new HttpsError('invalid-argument', 'drillId is required.');
+  }
+  if (!Array.isArray(emailsRaw) || emailsRaw.length === 0) {
+    throw new HttpsError(
+        'invalid-argument',
+        'playerEmails must be a non-empty array.',
+    );
+  }
+  if (emailsRaw.length > 50) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Assign to at most 50 players per request.',
+    );
+  }
+
+  let dueDate;
+  if (dueRaw instanceof Date && !Number.isNaN(dueRaw.getTime())) {
+    dueDate = admin.firestore.Timestamp.fromDate(dueRaw);
+  } else if (
+    typeof dueRaw === 'string' &&
+    dueRaw.trim() &&
+    !Number.isNaN(Date.parse(dueRaw))
+  ) {
+    dueDate = admin.firestore.Timestamp.fromDate(new Date(dueRaw));
+  } else if (
+    typeof dueRaw === 'number' &&
+    Number.isFinite(dueRaw) &&
+    dueRaw > 0
+  ) {
+    dueDate = admin.firestore.Timestamp.fromMillis(dueRaw);
+  } else {
+    throw new HttpsError(
+        'invalid-argument',
+        'dueDate must be an ISO string, millis, or Date.',
+    );
+  }
+
+  const {clubId} = await assertCanSecureAddPlayer(request, teamId);
+  await assertClubSubscriptionWritable(clubId, request);
+
+  const drillSnap = await db.collection('drills').doc(drillId).get();
+  if (!drillSnap.exists) {
+    throw new HttpsError('not-found', 'Drill not found in library.');
+  }
+  const drillTitle =
+      typeof drillSnap.data().title === 'string' ?
+        drillSnap.data().title.trim().slice(0, 200) :
+        'Drill';
+
+  const batch = db.batch();
+  let count = 0;
+  const seen = new Set();
+  for (const raw of emailsRaw) {
+    const em = normEmail(String(raw || ''));
+    if (!em || seen.has(em)) continue;
+    seen.add(em);
+    const uSnap = await db.collection('users').doc(em).get();
+    if (!uSnap.exists) continue;
+    const u = uSnap.data();
+    if (u.teamId !== teamId) {
+      throw new HttpsError(
+          'failed-precondition',
+          `Player ${em} is not on this team.`,
+      );
+    }
+    let uid;
+    try {
+      const rec = await admin.auth().getUserByEmail(em);
+      uid = rec.uid;
+    } catch (e) {
+      logger.warn('secureAssignHomework: no auth user for', em);
+      continue;
+    }
+    const playerName =
+        typeof u.playerName === 'string' ? u.playerName.trim() : '';
+    const ref = db.collection('assignments').doc();
+    batch.set(ref, {
+      teamId,
+      playerId: uid,
+      player: playerName || 'Player',
+      drillId,
+      drillTitle,
+      dueDate,
+      status: 'pending',
+      assignedBy: request.auth.uid,
+      assignedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    count++;
+  }
+
+  if (count === 0) {
+    throw new HttpsError(
+        'failed-precondition',
+        'No valid athlete accounts could be assigned.',
+    );
+  }
+
+  await batch.commit();
+
+  await db.collection('security_audit').add({
+    action: 'secureAssignHomework',
+    teamId,
+    drillId,
+    count,
+    actorUid: request.auth.uid,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {ok: true, assignedCount: count};
+});
+
+/**
+ * Epic 11: coach deletes an assignment row.
+ */
+exports.secureDeleteHomework = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const assignmentId =
+      typeof data.assignmentId === 'string' ?
+        data.assignmentId.trim() :
+        '';
+  if (!assignmentId) {
+    throw new HttpsError('invalid-argument', 'assignmentId is required.');
+  }
+  const ref = db.collection('assignments').doc(assignmentId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError('not-found', 'Assignment not found.');
+  }
+  const teamId =
+      typeof snap.data().teamId === 'string' ?
+        snap.data().teamId.trim() :
+        '';
+  if (!teamId) {
+    throw new HttpsError('failed-precondition', 'Invalid assignment.');
+  }
+  const {clubId} = await assertCanSecureAddPlayer(request, teamId);
+  await assertClubSubscriptionWritable(clubId, request);
+  await ref.delete();
+  return {ok: true};
+});
+
+/**
+ * Epic 11: player marks homework done without a training log (legacy / quick).
+ */
+exports.completeAssignmentStatus = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const assignmentId =
+      typeof data.assignmentId === 'string' ?
+        data.assignmentId.trim() :
+        '';
+  if (!assignmentId) {
+    throw new HttpsError('invalid-argument', 'assignmentId is required.');
+  }
+  const ref = db.collection('assignments').doc(assignmentId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError('not-found', 'Assignment not found.');
+  }
+  const a = snap.data();
+  const uid = request.auth.uid;
+  let allowed = false;
+  if (typeof a.playerId === 'string' && a.playerId === uid) {
+    allowed = true;
+  } else if (typeof a.player === 'string' && a.player.trim()) {
+    const em = normEmail(request.auth.token.email);
+    if (em) {
+      const uSnap = await db.collection('users').doc(em).get();
+      if (
+        uSnap.exists &&
+        typeof uSnap.data().playerName === 'string' &&
+        uSnap.data().playerName.trim() === a.player.trim()
+      ) {
+        allowed = true;
+      }
+    }
+  }
+  if (!allowed) {
+    throw new HttpsError(
+        'permission-denied',
+        'This assignment is not yours to complete.',
+    );
+  }
+  await ref.update({
+    status: 'completed',
+    completedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return {ok: true};
+});
+
+/**
+ * Phase 2: aggregate team practice activity when a workout rep is logged
+ * (player/parent submitWorkoutRep). Updates team_stats for accountability.
+ */
+exports.onRepCreatedUpdateTeamStats = onDocumentCreated(
+    {
+      document: 'reps/{repId}',
+      region: REGION,
+    },
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+      const data = snap.data();
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      if (!teamId || teamId === 'admin') return;
+
+      const statsRef = db.collection('team_stats').doc(teamId);
+      const teamRef = db.collection('teams').doc(teamId);
+
+      try {
+        await db.runTransaction(async (transaction) => {
+          const [statsSnap, teamSnap] = await Promise.all([
+            transaction.get(statsRef),
+            transaction.get(teamRef),
+          ]);
+          const clubId =
+              teamSnap.exists &&
+              typeof teamSnap.data().clubId === 'string' &&
+              teamSnap.data().clubId.trim() ?
+                teamSnap.data().clubId.trim() :
+                null;
+
+          const nowDate = new Date();
+          const monthKey =
+              `${nowDate.getUTCFullYear()}-` +
+              `${String(nowDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+          let totalSessions = 1;
+          if (statsSnap.exists) {
+            const sd = statsSnap.data() || {};
+            const prevKey = sd.stats_month_key;
+            if (prevKey === monthKey) {
+              const prev =
+                  typeof sd.total_sessions_this_month === 'number' &&
+                  !Number.isNaN(sd.total_sessions_this_month) ?
+                    sd.total_sessions_this_month :
+                    0;
+              totalSessions = prev + 1;
+            }
+          }
+
+          transaction.set(
+              statsRef,
+              {
+                teamId,
+                clubId: clubId || null,
+                last_activity_timestamp:
+                  admin.firestore.FieldValue.serverTimestamp(),
+                total_sessions_this_month: totalSessions,
+                stats_month_key: monthKey,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              {merge: true},
+          );
+        });
+      } catch (err) {
+        logger.error('onRepCreatedUpdateTeamStats failed', err);
+      }
+    },
+);
+
+/**
+ * Director / super_admin: oversight analytics (coach accountability buckets).
+ * Directors are restricted to token clubId only (zero-trust).
+ */
+exports.getAccountabilityReport = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role || 'player';
+  if (role !== 'director' && role !== 'super_admin') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only directors and application admins may view this report.',
+    );
+  }
+
+  let clubId = '';
+  if (role === 'super_admin') {
+    const data = request.data || {};
+    const raw =
+        typeof data.clubId === 'string' ? data.clubId.trim() : '';
+    if (!raw) {
+      throw new HttpsError(
+          'invalid-argument',
+          'clubId is required for super admin.',
+      );
+    }
+    clubId = raw;
+  } else {
+    clubId = request.auth.token.clubId || '';
+    if (!clubId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is missing club scope.',
+      );
+    }
+  }
+
+  const teamsSnap = await db.collection('teams')
+      .where('clubId', '==', clubId)
+      .get();
+
+  const nowMs = Date.now();
+  const MS_PER_DAY = 86400000;
+
+  const teams = [];
+
+  for (const tDoc of teamsSnap.docs) {
+    const teamId = tDoc.id;
+    const td = tDoc.data() || {};
+    const teamName =
+        typeof td.name === 'string' && td.name.trim() ?
+          td.name.trim() :
+          teamId;
+    const coachEmail =
+        typeof td.coachEmail === 'string' && td.coachEmail.trim() ?
+          td.coachEmail.trim().toLowerCase() :
+          '';
+
+    const statsSnap = await db.collection('team_stats').doc(teamId).get();
+    let lastMs = null;
+    let sessionsThisMonth = 0;
+    if (statsSnap.exists) {
+      const sd = statsSnap.data() || {};
+      const ts = sd.last_activity_timestamp;
+      if (ts && typeof ts.toMillis === 'function') {
+        lastMs = ts.toMillis();
+      }
+      if (typeof sd.total_sessions_this_month === 'number' &&
+          !Number.isNaN(sd.total_sessions_this_month)) {
+        sessionsThisMonth = sd.total_sessions_this_month;
+      }
+    }
+
+    let daysSince = null;
+    if (lastMs != null) {
+      daysSince = Math.floor((nowMs - lastMs) / MS_PER_DAY);
+    }
+
+    let status = 'at_risk';
+    if (daysSince !== null && daysSince <= 3) {
+      status = 'active';
+    } else if (daysSince !== null && daysSince <= 6) {
+      status = 'warning';
+    } else {
+      status = 'at_risk';
+    }
+
+    teams.push({
+      teamId,
+      teamName,
+      coachEmail,
+      daysSinceActivity: daysSince,
+      lastActivityAt: lastMs != null ?
+        new Date(lastMs).toISOString() :
+        null,
+      sessionsThisMonth,
+      status,
+    });
+  }
+
+  teams.sort((a, b) => {
+    const order = {at_risk: 0, warning: 1, active: 2};
+    const oa = order[a.status] !== undefined ? order[a.status] : 3;
+    const ob = order[b.status] !== undefined ? order[b.status] : 3;
+    if (oa !== ob) return oa - ob;
+    return (a.teamName || '').localeCompare(b.teamName || '');
+  });
+
+  const summary = {
+    active: teams.filter((t) => t.status === 'active').length,
+    warning: teams.filter((t) => t.status === 'warning').length,
+    atRisk: teams.filter((t) => t.status === 'at_risk').length,
+  };
+
+  return {
+    ok: true,
+    clubId,
+    generatedAt: new Date().toISOString(),
+    summary,
+    teams,
+  };
+});
 
 /**
  * Move a player (users + player_lookup + rosters) to another team/club.
@@ -4509,3 +5836,585 @@ exports.publishClubCampaign = onCall({region: REGION}, async (request) => {
     clubId,
   };
 });
+
+// ---------------------------------------------------------------------------
+// Epic 9: Stripe billing (tiered multi-tenancy)
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string} tierType
+ * @param {number} purchasedQty
+ * @return {number}
+ */
+function seatsLimitForTier(tierType, purchasedQty) {
+  if (tierType === 'tutor') return 15;
+  if (tierType === 'free_trial') return 15;
+  if (tierType === 'team') return 25;
+  if (tierType === 'club') {
+    return purchasedQty > 0 && purchasedQty <= 100000 ? purchasedQty : 100;
+  }
+  if (tierType === 'recruiter') return 0;
+  return 0;
+}
+
+/**
+ * @param {string} stripeStatus
+ * @return {'active'|'past_due'|'canceled'}
+ */
+function mapStripeSubscriptionStatus(stripeStatus) {
+  if (stripeStatus === 'active' || stripeStatus === 'trialing') {
+    return 'active';
+  }
+  if (stripeStatus === 'past_due' || stripeStatus === 'unpaid') {
+    return 'past_due';
+  }
+  if (
+    stripeStatus === 'canceled' ||
+    stripeStatus === 'incomplete_expired' ||
+    stripeStatus === 'paused'
+  ) {
+    return 'canceled';
+  }
+  return 'past_due';
+}
+
+/**
+ * @param {Object} stripe Stripe client
+ * @param {string} tierType
+ * @return {string}
+ */
+function priceIdForTierType(stripe, tierType) {
+  void stripe;
+  if (tierType === 'tutor') return STRIPE_PRICE_TUTOR.value();
+  if (tierType === 'team') return STRIPE_PRICE_TEAM.value();
+  if (tierType === 'club') return STRIPE_PRICE_CLUB.value();
+  if (tierType === 'recruiter') return STRIPE_PRICE_RECRUITER.value();
+  return '';
+}
+
+/**
+ * @param {any} request
+ * @return {string} clubId
+ */
+function resolveClubIdForStripeCheckout(request) {
+  const actor = assertDirectorOrSuper(request);
+  const data = request.data || {};
+  if (actor.role === 'super_admin') {
+    const raw = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+    if (!raw) {
+      throw new HttpsError(
+          'invalid-argument',
+          'clubId is required for super admin.',
+      );
+    }
+    return raw;
+  }
+  const cid = request.auth.token.clubId || '';
+  if (!cid) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Club scope missing; sign out and back in.',
+    );
+  }
+  return cid;
+}
+
+/**
+ * @param {string} url
+ * @return {boolean}
+ */
+function isAllowedStripeRedirectUrl(url) {
+  if (typeof url !== 'string' || url.length < 12 || url.length > 2048) {
+    return false;
+  }
+  if (url.startsWith('https://')) return true;
+  if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Director / super_admin: Stripe Checkout Session for subscription tier.
+ */
+exports.createStripeCheckoutSession = onCall(
+    {
+      region: REGION,
+      secrets: [STRIPE_SECRET_KEY],
+    },
+    async (request) => {
+      if (!request.auth || !request.auth.uid) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+      const clubId = resolveClubIdForStripeCheckout(request);
+      const data = request.data || {};
+      const tierTypeRaw = typeof data.tierType === 'string' ?
+        data.tierType.trim().toLowerCase() :
+        '';
+      const allowedTiers = ['tutor', 'team', 'club', 'recruiter'];
+      if (!allowedTiers.includes(tierTypeRaw)) {
+        throw new HttpsError(
+            'invalid-argument',
+            'tierType must be tutor, team, club, or recruiter.',
+        );
+      }
+      const successUrl =
+          typeof data.successUrl === 'string' ? data.successUrl.trim() : '';
+      const cancelUrl =
+          typeof data.cancelUrl === 'string' ? data.cancelUrl.trim() : '';
+      if (!isAllowedStripeRedirectUrl(successUrl) ||
+          !isAllowedStripeRedirectUrl(cancelUrl)) {
+        throw new HttpsError(
+            'invalid-argument',
+            'successUrl and cancelUrl must be valid https URLs ' +
+            '(or localhost for dev).',
+        );
+      }
+
+      const secret = STRIPE_SECRET_KEY.value();
+      if (!secret || typeof secret !== 'string' || secret.length < 16) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Stripe is not configured. Set STRIPE_SECRET_KEY secret.',
+        );
+      }
+
+      const stripe = stripeLib(secret);
+      const priceId = priceIdForTierType(stripe, tierTypeRaw);
+      if (!priceId || typeof priceId !== 'string') {
+        throw new HttpsError(
+            'failed-precondition',
+            'Stripe Price ID not configured for this tier.',
+        );
+      }
+
+      let quantity = 1;
+      if (tierTypeRaw === 'club') {
+        const q = parseInt(String(data.clubSeatQuantity), 10);
+        if (Number.isFinite(q) && q >= 1 && q <= 100000) {
+          quantity = q;
+        } else {
+          quantity = 100;
+        }
+      }
+
+      const email =
+          typeof request.auth.token.email === 'string' ?
+            request.auth.token.email :
+            undefined;
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        line_items: [{price: priceId, quantity: quantity}],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        client_reference_id:
+            clubId.length <= 255 ? clubId : clubId.slice(0, 255),
+        customer_email: email || undefined,
+        metadata: {
+          clubId: clubId,
+          tierType: tierTypeRaw,
+          firebaseUid: request.auth.uid,
+        },
+        subscription_data: {
+          metadata: {
+            clubId: clubId,
+            tierType: tierTypeRaw,
+          },
+        },
+      });
+
+      if (!session.url) {
+        throw new HttpsError(
+            'internal',
+            'Stripe did not return a checkout URL.',
+        );
+      }
+
+      return {ok: true, url: session.url, sessionId: session.id};
+    },
+);
+
+/**
+ * Stripe webhooks: verify signature, sync license_entitlements.
+ * Deploy with public invoker for Stripe; use endpoint signing secret.
+ */
+exports.stripeWebhook = onRequest(
+    {
+      region: REGION,
+      cors: false,
+      invoker: 'public',
+      secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET],
+    },
+    async (req, res) => {
+      if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed');
+        return;
+      }
+      const sig = req.headers['stripe-signature'];
+      if (!sig || typeof sig !== 'string') {
+        res.status(400).send('Missing stripe-signature');
+        return;
+      }
+      const rawBody = req.rawBody;
+      if (!Buffer.isBuffer(rawBody)) {
+        logger.error('stripeWebhook: missing rawBody buffer');
+        res.status(400).send('Invalid body');
+        return;
+      }
+
+      const secretKey = STRIPE_SECRET_KEY.value();
+      const whSecret = STRIPE_WEBHOOK_SECRET.value();
+      if (!secretKey || !whSecret) {
+        logger.error('stripeWebhook: missing Stripe secrets');
+        res.status(500).send('Server misconfiguration');
+        return;
+      }
+
+      const stripe = stripeLib(secretKey);
+      let event;
+      try {
+        event = stripe.webhooks.constructEvent(rawBody, sig, whSecret);
+      } catch (err) {
+        logger.error('stripeWebhook signature verification failed', err);
+        res.status(400).send('Webhook signature verification failed');
+        return;
+      }
+
+      try {
+        await handleStripeWebhookEvent(stripe, event);
+      } catch (err) {
+        logger.error('stripeWebhook handler error', err);
+        res.status(500).send('Handler error');
+        return;
+      }
+
+      res.status(200).json({received: true});
+    },
+);
+
+/**
+ * @param {Object} stripe Stripe client
+ * @param {Object} event Stripe event payload
+ */
+async function handleStripeWebhookEvent(stripe, event) {
+  const type = event.type;
+
+  if (type === 'checkout.session.completed') {
+    const session = /** @type {import('stripe').Stripe.Checkout.Session} */ (
+      event.data.object
+    );
+    const clubId = session.metadata && session.metadata.clubId;
+    const tierType =
+        session.metadata && session.metadata.tierType ?
+          String(session.metadata.tierType).toLowerCase() :
+          '';
+    if (!clubId || !tierType) {
+      logger.warn(
+          'checkout.session.completed: missing clubId/tier in metadata',
+      );
+      return;
+    }
+    const subId = session.subscription;
+    const customerId = session.customer;
+    let quantity = 1;
+    if (typeof subId === 'string') {
+      const sub = await stripe.subscriptions.retrieve(subId);
+      const first = sub.items && sub.items.data[0] ? sub.items.data[0] : null;
+      if (first && typeof first.quantity === 'number' && first.quantity > 0) {
+        quantity = first.quantity;
+      }
+    }
+    const seats = seatsLimitForTier(tierType, quantity);
+    const entRef = db.collection('license_entitlements').doc(clubId);
+    await entRef.set(
+        {
+          tier: tierType,
+          stripe_customer_id: typeof customerId === 'string' ?
+            customerId :
+            String(customerId || ''),
+          stripe_subscription_id: typeof subId === 'string' ? subId : '',
+          subscription_status: 'active',
+          seats_limit: seats,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'stripe:checkout.session.completed',
+        },
+        {merge: true},
+    );
+    return;
+  }
+
+  if (type === 'customer.subscription.deleted') {
+    const sub = /** @type {import('stripe').Stripe.Subscription} */ (
+      event.data.object
+    );
+    await syncSubscriptionStatusFromStripeObject(stripe, sub, 'canceled');
+    return;
+  }
+
+  if (type === 'customer.subscription.updated') {
+    const sub = /** @type {import('stripe').Stripe.Subscription} */ (
+      event.data.object
+    );
+    const mapped = mapStripeSubscriptionStatus(sub.status);
+    await syncSubscriptionStatusFromStripeObject(stripe, sub, mapped);
+    return;
+  }
+
+  if (type === 'invoice.payment_failed') {
+    const invoice = /** @type {import('stripe').Stripe.Invoice} */ (
+      event.data.object
+    );
+    const subId = invoice.subscription;
+    if (typeof subId === 'string') {
+      const sub = await stripe.subscriptions.retrieve(subId);
+      await syncSubscriptionStatusFromStripeObject(stripe, sub, 'past_due');
+    }
+    return;
+  }
+}
+
+/**
+ * @param {Object} stripe Stripe client
+ * @param {Object} sub Stripe subscription
+ * @param {'active'|'past_due'|'canceled'} status
+ */
+async function syncSubscriptionStatusFromStripeObject(stripe, sub, status) {
+  void stripe;
+  const clubId =
+      sub.metadata && sub.metadata.clubId ? String(sub.metadata.clubId) : '';
+  if (!clubId) {
+    logger.warn('subscription event: missing clubId in subscription metadata');
+    return;
+  }
+  const tierType =
+      sub.metadata && sub.metadata.tierType ?
+        String(sub.metadata.tierType).toLowerCase() :
+        '';
+  const first = sub.items && sub.items.data[0] ? sub.items.data[0] : null;
+  const quantity =
+      first && typeof first.quantity === 'number' && first.quantity > 0 ?
+        first.quantity :
+        1;
+  const seats = tierType ? seatsLimitForTier(tierType, quantity) : undefined;
+
+  const patch = {
+    stripe_subscription_id: sub.id,
+    stripe_customer_id:
+      typeof sub.customer === 'string' ?
+        sub.customer :
+        String(sub.customer || ''),
+    subscription_status: status,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedBy: 'stripe:subscription',
+  };
+  if (tierType && seats !== undefined) {
+    patch.seats_limit = seats;
+    patch.tier = tierType;
+  }
+
+  await db
+      .collection('license_entitlements')
+      .doc(clubId)
+      .set(patch, {merge: true});
+}
+
+// ---------------------------------------------------------------------------
+// Epic 13: FCM — device token registry + trial notifications
+// ---------------------------------------------------------------------------
+
+/**
+ * Authenticated users register web push tokens for their Auth uid.
+ */
+exports.registerDeviceToken = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const uid = request.auth.uid;
+  const raw = request.data && request.data.fcmToken;
+  const fcmToken = typeof raw === 'string' ? raw.trim() : '';
+  if (!fcmToken || fcmToken.length < 80 || fcmToken.length > 4096) {
+    throw new HttpsError(
+        'invalid-argument',
+        'fcmToken must be a valid FCM registration token string.',
+    );
+  }
+  await db.collection('device_tokens').doc(uid).set(
+      {
+        tokens: admin.firestore.FieldValue.arrayUnion(fcmToken),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      {merge: true},
+  );
+  return {ok: true};
+});
+
+/**
+ * Resolve parent Auth UIDs for a player (team + display name) via
+ * player_lookup, users, and households.
+ * @param {string} teamId
+ * @param {string} playerName
+ * @return {Promise<string[]>}
+ */
+async function resolveParentUidsForTrialPlayer(teamId, playerName) {
+  if (!teamId || !playerName) {
+    return [];
+  }
+  const lookupSnap = await db.collection('player_lookup')
+      .where('teamId', '==', teamId)
+      .where('playerName', '==', playerName)
+      .limit(2)
+      .get();
+  if (lookupSnap.empty) {
+    return [];
+  }
+  if (lookupSnap.size > 1) {
+    logger.warn(
+        'onTrialScoreAdded: duplicate player_lookup; skip notify.',
+    );
+    return [];
+  }
+  const playerEmail = normEmail(lookupSnap.docs[0].id);
+  if (!playerEmail) {
+    return [];
+  }
+  const uSnap = await db.collection('users').doc(playerEmail).get();
+  if (!uSnap.exists) {
+    return [];
+  }
+  const hid =
+      typeof uSnap.data().householdId === 'string' ?
+        uSnap.data().householdId.trim() :
+        '';
+  if (!hid) {
+    return [];
+  }
+  const hSnap = await db.collection('households').doc(hid).get();
+  if (!hSnap.exists) {
+    return [];
+  }
+  const pe = hSnap.data().parentEmails;
+  if (!Array.isArray(pe) || pe.length === 0) {
+    return [];
+  }
+  /** @type {string[]} */
+  const uids = [];
+  for (const raw of pe) {
+    const em = normEmail(String(raw));
+    if (!em || !em.includes('@')) continue;
+    try {
+      const ur = await admin.auth().getUserByEmail(em);
+      if (ur && ur.uid) uids.push(ur.uid);
+    } catch (e) {
+      logger.warn(
+          'onTrialScoreAdded: parent auth lookup failed ' + em + ' ' + e,
+      );
+    }
+  }
+  return [...new Set(uids)];
+}
+
+/**
+ * Collect unique FCM tokens from device_tokens for the given Auth UIDs.
+ * @param {string[]} uids
+ * @return {Promise<string[]>}
+ */
+async function collectFcmTokensForUids(uids) {
+  /** @type {string[]} */
+  const out = [];
+  for (const uid of uids) {
+    if (!uid) continue;
+    const snap = await db.collection('device_tokens').doc(uid).get();
+    if (!snap.exists) continue;
+    const arr = snap.data().tokens;
+    if (!Array.isArray(arr)) continue;
+    for (const t of arr) {
+      if (typeof t === 'string' && t.length > 80) {
+        out.push(t);
+      }
+    }
+  }
+  return [...new Set(out)];
+}
+
+/**
+ * Firestore: new skill trial logged under trials/ — notify linked parents.
+ * Path matches client writes (challenges + coach Evals).
+ */
+exports.onTrialScoreAdded = onDocumentCreated(
+    {
+      document: 'trials/{scoreId}',
+      region: REGION,
+    },
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+      const data = snap.data() || {};
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      const playerName =
+          typeof data.player === 'string' ? data.player.trim() : '';
+      const skill =
+          typeof data.skill === 'string' && data.skill.trim() ?
+            data.skill.trim() :
+            'trial drill';
+      const score =
+          typeof data.result === 'string' && data.result.trim() ?
+            data.result.trim() :
+            '—';
+
+      if (!teamId || !playerName) {
+        return;
+      }
+
+      let parentUids = [];
+      try {
+        parentUids = await resolveParentUidsForTrialPlayer(teamId, playerName);
+      } catch (e) {
+        logger.error('onTrialScoreAdded: resolve parents failed', e);
+        return;
+      }
+      if (parentUids.length === 0) {
+        return;
+      }
+
+      let tokens = [];
+      try {
+        tokens = await collectFcmTokensForUids(parentUids);
+      } catch (e) {
+        logger.error('onTrialScoreAdded: token load failed', e);
+        return;
+      }
+      if (tokens.length === 0) {
+        return;
+      }
+
+      const title = 'New Trial Score Logged! 🚀';
+      const body =
+          `${playerName} just logged a ${score} on ${skill}. ` +
+          'Tap to view their progress!';
+
+      const scoreId = event.params.scoreId || '';
+      const chunkSize = 500;
+      for (let i = 0; i < tokens.length; i += chunkSize) {
+        const chunk = tokens.slice(i, i + chunkSize);
+        try {
+          await admin.messaging().sendMulticast({
+            tokens: chunk,
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              kind: 'trial_score',
+              teamId,
+              scoreId: String(scoreId),
+              playerName,
+            },
+          });
+        } catch (e) {
+          logger.error('onTrialScoreAdded: sendMulticast failed', e);
+        }
+      }
+    },
+);

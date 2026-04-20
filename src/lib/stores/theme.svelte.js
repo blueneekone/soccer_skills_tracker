@@ -45,7 +45,9 @@ function createThemeStore() {
 			return preference;
 		},
 		init,
-		setPreference
+		setPreference,
+		/** Re-apply dark/light from preference (e.g. after leaving player-elite shell). */
+		apply
 	};
 }
 

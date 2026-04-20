@@ -1,16 +1,33 @@
 <script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { httpsCallable } from 'firebase/functions';
-	import { functions } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
+	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
 
-	const submitWorkoutRep = httpsCallable(functions, 'submitWorkoutRep');
+	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
 	const logPlayerActivity = httpsCallable(functions, 'logPlayerActivity');
+
+	/**
+	 * @param {{ sets?: unknown; reps?: unknown }[]} items
+	 */
+	function sessionTotalReps(items) {
+		let n = 0;
+		for (const i of items) {
+			const s = Number(i.sets);
+			const r = Number(i.reps);
+			if (Number.isFinite(s) && Number.isFinite(r) && s >= 0 && r >= 0) {
+				n += Math.floor(s * r);
+			}
+		}
+		return n;
+	}
 
 	const profile = $derived(authStore.userProfile);
 
@@ -44,11 +61,41 @@
 	let sessionItems = $state([]);
 	let totalMinutes = $state('');
 	let outcome = $state('Good');
+	/** @type {'low' | 'medium' | 'high'} */
+	let intensity = $state('medium');
 	let calDate = $state('');
 	let calTime = $state('');
 
 	/** Athlete acknowledgment (self-log; parent-verified logs use /parent/log-workout). */
 	let workoutAccuracyAck = $state(false);
+
+	/** Epic 11: completing a coach assignment from the inbox. */
+	let homeworkAssignmentId = $state('');
+
+	$effect(() => {
+		if (!browser) return;
+		const aid = $page.url.searchParams.get('assignmentId');
+		const did = $page.url.searchParams.get('drillId');
+		homeworkAssignmentId = aid && aid.trim() ? aid.trim() : '';
+		if (!did || !did.trim()) return;
+		if (authStore.role !== 'player') return;
+		let cancelled = false;
+		(async () => {
+			try {
+				const ds = await getDoc(doc(db, 'drills', did.trim()));
+				if (cancelled || !ds.exists()) return;
+				const dr = ds.data();
+				const name =
+					typeof dr.title === 'string' ? dr.title.trim() : 'Assigned drill';
+				sessionItems = [{ name, sets: 3, reps: 20 }];
+			} catch (e) {
+				console.warn('[tracker] homework drill preload', e);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	// Workout selects
 	let selectWarmup = $state('');
@@ -82,7 +129,9 @@
 		sessionItems = [];
 		totalMinutes = '';
 		outcome = 'Good';
+		intensity = 'medium';
 		workoutAccuracyAck = false;
+		homeworkAssignmentId = '';
 	};
 
 	const getSessionDescription = () => {
@@ -126,14 +175,41 @@
 		}
 
 		try {
-			await submitWorkoutRep({
-				minutes: mins,
-				outcome,
-				drills: sessionItems
+			const baseDrills =
+				sessionItems.map((i) => i.name).filter(Boolean).join(' · ') || 'Training session';
+			const drillType = `${baseDrills} (${outcome})`.slice(0, 200);
+			const repTotal = sessionTotalReps(sessionItems);
+
+			const res = await logTrainingSession({
+				drillType,
+				duration: mins,
+				reps: repTotal,
+				intensity,
+				...(homeworkAssignmentId ? { assignmentId: homeworkAssignmentId } : {})
 			});
+			const payload = res.data;
+			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
+			const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : 0;
+			if (typeof sessionStorage !== 'undefined') {
+				sessionStorage.setItem(
+					'elite_xp_pulse',
+					JSON.stringify({
+						fromTotal: Math.max(0, newTotal - earned),
+						toTotal: newTotal
+					})
+				);
+			}
 
 			confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#0f172a', '#fbbf24', '#3b82f6'] });
-			await Swal.fire({ title: 'Workout Logged!', text: 'Awesome job! +XP added to your profile.', icon: 'success', confirmButtonColor: '#0f172a', confirmButtonText: 'Keep Grinding', customClass: { popup: 'card' } });
+			await Swal.fire({
+				title: 'Workout Logged!',
+				text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
+				icon: 'success',
+				confirmButtonColor: '#0f172a',
+				confirmButtonText: 'Keep Grinding',
+				customClass: { popup: 'card' }
+			});
+			await authStore.refresh({ silent: true });
 			clearForm();
 			goto('/home');
 		} catch (e) {
@@ -145,6 +221,17 @@
 
 <div class="view-section locked-dashboard-view tracker-page">
 	<h2 class="view-title">Log Workout</h2>
+
+	{#if homeworkAssignmentId && authStore.role === 'player'}
+		<div class="card tracker-hw-banner">
+			<div class="card-body">
+				<strong>Completing assigned homework</strong>
+				<p class="tracker-hw-banner__text">
+					This log will mark the assignment complete when you submit (server-verified).
+				</p>
+			</div>
+		</div>
+	{/if}
 
 	{#if authStore.role === 'player' && profile?.teamId && profile.teamId !== 'admin'}
 		<TeamLeaderboard />
@@ -252,10 +339,25 @@
 				{/each}
 			</div>
 
+			<label>Intensity (XP multiplier)</label>
+			<div class="outcome-row">
+				{#each ['low', 'medium', 'high'] as tier}
+					<button
+						type="button"
+						class="outcome-btn"
+						class:active={intensity === tier}
+						onclick={() => (intensity = /** @type {'low' | 'medium' | 'high'} */ (tier))}
+					>
+						<span>{tier === 'low' ? '🌙' : tier === 'medium' ? '⚡' : '🔥'}</span>
+						{tier}
+					</button>
+				{/each}
+			</div>
+
 			<div class="verify-panel">
 				<span class="verify-heading">Submit workout (player account)</span>
 				<p class="verify-help">
-					Logs are written by a secure server function with an integrity digest. This path is a
+					XP is calculated on the server (<code>logTrainingSession</code>). This path is a
 					<strong>self-log</strong> (not guardian-verified). For a parent-verified session, a guardian must sign
 					in and use
 					<a class="parent-log-link" href="/parent/log-workout">Log workout for athlete</a>.
@@ -284,6 +386,16 @@
 </div>
 
 <style>
+	.tracker-hw-banner {
+		margin-bottom: clamp(14px, 2.5vw, 20px);
+		border-color: color-mix(in srgb, var(--brand-primary) 35%, var(--glass-border));
+		background: color-mix(in srgb, var(--brand-primary) 8%, var(--glass-bg));
+	}
+	.tracker-hw-banner__text {
+		margin: 8px 0 0;
+		font-size: 0.88rem;
+		line-height: 1.45;
+	}
 	.tracker-box {
 		margin-bottom: clamp(16px, 3vw, 24px);
 	}

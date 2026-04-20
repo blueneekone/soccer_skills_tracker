@@ -8,7 +8,22 @@
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
 
-	const submitWorkoutRep = httpsCallable(functions, 'submitWorkoutRep');
+	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
+
+	/**
+	 * @param {{ sets?: unknown; reps?: unknown }[]} items
+	 */
+	function sessionTotalReps(items) {
+		let n = 0;
+		for (const i of items) {
+			const s = Number(i.sets);
+			const r = Number(i.reps);
+			if (Number.isFinite(s) && Number.isFinite(r) && s >= 0 && r >= 0) {
+				n += Math.floor(s * r);
+			}
+		}
+		return n;
+	}
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
@@ -19,6 +34,8 @@
 	let sessionItems = $state([]);
 	let totalMinutes = $state('');
 	let outcome = $state('Good');
+	/** @type {'low' | 'medium' | 'high'} */
+	let intensity = $state('medium');
 	let verifierLegalName = $state('');
 	let parentVerifiedAck = $state(false);
 
@@ -112,6 +129,7 @@
 		sessionItems = [];
 		totalMinutes = '';
 		outcome = 'Good';
+		intensity = 'medium';
 		verifierLegalName = '';
 		parentVerifiedAck = false;
 	};
@@ -127,17 +145,25 @@
 		if (mins <= 0) return alert('Enter valid total minutes.');
 
 		try {
-			await submitWorkoutRep({
+			const baseDrills =
+				sessionItems.map((i) => i.name).filter(Boolean).join(' · ') || 'Training session';
+			const drillType = `${baseDrills} (${outcome})`.slice(0, 200);
+			const repTotal = sessionTotalReps(sessionItems);
+
+			const res = await logTrainingSession({
 				playerEmail: selectedChildEmail,
 				verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
-				minutes: mins,
-				outcome,
-				drills: sessionItems
+				drillType,
+				duration: mins,
+				reps: repTotal,
+				intensity
 			});
+			const payload = res.data;
+			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
 			confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#0f172a', '#fbbf24', '#3b82f6'] });
 			await Swal.fire({
 				title: 'Workout logged',
-				text: 'Guardian-verified session saved.',
+				text: `Guardian-verified · +${earned} XP for the athlete.`,
 				icon: 'success',
 				confirmButtonColor: '#0f172a'
 			});
@@ -153,8 +179,8 @@
 <div class="view-section">
 	<h2 class="view-title">Log workout for athlete</h2>
 	<p class="lead">
-		Parent accounts verify sessions on behalf of a linked minor or athlete. Entries are stored with your Firebase
-		identity and an integrity digest.
+		Parent accounts verify sessions on behalf of a linked minor or athlete. XP is awarded by the secure
+		<code>logTrainingSession</code> function.
 	</p>
 
 	<div class="card">
@@ -259,6 +285,20 @@
 							{#each ['Struggled', 'Good', 'Mastered'] as opt}
 								<button type="button" class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>
 									{opt}
+								</button>
+							{/each}
+						</div>
+
+						<span class="field-label">Intensity (XP multiplier)</span>
+						<div class="outcome-row">
+							{#each ['low', 'medium', 'high'] as tier}
+								<button
+									type="button"
+									class="outcome-btn"
+									class:active={intensity === tier}
+									onclick={() => (intensity = /** @type {'low' | 'medium' | 'high'} */ (tier))}
+								>
+									{tier}
 								</button>
 							{/each}
 						</div>

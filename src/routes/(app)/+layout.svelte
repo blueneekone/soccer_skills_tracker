@@ -1,16 +1,34 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
+	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 
 	let { children } = $props();
+
+	// Sync club license doc for read-only / pricing UX — super_admin exempt.
+	$effect(() => {
+		if (authStore.isLoading) return;
+		if (!authStore.isAuthenticated || !authStore.isProfileComplete) {
+			licenseEntitlementStore.syncFromUser(null);
+			return;
+		}
+		if (authStore.role === 'super_admin') {
+			licenseEntitlementStore.syncFromUser(null);
+			return;
+		}
+		licenseEntitlementStore.syncFromUser(auth.currentUser);
+	});
 
 	// Auth guard + role guard
 	$effect(() => {
@@ -59,6 +77,27 @@
 		const cid = authStore.userProfile?.clubId;
 		clubBrandingStore.loadForClub(cid || '');
 	});
+
+	// Elite Player Portal: dark, high-contrast athlete shell.
+	$effect(() => {
+		if (typeof document === 'undefined' || authStore.isLoading) return;
+		const elite =
+			authStore.role === 'player' &&
+			authStore.isProfileComplete &&
+			authStore.isAuthenticated;
+		const recruiterScout =
+			authStore.isAuthenticated &&
+			authStore.isProfileComplete &&
+			$page.url.pathname.startsWith('/recruiter');
+		document.documentElement.classList.toggle('player-elite', elite);
+		document.documentElement.classList.toggle('player-portal-theme', elite);
+		document.documentElement.classList.toggle('recruiter-scout-theme', recruiterScout);
+		if (elite || recruiterScout) {
+			document.documentElement.classList.add('dark');
+		} else {
+			themeStore.apply();
+		}
+	});
 </script>
 
 {#if authStore.isLoading}
@@ -68,6 +107,7 @@
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
 	<div class="app-shell">
 		<AppHeader />
+		<ParentFcmPrompt />
 		<main class="container app-main">
 			{@render children()}
 		</main>

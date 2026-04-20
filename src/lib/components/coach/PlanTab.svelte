@@ -1,5 +1,6 @@
 <script>
-	import { db, auth } from '$lib/firebase.js';
+	import { db, auth, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,
 		collection,
@@ -14,7 +15,9 @@
 	} from 'firebase/firestore';
 	import Modal from '$lib/components/Modal.svelte';
 
-	let { teamId = '', workouts = [], players = [] } = $props();
+	let { teamId = '', workouts = [] } = $props();
+
+	const secureDeleteHomework = httpsCallable(functions, 'secureDeleteHomework');
 
 	const DRAG_MIME = 'application/x-sstracker-drill+json';
 
@@ -24,12 +27,6 @@
 	let schedTime = $state('');
 	let schedType = $state('Practice');
 	let schedLocation = $state('');
-	let hwDueDate = $state('');
-	let hwSelectedDrill = $state('');
-	let hwBuilderList = $state([]);
-	let selectedPlayers = $state([]);
-	let selectAll = $state(false);
-
 	/** @type {Array<{ id: string, name: string, durationMinutes: number, description: string, focusArea: string }>} */
 	let drillLibrary = $state([]);
 	/** @type {Array<{ instanceId: string, drillId: string, name: string, durationMinutes: number, description: string, focusArea: string }>} */
@@ -64,7 +61,10 @@
 		hwItems = [];
 		hwSnap.forEach((d) => {
 			const hw = d.data();
-			if (hw.status === 'active') hwItems.push({ id: d.id, ...hw });
+			const st = hw.status;
+			if (st === 'active' || st === 'pending') {
+				hwItems.push({ id: d.id, ...hw });
+			}
 		});
 	};
 
@@ -162,54 +162,18 @@
 		loadSchedule();
 	};
 
-	const addHwDrill = () => {
-		if (!hwSelectedDrill) return;
-		hwBuilderList = [
-			...hwBuilderList,
-			{ name: hwSelectedDrill, sets: 3, reps: 20 },
-		];
-	};
-	const removeHwDrill = (idx) => {
-		hwBuilderList = hwBuilderList.filter((_, i) => i !== idx);
-	};
-
-	const toggleSelectAll = () => {
-		if (selectAll) {
-			selectedPlayers = [...players];
-		} else {
-			selectedPlayers = [];
-		}
-	};
-
-	const assignHomework = async () => {
-		if (selectedPlayers.length === 0 || hwBuilderList.length === 0 || !hwDueDate) {
-			return alert('Select players, add drills, and set a due date.');
-		}
-		const batch = [];
-		for (const player of selectedPlayers) {
-			batch.push(
-				addDoc(collection(db, 'assignments'), {
-					teamId,
-					player,
-					drills: hwBuilderList,
-					dueDate: hwDueDate,
-					status: 'active',
-				}),
-			);
-		}
-		await Promise.all(batch);
-		hwBuilderList = [];
-		selectedPlayers = [];
-		selectAll = false;
-		hwDueDate = '';
-		alert('Homework Assigned!');
-		loadSchedule();
-	};
-
 	const deleteHw = async (id) => {
 		if (!confirm('Delete assignment?')) return;
-		await deleteDoc(doc(db, 'assignments', id));
-		loadSchedule();
+		try {
+			await secureDeleteHomework({ assignmentId: id });
+			loadSchedule();
+		} catch (e) {
+			alert(
+				e && typeof e === 'object' && 'message' in e ?
+					String(e.message) :
+					'Could not delete assignment.',
+			);
+		}
 	};
 
 	/**
@@ -719,56 +683,23 @@
 		</div>
 
 		<div class="card">
-			<div class="card-header bg-orange-header">🎯 Assign Homework</div>
+			<div class="card-header bg-orange-header">🎯 Homework</div>
 			<div class="card-body">
-				<label>Select Players &amp; Due Date</label>
-				<div class="hw-select-box">
-					<label class="hw-select-all-label">
-						<input type="checkbox" bind:checked={selectAll} onchange={toggleSelectAll} />
-						<b>Select All Players</b>
-					</label>
-					<div class="hw-player-list">
-						{#each players as p}
-							<label class="hw-player-row">
-								<input type="checkbox" bind:group={selectedPlayers} value={p} />
-								<span>{p}</span>
-							</label>
-						{/each}
-					</div>
-				</div>
-				<div class="hw-due-row">
-					<label class="m-0">Due Date:</label>
-					<input type="date" bind:value={hwDueDate} class="flex-1 m-0" />
-				</div>
-				<label>Build the Workout</label>
-				<select bind:value={hwSelectedDrill}>
-					<option value="" disabled>Select Drill...</option>
-					{#each workouts as w}<option value={w.name}>{w.name}</option>{/each}
-				</select>
-				<button class="secondary-btn w-100" onclick={addHwDrill}>+ Add Drill</button>
-				<ul class="session-list">
-					{#each hwBuilderList as item, i}
-						<li class="session-item">
-							<span>{i + 1}. {item.name}</span>
-							<button class="delete-btn" onclick={() => removeHwDrill(i)}>✕</button>
-						</li>
-					{:else}
-						<li class="session-empty">No drills added to this assignment yet.</li>
-					{/each}
-				</ul>
-				<button class="primary-btn btn-orange w-100" onclick={assignHomework}>Send Assignment</button>
-
+				<p class="plan-playbook-hint">
+					Assign drills from the global library using the <strong>Playbook</strong> tab (secure
+					server function). Below lists active / pending rows for this team.
+				</p>
 				<hr class="section-divider" />
-				<label>Active Assignments</label>
+				<label>Active &amp; pending assignments</label>
 				<ul class="session-list">
 					{#each hwItems as hw}
 						<li class="session-item">
 							<div>
-								<b>{hw.player}</b><br /><span class="text-sm-sub text-accent-orange"
-									>Due: {hw.dueDate}</span
-								>
+								<b>{hw.drillTitle || (Array.isArray(hw.drills) && hw.drills[0]?.name) || 'Homework'}</b><br />
+								<span class="text-sm-sub">{hw.player || '—'}</span><br />
+								<span class="text-sm-sub text-accent-orange">Due: {hw.dueDate}</span>
 							</div>
-							<button class="delete-btn" onclick={() => deleteHw(hw.id)}>✕</button>
+							<button type="button" class="delete-btn" onclick={() => deleteHw(hw.id)}>✕</button>
 						</li>
 					{:else}
 						<li class="session-empty">No active homework.</li>
@@ -1120,46 +1051,18 @@
 		flex: 1;
 		margin: 0;
 	}
-	.hw-select-box {
-		border: 1px solid rgba(15, 23, 42, 0.1);
-		border-radius: var(--radius-premium);
-		padding: clamp(12px, 2vw, 14px);
-		margin-bottom: 12px;
-	}
-	.hw-select-all-label {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		font-size: 0.9rem;
-		margin-bottom: 8px;
-		cursor: pointer;
-	}
-	.hw-player-list {
-		max-height: 150px;
-		overflow-y: auto;
-	}
-	.hw-player-row {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 6px 0;
-		font-size: 0.9rem;
-		cursor: pointer;
-		margin: 0;
-		font-weight: 600;
-	}
-	.hw-due-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin-bottom: 12px;
-	}
 	.card-body > label + * {
 		margin-top: 0;
 	}
 	select,
 	input {
 		margin-bottom: 10px;
+	}
+	.plan-playbook-hint {
+		margin: 0 0 12px;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--text-secondary);
 	}
 	.section-divider {
 		border: none;

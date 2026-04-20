@@ -1,27 +1,44 @@
 <script>
 	import { browser } from '$app/environment';
-	import { httpsCallable } from 'firebase/functions';
-	import { functions } from '$lib/firebase.js';
+	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
-	/** Optional team id for director / super_admin callables. */
+	/** Optional team id for director / super_admin. */
 	let { teamIdForStaff = '' } = $props();
-
-	const getTeamLeaderboard = httpsCallable(functions, 'getTeamLeaderboard');
 
 	let loading = $state(true);
 	let err = $state('');
-	/** @type {Array<{ rank: number, playerKey: string, displayName: string, xp: number, currentStreak: number, isCurrentUser: boolean }>} */
+	/** @type {Array<{ rank: number, playerKey: string, displayName: string, xpThisWeek: number, currentLevel: number, streak: number, isCurrentUser: boolean }>} */
 	let entries = $state([]);
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
+	const uid = $derived(authStore.user?.uid || '');
+
+	const effectiveTeamId = $derived.by(() => {
+		const staff =
+			typeof teamIdForStaff === 'string' ? teamIdForStaff.trim() : '';
+		if (staff && (role === 'director' || role === 'super_admin')) {
+			return staff;
+		}
+		const tid = profile?.teamId;
+		return tid && tid !== 'admin' ? tid : '';
+	});
 
 	$effect(() => {
 		if (!browser) return;
 		if (!authStore.isAuthenticated || authStore.isLoading) return;
 
 		if (role === 'parent' || role === 'registrar') {
+			entries = [];
+			loading = false;
+			err = '';
+			return;
+		}
+
+		const tid = effectiveTeamId;
+		if (!tid) {
 			entries = [];
 			loading = false;
 			err = '';
@@ -35,29 +52,38 @@
 
 		(async () => {
 			try {
-				const payload = {};
-				if (role === 'director' || role === 'super_admin') {
-					const tid =
-						(typeof teamIdForStaff === 'string' && teamIdForStaff.trim()) ||
-						(typeof profile?.teamId === 'string' ? profile.teamId : '');
-					if (!tid || tid === 'admin') {
-						if (!cancelled) {
-							entries = [];
-							loading = false;
-						}
-						return;
-					}
-					payload.teamId = tid.trim();
-				}
-
-				const res = await getTeamLeaderboard(payload);
-				const data = /** @type {{ ok?: boolean, entries?: typeof entries }} */ (res.data);
+				const q = query(
+					collection(db, 'player_stats'),
+					where('teamId', '==', tid),
+					orderBy('xp_this_week', 'desc'),
+					limit(15)
+				);
+				const snap = await getDocs(q);
 				if (cancelled) return;
-				if (data?.ok && Array.isArray(data.entries)) {
-					entries = data.entries;
-				} else {
-					err = 'Could not load leaderboard.';
-				}
+
+				/** @type {typeof entries} */
+				const rows = [];
+				let rank = 1;
+				snap.forEach((docSnap) => {
+					const d = docSnap.data();
+					const wk = Math.floor(Number(d.xp_this_week) || 0);
+					rows.push({
+						rank: rank++,
+						playerKey: docSnap.id,
+						displayName:
+							typeof d.playerName === 'string' && d.playerName.trim() ?
+								d.playerName.trim() :
+								'Player',
+						xpThisWeek: wk,
+						currentLevel: Math.max(
+							1,
+							Math.floor(Number(d.current_level) || 1)
+						),
+						streak: Math.floor(Number(d.streak_days) || 0),
+						isCurrentUser: docSnap.id === uid
+					});
+				});
+				entries = rows;
 			} catch (e) {
 				if (!cancelled) {
 					err =
@@ -75,6 +101,9 @@
 		};
 	});
 
+	/**
+	 * @param {number} rank
+	 */
 	function tierClass(rank) {
 		if (rank === 1) return 'lb-row--gold';
 		if (rank === 2) return 'lb-row--silver';
@@ -88,7 +117,7 @@
 		<div class="lb-header">
 			<div>
 				<h2 class="lb-title">Team leaderboard</h2>
-				<p class="lb-sub">Top players by XP · 🔥 = daily streak</p>
+				<p class="lb-sub">Top 15 by XP this week · 🔥 = streak</p>
 			</div>
 		</div>
 
@@ -97,7 +126,9 @@
 		{:else if err}
 			<p class="lb-err" role="alert">{err}</p>
 		{:else if entries.length === 0}
-			<p class="lb-hint">No ranked players yet. Log in daily to earn XP and climb the board.</p>
+			<p class="lb-hint">
+				No weekly stats yet. Log training to earn XP and climb the board.
+			</p>
 		{:else}
 			<div class="lb-table-wrap">
 				<table class="lb-table">
@@ -105,7 +136,8 @@
 						<tr>
 							<th class="lb-th-rank">#</th>
 							<th>Player</th>
-							<th class="lb-th-num">XP</th>
+							<th class="lb-th-num">Lv</th>
+							<th class="lb-th-week">XP week</th>
 							<th class="lb-th-streak">Streak</th>
 						</tr>
 					</thead>
@@ -128,10 +160,11 @@
 										<span class="lb-you">You</span>
 									{/if}
 								</td>
-								<td class="lb-td-num">{row.xp.toLocaleString()}</td>
+								<td class="lb-td-num">{row.currentLevel}</td>
+								<td class="lb-td-week">{row.xpThisWeek.toLocaleString()}</td>
 								<td class="lb-td-streak">
-									{#if row.currentStreak > 0}
-										<span class="lb-fire" title="Current streak">🔥 {row.currentStreak}</span>
+									{#if row.streak > 0}
+										<span class="lb-fire" title="Current streak">🔥 {row.streak}</span>
 									{:else}
 										<span class="lb-dash">—</span>
 									{/if}
@@ -156,12 +189,14 @@
 		margin-bottom: 0;
 		padding: var(--spacing-fluid);
 		border-radius: var(--radius-premium);
+		background: var(--pp-surface-elevated, var(--glass-bg));
+		border: 1px solid var(--pp-border, var(--glass-border));
 	}
 
 	.lb-header {
 		margin-bottom: clamp(14px, 2.5vw, 18px);
 		padding-bottom: clamp(12px, 2vw, 16px);
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--pp-border, var(--border-subtle));
 	}
 
 	.lb-title {
@@ -169,19 +204,20 @@
 		font-size: clamp(1.1rem, 3.2vw, 1.35rem);
 		font-weight: 900;
 		letter-spacing: -0.02em;
+		color: var(--pp-text, var(--text-primary));
 	}
 
 	.lb-sub {
 		margin: 8px 0 0;
 		font-size: clamp(0.86rem, 2.4vw, 0.92rem);
-		color: var(--text-secondary);
+		color: var(--pp-text-muted, var(--text-secondary));
 		font-weight: 600;
 	}
 
 	.lb-hint {
 		margin: 0;
 		font-weight: 600;
-		color: var(--text-secondary);
+		color: var(--pp-text-muted, var(--text-secondary));
 		line-height: 1.55;
 	}
 
@@ -194,8 +230,8 @@
 	.lb-table-wrap {
 		overflow-x: auto;
 		border-radius: var(--radius-premium);
-		border: 1px solid var(--glass-border);
-		background: var(--glass-bg);
+		border: 1px solid var(--pp-border, var(--glass-border));
+		background: var(--pp-surface, rgba(15, 23, 42, 0.4));
 		-webkit-backdrop-filter: blur(12px);
 		backdrop-filter: blur(12px);
 	}
@@ -210,7 +246,7 @@
 	.lb-table td {
 		padding: clamp(12px, 2vw, 14px) clamp(14px, 2.5vw, 16px);
 		text-align: left;
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--pp-border, var(--border-subtle));
 	}
 
 	.lb-table thead th {
@@ -218,8 +254,8 @@
 		text-transform: uppercase;
 		letter-spacing: 0.07em;
 		font-weight: 900;
-		color: var(--text-secondary);
-		background: var(--surface-subtle);
+		color: var(--pp-text-muted, var(--text-secondary));
+		background: var(--pp-surface-elevated, var(--surface-subtle));
 	}
 
 	.lb-th-rank {
@@ -227,6 +263,7 @@
 	}
 
 	.lb-th-num,
+	.lb-th-week,
 	.lb-th-streak {
 		text-align: right;
 		width: 5rem;
@@ -239,31 +276,67 @@
 	.lb-row--gold {
 		background: linear-gradient(
 			90deg,
-			rgba(245, 158, 11, 0.18) 0%,
-			transparent 65%
+			rgba(245, 158, 11, 0.28) 0%,
+			transparent 70%
 		);
+		box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
 	}
 
 	.lb-row--silver {
 		background: linear-gradient(
 			90deg,
 			rgba(148, 163, 184, 0.22) 0%,
-			transparent 65%
+			transparent 70%
 		);
+		box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
 	}
 
 	.lb-row--bronze {
 		background: linear-gradient(
 			90deg,
-			rgba(180, 83, 9, 0.16) 0%,
-			transparent 65%
+			rgba(180, 83, 9, 0.2) 0%,
+			transparent 70%
 		);
+		box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.3);
+	}
+
+	.lb-rank-podium {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 12px;
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.lb-rank-podium--1 {
+		background: linear-gradient(145deg, #fde68a, #f59e0b);
+		color: #0f172a;
+		box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+	}
+
+	.lb-rank-podium--2 {
+		background: linear-gradient(145deg, #e2e8f0, #94a3b8);
+		color: #0f172a;
+		box-shadow: 0 0 14px rgba(148, 163, 184, 0.4);
+	}
+
+	.lb-rank-podium--3 {
+		background: linear-gradient(145deg, #fdba74, #c2410c);
+		color: #fff;
+		box-shadow: 0 0 14px rgba(194, 65, 12, 0.35);
 	}
 
 	.lb-row--me {
-		outline: 2px solid var(--aggie-blue);
+		outline: 2px solid var(--pp-accent, var(--brand-primary));
 		outline-offset: -2px;
-		box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+			0 0 22px color-mix(in srgb, var(--pp-accent, var(--brand-primary)) 22%, transparent);
+		position: relative;
+		z-index: 1;
 	}
 
 	.lb-td-rank {
@@ -277,6 +350,7 @@
 
 	.lb-td-name {
 		font-weight: 700;
+		color: var(--pp-text, var(--text-primary));
 	}
 
 	.lb-you {
@@ -288,16 +362,22 @@
 		font-weight: 900;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		background: var(--aggie-blue);
+		background: var(--pp-accent, var(--brand-primary));
 		color: #fff;
 		vertical-align: middle;
 	}
 
 	.lb-td-num,
+	.lb-td-week,
 	.lb-td-streak {
 		text-align: right;
 		font-variant-numeric: tabular-nums;
 		font-weight: 800;
+		color: var(--pp-text, var(--text-primary));
+	}
+
+	.lb-td-week {
+		color: var(--pp-accent, var(--brand-primary));
 	}
 
 	.lb-fire {
@@ -305,17 +385,7 @@
 	}
 
 	.lb-dash {
-		color: var(--text-secondary);
+		color: var(--pp-text-muted, var(--text-secondary));
 		font-weight: 600;
-	}
-
-	:global(html.dark) .lb-table-wrap {
-		background: rgba(15, 23, 42, 0.45);
-		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	:global(html.dark) .lb-row--me {
-		outline-color: #38bdf8;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 	}
 </style>
