@@ -14,6 +14,7 @@
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
+	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 
 	let { children } = $props();
 
@@ -130,6 +131,7 @@
 			<BottomNav />
 		</div>
 	{/if}
+	<PlayerDetailDrawer />
 {/if}
 
 <style>

@@ -1,13 +1,19 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 	import Swal from 'sweetalert2';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
+	import '$lib/styles/enterprise-console.css';
 
 	let { teamId = '', teams = [] } = $props();
 
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
+
+	/** Roster display name → player_lookup doc id (email lower) */
+	let nameToEmail = $state(/** @type {Record<string, string>} */ ({}));
 
 	let players = $state([]);
 	let playerStats = $state({});
@@ -24,6 +30,44 @@
 	let addEmail = $state('');
 	let addJersey = $state('');
 	let totalReps = $state(0);
+
+	const currentTeam = $derived(teams.find((t) => t.id === teamId));
+
+	/**
+	 * @param {string} teamName
+	 */
+	function parseAgeFromTeamName(teamName) {
+		if (!teamName) return null;
+		const m = String(teamName).match(/\bU\s*(\d{1,2})\b/i);
+		return m ? `U${m[1]}` : null;
+	}
+
+	/**
+	 * @param {Record<string, Record<string, unknown>>} ps
+	 * @param {string} name
+	 */
+	function resolveStatsDocId(name, ps) {
+		if (ps[name]) return name;
+		const id = Object.keys(ps).find((k) => ps[k]?.playerName === name);
+		return id || name;
+	}
+
+	/**
+	 * @param {Record<string, unknown> | undefined} stats
+	 */
+	function formatLastActiveLabel(stats) {
+		if (!stats) return '—';
+		const la = stats.lastActive;
+		if (la && typeof la === 'object' && 'toDate' in la && typeof la.toDate === 'function') {
+			try {
+				return la.toDate().toLocaleDateString();
+			} catch {
+				/* fall through */
+			}
+		}
+		if (stats.last_training_utc) return String(stats.last_training_utc);
+		return '—';
+	}
 
 	const loadRoster = async () => {
 		if (!teamId) return;
@@ -44,7 +88,15 @@
 			jerseys = rosterSnap.exists() ? rosterSnap.data().jerseys || {} : {};
 
 			linkedPlayers = new Set();
-			linkSnap.forEach((d) => linkedPlayers.add(d.data().playerName));
+			const emailMap = {};
+			linkSnap.forEach((d) => {
+				const data = d.data();
+				if (typeof data.playerName === 'string' && data.playerName.trim()) {
+					linkedPlayers.add(data.playerName);
+					emailMap[data.playerName.trim()] = d.id;
+				}
+			});
+			nameToEmail = emailMap;
 
 			const combined = new Set([...rosterNames, ...Object.keys(playerStats)]);
 			players = Array.from(combined).sort();
@@ -244,6 +296,46 @@
 			removingName = null;
 		}
 	};
+
+	/**
+	 * @param {string} p
+	 */
+	function openPlayerDrawer(p) {
+		const statsId = resolveStatsDocId(p, playerStats);
+		const stats = playerStats[statsId];
+		const em = nameToEmail[p] || null;
+		const teamNm = currentTeam?.name || '';
+
+		enterprisePlayerDrawer.open(
+			{
+				id: `${teamId}_${p}`,
+				displayName: p,
+				teamId,
+				teamLabel: teamNm || teamId,
+				statsDocId: statsId,
+				playerEmail: em,
+				jersey: jerseys[p] != null && String(jerseys[p]).trim() ? String(jerseys[p]) : null,
+				ageGroup: parseAgeFromTeamName(teamNm),
+				position: null,
+				status: linkedPlayers.has(p) ? 'active' : 'pending',
+				lastActiveLabel: formatLastActiveLabel(stats),
+				source: 'coach',
+			},
+			{
+				assignDrill: () => {
+					enterprisePlayerDrawer.close();
+					goto('/coach?tab=plan');
+				},
+				editProfile: () => {
+					if (em) window.location.href = `mailto:${em}`;
+				},
+				removeFromRoster: async () => {
+					await removePlayer(p);
+					enterprisePlayerDrawer.close();
+				},
+			}
+		);
+	}
 </script>
 
 <div class="roster-tab">
@@ -324,29 +416,51 @@
 				{:else if players.length === 0}
 					<div class="session-empty">No players found.</div>
 				{:else}
-					{#each players as p}
-						<div class="player-row">
-							<div>
-								<b>{jerseys[p] ? `#${jerseys[p]} ` : ''}{p}</b>
-								<div class="text-sm-sub">
-									Last: {playerStats[p]?.lastActive
-										? playerStats[p].lastActive.toDate?.().toLocaleDateString?.() || 'N/A'
-										: 'Inactive'}
-								</div>
-							</div>
-							<div class="player-actions">
-								<span class="player-mins">{playerStats[p]?.totalMins || 0}m</span>
-								{#if linkedPlayers.has(p)}<span class="linked-badge-ui">✔ Linked</span>{/if}
-								<button
-									type="button"
-									class="delete-btn"
-									onclick={() => removePlayer(p)}
-									disabled={removeBusy}
-									aria-busy={removingName === p}
-								>{removingName === p ? '…' : 'x'}</button>
-							</div>
-						</div>
-					{/each}
+					<div class="ec-table-wrap roster-ec-table">
+						<table class="ec-table">
+							<thead>
+								<tr>
+									<th>Player</th>
+									<th>Age group</th>
+									<th>Position</th>
+									<th>Status</th>
+									<th>Last active</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each players as p (p)}
+									{@const statsId = resolveStatsDocId(p, playerStats)}
+									{@const st = playerStats[statsId]}
+									<tr
+										class="ec-table__row-click"
+										onclick={() => openPlayerDrawer(p)}
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												e.preventDefault();
+												openPlayerDrawer(p);
+											}
+										}}
+										role="button"
+										tabindex="0"
+									>
+										<td class="ec-table__strong">
+											{jerseys[p] ? `#${jerseys[p]} ` : ''}{p}
+										</td>
+										<td>{parseAgeFromTeamName(currentTeam?.name || '') || '—'}</td>
+										<td class="ec-muted">—</td>
+										<td>
+											{#if linkedPlayers.has(p)}
+												<span class="ec-pill ec-pill--ok">Active</span>
+											{:else}
+												<span class="ec-pill ec-pill--muted">Pending</span>
+											{/if}
+										</td>
+										<td class="ec-muted">{formatLastActiveLabel(st)}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
 				{/if}
 			</div>
 		</div>

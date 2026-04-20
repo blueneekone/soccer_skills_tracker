@@ -4,6 +4,142 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
+	import '$lib/styles/enterprise-console.css';
+
+	/** @typedef {{ id: string, displayName: string, teamId: string, teamLabel: string, statsDocId: string, playerEmail: string, jersey: string | null, ageGroup: string | null, position: string | null, status: 'active' | 'pending', lastActiveLabel: string }} PlatformPlayerRow */
+
+	let platformPlayers = $state(/** @type {PlatformPlayerRow[]} */ ([]));
+	let platformLoading = $state(false);
+	let platformErr = $state('');
+
+	/**
+	 * @param {string} teamName
+	 */
+	function parseAgeFromTeamName(teamName) {
+		if (!teamName) return null;
+		const m = String(teamName).match(/\bU\s*(\d{1,2})\b/i);
+		return m ? `U${m[1]}` : null;
+	}
+
+	/**
+	 * @param {Record<string, unknown> | undefined} stats
+	 */
+	function formatLastActiveLabel(stats) {
+		if (!stats) return '—';
+		const la = stats.lastActive;
+		if (la && typeof la === 'object' && 'toDate' in la && typeof la.toDate === 'function') {
+			try {
+				return la.toDate().toLocaleDateString();
+			} catch {
+				/* — */
+			}
+		}
+		if (typeof stats.last_training_utc === 'string') return stats.last_training_utc;
+		return '—';
+	}
+
+	async function loadPlatformRoster() {
+		if (authStore.role !== 'super_admin') return;
+		platformLoading = true;
+		platformErr = '';
+		try {
+			const lookupSnap = await getDocs(collection(db, 'player_lookup'));
+			const teamNameById = Object.fromEntries(teamsStore.teams.map((t) => [t.id, t.name || t.id]));
+			const uniqueTeamIds = new Set();
+			/** @type {Array<{ playerName: string, email: string, teamId: string, teamLabel: string }>} */
+			const raw = [];
+			lookupSnap.forEach((d) => {
+				const data = d.data();
+				const teamId = typeof data.teamId === 'string' ? data.teamId : '';
+				const playerName =
+					typeof data.playerName === 'string' && data.playerName.trim() ?
+						data.playerName.trim() :
+						'';
+				if (!playerName) return;
+				uniqueTeamIds.add(teamId);
+				raw.push({
+					playerName,
+					email: d.id,
+					teamId,
+					teamLabel: teamNameById[teamId] || teamId || '—',
+				});
+			});
+
+			/** @type {Record<string, Record<string, { id: string, data: Record<string, unknown> }>>} */
+			const statsByTeam = {};
+			for (const tid of uniqueTeamIds) {
+				if (!tid) continue;
+				const sq = query(collection(db, 'player_stats'), where('teamId', '==', tid));
+				const sSnap = await getDocs(sq);
+				statsByTeam[tid] = {};
+				sSnap.forEach((sd) => {
+					const dat = sd.data();
+					const entry = { id: sd.id, data: dat };
+					statsByTeam[tid][sd.id] = entry;
+					const pn = typeof dat.playerName === 'string' ? dat.playerName.trim() : '';
+					if (pn) statsByTeam[tid][`n:${pn}`] = entry;
+				});
+			}
+
+			platformPlayers = raw
+				.map((r) => {
+					const teamStats = statsByTeam[r.teamId] || {};
+					const byName = teamStats[`n:${r.playerName}`];
+					const byEmail = teamStats[r.email];
+					const pick = byName || byEmail;
+					const st = pick?.data;
+					const statsDocId = pick?.id || r.email;
+					return {
+						id: `${r.teamId}_${r.playerName}_${r.email}`,
+						displayName: r.playerName,
+						teamId: r.teamId,
+						teamLabel: r.teamLabel,
+						statsDocId,
+						playerEmail: r.email,
+						jersey: null,
+						ageGroup: parseAgeFromTeamName(r.teamLabel),
+						position: null,
+						status: /** @type {'active'} */ ('active'),
+						lastActiveLabel: formatLastActiveLabel(st),
+					};
+				})
+				.sort((a, b) =>
+					a.teamLabel.localeCompare(b.teamLabel) || a.displayName.localeCompare(b.displayName)
+				);
+		} catch (e) {
+			platformErr =
+				e instanceof Error ? e.message : 'Could not load platform roster.';
+			platformPlayers = [];
+		} finally {
+			platformLoading = false;
+		}
+	}
+
+	$effect(() => {
+		if (!teamsStore.loaded || authStore.role !== 'super_admin') return;
+		// Re-run when team list changes so labels stay in sync.
+		void teamsStore.teams.length;
+		loadPlatformRoster();
+	});
+
+	/**
+	 * @param {PlatformPlayerRow} row
+	 */
+	function openAdminPlayer(row) {
+		enterprisePlayerDrawer.open(
+			{
+				...row,
+				source: 'admin',
+			},
+			{
+				editProfile: () => {
+					const em = row.playerEmail;
+					if (em) window.location.href = `mailto:${em}`;
+				},
+			}
+		);
+	}
 
 	let newClubId = $state('');
 	let newClubName = $state('');
@@ -99,6 +235,61 @@
 
 <div class="accounts-tab">
 	<div class="bento-section">
+	<div class="card">
+		<div class="card-header">📋 Platform roster (linked players)</div>
+		<div class="card-body p-0">
+			{#if authStore.role !== 'super_admin'}
+				<p class="admin-roster-hint">Super admin only.</p>
+			{:else if platformLoading}
+				<div class="session-empty">Loading roster…</div>
+			{:else if platformErr}
+				<p class="admin-roster-err">{platformErr}</p>
+			{:else if platformPlayers.length === 0}
+				<div class="session-empty">No players in player_lookup.</div>
+			{:else}
+				<div class="ec-table-wrap">
+					<table class="ec-table">
+						<thead>
+							<tr>
+								<th>Player</th>
+								<th>Team</th>
+								<th>Age group</th>
+								<th>Position</th>
+								<th>Status</th>
+								<th>Last active</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each platformPlayers as row (row.id)}
+								<tr
+									class="ec-table__row-click"
+									onclick={() => openAdminPlayer(row)}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											openAdminPlayer(row);
+										}
+									}}
+									role="button"
+									tabindex="0"
+								>
+									<td class="ec-table__strong">{row.displayName}</td>
+									<td class="ec-muted">{row.teamLabel}</td>
+									<td>{row.ageGroup || '—'}</td>
+									<td class="ec-muted">—</td>
+									<td>
+										<span class="ec-pill ec-pill--ok">Active</span>
+									</td>
+									<td class="ec-muted">{row.lastActiveLabel}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
+		</div>
+	</div>
+
 	<div class="card">
 		<div class="card-header">🏢 Registered Organizations</div>
 		<div class="card-body">
@@ -205,4 +396,6 @@
 	.section-divider { border: none; border-top: 1px solid var(--border-subtle); margin: 16px 0; }
 	.admin-flex-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
 	.delete-btn { background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
+	.admin-roster-hint { padding: 16px; margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+	.admin-roster-err { padding: 16px; margin: 0; color: var(--danger-red, #b91c1c); font-size: 0.9rem; }
 </style>
