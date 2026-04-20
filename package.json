@@ -13,7 +13,7 @@
     "@sveltejs/adapter-static": "^0.0.17",
     "@sveltejs/kit": "^0.0.30",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "@vite-pwa/sveltekit": "^0.0.1",
+    "@vite-pwa/sveltekit": "^1.1.0",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.10",
     "svelte": "^5.16.0",
