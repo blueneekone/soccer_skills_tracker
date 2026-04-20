@@ -1,6 +1,6 @@
 /**
- * Director / Admin — locked desktop console (100vw × 100vh).
- * Athlete routes do not import this file.
+ * Universal enterprise shell — locked viewport (100vh), sidebar, canvas.
+ * Imported by EnterpriseConsoleShell for all authenticated app roles.
  */
 
 .ec-root {
@@ -944,4 +944,24 @@ html.dark .ec-pdrawer__btn:hover {
 
 html.dark .ec-pdrawer__btn--danger:hover {
 	background: rgba(127, 29, 29, 0.25);
+}
+
+/* Universal app surfaces — Epic 19 */
+.ec-page {
+	width: 100%;
+	max-width: min(100%, 120rem);
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+.ec-panel {
+	border: 1px solid #e5e5e5;
+	border-radius: 14px;
+	background: #fafafa;
+	box-sizing: border-box;
+}
+
+html.dark .ec-panel {
+	border-color: rgba(255, 255, 255, 0.1);
+	background: #0f0f11;
 }

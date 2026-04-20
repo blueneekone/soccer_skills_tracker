@@ -10,18 +10,11 @@
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
-	import AppHeader from '$lib/components/AppHeader.svelte';
-	import BottomNav from '$lib/components/BottomNav.svelte';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 
 	let { children } = $props();
-
-	const isEnterpriseConsole = $derived(
-		$page.url.pathname.startsWith('/director') || $page.url.pathname.startsWith('/admin')
-	);
-	const enterpriseVariant = $derived($page.url.pathname.startsWith('/admin') ? 'admin' : 'director');
 
 	// Sync club license doc for read-only / pricing UX — super_admin exempt.
 	$effect(() => {
@@ -85,30 +78,16 @@
 		clubBrandingStore.loadForClub(cid || '');
 	});
 
-	// Elite Player Portal: dark, high-contrast athlete shell.
+	// Universal enterprise shell: theme follows user preference (no forced athlete dark mode).
 	$effect(() => {
 		if (typeof document === 'undefined' || authStore.isLoading) return;
-		const elite =
-			authStore.role === 'player' &&
-			authStore.isProfileComplete &&
-			authStore.isAuthenticated;
-		const recruiterScout =
-			authStore.isAuthenticated &&
-			authStore.isProfileComplete &&
-			$page.url.pathname.startsWith('/recruiter');
-		document.documentElement.classList.toggle('player-elite', elite);
-		document.documentElement.classList.toggle('player-portal-theme', elite);
-		document.documentElement.classList.toggle('recruiter-scout-theme', recruiterScout);
-		if (elite || recruiterScout) {
-			document.documentElement.classList.add('dark');
-		} else {
-			themeStore.apply();
-		}
+		document.documentElement.classList.remove('player-elite', 'player-portal-theme', 'recruiter-scout-theme');
+		themeStore.apply();
 	});
 
 	$effect(() => {
 		if (typeof document === 'undefined') return;
-		document.documentElement.classList.toggle('enterprise-console-active', isEnterpriseConsole);
+		document.documentElement.classList.add('enterprise-console-active');
 	});
 </script>
 
@@ -118,19 +97,9 @@
 	</div>
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
 	<ParentFcmPrompt />
-	{#if isEnterpriseConsole}
-		<EnterpriseConsoleShell variant={enterpriseVariant}>
-			{@render children()}
-		</EnterpriseConsoleShell>
-	{:else}
-		<div class="app-shell">
-			<AppHeader />
-			<main class="container app-main">
-				{@render children()}
-			</main>
-			<BottomNav />
-		</div>
-	{/if}
+	<EnterpriseConsoleShell>
+		{@render children()}
+	</EnterpriseConsoleShell>
 	<PlayerDetailDrawer />
 {/if}
 

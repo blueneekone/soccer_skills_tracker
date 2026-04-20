@@ -5,7 +5,9 @@
 	let {
 		tabs = [],
 		activeTab = $bindable(''),
-		variant = 'admin' // 'admin' | 'director' | 'coach'
+		variant = 'admin', // 'admin' | 'director' | 'coach'
+		/** @type {((id: string) => void) | undefined} */
+		onPick = undefined,
 	} = $props();
 
 	const tabClass = $derived(
@@ -22,7 +24,10 @@
 			aria-selected={activeTab === tab.id}
 			aria-label={tab.label}
 			title={tab.label}
-			onclick={() => (activeTab = tab.id)}
+			onclick={() => {
+				activeTab = tab.id;
+				onPick?.(tab.id);
+			}}
 		>
 			{#if tab.icon}<i class="ph {tab.icon} tab-bar-icon" aria-hidden="true"></i>{/if}
 			<span class="tab-bar-label">{tab.label}</span>

@@ -4,6 +4,8 @@
 	import CoachAccountabilityModule from './CoachAccountabilityModule.svelte';
 	import EntitlementModule from './EntitlementModule.svelte';
 	import FieldOpsModule from './FieldOpsModule.svelte';
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 
 	let {
@@ -27,6 +29,9 @@
 			</p>
 		</div>
 	</div>
+
+	<ActionInbox {clubId} />
+	<DirectorAnalyticsCharts {clubId} />
 
 	<div class="director-bento-grid director-bento-grid--lg director-os-shell">
 		<article

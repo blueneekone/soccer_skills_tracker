@@ -5,28 +5,26 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
+	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/**
-	 * @typedef {'director' | 'admin'} ConsoleVariant
-	 */
-
-	/** @type {{ variant?: ConsoleVariant, breadcrumb?: string, children?: import('svelte').Snippet }} */
-	let { variant = 'director', breadcrumb = '', children } = $props();
+	/** @type {{ breadcrumb?: string, children?: import('svelte').Snippet }} */
+	let { breadcrumb = '', children } = $props();
 
 	let drawerOpen = $state(false);
-	/** @type {{ title?: string, body?: string, meta?: string } | null} */
+	/** @type {{ title?: string, body?: string, meta?: string, href?: string } | null} */
 	let drawerPayload = $state(null);
 
 	setContext('enterpriseDrawer', {
 		/**
-		 * @param {{ title?: string, body?: string, meta?: string }} opts
+		 * @param {{ title?: string, body?: string, meta?: string, href?: string }} opts
 		 */
 		open(opts = {}) {
 			drawerPayload = {
 				title: opts.title ?? 'Details',
 				body: opts.body ?? '',
-				meta: opts.meta ?? ''
+				meta: opts.meta ?? '',
+				href: typeof opts.href === 'string' ? opts.href : ''
 			};
 			drawerOpen = true;
 		},
@@ -42,44 +40,14 @@
 		drawerOpen = false;
 	}
 
-	/** Director sidebar — dense nav aligned to portal sections */
-	const directorLinks = [
-		{ tab: 'home', label: 'Home', icon: 'ph-house' },
-		{ tab: 'teams', label: 'Roster & teams', icon: 'ph-users-three' },
-		{ tab: 'field', label: 'Field ops', icon: 'ph-soccer-ball' },
-		{ tab: 'registrars', label: 'Registrars', icon: 'ph-swap' },
-		{ tab: 'brand', label: 'Club branding', icon: 'ph-palette' },
-		{ tab: 'marketing', label: 'Playbook & campaigns', icon: 'ph-megaphone' },
-		{ tab: 'compliance', label: 'Compliance', icon: 'ph-shield-check' },
-		{ tab: 'household', label: 'Households & COPPA', icon: 'ph-house-line' }
-	];
+	const nav = $derived(getWorkspaceNav($page.url.pathname, authStore.role));
+	const links = $derived(nav.links);
+	const workspaceLabel = $derived(nav.workspaceLabel);
+	const mobileTitle = $derived(nav.mobileTitle);
+	const showBilling = $derived(nav.showBilling);
 
-	/** Admin super_console nav */
-	const adminLinks = [
-		{ tab: 'overview', label: 'Overview', icon: 'ph-chart-line' },
-		{ tab: 'sports', label: 'Sports modules', icon: 'ph-trophy' },
-		{ tab: 'accounts', label: 'Accounts', icon: 'ph-users-three' },
-		{ tab: 'billing', label: 'Licensing', icon: 'ph-credit-card' },
-		{ tab: 'security', label: 'Security', icon: 'ph-shield-check' }
-	];
-
-	const activeTab = $derived($page.url.searchParams.get('tab') || '');
-	const links = $derived(variant === 'admin' ? adminLinks : directorLinks);
-
-	function hrefFor(tab) {
-		const base = variant === 'admin' ? '/admin' : '/director';
-		if (tab === 'home') return `${base}?tab=home`;
-		if (variant === 'admin' && tab === 'overview') return base;
-		return `${base}?tab=${encodeURIComponent(tab)}`;
-	}
-
-	function isActive(tab) {
-		if (variant === 'admin') {
-			if (tab === 'overview') return activeTab === '' || activeTab === 'overview';
-			return activeTab === tab;
-		}
-		if (tab === 'home') return activeTab === '' || activeTab === 'home';
-		return activeTab === tab;
+	function navActive(item) {
+		return isShellNavActive($page.url.pathname, $page.url.searchParams, item);
 	}
 
 	let mobileNavOpen = $state(false);
@@ -113,7 +81,7 @@
 				<i class="ph ph-squares-four ec-mobile-header__logo-fallback" aria-hidden="true"></i>
 			{/if}
 			<div class="ec-mobile-header__titles">
-				<span class="ec-mobile-header__name">{variant === 'admin' ? 'Admin' : 'Director'}</span>
+				<span class="ec-mobile-header__name">{mobileTitle}</span>
 				<span class="ec-mobile-header__sub">Command Center</span>
 			</div>
 		</div>
@@ -157,16 +125,16 @@
 					<i class="ph ph-squares-four" style="font-size: 1.5rem; color: var(--text-secondary);" aria-hidden="true"></i>
 				{/if}
 				<div class="min-w-0">
-					<p class="ec-sidebar__title">{variant === 'admin' ? 'Platform admin' : 'Director'}</p>
+					<p class="ec-sidebar__title">{workspaceLabel}</p>
 					<p class="ec-sidebar__subtitle">Workspace</p>
 				</div>
 			</div>
 			<nav class="ec-sidebar__nav">
-				{#each links as item (item.tab)}
+				{#each links as item (item.href)}
 					<a
 						class="ec-nav-link"
-						class:ec-nav-link--active={isActive(item.tab)}
-						href={hrefFor(item.tab)}
+						class:ec-nav-link--active={navActive(item)}
+						href={item.href}
 						data-sveltekit-preload-data="hover"
 						onclick={closeMobileNav}
 					>
@@ -174,7 +142,7 @@
 						<span class="min-w-0">{item.label}</span>
 					</a>
 				{/each}
-				{#if variant === 'director'}
+				{#if showBilling}
 					<p class="ec-nav-section">Billing</p>
 					<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
 						<i class="ph ph-credit-card" aria-hidden="true"></i>
@@ -189,10 +157,8 @@
 			<div class="ec-breadcrumb">
 				{#if breadcrumb}
 					{breadcrumb}
-				{:else if variant === 'admin'}
-					<strong>Admin</strong> / Console
 				{:else}
-					<strong>Director</strong> / Console
+					<strong>{workspaceLabel}</strong> / Console
 				{/if}
 			</div>
 			<div class="ec-search">
@@ -251,6 +217,18 @@
 		{:else}
 			<p style="margin: 0; color: var(--text-secondary);">No selection.</p>
 		{/if}
+		{#if drawerPayload?.href}
+			<p class="ec-drawer__actions">
+				<a
+					class="ec-drawer__cta"
+					href={drawerPayload.href}
+					data-sveltekit-preload-data="hover"
+					onclick={() => closeDrawer()}
+				>
+					Continue
+				</a>
+			</p>
+		{/if}
 	</div>
 </aside>
 
@@ -273,5 +251,22 @@
 	.ec-drawer__text {
 		white-space: pre-wrap;
 		color: var(--text-primary);
+	}
+
+	.ec-drawer__actions {
+		margin: 16px 0 0;
+	}
+
+	.ec-drawer__cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px 16px;
+		border-radius: 10px;
+		font-size: 13px;
+		font-weight: 700;
+		text-decoration: none;
+		color: #0f172a;
+		background: var(--brand-primary, #f59e0b);
 	}
 </style>

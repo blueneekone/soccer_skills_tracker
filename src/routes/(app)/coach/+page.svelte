@@ -1,4 +1,7 @@
 <script>
+	import { untrack } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
@@ -6,6 +9,8 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 	import TabBar from '$lib/components/TabBar.svelte';
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
 	import RosterTab from '$lib/components/coach/RosterTab.svelte';
 	import PlanTab from '$lib/components/coach/PlanTab.svelte';
 	import EvalsTab from '$lib/components/coach/EvalsTab.svelte';
@@ -91,9 +96,22 @@
 	};
 
 	const onWorkoutSaved = () => workoutsStore.loadForTeam(selectedTeamId);
+
+	$effect(() => {
+		const t = $page.url.searchParams.get('tab') || 'roster';
+		if (!TABS.some((x) => x.id === t)) return;
+		if (untrack(() => activeTab) !== t) activeTab = t;
+	});
+
+	/**
+	 * @param {string} id
+	 */
+	function onCoachTabPick(id) {
+		goto(`/coach?tab=${encodeURIComponent(id)}`, { replaceState: true, noScroll: true });
+	}
 </script>
 
-<div class="view-section locked-dashboard-view">
+<div class="ec-page ec-coach">
 	<div class="coach-portal-title">
 		{#if clubId}
 			<ClubLogoMark size="lg" />
@@ -103,11 +121,11 @@
 
 	<!-- Director team selector -->
 	{#if isDirectorView}
-		<div class="card">
-			<div class="card-header">Director Access</div>
-			<div class="card-body">
-				<label>View Team Data</label>
-				<select bind:value={selectedTeamId}>
+		<div class="ec-panel ec-coach__select">
+			<div class="ec-coach__select-head">Director Access</div>
+			<div class="ec-coach__select-body">
+				<label class="ec-coach__label" for="coach-dir-team">View Team Data</label>
+				<select id="coach-dir-team" bind:value={selectedTeamId}>
 					{#each myTeams() as t}
 						<option value={t.id}>{t.name}</option>
 					{/each}
@@ -117,9 +135,9 @@
 	{:else}
 		<!-- Coach can only see their own teams -->
 		{#if myTeams().length > 1}
-			<div class="card">
-				<div class="card-body">
-					<select bind:value={selectedTeamId}>
+			<div class="ec-panel ec-coach__select">
+				<div class="ec-coach__select-body">
+					<select bind:value={selectedTeamId} aria-label="Select team">
 						{#each myTeams() as t}
 							<option value={t.id}>{t.name}</option>
 						{/each}
@@ -129,7 +147,10 @@
 		{/if}
 	{/if}
 
-	<TabBar tabs={TABS} bind:activeTab variant="coach" />
+	<ActionInbox clubId={clubId || ''} teamId={selectedTeamId} />
+	<CoachTeamXpVelocityChart teamId={selectedTeamId} />
+
+	<TabBar tabs={TABS} bind:activeTab variant="coach" onPick={onCoachTabPick} />
 
 	<div class="tab-content">
 		{#if activeTab === 'roster'}
@@ -160,6 +181,49 @@
 </div>
 
 <style>
+	.ec-coach {
+		padding-bottom: 8px;
+	}
+
+	.ec-coach__select {
+		padding: 0;
+		margin-bottom: 14px;
+		overflow: hidden;
+	}
+
+	.ec-coach__select-head {
+		padding: 10px 14px;
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+		background: #ffffff;
+	}
+
+	:global(html.dark) .ec-coach__select-head {
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+		background: #09090b;
+	}
+
+	.ec-coach__select-body {
+		padding: 12px 14px;
+		background: #ffffff;
+	}
+
+	:global(html.dark) .ec-coach__select-body {
+		background: #09090b;
+	}
+
+	.ec-coach__label {
+		display: block;
+		font-size: 12px;
+		font-weight: 600;
+		margin-bottom: 6px;
+		color: var(--text-secondary);
+	}
+
 	.coach-portal-title {
 		display: flex;
 		align-items: center;

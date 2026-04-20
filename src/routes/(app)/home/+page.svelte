@@ -12,6 +12,7 @@
 	import ElitePlayerDashboard from '$lib/components/ElitePlayerDashboard.svelte';
 	import ActiveAssignmentsInbox from '$lib/components/ActiveAssignmentsInbox.svelte';
 	import VideoTrialUploader from '$lib/components/player/VideoTrialUploader.svelte';
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 
 	const completeAssignmentStatus = httpsCallable(functions, 'completeAssignmentStatus');
 
@@ -146,11 +147,22 @@
 		role === 'director' ||
 		(teamsStore.loaded && authStore.user && teamsStore.getCoachTeams(authStore.user.email).length > 0)
 	);
+
+	const inboxClubId = $derived(profile?.clubId || '');
+	const inboxTeamId = $derived.by(() => {
+		if (role === 'coach' && authStore.user?.email && teamsStore.loaded) {
+			const teams = teamsStore.getCoachTeams(authStore.user.email);
+			return teams[0]?.id || '';
+		}
+		return effectiveTid || '';
+	});
 </script>
 
-<div class="view-section locked-dashboard-view">
+<div class="ec-page ec-home">
+	<ActionInbox clubId={inboxClubId} teamId={inboxTeamId} />
+
 	<!-- Welcome header -->
-	<div class="card dashboard-header">
+	<div class="ec-panel dashboard-header">
 		<div class="card-body text-center">
 			{#if profile?.clubId}
 				<div class="welcome-brand-wrap">
@@ -330,6 +342,19 @@
 </div>
 
 <style>
+	.ec-home {
+		padding-bottom: 16px;
+	}
+
+	.ec-home .dashboard-header {
+		padding: clamp(14px, 3vw, 22px);
+		margin-bottom: 16px;
+	}
+
+	.ec-home .dashboard-header .card-body {
+		padding: 0;
+	}
+
 	.welcome-brand-wrap {
 		display: flex;
 		justify-content: center;
