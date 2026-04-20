@@ -593,6 +593,21 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Epic 14: video trials — all writes via Cloud Functions (submitVideoTrial / verifyVideoTrial).
+    match /trial_scores/{scoreId} {
+      allow read: if authed() && (
+        isSuper()
+        || resource.data.playerId == request.auth.uid
+        || directorScopedToTeam(resource.data.teamId)
+        || (isCoach() && sameTeam(resource.data.teamId))
+        || (isRegistrar()
+            && tokenClub() != null
+            && resource.data.clubId == tokenClub())
+        || (recruiterSubscriptionActive() && resource.data.status == 'verified')
+      );
+      allow create, update, delete: if false;
+    }
+
     // Epic 11: global drill catalog (seeded / admin only via Admin SDK).
     match /drills/{drillId} {
       allow read: if authed();

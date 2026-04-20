@@ -843,6 +843,30 @@ async function syncPublicPlayerProfile(uid) {
       .sort()
       .map((month) => ({month, xp: monthXp[month]}));
 
+  let verifiedVideoUrl = null;
+  let verifiedVideoScoreId = null;
+  try {
+    const vSnap = await db.collection('trial_scores')
+        .where('playerId', '==', uid)
+        .where('status', '==', 'verified')
+        .orderBy('verifiedAt', 'desc')
+        .limit(1)
+        .get();
+    if (!vSnap.empty) {
+      const vd = vSnap.docs[0].data() || {};
+      const vu =
+          typeof vd.videoUrl === 'string' && vd.videoUrl.trim() ?
+            vd.videoUrl.trim() :
+            '';
+      if (vu) {
+        verifiedVideoUrl = vu;
+        verifiedVideoScoreId = vSnap.docs[0].id;
+      }
+    }
+  } catch (e) {
+    logger.warn('syncPublicPlayerProfile trial_scores video', e);
+  }
+
   let brandLogoUrl = null;
   let clubNameShort = null;
   if (teamId) {
@@ -883,6 +907,8 @@ async function syncPublicPlayerProfile(uid) {
         top_attributes: topAttributes,
         verified_trial_scores: verifiedTrialScores,
         monthly_performance: monthlyXp,
+        verified_video_url: verifiedVideoUrl || null,
+        verified_video_score_id: verifiedVideoScoreId || null,
         brandLogoUrl: brandLogoUrl || null,
         clubDisplayName: clubNameShort || null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -954,6 +980,177 @@ exports.updatePublicProfileOnTrial = onDocumentWritten(
       }
     },
 );
+
+/** Epic 14: video trial Firestore row after Storage upload (validated). */
+exports.submitVideoTrial = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role || 'player';
+  if (role !== 'player') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only player accounts may submit video trials.',
+    );
+  }
+  const data = request.data || {};
+  const scoreId =
+      typeof data.scoreId === 'string' ? data.scoreId.trim() : '';
+  const videoUrl =
+      typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '';
+  const skill =
+      typeof data.skill === 'string' ? data.skill.trim().slice(0, 120) : '';
+  if (!scoreId || scoreId.length < 8 || scoreId.length > 128) {
+    throw new HttpsError('invalid-argument', 'scoreId is required.');
+  }
+  if (!videoUrl || !videoUrl.startsWith('http')) {
+    throw new HttpsError('invalid-argument', 'videoUrl is required.');
+  }
+  const uid = request.auth.uid;
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('failed-precondition', 'Missing email on account.');
+  }
+  const uSnap = await db.collection('users').doc(email).get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'Profile not found.');
+  }
+  const u = uSnap.data() || {};
+  const teamId =
+      typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ?
+        u.teamId.trim() :
+        '';
+  const clubId =
+      typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
+  const playerName =
+      typeof u.playerName === 'string' && u.playerName.trim() ?
+        u.playerName.trim() :
+        '';
+  if (!teamId || !clubId || !playerName) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Athlete profile must have team and club.',
+    );
+  }
+
+  const expectedPath = `clubs/${clubId}/trials/${uid}/${scoreId}_video.mp4`;
+  let bucket;
+  try {
+    bucket = admin.storage().bucket();
+  } catch (e) {
+    logger.error('submitVideoTrial bucket', e);
+    throw new HttpsError(
+        'failed-precondition',
+        'Storage is not available.',
+    );
+  }
+  const [exists] = await bucket.file(expectedPath).exists();
+  if (!exists) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Upload the video to the expected path before submitting.',
+    );
+  }
+
+  const ref = db.collection('trial_scores').doc(scoreId);
+  const prev = await ref.get();
+  if (prev.exists) {
+    throw new HttpsError(
+        'already-exists',
+        'This trial id was already submitted.',
+    );
+  }
+
+  await ref.set({
+    clubId,
+    teamId,
+    playerId: uid,
+    playerName,
+    videoUrl,
+    skill: skill || '',
+    status: 'pending_verification',
+    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {ok: true, scoreId};
+});
+
+/**
+ * Epic 14: coach / director approves or rejects a pending video trial.
+ */
+exports.verifyVideoTrial = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const scoreId =
+      typeof data.scoreId === 'string' ? data.scoreId.trim() : '';
+  const decisionRaw =
+      typeof data.decision === 'string' ? data.decision.trim().toLowerCase() :
+        '';
+  if (!scoreId) {
+    throw new HttpsError('invalid-argument', 'scoreId is required.');
+  }
+  if (!['approve', 'reject'].includes(decisionRaw)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'decision must be approve or reject.',
+    );
+  }
+
+  const ref = db.collection('trial_scores').doc(scoreId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError('not-found', 'Trial not found.');
+  }
+  const t = snap.data() || {};
+  const teamId =
+      typeof t.teamId === 'string' ? t.teamId.trim() : '';
+  if (!teamId) {
+    throw new HttpsError('failed-precondition', 'Trial has no team.');
+  }
+  await assertCanSecureAddPlayer(request, teamId);
+
+  const st = t.status;
+  if (st !== 'pending_verification') {
+    throw new HttpsError(
+        'failed-precondition',
+        'This trial is not pending verification.',
+    );
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const actorUid = request.auth.uid;
+  const patch =
+      decisionRaw === 'approve' ?
+        {
+          status: 'verified',
+          verifiedAt: now,
+          verifiedByUid: actorUid,
+        } :
+        {
+          status: 'rejected',
+          verifiedAt: now,
+          verifiedByUid: actorUid,
+        };
+
+  await db.runTransaction(async (tx) => {
+    const cur = await tx.get(ref);
+    if (!cur.exists) {
+      throw new HttpsError('not-found', 'Trial not found.');
+    }
+    const c = cur.data() || {};
+    if (c.status !== 'pending_verification') {
+      throw new HttpsError(
+          'failed-precondition',
+          'This trial is no longer pending.',
+      );
+    }
+    tx.update(ref, patch);
+  });
+
+  return {ok: true, scoreId, status: patch.status};
+});
 
 exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
   const userData = event.data.after.data();
@@ -6340,6 +6537,7 @@ async function collectFcmTokensForUids(uids) {
 /**
  * Firestore: new skill trial logged under trials/ — notify linked parents.
  * Path matches client writes (challenges + coach Evals).
+ * Video trials use trial_scores/ + onTrialScoreWritten (player FCM on verify).
  */
 exports.onTrialScoreAdded = onDocumentCreated(
     {
@@ -6414,6 +6612,68 @@ exports.onTrialScoreAdded = onDocumentCreated(
           });
         } catch (e) {
           logger.error('onTrialScoreAdded: sendMulticast failed', e);
+        }
+      }
+    },
+);
+
+/**
+ * Epic 14: trial_scores → public profile + FCM on verify.
+ * Legacy trials/ still uses onTrialScoreAdded for parents.
+ */
+exports.onTrialScoreWritten = onDocumentWritten(
+    {
+      document: 'trial_scores/{scoreId}',
+      region: REGION,
+    },
+    async (event) => {
+      const afterSnap = event.data.after;
+      const beforeSnap = event.data.before;
+      if (!afterSnap || !afterSnap.exists) return;
+      const after = afterSnap.data();
+      const before =
+          beforeSnap && beforeSnap.exists ? beforeSnap.data() : null;
+      const pid =
+          typeof after.playerId === 'string' ? after.playerId.trim() : '';
+      if (!pid) return;
+
+      try {
+        await syncPublicPlayerProfile(pid);
+      } catch (e) {
+        logger.error('onTrialScoreWritten syncPublicProfile', e);
+      }
+
+      if (after.status !== 'verified') return;
+      if (before && before.status === 'verified') return;
+
+      let tokens = [];
+      try {
+        tokens = await collectFcmTokensForUids([pid]);
+      } catch (e) {
+        logger.error('onTrialScoreWritten tokens', e);
+        return;
+      }
+      if (tokens.length === 0) return;
+
+      const title = 'Verification Complete! 🏆';
+      const body =
+          'Your video trial has been approved and added to your global ' +
+          'scouting profile.';
+      const sid = event.params.scoreId || '';
+      const chunkSize = 500;
+      for (let i = 0; i < tokens.length; i += chunkSize) {
+        const chunk = tokens.slice(i, i + chunkSize);
+        try {
+          await admin.messaging().sendMulticast({
+            tokens: chunk,
+            notification: {title, body},
+            data: {
+              kind: 'video_trial_verified',
+              scoreId: String(sid),
+            },
+          });
+        } catch (e) {
+          logger.error('onTrialScoreWritten FCM', e);
         }
       }
     },

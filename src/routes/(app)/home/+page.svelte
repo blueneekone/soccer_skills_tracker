@@ -11,6 +11,7 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import ElitePlayerDashboard from '$lib/components/ElitePlayerDashboard.svelte';
 	import ActiveAssignmentsInbox from '$lib/components/ActiveAssignmentsInbox.svelte';
+	import VideoTrialUploader from '$lib/components/player/VideoTrialUploader.svelte';
 
 	const completeAssignmentStatus = httpsCallable(functions, 'completeAssignmentStatus');
 
@@ -168,6 +169,10 @@
 	{/if}
 
 	<ActiveAssignmentsInbox />
+
+	{#if role === 'player' && profile?.clubId && profile?.teamId && profile.teamId !== 'admin'}
+		<VideoTrialUploader />
+	{/if}
 
 	<!-- 250 XP challenge banner -->
 	{#if show250Banner && showAthleteHomeCards}

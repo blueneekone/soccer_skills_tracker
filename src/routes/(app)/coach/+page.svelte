@@ -15,6 +15,7 @@
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 	import MatchDayTab from '$lib/components/coach/MatchDayTab.svelte';
 	import PlaybookModule from '$lib/components/coach/PlaybookModule.svelte';
+	import VerificationQueue from '$lib/components/coach/VerificationQueue.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
@@ -22,6 +23,7 @@
 	const TABS = [
 		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
 		{ id: 'playbook', label: '📘 Playbook', icon: 'ph-book-open' },
+		{ id: 'videos', label: '🎬 Videos', icon: 'ph-video-camera' },
 		{ id: 'matchday', label: '⚽ Match Day', icon: 'ph-soccer-ball' },
 		{ id: 'messages', label: '💬 Messages', icon: 'ph-chat-circle' },
 		{ id: 'plan', label: '📅 Plan', icon: 'ph-calendar' },
@@ -134,6 +136,8 @@
 			<RosterTab teamId={selectedTeamId} teams={myTeams()} />
 		{:else if activeTab === 'playbook'}
 			<PlaybookModule teamId={selectedTeamId} />
+		{:else if activeTab === 'videos'}
+			<VerificationQueue teamId={selectedTeamId} />
 		{:else if activeTab === 'matchday'}
 			<MatchDayTab
 				teamId={selectedTeamId}

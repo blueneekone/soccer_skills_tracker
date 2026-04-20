@@ -170,6 +170,24 @@
         { "fieldPath": "teamId", "order": "ASCENDING" },
         { "fieldPath": "playerName", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "trial_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trial_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "verifiedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

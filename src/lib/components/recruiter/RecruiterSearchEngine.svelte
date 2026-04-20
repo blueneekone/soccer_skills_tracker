@@ -28,6 +28,9 @@
 	let modalOpen = $state(false);
 	/** @type {Record<string, unknown> & { id: string } | null} */
 	let selected = $state(null);
+	let videoModalOpen = $state(false);
+	let videoUrl = $state('');
+	let videoTitle = $state('');
 	let chartCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
 	/** @type {import('chart.js').Chart | null} */
 	let chartInstance = null;
@@ -116,6 +119,20 @@
 	function openDetail(row) {
 		selected = row;
 		modalOpen = true;
+	}
+
+	/**
+	 * @param {Record<string, unknown> & { id: string }} row
+	 */
+	function openVideo(row) {
+		const u =
+			typeof row.verified_video_url === 'string' ?
+				row.verified_video_url.trim() :
+				'';
+		if (!u) return;
+		videoUrl = u;
+		videoTitle = String(row.displayName ?? 'Athlete');
+		videoModalOpen = true;
 	}
 
 	$effect(() => {
@@ -251,12 +268,13 @@
 
 	<div class="rse-grid">
 		{#each results as row (row.id)}
-			<button
-				type="button"
-				class="rse-card"
-				onclick={() => openDetail(row)}
-				aria-label="Open profile for {String(row.displayName ?? 'player')}"
-			>
+			<div class="rse-card-wrap">
+				<button
+					type="button"
+					class="rse-card"
+					onclick={() => openDetail(row)}
+					aria-label="Open profile for {String(row.displayName ?? 'player')}"
+				>
 				<div class="rse-card-watermark" aria-hidden="true">
 					<ClubLogoMark size="xl" logoUrl={typeof row.brandLogoUrl === 'string' ? row.brandLogoUrl : ''} />
 				</div>
@@ -287,7 +305,21 @@
 						{/each}
 					</ul>
 				</div>
-			</button>
+				</button>
+				{#if typeof row.verified_video_url === 'string' && row.verified_video_url.trim()}
+					<button
+						type="button"
+						class="rse-play-fab"
+						aria-label="Play verified video trial"
+						onclick={(e) => {
+							e.stopPropagation();
+							openVideo(row);
+						}}
+					>
+						<i class="ph ph-play-circle" aria-hidden="true"></i>
+					</button>
+				{/if}
+			</div>
 		{:else}
 			{#if !loading}
 				<p class="rse-empty">No athletes match these filters. Widen age/position or lower the level floor.</p>
@@ -335,6 +367,20 @@
 			<p class="rse-modal-footnote">
 				Charts reflect verified session XP only. Trial scores on cards are coach-logged evaluations.
 			</p>
+		</div>
+	{/if}
+</Modal>
+
+<Modal bind:open={videoModalOpen} title="Verified trial" maxWidth="900px">
+	{#snippet titleSlot()}
+		<div class="rse-video-modal-head">
+			<span>{videoTitle}</span>
+		</div>
+	{/snippet}
+	{#if videoUrl}
+		<div class="rse-video-shell">
+			<video class="rse-video-el" controls playsinline src={videoUrl} preload="metadata"></video>
+			<p class="rse-video-note">Coach-verified clip. Distribution subject to athlete opt-in.</p>
 		</div>
 	{/if}
 </Modal>
@@ -439,6 +485,36 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
 		gap: clamp(14px, 3vw, 20px);
+	}
+
+	.rse-card-wrap {
+		position: relative;
+	}
+
+	.rse-play-fab {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 3;
+		width: 44px;
+		height: 44px;
+		border: none;
+		border-radius: 50%;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(
+			145deg,
+			color-mix(in srgb, var(--brand-primary, #f59e0b) 90%, #fff) 0%,
+			var(--brand-primary, #d97706) 100%
+		);
+		color: #0f172a;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+	}
+
+	.rse-play-fab i {
+		font-size: 1.65rem;
 	}
 
 	.rse-card {
@@ -624,5 +700,27 @@
 		font-size: 0.78rem;
 		color: #64748b;
 		line-height: 1.45;
+	}
+
+	.rse-video-modal-head {
+		font-weight: 800;
+		font-size: 1.05rem;
+	}
+
+	.rse-video-shell {
+		padding: 4px 0 8px;
+	}
+
+	.rse-video-el {
+		width: 100%;
+		max-height: min(70vh, 520px);
+		border-radius: 14px;
+		background: #020617;
+	}
+
+	.rse-video-note {
+		margin: 12px 0 0;
+		font-size: 0.78rem;
+		color: #64748b;
 	}
 </style>
