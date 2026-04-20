@@ -2743,3 +2743,86 @@ exports.analyzeTacticWithAI = onCall(
       };
     },
 );
+
+/**
+ * Epic 12: director/super_admin broadcast to a club (no client Firestore
+ * writes).
+ */
+exports.publishClubCampaign = onCall({region: REGION}, async (request) => {
+  const actor = assertDirectorOrSuper(request);
+  const data = request.data || {};
+
+  /** @type {string} */
+  let clubId;
+  if (actor.role === 'super_admin') {
+    const raw =
+        typeof data.clubId === 'string' ? data.clubId.trim() : '';
+    if (!raw) {
+      throw new HttpsError(
+          'invalid-argument',
+          'clubId is required for super admin.',
+      );
+    }
+    const cSnap = await db.collection('clubs').doc(raw).get();
+    if (!cSnap.exists) {
+      throw new HttpsError('not-found', 'Club not found.');
+    }
+    clubId = raw;
+  } else {
+    if (!actor.clubId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Club scope missing; sign out and back in.',
+      );
+    }
+    clubId = actor.clubId;
+  }
+
+  const title = typeof data.title === 'string' ? data.title.trim() : '';
+  const body = typeof data.body === 'string' ? data.body.trim() : '';
+  if (!title || title.length > 200) {
+    throw new HttpsError(
+        'invalid-argument',
+        'title is required (max 200 characters).',
+    );
+  }
+  if (!body || body.length > 8000) {
+    throw new HttpsError(
+        'invalid-argument',
+        'body is required (max 8000 characters).',
+    );
+  }
+
+  const audienceRaw =
+      typeof data.targetAudience === 'string' ?
+        data.targetAudience.trim() :
+        '';
+  const allowedAudiences = ['all', 'parents', 'coaches', 'players'];
+  if (!allowedAudiences.includes(audienceRaw)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'targetAudience must be all, parents, coaches, or players.',
+    );
+  }
+
+  const priority = data.priority === true;
+  const uid = request.auth.uid;
+
+  const docRef = await db.collection('clubs').doc(clubId)
+      .collection('campaigns')
+      .add({
+        title,
+        body,
+        targetAudience: audienceRaw,
+        priority,
+        clubId,
+        authorId: uid,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+  return {
+    ok: true,
+    campaignId: docRef.id,
+    clubId,
+  };
+});

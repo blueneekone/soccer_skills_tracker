@@ -116,6 +116,23 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/teams/$(tid)).data.clubId;
     }
 
+    // Epic 12: club campaigns — members of the club can read; no client writes.
+    function canReadClubCampaign(clubPathId) {
+      return authed() && (
+        isSuper()
+        || (tokenClub() != null && tokenClub() == clubPathId)
+        || (userDoc().keys().hasAll(['clubId'])
+            && userDoc().clubId == clubPathId)
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && teamClubId(tokenTeam()) == clubPathId)
+        || (tokenRole() == 'player'
+            && userDoc().keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(userDoc().teamId))
+            && teamClubId(userDoc().teamId) == clubPathId)
+      );
+    }
+
     // Director scoping helpers — require tokenClub() claim to be set.
     function directorScopedToTeam(tid) {
       return isDirector() && tokenClub() != null && teamClubId(tid) == tokenClub();
@@ -333,6 +350,12 @@ service cloud.firestore {
     match /clubs/{clubId} {
       allow read: if authed();
       allow create, update, delete: if isSuper();
+
+      match /campaigns/{campaignId} {
+        allow read: if canReadClubCampaign(clubId)
+          && resource.data.clubId == clubId;
+        allow create, update, delete: if false;
+      }
     }
 
     match /teams/{teamId} {
