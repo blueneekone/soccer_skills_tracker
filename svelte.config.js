@@ -1,20 +1,19 @@
 import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
+		// Notice the parentheses calling adapter()
 		adapter: adapter({
-			fallback: 'index.html',
 			pages: 'build',
 			assets: 'build',
-			strict: false
-		}),
-		prerender: {
-			handleMissingId: 'ignore',
-			handleHttpError: 'warn',
-			entries: []
-		}
-	}
+			fallback: 'index.html', // Crucial for Firebase SPA routing
+			precompress: false,
+			strict: true
+		})
+	},
+	preprocess: vitePreprocess()
 };
 
 export default config;
