@@ -17,6 +17,7 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import NewMessageModal from './NewMessageModal.svelte';
 
 	let { teamId = '', players = [], clubId = '' } = $props();
 
@@ -52,6 +53,7 @@
 	let draft = $state('');
 	let sending = $state(false);
 	let seeding = $state(false);
+	let newMessageOpen = $state(false);
 
 	const selectedChannel = $derived(channels.find((c) => c.id === selectedChannelId) ?? null);
 
@@ -269,7 +271,25 @@
 			return '';
 		}
 	}
+
+	/**
+	 * @param {string} channelId
+	 */
+	function onNewChannelCreated(channelId) {
+		selectedChannelId = channelId;
+	}
 </script>
+
+<NewMessageModal
+	open={newMessageOpen}
+	onClose={() => (newMessageOpen = false)}
+	clubId={clubId}
+	teamId={teamId}
+	myEmail={myEmail}
+	myUid={myUid}
+	myRole={myRole}
+	onChannelCreated={onNewChannelCreated}
+/>
 
 <div class="comms-hub" aria-label="Team communications">
 	{#if !clubId}
@@ -279,7 +299,19 @@
 	{:else}
 		<!-- Pane 1 -->
 		<aside class="comms-hub__pane comms-hub__pane--nav" aria-label="Channels">
-			<div class="comms-hub__pane-head">Channels</div>
+			<div class="comms-hub__pane-head">
+				<span class="comms-hub__pane-head-title">Channels</span>
+				{#if canCreateChannel}
+					<button
+						type="button"
+						class="comms-hub__new-chat"
+						aria-label="New chat"
+						onclick={() => (newMessageOpen = true)}
+					>
+						<i class="ph ph-pencil-simple" aria-hidden="true"></i>
+					</button>
+				{/if}
+			</div>
 			{#if channelsLoading || seeding}
 				<p class="comms-hub__muted">Loading…</p>
 			{:else if channelsErr}
@@ -497,13 +529,50 @@
 	}
 
 	.comms-hub__pane-head {
-		padding: 12px 14px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 10px 12px 10px 14px;
+		border-bottom: 1px solid #e5e5e5;
+	}
+
+	.comms-hub__pane-head-title {
 		font-size: 11px;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--text-secondary);
-		border-bottom: 1px solid #e5e5e5;
+	}
+
+	.comms-hub__new-chat {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		border: 1px solid #e5e5e5;
+		border-radius: 10px;
+		background: #ffffff;
+		color: var(--text-primary);
+		cursor: pointer;
+		font-size: 16px;
+	}
+
+	.comms-hub__new-chat:hover {
+		background: rgba(0, 0, 0, 0.04);
+		border-color: #d4d4d8;
+	}
+
+	:global(html.dark) .comms-hub__new-chat {
+		background: #18181b;
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	:global(html.dark) .comms-hub__new-chat:hover {
+		background: rgba(255, 255, 255, 0.06);
 	}
 
 	:global(html.dark) .comms-hub__pane-head {

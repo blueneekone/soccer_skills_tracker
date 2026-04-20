@@ -572,10 +572,18 @@ service cloud.firestore {
     }
 
     match /households/{householdId} {
+      // Directors/coaches (same club as household) may read to resolve SafeSport Shadow CC parents in Comms Hub.
       allow read: if authed() && (
         isSuper()
         || (resource.data.parentEmails != null && resource.data.parentEmails.hasAny([emailKey()]))
         || (tokenHousehold() != null && tokenHousehold() == householdId)
+        || (isDirector() && tokenClub() != null
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == teamClubId(tokenTeam()))
       );
       allow create, update, delete: if isSuper();
     }
