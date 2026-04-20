@@ -364,15 +364,15 @@
 	}
 	.verify-check {
 		display: flex;
-		align-items: flex-start;
-		gap: 10px;
+		align-items: center;
+		gap: 0.75rem;
 		font-size: 0.86rem;
 		font-weight: 600;
 		line-height: 1.45;
 		cursor: pointer;
 	}
 	.verify-check input {
-		margin-top: 4px;
+		margin-top: 0;
 	}
 	.session-item-title { font-weight: 700; }
 	.session-item-detail { font-size: 0.85rem; color: var(--muted-slate); }

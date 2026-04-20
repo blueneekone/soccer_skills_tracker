@@ -729,10 +729,10 @@
 					</label>
 					<div class="hw-player-list">
 						{#each players as p}
-							<div class="hw-player-row">
+							<label class="hw-player-row">
 								<input type="checkbox" bind:group={selectedPlayers} value={p} />
 								<span>{p}</span>
-							</div>
+							</label>
 						{/each}
 					</div>
 				</div>
@@ -1129,7 +1129,7 @@
 	.hw-select-all-label {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 0.75rem;
 		font-size: 0.9rem;
 		margin-bottom: 8px;
 		cursor: pointer;
@@ -1141,9 +1141,12 @@
 	.hw-player-row {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 0.75rem;
 		padding: 6px 0;
 		font-size: 0.9rem;
+		cursor: pointer;
+		margin: 0;
+		font-weight: 600;
 	}
 	.hw-due-row {
 		display: flex;

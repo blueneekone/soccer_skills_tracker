@@ -217,15 +217,66 @@ html.dark .linked-badge-ui {
    4. INPUTS & CHUNKY BUTTONS
    ========================================== */
 label { display: block; text-align: left; font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-primary); }
-input, select, textarea {
+
+/* Text-like fields: premium radius (caps at 12px so fields stay proportional to --radius-premium scale) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="color"]),
+select,
+textarea,
+.input-field {
     width: 100%; padding: clamp(14px, 2vw, 18px) 16px; margin-bottom: 0; box-sizing: border-box;
-    border: 1px solid var(--input-border); border-radius: 16px;
+    border: 1px solid var(--input-border);
+    border-radius: min(12px, var(--radius-premium));
     background: var(--input-bg); box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
     font-size: 1rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; color: var(--input-text);
 }
-input:focus, select:focus, textarea:focus {
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="color"]):focus,
+select:focus,
+textarea:focus,
+.input-field:focus {
     outline: none; border-color: var(--aggie-gold); background: var(--input-bg);
     box-shadow: 0 0 0 3px var(--focus-ring-color), inset 0 2px 4px rgba(0,0,0,0.03);
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"%2364748b\" viewBox=\"0 0 16 16\"><path d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\"/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    width: auto;
+    min-width: 1.125rem;
+    min-height: 1.125rem;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--aggie-blue);
+}
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+}
+input[type="range"],
+input[type="file"] {
+    width: 100%;
+    padding: clamp(8px, 1vw, 12px) 0;
+    border: none;
+    border-radius: min(12px, var(--radius-premium));
+    background: transparent;
+    box-shadow: none;
 }
 .input-row { display: flex; gap: 10px; align-items: center; width: 100%; margin-bottom: 15px; }
 .input-divider { font-weight: 900; color: var(--text-secondary); }
@@ -254,7 +305,7 @@ input:focus, select:focus, textarea:focus {
 /* ==========================================
    5. APP HEADER & DASHBOARD GRID
    ========================================== */
-.app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
+.app-header { display: flex; justify-content: space-between; align-items: center; padding-block: clamp(18px, 2.2vw, 26px); padding-inline: var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
 .app-title { margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; color: var(--text-primary); }
 .player-info { font-size: 0.85rem; color: var(--text-secondary); }
 .header-action-group { display: flex; gap: 10px; align-items: center; }
@@ -390,8 +441,9 @@ html.dark .current-rank-label {
    11. TROPHY ROOM
    ========================================== */
 .trophy-header { font-size: 1rem; color: var(--text-secondary); letter-spacing: 2px; justify-content: center; border-bottom: none; }
-.trophy-flex { display: flex; gap: 20px; justify-content: flex-start; min-width: max-content; padding-bottom: 15px; }
-.medal-container { display: flex; flex-direction: column; align-items: center; width: 100px; }
+.trophy-flex { display: flex; gap: 20px; justify-content: flex-start; min-width: max-content; padding: 1.5rem 1.5rem 1.25rem; box-sizing: border-box; }
+.badge-card, .trophy-case { padding: 1.5rem; box-sizing: border-box; }
+.medal-container { display: flex; flex-direction: column; align-items: center; width: 100px; padding: 0.75rem 0.5rem; box-sizing: content-box; }
 .medal-coin {
     width: 88px;
     height: 88px;
@@ -566,7 +618,7 @@ html.dark .legend-title-color {
 /* ==========================================
    12. ADMIN, DIRECTOR & COACH TABS
    ========================================== */
-.admin-sticky-header { position: sticky; top: 70px; background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); z-index: 90; padding: 15px 0; border-bottom: 1px solid var(--glass-border); margin-bottom: 20px; }
+.admin-sticky-header { position: sticky; top: 70px; background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); z-index: 90; padding-block: clamp(18px, 2.2vw, 24px); padding-inline: 0; border-bottom: 1px solid var(--glass-border); margin-bottom: 20px; }
 .admin-header { display: flex; align-items: center; gap: 10px; margin: 0 0 15px 0; }
 .admin-tab-bar, .coach-tabs-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
 .admin-tab, .director-tab, .coach-tab-btn { padding: 10px 20px; border: 1px solid var(--border-subtle); background: var(--surface-row-hover); border-radius: 99px; font-weight: 700; color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); }
@@ -632,7 +684,7 @@ html.dark .legend-title-color {
 }
 
 /* ==========================================
-   15. DESKTOP APP SHELL (100vh lock, internal scroll)
+   15. DESKTOP APP SHELL (100vh body lock, scroll in .app-main)
    ========================================== */
 @media (min-width: 1024px) {
     body:has(.app-shell) {
@@ -665,31 +717,24 @@ html.dark .legend-title-color {
         padding-bottom: clamp(96px, 11vh, 130px);
     }
 
-    /* Lock the main container whenever a dashboard view is mounted */
+    /* Dashboard views: column layout only; scroll stays on .app-main (whole page) */
     .app-main:has(.locked-dashboard-view) {
         display: flex;
         flex-direction: column;
-        overflow-y: hidden;
     }
 
     .locked-dashboard-view {
-        flex: 1 1 auto;
         display: flex;
         flex-direction: column;
-        min-height: 0;
     }
 
-    /* Force all Bento sections inside a locked view to absorb the viewport height */
     .locked-dashboard-view .bento-section {
-        flex: 1 1 auto;
-        min-height: 0;
-        margin-bottom: 0;
+        height: auto;
     }
 
     .admin-sticky-header {
         top: 0;
-        padding-top: 10px;
-        padding-bottom: 12px;
+        padding-block: clamp(16px, 2vw, 22px);
         margin-bottom: clamp(12px, 2vw, 18px);
     }
 
@@ -698,39 +743,13 @@ html.dark .legend-title-color {
     }
 
     .bento-section--dashboard-cards {
-        flex: 1 1 auto;
-        min-height: 0;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
         gap: clamp(12px, 2vw, 18px);
-        margin-bottom: 0;
         align-items: stretch;
     }
 
     .bento-section--dashboard-cards > .card {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-        max-height: min(52vh, 520px);
         margin-bottom: 0;
-        overflow: hidden;
-    }
-
-    .bento-section--dashboard-cards > .card > .card-body {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-    }
-
-    .bento-section--dashboard-cards > .card > .card-header {
-        flex-shrink: 0;
-    }
-
-    .tracker-page .tracker-main-panel {
-        max-height: min(58vh, 640px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding-right: 2px;
     }
 
     .dashboard-grid,
@@ -885,6 +904,10 @@ html.dark .cal-day.has-log:hover {
 
 html.dark .challenge-banner {
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+html.dark select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"%23cbd5e1\" viewBox=\"0 0 16 16\"><path d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\"/></svg>");
 }
 
 html.dark .medal-locked {
