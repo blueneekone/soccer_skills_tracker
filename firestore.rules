@@ -767,6 +767,17 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Sprint 2.5.3: licenses & sport modules — super_admin read only; all writes via Cloud Functions.
+    match /licenses/{docId} {
+      allow read: if isSuper();
+      allow create, update, delete: if false;
+    }
+
+    match /sports/{sportId} {
+      allow read: if isSuper();
+      allow create, update, delete: if false;
+    }
+
     // Epic 3.1: pro-style verified metrics per season (playerKey = users doc id / email lower).
     match /player_metrics/{playerKey}/seasons/{seasonId} {
       allow read: if canReadPlayerSeasonMetrics(playerKey);

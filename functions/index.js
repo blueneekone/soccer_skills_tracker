@@ -98,6 +98,47 @@ function assertDirectorOrSuper(request) {
 }
 
 /**
+ * Strict super_admin only (licensing, sport modules, etc.).
+ * @param {any} request Callable request
+ * @return {{ email: string }}
+ */
+function assertSuperAdmin(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if (request.auth.token.role !== 'super_admin') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only application super admins may perform this action.',
+    );
+  }
+  return {email: normEmail(request.auth.token.email) || 'unknown'};
+}
+
+/**
+ * @return {string} e.g. SST-A3F9-K2PL
+ */
+function generateLicenseKeyString() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const segment = () =>
+    Array.from({length: 4}, () =>
+      chars[crypto.randomInt(0, chars.length)],
+    ).join('');
+  return `SST-${segment()}-${segment()}`;
+}
+
+/**
+ * @param {*} err Firestore / gRPC error from DocumentReference.create
+ * @return {boolean}
+ */
+function isAlreadyExistsError(err) {
+  if (!err || typeof err !== 'object') return false;
+  if (err.code === 6) return true;
+  const msg = typeof err.message === 'string' ? err.message : '';
+  return msg.includes('ALREADY_EXISTS') || msg.includes('already exists');
+}
+
+/**
  * @param {any} request Callable request
  * @return {{ email: string, householdId: string }}
  */
@@ -464,6 +505,111 @@ exports.logSecurityAudit = onCall({region: REGION}, async (request) => {
     details,
   });
   return {ok: true};
+});
+
+/**
+ * super_admin: create a license record (client Firestore writes disabled).
+ */
+exports.generateLicense = onCall({region: REGION}, async (request) => {
+  assertSuperAdmin(request);
+  const data = request.data || {};
+  const licenseTypeRaw =
+      typeof data.licenseType === 'string' ? data.licenseType.trim() : '';
+  const licenseType =
+      licenseTypeRaw && licenseTypeRaw.length <= 64 ?
+        licenseTypeRaw.slice(0, 64) :
+        'subscription';
+  let maxSeats = parseInt(data.maxSeats, 10);
+  if (!Number.isFinite(maxSeats) || maxSeats < 1) maxSeats = 10;
+  maxSeats = Math.min(Math.floor(maxSeats), 100000);
+  let durationMonths = parseInt(data.durationMonths, 10);
+  if (!Number.isFinite(durationMonths) || durationMonths < 1) {
+    durationMonths = 12;
+  }
+  durationMonths = Math.min(Math.floor(durationMonths), 120);
+  const clubId =
+      typeof data.clubId === 'string' ? data.clubId.trim().slice(0, 128) : '';
+
+  const basePayload = (licenseKey) => ({
+    licenseKey,
+    licenseType,
+    maxSeats,
+    durationMonths,
+    clubId: clubId || null,
+    status: 'active',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdBy: normEmail(request.auth.token.email) || 'unknown',
+  });
+
+  let licenseKey = '';
+  for (let attempt = 0; attempt < 16; attempt++) {
+    licenseKey = generateLicenseKeyString();
+    const ref = db.collection('licenses').doc(licenseKey);
+    try {
+      await ref.create(basePayload(licenseKey));
+      return {ok: true, licenseKey};
+    } catch (err) {
+      if (isAlreadyExistsError(err)) continue;
+      logger.error('generateLicense create failed', err);
+      const detail =
+          err && err.message ?
+            String(err.message) :
+            'Could not create license.';
+      throw new HttpsError('internal', detail);
+    }
+  }
+  throw new HttpsError('internal', 'Could not allocate a unique license key.');
+});
+
+/** super_admin: create sport module (no client writes). */
+exports.createSportModule = onCall({region: REGION}, async (request) => {
+  assertSuperAdmin(request);
+  const data = request.data || {};
+  const sportName =
+      typeof data.sportName === 'string' ? data.sportName.trim() : '';
+  if (!sportName || sportName.length > 120) {
+    throw new HttpsError(
+        'invalid-argument',
+        'sportName is required (1–120 characters).',
+    );
+  }
+  const defaultIcon =
+      typeof data.defaultIcon === 'string' && data.defaultIcon.trim() ?
+        data.defaultIcon.trim().slice(0, 64) :
+        'ph-soccer-ball';
+  let courtType =
+      typeof data.courtType === 'string' && data.courtType.trim() ?
+        data.courtType.trim().slice(0, 64) :
+        sportName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+            .slice(0, 64);
+  if (!courtType) courtType = 'generic';
+
+  const slug = sportName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 80);
+  const sportId = slug || `sport_${crypto.randomInt(0, 1e9)}`;
+
+  const ref = db.collection('sports').doc(sportId);
+  const existing = await ref.get();
+  if (existing.exists) {
+    throw new HttpsError(
+        'already-exists',
+        'A sport module with this id already exists. Pick a different name.',
+    );
+  }
+
+  await ref.set({
+    sportName,
+    defaultIcon,
+    courtType,
+    status: 'active',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdBy: normEmail(request.auth.token.email) || 'unknown',
+  });
+
+  return {ok: true, sportId};
 });
 
 /**

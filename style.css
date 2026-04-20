@@ -669,6 +669,7 @@ html.dark .legend-title-color {
     .app-main:has(.home-dashboard-view) {
         display: flex;
         flex-direction: column;
+        overflow-y: hidden;
     }
 
     .home-dashboard-view {
