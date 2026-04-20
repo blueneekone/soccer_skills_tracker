@@ -159,6 +159,43 @@ service cloud.firestore {
       );
     }
 
+    // Epic 17 Phase 2 — optional lat/lng + Google Maps directions link (all-or-nothing).
+    function facilityRoutingUrlOk(url) {
+      return url is string
+        && url.size() > 0
+        && url.size() <= 512
+        && url.matches('^https://www\\.google\\.com/maps/dir/\\?api=1&destination=.+');
+    }
+
+    function facilityLogisticsConsistent(d) {
+      let hasLat = d.keys().hasAny(['latitude']);
+      let hasLng = d.keys().hasAny(['longitude']);
+      let hasRoute = d.keys().hasAny(['routingUrl']);
+      return (!hasLat && !hasLng && !hasRoute)
+        || (hasLat && hasLng && hasRoute
+          && d.latitude >= -90 && d.latitude <= 90
+          && d.longitude >= -180 && d.longitude <= 180
+          && facilityRoutingUrlOk(d.routingUrl));
+    }
+
+    // Epic 17: facility map vault — club members read; directors write metadata.
+    function canReadFacilityVault(clubPathId) {
+      return authed() && (
+        isSuper()
+        || (tokenClub() != null && tokenClub() == clubPathId)
+        || (isRegistrar() && tokenClub() != null && tokenClub() == clubPathId)
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && teamClubId(tokenTeam()) == clubPathId)
+        || (isParent() && userDoc().keys().hasAll(['clubId'])
+            && userDoc().clubId == clubPathId)
+        || (tokenRole() == 'player'
+            && userDoc().keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(userDoc().teamId))
+            && teamClubId(userDoc().teamId) == clubPathId)
+      );
+    }
+
     // Director scoping helpers — require tokenClub() claim to be set.
     function directorScopedToTeam(tid) {
       return isDirector() && tokenClub() != null && teamClubId(tid) == tokenClub();
@@ -394,7 +431,61 @@ service cloud.firestore {
           && resource.data.clubId == clubId;
         allow create, update, delete: if false;
       }
+
+      // Epic 17 Phase 1 — facility map metadata (Storage file lives under facility_maps/).
+      match /facilities/{facilityId} {
+        allow read: if authed() && canReadFacilityVault(clubId);
+
+        allow create: if authed()
+          && isDirector()
+          && tokenClub() == clubId
+          && request.resource.data.keys().hasAll([
+            'name',
+            'mapStoragePath',
+            'mapDownloadUrl',
+            'type',
+            'uploadedAt'
+          ])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200
+          && request.resource.data.mapStoragePath is string
+          && request.resource.data.mapStoragePath.matches(
+            '^clubs/' + clubId + '/facility_maps/.+'
+          )
+          && request.resource.data.mapDownloadUrl is string
+          && request.resource.data.mapDownloadUrl.size() > 0
+          && request.resource.data.mapDownloadUrl.size() <= 2048
+          && request.resource.data.type in ['image', 'pdf']
+          && request.resource.data.uploadedAt is timestamp
+          && (
+            !request.resource.data.keys().hasAny(['address'])
+            || (request.resource.data.address is string
+              && request.resource.data.address.size() <= 500)
+          )
+          && facilityLogisticsConsistent(request.resource.data);
+
+        allow update: if authed()
+          && isDirector()
+          && tokenClub() == clubId
+          && request.resource.data.name == resource.data.name
+          && request.resource.data.mapStoragePath == resource.data.mapStoragePath
+          && request.resource.data.mapDownloadUrl == resource.data.mapDownloadUrl
+          && request.resource.data.type == resource.data.type
+          && request.resource.data.uploadedAt == resource.data.uploadedAt
+          && facilityLogisticsConsistent(request.resource.data)
+          && (
+            !request.resource.data.keys().hasAny(['address'])
+            || (request.resource.data.address is string
+              && request.resource.data.address.size() <= 500)
+          );
+
+        allow delete: if authed()
+          && isDirector()
+          && tokenClub() == clubId;
+      }
     }
+
 
     match /teams/{teamId} {
       allow read: if authed() && (

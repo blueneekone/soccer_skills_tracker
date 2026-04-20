@@ -7,6 +7,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
+	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
+	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -324,6 +326,23 @@
 	{#if !clubId}
 		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);">No club scope.</p>
 	{:else}
+		<section
+			class="tw-rounded-xl tw-border tw-p-4 tw-mb-4"
+			style="border-color: rgba(15, 23, 42, 0.1); background: #fafafa;"
+		>
+			<h4
+				class="tw-m-0 tw-mb-1 tw-text-sm tw-font-extrabold tw-tracking-tight"
+				style="color: var(--text-primary);"
+			>
+				Static map vault
+			</h4>
+			<p class="tw-m-0 tw-mb-3 tw-text-xs" style="color: var(--text-secondary);">
+				Upload PDFs or images of your facilities. In the facility drawer, set a map pin, address, and saved
+				routing link for parents and coaches. Coaches can open read-only maps from their tools tab.
+			</p>
+			<FacilityMapVault {clubId} canManage={!isReadOnly} />
+		</section>
+
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
 				Field

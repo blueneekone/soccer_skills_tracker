@@ -1,7 +1,8 @@
 <script>
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 
-	let { teamId = '' } = $props();
+	let { teamId = '', clubId = '' } = $props();
 
 	const exportXlsx = async () => {
 		const w = workoutsStore.workouts;
@@ -26,6 +27,18 @@
 </script>
 
 <div class="tools-tab">
+	{#if clubId}
+		<div class="card">
+			<div class="card-header">🗺️ Facility maps (read-only)</div>
+			<div class="card-body">
+				<p class="text-sm-sub tw-mb-3">
+					Club facility PDFs and images uploaded by your director.
+				</p>
+				<FacilityMapVault {clubId} canManage={false} />
+			</div>
+		</div>
+	{/if}
+
 	<div class="card">
 		<div class="card-header">⚙️ Coach Tools</div>
 		<div class="card-body">

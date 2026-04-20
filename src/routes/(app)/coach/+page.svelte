@@ -154,7 +154,7 @@
 		{:else if activeTab === 'design'}
 			<DrillDesignerTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {onWorkoutSaved} />
 		{:else if activeTab === 'tools'}
-			<ToolsTab teamId={selectedTeamId} />
+			<ToolsTab teamId={selectedTeamId} clubId={clubId || ''} />
 		{/if}
 	</div>
 </div>
