@@ -1,21 +1,13 @@
 <script>
 	import { db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
-	import {
-		doc,
-		getDoc,
-		setDoc,
-		updateDoc,
-		deleteDoc,
-		collection,
-		query,
-		where,
-		getDocs
-	} from 'firebase/firestore';
+	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
 	const transferPlayer = httpsCallable(functions, 'registrarTransferPlayer');
+	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
+	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
 
 	const clubId = $derived(authStore.userProfile?.clubId || '');
 	const clubTeams = $derived(
@@ -89,7 +81,7 @@
 	async function addPlayerInvite() {
 		addErr = '';
 		addMsg = '';
-		const name = addName.trim();
+		const name = addName.trim().replace(/\s+/g, ' ');
 		const email = addEmail.trim().toLowerCase();
 		if (!name || !addTeamId) {
 			addErr = 'Player name and team are required.';
@@ -97,21 +89,19 @@
 		}
 		addBusy = true;
 		try {
-			const rosterRef = doc(db, 'rosters', addTeamId);
-			const rosterSnap = await getDoc(rosterRef);
-			const list = rosterSnap.exists() ? [...(rosterSnap.data().players || [])] : [];
-			const jerseys = rosterSnap.exists() ? { ...(rosterSnap.data().jerseys || {}) } : {};
-			if (!list.includes(name)) list.push(name);
-			await setDoc(rosterRef, { players: list, jerseys }, { merge: true });
-			if (email) {
-				await setDoc(doc(db, 'player_lookup', email), {
-					teamId: addTeamId,
-					playerName: name
-				});
+			const res = await secureAddPlayer({
+				teamId: addTeamId,
+				playerName: name,
+				...(email ? { playerEmail: email } : {})
+			});
+			const data = res.data;
+			if (data?.duplicate) {
+				addMsg = 'That player is already on this team roster.';
+			} else {
+				addMsg = email
+					? 'Player added to roster and login invite saved.'
+					: 'Player added to roster (no email invite).';
 			}
-			addMsg = email
-				? 'Player added to roster and login invite saved.'
-				: 'Player added to roster (no email invite).';
 			addName = '';
 			addEmail = '';
 			await loadRosterContext();
@@ -126,20 +116,14 @@
 		if (!rosterTeamId || !confirm(`Remove ${name} from this roster view?`)) return;
 		addErr = '';
 		try {
-			const rosterRef = doc(db, 'rosters', rosterTeamId);
-			const rosterSnap = await getDoc(rosterRef);
-			if (rosterSnap.exists()) {
-				const jerseys = { ...(rosterSnap.data().jerseys || {}) };
-				delete jerseys[name];
-				await updateDoc(rosterRef, {
-					players: (rosterSnap.data().players || []).filter((p) => p !== name),
-					jerseys
-				});
-			}
-			for (const row of linkedRows) {
-				if (row.playerName === name) {
-					await deleteDoc(doc(db, 'player_lookup', row.id));
-				}
+			const normalized = name.trim().replace(/\s+/g, ' ');
+			const res = await secureRemovePlayer({
+				teamId: rosterTeamId,
+				playerName: normalized
+			});
+			if (res.data?.notFound) {
+				addErr =
+					'That player was not on this roster. It may have been updated elsewhere.';
 			}
 			await loadRosterContext();
 		} catch (e) {

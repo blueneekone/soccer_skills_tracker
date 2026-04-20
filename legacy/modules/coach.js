@@ -1,11 +1,12 @@
 // modules/coach.js
 import { auth, db, app } from "../firebase-config.js";
-import { collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, setDoc, getDoc, deleteDoc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 
 const functions = getFunctions(app, "us-central1");
 const secureAddPlayerFn = httpsCallable(functions, "secureAddPlayer");
 const secureRemovePlayerFn = httpsCallable(functions, "secureRemovePlayer");
+const secureUpdateJerseyFn = httpsCallable(functions, "secureUpdateJersey");
 // 🟢 THE CRASH-INDUCING RENDERTEAMCHART IMPORT IS GONE!
 
 export let currentCoachTeamId = null;
@@ -61,13 +62,19 @@ const bindCoachView = () => {
                 let num = prompt(`Enter new jersey number for ${pName} (or leave blank to clear):`, currentJersey);
                 if (num === null) return;
                 num = num.trim();
-const ref = doc(db, "rosters", currentCoachTeamId);
-const snap = await getDoc(ref);
-if (snap.exists()) {
-    let jerseys = snap.data().jerseys || {};
-                    if (num === "") delete jerseys[pName]; else jerseys[pName] = num;
-                    await updateDoc(ref, { jerseys: jerseys });
+                if (!currentCoachTeamId) return alert("Select a team first.");
+                try {
+                    await secureUpdateJerseyFn({
+                        teamId: currentCoachTeamId,
+                        playerName: pName,
+                        jersey: num
+                    });
                     loadCoachDashboard(false, window.globalTeams);
+                } catch (err) {
+                    const code = err && err.code ? String(err.code) : "";
+                    console.error("[coach.js] secureUpdateJersey failed:", code, err && err.message);
+                    const msg = err && err.message ? err.message : "Could not update jersey.";
+                    alert(msg);
                 }
             }
 

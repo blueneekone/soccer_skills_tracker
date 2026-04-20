@@ -493,6 +493,8 @@ service cloud.firestore {
       }
     }
 
+    // Epic 3 Sprint 6: roster mutations only via Cloud Functions (secureAdd/Remove/UpdateJersey).
+    // Admin SDK bypasses rules; client SDK cannot write (including super_admin).
     match /rosters/{teamId} {
       allow read: if authed() && (
         isSuper()
@@ -501,11 +503,7 @@ service cloud.firestore {
           && teamClubId(teamId) == tokenClub())
         || registrarTeamInClub(teamId)
       );
-      allow write: if isSuper()
-        || (isCoach() && sameTeam(teamId))
-        || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
-          && teamClubId(teamId) == tokenClub())
-        || registrarTeamInClub(teamId);
+      allow write: if false;
     }
 
     match /coach_lookup/{coachId} {
@@ -529,6 +527,7 @@ service cloud.firestore {
         || (isDirector() && resource.data.clubId == tokenClub());
     }
 
+    // Epic 3 Sprint 6: player_lookup rows only via Cloud Functions (stays in sync with rosters).
     match /player_lookup/{inviteId} {
       allow read: if authed() && (
         emailKey() == inviteId.lower()
@@ -538,16 +537,7 @@ service cloud.firestore {
         || (isCoach() && resource.data.keys().hasAll(['teamId'])
             && coachStaffCanAccessTeam(resource.data.teamId))
       );
-      allow create, update: if isSuper()
-        || isDirector()
-        || isCoach()
-        || (isRegistrar() && tokenClub() != null
-          && teamClubId(request.resource.data.teamId) == tokenClub());
-      allow delete: if isSuper()
-        || isDirector()
-        || isCoach()
-        || (isRegistrar() && resource.data.teamId != null
-          && teamClubId(resource.data.teamId) == tokenClub());
+      allow write: if false;
     }
 
     match /team_workouts/{docId} {

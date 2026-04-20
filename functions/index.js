@@ -878,6 +878,65 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
   return {ok: true};
 });
 
+/**
+ * Jersey number updates on rosters/{teamId} (no license seat change).
+ */
+exports.secureUpdateJersey = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  let playerName =
+      typeof data.playerName === 'string' ? data.playerName.trim() : '';
+  playerName = playerName.replace(/\s+/g, ' ');
+  if (!teamId || !playerName || playerName.length > 200) {
+    throw new HttpsError(
+        'invalid-argument',
+        'teamId and playerName are required.',
+    );
+  }
+
+  let jersey = '';
+  if (typeof data.jersey === 'string' && data.jersey.trim()) {
+    jersey = data.jersey.trim().slice(0, 16);
+  }
+
+  await assertCanSecureAddPlayer(request, teamId);
+
+  const rosterRef = db.collection('rosters').doc(teamId);
+
+  const txnResult = await db.runTransaction(async (transaction) => {
+    const rosterSnap = await transaction.get(rosterRef);
+    const list = rosterSnap.exists ?
+      (Array.isArray(rosterSnap.data().players) ?
+        rosterSnap.data().players :
+        []) :
+      [];
+    if (!list.includes(playerName)) {
+      return {kind: 'not_found'};
+    }
+
+    const jerseys =
+        rosterSnap.exists &&
+        rosterSnap.data().jerseys &&
+        typeof rosterSnap.data().jerseys === 'object' ?
+          {...rosterSnap.data().jerseys} :
+          {};
+    if (jersey) {
+      jerseys[playerName] = jersey;
+    } else if (Object.prototype.hasOwnProperty.call(jerseys, playerName)) {
+      delete jerseys[playerName];
+    }
+
+    transaction.set(rosterRef, {jerseys}, {merge: true});
+    return {kind: 'ok'};
+  });
+
+  if (txnResult.kind === 'not_found') {
+    return {ok: true, notFound: true};
+  }
+  return {ok: true};
+});
+
 /** super_admin: create sport module (no client writes). */
 exports.createSportModule = onCall({region: REGION}, async (request) => {
   assertSuperAdmin(request);
