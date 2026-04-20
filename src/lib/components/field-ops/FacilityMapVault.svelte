@@ -13,9 +13,10 @@
 	} from 'firebase/firestore';
 	import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 	import '$lib/styles/enterprise-console.css';
+	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
 
 	/**
-	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath: string; mapDownloadUrl: string; type: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string }} FacilityMapRow
+	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath: string; mapDownloadUrl: string; type: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string }} FacilityMapRow
 	 */
 
 	let { clubId = '', canManage = false } = $props();
@@ -70,6 +71,10 @@
 					const lng = typeof x.longitude === 'number' ? x.longitude : undefined;
 					const routingUrl =
 						typeof x.routingUrl === 'string' && x.routingUrl ? x.routingUrl : undefined;
+					const tacticalCanvasJson =
+						typeof x.tacticalCanvasJson === 'string' && x.tacticalCanvasJson.trim() ?
+							x.tacticalCanvasJson
+						:	undefined;
 					return {
 						id: d.id,
 						name: typeof x.name === 'string' ? x.name : d.id,
@@ -81,6 +86,7 @@
 						...(lat !== undefined ? { latitude: lat } : {}),
 						...(lng !== undefined ? { longitude: lng } : {}),
 						...(routingUrl ? { routingUrl } : {}),
+						...(tacticalCanvasJson ? { tacticalCanvasJson } : {}),
 					};
 				});
 				list.sort((a, b) => {
@@ -634,6 +640,18 @@
 				{/if}
 			</section>
 
+			<section class="fm-tactical-wrap" aria-labelledby="fm-tactical-h">
+				<h3 id="fm-tactical-h" class="fm-logistics__title">Tactical Builder</h3>
+				{#key previewId}
+					<TacticalBuilder
+						{clubId}
+						facilityId={previewRow.id}
+						{canManage}
+						initialJson={previewRow.tacticalCanvasJson}
+					/>
+				{/key}
+			</section>
+
 			{#if previewRow.address && !canManage}
 				<p class="fm-preview-meta">{previewRow.address}</p>
 			{/if}
@@ -942,6 +960,11 @@
 		color: var(--brand-primary, #f59e0b);
 		text-decoration: underline;
 		text-underline-offset: 3px;
+	}
+
+	.fm-tactical-wrap {
+		width: 100%;
+		margin-top: 4px;
 	}
 
 	.fm-preview-meta {

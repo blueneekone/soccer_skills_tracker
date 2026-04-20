@@ -178,6 +178,12 @@ service cloud.firestore {
           && facilityRoutingUrlOk(d.routingUrl));
     }
 
+    // Epic 17 Phase 3 — Fabric.js tactical layout JSON (stringified canvas state).
+    function facilityTacticalJsonOk(d) {
+      return !d.keys().hasAny(['tacticalCanvasJson'])
+        || (d.tacticalCanvasJson is string && d.tacticalCanvasJson.size() <= 500000);
+    }
+
     // Epic 17: facility map vault — club members read; directors write metadata.
     function canReadFacilityVault(clubPathId) {
       return authed() && (
@@ -463,7 +469,8 @@ service cloud.firestore {
             || (request.resource.data.address is string
               && request.resource.data.address.size() <= 500)
           )
-          && facilityLogisticsConsistent(request.resource.data);
+          && facilityLogisticsConsistent(request.resource.data)
+          && facilityTacticalJsonOk(request.resource.data);
 
         allow update: if authed()
           && isDirector()
@@ -474,6 +481,7 @@ service cloud.firestore {
           && request.resource.data.type == resource.data.type
           && request.resource.data.uploadedAt == resource.data.uploadedAt
           && facilityLogisticsConsistent(request.resource.data)
+          && facilityTacticalJsonOk(request.resource.data)
           && (
             !request.resource.data.keys().hasAny(['address'])
             || (request.resource.data.address is string

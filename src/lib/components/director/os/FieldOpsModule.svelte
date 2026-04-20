@@ -337,8 +337,8 @@
 				Static map vault
 			</h4>
 			<p class="tw-m-0 tw-mb-3 tw-text-xs" style="color: var(--text-secondary);">
-				Upload PDFs or images of your facilities. In the facility drawer, set a map pin, address, and saved
-				routing link for parents and coaches. Coaches can open read-only maps from their tools tab.
+				Upload PDFs or images of your facilities. 				In the facility drawer, set a map pin, address, routing link, and tactical canvas for parents and
+				coaches. Coaches can open read-only maps from their tools tab.
 			</p>
 			<FacilityMapVault {clubId} canManage={!isReadOnly} />
 		</section>
