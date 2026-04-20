@@ -1,64 +1,58 @@
----
-name: SSTRACKER Unified Execution Plan
-overview: "The absolute, unified roadmap for SSTRACKER. This plan merges the necessary SvelteKit/Svelte 5 architectural migration (Foundation) with the strict 2026 PE-Exit Feature Roadmap defined by the CEO. Do not omit any AI, Biomechanical, or Compliance features listed here."
-isProject: true
----
+# Master Roadmap: SSTRACKER (Enterprise SaaS)
 
-# SSTRACKER 2026: Master Execution Plan
-
-This document is the **single source of truth** for project execution. It enforces the SvelteKit migration required by `.cursorrules` while strictly maintaining the CEO's 4-Epic business feature roadmap.
-
-## 🏗️ PHASE 0: The SvelteKit & RBAC Foundation (Prerequisite)
-*Cursor must complete this phase before initiating any Epic sprints.*
-
-* **0.1 SvelteKit Scaffold:** Port the current vanilla PWA (`index.html`, `app.js`) into a SvelteKit (adapter-static) architecture.
-* **0.2 Liquid Glass Preservation:** Import the existing `style.css` globally to preserve the `clamp()` anti-squish variables and 24px radii, then incrementally scope styles to `.svelte` components.
-* **0.3 Auth & Claims:** Restore `signInWithPopup`. Implement Firebase Custom Claims (`role`, `teamId`) via Cloud Functions to establish true server-side RBAC.
-* **0.4 Firestore Rules:** Author strict `firestore.rules` to lock down the data plane based on the new custom claims.
+## 🟢 PHASE 1 & 2: MVP & Enterprise Architecture
+**STATUS: COMPLETE.** * Secure routing, RBAC (Role-Based Access Control), multi-tenant DB normalization, Pro Coach tactics, and gamification foundation are live.
 
 ---
 
-## 💎 EPIC 1: Foundation, UI Polish & Compliance (Immediate Follow-Up)
-**Goal:** Eradicate technical debt, finalize the "Billion-Dollar" visual identity in Svelte, and meet April 2026 FTC COPPA deadlines.
+## 🟡 PHASE 2.5: Premium UX & Bug Squashing (WE ARE HERE)
+**Goal:** Make the app look and feel like a billion-dollar product. Zero vertical scrolling on desktop, flawless Liquid Glass spacing, and premium gamification assets.
 
-* **Sprint 1.1: Cryptographic Cache Busting:** Utilize Vite's file-hash versioning for the PWA Service Worker. Eliminate all legacy `?v=` query strings.
-* **Sprint 1.2: Bento Grid UI Finalization:** Ensure all new Svelte components utilize responsive CSS Grids and multi-layered, specular drop shadows defined in the Liquid Glass UI protocol.
-* **Sprint 1.3: Ironclad COPPA 2026 Engine:** * Deprecate `<canvas>` signatures for U13 athletes. 
-    * Build Verifiable Parental Consent (VPC) gateway flows.
-    * Implement automated TTL data purging for offboarded minors.
-* **Sprint 1.4: SafeSport & Privacy:** Default minor accounts to maximum privacy. Engineer in-app messaging to automatically CC parent/guardian accounts to prevent 1-on-1 adult-to-minor communication.
-
----
-
-## 🛡️ EPIC 2: Coach Command Center & UYSA Sync
-**Goal:** Eliminate manual data entry via governing body APIs and provide elite spatial design tools.
-
-* **Sprint 2.1: Affinity/UYSA Interoperability:** * Build OAuth pipelines to Affinity Sports API. 
-    * Map `SIDCODE`/`SeasonID` to pull verified rosters and staff.
-* **Sprint 2.2: Digital Match Day Operations:** Generate auto-updating digital match cards that explicitly flag players lacking SafeSport or concussion clearance ("Not Eligible").
-* **Sprint 2.3: Database Bridge (Strategy Canvas):** Extract X/Y coordinates from the Fabric.js Strategy Board and write to Firestore for serialized tactical sharing.
-* **Sprint 2.4: Advanced Workout Builder:** Implement SortableJS for drag-and-drop curriculum building. Persist as canonical JSON schemas.
+* **Sprint 2.5.1: Desktop Viewport & Spacing Polish**
+  * Force `100vh` layout on desktop to eliminate vertical scrolling.
+  * Consolidate multi-page dashboards into a single-icon tab system.
+  * Fix CSS Bento gaps for "Team Schedule", "My Homework", "Set Selection", and "Submit Workout" areas.
+  * Fix Command Center header spacing and the dark-mode text contrast bug.
+  * Remove the "Position Specific" card from the dashboard.
+* **Sprint 2.5.2: The Asset Upgrade & Missing Cards**
+  * Replace ugly rank medals with premium SVG/CSS-styled glowing tier badges (Rookie to Legend).
+  * Build the missing "My Stats" card for the Player dashboard.
+  * Implement dynamic sport icons (e.g., change the football icon to a basketball or soccer ball based on the `clubId` settings).
+* **Sprint 2.5.3: Super Admin Backend Fixes**
+  * Fix the Cloud Functions / Firestore rules that are causing "Create License" and "Create New Sports Module" to fail.
 
 ---
 
-## 📈 EPIC 3: Gamification & The Digital Resume
-**Goal:** Maximize Net Revenue Retention (NRR) by transforming the utility into an indispensable athlete career asset.
+## 🔵 PHASE 3: Monetization, Licensing & Sponsorships
+**Goal:** Automate revenue generation and allow Directors to monetize their own clubs.
 
-* **Sprint 3.1: Pro-Style Longitudinal Player Cards:** Transform stats into "Pro Cards" using Chart.js radar/spider charts to track YoY physical/technical growth. Implement verified coach signatures.
-* **Sprint 3.2: Collegiate Recruitment Portal:** B2B tier for scouts to filter the global database by graduation year and verified metrics. Allow players to generate shareable QR portfolios.
-* **Sprint 3.3: Deep Engagement Mechanics:** Multi-day streak badges, FCM push notification rewards, and team leaderboards, adhering strictly to privacy opt-ins.
-
----
-
-## 🤖 EPIC 4: The AI-Native Ecosystem (Enterprise Valuation Multiplier)
-**Goal:** Deploy bleeding-edge architecture (RAG, ML, Computer Vision) to outpace legacy competitors.
-
-* **Sprint 4.1: Tactical RAG LLM Integration:** Firebase AI Logic/Genkit over Epic 2/3 payloads. Coaches prompt AI for counter-tactics, generating structured JSON practice plans.
-* **Sprint 4.2: Biomechanical Kinematic Analysis:** Integrate ML computer vision APIs to analyze uploaded smartphone video of shooting mechanics, comparing joint angles to pro baselines.
-* **Sprint 4.3: Predictive Load Management:** Train an ML model on historical telemetry (minutes/reps) to forecast injury probabilities and alert Directors to rest players.
+* **Sprint 3.1: Advanced Licensing Engine**
+  * Expand the licensing module to support: Trial, Monthly, Quarterly, and Yearly tiers.
+  * Integrate Stripe Checkout for automated billing and webhook updates.
+* **Sprint 3.2: Director Sponsorship Module**
+  * Add a "Sponsors" tab to the Director portal.
+  * Allow Directors to upload sponsor logos and links, which will dynamically render on their players' dashboards and Pro Cards.
+* **Sprint 3.3: Automated Onboarding**
+  * Generate unique "Join Links" for parents/coaches.
 
 ---
 
-## 🚦 Execution Guardrails (Cursor Instructions)
-1.  **Do Not Omit Features:** Epic 3 (Player Cards) and Epic 4 (Biomechanics/Load Management) are mandatory for the PE exit strategy. Do not abstract them away.
-2.  **Strict Dependencies:** Do not build Epic 4 (AI) until Epic 2 (JSON Curriculum schemas) is complete. Do not pull Affinity PII (Epic 2) until Epic 1 (COPPA/RBAC) is secure.
+## 🟣 PHASE 4: Real-Time Chat & Social Reach
+**Goal:** Move from static messaging to real-time chat, and integrate enterprise marketing APIs.
+
+* **Sprint 4.1: Real-Time Chat Platform**
+  * Scrap the old "Messaging" system. 
+  * Build a WebSocket or Firestore-listener based real-time Chat interface (Slack/Discord style) with channels (e.g., `#general`, `#coaches`, `#parents`).
+* **Sprint 4.2: The Omnichannel Marketing Engine**
+  * Integrate Chat with Broadcasting (Directors can drop a high-priority card directly into the chat).
+  * **API Integrations:** Connect Meta (Facebook/Instagram) and X (Twitter) APIs.
+  * Allow Directors to push a "Campaign" simultaneously to the in-app Chat AND their official Club Social Media pages.
+* **Sprint 4.3: Push Notifications**
+  * FCM backend triggers for chat tags and workout reminders.
+
+---
+
+## ⚪ PHASE 5 & 6: Premium Analytics & Scale
+* **Epic 14:** Video Feedback & Storage (AWS/GCP Cloud Storage).
+* **Epic 15:** Predictive Analytics & Automated PDF Scouting Reports.
+* **Epic 16:** Deep Multi-Sport expansion (Dynamic XP algorithms per sport).
