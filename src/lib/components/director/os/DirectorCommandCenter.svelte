@@ -30,7 +30,7 @@
 
 	<div class="director-bento-grid director-bento-grid--lg director-os-shell">
 		<article
-			class="dir-bento-card glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
 		>
 			<div class="tw-relative tw-z-10">
@@ -39,7 +39,7 @@
 		</article>
 
 		<article
-			class="dir-bento-card glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
 		>
 			<div class="tw-relative tw-z-10">
@@ -52,7 +52,7 @@
 		</article>
 
 		<article
-			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class="dir-bento-card dir-bento-card--interactive director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
 		>
 			<div class="tw-relative tw-z-10">
@@ -60,6 +60,7 @@
 			</div>
 		</article>
 
+		<!-- Read-only seat visualization — no tile-level motion -->
 		<article
 			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
@@ -70,7 +71,7 @@
 		</article>
 
 		<article
-			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class="dir-bento-card dir-bento-card--interactive director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
 			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
 		>
 			<div class="tw-relative tw-z-10">

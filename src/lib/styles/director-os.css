@@ -66,6 +66,23 @@
 	filter: saturate(1.05);
 }
 
+/* Actionable tiles only — lift + press; omit on read-only / viz-only strips */
+.dir-bento-card.dir-bento-card--interactive {
+	transition:
+		transform 0.2s ease-out,
+		box-shadow 0.2s ease-out;
+}
+.dir-bento-card.dir-bento-card--interactive:hover {
+	transform: translateY(-2px);
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.06),
+		0 2px 4px -2px rgb(0 0 0 / 0.06),
+		var(--shadow-liquid, 0 12px 40px -12px rgba(15, 23, 42, 0.12));
+}
+.dir-bento-card.dir-bento-card--interactive:active {
+	transform: scale(0.98);
+}
+
 /* .glass-panel — defined globally in style.css */
 
 /* Premium CTA buttons (Director OS only) */
