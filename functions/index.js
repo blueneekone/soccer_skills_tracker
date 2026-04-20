@@ -998,6 +998,270 @@ exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
 });
 
 /**
+ * @param {admin.firestore.Timestamp} aStart
+ * @param {admin.firestore.Timestamp} aEnd
+ * @param {admin.firestore.Timestamp} bStart
+ * @param {admin.firestore.Timestamp} bEnd
+ * @return {boolean}
+ */
+function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
+  return (
+    aStart.toMillis() < bEnd.toMillis() && bStart.toMillis() < aEnd.toMillis()
+  );
+}
+
+/**
+ * Director / registrar / coach (own team) / super_admin — field metadata.
+ */
+exports.directorUpsertField = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const fieldId =
+      typeof data.fieldId === 'string' ? data.fieldId.trim().slice(0, 128) : '';
+  const clubId =
+      typeof data.clubId === 'string' ? data.clubId.trim().slice(0, 128) : '';
+  const name =
+      typeof data.name === 'string' ? data.name.trim().slice(0, 200) : '';
+  const location =
+      typeof data.location === 'string' ?
+        data.location.trim().slice(0, 500) :
+        '';
+  const statusRaw =
+      typeof data.status === 'string' ?
+        data.status.trim().toLowerCase() :
+        '';
+  const status =
+      statusRaw === 'maintenance' || statusRaw === 'closed' ?
+        statusRaw :
+        'active';
+
+  if (!fieldId || !clubId || !name) {
+    throw new HttpsError(
+        'invalid-argument',
+        'fieldId, clubId, and name are required.',
+    );
+  }
+
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role;
+  const tokenClub = request.auth.token.clubId || null;
+  if (role !== 'super_admin') {
+    if (role !== 'director' && role !== 'registrar') {
+      throw new HttpsError(
+          'permission-denied',
+          'Only club staff may manage fields.',
+      );
+    }
+    if (!tokenClub || tokenClub !== clubId) {
+      throw new HttpsError('permission-denied', 'Club mismatch.');
+    }
+  }
+
+  await db.collection('fields').doc(fieldId).set(
+      {
+        clubId,
+        name,
+        location: location || '',
+        status,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: normEmail(request.auth.token.email) || 'unknown',
+      },
+      {merge: true},
+  );
+  return {ok: true};
+});
+
+/**
+ * Atomic field schedule booking with same-day overlap check ("bouncer").
+ */
+exports.secureBookField = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const fieldId =
+      typeof data.fieldId === 'string' ? data.fieldId.trim().slice(0, 128) : '';
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  const scheduleDate =
+      typeof data.scheduleDate === 'string' ?
+        data.scheduleDate.trim().slice(0, 12) :
+        '';
+  const startIso =
+      typeof data.startTime === 'string' ? data.startTime.trim() : '';
+  const endIso = typeof data.endTime === 'string' ? data.endTime.trim() : '';
+  const activityRaw =
+      typeof data.activityType === 'string' ?
+        data.activityType.trim() :
+        'Practice';
+  const activityType =
+      activityRaw.toLowerCase() === 'game' ? 'Game' : 'Practice';
+
+  if (!fieldId || !teamId || !scheduleDate || !startIso || !endIso) {
+    throw new HttpsError(
+        'invalid-argument',
+        'fieldId, teamId, scheduleDate, startTime, endTime are required.',
+    );
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(scheduleDate)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'scheduleDate must be YYYY-MM-DD.',
+    );
+  }
+
+  let startDate;
+  let endDate;
+  try {
+    startDate = new Date(startIso);
+    endDate = new Date(endIso);
+  } catch (e) {
+    throw new HttpsError('invalid-argument', 'Invalid start or end time.');
+  }
+  if (
+    Number.isNaN(startDate.getTime()) ||
+    Number.isNaN(endDate.getTime()) ||
+    startDate.getTime() >= endDate.getTime()
+  ) {
+    throw new HttpsError(
+        'invalid-argument',
+        'endTime must be after startTime.',
+    );
+  }
+
+  const startTs = admin.firestore.Timestamp.fromDate(startDate);
+  const endTs = admin.firestore.Timestamp.fromDate(endDate);
+
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role;
+  const tokenClub = request.auth.token.clubId || null;
+  const tokenTeam = request.auth.token.teamId || null;
+
+  const fieldRef = db.collection('fields').doc(fieldId);
+  const teamRef = db.collection('teams').doc(teamId);
+
+  const txnResult = await db.runTransaction(async (transaction) => {
+    const fieldSnap = await transaction.get(fieldRef);
+    if (!fieldSnap.exists) {
+      return {kind: 'no_field'};
+    }
+    const fieldClub =
+        typeof fieldSnap.data().clubId === 'string' ?
+          fieldSnap.data().clubId.trim() :
+          '';
+    if (!fieldClub) {
+      return {kind: 'bad_field'};
+    }
+
+    const teamSnap = await transaction.get(teamRef);
+    if (!teamSnap.exists) {
+      return {kind: 'no_team'};
+    }
+    const teamClub =
+        typeof teamSnap.data().clubId === 'string' ?
+          teamSnap.data().clubId.trim() :
+          '';
+    if (teamClub !== fieldClub) {
+      return {kind: 'club_mismatch'};
+    }
+
+    if (role === 'super_admin') {
+      // ok
+    } else if (role === 'director' || role === 'registrar') {
+      if (!tokenClub || tokenClub !== fieldClub) {
+        return {kind: 'denied'};
+      }
+    } else if (role === 'coach') {
+      if (!tokenClub || tokenClub !== fieldClub) {
+        return {kind: 'denied'};
+      }
+      if (!tokenTeam || tokenTeam !== teamId) {
+        return {kind: 'denied'};
+      }
+    } else {
+      return {kind: 'denied'};
+    }
+
+    const q = fieldRef
+        .collection('schedules')
+        .where('scheduleDate', '==', scheduleDate);
+    const existingSnap = await transaction.get(q);
+
+    let conflictTeamId = '';
+    for (const doc of existingSnap.docs) {
+      const d = doc.data();
+      const s = d.startTime;
+      const e = d.endTime;
+      if (!(s instanceof admin.firestore.Timestamp) ||
+          !(e instanceof admin.firestore.Timestamp)) {
+        continue;
+      }
+      if (timeRangesOverlap(startTs, endTs, s, e)) {
+        conflictTeamId =
+            typeof d.teamId === 'string' ? d.teamId : '';
+        break;
+      }
+    }
+
+    if (conflictTeamId) {
+      return {kind: 'overlap', conflictTeamId};
+    }
+
+    const scheduleRef = fieldRef.collection('schedules').doc();
+    transaction.set(scheduleRef, {
+      teamId,
+      clubId: fieldClub,
+      scheduleDate,
+      startTime: startTs,
+      endTime: endTs,
+      activityType,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: normEmail(request.auth.token.email) || 'unknown',
+    });
+
+    return {kind: 'ok', scheduleId: scheduleRef.id};
+  });
+
+  if (txnResult.kind === 'no_field') {
+    throw new HttpsError('not-found', 'Field not found.');
+  }
+  if (txnResult.kind === 'bad_field') {
+    throw new HttpsError('failed-precondition', 'Field has no clubId.');
+  }
+  if (txnResult.kind === 'no_team') {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  if (txnResult.kind === 'club_mismatch') {
+    throw new HttpsError(
+        'failed-precondition',
+        'Team and field must belong to the same club.',
+    );
+  }
+  if (txnResult.kind === 'denied') {
+    throw new HttpsError(
+        'permission-denied',
+        'You cannot book this field for that team.',
+    );
+  }
+  if (txnResult.kind === 'overlap') {
+    const tid = txnResult.conflictTeamId || '';
+    const nameSnap = await db.collection('teams').doc(tid).get();
+    const teamName =
+        nameSnap.exists &&
+        typeof nameSnap.data().name === 'string' &&
+        nameSnap.data().name.trim() ?
+          nameSnap.data().name.trim() :
+          tid || 'another team';
+    throw new HttpsError(
+        'failed-precondition',
+        'Time slot conflicts with ' + teamName + '.',
+    );
+  }
+
+  return {ok: true, scheduleId: txnResult.scheduleId};
+});
+
+/**
  * Scheduled: release reserved seats for coach invites older than 168 hours.
  */
 exports.expireCoachInvites = onSchedule('every 60 minutes', async () => {
@@ -1047,7 +1311,46 @@ exports.expireCoachInvites = onSchedule('every 60 minutes', async () => {
   if (released > 0) {
     logger.info(`expireCoachInvites released ${released} pending invite(s).`);
   }
+
+  await reconcileReservedSeatsWithoutPendingInvites();
 });
+
+/**
+ * If no pending coach_invites exist for a club but reserved_seats leaked,
+ * reset reserved_seats.
+ */
+async function reconcileReservedSeatsWithoutPendingInvites() {
+  const snap = await db.collection('license_entitlements')
+      .where('reserved_seats', '>', 0)
+      .limit(200)
+      .get();
+
+  let fixed = 0;
+  for (const entDoc of snap.docs) {
+    const clubId = entDoc.id;
+    const pending = await db.collection('coach_invites')
+        .where('clubId', '==', clubId)
+        .where('status', '==', 'pending')
+        .limit(1)
+        .get();
+    if (pending.empty) {
+      await db.collection('license_entitlements').doc(clubId).set(
+          {
+            reserved_seats: 0,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'system:reconcileReservedSeats',
+          },
+          {merge: true},
+      );
+      fixed++;
+    }
+  }
+  if (fixed > 0) {
+    logger.info(
+        `reconcileReservedSeatsWithoutPendingInvites: reset ${fixed} club(s).`,
+    );
+  }
+}
 
 /**
  * Atomic roster add with license_entitlements seat check

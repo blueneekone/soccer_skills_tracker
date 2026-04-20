@@ -229,3 +229,99 @@
 		align-items: flex-start;
 	}
 }
+
+/* Sprint 8.2 — Field ops master schedule (CSS grid + overlay blocks, no SVG) */
+.dir-field-hour-ruler {
+	display: flex;
+	justify-content: space-between;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	color: var(--muted-slate);
+	margin-bottom: 6px;
+	padding: 0 2px;
+}
+
+.dir-field-track-wrap {
+	position: relative;
+	min-height: 52px;
+}
+
+.dir-field-slots-grid {
+	display: grid;
+	gap: 2px;
+	position: relative;
+	z-index: 1;
+}
+
+.dir-field-slot {
+	min-height: 48px;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.42);
+	border: 1px dashed color-mix(in srgb, var(--brand-primary) 30%, rgba(15, 23, 42, 0.15));
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.dir-field-slot--hint {
+	border-color: var(--brand-accent);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-accent) 40%, transparent);
+}
+
+.dir-field-blocks-layer {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.dir-field-block {
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	pointer-events: auto;
+	border-radius: 10px;
+	padding: 4px 6px;
+	overflow: hidden;
+	background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+	color: #f8fafc;
+	font-size: 10px;
+	font-weight: 800;
+	line-height: 1.2;
+	box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+	border: 1px solid color-mix(in srgb, var(--brand-accent) 55%, transparent);
+}
+
+.dir-field-block-text {
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dir-field-block-sub {
+	display: block;
+	font-size: 9px;
+	font-weight: 600;
+	opacity: 0.92;
+}
+
+.dir-field-team-chip {
+	border-radius: 9999px;
+	padding: 6px 12px;
+	border: 1px solid color-mix(in srgb, var(--brand-primary) 38%, transparent);
+	background: color-mix(in srgb, var(--brand-accent) 10%, rgba(255, 255, 255, 0.85));
+	cursor: grab;
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--text-primary);
+}
+
+.dir-field-team-chip:active {
+	cursor: grabbing;
+}

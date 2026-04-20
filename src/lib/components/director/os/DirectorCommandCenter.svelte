@@ -2,6 +2,7 @@
 	import ClubIdentityModule from './ClubIdentityModule.svelte';
 	import QuickActionsModule from './QuickActionsModule.svelte';
 	import EntitlementModule from './EntitlementModule.svelte';
+	import FieldOpsModule from './FieldOpsModule.svelte';
 
 	let {
 		clubId = '',
@@ -20,7 +21,7 @@
 				Command center
 			</h2>
 			<p class="tw-m-0 tw-mt-2 tw-text-sm md:tw-text-base tw-max-w-2xl" style="color: var(--text-secondary);">
-				Executive overview for your club — branding, staffing shortcuts, and live seat usage.
+				Executive overview — branding, staffing, seat usage, and field operations.
 			</p>
 		</div>
 	</div>
@@ -40,6 +41,10 @@
 
 		<article class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6">
 			<EntitlementModule {clubId} />
+		</article>
+
+		<article class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6">
+			<FieldOpsModule {clubId} />
 		</article>
 	</div>
 </section>

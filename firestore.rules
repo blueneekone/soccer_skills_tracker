@@ -774,6 +774,32 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Phoenix Sprint 8.2: physical fields + schedules (writes via Cloud Functions only).
+    function fieldDocClub(fid) {
+      return get(/databases/$(database)/documents/fields/$(fid)).data.clubId;
+    }
+
+    match /fields/{fieldId} {
+      allow read: if authed() && (
+        isSuper()
+        || (tokenClub() != null
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub()
+            && (isDirector() || isRegistrar() || isCoach()))
+      );
+      allow create, update, delete: if false;
+
+      match /schedules/{scheduleId} {
+        allow read: if authed() && (
+          isSuper()
+          || (tokenClub() != null
+              && fieldDocClub(fieldId) == tokenClub()
+              && (isDirector() || isRegistrar() || isCoach()))
+        );
+        allow create, update, delete: if false;
+      }
+    }
+
     // Phoenix Sprint 7.2: coach invite holds — reads club-scoped; writes via Cloud Functions only.
     match /coach_invites/{inviteId} {
       allow read: if authed() && (
