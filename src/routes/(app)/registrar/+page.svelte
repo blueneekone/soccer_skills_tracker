@@ -4,6 +4,7 @@
 	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 
 	const transferPlayer = httpsCallable(functions, 'registrarTransferPlayer');
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
@@ -160,7 +161,12 @@
 </script>
 
 <div class="view-section">
-	<h2 class="view-title">📋 Registrar console</h2>
+	<div class="registrar-portal-title">
+		{#if clubId}
+			<ClubLogoMark size="lg" />
+		{/if}
+		<h2 class="view-title registrar-portal-title__h">Registrar console</h2>
+	</div>
 	<p class="lead text-sm-sub">
 		Manage roster names and login invites for your organization. Transfers between clubs require staff in
 		the <strong>source</strong> or <strong>destination</strong> club (or a super admin). Removing a player
@@ -278,6 +284,18 @@
 </div>
 
 <style>
+	.registrar-portal-title {
+		display: flex;
+		align-items: center;
+		gap: clamp(10px, 2vw, 16px);
+		flex-wrap: wrap;
+		margin-bottom: clamp(8px, 1.5vw, 14px);
+	}
+
+	.registrar-portal-title__h {
+		margin: 0;
+	}
+
 	.lead {
 		margin-bottom: clamp(16px, 3vw, 24px);
 		max-width: 52rem;

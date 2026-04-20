@@ -7,6 +7,7 @@
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
 	import DashCard from '$lib/components/DashCard.svelte';
+	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
@@ -125,7 +126,13 @@
 	<!-- Welcome header -->
 	<div class="card dashboard-header">
 		<div class="card-body text-center">
-			<i class="ph {welcomeSportIcon} dash-icon icon-large welcome-sport-icon"></i>
+			{#if profile?.clubId}
+				<div class="welcome-brand-wrap">
+					<ClubLogoMark size="lg" />
+				</div>
+			{:else}
+				<i class="ph {welcomeSportIcon} dash-icon icon-large welcome-sport-icon"></i>
+			{/if}
 			<h2 class="welcome-title">Welcome, <span>{firstName}</span>!</h2>
 			<p class="welcome-subtitle">Ready to get 1% better today?</p>
 		</div>
@@ -285,6 +292,12 @@
 </div>
 
 <style>
+	.welcome-brand-wrap {
+		display: flex;
+		justify-content: center;
+		margin-bottom: clamp(6px, 1.5vw, 12px);
+	}
+
 	.welcome-sport-icon {
 		color: var(--aggie-gold);
 		filter: drop-shadow(0 4px 14px rgba(245, 158, 11, 0.35));

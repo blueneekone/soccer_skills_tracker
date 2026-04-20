@@ -1,18 +1,29 @@
 <script>
-	import { db, functions } from '$lib/firebase.js';
+	import { db, functions, storage } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
+	import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 	import { httpsCallable } from 'firebase/functions';
+	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 
 	let { clubId = '' } = $props();
 
 	const saveBranding = httpsCallable(functions, 'directorSaveClubBranding');
 
+	const MAX_BYTES = 2 * 1024 * 1024;
+	const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
 	let primaryHex = $state('#6366f1');
 	let accentHex = $state('#10b981');
+	/** Local blob preview while selecting (before upload completes) */
 	let logoPreview = $state(/** @type {string | null} */ (null));
+	/** Persisted URL from Firestore */
+	let savedLogoUrl = $state('');
 	let loading = $state(false);
 	let saving = $state(false);
+	let uploading = $state(false);
+	let uploadProgress = $state(0);
 	let loadErr = $state(/** @type {string | null} */ (null));
+	const fileInputId = $derived(clubId ? `club-logo-file-${clubId}` : 'club-logo-file');
 
 	function applyRootBranding() {
 		if (typeof document === 'undefined') return;
@@ -30,6 +41,7 @@
 		if (!clubId) {
 			loadErr = null;
 			loading = false;
+			savedLogoUrl = '';
 			return;
 		}
 		loading = true;
@@ -42,6 +54,10 @@
 				const a = typeof d.brandAccentHex === 'string' ? d.brandAccentHex : '';
 				if (/^#[0-9A-Fa-f]{6}$/.test(p)) primaryHex = p;
 				if (/^#[0-9A-Fa-f]{6}$/.test(a)) accentHex = a;
+				savedLogoUrl =
+					typeof d.brandLogoUrl === 'string' ? d.brandLogoUrl.trim() : '';
+			} else {
+				savedLogoUrl = '';
 			}
 			applyRootBranding();
 		} catch (e) {
@@ -57,12 +73,77 @@
 		loadClubBranding();
 	});
 
+	function validateFile(file) {
+		if (!ALLOWED_TYPES.includes(file.type)) {
+			return 'Use PNG, JPG, or WebP only.';
+		}
+		if (file.size > MAX_BYTES) {
+			return 'File must be 2MB or smaller.';
+		}
+		return null;
+	}
+
+	async function uploadLogoToStorage(file) {
+		if (!clubId) return;
+		const err = validateFile(file);
+		if (err) {
+			alert(err);
+			return;
+		}
+		uploading = true;
+		uploadProgress = 0;
+		try {
+			const storageRef = ref(storage, `clubs/${clubId}/branding/logo.png`);
+			const task = uploadBytesResumable(storageRef, file, { contentType: file.type });
+			await new Promise((resolve, reject) => {
+				task.on(
+					'state_changed',
+					(snap) => {
+						const t = snap.totalBytes;
+						uploadProgress = t ? Math.round((100 * snap.bytesTransferred) / t) : 0;
+					},
+					(e) => reject(e),
+					() => resolve(undefined)
+				);
+			});
+			const downloadUrl = await getDownloadURL(storageRef);
+			await saveBranding({
+				clubId,
+				brandPrimaryHex: primaryHex,
+				brandAccentHex: accentHex,
+				logoUrl: downloadUrl
+			});
+			savedLogoUrl = downloadUrl;
+			if (logoPreview) URL.revokeObjectURL(logoPreview);
+			logoPreview = null;
+			uploadProgress = 100;
+			applyRootBranding();
+		} catch (e) {
+			const msg =
+				e && typeof e === 'object' && 'message' in e ?
+					String(/** @type {{ message?: string }} */ (e).message) :
+					'Upload failed.';
+			alert(msg);
+		} finally {
+			uploading = false;
+			uploadProgress = 0;
+		}
+	}
+
 	function onLogoChange(e) {
 		const input = /** @type {HTMLInputElement} */ (e.target);
 		const file = input.files?.[0];
-		if (!file || !file.type.startsWith('image/')) return;
+		if (!file) return;
+		const err = validateFile(file);
+		if (err) {
+			alert(err);
+			input.value = '';
+			return;
+		}
 		if (logoPreview) URL.revokeObjectURL(logoPreview);
 		logoPreview = URL.createObjectURL(file);
+		void uploadLogoToStorage(file);
+		input.value = '';
 	}
 
 	async function onSave() {
@@ -89,6 +170,8 @@
 			saving = false;
 		}
 	}
+
+	const displayLogoSrc = $derived(logoPreview || savedLogoUrl || '');
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-4">
@@ -104,43 +187,64 @@
 		</span>
 	</div>
 	<p class="tw-m-0 tw-text-sm tw-leading-relaxed" style="color: var(--text-secondary);">
-		Colors apply to this session instantly; Save publishes them to your club record.
+		Colors apply instantly; logo uploads go to Cloud Storage, then save to your club record.
 	</p>
 	{#if loadErr}
 		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);" role="alert">{loadErr}</p>
 	{/if}
 
 	<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
-		<label class="tw-flex tw-flex-col tw-gap-2 tw-cursor-pointer">
+		<div class="tw-flex tw-flex-col tw-gap-2">
 			<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide" style="color: var(--text-secondary);"
 				>Club logo</span
 			>
-			<input
-				type="file"
-				accept="image/png,image/jpeg,image/webp,image/svg+xml"
-				class="tw-sr-only"
-				onchange={onLogoChange}
-			/>
-			<div
-				class="tw-flex tw-min-h-[clamp(7rem,18vw,10rem)] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-transition hover:tw-border-slate-400"
+			<label
+				for={fileInputId}
+				class="tw-flex tw-min-h-[clamp(7rem,18vw,10rem)] tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-transition hover:tw-border-slate-400"
 				style="border-color: color-mix(in srgb, var(--brand-primary) 35%, rgba(15,23,42,0.2)); background: rgba(255,255,255,0.35);"
 			>
-				{#if logoPreview}
+				<input
+					id={fileInputId}
+					type="file"
+					accept="image/png,image/jpeg,image/webp"
+					class="tw-sr-only"
+					disabled={uploading || !clubId}
+					onchange={onLogoChange}
+				/>
+				{#if displayLogoSrc}
 					<img
-						src={logoPreview}
-						alt="Club logo preview"
+						src={displayLogoSrc}
+						alt="Club logo"
 						class="tw-max-h-32 tw-max-w-full tw-object-contain tw-p-2"
 					/>
 				{:else}
-					<div class="tw-text-center tw-px-4">
-						<span class="tw-block tw-text-2xl tw-mb-1" aria-hidden="true">📷</span>
+					<div class="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-text-center tw-px-4">
+						<ClubLogoMark size="xl" />
 						<span class="tw-text-sm tw-font-semibold" style="color: var(--text-secondary);"
-							>Upload mark (PNG / JPG / WebP / SVG)</span
+							>PNG, JPG, or WebP · max 2MB — tap to upload</span
 						>
 					</div>
 				{/if}
-			</div>
-		</label>
+			</label>
+			{#if uploading}
+				<div
+					class="tw-h-1.5 tw-rounded-full tw-overflow-hidden"
+					style="background: color-mix(in srgb, var(--brand-primary) 12%, rgba(15,23,42,0.08));"
+					role="progressbar"
+					aria-valuenow={uploadProgress}
+					aria-valuemin="0"
+					aria-valuemax="100"
+				>
+					<div
+						class="tw-h-full tw-rounded-full tw-transition-all tw-duration-150"
+						style="width: {uploadProgress}%; background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));"
+					></div>
+				</div>
+				<p class="tw-m-0 tw-text-xs tw-font-semibold" style="color: var(--muted-slate);">
+					Uploading… {uploadProgress}%
+				</p>
+			{/if}
+		</div>
 
 		<div class="tw-flex tw-flex-col tw-gap-3 tw-justify-center">
 			<div class="tw-flex tw-flex-col tw-gap-2">
@@ -187,7 +291,7 @@
 				type="button"
 				class="dir-os-btn-primary tw-mt-1"
 				onclick={onSave}
-				disabled={saving || loading || !clubId}
+				disabled={saving || loading || uploading || !clubId}
 			>
 				{saving ? 'Saving…' : 'Save branding'}
 			</button>

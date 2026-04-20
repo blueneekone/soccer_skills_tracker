@@ -3,6 +3,7 @@
 	import QuickActionsModule from './QuickActionsModule.svelte';
 	import EntitlementModule from './EntitlementModule.svelte';
 	import FieldOpsModule from './FieldOpsModule.svelte';
+	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 
 	let {
 		clubId = '',
@@ -27,24 +28,44 @@
 	</div>
 
 	<div class="director-bento-grid director-bento-grid--lg director-os-shell">
-		<article class="dir-bento-card glass-panel tw-p-5 md:tw-p-6">
-			<ClubIdentityModule {clubId} />
+		<article
+			class="dir-bento-card glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+		>
+			<div class="tw-relative tw-z-10">
+				<ClubIdentityModule {clubId} />
+			</div>
 		</article>
 
-		<article class="dir-bento-card glass-panel tw-p-5 md:tw-p-6">
+		<article
+			class="dir-bento-card glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+		>
+			<div class="tw-relative tw-z-10">
 			<QuickActionsModule
 				{clubId}
 				onCreateTeam={() => onNavigateTab('teams')}
 				onInviteCoach={() => onNavigateTab('teams')}
 			/>
+			</div>
 		</article>
 
-		<article class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6">
-			<EntitlementModule {clubId} />
+		<article
+			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+		>
+			<div class="tw-relative tw-z-10">
+				<EntitlementModule {clubId} />
+			</div>
 		</article>
 
-		<article class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6">
-			<FieldOpsModule {clubId} />
+		<article
+			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+		>
+			<div class="tw-relative tw-z-10">
+				<FieldOpsModule {clubId} />
+			</div>
 		</article>
 	</div>
 </section>

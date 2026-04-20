@@ -415,6 +415,22 @@ function normEmail(e) {
 }
 
 /**
+ * @param {string} url
+ * @return {boolean}
+ */
+function isTrustedFirebaseStorageLogoUrl(url) {
+  if (typeof url !== 'string' || url.length < 40 || url.length > 2000) {
+    return false;
+  }
+  if (!url.startsWith('https://')) {
+    return false;
+  }
+  return url.includes('firebasestorage.googleapis.com') ||
+      url.includes('firebasestorage.app') ||
+      url.includes('storage.googleapis.com');
+}
+
+/**
  * Deterministic id for coach invite dedupe
  * (one pending invite per club+team+email).
  * @param {string} clubId
@@ -450,6 +466,44 @@ function assertDirectorClubOrSuper(request, clubId) {
     );
   }
   return actor;
+}
+
+/**
+ * Director, registrar, or super_admin for club branding persistence.
+ * @param {any} request
+ * @param {string} clubId
+ * @return {{role: string, clubId: ?string, email: ?string}}
+ */
+function assertClubStaffOrSuper(request, clubId) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role;
+  const tokenClub = request.auth.token.clubId || null;
+  if (role === 'super_admin') {
+    return {
+      role,
+      clubId: tokenClub,
+      email: normEmail(request.auth.token.email),
+    };
+  }
+  if (role !== 'director' && role !== 'registrar') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only directors or registrars may update club branding.',
+    );
+  }
+  if (!clubId || !tokenClub || tokenClub !== clubId) {
+    throw new HttpsError(
+        'permission-denied',
+        'You can only manage branding for your own club.',
+    );
+  }
+  return {
+    role,
+    clubId: tokenClub,
+    email: normEmail(request.auth.token.email),
+  };
 }
 
 /**
@@ -726,7 +780,14 @@ exports.directorSaveClubBranding = onCall({region: REGION}, async (request) => {
     );
   }
 
-  const actor = assertDirectorClubOrSuper(request, clubId);
+  if (logoUrl && !isTrustedFirebaseStorageLogoUrl(logoUrl)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'logoUrl must be a Firebase Storage download URL.',
+    );
+  }
+
+  const actor = assertClubStaffOrSuper(request, clubId);
   const by = normEmail(actor.email) || 'unknown';
 
   const payload = {

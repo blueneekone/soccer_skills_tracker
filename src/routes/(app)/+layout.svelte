@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
 	import AppHeader from '$lib/components/AppHeader.svelte';
@@ -48,6 +49,15 @@
 		if (authStore.userProfile?.teamId && authStore.userProfile.teamId !== 'admin') {
 			brandingStore.loadForTeam(authStore.userProfile.teamId);
 		}
+	});
+
+	$effect(() => {
+		if (!authStore.isAuthenticated || authStore.isLoading) {
+			clubBrandingStore.clear();
+			return;
+		}
+		const cid = authStore.userProfile?.clubId;
+		clubBrandingStore.loadForClub(cid || '');
 	});
 </script>
 

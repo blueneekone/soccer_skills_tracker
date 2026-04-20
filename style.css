@@ -16,6 +16,7 @@
     /* Phoenix: director-injected club identity (defaults mirror core brand) */
     --brand-primary: #6366f1;
     --brand-accent: #10b981;
+    --club-logo-url: none;
     --success-green: #047857;
     --danger-red: #991b1b;
     --muted-slate: #334155;

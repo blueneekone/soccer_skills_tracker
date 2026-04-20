@@ -14,6 +14,7 @@
 	import ToolsTab from '$lib/components/coach/ToolsTab.svelte';
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 	import MatchDayTab from '$lib/components/coach/MatchDayTab.svelte';
+	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
@@ -35,6 +36,7 @@
 
 	const role = $derived(authStore.role);
 	const userEmail = $derived(authStore.user?.email || '');
+	const clubId = $derived(authStore.userProfile?.clubId);
 
 	// Which teams to show
 	const myTeams = $derived(() => {
@@ -88,7 +90,12 @@
 </script>
 
 <div class="view-section locked-dashboard-view">
-	<h2 class="coach-header">Coaching Tools</h2>
+	<div class="coach-portal-title">
+		{#if clubId}
+			<ClubLogoMark size="lg" />
+		{/if}
+		<h2 class="coach-header coach-portal-title__h">Coaching Tools</h2>
+	</div>
 
 	<!-- Director team selector -->
 	{#if isDirectorView}
@@ -145,10 +152,21 @@
 </div>
 
 <style>
+	.coach-portal-title {
+		display: flex;
+		align-items: center;
+		gap: clamp(10px, 2vw, 16px);
+		flex-wrap: wrap;
+		margin-bottom: clamp(12px, 2vw, 20px);
+	}
+
+	.coach-portal-title__h {
+		margin: 0;
+	}
+
 	.coach-header {
 		font-size: clamp(1.4rem, 4vw, 1.8rem);
 		font-weight: 900;
-		margin-bottom: clamp(12px, 2vw, 20px);
 	}
 	select { margin-bottom: 0; }
 	.tab-content { margin-top: clamp(12px, 2vw, 20px); }

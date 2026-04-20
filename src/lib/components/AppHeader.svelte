@@ -4,6 +4,7 @@
 	import { signOut } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
 
 	const handleLogout = async () => {
@@ -24,7 +25,11 @@
 <header class="app-header">
 	<button class="header-home-btn" onclick={goHome} aria-label="Go to home">
 		<div class="header-brand-row">
-			<i class="ph {sportIcon} header-sport-icon" aria-hidden="true"></i>
+			{#if authStore.userProfile?.clubId}
+				<ClubLogoMark size="md" />
+			{:else}
+				<i class="ph {sportIcon} header-sport-icon" aria-hidden="true"></i>
+			{/if}
 			<div class="header-titles">
 				<h3 class="app-title">{brandingStore.appName || 'SSTRACKER'}</h3>
 				<div class="player-info">Player: <span class="font-bold">{displayName}</span></div>
