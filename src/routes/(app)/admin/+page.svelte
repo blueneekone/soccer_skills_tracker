@@ -1,24 +1,16 @@
 <script>
+	import { page } from '$app/stores';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
-	import TabBar from '$lib/components/TabBar.svelte';
 	import AccountsTab from '$lib/components/admin/AccountsTab.svelte';
 	import SecurityTab from '$lib/components/admin/SecurityTab.svelte';
-
-	const TABS = [
-		{ id: 'overview', label: 'Overview', icon: 'ph-chart-line' },
-		{ id: 'sports', label: 'Sports Modules', icon: 'ph-trophy' },
-		{ id: 'accounts', label: 'Accounts', icon: 'ph-users-three' },
-		{ id: 'billing', label: 'Licensing', icon: 'ph-credit-card' },
-		{ id: 'security', label: 'Security', icon: 'ph-shield-check' }
-	];
 
 	const generateLicenseFn = httpsCallable(functions, 'generateLicense');
 	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
 
-	let activeTab = $state('overview');
+	const activeTab = $derived($page.url.searchParams.get('tab') || 'overview');
 
 	let playerCount = $state(0);
 	let clubCount = $derived(teamsStore.clubs.length);
@@ -126,11 +118,8 @@
 	}
 </script>
 
-<div class="view-section locked-dashboard-view">
-	<div class="admin-sticky-header">
-		<h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
-		<TabBar tabs={TABS} bind:activeTab variant="admin" />
-	</div>
+<div class="admin-console-page">
+	<h2 class="admin-console-page__title"><i class="ph ph-terminal-window"></i> Command Center</h2>
 
 	{#if activeTab === 'overview'}
 		<div class="stats-grid">
@@ -263,6 +252,17 @@
 </div>
 
 <style>
+	.admin-console-page__title {
+		margin: 0 0 16px;
+		font-size: 1.125rem;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--text-primary);
+		letter-spacing: -0.03em;
+	}
+
 	select,
 	input {
 		margin-bottom: 10px;

@@ -13,8 +13,14 @@
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
+	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 
 	let { children } = $props();
+
+	const isEnterpriseConsole = $derived(
+		$page.url.pathname.startsWith('/director') || $page.url.pathname.startsWith('/admin')
+	);
+	const enterpriseVariant = $derived($page.url.pathname.startsWith('/admin') ? 'admin' : 'director');
 
 	// Sync club license doc for read-only / pricing UX — super_admin exempt.
 	$effect(() => {
@@ -98,6 +104,11 @@
 			themeStore.apply();
 		}
 	});
+
+	$effect(() => {
+		if (typeof document === 'undefined') return;
+		document.documentElement.classList.toggle('enterprise-console-active', isEnterpriseConsole);
+	});
 </script>
 
 {#if authStore.isLoading}
@@ -105,14 +116,20 @@
 		<div class="splash-spinner"></div>
 	</div>
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
-	<div class="app-shell">
-		<AppHeader />
-		<ParentFcmPrompt />
-		<main class="container app-main">
+	<ParentFcmPrompt />
+	{#if isEnterpriseConsole}
+		<EnterpriseConsoleShell variant={enterpriseVariant}>
 			{@render children()}
-		</main>
-		<BottomNav />
-	</div>
+		</EnterpriseConsoleShell>
+	{:else}
+		<div class="app-shell">
+			<AppHeader />
+			<main class="container app-main">
+				{@render children()}
+			</main>
+			<BottomNav />
+		</div>
+	{/if}
 {/if}
 
 <style>

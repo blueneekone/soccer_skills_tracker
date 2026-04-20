@@ -13,6 +13,9 @@
 	/** @type {() => void} */
 	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
 
+	/** @type {{ open?: (o: { title?: string; body?: string; meta?: string }) => void } | undefined} */
+	const enterpriseDrawer = getContext('enterpriseDrawer');
+
 	const isReadOnly = $derived(
 		isSubscriptionReadOnly(
 			authStore.role,
@@ -53,6 +56,23 @@
 		}
 		return s;
 	});
+
+	/**
+	 * @param {{ id: string; name?: string }} t
+	 */
+	function openTeamDrawer(t) {
+		const tid = t.id;
+		const rc = rosterCounts[tid] ?? 0;
+		const row = teamEntLimits[tid];
+		const hasCap = row?.set === true && row.limit > 0;
+		const capLine = hasCap ? `${rc} / ${row.limit} seats` : `${rc} on roster (no per-team cap)`;
+		enterpriseDrawer?.open?.({
+			title: t.name || tid,
+			meta: tid,
+			body:
+				`${capLine}\nClub pool: ${masterSeatLimit || '—'} · Allocated (all teams): ${allocatedSum}\n\nOpen “Seat management” on a row to edit caps.`,
+		});
+	}
 
 	$effect(() => {
 		if (clubTeams.length > 0 && !selectedTeamId) selectedTeamId = clubTeams[0].id;
@@ -318,84 +338,112 @@
 			{#if clubTeams.length === 0}
 				<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">No teams yet.</p>
 			{:else}
-				<ul class="team-seat-list">
-					{#each clubTeams as t (t.id)}
-						{@const tid = t.id}
-						{@const rc = rosterCounts[tid] ?? 0}
-						{@const row = teamEntLimits[tid]}
-						{@const hasCap = row?.set === true && row.limit > 0}
-						<li class="team-seat-row">
-							<div class="team-seat-row__head">
-								<span class="team-seat-row__name">{t.name || tid}</span>
-								<button
-									type="button"
-									class="team-seat-toggle"
-									onclick={() => toggleSeatMgmt(tid)}
-									aria-expanded={openSeatMgmt[tid] === true}
+				<div class="ec-table-wrap">
+					<table class="ec-table">
+						<thead>
+							<tr>
+								<th>Team</th>
+								<th>Roster</th>
+								<th>Seat usage</th>
+								<th style="width: 9rem;">Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each clubTeams as t (t.id)}
+								{@const tid = t.id}
+								{@const rc = rosterCounts[tid] ?? 0}
+								{@const row = teamEntLimits[tid]}
+								{@const hasCap = row?.set === true && row.limit > 0}
+								<tr
+									class="ec-table__row-click"
+									onclick={() => openTeamDrawer(t)}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											openTeamDrawer(t);
+										}
+									}}
+									role="button"
+									tabindex="0"
 								>
-									{openSeatMgmt[tid] ? 'Hide' : 'Seat management'}
-								</button>
-							</div>
-							<div class="team-seat-meter" aria-hidden="true">
-								<div
-									class="team-seat-meter__fill"
-									style:width="{usagePct(tid)}%"
-								></div>
-							</div>
-							<p class="team-seat-row__meta">
-								{#if hasCap}
-									<strong>{rc}</strong> / {row.limit} seats
-								{:else}
-									<strong>{rc}</strong> on roster · <span class="muted">no team cap set</span>
-								{/if}
-							</p>
-							{#if openSeatMgmt[tid]}
-								<div class="team-seat-editor">
-									<label class="tw-block tw-text-xs tw-font-bold tw-mb-1" for="seat-cap-{tid}"
-										>Seat cap for this team</label
-									>
-									<div class="team-seat-editor__controls">
-										<input
-											id="seat-cap-{tid}"
-											type="range"
-											min="1"
-											max={Math.max(masterSeatLimit || 1, seatDraft[tid] ?? 1, rc || 1)}
-											value={seatDraft[tid] ?? Math.max(rc, 1)}
-											oninput={(e) => {
-												const n = parseInt(e.currentTarget.value, 10);
-												seatDraft = { ...seatDraft, [tid]: n };
-											}}
-										/>
-										<input
-											type="number"
-											min="1"
-											class="team-seat-num"
-											value={seatDraft[tid] ?? Math.max(rc, 1)}
-											oninput={(e) => {
-												const n = parseInt(e.currentTarget.value, 10);
-												if (Number.isFinite(n)) {
-													seatDraft = { ...seatDraft, [tid]: n };
-												}
-											}}
-										/>
+									<td class="ec-table__strong">{t.name || tid}</td>
+									<td>{rc}</td>
+									<td>
+										{#if hasCap}
+											{rc} / {row.limit}
+										{:else}
+											{rc} · <span class="muted">no cap</span>
+										{/if}
+										<div class="team-seat-meter team-seat-meter--inline" aria-hidden="true">
+											<div class="team-seat-meter__fill" style:width="{usagePct(tid)}%"></div>
+										</div>
+									</td>
+									<td>
 										<button
 											type="button"
-											class="primary-btn btn-blue team-seat-save"
-											class:primary-btn--readonly={isReadOnly}
-											disabled={seatBusy === tid}
-											onclick={() => saveTeamSeats(tid)}
+											class="team-seat-toggle"
+											onclick={(e) => {
+												e.stopPropagation();
+												toggleSeatMgmt(tid);
+											}}
+											aria-expanded={openSeatMgmt[tid] === true}
 										>
-											{seatBusy === tid ? 'Saving…' : 'Apply'}
+											{openSeatMgmt[tid] ? 'Hide' : 'Seat management'}
 										</button>
-									</div>
-									<p class="tw-m-0 tw-mt-2 tw-text-xs" style="color: var(--text-secondary);">
-										Cannot set below current roster size ({rc}).
-									</p>
-								</div>
-							{/if}
-						</li>
-					{/each}
-				</ul>
+									</td>
+								</tr>
+								{#if openSeatMgmt[tid]}
+									<tr class="ec-table__expand">
+										<td colspan="4">
+											<div class="team-seat-editor">
+												<label class="tw-block tw-text-xs tw-font-bold tw-mb-1" for="seat-cap-{tid}"
+													>Seat cap for this team</label
+												>
+												<div class="team-seat-editor__controls">
+													<input
+														id="seat-cap-{tid}"
+														type="range"
+														min="1"
+														max={Math.max(masterSeatLimit || 1, seatDraft[tid] ?? 1, rc || 1)}
+														value={seatDraft[tid] ?? Math.max(rc, 1)}
+														oninput={(e) => {
+															const n = parseInt(e.currentTarget.value, 10);
+															seatDraft = { ...seatDraft, [tid]: n };
+														}}
+													/>
+													<input
+														type="number"
+														min="1"
+														class="team-seat-num"
+														value={seatDraft[tid] ?? Math.max(rc, 1)}
+														oninput={(e) => {
+															const n = parseInt(e.currentTarget.value, 10);
+															if (Number.isFinite(n)) {
+																seatDraft = { ...seatDraft, [tid]: n };
+															}
+														}}
+													/>
+													<button
+														type="button"
+														class="primary-btn btn-blue team-seat-save"
+														class:primary-btn--readonly={isReadOnly}
+														disabled={seatBusy === tid}
+														onclick={() => saveTeamSeats(tid)}
+													>
+														{seatBusy === tid ? 'Saving…' : 'Apply'}
+													</button>
+												</div>
+												<p class="tw-m-0 tw-mt-2 tw-text-xs" style="color: var(--text-secondary);">
+													Cannot set below current roster size ({rc}).
+												</p>
+											</div>
+										</td>
+									</tr>
+								{/if}
+							{/each}
+						</tbody>
+					</table>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -466,6 +514,12 @@
 		background: color-mix(in srgb, var(--brand-primary, #0f172a) 12%, rgba(255, 255, 255, 0.5));
 		overflow: hidden;
 		margin-bottom: 6px;
+	}
+
+	.team-seat-meter--inline {
+		height: 4px;
+		margin: 6px 0 0;
+		max-width: 140px;
 	}
 
 	.team-seat-meter__fill {
