@@ -34,9 +34,13 @@
     --chart-tick: #334155;
     --chart-grid: rgba(15, 23, 42, 0.12);
 
-    /* Glassmorphism */
+    /* Glassmorphism — crisp edge tokens (light / dark shells override) */
     --glass-bg: rgba(255, 255, 255, 0.88);
     --glass-border: rgba(255, 255, 255, 0.45);
+    --glass-edge-light: rgba(255, 255, 255, 0.2);
+    --glass-edge-dark: rgba(15, 23, 42, 0.35);
+    /* Crisp glass rim (light shell) — dark mode overrides below */
+    --glass-panel-edge: rgba(255, 255, 255, 0.2);
     --surface-row-hover: rgba(255, 255, 255, 0.5);
     --surface-subtle: rgba(15, 23, 42, 0.05);
     --border-subtle: rgba(15, 23, 42, 0.1);
@@ -51,13 +55,19 @@
     --spacing-element: 20px;
     --shadow-premium: 0 20px 40px -10px rgba(15, 23, 42, 0.08),
         inset 0 1px 1px rgba(255, 255, 255, 0.82);
-    /* Director OS / liquid glass depth */
-    --shadow-liquid: 0 12px 40px -8px rgba(15, 23, 42, 0.18),
-        0 4px 14px -4px rgba(15, 23, 42, 0.12),
+    /* Director OS / liquid glass — layered diffuse (Vercel-style depth) */
+    --shadow-liquid:
+        0 4px 6px -1px rgb(0 0 0 / 0.05),
+        0 2px 4px -2px rgb(0 0 0 / 0.05),
+        0 12px 40px -12px rgba(15, 23, 42, 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    /* Shell / container rhythm */
+    --shell-padding-x: clamp(1rem, 5vw, 3rem);
+    --shell-padding-y: clamp(0.75rem, 2.5vw, 1.5rem);
+    --grid-gap-bento: clamp(1rem, 2.8vw, 2rem);
 }
 
-/* Elite Player Portal — deep slate shell (athlete / PWA) */
+/* Elite Player Portal — slate-950 shell (athlete / PWA), not pure black */
 html.player-elite.dark body {
     background: #020617;
 }
@@ -70,15 +80,44 @@ html.player-elite.dark body::before {
     );
 }
 
-/* Athlete / Elite shell — premium dark tokens (html.player-portal-theme) */
+/* Athlete / Elite shell — rich slate (not pure black), WCAG-friendly contrast */
 html.player-portal-theme {
     --pp-bg: #020617;
-    --pp-surface: rgba(15, 23, 42, 0.55);
-    --pp-surface-elevated: rgba(30, 41, 59, 0.72);
+    --pp-bg-rich: #0f172a;
+    --pp-surface: rgba(15, 23, 42, 0.72);
+    --pp-surface-elevated: rgba(30, 41, 59, 0.85);
     --pp-border: rgba(51, 65, 85, 0.55);
-    --pp-text: #f8fafc;
-    --pp-text-muted: rgba(148, 163, 184, 0.95);
+    --pp-text: #ffffff;
+    --pp-text-body: #cbd5e1;
+    --pp-text-muted: #94a3b8;
     --pp-accent: var(--brand-primary);
+    --pp-card-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    color-scheme: dark;
+}
+
+html.player-portal-theme body {
+    background: var(--pp-bg-rich);
+    color: var(--pp-text-body);
+}
+
+html.player-portal-theme .app-title,
+html.player-portal-theme h1,
+html.player-portal-theme h2,
+html.player-portal-theme h3,
+html.player-portal-theme .welcome-title {
+    color: var(--pp-text);
+}
+
+html.player-portal-theme .player-info,
+html.player-portal-theme .welcome-subtitle {
+    color: var(--pp-text-muted);
+}
+
+/* Premium cards in athlete shell — lift off slate with inner highlight */
+html.player-portal-theme .card,
+html.player-portal-theme .welcome-brand-wrap,
+html.player-portal-theme .glass-panel {
+    box-shadow: var(--shadow-liquid), var(--pp-card-glow);
 }
 
 /* ==========================================
@@ -99,14 +138,26 @@ body::before {
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: -1;
 }
 
-.container { max-width: 1000px; margin: 0 auto; padding-bottom: 40px; }
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
 .app-main {
-    padding-top: 80px;
-    padding-bottom: 100px;
+    padding-top: clamp(4rem, 10vw, 5rem);
+    padding-bottom: clamp(5rem, 12vw, 6.25rem);
+    padding-inline: var(--shell-padding-x);
     min-height: 100vh;
     box-sizing: border-box;
 }
-.view-section { padding: var(--spacing-fluid) 16px; width: 100%; box-sizing: border-box; }
+/* Vertical rhythm only — horizontal shell padding lives on .app-main (avoids double gutters) */
+.view-section {
+    padding-block: var(--shell-padding-y);
+    padding-inline: 0;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
 .full-screen-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
 
 /* SvelteKit root wrapper: no layout box so app content participates in body flow */
@@ -145,6 +196,10 @@ body::before {
 .no-underline { text-decoration: none; }
 .flush-top { margin-top: 0 !important; border-top-left-radius: 0; border-top-right-radius: 0; }
 
+/* Layout hardening — flex/grid: text truncates, chrome does not compress */
+.min-w-0 { min-width: 0; }
+.shrink-0 { flex-shrink: 0; }
+
 /* Accessible accent text (theme-aware; avoids inline styles) */
 .text-accent-orange { color: var(--accent-orange-soft); font-weight: 700; }
 .text-admin-mono { color: #0369a1; font-weight: 700; }
@@ -152,6 +207,7 @@ html.dark .text-admin-mono { color: #7dd3fc; }
 
 /* Linked / success chip (roster, etc.) */
 .linked-badge-ui {
+    flex-shrink: 0;
     background: rgba(4, 120, 87, 0.12);
     color: #065f46;
     border: 1px solid rgba(4, 120, 87, 0.35);
@@ -192,10 +248,10 @@ html.dark .linked-badge-ui {
 /* Epic 1.2: multi-card bento rows (fluid gap, no double margins) */
 .bento-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-    gap: clamp(16px, 3vw, 24px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
+    gap: var(--grid-gap-bento);
     align-items: start;
-    margin-bottom: clamp(16px, 3vw, 24px);
+    margin-bottom: var(--grid-gap-bento);
 }
 
 .bento-section > .card {
@@ -203,14 +259,61 @@ html.dark .linked-badge-ui {
 }
 
 .bento-section-tight {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(240px, 28vw, 320px)), 1fr));
 }
 
 .bento-span-full {
     grid-column: 1 / -1;
 }
-.card-header { font-size: 1.25rem; font-weight: 900; padding-bottom: 15px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 20px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-radius: var(--radius-premium) var(--radius-premium) 0 0; }
+.card-header {
+    font-size: 1.25rem;
+    font-weight: 900;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-radius: var(--radius-premium) var(--radius-premium) 0 0;
+    min-width: 0;
+}
+.card-header > * {
+    min-width: 0;
+}
+.card-header > button,
+.card-header > a[role='button'],
+.card-header > .card-header-actions {
+    flex-shrink: 0;
+    min-width: auto;
+}
 .card-body > * + * { margin-top: var(--spacing-element); }
+
+/* Shared liquid glass surface (used outside Director OS — pricing, recruiter, trials, etc.) */
+.glass-panel {
+    border-radius: var(--radius-premium, 1.25rem);
+    border: 1px solid var(--glass-panel-edge);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(248, 250, 252, 0.12) 100%
+    );
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-liquid);
+}
+
+html.dark .glass-panel,
+html.recruiter-scout-theme .glass-panel {
+    border-color: var(--glass-panel-edge);
+    background: linear-gradient(
+        145deg,
+        rgba(30, 41, 59, 0.58) 0%,
+        rgba(15, 23, 42, 0.48) 100%
+    );
+}
 
 /* Themed Borders & Headers */
 .border-gold { border: 2px solid var(--aggie-gold); }
@@ -313,17 +416,59 @@ input[type="file"] {
 .input-row { display: flex; gap: 10px; align-items: center; width: 100%; margin-bottom: 15px; }
 .input-divider { font-weight: 900; color: var(--text-secondary); }
 
-/* Buttons */
-.primary-btn { 
-    background: linear-gradient(135deg, var(--aggie-blue) 0%, #1e293b 100%); color: white; 
-    border-radius: 99px; padding: clamp(14px, 2vw, 18px); font-weight: 800; font-size: 1rem; border: none; box-sizing: border-box; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 8px;
+/* Buttons — premium motion (lift + diffuse shadow + tactile press) */
+.primary-btn {
+    background: linear-gradient(135deg, var(--aggie-blue) 0%, #1e293b 100%);
+    color: white;
+    border-radius: 99px;
+    padding: clamp(14px, 2vw, 18px);
+    font-weight: 800;
+    font-size: 1rem;
+    border: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
 }
-.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(15, 23, 42, 0.5); }
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 6px -1px rgb(0 0 0 / 0.08),
+        0 10px 20px -10px rgba(15, 23, 42, 0.45);
+}
+.primary-btn:active {
+    transform: scale(0.98) translateY(0);
+}
 .secondary-btn {
-    background: transparent; color: var(--text-primary); border: 2px solid var(--border-strong);
-    border-radius: 99px; padding: clamp(14px, 2vw, 18px); font-weight: 800; font-size: 1rem; box-sizing: border-box; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-strong);
+    border-radius: 99px;
+    padding: clamp(14px, 2vw, 18px);
+    font-weight: 800;
+    font-size: 1rem;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
 }
-.secondary-btn:hover { background: var(--surface-subtle); border-color: var(--aggie-blue); }
+.secondary-btn:hover {
+    background: var(--surface-subtle);
+    border-color: var(--aggie-blue);
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 6px -1px rgb(0 0 0 / 0.05),
+        0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+.secondary-btn:active {
+    transform: scale(0.98);
+}
 
 .btn-orange { background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%); color: #ffffff; }
 .btn-red { background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%); color: #ffffff; }
@@ -337,7 +482,36 @@ input[type="file"] {
 /* ==========================================
    5. APP HEADER & DASHBOARD GRID
    ========================================== */
-.app-header { display: flex; justify-content: space-between; align-items: center; padding-block: clamp(18px, 2.2vw, 26px); padding-inline: var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; margin-bottom: 20px; }
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: clamp(8px, 2vw, 16px);
+    min-width: 0;
+    padding-block: clamp(18px, 2.2vw, 26px);
+    padding-inline: var(--shell-padding-x);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    border-inline: 1px solid var(--glass-panel-edge);
+    box-shadow: var(--shadow-liquid);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 20px;
+}
+.app-header > .header-home-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.header-action-group {
+    flex-shrink: 0;
+}
+.header-action-group > button,
+.header-action-group > .action-btn {
+    flex-shrink: 0;
+}
 .app-header, .admin-sticky-header {
     border-bottom-left-radius: var(--radius-premium);
     border-bottom-right-radius: var(--radius-premium);
@@ -358,17 +532,50 @@ input[type="file"] {
 .challenge-banner-title { margin: 0 0 5px 0; font-weight: 900; }
 .challenge-banner-text { margin: 0; font-weight: 700; font-size: 1rem; }
 
-/* Grid Layout — Bento / roadmap: auto-fit + fluid gap */
+/* Grid Layout — Bento: min column floor so tiles wrap instead of crushing */
 .dashboard-grid,
 .bento-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: clamp(16px, 3vw, 24px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
+    gap: var(--grid-gap-bento);
     margin-bottom: var(--spacing-fluid);
 }
-.dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: clamp(20px, 4vw, 30px) 16px; margin-bottom: 0; }
-.dash-card-body { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-.dash-icon { font-size: 3rem; margin-bottom: 15px; color: var(--text-primary); }
+.dash-card {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(20px, 4vw, 30px) 16px;
+    margin-bottom: 0;
+    transition: all 0.2s ease-out;
+    border-radius: var(--radius-premium);
+}
+.dash-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 6px -1px rgb(0 0 0 / 0.06),
+        0 2px 4px -2px rgb(0 0 0 / 0.06),
+        var(--shadow-liquid);
+}
+.dash-card:active {
+    transform: scale(0.98);
+}
+.dash-card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+.dash-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
 .icon-large { font-size: 4rem; margin-bottom: 20px; }
 .dash-label { font-weight: 800; font-size: 1.1rem; }
 .challenge-title-gold { color: #92400e; text-shadow: none; font-weight: 900; }
@@ -792,8 +999,8 @@ html.dark .legend-title-color {
     }
 
     .bento-section--dashboard-cards {
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-        gap: clamp(12px, 2vw, 18px);
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
+        gap: var(--grid-gap-bento);
         align-items: stretch;
     }
 
@@ -803,14 +1010,12 @@ html.dark .legend-title-color {
 
     .dashboard-grid,
     .bento-grid {
-        gap: clamp(12px, 2vw, 18px);
+        gap: var(--grid-gap-bento);
     }
 
     .view-section {
-        padding-left: clamp(12px, 2vw, 20px);
-        padding-right: clamp(12px, 2vw, 20px);
-        padding-top: clamp(14px, 2.5vw, 22px);
-        padding-bottom: clamp(14px, 2.5vw, 22px);
+        padding-block: clamp(0.875rem, 2.2vw, 1.375rem);
+        padding-inline: 0;
     }
 }
 
@@ -818,8 +1023,7 @@ html.dark .legend-title-color {
    16. RESPONSIVE ADJUSTMENTS
    ========================================== */
 @media (max-width: 768px) {
-    /* dashboard-grid intentionally NOT overridden: auto-fill with minmax(160px,1fr)
-       gives 2 columns on all phones, 3+ on tablets — no single-col collapse needed */
+    /* Bento grids use min column width + auto-fit; narrow viewports wrap/stack via min(100%, clamp(...)) */
     .input-row, .admin-input-row, .admin-flex-row, .hw-drill-row, .gameday-bench-row { flex-direction: column; align-items: stretch; }
     .w-50 { width: 100%; }
     .cal-header-row { flex-direction: column; align-items: center; text-align: center; }
@@ -828,10 +1032,12 @@ html.dark .legend-title-color {
     .cert-footer { flex-direction: column; gap: 30px; align-items: center; }
 }
 
-/* Extra small phones: ensure grid stays 2-col minimum */
+/* Extra small phones: single column — avoids crushing tiles below min column width */
 @media (max-width: 360px) {
     .dashboard-grid,
-    .bento-grid { grid-template-columns: repeat(2, 1fr); }
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ==========================================
@@ -839,6 +1045,9 @@ html.dark .legend-title-color {
    Brand navy --aggie-blue stays #0f172a; use --text-primary for readable copy.
    ========================================== */
 html.dark {
+    --glass-edge-light: rgba(148, 163, 184, 0.12);
+    --glass-edge-dark: rgba(15, 23, 42, 0.65);
+    --glass-panel-edge: rgba(30, 41, 59, 0.5);
     --text-primary: #f8fafc;
     --text-secondary: #e2e8f0;
     --text-on-gold: #0f172a;
@@ -863,6 +1072,11 @@ html.dark {
     --chart-bar: #93c5fd;
     --chart-tick: #e2e8f0;
     --chart-grid: rgba(226, 232, 240, 0.14);
+    --shadow-liquid:
+        0 4px 6px -1px rgb(0 0 0 / 0.12),
+        0 2px 4px -2px rgb(0 0 0 / 0.1),
+        0 12px 40px -12px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 html.dark body {
@@ -957,7 +1171,7 @@ html.dark .challenge-banner {
 
 html.dark .app-header,
 html.dark .admin-sticky-header {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--shadow-liquid);
 }
 
 html.dark select {
@@ -1028,6 +1242,7 @@ html.recruiter-scout-theme {
     --text-secondary: #94a3b8;
     --glass-bg: rgba(15, 23, 42, 0.72);
     --glass-border: rgba(148, 163, 184, 0.22);
+    --glass-panel-edge: rgba(30, 41, 59, 0.5);
     background:
         radial-gradient(1200px 600px at 10% -10%, rgba(251, 191, 36, 0.08), transparent 55%),
         radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.07), transparent 50%),

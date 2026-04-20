@@ -28,7 +28,7 @@
 .director-bento-grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: clamp(16px, 3vw, 32px);
+	gap: var(--grid-gap-bento, clamp(1rem, 2.8vw, 2rem));
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -66,19 +66,7 @@
 	filter: saturate(1.05);
 }
 
-/* Liquid glass panel (theme vars from :root in style.css) */
-.glass-panel {
-	border-radius: var(--radius-premium, 1.25rem);
-	border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.35));
-	background: linear-gradient(
-		145deg,
-		rgba(255, 255, 255, 0.22) 0%,
-		rgba(248, 250, 252, 0.12) 100%
-	);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	box-shadow: var(--shadow-liquid, var(--shadow-premium));
-}
+/* .glass-panel — defined globally in style.css */
 
 /* Premium CTA buttons (Director OS only) */
 .dir-os-btn-primary {
@@ -95,21 +83,21 @@
 	cursor: pointer;
 	color: #f8fafc;
 	background: linear-gradient(180deg, var(--aggie-blue, #0f172a) 0%, #1e293b 100%);
-	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.22);
-	transition:
-		transform 0.18s ease,
-		box-shadow 0.18s ease,
-		translate 0.18s ease;
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.06),
+		0 6px 18px rgba(15, 23, 42, 0.22);
+	transition: all 0.2s ease-out;
 }
 
 .dir-os-btn-primary:hover:not(:disabled) {
-	translate: 0 -2px;
-	box-shadow: 0 10px 26px rgba(15, 23, 42, 0.28);
+	transform: translateY(-2px);
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.08),
+		0 10px 26px rgba(15, 23, 42, 0.28);
 }
 
 .dir-os-btn-primary:active:not(:disabled) {
 	transform: scale(0.98);
-	translate: 0 0;
 }
 
 .dir-os-btn-primary:disabled {
