@@ -1414,6 +1414,119 @@ async function reconcileReservedSeatsWithoutPendingInvites() {
 }
 
 /**
+ * Director / super_admin: set per-team seat cap. Sum of all team caps for the
+ * club must not exceed license_entitlements/{clubId}.seats_limit.
+ */
+exports.secureAllocateTeamSeats = onCall({region: REGION}, async (request) => {
+  const actor = assertDirectorOrSuper(request);
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  let seatsLimit = data.seatsLimit;
+  if (typeof seatsLimit === 'string') {
+    seatsLimit = parseInt(seatsLimit, 10);
+  }
+  if (!teamId || !Number.isFinite(seatsLimit) || seatsLimit < 1) {
+    throw new HttpsError(
+        'invalid-argument',
+        'teamId and a positive integer seatsLimit are required.',
+    );
+  }
+  seatsLimit = Math.floor(seatsLimit);
+
+  const teamSnap = await db.collection('teams').doc(teamId).get();
+  if (!teamSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const clubId =
+      typeof teamSnap.data().clubId === 'string' ?
+        teamSnap.data().clubId.trim() :
+        '';
+  if (!clubId) {
+    throw new HttpsError('failed-precondition', 'Team has no club scope.');
+  }
+  if (actor.role === 'director') {
+    if (!actor.clubId || actor.clubId !== clubId) {
+      throw new HttpsError('permission-denied', 'Out of club scope.');
+    }
+  }
+
+  const rosterRef = db.collection('rosters').doc(teamId);
+  const masterRef = db.collection('license_entitlements').doc(clubId);
+  const teamEntRef = db.collection('team_entitlements').doc(teamId);
+  const teamsQuery = db.collection('teams').where('clubId', '==', clubId);
+
+  await db.runTransaction(async (transaction) => {
+    const [rosterSnap, masterSnap, teamsSnap] = await Promise.all([
+      transaction.get(rosterRef),
+      transaction.get(masterRef),
+      transaction.get(teamsQuery),
+    ]);
+
+    if (!masterSnap.exists) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Club license is not configured yet. ' +
+          'Contact your platform administrator.',
+      );
+    }
+    const master = masterSnap.data() || {};
+    const masterLimit =
+        typeof master.seats_limit === 'number' &&
+        !Number.isNaN(master.seats_limit) ?
+          master.seats_limit :
+          0;
+
+    const list = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
+      rosterSnap.data().players :
+      [];
+    const activeCount = list.length;
+
+    if (seatsLimit < activeCount) {
+      throw new HttpsError(
+          'invalid-argument',
+          `seatsLimit must be at least current roster size (${activeCount}).`,
+      );
+    }
+
+    let sumOthers = 0;
+    for (const td of teamsSnap.docs) {
+      if (td.id === teamId) continue;
+      const oSnap = await transaction.get(
+          db.collection('team_entitlements').doc(td.id),
+      );
+      if (oSnap.exists) {
+        const sl = oSnap.data().seats_limit;
+        if (typeof sl === 'number' && !Number.isNaN(sl)) sumOthers += sl;
+      }
+    }
+
+    if (sumOthers + seatsLimit > masterLimit) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Team allocations exceed the club master license limit. ' +
+          'Lower other team caps or upgrade the club license.',
+      );
+    }
+
+    transaction.set(
+        teamEntRef,
+        {
+          clubId,
+          teamId,
+          seats_limit: seatsLimit,
+          active_seats: activeCount,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'system:secureAllocateTeamSeats',
+        },
+        {merge: true},
+    );
+  });
+
+  return {ok: true, teamId, seatsLimit};
+});
+
+/**
  * Atomic roster add with license_entitlements seat check
  * (no direct client writes).
  */
@@ -1451,6 +1564,7 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
 
   const rosterRef = db.collection('rosters').doc(teamId);
   const entRef = db.collection('license_entitlements').doc(clubId);
+  const teamEntRef = db.collection('team_entitlements').doc(teamId);
   const lookupRef = playerEmail ?
     db.collection('player_lookup').doc(playerEmail) :
     null;
@@ -1473,6 +1587,29 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
         if (existingTid && existingTid !== teamId) {
           return {kind: 'email_in_use'};
         }
+      }
+    }
+
+    const teamEntSnap = await transaction.get(teamEntRef);
+    if (teamEntSnap.exists) {
+      const td = teamEntSnap.data() || {};
+      const teClub =
+          typeof td.clubId === 'string' ? td.clubId.trim() : '';
+      if (teClub && teClub !== clubId) {
+        return {kind: 'no_entitlement'};
+      }
+      const tLimit =
+          typeof td.seats_limit === 'number' &&
+          !Number.isNaN(td.seats_limit) ?
+            td.seats_limit :
+            0;
+      const tActive =
+          typeof td.active_seats === 'number' &&
+          !Number.isNaN(td.active_seats) ?
+            td.active_seats :
+            0;
+      if (tActive >= tLimit) {
+        return {kind: 'team_full'};
       }
     }
 
@@ -1510,6 +1647,14 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
     }
 
     const newPlayers = [...list, playerName];
+
+    if (teamEntSnap.exists) {
+      transaction.update(teamEntRef, {
+        active_seats: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: 'system:secureAddPlayer',
+      });
+    }
 
     transaction.update(entRef, {
       active_seats: admin.firestore.FieldValue.increment(1),
@@ -1551,6 +1696,9 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
         'Contact your platform administrator.',
     );
   }
+  if (txnResult.kind === 'team_full') {
+    throw new HttpsError('failed-precondition', 'team-full');
+  }
   if (txnResult.kind === 'full') {
     throw new HttpsError(
         'resource-exhausted',
@@ -1583,6 +1731,7 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
 
   const rosterRef = db.collection('rosters').doc(teamId);
   const entRef = db.collection('license_entitlements').doc(clubId);
+  const teamEntRef = db.collection('team_entitlements').doc(teamId);
   const lookupQuery = db.collection('player_lookup')
       .where('teamId', '==', teamId)
       .where('playerName', '==', playerName)
@@ -1600,6 +1749,7 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
     }
 
     const entSnap = await transaction.get(entRef);
+    const teamEntSnap = await transaction.get(teamEntRef);
     const lookupSnap = await transaction.get(lookupQuery);
 
     const jerseys =
@@ -1635,6 +1785,25 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedBy: 'system:secureRemovePlayer',
       });
+    }
+
+    if (teamEntSnap.exists) {
+      const td = teamEntSnap.data() || {};
+      const teClub =
+          typeof td.clubId === 'string' ? td.clubId.trim() : '';
+      if (!teClub || teClub === clubId) {
+        const a =
+            typeof td.active_seats === 'number' &&
+            !Number.isNaN(td.active_seats) ?
+              td.active_seats :
+              0;
+        const newTA = Math.max(0, a - 1);
+        transaction.update(teamEntRef, {
+          active_seats: newTA,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'system:secureRemovePlayer',
+        });
+      }
     }
 
     return {kind: 'ok'};
@@ -2528,129 +2697,353 @@ exports.registrarTransferPlayer = onCall({region: REGION}, async (request) => {
     );
   }
 
-  const tSnap = await db.collection('teams').doc(targetTeamId).get();
-  if (!tSnap.exists) {
-    throw new HttpsError('not-found', 'Target team not found.');
-  }
-  const newClubId = tSnap.data().clubId || null;
-  if (!newClubId) {
-    throw new HttpsError('failed-precondition', 'Target team missing clubId.');
-  }
-
   const uRef = db.collection('users').doc(playerEmail);
   const plRef = db.collection('player_lookup').doc(playerEmail);
-  const [uSnap, plSnap] = await Promise.all([uRef.get(), plRef.get()]);
+  const targetTeamRef = db.collection('teams').doc(targetTeamId);
 
-  let playerName;
-  let oldTeamId;
-  let oldClubId = null;
-
-  if (uSnap.exists) {
-    const u = uSnap.data();
-    playerName = u.playerName;
-    oldTeamId = u.teamId || null;
-    oldClubId = u.clubId || null;
-  }
-  if (!playerName && plSnap.exists) {
-    const pl = plSnap.data();
-    playerName = pl.playerName;
-    oldTeamId = oldTeamId || pl.teamId || null;
-  }
-  if (!playerName) {
-    throw new HttpsError(
-        'not-found',
-        'No player account or invite found for that email.',
-    );
-  }
-
-  if (!oldClubId && oldTeamId) {
-    const ot = await db.collection('teams').doc(oldTeamId).get();
-    if (ot.exists) {
-      oldClubId = ot.data().clubId || null;
+  const txResult = await db.runTransaction(async (transaction) => {
+    const uSnap = await transaction.get(uRef);
+    const plSnap = await transaction.get(plRef);
+    const tSnap = await transaction.get(targetTeamRef);
+    if (!tSnap.exists) {
+      throw new HttpsError('not-found', 'Target team not found.');
     }
-  }
-
-  if (actor.role !== 'super_admin') {
-    const ac = actor.clubId;
-    const canOut = oldClubId != null && ac === oldClubId;
-    const canIn = ac === newClubId;
-    if (!canOut && !canIn) {
+    const newClubIdRaw = tSnap.data().clubId;
+    const newClubId =
+        typeof newClubIdRaw === 'string' && newClubIdRaw.trim() ?
+          newClubIdRaw.trim() :
+          '';
+    if (!newClubId) {
       throw new HttpsError(
-          'permission-denied',
-          'Staff must belong to the player current club or destination club.',
+          'failed-precondition',
+          'Target team missing clubId.',
       );
     }
-  }
 
-  const uClub = uSnap.exists ? (uSnap.data().clubId || null) : null;
-  if (oldTeamId === targetTeamId &&
-      (uClub === newClubId || !uSnap.exists)) {
+    let playerName;
+    let oldTeamId = null;
+    let oldClubId = null;
+
+    if (uSnap.exists) {
+      const u = uSnap.data();
+      playerName = u.playerName;
+      oldTeamId = u.teamId || null;
+      oldClubId = u.clubId || null;
+    }
+    if (!playerName && plSnap.exists) {
+      const pl = plSnap.data();
+      playerName = pl.playerName;
+      oldTeamId = oldTeamId || pl.teamId || null;
+    }
+    if (!playerName) {
+      throw new HttpsError(
+          'not-found',
+          'No player account or invite found for that email.',
+      );
+    }
+
+    if (!oldClubId && oldTeamId) {
+      const otSnap = await transaction.get(
+          db.collection('teams').doc(oldTeamId),
+      );
+      if (otSnap.exists) {
+        const oc = otSnap.data().clubId;
+        oldClubId =
+            typeof oc === 'string' && oc.trim() ? oc.trim() : null;
+      }
+    }
+
+    if (actor.role !== 'super_admin') {
+      const ac = actor.clubId;
+      const canOut = oldClubId != null && ac === oldClubId;
+      const canIn = ac === newClubId;
+      if (!canOut && !canIn) {
+        throw new HttpsError(
+            'permission-denied',
+            'Staff must belong to the player current club or destination club.',
+        );
+      }
+    }
+
+    const uClub = uSnap.exists ? (uSnap.data().clubId || null) : null;
+    if (oldTeamId === targetTeamId &&
+        (uClub === newClubId || !uSnap.exists)) {
+      return {
+        noop: true,
+        playerEmail,
+        targetTeamId,
+        playerName,
+        newClubId,
+        oldTeamId: oldTeamId || null,
+        oldClubId: oldClubId || null,
+      };
+    }
+
+    const oldRosterRef = oldTeamId ?
+      db.collection('rosters').doc(oldTeamId) :
+      null;
+    const newRosterRef = db.collection('rosters').doc(targetTeamId);
+
+    const oldRSnap = oldRosterRef && oldTeamId !== targetTeamId ?
+      await transaction.get(oldRosterRef) :
+      null;
+    const newRSnap = await transaction.get(newRosterRef);
+
+    const oldPlayers = oldRSnap && oldRSnap.exists ?
+      [...(oldRSnap.data().players || [])] :
+      [];
+    const newPlayers = newRSnap.exists ?
+      [...(newRSnap.data().players || [])] :
+      [];
+    const newJerseys = newRSnap.exists ?
+      {...(newRSnap.data().jerseys || {})} :
+      {};
+
+    const wasOnOld = oldPlayers.includes(playerName);
+    const alreadyOnNew = newPlayers.includes(playerName);
+
+    const newTeamEntRef = db.collection('team_entitlements').doc(targetTeamId);
+    const newTESnap = await transaction.get(newTeamEntRef);
+
+    if (newTESnap.exists && !alreadyOnNew && oldTeamId !== targetTeamId) {
+      const net = newTESnap.data() || {};
+      const teClub =
+          typeof net.clubId === 'string' ? net.clubId.trim() : '';
+      if (teClub && teClub !== newClubId) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Target team scope mismatch.',
+        );
+      }
+      const tLimit =
+          typeof net.seats_limit === 'number' &&
+          !Number.isNaN(net.seats_limit) ?
+            net.seats_limit :
+            0;
+      const tActive =
+          typeof net.active_seats === 'number' &&
+          !Number.isNaN(net.active_seats) ?
+            net.active_seats :
+            0;
+      if (tActive >= tLimit) {
+        throw new HttpsError('failed-precondition', 'team-full');
+      }
+    }
+
+    const sameClub = oldClubId === newClubId;
+
+    if (!sameClub && !alreadyOnNew) {
+      const newEntSnap = await transaction.get(
+          db.collection('license_entitlements').doc(newClubId),
+      );
+      if (!newEntSnap.exists) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Destination club license is not configured.',
+        );
+      }
+      const ne = newEntSnap.data() || {};
+      const nLimit =
+          typeof ne.seats_limit === 'number' &&
+          !Number.isNaN(ne.seats_limit) ?
+            ne.seats_limit :
+            0;
+      const nActive =
+          typeof ne.active_seats === 'number' &&
+          !Number.isNaN(ne.active_seats) ?
+            ne.active_seats :
+            0;
+      const nRes =
+          typeof ne.reserved_seats === 'number' &&
+          !Number.isNaN(ne.reserved_seats) ?
+            ne.reserved_seats :
+            0;
+      if (nActive + nRes >= nLimit) {
+        throw new HttpsError(
+            'resource-exhausted',
+            'Licensed roster seats are fully allocated. ' +
+            'Contact your Director to upgrade.',
+        );
+      }
+    }
+
+    if (oldRosterRef &&
+        oldTeamId !== targetTeamId &&
+        oldRSnap &&
+        oldRSnap.exists) {
+      const oj = {...(oldRSnap.data().jerseys || {})};
+      if (Object.prototype.hasOwnProperty.call(oj, playerName)) {
+        delete oj[playerName];
+      }
+      const filtered = oldPlayers.filter((p) => p !== playerName);
+      transaction.set(
+          oldRosterRef,
+          {players: filtered, jerseys: oj},
+          {merge: true},
+      );
+    }
+
+    const mergedNewPlayers = alreadyOnNew ?
+      newPlayers :
+      [...newPlayers, playerName];
+    transaction.set(
+        newRosterRef,
+        {players: mergedNewPlayers, jerseys: newJerseys},
+        {merge: true},
+    );
+
+    if (uSnap.exists) {
+      transaction.set(
+          uRef,
+          {teamId: targetTeamId, clubId: newClubId},
+          {merge: true},
+      );
+    }
+    transaction.set(
+        plRef,
+        {
+          teamId: targetTeamId,
+          playerName,
+          clubId: newClubId,
+        },
+        {merge: true},
+    );
+
+    const oldTeamEntRef =
+        oldTeamId && oldTeamId !== targetTeamId ?
+          db.collection('team_entitlements').doc(oldTeamId) :
+          null;
+
+    if (sameClub) {
+      if (wasOnOld && oldTeamEntRef) {
+        const oSnap = await transaction.get(oldTeamEntRef);
+        if (oSnap.exists) {
+          const od = oSnap.data() || {};
+          const a =
+              typeof od.active_seats === 'number' &&
+              !Number.isNaN(od.active_seats) ?
+                od.active_seats :
+                0;
+          transaction.update(oldTeamEntRef, {
+            active_seats: Math.max(0, a - 1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'system:registrarTransferPlayer',
+          });
+        }
+      }
+      if (!alreadyOnNew && newTESnap.exists) {
+        const net = newTESnap.data() || {};
+        const a =
+            typeof net.active_seats === 'number' &&
+            !Number.isNaN(net.active_seats) ?
+              net.active_seats :
+              0;
+        transaction.update(newTeamEntRef, {
+          active_seats: a + 1,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'system:registrarTransferPlayer',
+        });
+      }
+    } else {
+      if (wasOnOld && oldClubId) {
+        const oldEntRef = db.collection('license_entitlements').doc(oldClubId);
+        const oeSnap = await transaction.get(oldEntRef);
+        if (oeSnap.exists) {
+          const oe = oeSnap.data() || {};
+          const a =
+              typeof oe.active_seats === 'number' &&
+              !Number.isNaN(oe.active_seats) ?
+                oe.active_seats :
+                0;
+          transaction.update(oldEntRef, {
+            active_seats: Math.max(0, a - 1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'system:registrarTransferPlayer',
+          });
+        }
+      }
+      if (!alreadyOnNew) {
+        transaction.update(
+            db.collection('license_entitlements').doc(newClubId),
+            {
+              active_seats: admin.firestore.FieldValue.increment(1),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedBy: 'system:registrarTransferPlayer',
+            },
+        );
+      }
+      if (wasOnOld && oldTeamEntRef) {
+        const oSnap = await transaction.get(oldTeamEntRef);
+        if (oSnap.exists) {
+          const od = oSnap.data() || {};
+          const a =
+              typeof od.active_seats === 'number' &&
+              !Number.isNaN(od.active_seats) ?
+                od.active_seats :
+                0;
+          transaction.update(oldTeamEntRef, {
+            active_seats: Math.max(0, a - 1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'system:registrarTransferPlayer',
+          });
+        }
+      }
+      if (!alreadyOnNew && newTESnap.exists) {
+        const net = newTESnap.data() || {};
+        const a =
+            typeof net.active_seats === 'number' &&
+            !Number.isNaN(net.active_seats) ?
+              net.active_seats :
+              0;
+        transaction.update(newTeamEntRef, {
+          active_seats: a + 1,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'system:registrarTransferPlayer',
+        });
+      }
+    }
+
     return {
-      ok: true,
-      noop: true,
+      noop: false,
       playerEmail,
       targetTeamId,
       playerName,
+      newClubId,
+      oldTeamId: oldTeamId || null,
+      oldClubId: oldClubId || null,
+    };
+  });
+
+  if (txResult.noop) {
+    return {
+      ok: true,
+      noop: true,
+      playerEmail: txResult.playerEmail,
+      targetTeamId: txResult.targetTeamId,
+      playerName: txResult.playerName,
     };
   }
 
-  const batch = db.batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
-
-  if (uSnap.exists) {
-    batch.set(uRef, {
-      teamId: targetTeamId,
-      clubId: newClubId,
-    }, {merge: true});
-  }
-
-  batch.set(plRef, {
-    teamId: targetTeamId,
-    playerName,
-  }, {merge: true});
-
-  if (oldTeamId && oldTeamId !== targetTeamId) {
-    const oldR = db.collection('rosters').doc(oldTeamId);
-    const oldRs = await oldR.get();
-    if (oldRs.exists) {
-      const d = oldRs.data();
-      const players = (d.players || []).filter((p) => p !== playerName);
-      const jerseys = {...(d.jerseys || {})};
-      delete jerseys[playerName];
-      batch.set(oldR, {players, jerseys}, {merge: true});
-    }
-  }
-
-  const newR = db.collection('rosters').doc(targetTeamId);
-  const newRs = await newR.get();
-  const players = newRs.exists ? [...(newRs.data().players || [])] : [];
-  const jerseys = newRs.exists ? {...(newRs.data().jerseys || {})} : {};
-  if (!players.includes(playerName)) {
-    players.push(playerName);
-  }
-  batch.set(newR, {players, jerseys}, {merge: true});
-
-  batch.set(db.collection('security_audit').doc(), {
+  await db.collection('security_audit').doc().set({
     action: 'registrarTransferPlayer',
-    playerEmail,
-    playerName,
-    oldTeamId: oldTeamId || null,
-    oldClubId: oldClubId || null,
-    targetTeamId,
-    newClubId,
+    playerEmail: txResult.playerEmail,
+    playerName: txResult.playerName,
+    oldTeamId: txResult.oldTeamId || null,
+    oldClubId: txResult.oldClubId || null,
+    targetTeamId: txResult.targetTeamId,
+    newClubId: txResult.newClubId,
     actorEmail: actor.email || null,
     actorUid: request.auth.uid,
     at: now,
   });
 
-  await batch.commit();
-
   return {
     ok: true,
-    playerEmail,
-    targetTeamId,
-    newClubId,
-    playerName,
+    playerEmail: txResult.playerEmail,
+    targetTeamId: txResult.targetTeamId,
+    newClubId: txResult.newClubId,
+    playerName: txResult.playerName,
   };
 });
 

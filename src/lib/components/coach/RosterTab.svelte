@@ -92,6 +92,12 @@
 			);
 		}
 		if (code === 'functions/failed-precondition' || code === 'failed-precondition') {
+			if (message === 'team-full' || message.includes('team-full')) {
+				return (
+					'This team roster quota is full. Ask your Director to allocate more seats ' +
+					'from the club license pool (Teams → seat management).'
+				);
+			}
 			return (
 				message ||
 				'Club license is not configured yet. Contact your platform administrator.'

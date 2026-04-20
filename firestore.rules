@@ -774,6 +774,19 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Phoenix Sprint 8.3: per-team seat caps vs club master pool (callables only).
+    match /team_entitlements/{teamId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub()
+            && (isDirector() || isRegistrar()))
+        || directorScopedToTeam(teamId)
+        || coachStaffCanAccessTeam(teamId)
+      );
+      allow write: if false;
+    }
+
     // Phoenix Sprint 8.2: physical fields + schedules (writes via Cloud Functions only).
     function fieldDocClub(fid) {
       return get(/databases/$(database)/documents/fields/$(fid)).data.clubId;
