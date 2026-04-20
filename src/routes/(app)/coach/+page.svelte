@@ -165,7 +165,7 @@
 				canOverride={canOverrideEligibility}
 			/>
 		{:else if activeTab === 'messages'}
-			<MessagesTab teamId={selectedTeamId} {players} />
+			<MessagesTab teamId={selectedTeamId} {players} clubId={clubId || ''} />
 		{:else if activeTab === 'plan'}
 			<PlanTab teamId={selectedTeamId} workouts={workoutsStore.workouts} />
 		{:else if activeTab === 'evals'}

@@ -277,6 +277,132 @@ service cloud.firestore {
           || coachStaffCanAccessTeam(tid));
     }
 
+    // Epic 20 — Comms Hub: club-scoped channel membership (memberIds = lowercase email keys).
+    function channelClubScopeOk(clubId) {
+      return isSuper()
+        || tokenClub() == clubId
+        || (isRegistrar() && tokenClub() == clubId)
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && teamClubId(tokenTeam()) == clubId)
+        || (isParent() && userDoc().keys().hasAll(['clubId'])
+            && userDoc().clubId == clubId)
+        || (tokenRole() == 'player'
+            && userDoc().keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(userDoc().teamId))
+            && teamClubId(userDoc().teamId) == clubId);
+    }
+
+    function canCreateCommsChannelInClub(clubId) {
+      return isSuper()
+        || (isDirector() && tokenClub() == clubId)
+        || (isCoach() && tokenTeam() != null
+            && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
+            && teamClubId(tokenTeam()) == clubId);
+    }
+
+    function channelMemberEmailKeysOk() {
+      return request.resource.data.memberIds is list
+        && request.resource.data.memberIds.size() > 0
+        && request.resource.data.memberIds.size() <= 500
+        && request.resource.data.memberIds[0] is string;
+    }
+
+    function channelCreateShapeOk() {
+      return request.resource.data.keys().hasAll(['name', 'type', 'memberIds', 'createdBy'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 200
+        && request.resource.data.type in ['broadcast', 'group', 'dm']
+        && request.resource.data.createdBy == request.auth.uid
+        && channelMemberEmailKeysOk()
+        && request.resource.data.memberIds.hasAny([emailKey()])
+        && (!request.resource.data.keys().hasAny(['teamId'])
+            || (request.resource.data.teamId is string
+              && request.resource.data.teamId.size() > 0
+              && request.resource.data.teamId.size() <= 128))
+        && (request.resource.data.type != 'dm'
+            || request.resource.data.memberIds.size() == 2);
+    }
+
+    // DM: two members only; peer email is the memberIds entry that is not the creator.
+    function dmPeerEmailKeyFromCreate() {
+      return request.resource.data.memberIds[0] == emailKey()
+        ? request.resource.data.memberIds[1]
+        : request.resource.data.memberIds[0];
+    }
+
+    function userRoleFromEmail(peerKey) {
+      return exists(/databases/$(database)/documents/users/$(peerKey))
+        ? get(/databases/$(database)/documents/users/$(peerKey)).data.get('role', '')
+        : '';
+    }
+
+    // SafeSport: coach/director cannot open a 2-party DM with a player as the only peer.
+    function dmSafesportCoachDirectorPeerOk() {
+      return request.resource.data.type != 'dm'
+        || !(isCoach() || isDirector())
+        || request.resource.data.memberIds.size() != 2
+        || userRoleFromEmail(dmPeerEmailKeyFromCreate()) != 'player';
+    }
+
+    // No player↔player DMs (1:1 minor risk).
+    function dmSafesportNotTwoPlayersOk() {
+      return request.resource.data.type != 'dm'
+        || request.resource.data.memberIds.size() != 2
+        || userRoleFromEmail(request.resource.data.memberIds[0]) != 'player'
+        || userRoleFromEmail(request.resource.data.memberIds[1]) != 'player';
+    }
+
+    function channelCreateSafesportOk() {
+      return channelCreateShapeOk()
+        && dmSafesportCoachDirectorPeerOk()
+        && dmSafesportNotTwoPlayersOk();
+    }
+
+    function channelDataUnchangedExceptMemberIds() {
+      return request.resource.data.name == resource.data.name
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.createdBy == resource.data.createdBy
+        && (!resource.data.keys().hasAny(['teamId'])
+            ? !request.resource.data.keys().hasAny(['teamId'])
+            : request.resource.data.teamId == resource.data.teamId);
+    }
+
+    function commsChannelDocData(clubId, channelId) {
+      return get(/databases/$(database)/documents/clubs/$(clubId)/channels/$(channelId)).data;
+    }
+
+    function commsBroadcastWriterOk(clubId, channelId) {
+      let ch = commsChannelDocData(clubId, channelId);
+      return ch.type != 'broadcast'
+        || isSuper()
+        || isCoach()
+        || isDirector();
+    }
+
+    function messageCreateShapeOk() {
+      return request.resource.data.keys().hasAll([
+          'senderId', 'senderName', 'senderRole', 'text', 'timestamp', 'deleted'
+        ])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() > 0
+        && request.resource.data.senderName.size() <= 200
+        && request.resource.data.senderRole is string
+        && request.resource.data.senderRole.size() <= 32
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 8000
+        && request.resource.data.deleted == false
+        && request.resource.data.timestamp == request.time;
+    }
+
+    function messageSoftDeleteOk() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
+        && request.resource.data.deleted == true;
+    }
+
     // schedules / team_workouts: team-scoped reads (no global enumeration).
     function canReadScheduleOrWorkoutDoc() {
       return resource.data.keys().hasAll(['teamId'])
@@ -519,6 +645,57 @@ service cloud.firestore {
         allow delete: if authed()
           && isDirector()
           && tokenClub() == clubId;
+      }
+
+      // Epic 20 — Comms Hub (SafeSport): channels + messages (memberIds = lowercase email keys).
+      match /channels/{channelId} {
+        allow read: if authed()
+          && resource.data.memberIds is list
+          && resource.data.memberIds.hasAny([emailKey()])
+          && channelClubScopeOk(clubId);
+
+        allow create: if authed()
+          && canCreateCommsChannelInClub(clubId)
+          && channelCreateSafesportOk();
+
+        allow update: if authed()
+          && channelClubScopeOk(clubId)
+          && resource.data.memberIds is list
+          && resource.data.memberIds.hasAny([emailKey()])
+          && canCreateCommsChannelInClub(clubId)
+          && channelDataUnchangedExceptMemberIds()
+          && request.resource.data.memberIds is list
+          && request.resource.data.memberIds.size() > 0
+          && request.resource.data.memberIds.size() <= 500
+          && request.resource.data.memberIds.hasAny([emailKey()]);
+
+        allow delete: if authed()
+          && canCreateCommsChannelInClub(clubId)
+          && resource.data.memberIds is list
+          && resource.data.memberIds.hasAny([emailKey()]);
+
+        match /messages/{messageId} {
+          allow read: if authed()
+            && commsChannelDocData(clubId, channelId).memberIds is list
+            && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
+            && channelClubScopeOk(clubId);
+
+          allow create: if authed()
+            && commsChannelDocData(clubId, channelId).memberIds is list
+            && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
+            && channelClubScopeOk(clubId)
+            && messageCreateShapeOk()
+            && commsBroadcastWriterOk(clubId, channelId);
+
+          allow update: if authed()
+            && commsChannelDocData(clubId, channelId).memberIds is list
+            && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
+            && channelClubScopeOk(clubId)
+            && messageSoftDeleteOk()
+            && (isSuper() || isCoach() || isDirector());
+
+          allow delete: if false;
+        }
       }
     }
 
