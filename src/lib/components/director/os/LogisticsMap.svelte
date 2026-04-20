@@ -1,6 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
-	import { untrack } from 'svelte/reactivity';
+	import { untrack } from 'svelte';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
