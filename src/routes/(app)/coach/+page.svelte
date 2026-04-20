@@ -76,7 +76,7 @@
 	const onWorkoutSaved = () => workoutsStore.loadForTeam(selectedTeamId);
 </script>
 
-<div class="view-section">
+<div class="view-section locked-dashboard-view">
 	<h2 class="coach-header">Coaching Tools</h2>
 
 	<!-- Director team selector -->

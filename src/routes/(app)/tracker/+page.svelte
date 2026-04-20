@@ -143,7 +143,7 @@
 	};
 </script>
 
-<div class="view-section tracker-page">
+<div class="view-section locked-dashboard-view tracker-page">
 	<h2 class="view-title">Log Workout</h2>
 
 	{#if authStore.role === 'player' && profile?.teamId && profile.teamId !== 'admin'}

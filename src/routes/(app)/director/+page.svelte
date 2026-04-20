@@ -22,7 +22,7 @@
 	const clubId = $derived(authStore.userProfile?.clubId || authStore.userProfile?.teamId || '');
 </script>
 
-<div class="view-section">
+<div class="view-section locked-dashboard-view">
 	<h2 class="view-title">👔 Director Portal</h2>
 
 	<TabBar tabs={TABS} bind:activeTab variant="director" />

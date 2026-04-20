@@ -126,7 +126,7 @@
 	}
 </script>
 
-<div class="view-section">
+<div class="view-section locked-dashboard-view">
 	<div class="admin-sticky-header">
 		<h2 class="admin-header"><i class="ph ph-terminal-window"></i> Command Center</h2>
 		<TabBar tabs={TABS} bind:activeTab variant="admin" />

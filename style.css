@@ -665,18 +665,25 @@ html.dark .legend-title-color {
         padding-bottom: clamp(96px, 11vh, 130px);
     }
 
-    /* Home dashboard: fill main, scroll inside bento cards only */
-    .app-main:has(.home-dashboard-view) {
+    /* Lock the main container whenever a dashboard view is mounted */
+    .app-main:has(.locked-dashboard-view) {
         display: flex;
         flex-direction: column;
         overflow-y: hidden;
     }
 
-    .home-dashboard-view {
+    .locked-dashboard-view {
         flex: 1 1 auto;
         display: flex;
         flex-direction: column;
         min-height: 0;
+    }
+
+    /* Force all Bento sections inside a locked view to absorb the viewport height */
+    .locked-dashboard-view .bento-section {
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-bottom: 0;
     }
 
     .admin-sticky-header {
