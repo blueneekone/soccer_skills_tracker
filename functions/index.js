@@ -788,6 +788,8 @@ async function syncPublicPlayerProfile(uid) {
       typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ?
         u.teamId.trim() :
         '';
+  /** @type {string} */
+  let resolvedClubId = '';
   /** @type {Record<string, string>} */
   const verifiedTrialScores = {};
   if (teamId && playerName) {
@@ -882,6 +884,7 @@ async function syncPublicPlayerProfile(uid) {
         typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
     const clubId = tidClub || userClub;
     if (clubId) {
+      resolvedClubId = clubId;
       const clubSnap = await db.collection('clubs').doc(clubId).get();
       if (clubSnap.exists) {
         const c = clubSnap.data() || {};
@@ -895,6 +898,12 @@ async function syncPublicPlayerProfile(uid) {
         if (cn) clubNameShort = cn;
       }
     }
+  } else {
+    const userClub =
+        typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
+    if (userClub) {
+      resolvedClubId = userClub;
+    }
   }
 
   await pubRef.set(
@@ -902,6 +911,7 @@ async function syncPublicPlayerProfile(uid) {
         displayName,
         ageGroup,
         position,
+        clubId: resolvedClubId || null,
         current_level: currentLevel,
         total_xp: totalXp,
         top_attributes: topAttributes,
@@ -5572,6 +5582,81 @@ exports.getPublicRecruitProfile = onCall(
         playerKey,
         displayName: typeof u.playerName === 'string' ? u.playerName : null,
         seasons,
+      };
+    },
+);
+
+/**
+ * Public (no auth): marketing storefront landing by clubs.marketing.publicSlug.
+ */
+exports.getPublicClubLanding = onCall(
+    {region: REGION, invoker: 'public'},
+    async (request) => {
+      const data = request.data || {};
+      const raw =
+          typeof data.slug === 'string' ? data.slug.trim().toLowerCase() : '';
+      if (!raw || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(raw) || raw.length > 80) {
+        throw new HttpsError('invalid-argument', 'Invalid slug.');
+      }
+
+      const snap = await db.collection('clubs')
+          .where('marketing.publicSlug', '==', raw)
+          .limit(1)
+          .get();
+      if (snap.empty) {
+        return {ok: false, notFound: true};
+      }
+
+      const clubDoc = snap.docs[0];
+      const clubId = clubDoc.id;
+      const c = clubDoc.data() || {};
+      const m = c.marketing && typeof c.marketing === 'object' ? c.marketing : {};
+      const metaPixelId =
+          typeof m.metaPixelId === 'string' ? m.metaPixelId.trim().slice(0, 64) : '';
+      const googleAnalyticsId =
+          typeof m.googleAnalyticsId === 'string' ?
+            m.googleAnalyticsId.trim().slice(0, 64) :
+            '';
+
+      /** @type {Array<Record<string, unknown>>} */
+      const athletes = [];
+      try {
+        const profSnap = await db.collection('public_player_profiles')
+            .where('clubId', '==', clubId)
+            .orderBy('current_level', 'desc')
+            .limit(8)
+            .get();
+        profSnap.forEach((d) => {
+          const p = d.data() || {};
+          athletes.push({
+            id: d.id,
+            displayName: p.displayName || null,
+            ageGroup: p.ageGroup || null,
+            position: p.position || null,
+            current_level: p.current_level || 1,
+            total_xp: p.total_xp || 0,
+            verified_trial_scores: p.verified_trial_scores || {},
+            brandLogoUrl: p.brandLogoUrl || null,
+            clubDisplayName: p.clubDisplayName || null,
+          });
+        });
+      } catch (e) {
+        logger.warn('getPublicClubLanding athletes query', e);
+      }
+
+      return {
+        ok: true,
+        clubId,
+        slug: raw,
+        clubName: typeof c.name === 'string' ? c.name : '',
+        brandLogoUrl: typeof c.brandLogoUrl === 'string' ? c.brandLogoUrl : '',
+        brandPrimaryHex:
+          typeof c.brandPrimaryHex === 'string' ? c.brandPrimaryHex : '',
+        brandAccentHex:
+          typeof c.brandAccentHex === 'string' ? c.brandAccentHex : '',
+        metaPixelId: metaPixelId || null,
+        googleAnalyticsId: googleAnalyticsId || null,
+        athletes,
       };
     },
 );

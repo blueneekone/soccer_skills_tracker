@@ -14,16 +14,13 @@
 	import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 	import '$lib/styles/enterprise-console.css';
 	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
+	import LogisticsMap from '$lib/components/director/os/LogisticsMap.svelte';
 
 	/**
 	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath: string; mapDownloadUrl: string; type: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string }} FacilityMapRow
 	 */
 
 	let { clubId = '', canManage = false } = $props();
-
-	const mapsApiKey = typeof import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY === 'string' ?
-		import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY :
-		'';
 
 	let rows = $state(/** @type {FacilityMapRow[]} */ ([]));
 	let mapName = $state('');
@@ -40,18 +37,18 @@
 	let draftLng = $state(null);
 	let logisticsSaving = $state(false);
 	let logisticsSaveErr = $state('');
-	/** Snapshot when the drawer opens — avoids re-init when Firestore pushes row updates. */
-	/** @type {number | null} */
-	let logisticsSeedLat = $state(null);
-	/** @type {number | null} */
-	let logisticsSeedLng = $state(null);
-	/** @type {HTMLDivElement | null} */
-	let mapEl = $state(null);
 
 	const previewRow = $derived.by(() => {
 		if (!previewId) return /** @type {FacilityMapRow | null} */ (null);
 		return rows.find((r) => r.id === previewId) ?? null;
 	});
+
+	const routingDisplayUri = $derived(
+		draftLat != null && draftLng != null ?
+			`http://googleusercontent.com/maps.google.com/maps?daddr=${draftLat},${draftLng}`
+		:	''
+	);
+
 	/** @type {HTMLCanvasElement | null} */
 	let pdfCanvasEl = $state(null);
 	let pdfBusy = $state(false);
@@ -109,8 +106,6 @@
 		draftAddress = '';
 		draftLat = null;
 		draftLng = null;
-		logisticsSeedLat = null;
-		logisticsSeedLng = null;
 	}
 
 	/**
@@ -120,116 +115,10 @@
 		previewId = row.id;
 		previewOpen = true;
 		draftAddress = row.address ?? '';
-		logisticsSeedLat = typeof row.latitude === 'number' ? row.latitude : null;
-		logisticsSeedLng = typeof row.longitude === 'number' ? row.longitude : null;
-		draftLat = logisticsSeedLat;
-		draftLng = logisticsSeedLng;
+		draftLat = typeof row.latitude === 'number' ? row.latitude : null;
+		draftLng = typeof row.longitude === 'number' ? row.longitude : null;
 		logisticsSaveErr = '';
 	}
-
-	/**
-	 * @param {string} hex
-	 */
-	function markerSvgDataUrl(hex) {
-		const svg =
-			`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 24 24">` +
-			`<path fill="${hex}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>` +
-			`</svg>`;
-		return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-	}
-
-	function brandPrimaryHex() {
-		if (!browser) return '#f59e0b';
-		const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim();
-		if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
-		return '#f59e0b';
-	}
-
-	$effect(() => {
-		if (!browser || !previewOpen || !previewId || !canManage || !mapEl || !mapsApiKey.trim()) return;
-
-		const lat0 = logisticsSeedLat;
-		const lng0 = logisticsSeedLng;
-
-		let cancelled = false;
-		/** @type {any} */
-		let map = null;
-		/** @type {any} */
-		let marker = null;
-
-		(async () => {
-			try {
-				const { setOptions, importLibrary } = await import('@googlemaps/js-api-loader');
-				setOptions({ key: mapsApiKey.trim(), v: 'weekly' });
-				await importLibrary('maps');
-				if (cancelled || !mapEl) return;
-
-				const g = globalThis.google;
-				if (!g?.maps) return;
-
-				const center =
-					lat0 != null && lng0 != null ?
-						{ lat: lat0, lng: lng0 }
-					:	{ lat: 39.8283, lng: -98.5795 };
-				const zoom = lat0 != null && lng0 != null ? 16 : 4;
-
-				map = new g.maps.Map(mapEl, {
-					center,
-					zoom,
-					mapTypeControl: false,
-					streetViewControl: false,
-					fullscreenControl: false,
-					clickableIcons: false,
-				});
-
-				const iconUrl = markerSvgDataUrl(brandPrimaryHex());
-				const icon = {
-					url: iconUrl,
-					scaledSize: new g.maps.Size(32, 40),
-					anchor: new g.maps.Point(16, 40),
-				};
-
-				if (lat0 != null && lng0 != null) {
-					marker = new g.maps.Marker({
-						map,
-						position: center,
-						icon,
-					});
-				}
-
-				map.addListener('click', (e) => {
-					if (!e.latLng || cancelled) return;
-					const lat = e.latLng.lat();
-					const lng = e.latLng.lng();
-					if (!marker) {
-						marker = new g.maps.Marker({
-							map,
-							position: { lat, lng },
-							icon,
-						});
-					} else {
-						marker.setPosition({ lat, lng });
-					}
-					draftLat = lat;
-					draftLng = lng;
-				});
-			} catch (e) {
-				console.error('[FacilityMapVault] maps init', e);
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-			if (marker) {
-				marker.setMap(null);
-				marker = null;
-			}
-			if (map) {
-				globalThis.google?.maps?.event?.clearInstanceListeners(map);
-				map = null;
-			}
-		};
-	});
 
 	$effect(() => {
 		if (!browser || !previewOpen || !previewRow || previewRow.type !== 'pdf') return;
@@ -582,49 +471,54 @@
 			</button>
 		</div>
 		<div class="ec-drawer__body fm-preview-body">
-			<section class="fm-logistics-bento" aria-labelledby="fm-logistics-h">
-				<h3 id="fm-logistics-h" class="fm-logistics__title">Logistics & Routing</h3>
-				{#if canManage}
-					{#if !mapsApiKey.trim()}
-						<p class="fm-logistics__hint">
-							Set <code class="fm-code">VITE_PUBLIC_GOOGLE_MAPS_API_KEY</code> in your environment to load the map.
-						</p>
-					{:else}
-						{#key previewId}
-							<div
-								class="fm-logistics-map"
-								bind:this={mapEl}
-								role="application"
-								aria-label="Set facility location on map"
-							></div>
-						{/key}
-						<label class="fm-label" for="fm-logistics-address">Address</label>
-						<input
-							id="fm-logistics-address"
-							class="fm-input fm-logistics-input"
-							type="text"
-							bind:value={draftAddress}
-							placeholder="Street, city, state"
-							autocomplete="off"
+			<section class="fm-logistics-bento" aria-labelledby="fm-location-h">
+				<h3 id="fm-location-h" class="fm-logistics__title">Location & Routing</h3>
+				<div class="fm-logistics-map-slot">
+					{#key previewId}
+						<LogisticsMap
+							bind:latitude={draftLat}
+							bind:longitude={draftLng}
+							readonly={!canManage}
 						/>
-						<p class="fm-logistics__coords" aria-live="polite">
-							{#if draftLat != null && draftLng != null}
-								{draftLat.toFixed(6)}, {draftLng.toFixed(6)}
-							{:else}
-								Click the map to set coordinates.
-							{/if}
-						</p>
-						<button
-							type="button"
-							class="fm-btn fm-btn--primary"
-							disabled={logisticsSaving}
-							onclick={() => void saveLogistics()}
-						>
-							{logisticsSaving ? 'Saving…' : 'Save logistics'}
-						</button>
-						{#if logisticsSaveErr}
-							<p class="fm-err" role="alert">{logisticsSaveErr}</p>
+					{/key}
+				</div>
+				{#if draftLat != null && draftLng != null}
+					<label class="fm-label" for="fm-routing-uri">Routing URI</label>
+					<input
+						id="fm-routing-uri"
+						class="fm-input fm-logistics-input fm-routing-uri-input"
+						type="text"
+						readonly
+						value={routingDisplayUri}
+					/>
+				{/if}
+				{#if canManage}
+					<label class="fm-label" for="fm-logistics-address">Address</label>
+					<input
+						id="fm-logistics-address"
+						class="fm-input fm-logistics-input"
+						type="text"
+						bind:value={draftAddress}
+						placeholder="Street, city, state"
+						autocomplete="off"
+					/>
+					<p class="fm-logistics__coords" aria-live="polite">
+						{#if draftLat != null && draftLng != null}
+							{draftLat.toFixed(6)}, {draftLng.toFixed(6)}
+						{:else}
+							Click the map to set coordinates.
 						{/if}
+					</p>
+					<button
+						type="button"
+						class="fm-btn fm-btn--primary"
+						disabled={logisticsSaving}
+						onclick={() => void saveLogistics()}
+					>
+						{logisticsSaving ? 'Saving…' : 'Save logistics'}
+					</button>
+					{#if logisticsSaveErr}
+						<p class="fm-err" role="alert">{logisticsSaveErr}</p>
 					{/if}
 				{:else if previewRow.routingUrl}
 					<a
@@ -635,7 +529,7 @@
 					>
 						Open in Maps
 					</a>
-				{:else}
+				{:else if draftLat == null || draftLng == null}
 					<p class="fm-logistics__hint">Directions are not configured for this facility yet.</p>
 				{/if}
 			</section>
@@ -913,31 +807,13 @@
 		color: var(--text-secondary);
 	}
 
-	.fm-code {
-		font-family: ui-monospace, monospace;
-		font-size: 11px;
-		padding: 1px 4px;
-		border-radius: 4px;
-		background: rgba(0, 0, 0, 0.06);
-	}
-
-	:global(html.dark) .fm-code {
-		background: rgba(255, 255, 255, 0.08);
-	}
-
-	.fm-logistics-map {
-		height: 16rem;
-		width: 100%;
-		border-radius: 14px;
-		border: 1px solid #e5e5e5;
-		background: #fafafa;
-		box-sizing: border-box;
+	.fm-logistics-map-slot {
 		margin-bottom: 12px;
 	}
 
-	:global(html.dark) .fm-logistics-map {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
+	.fm-routing-uri-input {
+		font-family: ui-monospace, monospace;
+		font-size: 11px;
 	}
 
 	.fm-logistics-input {

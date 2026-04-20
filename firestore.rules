@@ -184,6 +184,32 @@ service cloud.firestore {
         || (d.tacticalCanvasJson is string && d.tacticalCanvasJson.size() <= 500000);
     }
 
+    // Epic 18 — marketing funnel (directors may update only clubs.marketing).
+    function clubMarketingMapOk(m) {
+      return m is map
+        && (!m.keys().hasAny(['publicSlug']) || (
+          m.publicSlug is string
+          && m.publicSlug.size() <= 80
+          && (m.publicSlug.size() == 0
+            || m.publicSlug.matches('^[a-z0-9]+(-[a-z0-9]+)*$'))
+        ))
+        && (!m.keys().hasAny(['metaPixelId']) || (
+          m.metaPixelId is string && m.metaPixelId.size() <= 64
+        ))
+        && (!m.keys().hasAny(['googleAnalyticsId']) || (
+          m.googleAnalyticsId is string && m.googleAnalyticsId.size() <= 64
+        ))
+        && (!m.keys().hasAny(['activeCampaigns']) || (
+          m.activeCampaigns is list && m.activeCampaigns.size() <= 50
+        ));
+    }
+
+    function clubMarketingUpdateOk() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['marketing'])
+        && request.resource.data.keys().hasAll(['marketing'])
+        && clubMarketingMapOk(request.resource.data.marketing);
+    }
+
     // Epic 17: facility map vault — club members read; directors write metadata.
     function canReadFacilityVault(clubPathId) {
       return authed() && (
@@ -430,7 +456,9 @@ service cloud.firestore {
 
     match /clubs/{clubId} {
       allow read: if authed();
-      allow create, update, delete: if isSuper();
+      allow create, delete: if isSuper();
+      allow update: if isSuper()
+        || (isDirector() && tokenClub() == clubId && clubMarketingUpdateOk());
 
       match /campaigns/{campaignId} {
         allow read: if canReadClubCampaign(clubId)
