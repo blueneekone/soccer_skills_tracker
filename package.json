@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "svelte-kit sync && vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json"
+    "check": "svelte-check --tsconfig ./jsconfig.json"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/kit": "^2.15.0",
+    "@sveltejs/adapter-static": "^0.0.17",
+    "@sveltejs/kit": "^0.0.30",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "@vite-pwa/sveltekit": "^0.6.6",
+    "@vite-pwa/sveltekit": "^0.0.1",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.10",
     "svelte": "^5.16.0",
@@ -26,7 +26,8 @@
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "fabric": "^7.2.0",
-    "firebase": "^10.14.1",
+    "firebase": "^12.12.0",
+    "firebase-functions": "^4.9.0",
     "pdfjs-dist": "^5.6.205",
     "qrcode": "^1.5.4",
     "sweetalert2": "^11.26.24",
