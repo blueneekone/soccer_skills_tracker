@@ -1,4 +1,5 @@
 <script>
+	/** Field mode: responsive enterprise shell — enterprise-console.css + EnterpriseConsoleShell (max-width 1023px). */
 	import { setContext } from 'svelte';
 	import '$lib/styles/director-os.css';
 	import DirectorReadOnlyBanner from '$lib/components/director/DirectorReadOnlyBanner.svelte';

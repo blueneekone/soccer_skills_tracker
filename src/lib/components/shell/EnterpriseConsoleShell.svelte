@@ -18,8 +18,6 @@
 	/** @type {{ title?: string, body?: string, meta?: string } | null} */
 	let drawerPayload = $state(null);
 
-	const path = $derived($page.url.pathname);
-
 	setContext('enterpriseDrawer', {
 		/**
 		 * @param {{ title?: string, body?: string, meta?: string }} opts
@@ -83,42 +81,108 @@
 		if (tab === 'home') return activeTab === '' || activeTab === 'home';
 		return activeTab === tab;
 	}
+
+	let mobileNavOpen = $state(false);
+
+	function closeMobileNav() {
+		mobileNavOpen = false;
+	}
+
+	function toggleMobileNav() {
+		mobileNavOpen = !mobileNavOpen;
+	}
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const mq = window.matchMedia('(min-width: 1024px)');
+		const onChange = () => {
+			if (mq.matches) mobileNavOpen = false;
+		};
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
+	});
 </script>
 
 <div class="ec-root">
-	<aside class="ec-sidebar" aria-label="Workspace navigation">
-		<div class="ec-sidebar__brand">
+	<!-- Field mode: fixed bar with club mark + menu (< lg only, see CSS) -->
+	<header class="ec-mobile-header">
+		<div class="ec-mobile-header__brand">
 			{#if clubBrandingStore.logoUrl}
-				<ClubLogoMark size="md" />
+				<ClubLogoMark size="sm" />
 			{:else}
-				<i class="ph ph-squares-four" style="font-size: 1.5rem; color: var(--text-secondary);" aria-hidden="true"></i>
+				<i class="ph ph-squares-four ec-mobile-header__logo-fallback" aria-hidden="true"></i>
 			{/if}
-			<div class="min-w-0">
-				<p class="ec-sidebar__title">{variant === 'admin' ? 'Platform admin' : 'Director'}</p>
-				<p class="ec-sidebar__subtitle">Workspace</p>
+			<div class="ec-mobile-header__titles">
+				<span class="ec-mobile-header__name">{variant === 'admin' ? 'Admin' : 'Director'}</span>
+				<span class="ec-mobile-header__sub">Command Center</span>
 			</div>
 		</div>
-		<nav class="ec-sidebar__nav">
-			{#each links as item (item.tab)}
-				<a
-					class="ec-nav-link"
-					class:ec-nav-link--active={isActive(item.tab)}
-					href={hrefFor(item.tab)}
-					data-sveltekit-preload-data="hover"
-				>
-					<i class="ph {item.icon}" aria-hidden="true"></i>
-					<span class="min-w-0">{item.label}</span>
-				</a>
-			{/each}
-			{#if variant === 'director'}
-				<p class="ec-nav-section">Billing</p>
-				<a class="ec-nav-link" href="/pricing">
-					<i class="ph ph-credit-card" aria-hidden="true"></i>
-					Plans & billing
-				</a>
-			{/if}
-		</nav>
-	</aside>
+		<button
+			type="button"
+			class="ec-mobile-header__hamburger"
+			onclick={toggleMobileNav}
+			aria-expanded={mobileNavOpen}
+			aria-controls="ec-workspace-nav"
+			aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+		>
+			<i class="ph ph-list" style="font-size: 1.5rem;" aria-hidden="true"></i>
+		</button>
+	</header>
+
+	<div
+		class="ec-nav-backdrop"
+		class:ec-nav-backdrop--open={mobileNavOpen}
+		role="presentation"
+		aria-hidden={!mobileNavOpen}
+		onclick={closeMobileNav}
+	></div>
+
+	<div class="ec-root__body">
+		<aside
+			id="ec-workspace-nav"
+			class="ec-sidebar"
+			class:ec-sidebar--open={mobileNavOpen}
+			aria-label="Workspace navigation"
+		>
+			<div class="ec-sidebar__mobile-top">
+				<button type="button" class="ec-sidebar__close-btn" onclick={closeMobileNav}>
+					<i class="ph ph-x" aria-hidden="true"></i>
+					Close
+				</button>
+			</div>
+			<div class="ec-sidebar__brand">
+				{#if clubBrandingStore.logoUrl}
+					<ClubLogoMark size="md" />
+				{:else}
+					<i class="ph ph-squares-four" style="font-size: 1.5rem; color: var(--text-secondary);" aria-hidden="true"></i>
+				{/if}
+				<div class="min-w-0">
+					<p class="ec-sidebar__title">{variant === 'admin' ? 'Platform admin' : 'Director'}</p>
+					<p class="ec-sidebar__subtitle">Workspace</p>
+				</div>
+			</div>
+			<nav class="ec-sidebar__nav">
+				{#each links as item (item.tab)}
+					<a
+						class="ec-nav-link"
+						class:ec-nav-link--active={isActive(item.tab)}
+						href={hrefFor(item.tab)}
+						data-sveltekit-preload-data="hover"
+						onclick={closeMobileNav}
+					>
+						<i class="ph {item.icon}" aria-hidden="true"></i>
+						<span class="min-w-0">{item.label}</span>
+					</a>
+				{/each}
+				{#if variant === 'director'}
+					<p class="ec-nav-section">Billing</p>
+					<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
+						<i class="ph ph-credit-card" aria-hidden="true"></i>
+						Plans & billing
+					</a>
+				{/if}
+			</nav>
+		</aside>
 
 	<div class="ec-main">
 		<header class="ec-topbar">
@@ -159,6 +223,7 @@
 		<div class="ec-canvas">
 			{@render children?.()}
 		</div>
+	</div>
 	</div>
 </div>
 
