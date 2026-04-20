@@ -276,6 +276,7 @@ input:focus, select:focus, textarea:focus {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: clamp(16px, 3vw, 24px);
+    margin-bottom: var(--spacing-fluid);
 }
 .dash-card { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: clamp(20px, 4vw, 30px) 16px; margin-bottom: 0; }
 .dash-card-body { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
@@ -664,6 +665,19 @@ html.dark .legend-title-color {
         padding-bottom: clamp(96px, 11vh, 130px);
     }
 
+    /* Home dashboard: fill main, scroll inside bento cards only */
+    .app-main:has(.home-dashboard-view) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-dashboard-view {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     .admin-sticky-header {
         top: 0;
         padding-top: 10px;
@@ -676,9 +690,11 @@ html.dark .legend-title-color {
     }
 
     .bento-section--dashboard-cards {
+        flex: 1 1 auto;
+        min-height: 0;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
         gap: clamp(12px, 2vw, 18px);
-        margin-bottom: clamp(12px, 2vw, 18px);
+        margin-bottom: 0;
         align-items: stretch;
     }
 

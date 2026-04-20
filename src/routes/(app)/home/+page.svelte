@@ -121,7 +121,7 @@
 	);
 </script>
 
-<div class="view-section">
+<div class="view-section home-dashboard-view">
 	<!-- Welcome header -->
 	<div class="card dashboard-header">
 		<div class="card-body text-center">
