@@ -4,6 +4,8 @@
 	import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
 	import DashCard from '$lib/components/DashCard.svelte';
 
 	const profile = $derived(authStore.userProfile);
@@ -29,6 +31,16 @@
 	let hwLoading = $state(true);
 	let show250Banner = $state(false);
 
+	let statsMiniMins = $state(0);
+	let statsMiniSessions = $state(0);
+	let statsMiniLoading = $state(false);
+
+	const welcomeSportIcon = $derived(sportPhosphorIcon(brandingStore.courtType));
+	const showPlayerStatsBento = $derived(
+		showAthleteHomeCards && role === 'player' && profile?.playerName && profile?.teamId && profile.teamId !== 'admin'
+	);
+	const statsMiniXp = $derived(Math.floor(statsMiniMins * 2));
+
 	// Check for 250 XP challenge unlock banner
 	$effect(() => {
 		if (profile && !profile.hasViewedBasicsChallenge) {
@@ -50,6 +62,32 @@
 			})
 			.catch(console.error)
 			.finally(() => (scheduleLoading = false));
+	});
+
+	// Player dashboard: quick stats for bento card
+	$effect(() => {
+		if (!showPlayerStatsBento || !profile?.playerName || !profile?.teamId) {
+			statsMiniMins = 0;
+			statsMiniSessions = 0;
+			statsMiniLoading = false;
+			return;
+		}
+		statsMiniLoading = true;
+		const player = profile.playerName;
+		const tid = profile.teamId;
+		getDocs(query(collection(db, 'reps'), where('player', '==', player), where('teamId', '==', tid)))
+			.then((snap) => {
+				let m = 0;
+				snap.forEach((d) => {
+					m += Number(d.data().minutes || 0);
+				});
+				statsMiniSessions = snap.size;
+				statsMiniMins = m;
+			})
+			.catch(console.error)
+			.finally(() => {
+				statsMiniLoading = false;
+			});
 	});
 
 	// Load homework
@@ -87,7 +125,7 @@
 	<!-- Welcome header -->
 	<div class="card dashboard-header">
 		<div class="card-body text-center">
-			<i class="ph ph-football dash-icon icon-large"></i>
+			<i class="ph {welcomeSportIcon} dash-icon icon-large welcome-sport-icon"></i>
 			<h2 class="welcome-title">Welcome, <span>{firstName}</span>!</h2>
 			<p class="welcome-subtitle">Ready to get 1% better today?</p>
 		</div>
@@ -107,7 +145,6 @@
 	<div class="dashboard-grid bento-grid">
 		<DashCard icon="ph-list" label="Log Workout" hidden={!showAthleteHomeCards} onclick={() => goto('/tracker')} />
 		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" hidden={!showAthleteHomeCards} onclick={() => goto('/passport')} />
-		<DashCard icon="ph-chart-bar" label="My Stats" hidden={!showAthleteHomeCards} onclick={() => goto('/stats')} />
 		<DashCard
 			icon="ph-chat-circle"
 			label="Messages"
@@ -117,15 +154,6 @@
 		/>
 		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/challenges')} />
 		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/trophies')} />
-
-		<a href="https://www.positionspecific.com/" target="_blank" rel="noopener" class="no-underline">
-			<div class="card dash-card border-slate">
-				<div class="dash-card-body">
-					<i class="ph ph-lightning-bolt dash-icon"></i>
-					<div class="dash-label">Position Specific</div>
-				</div>
-			</div>
-		</a>
 
 		<DashCard
 			icon="ph-shield-check"
@@ -153,8 +181,8 @@
 		/>
 	</div>
 
-	<!-- Team schedule + homework (Epic 1.2 bento row) -->
-	<div class="bento-section">
+	<!-- Team schedule + homework + player stats (scrollable bento cells on desktop) -->
+	<div class="bento-section bento-section--dashboard-cards">
 	<div class="card border-aggie-blue">
 		<div class="card-header">📅 Team Schedule</div>
 		<div class="card-body p-0">
@@ -219,10 +247,118 @@
 			{/if}
 		</div>
 	</div>
+
+	{#if showPlayerStatsBento}
+		<button
+			type="button"
+			class="card border-gold my-stats-bento-card"
+			onclick={() => goto('/stats')}
+		>
+			<div class="card-header my-stats-bento-header">
+				<span><i class="ph ph-chart-bar" aria-hidden="true"></i> My Stats</span>
+				<span class="my-stats-bento-cta">Open</span>
+			</div>
+			<div class="card-body my-stats-bento-body">
+				{#if statsMiniLoading}
+					<p class="my-stats-bento-muted">Loading your stats…</p>
+				{:else}
+					<div class="my-stats-bento-metrics">
+						<div>
+							<span class="my-stats-bento-value">{statsMiniXp.toLocaleString()}</span>
+							<span class="my-stats-bento-unit">XP</span>
+						</div>
+						<div>
+							<span class="my-stats-bento-value">{statsMiniSessions}</span>
+							<span class="my-stats-bento-unit">sessions</span>
+						</div>
+						<div>
+							<span class="my-stats-bento-value">{statsMiniMins}</span>
+							<span class="my-stats-bento-unit">minutes</span>
+						</div>
+					</div>
+					<p class="my-stats-bento-hint">View charts, rank, and calendar on the full stats page.</p>
+				{/if}
+			</div>
+		</button>
+	{/if}
 	</div>
 </div>
 
 <style>
+	.welcome-sport-icon {
+		color: var(--aggie-gold);
+		filter: drop-shadow(0 4px 14px rgba(245, 158, 11, 0.35));
+	}
+
+	.my-stats-bento-card {
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
+		font: inherit;
+		margin-bottom: 0;
+	}
+
+	.my-stats-bento-header {
+		margin-bottom: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
+	.my-stats-bento-header i {
+		margin-right: 8px;
+		vertical-align: -0.1em;
+	}
+
+	.my-stats-bento-cta {
+		font-size: 0.8rem;
+		font-weight: 800;
+		color: var(--accent-orange-soft);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.my-stats-bento-body {
+		padding-top: 0;
+	}
+
+	.my-stats-bento-metrics {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 12px;
+		margin-bottom: 12px;
+	}
+
+	.my-stats-bento-value {
+		display: block;
+		font-size: 1.5rem;
+		font-weight: 900;
+		color: var(--text-primary);
+		line-height: 1.1;
+	}
+
+	.my-stats-bento-unit {
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: var(--text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.my-stats-bento-hint {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		line-height: 1.45;
+	}
+
+	.my-stats-bento-muted {
+		margin: 0;
+		color: var(--text-secondary);
+		font-weight: 600;
+	}
+
 	.schedule-evt-type {
 		color: var(--text-primary);
 		font-weight: 800;

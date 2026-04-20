@@ -129,6 +129,7 @@
 	const currentRank = $derived(RANKS.find((r) => xpPoints >= r.min && xpPoints <= r.max) || RANKS[0]);
 	const nextRank = $derived(RANKS[RANKS.indexOf(currentRank) + 1]);
 	const xpPct = $derived(nextRank ? Math.min(100, ((xpPoints - currentRank.min) / (nextRank.min - currentRank.min)) * 100) : 100);
+	const rankCrestClass = $derived(`stats-rank-crest--${currentRank.name.toLowerCase()}`);
 
 	// Calendar
 	let calOffset = $state(0);
@@ -406,6 +407,9 @@
 	<div class="bento-section">
 		<div class="card">
 			<div class="card-body text-center">
+				<div class="stats-rank-crest {rankCrestClass}" aria-hidden="true">
+					<span class="stats-rank-crest-letter">{currentRank.name.charAt(0)}</span>
+				</div>
 				<h1 class="level-display">{currentRank.name}</h1>
 				<p class="current-rank-label">Current Rank</p>
 				<div class="xp-bar-container">

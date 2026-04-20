@@ -75,13 +75,6 @@
 		};
 	});
 
-	function medalForRank(r) {
-		if (r === 1) return '🥇';
-		if (r === 2) return '🥈';
-		if (r === 3) return '🥉';
-		return '';
-	}
-
 	function tierClass(rank) {
 		if (rank === 1) return 'lb-row--gold';
 		if (rank === 2) return 'lb-row--silver';
@@ -123,8 +116,11 @@
 								class:lb-row--me={row.isCurrentUser}
 							>
 								<td class="lb-td-rank">
-									<span class="lb-medal" aria-hidden="true">{medalForRank(row.rank)}</span>
-									<span class="lb-rank-num">{row.rank}</span>
+									{#if row.rank <= 3}
+										<span class="lb-rank-podium lb-rank-podium--{row.rank}">{row.rank}</span>
+									{:else}
+										<span class="lb-rank-num">{row.rank}</span>
+									{/if}
 								</td>
 								<td class="lb-td-name">
 									{row.displayName}
@@ -273,10 +269,6 @@
 	.lb-td-rank {
 		font-weight: 900;
 		white-space: nowrap;
-	}
-
-	.lb-medal {
-		margin-right: 6px;
 	}
 
 	.lb-rank-num {

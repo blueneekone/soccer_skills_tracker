@@ -64,7 +64,9 @@
 				<div class="trophy-flex">
 					{#each RANKS as rank, i}
 						<div class="medal-container" class:medal-locked={i > unlockedRankIdx}>
-							<div class="medal-coin {rank.cls}"></div>
+							<div class="medal-coin {rank.cls}" aria-hidden="true">
+								<span class="medal-coin-letter">{rank.name.charAt(0)}</span>
+							</div>
 							<div class="medal-title" class:legend-title-color={rank.name === 'LEGEND'}>{rank.name}</div>
 							<div class="medal-xp">{rank.xp} XP</div>
 						</div>
@@ -78,19 +80,19 @@
 			<div class="card-body text-center overflow-x-auto">
 				<div class="trophy-flex milestone-flex">
 					<div class="medal-container" class:medal-locked={!badge7Day}>
-						<div class="milestone-icon">🔥</div>
+						<div class="milestone-badge-shell" aria-hidden="true"><i class="ph ph-fire"></i></div>
 						<div class="medal-title">7-DAY STREAK</div>
 					</div>
 					<div class="medal-container" class:medal-locked={!badge100Sessions}>
-						<div class="milestone-icon">💯</div>
+						<div class="milestone-badge-shell" aria-hidden="true"><i class="ph ph-medal"></i></div>
 						<div class="medal-title">100 SESSIONS</div>
 					</div>
 					<div class="medal-container" class:medal-locked={!badge1000Mins}>
-						<div class="milestone-icon">⏱️</div>
+						<div class="milestone-badge-shell" aria-hidden="true"><i class="ph ph-timer"></i></div>
 						<div class="medal-title">1000 MINS</div>
 					</div>
 					<div class="medal-container medal-locked">
-						<div class="milestone-icon">⚔️</div>
+						<div class="milestone-badge-shell" aria-hidden="true"><i class="ph ph-sword"></i></div>
 						<div class="medal-title">WEEKEND WARRIOR</div>
 					</div>
 				</div>

@@ -4,6 +4,7 @@
 	import { signOut } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
 
 	const handleLogout = async () => {
 		await signOut(auth);
@@ -16,12 +17,19 @@
 		authStore.userProfile?.playerName ||
 		(authStore.role ? authStore.role.charAt(0).toUpperCase() + authStore.role.slice(1) : 'Player')
 	);
+
+	const sportIcon = $derived(sportPhosphorIcon(brandingStore.courtType));
 </script>
 
 <header class="app-header">
 	<button class="header-home-btn" onclick={goHome} aria-label="Go to home">
-		<h3 class="app-title">{brandingStore.appName || 'SSTRACKER'}</h3>
-		<div class="player-info">Player: <span class="font-bold">{displayName}</span></div>
+		<div class="header-brand-row">
+			<i class="ph {sportIcon} header-sport-icon" aria-hidden="true"></i>
+			<div class="header-titles">
+				<h3 class="app-title">{brandingStore.appName || 'SSTRACKER'}</h3>
+				<div class="player-info">Player: <span class="font-bold">{displayName}</span></div>
+			</div>
+		</div>
 	</button>
 	<div class="header-action-group">
 		<button
@@ -43,6 +51,24 @@
 </header>
 
 <style>
+	.header-brand-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-align: left;
+	}
+
+	.header-sport-icon {
+		font-size: 2rem;
+		color: var(--aggie-gold);
+		filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.35));
+		flex-shrink: 0;
+	}
+
+	.header-titles {
+		min-width: 0;
+	}
+
 	.header-home-btn {
 		background: none;
 		border: none;

@@ -56,20 +56,16 @@
 		<div class="splash-spinner"></div>
 	</div>
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
-	<AppHeader />
-	<main class="container app-main">
-		{@render children()}
-	</main>
-	<BottomNav />
+	<div class="app-shell">
+		<AppHeader />
+		<main class="container app-main">
+			{@render children()}
+		</main>
+		<BottomNav />
+	</div>
 {/if}
 
 <style>
-	.app-main {
-		padding-top: 80px;
-		padding-bottom: 100px;
-		min-height: 100vh;
-	}
-
 	.splash-loading {
 		display: flex;
 		justify-content: center;

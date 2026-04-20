@@ -143,13 +143,14 @@
 	};
 </script>
 
-<div class="view-section">
+<div class="view-section tracker-page">
 	<h2 class="view-title">Log Workout</h2>
 
 	{#if authStore.role === 'player' && profile?.teamId && profile.teamId !== 'admin'}
 		<TeamLeaderboard />
 	{/if}
 
+	<div class="tracker-main-panel">
 	<div class="card">
 		<div class="card-body">
 			<!-- Part A: Cardio -->
@@ -278,6 +279,7 @@
 			<button class="secondary-btn btn-export" onclick={addToGoogleCalendar}>📅 Save to Google Cal</button>
 			<button class="secondary-btn btn-export" onclick={downloadIcs}>🗓️ Download .ICS</button>
 		</div>
+	</div>
 	</div>
 </div>
 

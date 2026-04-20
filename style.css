@@ -68,6 +68,12 @@ body::before {
 }
 
 .container { max-width: 1000px; margin: 0 auto; padding-bottom: 40px; }
+.app-main {
+    padding-top: 80px;
+    padding-bottom: 100px;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
 .view-section { padding: var(--spacing-fluid) 16px; width: 100%; box-sizing: border-box; }
 .full-screen-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
 
@@ -249,7 +255,7 @@ input:focus, select:focus, textarea:focus {
    5. APP HEADER & DASHBOARD GRID
    ========================================== */
 .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px var(--spacing-fluid); background: var(--glass-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; border-radius: 0 0 24px 24px; margin-bottom: 20px; }
-.app-title { margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; }
+.app-title { margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; color: var(--text-primary); }
 .player-info { font-size: 0.85rem; color: var(--text-secondary); }
 .header-action-group { display: flex; gap: 10px; align-items: center; }
 .nav-logout-btn { background: rgba(239, 68, 68, 0.12); color: #7f1d1d; border: 1px solid rgba(185, 28, 28, 0.25); padding: 8px 16px; border-radius: 99px; font-weight: 700; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
@@ -385,16 +391,83 @@ html.dark .current-rank-label {
 .trophy-header { font-size: 1rem; color: var(--text-secondary); letter-spacing: 2px; justify-content: center; border-bottom: none; }
 .trophy-flex { display: flex; gap: 20px; justify-content: flex-start; min-width: max-content; padding-bottom: 15px; }
 .medal-container { display: flex; flex-direction: column; align-items: center; width: 100px; }
-.medal-coin { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; box-shadow: 0 10px 15px rgba(0,0,0,0.2), inset 0 -5px 10px rgba(0,0,0,0.3), inset 0 5px 10px rgba(255,255,255,0.5); position: relative; }
-.medal-coin::after { content: '⭐'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; opacity: 0.8; }
-.medal-rookie { background: linear-gradient(135deg, #94a3b8 0%, #475569 100%); }
-.medal-starter { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
-.medal-veteran { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
-.medal-pro { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
-.medal-legend { background: linear-gradient(135deg, var(--aggie-gold) 0%, #d97706 100%); box-shadow: 0 0 20px var(--aggie-gold); }
+.medal-coin {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    margin-bottom: 12px;
+    position: relative;
+    isolation: isolate;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    box-shadow:
+        0 8px 28px rgba(15, 23, 42, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+        0 -12px 24px rgba(0, 0, 0, 0.22) inset;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+.medal-coin::before {
+    content: '';
+    position: absolute;
+    inset: 10%;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.05) 45%, transparent 70%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: inset 0 2px 12px rgba(255, 255, 255, 0.25);
+    pointer-events: none;
+    z-index: 1;
+}
+.medal-coin::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, transparent 65%);
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+}
+.medal-coin-letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    z-index: 2;
+    pointer-events: none;
+}
+.medal-rookie {
+    background: linear-gradient(145deg, #cbd5e1 0%, #64748b 40%, #334155 100%);
+}
+.medal-starter {
+    background: linear-gradient(145deg, #34d399 0%, #059669 45%, #065f46 100%);
+    box-shadow: 0 8px 28px rgba(5, 150, 105, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12) inset, 0 -12px 24px rgba(0, 0, 0, 0.22) inset;
+}
+.medal-veteran {
+    background: linear-gradient(145deg, #60a5fa 0%, #2563eb 45%, #1e3a8a 100%);
+    box-shadow: 0 8px 28px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12) inset, 0 -12px 24px rgba(0, 0, 0, 0.22) inset;
+}
+.medal-pro {
+    background: linear-gradient(145deg, #fb923c 0%, #ea580c 45%, #9a3412 100%);
+    box-shadow: 0 8px 28px rgba(234, 88, 12, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12) inset, 0 -12px 24px rgba(0, 0, 0, 0.22) inset;
+}
+.medal-legend {
+    background: linear-gradient(145deg, #fde68a 0%, var(--aggie-gold) 40%, #b45309 100%);
+    border-color: rgba(255, 251, 235, 0.55);
+    animation: medal-legend-glow 2.8s ease-in-out infinite;
+}
+@keyframes medal-legend-glow {
+    0%, 100% { box-shadow: 0 8px 32px rgba(245, 158, 11, 0.45), 0 0 28px rgba(251, 191, 36, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15) inset; }
+    50% { box-shadow: 0 12px 40px rgba(245, 158, 11, 0.6), 0 0 44px rgba(251, 191, 36, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2) inset; }
+}
 .medal-title { font-weight: 900; font-size: 0.8rem; letter-spacing: 1px; color: var(--text-primary); }
 .medal-xp { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; }
-.medal-locked { opacity: 0.4; filter: grayscale(100%); }
+.medal-locked { opacity: 0.42; filter: grayscale(85%) brightness(0.92); }
+.medal-locked .medal-coin { animation: none; }
 .legend-title-color { color: #92400e; font-weight: 900; }
 
 html.dark .legend-title-color {
@@ -402,7 +475,92 @@ html.dark .legend-title-color {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
-.milestone-icon { font-size: 3rem; background: var(--surface-subtle); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 20px; margin-bottom: 10px; border: 1px solid var(--border-subtle); }
+.milestone-badge-shell {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.06) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        0 10px 28px rgba(15, 23, 42, 0.2),
+        inset 0 1px 1px rgba(255, 255, 255, 0.55),
+        inset 0 -8px 20px rgba(15, 23, 42, 0.12);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    font-size: 2.25rem;
+    color: var(--aggie-gold);
+}
+.milestone-badge-shell .ph {
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.35));
+}
+.medal-locked .milestone-badge-shell {
+    opacity: 0.5;
+    filter: grayscale(90%);
+}
+
+.stats-rank-crest {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.25), inset 0 2px 12px rgba(255, 255, 255, 0.25);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.stats-rank-crest-letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);
+    font-size: 2rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.96);
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+}
+.stats-rank-crest--rookie { background: linear-gradient(145deg, #cbd5e1 0%, #475569 100%); }
+.stats-rank-crest--starter { background: linear-gradient(145deg, #34d399 0%, #065f46 100%); }
+.stats-rank-crest--veteran { background: linear-gradient(145deg, #60a5fa 0%, #1e3a8a 100%); }
+.stats-rank-crest--pro { background: linear-gradient(145deg, #fb923c 0%, #9a3412 100%); }
+.stats-rank-crest--legend {
+    background: linear-gradient(145deg, #fde68a 0%, var(--aggie-gold) 45%, #b45309 100%);
+    animation: medal-legend-glow 2.8s ease-in-out infinite;
+}
+
+.lb-rank-podium {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    margin-right: 6px;
+    border-radius: 10px;
+    vertical-align: middle;
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+.lb-rank-podium--1 {
+    background: linear-gradient(145deg, #fde68a 0%, #d97706 100%);
+}
+.lb-rank-podium--2 {
+    background: linear-gradient(145deg, #e2e8f0 0%, #64748b 100%);
+}
+.lb-rank-podium--3 {
+    background: linear-gradient(145deg, #fdba74 0%, #9a3412 100%);
+}
 
 /* ==========================================
    12. ADMIN, DIRECTOR & COACH TABS
@@ -473,7 +631,99 @@ html.dark .legend-title-color {
 }
 
 /* ==========================================
-   15. RESPONSIVE ADJUSTMENTS
+   15. DESKTOP APP SHELL (100vh lock, internal scroll)
+   ========================================== */
+@media (min-width: 1024px) {
+    body:has(.app-shell) {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .app-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .app-header {
+        flex-shrink: 0;
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    .app-main {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-top: clamp(10px, 1.2vw, 18px);
+        padding-bottom: clamp(96px, 11vh, 130px);
+    }
+
+    .admin-sticky-header {
+        top: 0;
+        padding-top: 10px;
+        padding-bottom: 12px;
+        margin-bottom: clamp(12px, 2vw, 18px);
+    }
+
+    .admin-header {
+        color: var(--text-primary);
+    }
+
+    .bento-section--dashboard-cards {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+        gap: clamp(12px, 2vw, 18px);
+        margin-bottom: clamp(12px, 2vw, 18px);
+        align-items: stretch;
+    }
+
+    .bento-section--dashboard-cards > .card {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        max-height: min(52vh, 520px);
+        margin-bottom: 0;
+        overflow: hidden;
+    }
+
+    .bento-section--dashboard-cards > .card > .card-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .bento-section--dashboard-cards > .card > .card-header {
+        flex-shrink: 0;
+    }
+
+    .tracker-page .tracker-main-panel {
+        max-height: min(58vh, 640px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-right: 2px;
+    }
+
+    .dashboard-grid,
+    .bento-grid {
+        gap: clamp(12px, 2vw, 18px);
+    }
+
+    .view-section {
+        padding-left: clamp(12px, 2vw, 20px);
+        padding-right: clamp(12px, 2vw, 20px);
+        padding-top: clamp(14px, 2.5vw, 22px);
+        padding-bottom: clamp(14px, 2.5vw, 22px);
+    }
+}
+
+/* ==========================================
+   16. RESPONSIVE ADJUSTMENTS
    ========================================== */
 @media (max-width: 768px) {
     /* dashboard-grid intentionally NOT overridden: auto-fill with minmax(160px,1fr)
@@ -493,7 +743,7 @@ html.dark .legend-title-color {
 }
 
 /* ==========================================
-   16. DARK MODE (themeStore: html.dark)
+   17. DARK MODE (themeStore: html.dark)
    Brand navy --aggie-blue stays #0f172a; use --text-primary for readable copy.
    ========================================== */
 html.dark {
