@@ -5,6 +5,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
+	import AdminEditClubDrawer from '$lib/components/admin/AdminEditClubDrawer.svelte';
 	import '$lib/styles/enterprise-console.css';
 
 	/** @typedef {{ id: string, displayName: string, teamId: string, teamLabel: string, statsDocId: string, playerEmail: string, jersey: string | null, ageGroup: string | null, position: string | null, status: 'active' | 'pending', lastActiveLabel: string }} PlatformPlayerRow */
@@ -12,6 +13,11 @@
 	let platformPlayers = $state(/** @type {PlatformPlayerRow[]} */ ([]));
 	let platformLoading = $state(false);
 	let platformErr = $state('');
+
+	let accountsTab = $state(/** @type {'orgs' | 'roster' | 'admins'} */ ('orgs'));
+	let editClubOpen = $state(false);
+	/** @type {Record<string, unknown> & { id: string } | null} */
+	let selectedClub = $state(null);
 
 	/**
 	 * @param {string} teamName
@@ -118,7 +124,6 @@
 
 	$effect(() => {
 		if (!teamsStore.loaded || authStore.role !== 'super_admin') return;
-		// Re-run when team list changes so labels stay in sync.
 		void teamsStore.teams.length;
 		loadPlatformRoster();
 	});
@@ -139,6 +144,14 @@
 				},
 			}
 		);
+	}
+
+	/**
+	 * @param {Record<string, unknown> & { id: string }} cl
+	 */
+	function openEditClub(cl) {
+		selectedClub = cl;
+		editClubOpen = true;
 	}
 
 	let newClubId = $state('');
@@ -177,8 +190,11 @@
 			newClubSport = 'soccer';
 			newClubDirector = '';
 			await teamsStore.load('super_admin');
-		} catch (e) { alert('Error: ' + e.message); }
-		finally { saving = false; }
+		} catch (e) {
+			alert('Error: ' + e.message);
+		} finally {
+			saving = false;
+		}
 	};
 
 	const deleteClub = async (id) => {
@@ -190,21 +206,41 @@
 	};
 
 	const addTeam = async () => {
-		if (!adminTeamClubSel || !adminTeamName.trim() || !adminTeamId.trim()) return alert('Select parent club, enter a Team ID and team name.');
+		if (!adminTeamClubSel || !adminTeamName.trim() || !adminTeamId.trim()) {
+			return alert('Select parent club, enter a Team ID and team name.');
+		}
 		const tid = `${adminTeamClubSel}_${adminTeamId.trim()}`;
 		saving = true;
 		try {
-			await setDoc(doc(db, 'teams', tid), { clubId: adminTeamClubSel, name: adminTeamName, coachEmail: adminTeamCoach.toLowerCase(), createdAt: new Date() });
+			await setDoc(doc(db, 'teams', tid), {
+				clubId: adminTeamClubSel,
+				name: adminTeamName,
+				coachEmail: adminTeamCoach.toLowerCase(),
+				createdAt: new Date(),
+			});
 			if (adminTeamCoach) {
-				await setDoc(doc(db, 'users', adminTeamCoach.toLowerCase()), { role: 'coach', clubId: adminTeamClubSel, teamId: tid }, { merge: true });
-				await setDoc(doc(db, 'coach_lookup', adminTeamCoach.toLowerCase()), { role: 'coach', clubId: adminTeamClubSel, teamId: tid }, { merge: true });
+				await setDoc(
+					doc(db, 'users', adminTeamCoach.toLowerCase()),
+					{ role: 'coach', clubId: adminTeamClubSel, teamId: tid },
+					{ merge: true }
+				);
+				await setDoc(
+					doc(db, 'coach_lookup', adminTeamCoach.toLowerCase()),
+					{ role: 'coach', clubId: adminTeamClubSel, teamId: tid },
+					{ merge: true }
+				);
 			}
 			await logSecurityEvent('CREATE_TEAM', tid, adminTeamName);
 			alert(`Team '${adminTeamName}' added!`);
-			adminTeamId = ''; adminTeamName = ''; adminTeamCoach = '';
+			adminTeamId = '';
+			adminTeamName = '';
+			adminTeamCoach = '';
 			await teamsStore.load('super_admin');
-		} catch (e) { alert('Error: ' + e.message); }
-		finally { saving = false; }
+		} catch (e) {
+			alert('Error: ' + e.message);
+		} finally {
+			saving = false;
+		}
 	};
 
 	const addAdmin = async () => {
@@ -218,8 +254,11 @@
 			alert('Global Admin Added!');
 			newAdminEmail = '';
 			await teamsStore.load('super_admin');
-		} catch (e) { alert('Error: ' + e.message); }
-		finally { saving = false; }
+		} catch (e) {
+			alert('Error: ' + e.message);
+		} finally {
+			saving = false;
+		}
 	};
 
 	const removeAdmin = async (email) => {
@@ -240,188 +279,393 @@
 			await logSecurityEvent('ASSIGN_DIRECTOR', email, `Club ID: ${assignDirClubId}`);
 			alert(`${email} is now Director of ${assignDirClubId}`);
 			assignDirEmail = '';
-		} catch (e) { alert('Error: ' + e.message); }
-		finally { saving = false; }
+		} catch (e) {
+			alert('Error: ' + e.message);
+		} finally {
+			saving = false;
+		}
 	};
 </script>
 
 <div class="accounts-tab">
-	<div class="bento-section">
-	<div class="card">
-		<div class="card-header">📋 Platform Roster (Linked Players)</div>
-		<div class="card-body p-0">
-			{#if authStore.role !== 'super_admin'}
-				<p class="admin-roster-hint">Super admin only.</p>
-			{:else if platformLoading}
-				<div class="session-empty">Loading roster…</div>
-			{:else if platformErr}
-				<p class="admin-roster-err">{platformErr}</p>
-			{:else if platformPlayers.length === 0}
-				<div class="session-empty">No players in player_lookup.</div>
-			{:else}
-				<div class="ec-table-wrap">
-					<table class="ec-table">
-						<thead>
-							<tr>
-								<th>Player</th>
-								<th>Team</th>
-								<th>Age Group</th>
-								<th>Position</th>
-								<th>Status</th>
-								<th>Last Active</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each platformPlayers as row (row.id)}
-								<tr
-									class="ec-table__row-click"
-									onclick={() => openAdminPlayer(row)}
-									onkeydown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
-											e.preventDefault();
-											openAdminPlayer(row);
-										}
-									}}
-									role="button"
-									tabindex="0"
-								>
-									<td class="ec-table__strong">{row.displayName}</td>
-									<td class="ec-muted">{row.teamLabel}</td>
-									<td>{row.ageGroup || '—'}</td>
-									<td class="ec-muted">—</td>
-									<td>
-										<span class="ec-pill ec-pill--ok">Active</span>
-									</td>
-									<td class="ec-muted">{row.lastActiveLabel}</td>
+	<div class="accounts-tab__nav" role="tablist" aria-label="Administrator sections">
+		<button
+			type="button"
+			class="accounts-tab__tab"
+			role="tab"
+			aria-selected={accountsTab === 'orgs'}
+			tabindex={accountsTab === 'orgs' ? 0 : -1}
+			onclick={() => (accountsTab = 'orgs')}
+		>
+			Organizations
+		</button>
+		<button
+			type="button"
+			class="accounts-tab__tab"
+			role="tab"
+			aria-selected={accountsTab === 'roster'}
+			tabindex={accountsTab === 'roster' ? 0 : -1}
+			onclick={() => (accountsTab = 'roster')}
+		>
+			Platform Roster
+		</button>
+		<button
+			type="button"
+			class="accounts-tab__tab"
+			role="tab"
+			aria-selected={accountsTab === 'admins'}
+			tabindex={accountsTab === 'admins' ? 0 : -1}
+			onclick={() => (accountsTab = 'admins')}
+		>
+			System Admins
+		</button>
+	</div>
+
+	{#if accountsTab === 'orgs'}
+		<div class="bento-section accounts-tab__panel" role="tabpanel">
+			<div class="card">
+				<div class="card-header">🏢 Registered Organizations</div>
+				<div class="card-body">
+					<div class="ec-table-wrap">
+						<table class="admin-table">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Sport</th>
+									<th>License</th>
+									<th>Director</th>
+									<th>Action</th>
 								</tr>
-							{/each}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{#each teamsStore.clubs as cl}
+									<tr
+										class="accounts-tab__org-row"
+										onclick={() => openEditClub(cl)}
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												e.preventDefault();
+												openEditClub(cl);
+											}
+										}}
+										role="button"
+										tabindex="0"
+									>
+										<td>{cl.id}</td>
+										<td>{cl.name}</td>
+										<td>{cl.sport || '—'}</td>
+										<td>
+											{#if cl.isInfinite === true}
+												<span class="accounts-tab__pill">Infinite</span>
+											{:else}
+												<span class="accounts-tab__pill-muted">Standard</span>
+											{/if}
+										</td>
+										<td>{cl.directorEmail || '—'}</td>
+										<td>
+											<button
+												type="button"
+												class="delete-btn"
+												onclick={(e) => {
+													e.stopPropagation();
+													deleteClub(cl.id);
+												}}
+											>
+												🗑️
+											</button>
+										</td>
+									</tr>
+								{:else}
+									<tr><td colspan="6" class="text-center">No clubs.</td></tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+					<p class="accounts-tab__hint">Click a row to edit sport and promo license settings.</p>
+					<hr class="section-divider" />
+					<label for="admin-new-club-id">Add New Club</label>
+					<div class="admin-input-row">
+						<input
+							id="admin-new-club-id"
+							type="text"
+							bind:value={newClubId}
+							placeholder="Club ID (e.g. aggiesfc)"
+							class="m-0 flex-1"
+						/>
+						<input type="text" bind:value={newClubName} placeholder="Club Name" class="m-0 flex-1" />
+					</div>
+					<label for="admin-new-club-sport">Sport</label>
+					<select id="admin-new-club-sport" bind:value={newClubSport} class="m-0 w-100">
+						<option value="soccer">Soccer</option>
+						<option value="basketball">Basketball</option>
+						<option value="baseball">Baseball</option>
+						<option value="football">Football</option>
+						<option value="volleyball">Volleyball</option>
+						<option value="hockey">Hockey</option>
+						<option value="lacrosse">Lacrosse</option>
+						<option value="generic">Generic</option>
+					</select>
+					<input type="email" bind:value={newClubDirector} placeholder="Director Email (Optional)" />
+					<button class="primary-btn btn-blue w-100" onclick={addClub} disabled={saving}>+ Add Club</button>
 				</div>
-			{/if}
-		</div>
-	</div>
+			</div>
 
-	<div class="card">
-		<div class="card-header">🏢 Registered Organizations</div>
-		<div class="card-body">
-			<div class="ec-table-wrap">
-				<table class="admin-table">
-					<thead><tr><th>ID</th><th>Name</th><th>Sport</th><th>Director</th><th>Action</th></tr></thead>
-					<tbody>
-						{#each teamsStore.clubs as cl}
-							<tr>
-								<td>{cl.id}</td>
-								<td>{cl.name}</td>
-								<td>{cl.sport || '—'}</td>
-								<td>{cl.directorEmail || '—'}</td>
-								<td><button class="delete-btn" onclick={() => deleteClub(cl.id)}>🗑️</button></td>
-							</tr>
-						{:else}
-							<tr><td colspan="5" class="text-center">No clubs.</td></tr>
-						{/each}
-					</tbody>
-				</table>
+			<div class="card">
+				<div class="card-header">👥 Registered Teams</div>
+				<div class="card-body">
+					<div class="ec-table-wrap">
+						<table class="admin-table">
+							<thead>
+								<tr><th>Team</th><th>Club</th><th>Coach</th></tr>
+							</thead>
+							<tbody>
+								{#each teamsStore.teams as t}
+									<tr>
+										<td>{t.name} <span class="text-sm-sub">({t.id})</span></td>
+										<td>{t.clubId}</td>
+										<td>{t.coachEmail || '—'}</td>
+									</tr>
+								{:else}
+									<tr><td colspan="3" class="text-center">No teams.</td></tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+					<hr class="section-divider" />
+					<label for="admin-new-team-club">Add New Team</label>
+					<select id="admin-new-team-club" bind:value={adminTeamClubSel}>
+						<option value="">-- Select Parent Club --</option>
+						{#each teamsStore.clubs as cl}<option value={cl.id}>{cl.name}</option>{/each}
+					</select>
+					<div class="admin-input-row">
+						<input type="text" bind:value={adminTeamId} placeholder="Team ID (e.g. 15bew)" class="m-0 flex-1" />
+						<input type="text" bind:value={adminTeamName} placeholder="Full Team Name" class="m-0 flex-2" />
+					</div>
+					<input type="email" bind:value={adminTeamCoach} placeholder="Head Coach Email" />
+					<button class="primary-btn btn-blue w-100" onclick={addTeam} disabled={saving}>+ Add Team</button>
+				</div>
 			</div>
-			<hr class="section-divider" />
-			<label>Add New Club</label>
-			<div class="admin-input-row">
-				<input type="text" bind:value={newClubId} placeholder="Club ID (e.g. aggiesfc)" class="m-0 flex-1" />
-				<input type="text" bind:value={newClubName} placeholder="Club Name" class="m-0 flex-1" />
-			</div>
-			<label for="admin-new-club-sport">Sport</label>
-			<select id="admin-new-club-sport" bind:value={newClubSport} class="m-0 w-100">
-				<option value="soccer">Soccer</option>
-				<option value="basketball">Basketball</option>
-				<option value="baseball">Baseball</option>
-				<option value="football">Football</option>
-				<option value="volleyball">Volleyball</option>
-				<option value="hockey">Hockey</option>
-				<option value="lacrosse">Lacrosse</option>
-				<option value="generic">Generic</option>
-			</select>
-			<input type="email" bind:value={newClubDirector} placeholder="Director Email (Optional)" />
-			<button class="primary-btn btn-blue w-100" onclick={addClub} disabled={saving}>+ Add Club</button>
-		</div>
-	</div>
 
-	<div class="card">
-		<div class="card-header">👥 Registered Teams</div>
-		<div class="card-body">
-			<div class="ec-table-wrap">
-				<table class="admin-table">
-					<thead><tr><th>Team</th><th>Club</th><th>Coach</th></tr></thead>
-					<tbody>
-						{#each teamsStore.teams as t}
-							<tr><td>{t.name} <span class="text-sm-sub">({t.id})</span></td><td>{t.clubId}</td><td>{t.coachEmail || '—'}</td></tr>
-						{:else}
-							<tr><td colspan="3" class="text-center">No teams.</td></tr>
-						{/each}
-					</tbody>
-				</table>
+			<div class="card">
+				<div class="card-header bg-blue-header">👥 Assign Club Director</div>
+				<div class="card-body">
+					<div class="admin-flex-row">
+						<input type="email" bind:value={assignDirEmail} placeholder="Director Email" class="flex-1 m-0" />
+						<select bind:value={assignDirClubId} class="m-0">
+							<option value="">Select Club</option>
+							{#each teamsStore.clubs as cl}<option value={cl.id}>{cl.name}</option>{/each}
+						</select>
+					</div>
+					<button class="primary-btn w-100" onclick={assignDirector} disabled={saving}>
+						Assign Director Role
+					</button>
+				</div>
 			</div>
-			<hr class="section-divider" />
-			<label>Add New Team</label>
-			<select bind:value={adminTeamClubSel}>
-				<option value="">-- Select Parent Club --</option>
-				{#each teamsStore.clubs as cl}<option value={cl.id}>{cl.name}</option>{/each}
-			</select>
-			<div class="admin-input-row">
-				<input type="text" bind:value={adminTeamId} placeholder="Team ID (e.g. 15bew)" class="m-0 flex-1" />
-				<input type="text" bind:value={adminTeamName} placeholder="Full Team Name" class="m-0 flex-2" />
-			</div>
-			<input type="email" bind:value={adminTeamCoach} placeholder="Head Coach Email" />
-			<button class="primary-btn btn-blue w-100" onclick={addTeam} disabled={saving}>+ Add Team</button>
 		</div>
-	</div>
-
-	<div class="card">
-		<div class="card-header bg-blue-header">👥 Assign Club Director</div>
-		<div class="card-body">
-			<div class="admin-flex-row">
-				<input type="email" bind:value={assignDirEmail} placeholder="Director Email" class="flex-1 m-0" />
-				<select bind:value={assignDirClubId} class="m-0">
-					<option value="">Select Club</option>
-					{#each teamsStore.clubs as cl}<option value={cl.id}>{cl.name}</option>{/each}
-				</select>
-			</div>
-			<button class="primary-btn w-100" onclick={assignDirector} disabled={saving}>Assign Director Role</button>
-		</div>
-	</div>
-
-	<div class="card border-gold">
-		<div class="card-header bg-gold-header">👑 Super Admins</div>
-		<div class="card-body">
-			<div class="ec-table-wrap">
-				<table class="admin-table">
-				<thead><tr><th>Admin Email</th><th>Action</th></tr></thead>
-				<tbody>
-					{#each teamsStore.admins as email}
-						<tr>
-							<td>{email}</td>
-							<td><button class="delete-btn" onclick={() => removeAdmin(email)}>X</button></td>
-						</tr>
+	{:else if accountsTab === 'roster'}
+		<div class="bento-section accounts-tab__panel" role="tabpanel">
+			<div class="card">
+				<div class="card-header">📋 Platform Roster (Linked Players)</div>
+				<div class="card-body p-0">
+					{#if authStore.role !== 'super_admin'}
+						<p class="admin-roster-hint">Super admin only.</p>
+					{:else if platformLoading}
+						<div class="session-empty">Loading roster…</div>
+					{:else if platformErr}
+						<p class="admin-roster-err">{platformErr}</p>
+					{:else if platformPlayers.length === 0}
+						<div class="session-empty">No players in player_lookup.</div>
 					{:else}
-						<tr><td colspan="2" class="text-center">No admins loaded.</td></tr>
-					{/each}
-				</tbody>
-			</table>
-			</div>
-			<label>Grant Super Admin Access</label>
-			<div class="admin-input-row">
-				<input type="email" bind:value={newAdminEmail} placeholder="Enter new admin email..." class="m-0 flex-1" />
-				<button class="primary-btn btn-gold" onclick={addAdmin} disabled={saving}>Grant Access</button>
+						<div class="ec-table-wrap">
+							<table class="ec-table">
+								<thead>
+									<tr>
+										<th>Player</th>
+										<th>Team</th>
+										<th>Age Group</th>
+										<th>Position</th>
+										<th>Status</th>
+										<th>Last Active</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each platformPlayers as row (row.id)}
+										<tr
+											class="ec-table__row-click"
+											onclick={() => openAdminPlayer(row)}
+											onkeydown={(e) => {
+												if (e.key === 'Enter' || e.key === ' ') {
+													e.preventDefault();
+													openAdminPlayer(row);
+												}
+											}}
+											role="button"
+											tabindex="0"
+										>
+											<td class="ec-table__strong">{row.displayName}</td>
+											<td class="ec-muted">{row.teamLabel}</td>
+											<td>{row.ageGroup || '—'}</td>
+											<td class="ec-muted">—</td>
+											<td>
+												<span class="ec-pill ec-pill--ok">Active</span>
+											</td>
+											<td class="ec-muted">{row.lastActiveLabel}</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
-	</div>
+	{:else}
+		<div class="bento-section accounts-tab__panel" role="tabpanel">
+			<div class="card border-gold">
+				<div class="card-header bg-gold-header">👑 System Admins</div>
+				<div class="card-body">
+					<div class="ec-table-wrap">
+						<table class="admin-table">
+							<thead>
+								<tr><th>Admin Email</th><th>Action</th></tr>
+							</thead>
+							<tbody>
+								{#each teamsStore.admins as email}
+									<tr>
+										<td>{email}</td>
+										<td><button class="delete-btn" onclick={() => removeAdmin(email)}>X</button></td>
+									</tr>
+								{:else}
+									<tr><td colspan="2" class="text-center">No admins loaded.</td></tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+					<label for="admin-grant-email">Grant Super Admin Access</label>
+					<div class="admin-input-row">
+						<input
+							id="admin-grant-email"
+							type="email"
+							bind:value={newAdminEmail}
+							placeholder="Enter new admin email..."
+							class="m-0 flex-1"
+						/>
+						<button class="primary-btn btn-gold" onclick={addAdmin} disabled={saving}>Grant Access</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
+<AdminEditClubDrawer bind:open={editClubOpen} club={selectedClub} />
+
 <style>
-	select, input { margin-bottom: 10px; }
-	.section-divider { border: none; border-top: 1px solid var(--border-subtle); margin: 16px 0; }
-	.admin-flex-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-	.delete-btn { background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--danger-red); padding: 2px 8px; font-size: 0.85rem; }
-	.admin-roster-hint { padding: 16px; margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
-	.admin-roster-err { padding: 16px; margin: 0; color: var(--danger-red, #b91c1c); font-size: 0.9rem; }
+	select,
+	input {
+		margin-bottom: 10px;
+	}
+	.section-divider {
+		border: none;
+		border-top: 1px solid var(--border-subtle);
+		margin: 16px 0;
+	}
+	.admin-flex-row {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 12px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.delete-btn {
+		background: none;
+		border: 1px solid var(--border-strong);
+		border-radius: 6px;
+		cursor: pointer;
+		color: var(--danger-red);
+		padding: 2px 8px;
+		font-size: 0.85rem;
+	}
+	.admin-roster-hint {
+		padding: 16px;
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+	}
+	.admin-roster-err {
+		padding: 16px;
+		margin: 0;
+		color: var(--danger-red, #b91c1c);
+		font-size: 0.9rem;
+	}
+
+	.accounts-tab__nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 16px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+	}
+
+	.accounts-tab__tab {
+		border: 1px solid #e5e5e5;
+		background: #fafafa;
+		color: var(--text-secondary);
+		font-size: 0.875rem;
+		font-weight: 600;
+		padding: 8px 14px;
+		border-radius: 8px;
+		cursor: pointer;
+		transition:
+			background 0.12s ease,
+			color 0.12s ease,
+			border-color 0.12s ease;
+	}
+
+	.accounts-tab__tab[aria-selected='true'] {
+		background: #ffffff;
+		color: var(--text-primary);
+		border-color: #a3a3a3;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	}
+
+	:global(html.dark) .accounts-tab__tab {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.12);
+		color: var(--text-secondary);
+	}
+
+	:global(html.dark) .accounts-tab__tab[aria-selected='true'] {
+		background: #09090b;
+		color: #fafafa;
+		border-color: rgba(255, 255, 255, 0.18);
+	}
+
+	.accounts-tab__hint {
+		margin: 10px 0 0;
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+	}
+
+	.accounts-tab__pill {
+		display: inline-block;
+		font-size: 11px;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(22, 163, 74, 0.12);
+		color: #15803d;
+		border: 1px solid rgba(22, 163, 74, 0.25);
+	}
+
+	.accounts-tab__pill-muted {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+	}
+
+	:global(.accounts-tab__org-row) {
+		cursor: pointer;
+	}
 </style>

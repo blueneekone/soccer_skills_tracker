@@ -20,9 +20,12 @@
 		isSubscriptionReadOnly(
 			authStore.role,
 			licenseEntitlementStore.clubIdResolved,
-			licenseEntitlementStore.entitlement
+			licenseEntitlementStore.entitlement,
+			{ clubInfinite: licenseEntitlementStore.isInfiniteClub }
 		)
 	);
+
+	const clubInfinite = $derived(licenseEntitlementStore.isInfiniteClub === true);
 
 	const directorInviteCoach = httpsCallable(functions, 'directorInviteCoach');
 	const secureAllocateTeamSeats = httpsCallable(functions, 'secureAllocateTeamSeats');
@@ -326,11 +329,13 @@
 		<div class="card-header bg-blue-header">Teams & seat management</div>
 		<div class="card-body">
 			<p class="tw-m-0 tw-mb-4 tw-text-sm" style="color: var(--text-secondary);">
-				Allocate sub-licenses per team. Total allocated caps must stay within the club master license
-				({masterSeatLimit || '—'} seats). Pool remaining:
-				<strong
-					>{masterSeatLimit > 0 ? Math.max(0, masterSeatLimit - allocatedSum) : '—'}</strong
-				>.
+				Allocate sub-licenses per team. Club master license cap:
+				{#if clubInfinite}
+					<strong>Unlimited</strong> (promo). Pool remaining: <strong>Unlimited</strong>.
+				{:else}
+					<strong>{masterSeatLimit || '—'}</strong> seats. Pool remaining:
+					<strong>{masterSeatLimit > 0 ? Math.max(0, masterSeatLimit - allocatedSum) : '—'}</strong>.
+				{/if}
 			</p>
 			{#if seatFeedback}
 				<p class="seat-feedback" role="status">{seatFeedback}</p>

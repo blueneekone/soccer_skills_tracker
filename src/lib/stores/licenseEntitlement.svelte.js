@@ -6,13 +6,21 @@ function createLicenseEntitlementStore() {
 	let loading = $state(true);
 	let entitlement = $state(/** @type {Record<string, unknown> | null} */ (null));
 	let clubIdResolved = $state('');
+	/** `clubs/{clubId}` — sport, isInfinite, etc. */
+	let clubDoc = $state(/** @type {Record<string, unknown> | null} */ (null));
 	/** @type {null | (() => void)} */
 	let unsub = null;
+	/** @type {null | (() => void)} */
+	let unsubClub = null;
 
 	function detach() {
 		if (unsub) {
 			unsub();
 			unsub = null;
+		}
+		if (unsubClub) {
+			unsubClub();
+			unsubClub = null;
 		}
 	}
 
@@ -22,6 +30,7 @@ function createLicenseEntitlementStore() {
 	async function syncFromUser(user) {
 		detach();
 		entitlement = null;
+		clubDoc = null;
 		clubIdResolved = '';
 		if (!user) {
 			loading = false;
@@ -39,6 +48,18 @@ function createLicenseEntitlementStore() {
 				return;
 			}
 			clubIdResolved = cid;
+
+			unsubClub = onSnapshot(
+				doc(db, 'clubs', cid),
+				(snap) => {
+					clubDoc = snap.exists() ? snap.data() : null;
+				},
+				(err) => {
+					console.error('[clubs entitlement club snapshot]', err);
+					clubDoc = null;
+				}
+			);
+
 			unsub = onSnapshot(
 				doc(db, 'license_entitlements', cid),
 				(snap) => {
@@ -67,6 +88,13 @@ function createLicenseEntitlementStore() {
 		},
 		get clubIdResolved() {
 			return clubIdResolved;
+		},
+		get clubDoc() {
+			return clubDoc;
+		},
+		/** Promo / enterprise: unlimited seats & bypass Stripe read-only when true on `clubs/{id}` */
+		get isInfiniteClub() {
+			return clubDoc?.isInfinite === true;
 		}
 	};
 }

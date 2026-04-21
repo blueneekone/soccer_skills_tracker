@@ -4,20 +4,42 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { signOut } from 'firebase/auth';
 	import { doc, setDoc, getDoc } from 'firebase/firestore';
+	import { getIdTokenResult } from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
 	const listTeamsForClub = httpsCallable(functions, 'listTeamsForClub');
 
-	// Redirect logic
+	// Redirect logic — super admins (JWT `isSuperAdmin` or role) skip profile completion
 	$effect(() => {
-		if (!authStore.isLoading) {
-			if (!authStore.isAuthenticated) goto('/login', { replaceState: true });
-			else if (authStore.isProfileComplete) {
+		if (authStore.isLoading) return;
+
+		if (!authStore.isAuthenticated) {
+			goto('/login', { replaceState: true });
+			return;
+		}
+
+		void (async () => {
+			const u = auth.currentUser;
+			if (!u) return;
+			try {
+				const tr = await getIdTokenResult(u, false);
+				const isSuper =
+					tr.claims.isSuperAdmin === true || tr.claims.role === 'super_admin';
+				if (isSuper) {
+					await authStore.refresh({ silent: true });
+					goto('/admin', { replaceState: true });
+					return;
+				}
+			} catch (e) {
+				console.error('[setup] token', e);
+			}
+
+			if (authStore.isProfileComplete) {
 				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 			}
-		}
+		})();
 	});
 
 	// Load clubs for dropdowns

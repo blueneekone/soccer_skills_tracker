@@ -18,6 +18,7 @@
 	let activeSeats = $state(0);
 	let reservedSeats = $state(0);
 	let seatsLimit = $state(0);
+	let clubInfinite = $state(false);
 
 	let passportCounts = $state({ verified: 0, pending: 0, expired: 0 });
 
@@ -27,6 +28,9 @@
 
 	$effect(() => {
 		if (!browser || !clubId) return;
+		const unsubClub = onSnapshot(doc(db, 'clubs', clubId), (snap) => {
+			clubInfinite = snap.exists() && snap.data()?.isInfinite === true;
+		});
 		const unsub = onSnapshot(
 			doc(db, 'license_entitlements', clubId),
 			(snap) => {
@@ -47,7 +51,10 @@
 				seatsLimit = 0;
 			},
 		);
-		return () => unsub();
+		return () => {
+			unsub();
+			unsubClub();
+		};
 	});
 
 	$effect(() => {
@@ -85,7 +92,7 @@
 	});
 
 	$effect(() => {
-		if (!browser || !mounted || !donutCanvas) return;
+		if (!browser || !mounted || !donutCanvas || clubInfinite) return;
 		void (async () => {
 			await tick();
 			const mod = await import('chart.js');
@@ -185,9 +192,16 @@
 		<div class="ec-dir-analytics__card">
 			<h3 class="ec-dir-analytics__title">License utilization</h3>
 			<p class="ec-dir-analytics__sub">Active roster seats vs. remaining capacity.</p>
-			<div class="ec-dir-analytics__chart">
-				<canvas bind:this={donutCanvas} aria-label="License utilization chart"></canvas>
-			</div>
+			{#if clubInfinite}
+				<p class="ec-dir-analytics__promo">
+					<strong>Unlimited license (promo).</strong> No seat cap chart — Stripe and subscription read-only rules are
+					bypassed for this club.
+				</p>
+			{:else}
+				<div class="ec-dir-analytics__chart">
+					<canvas bind:this={donutCanvas} aria-label="License utilization chart"></canvas>
+				</div>
+			{/if}
 		</div>
 		<div class="ec-dir-analytics__card">
 			<h3 class="ec-dir-analytics__title">Platform compliance</h3>
@@ -237,5 +251,12 @@
 		position: relative;
 		height: 200px;
 		max-width: 100%;
+	}
+
+	.ec-dir-analytics__promo {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.45;
+		color: var(--text-secondary);
 	}
 </style>

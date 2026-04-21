@@ -11,10 +11,12 @@
  * @param {string} role
  * @param {string} clubId Resolved club scope (JWT / profile).
  * @param {Record<string, unknown> | null | undefined} ent Snapshot data or null.
+ * @param {{ clubInfinite?: boolean }} [opts] When `clubs/{clubId}.isInfinite` is true, skip read-only billing.
  * @returns {boolean}
  */
-export function isSubscriptionReadOnly(role, clubId, ent) {
+export function isSubscriptionReadOnly(role, clubId, ent, opts = {}) {
 	if (role === 'super_admin') return false;
+	if (opts.clubInfinite === true) return false;
 	if (!clubId || typeof clubId !== 'string' || !clubId.trim()) return false;
 	if (!ent || typeof ent !== 'object') return false;
 	if (ent.billing_exempt === true || ent.grandfathered === true) return false;

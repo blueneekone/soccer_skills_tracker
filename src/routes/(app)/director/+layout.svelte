@@ -16,7 +16,8 @@
 		isSubscriptionReadOnly(
 			authStore.role,
 			licenseEntitlementStore.clubIdResolved,
-			licenseEntitlementStore.entitlement
+			licenseEntitlementStore.entitlement,
+			{ clubInfinite: licenseEntitlementStore.isInfiniteClub }
 		)
 	);
 

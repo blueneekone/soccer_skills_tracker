@@ -9,6 +9,7 @@
 	let activeSeats = $state(0);
 	let reservedSeats = $state(0);
 	let seatsLimit = $state(0);
+	let clubInfinite = $state(false);
 
 	$effect(() => {
 		if (!clubId) {
@@ -17,11 +18,12 @@
 			activeSeats = 0;
 			reservedSeats = 0;
 			seatsLimit = 0;
+			clubInfinite = false;
 			return;
 		}
 		loading = true;
 		err = null;
-		const unsub = onSnapshot(
+		const unsubEnt = onSnapshot(
 			doc(db, 'license_entitlements', clubId),
 			(snap) => {
 				loading = false;
@@ -44,7 +46,16 @@
 				err = e instanceof Error ? e.message : 'Could not load entitlements.';
 			}
 		);
-		return () => unsub();
+		const unsubClub = onSnapshot(doc(db, 'clubs', clubId), (snap) => {
+			clubInfinite = snap.exists() && snap.data()?.isInfinite === true;
+			if (clubInfinite && err === 'No license entitlement document yet. Generate a club license in Admin.') {
+				err = null;
+			}
+		});
+		return () => {
+			unsubEnt();
+			unsubClub();
+		};
 	});
 
 	const usedPct = $derived(
@@ -88,6 +99,11 @@
 			style="background: rgba(15,23,42,0.1);"
 			aria-hidden="true"
 		></div>
+	{:else if clubInfinite}
+		<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">
+			<strong>Unlimited enterprise license (promo).</strong> Seat metering and Stripe read-only rules are bypassed
+			for this organization.
+		</p>
 	{:else if err}
 		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);" role="alert">{err}</p>
 	{:else if seatsLimit <= 0}
