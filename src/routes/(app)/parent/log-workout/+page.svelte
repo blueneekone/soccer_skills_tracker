@@ -61,7 +61,7 @@
 
 	$effect(() => {
 		if (!authStore.isLoading && role !== 'parent') {
-			goto('/home', { replaceState: true });
+			goto('/parent/vpc', { replaceState: true });
 		}
 	});
 
@@ -168,7 +168,7 @@
 				confirmButtonColor: '#0f172a'
 			});
 			clearForm();
-			goto('/home');
+			goto('/parent/vpc');
 		} catch (e) {
 			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
 			alert('Could not log workout: ' + msg);

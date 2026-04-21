@@ -10,6 +10,7 @@
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
@@ -43,7 +44,7 @@
 		}
 		const currentPath = $page.url.pathname;
 		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
-			goto('/home', { replaceState: true });
+			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 			return;
 		}
 	});

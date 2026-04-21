@@ -141,7 +141,7 @@
 							id: 'hw',
 							label: `${n} household assignment${n === 1 ? '' : 's'} to complete`,
 							meta: 'Household',
-							href: '/home',
+							href: '/parent/vpc',
 						});
 					}
 				}

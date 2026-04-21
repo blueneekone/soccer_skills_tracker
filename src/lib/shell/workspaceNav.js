@@ -27,7 +27,6 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
 	{ tab: 'roster', label: 'My Team', icon: 'ph-users-three', href: '/coach?tab=roster' },
 	{ tab: 'playbook', label: 'Playbook', icon: 'ph-book-open', href: '/coach?tab=playbook' },
 	{ tab: 'videos', label: 'Videos', icon: 'ph-video-camera', href: '/coach?tab=videos' },
@@ -42,7 +41,6 @@ const coachLinks = [
 
 /** @type {ShellNavItem[]} */
 const playerLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
 	{ tab: '', label: 'My Stats', icon: 'ph-chart-bar', href: '/stats' },
 	{ tab: '', label: 'Log workout', icon: 'ph-list', href: '/tracker' },
 	{ tab: '', label: 'Trials', icon: 'ph-trophy', href: '/challenges' },
@@ -53,8 +51,7 @@ const playerLinks = [
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
-	{ tab: '', label: 'Household', icon: 'ph-users-three', href: '/parent/vpc' },
+	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
 	{ tab: '', label: 'Log workout', icon: 'ph-user-check', href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments', icon: 'ph-credit-card', href: '/pricing' },
 	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },
@@ -62,21 +59,17 @@ const parentLinks = [
 
 /** @type {ShellNavItem[]} */
 const registrarLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
 	{ tab: '', label: 'Compliance desk', icon: 'ph-shield-check', href: '/registrar' },
 ];
 
 /** @type {ShellNavItem[]} */
 const recruiterLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
 	{ tab: '', label: 'Recruiter search', icon: 'ph-magnifying-glass', href: '/recruiter' },
 ];
 
 /** @type {ShellNavItem[]} */
 const superAdminHomeLinks = [
-	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
 	{ tab: '', label: 'Admin console', icon: 'ph-shield-star', href: '/admin' },
-	{ tab: '', label: 'Director console', icon: 'ph-briefcase', href: '/director?tab=home' },
 	{ tab: 'roster', label: 'Coach tools', icon: 'ph-megaphone', href: '/coach?tab=roster' },
 ];
 
@@ -179,7 +172,7 @@ export function getWorkspaceNav(pathname, role) {
 			return {
 				workspaceLabel: 'Workspace',
 				mobileTitle: 'App',
-				links: [{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' }],
+				links: [{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' }],
 				showBilling: false,
 			};
 	}

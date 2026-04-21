@@ -3,6 +3,7 @@
 	import { auth } from '$lib/firebase.js';
 	import { signOut } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
@@ -13,7 +14,8 @@
 		goto('/login', { replaceState: true });
 	};
 
-	const goHome = () => goto('/home');
+	const goHome = () =>
+		goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 
 	const displayName = $derived(
 		authStore.userProfile?.playerName ||

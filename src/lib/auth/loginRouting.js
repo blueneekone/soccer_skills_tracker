@@ -53,15 +53,15 @@ export function getLoginWaterfallDestination(role, profile) {
 	}
 	if (role === 'player') {
 		return {
-			path: '/home',
+			path: '/stats',
 			context: 'household',
 			pivotKey: 'ctx-player-home',
 		};
 	}
 	return {
-		path: '/home',
+		path: '/settings',
 		context: 'household',
-		pivotKey: 'ctx-fallback-home',
+		pivotKey: 'ctx-fallback-settings',
 	};
 }
 
@@ -92,6 +92,8 @@ export function getContextFromHref(href) {
 		if (path.startsWith('/registrar')) return 'registrar';
 		if (path.startsWith('/parent')) return 'household';
 		if (path === '/home' || path.startsWith('/home/')) return 'household';
+		if (path.startsWith('/stats')) return 'household';
+		if (path.startsWith('/settings')) return 'household';
 		return '';
 	} catch {
 		return '';

@@ -211,7 +211,7 @@
 			});
 			await authStore.refresh({ silent: true });
 			clearForm();
-			goto('/home');
+			goto('/stats');
 		} catch (e) {
 			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
 			alert('Could not log workout: ' + msg);

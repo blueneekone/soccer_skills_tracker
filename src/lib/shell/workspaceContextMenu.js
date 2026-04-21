@@ -40,7 +40,8 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	}
 
 	const clubId = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
-	if (clubId && (role === 'director' || role === 'super_admin')) {
+	// Director workspace: directors only (not super_admin — use Context Switcher + Admin for platform).
+	if (clubId && role === 'director') {
 		const cl = clubs.find((c) => c.id === clubId);
 		const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || clubId;
 		sections.push({
@@ -55,9 +56,9 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	}
 
 	const coachTeams = teamsWhereCoach(email, teams);
-	if (role === 'coach' || role === 'super_admin' || role === 'director') {
-		/** @type {WorkspaceMenuItem[]} */
-		let coachItems = coachTeams.map((t) => {
+	// Coach workspace: only when assigned to at least one team (head or assistant). No empty coach stubs.
+	if (coachTeams.length > 0) {
+		const coachItems = coachTeams.map((t) => {
 			const tn = (typeof t.name === 'string' && t.name.trim()) || t.id;
 			return {
 				id: `ctx-coach-${t.id}`,
@@ -65,18 +66,13 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 				href: '/coach?tab=roster',
 			};
 		});
-		if (coachItems.length === 0 && role === 'coach') {
-			coachItems = [{ id: 'ctx-coach-default', label: 'Coach · Console', href: '/coach?tab=roster' }];
-		}
-		if (coachItems.length > 0) {
-			sections.push({ title: 'Teams', items: coachItems });
-		}
+		sections.push({ title: 'Teams', items: coachItems });
 	}
 
 	if (role === 'super_admin') {
 		sections.push({
 			title: 'Household',
-			items: [{ id: 'ctx-athlete-home', label: 'Athlete · Home', href: '/home' }],
+			items: [{ id: 'ctx-athlete-stats', label: 'Athlete · Stats', href: '/stats' }],
 		});
 	} else if (role === 'parent') {
 		sections.push({
@@ -86,7 +82,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	} else if (role === 'player') {
 		sections.push({
 			title: 'Household',
-			items: [{ id: 'ctx-player-home', label: 'Player · Home', href: '/home' }],
+			items: [{ id: 'ctx-player-stats', label: 'Player · Stats', href: '/stats' }],
 		});
 	}
 
@@ -107,7 +103,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	if (sections.length === 0) {
 		sections.push({
 			title: 'Workspace',
-			items: [{ id: 'ctx-fallback-home', label: 'Home', href: '/home' }],
+			items: [{ id: 'ctx-fallback-settings', label: 'Settings', href: '/settings' }],
 		});
 	}
 
@@ -156,6 +152,12 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 	if (pathname.startsWith('/recruiter')) {
 		return { title: 'Recruiter', sub: 'Workspace' };
 	}
+	if (pathname.startsWith('/stats')) {
+		return { title: 'Player · Stats', sub: 'Workspace' };
+	}
+	if (pathname.startsWith('/settings')) {
+		return { title: 'Settings', sub: 'Workspace' };
+	}
 
 	switch (role) {
 		case 'super_admin':
@@ -183,7 +185,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		case 'parent':
 			return { title: 'Parent · Household', sub: 'Workspace' };
 		case 'player':
-			return { title: 'Player · Home', sub: 'Workspace' };
+			return { title: 'Player · Stats', sub: 'Workspace' };
 		case 'registrar':
 			return { title: 'Registrar Workspace', sub: 'Compliance' };
 		default:
