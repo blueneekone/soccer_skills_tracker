@@ -23,7 +23,7 @@
  * @property {string | null} position
  * @property {'active' | 'pending'} status
  * @property {string} lastActiveLabel
- * @property {'coach' | 'admin'} source Which surface opened the drawer (copy / permissions)
+ * @property {'coach' | 'admin' | 'registrar'} source Which surface opened the drawer (copy / permissions)
  */
 
 function createEnterprisePlayerDrawer() {
@@ -33,6 +33,9 @@ function createEnterprisePlayerDrawer() {
 	/** @type {PlayerDrawerActionCallbacks | null} */
 	let actions = $state(null);
 
+	/** When true, PlayerDetailDrawer scrolls to Household & Compliance first. */
+	let focusCompliance = $state(false);
+
 	return {
 		get selected() {
 			return selected;
@@ -40,17 +43,24 @@ function createEnterprisePlayerDrawer() {
 		get actions() {
 			return actions;
 		},
+		get focusCompliance() {
+			return focusCompliance;
+		},
 		/**
 		 * @param {PlayerDrawerRow} row
 		 * @param {PlayerDrawerActionCallbacks} [callbacks]
+		 * @param {{ focusCompliance?: boolean }} [options]
 		 */
-		open(row, callbacks = undefined) {
+		open(row, callbacks = undefined, options = undefined) {
 			selected = row;
 			actions = callbacks ?? null;
+			focusCompliance =
+				options?.focusCompliance === true || row?.source === 'registrar';
 		},
 		close() {
 			selected = null;
 			actions = null;
+			focusCompliance = false;
 		},
 		get isOpen() {
 			return selected != null;

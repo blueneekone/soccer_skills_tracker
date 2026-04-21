@@ -1,7 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { getContext } from 'svelte';
-	import { collection, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
+	import { collection, doc, query, where, getDoc, getDocs, getCountFromServer } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
@@ -88,6 +88,43 @@
 							label: `${n} pending coach invite${n === 1 ? '' : 's'}`,
 							meta: 'Roster & teams',
 							href: '/director?tab=teams',
+						});
+					}
+				} else if (role === 'registrar' && clubId) {
+					const tSnap = await getDocs(
+						query(collection(db, 'teams'), where('clubId', '==', clubId)),
+					);
+					const emails = new Set();
+					for (const td of tSnap.docs) {
+						const lq = query(collection(db, 'player_lookup'), where('teamId', '==', td.id));
+						const ls = await getDocs(lq);
+						ls.forEach((d) => {
+							if (d.id) emails.add(d.id);
+						});
+					}
+					let passportPending = 0;
+					let waiverMissing = 0;
+					for (const em of emails) {
+						const ps = await getDoc(doc(db, 'passports', em));
+						const data = ps.exists() ? ps.data() : null;
+						const cs = data?.clearanceStatus;
+						if (cs === 'PENDING_SAFESPORT') passportPending++;
+						if (!data || data.hasSignedWaiver !== true) waiverMissing++;
+					}
+					if (!cancelled && passportPending > 0) {
+						next.push({
+							id: 'passport-pending',
+							label: `${passportPending} passport${passportPending === 1 ? '' : 's'} pending verification`,
+							meta: 'Compliance · Passports',
+							href: '/registrar',
+						});
+					}
+					if (!cancelled && waiverMissing > 0) {
+						next.push({
+							id: 'waiver-missing',
+							label: `${waiverMissing} player${waiverMissing === 1 ? '' : 's'} missing waiver${waiverMissing === 1 ? '' : 's'}`,
+							meta: 'Compliance · Waivers',
+							href: '/registrar',
 						});
 					}
 				} else if (role === 'parent' && authStore.userProfile?.playerName) {

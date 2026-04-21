@@ -63,7 +63,7 @@ const parentLinks = [
 /** @type {ShellNavItem[]} */
 const registrarLinks = [
 	{ tab: '', label: 'Home', icon: 'ph-house', href: '/home' },
-	{ tab: '', label: 'Registrar console', icon: 'ph-swap', href: '/registrar' },
+	{ tab: '', label: 'Compliance desk', icon: 'ph-shield-check', href: '/registrar' },
 ];
 
 /** @type {ShellNavItem[]} */
@@ -112,8 +112,8 @@ export function getWorkspaceNav(pathname, role) {
 	}
 	if (pathname.startsWith('/registrar')) {
 		return {
-			workspaceLabel: 'Registrar',
-			mobileTitle: 'Registrar',
+			workspaceLabel: 'Registrar Workspace',
+			mobileTitle: 'Registrar Workspace',
 			links: registrarLinks,
 			showBilling: false,
 		};
@@ -170,8 +170,8 @@ export function getWorkspaceNav(pathname, role) {
 			};
 		case 'registrar':
 			return {
-				workspaceLabel: 'Registrar',
-				mobileTitle: 'Registrar',
+				workspaceLabel: 'Registrar Workspace',
+				mobileTitle: 'Registrar Workspace',
 				links: registrarLinks,
 				showBilling: false,
 			};

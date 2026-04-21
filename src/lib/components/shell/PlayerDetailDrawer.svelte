@@ -1,4 +1,5 @@
 <script>
+	import { tick } from 'svelte';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -32,7 +33,7 @@
 	const canReadPassport = $derived(
 		role === 'super_admin' || role === 'director' || role === 'registrar'
 	);
-	const canReadHousehold = $derived(role === 'super_admin');
+	const canReadHousehold = $derived(role === 'super_admin' || role === 'registrar');
 
 	const open = $derived(row != null);
 
@@ -194,6 +195,40 @@
 		if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
 		return (p[0][0] + p[p.length - 1][0]).toUpperCase();
 	}
+
+	const passportCs = $derived.by(() => {
+		const cs = passportSnap?.clearanceStatus;
+		return typeof cs === 'string' && cs.trim() ? cs.trim() : 'CLEARED';
+	});
+
+	const passportStatusLine = $derived.by(() => {
+		if (!canReadPassport || !passportSnap) return '—';
+		if (passportCs === 'RED_CARD') return 'Expired (clearance hold)';
+		if (passportCs === 'PENDING_SAFESPORT') return 'Pending verification';
+		return 'Verified';
+	});
+
+	const waiverLine = $derived.by(() => {
+		if (!canReadPassport || !passportSnap) return '—';
+		return passportSnap.hasSignedWaiver === true ? 'Signed' : 'Missing';
+	});
+
+	const dobLine = $derived.by(() => {
+		const p = passportSnap?.dateOfBirth;
+		if (p != null) return fmtTs(p);
+		const u = userSnap?.dateOfBirth;
+		if (u != null) return fmtTs(u);
+		return '—';
+	});
+
+	$effect(() => {
+		if (!open || !enterprisePlayerDrawer.focusCompliance) return;
+		void tick().then(() => {
+			requestAnimationFrame(() => {
+				document.getElementById('ec-pdrawer-compliance')?.scrollIntoView({ block: 'start' });
+			});
+		});
+	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -228,8 +263,11 @@
 			</button>
 		</div>
 
-		<div class="ec-pdrawer__scroll">
-			<section class="ec-pdrawer__section">
+		<div
+			class="ec-pdrawer__scroll"
+			class:ec-pdrawer__scroll--compliance-first={enterprisePlayerDrawer.focusCompliance}
+		>
+			<section class="ec-pdrawer__section ec-pdrawer__section--identity">
 				<h3 class="ec-pdrawer__section-label">Identity</h3>
 				<dl class="ec-pdrawer__dl">
 					<div>
@@ -247,7 +285,7 @@
 				</dl>
 			</section>
 
-			<section class="ec-pdrawer__section">
+			<section class="ec-pdrawer__section ec-pdrawer__section--accountability">
 				<h3 class="ec-pdrawer__section-label">Accountability</h3>
 				<dl class="ec-pdrawer__dl">
 					<div>
@@ -268,12 +306,16 @@
 				{/if}
 			</section>
 
-			<section class="ec-pdrawer__section">
-				<h3 class="ec-pdrawer__section-label">Household</h3>
+			<section class="ec-pdrawer__section" id="ec-pdrawer-compliance">
+				<h3 class="ec-pdrawer__section-label">Household &amp; compliance</h3>
 				{#if householdBusy}
 					<p class="ec-pdrawer__hint">Loading…</p>
 				{:else}
 					<dl class="ec-pdrawer__dl">
+						<div>
+							<dt>Date of birth</dt>
+							<dd>{dobLine}</dd>
+						</div>
 						<div>
 							<dt>Parent / guardian</dt>
 							<dd>{parentLine}</dd>
@@ -282,6 +324,16 @@
 							<dt>Emergency / contact</dt>
 							<dd>{emergencyEmailLine}</dd>
 						</div>
+						{#if canReadPassport}
+							<div>
+								<dt>Waiver</dt>
+								<dd>{waiverLine}</dd>
+							</div>
+							<div>
+								<dt>Passport status</dt>
+								<dd>{passportStatusLine}</dd>
+							</div>
+						{/if}
 					</dl>
 					{#if !canReadPassport && row.source === 'coach'}
 						<p class="ec-pdrawer__hint">
@@ -291,7 +343,7 @@
 				{/if}
 			</section>
 
-			<section class="ec-pdrawer__section">
+			<section class="ec-pdrawer__section ec-pdrawer__section--actions">
 				<h3 class="ec-pdrawer__section-label">Actions</h3>
 				<div class="ec-pdrawer__actions">
 					{#if act?.assignDrill}
@@ -330,4 +382,20 @@
 
 <style>
 	/* Panel tweaks are in enterprise-console.css (.ec-pdrawer*) */
+	.ec-pdrawer__scroll--compliance-first {
+		display: flex;
+		flex-direction: column;
+	}
+	.ec-pdrawer__scroll--compliance-first #ec-pdrawer-compliance {
+		order: 1;
+	}
+	.ec-pdrawer__scroll--compliance-first .ec-pdrawer__section--identity {
+		order: 2;
+	}
+	.ec-pdrawer__scroll--compliance-first .ec-pdrawer__section--accountability {
+		order: 3;
+	}
+	.ec-pdrawer__scroll--compliance-first .ec-pdrawer__section--actions {
+		order: 4;
+	}
 </style>

@@ -93,7 +93,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	if (role === 'registrar') {
 		sections.push({
 			title: 'Registrar',
-			items: [{ id: 'ctx-registrar', label: 'Registrar · Console', href: '/registrar' }],
+			items: [{ id: 'ctx-registrar', label: 'Registrar Workspace', href: '/registrar' }],
 		});
 	}
 
@@ -151,7 +151,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		return { title: 'Parent · Household', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/registrar')) {
-		return { title: 'Registrar · Console', sub: 'Workspace' };
+		return { title: 'Registrar Workspace', sub: 'Compliance' };
 	}
 	if (pathname.startsWith('/recruiter')) {
 		return { title: 'Recruiter', sub: 'Workspace' };
@@ -185,7 +185,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		case 'player':
 			return { title: 'Player · Home', sub: 'Workspace' };
 		case 'registrar':
-			return { title: 'Registrar · Console', sub: 'Workspace' };
+			return { title: 'Registrar Workspace', sub: 'Compliance' };
 		default:
 			return { title: 'Workspace', sub: 'Console' };
 	}
