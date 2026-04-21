@@ -75,7 +75,7 @@
 	class="xp-ring"
 	class:xp-ring--light={variant === 'light'}
 	class:xp-ring--lg={size === 'lg'}
-	style="width: {pixelSize}px; height: {pixelSize}px;"
+	style="--ring-size:{pixelSize}px;"
 	aria-label="Level progress"
 >
 	<svg
@@ -112,8 +112,9 @@
 <style>
 	.xp-ring {
 		position: relative;
-		width: 128px;
-		height: 128px;
+		/* Dynamic size via CSS custom property --ring-size; defaults to 128px */
+		width: var(--ring-size, 128px);
+		height: var(--ring-size, 128px);
 		flex-shrink: 0;
 	}
 

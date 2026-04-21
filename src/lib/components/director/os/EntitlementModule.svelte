@@ -76,51 +76,45 @@
 <div class="tw-flex tw-flex-col tw-gap-4">
 	<div class="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3 dir-ent-label-row">
 		<div>
-			<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
+			<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight ent-title">
 				License seats
 			</h3>
-			<p class="tw-m-0 tw-text-sm tw-mt-1" style="color: var(--text-secondary);">
+			<p class="tw-m-0 tw-text-sm tw-mt-1 ent-muted">
 				Active roster seats, pending coach holds, and remaining capacity.
 			</p>
 		</div>
 		{#if !loading && !err && seatsLimit > 0}
-			<span
-				class="tw-tabular-nums tw-text-sm tw-font-bold tw-rounded-lg tw-px-3 tw-py-1"
-				style="background: rgba(15,23,42,0.06); color: var(--text-primary);"
-			>
+			<span class="tw-tabular-nums tw-text-sm tw-font-bold tw-rounded-lg tw-px-3 tw-py-1 ent-badge">
 				{activeSeats} active · {reservedSeats} reserved · {seatsLimit} cap
 			</span>
 		{/if}
 	</div>
 
 	{#if loading}
-		<div
-			class="tw-h-3 tw-rounded-full tw-animate-pulse"
-			style="background: rgba(15,23,42,0.1);"
-			aria-hidden="true"
-		></div>
+		<div class="tw-h-3 tw-rounded-full tw-animate-pulse ent-skeleton" aria-hidden="true"></div>
 	{:else if clubInfinite}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">
+		<p class="tw-m-0 tw-text-sm ent-muted">
 			<strong>Unlimited enterprise license (promo).</strong> Seat metering and Stripe read-only rules are bypassed
 			for this organization.
 		</p>
 	{:else if err}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);" role="alert">{err}</p>
+		<p class="tw-m-0 tw-text-sm ent-danger" role="alert">{err}</p>
 	{:else if seatsLimit <= 0}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">
+		<p class="tw-m-0 tw-text-sm ent-muted">
 			Seat limit is not set yet. Contact your platform administrator.
 		</p>
 	{:else}
+		<!-- CSS custom property passes dynamic segment widths; left/width rules live in scoped CSS -->
 		<div
 			class="dir-ent-track dir-ent-track--segments"
-			style="display: grid; grid-template-columns: {segActive}% {segReserved}% {segAvail}%;"
+			style="--seg-active:{segActive}%;--seg-reserved:{segReserved}%;--seg-avail:{segAvail}%;"
 			aria-label="Seat usage by segment"
 		>
 			<div class="dir-ent-seg dir-ent-seg--active" data-stress={stress}></div>
 			<div class="dir-ent-seg dir-ent-seg--reserved"></div>
 			<div class="dir-ent-seg dir-ent-seg--empty"></div>
 		</div>
-		<p class="tw-m-0 tw-text-xs tw-font-medium" style="color: var(--muted-slate);">
+		<p class="tw-m-0 tw-text-xs tw-font-medium ent-hint">
 			<span class="tw-inline-flex tw-items-center tw-gap-1 tw-mr-3"
 				><span class="dir-ent-legend dir-ent-legend--active"></span> Active</span
 			>
@@ -131,7 +125,7 @@
 				><span class="dir-ent-legend dir-ent-legend--empty"></span> Available</span
 			>
 		</p>
-		<p class="tw-m-0 tw-text-xs tw-font-medium" style="color: var(--muted-slate);">
+		<p class="tw-m-0 tw-text-xs tw-font-medium ent-hint">
 			{#if stress === 'high'}
 				Critical: active plus pending invites are near capacity.
 			{:else if stress === 'medium'}
@@ -142,3 +136,18 @@
 		</p>
 	{/if}
 </div>
+
+<style>
+	.ent-title    { color: var(--text-primary); }
+	.ent-muted    { color: var(--text-secondary); }
+	.ent-hint     { color: var(--muted-slate); }
+	.ent-danger   { color: var(--danger-red); }
+	.ent-badge    { background: rgba(15, 23, 42, 0.06); color: var(--text-primary); }
+	.ent-skeleton { background: rgba(15, 23, 42, 0.10); }
+
+	/* Dynamic grid: segment widths injected via CSS custom properties */
+	.dir-ent-track--segments {
+		display: grid;
+		grid-template-columns: var(--seg-active) var(--seg-reserved) var(--seg-avail);
+	}
+</style>

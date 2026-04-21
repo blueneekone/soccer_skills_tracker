@@ -1,7 +1,8 @@
 <script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -33,7 +34,7 @@
 
 	$effect(() => {
 		if (!authStore.isLoading && authStore.role === 'parent') {
-			goto('/parent/log-workout', { replaceState: true });
+			untrack(() => goto('/parent/log-workout', { replaceState: true }));
 		}
 	});
 
@@ -74,8 +75,8 @@
 
 	$effect(() => {
 		if (!browser) return;
-		const aid = $page.url.searchParams.get('assignmentId');
-		const did = $page.url.searchParams.get('drillId');
+		const aid = page.url.searchParams.get('assignmentId');
+		const did = page.url.searchParams.get('drillId');
 		homeworkAssignmentId = aid && aid.trim() ? aid.trim() : '';
 		if (!did || !did.trim()) return;
 		if (authStore.role !== 'player') return;

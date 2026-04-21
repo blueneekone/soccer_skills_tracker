@@ -73,19 +73,16 @@
 
 <div class="acc-root tw-h-full tw-flex tw-flex-col tw-gap-4">
 	<div>
-		<h3
-			class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight"
-			style="color: var(--text-primary);"
-		>
+		<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight acc-title">
 			Coach accountability
 		</h3>
-		<p class="tw-m-0 tw-mt-1 tw-text-sm tw-leading-relaxed" style="color: var(--text-secondary);">
+		<p class="tw-m-0 tw-mt-1 tw-text-sm tw-leading-relaxed acc-muted">
 			Practice logging signals from athlete-submitted reps. Teams bucketed by days since last log.
 		</p>
 	</div>
 
 	{#if loading}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">Loading report…</p>
+		<p class="tw-m-0 tw-text-sm acc-muted">Loading report…</p>
 	{:else if err}
 		<p class="acc-err tw-m-0 tw-text-sm" role="alert">{err}</p>
 		<button type="button" class="dir-os-btn-primary tw-self-start" onclick={() => load()}>Retry</button>
@@ -105,9 +102,9 @@
 			>
 		</div>
 		{#if typeof d.generatedAt === 'string'}
-			<p class="tw-m-0 tw-text-xs" style="color: var(--text-secondary);">
-				Generated {new Date(d.generatedAt).toLocaleString()}
-			</p>
+		<p class="tw-m-0 tw-text-xs acc-muted">
+			Generated {new Date(d.generatedAt).toLocaleString()}
+		</p>
 		{/if}
 		<div class="acc-grid">
 			{#each teams as row (row.teamId)}
@@ -164,6 +161,9 @@
 </div>
 
 <style>
+	.acc-title { color: var(--text-primary); }
+	.acc-muted  { color: var(--text-secondary); }
+
 	.acc-err {
 		color: var(--danger-red, #dc2626);
 		font-weight: 700;

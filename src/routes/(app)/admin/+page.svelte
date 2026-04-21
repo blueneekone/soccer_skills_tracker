@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
@@ -10,7 +10,7 @@
 	const generateLicenseFn = httpsCallable(functions, 'generateLicense');
 	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
 
-	const activeTab = $derived($page.url.searchParams.get('tab') || 'overview');
+	const activeTab = $derived(page.url.searchParams.get('tab') || 'overview');
 
 	let playerCount = $state(0);
 	let clubCount = $derived(teamsStore.clubs.length);

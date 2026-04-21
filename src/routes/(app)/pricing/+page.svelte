@@ -1,9 +1,9 @@
 <script>
 	import '$lib/styles/director-os.css';
 	import PricingTable from '$lib/components/pricing/PricingTable.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	const checkoutHint = $derived($page.url.searchParams.get('checkout'));
+	const checkoutHint = $derived(page.url.searchParams.get('checkout'));
 </script>
 
 <svelte:head>

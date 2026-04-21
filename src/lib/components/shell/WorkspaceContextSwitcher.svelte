@@ -1,7 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -21,7 +21,7 @@
 	/** @type {HTMLDivElement | undefined} */
 	let rootEl = $state();
 
-	const pathname = $derived($page.url.pathname);
+	const pathname = $derived(page.url.pathname);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 	const role = $derived(authStore.role || 'guest');
 	const profile = $derived(authStore.userProfile);

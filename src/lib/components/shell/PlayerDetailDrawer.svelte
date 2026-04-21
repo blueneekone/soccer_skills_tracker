@@ -259,7 +259,7 @@
 				</div>
 			</div>
 			<button type="button" class="ec-pdrawer__close-x" onclick={closePanel} aria-label="Close">
-				<i class="ph ph-x" style="font-size: 1.25rem;"></i>
+				<i class="ph ph-x pdrawer-close-icon" aria-hidden="true"></i>
 			</button>
 		</div>
 
@@ -382,6 +382,8 @@
 
 <style>
 	/* Panel tweaks are in enterprise-console.css (.ec-pdrawer*) */
+	.pdrawer-close-icon { font-size: 1.25rem; }
+
 	.ec-pdrawer__scroll--compliance-first {
 		display: flex;
 		flex-direction: column;

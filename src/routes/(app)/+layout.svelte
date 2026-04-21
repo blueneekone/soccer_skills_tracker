@@ -1,7 +1,8 @@
 <script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore, resolveTeamsLoadScope } from '$lib/stores/teams.svelte.js';
@@ -33,20 +34,23 @@
 		licenseEntitlementStore.syncFromUser(auth.currentUser);
 	});
 
-	// Auth guard + role guard
+	// Auth guard + role guard.
+	// untrack() on every goto() prevents the URL change from re-triggering this effect,
+	// which would otherwise create an infinite reactive loop.
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (!authStore.isAuthenticated) {
-			goto('/login', { replaceState: true });
+			untrack(() => goto('/login', { replaceState: true }));
 			return;
 		}
 		if (!authStore.isProfileComplete) {
-			goto('/setup', { replaceState: true });
+			untrack(() => goto('/setup', { replaceState: true }));
 			return;
 		}
-		const currentPath = $page.url.pathname;
+		const currentPath = page.url.pathname;
 		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
-			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
+			const dest = untrack(() => applyLoginWaterfall(authStore.role, authStore.userProfile));
+			untrack(() => goto(dest, { replaceState: true }));
 			return;
 		}
 	});
@@ -54,7 +58,7 @@
 	// Scoped teams/clubs by route + role (never full `teams` except Super Admin on /admin).
 	$effect(() => {
 		if (!authStore.isAuthenticated || authStore.isLoading) return;
-		const path = $page.url.pathname;
+		const path = page.url.pathname;
 		const scope = resolveTeamsLoadScope(path, authStore.role);
 		void teamsStore.load(authStore.role, {
 			clubId: authStore.userProfile?.clubId,
@@ -83,7 +87,7 @@
 	// Reset club/team scope on navigation so Context Switcher pivots do not bleed tenants.
 	$effect(() => {
 		if (!browser || !authStore.isAuthenticated || authStore.isLoading) return;
-		const path = $page.url.pathname;
+		const path = page.url.pathname;
 		const pivot = workspaceContextStore.activePivotKey;
 		const prof = authStore.userProfile;
 
@@ -119,7 +123,7 @@
 	$effect(() => {
 		if (!browser || !authStore.isAuthenticated || authStore.isLoading) return;
 		if (authStore.role !== 'super_admin') return;
-		const path = $page.url.pathname;
+		const path = page.url.pathname;
 		const clubs = teamsStore.clubs;
 		const teamRows = teamsStore.teams;
 		if ((path.startsWith('/director') || path.startsWith('/registrar')) && clubs.length > 0) {
@@ -136,7 +140,7 @@
 			clubBrandingStore.clear();
 			return;
 		}
-		const path = $page.url.pathname;
+		const path = page.url.pathname;
 		let cid = typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '';
 		if (authStore.role === 'super_admin' && (path.startsWith('/director') || path.startsWith('/registrar'))) {
 			const a = workspaceContextStore.activeClubId?.trim();

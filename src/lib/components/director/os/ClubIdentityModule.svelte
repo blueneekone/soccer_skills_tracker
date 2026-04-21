@@ -176,32 +176,26 @@
 
 <div class="tw-flex tw-flex-col tw-gap-4">
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 dir-ent-label-row">
-		<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
+		<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight cim-title">
 			Club identity
 		</h3>
-		<span
-			class="tw-rounded-full tw-px-3 tw-py-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide"
-			style="background: color-mix(in srgb, var(--brand-primary) 18%, transparent); color: var(--muted-slate);"
-		>
+		<span class="tw-rounded-full tw-px-3 tw-py-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide cim-preview-badge">
 			Live preview
 		</span>
 	</div>
-	<p class="tw-m-0 tw-text-sm tw-leading-relaxed" style="color: var(--text-secondary);">
+	<p class="tw-m-0 tw-text-sm tw-leading-relaxed cim-muted">
 		Colors apply instantly; logo uploads go to Cloud Storage, then save to your club record.
 	</p>
 	{#if loadErr}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);" role="alert">{loadErr}</p>
+		<p class="tw-m-0 tw-text-sm cim-danger" role="alert">{loadErr}</p>
 	{/if}
 
 	<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
 		<div class="tw-flex tw-flex-col tw-gap-2">
-			<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide" style="color: var(--text-secondary);"
-				>Club logo</span
-			>
+			<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide cim-muted">Club logo</span>
 			<label
 				for={fileInputId}
-				class="tw-flex tw-min-h-[clamp(7rem,18vw,10rem)] tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-transition hover:tw-border-slate-400"
-				style="border-color: color-mix(in srgb, var(--brand-primary) 35%, rgba(15,23,42,0.2)); background: rgba(255,255,255,0.35);"
+				class="tw-flex tw-min-h-[clamp(7rem,18vw,10rem)] tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-transition hover:tw-border-slate-400 cim-logo-drop"
 			>
 				<input
 					id={fileInputId}
@@ -220,27 +214,27 @@
 				{:else}
 					<div class="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-text-center tw-px-4">
 						<ClubLogoMark size="xl" />
-						<span class="tw-text-sm tw-font-semibold" style="color: var(--text-secondary);"
-							>PNG, JPG, or WebP · max 2MB — tap to upload</span
-						>
+						<span class="tw-text-sm tw-font-semibold cim-muted">
+							PNG, JPG, or WebP · max 2MB — tap to upload
+						</span>
 					</div>
 				{/if}
 			</label>
 			{#if uploading}
 				<div
-					class="tw-h-1.5 tw-rounded-full tw-overflow-hidden"
-					style="background: color-mix(in srgb, var(--brand-primary) 12%, rgba(15,23,42,0.08));"
+					class="tw-h-1.5 tw-rounded-full tw-overflow-hidden cim-progress-track"
 					role="progressbar"
 					aria-valuenow={uploadProgress}
 					aria-valuemin="0"
 					aria-valuemax="100"
 				>
+					<!-- CSS var passes the dynamic width; gradient is in scoped CSS -->
 					<div
-						class="tw-h-full tw-rounded-full tw-transition-all tw-duration-150"
-						style="width: {uploadProgress}%; background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));"
+						class="tw-h-full tw-rounded-full tw-transition-all tw-duration-150 cim-progress-fill"
+						style="--progress:{uploadProgress}%;"
 					></div>
 				</div>
-				<p class="tw-m-0 tw-text-xs tw-font-semibold" style="color: var(--muted-slate);">
+				<p class="tw-m-0 tw-text-xs tw-font-semibold cim-hint">
 					Uploading… {uploadProgress}%
 				</p>
 			{/if}
@@ -250,41 +244,31 @@
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="dir-brand-primary"
-					class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide"
-					style="color: var(--text-secondary);">Primary</label
+					class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide cim-muted">Primary</label
 				>
 				<div class="tw-flex tw-items-center tw-gap-3">
 					<input
 						id="dir-brand-primary"
 						type="color"
 						bind:value={primaryHex}
-						class="tw-h-12 tw-w-full tw-max-w-[5rem] tw-cursor-pointer tw-rounded-xl tw-border tw-bg-white tw-p-1"
-						style="border-color: rgba(15, 23, 42, 0.15);"
+						class="tw-h-12 tw-w-full tw-max-w-[5rem] tw-cursor-pointer tw-rounded-xl tw-border tw-bg-white tw-p-1 cim-color-input"
 					/>
-					<code
-						class="tw-rounded-lg tw-px-2 tw-py-1 tw-text-sm tw-font-mono"
-						style="background: rgba(15,23,42,0.06); color: var(--text-primary);">{primaryHex}</code
-					>
+					<code class="tw-rounded-lg tw-px-2 tw-py-1 tw-text-sm tw-font-mono cim-code">{primaryHex}</code>
 				</div>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="dir-brand-accent"
-					class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide"
-					style="color: var(--text-secondary);">Accent</label
+					class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide cim-muted">Accent</label
 				>
 				<div class="tw-flex tw-items-center tw-gap-3">
 					<input
 						id="dir-brand-accent"
 						type="color"
 						bind:value={accentHex}
-						class="tw-h-12 tw-w-full tw-max-w-[5rem] tw-cursor-pointer tw-rounded-xl tw-border tw-bg-white tw-p-1"
-						style="border-color: rgba(15, 23, 42, 0.15);"
+						class="tw-h-12 tw-w-full tw-max-w-[5rem] tw-cursor-pointer tw-rounded-xl tw-border tw-bg-white tw-p-1 cim-color-input"
 					/>
-					<code
-						class="tw-rounded-lg tw-px-2 tw-py-1 tw-text-sm tw-font-mono"
-						style="background: rgba(15,23,42,0.06); color: var(--text-primary);">{accentHex}</code
-					>
+					<code class="tw-rounded-lg tw-px-2 tw-py-1 tw-text-sm tw-font-mono cim-code">{accentHex}</code>
 				</div>
 			</div>
 			<button
@@ -298,3 +282,37 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.cim-title         { color: var(--text-primary); }
+	.cim-muted         { color: var(--text-secondary); }
+	.cim-hint          { color: var(--muted-slate); }
+	.cim-danger        { color: var(--danger-red); }
+
+	.cim-preview-badge {
+		background: color-mix(in srgb, var(--brand-primary) 18%, transparent);
+		color: var(--muted-slate);
+	}
+
+	.cim-logo-drop {
+		border-color: color-mix(in srgb, var(--brand-primary) 35%, rgba(15, 23, 42, 0.2));
+		background: rgba(255, 255, 255, 0.35);
+	}
+
+	.cim-progress-track {
+		background: color-mix(in srgb, var(--brand-primary) 12%, rgba(15, 23, 42, 0.08));
+	}
+
+	/* Dynamic width via CSS custom property; gradient is static */
+	.cim-progress-fill {
+		width: var(--progress);
+		background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));
+	}
+
+	.cim-color-input { border-color: rgba(15, 23, 42, 0.15); }
+
+	.cim-code {
+		background: rgba(15, 23, 42, 0.06);
+		color: var(--text-primary);
+	}
+</style>

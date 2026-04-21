@@ -1,6 +1,6 @@
 <script>
 	import { untrack } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -78,7 +78,7 @@
 		}
 
 		// Priority 2: URL teamId param — survives hard refresh / direct link.
-		const urlTeam = $page.url.searchParams.get('teamId')?.trim();
+		const urlTeam = page.url.searchParams.get('teamId')?.trim();
 		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
 			if (selectedTeamId !== urlTeam) selectedTeamId = urlTeam;
 			return;
@@ -120,7 +120,7 @@
 	const onWorkoutSaved = () => workoutsStore.loadForTeam(selectedTeamId);
 
 	$effect(() => {
-		const t = $page.url.searchParams.get('tab') || 'home';
+		const t = page.url.searchParams.get('tab') || 'home';
 		if (!TABS.some((x) => x.id === t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});

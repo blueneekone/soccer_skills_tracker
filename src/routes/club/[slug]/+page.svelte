@@ -1,7 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
@@ -64,7 +64,7 @@
 
 	$effect(() => {
 		if (!browser) return;
-		const slug = ($page.params.slug || '').trim().toLowerCase();
+		const slug = (page.params.slug || '').trim().toLowerCase();
 		if (!slug) {
 			status = 'missing';
 			return;

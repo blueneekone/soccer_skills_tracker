@@ -1,7 +1,7 @@
 <script>
 	import { setContext } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { signOut } from 'firebase/auth';
 	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -43,14 +43,14 @@
 	}
 
 	const nav = $derived.by(() =>
-		getWorkspaceNav($page.url.pathname, authStore.role, workspaceContextStore.activeContext),
+		getWorkspaceNav(page.url.pathname, authStore.role, workspaceContextStore.activeContext),
 	);
 	const links = $derived(nav.links);
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
 
 	function navActive(item) {
-		return isShellNavActive($page.url.pathname, $page.url.searchParams, item);
+		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
 	}
 
 	let mobileNavOpen = $state(false);
@@ -103,7 +103,7 @@
 			aria-controls="ec-workspace-nav"
 			aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
 		>
-			<i class="ph ph-list" style="font-size: 1.5rem;" aria-hidden="true"></i>
+			<i class="ph ph-list ecs-icon-lg" aria-hidden="true"></i>
 		</button>
 	</header>
 
@@ -210,7 +210,7 @@
 				>
 					<i class="ph ph-gear" aria-hidden="true"></i>
 				</button>
-				<div class="ec-topbar-user" style="color: var(--text-secondary); max-width: 140px;" title={authStore.user?.email ?? ''}>
+				<div class="ec-topbar-user ecs-user-label" title={authStore.user?.email ?? ''}>
 					<span class="ec-topbar-user-name">{authStore.userProfile?.playerName || authStore.user?.email || 'Account'}</span>
 				</div>
 			</div>
@@ -235,7 +235,7 @@
 	<div class="ec-drawer__head">
 		<h2 class="ec-drawer__title">{drawerPayload?.title ?? 'Details'}</h2>
 		<button type="button" class="ec-drawer__close" onclick={closeDrawer} aria-label="Close panel">
-			<i class="ph ph-x" style="font-size: 1.25rem;"></i>
+			<i class="ph ph-x ecs-icon-md" aria-hidden="true"></i>
 		</button>
 	</div>
 	<div class="ec-drawer__body">
@@ -245,7 +245,7 @@
 		{#if drawerPayload?.body}
 			<div class="ec-drawer__text">{drawerPayload.body}</div>
 		{:else}
-			<p style="margin: 0; color: var(--text-secondary);">No selection.</p>
+			<p class="ecs-empty-msg">No selection.</p>
 		{/if}
 		{#if drawerPayload?.href}
 			<p class="ec-drawer__actions">
@@ -263,6 +263,11 @@
 </aside>
 
 <style>
+	.ecs-icon-lg   { font-size: 1.5rem; }
+	.ecs-icon-md   { font-size: 1.25rem; }
+	.ecs-user-label { color: var(--text-secondary); max-width: 140px; }
+	.ecs-empty-msg  { margin: 0; color: var(--text-secondary); }
+
 	:global(.ec-sidebar__brand--switcher) {
 		padding: 0;
 		align-items: stretch;

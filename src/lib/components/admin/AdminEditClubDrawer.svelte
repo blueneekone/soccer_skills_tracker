@@ -1,6 +1,5 @@
 <script>
-	import { get } from 'svelte/store';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { db } from '$lib/firebase.js';
 	import { doc, setDoc } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -96,7 +95,7 @@
 			await logSecurityEvent('ADMIN_EDIT_CLUB', club.id, `sport=${editSport}; infinite=${editInfinite}`);
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
-				routePath: get(page).url.pathname,
+				routePath: page.url.pathname,
 			});
 			open = false;
 		} catch (e) {
@@ -118,7 +117,7 @@
 		<div class="admin-edit-club-panel__head">
 			<h2 class="admin-edit-club-panel__title">Edit organization</h2>
 			<button type="button" class="admin-edit-club-panel__close" onclick={close} aria-label="Close">
-				<i class="ph ph-x" style="font-size: 1.25rem;" aria-hidden="true"></i>
+				<i class="ph ph-x aecd-icon-close" aria-hidden="true"></i>
 			</button>
 		</div>
 		<div class="admin-edit-club-panel__body">
@@ -204,6 +203,8 @@
 {/if}
 
 <style>
+	.aecd-icon-close { font-size: 1.25rem; }
+
 	.admin-edit-club-backdrop {
 		position: fixed;
 		inset: 0;

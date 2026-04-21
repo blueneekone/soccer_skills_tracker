@@ -72,7 +72,8 @@
 										value={row.clearanceStatus || 'CLEARED'}
 										onchange={(e) => updateStatus(row.email, e.target.value)}
 										class="status-select"
-										style="color:{row.clearanceStatus === 'RED_CARD' ? '#b91c1c' : '#047857'}"
+										class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
+										class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
 									>
 										<option value="CLEARED">✅ CLEARED</option>
 										<option value="PENDING_SAFESPORT">🟨 SAFESPORT PENDING</option>
@@ -89,5 +90,7 @@
 </div>
 
 <style>
-	.status-select { margin: 0; padding: 4px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; width: auto; }
+	.status-select             { margin: 0; padding: 4px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; width: auto; }
+	.status-select--suspended  { color: #b91c1c; }
+	.status-select--clear      { color: #047857; }
 </style>

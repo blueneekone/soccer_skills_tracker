@@ -58,27 +58,24 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-2 tw-min-h-0">
-	<h4 class="tw-m-0 tw-text-sm tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
+	<h4 class="tw-m-0 tw-text-sm tw-font-extrabold tw-tracking-tight pil-title">
 		Pending Invites
 	</h4>
 	{#if err}
-		<p class="tw-m-0 tw-text-xs" style="color: var(--danger-red);" role="alert">{err}</p>
+		<p class="tw-m-0 tw-text-xs pil-danger" role="alert">{err}</p>
 	{:else if invites.length === 0}
-		<p class="tw-m-0 tw-text-xs" style="color: var(--muted-slate);">No pending coach invites.</p>
+		<p class="tw-m-0 tw-text-xs pil-muted">No pending coach invites.</p>
 	{:else}
 		<ul class="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-2">
 			{#each invites as inv (inv.id)}
-				<li
-					class="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-medium tw-border"
-					style="border-color: rgba(15,23,42,0.1); background: rgba(15,23,42,0.04); color: var(--text-primary);"
-				>
+				<li class="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-medium tw-border pil-invite-row">
 					<div class="tw-flex tw-flex-wrap tw-justify-between tw-gap-2">
 						<span class="tw-font-bold tw-break-all">{inv.coachEmail}</span>
-						<span class="tw-tabular-nums tw-text-[11px] tw-font-bold" style="color: var(--muted-slate);">
+						<span class="tw-tabular-nums tw-text-[11px] tw-font-bold pil-muted">
 							{daysRemaining(inv.createdAt)}d left
 						</span>
 					</div>
-					<div class="tw-mt-1 tw-text-[11px]" style="color: var(--text-secondary);">
+					<div class="tw-mt-1 tw-text-[11px] pil-secondary">
 						{teamLabel(inv.teamId)}
 					</div>
 				</li>
@@ -86,3 +83,15 @@
 		</ul>
 	{/if}
 </div>
+
+<style>
+	.pil-title       { color: var(--text-primary); }
+	.pil-muted       { color: var(--muted-slate); }
+	.pil-danger      { color: var(--danger-red); }
+	.pil-secondary   { color: var(--text-secondary); }
+	.pil-invite-row  {
+		border-color: rgba(15, 23, 42, 0.1);
+		background: rgba(15, 23, 42, 0.04);
+		color: var(--text-primary);
+	}
+</style>

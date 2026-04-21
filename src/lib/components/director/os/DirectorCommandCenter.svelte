@@ -59,16 +59,15 @@
 <section class="tw-mb-8 tw-max-w-[min(100%,120rem)] tw-mx-auto" aria-labelledby="dir-os-heading">
 	<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4 tw-mb-6">
 		<div>
-			<h2
-				id="dir-os-heading"
-				class="tw-m-0 tw-text-2xl md:tw-text-3xl tw-font-black tw-tracking-tight"
-				style="color: var(--text-primary);"
-			>
-				Command center
-			</h2>
-			<p class="tw-m-0 tw-mt-2 tw-text-sm md:tw-text-base tw-max-w-2xl" style="color: var(--text-secondary);">
-				Executive overview focused on alerts, core KPIs, and club analytics.
-			</p>
+		<h2
+			id="dir-os-heading"
+			class="tw-m-0 tw-text-2xl md:tw-text-3xl tw-font-black tw-tracking-tight dcc-heading"
+		>
+			Command center
+		</h2>
+		<p class="tw-m-0 tw-mt-2 tw-text-sm md:tw-text-base tw-max-w-2xl dcc-subheading">
+			Executive overview focused on alerts, core KPIs, and club analytics.
+		</p>
 		</div>
 	</div>
 
@@ -96,6 +95,9 @@
 </section>
 
 <style>
+	.dcc-heading    { color: var(--text-primary); }
+	.dcc-subheading { color: var(--text-secondary); }
+
 	.dir-kpi-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

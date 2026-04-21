@@ -1,6 +1,5 @@
 <script>
-	import { get } from 'svelte/store';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -232,7 +231,7 @@
 			await teamsStore.load('director', {
 				clubId,
 				scope: 'club',
-				routePath: get(page).url.pathname,
+				routePath: page.url.pathname,
 			});
 		} catch (e) {
 			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
@@ -286,13 +285,13 @@
 		<div class="card">
 			<div class="card-header bg-blue-header">Create sub-team</div>
 			<div class="card-body">
-				<label class="tw-block tw-text-xs tw-font-bold tw-mb-1" style="color: var(--text-secondary);"
-					>Team label (e.g. U12 Gold)</label
-				>
-				<input type="text" bind:value={newTeamName} placeholder="U12 Gold" class="w-100 m-0" />
-				<label class="tw-block tw-text-xs tw-font-bold tw-mt-3 tw-mb-1" style="color: var(--text-secondary);"
-					>Optional — head coach email</label
-				>
+			<label class="tw-block tw-text-xs tw-font-bold tw-mb-1 tt-label-muted"
+				>Team label (e.g. U12 Gold)</label
+			>
+			<input type="text" bind:value={newTeamName} placeholder="U12 Gold" class="w-100 m-0" />
+			<label class="tw-block tw-text-xs tw-font-bold tw-mt-3 tw-mb-1 tt-label-muted"
+				>Optional — head coach email</label
+			>
 				<input type="email" bind:value={newCoachEmail} placeholder="coach@club.com" class="w-100 m-0" />
 				<button
 					class="primary-btn btn-blue w-100 tw-mt-4"
@@ -308,10 +307,10 @@
 		<div class="card">
 			<div class="card-header bg-orange-header">Invite coach (seat reservation)</div>
 			<div class="card-body">
-				<p class="tw-m-0 tw-mb-3 tw-text-sm" style="color: var(--text-secondary);">
-					Sends a pending invite: one licensed seat moves into <strong>reserved</strong> until the coach
-					accepts or the invite expires after 7 days.
-				</p>
+			<p class="tw-m-0 tw-mb-3 tw-text-sm tt-muted">
+				Sends a pending invite: one licensed seat moves into <strong>reserved</strong> until the coach
+				accepts or the invite expires after 7 days.
+			</p>
 				<select bind:value={selectedTeamId} class="w-100">
 					<option value="">Select a team…</option>
 					{#each clubTeams as t}
@@ -334,7 +333,7 @@
 	<div class="card team-seat-card">
 		<div class="card-header bg-blue-header">Teams & seat management</div>
 		<div class="card-body">
-			<p class="tw-m-0 tw-mb-4 tw-text-sm" style="color: var(--text-secondary);">
+			<p class="tw-m-0 tw-mb-4 tw-text-sm tt-muted">
 				Allocate sub-licenses per team. Club master license cap:
 				{#if clubInfinite}
 					<strong>Unlimited</strong> (promo). Pool remaining: <strong>Unlimited</strong>.
@@ -347,7 +346,7 @@
 				<p class="seat-feedback" role="status">{seatFeedback}</p>
 			{/if}
 			{#if clubTeams.length === 0}
-				<p class="tw-m-0 tw-text-sm" style="color: var(--text-secondary);">No teams yet.</p>
+				<p class="tw-m-0 tw-text-sm tt-muted">No teams yet.</p>
 			{:else}
 				<div class="ec-table-wrap">
 					<table class="ec-table">
@@ -356,7 +355,7 @@
 								<th>Team</th>
 								<th>Roster</th>
 								<th>Seat usage</th>
-								<th style="width: 9rem;">Actions</th>
+								<th class="tt-actions-col">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -444,9 +443,9 @@
 														{seatBusy === tid ? 'Saving…' : 'Apply'}
 													</button>
 												</div>
-												<p class="tw-m-0 tw-mt-2 tw-text-xs" style="color: var(--text-secondary);">
-													Cannot set below current roster size ({rc}).
-												</p>
+											<p class="tw-m-0 tw-mt-2 tw-text-xs tt-muted">
+												Cannot set below current roster size ({rc}).
+											</p>
 											</div>
 										</td>
 									</tr>
@@ -461,6 +460,10 @@
 </div>
 
 <style>
+	.tt-muted       { color: var(--text-secondary); }
+	.tt-label-muted { color: var(--text-secondary); }
+	.tt-actions-col { width: 9rem; }
+
 	select,
 	input {
 		margin-bottom: 12px;

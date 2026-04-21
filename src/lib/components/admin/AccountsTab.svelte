@@ -1,6 +1,5 @@
 <script>
-	import { get } from 'svelte/store';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { auth, db } from '$lib/firebase.js';
 	import { collection, doc, setDoc, deleteDoc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -331,7 +330,7 @@
 			newClubDirector = '';
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
-				routePath: get(page).url.pathname,
+				routePath: page.url.pathname,
 			});
 		} catch (e) {
 			alert('Error: ' + e.message);
@@ -351,7 +350,7 @@
 		alert('Club deleted. Refresh to update.');
 		await teamsStore.load('super_admin', {
 			scope: 'admin_full',
-			routePath: get(page).url.pathname,
+			routePath: page.url.pathname,
 		});
 		return true;
 	};
@@ -398,7 +397,7 @@
 			adminTeamCoach = '';
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
-				routePath: get(page).url.pathname,
+				routePath: page.url.pathname,
 			});
 		} catch (e) {
 			alert('Error: ' + e.message);
@@ -419,7 +418,7 @@
 			newAdminEmail = '';
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
-				routePath: get(page).url.pathname,
+				routePath: page.url.pathname,
 			});
 		} catch (e) {
 			alert('Error: ' + e.message);
@@ -435,7 +434,7 @@
 		await logSecurityEvent('REVOKE_SUPER_ADMIN', email, 'Removed from global config');
 		await teamsStore.load('super_admin', {
 			scope: 'admin_full',
-			routePath: get(page).url.pathname,
+			routePath: page.url.pathname,
 		});
 	};
 
@@ -560,10 +559,10 @@
 														{#if u.limit > 0}
 															<div class="accounts-tab__gauge" title="Seats used vs licensed cap">
 																<div class="accounts-tab__gauge-track">
-																	<div
-																		class="accounts-tab__gauge-fill {licenseStressClass(u.pct)}"
-																		style="width: {u.pct}%"
-																	></div>
+																<div
+																	class="accounts-tab__gauge-fill {licenseStressClass(u.pct)}"
+																	style="--gauge-fill:{u.pct}%;"
+																></div>
 																</div>
 																<span class="accounts-tab__gauge-label">{u.used} / {u.limit} seats</span>
 															</div>
@@ -1104,6 +1103,7 @@
 	}
 
 	.accounts-tab__gauge-fill {
+		width: var(--gauge-fill, 0%);
 		height: 100%;
 		border-radius: 999px;
 		transition: width 0.2s ease, background 0.2s ease;

@@ -1,5 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions, db } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -61,7 +62,7 @@
 
 	$effect(() => {
 		if (!authStore.isLoading && role !== 'parent') {
-			goto('/parent/vpc', { replaceState: true });
+			untrack(() => goto('/parent/vpc', { replaceState: true }));
 		}
 	});
 

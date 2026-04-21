@@ -41,10 +41,10 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-4 tw-h-full">
-	<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
+	<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight qa-title">
 		Staff & invites
 	</h3>
-	<p class="tw-m-0 tw-text-sm tw-leading-relaxed" style="color: var(--text-secondary);">
+	<p class="tw-m-0 tw-text-sm tw-leading-relaxed qa-muted">
 		Create structure, send coach invites, and monitor pending seat holds.
 	</p>
 	<div class="tw-flex tw-flex-col tw-gap-3">
@@ -65,7 +65,13 @@
 			Invite coach
 		</button>
 	</div>
-	<div class="tw-pt-2 tw-border-t tw-mt-1" style="border-color: rgba(15,23,42,0.08);">
+	<div class="tw-pt-2 tw-border-t tw-mt-1 qa-border">
 		<PendingInvitesList {clubId} />
 	</div>
 </div>
+
+<style>
+	.qa-title  { color: var(--text-primary); }
+	.qa-muted  { color: var(--text-secondary); }
+	.qa-border { border-color: rgba(15, 23, 42, 0.08); }
+</style>
