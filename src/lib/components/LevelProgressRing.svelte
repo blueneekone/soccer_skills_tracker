@@ -3,11 +3,22 @@
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 
 	/** Total XP (lifetime); progress within current level is derived. */
-	let { totalXp = 0, level: levelProp = 0 } = $props();
+	let {
+		totalXp = 0,
+		level: levelProp = 0,
+		/** Light theme for enterprise cards (#fff / #fafafa surfaces). */
+		variant = 'dark',
+		/** Larger ring for hero headers. */
+		size = 'md',
+		/** Show XP progress within the current level (into / needed for next). */
+		showLevelSegment = false,
+	} = $props();
 
 	const R = 54;
 	const strokeW = 7;
 	const c = 2 * Math.PI * R;
+	const scale = $derived(size === 'lg' ? 1.35 : 1);
+	const pixelSize = $derived(Math.round(128 * scale));
 
 	let ringProgress = $state(0);
 	let countDisplay = $state(0);
@@ -55,10 +66,24 @@
 	});
 
 	const dashOffset = $derived(c * (1 - ringProgress));
+
+	const segInto = $derived(levelInfo.xpIntoLevel);
+	const segNeed = $derived(levelInfo.xpToNext);
 </script>
 
-<div class="xp-ring" aria-label="Level progress">
-	<svg class="xp-ring__svg" viewBox="0 0 128 128" width="128" height="128">
+<div
+	class="xp-ring"
+	class:xp-ring--light={variant === 'light'}
+	class:xp-ring--lg={size === 'lg'}
+	style="width: {pixelSize}px; height: {pixelSize}px;"
+	aria-label="Level progress"
+>
+	<svg
+		class="xp-ring__svg"
+		viewBox="0 0 128 128"
+		width={pixelSize}
+		height={pixelSize}
+	>
 		<circle class="xp-ring__track" cx="64" cy="64" r={R} fill="none" stroke-width={strokeW} />
 		<circle
 			class="xp-ring__fill"
@@ -76,6 +101,11 @@
 		<span class="xp-ring__level">Lv {displayLevel}</span>
 		<span class="xp-ring__xp">{countDisplay.toLocaleString()}</span>
 		<span class="xp-ring__xp-label">total XP</span>
+		{#if showLevelSegment}
+			<span class="xp-ring__seg">
+				{segInto.toLocaleString()} / {segNeed.toLocaleString()} XP this level
+			</span>
+		{/if}
 	</div>
 </div>
 
@@ -138,5 +168,44 @@
 		letter-spacing: 0.06em;
 		color: rgba(148, 163, 184, 0.95);
 		margin-top: 2px;
+	}
+
+	.xp-ring__seg {
+		display: block;
+		margin-top: 6px;
+		font-size: 0.65rem;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		color: var(--brand-primary, #6366f1);
+		line-height: 1.25;
+		max-width: 7.5rem;
+	}
+
+	.xp-ring--light .xp-ring__svg {
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brand-primary, #6366f1) 22%, transparent));
+	}
+
+	.xp-ring--light .xp-ring__track {
+		stroke: #e5e5e5;
+	}
+
+	.xp-ring--light .xp-ring__level {
+		color: var(--text-secondary, #737373);
+	}
+
+	.xp-ring--light .xp-ring__xp {
+		color: var(--text-primary, #0a0a0a);
+	}
+
+	.xp-ring--light .xp-ring__xp-label {
+		color: var(--text-secondary, #737373);
+	}
+
+	:global(html.dark) .xp-ring--light .xp-ring__track {
+		stroke: rgba(255, 255, 255, 0.14);
+	}
+
+	:global(html.dark) .xp-ring--light .xp-ring__xp {
+		color: #fafafa;
 	}
 </style>

@@ -5,7 +5,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	/** Optional team id for director / super_admin. */
-	let { teamIdForStaff = '' } = $props();
+	let { teamIdForStaff = '', compact = false } = $props();
 
 	let loading = $state(true);
 	let err = $state('');
@@ -110,14 +110,26 @@
 		if (rank === 3) return 'lb-row--bronze';
 		return '';
 	}
+
+	/**
+	 * @param {string} name
+	 */
+	function initialsFromName(name) {
+		const p = name.trim().split(/\s+/).filter(Boolean);
+		if (p.length === 0) return '?';
+		if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
+		return (p[0][0] + p[p.length - 1][0]).toUpperCase();
+	}
 </script>
 
-<div class="lb-outer bento-section">
-	<div class="card lb-shell">
+<div class="lb-outer bento-section" class:lb-outer--compact={compact}>
+	<div class="card lb-shell" class:lb-shell--compact={compact}>
 		<div class="lb-header">
 			<div>
 				<h2 class="lb-title">Team leaderboard</h2>
-				<p class="lb-sub">Top 15 by XP this week · 🔥 = streak</p>
+				<p class="lb-sub">
+					{compact ? 'Ranked by XP this week · tap a row to compare effort' : 'Top 15 by XP this week · 🔥 = streak'}
+				</p>
 			</div>
 		</div>
 
@@ -129,6 +141,31 @@
 			<p class="lb-hint">
 				No weekly stats yet. Log training to earn XP and climb the board.
 			</p>
+		{:else if compact}
+			<ul class="lb-compact-list" aria-label="Team XP rankings">
+				{#each entries as row (row.playerKey)}
+					<li
+						class="lb-compact-row {tierClass(row.rank)}"
+						class:lb-compact-row--me={row.isCurrentUser}
+					>
+						<span class="lb-compact-rank" aria-hidden="true">
+							{#if row.rank <= 3}
+								<span class="lb-rank-podium lb-rank-podium--{row.rank}">{row.rank}</span>
+							{:else}
+								<span class="lb-rank-num">{row.rank}</span>
+							{/if}
+						</span>
+						<div class="lb-compact-avatar" aria-hidden="true">{initialsFromName(row.displayName)}</div>
+						<div class="lb-compact-name-block">
+							<span class="lb-compact-name">{row.displayName}</span>
+							{#if row.isCurrentUser}
+								<span class="lb-you">You</span>
+							{/if}
+						</div>
+						<span class="lb-compact-xp">{row.xpThisWeek.toLocaleString()} XP</span>
+					</li>
+				{/each}
+			</ul>
 		{:else}
 			<div class="lb-table-wrap">
 				<table class="lb-table">
@@ -179,6 +216,146 @@
 </div>
 
 <style>
+	.lb-outer--compact {
+		margin-bottom: 0;
+	}
+
+	.lb-shell--compact {
+		background: #fafafa !important;
+		border: 1px solid #e5e5e5 !important;
+		box-shadow: none !important;
+	}
+
+	:global(html.dark) .lb-shell--compact {
+		background: #0f0f11 !important;
+		border-color: rgba(255, 255, 255, 0.1) !important;
+	}
+
+	.lb-compact-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.lb-compact-row {
+		display: grid;
+		grid-template-columns: auto auto 1fr auto;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 12px;
+		border-radius: 12px;
+		border: 1px solid #e5e5e5;
+		background: #ffffff;
+	}
+
+	:global(html.dark) .lb-compact-row {
+		background: #09090b;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.lb-compact-row--me {
+		outline: 2px solid var(--brand-primary, #6366f1);
+		outline-offset: 0;
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-primary, #6366f1) 25%, transparent);
+	}
+
+	.lb-compact-rank {
+		min-width: 2rem;
+		display: flex;
+		justify-content: center;
+	}
+
+	.lb-compact-avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 999px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.72rem;
+		font-weight: 900;
+		color: #0f172a;
+		background: linear-gradient(145deg, #e4e4e7, #d4d4d8);
+		border: 1px solid #e5e5e5;
+		flex-shrink: 0;
+	}
+
+	.lb-compact-name-block {
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.lb-compact-name {
+		font-weight: 800;
+		font-size: 0.9rem;
+		color: var(--text-primary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.lb-compact-xp {
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		font-size: 0.85rem;
+		color: var(--brand-primary, #6366f1);
+		white-space: nowrap;
+	}
+
+	.lb-compact-row.lb-row--gold {
+		background: linear-gradient(
+			90deg,
+			rgba(245, 158, 11, 0.12) 0%,
+			#ffffff 55%
+		);
+	}
+
+	.lb-compact-row.lb-row--silver {
+		background: linear-gradient(
+			90deg,
+			rgba(148, 163, 184, 0.15) 0%,
+			#ffffff 55%
+		);
+	}
+
+	.lb-compact-row.lb-row--bronze {
+		background: linear-gradient(
+			90deg,
+			rgba(180, 83, 9, 0.12) 0%,
+			#ffffff 55%
+		);
+	}
+
+	:global(html.dark) .lb-compact-row.lb-row--gold {
+		background: linear-gradient(
+			90deg,
+			rgba(245, 158, 11, 0.15) 0%,
+			#09090b 55%
+		);
+	}
+
+	:global(html.dark) .lb-compact-row.lb-row--silver {
+		background: linear-gradient(
+			90deg,
+			rgba(148, 163, 184, 0.12) 0%,
+			#09090b 55%
+		);
+	}
+
+	:global(html.dark) .lb-compact-row.lb-row--bronze {
+		background: linear-gradient(
+			90deg,
+			rgba(180, 83, 9, 0.12) 0%,
+			#09090b 55%
+		);
+	}
+
 	.lb-outer {
 		grid-template-columns: 1fr;
 		gap: clamp(16px, 3vw, 24px);
