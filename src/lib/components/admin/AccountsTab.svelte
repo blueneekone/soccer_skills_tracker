@@ -143,6 +143,8 @@
 
 	let newClubId = $state('');
 	let newClubName = $state('');
+	/** @type {'soccer'|'basketball'|'baseball'|'football'|'volleyball'|'hockey'|'lacrosse'|'generic'} */
+	let newClubSport = $state('soccer');
 	let newClubDirector = $state('');
 	let adminTeamClubSel = $state('');
 	let adminTeamId = $state('');
@@ -155,15 +157,25 @@
 
 	const addClub = async () => {
 		if (!newClubId.trim() || !newClubName.trim()) return alert('Please enter at least an ID and a Club Name.');
+		if (!newClubSport) return alert('Select a sport for this club.');
 		saving = true;
 		try {
 			const id = newClubId.trim().toLowerCase();
 			const email = newClubDirector.trim().toLowerCase();
-			await setDoc(doc(db, 'clubs', id), { id, name: newClubName, directorEmail: email, createdAt: new Date() });
+			await setDoc(doc(db, 'clubs', id), {
+				id,
+				name: newClubName,
+				directorEmail: email,
+				sport: newClubSport,
+				createdAt: new Date(),
+			});
 			if (email) await setDoc(doc(db, 'users', email), { role: 'director', clubId: id }, { merge: true });
 			await logSecurityEvent('CREATE_CLUB', id, newClubName);
 			alert('Club Added Securely!');
-			newClubId = ''; newClubName = ''; newClubDirector = '';
+			newClubId = '';
+			newClubName = '';
+			newClubSport = 'soccer';
+			newClubDirector = '';
 			await teamsStore.load('super_admin');
 		} catch (e) { alert('Error: ' + e.message); }
 		finally { saving = false; }
@@ -295,17 +307,18 @@
 		<div class="card-body">
 			<div class="overflow-x-auto">
 				<table class="admin-table">
-					<thead><tr><th>ID</th><th>Name</th><th>Director</th><th>Action</th></tr></thead>
+					<thead><tr><th>ID</th><th>Name</th><th>Sport</th><th>Director</th><th>Action</th></tr></thead>
 					<tbody>
 						{#each teamsStore.clubs as cl}
 							<tr>
 								<td>{cl.id}</td>
 								<td>{cl.name}</td>
+								<td>{cl.sport || '—'}</td>
 								<td>{cl.directorEmail || '—'}</td>
 								<td><button class="delete-btn" onclick={() => deleteClub(cl.id)}>🗑️</button></td>
 							</tr>
 						{:else}
-							<tr><td colspan="4" class="text-center">No clubs.</td></tr>
+							<tr><td colspan="5" class="text-center">No clubs.</td></tr>
 						{/each}
 					</tbody>
 				</table>
@@ -316,6 +329,17 @@
 				<input type="text" bind:value={newClubId} placeholder="Club ID (e.g. aggiesfc)" class="m-0 flex-1" />
 				<input type="text" bind:value={newClubName} placeholder="Club Name" class="m-0 flex-1" />
 			</div>
+			<label for="admin-new-club-sport">Sport</label>
+			<select id="admin-new-club-sport" bind:value={newClubSport} class="m-0 w-100">
+				<option value="soccer">Soccer</option>
+				<option value="basketball">Basketball</option>
+				<option value="baseball">Baseball</option>
+				<option value="football">Football</option>
+				<option value="volleyball">Volleyball</option>
+				<option value="hockey">Hockey</option>
+				<option value="lacrosse">Lacrosse</option>
+				<option value="generic">Generic</option>
+			</select>
 			<input type="email" bind:value={newClubDirector} placeholder="Director Email (Optional)" />
 			<button class="primary-btn btn-blue w-100" onclick={addClub} disabled={saving}>+ Add Club</button>
 		</div>

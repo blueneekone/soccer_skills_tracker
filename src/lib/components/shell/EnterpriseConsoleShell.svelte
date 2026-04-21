@@ -2,9 +2,8 @@
 	import { setContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
+	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
 	import '$lib/styles/enterprise-console.css';
 
@@ -43,7 +42,6 @@
 	const nav = $derived(getWorkspaceNav($page.url.pathname, authStore.role));
 	const links = $derived(nav.links);
 	const workspaceLabel = $derived(nav.workspaceLabel);
-	const mobileTitle = $derived(nav.mobileTitle);
 	const showBilling = $derived(nav.showBilling);
 
 	function navActive(item) {
@@ -75,15 +73,7 @@
 	<!-- Field mode: fixed bar with club mark + menu (< lg only, see CSS) -->
 	<header class="ec-mobile-header">
 		<div class="ec-mobile-header__brand">
-			{#if clubBrandingStore.logoUrl}
-				<ClubLogoMark size="sm" />
-			{:else}
-				<i class="ph ph-squares-four ec-mobile-header__logo-fallback" aria-hidden="true"></i>
-			{/if}
-			<div class="ec-mobile-header__titles">
-				<span class="ec-mobile-header__name">{mobileTitle}</span>
-				<span class="ec-mobile-header__sub">Command Center</span>
-			</div>
+			<WorkspaceContextSwitcher variant="mobile" />
 		</div>
 		<button
 			type="button"
@@ -118,16 +108,8 @@
 					Close
 				</button>
 			</div>
-			<div class="ec-sidebar__brand">
-				{#if clubBrandingStore.logoUrl}
-					<ClubLogoMark size="md" />
-				{:else}
-					<i class="ph ph-squares-four" style="font-size: 1.5rem; color: var(--text-secondary);" aria-hidden="true"></i>
-				{/if}
-				<div class="min-w-0">
-					<p class="ec-sidebar__title">{workspaceLabel}</p>
-					<p class="ec-sidebar__subtitle">Workspace</p>
-				</div>
+			<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
+				<WorkspaceContextSwitcher variant="sidebar" />
 			</div>
 			<nav class="ec-sidebar__nav">
 				{#each links as item (item.href)}
@@ -233,6 +215,11 @@
 </aside>
 
 <style>
+	:global(.ec-sidebar__brand--switcher) {
+		padding: 0;
+		align-items: stretch;
+	}
+
 	.ec-topbar-user-name {
 		display: block;
 		overflow: hidden;

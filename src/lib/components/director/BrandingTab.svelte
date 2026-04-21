@@ -9,7 +9,6 @@
 	let logoUrl = $state('');
 	let primaryColor = $state('#0f172a');
 	let secondaryColor = $state('#fbbf24');
-	let courtType = $state('soccer');
 	let saving = $state(false);
 
 	const clubTeams = $derived(teamsStore.teams.filter((t) => t.clubId === clubId));
@@ -22,7 +21,6 @@
 		logoUrl = brandingStore.logoUrl;
 		primaryColor = brandingStore.primaryColor;
 		secondaryColor = brandingStore.secondaryColor;
-		courtType = brandingStore.courtType;
 	};
 
 	$effect(() => {
@@ -33,7 +31,7 @@
 		if (!selectedTeamId) return;
 		saving = true;
 		try {
-			await brandingStore.saveForTeam(selectedTeamId, { appName, logoUrl, primaryColor, secondaryColor, courtType });
+			await brandingStore.saveForTeam(selectedTeamId, { appName, logoUrl, primaryColor, secondaryColor });
 			alert('Branding saved!');
 		} catch (e) { alert('Error: ' + e.message); }
 		finally { saving = false; }
@@ -42,7 +40,7 @@
 	const resetBranding = async () => {
 		if (!selectedTeamId || !confirm('Reset this team\'s branding to default?')) return;
 		await brandingStore.resetForTeam(selectedTeamId);
-		appName = 'SSTRACKER'; logoUrl = ''; primaryColor = '#0f172a'; secondaryColor = '#fbbf24'; courtType = 'soccer';
+		appName = 'SSTRACKER'; logoUrl = ''; primaryColor = '#0f172a'; secondaryColor = '#fbbf24';
 		alert('Branding reset.');
 	};
 </script>
@@ -64,16 +62,6 @@
 
 			<label>Logo URL (PNG/JPG)</label>
 			<input type="url" bind:value={logoUrl} placeholder="https://example.com/logo.png" />
-
-			<label>Sport Selection</label>
-			<select bind:value={courtType}>
-				<option value="soccer">Soccer</option>
-				<option value="basketball">Basketball</option>
-				<option value="football">Football</option>
-				<option value="baseball">Baseball</option>
-				<option value="lacrosse">Lacrosse</option>
-				<option value="generic">Generic Gym/Field</option>
-			</select>
 
 			<div class="color-row">
 				<div class="flex-1">

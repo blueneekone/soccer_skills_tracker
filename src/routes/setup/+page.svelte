@@ -4,6 +4,7 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { signOut } from 'firebase/auth';
 	import { doc, setDoc, getDoc } from 'firebase/firestore';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
@@ -13,7 +14,9 @@
 	$effect(() => {
 		if (!authStore.isLoading) {
 			if (!authStore.isAuthenticated) goto('/login', { replaceState: true });
-			else if (authStore.isProfileComplete) goto('/home', { replaceState: true });
+			else if (authStore.isProfileComplete) {
+				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
+			}
 		}
 	});
 
@@ -123,7 +126,7 @@
 				};
 				await setDoc(userRef, profileData, { merge: true });
 				await authStore.refresh({ silent: true });
-				goto('/home', { replaceState: true });
+				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 			} catch (err) {
 				errorMsg = 'Error saving profile: ' + err.message;
 				saving = false;
@@ -154,7 +157,7 @@
 
 			await setDoc(userRef, profileData, { merge: true });
 			await authStore.refresh({ silent: true });
-			goto('/home', { replaceState: true });
+			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} catch (err) {
 			errorMsg = 'Error saving profile: ' + err.message;
 			saving = false;

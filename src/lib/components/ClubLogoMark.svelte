@@ -1,5 +1,6 @@
 <script>
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
+	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
 
 	/**
 	 * @typedef {'sm' | 'md' | 'lg' | 'xl'} LogoSize
@@ -8,8 +9,10 @@
 	let {
 		size = 'md',
 		alt = 'Club logo',
-		/** When set (e.g. recruiter cards), overrides global club branding. */
+		/** When set (e.g. recruiter cards, public landing), overrides global club branding. */
 		logoUrl: logoUrlOverride = '',
+		/** When set, overrides `clubs/{clubId}.sport` for the default icon. */
+		sport: sportOverride = '',
 		class: className = ''
 	} = $props();
 
@@ -18,6 +21,14 @@
 			logoUrlOverride.trim() :
 			clubBrandingStore.logoUrl
 	);
+
+	const effectiveSport = $derived(
+		typeof sportOverride === 'string' && sportOverride.trim() ?
+			sportOverride.trim() :
+			clubBrandingStore.sport
+	);
+
+	const iconClass = $derived(clubSportIconClass(effectiveSport));
 
 	const dim = $derived(
 		(
@@ -48,9 +59,9 @@
 		style:height="{dim}px"
 		style:--club-mark-d="{dim}px"
 		role="img"
-		aria-label="Club mark"
+		aria-label={alt}
 	>
-		<i class="ph ph-bird club-logo-mark-fallback__icon" aria-hidden="true"></i>
+		<i class="{iconClass} club-logo-mark-fallback__icon" aria-hidden="true"></i>
 	</span>
 {/if}
 
@@ -69,23 +80,22 @@
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-		border-radius: 14px;
-		background: linear-gradient(
-			145deg,
-			color-mix(in srgb, var(--brand-primary, #0f172a) 12%, rgba(255, 255, 255, 0.92)) 0%,
-			color-mix(in srgb, var(--brand-accent, #10b981) 10%, rgba(248, 250, 252, 0.95)) 100%
-		);
-		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 22%, transparent);
+		border-radius: 50%;
+		background: #fafafa;
+		border: 1px solid rgba(15, 23, 42, 0.08);
 		box-shadow:
-			0 6px 18px rgba(15, 23, 42, 0.1),
-			inset 0 1px 0 rgba(255, 255, 255, 0.65);
+			0 1px 2px rgba(15, 23, 42, 0.06),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+	}
+
+	:global(html.dark) .club-logo-mark-fallback {
+		background: #fafafa;
+		border-color: rgba(255, 255, 255, 0.14);
 	}
 
 	.club-logo-mark-fallback__icon {
-		font-size: calc(var(--club-mark-d, 40px) * 0.46);
-		color: var(--brand-primary, var(--aggie-blue));
-		filter: drop-shadow(
-			0 1px 3px color-mix(in srgb, var(--brand-primary, var(--aggie-blue)) 25%, transparent)
-		);
+		font-size: calc(var(--club-mark-d, 40px) * 0.42);
+		color: #09090b;
+		line-height: 1;
 	}
 </style>

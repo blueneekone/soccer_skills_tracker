@@ -1,11 +1,12 @@
 <script>
 	import { goto } from '$app/navigation';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (authStore.isAuthenticated && authStore.isProfileComplete) {
-			goto('/home', { replaceState: true });
+			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} else if (authStore.isAuthenticated && !authStore.isProfileComplete) {
 			goto('/setup', { replaceState: true });
 		} else {

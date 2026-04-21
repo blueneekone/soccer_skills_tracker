@@ -12,6 +12,8 @@
 	let status = $state(/** @type {'loading' | 'ok' | 'missing'} */ ('loading'));
 	let clubName = $state('');
 	let brandLogoUrl = $state('');
+	/** Canonical sport key from `clubs.sport` (public callable). */
+	let clubSport = $state('generic');
 	let brandPrimaryHex = $state('');
 	let brandAccentHex = $state('');
 	let metaPixelId = $state('');
@@ -34,6 +36,23 @@
 	function sanitizePixelId(id) {
 		const s = String(id || '').trim();
 		return /^\d{10,20}$/.test(s) ? s : '';
+	}
+
+	/**
+	 * @param {string} s
+	 */
+	function sportKickerLabel(s) {
+		const map = {
+			soccer: 'Youth soccer',
+			basketball: 'Youth basketball',
+			baseball: 'Youth baseball',
+			football: 'Youth football',
+			volleyball: 'Youth volleyball',
+			hockey: 'Youth hockey',
+			lacrosse: 'Youth lacrosse',
+			generic: 'Youth sports',
+		};
+		return map[/** @type {keyof typeof map} */ (s)] ?? map.generic;
 	}
 
 	function sanitizeGaId(id) {
@@ -63,6 +82,7 @@
 					return;
 				}
 				clubName = typeof data.clubName === 'string' ? data.clubName : '';
+				clubSport = typeof data.sport === 'string' ? data.sport : 'generic';
 				brandLogoUrl = typeof data.brandLogoUrl === 'string' ? data.brandLogoUrl : '';
 				brandPrimaryHex =
 					typeof data.brandPrimaryHex === 'string' ? data.brandPrimaryHex : '';
@@ -164,9 +184,9 @@
 	{:else}
 		<header class="clp-hero clp-panel">
 			<div class="clp-brand">
-				<ClubLogoMark size="xl" logoUrl={brandLogoUrl} />
+				<ClubLogoMark size="xl" logoUrl={brandLogoUrl} sport={clubSport} />
 				<div>
-					<p class="clp-kicker">Youth soccer · SSTRACKER</p>
+					<p class="clp-kicker">{sportKickerLabel(clubSport)} · SSTRACKER</p>
 					<h1 class="clp-h1">{clubName || 'Our club'}</h1>
 					<p class="clp-lead">
 						Train with purpose. Register to join sessions, track skills, and stay connected with your team.

@@ -8,6 +8,7 @@
 		createUserWithEmailAndPassword,
 		getRedirectResult
 	} from 'firebase/auth';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
@@ -21,7 +22,7 @@
 	$effect(() => {
 		if (!authStore.isLoading && authStore.isAuthenticated) {
 			if (authStore.isProfileComplete) {
-				goto('/home', { replaceState: true });
+				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 			} else {
 				goto('/setup', { replaceState: true });
 			}

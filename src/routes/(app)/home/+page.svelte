@@ -6,7 +6,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
-	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
+	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
+	import { clubSportIconSuffix } from '$lib/utils/sport-icon.js';
 	import DashCard from '$lib/components/DashCard.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import ElitePlayerDashboard from '$lib/components/ElitePlayerDashboard.svelte';
@@ -43,7 +44,7 @@
 	let statsMiniSessions = $state(0);
 	let statsMiniLoading = $state(false);
 
-	const welcomeSportIcon = $derived(sportPhosphorIcon(brandingStore.courtType));
+	const welcomeSportIcon = $derived(clubSportIconSuffix(clubBrandingStore.sport));
 	const showPlayerStatsBento = $derived(
 		showAthleteHomeCards && role === 'player' && profile?.playerName && profile?.teamId && profile.teamId !== 'admin'
 	);
@@ -159,85 +160,47 @@
 </script>
 
 <div class="ec-page ec-home">
-	<ActionInbox clubId={inboxClubId} teamId={inboxTeamId} />
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
+		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
+			<ActionInbox clubId={inboxClubId} teamId={inboxTeamId} />
 
-	<!-- Welcome header -->
-	<div class="ec-panel dashboard-header">
-		<div class="card-body text-center">
-			{#if profile?.clubId}
-				<div class="welcome-brand-wrap">
-					<ClubLogoMark size="lg" />
+			<!-- Welcome header -->
+			<div class="ec-panel dashboard-header">
+				<div class="card-body text-center">
+					{#if profile?.clubId}
+						<div class="welcome-brand-wrap">
+							<ClubLogoMark size="lg" />
+						</div>
+					{:else}
+						<i class="ph {welcomeSportIcon} dash-icon icon-large welcome-sport-icon"></i>
+					{/if}
+					<h2 class="welcome-title">Welcome, <span>{firstName}</span>!</h2>
+					<p class="welcome-subtitle">Ready to get 1% better today?</p>
 				</div>
-			{:else}
-				<i class="ph {welcomeSportIcon} dash-icon icon-large welcome-sport-icon"></i>
-			{/if}
-			<h2 class="welcome-title">Welcome, <span>{firstName}</span>!</h2>
-			<p class="welcome-subtitle">Ready to get 1% better today?</p>
-		</div>
-	</div>
-
-	{#if showElitePlayerDash}
-		<ElitePlayerDashboard />
-	{/if}
-
-	<ActiveAssignmentsInbox />
-
-	{#if role === 'player' && profile?.clubId && profile?.teamId && profile.teamId !== 'admin'}
-		<VideoTrialUploader />
-	{/if}
-
-	<!-- 250 XP challenge banner -->
-	{#if show250Banner && showAthleteHomeCards}
-		<div class="card challenge-banner" role="button" tabindex="0" onclick={() => goto('/challenges')} onkeydown={(e) => e.key === 'Enter' && goto('/challenges')}>
-			<div class="challenge-banner-body">
-				<h3 class="challenge-banner-title">🔥 NEW CHALLENGE UNLOCKED! 🔥</h3>
-				<p class="challenge-banner-text">You hit 250 XP. Tap here to view your Brilliant Basics trial.</p>
 			</div>
-		</div>
-	{/if}
 
-	<!-- Bento grid dashboard (Epic 1.2 + Phase 0.2 shared tokens in style.css) -->
-	<div class="dashboard-grid bento-grid">
-		<DashCard icon="ph-list" label="Log Workout" hidden={!showAthleteHomeCards} onclick={() => goto('/tracker')} />
-		<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" hidden={!showAthleteHomeCards} onclick={() => goto('/passport')} />
-		<DashCard
-			icon="ph-chat-circle"
-			label="Messages"
-			borderVariant="gray"
-			hidden={role !== 'player' && role !== 'parent'}
-			onclick={() => goto('/messages')}
-		/>
-		<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/challenges')} />
-		<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/trophies')} />
+			{#if showElitePlayerDash}
+				<ElitePlayerDashboard />
+			{/if}
 
-		<DashCard
-			icon="ph-shield-check"
-			label="Parental consent"
-			borderVariant="green"
-			hidden={role !== 'parent'}
-			onclick={() => goto('/parent/vpc')}
-		/>
-		<DashCard
-			icon="ph-user-check"
-			label="Log workout (parent)"
-			borderVariant="green"
-			hidden={role !== 'parent'}
-			onclick={() => goto('/parent/log-workout')}
-		/>
-		<DashCard icon="ph-megaphone" label="Coach Tools" borderVariant="gray" hidden={!hasCoachAccess} onclick={() => goto('/coach')} />
-		<DashCard icon="ph-gear" label="Command Center" borderVariant="gray" hidden={role !== 'super_admin'} onclick={() => goto('/admin')} />
-		<DashCard icon="ph-briefcase" label="Director Portal" borderVariant="purple" hidden={role !== 'super_admin' && role !== 'director'} onclick={() => goto('/director')} />
-		<DashCard
-			icon="ph-swap"
-			label="Registrar console"
-			borderVariant="purple"
-			hidden={role !== 'registrar' && role !== 'director' && role !== 'super_admin'}
-			onclick={() => goto('/registrar')}
-		/>
-	</div>
+			<ActiveAssignmentsInbox />
 
-	<!-- Team schedule + homework + player stats (scrollable bento cells on desktop) -->
-	<div class="bento-section bento-section--dashboard-cards">
+			{#if role === 'player' && profile?.clubId && profile?.teamId && profile.teamId !== 'admin'}
+				<VideoTrialUploader />
+			{/if}
+
+			<!-- 250 XP challenge banner -->
+			{#if show250Banner && showAthleteHomeCards}
+				<div class="card challenge-banner" role="button" tabindex="0" onclick={() => goto('/challenges')} onkeydown={(e) => e.key === 'Enter' && goto('/challenges')}>
+					<div class="challenge-banner-body">
+						<h3 class="challenge-banner-title">🔥 NEW CHALLENGE UNLOCKED! 🔥</h3>
+						<p class="challenge-banner-text">You hit 250 XP. Tap here to view your Brilliant Basics trial.</p>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Team schedule + homework + player stats -->
+			<div class="bento-section bento-section--dashboard-cards">
 	<div class="card border-aggie-blue">
 		<div class="card-header">📅 Team Schedule</div>
 		<div class="card-body p-0">
@@ -338,6 +301,49 @@
 			</div>
 		</button>
 	{/if}
+			</div>
+		</div>
+
+		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-4">
+			<div class="dashboard-grid bento-grid tw-mb-0">
+				<DashCard icon="ph-list" label="Log Workout" hidden={!showAthleteHomeCards} onclick={() => goto('/tracker')} />
+				<DashCard icon="ph-identification-card" label="Player Passport" borderVariant="green" hidden={!showAthleteHomeCards} onclick={() => goto('/passport')} />
+				<DashCard
+					icon="ph-chat-circle"
+					label="Messages"
+					borderVariant="gray"
+					hidden={role !== 'player' && role !== 'parent'}
+					onclick={() => goto('/messages')}
+				/>
+				<DashCard icon="ph-trophy" label="Trials" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/challenges')} />
+				<DashCard icon="ph-trophy" label="Trophy Room" borderVariant="gold" hidden={!showAthleteHomeCards} onclick={() => goto('/trophies')} />
+
+				<DashCard
+					icon="ph-shield-check"
+					label="Parental consent"
+					borderVariant="green"
+					hidden={role !== 'parent'}
+					onclick={() => goto('/parent/vpc')}
+				/>
+				<DashCard
+					icon="ph-user-check"
+					label="Log workout (parent)"
+					borderVariant="green"
+					hidden={role !== 'parent'}
+					onclick={() => goto('/parent/log-workout')}
+				/>
+				<DashCard icon="ph-megaphone" label="Coach Tools" borderVariant="gray" hidden={!hasCoachAccess} onclick={() => goto('/coach')} />
+				<DashCard icon="ph-gear" label="Command Center" borderVariant="gray" hidden={role !== 'super_admin'} onclick={() => goto('/admin')} />
+				<DashCard icon="ph-briefcase" label="Director Portal" borderVariant="purple" hidden={role !== 'super_admin' && role !== 'director'} onclick={() => goto('/director')} />
+				<DashCard
+					icon="ph-swap"
+					label="Registrar console"
+					borderVariant="purple"
+					hidden={role !== 'registrar' && role !== 'director' && role !== 'super_admin'}
+					onclick={() => goto('/registrar')}
+				/>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -348,7 +354,7 @@
 
 	.ec-home .dashboard-header {
 		padding: clamp(14px, 3vw, 22px);
-		margin-bottom: 16px;
+		margin-bottom: 0;
 	}
 
 	.ec-home .dashboard-header .card-body {

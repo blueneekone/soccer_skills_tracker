@@ -30,58 +30,62 @@
 		</div>
 	</div>
 
-	<ActionInbox {clubId} />
-	<DirectorAnalyticsCharts {clubId} />
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
+		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
+			<ActionInbox {clubId} />
+			<DirectorAnalyticsCharts {clubId} />
 
-	<div class="director-bento-grid director-bento-grid--lg director-os-shell">
-		<article
-			class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
-			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
-		>
-			<div class="tw-relative tw-z-10">
-				<ClubIdentityModule {clubId} />
-			</div>
-		</article>
+			<article
+				class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+				class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+			>
+				<div class="tw-relative tw-z-10">
+					<CoachAccountabilityModule {clubId} />
+				</div>
+			</article>
 
-		<article
-			class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
-			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
-		>
-			<div class="tw-relative tw-z-10">
-			<QuickActionsModule
-				{clubId}
-				onCreateTeam={() => onNavigateTab('teams')}
-				onInviteCoach={() => onNavigateTab('teams')}
-			/>
-			</div>
-		</article>
+			<!-- Read-only seat visualization — no tile-level motion -->
+			<article
+				class="dir-bento-card glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+				class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+			>
+				<div class="tw-relative tw-z-10">
+					<EntitlementModule {clubId} />
+				</div>
+			</article>
 
-		<article
-			class="dir-bento-card dir-bento-card--interactive director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
-			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
-		>
-			<div class="tw-relative tw-z-10">
-				<CoachAccountabilityModule {clubId} />
-			</div>
-		</article>
+			<article
+				class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+				class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+			>
+				<div class="tw-relative tw-z-10">
+					<FieldOpsModule {clubId} />
+				</div>
+			</article>
+		</div>
 
-		<!-- Read-only seat visualization — no tile-level motion -->
-		<article
-			class="dir-bento-card director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
-			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
-		>
-			<div class="tw-relative tw-z-10">
-			<EntitlementModule {clubId} />
-			</div>
-		</article>
+		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-4">
+			<article
+				class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+				class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+			>
+				<div class="tw-relative tw-z-10">
+					<ClubIdentityModule {clubId} />
+				</div>
+			</article>
 
-		<article
-			class="dir-bento-card dir-bento-card--interactive director-bento-full glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
-			class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
-		>
-			<div class="tw-relative tw-z-10">
-				<FieldOpsModule {clubId} />
-			</div>
-		</article>
+			<article
+				class="dir-bento-card dir-bento-card--interactive glass-panel tw-p-5 md:tw-p-6 tw-relative tw-z-0"
+				class:dir-bento-club-brand={!!clubBrandingStore.logoUrl}
+			>
+				<div class="tw-relative tw-z-10">
+					<QuickActionsModule
+						{clubId}
+						onCreateTeam={() => onNavigateTab('teams')}
+						onInviteCoach={() => onNavigateTab('teams')}
+					/>
+				</div>
+			</article>
+		</div>
 	</div>
 </section>

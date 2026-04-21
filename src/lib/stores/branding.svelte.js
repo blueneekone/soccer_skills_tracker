@@ -6,7 +6,6 @@ function createBrandingStore() {
 	let logoUrl = $state('');
 	let primaryColor = $state('#0f172a');
 	let secondaryColor = $state('#fbbf24');
-	let courtType = $state('soccer');
 	let bgUrl = $state('');
 
 	function applyToCss() {
@@ -26,7 +25,6 @@ function createBrandingStore() {
 		get logoUrl() { return logoUrl; },
 		get primaryColor() { return primaryColor; },
 		get secondaryColor() { return secondaryColor; },
-		get courtType() { return courtType; },
 		get bgUrl() { return bgUrl; },
 
 		async loadForTeam(teamId) {
@@ -39,7 +37,6 @@ function createBrandingStore() {
 					logoUrl = data.logoUrl || '';
 					primaryColor = data.primaryColor || '#0f172a';
 					secondaryColor = data.secondaryColor || '#fbbf24';
-					courtType = data.courtType || 'soccer';
 					bgUrl = data.bgUrl || '';
 					applyToCss();
 				}
@@ -54,7 +51,6 @@ function createBrandingStore() {
 			logoUrl = data.logoUrl || logoUrl;
 			primaryColor = data.primaryColor || primaryColor;
 			secondaryColor = data.secondaryColor || secondaryColor;
-			courtType = data.courtType || courtType;
 			bgUrl = data.bgUrl || bgUrl;
 			applyToCss();
 		},
@@ -65,7 +61,6 @@ function createBrandingStore() {
 			logoUrl = '';
 			primaryColor = '#0f172a';
 			secondaryColor = '#fbbf24';
-			courtType = 'soccer';
 			bgUrl = '';
 			applyToCss();
 		}

@@ -4,8 +4,9 @@
 	import { signOut } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
+	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
-	import { sportPhosphorIcon } from '$lib/utils/sport-icon.js';
+	import { clubSportIconSuffix } from '$lib/utils/sport-icon.js';
 
 	const handleLogout = async () => {
 		await signOut(auth);
@@ -19,7 +20,7 @@
 		(authStore.role ? authStore.role.charAt(0).toUpperCase() + authStore.role.slice(1) : 'Player')
 	);
 
-	const sportIcon = $derived(sportPhosphorIcon(brandingStore.courtType));
+	const sportIcon = $derived(clubSportIconSuffix(clubBrandingStore.sport));
 </script>
 
 <header class="app-header">

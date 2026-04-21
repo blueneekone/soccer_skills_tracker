@@ -5644,11 +5644,22 @@ exports.getPublicClubLanding = onCall(
         logger.warn('getPublicClubLanding athletes query', e);
       }
 
+      const sportRaw = typeof c.sport === 'string' ? c.sport.trim().toLowerCase() : '';
+      const sport =
+          sportRaw &&
+          [
+            'soccer', 'basketball', 'baseball', 'football', 'volleyball',
+            'hockey', 'lacrosse', 'generic',
+          ].includes(sportRaw) ?
+            sportRaw :
+            'generic';
+
       return {
         ok: true,
         clubId,
         slug: raw,
         clubName: typeof c.name === 'string' ? c.name : '',
+        sport,
         brandLogoUrl: typeof c.brandLogoUrl === 'string' ? c.brandLogoUrl : '',
         brandPrimaryHex:
           typeof c.brandPrimaryHex === 'string' ? c.brandPrimaryHex : '',

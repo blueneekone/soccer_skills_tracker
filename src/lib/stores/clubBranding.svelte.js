@@ -7,6 +7,8 @@ import { doc, onSnapshot } from 'firebase/firestore';
  */
 function createClubBrandingStore() {
 	let logoUrl = $state('');
+	/** Canonical key from `clubs/{clubId}.sport` (e.g. soccer, basketball). */
+	let sport = $state('soccer');
 	let clubIdSub = $state('');
 	/** @type {(() => void) | null} */
 	let unsub = null;
@@ -26,6 +28,7 @@ function createClubBrandingStore() {
 		}
 		clubIdSub = '';
 		logoUrl = '';
+		sport = 'soccer';
 		applyToDocument();
 	}
 
@@ -53,12 +56,15 @@ function createClubBrandingStore() {
 			(snap) => {
 				if (!snap.exists()) {
 					logoUrl = '';
+					sport = 'soccer';
 					applyToDocument();
 					return;
 				}
 				const d = snap.data();
 				const u = typeof d.brandLogoUrl === 'string' ? d.brandLogoUrl.trim() : '';
 				logoUrl = u;
+				const sp = typeof d.sport === 'string' && d.sport.trim() ? d.sport.trim().toLowerCase() : 'soccer';
+				sport = sp;
 				const p = typeof d.brandPrimaryHex === 'string' ? d.brandPrimaryHex : '';
 				const a = typeof d.brandAccentHex === 'string' ? d.brandAccentHex : '';
 				if (browser && typeof document !== 'undefined') {
@@ -80,6 +86,9 @@ function createClubBrandingStore() {
 	return {
 		get logoUrl() {
 			return logoUrl;
+		},
+		get sport() {
+			return sport;
 		},
 		get clubId() {
 			return clubIdSub;
