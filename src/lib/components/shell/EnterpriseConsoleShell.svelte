@@ -128,7 +128,7 @@
 					<p class="ec-nav-section">Billing</p>
 					<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
 						<i class="ph ph-credit-card" aria-hidden="true"></i>
-						Plans & billing
+						<span class="min-w-0">Plans & Billing</span>
 					</a>
 				{/if}
 			</nav>

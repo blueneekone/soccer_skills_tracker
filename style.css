@@ -890,15 +890,15 @@ html.dark .milestone-badge-shell {
    ========================================== */
 @media (min-width: 1024px) {
     body:has(.app-shell) {
-        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
     }
 
     .app-shell {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-        max-height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
         overflow: hidden;
         box-sizing: border-box;
     }

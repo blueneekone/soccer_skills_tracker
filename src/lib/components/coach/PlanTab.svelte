@@ -764,8 +764,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: clamp(8px, 2vw, 10px);
-		max-height: min(420px, 55vh);
-		overflow-y: auto;
 	}
 
 	.plan-drill-item {

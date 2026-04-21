@@ -59,14 +59,14 @@
 
 <div class="tw-flex tw-flex-col tw-gap-2 tw-min-h-0">
 	<h4 class="tw-m-0 tw-text-sm tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
-		Pending invites
+		Pending Invites
 	</h4>
 	{#if err}
 		<p class="tw-m-0 tw-text-xs" style="color: var(--danger-red);" role="alert">{err}</p>
 	{:else if invites.length === 0}
 		<p class="tw-m-0 tw-text-xs" style="color: var(--muted-slate);">No pending coach invites.</p>
 	{:else}
-		<ul class="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-2 tw-max-h-48 tw-overflow-y-auto director-os-shell">
+		<ul class="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-2">
 			{#each invites as inv (inv.id)}
 				<li
 					class="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-medium tw-border"

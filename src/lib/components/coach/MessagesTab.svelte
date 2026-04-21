@@ -490,7 +490,8 @@
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
 		background: #ffffff;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: visible;
 		box-sizing: border-box;
 	}
 
@@ -580,8 +581,8 @@
 	}
 
 	.comms-hub__nav-scroll {
-		flex: 1;
-		overflow-y: auto;
+		flex: 1 1 auto;
+		overflow: visible;
 		padding: 8px 0 12px;
 		min-height: 0;
 	}
@@ -679,13 +680,13 @@
 	}
 
 	.comms-hub__stream {
-		flex: 1;
-		overflow-y: auto;
+		flex: 0 1 auto;
+		overflow: visible;
 		padding: 16px;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-		min-height: 200px;
+		min-height: 0;
 	}
 
 	.comms-hub__msg-row {
@@ -878,8 +879,6 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		max-height: 200px;
-		overflow-y: auto;
 		font-size: 12px;
 		color: var(--text-primary);
 	}

@@ -248,7 +248,7 @@
 <div class="accounts-tab">
 	<div class="bento-section">
 	<div class="card">
-		<div class="card-header">📋 Platform roster (linked players)</div>
+		<div class="card-header">📋 Platform Roster (Linked Players)</div>
 		<div class="card-body p-0">
 			{#if authStore.role !== 'super_admin'}
 				<p class="admin-roster-hint">Super admin only.</p>
@@ -265,10 +265,10 @@
 							<tr>
 								<th>Player</th>
 								<th>Team</th>
-								<th>Age group</th>
+								<th>Age Group</th>
 								<th>Position</th>
 								<th>Status</th>
-								<th>Last active</th>
+								<th>Last Active</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -305,7 +305,7 @@
 	<div class="card">
 		<div class="card-header">🏢 Registered Organizations</div>
 		<div class="card-body">
-			<div class="overflow-x-auto">
+			<div class="ec-table-wrap">
 				<table class="admin-table">
 					<thead><tr><th>ID</th><th>Name</th><th>Sport</th><th>Director</th><th>Action</th></tr></thead>
 					<tbody>
@@ -348,7 +348,7 @@
 	<div class="card">
 		<div class="card-header">👥 Registered Teams</div>
 		<div class="card-body">
-			<div class="overflow-x-auto">
+			<div class="ec-table-wrap">
 				<table class="admin-table">
 					<thead><tr><th>Team</th><th>Club</th><th>Coach</th></tr></thead>
 					<tbody>
@@ -392,7 +392,8 @@
 	<div class="card border-gold">
 		<div class="card-header bg-gold-header">👑 Super Admins</div>
 		<div class="card-body">
-			<table class="admin-table">
+			<div class="ec-table-wrap">
+				<table class="admin-table">
 				<thead><tr><th>Admin Email</th><th>Action</th></tr></thead>
 				<tbody>
 					{#each teamsStore.admins as email}
@@ -405,6 +406,7 @@
 					{/each}
 				</tbody>
 			</table>
+			</div>
 			<label>Grant Super Admin Access</label>
 			<div class="admin-input-row">
 				<input type="email" bind:value={newAdminEmail} placeholder="Enter new admin email..." class="m-0 flex-1" />

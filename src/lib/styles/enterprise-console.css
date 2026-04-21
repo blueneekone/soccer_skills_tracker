@@ -8,8 +8,8 @@
 	flex-direction: row;
 	align-items: stretch;
 	width: 100vw;
-	height: 100vh;
-	max-height: 100vh;
+	height: 100dvh;
+	max-height: 100dvh;
 	overflow: hidden;
 	background: var(--ec-canvas-bg, #f4f4f5);
 	box-sizing: border-box;
@@ -179,6 +179,7 @@ html.dark .ec-sidebar__close-btn:hover {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	overflow-x: hidden;
 	border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	background: var(--ec-sidebar-bg, #fafafa);
 	box-sizing: border-box;
@@ -242,10 +243,18 @@ html.dark .ec-sidebar__brand {
 	border: none;
 	background: transparent;
 	width: 100%;
+	min-width: 0;
 	text-align: left;
 	cursor: pointer;
 	transition: background 0.12s ease, color 0.12s ease;
 	letter-spacing: -0.01em;
+}
+
+.ec-nav-link > span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .ec-nav-link:hover {
@@ -364,7 +373,7 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		padding: 8px 10px 16px;
+		padding: 8px 10px calc(6rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 
@@ -377,6 +386,7 @@ html.dark .ec-nav-section {
 .ec-main {
 	flex: 1;
 	min-width: 0;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
@@ -420,12 +430,18 @@ html.dark .ec-topbar {
 	flex: 1;
 	max-width: 420px;
 	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	align-self: center;
+	min-width: 0;
 }
 
 .ec-search input {
 	width: 100%;
-	padding: 8px 12px;
+	height: 36px;
+	padding: 6px 12px;
 	font-size: 13px;
+	line-height: 1.25;
 	border: 1px solid var(--input-border, #e5e5e5);
 	border-radius: 8px;
 	background: var(--input-bg, #ffffff);
@@ -467,15 +483,18 @@ html.dark .ec-icon-btn:hover {
 .ec-canvas {
 	flex: 1;
 	min-height: 0;
+	/* Primary vertical scrollport — native overflow scrolling (not inner cards/tiles) */
+	height: 100%;
+	max-height: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-	padding: 16px 20px 24px;
+	padding: 16px 20px calc(6rem + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
 	width: 100%;
 }
 
-/* Dense data tables */
+/* Dense data tables — horizontal scroll on narrow viewports; table keeps readable column widths */
 .ec-table-wrap {
 	width: 100%;
 	max-width: 100%;
@@ -493,8 +512,13 @@ html.dark .ec-table-wrap {
 	background: #0f0f11;
 }
 
+.ec-table-wrap > table {
+	min-width: 800px;
+}
+
 table.ec-table {
 	width: 100%;
+	min-width: 800px;
 	border-collapse: collapse;
 	font-size: 13px;
 }
@@ -591,10 +615,15 @@ html.dark .ec-pill--muted {
 	color: #a1a1aa;
 }
 
-/* Locked viewport: Director / Admin app shell */
-html.enterprise-console-active,
+/* Locked viewport: Director / Admin app shell (dvh = mobile browser chrome–aware height) */
+html.enterprise-console-active {
+	height: 100dvh;
+	max-height: 100dvh;
+	overflow: hidden;
+}
 html.enterprise-console-active body {
 	height: 100%;
+	max-height: 100%;
 	overflow: hidden;
 }
 

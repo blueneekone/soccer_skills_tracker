@@ -430,8 +430,6 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		max-height: 240px;
-		overflow-y: auto;
 		border-radius: 14px;
 		border: 1px solid var(--border-subtle);
 		background: var(--surface-subtle);
