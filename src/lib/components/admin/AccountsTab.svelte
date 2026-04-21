@@ -2,13 +2,120 @@
 	import { get } from 'svelte/store';
 	import { page } from '$app/stores';
 	import { auth, db } from '$lib/firebase.js';
-	import { collection, doc, setDoc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
+	import { collection, doc, setDoc, deleteDoc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import AdminEditClubDrawer from '$lib/components/admin/AdminEditClubDrawer.svelte';
+	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
 	import '$lib/styles/enterprise-console.css';
+
+	const PAGE_SIZE = 25;
+
+	let accountsTab = $state(/** @type {'orgs' | 'roster' | 'admins'} */ ('orgs'));
+	let editClubOpen = $state(false);
+	/** @type {Record<string, unknown> & { id: string } | null} */
+	let selectedClub = $state(null);
+
+	let orgSearch = $state('');
+	let orgPage = $state(0);
+	let rosterSearch = $state('');
+	let rosterPage = $state(0);
+
+	/** @type {Record<string, Record<string, unknown>>} */
+	let entitlementByClubId = $state({});
+	let entitlementsLoading = $state(false);
+
+	$effect(() => {
+		void orgSearch;
+		orgPage = 0;
+	});
+
+	$effect(() => {
+		void rosterSearch;
+		rosterPage = 0;
+	});
+
+	$effect(() => {
+		if (authStore.role !== 'super_admin') return;
+		if (accountsTab !== 'orgs') return;
+		const clubs = teamsStore.clubs;
+		const ids = clubs.map((c) => c.id).filter(Boolean);
+		if (ids.length === 0) {
+			entitlementByClubId = {};
+			return;
+		}
+		let cancelled = false;
+		entitlementsLoading = true;
+		void (async () => {
+			try {
+				const snaps = await Promise.all(ids.map((id) => getDoc(doc(db, 'license_entitlements', id))));
+				if (cancelled) return;
+				/** @type {Record<string, Record<string, unknown>>} */
+				const next = {};
+				snaps.forEach((snap, i) => {
+					if (snap.exists()) next[ids[i]] = /** @type {Record<string, unknown>} */ (snap.data());
+				});
+				entitlementByClubId = next;
+			} catch (e) {
+				console.error('[AccountsTab] license_entitlements batch', e);
+			} finally {
+				if (!cancelled) entitlementsLoading = false;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	const filteredClubs = $derived.by(() => {
+		const q = orgSearch.trim().toLowerCase();
+		const list = teamsStore.clubs;
+		if (!q) return list;
+		return list.filter((cl) => {
+			const name = (cl.name || '').toLowerCase();
+			const id = (cl.id || '').toLowerCase();
+			const sport = (cl.sport || '').toLowerCase();
+			const dir = (cl.directorEmail || '').toLowerCase();
+			return name.includes(q) || id.includes(q) || sport.includes(q) || dir.includes(q);
+		});
+	});
+
+	const orgTotalPages = $derived(Math.max(1, Math.ceil(filteredClubs.length / PAGE_SIZE)));
+
+	const pagedClubs = $derived.by(() => {
+		const start = orgPage * PAGE_SIZE;
+		return filteredClubs.slice(start, start + PAGE_SIZE);
+	});
+
+	$effect(() => {
+		if (orgPage > orgTotalPages - 1) orgPage = Math.max(0, orgTotalPages - 1);
+	});
+
+	/**
+	 * @param {Record<string, unknown> | undefined} ent
+	 * @param {boolean} isInfinite
+	 */
+	function licenseUsedCount(ent, isInfinite) {
+		if (isInfinite) return { used: 0, limit: 0, pct: 0 };
+		if (!ent) return { used: 0, limit: 0, pct: 0 };
+		const lim = typeof ent.seats_limit === 'number' ? ent.seats_limit : 0;
+		const a = typeof ent.active_seats === 'number' ? ent.active_seats : 0;
+		const r = typeof ent.reserved_seats === 'number' ? ent.reserved_seats : 0;
+		const used = a + r;
+		const pct = lim > 0 ? Math.min(100, (used / lim) * 100) : 0;
+		return { used, limit: lim, pct };
+	}
+
+	/**
+	 * @param {number} pct
+	 */
+	function licenseStressClass(pct) {
+		if (pct > 90) return 'accounts-tab__gauge-fill--crit';
+		if (pct > 70) return 'accounts-tab__gauge-fill--warn';
+		return 'accounts-tab__gauge-fill--ok';
+	}
 
 	/** @typedef {{ id: string, displayName: string, teamId: string, teamLabel: string, statsDocId: string, playerEmail: string, jersey: string | null, ageGroup: string | null, position: string | null, status: 'active' | 'pending', lastActiveLabel: string }} PlatformPlayerRow */
 
@@ -16,10 +123,41 @@
 	let platformLoading = $state(false);
 	let platformErr = $state('');
 
-	let accountsTab = $state(/** @type {'orgs' | 'roster' | 'admins'} */ ('orgs'));
-	let editClubOpen = $state(false);
-	/** @type {Record<string, unknown> & { id: string } | null} */
-	let selectedClub = $state(null);
+	const filteredRoster = $derived.by(() => {
+		const q = rosterSearch.trim().toLowerCase();
+		if (!q) return platformPlayers;
+		return platformPlayers.filter((row) => {
+			const hay = [
+				row.displayName,
+				row.teamLabel,
+				row.playerEmail,
+				row.lastActiveLabel,
+				row.ageGroup || '',
+			]
+				.join(' ')
+				.toLowerCase();
+			return hay.includes(q);
+		});
+	});
+
+	const rosterTotalPages = $derived(Math.max(1, Math.ceil(filteredRoster.length / PAGE_SIZE)));
+
+	const pagedRoster = $derived.by(() => {
+		const start = rosterPage * PAGE_SIZE;
+		return filteredRoster.slice(start, start + PAGE_SIZE);
+	});
+
+	$effect(() => {
+		if (rosterPage > rosterTotalPages - 1) rosterPage = Math.max(0, rosterTotalPages - 1);
+	});
+
+	const selectedEntitlement = $derived(
+		selectedClub?.id ? entitlementByClubId[selectedClub.id] ?? null : null,
+	);
+
+	const selectedTeamsCount = $derived(
+		selectedClub ? teamsStore.teams.filter((t) => t.clubId === selectedClub.id).length : 0,
+	);
 
 	/**
 	 * @param {string} teamName
@@ -202,16 +340,31 @@
 		}
 	};
 
+	/**
+	 * @param {string} id
+	 * @returns {Promise<boolean>}
+	 */
 	const deleteClub = async (id) => {
-		if (!confirm(`WARNING: Delete club '${id}'? This cannot be undone.`)) return;
+		if (!confirm(`WARNING: Delete club '${id}'? This cannot be undone.`)) return false;
 		await deleteDoc(doc(db, 'clubs', id));
 		await logSecurityEvent('DELETE_CLUB', id, 'Club deleted permanently');
 		alert('Club deleted. Refresh to update.');
 		await teamsStore.load('super_admin', {
-				scope: 'admin_full',
-				routePath: get(page).url.pathname,
-			});
+			scope: 'admin_full',
+			routePath: get(page).url.pathname,
+		});
+		return true;
 	};
+
+	async function deleteSelectedClubFromDrawer() {
+		if (!selectedClub?.id) return false;
+		const ok = await deleteClub(selectedClub.id);
+		if (ok) {
+			editClubOpen = false;
+			selectedClub = null;
+		}
+		return ok;
+	}
 
 	const addTeam = async () => {
 		if (!adminTeamClubSel || !adminTeamName.trim() || !adminTeamId.trim()) {
@@ -343,63 +496,125 @@
 			<div class="card">
 				<div class="card-header">🏢 Registered Organizations</div>
 				<div class="card-body">
-					<div class="ec-table-wrap">
-						<table class="admin-table">
+					<label class="accounts-tab__search-label" for="accounts-org-search">Search organizations</label>
+					<input
+						id="accounts-org-search"
+						type="search"
+						class="accounts-tab__search-input"
+						bind:value={orgSearch}
+						placeholder="Search by name, ID, sport, director…"
+						autocomplete="off"
+					/>
+					<div class="accounts-tab__table-wrap">
+						<table class="admin-table accounts-tab__orgs-table">
 							<thead>
 								<tr>
-									<th>ID</th>
-									<th>Name</th>
+									<th class="accounts-tab__th-logo">Logo</th>
+									<th>Club name</th>
 									<th>Sport</th>
-									<th>License</th>
 									<th>Director</th>
-									<th>Action</th>
+									<th>License</th>
+									<th class="accounts-tab__th-action">Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								{#each teamsStore.clubs as cl}
+								{#if pagedClubs.length === 0}
 									<tr
-										class="accounts-tab__org-row"
-										onclick={() => openEditClub(cl)}
-										onkeydown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') {
-												e.preventDefault();
-												openEditClub(cl);
-											}
-										}}
-										role="button"
-										tabindex="0"
+										><td colspan="6" class="text-center"
+											>{filteredClubs.length === 0 ? 'No clubs match your search.' : 'No clubs.'}</td
+										></tr
 									>
-										<td>{cl.id}</td>
-										<td>{cl.name}</td>
-										<td>{cl.sport || '—'}</td>
-										<td>
-											{#if cl.isInfinite === true}
-												<span class="accounts-tab__pill">Infinite</span>
-											{:else}
-												<span class="accounts-tab__pill-muted">Standard</span>
-											{/if}
-										</td>
-										<td>{cl.directorEmail || '—'}</td>
-										<td>
-											<button
-												type="button"
-												class="delete-btn"
-												onclick={(e) => {
-													e.stopPropagation();
-													deleteClub(cl.id);
-												}}
-											>
-												🗑️
-											</button>
-										</td>
-									</tr>
 								{:else}
-									<tr><td colspan="6" class="text-center">No clubs.</td></tr>
-								{/each}
+									{#each pagedClubs as cl (cl.id)}
+										<tr class="accounts-tab__org-row">
+											<td class="accounts-tab__td-logo">
+												{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
+													<img
+														class="accounts-tab__club-logo"
+														src={cl.logoUrl.trim()}
+														alt=""
+													/>
+												{:else}
+													<div class="accounts-tab__logo-fallback" aria-hidden="true">
+														<i class="ph {clubSportIconClass(cl.sport)}"></i>
+													</div>
+												{/if}
+											</td>
+											<td class="accounts-tab__td-name">
+												<span class="accounts-tab__club-title">{cl.name || '—'}</span>
+												<span class="accounts-tab__club-id">{cl.id}</span>
+											</td>
+											<td>{cl.sport || '—'}</td>
+											<td class="accounts-tab__td-ellipsis">{cl.directorEmail || '—'}</td>
+											<td class="accounts-tab__td-license">
+												{#if cl.isInfinite === true}
+													<span class="accounts-tab__promo-badge" title="Unlimited enterprise / promo">
+														∞ PROMO
+													</span>
+												{:else}
+													{@const ent = entitlementByClubId[cl.id]}
+													{#if entitlementsLoading && ent === undefined}
+														<span class="accounts-tab__license-muted">…</span>
+													{:else}
+														{@const u = licenseUsedCount(ent, false)}
+														{#if u.limit > 0}
+															<div class="accounts-tab__gauge" title="Seats used vs licensed cap">
+																<div class="accounts-tab__gauge-track">
+																	<div
+																		class="accounts-tab__gauge-fill {licenseStressClass(u.pct)}"
+																		style="width: {u.pct}%"
+																	></div>
+																</div>
+																<span class="accounts-tab__gauge-label">{u.used} / {u.limit} seats</span>
+															</div>
+														{:else}
+															<span class="accounts-tab__license-muted">No cap set</span>
+														{/if}
+													{/if}
+												{/if}
+											</td>
+											<td class="accounts-tab__td-action">
+												<button
+													type="button"
+													class="accounts-tab__manage-btn"
+													onclick={() => openEditClub(cl)}
+													aria-label="Manage {cl.name || cl.id}"
+												>
+													<i class="ph ph-dots-three" aria-hidden="true"></i>
+												</button>
+											</td>
+										</tr>
+									{/each}
+								{/if}
 							</tbody>
 						</table>
 					</div>
-					<p class="accounts-tab__hint">Click a row to edit sport and promo license settings.</p>
+					<div class="accounts-tab__pager" role="navigation" aria-label="Organizations pagination">
+						<button
+							type="button"
+							class="accounts-tab__page-btn"
+							disabled={orgPage <= 0}
+							onclick={() => (orgPage = Math.max(0, orgPage - 1))}
+						>
+							Prev
+						</button>
+						<span class="accounts-tab__page-info">
+							Page {orgPage + 1} / {orgTotalPages}
+							<span class="accounts-tab__page-count">({filteredClubs.length} orgs)</span>
+						</span>
+						<button
+							type="button"
+							class="accounts-tab__page-btn"
+							disabled={orgPage >= orgTotalPages - 1}
+							onclick={() => (orgPage = Math.min(orgTotalPages - 1, orgPage + 1))}
+						>
+							Next
+						</button>
+					</div>
+					<p class="accounts-tab__hint">
+						Use Manage (<i class="ph ph-dots-three" aria-hidden="true"></i>) for full club details,
+						Stripe IDs, and teams count. Club ID is shown under the name.
+					</p>
 					<hr class="section-divider" />
 					<label for="admin-new-club-id">Add New Club</label>
 					<div class="admin-input-row">
@@ -484,7 +699,7 @@
 		<div class="bento-section accounts-tab__panel" role="tabpanel">
 			<div class="card">
 				<div class="card-header">📋 Platform Roster (Linked Players)</div>
-				<div class="card-body p-0">
+				<div class="card-body accounts-tab__roster-stack">
 					{#if authStore.role !== 'super_admin'}
 						<p class="admin-roster-hint">Super admin only.</p>
 					{:else if platformLoading}
@@ -494,8 +709,19 @@
 					{:else if platformPlayers.length === 0}
 						<div class="session-empty">No players in player_lookup.</div>
 					{:else}
-						<div class="ec-table-wrap">
-							<table class="ec-table">
+						<div class="accounts-tab__roster-toolbar">
+							<label class="accounts-tab__search-label" for="accounts-roster-search">Search roster</label>
+							<input
+								id="accounts-roster-search"
+								type="search"
+								class="accounts-tab__search-input"
+								bind:value={rosterSearch}
+								placeholder="Search player, team, email, last active…"
+								autocomplete="off"
+							/>
+						</div>
+						<div class="accounts-tab__table-wrap">
+							<table class="admin-table accounts-tab__roster-table">
 								<thead>
 									<tr>
 										<th>Player</th>
@@ -507,31 +733,61 @@
 									</tr>
 								</thead>
 								<tbody>
-									{#each platformPlayers as row (row.id)}
+									{#if pagedRoster.length === 0}
 										<tr
-											class="ec-table__row-click"
-											onclick={() => openAdminPlayer(row)}
-											onkeydown={(e) => {
-												if (e.key === 'Enter' || e.key === ' ') {
-													e.preventDefault();
-													openAdminPlayer(row);
-												}
-											}}
-											role="button"
-											tabindex="0"
+											><td colspan="6" class="text-center"
+												>{filteredRoster.length === 0 ? 'No players match your search.' : 'No rows.'}</td
+											></tr
 										>
-											<td class="ec-table__strong">{row.displayName}</td>
-											<td class="ec-muted">{row.teamLabel}</td>
-											<td>{row.ageGroup || '—'}</td>
-											<td class="ec-muted">—</td>
-											<td>
-												<span class="ec-pill ec-pill--ok">Active</span>
-											</td>
-											<td class="ec-muted">{row.lastActiveLabel}</td>
-										</tr>
-									{/each}
+									{:else}
+										{#each pagedRoster as row (row.id)}
+											<tr
+												class="accounts-tab__roster-row"
+												onclick={() => openAdminPlayer(row)}
+												onkeydown={(e) => {
+													if (e.key === 'Enter' || e.key === ' ') {
+														e.preventDefault();
+														openAdminPlayer(row);
+													}
+												}}
+												role="button"
+												tabindex="0"
+											>
+												<td class="accounts-tab__td-strong">{row.displayName}</td>
+												<td class="accounts-tab__td-muted">{row.teamLabel}</td>
+												<td>{row.ageGroup || '—'}</td>
+												<td class="accounts-tab__td-muted">—</td>
+												<td>
+													<span class="ec-pill ec-pill--ok">Active</span>
+												</td>
+												<td class="accounts-tab__td-muted">{row.lastActiveLabel}</td>
+											</tr>
+										{/each}
+									{/if}
 								</tbody>
 							</table>
+						</div>
+						<div class="accounts-tab__pager" role="navigation" aria-label="Platform roster pagination">
+							<button
+								type="button"
+								class="accounts-tab__page-btn"
+								disabled={rosterPage <= 0}
+								onclick={() => (rosterPage = Math.max(0, rosterPage - 1))}
+							>
+								Prev
+							</button>
+							<span class="accounts-tab__page-info">
+								Page {rosterPage + 1} / {rosterTotalPages}
+								<span class="accounts-tab__page-count">({filteredRoster.length} players)</span>
+							</span>
+							<button
+								type="button"
+								class="accounts-tab__page-btn"
+								disabled={rosterPage >= rosterTotalPages - 1}
+								onclick={() => (rosterPage = Math.min(rosterTotalPages - 1, rosterPage + 1))}
+							>
+								Next
+							</button>
 						</div>
 					{/if}
 				</div>
@@ -576,11 +832,17 @@
 	{/if}
 </div>
 
-<AdminEditClubDrawer bind:open={editClubOpen} club={selectedClub} />
+<AdminEditClubDrawer
+	bind:open={editClubOpen}
+	club={selectedClub}
+	entitlement={selectedEntitlement}
+	teamsCount={selectedTeamsCount}
+	onDeleteClub={deleteSelectedClubFromDrawer}
+/>
 
 <style>
-	select,
-	input {
+	.accounts-tab :global(select),
+	.accounts-tab :global(input:not(.accounts-tab__search-input)) {
 		margin-bottom: 10px;
 	}
 	.section-divider {

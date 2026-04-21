@@ -7,10 +7,15 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/** @type {{ id: string, name?: string, sport?: string, isInfinite?: boolean, directorEmail?: string } | null} */
+	/** @type {{ id: string, name?: string, sport?: string, isInfinite?: boolean, directorEmail?: string, logoUrl?: string, createdAt?: import('firebase/firestore').Timestamp | Date | unknown } | null} */
 	let {
 		club = null,
 		open = $bindable(false),
+		/** Snapshot from `license_entitlements/{clubId}` for read-only admin detail. */
+		entitlement = /** @type {Record<string, unknown> | null} */ (null),
+		teamsCount = 0,
+		/** When set, shows a destructive delete control (parent runs confirm + Firestore). */
+		onDeleteClub = /** @type {(() => void | Promise<void>) | undefined} */ (undefined),
 	} = $props();
 
 	/** @type {'soccer'|'basketball'|'baseball'|'football'|'volleyball'|'hockey'|'lacrosse'|'generic'} */
@@ -41,6 +46,38 @@
 	function close() {
 		open = false;
 		err = '';
+	}
+
+	/**
+	 * @param {unknown} raw
+	 */
+	function formatCreatedAt(raw) {
+		if (!raw) return '—';
+		if (typeof raw === 'object' && raw !== null && 'toDate' in raw) {
+			const fn = /** @type {Record<string, unknown>} */ (raw)['toDate'];
+			if (typeof fn === 'function') {
+				try {
+					const d = /** @type {() => Date} */ (fn).call(raw);
+					return d instanceof Date ? d.toLocaleString() : '—';
+				} catch {
+					return '—';
+				}
+			}
+		}
+		if (raw instanceof Date) return raw.toLocaleString();
+		return '—';
+	}
+
+	let deleting = $state(false);
+	async function runDelete() {
+		if (!onDeleteClub) return;
+		deleting = true;
+		try {
+			const r = await Promise.resolve(onDeleteClub());
+			if (r !== false) close();
+		} finally {
+			deleting = false;
+		}
 	}
 
 	async function save() {
@@ -88,6 +125,28 @@
 			<p class="admin-edit-club-panel__meta">Club ID: <strong>{club.id}</strong></p>
 			<p class="admin-edit-club-panel__meta">Name: {club.name || '—'}</p>
 
+			<div class="admin-edit-club-panel__detail-block">
+				<h3 class="admin-edit-club-panel__detail-heading">Details</h3>
+				<p class="admin-edit-club-panel__meta">Created: {formatCreatedAt(club.createdAt)}</p>
+				<p class="admin-edit-club-panel__meta">Teams in org: <strong>{teamsCount}</strong></p>
+				{#if entitlement}
+					<p class="admin-edit-club-panel__meta admin-edit-club-panel__mono">
+						Stripe customer:
+						{typeof entitlement.stripe_customer_id === 'string' && entitlement.stripe_customer_id.trim() ?
+							entitlement.stripe_customer_id
+						:	'—'}
+					</p>
+					<p class="admin-edit-club-panel__meta admin-edit-club-panel__mono">
+						Stripe subscription:
+						{typeof entitlement.stripe_subscription_id === 'string' && entitlement.stripe_subscription_id.trim() ?
+							entitlement.stripe_subscription_id
+						:	'—'}
+					</p>
+				{:else}
+					<p class="admin-edit-club-panel__meta">No entitlement document loaded.</p>
+				{/if}
+			</div>
+
 			<label class="admin-edit-club-panel__label" for="admin-edit-club-sport">Sport</label>
 			<select id="admin-edit-club-sport" bind:value={editSport} class="admin-edit-club-panel__select">
 				<option value="soccer">Soccer</option>
@@ -118,6 +177,20 @@
 
 			{#if err}
 				<p class="admin-edit-club-panel__err" role="alert">{err}</p>
+			{/if}
+
+			{#if onDeleteClub}
+				<div class="admin-edit-club-panel__danger">
+					<p class="admin-edit-club-panel__danger-label">Danger zone</p>
+					<button
+						type="button"
+						class="delete-btn admin-edit-club-panel__delete-org"
+						onclick={runDelete}
+						disabled={saving || deleting}
+					>
+						{deleting ? 'Deleting…' : 'Delete organization'}
+					</button>
+				</div>
 			{/if}
 
 			<div class="admin-edit-club-panel__actions">
@@ -287,5 +360,59 @@
 		justify-content: flex-end;
 		margin-top: auto;
 		padding-top: 16px;
+	}
+
+	.admin-edit-club-panel__detail-block {
+		padding: 12px;
+		border: 1px solid #e5e5e5;
+		border-radius: 10px;
+		background: #fafafa;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	:global(html.dark) .admin-edit-club-panel__detail-block {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	.admin-edit-club-panel__detail-heading {
+		margin: 0 0 4px;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-secondary);
+	}
+
+	.admin-edit-club-panel__mono {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-size: 0.78rem;
+		word-break: break-all;
+	}
+
+	.admin-edit-club-panel__danger {
+		margin-top: 8px;
+		padding-top: 16px;
+		border-top: 1px dashed rgba(220, 38, 38, 0.35);
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.admin-edit-club-panel__danger-label {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--danger-red, #b91c1c);
+	}
+
+	.admin-edit-club-panel__delete-org {
+		align-self: flex-start;
+		padding: 8px 12px;
+		font-weight: 600;
 	}
 </style>
