@@ -50,6 +50,7 @@
 	 * @param {{ id: string; label: string; href: string }} item
 	 */
 	function pick(item) {
+		workspaceContextStore.resetScope();
 		workspaceContextStore.setPivot(item.id);
 		const ctx = getContextFromHref(item.href);
 		if (ctx) workspaceContextStore.setActiveContext(ctx);

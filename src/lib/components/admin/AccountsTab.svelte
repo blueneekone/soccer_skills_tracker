@@ -1,4 +1,6 @@
 <script>
+	import { get } from 'svelte/store';
+	import { page } from '$app/stores';
 	import { auth, db } from '$lib/firebase.js';
 	import { collection, doc, setDoc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -189,7 +191,10 @@
 			newClubName = '';
 			newClubSport = 'soccer';
 			newClubDirector = '';
-			await teamsStore.load('super_admin');
+			await teamsStore.load('super_admin', {
+				scope: 'admin_full',
+				routePath: get(page).url.pathname,
+			});
 		} catch (e) {
 			alert('Error: ' + e.message);
 		} finally {
@@ -202,7 +207,10 @@
 		await deleteDoc(doc(db, 'clubs', id));
 		await logSecurityEvent('DELETE_CLUB', id, 'Club deleted permanently');
 		alert('Club deleted. Refresh to update.');
-		await teamsStore.load('super_admin');
+		await teamsStore.load('super_admin', {
+				scope: 'admin_full',
+				routePath: get(page).url.pathname,
+			});
 	};
 
 	const addTeam = async () => {
@@ -235,7 +243,10 @@
 			adminTeamId = '';
 			adminTeamName = '';
 			adminTeamCoach = '';
-			await teamsStore.load('super_admin');
+			await teamsStore.load('super_admin', {
+				scope: 'admin_full',
+				routePath: get(page).url.pathname,
+			});
 		} catch (e) {
 			alert('Error: ' + e.message);
 		} finally {
@@ -253,7 +264,10 @@
 			await logSecurityEvent('GRANT_SUPER_ADMIN', email, 'Added to global config');
 			alert('Global Admin Added!');
 			newAdminEmail = '';
-			await teamsStore.load('super_admin');
+			await teamsStore.load('super_admin', {
+				scope: 'admin_full',
+				routePath: get(page).url.pathname,
+			});
 		} catch (e) {
 			alert('Error: ' + e.message);
 		} finally {
@@ -266,7 +280,10 @@
 		const newList = teamsStore.admins.filter((e) => e !== email);
 		await setDoc(doc(db, 'config', 'admins'), { list: newList });
 		await logSecurityEvent('REVOKE_SUPER_ADMIN', email, 'Removed from global config');
-		await teamsStore.load('super_admin');
+		await teamsStore.load('super_admin', {
+			scope: 'admin_full',
+			routePath: get(page).url.pathname,
+		});
 	};
 
 	const assignDirector = async () => {

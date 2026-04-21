@@ -1,4 +1,6 @@
 <script>
+	import { get } from 'svelte/store';
+	import { page } from '$app/stores';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -227,7 +229,11 @@
 			);
 			newTeamName = '';
 			newCoachEmail = '';
-			await teamsStore.load('director', { clubId });
+			await teamsStore.load('director', {
+				clubId,
+				scope: 'club',
+				routePath: get(page).url.pathname,
+			});
 		} catch (e) {
 			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
 		} finally {

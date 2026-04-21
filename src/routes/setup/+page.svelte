@@ -45,8 +45,10 @@
 	// Load clubs for dropdowns
 	$effect(() => {
 		if (authStore.isAuthenticated && !teamsStore.loaded) {
-			teamsStore.load(authStore.role, {
-				coachEmail: auth.currentUser?.email ?? ''
+			teamsStore.load(authStore.role || 'player', {
+				coachEmail: auth.currentUser?.email ?? '',
+				scope: 'setup',
+				routePath: '/setup',
 			});
 		}
 	});

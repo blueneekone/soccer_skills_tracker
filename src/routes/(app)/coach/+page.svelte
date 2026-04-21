@@ -47,10 +47,9 @@
 	const userEmail = $derived(authStore.user?.email || '');
 	const clubId = $derived(authStore.userProfile?.clubId);
 
-	// Which teams to show
+	// Coach workspace: only teams this user heads or assists — never the full org catalog.
 	const myTeams = $derived(() => {
 		if (!teamsStore.loaded || !userEmail) return [];
-		if (role === 'super_admin' || role === 'director') return teamsStore.teams;
 		return teamsStore.getCoachTeams(userEmail);
 	});
 

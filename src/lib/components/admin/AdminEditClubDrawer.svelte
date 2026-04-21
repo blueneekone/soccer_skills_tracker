@@ -1,4 +1,6 @@
 <script>
+	import { get } from 'svelte/store';
+	import { page } from '$app/stores';
 	import { db } from '$lib/firebase.js';
 	import { doc, setDoc } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -55,7 +57,10 @@
 				{ merge: true }
 			);
 			await logSecurityEvent('ADMIN_EDIT_CLUB', club.id, `sport=${editSport}; infinite=${editInfinite}`);
-			await teamsStore.load('super_admin');
+			await teamsStore.load('super_admin', {
+				scope: 'admin_full',
+				routePath: get(page).url.pathname,
+			});
 			open = false;
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not save club.';

@@ -53,14 +53,6 @@
 	});
 
 	$effect(() => {
-		if (!authStore.isAuthenticated) return;
-		teamsStore.load(authStore.role, {
-			clubId: authStore.userProfile?.clubId,
-			coachEmail: authStore.user?.email
-		});
-	});
-
-	$effect(() => {
 		if (!profile) return;
 		playerName = String(profile.playerName ?? '');
 		privacyProfile = String(profile.privacyProfile ?? 'strict_minor_defaults');

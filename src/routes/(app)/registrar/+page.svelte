@@ -31,13 +31,10 @@
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
 
 	const clubId = $derived(authStore.userProfile?.clubId || '');
-	const allTeams = $derived(teamsStore.teams);
 	const clubTeams = $derived(
 		clubId ? teamsStore.teams.filter((t) => t.clubId === clubId) : []
 	);
-	const scopeTeams = $derived(
-		authStore.role === 'super_admin' ? allTeams : clubTeams
-	);
+	const scopeTeams = $derived(clubTeams);
 
 	let addName = $state('');
 	let addEmail = $state('');
@@ -60,17 +57,7 @@
 	let tableLoading = $state(false);
 	let tableErr = $state('');
 
-	const xferTeamChoices = $derived(
-		authStore.role === 'super_admin' ? allTeams : clubTeams
-	);
-
-	$effect(() => {
-		if (!authStore.isAuthenticated) return;
-		teamsStore.load(authStore.role, {
-			clubId: authStore.userProfile?.clubId,
-			coachEmail: authStore.user?.email
-		});
-	});
+	const xferTeamChoices = $derived(clubTeams);
 
 	$effect(() => {
 		if (scopeTeams.length && !addTeamId) addTeamId = scopeTeams[0].id;

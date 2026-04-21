@@ -1,9 +1,11 @@
 <script>
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { teamsStore, resolveTeamsLoadScope } from '$lib/stores/teams.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
@@ -49,12 +51,16 @@
 		}
 	});
 
-	// Load teams + workouts once auth is ready
+	// Scoped teams/clubs by route + role (never full `teams` except Super Admin on /admin).
 	$effect(() => {
 		if (!authStore.isAuthenticated || authStore.isLoading) return;
-		teamsStore.load(authStore.role, {
+		const path = $page.url.pathname;
+		const scope = resolveTeamsLoadScope(path, authStore.role);
+		void teamsStore.load(authStore.role, {
 			clubId: authStore.userProfile?.clubId,
-			coachEmail: authStore.user?.email
+			coachEmail: authStore.user?.email,
+			scope,
+			routePath: path,
 		});
 		if (authStore.userProfile?.teamId) {
 			const effectiveTid =
@@ -67,6 +73,41 @@
 		}
 		if (authStore.userProfile?.teamId && authStore.userProfile.teamId !== 'admin') {
 			brandingStore.loadForTeam(authStore.userProfile.teamId);
+		}
+	});
+
+	// Reset club/team scope on navigation so Context Switcher pivots do not bleed tenants.
+	$effect(() => {
+		if (!browser || !authStore.isAuthenticated || authStore.isLoading) return;
+		const path = $page.url.pathname;
+		const pivot = workspaceContextStore.activePivotKey;
+		const prof = authStore.userProfile;
+
+		workspaceContextStore.resetScope();
+
+		if (path.startsWith('/admin')) {
+			workspaceContextStore.setActiveContext('admin');
+		} else if (path.startsWith('/director')) {
+			const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+			if (cid) workspaceContextStore.setActiveClubId(cid);
+			workspaceContextStore.setActiveContext('director');
+		} else if (path.startsWith('/registrar')) {
+			const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+			if (cid) workspaceContextStore.setActiveClubId(cid);
+			workspaceContextStore.setActiveContext('registrar');
+		} else if (path.startsWith('/coach')) {
+			const m = /^ctx-coach-(.+)$/.exec(pivot);
+			if (m?.[1]) workspaceContextStore.setActiveTeamId(m[1]);
+			else if (prof?.teamId && prof.teamId !== 'admin') {
+				workspaceContextStore.setActiveTeamId(prof.teamId);
+			}
+			workspaceContextStore.setActiveContext('coach');
+		} else if (path.startsWith('/recruiter')) {
+			workspaceContextStore.setActiveContext('admin');
+		} else if (path.startsWith('/parent')) {
+			workspaceContextStore.setActiveContext('household');
+		} else {
+			workspaceContextStore.setActiveContext('household');
 		}
 	});
 
