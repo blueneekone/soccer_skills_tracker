@@ -539,7 +539,10 @@
 	}
 
 	.epd__skills-card {
-		padding: 16px;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.25rem;
 		border-radius: 14px;
 		border: 1px solid #e5e5e5;
 		background: #fafafa;
@@ -568,7 +571,10 @@
 	}
 
 	.epd__trophy {
-		padding: 16px;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.25rem;
 		border-radius: 14px;
 		border: 1px solid #e5e5e5;
 		background: #fafafa;
@@ -600,6 +606,8 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 10px;
+		align-items: stretch;
+		flex: 1 1 auto;
 	}
 
 	@media (min-width: 640px) {
@@ -614,7 +622,8 @@
 		align-items: center;
 		text-align: center;
 		gap: 6px;
-		padding: 12px 8px;
+		height: 100%;
+		padding: 1.25rem;
 		border-radius: 12px;
 		border: 1px solid #e5e5e5;
 		background: #ffffff;

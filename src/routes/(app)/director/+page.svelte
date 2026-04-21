@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import FieldOpsModule from '$lib/components/director/os/FieldOpsModule.svelte';
@@ -30,10 +29,6 @@
 	});
 
 	const activeTab = $derived($page.url.searchParams.get('tab') || 'home');
-
-	function navigateDirectorTab(/** @type {string} */ id) {
-		goto(`/director?tab=${encodeURIComponent(id)}`, { replaceState: true, noScroll: true });
-	}
 </script>
 
 <div class="director-console-page">
@@ -46,7 +41,7 @@
 
 	{#if activeTab === 'home'}
 		<section class="director-console-page__section director-console-page__section--flush">
-			<DirectorCommandCenter {clubId} onNavigateTab={navigateDirectorTab} />
+			<DirectorCommandCenter {clubId} />
 		</section>
 	{:else if activeTab === 'field'}
 		<section class="director-console-page__section">

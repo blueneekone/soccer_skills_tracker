@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
@@ -22,11 +23,13 @@
 	import PlaybookModule from '$lib/components/coach/PlaybookModule.svelte';
 	import VerificationQueue from '$lib/components/coach/VerificationQueue.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
 	const TABS = [
+		{ id: 'home', label: '🏠 Home', icon: 'ph-house' },
 		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
 		{ id: 'playbook', label: '📘 Playbook', icon: 'ph-book-open' },
 		{ id: 'videos', label: '🎬 Videos', icon: 'ph-video-camera' },
@@ -39,7 +42,7 @@
 		{ id: 'tools', label: '⚙️ Tools', icon: 'ph-gear' }
 	];
 
-	let activeTab = $state('roster');
+	let activeTab = $state('home');
 	let selectedTeamId = $state('');
 	let players = $state([]);
 	let coachInviteClaimTried = $state(false);
@@ -108,7 +111,7 @@
 	const onWorkoutSaved = () => workoutsStore.loadForTeam(selectedTeamId);
 
 	$effect(() => {
-		const t = $page.url.searchParams.get('tab') || 'roster';
+		const t = $page.url.searchParams.get('tab') || 'home';
 		if (!TABS.some((x) => x.id === t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
@@ -117,12 +120,12 @@
 	 * @param {string} id
 	 */
 	function onCoachTabPick(id) {
-		goto(`/coach?tab=${encodeURIComponent(id)}`, { replaceState: true, noScroll: true });
+		goto(resolve(`/coach?tab=${encodeURIComponent(id)}`), { replaceState: true, noScroll: true });
 	}
 </script>
 
 <div class="ec-page ec-coach">
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch">
 		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
 			<div class="coach-portal-title">
 				{#if clubId}
@@ -137,7 +140,26 @@
 			<TabBar tabs={TABS} bind:activeTab variant="coach" onPick={onCoachTabPick} />
 
 			<div class="tab-content">
-				{#if activeTab === 'roster'}
+				{#if activeTab === 'home'}
+					<div class="coach-home-grid">
+						<div class="ec-panel coach-home-card">
+							<div class="coach-home-card__head">Team leaderboard snapshot</div>
+							<TeamLeaderboard teamIdForStaff={selectedTeamId} compact />
+						</div>
+						<div class="ec-panel coach-home-card">
+							<div class="coach-home-card__head">Roster snapshot</div>
+							{#if players.length === 0}
+								<p class="coach-home-card__empty">No roster data yet for this team.</p>
+							{:else}
+								<ul class="coach-home-roster" aria-label="Roster snapshot">
+									{#each players.slice(0, 12) as playerName (playerName)}
+										<li>{playerName}</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
+					</div>
+				{:else if activeTab === 'roster'}
 					<RosterTab teamId={selectedTeamId} teams={myTeams} />
 				{:else if activeTab === 'playbook'}
 					<PlaybookModule teamId={selectedTeamId} />
@@ -171,7 +193,7 @@
 					<div class="ec-coach__select-body">
 						<label class="ec-coach__label" for="coach-dir-team">View Team Data</label>
 						<select id="coach-dir-team" bind:value={selectedTeamId}>
-							{#each myTeams as t}
+							{#each myTeams as t (t.id)}
 								<option value={t.id}>{t.name}</option>
 							{/each}
 						</select>
@@ -182,7 +204,7 @@
 					<div class="ec-coach__select-body">
 						<label class="ec-coach__label" for="coach-team-pick">Team</label>
 						<select id="coach-team-pick" bind:value={selectedTeamId} aria-label="Select team">
-							{#each myTeams as t}
+							{#each myTeams as t (t.id)}
 								<option value={t.id}>{t.name}</option>
 							{/each}
 						</select>
@@ -190,27 +212,30 @@
 				</div>
 			{/if}
 
-			<div class="ec-panel ec-coach-quick">
-				<div class="ec-coach-quick__inner">
-					<div class="ec-coach-quick__head">Quick navigation</div>
-					<div class="tw-flex tw-flex-col tw-gap-2">
-					{#each [
-						{ id: 'roster', label: 'Roster' },
-						{ id: 'playbook', label: 'Playbook' },
-						{ id: 'matchday', label: 'Match Day' },
-						{ id: 'plan', label: 'Plan' }
-					] as q}
-						<button
-							type="button"
-							class="ec-coach-quick__btn"
-							onclick={() => onCoachTabPick(q.id)}
-						>
-							{q.label}
-						</button>
-					{/each}
+			{#if activeTab !== 'home'}
+				<div class="ec-panel ec-coach-quick">
+					<div class="ec-coach-quick__inner">
+						<div class="ec-coach-quick__head">Quick navigation</div>
+						<div class="tw-flex tw-flex-col tw-gap-2">
+						{#each [
+							{ id: 'home', label: 'Home' },
+							{ id: 'roster', label: 'Roster' },
+							{ id: 'playbook', label: 'Playbook' },
+							{ id: 'videos', label: 'Videos' },
+							{ id: 'matchday', label: 'Match Day' }
+						] as q (q.id)}
+							<button
+								type="button"
+								class="ec-coach-quick__btn"
+								onclick={() => onCoachTabPick(q.id)}
+							>
+								{q.label}
+							</button>
+						{/each}
+						</div>
 					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -317,6 +342,59 @@
 
 	.ec-coach-quick__btn:hover {
 		background: #ffffff;
+	}
+
+	.coach-home-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 12px;
+		align-items: stretch;
+	}
+
+	.coach-home-card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.25rem;
+	}
+
+	.coach-home-card__head {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
+		margin-bottom: 10px;
+	}
+
+	.coach-home-card__empty {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+	}
+
+	.coach-home-roster {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 8px;
+		flex: 1 1 auto;
+	}
+
+	.coach-home-roster li {
+		border: 1px solid #e5e5e5;
+		border-radius: 10px;
+		background: #fafafa;
+		padding: 8px 10px;
+		font-size: 0.9rem;
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .coach-home-roster li {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: #0f0f11;
 	}
 
 	:global(html.dark) .ec-coach-quick__btn {

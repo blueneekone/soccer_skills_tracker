@@ -1,14 +1,13 @@
 <script>
 	import { browser } from '$app/environment';
-	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { collection, doc, query, where, getDoc, getDocs, getCountFromServer } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	/** @type {{ clubId?: string, teamId?: string }} */
 	let { clubId = '', teamId = '' } = $props();
-
-	const drawer = getContext('enterpriseDrawer');
 
 	const role = $derived(authStore.role);
 	const uid = $derived(authStore.user?.uid || '');
@@ -158,16 +157,9 @@
 		};
 	});
 
-	/**
-	 * @param {typeof items[number]} row
-	 */
-	function activate(row) {
-		drawer?.open?.({
-			title: row.label,
-			body: 'Use Continue for in-app navigation (no full page reload).',
-			meta: row.meta ?? '',
-			href: row.href,
-		});
+	async function navigateTo(href) {
+		if (!href) return;
+		await goto(resolve(href));
 	}
 </script>
 
@@ -184,17 +176,20 @@
 		<ul class="ec-action-inbox__list">
 			{#each items as row (row.id)}
 				<li>
-					<button
-						type="button"
+					<a
+						href={resolve(row.href)}
 						class="ec-action-inbox__row"
-						onclick={() => activate(row)}
+						onclick={(event) => {
+							event.preventDefault();
+							void navigateTo(row.href);
+						}}
 					>
 						<span class="ec-action-inbox__label">{row.label}</span>
 						{#if row.meta}
 							<span class="ec-action-inbox__meta">{row.meta}</span>
 						{/if}
 						<i class="ph ph-caret-right ec-action-inbox__chev" aria-hidden="true"></i>
-					</button>
+					</a>
 				</li>
 			{/each}
 		</ul>
@@ -258,6 +253,7 @@
 		font: inherit;
 		color: var(--text-primary);
 		transition: background 0.12s ease;
+		text-decoration: none;
 	}
 
 	:global(html.dark) .ec-action-inbox__row {

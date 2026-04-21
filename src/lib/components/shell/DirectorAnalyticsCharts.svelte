@@ -1,89 +1,123 @@
 <script>
 	import { browser } from '$app/environment';
 	import { onMount, tick } from 'svelte';
+	import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { collection, doc, getDocs, onSnapshot } from 'firebase/firestore';
-	import { enterpriseChartOptions, enterpriseRadialOptions } from '$lib/charts/enterpriseChartTheme.js';
+	import {
+		enterpriseChartOptions,
+		EC_ACCENT,
+		EC_INK,
+		EC_INK_LIGHT
+	} from '$lib/charts/enterpriseChartTheme.js';
 
 	let { clubId = '' } = $props();
 
-	let donutCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
-	let barCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
+	let seatCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
+	let clubCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
 	let mounted = $state(false);
 	/** @type {any} */
-	let donutChart = null;
+	let seatChart = null;
 	/** @type {any} */
-	let barChart = null;
+	let clubChart = null;
 
 	let activeSeats = $state(0);
 	let reservedSeats = $state(0);
 	let seatsLimit = $state(0);
 	let clubInfinite = $state(false);
 
-	let passportCounts = $state({ verified: 0, pending: 0, expired: 0 });
-
-	const INK = '#3f3f46';
-	const INK_LIGHT = '#d4d4d8';
-	const ACCENT = '#d97706';
+	/** @type {{ labels: string[], values: number[] }} */
+	let playersByClub = $state({ labels: [], values: [] });
 
 	$effect(() => {
 		if (!browser || !clubId) return;
 		const unsubClub = onSnapshot(doc(db, 'clubs', clubId), (snap) => {
 			clubInfinite = snap.exists() && snap.data()?.isInfinite === true;
 		});
-		const unsub = onSnapshot(
-			doc(db, 'license_entitlements', clubId),
-			(snap) => {
-				if (!snap.exists()) {
-					activeSeats = 0;
-					reservedSeats = 0;
-					seatsLimit = 0;
-					return;
-				}
-				const d = snap.data();
-				activeSeats = typeof d.active_seats === 'number' ? d.active_seats : 0;
-				reservedSeats = typeof d.reserved_seats === 'number' ? d.reserved_seats : 0;
-				seatsLimit = typeof d.seats_limit === 'number' ? d.seats_limit : 0;
-			},
-			() => {
+		const unsubEnt = onSnapshot(doc(db, 'license_entitlements', clubId), (snap) => {
+			if (!snap.exists()) {
 				activeSeats = 0;
 				reservedSeats = 0;
 				seatsLimit = 0;
-			},
-		);
+				return;
+			}
+			const d = snap.data();
+			activeSeats = typeof d.active_seats === 'number' ? d.active_seats : 0;
+			reservedSeats = typeof d.reserved_seats === 'number' ? d.reserved_seats : 0;
+			seatsLimit = typeof d.seats_limit === 'number' ? d.seats_limit : 0;
+		});
 		return () => {
-			unsub();
 			unsubClub();
+			unsubEnt();
 		};
 	});
 
 	$effect(() => {
-		if (!browser || !clubId) return;
+		if (!browser) return;
 		let cancelled = false;
 		(async () => {
 			try {
-				const [passSnap, userSnap] = await Promise.all([
-					getDocs(collection(db, 'passports')),
-					getDocs(collection(db, 'users')),
+				const [clubsSnap, teamsSnap, lookupSnap] = await Promise.all([
+					getDocs(collection(db, 'clubs')),
+					getDocs(collection(db, 'teams')),
+					getDocs(collection(db, 'player_lookup')),
 				]);
 				if (cancelled) return;
-				const clubUsers = {};
-				userSnap.forEach((d) => {
-					if (d.data().clubId === clubId) clubUsers[d.id] = true;
+
+				/** @type {Record<string, string>} */
+				const teamClub = {};
+				teamsSnap.forEach((d) => {
+					const t = d.data();
+					if (typeof t.clubId === 'string' && t.clubId.trim()) {
+						teamClub[d.id] = t.clubId.trim();
+					}
 				});
-				let verified = 0;
-				let pending = 0;
-				let expired = 0;
-				passSnap.forEach((d) => {
-					if (!clubUsers[d.id]) return;
-					const st = d.data().clearanceStatus || 'CLEARED';
-					if (st === 'CLEARED') verified++;
-					else if (st === 'PENDING_SAFESPORT') pending++;
-					else if (st === 'RED_CARD') expired++;
+
+				/** @type {Record<string, string>} */
+				const clubNameById = {};
+				clubsSnap.forEach((d) => {
+					const c = d.data();
+					clubNameById[d.id] =
+						typeof c.name === 'string' && c.name.trim() ? c.name.trim() : d.id;
 				});
-				if (!cancelled) passportCounts = { verified, pending, expired };
-			} catch (e) {
-				console.error('[DirectorAnalyticsCharts] passports', e);
+
+				/** @type {Record<string, number>} */
+				const counts = {};
+				lookupSnap.forEach((d) => {
+					const row = d.data();
+					const teamId = typeof row.teamId === 'string' ? row.teamId : '';
+					const cid = teamClub[teamId] || clubId;
+					if (!cid) return;
+					counts[cid] = (counts[cid] || 0) + 1;
+				});
+
+				const rows = Object.entries(counts)
+					.map(([id, count]) => ({ id, name: clubNameById[id] || id, count }))
+					.sort((a, b) => b.count - a.count)
+					.slice(0, 8);
+
+				playersByClub = {
+					labels: rows.map((r) => r.name),
+					values: rows.map((r) => r.count),
+				};
+			} catch {
+				// Fallback to current-club only count (strict role rules can block global reads).
+				try {
+					const lookupSnap = await getDocs(collection(db, 'player_lookup'));
+					let n = 0;
+					lookupSnap.forEach((d) => {
+						const row = d.data();
+						const teamId = typeof row.teamId === 'string' ? row.teamId : '';
+						if (teamId.startsWith(`${clubId}_`)) n++;
+					});
+					if (!cancelled) {
+						const cl = await getDoc(doc(db, 'clubs', clubId));
+						const name =
+							cl.exists() && typeof cl.data()?.name === 'string' ? cl.data().name : 'Current Club';
+						playersByClub = { labels: [name], values: [n] };
+					}
+				} catch {
+					if (!cancelled) playersByClub = { labels: ['Current Club'], values: [0] };
+				}
 			}
 		})();
 		return () => {
@@ -92,93 +126,104 @@
 	});
 
 	$effect(() => {
-		if (!browser || !mounted || !donutCanvas || clubInfinite) return;
+		if (!browser || !mounted || !seatCanvas || !clubId) return;
 		void (async () => {
 			await tick();
 			const mod = await import('chart.js');
-			const { Chart, DoughnutController, ArcElement, Legend, Tooltip } = mod;
-			Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
-			if (donutChart) donutChart.destroy();
-			const avail = Math.max(0, seatsLimit - activeSeats - reservedSeats);
-			const opts = enterpriseRadialOptions(false);
-			donutChart = new Chart(donutCanvas, {
-				type: 'doughnut',
-				data: {
-					labels: ['Active seats', 'Available seats'],
-					datasets: [
-						{
-							data:
-								seatsLimit > 0 ?
-									[activeSeats, avail]
-								:	[0, 1],
-							backgroundColor: [INK, INK_LIGHT],
-							borderWidth: 0,
-						},
-					],
-				},
-				options: {
-					...opts,
-					cutout: '62%',
-				},
-			});
-		})();
-		return () => {
-			donutChart?.destroy();
-			donutChart = null;
-		};
-	});
-
-	$effect(() => {
-		if (!browser || !mounted || !barCanvas) return;
-		const { verified, pending, expired } = passportCounts;
-		void (async () => {
-			await tick();
-			const mod = await import('chart.js');
-			const {
-				Chart,
-				BarController,
-				BarElement,
-				CategoryScale,
-				LinearScale,
-				Legend,
-				Tooltip,
-			} = mod;
-			Chart.register(BarController, BarElement, CategoryScale, LinearScale, Legend, Tooltip);
-			if (barChart) barChart.destroy();
+			const { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Legend, Tooltip } = mod;
+			Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Legend, Tooltip);
+			if (seatChart) seatChart.destroy();
 			const opts = enterpriseChartOptions(false);
-			barChart = new Chart(barCanvas, {
-				type: 'bar',
+			const allocatedSeats = activeSeats + reservedSeats;
+			const utilPct = seatsLimit > 0 ? Math.round((allocatedSeats / seatsLimit) * 100) : 0;
+			seatChart = new Chart(seatCanvas, {
+				type: 'line',
 				data: {
-					labels: ['Verified', 'Pending', 'Expired'],
+					labels: ['Allocated seats (active + reserved)', 'Licensed capacity'],
 					datasets: [
 						{
-							label: 'Players',
-							data: [verified, pending, expired],
-							backgroundColor: [INK, INK_LIGHT, ACCENT],
-							borderWidth: 0,
-							borderRadius: 6,
+							label: 'Seat count',
+							data: [allocatedSeats, seatsLimit],
+							borderColor: EC_ACCENT,
+							backgroundColor: 'rgba(245, 158, 11, 0.14)',
+							pointBackgroundColor: EC_INK,
+							fill: true,
+							tension: 0.25,
 						},
 					],
 				},
 				options: {
 					...opts,
-					scales: {
-						x: {
-							beginAtZero: true,
-							grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-							ticks: { color: '#a1a1aa', font: { size: 11 } },
-						},
-						y: {
-							grid: { display: false },
-							ticks: { color: '#52525b', font: { size: 11 } },
+					plugins: {
+						...opts.plugins,
+						legend: { display: false },
+						tooltip: {
+							...opts.plugins.tooltip,
+							footerColor: '#71717a',
+							footerFont: { weight: '600' },
+							callbacks: {
+								footer: () => `Utilization: ${utilPct}%`,
+							},
 						},
 					},
 				},
 			});
 		})();
 		return () => {
-			barChart?.destroy();
-			barChart = null;
+			seatChart?.destroy();
+			seatChart = null;
+		};
+	});
+
+	$effect(() => {
+		if (!browser || !mounted || !clubCanvas) return;
+		const labels = playersByClub.labels;
+		const values = playersByClub.values;
+		void (async () => {
+			await tick();
+			const mod = await import('chart.js');
+			const { Chart, BarController, BarElement, CategoryScale, LinearScale, Legend, Tooltip } = mod;
+			Chart.register(BarController, BarElement, CategoryScale, LinearScale, Legend, Tooltip);
+			if (clubChart) clubChart.destroy();
+			const opts = enterpriseChartOptions(false);
+			clubChart = new Chart(clubCanvas, {
+				type: 'bar',
+				data: {
+					labels: labels.length ? labels : ['Current Club'],
+					datasets: [
+						{
+							label: 'Active players',
+							data: values.length ? values : [0],
+							backgroundColor: EC_INK,
+							hoverBackgroundColor: EC_ACCENT,
+							borderRadius: 6,
+							borderWidth: 0,
+						},
+					],
+				},
+				options: {
+					...opts,
+					plugins: {
+						...opts.plugins,
+						legend: { display: false },
+					},
+					scales: {
+						x: {
+							grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
+						},
+						y: {
+							beginAtZero: true,
+							grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
+						},
+					},
+				},
+			});
+		})();
+		return () => {
+			clubChart?.destroy();
+			clubChart = null;
 		};
 	});
 
@@ -190,24 +235,23 @@
 {#if clubId}
 	<div class="ec-dir-analytics">
 		<div class="ec-dir-analytics__card">
-			<h3 class="ec-dir-analytics__title">License utilization</h3>
-			<p class="ec-dir-analytics__sub">Active roster seats vs. remaining capacity.</p>
+			<h3 class="ec-dir-analytics__title">Platform seat utilization</h3>
+			<p class="ec-dir-analytics__sub">Current allocated seats (active + reserved) against licensed capacity.</p>
 			{#if clubInfinite}
 				<p class="ec-dir-analytics__promo">
-					<strong>Unlimited license (promo).</strong> No seat cap chart — Stripe and subscription read-only rules are
-					bypassed for this club.
+					<strong>Unlimited license (promo).</strong> Capacity is uncapped for this club.
 				</p>
 			{:else}
 				<div class="ec-dir-analytics__chart">
-					<canvas bind:this={donutCanvas} aria-label="License utilization chart"></canvas>
+					<canvas bind:this={seatCanvas} aria-label="Platform seat utilization chart"></canvas>
 				</div>
 			{/if}
 		</div>
 		<div class="ec-dir-analytics__card">
-			<h3 class="ec-dir-analytics__title">Platform compliance</h3>
-			<p class="ec-dir-analytics__sub">Passport clearance mix for your club.</p>
+			<h3 class="ec-dir-analytics__title">Active players per club</h3>
+			<p class="ec-dir-analytics__sub">Top clubs by active roster size (player lookup records).</p>
 			<div class="ec-dir-analytics__chart">
-				<canvas bind:this={barCanvas} aria-label="Passport compliance chart"></canvas>
+				<canvas bind:this={clubCanvas} aria-label="Active players per club chart"></canvas>
 			</div>
 		</div>
 	</div>
@@ -219,19 +263,23 @@
 		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 		gap: 14px;
 		margin-bottom: 20px;
+		align-items: stretch;
 	}
 
 	.ec-dir-analytics__card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
-		background: #fafafa;
-		padding: 14px 16px;
+		background: #ffffff;
+		padding: 1.25rem;
 		box-sizing: border-box;
 	}
 
 	:global(html.dark) .ec-dir-analytics__card {
 		border-color: rgba(255, 255, 255, 0.1);
-		background: #0f0f11;
+		background: #0f172a;
 	}
 
 	.ec-dir-analytics__title {
@@ -249,6 +297,7 @@
 
 	.ec-dir-analytics__chart {
 		position: relative;
+		flex: 1 1 auto;
 		height: 200px;
 		max-width: 100%;
 	}

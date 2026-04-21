@@ -21,7 +21,7 @@
 </script>
 
 <div
-	class="card"
+	class="card tw-flex tw-flex-col tw-h-full"
 	class:border-gold={borderVariant === 'gold'}
 	class:border-green={borderVariant === 'green'}
 	class:border-orange={borderVariant === 'orange'}
@@ -40,7 +40,7 @@
 			{/if}
 		</div>
 	{/if}
-	<div class="card-body">
+	<div class="card-body tw-flex-1">
 		{@render children()}
 	</div>
 </div>
