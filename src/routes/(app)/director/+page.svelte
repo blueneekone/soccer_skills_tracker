@@ -20,7 +20,7 @@
 	const DIR_TABS = [
 		{ id: 'home',        label: 'Home',        icon: 'ph-house' },
 		{ id: 'teams',       label: 'Teams',       icon: 'ph-users-three' },
-		{ id: 'field',       label: 'Field Ops',   icon: 'ph-soccer-ball' },
+		{ id: 'field',       label: 'Field Ops',   icon: 'ph-map-pin' },
 		{ id: 'registrars',  label: 'Registrars',  icon: 'ph-swap' },
 		{ id: 'brand',       label: 'Branding',    icon: 'ph-palette' },
 		{ id: 'marketing',   label: 'Marketing',   icon: 'ph-megaphone' },
@@ -78,10 +78,8 @@
 			<DirectorCommandCenter {clubId} />
 		</section>
 	{:else if activeTab === 'field'}
-		<section class="director-console-page__section">
-			<div class="glass-panel director-console-panel">
-				<FieldOpsModule {clubId} />
-			</div>
+		<section class="director-console-page__section director-console-page__section--full">
+			<FieldOpsModule {clubId} />
 		</section>
 	{:else}
 		<section class="director-console-page__section">
@@ -125,8 +123,10 @@
 		margin-top: 0;
 	}
 
-	.director-console-panel {
-		padding: 16px;
+	/* Field Ops gets the full canvas width with no extra wrappers */
+	.director-console-page__section--full {
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.director-console-fallback {
