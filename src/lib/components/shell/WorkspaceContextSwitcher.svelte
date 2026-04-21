@@ -57,6 +57,12 @@
 		workspaceContextStore.setPivot(item.id);
 		const ctx = getContextFromHref(item.href);
 		if (ctx) workspaceContextStore.setActiveContext(ctx);
+		// Stamp scoped IDs from the URL so the target page can read them on mount.
+		const params = new URL(item.href, 'http://x').searchParams;
+		const tid = params.get('teamId');
+		if (tid) workspaceContextStore.setActiveTeamId(tid);
+		const cid = params.get('clubId');
+		if (cid) workspaceContextStore.setActiveClubId(cid);
 		close();
 		void goto(item.href);
 	}

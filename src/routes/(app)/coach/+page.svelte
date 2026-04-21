@@ -65,17 +65,26 @@
 		role === 'super_admin' || role === 'director',
 	);
 
-	// Auto-select first team (sync QA pivot when God Mode sets active team)
+	// Auto-select team: context store pivot (any role) → URL param → first available.
 	$effect(() => {
 		const teams = myTeams;
 		if (teams.length === 0) return;
-		if (role === 'super_admin') {
-			const pivot = workspaceContextStore.activeTeamId?.trim();
-			if (pivot && teams.some((t) => t.id === pivot)) {
-				if (selectedTeamId !== pivot) selectedTeamId = pivot;
-				return;
-			}
+
+		// Priority 1: context store pivot — set by WorkspaceContextSwitcher for any role.
+		const pivot = workspaceContextStore.activeTeamId?.trim();
+		if (pivot && teams.some((t) => t.id === pivot)) {
+			if (selectedTeamId !== pivot) selectedTeamId = pivot;
+			return;
 		}
+
+		// Priority 2: URL teamId param — survives hard refresh / direct link.
+		const urlTeam = $page.url.searchParams.get('teamId')?.trim();
+		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
+			if (selectedTeamId !== urlTeam) selectedTeamId = urlTeam;
+			return;
+		}
+
+		// Priority 3: default to first team when nothing else is available.
 		if (!selectedTeamId) {
 			selectedTeamId = teams[0].id;
 		}

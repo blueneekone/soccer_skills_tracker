@@ -71,7 +71,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 			return {
 				id: `ctx-coach-${t.id}`,
 				label: `Coach · ${tn}`,
-				href: '/coach?tab=roster',
+				href: `/coach?tab=roster&teamId=${encodeURIComponent(t.id)}`,
 			};
 		});
 		sections.push({ title: 'Teams', items: coachItems });

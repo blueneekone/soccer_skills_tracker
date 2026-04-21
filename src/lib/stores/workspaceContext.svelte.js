@@ -57,6 +57,13 @@ export const workspaceContextStore = {
 	setActiveTeamId(id) {
 		activeTeamId = (id || '').trim();
 	},
+	/**
+	 * Convenience alias — sets the active team and fires any reactive dependents.
+	 * @param {string} id
+	 */
+	setTeam(id) {
+		activeTeamId = (id || '').trim();
+	},
 	/** @param {boolean} open */
 	setSidebarOpen(open) {
 		isSidebarOpen = Boolean(open);
