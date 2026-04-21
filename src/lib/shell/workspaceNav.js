@@ -48,14 +48,16 @@ const coachLinks = [
  */
 const athleteHouseholdLinks = [
 	{ tab: '', label: 'Player Stats', icon: 'ph-chart-bar', href: '/stats' },
+	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
 	{ tab: '', label: 'Log workout', icon: 'ph-list', href: '/tracker' },
-	{ tab: '', label: 'Challenges', icon: 'ph-trophy', href: '/challenges' },
+	{ tab: '', label: 'Challenges', icon: 'ph-medal', href: '/challenges' },
 	{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
 ];
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
 	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
+	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
 	{ tab: '', label: 'Log workout', icon: 'ph-user-check', href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments', icon: 'ph-credit-card', href: '/pricing' },
 	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },

@@ -151,11 +151,13 @@
 		min-width: 0;
 	}
 
+	/* w-full + box-border — keeps trigger inside sidebar rail */
 	.ec-ws__trigger {
 		display: flex;
 		align-items: center;
 		gap: 10px;
 		width: 100%;
+		max-width: 100%;
 		min-width: 0;
 		min-height: 56px;
 		padding: 10px 12px 10px 14px;
@@ -187,13 +189,14 @@
 	}
 
 	.ec-ws__text {
-		flex: 1;
+		flex: 1 1 0%;
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
 	}
 
+	/* truncate (Tailwind parity) */
 	.ec-ws__truncate {
 		display: block;
 		min-width: 0;
@@ -219,6 +222,7 @@
 
 	.ec-ws__caret {
 		flex-shrink: 0;
+		flex-grow: 0;
 		font-size: 14px;
 		color: var(--text-secondary);
 		opacity: 0.85;

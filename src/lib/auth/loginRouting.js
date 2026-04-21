@@ -94,6 +94,7 @@ export function getContextFromHref(href) {
 		if (path.startsWith('/parent')) return 'household';
 		if (path === '/home' || path.startsWith('/home/')) return 'household';
 		if (path.startsWith('/stats')) return 'household';
+		if (path.startsWith('/trophies')) return 'household';
 		if (path.startsWith('/settings')) return 'household';
 		return '';
 	} catch {

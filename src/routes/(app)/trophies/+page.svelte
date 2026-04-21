@@ -5,6 +5,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Modal from '$lib/components/Modal.svelte';
 	import confetti from 'canvas-confetti';
+	import '$lib/styles/director-os.css';
 
 	const profile = $derived(authStore.userProfile);
 
@@ -54,10 +55,12 @@
 	});
 </script>
 
-<div class="view-section">
-	<h2 class="view-title">🏆 TROPHY ROOM</h2>
+<div class="ec-page ec-trophies view-section">
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
+		<div class="tw-min-w-0 tw-col-span-1 xl:tw-col-span-12">
+			<h2 class="view-title">🏆 TROPHY ROOM</h2>
 
-	<div class="bento-section">
+			<div class="bento-section">
 		<div class="card">
 			<div class="card-header trophy-header">RANK MEDALS</div>
 			<div class="card-body text-center overflow-x-auto">
@@ -100,12 +103,12 @@
 		</div>
 	</div>
 
-	<div class="text-center">
-		<button class="primary-btn btn-claim-cert" onclick={claimCertificate}>🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
-	</div>
+			<div class="text-center">
+				<button class="primary-btn btn-claim-cert" onclick={claimCertificate}>🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
+			</div>
 
-	<!-- Certificate Modal -->
-	<Modal bind:open={certModalOpen} maxWidth="800px" certStyle={true}>
+			<!-- Certificate Modal -->
+			<Modal bind:open={certModalOpen} maxWidth="800px" certStyle={true}>
 		{#snippet titleSlot()}
 			<span>Certificate of Achievement</span>
 		{/snippet}
@@ -135,7 +138,9 @@
 			<button class="primary-btn btn-print" onclick={() => window.print()}>🖨️ Print Certificate</button>
 			<button class="secondary-btn" onclick={() => (certModalOpen = false)}>Close</button>
 		</div>
-	</Modal>
+			</Modal>
+		</div>
+	</div>
 </div>
 
 <style>

@@ -3,9 +3,18 @@
 	import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+	import {
+		getLevelProgressFromTotalXp,
+		getCardTierFromLevel,
+	} from '$lib/gamification/level.js';
+	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
+	import {
+		getAttributeSchemaForSport,
+		deriveSkillValuesForSchema,
+	} from '$lib/utils/sport-attributes.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
+	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
 
 	const SESSION_KEY = 'elite_xp_pulse';
 
@@ -15,6 +24,10 @@
 	let xpWeek = $state(0);
 	let loading = $state(true);
 	let teamLabel = $state('');
+	/** Team-level `sport` override from `teams/{teamId}` (optional). */
+	let teamSportFromDoc = $state(/** @type {string | null} */ (null));
+	/** @type {Record<string, unknown> | null} */
+	let statsRaw = $state(null);
 
 	let displayXp = $state(0);
 	let animating = $state(false);
@@ -28,6 +41,36 @@
 	);
 
 	const levelInfo = $derived(getLevelProgressFromTotalXp(displayXp));
+	const cardTier = $derived(getCardTierFromLevel(levelInfo.level));
+	const tierLabel = $derived(
+		cardTier === 'bronze'
+			? 'Bronze'
+			: cardTier === 'silver'
+				? 'Silver'
+				: cardTier === 'gold'
+					? 'Gold'
+					: 'Elite',
+	);
+
+	/** Prefer team `sport`, then club branding (`clubs/{clubId}.sport`). */
+	const resolvedSportRaw = $derived.by(() => {
+		const t = typeof teamSportFromDoc === 'string' ? teamSportFromDoc.trim() : '';
+		if (t) return t;
+		const c = typeof clubBrandingStore.sport === 'string' ? clubBrandingStore.sport.trim() : '';
+		return c || 'soccer';
+	});
+
+	const attributeSchema = $derived(getAttributeSchemaForSport(resolvedSportRaw));
+
+	const skillRadar = $derived(
+		deriveSkillValuesForSchema(statsRaw, attributeSchema, displayXp, streakDays),
+	);
+
+	const sportDisplayLabel = $derived.by(() => {
+		const k = attributeSchema.canonicalKey || 'generic';
+		if (k === 'generic') return 'Multi-sport';
+		return k.charAt(0).toUpperCase() + k.slice(1);
+	});
 
 	/**
 	 * @param {string} name
@@ -72,6 +115,7 @@
 	$effect(() => {
 		if (!browser || !profile?.teamId || profile.teamId === 'admin') {
 			teamLabel = '';
+			teamSportFromDoc = null;
 			return;
 		}
 		const tid = profile.teamId;
@@ -80,10 +124,17 @@
 			try {
 				const snap = await getDoc(doc(db, 'teams', tid));
 				if (cancelled) return;
-				const n = snap.exists() ? snap.data()?.name : null;
+				const data = snap.exists() ? snap.data() : null;
+				const n = data?.name;
 				teamLabel = typeof n === 'string' && n.trim() ? n.trim() : tid;
+				const sp = data?.sport;
+				teamSportFromDoc =
+					typeof sp === 'string' && sp.trim() ? sp.trim().toLowerCase() : null;
 			} catch {
-				if (!cancelled) teamLabel = tid;
+				if (!cancelled) {
+					teamLabel = tid;
+					teamSportFromDoc = null;
+				}
 			}
 		})();
 		return () => {
@@ -103,6 +154,7 @@
 			(snap) => {
 				loading = false;
 				if (!snap.exists()) {
+					statsRaw = null;
 					totalXpLive = 0;
 					streakDays = 0;
 					xpWeek = 0;
@@ -110,6 +162,7 @@
 					return;
 				}
 				const d = snap.data();
+				statsRaw = d;
 				totalXpLive = Math.floor(Number(d.total_xp) || 0);
 				streakDays = Math.floor(Number(d.streak_days) || 0);
 				xpWeek = Math.floor(Number(d.xp_this_week) || 0);
@@ -141,7 +194,11 @@
 </script>
 
 <div class="epd">
-	<section class="epd__identity" aria-labelledby="epd-identity-h">
+	<section
+		class="epd__identity epd__identity--{cardTier}"
+		aria-labelledby="epd-identity-h"
+		aria-describedby="epd-tier-label"
+	>
 		<div class="epd__identity-left">
 			{#if photoUrl}
 				<img class="epd__avatar" src={photoUrl} alt="" width="64" height="64" />
@@ -150,6 +207,7 @@
 			{/if}
 			<div class="epd__id-text">
 				<p id="epd-identity-h" class="epd__name">{displayName}</p>
+				<p id="epd-tier-label" class="epd__tier-chip">{tierLabel} tier · Lv {levelInfo.level}</p>
 				{#if teamLabel}
 					<p class="epd__team">{teamLabel}</p>
 				{:else if profile?.teamId && profile.teamId !== 'admin'}
@@ -161,7 +219,7 @@
 			<LevelProgressRing
 				totalXp={displayXp}
 				level={levelInfo.level}
-				variant="light"
+				variant={cardTier === 'elite' ? 'dark' : 'light'}
 				size="lg"
 				showLevelSegment={true}
 			/>
@@ -169,6 +227,16 @@
 	</section>
 
 	<PlayerActionInbox />
+
+	<section class="epd__skills-bento" aria-labelledby="epd-skills-h">
+		<div class="epd__skills-card">
+			<h2 id="epd-skills-h" class="epd__skills-title">Skill attributes</h2>
+			<p class="epd__skills-sub">
+				{sportDisplayLabel} · Ultimate Team profile — max rating 99.
+			</p>
+			<PlayerSkillRadar labels={skillRadar.labels} values={skillRadar.values} />
+		</div>
+	</section>
 
 	<section class="epd__trophy" aria-labelledby="epd-trophy-h">
 		<h2 id="epd-trophy-h" class="epd__trophy-title">Trophy case</h2>
@@ -249,14 +317,58 @@
 		gap: 16px;
 		padding: 16px 18px;
 		border-radius: 14px;
-		border: 1px solid #e5e5e5;
-		background: #ffffff;
 		box-sizing: border-box;
 	}
 
-	:global(html.dark) .epd__identity {
+	/* FIFA-style card tiers — light mode */
+	.epd__identity--bronze {
+		border: 1px solid rgba(120, 53, 15, 0.38);
+		background: linear-gradient(135deg, #f3e6d8 0%, #c9a077 45%, #7a4a28 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+	}
+
+	.epd__identity--silver {
+		border: 1px solid rgba(71, 85, 105, 0.42);
+		background: linear-gradient(145deg, #f8fafc 0%, #cbd5e1 48%, #94a3b8 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+	}
+
+	.epd__identity--gold {
+		border: 1px solid rgba(180, 83, 9, 0.42);
+		background: linear-gradient(135deg, #fff7d6 0%, #fbbf24 46%, #c2410c 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+	}
+
+	.epd__identity--elite {
+		border: 2px solid var(--brand-primary, #f59e0b);
 		background: #09090b;
-		border-color: rgba(255, 255, 255, 0.1);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35),
+			0 0 28px color-mix(in srgb, var(--brand-primary, #f59e0b) 42%, transparent),
+			inset 0 1px 0 rgba(255, 255, 255, 0.07);
+	}
+
+	:global(html.dark) .epd__identity--bronze {
+		border-color: rgba(253, 230, 138, 0.22);
+		background: linear-gradient(135deg, #3a2a1f 0%, #6b4423 48%, #1f1410 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	:global(html.dark) .epd__identity--silver {
+		border-color: rgba(148, 163, 184, 0.35);
+		background: linear-gradient(145deg, #1e293b 0%, #475569 50%, #0f172a 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	}
+
+	:global(html.dark) .epd__identity--gold {
+		border-color: rgba(251, 191, 36, 0.35);
+		background: linear-gradient(135deg, #422006 0%, #b45309 48%, #1c1004 100%);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	:global(html.dark) .epd__identity--elite {
+		border-color: var(--brand-primary, #f59e0b);
+		background: #09090b;
 	}
 
 	.epd__identity-left {
@@ -271,22 +383,52 @@
 		height: 64px;
 		border-radius: 999px;
 		object-fit: cover;
-		border: 1px solid #e5e5e5;
+		border: 1px solid rgba(15, 23, 42, 0.18);
 		flex-shrink: 0;
+	}
+
+	.epd__identity--elite .epd__avatar {
+		border-color: rgba(255, 255, 255, 0.2);
 	}
 
 	.epd__avatar--fallback {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: #fafafa;
+		background: rgba(255, 255, 255, 0.55);
 		font-weight: 900;
 		font-size: 1.1rem;
-		color: var(--text-primary);
+		color: #1c1008;
 	}
 
-	:global(html.dark) .epd__avatar--fallback {
+	.epd__identity--silver .epd__avatar--fallback {
+		background: rgba(255, 255, 255, 0.65);
+		color: #0f172a;
+	}
+
+	.epd__identity--gold .epd__avatar--fallback {
+		background: rgba(255, 255, 255, 0.55);
+		color: #422006;
+	}
+
+	.epd__identity--elite .epd__avatar--fallback {
 		background: #18181b;
+		color: #fafafa;
+	}
+
+	:global(html.dark) .epd__identity--bronze .epd__avatar--fallback {
+		background: rgba(0, 0, 0, 0.25);
+		color: #fef3c7;
+	}
+
+	:global(html.dark) .epd__identity--silver .epd__avatar--fallback {
+		background: rgba(0, 0, 0, 0.3);
+		color: #e2e8f0;
+	}
+
+	:global(html.dark) .epd__identity--gold .epd__avatar--fallback {
+		background: rgba(0, 0, 0, 0.28);
+		color: #fde68a;
 	}
 
 	.epd__id-text {
@@ -298,19 +440,91 @@
 		font-size: 1.2rem;
 		font-weight: 900;
 		letter-spacing: -0.03em;
-		color: var(--text-primary);
 		line-height: 1.2;
+		color: #1c1008;
+	}
+
+	.epd__identity--silver .epd__name {
+		color: #0f172a;
+	}
+
+	.epd__identity--gold .epd__name {
+		color: #422006;
+	}
+
+	.epd__identity--elite .epd__name {
+		color: #fafafa;
+	}
+
+	.epd__tier-chip {
+		margin: 6px 0 0;
+		font-size: 0.72rem;
+		font-weight: 900;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: rgba(28, 16, 8, 0.78);
+	}
+
+	.epd__identity--silver .epd__tier-chip {
+		color: rgba(15, 23, 42, 0.72);
+	}
+
+	.epd__identity--gold .epd__tier-chip {
+		color: rgba(66, 32, 6, 0.78);
+	}
+
+	.epd__identity--elite .epd__tier-chip {
+		color: color-mix(in srgb, var(--brand-primary, #f59e0b) 88%, #fafafa);
 	}
 
 	.epd__team {
 		margin: 4px 0 0;
 		font-size: 0.88rem;
 		font-weight: 700;
-		color: var(--text-secondary);
+		color: rgba(28, 16, 8, 0.78);
+	}
+
+	.epd__identity--silver .epd__team {
+		color: rgba(15, 23, 42, 0.72);
+	}
+
+	.epd__identity--gold .epd__team {
+		color: rgba(66, 32, 6, 0.75);
+	}
+
+	.epd__identity--elite .epd__team {
+		color: #a1a1aa;
 	}
 
 	.epd__team--muted {
 		opacity: 0.75;
+	}
+
+	:global(html.dark) .epd__identity--bronze .epd__name {
+		color: #fff7ed;
+	}
+
+	:global(html.dark) .epd__identity--bronze .epd__tier-chip,
+	:global(html.dark) .epd__identity--bronze .epd__team {
+		color: rgba(255, 247, 237, 0.78);
+	}
+
+	:global(html.dark) .epd__identity--silver .epd__name {
+		color: #f8fafc;
+	}
+
+	:global(html.dark) .epd__identity--silver .epd__tier-chip,
+	:global(html.dark) .epd__identity--silver .epd__team {
+		color: rgba(226, 232, 240, 0.78);
+	}
+
+	:global(html.dark) .epd__identity--gold .epd__name {
+		color: #fffbeb;
+	}
+
+	:global(html.dark) .epd__identity--gold .epd__tier-chip,
+	:global(html.dark) .epd__identity--gold .epd__team {
+		color: rgba(254, 243, 199, 0.82);
 	}
 
 	.epd__identity-ring {
@@ -318,6 +532,39 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.epd__skills-bento {
+		box-sizing: border-box;
+	}
+
+	.epd__skills-card {
+		padding: 16px;
+		border-radius: 14px;
+		border: 1px solid #e5e5e5;
+		background: #fafafa;
+		box-sizing: border-box;
+	}
+
+	:global(html.dark) .epd__skills-card {
+		background: #0f0f11;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.epd__skills-title {
+		margin: 0 0 4px;
+		font-size: 13px;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--text-primary);
+	}
+
+	.epd__skills-sub {
+		margin: 0 0 14px;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--text-secondary);
+		line-height: 1.45;
 	}
 
 	.epd__trophy {

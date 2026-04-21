@@ -9,6 +9,7 @@
 	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
 	import ElitePlayerDashboard from '$lib/components/ElitePlayerDashboard.svelte';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
+	import PlayerNextMilestone from '$lib/components/PlayerNextMilestone.svelte';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import '$lib/styles/director-os.css';
 
@@ -458,6 +459,7 @@
 		{#if isPlayerRole}
 			<aside class="tw-min-w-0 tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-4">
 				<TeamLeaderboard compact />
+				<PlayerNextMilestone />
 				<PlayerActivityStreak />
 			</aside>
 		{/if}
