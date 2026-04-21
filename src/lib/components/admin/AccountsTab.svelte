@@ -944,7 +944,304 @@
 		color: var(--text-secondary);
 	}
 
-	:global(.accounts-tab__org-row) {
+	.accounts-tab__search-label {
+		display: block;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--text-secondary);
+		margin-bottom: 6px;
+	}
+
+	.accounts-tab__search-input {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		margin: 0 0 14px;
+		padding: 10px 12px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--input-bg, #fff);
+		font: inherit;
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .accounts-tab__search-input {
+		background: #09090b;
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.accounts-tab__table-wrap {
+		width: 100%;
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 10px;
+		background: var(--glass-bg, #fff);
+	}
+
+	:global(html.dark) .accounts-tab__table-wrap {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: #0f0f11;
+	}
+
+	.accounts-tab__orgs-table,
+	.accounts-tab__roster-table {
+		width: 100%;
+		min-width: 0;
+		table-layout: fixed;
+	}
+
+	.accounts-tab__orgs-table :global(th),
+	.accounts-tab__orgs-table :global(td),
+	.accounts-tab__roster-table :global(th),
+	.accounts-tab__roster-table :global(td) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.accounts-tab__th-logo {
+		width: 52px;
+	}
+	.accounts-tab__th-action {
+		width: 56px;
+		text-align: right;
+	}
+
+	.accounts-tab__td-logo {
+		width: 52px;
+		vertical-align: middle;
+	}
+
+	.accounts-tab__club-logo {
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		object-fit: cover;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		display: block;
+	}
+
+	.accounts-tab__logo-fallback {
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		background: rgba(99, 102, 241, 0.12);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--text-primary);
+		font-size: 1.1rem;
+	}
+
+	.accounts-tab__td-name {
+		vertical-align: middle;
+	}
+
+	.accounts-tab__club-title {
+		display: block;
+		font-weight: 600;
+		color: var(--text-primary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.accounts-tab__club-id {
+		display: block;
+		font-size: 0.72rem;
+		color: var(--text-secondary);
+		font-family: ui-monospace, monospace;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.accounts-tab__td-ellipsis {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.accounts-tab__td-license {
+		vertical-align: middle;
+		min-width: 120px;
+	}
+
+	.accounts-tab__promo-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		padding: 4px 8px;
+		border-radius: 999px;
+		color: #78350f;
+		background: linear-gradient(135deg, #fde68a 0%, #fbbf24 55%, #d97706 100%);
+		border: 1px solid rgba(180, 83, 9, 0.35);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+	}
+
+	.accounts-tab__gauge {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+	}
+
+	.accounts-tab__gauge-track {
+		height: 6px;
+		border-radius: 999px;
+		background: rgba(15, 23, 42, 0.1);
+		overflow: hidden;
+	}
+
+	:global(html.dark) .accounts-tab__gauge-track {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.accounts-tab__gauge-fill {
+		height: 100%;
+		border-radius: 999px;
+		transition: width 0.2s ease, background 0.2s ease;
+	}
+
+	.accounts-tab__gauge-fill--ok {
+		background: #22c55e;
+	}
+
+	.accounts-tab__gauge-fill--warn {
+		background: #f59e0b;
+	}
+
+	.accounts-tab__gauge-fill--crit {
+		background: #ef4444;
+	}
+
+	.accounts-tab__gauge-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--text-secondary);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.accounts-tab__license-muted {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+	}
+
+	.accounts-tab__td-action {
+		text-align: right;
+		vertical-align: middle;
+	}
+
+	.accounts-tab__manage-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 8px;
+		background: var(--surface-subtle, #fafafa);
 		cursor: pointer;
+		color: var(--text-primary);
+	}
+
+	.accounts-tab__manage-btn:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	:global(html.dark) .accounts-tab__manage-btn {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.accounts-tab__pager {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 14px;
+		padding-top: 4px;
+	}
+
+	.accounts-tab__page-btn {
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 6px 14px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: #fff;
+		cursor: pointer;
+		color: var(--text-primary);
+	}
+
+	.accounts-tab__page-btn:hover:not(:disabled) {
+		background: var(--surface-subtle, #fafafa);
+	}
+
+	.accounts-tab__page-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	:global(html.dark) .accounts-tab__page-btn {
+		background: #18181b;
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.accounts-tab__page-info {
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		font-weight: 500;
+	}
+
+	.accounts-tab__page-count {
+		font-size: 0.78rem;
+		opacity: 0.9;
+	}
+
+	.accounts-tab__muted {
+		color: var(--text-secondary);
+	}
+
+	.accounts-tab__roster-stack {
+		padding: 0;
+	}
+
+	.accounts-tab__roster-toolbar {
+		padding: 16px 16px 0;
+	}
+
+	.accounts-tab__roster-stack .accounts-tab__table-wrap {
+		margin: 0 16px;
+		width: auto;
+		max-width: calc(100% - 32px);
+	}
+
+	.accounts-tab__roster-stack .accounts-tab__pager {
+		padding: 0 16px 16px;
+		margin-top: 12px;
+	}
+
+	.accounts-tab__roster-row {
+		cursor: pointer;
+	}
+
+	.accounts-tab__td-strong {
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.accounts-tab__td-muted {
+		color: var(--text-secondary);
+		font-size: 0.88rem;
 	}
 </style>
