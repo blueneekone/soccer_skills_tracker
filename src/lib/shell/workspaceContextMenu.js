@@ -37,6 +37,14 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 			title: 'Platform',
 			items: [{ id: 'ctx-platform-admin', label: 'Super Admin · Platform', href: '/admin' }],
 		});
+		sections.push({
+			title: 'QA · God mode',
+			items: [
+				{ id: 'ctx-qa-director', label: 'QA: Director View', href: '/director' },
+				{ id: 'ctx-qa-coach', label: 'QA: Coach View', href: '/coach' },
+				{ id: 'ctx-qa-registrar', label: 'QA: Registrar View', href: '/registrar' },
+			],
+		});
 	}
 
 	const clubId = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
@@ -118,18 +126,41 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
  * @param {Array<{ id: string; name?: string }>} clubs
  * @param {Array<{ id: string; name?: string; coachEmail?: string; assistants?: string[] }>} teams
  * @param {string} email
+ * @param {{ activeClubId?: string; activeTeamId?: string }} [scopeHint]
  */
-export function getShellContextLabel(pathname, role, profile, clubs, teams, email) {
+export function getShellContextLabel(pathname, role, profile, clubs, teams, email, scopeHint) {
+	const activeClub = (scopeHint?.activeClubId || '').trim();
+	const activeTeam = (scopeHint?.activeTeamId || '').trim();
+
 	if (pathname.startsWith('/admin')) {
 		return { title: 'Super Admin · Platform', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/director')) {
-		const cid = typeof profile?.clubId === 'string' ? profile.clubId : '';
+		let cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
+		if (role === 'super_admin') {
+			if (activeClub) cid = activeClub;
+			else if (!cid || cid === 'admin') cid = clubs[0]?.id || '';
+		}
 		const cl = cid ? clubs.find((c) => c.id === cid) : null;
 		const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || cid || 'Club';
 		return { title: `Director · ${name}`, sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/coach')) {
+		if (role === 'super_admin') {
+			if (activeTeam) {
+				const tm = teams.find((t) => t.id === activeTeam);
+				const tn =
+					(tm && typeof tm.name === 'string' && tm.name.trim()) || activeTeam || 'Team';
+				return { title: `Coach · ${tn}`, sub: 'Workspace' };
+			}
+			if (teams.length === 1) {
+				const tn = (typeof teams[0].name === 'string' && teams[0].name.trim()) || teams[0].id;
+				return { title: `Coach · ${tn}`, sub: 'Workspace' };
+			}
+			if (teams.length > 1) {
+				return { title: 'Coach · QA', sub: 'Workspace' };
+			}
+		}
 		const tid = typeof profile?.teamId === 'string' ? profile.teamId : '';
 		if (tid && tid !== 'admin') {
 			const tm = teams.find((t) => t.id === tid);
@@ -147,6 +178,12 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		return { title: 'Parent · Household', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/registrar')) {
+		if (role === 'super_admin' && clubs.length > 0) {
+			const cid = activeClub || clubs[0].id;
+			const cl = clubs.find((c) => c.id === cid);
+			const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || cid || 'Club';
+			return { title: `Registrar · ${name}`, sub: 'QA' };
+		}
 		return { title: 'Registrar Workspace', sub: 'Compliance' };
 	}
 	if (pathname.startsWith('/recruiter')) {

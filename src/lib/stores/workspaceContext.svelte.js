@@ -5,7 +5,7 @@
 /** @type {string} */
 let activePivotKey = $state('');
 
-/** @type {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'household'} */
+/** @type {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'recruiter' | 'household'} */
 let activeContext = $state('');
 
 /** Active club for director/registrar sessions (cleared on pivot). */
@@ -13,6 +13,9 @@ let activeClubId = $state('');
 
 /** Active team for coach sessions (cleared on pivot). */
 let activeTeamId = $state('');
+
+/** Desktop sidebar rail visible (mobile overlay uses separate sheet state). */
+let isSidebarOpen = $state(true);
 
 export const workspaceContextStore = {
 	get activePivotKey() {
@@ -27,6 +30,9 @@ export const workspaceContextStore = {
 	get activeTeamId() {
 		return activeTeamId;
 	},
+	get isSidebarOpen() {
+		return isSidebarOpen;
+	},
 	/**
 	 * @param {string} key
 	 */
@@ -34,7 +40,7 @@ export const workspaceContextStore = {
 		activePivotKey = key;
 	},
 	/**
-	 * @param {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'household'} ctx
+	 * @param {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'recruiter' | 'household'} ctx
 	 */
 	setActiveContext(ctx) {
 		activeContext = ctx;
@@ -51,6 +57,13 @@ export const workspaceContextStore = {
 	setActiveTeamId(id) {
 		activeTeamId = (id || '').trim();
 	},
+	/** @param {boolean} open */
+	setSidebarOpen(open) {
+		isSidebarOpen = Boolean(open);
+	},
+	toggleSidebar() {
+		isSidebarOpen = !isSidebarOpen;
+	},
 	/** Clear club/team scope (call before applying a new workspace pivot). */
 	resetScope() {
 		activeClubId = '';
@@ -61,5 +74,6 @@ export const workspaceContextStore = {
 		activeContext = '';
 		activeClubId = '';
 		activeTeamId = '';
+		isSidebarOpen = true;
 	},
 };

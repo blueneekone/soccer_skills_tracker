@@ -37,7 +37,10 @@
 	);
 
 	const triggerLabel = $derived(
-		getShellContextLabel(pathname, role, profile, teamsStore.clubs, teamsStore.teams, email),
+		getShellContextLabel(pathname, role, profile, teamsStore.clubs, teamsStore.teams, email, {
+			activeClubId: workspaceContextStore.activeClubId,
+			activeTeamId: workspaceContextStore.activeTeamId,
+		}),
 	);
 
 	const flatCount = $derived(menuSections.reduce((n, s) => n + s.items.length, 0));
@@ -137,7 +140,10 @@
 	.ec-ws {
 		position: relative;
 		align-self: stretch;
+		width: 100%;
+		max-width: 100%;
 		min-width: 0;
+		overflow: hidden;
 	}
 
 	.ec-ws--mobile {
@@ -199,6 +205,9 @@
 		font-weight: 500;
 		color: var(--text-secondary);
 		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.ec-ws__caret {

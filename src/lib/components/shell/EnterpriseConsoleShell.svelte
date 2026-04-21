@@ -2,9 +2,12 @@
 	import { setContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { signOut } from 'firebase/auth';
+	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
 	/** @type {{ breadcrumb?: string, children?: import('svelte').Snippet }} */
@@ -39,7 +42,9 @@
 		drawerOpen = false;
 	}
 
-	const nav = $derived(getWorkspaceNav($page.url.pathname, authStore.role));
+	const nav = $derived.by(() =>
+		getWorkspaceNav($page.url.pathname, authStore.role, workspaceContextStore.activeContext),
+	);
 	const links = $derived(nav.links);
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
@@ -58,15 +63,30 @@
 		mobileNavOpen = !mobileNavOpen;
 	}
 
+	let isDesktop = $state(false);
+
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		const mq = window.matchMedia('(min-width: 1024px)');
 		const onChange = () => {
+			isDesktop = mq.matches;
 			if (mq.matches) mobileNavOpen = false;
 		};
+		onChange();
 		mq.addEventListener('change', onChange);
 		return () => mq.removeEventListener('change', onChange);
 	});
+
+	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
+
+	function toggleDesktopSidebar() {
+		workspaceContextStore.toggleSidebar();
+	}
+
+	async function handleSignOut() {
+		await signOut(auth);
+		goto('/login', { replaceState: true });
+	}
 </script>
 
 <div class="ec-root">
@@ -100,42 +120,70 @@
 			id="ec-workspace-nav"
 			class="ec-sidebar"
 			class:ec-sidebar--open={mobileNavOpen}
+			class:ec-sidebar--collapsed-desktop={sidebarCollapsedDesktop}
 			aria-label="Workspace navigation"
 		>
-			<div class="ec-sidebar__mobile-top">
-				<button type="button" class="ec-sidebar__close-btn" onclick={closeMobileNav}>
-					<i class="ph ph-x" aria-hidden="true"></i>
-					Close
-				</button>
-			</div>
-			<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
-				<WorkspaceContextSwitcher variant="sidebar" />
-			</div>
-			<nav class="ec-sidebar__nav">
-				{#each links as item (item.href)}
+			<div class="ec-sidebar__panel">
+				<div class="ec-sidebar__mobile-top">
+					<button type="button" class="ec-sidebar__close-btn" onclick={closeMobileNav}>
+						<i class="ph ph-x" aria-hidden="true"></i>
+						Close
+					</button>
+				</div>
+				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
+					<WorkspaceContextSwitcher variant="sidebar" />
+				</div>
+				<nav class="ec-sidebar__nav">
+					{#each links as item (item.href)}
+						<a
+							class="ec-nav-link"
+							class:ec-nav-link--active={navActive(item)}
+							href={item.href}
+							data-sveltekit-preload-data="hover"
+							onclick={closeMobileNav}
+						>
+							<i class="ph {item.icon}" aria-hidden="true"></i>
+							<span class="ec-nav-link__label">{item.label}</span>
+						</a>
+					{/each}
+					{#if showBilling}
+						<p class="ec-nav-section">Billing</p>
+						<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
+							<i class="ph ph-credit-card" aria-hidden="true"></i>
+							<span class="ec-nav-link__label">Plans & Billing</span>
+						</a>
+					{/if}
+				</nav>
+				<div class="ec-sidebar__system">
+					<p class="ec-sidebar__system-label">System actions</p>
 					<a
 						class="ec-nav-link"
-						class:ec-nav-link--active={navActive(item)}
-						href={item.href}
-						data-sveltekit-preload-data="hover"
-						onclick={closeMobileNav}
+						href="mailto:support@sstracker.app?subject=SSTRACKER%20support"
+						rel="noopener noreferrer"
 					>
-						<i class="ph {item.icon}" aria-hidden="true"></i>
-						<span class="min-w-0">{item.label}</span>
+						<i class="ph ph-lifebuoy" aria-hidden="true"></i>
+						<span class="ec-nav-link__label">Support / Help Desk</span>
 					</a>
-				{/each}
-				{#if showBilling}
-					<p class="ec-nav-section">Billing</p>
-					<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
-						<i class="ph ph-credit-card" aria-hidden="true"></i>
-						<span class="min-w-0">Plans & Billing</span>
-					</a>
-				{/if}
-			</nav>
+					<button type="button" class="ec-nav-link" onclick={handleSignOut}>
+						<i class="ph ph-sign-out" aria-hidden="true"></i>
+						<span class="ec-nav-link__label">Sign out</span>
+					</button>
+				</div>
+			</div>
 		</aside>
 
 	<div class="ec-main">
 		<header class="ec-topbar">
+			<button
+				type="button"
+				class="ec-sidebar-toggle ec-sidebar-toggle--desktop"
+				onclick={toggleDesktopSidebar}
+				aria-expanded={workspaceContextStore.isSidebarOpen}
+				aria-controls="ec-workspace-nav"
+				aria-label={workspaceContextStore.isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+			>
+				<i class="ph ph-sidebar-simple" aria-hidden="true"></i>
+			</button>
 			<div class="ec-breadcrumb">
 				{#if breadcrumb}
 					{breadcrumb}

@@ -1,7 +1,10 @@
 /**
- * Enterprise shell sidebar: workspace label + links from pathname + role.
+ * Enterprise shell sidebar: strictly isolated by workspace `activeContext` (Context Switcher).
+ * Do not mix workspace-jumping links here — use WorkspaceContextSwitcher for that.
+ *
  * @typedef {{ tab?: string, label: string, icon: string, href: string }} ShellNavItem
  * @typedef {{ workspaceLabel: string, mobileTitle: string, links: ShellNavItem[], showBilling?: boolean }} ShellNavConfig
+ * @typedef {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'recruiter' | 'household'} WorkspaceContext
  */
 
 /** @type {ShellNavItem[]} */
@@ -39,14 +42,15 @@ const coachLinks = [
 	{ tab: 'tools', label: 'Tools', icon: 'ph-gear', href: '/coach?tab=tools' },
 ];
 
-/** @type {ShellNavItem[]} */
-const playerLinks = [
-	{ tab: '', label: 'My Stats', icon: 'ph-chart-bar', href: '/stats' },
+/**
+ * Player / athlete OS (household context): no workspace-jumping links.
+ * @type {ShellNavItem[]}
+ */
+const athleteHouseholdLinks = [
+	{ tab: '', label: 'Player Stats', icon: 'ph-chart-bar', href: '/stats' },
 	{ tab: '', label: 'Log workout', icon: 'ph-list', href: '/tracker' },
-	{ tab: '', label: 'Trials', icon: 'ph-trophy', href: '/challenges' },
-	{ tab: '', label: 'Passport', icon: 'ph-identification-card', href: '/passport' },
-	{ tab: '', label: 'Trophy Room', icon: 'ph-medal', href: '/trophies' },
-	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },
+	{ tab: '', label: 'Challenges', icon: 'ph-trophy', href: '/challenges' },
+	{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
 ];
 
 /** @type {ShellNavItem[]} */
@@ -67,77 +71,52 @@ const recruiterLinks = [
 	{ tab: '', label: 'Recruiter search', icon: 'ph-magnifying-glass', href: '/recruiter' },
 ];
 
-/** @type {ShellNavItem[]} */
-const superAdminHomeLinks = [
-	{ tab: '', label: 'Admin console', icon: 'ph-shield-star', href: '/admin' },
-	{ tab: 'roster', label: 'Coach tools', icon: 'ph-megaphone', href: '/coach?tab=roster' },
-];
+/**
+ * When `activeContext` is not yet set, infer from URL (first paint / deep link).
+ * @param {string} pathname
+ * @returns {WorkspaceContext}
+ */
+export function inferWorkspaceContextFromPathname(pathname) {
+	const p = pathname || '';
+	if (p.startsWith('/admin')) return 'admin';
+	if (p.startsWith('/director')) return 'director';
+	if (p.startsWith('/coach')) return 'coach';
+	if (p.startsWith('/registrar')) return 'registrar';
+	if (p.startsWith('/recruiter')) return 'recruiter';
+	return 'household';
+}
 
 /**
+ * Sidebar links for the Enterprise shell — isolated by active workspace only.
+ *
  * @param {string} pathname
  * @param {string} role
+ * @param {string} [activeContext]
  * @returns {ShellNavConfig}
  */
-export function getWorkspaceNav(pathname, role) {
-	if (pathname.startsWith('/admin')) {
-		return {
-			workspaceLabel: 'Admin',
-			mobileTitle: 'Admin',
-			links: adminLinks,
-			showBilling: false,
-		};
-	}
-	if (pathname.startsWith('/director')) {
-		return {
-			workspaceLabel: 'Director',
-			mobileTitle: 'Director',
-			links: directorLinks,
-			showBilling: true,
-		};
-	}
-	if (pathname.startsWith('/coach')) {
-		return {
-			workspaceLabel: 'Coach',
-			mobileTitle: 'Coach',
-			links: coachLinks,
-			showBilling: false,
-		};
-	}
-	if (pathname.startsWith('/registrar')) {
-		return {
-			workspaceLabel: 'Registrar Workspace',
-			mobileTitle: 'Registrar Workspace',
-			links: registrarLinks,
-			showBilling: false,
-		};
-	}
-	if (pathname.startsWith('/recruiter')) {
-		return {
-			workspaceLabel: 'Recruiter',
-			mobileTitle: 'Recruiter',
-			links: recruiterLinks,
-			showBilling: false,
-		};
+export function getWorkspaceNav(pathname, role, activeContext = '') {
+	const inferred = inferWorkspaceContextFromPathname(pathname);
+	const raw = (activeContext || '').trim();
+	/** @type {WorkspaceContext} */
+	let ctx = raw || inferred;
+	const allowed = new Set(['admin', 'director', 'coach', 'registrar', 'recruiter', 'household']);
+	if (!allowed.has(ctx)) {
+		ctx = inferred;
 	}
 
-	switch (role) {
-		case 'super_admin':
+	switch (ctx) {
+		case 'admin':
 			return {
-				workspaceLabel: 'Platform',
+				workspaceLabel: 'Admin',
 				mobileTitle: 'Admin',
-				links: superAdminHomeLinks,
+				links: adminLinks,
 				showBilling: false,
 			};
 		case 'director':
 			return {
 				workspaceLabel: 'Director',
 				mobileTitle: 'Director',
-				links: [
-					{ tab: 'home', label: 'Command center', icon: 'ph-squares-four', href: '/director?tab=home' },
-					...directorLinks.slice(1, 5),
-					{ tab: '', label: 'Recruiter', icon: 'ph-magnifying-glass', href: '/recruiter' },
-					{ tab: '', label: 'Coach tools', icon: 'ph-megaphone', href: '/coach?tab=roster' },
-				],
+				links: directorLinks,
 				showBilling: true,
 			};
 		case 'coach':
@@ -147,20 +126,6 @@ export function getWorkspaceNav(pathname, role) {
 				links: coachLinks,
 				showBilling: false,
 			};
-		case 'player':
-			return {
-				workspaceLabel: 'Player',
-				mobileTitle: 'Player',
-				links: playerLinks,
-				showBilling: false,
-			};
-		case 'parent':
-			return {
-				workspaceLabel: 'Parent',
-				mobileTitle: 'Parent',
-				links: parentLinks,
-				showBilling: false,
-			};
 		case 'registrar':
 			return {
 				workspaceLabel: 'Registrar Workspace',
@@ -168,13 +133,39 @@ export function getWorkspaceNav(pathname, role) {
 				links: registrarLinks,
 				showBilling: false,
 			};
-		default:
+		case 'recruiter':
+			return {
+				workspaceLabel: 'Recruiter',
+				mobileTitle: 'Recruiter',
+				links: recruiterLinks,
+				showBilling: false,
+			};
+		case 'household':
+		default: {
+			// 'household' = Player OS / parent portal — never workspace-jumping links.
+			if (role === 'parent') {
+				return {
+					workspaceLabel: 'Parent',
+					mobileTitle: 'Parent',
+					links: parentLinks,
+					showBilling: false,
+				};
+			}
+			if (role === 'player' || role === 'super_admin') {
+				return {
+					workspaceLabel: 'Player',
+					mobileTitle: 'Player',
+					links: athleteHouseholdLinks,
+					showBilling: false,
+				};
+			}
 			return {
 				workspaceLabel: 'Workspace',
 				mobileTitle: 'App',
 				links: [{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' }],
 				showBilling: false,
 			};
+		}
 	}
 }
 

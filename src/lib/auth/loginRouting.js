@@ -81,7 +81,7 @@ export function applyLoginWaterfall(role, profile) {
 /**
  * Map a navigation target to `activeContext` (sidebar switcher + store).
  * @param {string} href
- * @returns {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'household'}
+ * @returns {'' | 'admin' | 'director' | 'coach' | 'registrar' | 'recruiter' | 'household'}
  */
 export function getContextFromHref(href) {
 	try {
@@ -90,6 +90,7 @@ export function getContextFromHref(href) {
 		if (path.startsWith('/director')) return 'director';
 		if (path.startsWith('/coach')) return 'coach';
 		if (path.startsWith('/registrar')) return 'registrar';
+		if (path.startsWith('/recruiter')) return 'recruiter';
 		if (path.startsWith('/parent')) return 'household';
 		if (path === '/home' || path.startsWith('/home/')) return 'household';
 		if (path.startsWith('/stats')) return 'household';

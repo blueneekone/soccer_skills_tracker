@@ -11,8 +11,23 @@
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import MarketingTab from '$lib/components/director/MarketingTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
-	const clubId = $derived(authStore.userProfile?.clubId || authStore.userProfile?.teamId || '');
+	/** Effective tenant for Firestore; super_admin uses QA scope (active club or first org). */
+	const clubId = $derived.by(() => {
+		const role = authStore.role;
+		const prof = authStore.userProfile;
+		const raw = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+		if (raw && raw !== 'admin') return raw;
+		if (role === 'super_admin') {
+			const a = workspaceContextStore.activeClubId?.trim();
+			if (a) return a;
+			const first = teamsStore.clubs[0]?.id;
+			if (first) return first;
+		}
+		return '';
+	});
 
 	const activeTab = $derived($page.url.searchParams.get('tab') || 'home');
 

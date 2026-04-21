@@ -7,6 +7,7 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
 	/**
@@ -30,7 +31,20 @@
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
 
-	const clubId = $derived(authStore.userProfile?.clubId || '');
+	const clubId = $derived.by(() => {
+		const role = authStore.role;
+		const raw = typeof authStore.userProfile?.clubId === 'string' ?
+			authStore.userProfile.clubId.trim() :
+			'';
+		if (raw) return raw;
+		if (role === 'super_admin') {
+			const a = workspaceContextStore.activeClubId?.trim();
+			if (a) return a;
+			const first = teamsStore.clubs[0]?.id;
+			if (first) return first;
+		}
+		return '';
+	});
 	const clubTeams = $derived(
 		clubId ? teamsStore.teams.filter((t) => t.clubId === clubId) : []
 	);

@@ -22,6 +22,7 @@
 	import PlaybookModule from '$lib/components/coach/PlaybookModule.svelte';
 	import VerificationQueue from '$lib/components/coach/VerificationQueue.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
@@ -47,9 +48,11 @@
 	const userEmail = $derived(authStore.user?.email || '');
 	const clubId = $derived(authStore.userProfile?.clubId);
 
-	// Coach workspace: only teams this user heads or assists — never the full org catalog.
-	const myTeams = $derived(() => {
-		if (!teamsStore.loaded || !userEmail) return [];
+	// Coach workspace: assigned teams; super_admin QA uses full loaded catalog from org scope.
+	const myTeams = $derived.by(() => {
+		if (!teamsStore.loaded) return [];
+		if (role === 'super_admin') return teamsStore.teams.slice();
+		if (!userEmail) return [];
 		return teamsStore.getCoachTeams(userEmail);
 	});
 
@@ -59,10 +62,18 @@
 		role === 'super_admin' || role === 'director',
 	);
 
-	// Auto-select first team
+	// Auto-select first team (sync QA pivot when God Mode sets active team)
 	$effect(() => {
-		const teams = myTeams();
-		if (teams.length > 0 && !selectedTeamId) {
+		const teams = myTeams;
+		if (teams.length === 0) return;
+		if (role === 'super_admin') {
+			const pivot = workspaceContextStore.activeTeamId?.trim();
+			if (pivot && teams.some((t) => t.id === pivot)) {
+				if (selectedTeamId !== pivot) selectedTeamId = pivot;
+				return;
+			}
+		}
+		if (!selectedTeamId) {
 			selectedTeamId = teams[0].id;
 		}
 	});
@@ -127,7 +138,7 @@
 
 			<div class="tab-content">
 				{#if activeTab === 'roster'}
-					<RosterTab teamId={selectedTeamId} teams={myTeams()} />
+					<RosterTab teamId={selectedTeamId} teams={myTeams} />
 				{:else if activeTab === 'playbook'}
 					<PlaybookModule teamId={selectedTeamId} />
 				{:else if activeTab === 'videos'}
@@ -160,18 +171,18 @@
 					<div class="ec-coach__select-body">
 						<label class="ec-coach__label" for="coach-dir-team">View Team Data</label>
 						<select id="coach-dir-team" bind:value={selectedTeamId}>
-							{#each myTeams() as t}
+							{#each myTeams as t}
 								<option value={t.id}>{t.name}</option>
 							{/each}
 						</select>
 					</div>
 				</div>
-			{:else if myTeams().length > 1}
+			{:else if myTeams.length > 1}
 				<div class="ec-panel ec-coach__select">
 					<div class="ec-coach__select-body">
 						<label class="ec-coach__label" for="coach-team-pick">Team</label>
 						<select id="coach-team-pick" bind:value={selectedTeamId} aria-label="Select team">
-							{#each myTeams() as t}
+							{#each myTeams as t}
 								<option value={t.id}>{t.name}</option>
 							{/each}
 						</select>

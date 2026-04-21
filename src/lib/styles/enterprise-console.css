@@ -7,10 +7,12 @@
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
-	width: 100vw;
+	width: 100%;
+	max-width: 100%;
 	height: 100dvh;
 	max-height: 100dvh;
 	overflow: hidden;
+	overflow-x: hidden;
 	background: var(--ec-canvas-bg, #f4f4f5);
 	box-sizing: border-box;
 }
@@ -23,6 +25,7 @@
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
+	overflow-x: hidden;
 }
 
 /* ---------- Field mode: mobile header + off-canvas nav (< 1024px) ---------- */
@@ -173,21 +176,53 @@ html.dark .ec-sidebar__close-btn:hover {
 }
 
 .ec-sidebar {
-	width: 250px;
-	min-width: 250px;
+	width: 16rem;
+	max-width: 16rem;
+	min-width: 0;
 	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	overflow: hidden;
 	overflow-x: hidden;
 	border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	background: var(--ec-sidebar-bg, #fafafa);
 	box-sizing: border-box;
+	transition:
+		width 0.22s ease,
+		max-width 0.22s ease,
+		border-color 0.22s ease;
+}
+
+.ec-sidebar__panel {
+	width: 16rem;
+	max-width: 16rem;
+	flex: 1;
+	min-height: 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	box-sizing: border-box;
+	transition: transform 0.22s ease;
 }
 
 html.dark .ec-sidebar {
 	background: #09090b;
 	border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 1024px) {
+	.ec-sidebar--collapsed-desktop {
+		width: 0 !important;
+		max-width: 0 !important;
+		min-width: 0 !important;
+		border-right-width: 0 !important;
+	}
+
+	.ec-sidebar--collapsed-desktop .ec-sidebar__panel {
+		transform: translateX(-100%);
+	}
 }
 
 .ec-sidebar__brand {
@@ -196,6 +231,10 @@ html.dark .ec-sidebar {
 	gap: 10px;
 	padding: 14px 16px;
 	min-height: 56px;
+	min-width: 0;
+	width: 100%;
+	max-width: 100%;
+	overflow: hidden;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	flex-shrink: 0;
 }
@@ -223,11 +262,34 @@ html.dark .ec-sidebar__brand {
 .ec-sidebar__nav {
 	flex: 1;
 	min-height: 0;
+	min-width: 0;
+	overflow-x: hidden;
 	overflow-y: auto;
 	padding: 8px 10px 16px;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
+}
+
+.ec-sidebar__system {
+	flex-shrink: 0;
+	margin-top: auto;
+	padding: 8px 10px 12px;
+	border-top: 1px solid #e4e4e7;
+}
+
+html.dark .ec-sidebar__system {
+	border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.ec-sidebar__system-label {
+	margin: 0 0 6px;
+	padding: 0 10px;
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-secondary);
 }
 
 .ec-nav-link {
@@ -250,7 +312,9 @@ html.dark .ec-sidebar__brand {
 	letter-spacing: -0.01em;
 }
 
-.ec-nav-link > span {
+.ec-nav-link > span,
+.ec-nav-link__label {
+	display: block;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -338,7 +402,8 @@ html.dark .ec-nav-section {
 		top: calc(56px + env(safe-area-inset-top));
 		left: 0;
 		bottom: 0;
-		width: min(256px, 88vw);
+		width: min(16rem, 88vw);
+		max-width: min(16rem, 88vw);
 		min-width: 0;
 		height: auto;
 		max-height: none;
@@ -347,6 +412,12 @@ html.dark .ec-nav-section {
 		transition: transform 0.2s ease-out;
 		box-shadow: none;
 		border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
+	}
+
+	.ec-sidebar__panel {
+		width: 100%;
+		max-width: 100%;
+		height: 100%;
 	}
 
 	html.dark .ec-sidebar {
@@ -393,6 +464,41 @@ html.dark .ec-nav-section {
 	background: var(--ec-canvas-bg, #f4f4f5);
 }
 
+.ec-sidebar-toggle {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	flex-shrink: 0;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background 0.12s ease, color 0.12s ease;
+}
+
+.ec-sidebar-toggle:hover {
+	background: rgba(0, 0, 0, 0.05);
+	color: var(--text-primary);
+}
+
+html.dark .ec-sidebar-toggle:hover {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.ec-sidebar-toggle i {
+	font-size: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+	.ec-sidebar-toggle--desktop {
+		display: inline-flex;
+	}
+}
+
 .ec-topbar {
 	flex-shrink: 0;
 	height: 56px;
@@ -404,6 +510,7 @@ html.dark .ec-nav-section {
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	background: var(--glass-bg, #ffffff);
 	box-sizing: border-box;
+	min-width: 0;
 }
 
 html.dark .ec-topbar {
@@ -412,6 +519,8 @@ html.dark .ec-topbar {
 }
 
 .ec-breadcrumb {
+	flex: 1;
+	min-width: 0;
 	font-size: 13px;
 	font-weight: 500;
 	color: var(--text-secondary);

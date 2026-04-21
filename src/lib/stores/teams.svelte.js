@@ -172,6 +172,15 @@ export const teamsStore = createTeamsStore();
 export function resolveTeamsLoadScope(pathname, role) {
 	if (pathname.startsWith('/admin')) return 'admin_full';
 	if (pathname.startsWith('/setup')) return 'setup';
+	/** Super Admin QA: load full org catalog on staff dashboards (no club/team on profile). */
+	if (
+		role === 'super_admin' &&
+		(pathname.startsWith('/director') ||
+			pathname.startsWith('/coach') ||
+			pathname.startsWith('/registrar'))
+	) {
+		return 'admin_full';
+	}
 	if (pathname.startsWith('/director') || pathname.startsWith('/registrar')) return 'club';
 	if (pathname.startsWith('/coach')) return 'coach';
 	if (pathname.startsWith('/recruiter')) return 'none';

@@ -71,6 +71,10 @@
 					: authStore.userProfile.teamId;
 			if (effectiveTid) workoutsStore.loadForTeam(effectiveTid);
 		}
+		if (authStore.role === 'super_admin' && path.startsWith('/coach')) {
+			const qaTid = workspaceContextStore.activeTeamId?.trim();
+			if (qaTid) workoutsStore.loadForTeam(qaTid);
+		}
 		if (authStore.userProfile?.teamId && authStore.userProfile.teamId !== 'admin') {
 			brandingStore.loadForTeam(authStore.userProfile.teamId);
 		}
@@ -103,11 +107,27 @@
 			}
 			workspaceContextStore.setActiveContext('coach');
 		} else if (path.startsWith('/recruiter')) {
-			workspaceContextStore.setActiveContext('admin');
+			workspaceContextStore.setActiveContext('recruiter');
 		} else if (path.startsWith('/parent')) {
 			workspaceContextStore.setActiveContext('household');
 		} else {
 			workspaceContextStore.setActiveContext('household');
+		}
+	});
+
+	// Super Admin QA: default active club/team from loaded org data when profile has no tenant.
+	$effect(() => {
+		if (!browser || !authStore.isAuthenticated || authStore.isLoading) return;
+		if (authStore.role !== 'super_admin') return;
+		const path = $page.url.pathname;
+		const clubs = teamsStore.clubs;
+		const teamRows = teamsStore.teams;
+		if ((path.startsWith('/director') || path.startsWith('/registrar')) && clubs.length > 0) {
+			const cur = workspaceContextStore.activeClubId?.trim();
+			if (!cur) workspaceContextStore.setActiveClubId(clubs[0].id);
+		} else if (path.startsWith('/coach') && teamRows.length > 0) {
+			const cur = workspaceContextStore.activeTeamId?.trim();
+			if (!cur) workspaceContextStore.setActiveTeamId(teamRows[0].id);
 		}
 	});
 
@@ -116,7 +136,13 @@
 			clubBrandingStore.clear();
 			return;
 		}
-		const cid = authStore.userProfile?.clubId;
+		const path = $page.url.pathname;
+		let cid = typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '';
+		if (authStore.role === 'super_admin' && (path.startsWith('/director') || path.startsWith('/registrar'))) {
+			const a = workspaceContextStore.activeClubId?.trim();
+			if (a) cid = a;
+			else if (!cid || cid === 'admin') cid = teamsStore.clubs[0]?.id || '';
+		}
 		clubBrandingStore.loadForClub(cid || '');
 	});
 
