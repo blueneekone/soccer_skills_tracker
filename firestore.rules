@@ -65,8 +65,9 @@ service cloud.firestore {
       return tokenRole() == 'parent';
     }
 
+    // Registrar OS: custom claim from syncUserClaims / setCustomUserClaims.
     function isRegistrar() {
-      return tokenRole() == 'registrar';
+      return request.auth != null && request.auth.token.role == 'registrar';
     }
 
     function registrarTeamInClub(tid) {
@@ -572,12 +573,15 @@ service cloud.firestore {
     }
 
     match /households/{householdId} {
-      // Directors/coaches (same club as household) may read to resolve SafeSport Shadow CC parents in Comms Hub.
+      // Directors/coaches/registrars (same club as household) may read; registrars for Registrar OS compliance.
       allow read: if authed() && (
         isSuper()
         || (resource.data.parentEmails != null && resource.data.parentEmails.hasAny([emailKey()]))
         || (tokenHousehold() != null && tokenHousehold() == householdId)
         || (isDirector() && tokenClub() != null
+            && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (isRegistrar() && tokenClub() != null
             && resource.data.keys().hasAll(['clubId'])
             && resource.data.clubId == tokenClub())
         || (isCoach() && tokenTeam() != null
