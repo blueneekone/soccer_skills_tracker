@@ -476,7 +476,7 @@
 	}
 	.verify-check {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 0.75rem;
 		font-size: 0.86rem;
 		font-weight: 600;
@@ -484,7 +484,7 @@
 		cursor: pointer;
 	}
 	.verify-check input {
-		margin-top: 0;
+		margin-top: 0.125rem;
 	}
 	.session-item-title { font-weight: 700; }
 	.session-item-detail { font-size: 0.85rem; color: var(--muted-slate); }

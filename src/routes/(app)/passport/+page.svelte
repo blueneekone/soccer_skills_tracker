@@ -348,7 +348,7 @@
 	.attest-check {
 		display: flex;
 		align-items: flex-start;
-		gap: 10px;
+		gap: 0.75rem;
 		font-size: 0.88rem;
 		font-weight: 600;
 		line-height: 1.45;
@@ -356,6 +356,6 @@
 	}
 
 	.attest-check input {
-		margin-top: 4px;
+		margin-top: 0.125rem;
 	}
 </style>

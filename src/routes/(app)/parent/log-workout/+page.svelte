@@ -460,7 +460,7 @@
 		background: rgba(15, 23, 42, 0.03);
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 0.75rem;
 		margin-bottom: 16px;
 	}
 	:global(html.dark) .verify-panel {
@@ -472,14 +472,14 @@
 	.verify-check {
 		display: flex;
 		align-items: flex-start;
-		gap: 10px;
+		gap: 0.75rem;
 		font-size: 0.88rem;
 		font-weight: 600;
 		line-height: 1.45;
 		cursor: pointer;
 	}
 	.verify-check input {
-		margin-top: 4px;
+		margin-top: 0.125rem;
 	}
 	.w-full {
 		width: 100%;

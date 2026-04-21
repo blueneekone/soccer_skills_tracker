@@ -3347,18 +3347,19 @@ exports.submitWorkoutRep = onCall(
     },
 );
 
+/** Keep in sync with `src/lib/gamification/level.js` (polynomial curve + max 99). */
+const MAX_TRAINING_LEVEL = 99;
+
 /**
- * XP band: level L → L+1 requires this much XP earned at level L.
+ * XP band: level L → L+1 requires floor(100 × L^1.5). At level 99+, 0 (capped).
  * @param {number} level
  * @return {number}
  */
 function xpToAdvanceFromTrainingLevel(level) {
   const L = Math.floor(level);
+  if (L >= MAX_TRAINING_LEVEL) return 0;
   if (L < 1) return 100;
-  if (L === 1) return 100;
-  if (L === 2) return 250;
-  if (L === 3) return 500;
-  return Math.floor(500 * Math.pow(2, L - 3));
+  return Math.floor(100 * Math.pow(L, 1.5));
 }
 
 /**
@@ -3369,7 +3370,10 @@ function trainingLevelFromTotalXp(totalXp) {
   const xp = Math.max(0, Math.floor(totalXp));
   let level = 1;
   let at = 0;
-  for (let guard = 0; guard < 5000; guard++) {
+  for (let guard = 0; guard < 10000; guard++) {
+    if (level >= MAX_TRAINING_LEVEL) {
+      return {level: MAX_TRAINING_LEVEL};
+    }
     const need = xpToAdvanceFromTrainingLevel(level);
     if (xp < at + need) {
       return {level};
@@ -3377,7 +3381,7 @@ function trainingLevelFromTotalXp(totalXp) {
     at += need;
     level++;
   }
-  return {level};
+  return {level: MAX_TRAINING_LEVEL};
 }
 
 /**

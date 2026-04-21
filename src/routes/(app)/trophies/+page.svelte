@@ -56,7 +56,7 @@
 </script>
 
 <div class="ec-page ec-trophies view-section">
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-4">
 		<div class="tw-min-w-0 tw-col-span-1 xl:tw-col-span-12">
 			<h2 class="view-title">🏆 TROPHY ROOM</h2>
 
@@ -144,6 +144,18 @@
 </div>
 
 <style>
+	.ec-trophies .card-body {
+		padding: 0.75rem;
+	}
+
+	.ec-trophies .trophy-flex {
+		gap: 1rem;
+	}
+
+	.ec-trophies .medal-container {
+		padding: 0.75rem;
+	}
+
 	.milestone-header {
 		font-size: 1rem;
 		color: var(--muted-slate);

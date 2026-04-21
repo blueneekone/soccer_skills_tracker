@@ -101,6 +101,10 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 	const raw = (activeContext || '').trim();
 	/** @type {WorkspaceContext} */
 	let ctx = raw || inferred;
+	// Super Admin must follow URL context strictly (prevents dashboard bleed across workspaces).
+	if (role === 'super_admin') {
+		ctx = inferred;
+	}
 	const allowed = new Set(['admin', 'director', 'coach', 'registrar', 'recruiter', 'household']);
 	if (!allowed.has(ctx)) {
 		ctx = inferred;

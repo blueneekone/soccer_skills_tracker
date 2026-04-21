@@ -273,14 +273,14 @@
 	.settings-checkbox-row {
 		display: flex;
 		align-items: flex-start;
-		gap: 10px;
+		gap: 0.75rem;
 		font-size: 0.9rem;
 		font-weight: 600;
 		cursor: pointer;
 	}
 
 	.settings-checkbox-row input {
-		margin-top: 4px;
+		margin-top: 0.125rem;
 	}
 
 	.theme-segment {
