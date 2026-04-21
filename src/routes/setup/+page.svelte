@@ -10,6 +10,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
 	const listTeamsForClub = httpsCallable(functions, 'listTeamsForClub');
+	const playerSelfReportDobFn = httpsCallable(functions, 'playerSelfReportDob');
 
 	// Redirect logic — super admins (JWT `isSuperAdmin` or role) skip profile completion
 	$effect(() => {
@@ -59,6 +60,7 @@
 	let selectedTeamId = $state('');
 	let selectedPlayerName = $state('');
 	let manualPlayerName = $state('');
+	let dateOfBirth = $state('');
 	let showManualEntry = $state(false);
 	let rosterPlayers = $state([]);
 	let rosterLoading = $state(false);
@@ -66,6 +68,15 @@
 	let saving = $state(false);
 	let clubTeams = $state([]);
 	let clubTeamsLoading = $state(false);
+	/** @type {'idle' | 'minor_pending'} */
+	let dobOutcome = $state('idle');
+
+	const today = new Date().toISOString().split('T')[0];
+	const minDobDate = (() => {
+		const d = new Date();
+		d.setFullYear(d.getFullYear() - 100);
+		return d.toISOString().split('T')[0];
+	})();
 
 	$effect(() => {
 		if (!selectedClubId) {
@@ -104,6 +115,8 @@
 		rosterPlayers = [];
 		showManualEntry = false;
 		manualPlayerName = '';
+		dateOfBirth = '';
+		dobOutcome = 'idle';
 		errorMsg = '';
 	}
 
@@ -181,6 +194,21 @@
 
 			await setDoc(userRef, profileData, { merge: true });
 			await authStore.refresh({ silent: true });
+
+			if (dateOfBirth.trim()) {
+				try {
+					const dobResult = await playerSelfReportDobFn({ dateOfBirth: dateOfBirth.trim() });
+					const r = /** @type {any} */ (dobResult.data);
+					if (r.isMinor === true) {
+						dobOutcome = 'minor_pending';
+						saving = false;
+						return;
+					}
+				} catch (dobErr) {
+					console.warn('[setup] DOB report failed — continuing setup:', dobErr);
+				}
+			}
+
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} catch (err) {
 			errorMsg = 'Error saving profile: ' + err.message;
@@ -247,6 +275,25 @@
 				You do not need a team roster slot. After you finish, your club director can link your account to your
 				athlete’s household for consent workflows.
 			</p>
+		{:else if dobOutcome === 'minor_pending'}
+			<div class="minor-gate" role="alert">
+				<div class="minor-gate__icon">🔒</div>
+				<h3 class="minor-gate__title">Parental consent required</h3>
+				<p class="minor-gate__body">
+					Based on your date of birth, your account requires a parent or guardian to complete the
+					consent process before you can access training data.
+				</p>
+				<p class="minor-gate__body">
+					A <strong>Parent / Guardian</strong> must create an account on this platform, then visit
+					<strong>Parent dashboard → Consent</strong> to complete verification.
+				</p>
+				<button
+					class="primary-btn btn-orange w-100"
+					onclick={() => goto('/vpc-pending', { replaceState: true })}
+				>
+					Got it — view my status
+				</button>
+			</div>
 		{:else}
 			<label>Select Your Team</label>
 			<select bind:value={selectedTeamId} disabled={!selectedClubId || clubTeamsLoading} onchange={onTeamChange}>
@@ -286,6 +333,18 @@
 					</p>
 				</div>
 			{/if}
+
+			<label for="setup-dob">Date of Birth <span class="setup-optional">(optional — used for COPPA compliance)</span></label>
+			<input
+				id="setup-dob"
+				type="date"
+				bind:value={dateOfBirth}
+				min={minDobDate}
+				max={today}
+			/>
+			<p class="setup-helper-text">
+				If you are under 17, a parent or guardian must complete the consent flow before you can log workouts.
+			</p>
 		{/if}
 
 		{#if errorMsg}
@@ -337,5 +396,32 @@
 	}
 	.manual-entry {
 		margin-bottom: 12px;
+	}
+
+	.setup-optional {
+		font-size: 0.75rem;
+		opacity: 0.6;
+		font-weight: 400;
+	}
+
+	.minor-gate {
+		text-align: center;
+		padding: 1.25rem 0.5rem 0.75rem;
+	}
+	.minor-gate__icon {
+		font-size: 2.5rem;
+		margin-bottom: 0.75rem;
+	}
+	.minor-gate__title {
+		margin: 0 0 0.75rem;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+	.minor-gate__body {
+		margin: 0 0 0.75rem;
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		line-height: 1.55;
 	}
 </style>

@@ -4,6 +4,7 @@
 	import { db } from '$lib/firebase.js';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
+	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -73,6 +74,14 @@
 
 	<ActionInbox {clubId} />
 
+	<div class="dcc-vpc-section">
+		<div class="dcc-vpc-section__head">
+			<i class="ph ph-shield-check" aria-hidden="true"></i>
+			<span>VPC approval queue</span>
+		</div>
+		<VpcApprovalQueue {clubId} />
+	</div>
+
 	<DirectorAnalyticsCharts {clubId} />
 
 	<div class="dir-kpi-grid">
@@ -97,6 +106,35 @@
 <style>
 	.dcc-heading    { color: var(--text-primary); }
 	.dcc-subheading { color: var(--text-secondary); }
+
+	.dcc-vpc-section {
+		border: 1px solid rgba(245, 158, 11, 0.25);
+		border-radius: 14px;
+		background: rgba(245, 158, 11, 0.03);
+		padding: 10px 12px;
+		margin-bottom: 16px;
+	}
+
+	:global(html.dark) .dcc-vpc-section {
+		border-color: rgba(245, 158, 11, 0.2);
+		background: rgba(245, 158, 11, 0.05);
+	}
+
+	.dcc-vpc-section__head {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: #b45309;
+		margin-bottom: 8px;
+	}
+
+	:global(html.dark) .dcc-vpc-section__head {
+		color: #fbbf24;
+	}
 
 	.dir-kpi-grid {
 		display: grid;

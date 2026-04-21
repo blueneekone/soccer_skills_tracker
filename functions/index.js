@@ -2763,7 +2763,8 @@ exports.setPlayerDateOfBirth = onCall({region: REGION}, async (request) => {
 
   const ts = admin.firestore.Timestamp.fromDate(dobDate);
   const age = computeAgeYears(ts);
-  const isMinor = age < 13;
+  // COPPA 2026 / Children's Privacy Act: threshold is under 17.
+  const isMinor = age < 17;
   const vpcStatus = isMinor ? 'pending' : 'not_required';
 
   await snap.ref.update({
@@ -2993,6 +2994,256 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
   });
 
   return {ok: true, playerEmail};
+});
+
+/**
+ * Sprint 1.2 — COPPA 2026: player self-reports date of birth at account setup.
+ * Server-side age derivation prevents client-side spoofing.
+ * Sets isMinor (age < 17) and vpcStatus ('pending_parent' | 'not_required').
+ * syncUserClaims trigger fires automatically to stamp JWT claims.
+ *
+ * @param {{ dateOfBirth: string }} data ISO date string, e.g. '2012-03-15'
+ */
+exports.playerSelfReportDob = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const role = request.auth.token.role || 'player';
+  if (role !== 'player') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only player accounts may self-report date of birth.',
+    );
+  }
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('unauthenticated', 'Authenticated email is missing.');
+  }
+
+  const data = request.data || {};
+  const rawDob = data.dateOfBirth;
+  if (typeof rawDob !== 'string' || !rawDob.trim()) {
+    throw new HttpsError(
+        'invalid-argument',
+        'dateOfBirth (ISO date string, e.g. 2012-03-15) is required.',
+    );
+  }
+  const dobDate = new Date(rawDob.trim());
+  if (Number.isNaN(dobDate.getTime())) {
+    throw new HttpsError('invalid-argument', 'Invalid dateOfBirth value.');
+  }
+
+  const now = new Date();
+  if (dobDate >= now) {
+    throw new HttpsError('invalid-argument', 'Date of birth must be in the past.');
+  }
+
+  const earliestAllowed = new Date(now);
+  earliestAllowed.setFullYear(earliestAllowed.getFullYear() - 100);
+  if (dobDate < earliestAllowed) {
+    throw new HttpsError('invalid-argument', 'Date of birth is implausibly old.');
+  }
+
+  const uRef = db.collection('users').doc(email);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError(
+        'not-found',
+        'User profile not found. Complete profile setup first.',
+    );
+  }
+
+  const u = uSnap.data();
+  if (u.vpcStatus === 'verified') {
+    return {ok: true, isMinor: u.isMinor === true, vpcStatus: 'verified'};
+  }
+
+  const ts = admin.firestore.Timestamp.fromDate(dobDate);
+  const age = computeAgeYears(ts);
+  // COPPA 2026 / Children's Privacy Act: threshold is under 17.
+  const isMinor = age < 17;
+  // 'pending_parent' distinguishes self-reported DOB from director-set DOB ('pending').
+  const vpcStatus = isMinor ? 'pending_parent' : 'not_required';
+
+  await uRef.update({
+    dateOfBirth: ts,
+    isMinor,
+    vpcStatus,
+  });
+
+  await db.collection('security_audit').add({
+    action: 'playerSelfReportDob',
+    playerEmail: email,
+    actorUid: request.auth.uid,
+    isMinor,
+    vpcStatus,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {ok: true, isMinor, vpcStatus};
+});
+
+/**
+ * Sprint 1.2 — COPPA 2026: parent submits explicit granular consent via the
+ * online consent ceremony. Creates a structured consent_records document and
+ * updates vpc_requests to 'parent_consented'. Does NOT verify the minor —
+ * directorApproveVpc is still required as the second factor.
+ *
+ * @param {{
+ *   playerEmail: string,
+ *   consentItems: {
+ *     workoutData: boolean,
+ *     identity: boolean,
+ *     analytics: boolean,
+ *     comms: boolean
+ *   },
+ *   parentDisplayName: string
+ * }} data
+ */
+exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
+  const actor = assertParent(request);
+  const data = request.data || {};
+
+  const playerEmail = normEmail(data.playerEmail);
+  if (!playerEmail) {
+    throw new HttpsError('invalid-argument', 'playerEmail is required.');
+  }
+
+  const ci = data.consentItems;
+  if (
+    !ci ||
+    typeof ci !== 'object' ||
+    ci.workoutData !== true ||
+    ci.identity !== true
+  ) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Required consent items (workoutData, identity) must be explicitly accepted.',
+    );
+  }
+
+  const parentDisplayName =
+      typeof data.parentDisplayName === 'string' ?
+        data.parentDisplayName.trim() :
+        '';
+  if (!parentDisplayName) {
+    throw new HttpsError(
+        'invalid-argument',
+        'parentDisplayName is required for consent attestation.',
+    );
+  }
+
+  const hRef = db.collection('households').doc(actor.householdId);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    throw new HttpsError('failed-precondition', 'Household not found.');
+  }
+  const h = hSnap.data();
+
+  const parentSet = new Set(
+      (h.parentEmails || []).map((e) => normEmail(String(e))).filter(Boolean),
+  );
+  if (!parentSet.has(actor.email)) {
+    throw new HttpsError(
+        'permission-denied',
+        'You are not listed on this household.',
+    );
+  }
+
+  const playerSet = new Set(
+      (h.playerEmails || []).map((e) => normEmail(String(e))).filter(Boolean),
+  );
+  if (!playerSet.has(playerEmail)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'That player email is not linked to your household.',
+    );
+  }
+
+  const uRef = db.collection('users').doc(playerEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'Player profile not found.');
+  }
+  const u = uSnap.data();
+  if (u.isMinor !== true) {
+    throw new HttpsError(
+        'failed-precondition',
+        'VPC consent applies to minors only.',
+    );
+  }
+  if (u.vpcStatus === 'verified') {
+    return {ok: true, alreadyVerified: true, playerEmail};
+  }
+
+  const clubId = u.clubId || h.clubId || null;
+  if (!clubId) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Club context is missing. Ask your director to link the club to this household.',
+    );
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const nowIso = new Date().toISOString();
+
+  const consentRef = db.collection('consent_records').doc();
+  await consentRef.set({
+    subjectEmail: playerEmail,
+    parentEmail: actor.email,
+    parentDisplayName,
+    householdId: actor.householdId,
+    clubId,
+    consentItems: {
+      workoutData: ci.workoutData === true,
+      identity: ci.identity === true,
+      analytics: ci.analytics === true,
+      comms: ci.comms === true,
+    },
+    method: 'parent_online_explicit',
+    policyVersion: '2026-04',
+    grantedAt: now,
+    grantedAtIso: nowIso,
+  });
+
+  const dupQ = await db.collection('vpc_requests')
+      .where('playerEmail', '==', playerEmail)
+      .where('status', '==', 'pending')
+      .limit(1)
+      .get();
+
+  if (!dupQ.empty) {
+    await dupQ.docs[0].ref.update({
+      status: 'parent_consented',
+      parentEmail: actor.email,
+      consentRecordId: consentRef.id,
+      consentedAt: now,
+    });
+  } else {
+    await db.collection('vpc_requests').add({
+      playerEmail,
+      parentEmail: actor.email,
+      householdId: actor.householdId,
+      clubId,
+      status: 'parent_consented',
+      consentRecordId: consentRef.id,
+      createdAt: now,
+      consentedAt: now,
+    });
+  }
+
+  await db.collection('security_audit').add({
+    action: 'parentGrantVpcConsent',
+    playerEmail,
+    parentEmail: actor.email,
+    householdId: actor.householdId,
+    clubId,
+    consentRecordId: consentRef.id,
+    actorUid: request.auth.uid,
+    at: now,
+  });
+
+  return {ok: true, playerEmail, pendingDirectorApproval: true};
 });
 
 /**
@@ -4664,6 +4915,55 @@ exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
  * @param {admin.firestore.QueryDocumentSnapshot} jobSnap Queue row.
  * @param {boolean} deleteQueueDoc If true, delete job doc after purge (TTL).
  */
+/**
+ * Paginated batch-delete for any Firestore query result set.
+ * Firestore batches are capped at 500 writes; this helper splits large
+ * query results into sequential batches so the purge can never throw a
+ * "batch too large" error regardless of collection size.
+ *
+ * @param {FirebaseFirestore.Query} q - The query whose matching docs to delete.
+ * @param {number} [pageSize=400] - Documents per batch (must be ≤ 500).
+ * @return {Promise<number>} Total number of documents deleted.
+ */
+async function paginatedBatchDelete(q, pageSize = 400) {
+  if (pageSize > 499) pageSize = 400;
+  let totalDeleted = 0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const snap = await q.limit(pageSize).get();
+    if (snap.empty) break;
+
+    const batch = db.batch();
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+    totalDeleted += snap.docs.length;
+
+    if (snap.docs.length < pageSize) break;
+  }
+
+  return totalDeleted;
+}
+
+/**
+ * Sprint 1.2 hardened purge: deletes the minor athlete's training data,
+ * severs roster/household linkages, anonymizes the users doc, and
+ * anonymizes the Firebase Auth record to satisfy COPPA 2026 / Privacy Shield.
+ *
+ * Scope of deletion:
+ *  - passports/{email}
+ *  - player_lookup/{email}
+ *  - workout_logs subcollection on users/{email}
+ *  - reps (where playerId == email)
+ *  - player_stats (where playerId == email)
+ *  - evaluations (where playerEmail == email)
+ *  - trials (where playerEmail == email)
+ *  - assignments (where playerId == email)
+ *  - Roster reference scrub
+ *  - Household playerEmails/playerNames scrub
+ *  - users/{email} doc — field-level anonymization
+ *  - Firebase Auth record — email, displayName, photoURL cleared
+ */
 async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
   const jobRef = jobSnap.ref;
   const job = jobSnap.data();
@@ -4714,6 +5014,35 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
     const teamId = u.teamId || null;
     const householdId = u.householdId || null;
 
+    // ── Phase 1: query-based paginated deletes for large collections ────────
+    const playerIdField = 'playerId';
+    const playerEmailField = 'playerEmail';
+
+    const [repsDeleted, statsDeleted, evalsDeleted, trialsDeleted, assignsDeleted] =
+      await Promise.all([
+        paginatedBatchDelete(
+            db.collection('reps').where(playerIdField, '==', email),
+        ),
+        paginatedBatchDelete(
+            db.collection('player_stats').where(playerIdField, '==', email),
+        ),
+        paginatedBatchDelete(
+            db.collection('evaluations').where(playerEmailField, '==', email),
+        ),
+        paginatedBatchDelete(
+            db.collection('trials').where(playerEmailField, '==', email),
+        ),
+        paginatedBatchDelete(
+            db.collection('assignments').where(playerIdField, '==', email),
+        ),
+      ]);
+
+    // ── Phase 2: workout_logs subcollection on the users doc ────────────────
+    const workoutLogsDeleted = await paginatedBatchDelete(
+        uRef.collection('workout_logs'),
+    );
+
+    // ── Phase 3: atomic batch for documents with known IDs ──────────────────
     const batch = db.batch();
 
     batch.delete(db.collection('passports').doc(email));
@@ -4736,18 +5065,19 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
       const hSnap = await hRef.get();
       if (hSnap.exists) {
         const hd = hSnap.data();
-        const playerEmails = (hd.playerEmails || [])
+        const pEmails = (hd.playerEmails || [])
             .filter((e) => (e || '').toLowerCase() !== email);
-        const playerNames = (hd.playerNames || [])
+        const pNames = (hd.playerNames || [])
             .filter((n) => n !== playerName);
         batch.set(hRef, {
-          playerEmails,
-          playerNames,
+          playerEmails: pEmails,
+          playerNames: pNames,
           updatedAt: now,
         }, {merge: true});
       }
     }
 
+    // Anonymize the users doc (retain the doc so auth-state queries don't 404).
     batch.set(uRef, {
       playerName: '[removed]',
       teamId: null,
@@ -4760,6 +5090,8 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
       privacyProfile: admin.firestore.FieldValue.delete(),
       telemetryOptIn: admin.firestore.FieldValue.delete(),
       settingsUpdatedAt: admin.firestore.FieldValue.delete(),
+      biometricOrVideoConsentAt: admin.firestore.FieldValue.delete(),
+      consentPolicyVersion: admin.firestore.FieldValue.delete(),
       retentionPurgedAt: now,
     }, {merge: true});
 
@@ -4773,8 +5105,37 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
     }
 
     await batch.commit();
+
+    // ── Phase 4: anonymize the Firebase Auth record ──────────────────────
+    // This is outside the batch (Admin SDK auth calls are not transactional),
+    // but happens after the Firestore batch to ensure Firestore is consistent
+    // before the auth record is modified.
+    let authAnonymized = false;
+    try {
+      const authUser = await admin.auth().getUserByEmail(email);
+      const anonymizedEmail = `purged-${authUser.uid}@retained.invalid`;
+      await admin.auth().updateUser(authUser.uid, {
+        email: anonymizedEmail,
+        displayName: '[removed]',
+        photoURL: null,
+        disabled: true,
+      });
+      authAnonymized = true;
+    } catch (authErr) {
+      // If the user doesn't exist in Auth (already deleted), that is acceptable.
+      if (authErr.code !== 'auth/user-not-found') {
+        logger.warn(
+            `minor_retention_queue: auth anonymization skipped for ${email}`,
+            authErr.message,
+        );
+      }
+    }
+
     logger.info(
-        `minor_retention_queue: purged ${email} (ttl=${deleteQueueDoc})`,
+        `minor_retention_queue: purged ${email} | ` +
+        `reps=${repsDeleted} stats=${statsDeleted} evals=${evalsDeleted} ` +
+        `trials=${trialsDeleted} assigns=${assignsDeleted} ` +
+        `workoutLogs=${workoutLogsDeleted} authAnonymized=${authAnonymized}`,
     );
   } catch (err) {
     logger.error(`minor_retention_queue: failed for ${email}`, err);

@@ -16,7 +16,8 @@ export const ROLE_ROUTE_POLICIES = {
 	'/stats': ['player', 'super_admin'],
 	'/challenges': ['player', 'super_admin'],
 	'/passport': ['player', 'super_admin'],
-	'/trophies': ['player', 'super_admin']
+	'/trophies': ['player', 'super_admin'],
+	'/vpc-pending': ['player']
 };
 
 /**

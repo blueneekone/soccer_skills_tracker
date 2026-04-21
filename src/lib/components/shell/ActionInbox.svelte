@@ -67,29 +67,51 @@
 							href: '/tracker',
 						});
 					}
-				} else if (role === 'director' && clubId) {
-					const q = query(
-						collection(db, 'coach_invites'),
-						where('clubId', '==', clubId),
-						where('status', '==', 'pending'),
-					);
-					let n = 0;
-					try {
-						const snap = await getCountFromServer(q);
-						n = snap.data().count;
-					} catch {
-						const snap = await getDocs(q);
-						n = snap.size;
-					}
-					if (!cancelled && n > 0) {
-						next.push({
-							id: 'invites',
-							label: `${n} pending coach invite${n === 1 ? '' : 's'}`,
-							meta: 'Roster & teams',
-							href: '/director?tab=teams',
-						});
-					}
-				} else if (role === 'registrar' && clubId) {
+			} else if (role === 'director' && clubId) {
+				const q = query(
+					collection(db, 'coach_invites'),
+					where('clubId', '==', clubId),
+					where('status', '==', 'pending'),
+				);
+				let n = 0;
+				try {
+					const snap = await getCountFromServer(q);
+					n = snap.data().count;
+				} catch {
+					const snap = await getDocs(q);
+					n = snap.size;
+				}
+				if (!cancelled && n > 0) {
+					next.push({
+						id: 'invites',
+						label: `${n} pending coach invite${n === 1 ? '' : 's'}`,
+						meta: 'Roster & teams',
+						href: '/director?tab=teams',
+					});
+				}
+
+				const vpcQ = query(
+					collection(db, 'vpc_requests'),
+					where('clubId', '==', clubId),
+					where('status', '==', 'parent_consented'),
+				);
+				let vpcN = 0;
+				try {
+					const vSnap = await getCountFromServer(vpcQ);
+					vpcN = vSnap.data().count;
+				} catch {
+					const vSnap = await getDocs(vpcQ);
+					vpcN = vSnap.size;
+				}
+				if (!cancelled && vpcN > 0) {
+					next.push({
+						id: 'vpc-approvals',
+						label: `${vpcN} VPC approval${vpcN === 1 ? '' : 's'} awaiting director sign-off`,
+						meta: 'Privacy · Consent',
+						href: '/director?tab=overview',
+					});
+				}
+			} else if (role === 'registrar' && clubId) {
 					const tSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
 					);

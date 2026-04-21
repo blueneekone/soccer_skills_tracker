@@ -34,7 +34,7 @@
 		licenseEntitlementStore.syncFromUser(auth.currentUser);
 	});
 
-	// Auth guard + role guard.
+	// Auth guard + role guard + COPPA 2026 minor holding gate.
 	// untrack() on every goto() prevents the URL change from re-triggering this effect,
 	// which would otherwise create an infinite reactive loop.
 	$effect(() => {
@@ -47,7 +47,22 @@
 			untrack(() => goto('/setup', { replaceState: true }));
 			return;
 		}
+
+		// COPPA 2026 / Privacy Shield: minor players must remain on /vpc-pending
+		// until a parent completes consent AND a director approves the VPC request.
+		const prof = authStore.userProfile;
 		const currentPath = page.url.pathname;
+		if (
+			authStore.role === 'player' &&
+			prof?.isMinor === true &&
+			prof?.vpcStatus !== 'verified' &&
+			prof?.vpcStatus !== 'not_required' &&
+			!currentPath.startsWith('/vpc-pending')
+		) {
+			untrack(() => goto('/vpc-pending', { replaceState: true }));
+			return;
+		}
+
 		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
 			const dest = untrack(() => applyLoginWaterfall(authStore.role, authStore.userProfile));
 			untrack(() => goto(dest, { replaceState: true }));
