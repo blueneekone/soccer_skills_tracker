@@ -143,26 +143,126 @@
 	});
 </script>
 
-{#if !apiKey || loadError}
+{#if !apiKey}
 	<div
-		class="logistics-map-empty flex h-72 w-full flex-col items-center justify-center gap-2 rounded-[14px] border border-[#e5e5e5] bg-[#f4f4f5] text-center dark:border-neutral-700 dark:bg-neutral-900/80"
+		class="logistics-map-empty logistics-map-empty--no-key"
 		role="img"
-		aria-label={!apiKey ? 'Google Maps API key missing' : 'Google Maps failed to load'}
+		aria-label="Google Maps API key required"
 	>
-		<i class="ph ph-map-pin text-3xl text-[#a1a1aa]" aria-hidden="true"></i>
-		<p class="mx-4 text-sm font-medium text-[#52525b] dark:text-neutral-400">
-			{#if !apiKey}
-				Google Maps API Key Required
-			{:else}
-				Unable to load Google Maps. Check your API key and billing.
-			{/if}
+		<i class="ph ph-lock-key logistics-map-empty__icon" aria-hidden="true"></i>
+		<p class="logistics-map-empty__text">
+			Google Maps API Key Required. Configure in .env to activate visual routing.
+		</p>
+	</div>
+{:else if loadError}
+	<div
+		class="logistics-map-empty logistics-map-empty--error"
+		role="img"
+		aria-label="Google Maps failed to load"
+	>
+		<i class="ph ph-map-pin logistics-map-empty__icon" aria-hidden="true"></i>
+		<p class="logistics-map-empty__text">
+			Unable to load Google Maps. Check your API key and billing.
 		</p>
 	</div>
 {:else}
 	<div
 		bind:this={mapRoot}
-		class="logistics-map-root h-72 w-full rounded-[14px] border border-[#e5e5e5] dark:border-neutral-700"
+		class="logistics-map-root"
 		role="application"
 		aria-label={readonly ? 'Facility location map' : 'Click to set facility location'}
 	></div>
 {/if}
+
+<style>
+	.logistics-map-root {
+		box-sizing: border-box;
+		height: 16rem;
+		width: 100%;
+		border-radius: 14px;
+		border: 1px solid #e5e5e5;
+	}
+
+	:global(html.dark) .logistics-map-root {
+		border-color: #404040;
+	}
+
+	/* Enterprise empty state — works without Tailwind (e.g. coach tools tab). */
+	.logistics-map-empty {
+		box-sizing: border-box;
+		display: flex;
+		height: 16rem;
+		width: 100%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		padding: 1rem 1.25rem;
+		text-align: center;
+		border-radius: 14px;
+		border: 1px solid #e4e4e7;
+	}
+
+	.logistics-map-empty--no-key {
+		background-color: #f4f4f5;
+		background-image: repeating-linear-gradient(
+			135deg,
+			transparent,
+			transparent 10px,
+			rgba(113, 113, 122, 0.09) 10px,
+			rgba(113, 113, 122, 0.09) 11px
+		);
+	}
+
+	.logistics-map-empty--error {
+		background-color: #f4f4f5;
+		border-color: #e4e4e7;
+	}
+
+	:global(html.dark) .logistics-map-empty {
+		border-color: rgba(255, 255, 255, 0.12);
+		background-color: #18181b;
+	}
+
+	:global(html.dark) .logistics-map-empty--no-key {
+		background-color: #18181b;
+		background-image: repeating-linear-gradient(
+			135deg,
+			transparent,
+			transparent 10px,
+			rgba(255, 255, 255, 0.06) 10px,
+			rgba(255, 255, 255, 0.06) 11px
+		);
+	}
+
+	.logistics-map-empty__icon {
+		font-size: 2.25rem;
+		line-height: 1;
+		color: #d97706;
+	}
+
+	:global(html.dark) .logistics-map-empty__icon {
+		color: #fbbf24;
+	}
+
+	.logistics-map-empty__text {
+		margin: 0;
+		max-width: 22rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.45;
+		color: #3f3f46;
+	}
+
+	:global(html.dark) .logistics-map-empty__text {
+		color: #d4d4d8;
+	}
+
+	.logistics-map-empty--error .logistics-map-empty__icon {
+		color: #a1a1aa;
+	}
+
+	:global(html.dark) .logistics-map-empty--error .logistics-map-empty__icon {
+		color: #71717a;
+	}
+</style>

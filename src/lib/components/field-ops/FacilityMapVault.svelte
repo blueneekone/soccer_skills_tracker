@@ -471,6 +471,7 @@
 			</button>
 		</div>
 		<div class="ec-drawer__body fm-preview-body">
+			<!-- Location and logistics: always rendered for a selected facility (map handles missing API key). -->
 			<section class="fm-logistics-bento" aria-labelledby="fm-location-h">
 				<h3 id="fm-location-h" class="fm-logistics__title">Location & Routing</h3>
 				<div class="fm-logistics-map-slot">
@@ -563,6 +564,16 @@
 				{/if}
 				<canvas bind:this={pdfCanvasEl} class="fm-preview-canvas"></canvas>
 			{/if}
+		</div>
+	{:else if previewOpen}
+		<div class="ec-drawer__head">
+			<h2 class="ec-drawer__title">Facility</h2>
+			<button type="button" class="ec-drawer__close" onclick={closePreview} aria-label="Close">
+				<i class="ph ph-x" style="font-size: 1.25rem;"></i>
+			</button>
+		</div>
+		<div class="ec-drawer__body fm-preview-body">
+			<p class="fm-panel__empty">This facility is no longer available. Close and select another map.</p>
 		</div>
 	{/if}
 </aside>
