@@ -1,5 +1,6 @@
 <script>
 	import { onMount, tick } from 'svelte';
+	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
@@ -21,6 +22,7 @@
 	let currentTool = $state('pen');
 	let currentColor = $state('#0f172a');
 	let whiteboard = $state(false);
+	let isFullscreen = $state(false);
 
 	/** @type {Array<Record<string, unknown>>} */
 	let strokes = $state([]);
@@ -355,6 +357,34 @@
 			return '';
 		}
 	}
+
+	function toggleFullscreen() {
+		isFullscreen = !isFullscreen;
+	}
+
+	$effect(() => {
+		if (!browser) return;
+		if (isFullscreen) {
+			const prev = document.body.style.overflow;
+			document.body.style.overflow = 'hidden';
+			return () => {
+				document.body.style.overflow = prev;
+			};
+		}
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		/** @param {KeyboardEvent} e */
+		function onKey(e) {
+			if (e.key === 'Escape' && isFullscreen) {
+				e.preventDefault();
+				isFullscreen = false;
+			}
+		}
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	});
 </script>
 
 <div class="strategy-tab">
@@ -439,32 +469,25 @@
 			</div>
 		</div>
 
-		<div class="card strategy-board-card">
-			<div class="card-header strategy-card-head">Strategy canvas</div>
-			<div class="card-body strategy-board-body strategy-board-body--canvas">
-				<div class="strategy-toolbar">
-					{#each [['pen', 'Pen'], ['arrow', 'Arrow'], ['X', 'X Player'], ['O', 'O Player']] as [tool, label]}
-						<button
-							type="button"
-							class="secondary-btn strategy-tool-btn"
-							class:active={currentTool === tool}
-							onclick={() => (currentTool = tool)}
-						>
-							{label}
-						</button>
-					{/each}
-					<input
-						type="color"
-						bind:value={currentColor}
-						title="Stroke color"
-						class="strategy-color-input"
-					/>
-					<label class="strategy-wb-toggle">
-						<input type="checkbox" bind:checked={whiteboard} />
-						Whiteboard mode
-					</label>
-				</div>
+		<!-- Dark workspace — replaces the old light card + flat toolbar -->
+		<div
+			class="strategy-workspace"
+			class:strategy-workspace--fullscreen={isFullscreen}
+		>
+			<!-- Full-screen toggle: top-right corner -->
+			<button
+				type="button"
+				class="strategy-fs-btn"
+				onclick={toggleFullscreen}
+				aria-pressed={isFullscreen}
+				aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+				title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+			>
+				<i class="ph {isFullscreen ? 'ph-corners-in' : 'ph-corners-out'}" aria-hidden="true"></i>
+			</button>
 
+			<!-- Pitch centered in the dark workspace -->
+			<div class="strategy-pitch-area">
 				<div class="strategy-canvas-wrap" class:strategy-canvas-wrap--wb={whiteboard}>
 					<div
 						class="strategy-pitch-bg pitch-lines"
@@ -498,6 +521,84 @@
 						</div>
 					{/if}
 				</div>
+			</div>
+
+			<!-- Floating island toolbar — bottom-center pill -->
+			<div class="strategy-island" role="toolbar" aria-label="Drawing tools">
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={currentTool === 'pen'}
+					onclick={() => (currentTool = 'pen')}
+					title="Pen"
+					aria-label="Pen"
+					aria-pressed={currentTool === 'pen'}
+				>
+					<i class="ph ph-pencil-simple" aria-hidden="true"></i>
+				</button>
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={currentTool === 'arrow'}
+					onclick={() => (currentTool = 'arrow')}
+					title="Arrow"
+					aria-label="Arrow"
+					aria-pressed={currentTool === 'arrow'}
+				>
+					<i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+				</button>
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={currentTool === 'X'}
+					onclick={() => (currentTool = 'X')}
+					title="X Player"
+					aria-label="X player marker"
+					aria-pressed={currentTool === 'X'}
+				>
+					<i class="ph ph-x" aria-hidden="true"></i>
+				</button>
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={currentTool === 'O'}
+					onclick={() => (currentTool = 'O')}
+					title="O Player"
+					aria-label="O player marker"
+					aria-pressed={currentTool === 'O'}
+				>
+					<i class="ph ph-circle" aria-hidden="true"></i>
+				</button>
+
+				<div class="strategy-island-sep" aria-hidden="true"></div>
+
+				<!-- Colour swatch — clicking the label opens the native picker -->
+				<label
+					class="strategy-island-color"
+					title="Stroke colour"
+					aria-label="Stroke colour"
+				>
+					<span
+						class="strategy-island-color-swatch"
+						style="background: {currentColor};"
+						aria-hidden="true"
+					></span>
+					<input type="color" bind:value={currentColor} />
+				</label>
+
+				<div class="strategy-island-sep" aria-hidden="true"></div>
+
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={whiteboard}
+					onclick={() => (whiteboard = !whiteboard)}
+					title="Whiteboard mode"
+					aria-label="Toggle whiteboard mode"
+					aria-pressed={whiteboard}
+				>
+					<i class="ph ph-eraser" aria-hidden="true"></i>
+				</button>
 			</div>
 		</div>
 	</div>
@@ -545,8 +646,7 @@
 		margin-bottom: clamp(16px, 3vw, 24px);
 	}
 
-	.strategy-library,
-	.strategy-board-card {
+	.strategy-library {
 		margin-bottom: 0;
 		padding: var(--spacing-fluid);
 		border-radius: var(--radius-premium);
@@ -557,8 +657,7 @@
 		margin-bottom: clamp(12px, 2vw, 16px);
 	}
 
-	.strategy-library-body,
-	.strategy-board-body {
+	.strategy-library-body {
 		padding-top: 0;
 	}
 
@@ -621,61 +720,84 @@
 		color: var(--danger-red);
 	}
 
-	.strategy-toolbar {
+	/* ─── Dark workspace ─────────────────────────────────────── */
+	.strategy-workspace {
+		position: relative;
 		display: flex;
-		gap: clamp(8px, 2vw, 10px);
-		flex-wrap: wrap;
-		margin-bottom: clamp(12px, 2vw, 16px);
-		padding: clamp(12px, 2.5vw, 16px);
-		background: var(--glass-bg);
-		-webkit-backdrop-filter: blur(20px) saturate(160%);
-		backdrop-filter: blur(20px) saturate(160%);
-		border-radius: var(--radius-premium);
-		border: 1px solid var(--glass-border);
+		flex-direction: column;
 		align-items: center;
-		box-shadow: var(--shadow-premium);
-	}
-
-	.strategy-tool-btn {
-		padding: clamp(8px, 2vw, 10px) clamp(12px, 2.5vw, 14px);
-		width: auto;
-		margin: 0;
-		font-size: 0.85rem;
+		justify-content: center;
+		width: 100%;
+		min-height: clamp(360px, 52vh, 580px);
+		background: #18181b;
 		border-radius: var(--radius-premium);
+		overflow: hidden;
+		/* bottom padding reserves space for the floating island */
+		padding: 1.25rem 1.25rem calc(1.25rem + 72px);
+		box-sizing: border-box;
 	}
 
-	.strategy-tool-btn.active {
-		background: var(--aggie-blue);
-		color: white;
-		border-color: var(--aggie-blue);
+	.strategy-workspace--fullscreen {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		border-radius: 0;
+		min-height: unset;
+		padding: 1.5rem 1.5rem calc(1.5rem + 80px);
 	}
 
-	.strategy-color-input {
-		width: 44px;
-		height: 44px;
-		padding: 2px;
-		border-radius: var(--radius-premium);
-		border: 1px solid var(--input-border);
+	/* ─── Full-screen button ──────────────────────────────────── */
+	.strategy-fs-btn {
+		position: absolute;
+		top: 0.875rem;
+		right: 0.875rem;
+		z-index: 40;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.1);
+		color: #fafafa;
 		cursor: pointer;
+		-webkit-backdrop-filter: blur(8px);
+		backdrop-filter: blur(8px);
+		transition: background 0.15s ease, border-color 0.15s ease;
 	}
 
-	.strategy-wb-toggle {
+	.strategy-fs-btn:hover {
+		background: rgba(255, 255, 255, 0.18);
+		border-color: rgba(255, 255, 255, 0.38);
+	}
+
+	.strategy-fs-btn i {
+		font-size: 1.25rem;
+		pointer-events: none;
+	}
+
+	/* ─── Pitch centering ─────────────────────────────────────── */
+	.strategy-pitch-area {
+		position: relative;
+		width: 100%;
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		font-size: 0.85rem;
-		font-weight: 600;
-		cursor: pointer;
+		justify-content: center;
 	}
 
 	.strategy-canvas-wrap {
 		position: relative;
-		border: 2px solid var(--aggie-blue);
 		border-radius: var(--radius-premium);
 		overflow: hidden;
 		background: #4ade80;
-		aspect-ratio: 4/3;
+		aspect-ratio: 4 / 3;
 		width: 100%;
+		/* shadow-2xl equivalent on dark background */
+		box-shadow:
+			0 25px 50px -12px rgba(0, 0, 0, 0.65),
+			0 0 0 1px rgba(255, 255, 255, 0.06);
 	}
 
 	.strategy-canvas-wrap--wb {
@@ -700,7 +822,7 @@
 		left: 5%;
 		right: 5%;
 		bottom: 5%;
-		border: 3px solid white;
+		border: 3px solid rgba(255, 255, 255, 0.7);
 		pointer-events: none;
 		border-radius: calc(var(--radius-premium) - 6px);
 	}
@@ -719,8 +841,134 @@
 		z-index: 10;
 	}
 
-	.strategy-board-body--canvas {
+	/* ─── Floating island toolbar ─────────────────────────────── */
+	.strategy-island {
+		position: absolute;
+		bottom: 1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		padding: 6px 10px;
+		background: #ffffff;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 9999px;
+		box-shadow:
+			0 10px 25px -5px rgba(0, 0, 0, 0.35),
+			0 4px 6px -2px rgba(0, 0, 0, 0.12),
+			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+		max-width: calc(100% - 3rem);
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	:global(html.dark) .strategy-island {
+		background: #09090b;
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow:
+			0 10px 25px -5px rgba(0, 0, 0, 0.6),
+			0 4px 6px -2px rgba(0, 0, 0, 0.25);
+	}
+
+	.strategy-island-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border-radius: 50%;
+		border: 1px solid transparent;
+		background: transparent;
+		color: #3f3f46;
+		cursor: pointer;
+		transition: background 0.12s ease, color 0.12s ease;
+		flex-shrink: 0;
+	}
+
+	:global(html.dark) .strategy-island-btn {
+		color: #a1a1aa;
+	}
+
+	.strategy-island-btn i {
+		font-size: 1.1rem;
+		pointer-events: none;
+	}
+
+	.strategy-island-btn:hover {
+		background: #f4f4f5;
+		color: #18181b;
+	}
+
+	:global(html.dark) .strategy-island-btn:hover {
+		background: rgba(255, 255, 255, 0.08);
+		color: #fafafa;
+	}
+
+	.strategy-island-btn--active {
+		background: #0f172a;
+		color: #ffffff;
+	}
+
+	.strategy-island-btn--active:hover {
+		background: #1e293b;
+		color: #ffffff;
+	}
+
+	:global(html.dark) .strategy-island-btn--active {
+		background: rgba(255, 255, 255, 0.15);
+		color: #fafafa;
+	}
+
+	.strategy-island-sep {
+		width: 1px;
+		height: 22px;
+		background: #e4e4e7;
+		flex-shrink: 0;
+		margin: 0 4px;
+	}
+
+	:global(html.dark) .strategy-island-sep {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	/* Colour swatch — the label wraps a hidden native picker + visible circle */
+	.strategy-island-color {
 		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		cursor: pointer;
+		flex-shrink: 0;
+		overflow: hidden;
+	}
+
+	.strategy-island-color-swatch {
+		display: block;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		border: 2px solid rgba(255, 255, 255, 0.6);
+		box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.15);
+		pointer-events: none;
+		flex-shrink: 0;
+	}
+
+	.strategy-island-color input[type='color'] {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0.001;
+		cursor: pointer;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
 	}
 
 	.strategy-ai-trigger {

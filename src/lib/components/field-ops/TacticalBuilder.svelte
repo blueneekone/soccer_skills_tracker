@@ -410,14 +410,8 @@
 
 	.fm-tactical-root--embed {
 		border-radius: 14px;
-		border: 1px solid #e5e5e5;
-		background: #fafafa;
+		background: #18181b;
 		overflow: hidden;
-	}
-
-	:global(html.dark) .fm-tactical-root--embed {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
 	}
 
 	/* Mirrors Tailwind: fixed inset-0 z-[100] bg-zinc-900 p-8 (no global tw- in field-ops shell) */
@@ -490,9 +484,9 @@
 	}
 
 	.fm-tactical-root--embed .fm-tactical-fs-btn {
-		border-color: rgba(0, 0, 0, 0.1);
-		background: rgba(255, 255, 255, 0.92);
-		color: var(--text-primary);
+		border-color: rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0.1);
+		color: #fafafa;
 	}
 
 	.fm-tactical-fs-btn:hover {
@@ -501,8 +495,8 @@
 	}
 
 	.fm-tactical-root--embed .fm-tactical-fs-btn:hover {
-		background: #ffffff;
-		border-color: rgba(0, 0, 0, 0.12);
+		background: rgba(255, 255, 255, 0.18);
+		border-color: rgba(255, 255, 255, 0.38);
 	}
 
 	.fm-tactical-fs-btn i {
@@ -532,7 +526,9 @@
 		flex-shrink: 0;
 		background: linear-gradient(180deg, #14532d 0%, #166534 45%, #14532d 100%);
 		border-radius: 10px;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+			0 25px 50px -12px rgba(0, 0, 0, 0.65);
 	}
 
 	.fm-tactical-root--fullscreen .fm-tactical-pitch {
@@ -563,7 +559,7 @@
 
 	.fm-tactical-island {
 		position: absolute;
-		bottom: 1rem;
+		bottom: 1.5rem;
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 30;
@@ -573,13 +569,14 @@
 		justify-content: center;
 		gap: 8px 12px;
 		max-width: calc(100% - 2rem);
-		padding: 10px 14px;
+		padding: 10px 16px;
 		background: #ffffff;
-		border: 1px solid #e4e4e7;
-		border-radius: 14px;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 9999px;
 		box-shadow:
-			0 10px 15px -3px rgba(0, 0, 0, 0.1),
-			0 4px 6px -4px rgba(0, 0, 0, 0.1);
+			0 10px 25px -5px rgba(0, 0, 0, 0.35),
+			0 4px 6px -2px rgba(0, 0, 0, 0.12),
+			inset 0 1px 0 rgba(255, 255, 255, 0.8);
 		box-sizing: border-box;
 	}
 
@@ -593,7 +590,7 @@
 
 	.fm-tactical-island__meta {
 		padding-left: 12px;
-		border-left: 1px solid #e4e4e7;
+		border-left: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
 	@media (max-width: 520px) {
@@ -602,7 +599,7 @@
 			border-left: none;
 			width: 100%;
 			justify-content: center;
-			border-top: 1px solid #e4e4e7;
+			border-top: 1px solid rgba(0, 0, 0, 0.1);
 			padding-top: 8px;
 		}
 	}
