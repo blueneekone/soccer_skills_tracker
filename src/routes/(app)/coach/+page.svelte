@@ -134,65 +134,65 @@
 </script>
 
 <div class="ec-page ec-coach">
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch">
+	<!-- Pinned sub-header: sits flush below ec-topbar, outside scroll flow -->
+	<div class="ec-page-subnav">
+		<TabBar tabs={TABS} bind:activeTab variant="coach" onPick={onCoachTabPick} />
+	</div>
+
+	<!-- Main canvas: uniform top gap after subnav -->
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch tw-mt-6">
 		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
-			<div class="coach-portal-title">
-				{#if clubId}
-					<ClubLogoMark size="lg" />
-				{/if}
-				<h2 class="coach-header coach-portal-title__h">Coaching Tools</h2>
-			</div>
-
-			<ActionInbox clubId={clubId || ''} teamId={selectedTeamId} />
-			<CoachTeamXpVelocityChart teamId={selectedTeamId} />
-
-			<TabBar tabs={TABS} bind:activeTab variant="coach" onPick={onCoachTabPick} />
-
-			<div class="tab-content">
-				{#if activeTab === 'home'}
-					<div class="coach-home-grid">
-						<div class="ec-panel coach-home-card">
-							<div class="coach-home-card__head">Team leaderboard snapshot</div>
-							<TeamLeaderboard teamIdForStaff={selectedTeamId} compact />
-						</div>
-						<div class="ec-panel coach-home-card">
-							<div class="coach-home-card__head">Roster snapshot</div>
-							{#if players.length === 0}
-								<p class="coach-home-card__empty">No roster data yet for this team.</p>
-							{:else}
-								<ul class="coach-home-roster" aria-label="Roster snapshot">
-									{#each players.slice(0, 12) as playerName (playerName)}
-										<li>{playerName}</li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
+			{#if activeTab === 'home'}
+				<div class="coach-portal-title">
+					{#if clubId}
+						<ClubLogoMark size="lg" />
+					{/if}
+					<h2 class="coach-header coach-portal-title__h">Coaching Tools</h2>
+				</div>
+				<ActionInbox clubId={clubId || ''} teamId={selectedTeamId} />
+				<CoachTeamXpVelocityChart teamId={selectedTeamId} />
+				<div class="coach-home-grid">
+					<div class="ec-panel coach-home-card">
+						<div class="coach-home-card__head">Team leaderboard snapshot</div>
+						<TeamLeaderboard teamIdForStaff={selectedTeamId} compact />
 					</div>
-				{:else if activeTab === 'roster'}
-					<RosterTab teamId={selectedTeamId} teams={myTeams} />
-				{:else if activeTab === 'playbook'}
-					<PlaybookModule teamId={selectedTeamId} />
-				{:else if activeTab === 'videos'}
-					<VerificationQueue teamId={selectedTeamId} />
-				{:else if activeTab === 'matchday'}
-					<MatchDayTab
-						teamId={selectedTeamId}
-						canOverride={canOverrideEligibility}
-					/>
-				{:else if activeTab === 'messages'}
-					<MessagesTab teamId={selectedTeamId} {players} clubId={clubId || ''} />
-				{:else if activeTab === 'plan'}
-					<PlanTab teamId={selectedTeamId} workouts={workoutsStore.workouts} />
-				{:else if activeTab === 'evals'}
-					<EvalsTab teamId={selectedTeamId} {players} workouts={workoutsStore.workouts} />
-				{:else if activeTab === 'strategy'}
-					<StrategyTab teamId={selectedTeamId} />
-				{:else if activeTab === 'design'}
-					<DrillDesignerTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {onWorkoutSaved} />
-				{:else if activeTab === 'tools'}
-					<ToolsTab teamId={selectedTeamId} clubId={clubId || ''} />
-				{/if}
-			</div>
+					<div class="ec-panel coach-home-card">
+						<div class="coach-home-card__head">Roster snapshot</div>
+						{#if players.length === 0}
+							<p class="coach-home-card__empty">No roster data yet for this team.</p>
+						{:else}
+							<ul class="coach-home-roster" aria-label="Roster snapshot">
+								{#each players.slice(0, 12) as playerName (playerName)}
+									<li>{playerName}</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+			{:else if activeTab === 'roster'}
+				<RosterTab teamId={selectedTeamId} teams={myTeams} />
+			{:else if activeTab === 'playbook'}
+				<PlaybookModule teamId={selectedTeamId} />
+			{:else if activeTab === 'videos'}
+				<VerificationQueue teamId={selectedTeamId} />
+			{:else if activeTab === 'matchday'}
+				<MatchDayTab
+					teamId={selectedTeamId}
+					canOverride={canOverrideEligibility}
+				/>
+			{:else if activeTab === 'messages'}
+				<MessagesTab teamId={selectedTeamId} {players} clubId={clubId || ''} />
+			{:else if activeTab === 'plan'}
+				<PlanTab teamId={selectedTeamId} workouts={workoutsStore.workouts} />
+			{:else if activeTab === 'evals'}
+				<EvalsTab teamId={selectedTeamId} {players} workouts={workoutsStore.workouts} />
+			{:else if activeTab === 'strategy'}
+				<StrategyTab teamId={selectedTeamId} />
+			{:else if activeTab === 'design'}
+				<DrillDesignerTab teamId={selectedTeamId} workouts={workoutsStore.workouts} {onWorkoutSaved} />
+			{:else if activeTab === 'tools'}
+				<ToolsTab teamId={selectedTeamId} clubId={clubId || ''} />
+			{/if}
 		</div>
 
 		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-4">
@@ -217,31 +217,6 @@
 								<option value={t.id}>{t.name}</option>
 							{/each}
 						</select>
-					</div>
-				</div>
-			{/if}
-
-			{#if activeTab !== 'home'}
-				<div class="ec-panel ec-coach-quick">
-					<div class="ec-coach-quick__inner">
-						<div class="ec-coach-quick__head">Quick navigation</div>
-						<div class="tw-flex tw-flex-col tw-gap-2">
-						{#each [
-							{ id: 'home', label: 'Home' },
-							{ id: 'roster', label: 'Roster' },
-							{ id: 'playbook', label: 'Playbook' },
-							{ id: 'videos', label: 'Videos' },
-							{ id: 'matchday', label: 'Match Day' }
-						] as q (q.id)}
-							<button
-								type="button"
-								class="ec-coach-quick__btn"
-								onclick={() => onCoachTabPick(q.id)}
-							>
-								{q.label}
-							</button>
-						{/each}
-						</div>
 					</div>
 				</div>
 			{/if}
@@ -310,48 +285,6 @@
 		font-weight: 900;
 	}
 	select { margin-bottom: 0; }
-	.tab-content { margin-top: clamp(12px, 2vw, 20px); }
-
-	.ec-coach-quick {
-		padding: 0;
-		overflow: hidden;
-	}
-
-	.ec-coach-quick__inner {
-		padding: 14px 16px;
-		background: #ffffff;
-	}
-
-	:global(html.dark) .ec-coach-quick__inner {
-		background: #09090b;
-	}
-
-	.ec-coach-quick__head {
-		font-size: 12px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--text-secondary);
-		margin-bottom: 12px;
-	}
-
-	.ec-coach-quick__btn {
-		text-align: left;
-		width: 100%;
-		border-radius: 10px;
-		border: 1px solid #e5e5e5;
-		background: #fafafa;
-		padding: 10px 12px;
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		cursor: pointer;
-		transition: background 0.15s ease-out;
-	}
-
-	.ec-coach-quick__btn:hover {
-		background: #ffffff;
-	}
 
 	.coach-home-grid {
 		display: grid;
@@ -406,12 +339,5 @@
 		background: #0f0f11;
 	}
 
-	:global(html.dark) .ec-coach-quick__btn {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: rgba(255, 255, 255, 0.04);
-	}
 
-	:global(html.dark) .ec-coach-quick__btn:hover {
-		background: rgba(255, 255, 255, 0.06);
-	}
 </style>

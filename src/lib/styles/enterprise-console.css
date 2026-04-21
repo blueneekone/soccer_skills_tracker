@@ -602,6 +602,38 @@ html.dark .ec-icon-btn:hover {
 	width: 100%;
 }
 
+/*
+ * Sub-page navigation bar — pinned directly below ec-topbar, outside the scroll flow.
+ * Uses negative margins to break out of ec-canvas padding so it sits flush at the top edge.
+ * Drop this div as the FIRST child of any page wrapper rendered inside ec-canvas.
+ */
+.ec-page-subnav {
+	position: sticky;
+	top: -16px;
+	z-index: 30;
+	margin-top: -16px;
+	margin-left: -20px;
+	margin-right: -20px;
+	background: var(--ec-topbar-bg, #ffffff);
+	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
+	padding: 8px 1.5rem 0;
+}
+
+html.dark .ec-page-subnav {
+	background: #09090b;
+	border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1023.98px) {
+	.ec-page-subnav {
+		top: -8px;
+		margin-top: -8px;
+		margin-left: -10px;
+		margin-right: -10px;
+		padding: 6px 10px 0;
+	}
+}
+
 /* Dense data tables — horizontal scroll on narrow viewports; table keeps readable column widths */
 .ec-table-wrap {
 	width: 100%;

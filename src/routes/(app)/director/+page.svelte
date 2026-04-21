@@ -1,6 +1,10 @@
 <script>
+	import { untrack } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import TabBar from '$lib/components/TabBar.svelte';
 	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import FieldOpsModule from '$lib/components/director/os/FieldOpsModule.svelte';
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
@@ -12,6 +16,17 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+
+	const DIR_TABS = [
+		{ id: 'home',        label: 'Home',        icon: 'ph-house' },
+		{ id: 'teams',       label: 'Teams',       icon: 'ph-users-three' },
+		{ id: 'field',       label: 'Field Ops',   icon: 'ph-soccer-ball' },
+		{ id: 'registrars',  label: 'Registrars',  icon: 'ph-swap' },
+		{ id: 'brand',       label: 'Branding',    icon: 'ph-palette' },
+		{ id: 'marketing',   label: 'Marketing',   icon: 'ph-megaphone' },
+		{ id: 'compliance',  label: 'Compliance',  icon: 'ph-shield-check' },
+		{ id: 'household',   label: 'Households',  icon: 'ph-house-line' },
+	];
 
 	/** Effective tenant for Firestore; super_admin uses QA scope (active club or first org). */
 	const clubId = $derived.by(() => {
@@ -28,11 +43,30 @@
 		return '';
 	});
 
-	const activeTab = $derived($page.url.searchParams.get('tab') || 'home');
+	let activeTab = $state($page.url.searchParams.get('tab') || 'home');
+
+	$effect(() => {
+		const t = $page.url.searchParams.get('tab') || 'home';
+		if (!DIR_TABS.some((x) => x.id === t)) return;
+		if (untrack(() => activeTab) !== t) activeTab = t;
+	});
+
+	/**
+	 * @param {string} id
+	 */
+	function onDirTabPick(id) {
+		goto(resolve(`/director?tab=${encodeURIComponent(id)}`), { replaceState: true, noScroll: true });
+	}
 </script>
 
 <div class="director-console-page">
-	<div class="director-console-page__header">
+	<!-- Pinned sub-header: sits flush below ec-topbar, outside scroll flow -->
+	<div class="ec-page-subnav">
+		<TabBar tabs={DIR_TABS} bind:activeTab variant="director" onPick={onDirTabPick} />
+	</div>
+
+	<!-- Page identity row — rendered as first content block after subnav -->
+	<div class="director-console-page__header tw-mt-6">
 		{#if clubId}
 			<ClubLogoMark size="md" />
 		{/if}
@@ -40,7 +74,7 @@
 	</div>
 
 	{#if activeTab === 'home'}
-		<section class="director-console-page__section director-console-page__section--flush">
+		<section class="director-console-page__section">
 			<DirectorCommandCenter {clubId} />
 		</section>
 	{:else if activeTab === 'field'}
@@ -89,11 +123,6 @@
 
 	.director-console-page__section {
 		margin-top: 0;
-	}
-
-	.director-console-page__section--flush {
-		margin-left: -4px;
-		margin-right: -4px;
 	}
 
 	.director-console-panel {
