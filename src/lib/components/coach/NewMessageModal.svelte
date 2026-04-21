@@ -235,6 +235,9 @@
 
 		let shadowPending = false;
 		let playerMissingGuardian = false;
+		// ccParentSet tracks which emails are being added specifically as SafeSport CC'd parents
+		// (distinct from being a regular channel member).
+		const ccParentSet = new Set();
 		if (isStaffShadow) {
 			for (const e of selected) {
 				const c = candidates.find((x) => x.email === e);
@@ -245,13 +248,21 @@
 					} else if (pars.length === 0) {
 						playerMissingGuardian = true;
 					} else {
-						for (const p of pars) memberSet.add(p);
+						for (const p of pars) {
+							memberSet.add(p);
+							ccParentSet.add(p);
+						}
 					}
 				}
 			}
 		}
 
 		const memberIds = [...memberSet].sort();
+		// ccParentEmails is the authoritative CC list written to the channel doc.
+		const ccParentEmails = [...ccParentSet].sort();
+		// safesportMonitored: true when at least one parent was auto-CC'd.
+		const safesportMonitored = ccParentEmails.length > 0;
+
 		let type = 'group';
 		if (
 			!shadowPending &&
@@ -282,7 +293,15 @@
 						return labels.slice(0, 5).join(', ') || 'Group chat';
 					})();
 
-		return { memberIds, type, defaultName, playerMissingGuardian, shadowPending };
+		return {
+			memberIds,
+			type,
+			defaultName,
+			playerMissingGuardian,
+			shadowPending,
+			ccParentEmails,
+			safesportMonitored,
+		};
 	});
 
 	const showGroupName = $derived(plan.type === 'group' || plan.shadowPending);
@@ -293,7 +312,15 @@
 			createErr = 'Select at least one person.';
 			return;
 		}
-		const { memberIds, type, defaultName, playerMissingGuardian, shadowPending } = plan;
+		const {
+			memberIds,
+			type,
+			defaultName,
+			playerMissingGuardian,
+			shadowPending,
+			ccParentEmails,
+			safesportMonitored,
+		} = plan;
 		if (shadowPending) return;
 		if (playerMissingGuardian) {
 			createErr =
@@ -310,6 +337,9 @@
 				name,
 				type,
 				memberIds,
+				// Durable SafeSport fields written at creation time.
+				safesportMonitored,
+				ccParentEmails,
 				teamId,
 				createdBy: myUid,
 				createdAt: serverTimestamp(),
@@ -393,12 +423,21 @@
 				{#if plan.shadowPending && isStaffShadow && selectedList.some((s) => s.role === 'player')}
 					<p class="nm-muted nm-pending">Looking up linked guardian…</p>
 				{/if}
-				{#if shadowCc && isStaffShadow && !plan.shadowPending}
-					<p class="nm-safesport">
-						<i class="ph ph-shield-check" aria-hidden="true"></i>
-						SafeSport Protocol: Parent automatically CC'd.
-					</p>
-				{/if}
+			{#if shadowCc && isStaffShadow && !plan.shadowPending}
+				<div class="nm-safesport">
+					<i class="ph ph-shield-check nm-safesport-icon" aria-hidden="true"></i>
+					<div class="nm-safesport-body">
+						<strong>SafeSport Protocol: Parent automatically CC'd.</strong>
+						{#if plan.ccParentEmails.length > 0}
+							<ul class="nm-safesport-parents" aria-label="CC'd parents">
+								{#each plan.ccParentEmails as email (email)}
+									<li>{email}</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+			{/if}
 
 				<div class="nm-list" role="listbox" aria-label="Recipients">
 					{#each filtered as c (c.email)}
@@ -631,17 +670,40 @@
 	}
 
 	.nm-safesport {
-		margin: 0;
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		padding: 10px 12px;
+		border-radius: 10px;
+		background: rgba(16, 185, 129, 0.08);
+		border: 1px solid rgba(16, 185, 129, 0.3);
 		font-size: 12px;
 		font-weight: 600;
-		color: var(--text-secondary);
+		color: #047857;
+	}
+	.nm-safesport-icon {
+		flex-shrink: 0;
+		margin-top: 1px;
+		font-size: 14px;
+	}
+	.nm-safesport-body {
 		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 8px 10px;
-		border-radius: 10px;
-		background: rgba(245, 158, 11, 0.1);
-		border: 1px solid rgba(245, 158, 11, 0.25);
+		flex-direction: column;
+		gap: 4px;
+	}
+	.nm-safesport-parents {
+		list-style: none;
+		margin: 2px 0 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.nm-safesport-parents li {
+		font-size: 11px;
+		font-weight: 500;
+		color: #059669;
+		word-break: break-all;
 	}
 
 	.nm-list {

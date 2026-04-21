@@ -15,9 +15,12 @@
 		getDoc,
 		serverTimestamp,
 	} from 'firebase/firestore';
-	import { db } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import NewMessageModal from './NewMessageModal.svelte';
+
+	const sendChannelMessageFn = httpsCallable(functions, 'sendChannelMessage');
 
 	let { teamId = '', players = [], clubId = '' } = $props();
 
@@ -38,14 +41,14 @@
 	);
 	const canCreateChannel = $derived(canModerate && !!clubId);
 
-	/** @type {Array<{ id: string; name: string; type: string; memberIds: string[]; teamId?: string }>} */
+	/** @type {Array<{ id: string; name: string; type: string; memberIds: string[]; safesportMonitored: boolean; ccParentEmails: string[]; teamId?: string }>} */
 	let channels = $state([]);
 	let channelsLoading = $state(true);
 	let channelsErr = $state('');
 
 	let selectedChannelId = $state('');
 
-	/** @type {Array<{ id: string; senderId: string; senderName: string; senderRole: string; text: string; timestamp?: import('firebase/firestore').Timestamp; deleted?: boolean }>} */
+	/** @type {Array<{ id: string; senderId: string; senderName: string; senderRole: string; text: string; timestamp?: import('firebase/firestore').Timestamp; deleted?: boolean; safesportMonitored?: boolean }>} */
 	let messages = $state([]);
 	let messagesLoading = $state(false);
 	let messagesErr = $state('');
@@ -137,16 +140,22 @@
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				channels = snap.docs.map((d) => {
-					const x = d.data();
-					return {
-						id: d.id,
-						name: typeof x.name === 'string' ? x.name : 'Channel',
-						type: x.type === 'dm' ? 'dm' : x.type === 'broadcast' ? 'broadcast' : 'group',
-						memberIds: Array.isArray(x.memberIds) ? x.memberIds.map((e) => String(e).toLowerCase()) : [],
-						...(typeof x.teamId === 'string' ? { teamId: x.teamId } : {}),
-					};
-				});
+			channels = snap.docs.map((d) => {
+				const x = d.data();
+				return {
+					id: d.id,
+					name: typeof x.name === 'string' ? x.name : 'Channel',
+					type: x.type === 'dm' ? 'dm' : x.type === 'broadcast' ? 'broadcast' : 'group',
+					memberIds: Array.isArray(x.memberIds)
+						? x.memberIds.map((e) => String(e).toLowerCase())
+						: [],
+					safesportMonitored: x.safesportMonitored === true,
+					ccParentEmails: Array.isArray(x.ccParentEmails)
+						? x.ccParentEmails.map((e) => String(e).toLowerCase())
+						: [],
+					...(typeof x.teamId === 'string' ? { teamId: x.teamId } : {}),
+				};
+			});
 				channelsLoading = false;
 				if (!selectedChannelId && channels.length > 0) {
 					selectedChannelId = channels[0].id;
@@ -194,6 +203,7 @@
 						text: String(x.text || ''),
 						timestamp: x.timestamp,
 						deleted: x.deleted === true,
+						safesportMonitored: x.safesportMonitored === true,
 					});
 				});
 				messages = rows.reverse();
@@ -211,18 +221,26 @@
 	async function sendMessage() {
 		if (!clubId || !selectedChannelId || !draft.trim() || broadcastReadOnly || sending) return;
 		sending = true;
+		const text = draft.trim().slice(0, 8000);
 		try {
-			await addDoc(
-				collection(db, 'clubs', clubId, 'channels', selectedChannelId, 'messages'),
-				{
-					senderId: myUid,
-					senderName: myName,
-					senderRole: myRole,
-					text: draft.trim().slice(0, 8000),
-					timestamp: serverTimestamp(),
-					deleted: false,
-				},
-			);
+			if (selectedChannel?.safesportMonitored) {
+				// Monitored channels: route through server-side callable.
+				// The callable verifies CC integrity, re-adds missing parents,
+				// and writes via Admin SDK (client writes are blocked by Rules).
+				await sendChannelMessageFn({ clubId, channelId: selectedChannelId, text });
+			} else {
+				await addDoc(
+					collection(db, 'clubs', clubId, 'channels', selectedChannelId, 'messages'),
+					{
+						senderId: myUid,
+						senderName: myName,
+						senderRole: myRole,
+						text,
+						timestamp: serverTimestamp(),
+						deleted: false,
+					},
+				);
+			}
 			draft = '';
 		} catch (e) {
 			alert(e instanceof Error ? e.message : String(e));
@@ -349,6 +367,13 @@
 									>
 										<i class="ph ph-chats-circle" aria-hidden="true"></i>
 										<span class="comms-hub__nav-text">{c.name}</span>
+										{#if c.safesportMonitored}
+											<i
+												class="ph ph-shield-check comms-hub__nav-shield"
+												title="SafeSport monitored"
+												aria-label="SafeSport monitored"
+											></i>
+										{/if}
 									</button>
 								</li>
 							{/each}
@@ -367,6 +392,13 @@
 									>
 										<i class="ph ph-user-circle" aria-hidden="true"></i>
 										<span class="comms-hub__nav-text">{c.name}</span>
+										{#if c.safesportMonitored}
+											<i
+												class="ph ph-shield-check comms-hub__nav-shield"
+												title="SafeSport monitored"
+												aria-label="SafeSport monitored"
+											></i>
+										{/if}
 									</button>
 								</li>
 							{/each}
@@ -381,7 +413,18 @@
 			{#if selectedChannel}
 				<div class="comms-hub__chat-head">
 					<h2 class="comms-hub__title">{selectedChannel.name}</h2>
-					<span class="comms-hub__badge">{selectedChannel.type}</span>
+					<div class="comms-hub__head-badges">
+						<span class="comms-hub__badge">{selectedChannel.type}</span>
+						{#if selectedChannel.safesportMonitored}
+							<span
+								class="comms-hub__badge comms-hub__badge--safesport"
+								title="All messages in this thread are logged for SafeSport compliance."
+							>
+								<i class="ph ph-shield-check" aria-hidden="true"></i>
+								SafeSport monitored
+							</span>
+						{/if}
+					</div>
 				</div>
 				<div class="comms-hub__stream" role="log" aria-live="polite">
 					{#if messagesLoading}
@@ -411,7 +454,16 @@
 												<span class="comms-hub__bubble-role">{m.senderRole}</span>
 											</span>
 											<p class="comms-hub__bubble-text">{m.text}</p>
-											<span class="comms-hub__bubble-time">{fmtTime(m.timestamp)}</span>
+											<span class="comms-hub__bubble-time">
+												{fmtTime(m.timestamp)}
+												{#if m.safesportMonitored}
+													<i
+														class="ph ph-shield-check comms-hub__bubble-shield"
+														title="SafeSport logged"
+														aria-label="SafeSport logged"
+													></i>
+												{/if}
+											</span>
 										</div>
 										{#if canModerate && !m.deleted}
 											<button
@@ -428,6 +480,15 @@
 						{/each}
 					{/if}
 				</div>
+				{#if selectedChannel?.safesportMonitored}
+					<div class="comms-hub__safesport-notice" role="note">
+						<i class="ph ph-shield-check" aria-hidden="true"></i>
+						<span>
+							This thread is SafeSport monitored. Parents are automatically CC'd and all
+							messages are audit-logged.
+						</span>
+					</div>
+				{/if}
 				<div class="comms-hub__composer">
 					{#if broadcastReadOnly}
 						<p class="comms-hub__readonly">Read-only: Announcements channel</p>
@@ -465,6 +526,27 @@
 			{#if selectedChannel}
 				<h3 class="comms-hub__detail-title">Details</h3>
 				<p class="comms-hub__detail-name">{selectedChannel.name}</p>
+
+				{#if selectedChannel.safesportMonitored}
+					<div class="comms-hub__detail-safesport-badge">
+						<i class="ph ph-shield-check" aria-hidden="true"></i>
+						<span>SafeSport monitored</span>
+					</div>
+					{#if selectedChannel.ccParentEmails.length > 0}
+						<p class="comms-hub__detail-sub">
+							CC'd parents ({selectedChannel.ccParentEmails.length})
+						</p>
+						<ul class="comms-hub__members comms-hub__members--cc">
+							{#each selectedChannel.ccParentEmails as e (e)}
+								<li class="comms-hub__member comms-hub__member--cc">
+									<i class="ph ph-user-circle-gear" aria-hidden="true"></i>
+									{e}
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				{/if}
+
 				<p class="comms-hub__detail-sub">Members ({selectedChannel.memberIds.length})</p>
 				<ul class="comms-hub__members">
 					{#each selectedChannel.memberIds as e (e)}
@@ -632,6 +714,15 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.comms-hub__nav-shield {
+		flex-shrink: 0;
+		font-size: 12px;
+		color: #059669;
+		margin-left: auto;
 	}
 
 	.comms-hub__pane--main {
@@ -668,7 +759,17 @@
 		color: var(--text-primary);
 	}
 
+	.comms-hub__head-badges {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+
 	.comms-hub__badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
 		font-size: 10px;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -677,6 +778,12 @@
 		border: 1px solid #e5e5e5;
 		border-radius: 8px;
 		padding: 4px 8px;
+	}
+
+	.comms-hub__badge--safesport {
+		color: #059669;
+		background: rgba(16, 185, 129, 0.08);
+		border-color: rgba(16, 185, 129, 0.35);
 	}
 
 	.comms-hub__stream {
@@ -762,8 +869,16 @@
 	}
 
 	.comms-hub__bubble-time {
+		display: flex;
+		align-items: center;
+		gap: 4px;
 		font-size: 10px;
 		color: var(--text-secondary);
+	}
+
+	.comms-hub__bubble-shield {
+		font-size: 11px;
+		color: #059669;
 	}
 
 	.comms-hub__del {
@@ -790,6 +905,18 @@
 	:global(html.dark) .comms-hub__composer {
 		border-top-color: rgba(255, 255, 255, 0.1);
 		background: #09090b;
+	}
+
+	.comms-hub__safesport-notice {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		font-size: 12px;
+		font-weight: 600;
+		color: #047857;
+		background: rgba(16, 185, 129, 0.07);
+		border-bottom: 1px solid rgba(16, 185, 129, 0.2);
 	}
 
 	.comms-hub__readonly {
@@ -875,6 +1002,19 @@
 		color: var(--text-secondary);
 	}
 
+	.comms-hub__detail-safesport-badge {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: rgba(16, 185, 129, 0.09);
+		border: 1px solid rgba(16, 185, 129, 0.28);
+		font-size: 11px;
+		font-weight: 700;
+		color: #047857;
+	}
+
 	.comms-hub__members {
 		list-style: none;
 		margin: 0;
@@ -883,10 +1023,23 @@
 		color: var(--text-primary);
 	}
 
+	.comms-hub__members--cc {
+		margin-bottom: 4px;
+	}
+
 	.comms-hub__member {
 		padding: 4px 0;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 		word-break: break-all;
+	}
+
+	.comms-hub__member--cc {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		color: #059669;
+		font-weight: 600;
+		font-size: 11px;
 	}
 
 	.comms-hub__schedule-btn {

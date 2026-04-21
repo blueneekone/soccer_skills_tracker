@@ -3336,7 +3336,7 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
   let minorRecipient = u.isMinor === true;
   if (!minorRecipient && u.dateOfBirth) {
     try {
-      minorRecipient = computeAgeYears(u.dateOfBirth) < 13;
+      minorRecipient = computeAgeYears(u.dateOfBirth) < 17;
     } catch (e) {
       logger.warn('sendCoachPlayerMessage: age check failed', e);
     }
@@ -3399,6 +3399,214 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
     minorRecipient,
     ccCount: ccParentEmails.length,
     warnNoCc: minorRecipient && ccParentEmails.length === 0,
+  };
+});
+
+/**
+ * Sprint 1.3 — SafeSport Comms: server-enforced message send for the Comms Hub.
+ *
+ * For channels where safesportMonitored === true, Firestore Rules block direct
+ * client addDoc; all messages MUST route through this callable so the server can:
+ *   1. Verify the caller is a current channel member (cannot be spoofed client-side).
+ *   2. Re-resolve and atomically re-add any parent emails dropped from memberIds
+ *      after channel creation (e.g., removed manually or household updated).
+ *   3. Write the message via Admin SDK with safesportMonitored: true stamped on it.
+ *   4. Create an immutable messaging_audit record for director compliance review.
+ *
+ * Non-monitored channels still use direct client addDoc; this callable also accepts
+ * non-monitored IDs to provide a single unified send path for the UI if desired.
+ *
+ * @param {{ clubId: string, channelId: string, text: string }} data
+ */
+exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const callerEmail = normEmail(request.auth.token.email);
+  const callerUid = request.auth.uid;
+  const callerRole = request.auth.token.role || 'player';
+
+  if (!callerEmail) {
+    throw new HttpsError('unauthenticated', 'Authenticated email is missing.');
+  }
+
+  const data = request.data || {};
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const channelId = typeof data.channelId === 'string' ? data.channelId.trim() : '';
+  const rawText = typeof data.text === 'string' ? data.text.trim() : '';
+
+  if (!clubId || !channelId || !rawText) {
+    throw new HttpsError(
+        'invalid-argument',
+        'clubId, channelId, and text are required.',
+    );
+  }
+  if (rawText.length > 8000) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Message too long (max 8000 characters).',
+    );
+  }
+
+  // Resolve display name server-side (not trusted from client).
+  let callerName = callerEmail.split('@')[0];
+  const callerUserSnap = await db.collection('users').doc(callerEmail).get();
+  if (callerUserSnap.exists) {
+    const cd = callerUserSnap.data();
+    const pn = typeof cd.playerName === 'string' ? cd.playerName.trim() : '';
+    const dn = typeof cd.displayName === 'string' ? cd.displayName.trim() : '';
+    callerName = pn || dn || callerName;
+  }
+
+  // Load and validate the channel doc.
+  const channelRef = db
+      .collection('clubs').doc(clubId)
+      .collection('channels').doc(channelId);
+  const channelSnap = await channelRef.get();
+  if (!channelSnap.exists) {
+    throw new HttpsError('not-found', 'Channel not found.');
+  }
+  const channel = channelSnap.data();
+
+  // Verify caller is a current member of this channel.
+  const memberIds = Array.isArray(channel.memberIds) ?
+    channel.memberIds.map((e) => normEmail(String(e))).filter(Boolean) :
+    [];
+  if (!memberIds.includes(callerEmail)) {
+    throw new HttpsError(
+        'permission-denied',
+        'You are not a member of this channel.',
+    );
+  }
+
+  // Cross-tenant guard: verify the channel's team belongs to the declared club.
+  const channelTeamId =
+      typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
+  if (channelTeamId) {
+    const teamSnap = await db.collection('teams').doc(channelTeamId).get();
+    if (teamSnap.exists) {
+      const teamClubId = teamSnap.data().clubId;
+      if (teamClubId && teamClubId !== clubId) {
+        throw new HttpsError(
+            'permission-denied',
+            'Channel does not belong to the specified club.',
+        );
+      }
+    }
+  }
+
+  // Broadcast channels: only staff may write.
+  if (
+    channel.type === 'broadcast' &&
+    callerRole !== 'coach' &&
+    callerRole !== 'director' &&
+    callerRole !== 'super_admin'
+  ) {
+    throw new HttpsError('permission-denied', 'Read-only: Announcements channel.');
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const safesportMonitored = channel.safesportMonitored === true;
+  let ccParentEmails = Array.isArray(channel.ccParentEmails) ?
+    channel.ccParentEmails.map((e) => normEmail(String(e))).filter(Boolean) :
+    [];
+
+  // SafeSport CC verification and re-enforcement (monitored channels only).
+  if (safesportMonitored) {
+    const memberSet = new Set(memberIds);
+
+    // Identify every player-role user currently in the channel member list.
+    const userSnaps = await Promise.all(
+        memberIds.map((em) => db.collection('users').doc(em).get()),
+    );
+    const playerEmailsInChannel = [];
+    for (let i = 0; i < memberIds.length; i++) {
+      const us = userSnaps[i];
+      if (us.exists && us.data().role === 'player') {
+        playerEmailsInChannel.push(memberIds[i]);
+      }
+    }
+
+    // Re-resolve parent emails for each player via household (strict club scope).
+    const resolvedParentSet = new Set(ccParentEmails);
+    for (const playerEmail of playerEmailsInChannel) {
+      const uSnap = await db.collection('users').doc(playerEmail).get();
+      if (!uSnap.exists) continue;
+      const playerHouseholdId = uSnap.data().householdId;
+      if (!playerHouseholdId) continue;
+      const hSnap = await db.collection('households').doc(playerHouseholdId).get();
+      if (!hSnap.exists) continue;
+      const hd = hSnap.data();
+      if (hd.clubId !== clubId) continue; // cross-tenant guard
+      const parentEmailList = (hd.parentEmails || [])
+          .map((e) => normEmail(String(e)))
+          .filter(Boolean);
+      for (const p of parentEmailList) resolvedParentSet.add(p);
+    }
+
+    const resolvedParents = [...resolvedParentSet].sort();
+
+    // Detect parents missing from current memberIds (dropped after creation).
+    const missingParents = resolvedParents.filter((p) => !memberSet.has(p));
+    const newParentsFound = resolvedParents.length > ccParentEmails.length;
+
+    if (missingParents.length > 0 || newParentsFound) {
+      const updatedMemberIds = [
+        ...new Set([...memberIds, ...resolvedParents]),
+      ].sort();
+      await channelRef.update({
+        memberIds: updatedMemberIds,
+        ccParentEmails: resolvedParents,
+      });
+      ccParentEmails = resolvedParents;
+      logger.info(
+          `[sendChannelMessage] re-enforced SafeSport CC: ` +
+          `${missingParents.length} missing + ${newParentsFound ? 'new' : '0 new'} ` +
+          `parents on channel ${channelId} in club ${clubId}`,
+      );
+    }
+  }
+
+  // Atomically write the message and audit record via Admin SDK.
+  const msgRef = db
+      .collection('clubs').doc(clubId)
+      .collection('channels').doc(channelId)
+      .collection('messages').doc();
+  const batch = db.batch();
+
+  batch.set(msgRef, {
+    senderId: callerUid,
+    senderName: callerName,
+    senderRole: callerRole,
+    text: rawText,
+    timestamp: now,
+    deleted: false,
+    safesportMonitored,
+    ...(safesportMonitored ? {ccParentEmails} : {}),
+  });
+
+  batch.set(db.collection('messaging_audit').doc(), {
+    action: 'channel_message',
+    channelId,
+    clubId,
+    teamId: channelTeamId || null,
+    fromEmail: callerEmail,
+    safesportMonitored,
+    ccParentEmails: safesportMonitored ? ccParentEmails : [],
+    bodyLength: rawText.length,
+    actorUid: callerUid,
+    at: now,
+  });
+
+  await batch.commit();
+
+  return {
+    ok: true,
+    messageId: msgRef.id,
+    safesportMonitored,
+    ccCount: safesportMonitored ? ccParentEmails.length : 0,
+    warnNoCc: safesportMonitored && ccParentEmails.length === 0,
   };
 });
 

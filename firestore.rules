@@ -331,7 +331,13 @@ service cloud.firestore {
               && request.resource.data.teamId.size() > 0
               && request.resource.data.teamId.size() <= 128))
         && (request.resource.data.type != 'dm'
-            || request.resource.data.memberIds.size() == 2);
+            || request.resource.data.memberIds.size() == 2)
+        // Sprint 1.3: validate optional SafeSport fields when present.
+        && (!request.resource.data.keys().hasAny(['safesportMonitored'])
+            || request.resource.data.safesportMonitored is bool)
+        && (!request.resource.data.keys().hasAny(['ccParentEmails'])
+            || (request.resource.data.ccParentEmails is list
+                && request.resource.data.ccParentEmails.size() <= 100));
     }
 
     // DM: two members only; peer email is the memberIds entry that is not the creator.
@@ -369,6 +375,16 @@ service cloud.firestore {
         && dmSafesportNotTwoPlayersOk();
     }
 
+    // Sprint 1.3: A monitored channel (safesportMonitored: true) MUST declare at least one
+    // CC'd parent email in ccParentEmails at creation time. This prevents staff from setting
+    // the flag without a valid CC list. Channels without the flag pass through unrestricted.
+    function channelGroupSafesportCreateOk() {
+      return !request.resource.data.get('safesportMonitored', false)
+        || (request.resource.data.keys().hasAny(['ccParentEmails'])
+            && request.resource.data.ccParentEmails is list
+            && request.resource.data.ccParentEmails.size() > 0);
+    }
+
     function channelDataUnchangedExceptMemberIds() {
       return request.resource.data.name == resource.data.name
         && request.resource.data.type == resource.data.type
@@ -388,6 +404,15 @@ service cloud.firestore {
         || isSuper()
         || isCoach()
         || isDirector();
+    }
+
+    // Sprint 1.3: Block direct client writes to SafeSport-monitored channels.
+    // When safesportMonitored is true, all writes MUST go through the sendChannelMessage
+    // callable (Admin SDK), which re-verifies CC structure and stamps audit records.
+    // Passing `true` from the client to set safesportMonitored on a direct write is also
+    // blocked, so this cannot be trivially bypassed.
+    function commsSafesportMessageOk(clubId, channelId) {
+      return !commsChannelDocData(clubId, channelId).get('safesportMonitored', false);
     }
 
     function messageCreateShapeOk() {
@@ -676,7 +701,8 @@ service cloud.firestore {
 
         allow create: if authed()
           && canCreateCommsChannelInClub(clubId)
-          && channelCreateSafesportOk();
+          && channelCreateSafesportOk()
+          && channelGroupSafesportCreateOk();
 
         allow update: if authed()
           && channelClubScopeOk(clubId)
@@ -705,7 +731,9 @@ service cloud.firestore {
             && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
             && channelClubScopeOk(clubId)
             && messageCreateShapeOk()
-            && commsBroadcastWriterOk(clubId, channelId);
+            && commsBroadcastWriterOk(clubId, channelId)
+            // Sprint 1.3: monitored channels require the server-side callable.
+            && commsSafesportMessageOk(clubId, channelId);
 
           allow update: if authed()
             && commsChannelDocData(clubId, channelId).memberIds is list
@@ -1037,8 +1065,29 @@ service cloud.firestore {
       allow update, delete: if isSuper();
     }
 
+    // Sprint 1.3: scope branding_ config docs to the owning tenant.
+    // Non-branding docs (e.g., feature-flags) remain readable by any authed user.
     match /config/{docId} {
-      allow read: if authed();
+      allow read: if authed() && (
+        isSuper()
+        // Non-branding config docs: any authenticated user may read.
+        || !docId.matches('^branding_.+')
+        // Coaches and players: read their own team's branding doc only.
+        || (isCoach() && tokenTeam() != null && docId == 'branding_' + tokenTeam())
+        || (tokenRole() == 'player' && tokenTeam() != null
+            && docId == 'branding_' + tokenTeam())
+        // Directors and registrars: read any branding_ doc whose team is in their club.
+        || ((isDirector() || isRegistrar())
+            && tokenClub() != null
+            && docId.split('_').size() >= 2
+            && exists(/databases/$(database)/documents/teams/$(docId.split('_')[1]))
+            && teamClubId(docId.split('_')[1]) == tokenClub())
+        // Parents: read the branding doc for the team their linked athlete belongs to.
+        || (isParent()
+            && userDoc().keys().hasAll(['teamId'])
+            && userDoc().teamId != null
+            && docId == 'branding_' + userDoc().teamId)
+      );
       allow write: if isSuper() || (isCoach() && docId == 'branding_' + tokenTeam());
     }
 
@@ -1086,9 +1135,16 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // SafeSport: server-only (sendCoachPlayerMessage); no client creates.
+    // Sprint 1.3: directors may read audit records scoped to teams in their own club.
+    // All writes remain server-only (sendCoachPlayerMessage / sendChannelMessage callables).
     match /messaging_audit/{docId} {
-      allow read: if isSuper();
+      allow read: if isSuper()
+        || (isDirector()
+            && tokenClub() != null
+            && resource.data.keys().hasAll(['teamId'])
+            && resource.data.teamId != null
+            && exists(/databases/$(database)/documents/teams/$(resource.data.teamId))
+            && teamClubId(resource.data.teamId) == tokenClub());
       allow create: if false;
       allow update, delete: if isSuper();
     }
