@@ -107,8 +107,8 @@
 	>
 		<ClubLogoMark size={variant === 'mobile' ? 'sm' : 'md'} />
 		<div class="ec-ws__text">
-			<span class="ec-ws__title">{triggerLabel.title}</span>
-			<span class="ec-ws__sub">{triggerLabel.sub}</span>
+			<span class="ec-ws__title ec-ws__truncate">{triggerLabel.title}</span>
+			<span class="ec-ws__sub ec-ws__truncate">{triggerLabel.sub}</span>
 		</div>
 		<i class="ph ph-caret-up-down ec-ws__caret" aria-hidden="true"></i>
 	</button>
@@ -137,13 +137,13 @@
 </div>
 
 <style>
+	/* Do not set overflow on this root — it clips the absolutely positioned menu. */
 	.ec-ws {
 		position: relative;
 		align-self: stretch;
 		width: 100%;
 		max-width: 100%;
 		min-width: 0;
-		overflow: hidden;
 	}
 
 	.ec-ws--mobile {
@@ -156,6 +156,7 @@
 		align-items: center;
 		gap: 10px;
 		width: 100%;
+		min-width: 0;
 		min-height: 56px;
 		padding: 10px 12px 10px 14px;
 		margin: 0;
@@ -166,6 +167,10 @@
 		text-align: left;
 		border-radius: 0;
 		box-sizing: border-box;
+	}
+
+	.ec-ws__trigger > :global(:first-child) {
+		flex-shrink: 0;
 	}
 
 	.ec-ws__trigger:hover {
@@ -189,15 +194,20 @@
 		gap: 2px;
 	}
 
+	.ec-ws__truncate {
+		display: block;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.ec-ws__title {
 		font-size: 13px;
 		font-weight: 600;
 		letter-spacing: -0.02em;
 		color: var(--text-primary);
 		line-height: 1.25;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.ec-ws__sub {
@@ -205,9 +215,6 @@
 		font-weight: 500;
 		color: var(--text-secondary);
 		line-height: 1.2;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.ec-ws__caret {
@@ -222,7 +229,8 @@
 		left: 8px;
 		right: 8px;
 		top: calc(100% + 4px);
-		z-index: 50;
+		/* Above sidebar chrome (55) and below global modals; high enough to escape local stacking */
+		z-index: 1000;
 		background: #ffffff;
 		border: 1px solid #e5e5e5;
 		border-radius: 10px;

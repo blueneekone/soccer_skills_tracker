@@ -175,6 +175,7 @@ html.dark .ec-sidebar__close-btn:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
 
+/* Top-level sidebar must not clip the workspace switcher dropdown; nav scroll lives on .ec-sidebar__nav */
 .ec-sidebar {
 	width: 16rem;
 	max-width: 16rem;
@@ -183,8 +184,6 @@ html.dark .ec-sidebar__close-btn:hover {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	overflow: hidden;
-	overflow-x: hidden;
 	border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	background: var(--ec-sidebar-bg, #fafafa);
 	box-sizing: border-box;
@@ -218,6 +217,7 @@ html.dark .ec-sidebar {
 		max-width: 0 !important;
 		min-width: 0 !important;
 		border-right-width: 0 !important;
+		overflow-x: hidden;
 	}
 
 	.ec-sidebar--collapsed-desktop .ec-sidebar__panel {
@@ -234,7 +234,6 @@ html.dark .ec-sidebar {
 	min-width: 0;
 	width: 100%;
 	max-width: 100%;
-	overflow: hidden;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	flex-shrink: 0;
 }
