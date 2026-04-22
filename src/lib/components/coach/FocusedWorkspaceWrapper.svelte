@@ -1,0 +1,177 @@
+<script>
+	import { browser } from '$app/environment';
+
+	/**
+	 * Reusable "Focused Workspace" shell for full-bleed canvas tools (Strategy, Drill Designer).
+	 * Provides:
+	 *  - Dark #18181b wrapper (normal) / fixed inset-0 overlay (fullscreen)
+	 *  - Floating pill toolbar anchored bottom-center
+	 *  - Full-screen toggle button (top-right, glassmorphic)
+	 *  - Body overflow lock + Escape key listener while in fullscreen
+	 *
+	 * Usage:
+	 *   <FocusedWorkspaceWrapper>
+	 *     {#snippet toolbar()}  ← pill toolbar content  {/snippet}
+	 *     <!-- children = main canvas / pitch content -->
+	 *   </FocusedWorkspaceWrapper>
+	 *
+	 * @type {{ children: import('svelte').Snippet, toolbar: import('svelte').Snippet }}
+	 */
+	let { children, toolbar } = $props();
+
+	let isFullscreen = $state(false);
+
+	function toggleFullscreen() {
+		isFullscreen = !isFullscreen;
+	}
+
+	$effect(() => {
+		if (!browser) return;
+		if (isFullscreen) {
+			const prev = document.body.style.overflow;
+			document.body.style.overflow = 'hidden';
+			return () => {
+				document.body.style.overflow = prev;
+			};
+		}
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		/** @param {KeyboardEvent} e */
+		function onKey(e) {
+			if (e.key === 'Escape' && isFullscreen) {
+				e.preventDefault();
+				isFullscreen = false;
+			}
+		}
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	});
+</script>
+
+<div
+	class="fw-workspace"
+	class:fw-workspace--fullscreen={isFullscreen}
+>
+	<!-- Full-screen toggle: top-right glassmorphic button -->
+	<button
+		type="button"
+		class="fw-fs-btn"
+		onclick={toggleFullscreen}
+		aria-pressed={isFullscreen}
+		aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+		title={isFullscreen ? 'Exit full screen (Esc)' : 'Enter full screen'}
+	>
+		<i class="ph {isFullscreen ? 'ph-corners-in' : 'ph-corners-out'}" aria-hidden="true"></i>
+	</button>
+
+	<!-- Main canvas content injected by parent -->
+	<div class="fw-content">
+		{@render children()}
+	</div>
+
+	<!-- Floating island toolbar — bottom-center pill, content from parent -->
+	<div class="fw-island" role="toolbar" aria-label="Workspace tools">
+		{@render toolbar()}
+	</div>
+</div>
+
+<style>
+	.fw-workspace {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: clamp(360px, 52vh, 580px);
+		background: #18181b;
+		border-radius: var(--radius-premium);
+		overflow: hidden;
+		padding: 1.25rem 1.25rem calc(1.25rem + 72px);
+		box-sizing: border-box;
+	}
+
+	.fw-workspace--fullscreen {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		border-radius: 0;
+		min-height: unset;
+		padding: 1.5rem 1.5rem calc(1.5rem + 80px);
+	}
+
+	.fw-content {
+		position: relative;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
+	/* ─── Full-screen toggle ──────────────────────────────────── */
+	.fw-fs-btn {
+		position: absolute;
+		top: 0.875rem;
+		right: 0.875rem;
+		z-index: 40;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.1);
+		color: #fafafa;
+		cursor: pointer;
+		-webkit-backdrop-filter: blur(8px);
+		backdrop-filter: blur(8px);
+		transition: background 0.15s ease, border-color 0.15s ease;
+	}
+
+	.fw-fs-btn:hover {
+		background: rgba(255, 255, 255, 0.18);
+		border-color: rgba(255, 255, 255, 0.38);
+	}
+
+	.fw-fs-btn i {
+		font-size: 1.25rem;
+		pointer-events: none;
+	}
+
+	/* ─── Floating island toolbar ─────────────────────────────── */
+	.fw-island {
+		position: absolute;
+		bottom: 1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		padding: 6px 10px;
+		background: #ffffff;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 9999px;
+		box-shadow:
+			0 10px 25px -5px rgba(0, 0, 0, 0.35),
+			0 4px 6px -2px rgba(0, 0, 0, 0.12),
+			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+		max-width: calc(100% - 3rem);
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	:global(html.dark) .fw-island {
+		background: #09090b;
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow:
+			0 10px 25px -5px rgba(0, 0, 0, 0.6),
+			0 4px 6px -2px rgba(0, 0, 0, 0.25);
+	}
+</style>

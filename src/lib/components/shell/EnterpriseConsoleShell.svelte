@@ -89,7 +89,7 @@
 	}
 </script>
 
-<div class="ec-root">
+<div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop}>
 	<!-- Field mode: fixed bar with club mark + menu (< lg only, see CSS) -->
 	<header class="ec-mobile-header">
 		<div class="ec-mobile-header__brand">

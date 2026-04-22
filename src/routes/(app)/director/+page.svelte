@@ -1,10 +1,7 @@
 <script>
 	import { untrack } from 'svelte';
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import TabBar from '$lib/components/TabBar.svelte';
 	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import FieldOpsModule from '$lib/components/director/os/FieldOpsModule.svelte';
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
@@ -17,16 +14,9 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
-	const DIR_TABS = [
-		{ id: 'home',        label: 'Home',        icon: 'ph-house' },
-		{ id: 'teams',       label: 'Teams',       icon: 'ph-users-three' },
-		{ id: 'field',       label: 'Field Ops',   icon: 'ph-map-pin' },
-		{ id: 'registrars',  label: 'Registrars',  icon: 'ph-swap' },
-		{ id: 'brand',       label: 'Branding',    icon: 'ph-palette' },
-		{ id: 'marketing',   label: 'Marketing',   icon: 'ph-megaphone' },
-		{ id: 'compliance',  label: 'Compliance',  icon: 'ph-shield-check' },
-		{ id: 'household',   label: 'Households',  icon: 'ph-house-line' },
-	];
+	const VALID_DIR_TABS = new Set([
+		'home', 'teams', 'field', 'registrars', 'brand', 'marketing', 'compliance', 'household',
+	]);
 
 	/** Effective tenant for Firestore; super_admin uses QA scope (active club or first org). */
 	const clubId = $derived.by(() => {
@@ -43,30 +33,18 @@
 		return '';
 	});
 
-	let activeTab = $state($page.url.searchParams.get('tab') || 'home');
+	let activeTab = $state(page.url.searchParams.get('tab') || 'home');
 
 	$effect(() => {
-		const t = $page.url.searchParams.get('tab') || 'home';
-		if (!DIR_TABS.some((x) => x.id === t)) return;
+		const t = page.url.searchParams.get('tab') || 'home';
+		if (!VALID_DIR_TABS.has(t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
-
-	/**
-	 * @param {string} id
-	 */
-	function onDirTabPick(id) {
-		goto(resolve(`/director?tab=${encodeURIComponent(id)}`), { replaceState: true, noScroll: true });
-	}
 </script>
 
 <div class="director-console-page">
-	<!-- Pinned sub-header: sits flush below ec-topbar, outside scroll flow -->
-	<div class="ec-page-subnav">
-		<TabBar tabs={DIR_TABS} bind:activeTab variant="director" onPick={onDirTabPick} />
-	</div>
-
-	<!-- Page identity row — rendered as first content block after subnav -->
-	<div class="director-console-page__header tw-mt-6">
+	<!-- Page identity row — sits directly inside ec-canvas (no subnav above it) -->
+	<div class="director-console-page__header">
 		{#if clubId}
 			<ClubLogoMark size="md" />
 		{/if}

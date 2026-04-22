@@ -3,6 +3,7 @@
 	import { db } from '$lib/firebase.js';
 	import { collection, addDoc } from 'firebase/firestore';
 	import Swal from 'sweetalert2';
+	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
 
 	let { teamId = '', workouts = [], onWorkoutSaved } = $props();
 
@@ -96,30 +97,49 @@
 			<input type="number" bind:value={workoutLevel} min="1" max="5" />
 			<textarea bind:value={workoutDesc} rows="3" placeholder="Describe the drill..."></textarea>
 
-			<!-- Spatial Canvas -->
-			<label>Spatial Layout (drag items onto field)</label>
-			<div class="drag-toolbar">
-				{#each DRAG_ITEMS as item}
-					<div
-						class="spatial-drag-item"
-						draggable="true"
-						role="button"
-						tabindex="0"
-						aria-label={item.label}
-						ondragstart={(e) => e.dataTransfer.setData('text/plain', item.type)}
-						onclick={() => spawnObject(item.type, 100, 100)}
-						onkeydown={(e) => e.key === 'Enter' && spawnObject(item.type, 100, 100)}
+			<!-- Spatial Canvas — dark workspace with floating item toolbar -->
+			<label>Spatial Layout</label>
+			<FocusedWorkspaceWrapper>
+				{#snippet toolbar()}
+					{#each DRAG_ITEMS as item}
+						<div
+							class="dd-drag-item"
+							draggable="true"
+							role="button"
+							tabindex="0"
+							aria-label={item.label}
+							title={item.label}
+							ondragstart={(e) => e.dataTransfer.setData('text/plain', item.type)}
+							onclick={() => spawnObject(item.type, 100, 100)}
+							onkeydown={(e) => e.key === 'Enter' && spawnObject(item.type, 100, 100)}
+						>
+							{item.emoji}
+						</div>
+					{/each}
+					<div class="dd-sep" aria-hidden="true"></div>
+					<button
+						type="button"
+						class="dd-clear-btn"
+						onclick={() => spatialCanvas?.clear()}
+						title="Clear canvas"
+						aria-label="Clear canvas"
 					>
-						{item.emoji}
-					</div>
-				{/each}
-				<button class="secondary-btn" onclick={() => spatialCanvas?.clear()}>Clear</button>
-			</div>
+						<i class="ph ph-eraser" aria-hidden="true"></i>
+					</button>
+				{/snippet}
 
-			<div class="spatial-field" bind:this={dropzone} ondragover={onDragOver} ondrop={onDrop} role="img" aria-label="Spatial field designer">
-				<div class="pitch-lines"></div>
-				<canvas id="spatialCanvasEl" bind:this={fabricCanvas}></canvas>
-			</div>
+				<div
+					class="spatial-field"
+					bind:this={dropzone}
+					ondragover={onDragOver}
+					ondrop={onDrop}
+					role="img"
+					aria-label="Spatial field designer"
+				>
+					<div class="pitch-lines"></div>
+					<canvas id="spatialCanvasEl" bind:this={fabricCanvas}></canvas>
+				</div>
+			</FocusedWorkspaceWrapper>
 
 			<button class="primary-btn btn-blue w-100" onclick={saveWorkout}>Save Workout</button>
 		</div>
@@ -151,12 +171,105 @@
 
 <style>
 	select, input, textarea { margin-bottom: 10px; }
-	.drag-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
-	.spatial-drag-item { width: 45px; height: 45px; background: white; border: 2px solid var(--glass-border); border-radius: 12px; font-weight: 900; font-size: 1.3rem; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
-	.spatial-drag-item:active { cursor: grabbing; transform: scale(0.95); }
-	.spatial-field { position: relative; border: 2px solid var(--aggie-blue); border-radius: 16px; overflow: hidden; background: #4ade80; aspect-ratio: 4/3; width: 100%; margin-bottom: 16px; }
-	.pitch-lines { position: absolute; top: 5%; left: 5%; right: 5%; bottom: 5%; border: 3px solid white; pointer-events: none; }
-	#spatialCanvasEl { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; z-index: 10; }
+
+	/* ─── Spatial field (inside FocusedWorkspaceWrapper) ─────── */
+	.spatial-field {
+		position: relative;
+		border-radius: var(--radius-premium);
+		overflow: hidden;
+		background: #4ade80;
+		aspect-ratio: 4 / 3;
+		width: 100%;
+		box-shadow:
+			0 25px 50px -12px rgba(0, 0, 0, 0.65),
+			0 0 0 1px rgba(255, 255, 255, 0.06);
+	}
+
+	.pitch-lines {
+		position: absolute;
+		top: 5%;
+		left: 5%;
+		right: 5%;
+		bottom: 5%;
+		border: 3px solid white;
+		pointer-events: none;
+	}
+
+	#spatialCanvasEl {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		touch-action: none;
+		z-index: 10;
+	}
+
+	/* ─── Floating toolbar items (rendered in fw-island pill) ─── */
+	.dd-drag-item {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		border: 1px solid transparent;
+		background: transparent;
+		font-weight: 900;
+		font-size: 1.1rem;
+		cursor: grab;
+		transition: background 0.12s ease;
+		flex-shrink: 0;
+	}
+
+	.dd-drag-item:hover {
+		background: #f4f4f5;
+	}
+
+	.dd-drag-item:active {
+		cursor: grabbing;
+		transform: scale(0.92);
+	}
+
+	.dd-sep {
+		width: 1px;
+		height: 22px;
+		background: #e4e4e7;
+		flex-shrink: 0;
+		margin: 0 4px;
+	}
+
+	:global(html.dark) .dd-sep {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.dd-clear-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border-radius: 50%;
+		border: 1px solid transparent;
+		background: transparent;
+		color: #3f3f46;
+		cursor: pointer;
+		transition: background 0.12s ease, color 0.12s ease;
+		flex-shrink: 0;
+	}
+
+	.dd-clear-btn:hover {
+		background: #fee2e2;
+		color: #b91c1c;
+	}
+
+	.dd-clear-btn i {
+		font-size: 1.1rem;
+		pointer-events: none;
+	}
+
+	/* ─── Saved drills list ───────────────────────────────────── */
 	.workout-item { border-left: 4px solid var(--aggie-blue); align-items: flex-start; }
 	.level-badge { background: var(--aggie-blue); color: white; border-radius: 10px; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; margin-left: 8px; }
 	.workout-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }

@@ -1,15 +1,12 @@
 <script>
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { db, auth, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
-	import TabBar from '$lib/components/TabBar.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
 	import RosterTab from '$lib/components/coach/RosterTab.svelte';
@@ -28,19 +25,10 @@
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
-	const TABS = [
-		{ id: 'home', label: '🏠 Home', icon: 'ph-house' },
-		{ id: 'roster', label: '👥 Roster', icon: 'ph-users' },
-		{ id: 'playbook', label: '📘 Playbook', icon: 'ph-book-open' },
-		{ id: 'videos', label: '🎬 Videos', icon: 'ph-video-camera' },
-		{ id: 'matchday', label: '⚽ Match Day', icon: 'ph-soccer-ball' },
-		{ id: 'messages', label: '💬 Messages', icon: 'ph-chat-circle' },
-		{ id: 'plan', label: '📅 Plan', icon: 'ph-calendar' },
-		{ id: 'evals', label: '📋 Evals', icon: 'ph-clipboard-text' },
-		{ id: 'strategy', label: '🖌️ Strategy', icon: 'ph-paint-brush' },
-		{ id: 'design', label: '📐 Drill Designer', icon: 'ph-ruler' },
-		{ id: 'tools', label: '⚙️ Tools', icon: 'ph-gear' }
-	];
+	const VALID_TABS = new Set([
+		'home', 'roster', 'playbook', 'videos', 'matchday',
+		'messages', 'plan', 'evals', 'strategy', 'design', 'tools',
+	]);
 
 	let activeTab = $state('home');
 	let selectedTeamId = $state('');
@@ -121,26 +109,14 @@
 
 	$effect(() => {
 		const t = page.url.searchParams.get('tab') || 'home';
-		if (!TABS.some((x) => x.id === t)) return;
+		if (!VALID_TABS.has(t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
-
-	/**
-	 * @param {string} id
-	 */
-	function onCoachTabPick(id) {
-		goto(resolve(`/coach?tab=${encodeURIComponent(id)}`), { replaceState: true, noScroll: true });
-	}
 </script>
 
 <div class="ec-page ec-coach">
-	<!-- Pinned sub-header: sits flush below ec-topbar, outside scroll flow -->
-	<div class="ec-page-subnav">
-		<TabBar tabs={TABS} bind:activeTab variant="coach" onPick={onCoachTabPick} />
-	</div>
-
-	<!-- Main canvas: uniform top gap after subnav -->
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch tw-mt-6">
+	<!-- Main canvas: sidebar navigation handles all tab switching -->
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch">
 		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
 			{#if activeTab === 'home'}
 				<div class="coach-portal-title">

@@ -2,6 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';
+	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,
@@ -22,7 +23,6 @@
 	let currentTool = $state('pen');
 	let currentColor = $state('#0f172a');
 	let whiteboard = $state(false);
-	let isFullscreen = $state(false);
 
 	/** @type {Array<Record<string, unknown>>} */
 	let strokes = $state([]);
@@ -358,33 +358,6 @@
 		}
 	}
 
-	function toggleFullscreen() {
-		isFullscreen = !isFullscreen;
-	}
-
-	$effect(() => {
-		if (!browser) return;
-		if (isFullscreen) {
-			const prev = document.body.style.overflow;
-			document.body.style.overflow = 'hidden';
-			return () => {
-				document.body.style.overflow = prev;
-			};
-		}
-	});
-
-	$effect(() => {
-		if (!browser) return;
-		/** @param {KeyboardEvent} e */
-		function onKey(e) {
-			if (e.key === 'Escape' && isFullscreen) {
-				e.preventDefault();
-				isFullscreen = false;
-			}
-		}
-		window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
-	});
 </script>
 
 <div class="strategy-tab">
@@ -469,62 +442,9 @@
 			</div>
 		</div>
 
-		<!-- Dark workspace — replaces the old light card + flat toolbar -->
-		<div
-			class="strategy-workspace"
-			class:strategy-workspace--fullscreen={isFullscreen}
-		>
-			<!-- Full-screen toggle: top-right corner -->
-			<button
-				type="button"
-				class="strategy-fs-btn"
-				onclick={toggleFullscreen}
-				aria-pressed={isFullscreen}
-				aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
-				title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
-			>
-				<i class="ph {isFullscreen ? 'ph-corners-in' : 'ph-corners-out'}" aria-hidden="true"></i>
-			</button>
-
-			<!-- Pitch centered in the dark workspace -->
-			<div class="strategy-pitch-area">
-				<div class="strategy-canvas-wrap" class:strategy-canvas-wrap--wb={whiteboard}>
-					<div
-						class="strategy-pitch-bg pitch-lines"
-						class:strategy-pitch-bg--wb={whiteboard}
-					></div>
-					<!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_mouse_events_have_key_events -->
-					<canvas
-						bind:this={canvas}
-						class="strategy-canvas"
-						onmousedown={startDraw}
-						onmouseup={endDraw}
-						onmousemove={draw}
-						onmouseout={endDraw}
-						ontouchstart={startDraw}
-						ontouchend={endDraw}
-						ontouchmove={draw}
-						aria-label="Strategy board canvas"
-					></canvas>
-					{#if aiBusy}
-						<div class="strategy-ai-overlay" aria-live="polite" aria-busy="true">
-							<div class="strategy-ai-overlay-glass">
-								<div class="strategy-ai-spinner" aria-hidden="true"></div>
-								<p class="strategy-ai-overlay-title">Tactical engine</p>
-								<p class="strategy-ai-overlay-sub">Processing spatial layout…</p>
-								<div class="strategy-ai-skeleton" aria-hidden="true">
-									<div class="strategy-ai-skel-line"></div>
-									<div class="strategy-ai-skel-line strategy-ai-skel-line--mid"></div>
-									<div class="strategy-ai-skel-line strategy-ai-skel-line--short"></div>
-								</div>
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Floating island toolbar — bottom-center pill -->
-			<div class="strategy-island" role="toolbar" aria-label="Drawing tools">
+		<!-- Dark workspace — managed by FocusedWorkspaceWrapper (fullscreen, escape, island) -->
+		<FocusedWorkspaceWrapper>
+			{#snippet toolbar()}
 				<button
 					type="button"
 					class="strategy-island-btn"
@@ -569,15 +489,8 @@
 				>
 					<i class="ph ph-circle" aria-hidden="true"></i>
 				</button>
-
 				<div class="strategy-island-sep" aria-hidden="true"></div>
-
-				<!-- Colour swatch — clicking the label opens the native picker -->
-				<label
-					class="strategy-island-color"
-					title="Stroke colour"
-					aria-label="Stroke colour"
-				>
+				<label class="strategy-island-color" title="Stroke colour" aria-label="Stroke colour">
 					<span
 						class="strategy-island-color-swatch"
 						style="background: {currentColor};"
@@ -585,9 +498,7 @@
 					></span>
 					<input type="color" bind:value={currentColor} />
 				</label>
-
 				<div class="strategy-island-sep" aria-hidden="true"></div>
-
 				<button
 					type="button"
 					class="strategy-island-btn"
@@ -599,8 +510,45 @@
 				>
 					<i class="ph ph-eraser" aria-hidden="true"></i>
 				</button>
+			{/snippet}
+
+			<!-- Pitch centered inside the dark workspace -->
+			<div class="strategy-pitch-area">
+				<div class="strategy-canvas-wrap" class:strategy-canvas-wrap--wb={whiteboard}>
+					<div
+						class="strategy-pitch-bg pitch-lines"
+						class:strategy-pitch-bg--wb={whiteboard}
+					></div>
+					<!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_mouse_events_have_key_events -->
+					<canvas
+						bind:this={canvas}
+						class="strategy-canvas"
+						onmousedown={startDraw}
+						onmouseup={endDraw}
+						onmousemove={draw}
+						onmouseout={endDraw}
+						ontouchstart={startDraw}
+						ontouchend={endDraw}
+						ontouchmove={draw}
+						aria-label="Strategy board canvas"
+					></canvas>
+					{#if aiBusy}
+						<div class="strategy-ai-overlay" aria-live="polite" aria-busy="true">
+							<div class="strategy-ai-overlay-glass">
+								<div class="strategy-ai-spinner" aria-hidden="true"></div>
+								<p class="strategy-ai-overlay-title">Tactical engine</p>
+								<p class="strategy-ai-overlay-sub">Processing spatial layout…</p>
+								<div class="strategy-ai-skeleton" aria-hidden="true">
+									<div class="strategy-ai-skel-line"></div>
+									<div class="strategy-ai-skel-line strategy-ai-skel-line--mid"></div>
+									<div class="strategy-ai-skel-line strategy-ai-skel-line--short"></div>
+								</div>
+							</div>
+						</div>
+					{/if}
+				</div>
 			</div>
-		</div>
+		</FocusedWorkspaceWrapper>
 	</div>
 
 	{#if aiInsightsOpen && (aiAnalysis || aiError)}
@@ -720,63 +668,6 @@
 		color: var(--danger-red);
 	}
 
-	/* ─── Dark workspace ─────────────────────────────────────── */
-	.strategy-workspace {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		min-height: clamp(360px, 52vh, 580px);
-		background: #18181b;
-		border-radius: var(--radius-premium);
-		overflow: hidden;
-		/* bottom padding reserves space for the floating island */
-		padding: 1.25rem 1.25rem calc(1.25rem + 72px);
-		box-sizing: border-box;
-	}
-
-	.strategy-workspace--fullscreen {
-		position: fixed;
-		inset: 0;
-		z-index: 100;
-		border-radius: 0;
-		min-height: unset;
-		padding: 1.5rem 1.5rem calc(1.5rem + 80px);
-	}
-
-	/* ─── Full-screen button ──────────────────────────────────── */
-	.strategy-fs-btn {
-		position: absolute;
-		top: 0.875rem;
-		right: 0.875rem;
-		z-index: 40;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		padding: 0;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.1);
-		color: #fafafa;
-		cursor: pointer;
-		-webkit-backdrop-filter: blur(8px);
-		backdrop-filter: blur(8px);
-		transition: background 0.15s ease, border-color 0.15s ease;
-	}
-
-	.strategy-fs-btn:hover {
-		background: rgba(255, 255, 255, 0.18);
-		border-color: rgba(255, 255, 255, 0.38);
-	}
-
-	.strategy-fs-btn i {
-		font-size: 1.25rem;
-		pointer-events: none;
-	}
 
 	/* ─── Pitch centering ─────────────────────────────────────── */
 	.strategy-pitch-area {
@@ -841,37 +732,7 @@
 		z-index: 10;
 	}
 
-	/* ─── Floating island toolbar ─────────────────────────────── */
-	.strategy-island {
-		position: absolute;
-		bottom: 1.5rem;
-		left: 50%;
-		transform: translateX(-50%);
-		z-index: 50;
-		display: flex;
-		align-items: center;
-		gap: 2px;
-		padding: 6px 10px;
-		background: #ffffff;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		border-radius: 9999px;
-		box-shadow:
-			0 10px 25px -5px rgba(0, 0, 0, 0.35),
-			0 4px 6px -2px rgba(0, 0, 0, 0.12),
-			inset 0 1px 0 rgba(255, 255, 255, 0.8);
-		max-width: calc(100% - 3rem);
-		flex-shrink: 0;
-		white-space: nowrap;
-	}
-
-	:global(html.dark) .strategy-island {
-		background: #09090b;
-		border-color: rgba(255, 255, 255, 0.12);
-		box-shadow:
-			0 10px 25px -5px rgba(0, 0, 0, 0.6),
-			0 4px 6px -2px rgba(0, 0, 0, 0.25);
-	}
-
+	/* ─── Island toolbar items (rendered inside fw-island pill) ── */
 	.strategy-island-btn {
 		display: inline-flex;
 		align-items: center;

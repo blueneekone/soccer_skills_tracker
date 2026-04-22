@@ -16,6 +16,7 @@
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
+	import PlayerShell from '$lib/components/shell/PlayerShell.svelte';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 
 	let { children } = $props();
@@ -184,10 +185,18 @@
 	</div>
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
 	<ParentFcmPrompt />
-	<EnterpriseConsoleShell>
-		{@render children()}
-	</EnterpriseConsoleShell>
-	<PlayerDetailDrawer />
+	{#if authStore.role === 'player'}
+		<!-- Player OS: dark-mode, gamified, mobile-first shell -->
+		<PlayerShell>
+			{@render children()}
+		</PlayerShell>
+	{:else}
+		<!-- Enterprise shell: admin, director, coach, registrar, recruiter, parent -->
+		<EnterpriseConsoleShell>
+			{@render children()}
+		</EnterpriseConsoleShell>
+		<PlayerDetailDrawer />
+	{/if}
 {/if}
 
 <style>

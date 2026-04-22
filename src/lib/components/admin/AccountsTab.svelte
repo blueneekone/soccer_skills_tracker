@@ -6,7 +6,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
-	import AdminEditClubDrawer from '$lib/components/admin/AdminEditClubDrawer.svelte';
 	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
 	import '$lib/styles/enterprise-console.css';
 
@@ -293,6 +292,67 @@
 		editClubOpen = true;
 	}
 
+	function closeEditClub() {
+		editClubOpen = false;
+		editErr = '';
+	}
+
+	/* ── Inline club-edit state (replaces AdminEditClubDrawer) ── */
+	/** @type {'soccer'|'basketball'|'baseball'|'football'|'volleyball'|'hockey'|'lacrosse'|'generic'} */
+	let editSport = $state('soccer');
+	let editInfinite = $state(false);
+	let editSaving = $state(false);
+	let editErr = $state('');
+
+	$effect(() => {
+		if (!selectedClub) return;
+		const s = typeof selectedClub.sport === 'string' && selectedClub.sport.trim()
+			? selectedClub.sport.trim().toLowerCase()
+			: 'soccer';
+		const allowed = ['soccer','basketball','baseball','football','volleyball','hockey','lacrosse','generic'];
+		editSport = /** @type {typeof editSport} */ (allowed.includes(s) ? s : 'generic');
+		editInfinite = selectedClub.isInfinite === true;
+		editErr = '';
+	});
+
+	/**
+	 * @param {unknown} raw
+	 */
+	function formatCreatedAt(raw) {
+		if (!raw) return '—';
+		if (typeof raw === 'object' && raw !== null && 'toDate' in raw) {
+			const fn = /** @type {Record<string, unknown>} */ (raw)['toDate'];
+			if (typeof fn === 'function') {
+				try {
+					const d = /** @type {() => Date} */ (fn).call(raw);
+					return d instanceof Date ? d.toLocaleString() : '—';
+				} catch { return '—'; }
+			}
+		}
+		if (raw instanceof Date) return raw.toLocaleString();
+		return '—';
+	}
+
+	async function saveClubEdit() {
+		if (!selectedClub?.id) return;
+		editSaving = true;
+		editErr = '';
+		try {
+			await setDoc(
+				doc(db, 'clubs', selectedClub.id),
+				{ sport: editSport, isInfinite: editInfinite === true },
+				{ merge: true },
+			);
+			await logSecurityEvent('ADMIN_EDIT_CLUB', selectedClub.id, `sport=${editSport}; infinite=${editInfinite}`);
+			await teamsStore.load('super_admin', { scope: 'admin_full', routePath: page.url.pathname });
+			closeEditClub();
+		} catch (e) {
+			editErr = e instanceof Error ? e.message : 'Could not save club.';
+		} finally {
+			editSaving = false;
+		}
+	}
+
 	let newClubId = $state('');
 	let newClubName = $state('');
 	/** @type {'soccer'|'basketball'|'baseball'|'football'|'volleyball'|'hockey'|'lacrosse'|'generic'} */
@@ -457,39 +517,44 @@
 </script>
 
 <div class="accounts-tab">
-	<div class="accounts-tab__nav" role="tablist" aria-label="Administrator sections">
+	<!-- Vertical mini-rail navigation -->
+	<aside class="at-rail" aria-label="Administrator sections">
 		<button
 			type="button"
-			class="accounts-tab__tab"
-			role="tab"
-			aria-selected={accountsTab === 'orgs'}
-			tabindex={accountsTab === 'orgs' ? 0 : -1}
+			class="at-rail__btn"
+			class:at-rail__btn--active={accountsTab === 'orgs'}
+			aria-current={accountsTab === 'orgs' ? 'page' : undefined}
 			onclick={() => (accountsTab = 'orgs')}
 		>
-			Organizations
+			<i class="ph ph-buildings" aria-hidden="true"></i>
+			<span>Orgs</span>
 		</button>
 		<button
 			type="button"
-			class="accounts-tab__tab"
-			role="tab"
-			aria-selected={accountsTab === 'roster'}
-			tabindex={accountsTab === 'roster' ? 0 : -1}
+			class="at-rail__btn"
+			class:at-rail__btn--active={accountsTab === 'roster'}
+			aria-current={accountsTab === 'roster' ? 'page' : undefined}
 			onclick={() => (accountsTab = 'roster')}
 		>
-			Platform Roster
+			<i class="ph ph-users" aria-hidden="true"></i>
+			<span>Roster</span>
 		</button>
 		<button
 			type="button"
-			class="accounts-tab__tab"
-			role="tab"
-			aria-selected={accountsTab === 'admins'}
-			tabindex={accountsTab === 'admins' ? 0 : -1}
+			class="at-rail__btn"
+			class:at-rail__btn--active={accountsTab === 'admins'}
+			aria-current={accountsTab === 'admins' ? 'page' : undefined}
 			onclick={() => (accountsTab = 'admins')}
 		>
-			System Admins
+			<i class="ph ph-crown" aria-hidden="true"></i>
+			<span>Admins</span>
 		</button>
-	</div>
+	</aside>
 
+	<!-- Workspace: scrollable table panel + slide-in detail panel -->
+	<div class="at-workspace">
+
+	<div class="at-table-panel">
 	{#if accountsTab === 'orgs'}
 		<div class="bento-section accounts-tab__panel" role="tabpanel">
 			<div class="card">
@@ -829,15 +894,97 @@
 			</div>
 		</div>
 	{/if}
-</div>
+	</div><!-- /at-table-panel -->
 
-<AdminEditClubDrawer
-	bind:open={editClubOpen}
-	club={selectedClub}
-	entitlement={selectedEntitlement}
-	teamsCount={selectedTeamsCount}
-	onDeleteClub={deleteSelectedClubFromDrawer}
-/>
+	<!-- Inline detail panel: slides in from the right within at-workspace -->
+	<div
+		class="at-detail-panel"
+		class:at-detail-panel--open={editClubOpen && selectedClub}
+		aria-hidden={!(editClubOpen && selectedClub)}
+		aria-label="Edit organization"
+	>
+		{#if selectedClub}
+			<div class="at-detail__head">
+				<h2 class="at-detail__title">Edit organization</h2>
+				<button type="button" class="at-detail__close" onclick={closeEditClub} aria-label="Close detail panel">
+					<i class="ph ph-x" aria-hidden="true"></i>
+				</button>
+			</div>
+			<div class="at-detail__body">
+				<p class="at-detail__meta">Club ID: <strong>{selectedClub.id}</strong></p>
+				<p class="at-detail__meta">Name: {selectedClub.name || '—'}</p>
+
+				<div class="at-detail__block">
+					<h3 class="at-detail__block-heading">Details</h3>
+					<p class="at-detail__meta">Created: {formatCreatedAt(selectedClub.createdAt)}</p>
+					<p class="at-detail__meta">Teams in org: <strong>{selectedTeamsCount}</strong></p>
+					{#if selectedEntitlement}
+						<p class="at-detail__meta at-detail__mono">
+							Stripe customer: {typeof selectedEntitlement.stripe_customer_id === 'string' && selectedEntitlement.stripe_customer_id.trim() ? selectedEntitlement.stripe_customer_id : '—'}
+						</p>
+						<p class="at-detail__meta at-detail__mono">
+							Stripe subscription: {typeof selectedEntitlement.stripe_subscription_id === 'string' && selectedEntitlement.stripe_subscription_id.trim() ? selectedEntitlement.stripe_subscription_id : '—'}
+						</p>
+					{:else}
+						<p class="at-detail__meta">No entitlement document loaded.</p>
+					{/if}
+				</div>
+
+				<label class="at-detail__label" for="at-edit-club-sport">Sport</label>
+				<select id="at-edit-club-sport" bind:value={editSport} class="at-detail__select">
+					<option value="soccer">Soccer</option>
+					<option value="basketball">Basketball</option>
+					<option value="baseball">Baseball</option>
+					<option value="football">Football</option>
+					<option value="volleyball">Volleyball</option>
+					<option value="hockey">Hockey</option>
+					<option value="lacrosse">Lacrosse</option>
+					<option value="generic">Generic</option>
+				</select>
+
+				<div class="at-detail__toggle-row">
+					<label class="at-detail__toggle-label" for="at-edit-infinite">
+						Grant Infinite License (Promo)
+					</label>
+					<input
+						id="at-edit-infinite"
+						type="checkbox"
+						bind:checked={editInfinite}
+						class="at-detail__checkbox"
+					/>
+				</div>
+				<p class="at-detail__hint">
+					Bypasses Stripe billing read-only mode and seat-cap enforcement on connected clients.
+				</p>
+
+				{#if editErr}
+					<p class="at-detail__err" role="alert">{editErr}</p>
+				{/if}
+
+				<div class="at-detail__danger">
+					<p class="at-detail__danger-label">Danger zone</p>
+					<button
+						type="button"
+						class="delete-btn at-detail__delete-btn"
+						onclick={deleteSelectedClubFromDrawer}
+						disabled={editSaving}
+					>
+						Delete organization
+					</button>
+				</div>
+
+				<div class="at-detail__actions">
+					<button type="button" class="secondary-btn" onclick={closeEditClub} disabled={editSaving}>Cancel</button>
+					<button type="button" class="primary-btn btn-blue" onclick={saveClubEdit} disabled={editSaving}>
+						{editSaving ? 'Saving…' : 'Save changes'}
+					</button>
+				</div>
+			</div>
+		{/if}
+	</div><!-- /at-detail-panel -->
+
+	</div><!-- /at-workspace -->
+</div>
 
 <style>
 	.accounts-tab :global(select),
@@ -876,49 +1023,6 @@
 		margin: 0;
 		color: var(--danger-red, #b91c1c);
 		font-size: 0.9rem;
-	}
-
-	.accounts-tab__nav {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-bottom: 16px;
-		padding-bottom: 12px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	.accounts-tab__tab {
-		border: 1px solid #e5e5e5;
-		background: #fafafa;
-		color: var(--text-secondary);
-		font-size: 0.875rem;
-		font-weight: 600;
-		padding: 8px 14px;
-		border-radius: 8px;
-		cursor: pointer;
-		transition:
-			background 0.12s ease,
-			color 0.12s ease,
-			border-color 0.12s ease;
-	}
-
-	.accounts-tab__tab[aria-selected='true'] {
-		background: #ffffff;
-		color: var(--text-primary);
-		border-color: #a3a3a3;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-	}
-
-	:global(html.dark) .accounts-tab__tab {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.12);
-		color: var(--text-secondary);
-	}
-
-	:global(html.dark) .accounts-tab__tab[aria-selected='true'] {
-		background: #09090b;
-		color: #fafafa;
-		border-color: rgba(255, 255, 255, 0.18);
 	}
 
 	.accounts-tab__hint {
@@ -1243,5 +1347,322 @@
 	.accounts-tab__td-muted {
 		color: var(--text-secondary);
 		font-size: 0.88rem;
+	}
+
+	/* ─── Master-Detail layout ────────────────────────────────── */
+	.accounts-tab {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		min-height: 0;
+		gap: 0;
+	}
+
+	/* Vertical mini-rail */
+	.at-rail {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex-shrink: 0;
+		width: 80px;
+		padding: 12px 8px;
+		border-right: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #ffffff);
+		border-radius: var(--radius-premium) 0 0 var(--radius-premium);
+	}
+
+	:global(html.dark) .at-rail {
+		background: #09090b;
+		border-right-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.at-rail__btn {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		width: 100%;
+		padding: 10px 4px;
+		border: 1px solid transparent;
+		border-radius: var(--radius-inner, 12px);
+		background: transparent;
+		cursor: pointer;
+		color: var(--text-secondary);
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		transition: background 0.12s ease, color 0.12s ease;
+	}
+
+	.at-rail__btn i {
+		font-size: 1.25rem;
+		pointer-events: none;
+	}
+
+	.at-rail__btn:hover {
+		background: rgba(0, 0, 0, 0.04);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .at-rail__btn:hover {
+		background: rgba(255, 255, 255, 0.06);
+	}
+
+	.at-rail__btn--active {
+		background: var(--brand-primary, #f59e0b);
+		color: #fff;
+		border-color: transparent;
+	}
+
+	:global(html.dark) .at-rail__btn--active {
+		background: var(--brand-primary, #f59e0b);
+		color: #0f172a;
+	}
+
+	.at-rail__btn--active:hover {
+		background: var(--brand-primary, #f59e0b);
+		filter: brightness(1.07);
+	}
+
+	/* Workspace: scrollable table panel + slide-in detail panel */
+	.at-workspace {
+		flex: 1 1 auto;
+		min-width: 0;
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		overflow: hidden;
+	}
+
+	.at-table-panel {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		transition: flex 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	/* Inline detail panel — hidden by default, slides in from right */
+	.at-detail-panel {
+		flex-shrink: 0;
+		width: 0;
+		overflow: hidden;
+		transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+		border-left: 0px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #ffffff);
+	}
+
+	:global(html.dark) .at-detail-panel {
+		background: #0f0f11;
+	}
+
+	.at-detail-panel--open {
+		width: min(400px, 42vw);
+		border-left-width: 1px;
+	}
+
+	:global(html.dark) .at-detail-panel--open {
+		border-left-color: rgba(255, 255, 255, 0.08);
+	}
+
+	/* Detail panel internals */
+	.at-detail__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 16px 18px;
+		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+		flex-shrink: 0;
+	}
+
+	:global(html.dark) .at-detail__head {
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.at-detail__title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		white-space: nowrap;
+	}
+
+	.at-detail__close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border: 1px solid transparent;
+		border-radius: 8px;
+		background: transparent;
+		cursor: pointer;
+		color: var(--text-secondary);
+		flex-shrink: 0;
+	}
+
+	.at-detail__close:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	.at-detail__close i { font-size: 1.1rem; }
+
+	.at-detail__body {
+		padding: 18px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		overflow-y: auto;
+		height: calc(100% - 57px);
+		box-sizing: border-box;
+	}
+
+	.at-detail__meta {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+	}
+
+	.at-detail__mono {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-size: 0.78rem;
+		word-break: break-all;
+	}
+
+	.at-detail__block {
+		padding: 12px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 10px;
+		background: var(--surface-subtle, #fafafa);
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	:global(html.dark) .at-detail__block {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	.at-detail__block-heading {
+		margin: 0 0 4px;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-secondary);
+	}
+
+	.at-detail__label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--text-secondary);
+	}
+
+	.at-detail__select {
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--surface-subtle, #fafafa);
+		font: inherit;
+		color: var(--text-primary);
+		box-sizing: border-box;
+		margin-bottom: 0;
+	}
+
+	:global(html.dark) .at-detail__select {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: #09090b;
+	}
+
+	.at-detail__toggle-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 12px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 10px;
+		background: var(--surface-subtle, #fafafa);
+	}
+
+	:global(html.dark) .at-detail__toggle-row {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	.at-detail__toggle-label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		flex: 1;
+	}
+
+	.at-detail__checkbox {
+		width: 20px;
+		height: 20px;
+		flex-shrink: 0;
+		cursor: pointer;
+	}
+
+	.at-detail__hint {
+		margin: 0;
+		font-size: 0.75rem;
+		line-height: 1.45;
+		color: var(--text-secondary);
+	}
+
+	.at-detail__err {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--danger-red, #b91c1c);
+	}
+
+	.at-detail__danger {
+		padding-top: 16px;
+		border-top: 1px dashed rgba(220, 38, 38, 0.35);
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.at-detail__danger-label {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--danger-red, #b91c1c);
+	}
+
+	.at-detail__delete-btn {
+		align-self: flex-start;
+		padding: 8px 12px;
+		font-weight: 600;
+	}
+
+	.at-detail__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		justify-content: flex-end;
+		margin-top: auto;
+		padding-top: 16px;
+	}
+
+	@media (max-width: 900px) {
+		.at-rail {
+			width: 60px;
+		}
+		.at-detail-panel--open {
+			width: min(320px, 90vw);
+		}
 	}
 </style>

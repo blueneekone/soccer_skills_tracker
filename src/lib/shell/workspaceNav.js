@@ -30,6 +30,7 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
+	{ tab: 'home', label: 'Dashboard', icon: 'ph-house', href: '/coach?tab=home' },
 	{ tab: 'roster', label: 'My Team', icon: 'ph-users-three', href: '/coach?tab=roster' },
 	{ tab: 'playbook', label: 'Playbook', icon: 'ph-book-open', href: '/coach?tab=playbook' },
 	{ tab: 'videos', label: 'Videos', icon: 'ph-video-camera', href: '/coach?tab=videos' },
@@ -188,8 +189,8 @@ export function isShellNavActive(pathname, searchParams, item) {
 		const wantTab = u.searchParams.get('tab');
 
 		if (pathname === '/coach') {
-			const cur = curTab || 'roster';
-			const want = wantTab || 'roster';
+			const cur = curTab || 'home';
+			const want = wantTab || 'home';
 			return cur === want;
 		}
 		if (pathname === '/director') {
