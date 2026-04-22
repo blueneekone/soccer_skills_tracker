@@ -7608,3 +7608,16 @@ exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
 
   return {ok: true, targetEmail};
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// Strike 1 (Agent 3) — Analytics aggregation triggers.
+//
+// The Global Admin "Command Center" reads from `analytics/platform_totals`,
+// a single pre-aggregated document. These triggers keep that doc in sync
+// with the authoritative collections. Defined in functions/analytics.js and
+// re-exported here so they actually deploy.
+// ─────────────────────────────────────────────────────────────────────────
+const analyticsTriggers = require('./analytics');
+exports.onAnalyticsUserWritten = analyticsTriggers.onUserWritten;
+exports.onAnalyticsClubWritten = analyticsTriggers.onClubWritten;
+exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;

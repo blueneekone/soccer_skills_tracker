@@ -121,14 +121,25 @@
 	});
 
 	// ── Derived display values ────────────────────────────────────────────────────
-	/** Estimated MRR at $49/license — clearly labeled as estimate in the UI */
-	const mrrEstimate = $derived(licenseCount * 49);
+	/** Strike 1: prefer the aggregated `totalRevenue` when the analytics
+	 *  triggers have started writing. Fall back to the $49/license estimate. */
+	const mrrEstimate = $derived(
+		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49
+	);
 
 	/** Stripe-style MRR formatted string */
 	const mrrDisplay = $derived(
 		mrrEstimate >= 1000
 			? `$${(mrrEstimate / 1000).toFixed(1)}k`
 			: `$${mrrEstimate.toLocaleString()}`,
+	);
+
+	/** Strike 1: KPI scalars — prefer aggregated totals when live. */
+	const licenseCountDisplay = $derived(
+		aggTotalLicenses > 0 ? aggTotalLicenses : licenseCount
+	);
+	const totalClubsDisplay = $derived(
+		aggTotalClubs > 0 ? aggTotalClubs : totalClubs
 	);
 
 	const adminCount = $derived(teamsStore.admins.length);
@@ -155,6 +166,21 @@
 
 	/** Players per sport, sourced from `analytics/platform_totals.bySport`. */
 	let playersBySport = $state(/** @type {SeriesPoint[]} */ ([]));
+
+	/** Strike 1 — Per-chart data-source indicator. The Global Admin sees
+	 *  "Live" as soon as the analytics triggers backfill the aggregate doc,
+	 *  and "Mock" while the platform is still empty. */
+	/** @typedef {'live' | 'mock'} ChartSource */
+	let mauSource      = $state(/** @type {ChartSource} */ ('mock'));
+	let revenueSource  = $state(/** @type {ChartSource} */ ('mock'));
+	let sportSource    = $state(/** @type {ChartSource} */ ('mock'));
+
+	/** Aggregated platform totals (Strike 1 wiring). When these are > 0 the
+	 *  KPI row prefers them over full-collection scans. */
+	let aggTotalClubs    = $state(0);
+	let aggTotalLicenses = $state(0);
+	let aggTotalRevenue  = $state(0);
+	let aggTotalUsers    = $state(0);
 
 	/** Recent security_audit events (desc by createdAt). */
 	let liveFeed = $state(
@@ -254,6 +280,20 @@
 				totals = null;
 			}
 
+			// Strike 1 — Hydrate aggregated KPI scalars so platform-health KPIs
+			// can prefer them over the collection scans once the analytics
+			// triggers (functions/analytics.js) have started writing.
+			if (totals && !destroyed) {
+				const tc = Number(totals.totalClubs);
+				const tl = Number(totals.totalLicenses);
+				const tr = Number(totals.totalRevenue);
+				const tu = Number(totals.totalUsers);
+				aggTotalClubs    = Number.isFinite(tc) && tc > 0 ? Math.round(tc) : 0;
+				aggTotalLicenses = Number.isFinite(tl) && tl > 0 ? Math.round(tl) : 0;
+				aggTotalRevenue  = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
+				aggTotalUsers    = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
+			}
+
 			// ── 1. MAU (Monthly Active Users) ─────────────────────────────────
 			try {
 				const labels = buildMauLabels();
@@ -287,6 +327,7 @@
 						label,
 						value: values[i] ?? 0,
 					}));
+					mauSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
 				console.warn('[overview] MAU hydrate failed — using mock series', e);
@@ -296,6 +337,7 @@
 						label,
 						value: MOCK_MAU[i] ?? 0,
 					}));
+					mauSource = 'mock';
 				}
 			}
 
@@ -328,6 +370,7 @@
 									value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
 								}))
 								.filter((s) => s.value > 0);
+					revenueSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
 				console.warn('[overview] Revenue-by-Tier hydrate failed — using mock series', e);
@@ -338,6 +381,7 @@
 							value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
 						}))
 						.filter((s) => s.value > 0);
+					revenueSource = 'mock';
 				}
 			}
 
@@ -369,6 +413,7 @@
 					playersBySport = ordered.length
 						? ordered
 						: [{ label: 'No Players', value: 0 }];
+					sportSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
 				console.warn('[overview] Players-by-Sport hydrate failed — using mock series', e);
@@ -379,6 +424,7 @@
 							value: Math.round(MOCK_PLAYERS_BY_SPORT[key] || 0),
 						}))
 						.filter((s) => s.value > 0);
+					sportSource = 'mock';
 				}
 			}
 
@@ -730,12 +776,10 @@
 		<div class="ov-hero__crumb">
 			<i class="ph ph-globe" aria-hidden="true"></i>
 			<span>Global Admin</span>
-			<i class="ph ph-caret-right ov-hero__sep" aria-hidden="true"></i>
-			<span class="ov-hero__crumb-leaf">Command Center</span>
 		</div>
 		<div class="ov-hero__row">
 			<div>
-				<h1 id="ov-hero-title" class="ov-hero__title">Single Pane of Glass</h1>
+				<h1 id="ov-hero-title" class="ov-hero__title">Command Center</h1>
 				<p class="ov-hero__sub">
 					Real-time telemetry across revenue, health, compliance, and the
 					global audit trail — everything a Global Admin needs in one view.
@@ -776,13 +820,17 @@
 				<span class="ov-kpi__value ov-kpi__value--xl">
 					{telLoading ? '—' : mrrDisplay}
 				</span>
-				<span class="ov-kpi__sub">@ $49 × {licenseCount} licenses</span>
+				<span class="ov-kpi__sub">
+					{aggTotalRevenue > 0
+						? 'Live from analytics/platform_totals'
+						: `@ $49 × ${licenseCount} licenses`}
+				</span>
 			</div>
 			<div class="ov-kpi-divider" aria-hidden="true"></div>
 			<div class="ov-kpi">
 				<span class="ov-kpi__label">Active Licenses</span>
 				<span class="ov-kpi__value">
-					{telLoading ? '—' : licenseCount.toLocaleString()}
+					{telLoading ? '—' : licenseCountDisplay.toLocaleString()}
 				</span>
 			</div>
 			<div class="ov-kpi-divider" aria-hidden="true"></div>
@@ -833,7 +881,7 @@
 			<div class="ov-kpi">
 				<span class="ov-kpi__label">Active Clubs</span>
 				<span class="ov-kpi__value ov-kpi__value--xl">
-					{telLoading ? '—' : totalClubs.toLocaleString()}
+					{telLoading ? '—' : totalClubsDisplay.toLocaleString()}
 				</span>
 			</div>
 			<div class="ov-kpi-divider" aria-hidden="true"></div>
@@ -947,7 +995,7 @@
 			<span class="ov-cc__icon" aria-hidden="true">
 				<i class="ph ph-chart-line"></i>
 			</span>
-			<h2 id="ov-cc-title" class="ov-cc__title">Command Center</h2>
+			<h2 id="ov-cc-title" class="ov-cc__title">Analytics &amp; Live Feed</h2>
 			<span class="ov-cc__badge" aria-label="Live data">
 				<span class="ov-cc__badge-dot"></span>
 				Live
@@ -964,6 +1012,17 @@
 						<div class="ov-card__head-body">
 							<h3 id="ov-card-mau" class="ov-card__title">Monthly Active Users</h3>
 							<p class="ov-card__sub">Unique sign-ins over the last six months</p>
+							<span
+								class="ov-card__src"
+								class:ov-card__src--live={mauSource === 'live'}
+								class:ov-card__src--mock={mauSource === 'mock'}
+								title={mauSource === 'live'
+									? 'Live data from analytics/platform_totals'
+									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
+							>
+								<span class="ov-card__src-dot" aria-hidden="true"></span>
+								{mauSource === 'live' ? 'Live' : 'Mock'}
+							</span>
 						</div>
 						<span class="ov-card__kpi">
 							{mauSeries.length ? mauSeries[mauSeries.length - 1].value.toLocaleString() : '—'}
@@ -983,6 +1042,17 @@
 						<div class="ov-card__head-body">
 							<h3 id="ov-card-rev" class="ov-card__title">Revenue by Tier</h3>
 							<p class="ov-card__sub">Active-license MRR grouped by plan</p>
+							<span
+								class="ov-card__src"
+								class:ov-card__src--live={revenueSource === 'live'}
+								class:ov-card__src--mock={revenueSource === 'mock'}
+								title={revenueSource === 'live'
+									? 'Live data from analytics/platform_totals'
+									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
+							>
+								<span class="ov-card__src-dot" aria-hidden="true"></span>
+								{revenueSource === 'live' ? 'Live' : 'Mock'}
+							</span>
 						</div>
 						<span class="ov-card__kpi">
 							${revenueByTier.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
@@ -1002,6 +1072,17 @@
 						<div class="ov-card__head-body">
 							<h3 id="ov-card-sports" class="ov-card__title">Total Players by Sport</h3>
 							<p class="ov-card__sub">Enrolled athletes grouped by their team's sport</p>
+							<span
+								class="ov-card__src"
+								class:ov-card__src--live={sportSource === 'live'}
+								class:ov-card__src--mock={sportSource === 'mock'}
+								title={sportSource === 'live'
+									? 'Live data from analytics/platform_totals'
+									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
+							>
+								<span class="ov-card__src-dot" aria-hidden="true"></span>
+								{sportSource === 'live' ? 'Live' : 'Mock'}
+							</span>
 						</div>
 						<span class="ov-card__kpi">
 							{playersBySport.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
@@ -1352,18 +1433,6 @@
 		color: var(--text-secondary);
 	}
 
-	/* Sprint 2.6.7 — Separator icon uses the solid secondary token (no
-	   transparency). The breadcrumb hierarchy is communicated via the leaf
-	   being primary while crumbs + separators are secondary. */
-	.ov-hero__sep {
-		color: var(--text-secondary);
-		font-size: 0.75em;
-	}
-
-	.ov-hero__crumb-leaf {
-		color: var(--text-primary);
-	}
-
 	.ov-hero__row {
 		display: flex;
 		align-items: flex-end;
@@ -1587,6 +1656,42 @@
 		font-size: 0.75rem;
 		line-height: 1.35;
 		color: var(--text-secondary);
+	}
+
+	/* Strike 1 — per-chart data-source chip. Makes it unambiguous whether the
+	   widget is rendering from analytics/platform_totals or the mock fallback. */
+	.ov-card__src {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 6px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		border: 1px solid transparent;
+	}
+
+	.ov-card__src-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: currentColor;
+		box-shadow: 0 0 8px currentColor;
+	}
+
+	.ov-card__src--live {
+		color: #10b981;
+		background: rgba(16, 185, 129, 0.12);
+		border-color: rgba(16, 185, 129, 0.35);
+	}
+
+	.ov-card__src--mock {
+		color: #f59e0b;
+		background: rgba(245, 158, 11, 0.10);
+		border-color: rgba(245, 158, 11, 0.30);
 	}
 
 	.ov-card__kpi {

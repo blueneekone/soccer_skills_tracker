@@ -30,6 +30,7 @@
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
+	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
 
 	const impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
@@ -93,6 +94,30 @@
 
 	// Sprint 2.6.5 — Grant Global Admin moved here from System Settings.
 	let showAddAdmin = $state(false);
+
+	// Strike 1 — Edit Admin modal state.
+	/** @type {UserRow | null} */
+	let editingAdmin = $state(null);
+	let showEditAdmin = $state(false);
+
+	/** @param {UserRow} row */
+	function openEditAdmin(row) {
+		editingAdmin = row;
+		showEditAdmin = true;
+		openMenuFor = '';
+	}
+
+	function closeEditAdmin() {
+		showEditAdmin = false;
+		editingAdmin = null;
+	}
+
+	/** Reactivity mandate (P0): patch the local rows array so the table
+	 *  shows the new values immediately without a refetch. */
+	/** @param {UserRow} patch */
+	function applyAdminPatchLocally(patch) {
+		rows = rows.map((r) => (r.id === patch.id ? { ...r, ...patch } : r));
+	}
 
 	// ── Role display helpers ─────────────────────────────────────────────────
 	const ROLE_LABELS = /** @type {const} */ ({
@@ -526,7 +551,9 @@
 </script>
 
 <div class="gu-root">
-	<!-- Header -->
+	<!-- Strike 1 — Page Actions header: title + sub left, primary CTAs on the
+	     top-right. The Add Admin button is now pinned to Page Actions and
+	     sits completely separate from the DataTable search row below. -->
 	<header class="gu-head">
 		<div class="gu-head__left">
 			<h1 class="gu-title">Global Users</h1>
@@ -536,39 +563,7 @@
 			</p>
 		</div>
 
-		<div class="gu-head__right">
-			<div class="gu-search" role="search">
-				<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-				<input
-					type="search"
-					bind:value={searchInput}
-					onkeydown={onSearchKey}
-					placeholder="Search by email prefix (press Enter)"
-					aria-label="Search users by email"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-				{#if searchApplied}
-					<button
-						type="button"
-						class="gu-search__clear"
-						onclick={clearSearch}
-						aria-label="Clear search"
-						title="Clear search"
-					>
-						<i class="ph ph-x" aria-hidden="true"></i>
-					</button>
-				{/if}
-				<button
-					type="button"
-					class="gu-search__submit"
-					onclick={runSearch}
-					disabled={loading}
-					aria-label="Run search"
-				>
-					Search
-				</button>
-			</div>
+		<div class="gu-page-actions" role="group" aria-label="Page actions">
 			<button
 				type="button"
 				class="gu-add-admin-btn"
@@ -581,12 +576,58 @@
 		</div>
 	</header>
 
+	<!-- Strike 1 — DataTable toolbar owns the search input exclusively. -->
+	<div class="gu-toolbar">
+		<div class="gu-search" role="search">
+			<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+			<input
+				type="search"
+				bind:value={searchInput}
+				onkeydown={onSearchKey}
+				placeholder="Search by email prefix (press Enter)"
+				aria-label="Search users by email"
+				autocomplete="off"
+				spellcheck="false"
+			/>
+			{#if searchApplied}
+				<button
+					type="button"
+					class="gu-search__clear"
+					onclick={clearSearch}
+					aria-label="Clear search"
+					title="Clear search"
+				>
+					<i class="ph ph-x" aria-hidden="true"></i>
+				</button>
+			{/if}
+			<button
+				type="button"
+				class="gu-search__submit"
+				onclick={runSearch}
+				disabled={loading}
+				aria-label="Run search"
+			>
+				Search
+			</button>
+		</div>
+	</div>
+
 	<AddAdminModal
 		bind:open={showAddAdmin}
 		onClose={() => (showAddAdmin = false)}
 		onGranted={(em) => {
 			flashOk = `${em} granted admin access.`;
 			showAddAdmin = false;
+		}}
+	/>
+
+	<EditAdminModal
+		bind:open={showEditAdmin}
+		admin={editingAdmin}
+		onClose={closeEditAdmin}
+		onSaved={(patch) => {
+			applyAdminPatchLocally(patch);
+			flashOk = `Saved changes for ${patch.email || patch.id}.`;
 		}}
 	/>
 
@@ -711,6 +752,20 @@
 
 									{#if openMenuFor === row.id}
 										<div class="gu-menu" role="menu" data-user-menu>
+											<!-- Strike 1 — Edit Admin entry point. Visible for any user;
+											     mutates users/{id} and patches local $state immediately. -->
+											<button
+												type="button"
+												class="gu-menu__item"
+												role="menuitem"
+												onclick={() => openEditAdmin(row)}
+											>
+												<i class="ph ph-pencil-simple" aria-hidden="true"></i>
+												<span>Edit {row.role === 'global_admin' || row.role === 'super_admin' ? 'Admin' : 'User'}</span>
+											</button>
+
+											<div class="gu-menu__sep" aria-hidden="true"></div>
+
 											<button
 												type="button"
 												class="gu-menu__item"
@@ -937,7 +992,23 @@
 
 	:global(html.dark) .gu-sub { color: #d4d4d8; }
 
-	.gu-head__right { flex: 0 1 auto; min-width: 260px; }
+	/* Strike 1 — Page Actions slot: primary CTAs pinned top-right, away from
+	   the DataTable search row. */
+	.gu-page-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		flex: 0 0 auto;
+		justify-content: flex-end;
+	}
+
+	/* Strike 1 — Dedicated toolbar row above the table. Owns search exclusively. */
+	.gu-toolbar {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
 
 	.gu-search {
 		display: flex;
@@ -1015,14 +1086,15 @@
 	.gu-search__submit:hover:not(:disabled) { filter: brightness(1.05); }
 	.gu-search__submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-	/* Sprint 2.6.5 — Grant Global Admin entry (moved from System Settings) */
+	/* Sprint 2.6.5 — Grant Global Admin entry (moved from System Settings).
+	   Strike 1 — button now lives inside `.gu-page-actions`, so left-margin
+	   coupling is removed. */
 	.gu-add-admin-btn {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		height: 38px;
 		padding: 0 16px;
-		margin-left: 8px;
 		border-radius: 8px;
 		border: 1px solid #4338ca;
 		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
@@ -1685,7 +1757,10 @@
 	@media (max-width: 640px) {
 		.gu-root { padding: 16px; }
 		.gu-head { flex-direction: column; align-items: stretch; }
-		.gu-head__right { min-width: 0; }
+		.gu-page-actions { justify-content: stretch; }
+		.gu-page-actions .gu-add-admin-btn { width: 100%; justify-content: center; }
+		.gu-toolbar { flex-direction: column; align-items: stretch; }
+		.gu-search { width: 100%; }
 		.gu-name__primary,
 		.gu-name__email { max-width: 180px; }
 	}

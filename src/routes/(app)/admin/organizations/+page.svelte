@@ -21,6 +21,7 @@
 	} from '$lib/utils/sport-icon.js';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
+	import EditOrganizationModal from '$lib/components/admin/EditOrganizationModal.svelte';
 	import '$lib/styles/enterprise-console.css';
 
 	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
@@ -146,6 +147,50 @@
 	/** @type {'all' | 'soccer' | 'basketball' | 'baseball' | 'football' | 'volleyball' | 'hockey' | 'lacrosse' | 'generic'} */
 	let activeSportTab = $state('all');
 
+	// ── Strike 1: Enterprise Filter popover (Status + Sport) ─────────────────
+	let filterOpen      = $state(false);
+	/** @type {'all' | 'compliant' | 'watch' | 'risk' | 'na'} */
+	let filterStatus    = $state('all');
+	/** Mirrors `activeSportTab` but exposed through the popover; one source of
+	 *  truth = activeSportTab. Keeping the popover state separate would desync. */
+	/** @type {HTMLElement | null} */
+	let filterRootEl    = $state(null);
+
+	/** Count of non-default filters (used for the pill badge). */
+	const filterActiveCount = $derived.by(() => {
+		let n = 0;
+		if (filterStatus !== 'all') n++;
+		if (activeSportTab !== 'all') n++;
+		return n;
+	});
+
+	function toggleFilter() { filterOpen = !filterOpen; }
+	function closeFilter() { filterOpen = false; }
+
+	function resetFilters() {
+		filterStatus   = 'all';
+		activeSportTab = 'all';
+	}
+
+	/** Global click-outside + Escape handlers are wired while the popover is open. */
+	$effect(() => {
+		if (!filterOpen) return;
+		/** @param {MouseEvent} ev */
+		const onDocClick = (ev) => {
+			const tgt = /** @type {Node | null} */ (ev.target);
+			if (!filterRootEl || !tgt) return;
+			if (!filterRootEl.contains(tgt)) closeFilter();
+		};
+		/** @param {KeyboardEvent} ev */
+		const onKey = (ev) => { if (ev.key === 'Escape') closeFilter(); };
+		document.addEventListener('mousedown', onDocClick);
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('mousedown', onDocClick);
+			document.removeEventListener('keydown', onKey);
+		};
+	});
+
 	/** Sport sub-nav tab definitions (CTO mandate: strict, finite tabstrip). */
 	const SPORT_TABS = /** @type {const} */ ([
 		{ key: 'all',        label: 'All',        icon: 'ph-squares-four'  },
@@ -182,10 +227,30 @@
 		return clubs.filter((cl) => normalizeClubSport(cl?.sport) === activeSportTab);
 	});
 
+	/**
+	 * Derive the public compliance bucket used by the Enterprise Filter.
+	 * Mirrors the render-side logic in the DataTable: no compliance map entry
+	 * + isInfinite → 'na'; map entry drives 'compliant' / 'watch' / 'risk';
+	 * the default bucket when no minors are on file is 'compliant'.
+	 * @param {Club} cl
+	 * @returns {'compliant' | 'watch' | 'risk' | 'na'}
+	 */
+	function bucketForClub(cl) {
+		const compliance = complianceMap.get(cl.id) ?? null;
+		if (cl.isInfinite === true && !compliance) return 'na';
+		if (!compliance) return 'compliant';
+		if (compliance.status === 'clean') return 'compliant';
+		if (compliance.status === 'watch') return 'watch';
+		return 'risk';
+	}
+
 	const filteredClubs = $derived.by(() => {
 		const q = orgSearch.trim().toLowerCase();
-		if (!q) return clubsBySport;
-		return clubsBySport.filter((cl) => {
+		const base = filterStatus === 'all'
+			? clubsBySport
+			: clubsBySport.filter((cl) => bucketForClub(cl) === filterStatus);
+		if (!q) return base;
+		return base.filter((cl) => {
 			return (
 				(cl.name || '').toLowerCase().includes(q) ||
 				cl.id.toLowerCase().includes(q) ||
@@ -332,6 +397,61 @@
 		}
 	}
 
+	// ── Strike 1 (Agent 2): row action menu + Edit Organization modal ───────
+	/** @type {string | null} */
+	let openRowMenuId  = $state(null);
+	/** @type {Club | null} */
+	let editingClub    = $state(null);
+	let showEditModal  = $state(false);
+
+	/** @param {string} id */
+	function toggleRowMenu(id) {
+		openRowMenuId = openRowMenuId === id ? null : id;
+	}
+	function closeRowMenu() {
+		openRowMenuId = null;
+	}
+
+	/** Global click-outside + Escape for the row-action menu. */
+	$effect(() => {
+		if (!openRowMenuId) return;
+		/** @param {MouseEvent} ev */
+		const onDocClick = (ev) => {
+			const tgt = /** @type {Element | null} */ (ev.target);
+			if (!tgt) return;
+			if (!tgt.closest?.('.orgs3-row-menu') && !tgt.closest?.('.orgs3-row-actions-btn')) {
+				closeRowMenu();
+			}
+		};
+		/** @param {KeyboardEvent} ev */
+		const onKey = (ev) => { if (ev.key === 'Escape') closeRowMenu(); };
+		document.addEventListener('mousedown', onDocClick);
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('mousedown', onDocClick);
+			document.removeEventListener('keydown', onKey);
+		};
+	});
+
+	/** @param {Club} cl */
+	function openEdit(cl) {
+		editingClub = cl;
+		showEditModal = true;
+		closeRowMenu();
+	}
+
+	function closeEdit() {
+		showEditModal = false;
+		editingClub = null;
+	}
+
+	/** Reactivity mandate (P0): patch the local `clubs` array so the UI
+	 *  reflects edits immediately without a page reload. */
+	/** @param {Club} updated */
+	function applyClubPatchLocally(updated) {
+		clubs = clubs.map((c) => (c.id === updated.id ? { ...c, ...updated } : c));
+	}
+
 	/**
 	 * @param {string} id
 	 * @param {string} name
@@ -368,6 +488,109 @@
 					aria-label="Filter organizations"
 				/>
 			</div>
+
+			<!-- Strike 1 — Enterprise Filter popover (Status + Sport) -->
+			<div class="orgs3-filter" bind:this={filterRootEl}>
+				<button
+					type="button"
+					class="orgs3-filter-btn"
+					class:orgs3-filter-btn--active={filterOpen || filterActiveCount > 0}
+					aria-haspopup="dialog"
+					aria-expanded={filterOpen}
+					onclick={toggleFilter}
+				>
+					<i class="ph ph-funnel" aria-hidden="true"></i>
+					<span>Enterprise Filter</span>
+					{#if filterActiveCount > 0}
+						<span class="orgs3-filter-badge" aria-label="{filterActiveCount} active filters">
+							{filterActiveCount}
+						</span>
+					{/if}
+				</button>
+
+				{#if filterOpen}
+					<div class="orgs3-filter-pop" role="dialog" aria-label="Enterprise Filter">
+						<div class="orgs3-filter-pop__head">
+							<span class="orgs3-filter-pop__title">Filter Organizations</span>
+							<button
+								type="button"
+								class="orgs3-filter-pop__close"
+								onclick={closeFilter}
+								aria-label="Close filter"
+							>
+								<i class="ph ph-x" aria-hidden="true"></i>
+							</button>
+						</div>
+
+						<fieldset class="orgs3-filter-group">
+							<legend class="orgs3-filter-group__legend">Compliance Status</legend>
+							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Compliance Status">
+								{#each [
+									{ key: 'all',       label: 'All',       dot: '#a1a1aa' },
+									{ key: 'compliant', label: 'Compliant', dot: '#22c55e' },
+									{ key: 'watch',     label: 'Watch',     dot: '#f59e0b' },
+									{ key: 'risk',      label: 'At Risk',   dot: '#ef4444' },
+									{ key: 'na',        label: 'N/A',       dot: '#64748b' }
+								] as opt (opt.key)}
+									<button
+										type="button"
+										role="radio"
+										aria-checked={filterStatus === opt.key}
+										class="orgs3-filter-chip"
+										class:orgs3-filter-chip--active={filterStatus === opt.key}
+										onclick={() => (filterStatus = /** @type {any} */ (opt.key))}
+									>
+										<span class="orgs3-filter-chip__dot" style="background:{opt.dot};"></span>
+										{opt.label}
+									</button>
+								{/each}
+							</div>
+						</fieldset>
+
+						<fieldset class="orgs3-filter-group">
+							<legend class="orgs3-filter-group__legend">Sport</legend>
+							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Sport">
+								{#each SPORT_TABS as opt (opt.key)}
+									{@const count = sportCounts[opt.key] ?? 0}
+									{#if opt.key === 'all' || count > 0}
+										<button
+											type="button"
+											role="radio"
+											aria-checked={activeSportTab === opt.key}
+											class="orgs3-filter-chip"
+											class:orgs3-filter-chip--active={activeSportTab === opt.key}
+											onclick={() => (activeSportTab = /** @type {any} */ (opt.key))}
+										>
+											<i class="ph {opt.icon}" aria-hidden="true"></i>
+											{opt.label}
+											<span class="orgs3-filter-chip__count">{count}</span>
+										</button>
+									{/if}
+								{/each}
+							</div>
+						</fieldset>
+
+						<div class="orgs3-filter-pop__foot">
+							<button
+								type="button"
+								class="orgs3-filter-reset"
+								onclick={resetFilters}
+								disabled={filterActiveCount === 0}
+							>
+								Reset
+							</button>
+							<button
+								type="button"
+								class="orgs3-filter-apply"
+								onclick={closeFilter}
+							>
+								Done
+							</button>
+						</div>
+					</div>
+				{/if}
+			</div>
+
 			<button
 				type="button"
 				class="orgs3-add-btn"
@@ -670,23 +893,58 @@
 								{/if}
 							</td>
 
-							<!-- Actions -->
+							<!-- Actions (Strike 1 — unified row dropdown with Edit) -->
 							<td class="orgs3-dt__td orgs3-dt__td--actions">
-								<a
-									class="orgs3-view-btn"
-									href="/admin/organizations/{cl.id}"
-									aria-label="View {cl.name || cl.id}"
-								>
-									View <i class="ph ph-arrow-right" aria-hidden="true"></i>
-								</a>
-								<button
-									type="button"
-									class="orgs3-del-btn"
-									onclick={() => deleteClub(cl.id, cl.name || cl.id)}
-									aria-label="Delete {cl.name || cl.id}"
-								>
-									<i class="ph ph-trash" aria-hidden="true"></i>
-								</button>
+								<div class="orgs3-row-action-wrap">
+									<a
+										class="orgs3-view-btn"
+										href="/admin/organizations/{cl.id}"
+										aria-label="View {cl.name || cl.id}"
+									>
+										View <i class="ph ph-arrow-right" aria-hidden="true"></i>
+									</a>
+									<button
+										type="button"
+										class="orgs3-row-actions-btn"
+										aria-haspopup="menu"
+										aria-expanded={openRowMenuId === cl.id}
+										aria-label="Actions for {cl.name || cl.id}"
+										onclick={(e) => { e.stopPropagation(); toggleRowMenu(cl.id); }}
+									>
+										<i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+									</button>
+									{#if openRowMenuId === cl.id}
+										<div class="orgs3-row-menu" role="menu">
+											<button
+												type="button"
+												role="menuitem"
+												class="orgs3-row-menu__item"
+												onclick={() => openEdit(cl)}
+											>
+												<i class="ph ph-pencil-simple" aria-hidden="true"></i>
+												Edit Organization
+											</button>
+											<a
+												role="menuitem"
+												class="orgs3-row-menu__item"
+												href="/admin/organizations/{cl.id}"
+												onclick={closeRowMenu}
+											>
+												<i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+												Open Details
+											</a>
+											<button
+												type="button"
+												role="menuitem"
+												class="orgs3-row-menu__item orgs3-row-menu__item--danger"
+												onclick={() => { closeRowMenu(); void deleteClub(cl.id, cl.name || cl.id); }}
+											>
+												<i class="ph ph-trash" aria-hidden="true"></i>
+												Delete Organization
+											</button>
+										</div>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}
@@ -694,6 +952,16 @@
 			</tbody>
 		</table>
 	</div>
+
+	<!-- Strike 1 — Edit Organization modal (live $state patch via applyClubPatchLocally). -->
+	<EditOrganizationModal
+		bind:open={showEditModal}
+		club={editingClub}
+		onClose={closeEdit}
+		onSaved={(updated) => {
+			applyClubPatchLocally(updated);
+		}}
+	/>
 
 	<!-- ── Pagination ─────────────────────────────────────────────────────────── -->
 	{#if orgTotalPages > 1}
@@ -838,6 +1106,279 @@
 	}
 
 	.orgs3-search--sm { width: 200px; }
+
+	/* ── Strike 1: Enterprise Filter popover ─────────────────────────── */
+	.orgs3-filter {
+		position: relative;
+		display: inline-flex;
+	}
+
+	.orgs3-filter-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: 38px;
+		padding: 0 14px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.12s ease, border-color 0.12s ease;
+	}
+
+	.orgs3-filter-btn:hover,
+	.orgs3-filter-btn--active {
+		border-color: #4f46e5;
+		background: rgba(79, 70, 229, 0.08);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .orgs3-filter-btn {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+	}
+
+	:global(html.dark) .orgs3-filter-btn:hover,
+	:global(html.dark) .orgs3-filter-btn--active {
+		background: rgba(124, 58, 237, 0.18);
+		border-color: #7c3aed;
+	}
+
+	.orgs3-filter-btn i {
+		font-size: 1rem;
+	}
+
+	.orgs3-filter-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 18px;
+		height: 18px;
+		padding: 0 5px;
+		border-radius: 999px;
+		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+		color: #fff;
+		font-size: 0.6875rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	.orgs3-filter-pop {
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		width: 340px;
+		max-width: calc(100vw - 24px);
+		background: var(--glass-bg, #fff);
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 12px;
+		box-shadow: 0 18px 40px -12px rgba(15, 23, 42, 0.18);
+		padding: 14px 14px 12px;
+		z-index: 80;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	:global(html.dark) .orgs3-filter-pop {
+		background: #0f0f11;
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55);
+	}
+
+	.orgs3-filter-pop__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.orgs3-filter-pop__title {
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		color: var(--text-primary);
+	}
+
+	.orgs3-filter-pop__close {
+		width: 26px;
+		height: 26px;
+		border-radius: 6px;
+		border: 1px solid transparent;
+		background: transparent;
+		color: var(--text-secondary);
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.orgs3-filter-pop__close:hover {
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .orgs3-filter-pop__close:hover {
+		background: rgba(255, 255, 255, 0.06);
+		color: #fafafa;
+	}
+
+	.orgs3-filter-group {
+		border: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.orgs3-filter-group__legend {
+		padding: 0;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+
+	.orgs3-filter-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.orgs3-filter-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 28px;
+		padding: 0 10px;
+		border-radius: 999px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.12s ease, border-color 0.12s ease;
+	}
+
+	.orgs3-filter-chip:hover {
+		border-color: #a1a1aa;
+	}
+
+	.orgs3-filter-chip--active {
+		border-color: #4f46e5;
+		background: rgba(79, 70, 229, 0.12);
+		color: #312e81;
+	}
+
+	:global(html.dark) .orgs3-filter-chip {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+	}
+
+	:global(html.dark) .orgs3-filter-chip--active {
+		background: rgba(124, 58, 237, 0.22);
+		border-color: #7c3aed;
+		color: #fafafa;
+	}
+
+	.orgs3-filter-chip__dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		display: inline-block;
+	}
+
+	.orgs3-filter-chip__count {
+		font-size: 0.6875rem;
+		font-weight: 700;
+		color: var(--text-secondary);
+		background: rgba(0, 0, 0, 0.05);
+		padding: 1px 6px;
+		border-radius: 999px;
+	}
+
+	:global(html.dark) .orgs3-filter-chip__count {
+		background: rgba(255, 255, 255, 0.08);
+		color: #d4d4d8;
+	}
+
+	.orgs3-filter-chip--active .orgs3-filter-chip__count {
+		background: rgba(79, 70, 229, 0.18);
+		color: #312e81;
+	}
+
+	:global(html.dark) .orgs3-filter-chip--active .orgs3-filter-chip__count {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fafafa;
+	}
+
+	.orgs3-filter-pop__foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		margin-top: 4px;
+		padding-top: 10px;
+		border-top: 1px solid var(--border-subtle, #e5e5e5);
+	}
+
+	:global(html.dark) .orgs3-filter-pop__foot {
+		border-top-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.orgs3-filter-reset {
+		height: 32px;
+		padding: 0 12px;
+		border-radius: 8px;
+		border: 1px solid transparent;
+		background: transparent;
+		color: var(--text-secondary);
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.orgs3-filter-reset:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.orgs3-filter-reset:hover:not(:disabled) {
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .orgs3-filter-reset:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.06);
+		color: #fafafa;
+	}
+
+	.orgs3-filter-apply {
+		height: 32px;
+		padding: 0 16px;
+		border-radius: 8px;
+		border: 1px solid #4338ca;
+		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+		color: #fff;
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.orgs3-filter-apply:hover {
+		filter: brightness(1.06);
+	}
 
 	/* ── Sprint 2.6.5: Sport sub-navigation tab strip ───────────────── */
 	.orgs3-tabs {
@@ -1476,6 +2017,116 @@
 	}
 
 	:global(html.dark) .orgs3-del-btn { color: rgba(255, 255, 255, 0.25); }
+
+	/* ── Strike 1: row action dropdown (kebab menu) ──────────────────── */
+	.orgs3-row-action-wrap {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.orgs3-row-actions-btn {
+		width: 28px;
+		height: 28px;
+		border-radius: 6px;
+		border: 1px solid transparent;
+		background: transparent;
+		color: var(--text-secondary);
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.orgs3-row-actions-btn:hover {
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .orgs3-row-actions-btn {
+		color: #d4d4d8;
+	}
+
+	:global(html.dark) .orgs3-row-actions-btn:hover {
+		background: rgba(255, 255, 255, 0.08);
+		color: #fafafa;
+	}
+
+	.orgs3-row-menu {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 6px);
+		min-width: 200px;
+		background: #ffffff;
+		border: 1px solid #e4e4e7;
+		border-radius: 10px;
+		box-shadow: 0 14px 34px -10px rgba(15, 23, 42, 0.22);
+		padding: 6px;
+		z-index: 60;
+		display: flex;
+		flex-direction: column;
+	}
+
+	:global(html.dark) .orgs3-row-menu {
+		background: #0f0f11;
+		border-color: rgba(255, 255, 255, 0.12);
+		box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.55);
+	}
+
+	.orgs3-row-menu__item {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 10px;
+		border-radius: 6px;
+		border: none;
+		background: transparent;
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text-primary);
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.orgs3-row-menu__item i {
+		font-size: 1rem;
+		color: var(--text-secondary);
+	}
+
+	.orgs3-row-menu__item:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	:global(html.dark) .orgs3-row-menu__item {
+		color: #fafafa;
+	}
+
+	:global(html.dark) .orgs3-row-menu__item:hover {
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	.orgs3-row-menu__item--danger {
+		color: #b91c1c;
+	}
+
+	.orgs3-row-menu__item--danger i {
+		color: #b91c1c;
+	}
+
+	.orgs3-row-menu__item--danger:hover {
+		background: rgba(185, 28, 28, 0.08);
+	}
+
+	:global(html.dark) .orgs3-row-menu__item--danger {
+		color: #fca5a5;
+	}
+
+	:global(html.dark) .orgs3-row-menu__item--danger i {
+		color: #fca5a5;
+	}
 
 	/* ── Pagination ─────────────────────────────────────────────────── */
 	.orgs3-pager {

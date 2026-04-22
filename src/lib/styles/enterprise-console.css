@@ -262,10 +262,63 @@ html.dark .ec-sidebar {
 	max-width: 100%;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	flex-shrink: 0;
+	/* Sprint — Strike 1: Context Switcher hover bleed (P0 FATAL).
+	   The brand slot hosts the workspace context switcher trigger. Its hover
+	   background would previously paint past the sidebar rail because no
+	   component clipped it. Paint containment + hard overflow hides any
+	   pseudo-element or hover box that tries to escape the sidebar width. */
+	overflow: hidden;
+	box-sizing: border-box;
+	contain: paint;
 }
 
 html.dark .ec-sidebar__brand {
 	border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   Strike 1: Global lockdown for the Workspace Context Switcher inside the
+   sidebar. These rules guarantee the trigger + all its descendants obey the
+   border-box model, never exceed the sidebar's pixel width, never carry
+   negative margins, and never project hover/focus paint past the rail. They
+   live in the shared enterprise stylesheet so the rule set survives any
+   component-level refactors.
+   --------------------------------------------------------------------------- */
+.ec-sidebar__brand--switcher,
+.ec-sidebar__brand--switcher *,
+.ec-sidebar__brand--switcher *::before,
+.ec-sidebar__brand--switcher *::after {
+	box-sizing: border-box;
+	max-width: 100%;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+/* Kill the trigger's ability to bleed horizontally under any layout pressure. */
+.ec-sidebar__brand--switcher .ec-ws,
+.ec-sidebar__brand--switcher .ec-ws__trigger {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	margin: 0;
+	box-sizing: border-box;
+	contain: paint;
+}
+
+.ec-sidebar__brand--switcher .ec-ws__trigger:hover,
+.ec-sidebar__brand--switcher .ec-ws__trigger:focus,
+.ec-sidebar__brand--switcher .ec-ws__trigger:focus-visible,
+.ec-sidebar__brand--switcher .ec-ws__trigger:active {
+	margin: 0;
+	max-width: 100%;
+	outline: none;
+	box-shadow: none;
+}
+
+/* Focus-visible ring is drawn inside the button so it never clips across the
+   sidebar border onto the main canvas. */
+.ec-sidebar__brand--switcher .ec-ws__trigger:focus-visible {
+	box-shadow: inset 0 0 0 2px var(--focus-ring-color, rgba(99, 102, 241, 0.35));
 }
 
 .ec-sidebar__title {

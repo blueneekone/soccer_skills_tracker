@@ -157,7 +157,9 @@
 		min-width: 0;
 	}
 
-	/* w-full + box-border — keeps trigger inside sidebar rail */
+	/* w-full + box-border — keeps trigger inside sidebar rail.
+	   Strike 1: zero margins everywhere + contain paint so the hover
+	   rectangle and caret pseudo-elements can never exceed the rail width. */
 	.ec-ws__trigger {
 		display: flex;
 		align-items: center;
@@ -175,10 +177,20 @@
 		text-align: left;
 		border-radius: 0;
 		box-sizing: border-box;
+		overflow: hidden;
+		contain: paint;
 	}
 
 	.ec-ws__trigger > :global(:first-child) {
 		flex-shrink: 0;
+	}
+
+	.ec-ws__trigger:hover,
+	.ec-ws__trigger:focus,
+	.ec-ws__trigger:focus-visible,
+	.ec-ws__trigger:active {
+		margin: 0;
+		max-width: 100%;
 	}
 
 	.ec-ws__trigger:hover {
