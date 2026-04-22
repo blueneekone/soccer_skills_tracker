@@ -13,7 +13,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
@@ -65,12 +64,24 @@
 			.then(([clubsSnap, vpcSnap]) => {
 				if (cancelled) return;
 
-				// Build clubs array
-				/** @type {Club[]} */
-				const loaded = [];
-				clubsSnap.forEach((d) => {
-					loaded.push({ id: d.id, .../** @type {Omit<Club,'id'>} */ (d.data()) });
+			// Build clubs array — normalize every field so legacy documents with missing
+			// fields (e.g. no `sport` key) never cause the {#each} renderer to throw.
+			/** @type {Club[]} */
+			const loaded = [];
+			clubsSnap.forEach((d) => {
+				const raw = /** @type {Record<string, unknown>} */ (d.data());
+				loaded.push({
+					id: d.id,
+					name:          typeof raw.name          === 'string' ? raw.name.trim()          : undefined,
+					sport:         typeof raw.sport         === 'string' && raw.sport.trim()
+					               ? raw.sport.trim()
+					               : undefined,          // intentionally undefined → renders as '—' downstream
+					directorEmail: typeof raw.directorEmail === 'string' ? raw.directorEmail.trim() : undefined,
+					isInfinite:    raw.isInfinite === true,
+					logoUrl:       typeof raw.logoUrl       === 'string' ? raw.logoUrl.trim()       : undefined,
+					createdAt:     raw.createdAt,
 				});
+			});
 				clubs = loaded.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
 
 				// Build compliance map from vpc_requests
@@ -248,134 +259,6 @@
 		clubs = clubs.filter((cl) => cl.id !== id);
 	}
 
-	// ── Platform Roster ───────────────────────────────────────────────────────────
-	/** @typedef {{ id: string, displayName: string, teamId: string, teamLabel: string, statsDocId: string, playerEmail: string, ageGroup: string | null, lastActiveLabel: string }} PlatformPlayerRow */
-
-	/** @type {PlatformPlayerRow[]} */
-	let platformPlayers = $state([]);
-	let platformLoading = $state(false);
-	let platformErr     = $state('');
-	let rosterSearch    = $state('');
-	let rosterPage      = $state(0);
-	let rosterVisible   = $state(false);
-
-	$effect(() => {
-		void rosterSearch;
-		rosterPage = 0;
-	});
-
-	$effect(() => {
-		if (!rosterVisible || authStore.role !== 'super_admin') return;
-		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		if (platformPlayers.length > 0 || platformLoading) return;
-		let cancelled = false;
-		platformLoading = true;
-		platformErr = '';
-		void loadPlatformRoster(cancelled).finally(() => {
-			if (!cancelled) platformLoading = false;
-		});
-		return () => { cancelled = true; };
-	});
-
-	/** @param {boolean} cancelledRef */
-	async function loadPlatformRoster(cancelledRef) {
-		try {
-			const lookupSnap = await getDocs(collection(db, 'player_lookup'));
-			if (cancelledRef) return;
-			const teamNameById = Object.fromEntries(teamsStore.teams.map((t) => [t.id, t.name || t.id]));
-			const uniqueTeamIds = new Set();
-			/** @type {Array<{ playerName: string, email: string, teamId: string, teamLabel: string }>} */
-			const raw = [];
-			lookupSnap.forEach((d) => {
-				const data = d.data();
-				const teamId     = typeof data.teamId === 'string' ? data.teamId : '';
-				const playerName = typeof data.playerName === 'string' && data.playerName.trim() ? data.playerName.trim() : '';
-				if (!playerName) return;
-				uniqueTeamIds.add(teamId);
-				raw.push({ playerName, email: d.id, teamId, teamLabel: teamNameById[teamId] || teamId || '—' });
-			});
-
-			/** @type {Record<string, Record<string, { id: string, data: Record<string,unknown> }>>} */
-			const statsByTeam = {};
-			for (const tid of uniqueTeamIds) {
-				if (!tid) continue;
-				const sq = query(collection(db, 'player_stats'), where('teamId', '==', tid));
-				const sSnap = await getDocs(sq);
-				if (cancelledRef) return;
-				statsByTeam[tid] = {};
-				sSnap.forEach((sd) => {
-					const dat = sd.data();
-					const entry = { id: sd.id, data: dat };
-					statsByTeam[tid][sd.id] = entry;
-					const pn = typeof dat.playerName === 'string' ? dat.playerName.trim() : '';
-					if (pn) statsByTeam[tid][`n:${pn}`] = entry;
-				});
-			}
-
-			platformPlayers = raw
-				.map((r) => {
-					const teamStats = statsByTeam[r.teamId] || {};
-					const pick = teamStats[`n:${r.playerName}`] || teamStats[r.email];
-					const st = pick?.data;
-					return {
-						id: `${r.teamId}_${r.playerName}_${r.email}`,
-						displayName: r.playerName,
-						teamId: r.teamId,
-						teamLabel: r.teamLabel,
-						statsDocId: pick?.id || r.email,
-						playerEmail: r.email,
-						ageGroup: parseAgeFromTeamName(r.teamLabel),
-						lastActiveLabel: formatLastActiveLabel(st),
-					};
-				})
-				.sort((a, b) => a.teamLabel.localeCompare(b.teamLabel) || a.displayName.localeCompare(b.displayName));
-		} catch (e) {
-			if (cancelledRef) return;
-			platformErr = e instanceof Error ? e.message : 'Could not load platform roster.';
-			platformPlayers = [];
-		}
-	}
-
-	/** @param {string} n */
-	function parseAgeFromTeamName(n) {
-		if (!n) return null;
-		const m = String(n).match(/\bU\s*(\d{1,2})\b/i);
-		return m ? `U${m[1]}` : null;
-	}
-
-	/** @param {Record<string,unknown> | undefined} stats */
-	function formatLastActiveLabel(stats) {
-		if (!stats) return '—';
-		const la = stats.lastActive;
-		if (la && typeof la === 'object' && 'toDate' in la && typeof la.toDate === 'function') {
-			try { return /** @type {() => Date} */ (/** @type {Record<string,unknown>} */ (la)['toDate']).call(la).toLocaleDateString(); } catch { /* — */ }
-		}
-		if (typeof stats.last_training_utc === 'string') return stats.last_training_utc;
-		return '—';
-	}
-
-	const filteredRoster = $derived.by(() => {
-		const q = rosterSearch.trim().toLowerCase();
-		if (!q) return platformPlayers;
-		return platformPlayers.filter((row) =>
-			[row.displayName, row.teamLabel, row.playerEmail, row.ageGroup || ''].join(' ').toLowerCase().includes(q),
-		);
-	});
-
-	const rosterTotalPages = $derived(Math.max(1, Math.ceil(filteredRoster.length / PAGE_SIZE)));
-	const pagedRoster      = $derived.by(() => filteredRoster.slice(rosterPage * PAGE_SIZE, (rosterPage + 1) * PAGE_SIZE));
-
-	$effect(() => {
-		if (rosterPage > rosterTotalPages - 1) rosterPage = Math.max(0, rosterTotalPages - 1);
-	});
-
-	/** @param {PlatformPlayerRow} row */
-	function openAdminPlayer(row) {
-		enterprisePlayerDrawer.open(
-			{ ...row, source: 'admin' },
-			{ editProfile: () => { if (row.playerEmail) window.location.href = `mailto:${row.playerEmail}`; } },
-		);
-	}
 </script>
 
 <div class="orgs3-page">
@@ -549,9 +432,9 @@
 								{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
 									<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 								{:else}
-									<span class="orgs3-logo-fallback" aria-hidden="true">
-										<i class="ph {clubSportIconClass(cl.sport)}"></i>
-									</span>
+								<span class="orgs3-logo-fallback" aria-hidden="true">
+									<i class="ph {clubSportIconClass(cl.sport ?? 'generic')}"></i>
+								</span>
 								{/if}
 							</td>
 
@@ -662,94 +545,6 @@
 		</div>
 	{/if}
 
-	<!-- ── Platform Roster (collapsible) ──────────────────────────────────────── -->
-	<div class="orgs3-section-toggle">
-		<button
-			type="button"
-			class="orgs3-section-toggle__btn"
-			onclick={() => (rosterVisible = !rosterVisible)}
-			aria-expanded={rosterVisible}
-		>
-			<i class="ph {rosterVisible ? 'ph-caret-up' : 'ph-caret-down'}" aria-hidden="true"></i>
-			Platform Roster
-			{#if platformPlayers.length > 0}
-				<span class="orgs3-section-toggle__count">{platformPlayers.length}</span>
-			{/if}
-		</button>
-	</div>
-
-	{#if rosterVisible}
-		<div class="orgs3-roster">
-			{#if authStore.role !== 'super_admin'}
-				<p class="orgs3-roster__guard">Super admin access required.</p>
-			{:else if platformLoading}
-				<p class="orgs3-roster__loading">Loading roster…</p>
-			{:else if platformErr}
-				<p class="orgs3-roster__err" role="alert">{platformErr}</p>
-			{:else}
-				<div class="orgs3-roster-toolbar">
-					<input
-						type="search"
-						class="orgs3-search orgs3-search--sm"
-						bind:value={rosterSearch}
-						placeholder="Filter roster…"
-						autocomplete="off"
-						aria-label="Filter roster"
-					/>
-				</div>
-
-				<div class="orgs3-dt-container">
-					<table class="orgs3-dt" aria-label="Platform roster">
-						<thead class="orgs3-dt__head">
-							<tr>
-								<th class="orgs3-dt__th" scope="col">Player</th>
-								<th class="orgs3-dt__th" scope="col">Team</th>
-								<th class="orgs3-dt__th" scope="col">Age Group</th>
-								<th class="orgs3-dt__th" scope="col">Status</th>
-								<th class="orgs3-dt__th" scope="col">Last Active</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#if pagedRoster.length === 0}
-								<tr>
-									<td colspan="5" class="orgs3-dt__td-empty">
-										{platformPlayers.length === 0 ? 'No players in player_lookup.' : 'No players match your filter.'}
-									</td>
-								</tr>
-							{:else}
-								{#each pagedRoster as row (row.id)}
-									<tr
-										class="orgs3-dt__row orgs3-dt__row--clickable"
-										onclick={() => openAdminPlayer(row)}
-										onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAdminPlayer(row); }}}
-										role="button"
-										tabindex="0"
-									>
-										<td class="orgs3-dt__td">
-											<span class="orgs3-player-name">{row.displayName}</span>
-											<span class="orgs3-player-email">{row.playerEmail}</span>
-										</td>
-										<td class="orgs3-dt__td orgs3-dt__td--muted">{row.teamLabel}</td>
-										<td class="orgs3-dt__td orgs3-dt__td--muted">{row.ageGroup || '—'}</td>
-										<td class="orgs3-dt__td"><span class="ec-pill ec-pill--ok">Active</span></td>
-										<td class="orgs3-dt__td orgs3-dt__td--muted">{row.lastActiveLabel}</td>
-									</tr>
-								{/each}
-							{/if}
-						</tbody>
-					</table>
-				</div>
-
-				{#if rosterTotalPages > 1}
-					<div class="orgs3-pager" role="navigation" aria-label="Roster pagination">
-						<button type="button" class="orgs3-page-btn" disabled={rosterPage <= 0} onclick={() => (rosterPage = Math.max(0, rosterPage - 1))}>← Prev</button>
-						<span class="orgs3-page-info">Page {rosterPage + 1} / {rosterTotalPages} <span class="orgs3-page-count">({filteredRoster.length} players)</span></span>
-						<button type="button" class="orgs3-page-btn" disabled={rosterPage >= rosterTotalPages - 1} onclick={() => (rosterPage = Math.min(rosterTotalPages - 1, rosterPage + 1))}>Next →</button>
-					</div>
-				{/if}
-			{/if}
-		</div>
-	{/if}
 
 </div>
 
@@ -845,9 +640,10 @@
 	}
 
 	:global(html.dark) .orgs3-search {
-		background: #0f0f11;
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #f4f4f5;
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 	}
 
 	.orgs3-search--sm { width: 200px; }
@@ -878,8 +674,8 @@
 
 	:global(html.dark) .orgs3-add-btn {
 		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #f4f4f5;
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
 	}
 
 	/* ── Inline add form ────────────────────────────────────────────── */
@@ -980,9 +776,10 @@
 	.orgs3-input:disabled { opacity: 0.55; cursor: not-allowed; }
 
 	:global(html.dark) .orgs3-input {
-		background: #0f0f11;
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #f4f4f5;
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 	}
 
 	.orgs3-req { color: var(--danger-red, #b91c1c); margin-left: 2px; }
@@ -1338,86 +1135,6 @@
 	}
 
 	.orgs3-page-count { font-size: 0.75rem; opacity: 0.8; margin-left: 4px; }
-
-	/* ── Section toggle (Platform Roster) ──────────────────────────── */
-	.orgs3-section-toggle {
-		padding: 16px 0 0;
-		border-top: 1px solid var(--border-subtle, #e5e5e5);
-		margin-top: 2px;
-	}
-
-	:global(html.dark) .orgs3-section-toggle {
-		border-top-color: rgba(255, 255, 255, 0.07);
-	}
-
-	.orgs3-section-toggle__btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		background: none;
-		border: none;
-		cursor: pointer;
-		font: inherit;
-		font-size: 0.8125rem;
-		font-weight: 700;
-		color: var(--text-secondary);
-		padding: 0;
-		transition: color 0.1s ease;
-	}
-
-	.orgs3-section-toggle__btn:hover { color: var(--text-primary); }
-
-	.orgs3-section-toggle__count {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 20px;
-		height: 18px;
-		padding: 0 5px;
-		border-radius: 999px;
-		background: rgba(0, 0, 0, 0.07);
-		font-size: 0.7rem;
-		font-weight: 800;
-		color: var(--text-secondary);
-	}
-
-	:global(html.dark) .orgs3-section-toggle__count {
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	/* ── Roster section ─────────────────────────────────────────────── */
-	.orgs3-roster {
-		padding-top: 12px;
-	}
-
-	.orgs3-roster-toolbar {
-		margin-bottom: 10px;
-	}
-
-	.orgs3-roster__guard,
-	.orgs3-roster__loading,
-	.orgs3-roster__err {
-		margin: 0;
-		padding: 20px 0;
-		font-size: 0.875rem;
-		color: var(--text-secondary);
-	}
-
-	.orgs3-roster__err { color: var(--danger-red, #b91c1c); }
-
-	/* Player cell */
-	.orgs3-player-name {
-		display: block;
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.orgs3-player-email {
-		display: block;
-		font-size: 0.72rem;
-		font-family: ui-monospace, monospace;
-		color: var(--text-secondary);
-	}
 
 	/* ── Error state ────────────────────────────────────────────────── */
 	.orgs3-err {

@@ -25,7 +25,9 @@
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
-	overflow-x: hidden;
+	/* overflow-x intentionally NOT set here — setting it would create a stacking context
+	   that causes the sidebar's absolutely-positioned context-switcher popover to paint
+	   BEHIND the main canvas (later DOM sibling wins). Sidebar width constrains overflow. */
 }
 
 /* ---------- Field mode: mobile header + off-canvas nav (< 1024px) ---------- */
@@ -212,6 +214,14 @@ html.dark .ec-sidebar {
 }
 
 @media (min-width: 1024px) {
+	/* Establish a stacking context on the sidebar so its popover descendants (context-switcher,
+	   z-index: 1000) always paint above .ec-main regardless of DOM order. Without this, the
+	   later sibling (.ec-main) would occlude absolutely-positioned sidebar children. */
+	.ec-sidebar {
+		position: relative;
+		z-index: 20;
+	}
+
 	.ec-sidebar--collapsed-desktop {
 		width: 0 !important;
 		max-width: 0 !important;
@@ -593,7 +603,7 @@ html.dark .ec-cmd-trigger__kbd {
 }
 
 html.dark .ec-topbar {
-	background: #0f0f11;
+	background: #09090b;
 	border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 

@@ -11,351 +11,331 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	// ── Derived KPIs from stores (fast — no additional fetch) ────────────────────
-	const clubCount  = $derived(teamsStore.clubs.length);
-	const adminCount = $derived(teamsStore.admins.length);
+	// ── KPI group 1: Gross Revenue & Receivables ─────────────────────────────────
+	let licenseCount        = $state(0);
+	let pastDueCount        = $state(0);
+	let outstandingInstalls = $state(0); // payment_plans count (graceful fallback)
 
-	// ── Telemetry state ───────────────────────────────────────────────────────────
-	let userCount        = $state(0);
-	let licenseCount     = $state(0);
-	let pastDueCount     = $state(0);
-	let totalSeatsLic    = $state(0);   // sum of license_entitlements[*].seats_limit
-	let totalSeatsUsed   = $state(0);   // sum of license_entitlements[*].active_seats
-	let pendingVpcCount  = $state(0);
-	let telLoading       = $state(false);
-	let telErr           = $state('');
+	// ── KPI group 2: Platform Health ─────────────────────────────────────────────
+	let totalClubs     = $state(0);
+	let totalTeams     = $state(0);
+	let totalAthletes  = $state(0);
 
-	// ── Single consolidated fetch — all telemetry data in one $effect ────────────
+	// ── KPI group 3: Compliance & Logistics ──────────────────────────────────────
+	let pendingVpcCount    = $state(0);
+	let activeBookingCount = $state(0); // field_bookings count (graceful fallback)
+
+	// ── Loading / error ───────────────────────────────────────────────────────────
+	let telLoading = $state(false);
+	let telErr     = $state('');
+
+	// ── Single consolidated fetch — all telemetry data in one $effect ─────────────
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		let cancelled = false;
+		let destroyed = false;
 		telLoading = true;
 		telErr = '';
 
 		void (async () => {
 			try {
-				// Run all counts in parallel — no sequential blocking
+				// All queries fire in parallel. New collections (payment_plans, field_bookings)
+				// use .catch(() => { data: () => ({ count: 0 }) }) so the entire Promise.all
+				// never rejects just because a collection doesn't exist yet.
 				const [
-					usersSnap,
 					licensesSnap,
-					entitlementsSnap,
-					vpcCountResult,
+					clubsSnap,
+					teamsCountSnap,
+					athletesCountSnap,
+					vpcCountSnap,
+					installmentsCountSnap,
+					bookingsCountSnap,
 				] = await Promise.all([
-					getDocs(collection(db, 'users')),
+					// Group 1 — Revenue
 					getDocs(collection(db, 'licenses')),
-					getDocs(collection(db, 'license_entitlements')),
-					getCountFromServer(
-						query(
-							collection(db, 'vpc_requests'),
-							where('status', '==', 'pending_verification'),
+					// Group 2 — Platform Health
+					getDocs(collection(db, 'clubs')),
+					getCountFromServer(collection(db, 'teams'))
+						.catch(() => getDocs(collection(db, 'teams'))
+							.then((s) => ({ data: () => ({ count: s.size }) }))
+							.catch(() => ({ data: () => ({ count: 0 }) })),
 						),
+					getCountFromServer(collection(db, 'player_lookup'))
+						.catch(() => getDocs(collection(db, 'player_lookup'))
+							.then((s) => ({ data: () => ({ count: s.size }) }))
+							.catch(() => ({ data: () => ({ count: 0 }) })),
+						),
+					// Group 3 — Compliance & Logistics
+					getCountFromServer(
+						query(collection(db, 'vpc_requests'), where('status', '==', 'pending_verification')),
 					).catch(() =>
-						// Fallback to getDocs count if getCountFromServer is unavailable
 						getDocs(
-							query(
-								collection(db, 'vpc_requests'),
-								where('status', '==', 'pending_verification'),
-							),
-						).then((s) => ({ data: () => ({ count: s.size }) })),
+							query(collection(db, 'vpc_requests'), where('status', '==', 'pending_verification')),
+						).then((s) => ({ data: () => ({ count: s.size }) }))
+						 .catch(() => ({ data: () => ({ count: 0 }) })),
 					),
+					// Outstanding player installments — payment_plans collection may not exist yet
+					getCountFromServer(collection(db, 'payment_plans'))
+						.catch(() => ({ data: () => ({ count: 0 }) })),
+					// Active field/facility bookings — field_bookings collection may not exist yet
+					getCountFromServer(
+						query(collection(db, 'field_bookings'), where('status', '==', 'active')),
+					).catch(() => ({ data: () => ({ count: 0 }) })),
 				]);
 
-				if (cancelled) return;
+				if (destroyed) return;
 
-				userCount    = usersSnap.size;
+				// ── Group 1: Revenue & Receivables ────────────────────────────
 				licenseCount = licensesSnap.size;
-
-				// Past-due count — licenses with status 'past_due'
 				let pastDue = 0;
 				licensesSnap.forEach((d) => {
 					if (d.data().status === 'past_due') pastDue++;
 				});
-				pastDueCount = pastDue;
+				pastDueCount        = pastDue;
+				outstandingInstalls = installmentsCountSnap.data().count;
 
-				// Seat aggregates — sum across all entitlement documents
-				let lic = 0;
-				let used = 0;
-				entitlementsSnap.forEach((d) => {
-					const data = d.data();
-					if (data.isInfinite === true) return; // skip unlimited promos
-					lic  += typeof data.seats_limit  === 'number' ? data.seats_limit  : 0;
-					used += typeof data.active_seats === 'number' ? data.active_seats : 0;
-				});
-				totalSeatsLic  = lic;
-				totalSeatsUsed = used;
+				// ── Group 2: Platform Health ──────────────────────────────────
+				totalClubs    = clubsSnap.size;
+				totalTeams    = teamsCountSnap.data().count;
+				totalAthletes = athletesCountSnap.data().count;
 
-				pendingVpcCount = vpcCountResult.data().count;
+				// ── Group 3: Compliance & Logistics ──────────────────────────
+				pendingVpcCount    = vpcCountSnap.data().count;
+				activeBookingCount = bookingsCountSnap.data().count;
+
 			} catch (e) {
-				if (!cancelled) telErr = e instanceof Error ? e.message : 'Could not load telemetry.';
+				if (!destroyed) telErr = e instanceof Error ? e.message : 'Could not load telemetry.';
 			} finally {
-				if (!cancelled) telLoading = false;
+				if (!destroyed) telLoading = false;
 			}
 		})();
 
-		return () => { cancelled = true; };
+		return () => {
+			destroyed = true;
+		};
 	});
 
 	// ── Derived display values ────────────────────────────────────────────────────
-	/** Placeholder MRR — $49/license, clearly labeled as estimate */
+	/** Estimated MRR at $49/license — clearly labeled as estimate in the UI */
 	const mrrEstimate = $derived(licenseCount * 49);
 
-	/** Seat utilization 0–100 */
-	const seatUtilPct = $derived(
-		totalSeatsLic > 0 ? Math.min(100, Math.round((totalSeatsUsed / totalSeatsLic) * 100)) : 0,
+	/** Stripe-style MRR formatted string */
+	const mrrDisplay = $derived(
+		mrrEstimate >= 1000
+			? `$${(mrrEstimate / 1000).toFixed(1)}k`
+			: `$${mrrEstimate.toLocaleString()}`,
 	);
 
-	/** Color tier for seat bar */
-	const seatBarColor = $derived(
-		seatUtilPct >= 90 ? '#ef4444'
-		: seatUtilPct >= 70 ? '#f59e0b'
-		: '#22c55e',
-	);
+	const adminCount = $derived(teamsStore.admins.length);
 </script>
 
-<div class="tel-page">
-
-	<!-- ── Executive stat bar ────────────────────────────────────────────────── -->
-	<section class="tel-stats" aria-label="Platform metrics">
-		<div class="tel-stat">
-			<span class="tel-stat__label">Total Users</span>
-			<span class="tel-stat__value">{telLoading ? '—' : userCount.toLocaleString()}</span>
-		</div>
-		<div class="tel-stats__div" aria-hidden="true"></div>
-		<div class="tel-stat">
-			<span class="tel-stat__label">Organizations</span>
-			<span class="tel-stat__value">{clubCount.toLocaleString()}</span>
-		</div>
-		<div class="tel-stats__div" aria-hidden="true"></div>
-		<div class="tel-stat">
-			<span class="tel-stat__label">Active Licenses</span>
-			<span class="tel-stat__value">{telLoading ? '—' : licenseCount.toLocaleString()}</span>
-		</div>
-		<div class="tel-stats__div" aria-hidden="true"></div>
-		<div class="tel-stat">
-			<span class="tel-stat__label">Platform Admins</span>
-			<span class="tel-stat__value">{adminCount}</span>
-		</div>
-	</section>
+<div class="ov-page">
 
 	{#if telErr}
-		<p class="tel-err" role="alert">
+		<p class="ov-err" role="alert">
 			<i class="ph ph-warning-circle" aria-hidden="true"></i>
 			{telErr}
 		</p>
 	{/if}
 
-	<!-- ── Telemetry widgets ──────────────────────────────────────────────────── -->
-	<div class="tel-grid">
-
-		<!-- Widget 1: Revenue Health -->
-		<div class="tel-widget" aria-labelledby="tel-w1-title">
-			<div class="tel-widget__header">
-				<span class="tel-widget__icon tel-widget__icon--revenue">
-					<i class="ph ph-currency-dollar" aria-hidden="true"></i>
-				</span>
-				<h2 id="tel-w1-title" class="tel-widget__title">Revenue Health</h2>
-			</div>
-
-			{#if telLoading}
-				<div class="tel-widget__loading" aria-busy="true">
-					<span class="tel-spinner" aria-hidden="true"></span>
-					Loading…
-				</div>
-			{:else}
-				<div class="tel-widget__body">
-					<div class="tel-kv">
-						<span class="tel-kv__label">Est. MRR</span>
-						<span class="tel-kv__value tel-kv__value--large">
-							${mrrEstimate.toLocaleString()}
-							<span class="tel-kv__unit">/mo</span>
-						</span>
-						<span class="tel-kv__hint">@ $49 × {licenseCount} active licenses</span>
-					</div>
-
-					<div class="tel-kv tel-kv--sep">
-						<span class="tel-kv__label">Past Due</span>
-						<span
-							class="tel-kv__value"
-							class:tel-kv__value--danger={pastDueCount > 0}
-							class:tel-kv__value--ok={pastDueCount === 0}
-						>
-							{#if pastDueCount === 0}
-								<i class="ph ph-check-circle" aria-hidden="true"></i>
-								None
-							{:else}
-								<i class="ph ph-warning" aria-hidden="true"></i>
-								{pastDueCount}
-								<span class="tel-kv__unit">accounts</span>
-							{/if}
-						</span>
-						{#if pastDueCount > 0}
-							<span class="tel-kv__hint tel-kv__hint--danger">
-								Review overdue accounts in billing.
-							</span>
-						{/if}
-					</div>
-				</div>
-			{/if}
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!-- KPI Group 1: Gross Revenue & Receivables                              -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<section class="ov-group" aria-labelledby="ov-g1-title">
+		<div class="ov-group__header">
+			<span class="ov-group__icon ov-group__icon--revenue">
+				<i class="ph ph-trend-up" aria-hidden="true"></i>
+			</span>
+			<h2 id="ov-g1-title" class="ov-group__title">Gross Revenue &amp; Receivables</h2>
+			<span class="ov-group__badge">
+				<span class="ov-group__badge-dot ov-group__badge-dot--live"></span>
+				Estimates
+			</span>
 		</div>
 
-		<!-- Widget 2: Ecosystem Activity -->
-		<div class="tel-widget" aria-labelledby="tel-w2-title">
-			<div class="tel-widget__header">
-				<span class="tel-widget__icon tel-widget__icon--ecosystem">
-					<i class="ph ph-users-three" aria-hidden="true"></i>
+		<div class="ov-kpi-row">
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Est. MRR</span>
+				<span class="ov-kpi__value ov-kpi__value--xl">
+					{telLoading ? '—' : mrrDisplay}
 				</span>
-				<h2 id="tel-w2-title" class="tel-widget__title">Ecosystem Activity</h2>
+				<span class="ov-kpi__sub">@ $49 × {licenseCount} licenses</span>
 			</div>
-
-			{#if telLoading}
-				<div class="tel-widget__loading" aria-busy="true">
-					<span class="tel-spinner" aria-hidden="true"></span>
-					Loading…
-				</div>
-			{:else}
-				<div class="tel-widget__body">
-					<div class="tel-kv">
-						<span class="tel-kv__label">Seat Utilization</span>
-						<span class="tel-kv__value tel-kv__value--large" style="--bar-color: {seatBarColor}">
-							{seatUtilPct}%
-						</span>
-					</div>
-					<!-- Utilization fill bar -->
-					<div class="tel-seat-bar" role="progressbar" aria-valuenow={seatUtilPct} aria-valuemin="0" aria-valuemax="100" aria-label="Seat utilization">
-						<div
-							class="tel-seat-bar__fill"
-							style="width: {seatUtilPct}%; background: {seatBarColor}"
-						></div>
-					</div>
-					<div class="tel-seat-legend">
-						<span class="tel-seat-legend__item">
-							<span class="tel-seat-legend__dot tel-seat-legend__dot--used"></span>
-							{totalSeatsUsed.toLocaleString()} used
-						</span>
-						<span class="tel-seat-legend__sep">/</span>
-						<span class="tel-seat-legend__item">
-							{totalSeatsLic.toLocaleString()} licensed
-						</span>
-						{#if totalSeatsLic === 0}
-							<span class="tel-kv__hint">No entitlement records found. Promo licenses may be excluded.</span>
-						{/if}
-					</div>
-				</div>
-			{/if}
-		</div>
-
-		<!-- Widget 3: Compliance Bottlenecks -->
-		<div
-			class="tel-widget"
-			class:tel-widget--alert={pendingVpcCount > 0}
-			aria-labelledby="tel-w3-title"
-		>
-			<div class="tel-widget__header">
-				<span class="tel-widget__icon tel-widget__icon--compliance">
-					<i class="ph ph-shield-warning" aria-hidden="true"></i>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Active Licenses</span>
+				<span class="ov-kpi__value">
+					{telLoading ? '—' : licenseCount.toLocaleString()}
 				</span>
-				<h2 id="tel-w3-title" class="tel-widget__title">Compliance Bottlenecks</h2>
 			</div>
-
-			{#if telLoading}
-				<div class="tel-widget__loading" aria-busy="true">
-					<span class="tel-spinner" aria-hidden="true"></span>
-					Loading…
-				</div>
-			{:else}
-				<div class="tel-widget__body">
-					<div class="tel-vpc-count" class:tel-vpc-count--zero={pendingVpcCount === 0}>
-						{pendingVpcCount}
-					</div>
-					<p class="tel-vpc-label">
-						{#if pendingVpcCount === 0}
-							<i class="ph ph-check-circle" aria-hidden="true"></i>
-							All parental consents verified
-						{:else}
-							Pending Parental Consents (VPC)
-						{/if}
-					</p>
-					{#if pendingVpcCount > 0}
-						<a href="/admin/organizations" class="tel-vpc-cta">
-							Review organizations <i class="ph ph-arrow-right" aria-hidden="true"></i>
-						</a>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Past Due Accounts</span>
+				<span
+					class="ov-kpi__value"
+					class:ov-kpi__value--danger={pastDueCount > 0}
+					class:ov-kpi__value--ok={!telLoading && pastDueCount === 0}
+				>
+					{#if telLoading}
+						—
+					{:else if pastDueCount === 0}
+						<i class="ph ph-check-circle" aria-hidden="true"></i>
+						None
+					{:else}
+						<i class="ph ph-warning" aria-hidden="true"></i>
+						{pastDueCount}
 					{/if}
-				</div>
+				</span>
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Installment Plans</span>
+				<span
+					class="ov-kpi__value"
+					class:ov-kpi__value--muted={outstandingInstalls === 0}
+				>
+					{telLoading ? '—' : outstandingInstalls.toLocaleString()}
+				</span>
+				<span class="ov-kpi__sub">Outstanding payment plans</span>
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!-- KPI Group 2: Platform Health                                           -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<section class="ov-group" aria-labelledby="ov-g2-title">
+		<div class="ov-group__header">
+			<span class="ov-group__icon ov-group__icon--health">
+				<i class="ph ph-pulse" aria-hidden="true"></i>
+			</span>
+			<h2 id="ov-g2-title" class="ov-group__title">Platform Health</h2>
+		</div>
+
+		<div class="ov-kpi-row">
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Active Clubs</span>
+				<span class="ov-kpi__value ov-kpi__value--xl">
+					{telLoading ? '—' : totalClubs.toLocaleString()}
+				</span>
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Total Teams</span>
+				<span class="ov-kpi__value">
+					{telLoading ? '—' : totalTeams.toLocaleString()}
+				</span>
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Total Athletes</span>
+				<span class="ov-kpi__value">
+					{telLoading ? '—' : totalAthletes.toLocaleString()}
+				</span>
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Platform Admins</span>
+				<span class="ov-kpi__value">
+					{adminCount}
+				</span>
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!-- KPI Group 3: Compliance & Logistics                                    -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<section
+		class="ov-group"
+		class:ov-group--alert={pendingVpcCount > 0}
+		aria-labelledby="ov-g3-title"
+	>
+		<div class="ov-group__header">
+			<span class="ov-group__icon ov-group__icon--compliance">
+				<i class="ph ph-shield-warning" aria-hidden="true"></i>
+			</span>
+			<h2 id="ov-g3-title" class="ov-group__title">Compliance &amp; Logistics</h2>
+			{#if pendingVpcCount > 0}
+				<span class="ov-group__badge ov-group__badge--warn">
+					<span class="ov-group__badge-dot ov-group__badge-dot--warn"></span>
+					Action required
+				</span>
 			{/if}
 		</div>
 
-	</div>
+		<div class="ov-kpi-row">
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Pending VPC Approvals</span>
+				<span
+					class="ov-kpi__value ov-kpi__value--xl"
+					class:ov-kpi__value--danger={pendingVpcCount > 0}
+					class:ov-kpi__value--ok={!telLoading && pendingVpcCount === 0}
+				>
+					{#if telLoading}
+						—
+					{:else if pendingVpcCount === 0}
+						<i class="ph ph-check-circle" aria-hidden="true"></i>
+						0
+					{:else}
+						{pendingVpcCount}
+					{/if}
+				</span>
+				<span class="ov-kpi__sub">Unverified parental consents</span>
+				{#if pendingVpcCount > 0}
+					<a href="/admin/organizations" class="ov-kpi__cta">
+						Review organizations <i class="ph ph-arrow-right" aria-hidden="true"></i>
+					</a>
+				{/if}
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Active Field Bookings</span>
+				<span
+					class="ov-kpi__value"
+					class:ov-kpi__value--muted={activeBookingCount === 0}
+				>
+					{telLoading ? '—' : activeBookingCount.toLocaleString()}
+				</span>
+				<span class="ov-kpi__sub">Active facility reservations</span>
+				{#if activeBookingCount === 0 && !telLoading}
+					<span class="ov-kpi__hint">No active bookings — Field Ops coming in Epic 3</span>
+				{/if}
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Compliance Rate</span>
+				<span class="ov-kpi__value">
+					{#if telLoading}
+						—
+					{:else if pendingVpcCount === 0}
+						<span class="ov-kpi__value--ok">
+							<i class="ph ph-check-circle" aria-hidden="true"></i>
+							100%
+						</span>
+					{:else}
+						{Math.max(0, Math.round((1 - pendingVpcCount / Math.max(pendingVpcCount, 1)) * 100))}%
+					{/if}
+				</span>
+				<span class="ov-kpi__sub">VPC verification rate</span>
+			</div>
+		</div>
+	</section>
 
 </div>
 
 <style>
-	.tel-page {
+	.ov-page {
 		display: flex;
 		flex-direction: column;
-		gap: 0;
-	}
-
-	/* ── Executive stat bar ─────────────────────────────────────────── */
-	.tel-stats {
-		display: flex;
-		align-items: stretch;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 10px;
-		background: var(--glass-bg, #fff);
-		overflow: hidden;
-		margin-bottom: 28px;
-		flex-wrap: wrap;
-	}
-
-	:global(html.dark) .tel-stats {
-		background: #111113;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.tel-stat {
-		flex: 1 1 0;
-		min-width: 120px;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		padding: 20px 24px;
-	}
-
-	.tel-stats__div {
-		flex-shrink: 0;
-		width: 1px;
-		background: var(--border-subtle, #e5e5e5);
-		margin: 14px 0;
-	}
-
-	:global(html.dark) .tel-stats__div {
-		background: rgba(255, 255, 255, 0.08);
-	}
-
-	.tel-stat__label {
-		font-size: 0.6875rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		color: var(--text-secondary);
-		white-space: nowrap;
-	}
-
-	.tel-stat__value {
-		font-size: 1.875rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--text-primary);
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
+		gap: 20px;
 	}
 
 	/* ── Error banner ───────────────────────────────────────────────── */
-	.tel-err {
+	.ov-err {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		margin: 0 0 20px;
+		margin: 0;
 		padding: 12px 14px;
 		border-radius: 10px;
 		font-size: 0.875rem;
@@ -365,283 +345,229 @@
 		border: 1px solid rgba(185, 28, 28, 0.25);
 	}
 
-	/* ── Telemetry widget grid ──────────────────────────────────────── */
-	.tel-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 16px;
-		align-items: start;
-	}
-
-	@media (max-width: 900px) { .tel-grid { grid-template-columns: 1fr 1fr; } }
-	@media (max-width: 560px) { .tel-grid { grid-template-columns: 1fr; } }
-
-	/* ── Widget card ────────────────────────────────────────────────── */
-	.tel-widget {
+	/* ── KPI Group section ──────────────────────────────────────────── */
+	.ov-group {
 		display: flex;
 		flex-direction: column;
 		gap: 0;
-		padding: 20px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		border-radius: 12px;
 		background: var(--glass-bg, #fff);
+		overflow: hidden;
 		transition: border-color 0.15s ease;
 	}
 
-	:global(html.dark) .tel-widget {
+	:global(html.dark) .ov-group {
 		background: #111113;
 		border-color: rgba(255, 255, 255, 0.08);
 	}
 
-	.tel-widget--alert {
-		border-color: rgba(245, 158, 11, 0.4);
+	.ov-group--alert {
+		border-color: rgba(245, 158, 11, 0.45);
 	}
 
-	:global(html.dark) .tel-widget--alert {
+	:global(html.dark) .ov-group--alert {
 		border-color: rgba(245, 158, 11, 0.35);
-		background: rgba(245, 158, 11, 0.04);
+		background: rgba(245, 158, 11, 0.03);
 	}
 
-	/* Widget header */
-	.tel-widget__header {
+	/* ── Group header ───────────────────────────────────────────────── */
+	.ov-group__header {
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		margin-bottom: 16px;
+		padding: 14px 20px 10px;
+		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
 	}
 
-	.tel-widget__icon {
-		width: 32px;
-		height: 32px;
-		border-radius: 8px;
+	:global(html.dark) .ov-group__header {
+		border-bottom-color: rgba(255, 255, 255, 0.07);
+	}
+
+	.ov-group__icon {
+		width: 28px;
+		height: 28px;
+		border-radius: 7px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1rem;
+		font-size: 0.9rem;
 		flex-shrink: 0;
 	}
 
-	.tel-widget__icon--revenue   { background: rgba(16, 185, 129, 0.1); color: #059669; }
-	.tel-widget__icon--ecosystem { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
-	.tel-widget__icon--compliance{ background: rgba(245, 158, 11, 0.1); color: #d97706; }
+	.ov-group__icon--revenue    { background: rgba(16,185,129,0.10); color: #059669; }
+	.ov-group__icon--health     { background: rgba(99,102,241,0.10); color: #6366f1; }
+	.ov-group__icon--compliance { background: rgba(245,158,11,0.10); color: #d97706; }
 
-	:global(html.dark) .tel-widget__icon--revenue    { background: rgba(16,185,129,0.12); color: #6ee7b7; }
-	:global(html.dark) .tel-widget__icon--ecosystem  { background: rgba(99,102,241,0.12); color: #a5b4fc; }
-	:global(html.dark) .tel-widget__icon--compliance { background: rgba(245,158,11,0.12); color: #fbbf24; }
+	:global(html.dark) .ov-group__icon--revenue    { background: rgba(16,185,129,0.14); color: #6ee7b7; }
+	:global(html.dark) .ov-group__icon--health     { background: rgba(99,102,241,0.14); color: #a5b4fc; }
+	:global(html.dark) .ov-group__icon--compliance { background: rgba(245,158,11,0.14); color: #fbbf24; }
 
-	.tel-widget__title {
+	.ov-group__title {
 		margin: 0;
+		flex: 1;
 		font-size: 0.8125rem;
 		font-weight: 700;
 		letter-spacing: -0.01em;
 		color: var(--text-primary);
 	}
 
-	/* Widget body */
-	.tel-widget__body {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.tel-widget__loading {
-		display: flex;
+	.ov-group__badge {
+		display: inline-flex;
 		align-items: center;
-		gap: 10px;
-		font-size: 0.8125rem;
+		gap: 5px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
 		color: var(--text-secondary);
-		padding: 8px 0;
+		background: rgba(0, 0, 0, 0.04);
+		border: 1px solid rgba(0, 0, 0, 0.06);
 	}
 
-	/* Loading spinner */
-	.tel-spinner {
-		display: inline-block;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		border: 2px solid rgba(0, 0, 0, 0.1);
-		border-top-color: var(--brand-primary, #f59e0b);
-		animation: tel-spin 0.7s linear infinite;
-		flex-shrink: 0;
-	}
-
-	:global(html.dark) .tel-spinner {
+	:global(html.dark) .ov-group__badge {
+		background: rgba(255, 255, 255, 0.06);
 		border-color: rgba(255, 255, 255, 0.1);
-		border-top-color: var(--brand-primary, #f59e0b);
+		color: #a1a1aa;
 	}
 
-	@keyframes tel-spin { to { transform: rotate(360deg); } }
+	.ov-group__badge--warn {
+		color: #b45309;
+		background: rgba(245, 158, 11, 0.08);
+		border-color: rgba(245, 158, 11, 0.25);
+	}
 
-	/* ── Key-value rows inside widgets ─────────────────────────────── */
-	.tel-kv {
+	:global(html.dark) .ov-group__badge--warn {
+		color: #fbbf24;
+		background: rgba(245, 158, 11, 0.1);
+		border-color: rgba(245, 158, 11, 0.25);
+	}
+
+	.ov-group__badge-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		background: rgba(0, 0, 0, 0.25);
+	}
+
+	.ov-group__badge-dot--live { background: #22c55e; }
+	.ov-group__badge-dot--warn { background: #f59e0b; animation: ov-pulse 1.8s ease infinite; }
+
+	@keyframes ov-pulse {
+		0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+		50%       { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+	}
+
+	/* ── KPI row — horizontal strip of metrics ──────────────────────── */
+	.ov-kpi-row {
+		display: flex;
+		align-items: stretch;
+		flex-wrap: wrap;
+	}
+
+	.ov-kpi {
+		flex: 1 1 0;
+		min-width: 130px;
 		display: flex;
 		flex-direction: column;
-		gap: 3px;
+		gap: 4px;
+		padding: 20px 24px;
 	}
 
-	.tel-kv--sep {
-		padding-top: 12px;
-		border-top: 1px solid var(--border-subtle, #e5e5e5);
+	.ov-kpi-divider {
+		flex-shrink: 0;
+		width: 1px;
+		background: var(--border-subtle, #e5e5e5);
+		margin: 16px 0;
+		align-self: stretch;
 	}
 
-	:global(html.dark) .tel-kv--sep {
-		border-top-color: rgba(255, 255, 255, 0.07);
+	:global(html.dark) .ov-kpi-divider {
+		background: rgba(255, 255, 255, 0.07);
 	}
 
-	.tel-kv__label {
+	/* ── KPI label ──────────────────────────────────────────────────── */
+	.ov-kpi__label {
 		font-size: 0.6875rem;
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.07em;
 		color: var(--text-secondary);
+		white-space: nowrap;
 	}
 
-	.tel-kv__value {
+	/* ── KPI value ──────────────────────────────────────────────────── */
+	.ov-kpi__value {
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		font-size: 1rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
+		font-size: 1.625rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 		color: var(--text-primary);
 		font-variant-numeric: tabular-nums;
+		line-height: 1.1;
 	}
 
-	.tel-kv__value--large {
-		font-size: 1.75rem;
-		letter-spacing: -0.04em;
-		color: var(--action-color, var(--text-primary));
+	.ov-kpi__value--xl {
+		font-size: 2.25rem;
 	}
 
-	.tel-kv__value--ok    { color: #15803d; }
-	.tel-kv__value--danger{ color: var(--danger-red, #b91c1c); }
+	.ov-kpi__value--ok     { color: #15803d; }
+	.ov-kpi__value--danger { color: var(--danger-red, #b91c1c); }
+	.ov-kpi__value--muted  { color: var(--text-secondary); font-size: 1.25rem; font-weight: 600; }
 
-	:global(html.dark) .tel-kv__value--ok     { color: #86efac; }
-	:global(html.dark) .tel-kv__value--danger { color: #fca5a5; }
+	:global(html.dark) .ov-kpi__value--ok     { color: #86efac; }
+	:global(html.dark) .ov-kpi__value--danger { color: #fca5a5; }
 
-	.tel-kv__unit {
-		font-size: 0.75rem;
-		font-weight: 500;
-		opacity: 0.7;
-		letter-spacing: 0;
-	}
-
-	.tel-kv__hint {
+	/* ── Sub-label / hint ───────────────────────────────────────────── */
+	.ov-kpi__sub {
 		font-size: 0.72rem;
 		color: var(--text-secondary);
 		line-height: 1.4;
 		margin-top: 2px;
 	}
 
-	.tel-kv__hint--danger {
-		color: var(--danger-red, #b91c1c);
-	}
-
-	:global(html.dark) .tel-kv__hint--danger { color: #fca5a5; }
-
-	/* ── Seat utilization bar ───────────────────────────────────────── */
-	.tel-seat-bar {
-		width: 100%;
-		height: 6px;
-		border-radius: 999px;
-		background: rgba(0, 0, 0, 0.07);
-		overflow: hidden;
-	}
-
-	:global(html.dark) .tel-seat-bar {
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	.tel-seat-bar__fill {
-		height: 100%;
-		border-radius: 999px;
-		transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	.tel-seat-legend {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		flex-wrap: wrap;
-		font-size: 0.75rem;
+	.ov-kpi__hint {
+		font-size: 0.72rem;
 		color: var(--text-secondary);
-		font-variant-numeric: tabular-nums;
+		opacity: 0.65;
+		font-style: italic;
+		line-height: 1.4;
 	}
 
-	.tel-seat-legend__item {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-
-	.tel-seat-legend__dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: #6366f1;
-		flex-shrink: 0;
-	}
-
-	.tel-seat-legend__dot--used { background: #22c55e; }
-	.tel-seat-legend__sep { opacity: 0.5; }
-
-	/* ── VPC (pending consents) widget ─────────────────────────────── */
-	.tel-vpc-count {
-		font-size: 3.5rem;
-		font-weight: 900;
-		letter-spacing: -0.06em;
-		line-height: 1;
-		color: #d97706;
-		font-variant-numeric: tabular-nums;
-		transition: color 0.2s ease;
-	}
-
-	.tel-vpc-count--zero {
-		color: #15803d;
-	}
-
-	:global(html.dark) .tel-vpc-count       { color: #fbbf24; }
-	:global(html.dark) .tel-vpc-count--zero { color: #86efac; }
-
-	.tel-vpc-label {
-		margin: 8px 0 0;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text-secondary);
-	}
-
-	.tel-vpc-cta {
+	/* ── CTA link inside KPI ────────────────────────────────────────── */
+	.ov-kpi__cta {
 		display: inline-flex;
 		align-items: center;
 		gap: 5px;
-		margin-top: 12px;
-		padding: 7px 14px;
+		margin-top: 10px;
+		padding: 6px 12px;
 		border-radius: 7px;
 		border: 1px solid rgba(245, 158, 11, 0.4);
 		background: rgba(245, 158, 11, 0.06);
 		color: #d97706;
-		font-size: 0.8125rem;
+		font-size: 0.75rem;
 		font-weight: 700;
 		text-decoration: none;
 		transition: background 0.1s ease;
+		width: fit-content;
 	}
 
-	.tel-vpc-cta:hover {
-		background: rgba(245, 158, 11, 0.12);
-	}
+	.ov-kpi__cta:hover { background: rgba(245, 158, 11, 0.12); }
 
-	:global(html.dark) .tel-vpc-cta {
+	:global(html.dark) .ov-kpi__cta {
 		color: #fbbf24;
 		border-color: rgba(245, 158, 11, 0.3);
 	}
 
+	/* ── Responsive — stack KPI rows on narrow viewports ───────────── */
 	@media (max-width: 680px) {
-		.tel-stats { display: grid; grid-template-columns: 1fr 1fr; }
-		.tel-stats__div { display: none; }
-		.tel-stat { padding: 16px; border-bottom: 1px solid var(--border-subtle, #e5e5e5); }
-		:global(html.dark) .tel-stat { border-bottom-color: rgba(255, 255, 255, 0.08); }
+		.ov-kpi-row { flex-direction: column; }
+		.ov-kpi-divider { width: 100%; height: 1px; margin: 0; }
+		.ov-kpi { padding: 16px; }
 	}
 </style>

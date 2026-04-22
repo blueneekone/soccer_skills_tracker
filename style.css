@@ -1086,14 +1086,15 @@ html.dark {
     --accent-orange: #fb923c;
     --accent-orange-soft: #fdba74;
     --light-blue: rgba(255, 255, 255, 0.06);
-    --glass-bg: #0f0f11;
+    --glass-bg: #09090b;  /* near-black — Stripe/Linear standard */
     --glass-border: rgba(255, 255, 255, 0.1);
     --surface-row-hover: rgba(255, 255, 255, 0.06);
     --surface-subtle: rgba(255, 255, 255, 0.04);
     --border-subtle: rgba(255, 255, 255, 0.1);
     --border-strong: rgba(255, 255, 255, 0.14);
-    --input-bg: #0f0f11;
-    --input-border: rgba(255, 255, 255, 0.14);
+    --input-bg: rgba(255, 255, 255, 0.04);        /* transparent-dark — no opaque fill */
+    --input-border: rgba(255, 255, 255, 0.10);
+    --input-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
     --input-text: var(--text-primary);
     --focus-ring-color: rgba(255, 255, 255, 0.2);
     --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 16px -4px rgba(0, 0, 0, 0.45);
