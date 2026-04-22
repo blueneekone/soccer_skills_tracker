@@ -15,7 +15,7 @@
 
 	/**
 	 * Sprint 2.7 — System Settings (Enterprise 3-tab).
-	 *   1. Access Control      — Super Admin grant/revoke.
+	 *   1. Access Control      — Global Admin grant/revoke.
 	 *   2. Feature Flags       — Global kill switch + feature toggles.
 	 *   3. Integrations        — API keys + webhook status (Pro League data).
 	 */
@@ -46,9 +46,9 @@
 			await setDoc(doc(db, 'config', 'admins'), {
 				list: Array.from(new Set([...teamsStore.admins, email]))
 			});
-			await setDoc(doc(db, 'users', email), { role: 'super_admin' }, { merge: true });
-			await logSecurityEvent('GRANT_SUPER_ADMIN', email, 'Added to global config');
-			adminOk = `${email} granted super admin access.`;
+			await setDoc(doc(db, 'users', email), { role: 'global_admin' }, { merge: true });
+			await logSecurityEvent('GRANT_GLOBAL_ADMIN', email, 'Added to global config');
+			adminOk = `${email} granted Global Admin access.`;
 			newAdminEmail = '';
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
@@ -69,8 +69,8 @@
 		try {
 			const newList = teamsStore.admins.filter((e) => e !== email);
 			await setDoc(doc(db, 'config', 'admins'), { list: newList });
-			await logSecurityEvent('REVOKE_SUPER_ADMIN', email, 'Removed from global config');
-			adminOk = `${email} removed from super admins.`;
+			await logSecurityEvent('REVOKE_GLOBAL_ADMIN', email, 'Removed from global config');
+			adminOk = `${email} removed from Global Admins.`;
 			await teamsStore.load('super_admin', {
 				scope: 'admin_full',
 				routePath: '/admin/system-settings'
@@ -361,7 +361,7 @@
 				<h2 id="ss-access-heading" class="ss-section__heading">System Administrators</h2>
 			</div>
 			<p class="ss-section__desc">
-				Super admins have unrestricted access to all platform data and controls. Grant access
+				Global admins have unrestricted access to all platform data and controls. Grant access
 				only to trusted internal accounts.
 			</p>
 
@@ -405,7 +405,7 @@
 			</div>
 
 			<div class="ss-inline-form">
-				<label class="ss-label" for="ss-grant-email">Grant Super Admin Access</label>
+				<label class="ss-label" for="ss-grant-email">Grant Global Admin Access</label>
 				<div class="ss-form-row">
 					<input
 						id="ss-grant-email"

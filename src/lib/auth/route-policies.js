@@ -6,17 +6,18 @@
  * unless listed (super_admin may enter for troubleshooting).
  */
 export const ROLE_ROUTE_POLICIES = {
-	'/admin': ['super_admin'],
-	'/director': ['super_admin', 'director'],
-	'/recruiter': ['super_admin', 'director'],
-	'/coach': ['super_admin', 'director', 'coach'],
-	'/registrar': ['super_admin', 'director', 'registrar'],
+	'/admin': ['super_admin', 'global_admin'],
+	'/director': ['super_admin', 'global_admin', 'director'],
+	'/recruiter': ['super_admin', 'global_admin', 'director'],
+	'/coach': ['super_admin', 'global_admin', 'director', 'coach'],
+	'/registrar': ['super_admin', 'global_admin', 'director', 'registrar'],
 	'/parent': ['parent'],
-	'/tracker': ['player', 'super_admin'],
-	'/stats': ['player', 'super_admin'],
-	'/challenges': ['player', 'super_admin'],
-	'/passport': ['player', 'super_admin'],
-	'/trophies': ['player', 'super_admin'],
+	'/player': ['player', 'super_admin', 'global_admin'],
+	'/tracker': ['player', 'super_admin', 'global_admin'],
+	'/stats': ['player', 'super_admin', 'global_admin'],
+	'/challenges': ['player', 'super_admin', 'global_admin'],
+	'/passport': ['player', 'super_admin', 'global_admin'],
+	'/trophies': ['player', 'super_admin', 'global_admin'],
 	'/vpc-pending': ['player']
 };
 

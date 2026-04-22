@@ -6,6 +6,7 @@
 
 	const canAccess = $derived(
 		authStore.role === 'super_admin' ||
+			authStore.role === 'global_admin' ||
 			(licenseEntitlementStore.entitlement &&
 				String(licenseEntitlementStore.entitlement.tier || '').toLowerCase() === 'recruiter' &&
 				String(licenseEntitlementStore.entitlement.subscription_status || '').toLowerCase() ===
@@ -19,7 +20,7 @@
 	<title>Recruiter marketplace · SSTRACKER</title>
 </svelte:head>
 
-{#if authStore.role === 'super_admin' || (!loadingEnt && canAccess)}
+{#if authStore.role === 'super_admin' || authStore.role === 'global_admin' || (!loadingEnt && canAccess)}
 	<RecruiterSearchEngine />
 {:else if !loadingEnt}
 	<section class="recruiter-locked glass-panel">

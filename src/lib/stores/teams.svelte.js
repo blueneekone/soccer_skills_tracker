@@ -109,14 +109,17 @@ function createTeamsStore() {
 					return;
 				}
 
-				if (scope === 'admin_full' && role === 'super_admin') {
+				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
 					const teamsSnap = await getDocs(collection(db, 'teams'));
 					teamsSnap.forEach((d) => teams.push({ id: d.id, ...d.data() }));
 					clubs = await loadClubsForScope('admin_full', teams, '');
 				} else if (
 					scope === 'club' &&
 					clubId &&
-					(role === 'director' || role === 'registrar' || role === 'super_admin')
+					(role === 'director' ||
+						role === 'registrar' ||
+						role === 'super_admin' ||
+						role === 'global_admin')
 				) {
 					const teamsSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
@@ -129,9 +132,9 @@ function createTeamsStore() {
 				}
 
 				admins = [];
-				if (scope === 'admin_full' && role === 'super_admin') {
+				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
 					const adminsSnap = await getDocs(
-						query(collection(db, 'users'), where('role', '==', 'super_admin')),
+						query(collection(db, 'users'), where('role', 'in', ['super_admin', 'global_admin'])),
 					);
 					adminsSnap.forEach((d) => admins.push(d.id));
 				}
@@ -172,9 +175,9 @@ export const teamsStore = createTeamsStore();
 export function resolveTeamsLoadScope(pathname, role) {
 	if (pathname.startsWith('/admin')) return 'admin_full';
 	if (pathname.startsWith('/setup')) return 'setup';
-	/** Super Admin QA: load full org catalog on staff dashboards (no club/team on profile). */
+	/** Global Admin QA: load full org catalog on staff dashboards (no club/team on profile). */
 	if (
-		role === 'super_admin' &&
+		(role === 'super_admin' || role === 'global_admin') &&
 		(pathname.startsWith('/director') ||
 			pathname.startsWith('/coach') ||
 			pathname.startsWith('/registrar'))
@@ -186,6 +189,8 @@ export function resolveTeamsLoadScope(pathname, role) {
 	if (pathname.startsWith('/recruiter')) return 'none';
 	if (role === 'director' || role === 'registrar') return 'club';
 	if (role === 'coach') return 'coach';
-	if (role === 'super_admin') return pathname.startsWith('/admin') ? 'admin_full' : 'coach';
+	if (role === 'super_admin' || role === 'global_admin') {
+		return pathname.startsWith('/admin') ? 'admin_full' : 'coach';
+	}
 	return 'none';
 }

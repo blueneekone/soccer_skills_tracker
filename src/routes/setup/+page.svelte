@@ -12,7 +12,9 @@
 	const listTeamsForClub = httpsCallable(functions, 'listTeamsForClub');
 	const playerSelfReportDobFn = httpsCallable(functions, 'playerSelfReportDob');
 
-	// Redirect logic — super admins (JWT `isSuperAdmin` or role) skip profile completion
+	// Redirect logic — global admins (JWT claims or role token) skip profile completion.
+	// Accepts both `isGlobalAdmin`/`global_admin` (new canonical) and `isSuperAdmin`/`super_admin`
+	// (legacy, still present on un-refreshed JWTs) during the Sprint 2.7 migration.
 	$effect(() => {
 		if (authStore.isLoading) return;
 
@@ -26,9 +28,12 @@
 			if (!u) return;
 			try {
 				const tr = await getIdTokenResult(u, false);
-				const isSuper =
-					tr.claims.isSuperAdmin === true || tr.claims.role === 'super_admin';
-				if (isSuper) {
+				const isPlatformAdmin =
+					tr.claims.isGlobalAdmin === true ||
+					tr.claims.isSuperAdmin === true ||
+					tr.claims.role === 'global_admin' ||
+					tr.claims.role === 'super_admin';
+				if (isPlatformAdmin) {
 					await authStore.refresh({ silent: true });
 					goto('/admin', { replaceState: true });
 					return;

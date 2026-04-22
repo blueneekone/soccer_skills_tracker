@@ -15,7 +15,7 @@ import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
  * @returns {{ path: string; context: LoginActiveContext; pivotKey: string }}
  */
 export function getLoginWaterfallDestination(role, profile) {
-	if (role === 'super_admin') {
+	if (role === 'super_admin' || role === 'global_admin') {
 		return {
 			path: '/admin/overview',
 			context: 'admin',

@@ -103,7 +103,7 @@
 					return;
 				}
 
-				if (role === 'super_admin') {
+				if (role === 'super_admin' || role === 'global_admin') {
 					if (!cancelled) items = [];
 					return;
 				}
@@ -130,9 +130,9 @@
 		<div class="card">
 			<div class="card-header bg-green-header">Inbox</div>
 			<div class="card-body inbox-body">
-				{#if role === 'super_admin'}
+				{#if role === 'super_admin' || role === 'global_admin'}
 					<p class="muted">
-						Use the Coach tools → Messages tab to send mail as a team staff member. Super admins can review
+						Use the Coach tools → Messages tab to send mail as a team staff member. Global admins can review
 						<code>messaging_audit</code> in the Firebase console.
 					</p>
 				{:else if loading}

@@ -32,13 +32,13 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	/** @type {WorkspaceMenuSection[]} */
 	const sections = [];
 
-	if (role === 'super_admin') {
+	if (role === 'super_admin' || role === 'global_admin') {
 		sections.push({
 			title: 'Platform',
-			items: [{ id: 'ctx-platform-admin', label: 'Super Admin · Platform', href: '/admin' }],
+			items: [{ id: 'ctx-platform-admin', label: 'Global Admin \u00b7 Platform', href: '/admin' }],
 		});
 		sections.push({
-			title: 'QA · God mode',
+			title: 'QA Views',
 			items: [
 				{ id: 'ctx-qa-director', label: 'QA: Director View', href: '/director' },
 				{ id: 'ctx-qa-coach', label: 'QA: Coach View', href: '/coach' },
@@ -77,7 +77,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 		sections.push({ title: 'Teams', items: coachItems });
 	}
 
-	if (role === 'super_admin') {
+	if (role === 'super_admin' || role === 'global_admin') {
 		sections.push({
 			title: 'Household',
 			items: [{ id: 'ctx-athlete-stats', label: 'Athlete · Stats', href: '/stats' }],
@@ -101,7 +101,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 		});
 	}
 
-	if (role === 'director' || role === 'super_admin') {
+	if (role === 'director' || role === 'super_admin' || role === 'global_admin') {
 		sections.push({
 			title: 'Recruiting',
 			items: [{ id: 'ctx-recruiter', label: 'Recruiter · Search', href: '/recruiter' }],
@@ -133,11 +133,11 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 	const activeTeam = (scopeHint?.activeTeamId || '').trim();
 
 	if (pathname.startsWith('/admin')) {
-		return { title: 'Super Admin · Platform', sub: 'Workspace' };
+		return { title: 'Global Admin \u00b7 Platform', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/director')) {
 		let cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
-		if (role === 'super_admin') {
+		if (role === 'super_admin' || role === 'global_admin') {
 			if (activeClub) cid = activeClub;
 			else if (!cid || cid === 'admin') cid = clubs[0]?.id || '';
 		}
@@ -146,7 +146,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		return { title: `Director · ${name}`, sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/coach')) {
-		if (role === 'super_admin') {
+		if (role === 'super_admin' || role === 'global_admin') {
 			if (activeTeam) {
 				const tm = teams.find((t) => t.id === activeTeam);
 				const tn =
@@ -178,7 +178,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		return { title: 'Parent · Household', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/registrar')) {
-		if (role === 'super_admin' && clubs.length > 0) {
+		if ((role === 'super_admin' || role === 'global_admin') && clubs.length > 0) {
 			const cid = activeClub || clubs[0].id;
 			const cl = clubs.find((c) => c.id === cid);
 			const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || cid || 'Club';
@@ -198,7 +198,8 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 
 	switch (role) {
 		case 'super_admin':
-			return { title: 'Super Admin · Platform', sub: 'Workspace' };
+		case 'global_admin':
+			return { title: 'Global Admin \u00b7 Platform', sub: 'Workspace' };
 		case 'director': {
 			const cid = typeof profile?.clubId === 'string' ? profile.clubId : '';
 			const cl = cid ? clubs.find((c) => c.id === cid) : null;

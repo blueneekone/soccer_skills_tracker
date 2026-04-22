@@ -39,18 +39,20 @@
 	const userEmail = $derived(authStore.user?.email || '');
 	const clubId = $derived(authStore.userProfile?.clubId);
 
-	// Coach workspace: assigned teams; super_admin QA uses full loaded catalog from org scope.
+	// Coach workspace: assigned teams; Global Admin QA uses full loaded catalog from org scope.
 	const myTeams = $derived.by(() => {
 		if (!teamsStore.loaded) return [];
-		if (role === 'super_admin') return teamsStore.teams.slice();
+		if (role === 'super_admin' || role === 'global_admin') return teamsStore.teams.slice();
 		if (!userEmail) return [];
 		return teamsStore.getCoachTeams(userEmail);
 	});
 
-	const isDirectorView = $derived(role === 'super_admin' || role === 'director');
+	const isDirectorView = $derived(
+		role === 'super_admin' || role === 'global_admin' || role === 'director',
+	);
 
 	const canOverrideEligibility = $derived(
-		role === 'super_admin' || role === 'director',
+		role === 'super_admin' || role === 'global_admin' || role === 'director',
 	);
 
 	// Auto-select team: context store pivot (any role) → URL param → first available.

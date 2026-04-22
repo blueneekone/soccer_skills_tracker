@@ -48,7 +48,7 @@
 		>
 			<i class="ph ph-gear"></i>
 		</button>
-		{#if authStore.role !== 'super_admin'}
+		{#if authStore.role !== 'super_admin' && authStore.role !== 'global_admin'}
 			<button class="action-btn btn-support text-white" onclick={() => goto('/support')}>
 				<i class="ph ph-lifebuoy support-icon"></i>
 				<span class="support-text">Support</span>

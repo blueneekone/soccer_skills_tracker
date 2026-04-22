@@ -30,7 +30,7 @@ export function fallbackPlayerName(baseProfile, email) {
  */
 export function isProfileComplete(profile) {
 	if (!profile) return false;
-	if (profile.role === 'super_admin') return true;
+	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
 	if (profile.role === 'coach' && profile.teamId) return true;
@@ -50,9 +50,9 @@ export function isProfileComplete(profile) {
 export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = true) {
 	const tokenResult = await getIdTokenResult(firebaseUser, forceTokenRefresh);
 	let role = tokenResult.claims.role || 'player';
-	/** @see Firebase custom claims — super admin must bypass setup even if users/{email} is missing */
-	if (tokenResult.claims.isSuperAdmin === true) {
-		role = 'super_admin';
+	/** @see Firebase custom claims — global admin must bypass setup even if users/{email} is missing */
+	if (tokenResult.claims.isGlobalAdmin === true || tokenResult.claims.isSuperAdmin === true) {
+		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
 	}
 
 	const emailKey = firebaseUser.email.toLowerCase();
@@ -61,7 +61,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
 	const fbName = fallbackPlayerName(baseProfile, firebaseUser.email);
 
-	if (role === 'super_admin' || role === 'director') {
+	if (role === 'super_admin' || role === 'global_admin' || role === 'director') {
 		return {
 			role,
 			profile: {

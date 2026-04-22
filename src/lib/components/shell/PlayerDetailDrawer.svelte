@@ -31,9 +31,11 @@
 
 	const role = $derived(authStore.role);
 	const canReadPassport = $derived(
-		role === 'super_admin' || role === 'director' || role === 'registrar'
+		role === 'super_admin' || role === 'global_admin' || role === 'director' || role === 'registrar'
 	);
-	const canReadHousehold = $derived(role === 'super_admin' || role === 'registrar');
+	const canReadHousehold = $derived(
+		role === 'super_admin' || role === 'global_admin' || role === 'registrar',
+	);
 
 	const open = $derived(row != null);
 

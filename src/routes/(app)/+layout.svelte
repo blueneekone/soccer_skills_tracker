@@ -25,14 +25,14 @@
 
 	let { children } = $props();
 
-	// Sync club license doc for read-only / pricing UX — super_admin exempt.
+	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (!authStore.isAuthenticated || !authStore.isProfileComplete) {
 			licenseEntitlementStore.syncFromUser(null);
 			return;
 		}
-		if (authStore.role === 'super_admin') {
+		if (authStore.role === 'super_admin' || authStore.role === 'global_admin') {
 			licenseEntitlementStore.syncFromUser(null);
 			return;
 		}
@@ -115,13 +115,17 @@
 		if (authStore.userProfile?.teamId) {
 			const effectiveTid =
 				authStore.role === 'super_admin' ||
+				authStore.role === 'global_admin' ||
 				authStore.role === 'director' ||
 				authStore.role === 'registrar'
 					? null
 					: authStore.userProfile.teamId;
 			if (effectiveTid) workoutsStore.loadForTeam(effectiveTid);
 		}
-		if (authStore.role === 'super_admin' && path.startsWith('/coach')) {
+		if (
+			(authStore.role === 'super_admin' || authStore.role === 'global_admin') &&
+			path.startsWith('/coach')
+		) {
 			const qaTid = workspaceContextStore.activeTeamId?.trim();
 			if (qaTid) workoutsStore.loadForTeam(qaTid);
 		}
@@ -165,10 +169,10 @@
 		}
 	});
 
-	// Super Admin QA: default active club/team from loaded org data when profile has no tenant.
+	// Global Admin QA: default active club/team from loaded org data when profile has no tenant.
 	$effect(() => {
 		if (!browser || !authStore.isAuthenticated || authStore.isLoading) return;
-		if (authStore.role !== 'super_admin') return;
+		if (authStore.role !== 'super_admin' && authStore.role !== 'global_admin') return;
 		const path = page.url.pathname;
 		const clubs = teamsStore.clubs;
 		const teamRows = teamsStore.teams;
@@ -188,7 +192,7 @@
 		}
 		const path = page.url.pathname;
 		let cid = typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '';
-		if (authStore.role === 'super_admin' && (path.startsWith('/director') || path.startsWith('/registrar'))) {
+		if ((authStore.role === 'super_admin' || authStore.role === 'global_admin') && (path.startsWith('/director') || path.startsWith('/registrar'))) {
 			const a = workspaceContextStore.activeClubId?.trim();
 			if (a) cid = a;
 			else if (!cid || cid === 'admin') cid = teamsStore.clubs[0]?.id || '';
@@ -209,12 +213,14 @@
 	});
 
 	// Sprint 2.7 — Global Kill Switch: block rendering for every role except
-	// super_admin when maintenanceMode === true. Super admins retain full access
-	// so they can disable the flag from System Settings → Feature Flags.
+	// Global Admin when maintenanceMode === true. Global Admins retain full
+	// access so they can disable the flag from System Settings → Feature Flags.
+	// Accepts both legacy `super_admin` and new `global_admin` role tokens.
 	const maintenanceLockout = $derived(
 		featureFlagsStore.loaded &&
 			featureFlagsStore.maintenanceMode &&
-			authStore.role !== 'super_admin'
+			authStore.role !== 'super_admin' &&
+			authStore.role !== 'global_admin',
 	);
 </script>
 

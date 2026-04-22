@@ -44,7 +44,7 @@
 	const teamLabel = $derived.by(() => {
 		const tid = profile?.teamId;
 		if (!tid || tid === 'admin') {
-			if (role === 'super_admin' || role === 'director') return 'All teams (admin)';
+			if (role === 'super_admin' || role === 'global_admin' || role === 'director') return 'All teams (admin)';
 			if (role === 'registrar') return 'Club-wide (not on a player roster)';
 			return '—';
 		}
@@ -67,7 +67,7 @@
 		errorMsg = '';
 		saveMsg = '';
 		const trimmed = playerName.trim();
-		if (!trimmed && role !== 'super_admin' && role !== 'director') {
+		if (!trimmed && role !== 'super_admin' && role !== 'global_admin' && role !== 'director') {
 			errorMsg = 'Display name is required.';
 			return;
 		}

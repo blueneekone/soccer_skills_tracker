@@ -184,7 +184,7 @@
 
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		if (authStore.role !== 'super_admin') {
+		if (authStore.role !== 'super_admin' && authStore.role !== 'global_admin') {
 			err = 'You must be a super admin to view this page.';
 			loading = false;
 			return;

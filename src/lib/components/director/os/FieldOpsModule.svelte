@@ -316,10 +316,10 @@
 	<div class="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
 		<div>
 			<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
-				Field ops
+				Field Ops
 			</h3>
 			<p class="tw-m-0 tw-text-sm tw-mt-1" style="color: var(--text-secondary);">
-				Master schedule for your pitches — conflicts are blocked server-side.
+				Master Schedule For Your Pitches — conflicts are blocked server-side.
 			</p>
 		</div>
 	</div>
@@ -335,7 +335,7 @@
 				class="tw-m-0 tw-mb-1 tw-text-sm tw-font-extrabold tw-tracking-tight"
 				style="color: var(--text-primary);"
 			>
-				Static map vault
+				Static Map Vault
 			</h4>
 			<p class="tw-m-0 tw-mb-3 tw-text-xs" style="color: var(--text-secondary);">
 				Upload PDFs or images of your facilities. 				In the facility drawer, set a map pin, address, routing link, and tactical canvas for parents and
@@ -347,15 +347,22 @@
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
 				Field
-				<select class="tw-rounded-lg tw-border tw-px-2 tw-py-2 tw-min-w-[12rem]" bind:value={fieldId}>
-					{#each fields as f}
+				<select
+					class="fieldops-control tw-rounded-lg tw-border tw-px-3 tw-min-w-[12rem]"
+					bind:value={fieldId}
+				>
+					{#each fields as f (f.id)}
 						<option value={f.id}>{f.name}</option>
 					{/each}
 				</select>
 			</label>
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
 				Date
-				<input type="date" bind:value={scheduleDate} class="tw-rounded-lg tw-border tw-px-2 tw-py-2" />
+				<input
+					type="date"
+					bind:value={scheduleDate}
+					class="fieldops-control tw-rounded-lg tw-border tw-px-3"
+				/>
 			</label>
 		</div>
 
@@ -496,3 +503,23 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	/* Normalize Field selector + Date input to identical 40px heights so the
+	   two controls align perfectly. Native date inputs have invisible UA
+	   padding; forcing height + box-sizing removes the drift. */
+	.fieldops-control {
+		height: 40px;
+		line-height: 1;
+		font-size: 13.5px;
+		box-sizing: border-box;
+		appearance: none;
+		-webkit-appearance: none;
+		background-color: #ffffff;
+	}
+
+	:global(html.dark) .fieldops-control {
+		background-color: #0f0f11;
+		color: #fafafa;
+	}
+</style>

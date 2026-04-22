@@ -4,7 +4,7 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
-	/** Optional team id for director / super_admin. */
+	/** Optional team id for director / global_admin. */
 	let { teamIdForStaff = '', compact = false } = $props();
 
 	let loading = $state(true);
@@ -19,7 +19,7 @@
 	const effectiveTeamId = $derived.by(() => {
 		const staff =
 			typeof teamIdForStaff === 'string' ? teamIdForStaff.trim() : '';
-		if (staff && (role === 'director' || role === 'super_admin')) {
+		if (staff && (role === 'director' || role === 'super_admin' || role === 'global_admin')) {
 			return staff;
 		}
 		const tid = profile?.teamId;

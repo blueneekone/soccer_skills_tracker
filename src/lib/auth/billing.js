@@ -15,7 +15,7 @@
  * @returns {boolean}
  */
 export function isSubscriptionReadOnly(role, clubId, ent, opts = {}) {
-	if (role === 'super_admin') return false;
+	if (role === 'super_admin' || role === 'global_admin') return false;
 	if (opts.clubInfinite === true) return false;
 	if (!clubId || typeof clubId !== 'string' || !clubId.trim()) return false;
 	if (!ent || typeof ent !== 'object') return false;

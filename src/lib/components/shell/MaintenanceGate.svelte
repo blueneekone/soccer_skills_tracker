@@ -4,9 +4,9 @@
 	 *
 	 * Rendered by (app)/+layout.svelte in place of all shells/children when:
 	 *   • config/feature_flags.maintenanceMode === true AND
-	 *   • authStore.role !== 'super_admin'
+	 *   • authStore.role !== 'super_admin' && authStore.role !== 'global_admin'
 	 *
-	 * Super admins always pass through so they can disable the flag without
+	 * Global Admins always pass through so they can disable the flag without
 	 * being locked out of their own kill switch.
 	 */
 

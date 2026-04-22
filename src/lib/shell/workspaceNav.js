@@ -11,7 +11,7 @@
 const adminLinks = [
 	{ label: 'Overview',        icon: 'ph-chart-line',   href: '/admin/overview' },
 	{ label: 'Organizations',   icon: 'ph-buildings',    href: '/admin/organizations' },
-	{ label: 'Global Users',    icon: 'ph-users-four',   href: '/admin/users' },
+	{ label: 'Global Users',    icon: 'ph-globe',        href: '/admin/users' },
 	{ label: 'Recruiters',      icon: 'ph-binoculars',   href: '/admin/recruiters' },
 	{ label: 'Audit Log',       icon: 'ph-shield-check', href: '/admin/audit-log' },
 	{ label: 'System Settings', icon: 'ph-gear-six',     href: '/admin/system-settings' },
@@ -20,11 +20,12 @@ const adminLinks = [
 /** @type {ShellNavItem[]} */
 const directorLinks = [
 	{ tab: 'home', label: 'Home', icon: 'ph-house', href: '/director?tab=home' },
-	{ tab: 'teams', label: 'Roster & teams', icon: 'ph-users-three', href: '/director?tab=teams' },
-	{ tab: 'field', label: 'Field ops', icon: 'ph-map-pin', href: '/director?tab=field' },
+	{ tab: 'teams', label: 'Roster & Teams', icon: 'ph-users-three', href: '/director?tab=teams' },
+	{ tab: 'field', label: 'Field Ops', icon: 'ph-map-pin', href: '/director?tab=field' },
 	{ tab: 'registrars', label: 'Registrars', icon: 'ph-swap', href: '/director?tab=registrars' },
-	{ tab: 'brand', label: 'Club branding', icon: 'ph-palette', href: '/director?tab=brand' },
-	{ tab: 'marketing', label: 'Playbook & campaigns', icon: 'ph-megaphone', href: '/director?tab=marketing' },
+	{ tab: 'brand', label: 'Club Branding', icon: 'ph-palette', href: '/director?tab=brand' },
+	{ tab: 'playbook', label: 'Playbook', icon: 'ph-strategy', href: '/director?tab=playbook' },
+	{ tab: 'licenses', label: 'Licenses & Seats', icon: 'ph-credit-card', href: '/director?tab=licenses' },
 	{ tab: 'compliance', label: 'Compliance', icon: 'ph-shield-check', href: '/director?tab=compliance' },
 	{ tab: 'household', label: 'Households & COPPA', icon: 'ph-house-line', href: '/director?tab=household' },
 ];
@@ -34,6 +35,7 @@ const coachLinks = [
 	{ tab: 'home', label: 'Dashboard', icon: 'ph-house', href: '/coach?tab=home' },
 	{ tab: 'roster', label: 'My Team', icon: 'ph-users-three', href: '/coach?tab=roster' },
 	{ tab: 'playbook', label: 'Playbook', icon: 'ph-book-open', href: '/coach?tab=playbook' },
+	{ tab: '', label: 'Drill Library', icon: 'ph-barbell', href: '/coach/drills' },
 	{ tab: 'videos', label: 'Videos', icon: 'ph-video-camera', href: '/coach?tab=videos' },
 	{ tab: 'matchday', label: 'Match Day', icon: 'ph-soccer-ball', href: '/coach?tab=matchday' },
 	{ tab: 'messages', label: 'Messages', icon: 'ph-chat-circle', href: '/coach?tab=messages' },
@@ -49,9 +51,11 @@ const coachLinks = [
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
+	{ tab: '', label: 'Dashboard', icon: 'ph-radar', href: '/player/dashboard' },
+	{ tab: '', label: 'Today\u2019s Quests', icon: 'ph-barbell', href: '/player/workout' },
 	{ tab: '', label: 'Player Stats', icon: 'ph-chart-bar', href: '/stats' },
 	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
-	{ tab: '', label: 'Log workout', icon: 'ph-list', href: '/tracker' },
+	{ tab: '', label: 'Log Workout', icon: 'ph-list', href: '/tracker' },
 	{ tab: '', label: 'Challenges', icon: 'ph-medal', href: '/challenges' },
 	{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
 ];
@@ -60,19 +64,19 @@ const athleteHouseholdLinks = [
 const parentLinks = [
 	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
 	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
-	{ tab: '', label: 'Log workout', icon: 'ph-user-check', href: '/parent/log-workout' },
+	{ tab: '', label: 'Log Workout', icon: 'ph-user-check', href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments', icon: 'ph-credit-card', href: '/pricing' },
 	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },
 ];
 
 /** @type {ShellNavItem[]} */
 const registrarLinks = [
-	{ tab: '', label: 'Compliance desk', icon: 'ph-shield-check', href: '/registrar' },
+	{ tab: '', label: 'Compliance Desk', icon: 'ph-shield-check', href: '/registrar' },
 ];
 
 /** @type {ShellNavItem[]} */
 const recruiterLinks = [
-	{ tab: '', label: 'Recruiter search', icon: 'ph-magnifying-glass', href: '/recruiter' },
+	{ tab: '', label: 'Recruiter Search', icon: 'ph-magnifying-glass', href: '/recruiter' },
 ];
 
 /**
@@ -103,8 +107,8 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 	const raw = (activeContext || '').trim();
 	/** @type {WorkspaceContext} */
 	let ctx = raw || inferred;
-	// Super Admin must follow URL context strictly (prevents dashboard bleed across workspaces).
-	if (role === 'super_admin') {
+	// Global Admin must follow URL context strictly (prevents dashboard bleed across workspaces).
+	if (role === 'super_admin' || role === 'global_admin') {
 		ctx = inferred;
 	}
 	const allowed = new Set(['admin', 'director', 'coach', 'registrar', 'recruiter', 'household']);
@@ -115,8 +119,8 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 	switch (ctx) {
 		case 'admin':
 			return {
-				workspaceLabel: 'Admin',
-				mobileTitle: 'Admin',
+				workspaceLabel: 'Global Admin',
+				mobileTitle: 'Global Admin',
 				links: adminLinks,
 				showBilling: false,
 			};

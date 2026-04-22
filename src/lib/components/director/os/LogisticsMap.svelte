@@ -177,7 +177,11 @@
 <style>
 	.logistics-map-root {
 		box-sizing: border-box;
-		height: 16rem;
+		/* Explicit height is critical — Google Maps API silently fails to render
+		   tiles inside a 0-height container. Use min-height so parent containers
+		   using flex-1 can stretch beyond this floor. */
+		min-height: 500px;
+		height: 500px;
 		width: 100%;
 		border-radius: 14px;
 		border: 1px solid #e5e5e5;
@@ -191,7 +195,8 @@
 	.logistics-map-empty {
 		box-sizing: border-box;
 		display: flex;
-		height: 16rem;
+		min-height: 500px;
+		height: 500px;
 		width: 100%;
 		flex-direction: column;
 		align-items: center;

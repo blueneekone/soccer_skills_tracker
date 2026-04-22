@@ -37,7 +37,7 @@
 			authStore.userProfile.clubId.trim() :
 			'';
 		if (raw) return raw;
-		if (role === 'super_admin') {
+		if (role === 'super_admin' || role === 'global_admin') {
 			const a = workspaceContextStore.activeClubId?.trim();
 			if (a) return a;
 			const first = teamsStore.clubs[0]?.id;

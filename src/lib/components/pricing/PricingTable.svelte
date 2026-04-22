@@ -12,9 +12,11 @@
 	let errorMsg = $state('');
 
 	const role = $derived(authStore.role);
-	const canPurchase = $derived(role === 'director' || role === 'super_admin');
+	const canPurchase = $derived(
+		role === 'director' || role === 'super_admin' || role === 'global_admin',
+	);
 	const superNeedsClub = $derived(
-		role === 'super_admin' &&
+		(role === 'super_admin' || role === 'global_admin') &&
 			!(typeof authStore.userProfile?.clubId === 'string' && authStore.userProfile.clubId.trim())
 	);
 
@@ -38,13 +40,13 @@
 				const q = parseInt(String(clubQty), 10);
 				payload.clubSeatQuantity = Number.isFinite(q) && q >= 1 && q <= 100000 ? q : 100;
 			}
-			if (role === 'super_admin') {
+			if (role === 'super_admin' || role === 'global_admin') {
 				const cid =
 					typeof authStore.userProfile?.clubId === 'string' ?
 						authStore.userProfile.clubId.trim() :
 						'';
 				if (!cid) {
-					errorMsg = 'Super admin: set a club scope on your profile before checkout.';
+					errorMsg = 'Global admin: set a club scope on your profile before checkout.';
 					busyTier = null;
 					return;
 				}

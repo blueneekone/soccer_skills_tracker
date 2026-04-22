@@ -92,7 +92,8 @@
 
 	// ── Role display helpers ─────────────────────────────────────────────────
 	const ROLE_LABELS = /** @type {const} */ ({
-		super_admin: 'Super Admin',
+		super_admin: 'Global Admin',
+		global_admin: 'Global Admin',
 		director: 'Director',
 		coach: 'Coach',
 		registrar: 'Registrar',
@@ -110,7 +111,8 @@
 	/** @param {string} role */
 	function roleToneClass(role) {
 		switch (role) {
-			case 'super_admin': return 'gu-role--crimson';
+			case 'super_admin':
+			case 'global_admin': return 'gu-role--crimson';
 			case 'director': return 'gu-role--indigo';
 			case 'coach': return 'gu-role--amber';
 			case 'registrar': return 'gu-role--teal';
@@ -327,7 +329,7 @@
 	// ── Initial + search-triggered fetches ───────────────────────────────────
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		if (authStore.role !== 'super_admin') {
+		if (authStore.role !== 'super_admin' && authStore.role !== 'global_admin') {
 			err = 'You must be a super admin to view this page.';
 			return;
 		}
@@ -418,8 +420,8 @@
 		openMenuFor = '';
 		flashOk = '';
 		flashErr = '';
-		if (row.role === 'super_admin') {
-			flashErr = 'Cannot impersonate another super admin.';
+		if (row.role === 'super_admin' || row.role === 'global_admin') {
+			flashErr = 'Cannot impersonate another global admin.';
 			return;
 		}
 		if (row.email === (authStore.user?.email || '').toLowerCase()) {
@@ -692,12 +694,12 @@
 												class="gu-menu__item"
 												role="menuitem"
 												onclick={() => loginAs(row)}
-												disabled={row.role === 'super_admin'}
+												disabled={row.role === 'super_admin' || row.role === 'global_admin'}
 											>
 												<i class="ph ph-user-switch" aria-hidden="true"></i>
 												<span>Login As</span>
-												{#if row.role === 'super_admin'}
-													<span class="gu-menu__hint">super admin</span>
+												{#if row.role === 'super_admin' || row.role === 'global_admin'}
+													<span class="gu-menu__hint">global admin</span>
 												{/if}
 											</button>
 
@@ -708,7 +710,7 @@
 												class="gu-menu__item gu-menu__item--danger"
 												role="menuitem"
 												onclick={() => openPurge(row)}
-												disabled={row.role === 'super_admin'}
+												disabled={row.role === 'super_admin' || row.role === 'global_admin'}
 											>
 												<i class="ph ph-trash" aria-hidden="true"></i>
 												<span>Purge User Data (GDPR)</span>

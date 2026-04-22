@@ -239,7 +239,11 @@
 		left: 8px;
 		right: 8px;
 		top: calc(100% + 4px);
-		/* Above sidebar chrome (55) and below global modals; high enough to escape local stacking */
+		/* Confine to sidebar rail: left/right inset keeps width equal to rail
+		   minus 16px of padding, so the popover can never bleed horizontally
+		   over the main dashboard canvas. z-index 1000 paints above sidebar
+		   chrome; the sidebar's own stacking context (z-index 40) keeps this
+		   popover above .ec-main. */
 		z-index: 1000;
 		background: #ffffff;
 		border: 1px solid #e5e5e5;
@@ -248,6 +252,8 @@
 		padding: 8px 0;
 		max-height: min(70vh, 420px);
 		overflow-y: auto;
+		overflow-x: hidden;
+		box-sizing: border-box;
 	}
 
 	:global(html.dark) .ec-ws__popover {

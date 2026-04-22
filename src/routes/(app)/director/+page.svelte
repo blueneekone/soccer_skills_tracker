@@ -9,13 +9,14 @@
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import HouseholdComplianceTab from '$lib/components/director/HouseholdComplianceTab.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
-	import MarketingTab from '$lib/components/director/MarketingTab.svelte';
+	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
+	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	const VALID_DIR_TABS = new Set([
-		'home', 'teams', 'field', 'registrars', 'brand', 'marketing', 'compliance', 'household',
+		'home', 'teams', 'field', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
 	]);
 
 	/** Effective tenant for Firestore; super_admin uses QA scope (active club or first org). */
@@ -24,7 +25,7 @@
 		const prof = authStore.userProfile;
 		const raw = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
 		if (raw && raw !== 'admin') return raw;
-		if (role === 'super_admin') {
+		if (role === 'super_admin' || role === 'global_admin') {
 			const a = workspaceContextStore.activeClubId?.trim();
 			if (a) return a;
 			const first = teamsStore.clubs[0]?.id;
@@ -67,8 +68,10 @@
 				<RegistrarInviteTab {clubId} />
 			{:else if activeTab === 'brand'}
 				<BrandingTab {clubId} />
-			{:else if activeTab === 'marketing'}
-				<MarketingTab {clubId} />
+			{:else if activeTab === 'playbook'}
+				<PlaybookTab {clubId} />
+			{:else if activeTab === 'licenses'}
+				<LicensesTab {clubId} />
 			{:else if activeTab === 'compliance'}
 				<ComplianceTab {clubId} />
 			{:else if activeTab === 'household'}

@@ -64,25 +64,37 @@
 			.then(([clubsSnap, vpcSnap]) => {
 				if (cancelled) return;
 
-			// Build clubs array — normalize every field so legacy documents with missing
-			// fields (e.g. no `sport` key) never cause the {#each} renderer to throw.
+			// Build clubs array — NO FILTERING. Every club document, even one missing
+			// `sport`, `createdAt`, or `name`, MUST render. Defensive normalization
+			// uses optional chaining and fallbacks so the renderer can never crash.
+			// This fixes the "Aggies FC disappears" bug.
 			/** @type {Club[]} */
 			const loaded = [];
 			clubsSnap.forEach((d) => {
-				const raw = /** @type {Record<string, unknown>} */ (d.data());
+				const raw = /** @type {Record<string, unknown>} */ (d.data() || {});
 				loaded.push({
 					id: d.id,
-					name:          typeof raw.name          === 'string' ? raw.name.trim()          : undefined,
-					sport:         typeof raw.sport         === 'string' && raw.sport.trim()
-					               ? raw.sport.trim()
-					               : undefined,          // intentionally undefined → renders as '—' downstream
-					directorEmail: typeof raw.directorEmail === 'string' ? raw.directorEmail.trim() : undefined,
-					isInfinite:    raw.isInfinite === true,
-					logoUrl:       typeof raw.logoUrl       === 'string' ? raw.logoUrl.trim()       : undefined,
-					createdAt:     raw.createdAt,
+					name:
+						typeof raw?.name === 'string' && raw.name.trim()
+							? raw.name.trim()
+							: undefined,
+					sport:
+						typeof raw?.sport === 'string' && raw.sport.trim()
+							? raw.sport.trim()
+							: undefined,
+					directorEmail:
+						typeof raw?.directorEmail === 'string' && raw.directorEmail.trim()
+							? raw.directorEmail.trim()
+							: undefined,
+					isInfinite: raw?.isInfinite === true,
+					logoUrl:
+						typeof raw?.logoUrl === 'string' && raw.logoUrl.trim()
+							? raw.logoUrl.trim()
+							: undefined,
+					createdAt: raw?.createdAt ?? null,
 				});
 			});
-				clubs = loaded.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+			clubs = loaded.sort((a, b) => (a?.name || a?.id || '').localeCompare(b?.name || b?.id || ''));
 
 				// Build compliance map from vpc_requests
 				/** @type {Map<string, { total: number, verified: number }>} */
@@ -235,12 +247,32 @@
 			newClubDir   = '';
 			showAddForm  = false;
 
-			// Reload clubs table directly
+			// Reload clubs table directly — same defensive normalization as initial load.
 			const snap = await getDocs(collection(db, 'clubs'));
 			/** @type {Club[]} */
 			const reloaded = [];
-			snap.forEach((d) => reloaded.push({ id: d.id, .../** @type {Omit<Club,'id'>} */ (d.data()) }));
-			clubs = reloaded.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+			snap.forEach((d) => {
+				const raw = /** @type {Record<string, unknown>} */ (d.data() || {});
+				reloaded.push({
+					id: d.id,
+					name: typeof raw?.name === 'string' && raw.name.trim() ? raw.name.trim() : undefined,
+					sport:
+						typeof raw?.sport === 'string' && raw.sport.trim() ? raw.sport.trim() : undefined,
+					directorEmail:
+						typeof raw?.directorEmail === 'string' && raw.directorEmail.trim()
+							? raw.directorEmail.trim()
+							: undefined,
+					isInfinite: raw?.isInfinite === true,
+					logoUrl:
+						typeof raw?.logoUrl === 'string' && raw.logoUrl.trim()
+							? raw.logoUrl.trim()
+							: undefined,
+					createdAt: raw?.createdAt ?? null,
+				});
+			});
+			clubs = reloaded.sort((a, b) =>
+				(a?.name || a?.id || '').localeCompare(b?.name || b?.id || ''),
+			);
 		} catch (e) {
 			clubAddErr = e instanceof Error ? e.message : 'Could not create club.';
 		} finally {
@@ -267,6 +299,7 @@
 	<div class="orgs3-toolbar">
 		<div class="orgs3-toolbar__left">
 			<h1 class="orgs3-toolbar__title">Organizations</h1>
+			<span class="orgs3-toolbar__sub">Organization &rsaquo; Program &rsaquo; Team &rsaquo; Roster</span>
 			<span class="orgs3-toolbar__count">
 				{#if clubsLoading}—{:else}{filteredClubs.length} of {clubs.length}{/if}
 			</span>
@@ -440,23 +473,23 @@
 
 							<!-- Name + ID -->
 							<td class="orgs3-dt__td orgs3-dt__td--name">
-								<a class="orgs3-org-link" href="/admin/organizations/{cl.id}">
-									{cl.name || '—'}
+								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
+									{cl?.name || cl?.id || 'Unnamed Organization'}
 								</a>
-								<span class="orgs3-org-id">{cl.id}</span>
-								{#if cl.isInfinite === true}
+								<span class="orgs3-org-id">{cl?.id ?? ''}</span>
+								{#if cl?.isInfinite === true}
 									<span class="orgs3-promo" title="Unlimited / Promo license">∞</span>
 								{/if}
 							</td>
 
 							<!-- Sport -->
 							<td class="orgs3-dt__td orgs3-dt__td--muted">
-								{cl.sport || '—'}
+								{cl?.sport || 'Unknown'}
 							</td>
 
 							<!-- Director -->
 							<td class="orgs3-dt__td orgs3-dt__td--mono orgs3-dt__td--ellipsis">
-								{cl.directorEmail || '—'}
+								{cl?.directorEmail || 'Unassigned'}
 							</td>
 
 							<!-- Teams count -->
@@ -593,6 +626,14 @@
 		font-size: 0.75rem;
 		color: var(--text-secondary);
 		font-variant-numeric: tabular-nums;
+	}
+
+	.orgs3-toolbar__sub {
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.01em;
+		color: var(--text-secondary, #52525b);
+		margin-left: 4px;
 	}
 
 	.orgs3-toolbar__right {

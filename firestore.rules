@@ -42,14 +42,22 @@ service cloud.firestore {
 
     // Sprint 1.2 — COPPA 2026 / Privacy Shield.
     // A minor player who has not yet completed VPC must not read training data.
-    // All other roles (coach, director, parent, super_admin, registrar) pass through.
+    // All other roles (coach, director, parent, global_admin, registrar) pass through.
     // Players who are not minors, or whose VPC is verified, also pass through.
     function playerVpcAllowed() {
       return tokenRole() != 'player' || !tokenMinor() || tokenVpcOk();
     }
 
+    // Global Admin = platform-wide administrator. Canonical role token is
+    // `global_admin`. `super_admin` is accepted during the migration so legacy
+    // JWTs remain authorised until they are refreshed.
+    function isGlobalAdmin() {
+      return tokenRole() == 'global_admin' || tokenRole() == 'super_admin';
+    }
+
+    // Legacy alias — existing rule bodies still call isSuper().
     function isSuper() {
-      return tokenRole() == 'super_admin';
+      return isGlobalAdmin();
     }
 
     // Epic 16: recruiter marketplace — active Stripe recruiter tier (JWT clubId → license_entitlements).
@@ -960,23 +968,107 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Epic 11: global drill catalog (seeded / admin only via Admin SDK).
+    // Sprint 2.6.4: Dopamine Engine — global drill catalog.
+    //
+    // The GLOBAL `drills` collection is a curated library seeded via Admin SDK
+    // / Global Admin tooling. It has NO teamId and therefore NO coach is ever
+    // permitted to mutate it from the client — coaches author team-scoped
+    // custom drills at `teams/{teamId}/drills/{drillId}` instead, which are
+    // gated by `canWriteTeamPracticeLibrary(teamId)` above.
     match /drills/{drillId} {
       allow read: if authed();
       allow create, update, delete: if false;
     }
 
-    // Epic 11: homework — all writes via Cloud Functions (secureAssignHomework, etc.).
+    // Sprint 2.6.4: Dopamine Engine — homework / assignments.
+    //
+    // Canonical write path is the `secureAssignHomework` Cloud Function
+    // (Admin SDK, bypasses rules). For defense-in-depth and parity with the
+    // CTO mandate ("Coaches can read/write assignments ONLY for their own
+    // teamId"), we also permit direct client writes strictly scoped to the
+    // coach's own team.
+    //
+    // READ:
+    //   • Global admin / super admin — always
+    //   • Director within the club that owns the team
+    //   • Coach staff on that team (primary OR assistant)
+    //   • Player whose Auth UID or playerName matches the assignment
+    //   • Parent linked to the named player
+    //
+    // WRITE (create / update / delete):
+    //   • Global admin / super admin — always
+    //   • Director scoped to the team
+    //   • Coach staff on that team
+    //   • Everyone else: DENIED (including players — assignments are handed
+    //     DOWN to them, never up)
     match /assignments/{docId} {
       allow read: if authed() && playerVpcAllowed() && (
         isSuper()
         || directorScopedToTeam(resource.data.teamId)
+        || coachStaffCanAccessTeam(resource.data.teamId)
         || sameTeam(resource.data.teamId)
         || resource.data.playerId == request.auth.uid
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
       );
-      allow create, update, delete: if false;
+      allow create: if authed()
+        && request.resource.data.keys().hasAll(['teamId', 'createdBy'])
+        && request.resource.data.teamId is string
+        && request.resource.data.teamId.size() > 0
+        && request.resource.data.createdBy == request.auth.uid
+        && (
+          isSuper()
+          || directorScopedToTeam(request.resource.data.teamId)
+          || coachStaffCanAccessTeam(request.resource.data.teamId)
+        );
+      allow update: if authed()
+        && request.resource.data.teamId == resource.data.teamId
+        && (
+          isSuper()
+          || directorScopedToTeam(resource.data.teamId)
+          || coachStaffCanAccessTeam(resource.data.teamId)
+        );
+      allow delete: if authed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || coachStaffCanAccessTeam(resource.data.teamId)
+      );
+    }
+
+    // Sprint 2.6.4: Dopamine Engine — player workouts (Action Board).
+    //
+    // The canonical write path is the `logTrainingSession` Cloud Function
+    // (Admin SDK). This rule is defense-in-depth for any direct client write:
+    // a player may only create a workout document where `userId` matches
+    // their own Auth UID AND `teamId` matches their token team. Coaches and
+    // staff get read access on their own teams so they can review effort;
+    // nobody other than the owner (or a Global Admin) may mutate an existing
+    // workout row.
+    match /workouts/{docId} {
+      allow read: if authed() && playerVpcAllowed() && (
+        isSuper()
+        || resource.data.userId == request.auth.uid
+        || directorScopedToTeam(resource.data.teamId)
+        || coachStaffCanAccessTeam(resource.data.teamId)
+        || sameTeam(resource.data.teamId)
+        || parentCanSeePlayerName(resource.data.player)
+      );
+      allow create: if authed()
+        && request.resource.data.keys().hasAll(['userId', 'teamId'])
+        && request.resource.data.userId is string
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.teamId is string
+        && request.resource.data.teamId.size() > 0
+        && (
+          isSuper()
+          || sameTeam(request.resource.data.teamId)
+          || coachStaffCanAccessTeam(request.resource.data.teamId)
+        );
+      allow update: if authed()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.teamId == resource.data.teamId;
+      allow delete: if isSuper();
     }
 
     match /reps/{docId} {

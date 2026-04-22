@@ -37,7 +37,7 @@
 	const canModerate = $derived(
 		authStore.role === 'coach' ||
 			authStore.role === 'director' ||
-			authStore.role === 'super_admin',
+			authStore.role === 'super_admin' || authStore.role === 'global_admin',
 	);
 	const canCreateChannel = $derived(canModerate && !!clubId);
 

@@ -28,7 +28,7 @@
 	const scopeClub = $derived(String(clubId || authStore.userProfile?.clubId || ''));
 
 	const canUse = $derived(
-		authStore.role === 'director' || authStore.role === 'super_admin'
+		authStore.role === 'director' || authStore.role === 'super_admin' || authStore.role === 'global_admin'
 	);
 
 	const parseEmails = (raw) =>
@@ -89,7 +89,7 @@
 				parentEmails,
 				playerEmails,
 				...(existingHouseholdId.trim() ? { householdId: existingHouseholdId.trim() } : {}),
-				...(authStore.role === 'super_admin' && clubId ? { clubId } : {})
+				...((authStore.role === 'super_admin' || authStore.role === 'global_admin') && clubId ? { clubId } : {})
 			};
 			const res = await linkHousehold(payload);
 			const d = res.data;

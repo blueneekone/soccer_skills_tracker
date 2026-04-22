@@ -29,7 +29,7 @@
 	const myKey = $derived((myEmail || '').toLowerCase());
 
 	const isStaffShadow = $derived(
-		myRole === 'coach' || myRole === 'director' || myRole === 'super_admin',
+		myRole === 'coach' || myRole === 'director' || myRole === 'super_admin' || myRole === 'global_admin',
 	);
 
 	/** @type {CandidateUser[]} */
@@ -86,7 +86,7 @@
 				byEmail.set(email, { email, role, label });
 			};
 
-			if (myRole === 'director' || myRole === 'super_admin') {
+			if (myRole === 'director' || myRole === 'super_admin' || myRole === 'global_admin') {
 				const uq = query(
 					collection(db, 'users'),
 					where('clubId', '==', clubId),
@@ -96,7 +96,7 @@
 				snap.forEach((d) => pushDoc(d));
 			}
 
-			if (teamId && (myRole === 'coach' || myRole === 'super_admin')) {
+			if (teamId && (myRole === 'coach' || myRole === 'super_admin' || myRole === 'global_admin')) {
 				const tq = query(collection(db, 'users'), where('teamId', '==', teamId), limit(400));
 				const ts = await getDocs(tq);
 				ts.forEach((d) => pushDoc(d));

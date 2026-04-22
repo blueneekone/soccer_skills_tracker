@@ -820,6 +820,14 @@
 
 	.fm-logistics-map-slot {
 		margin-bottom: 12px;
+		min-height: 500px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.fm-logistics-map-slot > :global(*) {
+		flex: 1 1 auto;
+		min-height: 500px;
 	}
 
 	.fm-routing-uri-input {
