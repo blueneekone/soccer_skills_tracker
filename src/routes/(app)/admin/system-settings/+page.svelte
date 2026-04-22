@@ -195,6 +195,89 @@
 	];
 
 	/**
+	 * Strike 3 (Agent 3, A3.3) — Upcoming integrations surface.
+	 *
+	 * Each entry renders as a disabled "Connect" card so Directors see the
+	 * roadmap without being able to spin up half-wired handshakes. The
+	 * `statusKey` resolves to the actual feature flag once the connector
+	 * ships; until then every row renders the "Coming Soon" state with the
+	 * Connect button permanently disabled.
+	 *
+	 * @typedef {{
+	 *   id: string,
+	 *   label: string,
+	 *   category: string,
+	 *   description: string,
+	 *   icon: string,
+	 *   accent: string,
+	 *   sprintEta: string,
+	 * }} UpcomingIntegrationSpec
+	 */
+
+	/** @type {UpcomingIntegrationSpec[]} */
+	const upcomingIntegrations = [
+		{
+			id: 'hudl',
+			label: 'HUDL',
+			category: 'Video Analysis Sync',
+			description:
+				'Two-way clip exchange so coaches can pull film libraries into the Video Room and push highlight reels back into HUDL.',
+			icon: 'ph-film-strip',
+			accent: '#f97316',
+			sprintEta: 'Sprint 3.1'
+		},
+		{
+			id: 'mailchimp',
+			label: 'Mailchimp · HubSpot',
+			category: 'Marketing CRM',
+			description:
+				'Sync club admins, parents, and verified scouts into marketing journeys with tier-aware segmentation.',
+			icon: 'ph-envelope-simple',
+			accent: '#facc15',
+			sprintEta: 'Sprint 3.2'
+		},
+		{
+			id: 'checkr',
+			label: 'Checkr',
+			category: 'Background Vetting',
+			description:
+				'Automated background checks for Coaches, Recruiters, and Facility Managers — drives the Compliance Alerts KPI.',
+			icon: 'ph-fingerprint',
+			accent: '#22c55e',
+			sprintEta: 'Sprint 3.3'
+		},
+		{
+			id: 'stripe-connect',
+			label: 'Stripe Connect',
+			category: 'Payouts',
+			description:
+				'Marketplace payouts for Recruiter commissions, facility rentals, and tournament disbursements.',
+			icon: 'ph-credit-card',
+			accent: '#6366f1',
+			sprintEta: 'Sprint 3.4'
+		}
+	];
+
+	/**
+	 * Every "Connect" button is disabled-by-default. We still wire the
+	 * onclick so that (a) the audit breadcrumb still fires if an admin
+	 * hammers it via DevTools, and (b) we can swap to a real OAuth handoff
+	 * in a future sprint without changing the markup shape.
+	 * @param {UpcomingIntegrationSpec} spec
+	 */
+	async function onUpcomingIntegrationClick(spec) {
+		try {
+			await logSecurityEvent(
+				'INTEGRATION_CONNECT_ATTEMPT',
+				spec.id,
+				`${spec.label} connector is not yet available (${spec.sprintEta}).`
+			);
+		} catch {
+			/* noop — audit write is best-effort on a disabled control. */
+		}
+	}
+
+	/**
 	 * @typedef {{
 	 *   id: string,
 	 *   integration: string,
@@ -372,23 +455,6 @@
 				</table>
 			</div>
 
-			<div class="ss-grant-cta" role="note">
-				<div class="ss-grant-cta__icon" aria-hidden="true">
-					<i class="ph ph-globe"></i>
-				</div>
-				<div class="ss-grant-cta__body">
-					<h3 class="ss-grant-cta__title">Grant Global Admin Access</h3>
-					<p class="ss-grant-cta__desc">
-						Sprint 2.6.5 moved this workflow into the Global Users command center so
-						admin onboarding can capture verified address, phone, and primary facility
-						alongside the role grant.
-					</p>
-				</div>
-				<a class="ss-btn ss-btn--primary ss-grant-cta__link" href="/admin/users">
-					<i class="ph ph-user-plus" aria-hidden="true"></i>
-					Open Global Users →
-				</a>
-			</div>
 		</section>
 	{/if}
 
@@ -526,6 +592,67 @@
 							<code class="ss-int-card__key-code">{spec.secretName}</code>
 						</div>
 						<p class="ss-int-card__hint">{spec.statusHint}</p>
+					</article>
+				{/each}
+			</div>
+
+			<!-- ══════════════════════════════════════════════════════════════
+			     Strike 3 (A3.3) — Upcoming Integrations (disabled hooks).
+			     Each card exposes a "Connect" CTA that ships disabled-by-default
+			     so Directors can preview the roadmap without kicking off a
+			     half-wired OAuth handshake. The buttons still log a security
+			     breadcrumb if hammered via DevTools so we capture demand signal.
+			     ══════════════════════════════════════════════════════════════ -->
+			<div class="ss-section__label ss-section__label--pad">
+				<i class="ph ph-rocket-launch" aria-hidden="true"></i>
+				<h2 class="ss-section__heading">Upcoming Integrations</h2>
+				<span class="ss-upcoming__header-chip">Roadmap</span>
+			</div>
+			<p class="ss-section__desc">
+				Platform-level connectors the Director Onboarding flow will turn on once
+				the handshake ships. Each hook is deliberately disabled until the
+				matching Cloud Function is live — we never render a half-wired OAuth flow.
+			</p>
+
+			<div class="ss-upcoming-grid">
+				{#each upcomingIntegrations as spec (spec.id)}
+					<article class="ss-upcoming-card" aria-labelledby="ss-upcoming-{spec.id}">
+						<header class="ss-upcoming-card__head">
+							<span
+								class="ss-upcoming-card__icon"
+								style="background: {spec.accent}1f; color: {spec.accent};"
+								aria-hidden="true"
+							>
+								<i class="ph {spec.icon}"></i>
+							</span>
+							<div class="ss-upcoming-card__title-wrap">
+								<h3 id="ss-upcoming-{spec.id}" class="ss-upcoming-card__title">
+									{spec.label}
+								</h3>
+								<span class="ss-upcoming-card__category">{spec.category}</span>
+							</div>
+							<span class="ss-upcoming-card__sprint" title="Expected release">
+								{spec.sprintEta}
+							</span>
+						</header>
+						<p class="ss-upcoming-card__desc">{spec.description}</p>
+						<div class="ss-upcoming-card__foot">
+							<span class="ss-upcoming-card__status">
+								<i class="ph ph-lock-simple" aria-hidden="true"></i>
+								Coming Soon
+							</span>
+							<button
+								type="button"
+								class="ss-upcoming-card__btn"
+								disabled
+								aria-disabled="true"
+								onclick={() => onUpcomingIntegrationClick(spec)}
+								title="Disabled — ships in {spec.sprintEta}"
+							>
+								<i class="ph ph-plugs" aria-hidden="true"></i>
+								Connect
+							</button>
+						</div>
 					</article>
 				{/each}
 			</div>
@@ -770,86 +897,6 @@
 
 	/* ── Forms ───────────────────────────────────────────────────────── */
 	.ss-inline-form { display: flex; flex-direction: column; gap: 8px; }
-
-	/* Sprint 2.6.5 — Grant CTA (replaces the inline form; links to /admin/users) */
-	.ss-grant-cta {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 14px;
-		padding: 14px 16px;
-		margin-top: 12px;
-		border-radius: 12px;
-		border: 1px solid rgba(99, 102, 241, 0.2);
-		background: linear-gradient(
-			135deg,
-			rgba(99, 102, 241, 0.06) 0%,
-			rgba(168, 85, 247, 0.05) 100%
-		);
-	}
-
-	:global(html.dark) .ss-grant-cta {
-		border-color: rgba(124, 58, 237, 0.3);
-		background: linear-gradient(
-			135deg,
-			rgba(99, 102, 241, 0.08) 0%,
-			rgba(168, 85, 247, 0.05) 100%
-		);
-	}
-
-	.ss-grant-cta__icon {
-		width: 40px;
-		height: 40px;
-		border-radius: 10px;
-		display: grid;
-		place-items: center;
-		color: #4f46e5;
-		background: rgba(99, 102, 241, 0.12);
-		border: 1px solid rgba(99, 102, 241, 0.3);
-		font-size: 1.1rem;
-	}
-
-	:global(html.dark) .ss-grant-cta__icon {
-		color: #a5b4fc;
-	}
-
-	.ss-grant-cta__title {
-		margin: 0 0 2px;
-		font-size: 0.9375rem;
-		font-weight: 700;
-		color: #18181b;
-	}
-
-	:global(html.dark) .ss-grant-cta__title {
-		color: #fafafa;
-	}
-
-	.ss-grant-cta__desc {
-		margin: 0;
-		color: #52525b;
-		font-size: 0.8125rem;
-		line-height: 1.45;
-		max-width: 60ch;
-	}
-
-	:global(html.dark) .ss-grant-cta__desc {
-		color: #d4d4d8;
-	}
-
-	.ss-grant-cta__link {
-		text-decoration: none;
-		white-space: nowrap;
-	}
-
-	@media (max-width: 720px) {
-		.ss-grant-cta {
-			grid-template-columns: auto 1fr;
-		}
-		.ss-grant-cta__link {
-			grid-column: 1 / -1;
-			justify-content: center;
-		}
-	}
 
 	.ss-form-row {
 		display: flex;
@@ -1327,4 +1374,199 @@
 	:global(html.dark) .ss-status--ok { color: #86efac; }
 	:global(html.dark) .ss-status--warn { color: #fcd34d; }
 	:global(html.dark) .ss-status--fail { color: #fca5a5; }
+
+	/* ═══════════════════════════════════════════════════════════════════════
+	   Strike 3 (A3.3) — Upcoming Integrations cards.
+	   Every CTA is `disabled` — the visuals are tuned so admins recognize
+	   the roadmap state without the card looking broken.
+	   ═══════════════════════════════════════════════════════════════════════ */
+	.ss-upcoming__header-chip {
+		margin-left: auto;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(99, 102, 241, 0.12);
+		color: #4338ca;
+		border: 1px solid rgba(99, 102, 241, 0.3);
+		font-size: 0.625rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	:global(html.dark) .ss-upcoming__header-chip {
+		background: rgba(99, 102, 241, 0.22);
+		color: #c7d2fe;
+		border-color: rgba(165, 180, 252, 0.4);
+	}
+
+	.ss-upcoming-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 12px;
+		margin-bottom: 6px;
+	}
+
+	.ss-upcoming-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 16px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 10px;
+		background:
+			linear-gradient(
+				135deg,
+				rgba(255, 255, 255, 0.95),
+				rgba(249, 250, 251, 0.85)
+			);
+		overflow: hidden;
+	}
+
+	.ss-upcoming-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: linear-gradient(
+			90deg,
+			rgba(99, 102, 241, 0.35),
+			rgba(168, 85, 247, 0.35)
+		);
+	}
+
+	:global(html.dark) .ss-upcoming-card {
+		background: #111113;
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.ss-upcoming-card__head {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.ss-upcoming-card__icon {
+		width: 36px;
+		height: 36px;
+		border-radius: 9px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.05rem;
+		flex-shrink: 0;
+	}
+
+	.ss-upcoming-card__title-wrap {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+
+	.ss-upcoming-card__title {
+		margin: 0;
+		font-size: 0.9375rem;
+		font-weight: 800;
+		letter-spacing: -0.01em;
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .ss-upcoming-card__title {
+		color: #fafafa;
+	}
+
+	.ss-upcoming-card__category {
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+
+	.ss-upcoming-card__sprint {
+		flex-shrink: 0;
+		padding: 3px 8px;
+		border-radius: 999px;
+		background: rgba(234, 179, 8, 0.12);
+		color: #a16207;
+		border: 1px solid rgba(234, 179, 8, 0.35);
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.03em;
+	}
+
+	:global(html.dark) .ss-upcoming-card__sprint {
+		background: rgba(234, 179, 8, 0.18);
+		color: #fde68a;
+		border-color: rgba(234, 179, 8, 0.4);
+	}
+
+	.ss-upcoming-card__desc {
+		margin: 0;
+		font-size: 0.8125rem;
+		line-height: 1.5;
+		color: var(--text-secondary);
+	}
+
+	:global(html.dark) .ss-upcoming-card__desc {
+		color: #d4d4d8;
+	}
+
+	.ss-upcoming-card__foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		margin-top: auto;
+		padding-top: 6px;
+	}
+
+	.ss-upcoming-card__status {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--text-secondary);
+	}
+
+	.ss-upcoming-card__status i {
+		font-size: 0.9rem;
+	}
+
+	.ss-upcoming-card__btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 32px;
+		padding: 0 14px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--surface-subtle, #fafafa);
+		color: var(--text-secondary);
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: not-allowed;
+		opacity: 0.7;
+	}
+
+	.ss-upcoming-card__btn[disabled] {
+		pointer-events: auto;
+	}
+
+	.ss-upcoming-card__btn i {
+		font-size: 0.9rem;
+	}
+
+	:global(html.dark) .ss-upcoming-card__btn {
+		background: rgba(255, 255, 255, 0.03);
+		border-color: rgba(255, 255, 255, 0.1);
+		color: #a1a1aa;
+	}
 </style>

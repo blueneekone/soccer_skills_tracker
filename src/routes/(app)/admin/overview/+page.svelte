@@ -170,6 +170,45 @@
 		return Math.max(3, synthetic);
 	});
 
+	// ═══════════════════════════════════════════════════════════════════════
+	// Strike 3 (Agent 3) — C-Suite KPI blocks.
+	//
+	//   • Tech:  System Uptime + API Latency  (mocked — swap in from
+	//            `analytics/platform_totals.uptime30d` /
+	//            `analytics/platform_totals.apiLatencyP50Ms` once the Cloud
+	//            Monitoring mirror Cloud Function is live).
+	//   • CEO:   LTV : CAC Ratio + MRR Churn  (mocked — swap in from the
+	//            finance ETL that lands on `analytics/platform_totals.ltvCac`
+	//            and `.mrrChurn`).
+	//   • CSO:   Active Threat Blocks         (mocked — swap in from the WAF
+	//            feed that writes `analytics/platform_totals.waf24h` +
+	//            `.failedLogins24h`).
+	//
+	// Each metric is a `$derived.by` so the swap-over to live data is a single
+	// field read when the backend catches up.
+	// ═══════════════════════════════════════════════════════════════════════
+
+	/** Tech — composite uptime across the last 30 days (percent, 4-digit). */
+	const systemUptime = $derived.by(() => 99.99);
+	/** Tech — API gateway p50 latency in milliseconds. */
+	const apiLatencyMs = $derived.by(() => 42);
+	/** CEO — lifetime value to customer-acquisition-cost ratio. */
+	const ltvCacRatio  = $derived.by(() => 4.2);
+	/** CEO — trailing 30-day MRR churn percentage (lower is better). */
+	const mrrChurnPct  = $derived.by(() => 1.2);
+
+	/**
+	 * CSO — Active Threat Blocks. WAF rejections + failed logins over the
+	 * last 24 hours. Mocked as a synthetic signal that responds gently to
+	 * platform size so the number does not look "too static" before live
+	 * data arrives.
+	 */
+	const activeThreatBlocks = $derived.by(() => {
+		const clubsSignal = totalClubsDisplay || 0;
+		const baseline = 18;
+		return baseline + Math.round(clubsSignal * 0.35);
+	});
+
 	// ═══════════════════════════════════════════════════════════════════════════
 	// Command Center datasets (Sprint 2.6.7 — Paranoid Patch)
 	// ═══════════════════════════════════════════════════════════════════════════
@@ -798,23 +837,22 @@
 
 <div class="ov-page" data-admin-shell="true">
 
-	<header class="ov-hero" aria-labelledby="ov-hero-title">
-		<div class="ov-hero__crumb">
-			<i class="ph ph-globe" aria-hidden="true"></i>
-			<span>Global Admin</span>
+	<!-- Strike 3 (A1.1) — Compact Executive HUD header. Collapsed from the
+	     previous 3-line hero to a single row so the dense KPI grid and chart
+	     strip below both land above the fold on a 1080p monitor. -->
+	<header class="ov-hud-head" aria-labelledby="ov-hero-title">
+		<div class="ov-hud-head__title">
+			<span class="ov-hud-head__crumb">
+				<i class="ph ph-globe" aria-hidden="true"></i>
+				Global Admin
+			</span>
+			<h1 id="ov-hero-title" class="ov-hud-head__h1">Command Center</h1>
 		</div>
-		<div class="ov-hero__row">
-			<div>
-				<h1 id="ov-hero-title" class="ov-hero__title">Command Center</h1>
-				<p class="ov-hero__sub">
-					Real-time telemetry across revenue, health, compliance, and the
-					global audit trail — everything a Global Admin needs in one view.
-				</p>
-			</div>
-			<div class="ov-hero__chip">
-				<span class="ov-hero__chip-dot"></span>
+		<div class="ov-hud-head__right">
+			<span class="ov-hud-head__chip">
+				<span class="ov-hud-head__chip-dot"></span>
 				{telLoading ? 'Syncing…' : 'Live'}
-			</div>
+			</span>
 		</div>
 	</header>
 
@@ -825,244 +863,300 @@
 		</p>
 	{/if}
 
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<!-- KPI Group 1: Gross Revenue & Receivables                              -->
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<section class="ov-group" aria-labelledby="ov-g1-title">
-		<div class="ov-group__header">
-			<span class="ov-group__icon ov-group__icon--revenue">
-				<i class="ph ph-trend-up" aria-hidden="true"></i>
-			</span>
-			<h2 id="ov-g1-title" class="ov-group__title">Gross Revenue &amp; Receivables</h2>
-			<span class="ov-group__badge">
-				<span class="ov-group__badge-dot ov-group__badge-dot--live"></span>
-				Estimates
-			</span>
+	<!-- ═══════════════════════════════════════════════════════════════════════
+	     Strike 3 (A1.1 + A3.2) — Executive HUD: dense 12-column KPI grid.
+	     Groups are tagged by department (Sales, CEO, Growth, Security, Tech)
+	     through color tokens. Each micro-card spans 3 columns on desktop so
+	     4 metrics line up horizontally. Every metric below 1,080p-above-fold
+	     is intentional — no vertical stacking of department sections.
+	     ═══════════════════════════════════════════════════════════════════════ -->
+	<section class="ov-hud" aria-label="Executive HUD">
+
+		<!-- ── Row A — Sales / Revenue (CEO) ─────────────────────────────── -->
+		<div class="ov-hud__row-label ov-hud__row-label--sales">
+			<span class="ov-hud__row-dot" aria-hidden="true"></span>
+			<span>Sales &middot; Revenue</span>
 		</div>
 
-		<div class="ov-kpi-row">
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Est. MRR</span>
-				<span class="ov-kpi__value ov-kpi__value--xl">
-					{telLoading ? '—' : mrrDisplay}
+		<article class="ov-hud__kpi ov-hud__kpi--sales ov-hud__kpi--hero">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-trend-up"></i>
 				</span>
-				<span class="ov-kpi__sub">
-					{aggTotalRevenue > 0
-						? 'Live from analytics/platform_totals'
-						: `@ $49 × ${licenseCount} licenses`}
-				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Active Licenses</span>
-				<span class="ov-kpi__value">
-					{telLoading ? '—' : licenseCountDisplay.toLocaleString()}
-				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Past Due Accounts</span>
-				<span
-					class="ov-kpi__value"
-					class:ov-kpi__value--danger={pastDueCount > 0}
-					class:ov-kpi__value--ok={!telLoading && pastDueCount === 0}
-				>
-					{#if telLoading}
-						—
-					{:else if pastDueCount === 0}
-						<i class="ph ph-check-circle" aria-hidden="true"></i>
-						None
-					{:else}
-						<i class="ph ph-warning" aria-hidden="true"></i>
-						{pastDueCount}
-					{/if}
-				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Installment Plans</span>
-				<span
-					class="ov-kpi__value"
-					class:ov-kpi__value--muted={outstandingInstalls === 0}
-				>
-					{telLoading ? '—' : outstandingInstalls.toLocaleString()}
-				</span>
-				<span class="ov-kpi__sub">Outstanding payment plans</span>
-			</div>
-		</div>
-	</section>
-
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<!-- KPI Group 2: Platform Health                                           -->
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<section class="ov-group" aria-labelledby="ov-g2-title">
-		<div class="ov-group__header">
-			<span class="ov-group__icon ov-group__icon--health">
-				<i class="ph ph-pulse" aria-hidden="true"></i>
+				<span class="ov-hud__kpi-label">Est. MRR</span>
+			</header>
+			<span class="ov-hud__kpi-value">{telLoading ? '—' : mrrDisplay}</span>
+			<span class="ov-hud__kpi-sub">
+				{aggTotalRevenue > 0 ? 'Live · platform_totals' : `@ $49 × ${licenseCount}`}
 			</span>
-			<h2 id="ov-g2-title" class="ov-group__title">Platform Health</h2>
-		</div>
+		</article>
 
-		<div class="ov-kpi-row">
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Active Clubs</span>
-				<span class="ov-kpi__value ov-kpi__value--xl">
-					{telLoading ? '—' : totalClubsDisplay.toLocaleString()}
+		<article class="ov-hud__kpi ov-hud__kpi--sales">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-ticket"></i>
 				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Total Teams</span>
-				<span class="ov-kpi__value">
-					{telLoading ? '—' : totalTeams.toLocaleString()}
-				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Total Athletes</span>
-				<span class="ov-kpi__value">
-					{telLoading ? '—' : totalAthletes.toLocaleString()}
-				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Platform Admins</span>
-				<span class="ov-kpi__value">
-					{adminCount}
-				</span>
-			</div>
-		</div>
-	</section>
-
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<!-- KPI Group 3: Compliance & Logistics                                    -->
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<section
-		class="ov-group"
-		class:ov-group--alert={pendingVpcCount > 0}
-		aria-labelledby="ov-g3-title"
-	>
-		<div class="ov-group__header">
-			<span class="ov-group__icon ov-group__icon--compliance">
-				<i class="ph ph-shield-warning" aria-hidden="true"></i>
+				<span class="ov-hud__kpi-label">Active Licenses</span>
+			</header>
+			<span class="ov-hud__kpi-value">
+				{telLoading ? '—' : licenseCountDisplay.toLocaleString()}
 			</span>
-			<h2 id="ov-g3-title" class="ov-group__title">Compliance &amp; Logistics</h2>
+			<span class="ov-hud__kpi-sub">Billed seats</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--sales">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-scales"></i>
+				</span>
+				<span class="ov-hud__kpi-label">LTV : CAC</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={ltvCacRatio >= 3}
+				class:ov-hud__kpi-value--danger={ltvCacRatio < 1.5}
+			>
+				{ltvCacRatio.toFixed(1)}<span class="ov-hud__kpi-unit">: 1</span>
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Finance ETL · mocked</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--sales">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-chart-line-down"></i>
+				</span>
+				<span class="ov-hud__kpi-label">MRR Churn</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={mrrChurnPct < 2}
+				class:ov-hud__kpi-value--danger={mrrChurnPct >= 5}
+			>
+				{mrrChurnPct.toFixed(1)}<span class="ov-hud__kpi-unit">%</span>
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Trailing 30d · mocked</span>
+		</article>
+
+		<!-- ── Row B — Growth (Ops) ──────────────────────────────────────── -->
+		<div class="ov-hud__row-label ov-hud__row-label--growth">
+			<span class="ov-hud__row-dot" aria-hidden="true"></span>
+			<span>Growth &middot; Platform</span>
+		</div>
+
+		<article class="ov-hud__kpi ov-hud__kpi--growth ov-hud__kpi--hero">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-buildings"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Active Clubs</span>
+			</header>
+			<span class="ov-hud__kpi-value">
+				{telLoading ? '—' : totalClubsDisplay.toLocaleString()}
+			</span>
+			<span class="ov-hud__kpi-sub">Across all sports</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--growth">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-users-three"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Teams</span>
+			</header>
+			<span class="ov-hud__kpi-value">
+				{telLoading ? '—' : totalTeams.toLocaleString()}
+			</span>
+			<span class="ov-hud__kpi-sub">Rostered</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--growth">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-barbell"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Athletes</span>
+			</header>
+			<span class="ov-hud__kpi-value">
+				{telLoading ? '—' : totalAthletes.toLocaleString()}
+			</span>
+			<span class="ov-hud__kpi-sub">Active players</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--growth">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-rocket-launch"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Activation</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={activationRate >= 50}
+				class:ov-hud__kpi-value--danger={activationRate > 0 && activationRate < 30}
+			>
+				{activationRate}<span class="ov-hud__kpi-unit">%</span>
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">7d workout · mocked</span>
+		</article>
+
+		<!-- ── Row C — Security (CSO) ───────────────────────────────────── -->
+		<div class="ov-hud__row-label ov-hud__row-label--security">
+			<span class="ov-hud__row-dot" aria-hidden="true"></span>
+			<span>Security &middot; Compliance</span>
+		</div>
+
+		<article
+			class="ov-hud__kpi ov-hud__kpi--security ov-hud__kpi--hero"
+			class:ov-hud__kpi--alert={activeThreatBlocks > 50}
+		>
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-shield-chevron"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Threat Blocks (24h)</span>
+			</header>
+			<span class="ov-hud__kpi-value">
+				{activeThreatBlocks.toLocaleString()}
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">WAF + failed logins</span>
+		</article>
+
+		<article
+			class="ov-hud__kpi ov-hud__kpi--security"
+			class:ov-hud__kpi--alert={pendingVpcCount > 0}
+		>
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-shield-warning"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Pending VPC</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={!telLoading && pendingVpcCount === 0}
+				class:ov-hud__kpi-value--danger={pendingVpcCount > 0}
+			>
+				{#if telLoading}—{:else}{pendingVpcCount}{/if}
+			</span>
 			{#if pendingVpcCount > 0}
-				<span class="ov-group__badge ov-group__badge--warn">
-					<span class="ov-group__badge-dot ov-group__badge-dot--warn"></span>
-					Action required
-				</span>
+				<a href="/admin/organizations" class="ov-hud__kpi-cta">
+					Review <i class="ph ph-arrow-right" aria-hidden="true"></i>
+				</a>
+			{:else}
+				<span class="ov-hud__kpi-sub">Unverified parental consents</span>
 			{/if}
-		</div>
+		</article>
 
-		<div class="ov-kpi-row">
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Pending VPC Approvals</span>
-				<span
-					class="ov-kpi__value ov-kpi__value--xl"
-					class:ov-kpi__value--danger={pendingVpcCount > 0}
-					class:ov-kpi__value--ok={!telLoading && pendingVpcCount === 0}
-				>
-					{#if telLoading}
-						—
-					{:else if pendingVpcCount === 0}
-						<i class="ph ph-check-circle" aria-hidden="true"></i>
-						0
-					{:else}
-						{pendingVpcCount}
-					{/if}
+		<article
+			class="ov-hud__kpi ov-hud__kpi--security"
+			class:ov-hud__kpi--alert={complianceAlerts > 0}
+		>
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-user-focus"></i>
 				</span>
-				<span class="ov-kpi__sub">Unverified parental consents</span>
-				{#if pendingVpcCount > 0}
-					<a href="/admin/organizations" class="ov-kpi__cta">
-						Review organizations <i class="ph ph-arrow-right" aria-hidden="true"></i>
-					</a>
-				{/if}
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Active Field Bookings</span>
-				<span
-					class="ov-kpi__value"
-					class:ov-kpi__value--muted={activeBookingCount === 0}
-				>
-					{telLoading ? '—' : activeBookingCount.toLocaleString()}
-				</span>
-				<span class="ov-kpi__sub">Active facility reservations</span>
-				{#if activeBookingCount === 0 && !telLoading}
-					<span class="ov-kpi__hint">No active bookings — Field Ops coming in Epic 3</span>
-				{/if}
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Compliance Rate</span>
-				<span class="ov-kpi__value">
-					{#if telLoading}
-						—
-					{:else if pendingVpcCount === 0}
-						<span class="ov-kpi__value--ok">
-							<i class="ph ph-check-circle" aria-hidden="true"></i>
-							100%
-						</span>
-					{:else}
-						{Math.max(0, Math.round((1 - pendingVpcCount / Math.max(pendingVpcCount, 1)) * 100))}%
-					{/if}
-				</span>
-				<span class="ov-kpi__sub">VPC verification rate</span>
-			</div>
-		</div>
-	</section>
-
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<!-- Strike 2 · Go-To-Market Signals (CMO / CSO metrics)                    -->
-	<!-- Mocked until activation + Checkr pipelines ship.                       -->
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<section class="ov-group" aria-labelledby="ov-g4-title">
-		<div class="ov-group__header">
-			<span class="ov-group__icon ov-group__icon--gtm">
-				<i class="ph ph-rocket-launch" aria-hidden="true"></i>
+				<span class="ov-hud__kpi-label">Compliance Alerts</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={complianceAlerts === 0}
+				class:ov-hud__kpi-value--danger={complianceAlerts > 0}
+			>
+				{complianceAlerts}
 			</span>
-			<h2 id="ov-g4-title" class="ov-group__title">Go-To-Market Signals</h2>
-			<span class="ov-group__badge ov-group__badge--mock">
-				<span class="ov-group__badge-dot"></span>
-				Mocked &middot; pending triggers
+			{#if complianceAlerts > 0}
+				<a href="/admin/recruiters" class="ov-hud__kpi-cta">
+					Vetting queue <i class="ph ph-arrow-right" aria-hidden="true"></i>
+				</a>
+			{:else}
+				<span class="ov-hud__kpi-sub">Coaches missing Checkr</span>
+			{/if}
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--security">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-warning-circle"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Past Due</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={!telLoading && pastDueCount === 0}
+				class:ov-hud__kpi-value--danger={pastDueCount > 0}
+			>
+				{#if telLoading}—{:else}{pastDueCount}{/if}
 			</span>
+			<span class="ov-hud__kpi-sub">Delinquent licenses</span>
+		</article>
+
+		<!-- ── Row D — Tech (CTO) ───────────────────────────────────────── -->
+		<div class="ov-hud__row-label ov-hud__row-label--tech">
+			<span class="ov-hud__row-dot" aria-hidden="true"></span>
+			<span>Tech &middot; Infrastructure</span>
 		</div>
 
-		<div class="ov-kpi-row">
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Activation Rate</span>
-				<span
-					class="ov-kpi__value ov-kpi__value--xl"
-					class:ov-kpi__value--ok={activationRate >= 50}
-					class:ov-kpi__value--danger={activationRate > 0 && activationRate < 30}
-				>
-					{activationRate}%
+		<article class="ov-hud__kpi ov-hud__kpi--tech ov-hud__kpi--hero">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-pulse"></i>
 				</span>
-				<span class="ov-kpi__sub">Licensed seats with an active workout in 7d</span>
-				<span class="ov-kpi__hint">
-					Live feed swaps in once <code>onWorkoutWritten</code> triggers backfill
-					<code>analytics/platform_totals.activationRate7d</code>.
+				<span class="ov-hud__kpi-label">System Uptime (30d)</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={systemUptime >= 99.9}
+				class:ov-hud__kpi-value--danger={systemUptime < 99}
+			>
+				{systemUptime.toFixed(2)}<span class="ov-hud__kpi-unit">%</span>
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Cloud Monitoring · mocked</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--tech">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-gauge"></i>
 				</span>
-			</div>
-			<div class="ov-kpi-divider" aria-hidden="true"></div>
-			<div class="ov-kpi">
-				<span class="ov-kpi__label">Compliance Alerts</span>
-				<span
-					class="ov-kpi__value ov-kpi__value--xl"
-					class:ov-kpi__value--danger={complianceAlerts > 0}
-					class:ov-kpi__value--ok={complianceAlerts === 0}
-				>
-					{complianceAlerts}
+				<span class="ov-hud__kpi-label">API Latency (p50)</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--ok={apiLatencyMs < 100}
+				class:ov-hud__kpi-value--danger={apiLatencyMs >= 250}
+			>
+				{apiLatencyMs}<span class="ov-hud__kpi-unit">ms</span>
+			</span>
+			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Gateway p50 · mocked</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--tech">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-map-trifold"></i>
 				</span>
-				<span class="ov-kpi__sub">Coaches missing a current background check</span>
-				{#if complianceAlerts > 0}
-					<a href="/admin/recruiters" class="ov-kpi__cta">
-						Review vetting queue <i class="ph ph-arrow-right" aria-hidden="true"></i>
-					</a>
-				{/if}
-			</div>
-		</div>
+				<span class="ov-hud__kpi-label">Field Bookings</span>
+			</header>
+			<span
+				class="ov-hud__kpi-value"
+				class:ov-hud__kpi-value--muted={activeBookingCount === 0}
+			>
+				{telLoading ? '—' : activeBookingCount.toLocaleString()}
+			</span>
+			<span class="ov-hud__kpi-sub">Active reservations</span>
+		</article>
+
+		<article class="ov-hud__kpi ov-hud__kpi--tech">
+			<header class="ov-hud__kpi-head">
+				<span class="ov-hud__kpi-icon" aria-hidden="true">
+					<i class="ph ph-crown"></i>
+				</span>
+				<span class="ov-hud__kpi-label">Platform Admins</span>
+			</header>
+			<span class="ov-hud__kpi-value">{adminCount}</span>
+			<span class="ov-hud__kpi-sub">Global admin seats</span>
+		</article>
 	</section>
 
 	<!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -1234,7 +1328,299 @@
 	.ov-page {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 14px;
+	}
+
+	/* ═══════════════════════════════════════════════════════════════════════
+	   Strike 3 (A1.1) — Executive HUD header + dense 12-col KPI grid.
+	   The old 3-row hero + 4 separate .ov-group sections have been collapsed
+	   into a single .ov-hud grid so the Command Center fits above the fold
+	   on 1080p monitors (no scrolling for the KPI strip).
+	   ═══════════════════════════════════════════════════════════════════════ */
+	.ov-hud-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 10px 16px;
+		border-radius: 12px;
+		background: linear-gradient(135deg, rgba(99, 102, 241, 0.07), rgba(59, 130, 246, 0.03));
+		border: 1px solid rgba(99, 102, 241, 0.18);
+	}
+
+	:global(html.dark) .ov-hud-head {
+		background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(30, 27, 75, 0.35));
+		border-color: rgba(99, 102, 241, 0.32);
+	}
+
+	.ov-hud-head__title {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	.ov-hud-head__crumb {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+
+	.ov-hud-head__h1 {
+		margin: 0;
+		font-size: 1.25rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--text-primary);
+		line-height: 1.1;
+	}
+
+	.ov-hud-head__right {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.ov-hud-head__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		border-radius: 999px;
+		background: rgba(34, 197, 94, 0.12);
+		border: 1px solid rgba(34, 197, 94, 0.35);
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #047857;
+	}
+
+	:global(html.dark) .ov-hud-head__chip {
+		background: rgba(34, 197, 94, 0.2);
+		border-color: rgba(34, 197, 94, 0.5);
+		color: #a7f3d0;
+	}
+
+	.ov-hud-head__chip-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #22c55e;
+		animation: ov-hud-pulse 1.8s ease-in-out infinite;
+	}
+
+	@keyframes ov-hud-pulse {
+		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+		50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+	}
+
+	/* ── 12-column dense KPI grid ───────────────────────────────────── */
+	.ov-hud {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 10px;
+	}
+
+	/* Row-label pills span all 12 cols — act as a thin department divider
+	   between the 4-card rows without shouting for attention. */
+	.ov-hud__row-label {
+		grid-column: 1 / -1;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		margin: 2px 0 0;
+		font-size: 0.625rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+
+	.ov-hud__row-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: currentColor;
+		box-shadow: 0 0 8px currentColor;
+	}
+
+	.ov-hud__row-label--sales    { color: #059669; }
+	.ov-hud__row-label--growth   { color: #4f46e5; }
+	.ov-hud__row-label--security { color: #b91c1c; }
+	.ov-hud__row-label--tech     { color: #0284c7; }
+
+	:global(html.dark) .ov-hud__row-label--sales    { color: #6ee7b7; }
+	:global(html.dark) .ov-hud__row-label--growth   { color: #c7d2fe; }
+	:global(html.dark) .ov-hud__row-label--security { color: #fca5a5; }
+	:global(html.dark) .ov-hud__row-label--tech     { color: #7dd3fc; }
+
+	/* ── Individual micro-KPI card ─────────────────────────────────── */
+	.ov-hud__kpi {
+		grid-column: span 3;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 12px 14px;
+		border-radius: 10px;
+		background: var(--glass-bg, #fff);
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-left: 3px solid transparent;
+		min-height: 84px;
+		position: relative;
+		transition: transform 0.12s ease, border-color 0.12s ease;
+	}
+
+	.ov-hud__kpi:hover {
+		transform: translateY(-1px);
+	}
+
+	:global(html.dark) .ov-hud__kpi {
+		background: #111113;
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	/* Department tint — left rail + head-icon color. */
+	.ov-hud__kpi--sales    { border-left-color: #10b981; }
+	.ov-hud__kpi--growth   { border-left-color: #6366f1; }
+	.ov-hud__kpi--security { border-left-color: #ef4444; }
+	.ov-hud__kpi--tech     { border-left-color: #0ea5e9; }
+
+	.ov-hud__kpi--sales    .ov-hud__kpi-icon { background: rgba(16, 185, 129, 0.12);  color: #059669; }
+	.ov-hud__kpi--growth   .ov-hud__kpi-icon { background: rgba(99, 102, 241, 0.12);  color: #4f46e5; }
+	.ov-hud__kpi--security .ov-hud__kpi-icon { background: rgba(239, 68, 68, 0.12);   color: #b91c1c; }
+	.ov-hud__kpi--tech     .ov-hud__kpi-icon { background: rgba(14, 165, 233, 0.12);  color: #0284c7; }
+
+	:global(html.dark) .ov-hud__kpi--sales    .ov-hud__kpi-icon { background: rgba(16, 185, 129, 0.2);  color: #6ee7b7; }
+	:global(html.dark) .ov-hud__kpi--growth   .ov-hud__kpi-icon { background: rgba(99, 102, 241, 0.22); color: #c7d2fe; }
+	:global(html.dark) .ov-hud__kpi--security .ov-hud__kpi-icon { background: rgba(239, 68, 68, 0.22);  color: #fca5a5; }
+	:global(html.dark) .ov-hud__kpi--tech     .ov-hud__kpi-icon { background: rgba(14, 165, 233, 0.22); color: #7dd3fc; }
+
+	/* Hero card (first in each department row) carries a subtle surface tint. */
+	.ov-hud__kpi--hero {
+		background: linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.92),
+			rgba(250, 250, 250, 0.65)
+		);
+	}
+
+	:global(html.dark) .ov-hud__kpi--hero {
+		background: linear-gradient(
+			135deg,
+			rgba(24, 24, 27, 0.95),
+			rgba(9, 9, 11, 0.85)
+		);
+	}
+
+	.ov-hud__kpi--alert { border-color: rgba(239, 68, 68, 0.45); }
+
+	:global(html.dark) .ov-hud__kpi--alert { border-color: rgba(252, 165, 165, 0.35); }
+
+	.ov-hud__kpi-head {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.ov-hud__kpi-icon {
+		width: 24px;
+		height: 24px;
+		border-radius: 6px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.8rem;
+		flex-shrink: 0;
+	}
+
+	.ov-hud__kpi-label {
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.ov-hud__kpi-value {
+		display: flex;
+		align-items: baseline;
+		gap: 2px;
+		margin-top: 2px;
+		font-size: 1.5rem;
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		color: var(--text-primary);
+		font-variant-numeric: tabular-nums;
+		line-height: 1.1;
+	}
+
+	.ov-hud__kpi--hero .ov-hud__kpi-value {
+		font-size: 1.85rem;
+	}
+
+	.ov-hud__kpi-unit {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--text-secondary);
+		margin-left: 2px;
+	}
+
+	.ov-hud__kpi-value--ok     { color: #15803d; }
+	.ov-hud__kpi-value--danger { color: var(--danger-red, #b91c1c); }
+	.ov-hud__kpi-value--muted  { color: var(--text-secondary); font-size: 1.15rem; font-weight: 700; }
+
+	:global(html.dark) .ov-hud__kpi-value--ok     { color: #86efac; }
+	:global(html.dark) .ov-hud__kpi-value--danger { color: #fca5a5; }
+
+	.ov-hud__kpi-sub {
+		font-size: 0.7rem;
+		line-height: 1.3;
+		color: var(--text-secondary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.ov-hud__kpi-sub--mock {
+		color: #a16207;
+		font-style: italic;
+	}
+
+	:global(html.dark) .ov-hud__kpi-sub--mock {
+		color: #fbbf24;
+	}
+
+	.ov-hud__kpi-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-top: 2px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #b45309;
+		text-decoration: none;
+		width: fit-content;
+	}
+
+	.ov-hud__kpi-cta:hover { text-decoration: underline; }
+
+	:global(html.dark) .ov-hud__kpi-cta { color: #fbbf24; }
+
+	/* Responsive — give up column density on narrower laptops/tablets. */
+	@media (max-width: 1280px) {
+		.ov-hud__kpi { grid-column: span 6; }
+	}
+
+	@media (max-width: 720px) {
+		.ov-hud__kpi { grid-column: span 12; }
 	}
 
 	/* ── Error banner ───────────────────────────────────────────────── */
@@ -1252,336 +1638,8 @@
 		border: 1px solid rgba(185, 28, 28, 0.25);
 	}
 
-	/* ── KPI Group section ──────────────────────────────────────────── */
-	.ov-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 12px;
-		background: var(--glass-bg, #fff);
-		overflow: hidden;
-		transition: border-color 0.15s ease;
-	}
-
-	:global(html.dark) .ov-group {
-		background: #111113;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.ov-group--alert {
-		border-color: rgba(245, 158, 11, 0.45);
-	}
-
-	:global(html.dark) .ov-group--alert {
-		border-color: rgba(245, 158, 11, 0.35);
-		background: rgba(245, 158, 11, 0.03);
-	}
-
-	/* ── Group header ───────────────────────────────────────────────── */
-	.ov-group__header {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 14px 20px 10px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .ov-group__header {
-		border-bottom-color: rgba(255, 255, 255, 0.07);
-	}
-
-	.ov-group__icon {
-		width: 28px;
-		height: 28px;
-		border-radius: 7px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.9rem;
-		flex-shrink: 0;
-	}
-
-	.ov-group__icon--revenue    { background: rgba(16,185,129,0.10); color: #059669; }
-	.ov-group__icon--health     { background: rgba(99,102,241,0.10); color: #6366f1; }
-	.ov-group__icon--compliance { background: rgba(245,158,11,0.10); color: #d97706; }
-	/* Strike 2: Go-To-Market Signals icon treatment (CMO / CSO track). */
-	.ov-group__icon--gtm        { background: rgba(168,85,247,0.10); color: #7c3aed; }
-
-	:global(html.dark) .ov-group__icon--revenue    { background: rgba(16,185,129,0.14); color: #6ee7b7; }
-	:global(html.dark) .ov-group__icon--health     { background: rgba(99,102,241,0.14); color: #a5b4fc; }
-	:global(html.dark) .ov-group__icon--compliance { background: rgba(245,158,11,0.14); color: #fbbf24; }
-	:global(html.dark) .ov-group__icon--gtm        { background: rgba(168,85,247,0.16); color: #c4b5fd; }
-
-	.ov-group__title {
-		margin: 0;
-		flex: 1;
-		font-size: 0.8125rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		color: var(--text-primary);
-	}
-
-	.ov-group__badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		padding: 2px 8px;
-		border-radius: 999px;
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		color: var(--text-secondary);
-		background: rgba(0, 0, 0, 0.04);
-		border: 1px solid rgba(0, 0, 0, 0.06);
-	}
-
-	:global(html.dark) .ov-group__badge {
-		background: rgba(255, 255, 255, 0.06);
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #a1a1aa;
-	}
-
-	.ov-group__badge--warn {
-		color: #b45309;
-		background: rgba(245, 158, 11, 0.08);
-		border-color: rgba(245, 158, 11, 0.25);
-	}
-
-	:global(html.dark) .ov-group__badge--warn {
-		color: #fbbf24;
-		background: rgba(245, 158, 11, 0.1);
-		border-color: rgba(245, 158, 11, 0.25);
-	}
-
-	/* Strike 2: "Mocked · pending triggers" badge on the GTM signals section. */
-	.ov-group__badge--mock {
-		color: #6b21a8;
-		background: rgba(168, 85, 247, 0.08);
-		border-color: rgba(168, 85, 247, 0.25);
-	}
-
-	.ov-group__badge--mock .ov-group__badge-dot {
-		background: #a855f7;
-	}
-
-	:global(html.dark) .ov-group__badge--mock {
-		color: #c4b5fd;
-		background: rgba(168, 85, 247, 0.12);
-		border-color: rgba(168, 85, 247, 0.28);
-	}
-
-	.ov-group__badge-dot {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		flex-shrink: 0;
-		background: rgba(0, 0, 0, 0.25);
-	}
-
-	.ov-group__badge-dot--live { background: #22c55e; }
-	.ov-group__badge-dot--warn { background: #f59e0b; animation: ov-pulse 1.8s ease infinite; }
-
-	@keyframes ov-pulse {
-		0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-		50%       { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
-	}
-
-	/* ── KPI row — horizontal strip of metrics ──────────────────────── */
-	.ov-kpi-row {
-		display: flex;
-		align-items: stretch;
-		flex-wrap: wrap;
-	}
-
-	.ov-kpi {
-		flex: 1 1 0;
-		min-width: 130px;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 20px 24px;
-	}
-
-	.ov-kpi-divider {
-		flex-shrink: 0;
-		width: 1px;
-		background: var(--border-subtle, #e5e5e5);
-		margin: 16px 0;
-		align-self: stretch;
-	}
-
-	:global(html.dark) .ov-kpi-divider {
-		background: rgba(255, 255, 255, 0.07);
-	}
-
-	/* ── KPI label ──────────────────────────────────────────────────── */
-	.ov-kpi__label {
-		font-size: 0.6875rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		color: var(--text-secondary);
-		white-space: nowrap;
-	}
-
-	/* ── KPI value ──────────────────────────────────────────────────── */
-	.ov-kpi__value {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 1.625rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--text-primary);
-		font-variant-numeric: tabular-nums;
-		line-height: 1.1;
-	}
-
-	.ov-kpi__value--xl {
-		font-size: 2.25rem;
-	}
-
-	.ov-kpi__value--ok     { color: #15803d; }
-	.ov-kpi__value--danger { color: var(--danger-red, #b91c1c); }
-	.ov-kpi__value--muted  { color: var(--text-secondary); font-size: 1.25rem; font-weight: 600; }
-
-	:global(html.dark) .ov-kpi__value--ok     { color: #86efac; }
-	:global(html.dark) .ov-kpi__value--danger { color: #fca5a5; }
-
-	/* ── Sub-label / hint ───────────────────────────────────────────── */
-	.ov-kpi__sub {
-		font-size: 0.72rem;
-		color: var(--text-secondary);
-		line-height: 1.4;
-		margin-top: 2px;
-	}
-
-	/* Sprint 2.6.7 — Hint copy is differentiated by weight + italics; the
-	   previous `opacity: 0.65` was a transparency hack that broke the
-	   Global Admin contrast contract. We now render in the exact
-	   secondary token (#D4D4D8 dark) so contrast never drops below WCAG AA. */
-	.ov-kpi__hint {
-		font-size: 0.72rem;
-		color: var(--text-secondary);
-		font-style: italic;
-		font-weight: 500;
-		line-height: 1.4;
-	}
-
-	/* ── CTA link inside KPI ────────────────────────────────────────── */
-	.ov-kpi__cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		margin-top: 10px;
-		padding: 6px 12px;
-		border-radius: 7px;
-		border: 1px solid rgba(245, 158, 11, 0.4);
-		background: rgba(245, 158, 11, 0.06);
-		color: #d97706;
-		font-size: 0.75rem;
-		font-weight: 700;
-		text-decoration: none;
-		transition: background 0.1s ease;
-		width: fit-content;
-	}
-
-	.ov-kpi__cta:hover { background: rgba(245, 158, 11, 0.12); }
-
-	:global(html.dark) .ov-kpi__cta {
-		color: #fbbf24;
-		border-color: rgba(245, 158, 11, 0.3);
-	}
-
-	/* ── Responsive — stack KPI rows on narrow viewports ───────────── */
-	@media (max-width: 680px) {
-		.ov-kpi-row { flex-direction: column; }
-		.ov-kpi-divider { width: 100%; height: 1px; margin: 0; }
-		.ov-kpi { padding: 16px; }
-	}
-
-	/* ═══════════════════════════════════════════════════════════════════ */
-	/* Sprint 2.6.5 — Command Center (Single Pane of Glass) hero + grid   */
-	/* ═══════════════════════════════════════════════════════════════════ */
-	.ov-hero {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		padding: 22px 24px;
-		border-radius: 14px;
-		background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(59, 130, 246, 0.04));
-		border: 1px solid rgba(99, 102, 241, 0.22);
-	}
-
-	:global(html.dark) .ov-hero {
-		background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(30, 27, 75, 0.4));
-		border-color: rgba(99, 102, 241, 0.35);
-	}
-
-	.ov-hero__crumb {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 0.72rem;
-		font-weight: 700;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		color: var(--text-secondary);
-	}
-
-	.ov-hero__row {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 16px;
-		flex-wrap: wrap;
-	}
-
-	.ov-hero__title {
-		margin: 0;
-		font-size: 1.75rem;
-		font-weight: 800;
-		letter-spacing: -0.02em;
-		color: var(--text-primary);
-	}
-
-	.ov-hero__sub {
-		margin: 6px 0 0;
-		font-size: 0.875rem;
-		line-height: 1.45;
-		color: var(--text-secondary);
-		max-width: 60ch;
-	}
-
-	.ov-hero__chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 6px 12px;
-		border-radius: 999px;
-		background: rgba(34, 197, 94, 0.12);
-		border: 1px solid rgba(34, 197, 94, 0.35);
-		font-size: 0.75rem;
-		font-weight: 700;
-		color: #047857;
-	}
-
-	:global(html.dark) .ov-hero__chip {
-		background: rgba(34, 197, 94, 0.18);
-		border-color: rgba(34, 197, 94, 0.5);
-		color: #a7f3d0;
-	}
-
-	.ov-hero__chip-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: #22c55e;
-		animation: ov-hero-pulse 1.8s ease-in-out infinite;
-	}
-
+	/* Strike 3 (A1.1) — Shared pulse keyframe (reused by `.ov-cc__badge-dot`
+	   below). Preserved from the old hero chip treatment. */
 	@keyframes ov-hero-pulse {
 		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
 		50%      { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }

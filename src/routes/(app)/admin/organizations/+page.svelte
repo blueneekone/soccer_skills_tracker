@@ -43,6 +43,11 @@
 	 *   isInfinite?: boolean,
 	 *   logoUrl?: string,
 	 *   createdAt?: unknown,
+	 *   verifiedAddress?: string,
+	 *   phoneNumber?: string,
+	 *   primaryFacility?: string,
+	 *   tier?: string,
+	 *   subscriptionTier?: string,
 	 * }} Club
 	 */
 
@@ -163,16 +168,31 @@
 	let filterOpen          = $state(false);
 	/** @type {'all' | 'verified' | 'pending'} */
 	let filterVerification  = $state('all');
-	/** @type {string} US state code (e.g. 'TX', 'CA') or 'all'. */
-	let filterState         = $state('all');
+	/** @type {string[]} Multi-select — empty array means "all states". */
+	let filterStates        = $state(/** @type {string[]} */ ([]));
+	/** @type {string[]} Multi-select — empty array means "all tiers". */
+	let filterTiers         = $state(/** @type {string[]} */ ([]));
 	/** @type {HTMLElement | null} */
 	let filterRootEl        = $state(null);
+	/** Typeahead for the region/state multi-select — keeps 50-state UX fast. */
+	let filterRegionQuery   = $state('');
+
+	/** Strike 3 (A2.1) — Subscription tier catalog. Mirrors the pricing
+	 *  surface and the Revenue-by-Tier chart on the Overview dashboard. */
+	const TIER_OPTIONS = /** @type {const} */ ([
+		{ key: 'enterprise', label: 'Enterprise', accent: '#4338ca', icon: 'ph-diamond'      },
+		{ key: 'club',       label: 'Club',       accent: '#0ea5e9', icon: 'ph-buildings'    },
+		{ key: 'pro',        label: 'Pro',        accent: '#10b981', icon: 'ph-trophy'       },
+		{ key: 'starter',    label: 'Starter',    accent: '#f59e0b', icon: 'ph-seedling'     },
+		{ key: 'unassigned', label: 'Unassigned', accent: '#71717a', icon: 'ph-question'     },
+	]);
 
 	/** Count of non-default filters (used for the pill badge). */
 	const filterActiveCount = $derived.by(() => {
 		let n = 0;
 		if (filterVerification !== 'all') n++;
-		if (filterState        !== 'all') n++;
+		if (filterStates.length > 0)      n++;
+		if (filterTiers.length > 0)       n++;
 		return n;
 	});
 
@@ -181,7 +201,21 @@
 
 	function resetFilters() {
 		filterVerification = 'all';
-		filterState        = 'all';
+		filterStates       = [];
+		filterTiers        = [];
+		filterRegionQuery  = '';
+	}
+
+	/**
+	 * Strike 3 (A2.1) — Toggle membership of a value in a multi-select
+	 * array. Replaces the array reference (not mutates) so Svelte 5 reactivity
+	 * stays hot.
+	 * @param {string[]} list
+	 * @param {string} value
+	 * @returns {string[]}
+	 */
+	function toggleInList(list, value) {
+		return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 	}
 
 	/** Global click-outside + Escape handlers are wired while the popover is open. */
@@ -277,14 +311,55 @@
 		return Array.from(s).sort();
 	});
 
+	/** Subset of `knownStates` that matches the typeahead query. */
+	const filteredStateOptions = $derived.by(() => {
+		const q = filterRegionQuery.trim().toUpperCase();
+		if (!q) return knownStates;
+		return knownStates.filter((st) => st.includes(q));
+	});
+
+	/**
+	 * Strike 3 (A2.1) — Canonicalise a club's subscription tier. Accepts a
+	 * `tier` or `subscriptionTier` field on the club doc and normalises into
+	 * one of the five tier keys from TIER_OPTIONS. Clubs lacking any tier
+	 * metadata fall into 'unassigned' so they are still filterable.
+	 * @param {Club} cl
+	 * @returns {'enterprise' | 'club' | 'pro' | 'starter' | 'unassigned'}
+	 */
+	function tierForClub(cl) {
+		const raw = (cl && (cl.tier || cl.subscriptionTier)) || '';
+		const key = String(raw).toLowerCase().trim();
+		if (key === 'enterprise') return 'enterprise';
+		if (key === 'club')       return 'club';
+		if (key === 'pro')        return 'pro';
+		if (key === 'starter')    return 'starter';
+		return 'unassigned';
+	}
+
+	/** Live tier distribution — drives the count chip next to each tier chip. */
+	const tierCounts = $derived.by(() => {
+		/** @type {Record<string, number>} */
+		const counts = { enterprise: 0, club: 0, pro: 0, starter: 0, unassigned: 0 };
+		for (const cl of clubs) counts[tierForClub(cl)]++;
+		return counts;
+	});
+
 	const filteredClubs = $derived.by(() => {
 		const q = orgSearch.trim().toLowerCase();
 		let base = clubsBySport;
 		if (filterVerification !== 'all') {
 			base = base.filter((cl) => verificationForClub(cl) === filterVerification);
 		}
-		if (filterState !== 'all') {
-			base = base.filter((cl) => stateForClub(cl) === filterState);
+		if (filterStates.length > 0) {
+			const allowed = new Set(filterStates);
+			base = base.filter((cl) => {
+				const st = stateForClub(cl);
+				return st ? allowed.has(st) : false;
+			});
+		}
+		if (filterTiers.length > 0) {
+			const allowed = new Set(filterTiers);
+			base = base.filter((cl) => allowed.has(tierForClub(cl)));
 		}
 		if (!q) return base;
 		return base.filter((cl) => {
@@ -601,6 +676,7 @@
 					placeholder="Filter organizations…"
 					autocomplete="off"
 					aria-label="Filter organizations"
+					style="padding-left: 2.75rem;"
 				/>
 			</div>
 
@@ -624,9 +700,10 @@
 				</button>
 
 				{#if filterOpen}
-					<!-- Strike 2 — Enterprise Filter: Verification + Region/State.
-					     Sport filtering intentionally lives in the tabstrip; we
-					     never duplicate it here. -->
+					<!-- Strike 3 (A2.1) — Enterprise Filter: Tier (multi) +
+					     Region/State (multi w/ typeahead) + Verification.
+					     Sport filtering intentionally lives in the tabstrip;
+					     we never duplicate it here. -->
 					<div class="orgs3-filter-pop" role="dialog" aria-label="Enterprise Filter">
 						<div class="orgs3-filter-pop__head">
 							<span class="orgs3-filter-pop__title">Filter Organizations</span>
@@ -640,6 +717,99 @@
 							</button>
 						</div>
 
+						<!-- ── Subscription Tier (multi-select) ────────────────── -->
+						<fieldset class="orgs3-filter-group">
+							<legend class="orgs3-filter-group__legend">
+								Subscription Tier
+								{#if filterTiers.length > 0}
+									<span class="orgs3-filter-group__mini-badge">{filterTiers.length}</span>
+								{/if}
+							</legend>
+							<p class="orgs3-filter-group__hint">
+								Pick one or more. Clubs without a tier assignment live under
+								<strong>Unassigned</strong>.
+							</p>
+							<div class="orgs3-filter-chips" role="group" aria-label="Subscription Tier">
+								{#each TIER_OPTIONS as tier (tier.key)}
+									{@const active = filterTiers.includes(tier.key)}
+									{@const count  = tierCounts[tier.key] || 0}
+									<button
+										type="button"
+										role="checkbox"
+										aria-checked={active}
+										class="orgs3-filter-chip orgs3-filter-chip--multi"
+										class:orgs3-filter-chip--active={active}
+										onclick={() => (filterTiers = toggleInList(filterTiers, tier.key))}
+									>
+										<span class="orgs3-filter-chip__dot" style="background:{tier.accent};"></span>
+										<i class="ph {tier.icon}" aria-hidden="true"></i>
+										<span>{tier.label}</span>
+										<span class="orgs3-filter-chip__count">{count}</span>
+									</button>
+								{/each}
+							</div>
+						</fieldset>
+
+						<!-- ── Region / State (multi-select w/ typeahead) ────── -->
+						<fieldset class="orgs3-filter-group">
+							<legend class="orgs3-filter-group__legend">
+								Region / State
+								{#if filterStates.length > 0}
+									<span class="orgs3-filter-group__mini-badge">{filterStates.length}</span>
+								{/if}
+							</legend>
+							<p class="orgs3-filter-group__hint">
+								Parsed from the Google-Places verified address. Type to filter
+								when the list grows past a handful of states.
+							</p>
+
+							{#if knownStates.length === 0}
+								<p class="orgs3-filter-group__empty">
+									No states detected yet. Add a verified address to a club to
+									enable region filtering.
+								</p>
+							{:else}
+								{#if knownStates.length > 6}
+									<label class="orgs3-filter-state" for="orgs3-filter-region-q">
+										<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+										<input
+											id="orgs3-filter-region-q"
+											type="search"
+											class="orgs3-filter-state__typeahead"
+											placeholder="Search states (TX, CA, NY…)"
+											autocomplete="off"
+											bind:value={filterRegionQuery}
+										/>
+									</label>
+								{/if}
+
+								<div class="orgs3-filter-state-grid" role="group" aria-label="States">
+									{#each filteredStateOptions as st (st)}
+										{@const active = filterStates.includes(st)}
+										<button
+											type="button"
+											role="checkbox"
+											aria-checked={active}
+											class="orgs3-filter-state-chip"
+											class:orgs3-filter-state-chip--active={active}
+											onclick={() => (filterStates = toggleInList(filterStates, st))}
+										>
+											<i
+												class="ph {active ? 'ph-check-square' : 'ph-square'}"
+												aria-hidden="true"
+											></i>
+											{st}
+										</button>
+									{:else}
+										<span class="orgs3-filter-group__empty orgs3-filter-group__empty--inline">
+											No states match "{filterRegionQuery}".
+										</span>
+									{/each}
+								</div>
+							{/if}
+						</fieldset>
+
+						<!-- ── Verification Status ────────────────────────────── -->
 						<fieldset class="orgs3-filter-group">
 							<legend class="orgs3-filter-group__legend">Verification Status</legend>
 							<p class="orgs3-filter-group__hint">
@@ -666,33 +836,6 @@
 									</button>
 								{/each}
 							</div>
-						</fieldset>
-
-						<fieldset class="orgs3-filter-group">
-							<legend class="orgs3-filter-group__legend">Region / State</legend>
-							<p class="orgs3-filter-group__hint">
-								Parsed from the Google-Places verified address. Unlisted
-								states appear once a club with that address loads.
-							</p>
-							<label class="orgs3-filter-state" for="orgs3-filter-state-select">
-								<i class="ph ph-map-pin" aria-hidden="true"></i>
-								<select
-									id="orgs3-filter-state-select"
-									class="orgs3-filter-state__select"
-									bind:value={filterState}
-								>
-									<option value="all">All states</option>
-									{#each knownStates as st (st)}
-										<option value={st}>{st}</option>
-									{/each}
-								</select>
-							</label>
-							{#if knownStates.length === 0}
-								<p class="orgs3-filter-group__empty">
-									No states detected yet. Add a verified address to a club to
-									enable region filtering.
-								</p>
-							{/if}
 						</fieldset>
 
 						<div class="orgs3-filter-pop__foot">
@@ -1261,9 +1404,11 @@
 
 	.orgs3-search {
 		height: 38px;
-		/* Tailwind `pl-10` = 2.5rem = 40px — guarantees the Phosphor glyph
-		   (16px glyph + 14px left + 10px breathing room) never touches text. */
-		padding: 0 14px 0 2.5rem;
+		/* Strike 3 (A1.3) — padding-left lives on the input ITSELF (not the
+		   wrapper) so the placeholder text never slides underneath the
+		   Phosphor icon, even if a future global style targets the wrapper.
+		   2.75rem = 44px, comfortably past the 16px glyph at 0.75rem. */
+		padding: 0 14px 0 2.75rem;
 		border-radius: 8px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--glass-bg, #fff);
@@ -1353,8 +1498,13 @@
 		position: absolute;
 		top: calc(100% + 8px);
 		right: 0;
-		width: 340px;
+		/* Strike 3 (A2.1) — widened to host the new Tier/Region multi-selects
+		   and given a max-height so it never escapes the viewport when an
+		   admin has 50 states worth of clubs. */
+		width: 380px;
 		max-width: calc(100vw - 24px);
+		max-height: min(calc(100vh - 120px), 640px);
+		overflow-y: auto;
 		background: var(--glass-bg, #fff);
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		border-radius: 12px;
@@ -1363,7 +1513,7 @@
 		z-index: 80;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 14px;
 	}
 
 	:global(html.dark) .orgs3-filter-pop {
@@ -1554,6 +1704,118 @@
 	:global(html.dark) .orgs3-filter-chip--active .orgs3-filter-chip__count {
 		background: rgba(255, 255, 255, 0.12);
 		color: #fafafa;
+	}
+
+	/* Strike 3 (A2.1) — Multi-select variants: wider padding, card surface. */
+	.orgs3-filter-chip--multi {
+		height: 30px;
+		padding: 0 10px 0 8px;
+	}
+
+	/* Strike 3 (A2.1) — Mini count badge sitting inside a fieldset legend. */
+	.orgs3-filter-group__mini-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: 6px;
+		min-width: 18px;
+		height: 18px;
+		padding: 0 6px;
+		border-radius: 999px;
+		background: rgba(79, 70, 229, 0.12);
+		color: #312e81;
+		font-size: 0.625rem;
+		font-weight: 800;
+		letter-spacing: 0;
+	}
+
+	:global(html.dark) .orgs3-filter-group__mini-badge {
+		background: rgba(165, 180, 252, 0.18);
+		color: #e0e7ff;
+	}
+
+	/* Strike 3 (A2.1) — Region typeahead input inside the state box. */
+	.orgs3-filter-state__typeahead {
+		flex: 1;
+		border: none;
+		background: transparent;
+		font: inherit;
+		font-size: 0.8125rem;
+		color: inherit;
+		outline: none;
+		padding: 6px 0;
+		min-width: 0;
+	}
+
+	/* Strike 3 (A2.1) — Scrollable grid of region chips so 50 states fit. */
+	.orgs3-filter-state-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+		gap: 6px;
+		max-height: 156px;
+		overflow-y: auto;
+		padding: 2px 2px 2px 0;
+		/* Slim scrollbar so 1,000-org tenants stay legible. */
+		scrollbar-width: thin;
+	}
+
+	.orgs3-filter-state-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		height: 28px;
+		padding: 0 8px;
+		border-radius: 6px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		cursor: pointer;
+		transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+	}
+
+	.orgs3-filter-state-chip i {
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+	}
+
+	.orgs3-filter-state-chip:hover {
+		border-color: #a1a1aa;
+	}
+
+	.orgs3-filter-state-chip--active {
+		border-color: #4338ca;
+		background: rgba(79, 70, 229, 0.12);
+		color: #312e81;
+	}
+
+	.orgs3-filter-state-chip--active i {
+		color: #4338ca;
+	}
+
+	:global(html.dark) .orgs3-filter-state-chip {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+	}
+
+	:global(html.dark) .orgs3-filter-state-chip--active {
+		background: rgba(124, 58, 237, 0.25);
+		border-color: #a5b4fc;
+		color: #fafafa;
+	}
+
+	:global(html.dark) .orgs3-filter-state-chip--active i {
+		color: #c7d2fe;
+	}
+
+	.orgs3-filter-group__empty--inline {
+		grid-column: 1 / -1;
+		margin: 0;
 	}
 
 	.orgs3-filter-pop__foot {
