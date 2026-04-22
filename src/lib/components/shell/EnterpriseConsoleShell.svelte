@@ -6,6 +6,7 @@
 	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
+	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
@@ -87,6 +88,22 @@
 		await signOut(auth);
 		goto('/login', { replaceState: true });
 	}
+
+	// ── Global Command Palette ───────────────────────────────────────────────────
+	let cmdPaletteOpen = $state(false);
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		/** @param {KeyboardEvent} e */
+		function onGlobalKey(e) {
+			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+				e.preventDefault();
+				cmdPaletteOpen = true;
+			}
+		}
+		window.addEventListener('keydown', onGlobalKey);
+		return () => window.removeEventListener('keydown', onGlobalKey);
+	});
 </script>
 
 <div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop}>
@@ -191,16 +208,19 @@
 					<strong>{workspaceLabel}</strong> / Console
 				{/if}
 			</div>
-			<div class="ec-search">
-				<label class="d-none" for="ec-global-search">Search</label>
-				<input
-					id="ec-global-search"
-					type="search"
-					placeholder="Search…"
-					autocomplete="off"
-					aria-label="Global search"
-				/>
-			</div>
+			<!-- Dead-center Command Palette trigger — absolute so it ignores sidebar-rail width -->
+			<button
+				type="button"
+				class="ec-cmd-trigger"
+				onclick={() => (cmdPaletteOpen = true)}
+				aria-label="Open command palette"
+				aria-keyshortcuts="Meta+K Control+K"
+				aria-haspopup="dialog"
+			>
+				<i class="ph ph-magnifying-glass ec-cmd-trigger__icon" aria-hidden="true"></i>
+				<span class="ec-cmd-trigger__text">Search &amp; jump to…</span>
+				<kbd class="ec-cmd-trigger__kbd">⌘K</kbd>
+			</button>
 			<div class="ec-topbar__right">
 				<button
 					type="button"
@@ -222,6 +242,9 @@
 	</div>
 	</div>
 </div>
+
+<!-- Global Command Palette (Cmd+K) -->
+<CommandPalette bind:open={cmdPaletteOpen} />
 
 <!-- Overlay + drawer (team / record details) -->
 <div

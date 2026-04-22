@@ -9,9 +9,10 @@
 
 /** @type {ShellNavItem[]} */
 const adminLinks = [
-	{ label: 'Overview', icon: 'ph-chart-line', href: '/admin/overview' },
-	{ label: 'Organizations', icon: 'ph-buildings', href: '/admin/organizations' },
-	{ label: 'Audit Log', icon: 'ph-shield-check', href: '/admin/audit-log' },
+	{ label: 'Overview',        icon: 'ph-chart-line',   href: '/admin/overview' },
+	{ label: 'Organizations',   icon: 'ph-buildings',    href: '/admin/organizations' },
+	{ label: 'Audit Log',       icon: 'ph-shield-check', href: '/admin/audit-log' },
+	{ label: 'System Settings', icon: 'ph-gear-six',     href: '/admin/system-settings' },
 ];
 
 /** @type {ShellNavItem[]} */
