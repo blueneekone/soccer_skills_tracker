@@ -24,42 +24,10 @@
 	let activeTab = $state('access');
 
 	// ── TAB 1: Access Control ────────────────────────────────────────────────
-	let newAdminEmail = $state('');
-	let adminSaving = $state(false);
+	// Sprint 2.6.5 — Grant flow moved to /admin/users (AddAdminModal). This
+	// page retains only the revoke action + deep-link to the grant modal.
 	let adminErr = $state('');
 	let adminOk = $state('');
-
-	const addAdmin = async () => {
-		adminErr = '';
-		adminOk = '';
-		const email = newAdminEmail.trim().toLowerCase();
-		if (!email) {
-			adminErr = 'Enter an email address.';
-			return;
-		}
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			adminErr = 'Enter a valid email address.';
-			return;
-		}
-		adminSaving = true;
-		try {
-			await setDoc(doc(db, 'config', 'admins'), {
-				list: Array.from(new Set([...teamsStore.admins, email]))
-			});
-			await setDoc(doc(db, 'users', email), { role: 'global_admin' }, { merge: true });
-			await logSecurityEvent('GRANT_GLOBAL_ADMIN', email, 'Added to global config');
-			adminOk = `${email} granted Global Admin access.`;
-			newAdminEmail = '';
-			await teamsStore.load('super_admin', {
-				scope: 'admin_full',
-				routePath: '/admin/system-settings'
-			});
-		} catch (e) {
-			adminErr = e instanceof Error ? e.message : 'Operation failed.';
-		} finally {
-			adminSaving = false;
-		}
-	};
 
 	/** @param {string} email */
 	const removeAdmin = async (email) => {
@@ -404,26 +372,22 @@
 				</table>
 			</div>
 
-			<div class="ss-inline-form">
-				<label class="ss-label" for="ss-grant-email">Grant Global Admin Access</label>
-				<div class="ss-form-row">
-					<input
-						id="ss-grant-email"
-						type="email"
-						bind:value={newAdminEmail}
-						placeholder="admin@organization.com"
-						disabled={adminSaving}
-						class="ss-input"
-					/>
-					<button
-						type="button"
-						class="ss-btn ss-btn--primary"
-						onclick={addAdmin}
-						disabled={adminSaving}
-					>
-						{adminSaving ? 'Saving…' : 'Grant Access'}
-					</button>
+			<div class="ss-grant-cta" role="note">
+				<div class="ss-grant-cta__icon" aria-hidden="true">
+					<i class="ph ph-globe"></i>
 				</div>
+				<div class="ss-grant-cta__body">
+					<h3 class="ss-grant-cta__title">Grant Global Admin Access</h3>
+					<p class="ss-grant-cta__desc">
+						Sprint 2.6.5 moved this workflow into the Global Users command center so
+						admin onboarding can capture verified address, phone, and primary facility
+						alongside the role grant.
+					</p>
+				</div>
+				<a class="ss-btn ss-btn--primary ss-grant-cta__link" href="/admin/users">
+					<i class="ph ph-user-plus" aria-hidden="true"></i>
+					Open Global Users →
+				</a>
 			</div>
 		</section>
 	{/if}
@@ -806,6 +770,86 @@
 
 	/* ── Forms ───────────────────────────────────────────────────────── */
 	.ss-inline-form { display: flex; flex-direction: column; gap: 8px; }
+
+	/* Sprint 2.6.5 — Grant CTA (replaces the inline form; links to /admin/users) */
+	.ss-grant-cta {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 14px;
+		padding: 14px 16px;
+		margin-top: 12px;
+		border-radius: 12px;
+		border: 1px solid rgba(99, 102, 241, 0.2);
+		background: linear-gradient(
+			135deg,
+			rgba(99, 102, 241, 0.06) 0%,
+			rgba(168, 85, 247, 0.05) 100%
+		);
+	}
+
+	:global(html.dark) .ss-grant-cta {
+		border-color: rgba(124, 58, 237, 0.3);
+		background: linear-gradient(
+			135deg,
+			rgba(99, 102, 241, 0.08) 0%,
+			rgba(168, 85, 247, 0.05) 100%
+		);
+	}
+
+	.ss-grant-cta__icon {
+		width: 40px;
+		height: 40px;
+		border-radius: 10px;
+		display: grid;
+		place-items: center;
+		color: #4f46e5;
+		background: rgba(99, 102, 241, 0.12);
+		border: 1px solid rgba(99, 102, 241, 0.3);
+		font-size: 1.1rem;
+	}
+
+	:global(html.dark) .ss-grant-cta__icon {
+		color: #a5b4fc;
+	}
+
+	.ss-grant-cta__title {
+		margin: 0 0 2px;
+		font-size: 0.9375rem;
+		font-weight: 700;
+		color: #18181b;
+	}
+
+	:global(html.dark) .ss-grant-cta__title {
+		color: #fafafa;
+	}
+
+	.ss-grant-cta__desc {
+		margin: 0;
+		color: #52525b;
+		font-size: 0.8125rem;
+		line-height: 1.45;
+		max-width: 60ch;
+	}
+
+	:global(html.dark) .ss-grant-cta__desc {
+		color: #d4d4d8;
+	}
+
+	.ss-grant-cta__link {
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	@media (max-width: 720px) {
+		.ss-grant-cta {
+			grid-template-columns: auto 1fr;
+		}
+		.ss-grant-cta__link {
+			grid-column: 1 / -1;
+			justify-content: center;
+		}
+	}
 
 	.ss-form-row {
 		display: flex;

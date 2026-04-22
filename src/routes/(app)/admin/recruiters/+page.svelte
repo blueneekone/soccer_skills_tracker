@@ -61,6 +61,51 @@
 	let flashOk = $state('');
 	let flashErr = $state('');
 
+	// Sprint 2.6.5 — lightweight toast (auto-dismiss, aria-live) for Run
+	// Background Check / future workflow triggers. No global store needed.
+	/** @type {{ id: number, text: string, tone: 'info' | 'ok' | 'warn' }[]} */
+	let toasts = $state([]);
+	let toastSeq = 0;
+	/** @param {string} text @param {'info' | 'ok' | 'warn'} [tone] */
+	function pushToast(text, tone = 'info') {
+		const id = ++toastSeq;
+		toasts = [...toasts, { id, text, tone }];
+		setTimeout(() => {
+			toasts = toasts.filter((t) => t.id !== id);
+		}, 4200);
+	}
+
+	// Row-level action menu (shared with Background Check action)
+	let openMenuFor = $state('');
+	function toggleMenu(/** @type {string} */ rowId) {
+		openMenuFor = openMenuFor === rowId ? '' : rowId;
+	}
+	function closeMenu() {
+		openMenuFor = '';
+	}
+
+	// Dismiss menu on outside click / Escape.
+	$effect(() => {
+		if (typeof document === 'undefined') return;
+		if (!openMenuFor) return;
+		/** @param {MouseEvent} e */
+		const onDocClick = (e) => {
+			const target = /** @type {HTMLElement | null} */ (e.target);
+			if (target && target.closest && target.closest('.ar-menu-wrap')) return;
+			openMenuFor = '';
+		};
+		/** @param {KeyboardEvent} e */
+		const onKey = (e) => {
+			if (e.key === 'Escape') openMenuFor = '';
+		};
+		document.addEventListener('click', onDocClick);
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('click', onDocClick);
+			document.removeEventListener('keydown', onKey);
+		};
+	});
+
 	// ── Utilities ────────────────────────────────────────────────────────────
 	/** @param {unknown} v */
 	function toEpochMs(v) {
@@ -313,6 +358,25 @@
 		if (row.verificationStatus === 'pending') return;
 		void updateVerification(row, 'pending');
 	}
+
+	/**
+	 * Sprint 2.6.5 — Vetting workflow stub. The Checkr API integration will
+	 * land in Sprint 2.9; v1 surfaces the entry point + audit breadcrumb so
+	 * admins can request the run today.
+	 * @param {RecruiterRow} row
+	 */
+	async function runBackgroundCheck(row) {
+		closeMenu();
+		pushToast(
+			`Background check queued for ${row.scoutName || row.email}. Checkr API integration coming Sprint 2.9.`,
+			'info'
+		);
+		try {
+			await logSecurityEvent('RECRUITER_BG_CHECK_REQUESTED', row.email, 'v1 stub — Checkr pending');
+		} catch (e) {
+			console.warn('[admin-recruiters] audit log for background check failed', e);
+		}
+	}
 </script>
 
 <div class="ar-root">
@@ -345,7 +409,7 @@
 					class:ar-tab--on={statusFilter === ''}
 					onclick={() => (statusFilter = '')}
 				>
-					All <span class="ar-tab__n">{counts.total}</span>
+					All <span class="ar-tab__n ar-tab__n--total">{counts.total}</span>
 				</button>
 				<button
 					type="button"
@@ -355,7 +419,7 @@
 					class:ar-tab--on={statusFilter === 'pending'}
 					onclick={() => (statusFilter = 'pending')}
 				>
-					Pending <span class="ar-tab__n">{counts.pending}</span>
+					Pending <span class="ar-tab__n ar-tab__n--pending text-amber-500">{counts.pending}</span>
 				</button>
 				<button
 					type="button"
@@ -365,7 +429,7 @@
 					class:ar-tab--on={statusFilter === 'verified'}
 					onclick={() => (statusFilter = 'verified')}
 				>
-					Verified <span class="ar-tab__n">{counts.verified}</span>
+					Verified <span class="ar-tab__n ar-tab__n--verified text-emerald-500">{counts.verified}</span>
 				</button>
 				<button
 					type="button"
@@ -375,7 +439,7 @@
 					class:ar-tab--on={statusFilter === 'rejected'}
 					onclick={() => (statusFilter = 'rejected')}
 				>
-					Rejected <span class="ar-tab__n">{counts.rejected}</span>
+					Rejected <span class="ar-tab__n ar-tab__n--rejected text-rose-500">{counts.rejected}</span>
 				</button>
 			</div>
 		</div>
@@ -526,18 +590,67 @@
 												Reject
 											</button>
 										{/if}
-										{#if row.verificationStatus !== 'pending'}
+										<div class="ar-menu-wrap">
 											<button
 												type="button"
-												class="ar-btn ar-btn--ghost"
-												onclick={() => resetPending(row)}
+												class="ar-btn ar-btn--ghost ar-menu-trigger"
+												onclick={() => toggleMenu(row.id)}
+												aria-haspopup="menu"
+												aria-expanded={openMenuFor === row.id}
+												aria-label="More actions for {row.email}"
 												disabled={busyFor === row.id}
-												title="Return to pending queue"
 											>
-												<i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>
-												Reset
+												<i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
 											</button>
-										{/if}
+											{#if openMenuFor === row.id}
+												<div
+													class="ar-menu"
+													role="menu"
+													tabindex="-1"
+													onclick={(e) => e.stopPropagation()}
+													onkeydown={(e) => { if (e.key === 'Escape') closeMenu(); }}
+												>
+													<button
+														type="button"
+														role="menuitem"
+														class="ar-menu__item"
+														onclick={() => runBackgroundCheck(row)}
+													>
+														<i class="ph ph-shield-chevron" aria-hidden="true"></i>
+														<span class="ar-menu__item-body">
+															<span class="ar-menu__item-label">Run Background Check</span>
+															<span class="ar-menu__item-hint">Checkr API — Sprint 2.9</span>
+														</span>
+													</button>
+													{#if row.verificationStatus !== 'pending'}
+														<button
+															type="button"
+															role="menuitem"
+															class="ar-menu__item"
+															onclick={() => { closeMenu(); resetPending(row); }}
+														>
+															<i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>
+															<span class="ar-menu__item-body">
+																<span class="ar-menu__item-label">Reset to Pending</span>
+																<span class="ar-menu__item-hint">Return to queue</span>
+															</span>
+														</button>
+													{/if}
+													<a
+														href="mailto:{row.email}"
+														role="menuitem"
+														class="ar-menu__item"
+														onclick={() => closeMenu()}
+													>
+														<i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
+														<span class="ar-menu__item-body">
+															<span class="ar-menu__item-label">Email Scout</span>
+															<span class="ar-menu__item-hint">{row.email}</span>
+														</span>
+													</a>
+												</div>
+											{/if}
+										</div>
 									</div>
 								{/if}
 							</td>
@@ -547,6 +660,24 @@
 			</tbody>
 		</table>
 	</div>
+
+	{#if toasts.length > 0}
+		<div class="ar-toast-stack" role="region" aria-live="polite" aria-label="Notifications">
+			{#each toasts as t (t.id)}
+				<div class="ar-toast ar-toast--{t.tone}" role="status">
+					<i
+						class="ph {t.tone === 'ok'
+							? 'ph-check-circle'
+							: t.tone === 'warn'
+								? 'ph-warning'
+								: 'ph-shield-chevron'}"
+						aria-hidden="true"
+					></i>
+					<span>{t.text}</span>
+				</div>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -633,10 +764,11 @@
 	.ar-filter {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
-		padding: 6px 10px;
-		min-width: 280px;
-		border-radius: 8px;
+		gap: 10px;
+		padding: 8px 14px;
+		/* Sprint 2.6.5 — widen to Tailwind w-96 (24rem / 384px). */
+		min-width: 24rem;
+		border-radius: 10px;
 		border: 1px solid #e4e4e7;
 		background: #ffffff;
 		box-shadow: inset 0 1px 2px rgba(24, 24, 27, 0.04);
@@ -732,25 +864,45 @@
 	}
 
 	.ar-tab__n {
-		padding: 0 6px;
+		padding: 0 7px;
 		border-radius: 999px;
 		background: #e4e4e7;
 		color: #3f3f46;
-		font-size: 0.6875rem;
-		font-weight: 700;
+		font-size: 0.75rem;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
 	}
 
 	:global(html.dark) .ar-tab__n {
-		background: #27272a;
+		background: rgba(255, 255, 255, 0.08);
 		color: #d4d4d8;
 	}
 
-	.ar-tab--on .ar-tab__n {
+	/* Sprint 2.6.5 — Color-coded status counts (CTO mandate). Pills are tinted
+	   glass so they read on BOTH the idle and active tab background. */
+	.ar-tab__n--pending {
+		background: rgba(245, 158, 11, 0.16);
+		color: #f59e0b; /* amber-500 */
+	}
+	.ar-tab__n--verified {
+		background: rgba(16, 185, 129, 0.18);
+		color: #10b981; /* emerald-500 */
+	}
+	.ar-tab__n--rejected {
+		background: rgba(244, 63, 94, 0.18);
+		color: #f43f5e; /* rose-500 */
+	}
+
+	:global(html.dark) .ar-tab__n--pending  { background: rgba(245, 158, 11, 0.22); color: #fbbf24; }
+	:global(html.dark) .ar-tab__n--verified { background: rgba(16, 185, 129, 0.22); color: #34d399; }
+	:global(html.dark) .ar-tab__n--rejected { background: rgba(244, 63, 94, 0.22); color: #fb7185; }
+
+	.ar-tab--on .ar-tab__n--total {
 		background: #18181b;
 		color: #fafafa;
 	}
 
-	:global(html.dark) .ar-tab--on .ar-tab__n {
+	:global(html.dark) .ar-tab--on .ar-tab__n--total {
 		background: #fafafa;
 		color: #18181b;
 	}
@@ -1218,6 +1370,162 @@
 
 	.ar-btn--ghost {
 		background: transparent;
+	}
+
+	/* ── Sprint 2.6.5 — Actions menu (Background Check host) ────────────── */
+	.ar-menu-wrap {
+		position: relative;
+		display: inline-flex;
+	}
+
+	.ar-menu-trigger {
+		padding: 6px 8px;
+	}
+
+	.ar-menu {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		z-index: 40;
+		min-width: 240px;
+		padding: 6px;
+		border-radius: 10px;
+		border: 1px solid #e4e4e7;
+		background: #ffffff;
+		box-shadow:
+			0 10px 32px -8px rgba(24, 24, 27, 0.25),
+			0 2px 4px rgba(24, 24, 27, 0.08);
+	}
+
+	:global(html.dark) .ar-menu {
+		border-color: #27272a;
+		background: #0f0f12;
+		box-shadow:
+			0 10px 32px -8px rgba(0, 0, 0, 0.6),
+			0 2px 4px rgba(0, 0, 0, 0.4);
+	}
+
+	.ar-menu__item {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		width: 100%;
+		padding: 8px 10px;
+		border-radius: 7px;
+		border: 0;
+		background: transparent;
+		color: #18181b;
+		font: inherit;
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	:global(html.dark) .ar-menu__item {
+		color: #fafafa;
+	}
+
+	.ar-menu__item:hover,
+	.ar-menu__item:focus-visible {
+		background: #f4f4f5;
+		outline: none;
+	}
+
+	:global(html.dark) .ar-menu__item:hover,
+	:global(html.dark) .ar-menu__item:focus-visible {
+		background: rgba(255, 255, 255, 0.06);
+	}
+
+	.ar-menu__item i {
+		flex-shrink: 0;
+		font-size: 1.05rem;
+		color: #4f46e5;
+		margin-top: 1px;
+	}
+
+	:global(html.dark) .ar-menu__item i {
+		color: #a5b4fc;
+	}
+
+	.ar-menu__item-body {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+	}
+
+	.ar-menu__item-label {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: inherit;
+	}
+
+	.ar-menu__item-hint {
+		font-size: 0.7rem;
+		color: #71717a;
+		letter-spacing: 0.02em;
+	}
+
+	:global(html.dark) .ar-menu__item-hint {
+		color: #d4d4d8;
+	}
+
+	/* ── Sprint 2.6.5 — Toast stack (Run Background Check, etc.) ────────── */
+	.ar-toast-stack {
+		position: fixed;
+		right: 24px;
+		bottom: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		z-index: 90;
+		pointer-events: none;
+	}
+
+	.ar-toast {
+		pointer-events: auto;
+		display: inline-flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		border: 1px solid #e4e4e7;
+		background: #ffffff;
+		color: #18181b;
+		box-shadow:
+			0 16px 40px -8px rgba(24, 24, 27, 0.25),
+			0 2px 4px rgba(24, 24, 27, 0.08);
+		font-size: 0.8125rem;
+		font-weight: 500;
+		max-width: 380px;
+		animation: ar-toast-in 160ms ease-out;
+	}
+
+	:global(html.dark) .ar-toast {
+		background: #0f0f12;
+		border-color: #27272a;
+		color: #fafafa;
+		box-shadow:
+			0 16px 40px -8px rgba(0, 0, 0, 0.6),
+			0 2px 4px rgba(0, 0, 0, 0.4);
+	}
+
+	.ar-toast i {
+		flex-shrink: 0;
+		font-size: 1.05rem;
+		color: #4f46e5;
+	}
+
+	:global(html.dark) .ar-toast i {
+		color: #a5b4fc;
+	}
+
+	.ar-toast--ok   i { color: #10b981; }
+	.ar-toast--warn i { color: #f59e0b; }
+
+	@keyframes ar-toast-in {
+		from { opacity: 0; transform: translateY(6px); }
+		to   { opacity: 1; transform: translateY(0); }
 	}
 
 	/* ── Responsive ──────────────────────────────────────────────────────── */

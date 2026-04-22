@@ -214,18 +214,20 @@ html.dark .ec-sidebar {
 }
 
 @media (min-width: 1024px) {
-	/* Sprint 2.6.4 — Stacking contexts only. NO `overflow: hidden` on
-	   `.ec-main` (that clipped DataTable action dropdowns and tooltips that
-	   escape the canvas). The Context Switcher no longer bleeds because:
-	     1. `.ec-sidebar` owns z-index: 40 so its absolutely-positioned
-	        popover lives above the canvas stack.
-	     2. `.ec-main` owns z-index: 10 on a relative parent, preserving
-	        predictable paint order without clipping descendants.
-	     3. The popover itself is left/right pinned inside `.ec-ws` and can
-	        never escape the sidebar column horizontally. */
+	/* Sprint 2.6.5 — Context Switcher bleed fix (P0).
+	   • `.ec-sidebar` owns z-index: 50 so its absolutely-positioned popover
+	     (`.ec-ws__popover`) lives above ALL canvas paint layers without any
+	     overflow tricks.
+	   • `.ec-main` deliberately does NOT set z-index. Adding one here would
+	     create a competing stacking context that traps popovers behind the
+	     canvas whenever the sidebar and main are siblings of the same
+	     z-index tier. Paint order stays under the browser's default normal
+	     flow, which is the source of truth for everything else on the page.
+	   • NO `overflow: hidden` on .ec-main (that clipped DataTable action
+	     dropdowns and tooltips). */
 	.ec-sidebar {
 		position: relative;
-		z-index: 40;
+		z-index: 50;
 	}
 
 	.ec-sidebar__panel {
@@ -234,7 +236,6 @@ html.dark .ec-sidebar {
 
 	.ec-main {
 		position: relative;
-		z-index: 10;
 	}
 
 	.ec-sidebar--collapsed-desktop {

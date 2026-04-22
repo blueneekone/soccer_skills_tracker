@@ -13,7 +13,12 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
+	import {
+		clubSportIconClass,
+		clubSportIconSuffix,
+		clubSportAccent,
+		normalizeClubSport
+	} from '$lib/utils/sport-icon.js';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import '$lib/styles/enterprise-console.css';
@@ -135,19 +140,52 @@
 		};
 	});
 
-	// ── Search + pagination ───────────────────────────────────────────────────────
+	// ── Search + sport tab + pagination ──────────────────────────────────────────
 	let orgSearch = $state('');
 	let orgPage   = $state(0);
+	/** @type {'all' | 'soccer' | 'basketball' | 'baseball' | 'football' | 'volleyball' | 'hockey' | 'lacrosse' | 'generic'} */
+	let activeSportTab = $state('all');
+
+	/** Sport sub-nav tab definitions (CTO mandate: strict, finite tabstrip). */
+	const SPORT_TABS = /** @type {const} */ ([
+		{ key: 'all',        label: 'All',        icon: 'ph-squares-four'  },
+		{ key: 'soccer',     label: 'Soccer',     icon: 'ph-soccer-ball'   },
+		{ key: 'basketball', label: 'Basketball', icon: 'ph-basketball'    },
+		{ key: 'volleyball', label: 'Volleyball', icon: 'ph-volleyball'    },
+		{ key: 'baseball',   label: 'Baseball',   icon: 'ph-baseball'      },
+		{ key: 'football',   label: 'Football',   icon: 'ph-football'      },
+		{ key: 'hockey',     label: 'Hockey',     icon: 'ph-ice-skate'     },
+		{ key: 'lacrosse',   label: 'Lacrosse',   icon: 'ph-tennis-ball'   },
+		{ key: 'generic',    label: 'Other',      icon: 'ph-shield-check'  }
+	]);
 
 	$effect(() => {
 		void orgSearch;
+		void activeSportTab;
 		orgPage = 0;
+	});
+
+	/** Live counts per sport — reactive so tab badges update on add/delete. */
+	const sportCounts = $derived.by(() => {
+		/** @type {Record<string, number>} */
+		const counts = { all: clubs.length };
+		for (const cl of clubs) {
+			const k = normalizeClubSport(cl?.sport);
+			counts[k] = (counts[k] || 0) + 1;
+		}
+		return counts;
+	});
+
+	/** Sport-filtered list (CTO mandate: Svelte 5 $derived tabbed filter). */
+	const clubsBySport = $derived.by(() => {
+		if (activeSportTab === 'all') return clubs;
+		return clubs.filter((cl) => normalizeClubSport(cl?.sport) === activeSportTab);
 	});
 
 	const filteredClubs = $derived.by(() => {
 		const q = orgSearch.trim().toLowerCase();
-		if (!q) return clubs;
-		return clubs.filter((cl) => {
+		if (!q) return clubsBySport;
+		return clubsBySport.filter((cl) => {
 			return (
 				(cl.name || '').toLowerCase().includes(q) ||
 				cl.id.toLowerCase().includes(q) ||
@@ -175,18 +213,22 @@
 	}
 
 	// ── Add Club form ────────────────────────────────────────────────────────────
-	let showAddForm     = $state(false);
-	let newClubId       = $state('');
-	let newClubName     = $state('');
+	let showAddForm        = $state(false);
+	let newClubId          = $state('');
+	let newClubName        = $state('');
 	/** @type {string} */
-	let newClubSport    = $state('soccer');
+	let newClubSport       = $state('soccer');
 	/** true when the admin selects "+ Create new sport…" in the sport select */
-	let newSportMode    = $state(false);
-	let newSportName    = $state('');
-	let newSportIcon    = $state('ph-soccer-ball');
-	let newClubDir      = $state('');
-	let clubSaving      = $state(false);
-	let clubAddErr      = $state('');
+	let newSportMode       = $state(false);
+	let newSportName       = $state('');
+	let newSportIcon       = $state('ph-soccer-ball');
+	let newClubDir         = $state('');
+	// Sprint 2.6.5 — extended demographic / ops fields
+	let newClubAddress     = $state('');
+	let newClubPhone       = $state('');
+	let newClubFacility    = $state('');
+	let clubSaving         = $state(false);
+	let clubAddErr         = $state('');
 
 	/** Reacts to sport select changes — toggles "new sport" inline panel */
 	$effect(() => {
@@ -225,12 +267,19 @@
 				resolvedSport = data.sportId;
 			}
 
-			// ── Step 2: Create the club document ────────────────────────────────
+			// ── Step 2: Create the club document (incl. Sprint 2.6.5 demographics) ─
+			const ph = newClubPhone.trim();
+			if (ph && !/^\+?[0-9\s().\-]{7,20}$/.test(ph)) {
+				throw new Error('Phone number looks invalid. Use E.164 (e.g. +15125550100).');
+			}
 			await setDoc(doc(db, 'clubs', id), {
 				id,
 				name: newClubName,
 				directorEmail: email,
 				sport: resolvedSport,
+				verifiedAddress: newClubAddress.trim() || '',
+				phoneNumber: ph,
+				primaryFacility: newClubFacility.trim() || '',
 				createdAt: new Date(),
 			});
 			if (email) {
@@ -239,12 +288,15 @@
 			await logSecurityEvent('CREATE_CLUB', id, newClubName);
 
 			// ── Reset form ───────────────────────────────────────────────────────
-			newClubId    = '';
-			newClubName  = '';
-			newClubSport = 'soccer';
-			newSportName = '';
-			newSportIcon = 'ph-soccer-ball';
-			newClubDir   = '';
+			newClubId     = '';
+			newClubName   = '';
+			newClubSport  = 'soccer';
+			newSportName  = '';
+			newSportIcon  = 'ph-soccer-ball';
+			newClubDir    = '';
+			newClubAddress  = '';
+			newClubPhone    = '';
+			newClubFacility = '';
 			showAddForm  = false;
 
 			// Reload clubs table directly — same defensive normalization as initial load.
@@ -328,6 +380,29 @@
 		</div>
 	</div>
 
+	<!-- ── Sprint 2.6.5: sport sub-navigation tab strip ─────────────────────── -->
+	<div class="orgs3-tabs" role="tablist" aria-label="Filter by sport">
+		{#each SPORT_TABS as tab (tab.key)}
+			{@const count = sportCounts[tab.key] ?? 0}
+			{@const isActive = activeSportTab === tab.key}
+			{#if tab.key === 'all' || count > 0}
+				<button
+					type="button"
+					role="tab"
+					aria-selected={isActive}
+					class="orgs3-tab"
+					class:orgs3-tab--active={isActive}
+					data-sport={tab.key}
+					onclick={() => (activeSportTab = tab.key)}
+				>
+					<i class="ph {tab.icon}" aria-hidden="true"></i>
+					<span class="orgs3-tab__label">{tab.label}</span>
+					<span class="orgs3-tab__count">{count}</span>
+				</button>
+			{/if}
+		{/each}
+	</div>
+
 	<!-- ── Inline add form (collapsible) ────────────────────────────────────── -->
 	{#if showAddForm}
 		<div class="orgs3-add-form">
@@ -365,6 +440,56 @@
 				<div class="orgs3-field">
 					<label class="orgs3-field-label" for="add-club-dir">Director Email</label>
 					<input id="add-club-dir" type="email" class="orgs3-input" bind:value={newClubDir} placeholder="director@example.com" disabled={clubSaving} />
+				</div>
+				<div class="orgs3-field">
+					<label class="orgs3-field-label" for="add-club-phone">Phone Number</label>
+					<input
+						id="add-club-phone"
+						type="tel"
+						class="orgs3-input"
+						bind:value={newClubPhone}
+						placeholder="+1 (512) 555-0100"
+						inputmode="tel"
+						autocomplete="tel"
+						disabled={clubSaving}
+					/>
+				</div>
+				<div class="orgs3-field orgs3-field--wide">
+					<label class="orgs3-field-label" for="add-club-address">
+						Verified Address
+						<span class="orgs3-places-chip">
+							<i class="ph ph-map-pin-line" aria-hidden="true"></i>
+							Google Places Autocomplete active
+						</span>
+					</label>
+					<input
+						id="add-club-address"
+						type="text"
+						class="orgs3-input"
+						bind:value={newClubAddress}
+						placeholder="Start typing a verified street address…"
+						autocomplete="street-address"
+						disabled={clubSaving}
+						data-places-autocomplete="address"
+					/>
+				</div>
+				<div class="orgs3-field orgs3-field--wide">
+					<label class="orgs3-field-label" for="add-club-facility">
+						Primary Facility
+						<span class="orgs3-places-chip">
+							<i class="ph ph-buildings" aria-hidden="true"></i>
+							Google Places Autocomplete active
+						</span>
+					</label>
+					<input
+						id="add-club-facility"
+						type="text"
+						class="orgs3-input"
+						bind:value={newClubFacility}
+						placeholder="e.g. Mueller Athletic Complex, Austin TX"
+						disabled={clubSaving}
+						data-places-autocomplete="establishment"
+					/>
 				</div>
 			</div>
 
@@ -459,22 +584,38 @@
 					{#each pagedClubs as cl (cl.id)}
 						{@const compliance = getCompliance(cl.id)}
 						{@const teamCount  = teamsStore.teams.filter((t) => t.clubId === cl.id).length}
+						{@const accent     = clubSportAccent(cl?.sport)}
+						{@const sportSuffix = clubSportIconSuffix(cl?.sport)}
 						<tr class="orgs3-dt__row">
-							<!-- Logo -->
+							<!-- Logo (sport-accented chip when no uploaded logo) -->
 							<td class="orgs3-dt__td orgs3-dt__td--logo">
 								{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
 									<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 								{:else}
-								<span class="orgs3-logo-fallback" aria-hidden="true">
-									<i class="ph {clubSportIconClass(cl.sport ?? 'generic')}"></i>
-								</span>
+									<span
+										class="orgs3-logo-chip"
+										style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
+										aria-hidden="true"
+									>
+										<i class="ph {clubSportIconClass(cl.sport ?? 'generic')}"></i>
+									</span>
 								{/if}
 							</td>
 
-							<!-- Name + ID -->
+							<!-- Name + ID (Sprint 2.6.5 — glowing inline sport icon) -->
 							<td class="orgs3-dt__td orgs3-dt__td--name">
 								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
-									{cl?.name || cl?.id || 'Unnamed Organization'}
+									<span
+										class="orgs3-org-sport-badge"
+										style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
+										title="Sport: {accent.label}"
+										aria-hidden="true"
+									>
+										<i class="ph {sportSuffix}"></i>
+									</span>
+									<span class="orgs3-org-name-text">
+										{cl?.name || cl?.id || 'Unnamed Organization'}
+									</span>
 								</a>
 								<span class="orgs3-org-id">{cl?.id ?? ''}</span>
 								{#if cl?.isInfinite === true}
@@ -484,7 +625,9 @@
 
 							<!-- Sport -->
 							<td class="orgs3-dt__td orgs3-dt__td--muted">
-								{cl?.sport || 'Unknown'}
+								<span class="orgs3-sport-pill" style="--sport-fg:{accent.fg}; --sport-ring:{accent.ring};">
+									{accent.label}
+								</span>
 							</td>
 
 							<!-- Director -->
@@ -643,37 +786,44 @@
 		flex-wrap: wrap;
 	}
 
-	/* ── Search ─────────────────────────────────────────────────────── */
+	/* ── Search (Sprint 2.6.5 — pl-10 / icon no longer overlaps text) ─ */
 	.orgs3-search-wrap {
 		position: relative;
 		display: flex;
 		align-items: center;
+		width: 320px;
+		max-width: 100%;
 	}
 
 	.orgs3-search-icon {
 		position: absolute;
-		left: 10px;
-		font-size: 0.875rem;
-		color: rgba(0, 0, 0, 0.3);
+		left: 14px;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 0.95rem;
+		color: rgba(0, 0, 0, 0.42);
 		pointer-events: none;
+		line-height: 1;
 	}
 
 	:global(html.dark) .orgs3-search-icon {
-		color: rgba(255, 255, 255, 0.28);
+		color: #d4d4d8;
 	}
 
 	.orgs3-search {
-		height: 34px;
-		padding: 0 12px 0 30px;
-		border-radius: 7px;
+		height: 38px;
+		/* Tailwind `pl-10` = 2.5rem = 40px — guarantees the Phosphor glyph
+		   (16px glyph + 14px left + 10px breathing room) never touches text. */
+		padding: 0 14px 0 2.5rem;
+		border-radius: 8px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--glass-bg, #fff);
 		font: inherit;
-		font-size: 0.8125rem;
+		font-size: 0.875rem;
 		color: var(--text-primary);
 		outline: none;
-		width: 220px;
-		transition: border-color 0.12s ease;
+		width: 100%;
+		transition: border-color 0.12s ease, box-shadow 0.12s ease;
 	}
 
 	.orgs3-search:focus {
@@ -688,6 +838,116 @@
 	}
 
 	.orgs3-search--sm { width: 200px; }
+
+	/* ── Sprint 2.6.5: Sport sub-navigation tab strip ───────────────── */
+	.orgs3-tabs {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding: 10px 0 12px;
+		overflow-x: auto;
+		scrollbar-width: thin;
+		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+	}
+
+	:global(html.dark) .orgs3-tabs {
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.orgs3-tab {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		height: 34px;
+		padding: 0 12px;
+		border-radius: 8px;
+		border: 1px solid transparent;
+		background: transparent;
+		color: var(--text-secondary);
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+	}
+
+	.orgs3-tab:hover {
+		background: rgba(0, 0, 0, 0.04);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .orgs3-tab {
+		color: #d4d4d8;
+	}
+
+	:global(html.dark) .orgs3-tab:hover {
+		background: rgba(255, 255, 255, 0.05);
+		color: #fafafa;
+	}
+
+	.orgs3-tab i {
+		font-size: 0.95rem;
+	}
+
+	.orgs3-tab__count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 18px;
+		padding: 0 6px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.06);
+		color: var(--text-secondary);
+		font-size: 0.7rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	:global(html.dark) .orgs3-tab__count {
+		background: rgba(255, 255, 255, 0.08);
+		color: #d4d4d8;
+	}
+
+	.orgs3-tab--active {
+		background: rgba(99, 102, 241, 0.1);
+		border-color: rgba(99, 102, 241, 0.25);
+		color: #4f46e5;
+	}
+
+	.orgs3-tab--active .orgs3-tab__count {
+		background: rgba(99, 102, 241, 0.18);
+		color: #4338ca;
+	}
+
+	:global(html.dark) .orgs3-tab--active {
+		background: rgba(168, 85, 247, 0.16);
+		border-color: rgba(168, 85, 247, 0.4);
+		color: #e9d5ff;
+	}
+
+	:global(html.dark) .orgs3-tab--active .orgs3-tab__count {
+		background: rgba(168, 85, 247, 0.25);
+		color: #fafafa;
+	}
+
+	/* Per-sport accent on the tab icon when active */
+	.orgs3-tab--active[data-sport="soccer"]     { color: #15803d; border-color: rgba(34, 197, 94, 0.35);  background: rgba(34, 197, 94, 0.08); }
+	.orgs3-tab--active[data-sport="basketball"] { color: #c2410c; border-color: rgba(251, 146, 60, 0.35); background: rgba(251, 146, 60, 0.08); }
+	.orgs3-tab--active[data-sport="baseball"]   { color: #1d4ed8; border-color: rgba(96, 165, 250, 0.35); background: rgba(96, 165, 250, 0.08); }
+	.orgs3-tab--active[data-sport="football"]   { color: #6d28d9; border-color: rgba(167, 139, 250, 0.35); background: rgba(167, 139, 250, 0.08); }
+	.orgs3-tab--active[data-sport="volleyball"] { color: #be185d; border-color: rgba(244, 114, 182, 0.35); background: rgba(244, 114, 182, 0.08); }
+	.orgs3-tab--active[data-sport="hockey"]     { color: #0369a1; border-color: rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.08); }
+	.orgs3-tab--active[data-sport="lacrosse"]   { color: #a16207; border-color: rgba(250, 204, 21, 0.4);  background: rgba(250, 204, 21, 0.08); }
+
+	:global(html.dark) .orgs3-tab--active[data-sport="soccer"]     { color: #86efac; }
+	:global(html.dark) .orgs3-tab--active[data-sport="basketball"] { color: #fdba74; }
+	:global(html.dark) .orgs3-tab--active[data-sport="baseball"]   { color: #bfdbfe; }
+	:global(html.dark) .orgs3-tab--active[data-sport="football"]   { color: #ddd6fe; }
+	:global(html.dark) .orgs3-tab--active[data-sport="volleyball"] { color: #fbcfe8; }
+	:global(html.dark) .orgs3-tab--active[data-sport="hockey"]     { color: #bae6fd; }
+	:global(html.dark) .orgs3-tab--active[data-sport="lacrosse"]   { color: #fde68a; }
 
 	/* ── Add button ─────────────────────────────────────────────────── */
 	.orgs3-add-btn {
@@ -790,12 +1050,41 @@
 		gap: 5px;
 	}
 
+	.orgs3-field--wide {
+		grid-column: 1 / -1;
+	}
+
 	.orgs3-field-label {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
 		font-size: 0.6875rem;
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--text-secondary);
+	}
+
+	.orgs3-places-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(16, 185, 129, 0.12);
+		color: #047857;
+		border: 1px solid rgba(16, 185, 129, 0.35);
+		font-size: 0.625rem;
+		font-weight: 700;
+		text-transform: none;
+		letter-spacing: 0;
+	}
+
+	:global(html.dark) .orgs3-places-chip {
+		background: rgba(16, 185, 129, 0.18);
+		color: #a7f3d0;
+		border-color: #065f46;
 	}
 
 	.orgs3-input {
@@ -1009,21 +1298,39 @@
 		display: block;
 	}
 
-	.orgs3-logo-fallback {
-		width: 28px;
-		height: 28px;
-		border-radius: 6px;
-		background: rgba(99, 102, 241, 0.1);
-		display: flex;
+	.orgs3-logo-chip {
+		width: 30px;
+		height: 30px;
+		border-radius: 8px;
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 0.9rem;
-		color: #6366f1;
+		font-size: 1rem;
+		color: var(--sport-fg, #6366f1);
+		background:
+			radial-gradient(120% 120% at 30% 30%, var(--sport-glow, rgba(99,102,241,0.2)) 0%, transparent 70%),
+			rgba(0, 0, 0, 0.025);
+		border: 1px solid var(--sport-ring, rgba(99, 102, 241, 0.35));
+		box-shadow: 0 0 0 3px var(--sport-glow, rgba(99, 102, 241, 0.08));
+		transition: transform 0.12s ease, box-shadow 0.12s ease;
 	}
 
-	/* ── Org name cell ──────────────────────────────────────────────── */
+	:global(html.dark) .orgs3-logo-chip {
+		background:
+			radial-gradient(120% 120% at 30% 30%, var(--sport-glow, rgba(99,102,241,0.25)) 0%, transparent 70%),
+			rgba(255, 255, 255, 0.03);
+	}
+
+	.orgs3-dt__row:hover .orgs3-logo-chip {
+		transform: translateY(-1px);
+		box-shadow: 0 0 0 3px var(--sport-glow, rgba(99, 102, 241, 0.14));
+	}
+
+	/* ── Org name cell (inline glowing sport badge + name) ──────────── */
 	.orgs3-org-link {
-		display: block;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
@@ -1032,6 +1339,42 @@
 	}
 
 	.orgs3-org-link:hover { color: var(--brand-primary, #d97706); }
+
+	.orgs3-org-sport-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 6px;
+		color: var(--sport-fg, #6366f1);
+		background: var(--sport-glow, rgba(99, 102, 241, 0.18));
+		border: 1px solid var(--sport-ring, rgba(99, 102, 241, 0.35));
+		font-size: 0.75rem;
+		flex-shrink: 0;
+	}
+
+	.orgs3-org-name-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		max-width: 220px;
+	}
+
+	.orgs3-sport-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 10px;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: var(--sport-fg, #525252);
+		border: 1px solid var(--sport-ring, rgba(0,0,0,0.1));
+		background: transparent;
+		white-space: nowrap;
+	}
 
 	.orgs3-org-id {
 		display: block;

@@ -29,6 +29,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
+	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
 
 	const impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
@@ -89,6 +90,9 @@
 	let loginAsBusyFor = $state('');
 	let flashOk = $state('');
 	let flashErr = $state('');
+
+	// Sprint 2.6.5 — Grant Global Admin moved here from System Settings.
+	let showAddAdmin = $state(false);
 
 	// ── Role display helpers ─────────────────────────────────────────────────
 	const ROLE_LABELS = /** @type {const} */ ({
@@ -565,8 +569,26 @@
 					Search
 				</button>
 			</div>
+			<button
+				type="button"
+				class="gu-add-admin-btn"
+				onclick={() => (showAddAdmin = true)}
+				aria-haspopup="dialog"
+			>
+				<i class="ph ph-user-plus" aria-hidden="true"></i>
+				Add Admin
+			</button>
 		</div>
 	</header>
+
+	<AddAdminModal
+		bind:open={showAddAdmin}
+		onClose={() => (showAddAdmin = false)}
+		onGranted={(em) => {
+			flashOk = `${em} granted admin access.`;
+			showAddAdmin = false;
+		}}
+	/>
 
 	<!-- Flash messages -->
 	{#if flashErr}
@@ -992,6 +1014,35 @@
 
 	.gu-search__submit:hover:not(:disabled) { filter: brightness(1.05); }
 	.gu-search__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+	/* Sprint 2.6.5 — Grant Global Admin entry (moved from System Settings) */
+	.gu-add-admin-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 38px;
+		padding: 0 16px;
+		margin-left: 8px;
+		border-radius: 8px;
+		border: 1px solid #4338ca;
+		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+		color: #ffffff;
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		cursor: pointer;
+		box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.5);
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+
+	.gu-add-admin-btn:hover {
+		filter: brightness(1.06);
+		transform: translateY(-1px);
+	}
+
+	:global(html.dark) .gu-add-admin-btn {
+		box-shadow: 0 6px 22px -6px rgba(124, 58, 237, 0.6);
+	}
 
 	/* ── Flash ──────────────────────────────────────────────────────── */
 	.gu-flash {

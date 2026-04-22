@@ -59,6 +59,10 @@
 
     --enterprise-primary-bg: #0a0a0a;
     --enterprise-primary-fg: #ffffff;
+
+    /* Sprint 2.6.5 — enterprise console canvas token (was falling back to
+       hard-coded #f4f4f5 in enterprise-console.css). */
+    --ec-canvas-bg: #f4f4f5;
 }
 
 /* Elite Player Portal — same enterprise dark canvas */
@@ -1071,38 +1075,54 @@ html.dark .milestone-badge-shell {
 /* ==========================================
    17. DARK MODE (themeStore: html.dark) — enterprise neutral shell
    ========================================== */
+/* Sprint 2.6.5 — Dark-mode contrast revamp.
+   Canonical tokens locked by the CEO audit:
+     • canvas background  = #09090B  (near-black, Stripe/Linear standard)
+     • primary text       = #FAFAFA  (pure light, WCAG AA on #09090B)
+     • secondary text     = #D4D4D8  (WCAG AA on #09090B, NO opacity layer)
+   No text token is ever expressed as `rgba(…)` — the admin pages ban
+   opacity on copy so nothing becomes ghost-grey under glassmorphic panels. */
 html.dark {
     --enterprise-primary-bg: #ffffff;
-    --enterprise-primary-fg: #0a0a0a;
+    --enterprise-primary-fg: #09090b;
     --glass-edge-light: rgba(255, 255, 255, 0.06);
     --glass-edge-dark: rgba(255, 255, 255, 0.1);
     --glass-panel-edge: rgba(255, 255, 255, 0.1);
     --text-primary: #fafafa;
-    --text-secondary: #d4d4d8; /* upgraded from #a3a3a3 — WCAG AA compliant on all dark surfaces */
-    --text-on-gold: #0a0a0a;
-    --muted-slate: #d4d4d8;    /* upgraded from #a3a3a3 */
+    --text-secondary: #d4d4d8;
+    --text-on-gold: #09090b;
+    --muted-slate: #d4d4d8;
     --danger-red: #fecaca;
     --success-green: #a7f3d0;
     --accent-orange: #fb923c;
     --accent-orange-soft: #fdba74;
     --light-blue: rgba(255, 255, 255, 0.06);
-    --glass-bg: #09090b;  /* near-black — Stripe/Linear standard */
+    --glass-bg: #09090b;
     --glass-border: rgba(255, 255, 255, 0.1);
     --surface-row-hover: rgba(255, 255, 255, 0.06);
     --surface-subtle: rgba(255, 255, 255, 0.04);
     --border-subtle: rgba(255, 255, 255, 0.1);
     --border-strong: rgba(255, 255, 255, 0.14);
-    --input-bg: rgba(255, 255, 255, 0.04);        /* transparent-dark — no opaque fill */
+    --input-bg: rgba(255, 255, 255, 0.04);
     --input-border: rgba(255, 255, 255, 0.10);
     --input-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
     --input-text: var(--text-primary);
     --focus-ring-color: rgba(255, 255, 255, 0.2);
     --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 16px -4px rgba(0, 0, 0, 0.45);
-    --chart-bar: #d4d4d8;  /* upgraded from #a3a3a3 */
-    --chart-tick: #d4d4d8; /* upgraded from #a3a3a3 */
+    --chart-bar: #d4d4d8;
+    --chart-tick: #d4d4d8;
     --chart-grid: rgba(255, 255, 255, 0.08);
     --shadow-liquid: var(--shadow-premium);
+    --ec-canvas-bg: #09090b;
 }
+
+/* Sprint 2.6.6 — The previous `[data-admin-shell] { opacity: 1 }` guard was
+   removed. It broke disabled button states, placeholder text, and fade-in
+   transitions across the Global Admin shell. Contrast is now enforced
+   exclusively through the solid hex tokens `--text-primary` (#FAFAFA) and
+   `--text-secondary` (#D4D4D8) defined in `html.dark` above. Components that
+   need muted copy MUST reference those variables directly — no opacity
+   overrides, no rgba-alpha text colors. */
 
 html.dark body {
     color: var(--text-primary);
