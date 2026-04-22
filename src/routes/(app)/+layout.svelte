@@ -12,12 +12,16 @@
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
+	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
+	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerShell from '$lib/components/shell/PlayerShell.svelte';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
+	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
+	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
 
 	let { children } = $props();
 
@@ -33,6 +37,32 @@
 			return;
 		}
 		licenseEntitlementStore.syncFromUser(auth.currentUser);
+	});
+
+	// Sprint 2.7 — subscribe to platform feature flags (maintenance mode kill
+	// switch). Subscription requires an authenticated session; we tear it down
+	// on sign-out to avoid permission-denied snapshot errors.
+	$effect(() => {
+		if (!authStore.isAuthenticated || authStore.isLoading) {
+			featureFlagsStore.teardown();
+			return;
+		}
+		featureFlagsStore.subscribe();
+		return () => {
+			featureFlagsStore.teardown();
+		};
+	});
+
+	// Sprint 2.6.1 — claims-driven impersonation detection.
+	// `impersonationStore` listens to `onIdTokenChanged`, which fires across
+	// tabs when Firebase Auth's IndexedDB-persisted session changes. This
+	// guarantees the banner renders in EVERY tab that inherits an
+	// impersonation session, closing the previous cross-tab desync hole.
+	$effect(() => {
+		impersonationStore.init();
+		return () => {
+			impersonationStore.teardown();
+		};
 	});
 
 	// Auth guard + role guard + COPPA 2026 minor holding gate.
@@ -177,13 +207,28 @@
 		if (typeof document === 'undefined') return;
 		document.documentElement.classList.add('enterprise-console-active');
 	});
+
+	// Sprint 2.7 — Global Kill Switch: block rendering for every role except
+	// super_admin when maintenanceMode === true. Super admins retain full access
+	// so they can disable the flag from System Settings → Feature Flags.
+	const maintenanceLockout = $derived(
+		featureFlagsStore.loaded &&
+			featureFlagsStore.maintenanceMode &&
+			authStore.role !== 'super_admin'
+	);
 </script>
 
 {#if authStore.isLoading}
 	<div class="splash-loading">
 		<div class="splash-spinner"></div>
 	</div>
+{:else if maintenanceLockout}
+	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
+	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete}
+	{#if impersonationStore.active}
+		<ImpersonationBanner />
+	{/if}
 	<ParentFcmPrompt />
 	{#if authStore.role === 'player'}
 		<!-- Player OS: dark-mode, gamified, mobile-first shell -->

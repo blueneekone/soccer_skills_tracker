@@ -201,7 +201,7 @@
 {#if open}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="cp-backdrop" onclick={onBackdropClick} role="dialog" aria-modal="true" aria-label="Command palette">
+	<div class="cp-backdrop" onclick={onBackdropClick} role="dialog" aria-modal="true" aria-label="Command palette" tabindex="-1">
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div class="cp-panel" onkeydown={onKeyDown} role="presentation">
 
@@ -358,11 +358,11 @@
 	.cp-search__icon {
 		flex-shrink: 0;
 		font-size: 1.1rem;
-		color: rgba(0, 0, 0, 0.35);
+		color: #52525b;
 	}
 
 	:global(html.dark) .cp-search__icon {
-		color: rgba(255, 255, 255, 0.3);
+		color: #a1a1aa;
 	}
 
 	.cp-search__input {
@@ -383,12 +383,12 @@
 	}
 
 	.cp-search__input::placeholder {
-		color: rgba(0, 0, 0, 0.35);
+		color: #52525b;
 		font-weight: 400;
 	}
 
 	:global(html.dark) .cp-search__input::placeholder {
-		color: rgba(255, 255, 255, 0.3);
+		color: #a1a1aa;
 	}
 
 	.cp-search__esc {
@@ -400,7 +400,7 @@
 		border-radius: 5px;
 		border: 1px solid rgba(0, 0, 0, 0.12);
 		background: rgba(0, 0, 0, 0.04);
-		color: rgba(0, 0, 0, 0.4);
+		color: #52525b;
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
 	}
@@ -408,7 +408,7 @@
 	:global(html.dark) .cp-search__esc {
 		border-color: rgba(255, 255, 255, 0.12);
 		background: rgba(255, 255, 255, 0.05);
-		color: rgba(255, 255, 255, 0.35);
+		color: #d4d4d8;
 	}
 
 	/* Loading spinner (CSS-only) */
@@ -442,12 +442,12 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.07em;
-		color: rgba(0, 0, 0, 0.38);
+		color: #52525b;
 		pointer-events: none;
 	}
 
 	:global(html.dark) .cp-section-label {
-		color: rgba(255, 255, 255, 0.28);
+		color: #a1a1aa;
 	}
 
 	.cp-item {
@@ -526,7 +526,7 @@
 
 	.cp-item__sub {
 		font-size: 0.72rem;
-		color: rgba(0, 0, 0, 0.45);
+		color: #52525b;
 		font-family: ui-monospace, monospace;
 		white-space: nowrap;
 		overflow: hidden;
@@ -534,7 +534,7 @@
 	}
 
 	:global(html.dark) .cp-item__sub {
-		color: rgba(255, 255, 255, 0.35);
+		color: #d4d4d8;
 	}
 
 	.cp-item__enter-hint {
@@ -546,13 +546,13 @@
 		border-radius: 5px;
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		background: rgba(0, 0, 0, 0.04);
-		color: rgba(0, 0, 0, 0.4);
+		color: #52525b;
 	}
 
 	:global(html.dark) .cp-item__enter-hint {
 		border-color: rgba(255, 255, 255, 0.12);
 		background: rgba(255, 255, 255, 0.05);
-		color: rgba(255, 255, 255, 0.3);
+		color: #a1a1aa;
 	}
 
 	.cp-empty {
@@ -561,11 +561,11 @@
 		gap: 10px;
 		padding: 20px 16px;
 		font-size: 0.875rem;
-		color: rgba(0, 0, 0, 0.4);
+		color: #52525b;
 	}
 
 	:global(html.dark) .cp-empty {
-		color: rgba(255, 255, 255, 0.3);
+		color: #a1a1aa;
 	}
 
 	/* ── Footer ──────────────────────────────────────────────────────── */
@@ -590,11 +590,11 @@
 		align-items: center;
 		gap: 5px;
 		font-size: 0.68rem;
-		color: rgba(0, 0, 0, 0.38);
+		color: #52525b;
 	}
 
 	:global(html.dark) .cp-footer__hint {
-		color: rgba(255, 255, 255, 0.28);
+		color: #a1a1aa;
 	}
 
 	.cp-footer__hint kbd {
@@ -605,23 +605,23 @@
 		border-radius: 4px;
 		border: 1px solid rgba(0, 0, 0, 0.12);
 		background: rgba(0, 0, 0, 0.04);
-		color: rgba(0, 0, 0, 0.45);
+		color: #3f3f46;
 	}
 
 	:global(html.dark) .cp-footer__hint kbd {
 		border-color: rgba(255, 255, 255, 0.12);
 		background: rgba(255, 255, 255, 0.05);
-		color: rgba(255, 255, 255, 0.35);
+		color: #d4d4d8;
 	}
 
 	.cp-footer__count {
 		margin-left: auto;
 		font-size: 0.68rem;
-		color: rgba(0, 0, 0, 0.28);
+		color: #71717a;
 		font-family: ui-monospace, monospace;
 	}
 
 	:global(html.dark) .cp-footer__count {
-		color: rgba(255, 255, 255, 0.2);
+		color: #a1a1aa;
 	}
 </style>

@@ -1059,14 +1059,55 @@ service cloud.firestore {
       allow delete: if isSuper();
     }
 
+    // Sprint 2.7 — Security audit trail.
+    //   • Read: super_admin only.
+    //   • Create: server-only for the canonical audit path (logSecurityAudit,
+    //     impersonateUserFn, purgeUserDataFn) to guarantee tamper-evident writes.
+    //     Super admins may ALSO create entries directly with a shape-validated
+    //     payload for manual / forensic annotations.
+    //   • Update/delete: super_admin only (for redaction / retention compliance).
     match /security_audit/{docId} {
       allow read: if isSuper();
-      allow create: if false;
+      allow create: if isSuper()
+        && request.resource.data.keys().hasAll(['action', 'target', 'admin'])
+        && request.resource.data.action is string
+        && request.resource.data.action.size() > 0
+        && request.resource.data.action.size() <= 120
+        && request.resource.data.target is string
+        && request.resource.data.target.size() <= 500
+        && request.resource.data.admin is string
+        && request.resource.data.admin.size() <= 320;
       allow update, delete: if isSuper();
     }
 
+    // Sprint 2.6.1 — Recruiter Marketplace oversight.
+    //   • super_admin: full read/write for verification workflow
+    //     (approve / reject, update subscription status, delete).
+    //   • recruiter (self): may read their own record keyed by lowercased
+    //     email (document id == emailKey()) so they can see their own
+    //     verification status. No self-modification of verificationStatus or
+    //     subscription fields — those are super_admin write-only.
+    //   • Everyone else: denied. Directors/coaches/players must never see
+    //     the recruiter roster; scout PII is sales-gated.
+    match /recruiters/{docId} {
+      allow read: if isSuper()
+        || (authed() && docId == emailKey());
+      allow create, update, delete: if isSuper();
+    }
+
+    // Sprint 2.7 — Platform-wide feature flags (maintenance mode, RAG AI,
+    // video processing, etc.). Every authenticated user can read so the
+    // Maintenance Mode gate in (app)/+layout.svelte can block rendering
+    // for non-super-admins. Only super_admin may write.
+    match /config/feature_flags {
+      allow read: if authed();
+      allow write: if isSuper();
+    }
+
     // Sprint 1.3: scope branding_ config docs to the owning tenant.
-    // Non-branding docs (e.g., feature-flags) remain readable by any authed user.
+    // Non-branding docs (e.g., feature-flags, admins) remain readable by any
+    // authed user; the dedicated /config/feature_flags match above takes
+    // precedence via the additive nature of Firestore rule evaluation.
     match /config/{docId} {
       allow read: if authed() && (
         isSuper()

@@ -11,6 +11,8 @@
 const adminLinks = [
 	{ label: 'Overview',        icon: 'ph-chart-line',   href: '/admin/overview' },
 	{ label: 'Organizations',   icon: 'ph-buildings',    href: '/admin/organizations' },
+	{ label: 'Global Users',    icon: 'ph-users-four',   href: '/admin/users' },
+	{ label: 'Recruiters',      icon: 'ph-binoculars',   href: '/admin/recruiters' },
 	{ label: 'Audit Log',       icon: 'ph-shield-check', href: '/admin/audit-log' },
 	{ label: 'System Settings', icon: 'ph-gear-six',     href: '/admin/system-settings' },
 ];

@@ -7347,3 +7347,264 @@ exports.onTrialScoreWritten = onDocumentWritten(
       }
     },
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sprint 2.7 — True Account Impersonation Engine.
+//
+// Generates a short-lived Firebase Custom Token for a super_admin to sign in
+// as another user for incident-triage / white-glove support.
+//
+// Security model:
+//   • Caller MUST be a super_admin (request.auth.token.role === 'super_admin').
+//   • Self-impersonation is rejected (no-op / audit noise protection).
+//   • Impersonating another super_admin is denied (lateral-movement guard).
+//   • Every call writes an immutable row to `security_audit` with
+//     action=IMPERSONATE_USER, actor=<adminEmail>, target=<targetUid/email>.
+//   • Custom token carries `additionalClaims.impersonation = true` and
+//     `additionalClaims.impersonatedBy = <adminEmail>` so downstream auditing
+//     can correlate sessions.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
+  const {email: adminEmail} = assertSuperAdmin(request);
+  const data = request.data || {};
+
+  const targetEmailIn =
+      typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
+  const targetUidIn =
+      typeof data.targetUid === 'string' ? data.targetUid.trim() : '';
+
+  if (!targetEmailIn && !targetUidIn) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Provide targetEmail or targetUid.',
+    );
+  }
+
+  // Resolve the target Firebase Auth record authoritatively.
+  let userRecord;
+  try {
+    if (targetUidIn) {
+      userRecord = await admin.auth().getUser(targetUidIn);
+    } else {
+      userRecord = await admin.auth().getUserByEmail(
+          normEmail(targetEmailIn) || targetEmailIn,
+      );
+    }
+  } catch (err) {
+    logger.warn('impersonateUserFn: target lookup failed', {
+      admin: adminEmail,
+      targetEmailIn,
+      targetUidIn,
+      err: err && err.message,
+    });
+    throw new HttpsError('not-found', 'Target user does not exist.');
+  }
+
+  const targetUid = userRecord.uid;
+  const targetEmail = normEmail(userRecord.email) || '';
+
+  // Self-impersonation has no valid use-case and pollutes audit history.
+  if (request.auth.uid === targetUid) {
+    throw new HttpsError(
+        'failed-precondition',
+        'You cannot impersonate your own account.',
+    );
+  }
+
+  // Lateral-movement guard: a super_admin may never impersonate another
+  // super_admin (prevents collusion / privilege-chain obfuscation).
+  let targetRole = '';
+  if (targetEmail) {
+    try {
+      const userDocSnap = await db.collection('users').doc(targetEmail).get();
+      if (userDocSnap.exists) {
+        const raw = userDocSnap.data() || {};
+        targetRole = typeof raw.role === 'string' ? raw.role : '';
+      }
+    } catch (err) {
+      logger.warn('impersonateUserFn: users/{email} lookup failed', {
+        admin: adminEmail,
+        targetEmail,
+        err: err && err.message,
+      });
+    }
+  }
+  if (targetRole === 'super_admin') {
+    throw new HttpsError(
+        'permission-denied',
+        'Impersonating another super_admin is not permitted.',
+    );
+  }
+
+  // Mint the custom token. The additionalClaims flow into the signed-in user's
+  // ID token so the client-side session is permanently identifiable as an
+  // impersonation session for the lifetime of that token.
+  // Sprint 2.6.1 — the banner is now derived from these claims on the client
+  // (no sessionStorage), so include target email + role so the high-visibility
+  // banner never requires a second Firestore round-trip.
+  const additionalClaims = {
+    impersonation: true,
+    impersonatedBy: adminEmail,
+    impersonatedEmail: targetEmail || null,
+    impersonatedRole: targetRole || null,
+    impersonationStartedAt: Date.now(),
+  };
+
+  let customToken;
+  try {
+    customToken = await admin.auth().createCustomToken(
+        targetUid,
+        additionalClaims,
+    );
+  } catch (err) {
+    logger.error('impersonateUserFn: createCustomToken failed', {
+      admin: adminEmail,
+      targetUid,
+      err: err && err.message,
+    });
+    throw new HttpsError(
+        'internal',
+        'Failed to mint impersonation token.',
+    );
+  }
+
+  try {
+    await db.collection('security_audit').add({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      admin: adminEmail,
+      action: 'IMPERSONATE_USER',
+      target: targetEmail || targetUid,
+      details: JSON.stringify({
+        targetUid,
+        targetEmail: targetEmail || null,
+        targetRole: targetRole || null,
+        callerUid: request.auth.uid,
+      }).slice(0, 2000),
+    });
+  } catch (err) {
+    // An audit write failure must not leak a token without traceability.
+    logger.error('impersonateUserFn: audit write failed', {
+      admin: adminEmail,
+      targetUid,
+      err: err && err.message,
+    });
+    throw new HttpsError(
+        'internal',
+        'Audit logging failed; impersonation aborted.',
+    );
+  }
+
+  return {
+    token: customToken,
+    targetUid,
+    targetEmail: targetEmail || null,
+    targetRole: targetRole || null,
+    impersonatedBy: adminEmail,
+  };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sprint 2.7 — GDPR Purge (right-to-be-forgotten).
+//
+// Hard-deletes a user's core identity footprint:
+//   • Firebase Auth record
+//   • users/{email}
+//   • player_lookup, coach_lookup, registrar_lookup (any matching rows)
+// Writes a PURGE_USER_DATA audit record before the Auth deletion so the
+// audit trail survives even if the caller's token is invalidated.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
+  const {email: adminEmail} = assertSuperAdmin(request);
+  const data = request.data || {};
+  const targetEmailIn =
+      typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
+  const reason =
+      typeof data.reason === 'string' ? data.reason.trim().slice(0, 500) : '';
+
+  const targetEmail = normEmail(targetEmailIn);
+  if (!targetEmail) {
+    throw new HttpsError('invalid-argument', 'targetEmail is required.');
+  }
+  if (targetEmail === adminEmail) {
+    throw new HttpsError(
+        'failed-precondition',
+        'You cannot purge your own account.',
+    );
+  }
+
+  // Lateral-movement guard: super_admin → super_admin purge is denied.
+  let targetRole = '';
+  try {
+    const userDocSnap = await db.collection('users').doc(targetEmail).get();
+    if (userDocSnap.exists) {
+      const raw = userDocSnap.data() || {};
+      targetRole = typeof raw.role === 'string' ? raw.role : '';
+    }
+  } catch (err) {
+    logger.warn('purgeUserDataFn: users lookup failed', {
+      admin: adminEmail,
+      targetEmail,
+      err: err && err.message,
+    });
+  }
+  if (targetRole === 'super_admin') {
+    throw new HttpsError(
+        'permission-denied',
+        'Purging another super_admin is not permitted.',
+    );
+  }
+
+  // Audit FIRST so the action is recorded even if mid-batch we fail.
+  try {
+    await db.collection('security_audit').add({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      admin: adminEmail,
+      action: 'PURGE_USER_DATA',
+      target: targetEmail,
+      details: JSON.stringify({
+        targetRole: targetRole || null,
+        reason: reason || null,
+      }).slice(0, 2000),
+    });
+  } catch (err) {
+    logger.error('purgeUserDataFn: audit write failed', {
+      admin: adminEmail,
+      targetEmail,
+      err: err && err.message,
+    });
+    throw new HttpsError('internal', 'Audit logging failed; purge aborted.');
+  }
+
+  // Delete users/{email} and any lookup rows atomically.
+  const batch = db.batch();
+  batch.delete(db.collection('users').doc(targetEmail));
+  batch.delete(db.collection('player_lookup').doc(targetEmail));
+  batch.delete(db.collection('coach_lookup').doc(targetEmail));
+  batch.delete(db.collection('registrar_lookup').doc(targetEmail));
+  try {
+    await batch.commit();
+  } catch (err) {
+    logger.error('purgeUserDataFn: Firestore batch failed', {
+      admin: adminEmail,
+      targetEmail,
+      err: err && err.message,
+    });
+    throw new HttpsError('internal', 'Firestore purge failed.');
+  }
+
+  // Best-effort Auth deletion: ignore if the user never completed signup.
+  try {
+    const rec = await admin.auth().getUserByEmail(targetEmail);
+    await admin.auth().deleteUser(rec.uid);
+  } catch (err) {
+    if (err && err.code !== 'auth/user-not-found') {
+      logger.warn('purgeUserDataFn: Auth deleteUser non-fatal', {
+        admin: adminEmail,
+        targetEmail,
+        err: err && err.message,
+      });
+    }
+  }
+
+  return {ok: true, targetEmail};
+});
