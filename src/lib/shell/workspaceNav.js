@@ -9,11 +9,9 @@
 
 /** @type {ShellNavItem[]} */
 const adminLinks = [
-	{ tab: 'overview', label: 'Overview', icon: 'ph-chart-line', href: '/admin' },
-	{ tab: 'sports', label: 'Sports modules', icon: 'ph-trophy', href: '/admin?tab=sports' },
-	{ tab: 'accounts', label: 'Accounts', icon: 'ph-users-three', href: '/admin?tab=accounts' },
-	{ tab: 'billing', label: 'Licensing', icon: 'ph-credit-card', href: '/admin?tab=billing' },
-	{ tab: 'security', label: 'Security', icon: 'ph-shield-check', href: '/admin?tab=security' },
+	{ label: 'Overview', icon: 'ph-chart-line', href: '/admin/overview' },
+	{ label: 'Organizations', icon: 'ph-buildings', href: '/admin/organizations' },
+	{ label: 'Audit Log', icon: 'ph-shield-check', href: '/admin/audit-log' },
 ];
 
 /** @type {ShellNavItem[]} */
@@ -184,6 +182,13 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 export function isShellNavActive(pathname, searchParams, item) {
 	try {
 		const u = new URL(item.href, 'https://placeholder.local');
+
+		// Admin OS uses deep path-based routing — use prefix matching so drill-down
+		// pages (e.g. /admin/organizations/clubId) keep the parent link highlighted.
+		if (pathname.startsWith('/admin') && u.pathname.startsWith('/admin')) {
+			return pathname === u.pathname || pathname.startsWith(u.pathname + '/');
+		}
+
 		if (u.pathname !== pathname) return false;
 		const curTab = searchParams.get('tab') || '';
 		const wantTab = u.searchParams.get('tab');
@@ -196,11 +201,6 @@ export function isShellNavActive(pathname, searchParams, item) {
 		if (pathname === '/director') {
 			const cur = curTab || 'home';
 			const want = wantTab || 'home';
-			return cur === want;
-		}
-		if (pathname === '/admin') {
-			const cur = curTab || 'overview';
-			const want = wantTab || 'overview';
 			return cur === want;
 		}
 		if (wantTab === null || wantTab === '') {

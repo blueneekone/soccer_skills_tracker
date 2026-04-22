@@ -17,7 +17,7 @@ import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'super_admin') {
 		return {
-			path: '/admin',
+			path: '/admin/overview',
 			context: 'admin',
 			pivotKey: 'ctx-platform-admin',
 		};
