@@ -556,7 +556,7 @@ html.dark .ec-cmd-trigger:hover {
 }
 
 html.dark .ec-cmd-trigger__icon {
-	color: rgba(255, 255, 255, 0.32);
+	color: #d4d4d8; /* upgraded from rgba(255,255,255,0.32) — WCAG AA on dark topbar */
 }
 
 .ec-cmd-trigger__text {
@@ -564,14 +564,14 @@ html.dark .ec-cmd-trigger__icon {
 	min-width: 0;
 	font-size: 0.8125rem;
 	font-weight: 400;
-	color: rgba(0, 0, 0, 0.38);
+	color: rgba(0, 0, 0, 0.45);
 	text-align: left;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 html.dark .ec-cmd-trigger__text {
-	color: rgba(255, 255, 255, 0.3);
+	color: #a1a1aa; /* readable placeholder — intentionally softer than primary but still AA */
 }
 
 .ec-cmd-trigger__kbd {
@@ -583,13 +583,13 @@ html.dark .ec-cmd-trigger__text {
 	border-radius: 4px;
 	border: 1px solid rgba(0, 0, 0, 0.12);
 	background: rgba(0, 0, 0, 0.04);
-	color: rgba(0, 0, 0, 0.35);
+	color: rgba(0, 0, 0, 0.45);
 }
 
 html.dark .ec-cmd-trigger__kbd {
-	border-color: rgba(255, 255, 255, 0.12);
-	background: rgba(255, 255, 255, 0.05);
-	color: rgba(255, 255, 255, 0.28);
+	border-color: rgba(255, 255, 255, 0.18);
+	background: rgba(255, 255, 255, 0.06);
+	color: #d4d4d8; /* upgraded from rgba(255,255,255,0.28) */
 }
 
 html.dark .ec-topbar {

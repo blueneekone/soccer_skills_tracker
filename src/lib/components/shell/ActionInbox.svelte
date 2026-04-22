@@ -17,7 +17,9 @@
 	let loading = $state(true);
 
 	$effect(() => {
-		if (!browser) return;
+		// Wait for Firebase Auth to fully initialize before firing any Firestore reads.
+		// Firing before auth settles produces empty reads or permission-denied errors.
+		if (!browser || authStore.isLoading || !authStore.isAuthenticated) return;
 		loading = true;
 		let cancelled = false;
 		(async () => {

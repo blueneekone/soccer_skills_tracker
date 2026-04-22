@@ -127,12 +127,16 @@
 
 	$effect(() => {
 		if (!browser || !mounted || !seatCanvas || !clubId) return;
+		// `destroyed` is set synchronously by the cleanup function so the async
+		// IIFE can detect it and abort before creating an orphaned Chart instance.
+		let destroyed = false;
 		void (async () => {
 			await tick();
 			const mod = await import('chart.js');
+			if (destroyed) return; // cleanup already fired — do not create the chart
 			const { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Legend, Tooltip } = mod;
 			Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Legend, Tooltip);
-			if (seatChart) seatChart.destroy();
+			if (seatChart) { seatChart.destroy(); seatChart = null; }
 			const opts = enterpriseChartOptions(false);
 			const allocatedSeats = activeSeats + reservedSeats;
 			const utilPct = seatsLimit > 0 ? Math.round((allocatedSeats / seatsLimit) * 100) : 0;
@@ -170,6 +174,7 @@
 			});
 		})();
 		return () => {
+			destroyed = true; // signal async IIFE to abort before chart construction
 			seatChart?.destroy();
 			seatChart = null;
 		};
@@ -179,12 +184,16 @@
 		if (!browser || !mounted || !clubCanvas) return;
 		const labels = playersByClub.labels;
 		const values = playersByClub.values;
+		// Same `destroyed` guard as seatChart — prevents orphaned Chart.js instance
+		// accumulation across client-side navigation.
+		let destroyed = false;
 		void (async () => {
 			await tick();
 			const mod = await import('chart.js');
+			if (destroyed) return; // cleanup already fired — do not create the chart
 			const { Chart, BarController, BarElement, CategoryScale, LinearScale, Legend, Tooltip } = mod;
 			Chart.register(BarController, BarElement, CategoryScale, LinearScale, Legend, Tooltip);
-			if (clubChart) clubChart.destroy();
+			if (clubChart) { clubChart.destroy(); clubChart = null; }
 			const opts = enterpriseChartOptions(false);
 			clubChart = new Chart(clubCanvas, {
 				type: 'bar',
@@ -222,6 +231,7 @@
 			});
 		})();
 		return () => {
+			destroyed = true; // signal async IIFE to abort before chart construction
 			clubChart?.destroy();
 			clubChart = null;
 		};

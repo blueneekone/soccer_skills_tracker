@@ -1,18 +1,20 @@
 <script>
-	import { db, functions } from '$lib/firebase.js';
-	import { collection, doc, setDoc, getDocs } from 'firebase/firestore';
-	import { httpsCallable } from 'firebase/functions';
+	import { db } from '$lib/firebase.js';
+	import { doc, setDoc } from 'firebase/firestore';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
 
-	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
-
 	// ── System Administrators ────────────────────────────────────────────────────
+	// Sport Module Provisioning has been moved to the Add Organization flow
+	// in /admin/organizations so admins can create a sport on-the-fly during
+	// club creation. This page is now solely for access control.
+
 	let newAdminEmail = $state('');
-	let adminSaving = $state(false);
-	let adminErr = $state('');
-	let adminOk = $state('');
+	let adminSaving   = $state(false);
+	let adminErr      = $state('');
+	let adminOk       = $state('');
 
 	const addAdmin = async () => {
 		adminErr = '';
@@ -52,53 +54,6 @@
 			adminErr = e instanceof Error ? e.message : 'Could not revoke access.';
 		}
 	};
-
-	// ── Sport Module Provisioning ────────────────────────────────────────────────
-	let sportName = $state('');
-	let sportIcon = $state('ph-soccer-ball');
-	let sportCourtType = $state('');
-	let sportBusy = $state(false);
-	let sportErr = $state('');
-	let sportOk = $state('');
-
-	/** @param {unknown} e */
-	function formatCallableError(e) {
-		if (e && typeof e === 'object' && 'message' in e && typeof e.message === 'string') {
-			return e.message;
-		}
-		if (e instanceof Error) return e.message;
-		return 'Check the Cloud Functions logs.';
-	}
-
-	async function onCreateSportModule() {
-		sportErr = '';
-		sportOk = '';
-		if (!sportName.trim()) {
-			sportErr = 'Sport name is required.';
-			return;
-		}
-		sportBusy = true;
-		try {
-			const res = await createSportModuleFn({
-				sportName: sportName.trim(),
-				defaultIcon: sportIcon.trim() || 'ph-soccer-ball',
-				courtType: sportCourtType.trim(),
-			});
-			const data = /** @type {{ ok?: boolean, sportId?: string }} */ (res.data);
-			if (data?.ok && data.sportId) {
-				sportOk = `Sport module created — ID: ${data.sportId}`;
-				sportName = '';
-				sportIcon = 'ph-soccer-ball';
-				sportCourtType = '';
-			} else {
-				sportErr = 'Server did not confirm creation.';
-			}
-		} catch (e) {
-			sportErr = formatCallableError(e);
-		} finally {
-			sportBusy = false;
-		}
-	}
 </script>
 
 <div class="ss-page">
@@ -186,83 +141,12 @@
 		</div>
 	</section>
 
-	<div class="ss-hr" role="separator" aria-hidden="true"></div>
-
-	<!-- ══════════════════════════════════════════════════════════════════════════ -->
-	<!-- Section 2: Sport Module Provisioning                                      -->
-	<!-- ══════════════════════════════════════════════════════════════════════════ -->
-	<section class="ss-section" aria-labelledby="ss-sport-heading">
-		<div class="ss-section__label">
-			<i class="ph ph-trophy" aria-hidden="true"></i>
-			<h2 id="ss-sport-heading" class="ss-section__heading">Sport Module Provisioning</h2>
-		</div>
-		<p class="ss-section__desc">
-			Creates a new sport configuration document in Firestore via secure Cloud Function.
-			This module becomes available to all organizations on the platform.
-		</p>
-
-		{#if sportErr}
-			<p class="ss-flash ss-flash--err" role="alert">{sportErr}</p>
-		{/if}
-		{#if sportOk}
-			<p class="ss-flash ss-flash--ok" role="status">{sportOk}</p>
-		{/if}
-
-		<div class="ss-sport-grid">
-			<div class="ss-field">
-				<label class="ss-label" for="ss-sport-name">
-					Sport Name <span class="ss-req" aria-hidden="true">*</span>
-				</label>
-				<input
-					id="ss-sport-name"
-					type="text"
-					bind:value={sportName}
-					placeholder="e.g., Volleyball"
-					disabled={sportBusy}
-					class="ss-input"
-				/>
-			</div>
-			<div class="ss-field">
-				<label class="ss-label" for="ss-sport-icon">
-					Default Icon <span class="ss-label__hint">(Phosphor class)</span>
-				</label>
-				<input
-					id="ss-sport-icon"
-					type="text"
-					bind:value={sportIcon}
-					placeholder="ph-volleyball"
-					disabled={sportBusy}
-					class="ss-input"
-				/>
-			</div>
-			<div class="ss-field">
-				<label class="ss-label" for="ss-sport-court">
-					Court Type Key <span class="ss-label__hint">(optional)</span>
-				</label>
-				<input
-					id="ss-sport-court"
-					type="text"
-					bind:value={sportCourtType}
-					placeholder="volleyball — auto-inferred if empty"
-					disabled={sportBusy}
-					class="ss-input"
-				/>
-			</div>
-		</div>
-
-		<button
-			type="button"
-			class="ss-btn ss-btn--primary"
-			disabled={sportBusy || !sportName.trim()}
-			onclick={onCreateSportModule}
-		>
-			{sportBusy ? 'Provisioning…' : 'Provision Sport Module'}
-		</button>
-		<p class="ss-hint">
-			Writes to <code>sports/{'{sportId}'}</code> via <code>createSportModule</code> Cloud Function.
-			Super admin invocation only — not reachable by tenant roles.
-		</p>
-	</section>
+	<p class="ss-note">
+		<i class="ph ph-info" aria-hidden="true"></i>
+		Sport module provisioning has been moved to
+		<a href="/admin/organizations" class="ss-note__link">Organizations → Add Organization</a>.
+		New sports can now be created on-the-fly as part of the club creation flow.
+	</p>
 
 </div>
 
@@ -585,22 +469,35 @@
 	}
 
 	/* ── Hint text ───────────────────────────────────────────────────── */
-	.ss-hint {
-		margin: 4px 0 0;
-		font-size: 0.75rem;
+	/* ── Relocation notice ───────────────────────────────────────────── */
+	.ss-note {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		margin: 16px 0 0;
+		padding: 12px 14px;
+		border-radius: 8px;
+		border: 1px solid rgba(99, 102, 241, 0.25);
+		background: rgba(99, 102, 241, 0.05);
+		font-size: 0.8125rem;
 		color: var(--text-secondary);
 		line-height: 1.55;
 	}
 
-	.ss-hint code {
-		font-family: ui-monospace, monospace;
-		font-size: 0.72rem;
-		background: rgba(0, 0, 0, 0.05);
-		padding: 1px 4px;
-		border-radius: 4px;
+	:global(html.dark) .ss-note {
+		border-color: rgba(165, 180, 252, 0.2);
+		background: rgba(99, 102, 241, 0.08);
 	}
 
-	:global(html.dark) .ss-hint code {
-		background: rgba(255, 255, 255, 0.08);
+	.ss-note i { color: #6366f1; flex-shrink: 0; margin-top: 2px; }
+	:global(html.dark) .ss-note i { color: #a5b4fc; }
+
+	.ss-note__link {
+		color: #6366f1;
+		font-weight: 600;
+		text-decoration: none;
 	}
+
+	.ss-note__link:hover { text-decoration: underline; }
+	:global(html.dark) .ss-note__link { color: #a5b4fc; }
 </style>

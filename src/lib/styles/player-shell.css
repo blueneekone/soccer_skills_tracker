@@ -13,7 +13,7 @@
 	--pp-card: #18181b;
 	--pp-border: rgba(255, 255, 255, 0.09);
 	--pp-text-primary: #f4f4f5;
-	--pp-text-secondary: rgba(161, 161, 170, 0.95);
+	--pp-text-secondary: #d4d4d8; /* upgraded from rgba(161,161,170,0.95) — solid value avoids opacity compression on dark bg */
 	--pp-accent: var(--brand-primary, #f59e0b);
 	--pp-topbar-height: 60px;
 	--pp-bottomnav-height: 68px;

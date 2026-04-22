@@ -15,7 +15,11 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
+	import { functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import '$lib/styles/enterprise-console.css';
+
+	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
 
 	const PAGE_SIZE = 50;
 
@@ -46,6 +50,10 @@
 	let complianceMap = $state(new Map());
 
 	$effect(() => {
+		// Guard: wait for Firebase Auth init to settle before reading protected collections.
+		// Without this, getDocs fires with no token → empty snapshot (the "Aggies FC" bug).
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
+
 		let cancelled = false;
 		clubsLoading = true;
 		clubsErr = '';
@@ -144,14 +152,24 @@
 	}
 
 	// ── Add Club form ────────────────────────────────────────────────────────────
-	let showAddForm   = $state(false);
-	let newClubId     = $state('');
-	let newClubName   = $state('');
-	/** @type {'soccer'|'basketball'|'baseball'|'football'|'volleyball'|'hockey'|'lacrosse'|'generic'} */
-	let newClubSport  = $state('soccer');
-	let newClubDir    = $state('');
-	let clubSaving    = $state(false);
-	let clubAddErr    = $state('');
+	let showAddForm     = $state(false);
+	let newClubId       = $state('');
+	let newClubName     = $state('');
+	/** @type {string} */
+	let newClubSport    = $state('soccer');
+	/** true when the admin selects "+ Create new sport…" in the sport select */
+	let newSportMode    = $state(false);
+	let newSportName    = $state('');
+	let newSportIcon    = $state('ph-soccer-ball');
+	let newClubDir      = $state('');
+	let clubSaving      = $state(false);
+	let clubAddErr      = $state('');
+
+	/** Reacts to sport select changes — toggles "new sport" inline panel */
+	$effect(() => {
+		newSportMode = newClubSport === '__new__';
+		if (!newSportMode) { newSportName = ''; newSportIcon = 'ph-soccer-ball'; }
+	});
 
 	async function addClub() {
 		clubAddErr = '';
@@ -159,28 +177,54 @@
 			clubAddErr = 'Club ID and Club Name are required.';
 			return;
 		}
+		if (newSportMode && !newSportName.trim()) {
+			clubAddErr = 'Sport name is required when creating a new sport module.';
+			return;
+		}
 		clubSaving = true;
 		try {
 			const id    = newClubId.trim().toLowerCase();
 			const email = newClubDir.trim().toLowerCase();
+
+			// ── Step 1: Provision new sport module if requested ──────────────────
+			// If this callable fails, club creation is halted — no partial state written.
+			let resolvedSport = newClubSport;
+			if (newSportMode) {
+				const res = await createSportModuleFn({
+					sportName: newSportName.trim(),
+					defaultIcon: newSportIcon.trim() || 'ph-soccer-ball',
+					courtType: '',
+				});
+				const data = /** @type {{ ok?: boolean, sportId?: string }} */ (res.data);
+				if (!data?.ok || !data.sportId) {
+					throw new Error('Sport module server did not confirm creation. Club was NOT created.');
+				}
+				resolvedSport = data.sportId;
+			}
+
+			// ── Step 2: Create the club document ────────────────────────────────
 			await setDoc(doc(db, 'clubs', id), {
 				id,
 				name: newClubName,
 				directorEmail: email,
-				sport: newClubSport,
+				sport: resolvedSport,
 				createdAt: new Date(),
 			});
 			if (email) {
 				await setDoc(doc(db, 'users', email), { role: 'director', clubId: id }, { merge: true });
 			}
 			await logSecurityEvent('CREATE_CLUB', id, newClubName);
+
+			// ── Reset form ───────────────────────────────────────────────────────
 			newClubId    = '';
 			newClubName  = '';
 			newClubSport = 'soccer';
+			newSportName = '';
+			newSportIcon = 'ph-soccer-ball';
 			newClubDir   = '';
 			showAddForm  = false;
-			// Re-trigger the $effect by bumping a dummy dependency — cleanest approach
-			// is to just reload clubs directly.
+
+			// Reload clubs table directly
 			const snap = await getDocs(collection(db, 'clubs'));
 			/** @type {Club[]} */
 			const reloaded = [];
@@ -222,6 +266,7 @@
 
 	$effect(() => {
 		if (!rosterVisible || authStore.role !== 'super_admin') return;
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		if (platformPlayers.length > 0 || platformLoading) return;
 		let cancelled = false;
 		platformLoading = true;
@@ -397,6 +442,8 @@
 						<option value="hockey">Hockey</option>
 						<option value="lacrosse">Lacrosse</option>
 						<option value="generic">Generic</option>
+						<option disabled>──────────</option>
+						<option value="__new__">+ Create new sport…</option>
 					</select>
 				</div>
 				<div class="orgs3-field">
@@ -404,8 +451,55 @@
 					<input id="add-club-dir" type="email" class="orgs3-input" bind:value={newClubDir} placeholder="director@example.com" disabled={clubSaving} />
 				</div>
 			</div>
+
+			<!-- ── New Sport inline panel — shown only when "+ Create new sport…" is selected -->
+			{#if newSportMode}
+				<div class="orgs3-new-sport-panel">
+					<div class="orgs3-new-sport-panel__label">
+						<i class="ph ph-trophy" aria-hidden="true"></i>
+						New Sport Module
+						<span class="orgs3-new-sport-panel__sub">
+							Provisioned via Cloud Function before the club is saved.
+							If this step fails, the club will NOT be created.
+						</span>
+					</div>
+					<div class="orgs3-add-grid orgs3-add-grid--compact">
+						<div class="orgs3-field">
+							<label class="orgs3-field-label" for="add-sport-name">
+								Sport Name <span class="orgs3-req" aria-hidden="true">*</span>
+							</label>
+							<input
+								id="add-sport-name"
+								type="text"
+								class="orgs3-input"
+								bind:value={newSportName}
+								placeholder="e.g. Volleyball"
+								disabled={clubSaving}
+							/>
+						</div>
+						<div class="orgs3-field">
+							<label class="orgs3-field-label" for="add-sport-icon">
+								Icon <span class="orgs3-field-label__hint">(Phosphor class)</span>
+							</label>
+							<input
+								id="add-sport-icon"
+								type="text"
+								class="orgs3-input"
+								bind:value={newSportIcon}
+								placeholder="ph-volleyball"
+								disabled={clubSaving}
+							/>
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			<button type="button" class="orgs3-submit-btn" onclick={addClub} disabled={clubSaving}>
-				{clubSaving ? 'Creating…' : '+ Register Organization'}
+				{#if clubSaving}
+					{newSportMode ? 'Provisioning sport & creating club…' : 'Creating…'}
+				{:else}
+					+ Register Organization
+				{/if}
 			</button>
 		</div>
 	{/if}
@@ -803,6 +897,54 @@
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 		gap: 12px;
 		margin-bottom: 14px;
+	}
+
+	.orgs3-add-grid--compact { margin-bottom: 0; }
+
+	/* ── New Sport inline panel ─────────────────────────────────────── */
+	.orgs3-new-sport-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 14px 16px;
+		margin-bottom: 14px;
+		border-radius: 8px;
+		border: 1px solid rgba(245, 158, 11, 0.3);
+		background: rgba(245, 158, 11, 0.04);
+	}
+
+	:global(html.dark) .orgs3-new-sport-panel {
+		border-color: rgba(245, 158, 11, 0.25);
+		background: rgba(245, 158, 11, 0.06);
+	}
+
+	.orgs3-new-sport-panel__label {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		color: #d97706;
+		flex-wrap: wrap;
+	}
+
+	:global(html.dark) .orgs3-new-sport-panel__label { color: #fbbf24; }
+
+	.orgs3-new-sport-panel__sub {
+		font-size: 0.72rem;
+		font-weight: 400;
+		color: var(--text-secondary);
+		width: 100%;
+		margin-top: 2px;
+		line-height: 1.5;
+	}
+
+	.orgs3-field-label__hint {
+		font-size: 0.7rem;
+		font-weight: 500;
+		text-transform: none;
+		letter-spacing: 0;
+		opacity: 0.75;
 	}
 
 	.orgs3-field {
