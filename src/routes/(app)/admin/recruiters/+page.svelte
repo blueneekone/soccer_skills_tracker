@@ -29,6 +29,12 @@
 	 * @typedef {'pending' | 'verified' | 'rejected'} VerificationStatus
 	 * @typedef {'none' | 'trial' | 'active' | 'past_due' | 'cancelled'} SubscriptionStatus
 	 *
+	 * Strike 2 — Checkr vetting pipeline status. `pending` means a run has
+	 * not been requested yet; `processing` is set the moment we dispatch the
+	 * Checkr call (simulated for now); `cleared` / `flagged` are terminal
+	 * states returned by the webhook (future sprint).
+	 * @typedef {'pending' | 'processing' | 'cleared' | 'flagged'} VettingStatus
+	 *
 	 * @typedef {{
 	 *   id: string,
 	 *   email: string,
@@ -38,6 +44,7 @@
 	 *   phone: string,
 	 *   region: string,
 	 *   verificationStatus: VerificationStatus,
+	 *   vettingStatus: VettingStatus,
 	 *   subscriptionStatus: SubscriptionStatus,
 	 *   subscriptionTier: string,
 	 *   lastActiveAt: number,
@@ -45,6 +52,19 @@
 	 *   notes: string,
 	 * }} RecruiterRow
 	 */
+
+	/**
+	 * Accepts whatever the backing Firestore doc happens to carry and
+	 * normalises it into a `VettingStatus`. Missing / unknown values default
+	 * to `pending`.
+	 * @param {unknown} raw
+	 * @returns {VettingStatus}
+	 */
+	function coerceVetting(raw) {
+		const v = typeof raw === 'string' ? raw.toLowerCase() : '';
+		if (v === 'processing' || v === 'cleared' || v === 'flagged') return v;
+		return 'pending';
+	}
 
 	// ── State ────────────────────────────────────────────────────────────────
 	/** @type {RecruiterRow[]} */
@@ -207,6 +227,7 @@
 					verificationStatus: /** @type {VerificationStatus} */ (
 						coerceVerification(typeof raw.verificationStatus === 'string' ? raw.verificationStatus : '')
 					),
+					vettingStatus: coerceVetting(raw.vettingStatus),
 					subscriptionStatus: /** @type {SubscriptionStatus} */ (
 						coerceSubscription(typeof raw.subscriptionStatus === 'string' ? raw.subscriptionStatus : '')
 					),
@@ -360,21 +381,59 @@
 	}
 
 	/**
-	 * Sprint 2.6.5 — Vetting workflow stub. The Checkr API integration will
-	 * land in Sprint 2.9; v1 surfaces the entry point + audit breadcrumb so
-	 * admins can request the run today.
+	 * Strike 2 — Vetting workflow. Optimistically flips the row's
+	 * `vettingStatus` to `processing` the moment the admin dispatches the
+	 * check so the UI reflects the pending API round-trip. The actual Checkr
+	 * call lands in Sprint 2.9 and will webhook back a `cleared` or `flagged`
+	 * terminal status. We persist the optimistic `processing` state to
+	 * Firestore so the update survives a reload even before Checkr is wired.
 	 * @param {RecruiterRow} row
 	 */
 	async function runBackgroundCheck(row) {
 		closeMenu();
+		if (row.vettingStatus === 'processing') {
+			pushToast(
+				`A Checkr run is already in flight for ${row.scoutName || row.email}.`,
+				'info'
+			);
+			return;
+		}
+
+		// Optimistic local patch — keeps the cell in sync with the toast.
+		const idx = rows.findIndex((r) => r.id === row.id);
+		if (idx >= 0) {
+			rows = [
+				...rows.slice(0, idx),
+				{ ...rows[idx], vettingStatus: /** @type {VettingStatus} */ ('processing') },
+				...rows.slice(idx + 1)
+			];
+		}
+
 		pushToast(
-			`Background check queued for ${row.scoutName || row.email}. Checkr API integration coming Sprint 2.9.`,
+			`Background check dispatched for ${row.scoutName || row.email}. Checkr API integration arriving Sprint 2.9.`,
 			'info'
 		);
+
 		try {
-			await logSecurityEvent('RECRUITER_BG_CHECK_REQUESTED', row.email, 'v1 stub — Checkr pending');
+			await updateDoc(doc(db, 'recruiters', row.id), {
+				vettingStatus: 'processing',
+				vettingRequestedAt: serverTimestamp(),
+				vettingRequestedBy: authStore.user?.email || 'super_admin'
+			});
+			await logSecurityEvent('RECRUITER_BG_CHECK_REQUESTED', row.email, 'Strike 2 — vetting status → processing');
 		} catch (e) {
-			console.warn('[admin-recruiters] audit log for background check failed', e);
+			console.warn('[admin-recruiters] background-check persistence failed', e);
+			// Roll back the optimistic patch on failure so the admin sees the
+			// real Firestore state.
+			const rollbackIdx = rows.findIndex((r) => r.id === row.id);
+			if (rollbackIdx >= 0) {
+				rows = [
+					...rows.slice(0, rollbackIdx),
+					{ ...rows[rollbackIdx], vettingStatus: row.vettingStatus },
+					...rows.slice(rollbackIdx + 1)
+				];
+			}
+			pushToast('Could not persist vetting status — see console.', 'warn');
 		}
 	}
 </script>
@@ -464,6 +523,7 @@
 					<th class="ar-th">Scout</th>
 					<th class="ar-th">Subscription</th>
 					<th class="ar-th">Verification</th>
+					<th class="ar-th">Vetting</th>
 					<th class="ar-th">Last Active</th>
 					<th class="ar-th ar-th--right">Actions</th>
 				</tr>
@@ -471,11 +531,11 @@
 			<tbody>
 				{#if loading}
 					<tr>
-						<td colspan="7" class="ar-td-empty">Loading recruiters…</td>
+						<td colspan="8" class="ar-td-empty">Loading recruiters…</td>
 					</tr>
 				{:else if filteredRows.length === 0}
 					<tr>
-						<td colspan="7" class="ar-td-empty">
+						<td colspan="8" class="ar-td-empty">
 							{searchInput || statusFilter
 								? 'No recruiters match the current filter.'
 								: 'No recruiter applications yet.'}
@@ -532,6 +592,22 @@
 										aria-hidden="true"
 									></i>
 									{row.verificationStatus}
+								</span>
+							</td>
+							<!-- Strike 2 — Checkr Vetting Status column. -->
+							<td class="ar-td">
+								<span class="ar-vet-pill ar-vet-pill--{row.vettingStatus}">
+									<i
+										class="ph {row.vettingStatus === 'cleared'
+											? 'ph-shield-check'
+											: row.vettingStatus === 'flagged'
+												? 'ph-warning-octagon'
+												: row.vettingStatus === 'processing'
+													? 'ph-circle-notch ar-vet-pill__spin'
+													: 'ph-hourglass-medium'}"
+										aria-hidden="true"
+									></i>
+									{row.vettingStatus}
 								</span>
 							</td>
 							<td class="ar-td">
@@ -1247,6 +1323,77 @@
 		background: rgba(239, 68, 68, 0.18);
 		color: #fecaca;
 		border-color: #7f1d1d;
+	}
+
+	/* Strike 2 — Checkr vetting status pill. Same visual treatment as the
+	   verification pill so the admin can read both columns at a glance. */
+	.ar-vet-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 3px 10px;
+		border-radius: 999px;
+		border: 1px solid transparent;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-transform: capitalize;
+	}
+
+	.ar-vet-pill i {
+		font-size: 0.875rem;
+	}
+
+	.ar-vet-pill--pending {
+		background: #f4f4f5;
+		color: #52525b;
+		border-color: #d4d4d8;
+	}
+	:global(html.dark) .ar-vet-pill--pending {
+		background: rgba(161, 161, 170, 0.18);
+		color: #e4e4e7;
+		border-color: #3f3f46;
+	}
+
+	.ar-vet-pill--processing {
+		background: #dbeafe;
+		color: #1e3a8a;
+		border-color: #93c5fd;
+	}
+	:global(html.dark) .ar-vet-pill--processing {
+		background: rgba(59, 130, 246, 0.18);
+		color: #bfdbfe;
+		border-color: #1e3a8a;
+	}
+
+	.ar-vet-pill--cleared {
+		background: #d1fae5;
+		color: #065f46;
+		border-color: #6ee7b7;
+	}
+	:global(html.dark) .ar-vet-pill--cleared {
+		background: rgba(16, 185, 129, 0.18);
+		color: #a7f3d0;
+		border-color: #065f46;
+	}
+
+	.ar-vet-pill--flagged {
+		background: #fee2e2;
+		color: #991b1b;
+		border-color: #fca5a5;
+	}
+	:global(html.dark) .ar-vet-pill--flagged {
+		background: rgba(239, 68, 68, 0.18);
+		color: #fecaca;
+		border-color: #7f1d1d;
+	}
+
+	.ar-vet-pill__spin {
+		animation: ar-vet-spin 0.9s linear infinite;
+	}
+
+	@keyframes ar-vet-spin {
+		to { transform: rotate(360deg); }
 	}
 
 	.ar-muted {

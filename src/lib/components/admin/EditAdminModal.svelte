@@ -179,20 +179,25 @@
 </script>
 
 {#if open && admin}
+	<!-- Strike 2: true fixed-overlay modal. See EditOrganizationModal for
+	     notes — single outer wrapper flex-centers the card and owns the
+	     dimmed scrim + blur. z-index 9999 keeps it above everything. -->
 	<div
-		class="eam-scrim"
+		class="eam-overlay"
 		role="presentation"
 		onclick={() => !saving && onClose?.()}
 		onkeydown={(e) => { if (e.key === 'Escape' && !saving) onClose?.(); }}
 		tabindex="-1"
-	></div>
-
+	>
 	<div
 		class="eam-root"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="eam-title"
 		data-admin-shell="true"
+		onclick={(e) => e.stopPropagation()}
+		onkeydown={(e) => e.stopPropagation()}
+		tabindex="-1"
 	>
 		<header class="eam-head">
 			<div class="eam-head__icon" aria-hidden="true">
@@ -341,25 +346,28 @@
 			</footer>
 		</form>
 	</div>
+	</div>
 {/if}
 
 <style>
-	.eam-scrim {
+	/* Strike 2 — True fixed overlay. See EditOrganizationModal for notes. */
+	.eam-overlay {
 		position: fixed;
 		inset: 0;
-		z-index: 100;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 16px;
 		background: rgba(9, 9, 11, 0.55);
 		backdrop-filter: blur(6px) saturate(1.4);
 		-webkit-backdrop-filter: blur(6px) saturate(1.4);
+		box-sizing: border-box;
 	}
 
 	.eam-root {
-		position: fixed;
-		z-index: 101;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: min(720px, calc(100vw - 32px));
+		position: relative;
+		width: min(720px, 100%);
 		max-height: min(92vh, 880px);
 		overflow: auto;
 		border-radius: 16px;

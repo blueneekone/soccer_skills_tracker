@@ -19,12 +19,17 @@
 		clubSportAccent,
 		normalizeClubSport
 	} from '$lib/utils/sport-icon.js';
-	import { functions } from '$lib/firebase.js';
+	import { auth, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
+	import { signInWithCustomToken } from 'firebase/auth';
+	import { goto } from '$app/navigation';
+	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import EditOrganizationModal from '$lib/components/admin/EditOrganizationModal.svelte';
 	import '$lib/styles/enterprise-console.css';
 
 	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
+	const impersonateUserFn   = httpsCallable(functions, 'impersonateUserFn');
 
 	const PAGE_SIZE = 50;
 
@@ -147,20 +152,27 @@
 	/** @type {'all' | 'soccer' | 'basketball' | 'baseball' | 'football' | 'volleyball' | 'hockey' | 'lacrosse' | 'generic'} */
 	let activeSportTab = $state('all');
 
-	// ── Strike 1: Enterprise Filter popover (Status + Sport) ─────────────────
-	let filterOpen      = $state(false);
-	/** @type {'all' | 'compliant' | 'watch' | 'risk' | 'na'} */
-	let filterStatus    = $state('all');
-	/** Mirrors `activeSportTab` but exposed through the popover; one source of
-	 *  truth = activeSportTab. Keeping the popover state separate would desync. */
+	// ── Strike 2: Enterprise Filter popover (Verification + Region/State) ────
+	// Sport tabs are already rendered as a separate tabstrip — we do NOT
+	// duplicate them in the popover. The popover owns two orthogonal axes:
+	//   1. Verification Status — derived from Google Places demographics
+	//      ("Verified" = clubs with both a `verifiedAddress` and
+	//      `phoneNumber`; "Pending" = missing one or both).
+	//   2. Region / State — parsed out of the `verifiedAddress` string
+	//      (last two-letter ALL-CAPS token adjacent to a ZIP).
+	let filterOpen          = $state(false);
+	/** @type {'all' | 'verified' | 'pending'} */
+	let filterVerification  = $state('all');
+	/** @type {string} US state code (e.g. 'TX', 'CA') or 'all'. */
+	let filterState         = $state('all');
 	/** @type {HTMLElement | null} */
-	let filterRootEl    = $state(null);
+	let filterRootEl        = $state(null);
 
 	/** Count of non-default filters (used for the pill badge). */
 	const filterActiveCount = $derived.by(() => {
 		let n = 0;
-		if (filterStatus !== 'all') n++;
-		if (activeSportTab !== 'all') n++;
+		if (filterVerification !== 'all') n++;
+		if (filterState        !== 'all') n++;
 		return n;
 	});
 
@@ -168,8 +180,8 @@
 	function closeFilter() { filterOpen = false; }
 
 	function resetFilters() {
-		filterStatus   = 'all';
-		activeSportTab = 'all';
+		filterVerification = 'all';
+		filterState        = 'all';
 	}
 
 	/** Global click-outside + Escape handlers are wired while the popover is open. */
@@ -228,27 +240,52 @@
 	});
 
 	/**
-	 * Derive the public compliance bucket used by the Enterprise Filter.
-	 * Mirrors the render-side logic in the DataTable: no compliance map entry
-	 * + isInfinite → 'na'; map entry drives 'compliant' / 'watch' / 'risk';
-	 * the default bucket when no minors are on file is 'compliant'.
+	 * Strike 2 — Derive verification status from demographic fields. A club is
+	 * "Verified" once it carries both a Google-Places verified address and a
+	 * phone number; anything short of that is "Pending".
 	 * @param {Club} cl
-	 * @returns {'compliant' | 'watch' | 'risk' | 'na'}
+	 * @returns {'verified' | 'pending'}
 	 */
-	function bucketForClub(cl) {
-		const compliance = complianceMap.get(cl.id) ?? null;
-		if (cl.isInfinite === true && !compliance) return 'na';
-		if (!compliance) return 'compliant';
-		if (compliance.status === 'clean') return 'compliant';
-		if (compliance.status === 'watch') return 'watch';
-		return 'risk';
+	function verificationForClub(cl) {
+		const hasAddr  = typeof cl?.verifiedAddress === 'string' && cl.verifiedAddress.trim().length > 0;
+		const hasPhone = typeof cl?.phoneNumber     === 'string' && cl.phoneNumber.trim().length     > 0;
+		return hasAddr && hasPhone ? 'verified' : 'pending';
 	}
+
+	/**
+	 * Strike 2 — Extract the two-letter US state code from a Google-Places
+	 * formatted address. We look for the last ALL-CAPS `AA` token that sits
+	 * adjacent to a 5-digit ZIP (e.g. `, TX 77840,` or `TX 77840, USA`).
+	 * @param {Club} cl
+	 * @returns {string} Uppercase state code, or '' if none could be inferred.
+	 */
+	function stateForClub(cl) {
+		const addr = typeof cl?.verifiedAddress === 'string' ? cl.verifiedAddress : '';
+		if (!addr) return '';
+		const m = addr.match(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/);
+		return m ? m[1] : '';
+	}
+
+	/** Live list of distinct US states present in the club set (for the select). */
+	const knownStates = $derived.by(() => {
+		/** @type {Set<string>} */
+		const s = new Set();
+		for (const cl of clubs) {
+			const st = stateForClub(cl);
+			if (st) s.add(st);
+		}
+		return Array.from(s).sort();
+	});
 
 	const filteredClubs = $derived.by(() => {
 		const q = orgSearch.trim().toLowerCase();
-		const base = filterStatus === 'all'
-			? clubsBySport
-			: clubsBySport.filter((cl) => bucketForClub(cl) === filterStatus);
+		let base = clubsBySport;
+		if (filterVerification !== 'all') {
+			base = base.filter((cl) => verificationForClub(cl) === filterVerification);
+		}
+		if (filterState !== 'all') {
+			base = base.filter((cl) => stateForClub(cl) === filterState);
+		}
 		if (!q) return base;
 		return base.filter((cl) => {
 			return (
@@ -275,6 +312,30 @@
 	/** @param {string} clubId */
 	function getCompliance(clubId) {
 		return complianceMap.get(clubId) ?? null;
+	}
+
+	// ── Strike 2: lightweight inline toasts (Stack Sports import stub, etc.) ─
+	/** @type {{ id: number, text: string, tone: 'info' | 'ok' | 'warn' }[]} */
+	let toasts     = $state([]);
+	let toastSeq   = 0;
+	/** @param {string} text @param {'info' | 'ok' | 'warn'} [tone] */
+	function pushToast(text, tone = 'info') {
+		const id = ++toastSeq;
+		toasts = [...toasts, { id, text, tone }];
+		setTimeout(() => { toasts = toasts.filter((t) => t.id !== id); }, 4500);
+	}
+
+	/**
+	 * Strike 2 — Stack Sports import entry point. v1 fires a toast + audit
+	 * breadcrumb; Sprint 2.9 will swap in the real OAuth handshake.
+	 */
+	function importViaStackSports() {
+		pushToast('Stack Sports OAuth Integration arriving in Sprint 2.9', 'info');
+		void logSecurityEvent(
+			'CLUB_IMPORT_STACK_SPORTS_INTENT',
+			'admin.organizations',
+			`Global Admin ${authStore.user?.email || 'unknown'} clicked Stack Sports import.`,
+		);
 	}
 
 	// ── Add Club form ────────────────────────────────────────────────────────────
@@ -463,6 +524,60 @@
 		clubs = clubs.filter((cl) => cl.id !== id);
 	}
 
+	// ── Strike 2 (Agent 2) — Login As Director ─────────────────────────────
+	// Mirrors the impersonation flow in /admin/users: fire the callable with
+	// the director's email, sign the admin into the returned custom token,
+	// stamp the workspaceContext with the target clubId so the Director shell
+	// lands on the correct scope, and route to the Director dashboard.
+	/** @type {string | null} */
+	let loginAsDirectorBusyFor = $state(null);
+	let loginAsDirectorErr     = $state('');
+
+	/** @param {Club} cl */
+	async function loginAsDirector(cl) {
+		closeRowMenu();
+		loginAsDirectorErr = '';
+		const email = (cl?.directorEmail || '').trim().toLowerCase();
+		if (!email) {
+			loginAsDirectorErr = `${cl.name || cl.id} has no director email on file — assign one before impersonating.`;
+			return;
+		}
+		const ok = confirm(
+			`Begin impersonation session as ${email} (Director of ${cl.name || cl.id})?\n\n` +
+				'Every action will be attributed to the Director. The session will be written to security_audit.'
+		);
+		if (!ok) return;
+
+		loginAsDirectorBusyFor = cl.id;
+		try {
+			const res = await impersonateUserFn({ targetEmail: email });
+			const payload = /** @type {{ token?: string, targetUid?: string, targetEmail?: string, targetRole?: string }} */ (
+				res.data || {}
+			);
+			if (!payload.token) throw new Error('Impersonation token missing from response.');
+
+			// Carry the clubId into the shell context BEFORE the auth swap so
+			// the Director page hydrates with the correct scope on first paint.
+			workspaceContextStore.resetScope();
+			workspaceContextStore.setActiveClubId(cl.id);
+			workspaceContextStore.setActiveContext('director');
+
+			await signInWithCustomToken(auth, payload.token);
+			await impersonationStore.touch();
+			await logSecurityEvent(
+				'IMPERSONATE_DIRECTOR',
+				cl.id,
+				`Global Admin ${authStore.user?.email || 'unknown'} started director impersonation for ${email}`,
+			);
+			await goto(`/director?clubId=${encodeURIComponent(cl.id)}`, { replaceState: true });
+		} catch (e) {
+			console.error('[admin-organizations] director impersonation failed', e);
+			loginAsDirectorErr = e instanceof Error ? e.message : 'Login As Director failed.';
+		} finally {
+			loginAsDirectorBusyFor = null;
+		}
+	}
+
 </script>
 
 <div class="orgs3-page">
@@ -509,6 +624,9 @@
 				</button>
 
 				{#if filterOpen}
+					<!-- Strike 2 — Enterprise Filter: Verification + Region/State.
+					     Sport filtering intentionally lives in the tabstrip; we
+					     never duplicate it here. -->
 					<div class="orgs3-filter-pop" role="dialog" aria-label="Enterprise Filter">
 						<div class="orgs3-filter-pop__head">
 							<span class="orgs3-filter-pop__title">Filter Organizations</span>
@@ -523,24 +641,27 @@
 						</div>
 
 						<fieldset class="orgs3-filter-group">
-							<legend class="orgs3-filter-group__legend">Compliance Status</legend>
-							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Compliance Status">
+							<legend class="orgs3-filter-group__legend">Verification Status</legend>
+							<p class="orgs3-filter-group__hint">
+								Clubs with a Google-Places verified address and a phone number
+								on file count as <strong>Verified</strong>.
+							</p>
+							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Verification Status">
 								{#each [
-									{ key: 'all',       label: 'All',       dot: '#a1a1aa' },
-									{ key: 'compliant', label: 'Compliant', dot: '#22c55e' },
-									{ key: 'watch',     label: 'Watch',     dot: '#f59e0b' },
-									{ key: 'risk',      label: 'At Risk',   dot: '#ef4444' },
-									{ key: 'na',        label: 'N/A',       dot: '#64748b' }
+									{ key: 'all',       label: 'All',       dot: '#a1a1aa', icon: 'ph-list'         },
+									{ key: 'verified',  label: 'Verified',  dot: '#22c55e', icon: 'ph-seal-check'   },
+									{ key: 'pending',   label: 'Pending',   dot: '#f59e0b', icon: 'ph-clock'        }
 								] as opt (opt.key)}
 									<button
 										type="button"
 										role="radio"
-										aria-checked={filterStatus === opt.key}
+										aria-checked={filterVerification === opt.key}
 										class="orgs3-filter-chip"
-										class:orgs3-filter-chip--active={filterStatus === opt.key}
-										onclick={() => (filterStatus = /** @type {any} */ (opt.key))}
+										class:orgs3-filter-chip--active={filterVerification === opt.key}
+										onclick={() => (filterVerification = /** @type {any} */ (opt.key))}
 									>
 										<span class="orgs3-filter-chip__dot" style="background:{opt.dot};"></span>
+										<i class="ph {opt.icon}" aria-hidden="true"></i>
 										{opt.label}
 									</button>
 								{/each}
@@ -548,26 +669,30 @@
 						</fieldset>
 
 						<fieldset class="orgs3-filter-group">
-							<legend class="orgs3-filter-group__legend">Sport</legend>
-							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Sport">
-								{#each SPORT_TABS as opt (opt.key)}
-									{@const count = sportCounts[opt.key] ?? 0}
-									{#if opt.key === 'all' || count > 0}
-										<button
-											type="button"
-											role="radio"
-											aria-checked={activeSportTab === opt.key}
-											class="orgs3-filter-chip"
-											class:orgs3-filter-chip--active={activeSportTab === opt.key}
-											onclick={() => (activeSportTab = /** @type {any} */ (opt.key))}
-										>
-											<i class="ph {opt.icon}" aria-hidden="true"></i>
-											{opt.label}
-											<span class="orgs3-filter-chip__count">{count}</span>
-										</button>
-									{/if}
-								{/each}
-							</div>
+							<legend class="orgs3-filter-group__legend">Region / State</legend>
+							<p class="orgs3-filter-group__hint">
+								Parsed from the Google-Places verified address. Unlisted
+								states appear once a club with that address loads.
+							</p>
+							<label class="orgs3-filter-state" for="orgs3-filter-state-select">
+								<i class="ph ph-map-pin" aria-hidden="true"></i>
+								<select
+									id="orgs3-filter-state-select"
+									class="orgs3-filter-state__select"
+									bind:value={filterState}
+								>
+									<option value="all">All states</option>
+									{#each knownStates as st (st)}
+										<option value={st}>{st}</option>
+									{/each}
+								</select>
+							</label>
+							{#if knownStates.length === 0}
+								<p class="orgs3-filter-group__empty">
+									No states detected yet. Add a verified address to a club to
+									enable region filtering.
+								</p>
+							{/if}
 						</fieldset>
 
 						<div class="orgs3-filter-pop__foot">
@@ -591,6 +716,18 @@
 				{/if}
 			</div>
 
+			<!-- Strike 2 — Stack Sports import (secondary action, pre-Sprint 2.9). -->
+			<button
+				type="button"
+				class="orgs3-import-btn"
+				onclick={importViaStackSports}
+				title="Import organizations from Stack Sports"
+			>
+				<i class="ph ph-cloud-arrow-down" aria-hidden="true"></i>
+				Import via Stack Sports API
+				<span class="orgs3-import-btn__chip">Beta</span>
+			</button>
+
 			<button
 				type="button"
 				class="orgs3-add-btn"
@@ -602,6 +739,25 @@
 			</button>
 		</div>
 	</div>
+
+	<!-- Strike 2 — inline toast stack (Stack Sports import, etc.) -->
+	{#if toasts.length > 0}
+		<div class="orgs3-toasts" role="status" aria-live="polite">
+			{#each toasts as t (t.id)}
+				<div class="orgs3-toast orgs3-toast--{t.tone}">
+					<i
+						class="ph {t.tone === 'ok'
+							? 'ph-check-circle'
+							: t.tone === 'warn'
+								? 'ph-warning-circle'
+								: 'ph-info'}"
+						aria-hidden="true"
+					></i>
+					<span>{t.text}</span>
+				</div>
+			{/each}
+		</div>
+	{/if}
 
 	<!-- ── Sprint 2.6.5: sport sub-navigation tab strip ─────────────────────── -->
 	<div class="orgs3-tabs" role="tablist" aria-label="Filter by sport">
@@ -775,6 +931,12 @@
 			{clubsErr}
 		</div>
 	{/if}
+	{#if loginAsDirectorErr}
+		<div class="orgs3-err" role="alert">
+			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			{loginAsDirectorErr}
+		</div>
+	{/if}
 
 	<div class="orgs3-dt-container">
 		<table class="orgs3-dt" aria-label="Organizations">
@@ -784,7 +946,7 @@
 					<th class="orgs3-dt__th" scope="col">Organization</th>
 					<th class="orgs3-dt__th" scope="col">Sport</th>
 					<th class="orgs3-dt__th" scope="col">Director</th>
-					<th class="orgs3-dt__th" scope="col">Teams</th>
+					<th class="orgs3-dt__th orgs3-dt__th--center" scope="col">Teams</th>
 					<th class="orgs3-dt__th orgs3-dt__th--compliance" scope="col">Compliance</th>
 					<th class="orgs3-dt__th orgs3-dt__th--actions" scope="col" aria-label="Actions"></th>
 				</tr>
@@ -858,8 +1020,8 @@
 								{cl?.directorEmail || 'Unassigned'}
 							</td>
 
-							<!-- Teams count -->
-							<td class="orgs3-dt__td orgs3-dt__td--num">
+							<!-- Teams count (Strike 2: header + cell center-aligned) -->
+							<td class="orgs3-dt__td orgs3-dt__td--num orgs3-dt__td--center">
 								{teamCount}
 							</td>
 
@@ -933,6 +1095,23 @@
 												<i class="ph ph-arrow-square-out" aria-hidden="true"></i>
 												Open Details
 											</a>
+											<!-- Strike 2 — Login As Director (P0). Disabled when the
+											     club has no director email on file. -->
+											<button
+												type="button"
+												role="menuitem"
+												class="orgs3-row-menu__item"
+												disabled={loginAsDirectorBusyFor === cl.id || !(cl.directorEmail || '').trim()}
+												onclick={() => void loginAsDirector(cl)}
+											>
+												{#if loginAsDirectorBusyFor === cl.id}
+													<i class="ph ph-circle-notch orgs3-row-menu__spin" aria-hidden="true"></i>
+													Launching session…
+												{:else}
+													<i class="ph ph-sign-in" aria-hidden="true"></i>
+													Login As Director
+												{/if}
+											</button>
 											<button
 												type="button"
 												role="menuitem"
@@ -1063,9 +1242,11 @@
 		max-width: 100%;
 	}
 
+	/* Strike 2 — icon absolutely positioned `left-3` (0.75rem / 12px) to
+	   match the Tailwind spec and the `pl-10` input padding. */
 	.orgs3-search-icon {
 		position: absolute;
-		left: 14px;
+		left: 0.75rem;
 		top: 50%;
 		transform: translateY(-50%);
 		font-size: 0.95rem;
@@ -1243,6 +1424,60 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--text-secondary);
+	}
+
+	/* Strike 2 — filter group helper copy + empty state */
+	.orgs3-filter-group__hint {
+		margin: 6px 0 4px;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: var(--text-secondary);
+	}
+
+	.orgs3-filter-group__empty {
+		margin: 6px 0 0;
+		font-size: 0.75rem;
+		font-style: italic;
+		color: var(--text-secondary);
+	}
+
+	/* Strike 2 — Region/State select control */
+	.orgs3-filter-state {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 36px;
+		padding: 0 10px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		color: var(--text-primary);
+		box-sizing: border-box;
+		transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	}
+
+	.orgs3-filter-state:focus-within {
+		border-color: var(--brand-primary, #f59e0b);
+		box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+	}
+
+	:global(html.dark) .orgs3-filter-state {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.10);
+		color: #fafafa;
+	}
+
+	.orgs3-filter-state__select {
+		flex: 1;
+		border: none;
+		background: transparent;
+		font: inherit;
+		font-size: 0.8125rem;
+		color: inherit;
+		outline: none;
+		appearance: none;
+		cursor: pointer;
 	}
 
 	.orgs3-filter-chips {
@@ -1520,6 +1755,94 @@
 		color: #fafafa;
 	}
 
+	/* Strike 2 — Stack Sports premium secondary action. */
+	.orgs3-import-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: 34px;
+		padding: 0 14px;
+		border-radius: 7px;
+		border: 1px solid rgba(79, 70, 229, 0.35);
+		background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(139,92,246,0.08));
+		color: #4338ca;
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+		white-space: nowrap;
+	}
+
+	.orgs3-import-btn:hover {
+		background: linear-gradient(135deg, rgba(79,70,229,0.14), rgba(139,92,246,0.14));
+		border-color: rgba(79, 70, 229, 0.6);
+	}
+
+	.orgs3-import-btn:active {
+		transform: translateY(1px);
+	}
+
+	:global(html.dark) .orgs3-import-btn {
+		color: #c7d2fe;
+		border-color: rgba(129, 140, 248, 0.35);
+		background: linear-gradient(135deg, rgba(79,70,229,0.18), rgba(139,92,246,0.18));
+	}
+
+	.orgs3-import-btn__chip {
+		padding: 1px 6px;
+		border-radius: 999px;
+		background: rgba(79, 70, 229, 0.15);
+		border: 1px solid rgba(79, 70, 229, 0.25);
+		font-size: 0.625rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		font-weight: 800;
+	}
+
+	:global(html.dark) .orgs3-import-btn__chip {
+		background: rgba(129, 140, 248, 0.18);
+		border-color: rgba(129, 140, 248, 0.3);
+	}
+
+	/* Strike 2 — Toast stack (Stack Sports import, etc.) */
+	.orgs3-toasts {
+		position: fixed;
+		right: 24px;
+		bottom: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		z-index: 9998;
+		pointer-events: none;
+	}
+
+	.orgs3-toast {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: #ffffff;
+		color: var(--text-primary);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		max-width: 380px;
+		box-shadow: 0 14px 32px rgba(15, 23, 42, 0.15);
+		pointer-events: auto;
+	}
+
+	:global(html.dark) .orgs3-toast {
+		background: #0f0f11;
+		border-color: rgba(255, 255, 255, 0.1);
+		color: #fafafa;
+	}
+
+	.orgs3-toast--ok   { border-color: rgba(16,185,129,0.35); }
+	.orgs3-toast--warn { border-color: rgba(245,158,11,0.4); }
+	.orgs3-toast i     { font-size: 1rem; }
+
 	/* ── Inline add form ────────────────────────────────────────────── */
 	.orgs3-add-form {
 		padding: 16px 0 20px;
@@ -1724,6 +2047,8 @@
 	.orgs3-dt__th--logo    { width: 44px; padding-left: 16px; }
 	.orgs3-dt__th--compliance { width: 130px; }
 	.orgs3-dt__th--actions { width: 96px; text-align: right; padding-right: 16px; }
+	/* Strike 2: center-align modifier for the Teams column (header + cell). */
+	.orgs3-dt__th--center, .orgs3-dt__td--center { text-align: center; }
 
 	/* Rows */
 	.orgs3-dt__row {
@@ -2089,6 +2414,20 @@
 		text-align: left;
 		text-decoration: none;
 		cursor: pointer;
+	}
+
+	/* Strike 2 — row menu spinner for async actions (Login As Director) */
+	.orgs3-row-menu__spin {
+		display: inline-block;
+		animation: orgs3-spin 0.9s linear infinite;
+	}
+	@keyframes orgs3-spin {
+		to { transform: rotate(360deg); }
+	}
+
+	.orgs3-row-menu__item[disabled] {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
 
 	.orgs3-row-menu__item i {

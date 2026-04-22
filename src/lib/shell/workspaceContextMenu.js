@@ -133,7 +133,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 	const activeTeam = (scopeHint?.activeTeamId || '').trim();
 
 	if (pathname.startsWith('/admin')) {
-		return { title: 'Global Admin \u00b7 Platform', sub: 'Workspace' };
+		return { title: 'Global Admin', sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/director')) {
 		let cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
@@ -199,7 +199,7 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 	switch (role) {
 		case 'super_admin':
 		case 'global_admin':
-			return { title: 'Global Admin \u00b7 Platform', sub: 'Workspace' };
+			return { title: 'Global Admin', sub: 'Workspace' };
 		case 'director': {
 			const cid = typeof profile?.clubId === 'string' ? profile.clubId : '';
 			const cl = cid ? clubs.find((c) => c.id === cid) : null;

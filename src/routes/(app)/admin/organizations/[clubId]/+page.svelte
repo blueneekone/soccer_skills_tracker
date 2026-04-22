@@ -264,6 +264,54 @@
 			</div>
 		</div>
 
+		<!-- ── Strike 2: Operations & Contact (Google-Places demographics) ────── -->
+		<div class="card">
+			<div class="card-header">
+				<i class="ph ph-map-pin-line" aria-hidden="true"></i> Operations &amp; Contact
+			</div>
+			<div class="card-body">
+				<div class="cd-ops">
+					<div class="cd-ops__row">
+						<span class="cd-ops__label">
+							<i class="ph ph-map-pin" aria-hidden="true"></i>
+							Verified Address
+						</span>
+						{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
+							<span class="cd-ops__value">{ctx.clubDoc.verifiedAddress}</span>
+						{:else}
+							<span class="cd-ops__value cd-ops__value--missing">
+								No verified address on file. Edit the organization to add one via Google Places.
+							</span>
+						{/if}
+					</div>
+					<div class="cd-ops__row">
+						<span class="cd-ops__label">
+							<i class="ph ph-phone" aria-hidden="true"></i>
+							Phone Number
+						</span>
+						{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
+							<a class="cd-ops__value cd-ops__value--link" href={`tel:${ctx.clubDoc.phoneNumber}`}>
+								{ctx.clubDoc.phoneNumber}
+							</a>
+						{:else}
+							<span class="cd-ops__value cd-ops__value--missing">No phone number on file.</span>
+						{/if}
+					</div>
+					<div class="cd-ops__row">
+						<span class="cd-ops__label">
+							<i class="ph ph-soccer-ball" aria-hidden="true"></i>
+							Primary Facility
+						</span>
+						{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
+							<span class="cd-ops__value">{ctx.clubDoc.primaryFacility}</span>
+						{:else}
+							<span class="cd-ops__value cd-ops__value--missing">No primary facility assigned.</span>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- ── Licensing & Entitlement ────────────────────────────────────────── -->
 		<div class="card border-gold">
 			<div class="card-header bg-gold-header">
@@ -594,6 +642,74 @@
 	.cd-bento__value--mono {
 		font-family: ui-monospace, monospace;
 		font-size: 0.78rem;
+	}
+
+	/* ── Strike 2: Operations & Contact block ───────────────────────── */
+	.cd-ops {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.cd-ops__row {
+		display: grid;
+		grid-template-columns: 200px 1fr;
+		align-items: start;
+		gap: 16px;
+		padding: 12px 14px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		border-radius: 12px;
+		background: var(--surface-subtle, #fafafa);
+	}
+
+	:global(html.dark) .cd-ops__row {
+		border-color: rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	.cd-ops__label {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+
+	.cd-ops__value {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		line-height: 1.45;
+		word-break: break-word;
+	}
+
+	.cd-ops__value--missing {
+		font-style: italic;
+		font-weight: 500;
+		color: var(--text-secondary);
+	}
+
+	.cd-ops__value--link {
+		color: #4f46e5;
+		text-decoration: none;
+	}
+
+	.cd-ops__value--link:hover {
+		text-decoration: underline;
+	}
+
+	:global(html.dark) .cd-ops__value--link {
+		color: #a5b4fc;
+	}
+
+	@media (max-width: 640px) {
+		.cd-ops__row {
+			grid-template-columns: 1fr;
+			gap: 6px;
+		}
 	}
 
 	/* ── License block ───────────────────────────────────────────────── */

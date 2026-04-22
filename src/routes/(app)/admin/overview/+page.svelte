@@ -144,6 +144,32 @@
 
 	const adminCount = $derived(teamsStore.admins.length);
 
+	// ── Strike 2 (Agent 3): CMO/CSO Command Center metrics ──────────────────
+	// Mocked gracefully until the backend triggers exist. Once the activation
+	// and compliance pipelines ship we'll swap these for values read from
+	// `analytics/platform_totals.activationRate` and `.complianceAlerts`.
+	/**
+	 * Activation Rate — percentage of licensed seats with at least one
+	 * logged workout in the last 7 days. Gracefully falls back to a mocked
+	 * ~62% until the `onWorkoutWritten` aggregation function is live.
+	 */
+	const activationRate = $derived.by(() => {
+		if (licenseCountDisplay <= 0) return 0;
+		// Mock baseline = 62%. Live rate will slot in here from the aggregated
+		// doc once the `activationRate7d` field is written by Cloud Functions.
+		return 62;
+	});
+
+	/**
+	 * Compliance Alerts — count of Coaches missing an up-to-date background
+	 * check. Until the Checkr integration and VPC rollups are wired, mock at
+	 * whichever value is higher: a synthetic `clamp(teams × 0.15)` or 3.
+	 */
+	const complianceAlerts = $derived.by(() => {
+		const synthetic = Math.round((totalTeams || 0) * 0.15);
+		return Math.max(3, synthetic);
+	});
+
 	// ═══════════════════════════════════════════════════════════════════════════
 	// Command Center datasets (Sprint 2.6.7 — Paranoid Patch)
 	// ═══════════════════════════════════════════════════════════════════════════
@@ -988,6 +1014,58 @@
 	</section>
 
 	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!-- Strike 2 · Go-To-Market Signals (CMO / CSO metrics)                    -->
+	<!-- Mocked until activation + Checkr pipelines ship.                       -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<section class="ov-group" aria-labelledby="ov-g4-title">
+		<div class="ov-group__header">
+			<span class="ov-group__icon ov-group__icon--gtm">
+				<i class="ph ph-rocket-launch" aria-hidden="true"></i>
+			</span>
+			<h2 id="ov-g4-title" class="ov-group__title">Go-To-Market Signals</h2>
+			<span class="ov-group__badge ov-group__badge--mock">
+				<span class="ov-group__badge-dot"></span>
+				Mocked &middot; pending triggers
+			</span>
+		</div>
+
+		<div class="ov-kpi-row">
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Activation Rate</span>
+				<span
+					class="ov-kpi__value ov-kpi__value--xl"
+					class:ov-kpi__value--ok={activationRate >= 50}
+					class:ov-kpi__value--danger={activationRate > 0 && activationRate < 30}
+				>
+					{activationRate}%
+				</span>
+				<span class="ov-kpi__sub">Licensed seats with an active workout in 7d</span>
+				<span class="ov-kpi__hint">
+					Live feed swaps in once <code>onWorkoutWritten</code> triggers backfill
+					<code>analytics/platform_totals.activationRate7d</code>.
+				</span>
+			</div>
+			<div class="ov-kpi-divider" aria-hidden="true"></div>
+			<div class="ov-kpi">
+				<span class="ov-kpi__label">Compliance Alerts</span>
+				<span
+					class="ov-kpi__value ov-kpi__value--xl"
+					class:ov-kpi__value--danger={complianceAlerts > 0}
+					class:ov-kpi__value--ok={complianceAlerts === 0}
+				>
+					{complianceAlerts}
+				</span>
+				<span class="ov-kpi__sub">Coaches missing a current background check</span>
+				{#if complianceAlerts > 0}
+					<a href="/admin/recruiters" class="ov-kpi__cta">
+						Review vetting queue <i class="ph ph-arrow-right" aria-hidden="true"></i>
+					</a>
+				{/if}
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
 	<!-- Command Center: 3 Chart.js widgets + Global Live Feed                 -->
 	<!-- ═══════════════════════════════════════════════════════════════════════ -->
 	<section class="ov-cc" aria-labelledby="ov-cc-title">
@@ -1227,10 +1305,13 @@
 	.ov-group__icon--revenue    { background: rgba(16,185,129,0.10); color: #059669; }
 	.ov-group__icon--health     { background: rgba(99,102,241,0.10); color: #6366f1; }
 	.ov-group__icon--compliance { background: rgba(245,158,11,0.10); color: #d97706; }
+	/* Strike 2: Go-To-Market Signals icon treatment (CMO / CSO track). */
+	.ov-group__icon--gtm        { background: rgba(168,85,247,0.10); color: #7c3aed; }
 
 	:global(html.dark) .ov-group__icon--revenue    { background: rgba(16,185,129,0.14); color: #6ee7b7; }
 	:global(html.dark) .ov-group__icon--health     { background: rgba(99,102,241,0.14); color: #a5b4fc; }
 	:global(html.dark) .ov-group__icon--compliance { background: rgba(245,158,11,0.14); color: #fbbf24; }
+	:global(html.dark) .ov-group__icon--gtm        { background: rgba(168,85,247,0.16); color: #c4b5fd; }
 
 	.ov-group__title {
 		margin: 0;
@@ -1272,6 +1353,23 @@
 		color: #fbbf24;
 		background: rgba(245, 158, 11, 0.1);
 		border-color: rgba(245, 158, 11, 0.25);
+	}
+
+	/* Strike 2: "Mocked · pending triggers" badge on the GTM signals section. */
+	.ov-group__badge--mock {
+		color: #6b21a8;
+		background: rgba(168, 85, 247, 0.08);
+		border-color: rgba(168, 85, 247, 0.25);
+	}
+
+	.ov-group__badge--mock .ov-group__badge-dot {
+		background: #a855f7;
+	}
+
+	:global(html.dark) .ov-group__badge--mock {
+		color: #c4b5fd;
+		background: rgba(168, 85, 247, 0.12);
+		border-color: rgba(168, 85, 247, 0.28);
 	}
 
 	.ov-group__badge-dot {

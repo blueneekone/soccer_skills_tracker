@@ -262,14 +262,12 @@ html.dark .ec-sidebar {
 	max-width: 100%;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	flex-shrink: 0;
-	/* Sprint — Strike 1: Context Switcher hover bleed (P0 FATAL).
-	   The brand slot hosts the workspace context switcher trigger. Its hover
-	   background would previously paint past the sidebar rail because no
-	   component clipped it. Paint containment + hard overflow hides any
-	   pseudo-element or hover box that tries to escape the sidebar width. */
-	overflow: hidden;
+	/* Strike 2: dropped `contain: paint` here — it was establishing a paint
+	   containment context that clipped the context switcher popover (which is
+	   a child of `.ec-ws` inside this slot). Hover-bleed is now prevented at
+	   the button level (overflow hidden on the trigger itself) while the
+	   popover floats free via absolute positioning + high z-index. */
 	box-sizing: border-box;
-	contain: paint;
 }
 
 html.dark .ec-sidebar__brand {
@@ -277,15 +275,13 @@ html.dark .ec-sidebar__brand {
 }
 
 /* ---------------------------------------------------------------------------
-   Strike 1: Global lockdown for the Workspace Context Switcher inside the
-   sidebar. These rules guarantee the trigger + all its descendants obey the
-   border-box model, never exceed the sidebar's pixel width, never carry
-   negative margins, and never project hover/focus paint past the rail. They
-   live in the shared enterprise stylesheet so the rule set survives any
-   component-level refactors.
+   Workspace Context Switcher — box model lockdown.
+   Constrains the trigger/button to the sidebar rail so hover backgrounds and
+   focus rings never paint past it, while leaving the popover free to float
+   over the main canvas (the popover is absolutely positioned with its own
+   z-index and is NOT subject to `contain: paint`).
    --------------------------------------------------------------------------- */
 .ec-sidebar__brand--switcher,
-.ec-sidebar__brand--switcher *,
 .ec-sidebar__brand--switcher *::before,
 .ec-sidebar__brand--switcher *::after {
 	box-sizing: border-box;
@@ -294,7 +290,8 @@ html.dark .ec-sidebar__brand {
 	margin-right: 0;
 }
 
-/* Kill the trigger's ability to bleed horizontally under any layout pressure. */
+/* Keep the trigger exactly rail-wide. Do NOT apply `contain: paint` here —
+   that would clip the absolutely-positioned popover when it opens. */
 .ec-sidebar__brand--switcher .ec-ws,
 .ec-sidebar__brand--switcher .ec-ws__trigger {
 	width: 100%;
@@ -302,7 +299,6 @@ html.dark .ec-sidebar__brand {
 	min-width: 0;
 	margin: 0;
 	box-sizing: border-box;
-	contain: paint;
 }
 
 .ec-sidebar__brand--switcher .ec-ws__trigger:hover,

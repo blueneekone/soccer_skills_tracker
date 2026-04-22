@@ -158,8 +158,10 @@
 	}
 
 	/* w-full + box-border — keeps trigger inside sidebar rail.
-	   Strike 1: zero margins everywhere + contain paint so the hover
-	   rectangle and caret pseudo-elements can never exceed the rail width. */
+	   Strike 2: removed `contain: paint` (was clipping the popover). Hover
+	   bleed is prevented by `overflow: hidden` on the trigger itself, which
+	   only affects its own background/pseudo-elements — the popover is a
+	   sibling of the trigger, so it is unaffected and floats freely. */
 	.ec-ws__trigger {
 		display: flex;
 		align-items: center;
@@ -178,7 +180,6 @@
 		border-radius: 0;
 		box-sizing: border-box;
 		overflow: hidden;
-		contain: paint;
 	}
 
 	.ec-ws__trigger > :global(:first-child) {
@@ -246,21 +247,21 @@
 		opacity: 0.85;
 	}
 
+	/* Strike 2: popover floats OVER the main canvas. It is allowed to exceed
+	   the sidebar rail width because it is absolutely positioned relative to
+	   `.ec-ws` and sits at z-index 1000 — so it paints above the entire
+	   console chrome (sidebar z-index 50, main canvas has no stacking). */
 	.ec-ws__popover {
 		position: absolute;
 		left: 8px;
-		right: 8px;
-		top: calc(100% + 4px);
-		/* Confine to sidebar rail: left/right inset keeps width equal to rail
-		   minus 16px of padding, so the popover can never bleed horizontally
-		   over the main dashboard canvas. z-index 1000 paints above sidebar
-		   chrome; the sidebar's own stacking context (z-index 40) keeps this
-		   popover above .ec-main. */
+		right: auto;
+		top: calc(100% + 6px);
+		width: clamp(260px, 18rem, calc(100vw - 48px));
 		z-index: 1000;
 		background: #ffffff;
 		border: 1px solid #e5e5e5;
 		border-radius: 10px;
-		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+		box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
 		padding: 8px 0;
 		max-height: min(70vh, 420px);
 		overflow-y: auto;

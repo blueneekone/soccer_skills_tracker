@@ -160,20 +160,27 @@
 </script>
 
 {#if open && club}
+	<!-- Strike 2: true fixed-overlay modal. The outer `.eom-overlay` is a
+	     `position: fixed; inset: 0` flex container that centers `.eom-root`
+	     above every other layer (z-index 9999 so no canvas stacking context
+	     can trap it). Clicking the overlay (but not the inner card) closes
+	     the modal — the inner card uses `stopPropagation`. -->
 	<div
-		class="eom-scrim"
+		class="eom-overlay"
 		role="presentation"
 		onclick={() => !saving && onClose?.()}
 		onkeydown={(e) => { if (e.key === 'Escape' && !saving) onClose?.(); }}
 		tabindex="-1"
-	></div>
-
+	>
 	<div
 		class="eom-root"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="eom-title"
 		data-admin-shell="true"
+		onclick={(e) => e.stopPropagation()}
+		onkeydown={(e) => e.stopPropagation()}
+		tabindex="-1"
 	>
 		<header class="eom-head">
 			<div class="eom-head__icon" aria-hidden="true">
@@ -330,25 +337,31 @@
 			</footer>
 		</form>
 	</div>
+	</div>
 {/if}
 
 <style>
-	.eom-scrim {
+	/* Strike 2 — True fixed overlay that hovers above the whole interface.
+	   The overlay itself handles both the dimmed scrim *and* the flex-centering
+	   of the dialog card. z-index 9999 guarantees it paints above the sidebar
+	   (z-index 50) and any per-page popover stacking. */
+	.eom-overlay {
 		position: fixed;
 		inset: 0;
-		z-index: 100;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 16px;
 		background: rgba(9, 9, 11, 0.55);
 		backdrop-filter: blur(6px) saturate(1.4);
 		-webkit-backdrop-filter: blur(6px) saturate(1.4);
+		box-sizing: border-box;
 	}
 
 	.eom-root {
-		position: fixed;
-		z-index: 101;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: min(720px, calc(100vw - 32px));
+		position: relative;
+		width: min(720px, 100%);
 		max-height: min(92vh, 880px);
 		overflow: auto;
 		border-radius: 16px;
