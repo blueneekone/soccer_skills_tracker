@@ -1,72 +1,65 @@
 /**
- * Strike 5 — Enterprise Console modal scroll lock.
+ * Strike 7 — Titanium modal scroll lock for nested SvelteKit / enterprise shells.
  *
- * The authenticated app shell scrolls inside `.ec-canvas`, not `document.body`.
- * Locking `body` alone leaves the DataTable / canvas scrolling underneath modals.
+ * Locks every common scrollport: `html`, `body`, `.ec-canvas`, and `.ec-main`.
+ * Shell nodes use `overflow: hidden !important` via inline styles so underlying
+ * CSS cannot keep a scroll context alive.
  *
- * This helper:
- *   • sets `html[data-modal-open="true"]` for CSS fallbacks (sidebar nav, etc.)
- *   • sets `overflow: hidden` + scrollbar width compensation on `.ec-canvas`
- *     (and `.ec-main` as a belt-and-suspenders layer)
- *   • falls back to `document.body` when `.ec-canvas` is absent (e.g. rare routes)
- *
- * @returns {() => void} Disposer — run on modal close / `$effect` cleanup.
+ * @returns {() => void} Disposer — restores all touched values on modal teardown.
  */
 export function lockEnterpriseShellScroll() {
 	if (typeof document === 'undefined') return () => {};
 
 	const html = document.documentElement;
-	html.setAttribute('data-modal-open', 'true');
+	const body = document.body;
 
-	const canvas = /** @type {HTMLElement | null} */ (document.querySelector('.ec-canvas'));
-	const main = /** @type {HTMLElement | null} */ (document.querySelector('.ec-main'));
-
-	/** @type {{ el: HTMLElement; overflow: string; paddingRight: string; overscroll: string }[]} */
-	const snapshots = [];
-
-	/** @param {HTMLElement | null} el */
-	const capture = (el) => {
-		if (!el) return;
-		snapshots.push({
-			el,
-			overflow: el.style.overflow,
-			paddingRight: el.style.paddingRight,
-			overscroll: el.style.overscrollBehavior,
-		});
-		el.style.overflow = 'hidden';
-		el.style.overscrollBehavior = 'none';
+	const snap = {
+		htmlOverflow: html.style.overflow,
+		bodyOverflow: body.style.overflow,
+		bodyPaddingRight: body.style.paddingRight,
 	};
 
-	capture(canvas);
-	capture(main);
+	html.setAttribute('data-modal-open', 'true');
+	html.style.overflow = 'hidden';
+	body.style.overflow = 'hidden';
 
-	/** @type {{ overflow: string; paddingRight: string } | null} */
-	let bodySnap = null;
-
-	if (canvas) {
-		const sw = canvas.offsetWidth - canvas.clientWidth;
-		if (sw > 0) canvas.style.paddingRight = `${sw}px`;
-	} else {
-		const body = document.body;
-		bodySnap = {
-			overflow: body.style.overflow,
-			paddingRight: body.style.paddingRight,
-		};
-		const sw = window.innerWidth - document.documentElement.clientWidth;
-		body.style.overflow = 'hidden';
-		if (sw > 0) body.style.paddingRight = `${sw}px`;
+	const gutter = window.innerWidth - html.clientWidth;
+	if (gutter > 0) {
+		body.style.paddingRight = `${gutter}px`;
 	}
+
+	/** @type {{ el: HTMLElement; overflow: string; paddingRight: string; overscroll: string }[]} */
+	const shellSnaps = [];
+
+	/** @param {HTMLElement | null} el */
+	function captureShell(el) {
+		if (!el) return;
+		const overflow = el.style.overflow;
+		const paddingRight = el.style.paddingRight;
+		const overscroll = el.style.overscrollBehavior;
+		shellSnaps.push({ el, overflow, paddingRight, overscroll });
+		el.style.setProperty('overflow', 'hidden', 'important');
+		el.style.setProperty('overscroll-behavior', 'none', 'important');
+		const sw = el.offsetWidth - el.clientWidth;
+		if (sw > 0) {
+			const base = paddingRight ? parseFloat(paddingRight) || 0 : 0;
+			el.style.paddingRight = `${base + sw}px`;
+		}
+	}
+
+	captureShell(/** @type {HTMLElement | null} */ (document.querySelector('.ec-canvas')));
+	captureShell(/** @type {HTMLElement | null} */ (document.querySelector('.ec-main')));
 
 	return () => {
 		html.removeAttribute('data-modal-open');
-		for (const s of snapshots) {
+		html.style.overflow = snap.htmlOverflow;
+		body.style.overflow = snap.bodyOverflow;
+		body.style.paddingRight = snap.bodyPaddingRight;
+
+		for (const s of shellSnaps) {
 			s.el.style.overflow = s.overflow;
 			s.el.style.paddingRight = s.paddingRight;
 			s.el.style.overscrollBehavior = s.overscroll;
-		}
-		if (bodySnap) {
-			document.body.style.overflow = bodySnap.overflow;
-			document.body.style.paddingRight = bodySnap.paddingRight;
 		}
 	};
 }

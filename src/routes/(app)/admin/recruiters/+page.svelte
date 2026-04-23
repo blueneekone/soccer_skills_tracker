@@ -448,17 +448,6 @@
 			</p>
 		</div>
 		<div class="ar-head__right">
-			<div class="ar-filter" role="search">
-				<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-				<input
-					type="search"
-					bind:value={searchInput}
-					placeholder="Search by email, scout name, or agency"
-					aria-label="Filter recruiters"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</div>
 			<div class="ar-tabs" role="tablist" aria-label="Verification filter">
 				<button
 					type="button"
@@ -515,6 +504,30 @@
 	{/if}
 
 	<div class="ar-table-wrap" role="region" aria-label="Recruiters table" tabindex="-1">
+		<div class="ar-table-toolbar">
+			<div class="ar-filter" role="search">
+				<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+				<input
+					type="search"
+					bind:value={searchInput}
+					placeholder="Search by email, scout name, or agency"
+					aria-label="Filter recruiters"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+			</div>
+			<button
+				type="button"
+				class="ar-btn ar-btn--ghost ar-toolbar-sync"
+				onclick={() => void loadRecruiters()}
+				disabled={loading}
+				aria-label="Refresh recruiter list from Firestore"
+			>
+				<i class="ph ph-arrows-clockwise {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
+				{loading ? 'Syncing…' : 'Refresh'}
+			</button>
+		</div>
+		<div class="ar-table-scroll">
 		<table class="ar-table">
 			<thead>
 				<tr>
@@ -735,6 +748,7 @@
 				{/if}
 			</tbody>
 		</table>
+		</div>
 	</div>
 
 	{#if toasts.length > 0}
@@ -1018,7 +1032,10 @@
 	/* ── Table ───────────────────────────────────────────────────────────── */
 	.ar-table-wrap {
 		flex: 1 1 auto;
-		overflow: auto;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		overflow: hidden;
 		border-radius: 12px;
 		border: 1px solid #e4e4e7;
 		background: #ffffff;
@@ -1027,6 +1044,49 @@
 	:global(html.dark) .ar-table-wrap {
 		border-color: #27272a;
 		background: #0f0f12;
+	}
+
+	.ar-table-toolbar {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
+		padding: 10px 12px;
+		border-bottom: 1px solid #e4e4e7;
+		background: #fafafa;
+		flex-shrink: 0;
+	}
+
+	:global(html.dark) .ar-table-toolbar {
+		border-bottom-color: #27272a;
+		background: #0c0c0f;
+	}
+
+	.ar-table-toolbar .ar-filter {
+		flex: 1 1 220px;
+		min-width: 0;
+		width: auto;
+	}
+
+	.ar-toolbar-sync {
+		flex-shrink: 0;
+		gap: 8px;
+	}
+
+	.ar-toolbar-sync__spin {
+		animation: ar-spin 0.85s linear infinite;
+	}
+
+	@keyframes ar-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.ar-table-scroll {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: auto;
 	}
 
 	.ar-table {

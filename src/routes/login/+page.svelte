@@ -73,13 +73,16 @@
 	const dismissPwa = () => { showPwaPrompt = false; };
 </script>
 
-<div class="full-screen-center">
+<div class="full-screen-center tw-flex tw-flex-col tw-items-stretch tw-justify-center">
 	<div class="auth-card">
 		<div class="logo-circle">⚽</div>
 		<h2 class="auth-title">SSTRACKER</h2>
 		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
-		<button class="primary-btn btn-google w-100" onclick={handleGoogleLogin}>
+		<button
+			class="primary-btn btn-google w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			onclick={handleGoogleLogin}
+		>
 			<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
 			Continue with Google
 		</button>
@@ -90,15 +93,35 @@
 			<hr class="divider-line" />
 		</div>
 
-		<input type="email" placeholder="Email Address" bind:value={email} />
-		<input type="password" placeholder="Password" bind:value={password} />
+		<input
+			type="email"
+			class="tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			placeholder="Email Address"
+			bind:value={email}
+		/>
+		<input
+			type="password"
+			class="tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			placeholder="Password"
+			bind:value={password}
+		/>
 
 		{#if errorMsg}
 			<div class="auth-error-msg" role="alert">{errorMsg}</div>
 		{/if}
 
-		<button class="primary-btn btn-mb-10 w-100" onclick={handleEmailLogin}>Sign In</button>
-		<button class="secondary-btn w-100" onclick={handleEmailSignup}>Create Account</button>
+		<button
+			class="primary-btn btn-mb-10 w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			onclick={handleEmailLogin}
+		>
+			Sign In
+		</button>
+		<button
+			class="secondary-btn w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			onclick={handleEmailSignup}
+		>
+			Create Account
+		</button>
 	</div>
 
 	{#if showPwaPrompt}
@@ -109,7 +132,12 @@
 				<b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then tap <b>Add to Home Screen</b>.<br /><br />
 				<b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
 			</div>
-			<button class="secondary-btn w-100" onclick={dismissPwa}>Continue in Browser (Not Recommended)</button>
+			<button
+				class="secondary-btn w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+				onclick={dismissPwa}
+			>
+				Continue in Browser (Not Recommended)
+			</button>
 		</div>
 	{/if}
 </div>

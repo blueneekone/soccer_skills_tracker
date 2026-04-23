@@ -67,10 +67,16 @@
 	/** @typedef {'live' | 'mock'} ChartSource */
 	let mauSource      = $state(/** @type {ChartSource} */ ('mock'));
 	let revenueSource  = $state(/** @type {ChartSource} */ ('mock'));
+	let sportSource    = $state(/** @type {ChartSource} */ ('mock'));
+
+	/** Players by sport — `analytics/platform_totals.bySport` (+ mock fallback). */
+	let playersBySport = $state(/** @type {SeriesPoint[]} */ ([]));
 
 	/** Aggregated platform totals — used for MRR + Active Users macro tiles. */
 	let aggTotalRevenue  = $state(0);
 	let aggTotalUsers    = $state(0);
+	let activationRatePct = $state(81.2);
+	let complianceOpenCount = $state(3);
 
 	/** Strike 5 — Bento top row: uptime % + churn % (mock until backend feeds). */
 	const systemUptime = $derived.by(() => 99.99);
@@ -142,6 +148,24 @@
 			enterprise: 8000,
 		};
 
+		/** @type {Record<string, number>} */
+		const MOCK_BY_SPORT = {
+			soccer: 1450,
+			basketball: 820,
+			volleyball: 340,
+			baseball: 290,
+			other: 120,
+		};
+
+		/** @param {string} raw */
+		function prettySportLabel(raw) {
+			const s = String(raw || '')
+				.replace(/_/g, ' ')
+				.trim();
+			if (!s) return 'Unknown';
+			return s.replace(/\b\w/g, (c) => c.toUpperCase());
+		}
+
 		/** Canonical tier ordering + display labels for the donut chart. */
 		const TIER_DEFS = /** @type {const} */ ([
 			{ key: 'starter',    label: 'Starter'    },
@@ -183,6 +207,14 @@
 				const tu = Number(totals.totalUsers);
 				aggTotalRevenue = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
 				aggTotalUsers   = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
+
+				const ar = Number(totals.activationRate ?? totals.activationRatePct);
+				if (Number.isFinite(ar) && ar > 0 && ar <= 100) activationRatePct = ar;
+
+				const cc = Number(
+					totals.complianceAlertsOpen ?? totals.openComplianceAlerts ?? totals.complianceAlerts,
+				);
+				if (Number.isFinite(cc) && cc >= 0) complianceOpenCount = Math.round(cc);
 			}
 
 			// ── 1. MAU (Monthly Active Users) ─────────────────────────────────
@@ -276,6 +308,48 @@
 				}
 			}
 
+			// ── 2b. Players by sport (bar chart) ────────────────────────────
+			try {
+				/** @type {Record<string, number>} */
+				const bySport = {};
+				const rawSport = totals && totals.bySport;
+				if (rawSport && typeof rawSport === 'object') {
+					for (const [key, value] of Object.entries(rawSport)) {
+						const n = Number(value);
+						if (!Number.isFinite(n) || n < 0) continue;
+						const k = String(key).toLowerCase();
+						bySport[k] = (bySport[k] || 0) + Math.round(n);
+					}
+				}
+
+				const hasSignal = Object.values(bySport).some((v) => v > 0);
+				const sourceMap = hasSignal ? bySport : { ...MOCK_BY_SPORT };
+
+				const ordered = Object.entries(sourceMap)
+					.map(([k, value]) => ({ label: prettySportLabel(k), value }))
+					.filter((s) => s.value > 0)
+					.sort((a, b) => b.value - a.value);
+
+				if (!destroyed) {
+					playersBySport = ordered.length
+						? ordered
+						: Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
+								label: prettySportLabel(k),
+								value: Math.round(v),
+							}));
+					sportSource = hasSignal ? 'live' : 'mock';
+				}
+			} catch (e) {
+				console.warn('[overview] bySport hydrate failed — using mock', e);
+				if (!destroyed) {
+					playersBySport = Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
+						label: prettySportLabel(k),
+						value: Math.round(v),
+					}));
+					sportSource = 'mock';
+				}
+			}
+
 			// ── 3. Global Live Feed (security_audit, most recent first) ───────
 			try {
 				const feedQ = query(
@@ -332,6 +406,7 @@
 
 	let mauCanvasEl      = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 	let revenueCanvasEl  = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
+	let sportCanvasEl    = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 
 	/** Read a CSS variable from the document root with a fallback. */
 	function cssVar(/** @type {string} */ name, /** @type {string} */ fallback) {
@@ -459,10 +534,10 @@
 								position: 'bottom',
 								labels: {
 									color: muted,
-									font: { size: 11, weight: 600 },
-									boxWidth: 10,
-									boxHeight: 10,
-									padding: 12,
+									font: { size: 9, weight: 600 },
+									boxWidth: 8,
+									boxHeight: 8,
+									padding: 4,
 									usePointStyle: true,
 								},
 							},
@@ -488,6 +563,85 @@
 				});
 			} catch (e) {
 				console.warn('[overview] Revenue chart init failed', e);
+			}
+		})();
+
+		return () => {
+			destroyed = true;
+			chart?.destroy();
+			chart = null;
+		};
+	});
+
+	/* ── Bar chart: Players by sport ───────────────────────────────────────── */
+	$effect(() => {
+		if (!browser || !sportCanvasEl) return;
+		const target = sportCanvasEl;
+		const series = playersBySport;
+		let destroyed = false;
+		/** @type {import('chart.js').Chart | null} */
+		let chart = null;
+
+		(async () => {
+			try {
+				const mod = await import('chart.js');
+				if (destroyed || !target.isConnected) return;
+				mod.Chart.register(...mod.registerables);
+				const text  = cssVar('--text-primary', '#0f172a');
+				const muted = cssVar('--text-secondary', '#475569');
+				const grid  = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
+				chart = new mod.Chart(target, {
+					type: 'bar',
+					data: {
+						labels: series.map((p) => p.label),
+						datasets: [
+							{
+								label: 'Players',
+								data: series.map((p) => p.value),
+								backgroundColor: 'rgba(244, 63, 94, 0.55)',
+								borderColor: 'rgba(244, 63, 94, 0.95)',
+								borderWidth: 1,
+								borderRadius: 4,
+								maxBarThickness: 22,
+							},
+						],
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						animation: { duration: 400 },
+						plugins: {
+							legend: { display: false },
+							tooltip: {
+								backgroundColor: 'rgba(9,9,11,0.92)',
+								titleColor: '#fafafa',
+								bodyColor: '#d4d4d8',
+								padding: 8,
+								cornerRadius: 8,
+								displayColors: false,
+							},
+						},
+						scales: {
+							x: {
+								ticks: {
+									color: muted,
+									font: { size: 9, weight: 600 },
+									maxRotation: 40,
+									minRotation: 0,
+								},
+								grid: { color: 'transparent', drawBorder: false },
+							},
+							y: {
+								beginAtZero: true,
+								ticks: { color: muted, font: { size: 9 }, precision: 0 },
+								grid: { color: grid, drawBorder: false },
+							},
+						},
+					},
+				});
+				void text;
+			} catch (e) {
+				console.warn('[overview] Sport chart init failed', e);
 			}
 		})();
 
@@ -555,7 +709,11 @@
 		<header class="ov-bento__head">
 			<div class="ov-bento__head-text">
 				<span class="ov-bento__eyebrow">Global Admin</span>
-				<h1 class="ov-bento__h1">Command Center</h1>
+				<h1
+					class="ov-bento__h1 tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-tracking-tight tw-text-[var(--text-primary)]"
+				>
+					Command Center
+				</h1>
 			</div>
 			<span class="ov-bento__live">
 				<span class="ov-bento__live-dot" aria-hidden="true"></span>
@@ -589,14 +747,26 @@
 				<span class="ov-macro__hint ov-macro__hint--mock">30d · monitoring feed</span>
 			</article>
 			<article class="ov-macro ov-macro--churn">
-				<span class="ov-macro__label">MRR churn</span>
+				<span class="ov-macro__label">Churn</span>
 				<span
 					class="ov-macro__value"
 					class:ov-macro__value--ok={mrrChurnPct < 2}
 				>
 					{mrrChurnPct.toFixed(1)}<span class="ov-macro__suffix">%</span>
 				</span>
-				<span class="ov-macro__hint ov-macro__hint--mock">Trailing 30d · finance ETL</span>
+				<span class="ov-macro__hint ov-macro__hint--mock">MRR · trailing 30d</span>
+			</article>
+			<article class="ov-macro ov-macro--activation">
+				<span class="ov-macro__label">Activation rate</span>
+				<span class="ov-macro__value">
+					{activationRatePct.toFixed(1)}<span class="ov-macro__suffix">%</span>
+				</span>
+				<span class="ov-macro__hint">Onboarding funnel · platform_totals</span>
+			</article>
+			<article class="ov-macro ov-macro--compliance">
+				<span class="ov-macro__label">Compliance alerts</span>
+				<span class="ov-macro__value">{complianceOpenCount.toLocaleString()}</span>
+				<span class="ov-macro__hint">Open items · GRC queue</span>
 			</article>
 		</div>
 
@@ -651,6 +821,32 @@
 					</header>
 					<div class="ov-chart__canvas">
 						<canvas bind:this={mauCanvasEl} aria-label="Activation MAU chart"></canvas>
+					</div>
+				</article>
+
+				<article class="ov-glass ov-chart" aria-labelledby="ov-sport-title">
+					<header class="ov-chart__head">
+						<div class="ov-chart__icon ov-chart__icon--rose" aria-hidden="true">
+							<i class="ph ph-soccer-ball"></i>
+						</div>
+						<div class="ov-chart__meta">
+							<h2 id="ov-sport-title" class="ov-chart__title">Players by sport</h2>
+							<p class="ov-chart__sub">Distribution · aggregate headcount</p>
+							<span
+								class="ov-chart__src"
+								class:ov-chart__src--live={sportSource === 'live'}
+								class:ov-chart__src--mock={sportSource === 'mock'}
+							>
+								{sportSource === 'live' ? 'Live' : 'Mock'}
+							</span>
+						</div>
+						<span class="ov-chart__kpi">
+							{playersBySport.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
+							<span class="ov-chart__kpi-unit">players</span>
+						</span>
+					</header>
+					<div class="ov-chart__canvas ov-chart__canvas--bars">
+						<canvas bind:this={sportCanvasEl} aria-label="Players by sport chart"></canvas>
 					</div>
 				</article>
 			</div>
@@ -725,15 +921,15 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 4px;
 	}
 
 	.ov-bento {
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-rows: auto minmax(0, 0.2fr) minmax(0, 1fr);
-		gap: 10px;
+		grid-template-rows: auto auto minmax(0, 1fr);
+		gap: 6px;
 	}
 
 	@media (max-width: 1100px) {
@@ -766,11 +962,7 @@
 
 	.ov-bento__h1 {
 		margin: 2px 0 0;
-		font-size: 1.125rem;
-		font-weight: 800;
-		letter-spacing: -0.02em;
-		color: var(--text-primary);
-		line-height: 1.15;
+		line-height: 1.1;
 	}
 
 	.ov-bento__live {
@@ -806,12 +998,18 @@
 
 	.ov-bento__kpis {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 10px;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: 6px;
 		min-height: 0;
 	}
 
-	@media (max-width: 900px) {
+	@media (max-width: 1200px) {
+		.ov-bento__kpis {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 700px) {
 		.ov-bento__kpis {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
@@ -820,9 +1018,9 @@
 	.ov-macro {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
-		padding: 10px 12px;
-		border-radius: 12px;
+		gap: 1px;
+		padding: 6px 8px;
+		border-radius: 10px;
 		background: rgba(255, 255, 255, 0.55);
 		backdrop-filter: blur(12px);
 		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
@@ -843,7 +1041,7 @@
 	}
 
 	.ov-macro__value {
-		font-size: 1.35rem;
+		font-size: 1.1rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
 		font-variant-numeric: tabular-nums;
@@ -886,7 +1084,7 @@
 	.ov-bento__body {
 		display: grid;
 		grid-template-columns: 7fr 3fr;
-		gap: 12px;
+		gap: 8px;
 		min-height: 0;
 		overflow: hidden;
 	}
@@ -896,19 +1094,27 @@
 			grid-template-columns: 1fr;
 			overflow-y: auto;
 		}
+
+		.ov-bento__stage {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.ov-bento__stage {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 6px;
 		min-height: 0;
 		overflow: hidden;
+		align-content: stretch;
 	}
 
 	.ov-bento__stage .ov-chart {
-		flex: 1;
 		min-height: 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 
 	.ov-glass {
@@ -926,9 +1132,9 @@
 	.ov-chart {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 12px 14px;
-		min-height: 120px;
+		gap: 4px;
+		padding: 8px 10px;
+		min-height: 0;
 	}
 
 	.ov-chart__head {
@@ -939,13 +1145,13 @@
 	}
 
 	.ov-chart__icon {
-		width: 32px;
-		height: 32px;
-		border-radius: 9px;
+		width: 28px;
+		height: 28px;
+		border-radius: 8px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 0.95rem;
+		font-size: 0.85rem;
 		flex-shrink: 0;
 	}
 
@@ -969,6 +1175,16 @@
 		color: #c7d2fe;
 	}
 
+	.ov-chart__icon--rose {
+		background: rgba(244, 63, 94, 0.18);
+		color: #e11d48;
+	}
+
+	:global(html.dark) .ov-chart__icon--rose {
+		background: rgba(244, 63, 94, 0.26);
+		color: #fda4af;
+	}
+
 	.ov-chart__meta {
 		flex: 1;
 		min-width: 0;
@@ -976,7 +1192,7 @@
 
 	.ov-chart__title {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: 0.78rem;
 		font-weight: 800;
 		letter-spacing: -0.01em;
 		color: var(--text-primary);
@@ -984,7 +1200,7 @@
 
 	.ov-chart__sub {
 		margin: 0;
-		font-size: 0.6875rem;
+		font-size: 0.625rem;
 		color: var(--text-secondary);
 		line-height: 1.3;
 	}
@@ -1011,7 +1227,7 @@
 	}
 
 	.ov-chart__kpi {
-		font-size: 1rem;
+		font-size: 0.85rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
 		color: var(--text-primary);
@@ -1030,12 +1246,16 @@
 	.ov-chart__canvas {
 		position: relative;
 		flex: 1;
-		min-height: 120px;
+		min-height: 72px;
 		width: 100%;
 	}
 
 	.ov-chart__canvas--donut {
-		min-height: 140px;
+		min-height: 88px;
+	}
+
+	.ov-chart__canvas--bars {
+		min-height: 72px;
 	}
 
 	.ov-chart__canvas canvas {

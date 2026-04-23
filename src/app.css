@@ -1,0 +1,32 @@
+@tailwind utilities;
+
+/**
+ * Strike 7 — Global UI enforcement (imported after style.css).
+ * Login gateway: neutralize flex shrink / cramped controls from the shell.
+ */
+.auth-card {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+}
+
+.auth-card input[type='email'],
+.auth-card input[type='password'] {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 3rem;
+	padding: 0.75rem 1rem;
+	font-size: 1.125rem;
+	line-height: 1.5;
+	flex-shrink: 0;
+}
+
+.auth-card .primary-btn,
+.auth-card .secondary-btn {
+	min-height: 3rem;
+	padding: 0.75rem 1rem;
+	font-size: 1.125rem;
+	line-height: 1.5;
+	flex-shrink: 0;
+}
