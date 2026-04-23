@@ -754,7 +754,7 @@
 				</div>
 			{/each}
 		</div>
-		<p class="cc-soc-legend" aria-hidden="true">
+		<p class="cc-soc-legend">
 			<span class="cc-soc-legend__title">Severity key</span>
 			<span class="cc-soc-legend__items">
 				<span><i class="cc-soc-dot cc-soc-dot--crit"></i> critical</span>
