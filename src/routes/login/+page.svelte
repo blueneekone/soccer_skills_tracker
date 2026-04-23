@@ -11,14 +11,12 @@
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
 	let email = $state('');
 	let password = $state('');
 	let errorMsg = $state('');
 	let showPwaPrompt = $state(false);
 
-	// Redirect if already authed and profile complete
 	$effect(() => {
 		if (!authStore.isLoading && authStore.isAuthenticated) {
 			if (authStore.isProfileComplete) {
@@ -30,16 +28,15 @@
 	});
 
 	onMount(() => {
-		// Check for mobile redirect result (fallback only)
 		getRedirectResult(auth).catch(() => {});
-
-		// Detect standalone PWA context — iOS Safari blocks popups in standalone
 		const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 		const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
 		showPwaPrompt = isIos && !isInStandaloneMode && !navigator.userAgent.includes('Chrome');
 	});
 
-	const showError = (msg) => { errorMsg = msg; };
+	const showError = (msg) => {
+		errorMsg = msg;
+	};
 
 	const handleGoogleLogin = async () => {
 		errorMsg = '';
@@ -70,17 +67,22 @@
 		}
 	};
 
-	const dismissPwa = () => { showPwaPrompt = false; };
+	const dismissPwa = () => {
+		showPwaPrompt = false;
+	};
+
+	const gateCtl =
+		'tw-w-full tw-shrink-0 tw-!min-h-[52px] tw-!rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-3 tw-text-base';
 </script>
 
 <div class="full-screen-center tw-flex tw-flex-col tw-items-stretch tw-justify-center">
-	<div class="auth-card">
+	<div class="auth-card tw-flex tw-flex-col tw-gap-5 tw-w-full">
 		<div class="logo-circle">⚽</div>
 		<h2 class="auth-title">SSTRACKER</h2>
 		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
 		<button
-			class="primary-btn btn-google w-100 tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
+			class="primary-btn btn-google w-100 {gateCtl}"
 			onclick={handleGoogleLogin}
 		>
 			<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
@@ -95,13 +97,13 @@
 
 		<input
 			type="email"
-			class="tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
+			class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
 			placeholder="Email Address"
 			bind:value={email}
 		/>
 		<input
 			type="password"
-			class="tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
+			class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
 			placeholder="Password"
 			bind:value={password}
 		/>
@@ -110,32 +112,19 @@
 			<div class="auth-error-msg" role="alert">{errorMsg}</div>
 		{/if}
 
-		<button
-			class="primary-btn btn-mb-10 w-100 tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
-			onclick={handleEmailLogin}
-		>
-			Sign In
-		</button>
-		<button
-			class="secondary-btn w-100 tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
-			onclick={handleEmailSignup}
-		>
-			Create Account
-		</button>
+		<button class="primary-btn btn-mb-10 w-100 {gateCtl}" onclick={handleEmailLogin}>Sign In</button>
+		<button class="secondary-btn w-100 {gateCtl}" onclick={handleEmailSignup}>Create Account</button>
 	</div>
 
 	{#if showPwaPrompt}
-		<div class="pwa-prompt">
+		<div class="pwa-prompt tw-mt-5">
 			<h3 class="pwa-title">📲 Install the App!</h3>
 			<p class="pwa-text">To login and save your stats securely, install the app to your device.</p>
 			<div class="pwa-box">
 				<b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then tap <b>Add to Home Screen</b>.<br /><br />
 				<b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
 			</div>
-			<button
-				class="secondary-btn w-100 tw-w-full tw-shrink-0 tw-min-h-[50px] tw-py-3 tw-px-4 tw-text-lg"
-				onclick={dismissPwa}
-			>
+			<button class="secondary-btn w-100 {gateCtl}" onclick={dismissPwa}>
 				Continue in Browser (Not Recommended)
 			</button>
 		</div>
@@ -144,9 +133,6 @@
 
 <style>
 	.btn-mb-10 {
-		margin-bottom: 10px;
-	}
-	input {
-		margin-bottom: 12px;
+		margin-bottom: 0;
 	}
 </style>

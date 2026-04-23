@@ -509,6 +509,7 @@
 				<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
 				<input
 					type="search"
+					class="tw-!h-11 tw-!pl-10 tw-!rounded-md tw-!bg-white/5 tw-!border tw-!border-white/10"
 					bind:value={searchInput}
 					placeholder="Search by email, scout name, or agency"
 					aria-label="Filter recruiters"

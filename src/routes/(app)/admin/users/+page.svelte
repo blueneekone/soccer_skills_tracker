@@ -29,7 +29,6 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -444,12 +443,6 @@
 		return () => document.removeEventListener('click', onDocClick);
 	});
 
-	/** Strike 5 — GDPR purge scrim: same scroll lock as admin modals. */
-	$effect(() => {
-		if (typeof document === 'undefined' || purgeStep <= 0) return;
-		return lockEnterpriseShellScroll();
-	});
-
 	// ── Login As (impersonation) — mirrors /admin/organizations director flow ─
 	/** @param {UserRow} row */
 	const loginAs = async (row) => {
@@ -557,6 +550,8 @@
 	const rangeEnd = $derived(pageIndex * PAGE_SIZE + rows.length);
 	const totalLabel = $derived(totalLoaded ? `${totalEstimate.toLocaleString()}` : '…');
 </script>
+
+<svelte:body class:modal-locked={purgeStep > 0} />
 
 <div class="gu-root">
 	<!-- Strike 1 — Page Actions header: title + sub left, primary CTAs on the

@@ -13,24 +13,24 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/** Strike 9 — Tabbed Command Center (explicit mock KPIs + live charts) */
+	/** Strike 10 — Billion-Dollar Blueprint (tabbed command center + live charts) */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
-	const TAB_LABELS = /** @type {const} */ ([
-		'Executive',
-		'Growth (CMO)',
-		'Security (CSO)',
-		'Platform (CTO)',
-	]);
+	const TAB_LABELS = /** @type {const} */ (['Executive', 'Growth', 'Security', 'Platform']);
 
 	/** @type {'executive' | 'growth' | 'security' | 'platform'} */
 	let activeTab = $state('executive');
 
 	/** CEO-mandated display KPIs (charts still hydrate from Firestore aggregates). */
 	const MOCK_KPI = /** @type {const} */ ({
-		executive: { mrr: '$42,500', activeUsers: '1,402', pendingAlerts: '3' },
-		growth: { ltvCac: '4.2', churn: '1.2%', trialConv: '68%' },
+		executive: {
+			mrr: '$42,500',
+			activeUsers: '1,402',
+			trialConv: '68%',
+			activationVelocity: '+12%',
+		},
+		growth: { ltvCac: '4.2', churn: '1.2%', pipelineARR: '$1.8M', paybackMo: '14' },
 		security: { threatBlocks: '142', failedLogins: '28', vettingPending: '12' },
-		platform: { apiLatency: '42ms', uptime: '99.99%', dbReads: '1.2M' },
+		platform: { apiLatency: '42ms', uptime: '99.99%', dbReads: '1.2M', storage: '2.4 TB' },
 	});
 
 	/** @typedef {{ label: string, value: number }} SeriesPoint */
@@ -564,17 +564,21 @@
 	}
 </script>
 
-<div class="cc-root" data-admin-shell="true">
+<div
+	class="cc-root tw-box-border tw-mx-auto tw-flex tw-h-[calc(100vh-80px)] tw-min-h-0 tw-w-full tw-max-w-[1680px] tw-flex-col tw-overflow-hidden tw-px-5 tw-pt-4"
+	data-admin-shell="true"
+>
 	<header class="cc-hero">
 		<div class="cc-hero__text">
 			<span class="cc-eyebrow">Global Admin</span>
 			<h1
-				class="tw-text-4xl md:tw-text-5xl tw-font-black tw-tracking-tight tw-text-[var(--text-primary)]"
+				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-white md:tw-!text-5xl"
+				style="line-height: 1.08;"
 			>
 				Command Center
 			</h1>
 			<p class="cc-lede">
-				Strike 9 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
+				Strike 10 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
 				sports {sportSource}.
 			</p>
 		</div>
@@ -584,7 +588,11 @@
 		</span>
 	</header>
 
-	<div class="cc-tabs" role="tablist" aria-label="Command center departments">
+	<div
+		class="cc-tabs tw-flex tw-flex-wrap tw-gap-1 tw-border-b tw-border-white/10 tw-bg-transparent tw-px-0 tw-py-0"
+		role="tablist"
+		aria-label="Command center departments"
+	>
 		{#each TAB_IDS as tid, idx (tid)}
 			<button
 				type="button"
@@ -602,7 +610,7 @@
 		{/each}
 	</div>
 
-	<div class="cc-scroll">
+	<div class="cc-scroll tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-pb-12">
 		{#if activeTab === 'executive'}
 			<section
 				class="cc-panel"
@@ -610,21 +618,44 @@
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
 			>
-				<div class="cc-kpi-grid cc-kpi-grid--3">
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">MRR</span>
-						<span class="cc-kpi__value">{MOCK_KPI.executive.mrr}</span>
-						<span class="cc-kpi__hint">Board reporting pack</span>
+				<div
+					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+				>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>MRR</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.executive.mrr}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Board reporting pack</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Active users</span>
-						<span class="cc-kpi__value">{MOCK_KPI.executive.activeUsers}</span>
-						<span class="cc-kpi__hint">30d rolling</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Active users</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.executive.activeUsers}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">30d rolling</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Pending alerts</span>
-						<span class="cc-kpi__value">{MOCK_KPI.executive.pendingAlerts}</span>
-						<span class="cc-kpi__hint">Compliance queue</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Trial conv.</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.executive.trialConv}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Self-serve funnel</span>
+					</article>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Activation velocity</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-emerald-400 tw-tabular-nums">{MOCK_KPI.executive.activationVelocity}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">WoW signal</span>
 					</article>
 				</div>
 
@@ -645,7 +676,7 @@
 							</span>
 						</div>
 					</header>
-					<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
+					<div class="tw-relative tw-w-full tw-!min-h-[350px] tw-!h-[350px]">
 						<canvas
 							class="cc-canvas-fill"
 							bind:this={mauCanvasEl}
@@ -656,21 +687,44 @@
 			</section>
 		{:else if activeTab === 'growth'}
 			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
-				<div class="cc-kpi-grid cc-kpi-grid--3">
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">LTV:CAC</span>
-						<span class="cc-kpi__value">{MOCK_KPI.growth.ltvCac}</span>
-						<span class="cc-kpi__hint">Blended cohort</span>
+				<div
+					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+				>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>LTV:CAC</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.ltvCac}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Blended cohort</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Churn</span>
-						<span class="cc-kpi__value">{MOCK_KPI.growth.churn}</span>
-						<span class="cc-kpi__hint">Logo + revenue</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Churn</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.churn}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Logo + revenue</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Trial conv.</span>
-						<span class="cc-kpi__value">{MOCK_KPI.growth.trialConv}</span>
-						<span class="cc-kpi__hint">Self-serve funnel</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Pipeline ARR</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.pipelineARR}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Weighted forecast</span>
+					</article>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>CAC payback</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.paybackMo} mo</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Months to recover</span>
 					</article>
 				</div>
 
@@ -692,7 +746,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
+						<div class="tw-relative tw-w-full tw-!min-h-[350px] tw-!h-[350px]">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={revenueCanvasEl}
@@ -718,7 +772,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
+						<div class="tw-relative tw-w-full tw-!min-h-[350px] tw-!h-[350px]">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={sportCanvasEl}
@@ -730,21 +784,35 @@
 			</section>
 		{:else if activeTab === 'security'}
 			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
-				<div class="cc-kpi-grid cc-kpi-grid--3">
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Threat blocks</span>
-						<span class="cc-kpi__value">{MOCK_KPI.security.threatBlocks}</span>
-						<span class="cc-kpi__hint">WAF / policy engine</span>
+				<div
+					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+				>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Threat blocks</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.security.threatBlocks}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">WAF / policy engine</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Failed logins</span>
-						<span class="cc-kpi__value">{MOCK_KPI.security.failedLogins}</span>
-						<span class="cc-kpi__hint">Rolling 24h</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Failed logins</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.security.failedLogins}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Rolling 24h</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Vetting pending</span>
-						<span class="cc-kpi__value">{MOCK_KPI.security.vettingPending}</span>
-						<span class="cc-kpi__hint">Background checks</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Vetting pending</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.security.vettingPending}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Background checks</span>
 					</article>
 				</div>
 
@@ -796,21 +864,44 @@
 			</section>
 		{:else}
 			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
-				<div class="cc-kpi-grid cc-kpi-grid--3">
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">API latency</span>
-						<span class="cc-kpi__value">{MOCK_KPI.platform.apiLatency}</span>
-						<span class="cc-kpi__hint">p50 edge → API</span>
+				<div
+					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+				>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>API latency</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.apiLatency}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">p50 edge → API</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Uptime</span>
-						<span class="cc-kpi__value cc-kpi__value--ok">{MOCK_KPI.platform.uptime}</span>
-						<span class="cc-kpi__hint">Trailing 30d SLO</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Uptime</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-emerald-400 tw-tabular-nums">{MOCK_KPI.platform.uptime}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Trailing 30d SLO</span>
 					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">DB reads</span>
-						<span class="cc-kpi__value">{MOCK_KPI.platform.dbReads}</span>
-						<span class="cc-kpi__hint">Firestore aggregate</span>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>DB reads</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.dbReads}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Firestore aggregate</span>
+					</article>
+					<article
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#09090b] tw-p-5 tw-shadow-sm"
+					>
+						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
+							>Storage</span
+						>
+						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.storage}</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Object + media vault</span>
 					</article>
 				</div>
 
@@ -827,16 +918,8 @@
 </div>
 
 <style>
+	/* Layout shell: height + overflow come from Tailwind on the root element */
 	.cc-root {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		min-height: 0;
-		height: 100%;
-		width: 100%;
-		padding: 16px 20px 56px;
-		max-width: 1680px;
-		margin: 0 auto;
 		box-sizing: border-box;
 	}
 
@@ -879,10 +962,8 @@
 		color: var(--text-secondary);
 	}
 
-	/* H1 sizing is entirely Tailwind (tw-text-4xl … tw-font-black); only rhythm here. */
 	.cc-hero__text > h1 {
 		margin: 4px 0 6px;
-		line-height: 1.08;
 	}
 
 	.cc-lede {
@@ -930,72 +1011,50 @@
 	}
 
 	.cc-tabs {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		padding: 12px 0 16px;
-		margin-bottom: 8px;
-		border-bottom: 1px solid var(--glass-border, #e4e4e7);
+		flex-shrink: 0;
+		margin-bottom: 10px;
+		padding-top: 8px;
 		position: sticky;
 		top: 0;
 		z-index: 5;
-		background: var(--ec-canvas-bg, #f4f4f5);
-	}
-
-	:global(html.dark) .cc-tabs {
 		background: var(--ec-canvas-bg, #09090b);
-		border-bottom-color: #27272a;
 	}
 
 	.cc-tab {
 		appearance: none;
-		border: 1px solid var(--glass-border, #e4e4e7);
-		background: rgba(255, 255, 255, 0.6);
-		color: var(--text-primary);
-		font: inherit;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		padding: 8px 14px;
-		border-radius: 999px;
+		margin: 0;
 		cursor: pointer;
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		padding: 10px 14px 12px;
+		color: rgba(255, 255, 255, 0.45);
+		background: transparent;
+		border: none;
+		border-bottom: 2px solid transparent;
+		border-radius: 0;
 		transition:
-			background 0.15s ease,
-			border-color 0.15s ease,
-			box-shadow 0.15s ease;
-	}
-
-	:global(html.dark) .cc-tab {
-		background: rgba(24, 24, 27, 0.65);
-		border-color: #3f3f46;
+			color 0.15s ease,
+			border-color 0.15s ease;
 	}
 
 	.cc-tab:hover {
-		border-color: #a1a1aa;
+		color: rgba(255, 255, 255, 0.72);
 	}
 
 	.cc-tab:focus-visible {
 		outline: 2px solid var(--brand-primary, #6366f1);
 		outline-offset: 2px;
+		border-radius: 4px;
 	}
 
 	.cc-tab--active {
-		background: var(--text-primary);
 		color: #fafafa;
-		border-color: var(--text-primary);
-		box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.35);
-	}
-
-	:global(html.dark) .cc-tab--active {
-		background: #fafafa;
-		color: #09090b;
-		border-color: #fafafa;
+		border-bottom-color: rgba(255, 255, 255, 0.85);
 	}
 
 	.cc-scroll {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
 		overscroll-behavior: contain;
 	}
 
