@@ -19,7 +19,7 @@
 	};
 </script>
 
-<svelte:body class:modal-locked={open} />
+<svelte:body class:modal-open={open} />
 <svelte:window onkeydown={handleKey} />
 
 {#if open}

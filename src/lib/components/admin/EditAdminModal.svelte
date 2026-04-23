@@ -177,7 +177,7 @@
 	}
 </script>
 
-<svelte:body class:modal-locked={open} />
+<svelte:body class:modal-open={open} />
 
 {#if open && admin}
 	<!-- Strike 2: true fixed-overlay modal. See EditOrganizationModal for

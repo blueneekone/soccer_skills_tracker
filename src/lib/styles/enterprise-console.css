@@ -757,14 +757,14 @@ html.dark .ec-icon-btn:hover {
 	width: 100%;
 }
 
-/* ── Strike 10 — `body.modal-locked` (Svelte modals): freeze shell scrollports */
-body.modal-locked .ec-canvas,
-body.modal-locked .ec-main {
+/* ── Strike 13 — `body.modal-open` (Svelte modals): freeze shell scrollports */
+body.modal-open .ec-canvas,
+body.modal-open .ec-main {
 	overflow: hidden !important;
 	overscroll-behavior: none;
 }
 
-body.modal-locked .ec-sidebar__nav {
+body.modal-open .ec-sidebar__nav {
 	overflow: hidden !important;
 }
 

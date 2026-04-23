@@ -26,11 +26,23 @@
 
 	/** @type {string} */
 	let actionFilter = $state('');
+	/** Full-text search across action, admin, target, details (Strike 13 toolbar). */
+	let searchQuery = $state('');
 
 	const filteredLogs = $derived.by(() => {
+		let rows = logs;
+		const needle = searchQuery.trim().toLowerCase();
+		if (needle) {
+			rows = rows.filter((l) => {
+				const blob = [l.action, l.admin, l.target, l.details]
+					.map((x) => String(x ?? '').toLowerCase())
+					.join(' ');
+				return blob.includes(needle);
+			});
+		}
 		const q = actionFilter.trim().toUpperCase();
-		if (!q) return logs;
-		return logs.filter((l) => String(l.action || '').toUpperCase().includes(q));
+		if (q) rows = rows.filter((l) => String(l.action || '').toUpperCase().includes(q));
+		return rows;
 	});
 
 	async function loadLogs(append = false) {
@@ -102,12 +114,33 @@
 				Immutable platform-level event history. Showing {filteredLogs.length} of {totalLoaded} loaded events.
 			</p>
 		</div>
-		<div class="al-header__actions">
+	</div>
+
+	<div class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+			<i
+				class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-zinc-400"
+				aria-hidden="true"
+			></i>
 			<input
 				type="search"
-				class="al-filter-input"
+				class="tw-w-full tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pl-10 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+				bind:value={searchQuery}
+				placeholder="Search events…"
+				autocomplete="off"
+				aria-label="Search audit log"
+			/>
+		</div>
+		<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+			<label class="tw-mb-0 tw-whitespace-nowrap tw-text-xs tw-font-semibold tw-text-zinc-500" for="al-action-filter"
+				>Filters</label
+			>
+			<input
+				id="al-action-filter"
+				type="search"
+				class="al-filter-input tw-min-w-[140px]"
 				bind:value={actionFilter}
-				placeholder="Filter by action…"
+				placeholder="Action…"
 				autocomplete="off"
 				aria-label="Filter audit log by action"
 			/>

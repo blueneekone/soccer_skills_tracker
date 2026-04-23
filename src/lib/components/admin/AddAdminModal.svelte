@@ -151,7 +151,7 @@
 	}
 </script>
 
-<svelte:body class:modal-locked={open} />
+<svelte:body class:modal-open={open} />
 
 {#if open}
 	<!-- Scrim -->

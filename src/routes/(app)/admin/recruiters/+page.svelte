@@ -503,31 +503,35 @@
 		<p class="ar-flash ar-flash--err" role="alert">{err}</p>
 	{/if}
 
-	<div class="ar-table-wrap" role="region" aria-label="Recruiters table" tabindex="-1">
-		<div class="ar-table-toolbar">
-			<div class="ar-filter" role="search">
-				<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-				<input
-					type="search"
-					class="tw-!h-11 tw-!pl-10 tw-!rounded-md tw-!bg-white/5 tw-!border tw-!border-white/10"
-					bind:value={searchInput}
-					placeholder="Search by email, scout name, or agency"
-					aria-label="Filter recruiters"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</div>
-			<button
-				type="button"
-				class="ar-btn ar-btn--ghost ar-toolbar-sync"
-				onclick={() => void loadRecruiters()}
-				disabled={loading}
-				aria-label="Refresh recruiter list from Firestore"
-			>
-				<i class="ph ph-arrows-clockwise {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
-				{loading ? 'Syncing…' : 'Refresh'}
-			</button>
+	<div class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+			<i
+				class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-zinc-400"
+				aria-hidden="true"
+			></i>
+			<input
+				type="search"
+				class="tw-w-full tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pl-10 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+				bind:value={searchInput}
+				placeholder="Search by email, scout name, or agency"
+				aria-label="Filter recruiters"
+				autocomplete="off"
+				spellcheck="false"
+			/>
 		</div>
+		<button
+			type="button"
+			class="ar-btn ar-btn--ghost ar-toolbar-sync tw-shrink-0"
+			onclick={() => void loadRecruiters()}
+			disabled={loading}
+			aria-label="Refresh recruiter list from Firestore"
+		>
+			<i class="ph ph-arrows-clockwise {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
+			{loading ? 'Syncing…' : 'Refresh'}
+		</button>
+	</div>
+
+	<div class="ar-table-wrap" role="region" aria-label="Recruiters table" tabindex="-1">
 		<div class="ar-table-scroll">
 		<table class="ar-table">
 			<thead>
@@ -1045,28 +1049,6 @@
 	:global(html.dark) .ar-table-wrap {
 		border-color: #27272a;
 		background: #0f0f12;
-	}
-
-	.ar-table-toolbar {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		flex-wrap: wrap;
-		padding: 10px 12px;
-		border-bottom: 1px solid #e4e4e7;
-		background: #fafafa;
-		flex-shrink: 0;
-	}
-
-	:global(html.dark) .ar-table-toolbar {
-		border-bottom-color: #27272a;
-		background: #0c0c0f;
-	}
-
-	.ar-table-toolbar .ar-filter {
-		flex: 1 1 220px;
-		min-width: 0;
-		width: auto;
 	}
 
 	.ar-toolbar-sync {

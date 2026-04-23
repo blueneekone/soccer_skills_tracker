@@ -158,7 +158,7 @@
 	}
 </script>
 
-<svelte:body class:modal-locked={open} />
+<svelte:body class:modal-open={open} />
 
 {#if open && club}
 	<!-- Strike 2: true fixed-overlay modal. The outer `.eom-overlay` is a

@@ -72,48 +72,47 @@
 	};
 
 	const gateCtl =
-		'tw-w-full tw-shrink-0 tw-!min-h-[52px] tw-!rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-3 tw-text-base';
+		'tw-w-full tw-shrink-0 tw-rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-2.5 tw-text-base';
 </script>
 
 <div class="full-screen-center tw-flex tw-flex-col tw-items-stretch tw-justify-center">
-	<div class="auth-card tw-flex tw-flex-col tw-gap-5 tw-w-full">
+	<div class="auth-card">
 		<div class="logo-circle">⚽</div>
 		<h2 class="auth-title">SSTRACKER</h2>
 		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
-		<button
-			class="primary-btn btn-google w-100 {gateCtl}"
-			onclick={handleGoogleLogin}
-		>
-			<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
-			Continue with Google
-		</button>
+		<div class="tw-mx-auto tw-w-full tw-max-w-[360px] tw-space-y-4">
+			<button class="primary-btn btn-google w-100 {gateCtl}" onclick={handleGoogleLogin}>
+				<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
+				Continue with Google
+			</button>
 
-		<div class="auth-divider">
-			<hr class="divider-line" />
-			<span class="divider-text">OR</span>
-			<hr class="divider-line" />
+			<div class="auth-divider">
+				<hr class="divider-line" />
+				<span class="divider-text">OR</span>
+				<hr class="divider-line" />
+			</div>
+
+			<input
+				type="email"
+				class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+				placeholder="Email Address"
+				bind:value={email}
+			/>
+			<input
+				type="password"
+				class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+				placeholder="Password"
+				bind:value={password}
+			/>
+
+			{#if errorMsg}
+				<div class="auth-error-msg" role="alert">{errorMsg}</div>
+			{/if}
+
+			<button class="primary-btn btn-mb-10 w-100 {gateCtl}" onclick={handleEmailLogin}>Sign In</button>
+			<button class="secondary-btn w-100 {gateCtl}" onclick={handleEmailSignup}>Create Account</button>
 		</div>
-
-		<input
-			type="email"
-			class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
-			placeholder="Email Address"
-			bind:value={email}
-		/>
-		<input
-			type="password"
-			class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
-			placeholder="Password"
-			bind:value={password}
-		/>
-
-		{#if errorMsg}
-			<div class="auth-error-msg" role="alert">{errorMsg}</div>
-		{/if}
-
-		<button class="primary-btn btn-mb-10 w-100 {gateCtl}" onclick={handleEmailLogin}>Sign In</button>
-		<button class="secondary-btn w-100 {gateCtl}" onclick={handleEmailSignup}>Create Account</button>
 	</div>
 
 	{#if showPwaPrompt}

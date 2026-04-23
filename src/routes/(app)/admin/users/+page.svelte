@@ -551,7 +551,7 @@
 	const totalLabel = $derived(totalLoaded ? `${totalEstimate.toLocaleString()}` : '…');
 </script>
 
-<svelte:body class:modal-locked={purgeStep > 0} />
+<svelte:body class:modal-open={purgeStep > 0} />
 
 <div class="gu-root">
 	<!-- Strike 1 — Page Actions header: title + sub left, primary CTAs on the
