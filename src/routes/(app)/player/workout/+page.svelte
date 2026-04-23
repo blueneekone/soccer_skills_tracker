@@ -1,9 +1,11 @@
 <script>
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { untrack } from 'svelte';
   import { httpsCallable } from 'firebase/functions';
   import { functions } from '$lib/firebase.js';
   import { authStore } from '$lib/stores/auth.svelte.js';
+  import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import confetti from 'canvas-confetti';
@@ -25,14 +27,23 @@
   }
 
   const profile = $derived(authStore.userProfile);
+  const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
   const totalXpHud = $derived(
-    Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)),
+    playerEngine.hydrated
+      ? Math.max(playerEngine.totalXp, profileXp)
+      : profileXp,
   );
 
-  let level = $state(1);
-  let currentXp = $state(0);
-  let nextLevelXp = $state(100);
-  let streak = $state(0);
+  const levelProgress = $derived(getLevelProgressFromTotalXp(totalXpHud));
+  const level = $derived(levelProgress.level);
+  const currentXp = $derived(levelProgress.xpIntoLevel);
+  const nextLevelXp = $derived(levelProgress.xpToNext);
+  const profileStreak = $derived(Math.max(0, Math.floor(Number(profile?.currentStreak) || 0)));
+  const streak = $derived(
+    playerEngine.hydrated
+      ? Math.max(playerEngine.streakDays, profileStreak)
+      : profileStreak,
+  );
 
   const xpLoadPct = $derived(
     nextLevelXp > 0
@@ -41,14 +52,13 @@
   );
 
   $effect(() => {
-    const lp = getLevelProgressFromTotalXp(totalXpHud);
-    level = lp.level;
-    currentXp = lp.xpIntoLevel;
-    nextLevelXp = lp.xpToNext;
-  });
-
-  $effect(() => {
-    streak = Math.max(0, Math.floor(Number(profile?.currentStreak) || 0));
+    if (!browser) return;
+    const u = authStore.user;
+    if (authStore.role === 'player' && u?.uid) {
+      playerEngine.attach(u.uid);
+      return () => playerEngine.detach();
+    }
+    playerEngine.detach();
   });
 
   let xpTrackEl = $state(/** @type {HTMLDivElement | null} */ (null));
@@ -186,6 +196,7 @@
       return Swal.fire({ title: 'Profile incomplete', text: 'Team and player name are required.', icon: 'warning' });
     }
     const drillType = `[${focusLabel}] ${selectedDrill} (Player workout)`.slice(0, 200);
+    const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
     logSubmitting = true;
     try {
       const res = await logTrainingSession({
@@ -197,10 +208,34 @@
       const payload = res.data;
       const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
       const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : totalXpHud + earned;
+      const em = authStore.user?.email;
+      if (em && profile?.teamId) {
+        try {
+          await writePlayerOsWorkout({
+            emailKey: em.toLowerCase(),
+            userUid: authStore.user.uid,
+            teamId: String(profile.teamId),
+            focus: focusLabel,
+            drill: String(selectedDrill),
+            duration: Math.max(0, Math.floor(Number(duration) || 0)),
+            intensityRpe: intensity,
+            earnedXp: earned,
+          });
+        } catch (we) {
+          console.error('[Player OS] users/', em.toLowerCase(), '/workouts', we);
+        }
+      }
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.setItem(
           'elite_xp_pulse',
           JSON.stringify({ fromTotal: Math.max(0, newTotal - earned), toTotal: newTotal }),
+        );
+      }
+      if (typeof payload?.level === 'number' && payload.level > oldLevel) {
+        window.dispatchEvent(
+          new CustomEvent('phoenix:level-up', {
+            detail: { from: oldLevel, to: payload.level, earnedXp: earned },
+          }),
         );
       }
       confetti({

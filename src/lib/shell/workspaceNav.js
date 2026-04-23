@@ -47,16 +47,12 @@ const coachLinks = [
 ];
 
 /**
- * Player / athlete OS (household context): no workspace-jumping links.
+ * Player OS (SIEM/SOAR): quests + logger = Command Center; trophies + stats = Operative Dossier.
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
-	{ tab: '', label: 'Dashboard', icon: 'ph-radar', href: '/player/dashboard' },
-	{ tab: '', label: 'Today\u2019s Quests', icon: 'ph-barbell', href: '/player/workout' },
-	{ tab: '', label: 'Player Stats', icon: 'ph-chart-bar', href: '/stats' },
-	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
-	{ tab: '', label: 'Log Workout', icon: 'ph-list', href: '/tracker' },
-	{ tab: '', label: 'Challenges', icon: 'ph-medal', href: '/challenges' },
+	{ tab: '', label: 'Command Center', icon: 'ph-crosshair', href: '/player/workout' },
+	{ tab: '', label: 'Operative Dossier', icon: 'ph-fingerprint', href: '/stats' },
 	{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
 ];
 

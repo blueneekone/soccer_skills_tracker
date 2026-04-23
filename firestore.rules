@@ -611,6 +611,48 @@ service cloud.firestore {
         );
         allow create, update, delete: if false;
       }
+
+      // Project Phoenix / Player OS: client-written execution mirror (server owns XP in player_stats).
+      match /workouts/{workoutId} {
+        allow read: if authed() && playerVpcAllowed() && (
+          isSuper()
+          || emailKey() == userId.lower()
+          || parentHouseholdAllowsChildEmail(userId.lower())
+          || directorScopedToTeam(resource.data.teamId)
+          || (isCoach() && sameTeam(resource.data.teamId))
+        );
+        allow create: if authed() && playerVpcAllowed()
+          && request.resource.data.keys().hasAll([
+            'focus', 'drill', 'durationMinutes', 'intensityRpe', 'earnedXp',
+            'teamId', 'userUid', 'source', 'createdAt'
+          ])
+          && request.resource.data.keys().size() <= 20
+          && request.resource.data.userUid is string
+          && request.resource.data.userUid == request.auth.uid
+          && request.resource.data.teamId is string
+          && userDoc().keys().hasAll(['teamId'])
+          && request.resource.data.teamId == userDoc().teamId
+          && request.resource.data.teamId.size() > 0
+          && request.resource.data.focus is string
+          && request.resource.data.focus.size() > 0
+          && request.resource.data.focus.size() <= 64
+          && request.resource.data.drill is string
+          && request.resource.data.drill.size() > 0
+          && request.resource.data.drill.size() <= 200
+          && request.resource.data.durationMinutes is int
+          && request.resource.data.durationMinutes >= 1
+          && request.resource.data.durationMinutes <= 1440
+          && request.resource.data.intensityRpe is int
+          && request.resource.data.intensityRpe >= 1
+          && request.resource.data.intensityRpe <= 10
+          && request.resource.data.earnedXp is int
+          && request.resource.data.earnedXp >= 1
+          && request.resource.data.earnedXp <= 2000000
+          && request.resource.data.source == 'player_os'
+          && request.resource.data.keys().hasAny(['createdAt'])
+          && emailKey() == userId.lower();
+        allow update, delete: if false;
+      }
     }
 
     match /households/{householdId} {

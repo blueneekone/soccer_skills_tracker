@@ -2,10 +2,21 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
+	import { getCardTierFromLevel, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import '$lib/styles/director-os.css';
 
 	const profile = $derived(authStore.userProfile);
 	const isPlayerRole = $derived(authStore.role === 'player');
+
+	$effect(() => {
+		if (!browser) return;
+		if (isPlayerRole && authStore.user?.uid) {
+			playerEngine.attach(authStore.user.uid);
+			return () => playerEngine.detach();
+		}
+		playerEngine.detach();
+	});
 
 	/** @type {null | typeof import('chart.js').Chart} */
 	let ChartCtor = $state(null);
@@ -21,12 +32,25 @@
 	/** Glowing border variant for high-tier */
 	let rankBorderMode = $state(/** @type {'cyber' | 'isotope'} */ ('cyber'));
 
-	// ─── Mock operative core (wire to API later) ─────────────────
-	let operative = $state({
-		codename: 'OPERATIVE_PHX',
-		rankLabel: 'PHOENIX TIER',
-		totalXp: 128_450,
-		clearance: 'GAMMA-7 / FIELD',
+	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
+	const profileStreak = $derived(Math.max(0, Math.floor(Number(profile?.currentStreak) || 0)));
+	const operative = $derived.by(() => {
+		const tx = playerEngine.hydrated
+			? Math.max(playerEngine.totalXp, profileXp)
+			: profileXp;
+		const st = playerEngine.hydrated
+			? Math.max(playerEngine.streakDays, profileStreak)
+			: profileStreak;
+		const lv = getLevelProgressFromTotalXp(tx).level;
+		const callsign = authStore.user?.uid
+			? `OPERATIVE_${authStore.user.uid.slice(-4).toUpperCase()}`
+			: 'OPERATIVE____';
+		return {
+			codename: callsign,
+			rankLabel: `LVL ${String(lv).padStart(2, '0')} // ${getCardTierFromLevel(lv).toUpperCase()}`,
+			totalXp: tx,
+			clearance: `STREAK · ${String(st).padStart(2, '0')}D // ACTIVE`,
+		};
 	});
 
 	/** Skill vector 0–100: Technical, Physical, Tactical, Mental */
