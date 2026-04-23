@@ -60,8 +60,8 @@
 	let okMsg  = $state('');
 
 	/**
-	 * Strike 5 — Lock the *enterprise* scrollport (`.ec-canvas`), not `body`.
-	 * See `enterpriseModalScrollLock.js` + `html[data-modal-open]` CSS.
+	 * Strike 8 — `lockEnterpriseShellScroll()` locks html, body (fixed + width),
+	 * `.ec-canvas`, and `.ec-main` while this modal is open.
 	 */
 	$effect(() => {
 		if (typeof document === 'undefined' || !open) return;

@@ -1,4 +1,6 @@
 <script>
+	import '../../style.css';
+
 	/**
 	 * Strike 3 (Agent 3) — Global Error Boundary.
 	 *
@@ -175,10 +177,14 @@
 		padding: 24px;
 		background: #09090B;
 		color: #FAFAFA;
+		color-scheme: dark;
 		font-family:
 			'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
 			sans-serif;
 		overflow: hidden;
+		min-height: 100vh;
+		min-height: 100dvh;
+		box-sizing: border-box;
 	}
 
 	.err-card {

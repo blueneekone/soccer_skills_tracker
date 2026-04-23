@@ -56,7 +56,7 @@
 	let errMsg = $state('');
 	let okMsg  = $state('');
 
-	/** Strike 5 — Enterprise shell scroll lock (`.ec-canvas`), not `body`. */
+	/** Strike 8 — Full shell + document scroll lock while modal is open. */
 	$effect(() => {
 		if (typeof document === 'undefined' || !open) return;
 		return lockEnterpriseShellScroll();

@@ -80,7 +80,7 @@
 		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
 		<button
-			class="primary-btn btn-google w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			class="primary-btn btn-google w-100 tw-min-h-[3rem] tw-flex-shrink-0 tw-py-3 tw-px-4 tw-text-lg"
 			onclick={handleGoogleLogin}
 		>
 			<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
@@ -111,13 +111,13 @@
 		{/if}
 
 		<button
-			class="primary-btn btn-mb-10 w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			class="primary-btn btn-mb-10 w-100 tw-min-h-[3rem] tw-flex-shrink-0 tw-py-3 tw-px-4 tw-text-lg"
 			onclick={handleEmailLogin}
 		>
 			Sign In
 		</button>
 		<button
-			class="secondary-btn w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+			class="secondary-btn w-100 tw-min-h-[3rem] tw-flex-shrink-0 tw-py-3 tw-px-4 tw-text-lg"
 			onclick={handleEmailSignup}
 		>
 			Create Account
@@ -133,7 +133,7 @@
 				<b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
 			</div>
 			<button
-				class="secondary-btn w-100 tw-min-h-[48px] tw-py-3 tw-px-4 tw-text-lg"
+				class="secondary-btn w-100 tw-min-h-[3rem] tw-flex-shrink-0 tw-py-3 tw-px-4 tw-text-lg"
 				onclick={dismissPwa}
 			>
 				Continue in Browser (Not Recommended)

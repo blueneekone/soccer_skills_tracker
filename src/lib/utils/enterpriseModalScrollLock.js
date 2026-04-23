@@ -1,27 +1,39 @@
 /**
- * Strike 7 — Titanium modal scroll lock for nested SvelteKit / enterprise shells.
+ * Strike 8 — Enterprise modal scroll lock (html, body, .ec-canvas, .ec-main).
  *
- * Locks every common scrollport: `html`, `body`, `.ec-canvas`, and `.ec-main`.
- * Shell nodes use `overflow: hidden !important` via inline styles so underlying
- * CSS cannot keep a scroll context alive.
+ * `position: fixed` + negative `top` on `body` freezes document scroll; shell
+ * nodes get `overflow: hidden !important`. Restores prior inline styles and
+ * reapplies the saved scroll position on teardown.
  *
- * @returns {() => void} Disposer — restores all touched values on modal teardown.
+ * @returns {() => void} Disposer — run when the modal closes.
  */
 export function lockEnterpriseShellScroll() {
 	if (typeof document === 'undefined') return () => {};
 
 	const html = document.documentElement;
 	const body = document.body;
+	const scrollY = window.scrollY;
 
 	const snap = {
 		htmlOverflow: html.style.overflow,
 		bodyOverflow: body.style.overflow,
 		bodyPaddingRight: body.style.paddingRight,
+		bodyPosition: body.style.position,
+		bodyTop: body.style.top,
+		bodyLeft: body.style.left,
+		bodyRight: body.style.right,
+		bodyWidth: body.style.width,
 	};
 
 	html.setAttribute('data-modal-open', 'true');
 	html.style.overflow = 'hidden';
+
 	body.style.overflow = 'hidden';
+	body.style.position = 'fixed';
+	body.style.top = `-${scrollY}px`;
+	body.style.left = '0';
+	body.style.right = '0';
+	body.style.width = '100%';
 
 	const gutter = window.innerWidth - html.clientWidth;
 	if (gutter > 0) {
@@ -55,11 +67,18 @@ export function lockEnterpriseShellScroll() {
 		html.style.overflow = snap.htmlOverflow;
 		body.style.overflow = snap.bodyOverflow;
 		body.style.paddingRight = snap.bodyPaddingRight;
+		body.style.position = snap.bodyPosition;
+		body.style.top = snap.bodyTop;
+		body.style.left = snap.bodyLeft;
+		body.style.right = snap.bodyRight;
+		body.style.width = snap.bodyWidth;
 
 		for (const s of shellSnaps) {
 			s.el.style.overflow = s.overflow;
 			s.el.style.paddingRight = s.paddingRight;
 			s.el.style.overscrollBehavior = s.overscroll;
 		}
+
+		window.scrollTo(0, scrollY);
 	};
 }

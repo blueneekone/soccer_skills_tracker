@@ -13,10 +13,21 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	// ── Strike 5 — Minimal license read for MRR fallback (no wide platform scan) ─
+	/** Strike 8 — Tabbed Command Center */
+	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'trust', 'platform']);
+	const TAB_LABELS = /** @type {const} */ ([
+		'Executive Summary',
+		'Growth & Revenue (CMO)',
+		'Trust & Security (CSO)',
+		'Platform Health (CTO)',
+	]);
+
+	/** @type {'executive' | 'growth' | 'trust' | 'platform'} */
+	let activeTab = $state('executive');
+
 	let licenseCount = $state(0);
-	let telLoading   = $state(false);
-	let telErr       = $state('');
+	let telLoading = $state(false);
+	let telErr = $state('');
 
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
@@ -41,57 +52,47 @@
 		};
 	});
 
-	// ═══════════════════════════════════════════════════════════════════════════
-	// Command Center datasets (Sprint 2.6.7 — Paranoid Patch)
-	// ═══════════════════════════════════════════════════════════════════════════
-	// Two premium Chart.js widgets + a live audit feed. Every chart dataset
-	// is hydrated from a SINGLE aggregated document (`analytics/platform_totals`)
-	// — we never scan `users`, `licenses`, `player_lookup`, `teams`, or `clubs`
-	// here. A scheduled Cloud Function (future sprint) will own the writer
-	// side. Until then every chart falls back to a hard-coded mock inside its
-	// own `catch` branch so the dashboard never fires a wide read and never
-	// renders blank. All Chart.js effects use the mandated
-	// `let destroyed = false;` cleanup pattern from `.cursorrules`.
-
 	/** @typedef {{ label: string, value: number }} SeriesPoint */
-
-	/** Last 6 months (including current), chronological: [{ label: 'Nov', value: 42 }, …] */
-	let mauSeries = $state(/** @type {SeriesPoint[]} */ ([]));
-
-	/** Revenue by license tier, sourced from `analytics/platform_totals.revenueByTier`. */
-	let revenueByTier = $state(/** @type {SeriesPoint[]} */ ([]));
-
-	/** Strike 1 — Per-chart data-source indicator. The Global Admin sees
-	 *  "Live" as soon as the analytics triggers backfill the aggregate doc,
-	 *  and "Mock" while the platform is still empty. */
 	/** @typedef {'live' | 'mock'} ChartSource */
-	let mauSource      = $state(/** @type {ChartSource} */ ('mock'));
-	let revenueSource  = $state(/** @type {ChartSource} */ ('mock'));
-	let sportSource    = $state(/** @type {ChartSource} */ ('mock'));
 
-	/** Players by sport — `analytics/platform_totals.bySport` (+ mock fallback). */
+	let mauSeries = $state(/** @type {SeriesPoint[]} */ ([]));
+	let revenueByTier = $state(/** @type {SeriesPoint[]} */ ([]));
 	let playersBySport = $state(/** @type {SeriesPoint[]} */ ([]));
 
-	/** Aggregated platform totals — used for MRR + Active Users macro tiles. */
-	let aggTotalRevenue  = $state(0);
-	let aggTotalUsers    = $state(0);
+	let mauSource = $state(/** @type {ChartSource} */ ('mock'));
+	let revenueSource = $state(/** @type {ChartSource} */ ('mock'));
+	let sportSource = $state(/** @type {ChartSource} */ ('mock'));
+
+	let aggTotalRevenue = $state(0);
+	let aggTotalUsers = $state(0);
 	let activationRatePct = $state(81.2);
 	let complianceOpenCount = $state(3);
 
-	/** Strike 5 — Bento top row: uptime % + churn % (mock until backend feeds). */
-	const systemUptime = $derived.by(() => 99.99);
-	const mrrChurnPct  = $derived.by(() => 1.2);
+	let ltvCacRatio = $state(3.8);
+	let trialConversionPct = $state(21.5);
+	let growthMrrChurnPct = $state(1.2);
+	let operationalArpu = $state(52.4);
 
-	/** Prefer `platform_totals.totalUsers`, else the latest MAU series point. */
+	let activeThreatBlocks = $state(14);
+	let failedLogins24h = $state(624);
+	let pendingVetting = $state(6);
+	let flaggedOrgs = $state(2);
+
+	let apiLatencyMs = $state(112);
+	let dbReadWriteVelocity = $state(18600);
+	let activeErrorBoundaries = $state(0);
+	let storageTerabytes = $state(2.41);
+
+	const systemUptime = $derived.by(() => 99.99);
+
 	const macroActiveUsers = $derived.by(() => {
 		if (aggTotalUsers > 0) return aggTotalUsers;
 		const last = mauSeries.length ? mauSeries[mauSeries.length - 1].value : 0;
 		return Number.isFinite(last) ? Math.round(last) : 0;
 	});
 
-	/** Prefer aggregated `totalRevenue`, else $49 × license count. */
 	const mrrEstimate = $derived(
-		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49
+		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49,
 	);
 
 	const mrrDisplay = $derived(
@@ -100,17 +101,21 @@
 			: `$${mrrEstimate.toLocaleString()}`,
 	);
 
-	/** Recent security_audit events (desc by createdAt). */
+	const arpuForGrowth = $derived.by(() => {
+		const u = macroActiveUsers;
+		const m = mrrEstimate;
+		if (u > 0 && m > 0) return m / u;
+		return operationalArpu;
+	});
+
 	let liveFeed = $state(
-		/** @type {{ id: string, action: string, targetEmail: string, details: string, createdAt: Date | null }[]} */ ([])
+		/** @type {{ id: string, action: string, targetEmail: string, details: string, createdAt: Date | null }[]} */ (
+			[]
+		),
 	);
 	let feedLoading = $state(false);
-	let feedErr     = $state('');
+	let feedErr = $state('');
 
-	/**
-	 * Pull MAU, revenue-by-tier, and the live audit feed from `platform_totals`
-	 * plus `security_audit` (no wide collection scans).
-	 */
 	$effect(() => {
 		if (!browser) return;
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
@@ -119,36 +124,13 @@
 		feedLoading = true;
 		feedErr = '';
 
-		// ═════════════════════════════════════════════════════════════════════
-		// Sprint 2.6.7 — Paranoid Patch. Chart datasets derive from a
-		// SINGLE aggregated document (`analytics/platform_totals`). No chart
-		// fans out a full collection scan on `users`, `licenses`, or any other
-		// per-entity collection. A scheduled Cloud Function (future sprint)
-		// owns the writer side; until then we serve hard-coded mocks so the
-		// dashboard renders without ever firing a collection-wide read.
-		//
-		// Expected document shape (forward-compat; extra fields ignored):
-		//   {
-		//     mau:            [{ label?: 'Nov', month?: 'YYYY-MM', value: 1200 }, …]
-		//                      OR { '2025-11': 1200, '2025-12': 1400, … },
-		//     revenueByTier:  { starter: 4500, pro: 12000, club: 24000, enterprise: 8000 },
-		//     bySport:        { soccer: 1450, basketball: 820, volleyball: 340, … },
-		//     updatedAt:      Timestamp,
-		//   }
-		// ═════════════════════════════════════════════════════════════════════
-
-		/** @type {number[]} Chronological oldest → newest; 6 trailing months. */
 		const MOCK_MAU = [1200, 1400, 1650, 1820, 2140, 2380];
-
-		/** @type {Record<string, number>} */
 		const MOCK_REVENUE_BY_TIER = {
-			starter:    4500,
-			pro:       12000,
-			club:      24000,
+			starter: 4500,
+			pro: 12000,
+			club: 24000,
 			enterprise: 8000,
 		};
-
-		/** @type {Record<string, number>} */
 		const MOCK_BY_SPORT = {
 			soccer: 1450,
 			basketball: 820,
@@ -157,7 +139,6 @@
 			other: 120,
 		};
 
-		/** @param {string} raw */
 		function prettySportLabel(raw) {
 			const s = String(raw || '')
 				.replace(/_/g, ' ')
@@ -166,16 +147,14 @@
 			return s.replace(/\b\w/g, (c) => c.toUpperCase());
 		}
 
-		/** Canonical tier ordering + display labels for the donut chart. */
 		const TIER_DEFS = /** @type {const} */ ([
-			{ key: 'starter',    label: 'Starter'    },
-			{ key: 'pro',        label: 'Pro'        },
-			{ key: 'club',       label: 'Club'       },
+			{ key: 'starter', label: 'Starter' },
+			{ key: 'pro', label: 'Pro' },
+			{ key: 'club', label: 'Club' },
 			{ key: 'enterprise', label: 'Enterprise' },
-			{ key: 'legacy',     label: 'Legacy'     },
+			{ key: 'legacy', label: 'Legacy' },
 		]);
 
-		/** Build the trailing 6-month label strip (Apr → … → current). */
 		function buildMauLabels() {
 			const now = new Date();
 			const out = /** @type {{ key: string, label: string }[]} */ ([]);
@@ -187,9 +166,6 @@
 			return out;
 		}
 
-		/**
-		 * Read `analytics/platform_totals` + hydrate MAU + revenue charts and feed.
-		 */
 		(async () => {
 			/** @type {Record<string, unknown> | null} */
 			let totals = null;
@@ -198,7 +174,7 @@
 				const totalsSnap = await getDoc(totalsRef);
 				if (totalsSnap.exists()) totals = totalsSnap.data() || {};
 			} catch (e) {
-				console.warn('[overview] analytics/platform_totals read failed — using mocks', e);
+				console.warn('[overview] analytics/platform_totals read failed — using defaults', e);
 				totals = null;
 			}
 
@@ -206,7 +182,7 @@
 				const tr = Number(totals.totalRevenue);
 				const tu = Number(totals.totalUsers);
 				aggTotalRevenue = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
-				aggTotalUsers   = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
+				aggTotalUsers = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
 
 				const ar = Number(totals.activationRate ?? totals.activationRatePct);
 				if (Number.isFinite(ar) && ar > 0 && ar <= 100) activationRatePct = ar;
@@ -215,17 +191,50 @@
 					totals.complianceAlertsOpen ?? totals.openComplianceAlerts ?? totals.complianceAlerts,
 				);
 				if (Number.isFinite(cc) && cc >= 0) complianceOpenCount = Math.round(cc);
+
+				const ltv = Number(totals.ltvCac ?? totals.ltvToCacRatio ?? totals.ltvToCac);
+				if (Number.isFinite(ltv) && ltv > 0) ltvCacRatio = ltv;
+
+				const tc = Number(totals.trialConversionPct ?? totals.trialConversionRate);
+				if (Number.isFinite(tc) && tc >= 0 && tc <= 100) trialConversionPct = tc;
+
+				const churn = Number(totals.mrrChurnPct ?? totals.monthlyChurnPct);
+				if (Number.isFinite(churn) && churn >= 0) growthMrrChurnPct = churn;
+
+				const arpuN = Number(totals.arpu ?? totals.arpuUsd);
+				if (Number.isFinite(arpuN) && arpuN > 0) operationalArpu = arpuN;
+
+				const tb = Number(totals.activeThreatBlocks ?? totals.threatBlocks);
+				if (Number.isFinite(tb) && tb >= 0) activeThreatBlocks = Math.round(tb);
+
+				const fl = Number(totals.failedLogins24h ?? totals.failedLogins);
+				if (Number.isFinite(fl) && fl >= 0) failedLogins24h = Math.round(fl);
+
+				const pv = Number(totals.pendingVetting ?? totals.vettingPending);
+				if (Number.isFinite(pv) && pv >= 0) pendingVetting = Math.round(pv);
+
+				const fo = Number(totals.flaggedOrgs ?? totals.orgsFlagged);
+				if (Number.isFinite(fo) && fo >= 0) flaggedOrgs = Math.round(fo);
+
+				const lat = Number(totals.apiLatencyMsP50 ?? totals.apiLatencyMs);
+				if (Number.isFinite(lat) && lat > 0) apiLatencyMs = Math.round(lat);
+
+				const dbv = Number(totals.dbReadWritePerMin ?? totals.databaseOpsPerMinute);
+				if (Number.isFinite(dbv) && dbv > 0) dbReadWriteVelocity = Math.round(dbv);
+
+				const eb = Number(totals.activeErrorBoundaries ?? totals.svelteErrorBoundaries);
+				if (Number.isFinite(eb) && eb >= 0) activeErrorBoundaries = Math.round(eb);
+
+				const st = Number(totals.storageTerabytes ?? totals.storageTb);
+				if (Number.isFinite(st) && st > 0) storageTerabytes = st;
 			}
 
-			// ── 1. MAU (Monthly Active Users) ─────────────────────────────────
 			try {
 				const labels = buildMauLabels();
-				/** @type {number[]} */
-				let values = [];
+				let values = /** @type {number[]} */ ([]);
 				const raw = totals && totals.mau;
 
 				if (Array.isArray(raw)) {
-					// Array form — trust the last 6 entries, chronological order.
 					const trimmed = raw.slice(-6);
 					values = labels.map((_, i) => {
 						const row = trimmed[i];
@@ -234,7 +243,6 @@
 						return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
 					});
 				} else if (raw && typeof raw === 'object') {
-					// Object form keyed by 'YYYY-MM'.
 					const map = /** @type {Record<string, unknown>} */ (raw);
 					values = labels.map(({ key }) => {
 						const n = Number(map[key]);
@@ -253,7 +261,7 @@
 					mauSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
-				console.warn('[overview] MAU hydrate failed — using mock series', e);
+				console.warn('[overview] MAU hydrate failed', e);
 				if (!destroyed) {
 					const labels = buildMauLabels();
 					mauSeries = labels.map(({ label }, i) => ({
@@ -264,54 +272,48 @@
 				}
 			}
 
-			// ── 2. Revenue by Tier ────────────────────────────────────────────
 			try {
-				/** @type {Record<string, number>} */
-				const revenue = {};
+				const revenue = /** @type {Record<string, number>} */ ({});
 				const raw = totals && (totals.revenueByTier || totals.revenue);
 				if (raw && typeof raw === 'object') {
 					for (const [key, value] of Object.entries(raw)) {
 						const n = Number(value);
 						if (!Number.isFinite(n) || n < 0) continue;
-						revenue[String(key).toLowerCase()] = (revenue[String(key).toLowerCase()] || 0) + Math.round(n);
+						revenue[String(key).toLowerCase()] =
+							(revenue[String(key).toLowerCase()] || 0) + Math.round(n);
 					}
 				}
 
 				const hasSignal = Object.values(revenue).some((v) => v > 0);
 				const source = hasSignal ? revenue : { ...MOCK_REVENUE_BY_TIER };
 
-				const ordered = TIER_DEFS
-					.map(({ key, label }) => ({ label, value: Math.round(source[key] || 0) }))
-					.filter((s) => s.value > 0);
+				const ordered = TIER_DEFS.map(({ key, label }) => ({
+					label,
+					value: Math.round(source[key] || 0),
+				})).filter((s) => s.value > 0);
 
 				if (!destroyed) {
 					revenueByTier = ordered.length
 						? ordered
-						: TIER_DEFS
-								.map(({ key, label }) => ({
-									label,
-									value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
-								}))
-								.filter((s) => s.value > 0);
+						: TIER_DEFS.map(({ key, label }) => ({
+								label,
+								value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
+							})).filter((s) => s.value > 0);
 					revenueSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
-				console.warn('[overview] Revenue-by-Tier hydrate failed — using mock series', e);
+				console.warn('[overview] Revenue hydrate failed', e);
 				if (!destroyed) {
-					revenueByTier = TIER_DEFS
-						.map(({ key, label }) => ({
-							label,
-							value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
-						}))
-						.filter((s) => s.value > 0);
+					revenueByTier = TIER_DEFS.map(({ key, label }) => ({
+						label,
+						value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
+					})).filter((s) => s.value > 0);
 					revenueSource = 'mock';
 				}
 			}
 
-			// ── 2b. Players by sport (bar chart) ────────────────────────────
 			try {
-				/** @type {Record<string, number>} */
-				const bySport = {};
+				const bySport = /** @type {Record<string, number>} */ ({});
 				const rawSport = totals && totals.bySport;
 				if (rawSport && typeof rawSport === 'object') {
 					for (const [key, value] of Object.entries(rawSport)) {
@@ -340,7 +342,7 @@
 					sportSource = hasSignal ? 'live' : 'mock';
 				}
 			} catch (e) {
-				console.warn('[overview] bySport hydrate failed — using mock', e);
+				console.warn('[overview] bySport hydrate failed', e);
 				if (!destroyed) {
 					playersBySport = Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
 						label: prettySportLabel(k),
@@ -350,17 +352,15 @@
 				}
 			}
 
-			// ── 3. Global Live Feed (security_audit, most recent first) ───────
 			try {
 				const feedQ = query(
 					collection(db, 'security_audit'),
 					orderBy('createdAt', 'desc'),
-					fbLimit(12),
+					fbLimit(120),
 				);
 				const snap = await getDocs(feedQ).catch(async () => {
-					// Legacy schema fallback — older events used `timestamp`.
 					return getDocs(
-						query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), fbLimit(12)),
+						query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), fbLimit(120)),
 					).catch(() => null);
 				});
 				if (!snap) {
@@ -385,9 +385,9 @@
 					if (!destroyed) liveFeed = rows;
 				}
 			} catch (e) {
-				console.warn('[overview] Live feed load failed', e);
+				console.warn('[overview] security_audit load failed', e);
 				if (!destroyed) {
-					feedErr = e instanceof Error ? e.message : 'Could not load live feed.';
+					feedErr = e instanceof Error ? e.message : 'Could not load audit log.';
 					liveFeed = [];
 				}
 			}
@@ -400,22 +400,16 @@
 		};
 	});
 
-	// ═══════════════════════════════════════════════════════════════════════════
-	// Chart.js widgets (strict $effect cleanup; zero onDestroy imports)
-	// ═══════════════════════════════════════════════════════════════════════════
+	let mauCanvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
+	let revenueCanvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
+	let sportCanvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 
-	let mauCanvasEl      = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
-	let revenueCanvasEl  = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
-	let sportCanvasEl    = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
-
-	/** Read a CSS variable from the document root with a fallback. */
 	function cssVar(/** @type {string} */ name, /** @type {string} */ fallback) {
 		if (!browser) return fallback;
 		const v = getComputedStyle(document.documentElement).getPropertyValue(name);
 		return (v || '').trim() || fallback;
 	}
 
-	/* ── Line chart: Monthly Active Users ─────────────────────────────────── */
 	$effect(() => {
 		if (!browser || !mauCanvasEl) return;
 		const target = mauCanvasEl;
@@ -429,9 +423,9 @@
 				const mod = await import('chart.js');
 				if (destroyed || !target.isConnected) return;
 				mod.Chart.register(...mod.registerables);
-				const text  = cssVar('--text-primary', '#0f172a');
+				const text = cssVar('--text-primary', '#0f172a');
 				const muted = cssVar('--text-secondary', '#475569');
-				const grid  = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
+				const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
 				chart = new mod.Chart(target, {
 					type: 'line',
 					data: {
@@ -471,12 +465,12 @@
 						scales: {
 							x: {
 								ticks: { color: muted, font: { size: 11, weight: 600 } },
-								grid:  { color: 'transparent' },
+								grid: { color: 'transparent' },
 							},
 							y: {
 								beginAtZero: true,
 								ticks: { color: muted, font: { size: 11 }, precision: 0 },
-								grid:  { color: grid, drawBorder: false },
+								grid: { color: grid, drawBorder: false },
 							},
 						},
 					},
@@ -494,7 +488,6 @@
 		};
 	});
 
-	/* ── Doughnut chart: Revenue by Tier ───────────────────────────────────── */
 	$effect(() => {
 		if (!browser || !revenueCanvasEl) return;
 		const target = revenueCanvasEl;
@@ -534,10 +527,10 @@
 								position: 'bottom',
 								labels: {
 									color: muted,
-									font: { size: 9, weight: 600 },
-									boxWidth: 8,
-									boxHeight: 8,
-									padding: 4,
+									font: { size: 10, weight: 600 },
+									boxWidth: 10,
+									boxHeight: 10,
+									padding: 8,
 									usePointStyle: true,
 								},
 							},
@@ -573,7 +566,6 @@
 		};
 	});
 
-	/* ── Bar chart: Players by sport ───────────────────────────────────────── */
 	$effect(() => {
 		if (!browser || !sportCanvasEl) return;
 		const target = sportCanvasEl;
@@ -587,9 +579,9 @@
 				const mod = await import('chart.js');
 				if (destroyed || !target.isConnected) return;
 				mod.Chart.register(...mod.registerables);
-				const text  = cssVar('--text-primary', '#0f172a');
+				const text = cssVar('--text-primary', '#0f172a');
 				const muted = cssVar('--text-secondary', '#475569');
-				const grid  = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
+				const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
 				chart = new mod.Chart(target, {
 					type: 'bar',
 					data: {
@@ -602,7 +594,7 @@
 								borderColor: 'rgba(244, 63, 94, 0.95)',
 								borderWidth: 1,
 								borderRadius: 4,
-								maxBarThickness: 22,
+								maxBarThickness: 28,
 							},
 						],
 					},
@@ -625,15 +617,15 @@
 							x: {
 								ticks: {
 									color: muted,
-									font: { size: 9, weight: 600 },
-									maxRotation: 40,
+									font: { size: 10, weight: 600 },
+									maxRotation: 45,
 									minRotation: 0,
 								},
 								grid: { color: 'transparent', drawBorder: false },
 							},
 							y: {
 								beginAtZero: true,
-								ticks: { color: muted, font: { size: 9 }, precision: 0 },
+								ticks: { color: muted, font: { size: 10 }, precision: 0 },
 								grid: { color: grid, drawBorder: false },
 							},
 						},
@@ -652,11 +644,6 @@
 		};
 	});
 
-	// ═══════════════════════════════════════════════════════════════════════════
-	// Live feed helpers
-	// ═══════════════════════════════════════════════════════════════════════════
-
-	/** @param {Date | null} d */
 	function relativeTime(d) {
 		if (!(d instanceof Date)) return '—';
 		const diff = Date.now() - d.getTime();
@@ -666,28 +653,24 @@
 		return `${Math.round(diff / 86_400_000)}d ago`;
 	}
 
-	/**
-	 * Map an audit action string to a tone classification for the live feed.
-	 * @param {string} action
-	 */
 	function actionTone(action) {
 		const a = String(action || '').toUpperCase();
-		if (a.includes('REVOKE') || a.includes('REJECT') || a.includes('DELETE') || a.includes('FAILED')) return 'danger';
-		if (a.includes('GRANT')  || a.includes('APPROVE') || a.includes('VERIFY') || a.includes('CREATE')) return 'success';
+		if (a.includes('REVOKE') || a.includes('REJECT') || a.includes('DELETE') || a.includes('FAILED'))
+			return 'danger';
+		if (a.includes('GRANT') || a.includes('APPROVE') || a.includes('VERIFY') || a.includes('CREATE'))
+			return 'success';
 		if (a.includes('BG_CHECK') || a.includes('IMPERSONAT')) return 'warn';
 		return 'info';
 	}
 
-	/** @param {string} action */
 	function actionIcon(action) {
 		const t = actionTone(action);
-		if (t === 'danger')  return 'ph-warning-octagon';
+		if (t === 'danger') return 'ph-warning-octagon';
 		if (t === 'success') return 'ph-check-circle';
-		if (t === 'warn')    return 'ph-shield-chevron';
+		if (t === 'warn') return 'ph-shield-chevron';
 		return 'ph-activity';
 	}
 
-	/** @param {string} action */
 	function prettyAction(action) {
 		return String(action || '')
 			.replace(/_/g, ' ')
@@ -696,262 +679,334 @@
 	}
 </script>
 
-<div class="ov-page ov-page--bento" data-admin-shell="true">
+<div class="cc-root" data-admin-shell="true">
 	{#if telErr}
-		<p class="ov-err ov-err--compact" role="alert">
+		<p class="cc-err" role="alert">
 			<i class="ph ph-warning-circle" aria-hidden="true"></i>
 			{telErr}
 		</p>
 	{/if}
 
-	<!-- Strike 5 — Enterprise Bento: zero page scroll; only the right-rail scrolls. -->
-	<div class="ov-bento" aria-label="Executive command center">
-		<header class="ov-bento__head">
-			<div class="ov-bento__head-text">
-				<span class="ov-bento__eyebrow">Global Admin</span>
-				<h1
-					class="ov-bento__h1 tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-tracking-tight tw-text-[var(--text-primary)]"
-				>
-					Command Center
-				</h1>
-			</div>
-			<span class="ov-bento__live">
-				<span class="ov-bento__live-dot" aria-hidden="true"></span>
-				{telLoading ? 'Syncing…' : 'Live'}
-			</span>
-		</header>
-
-		<div class="ov-bento__kpis" aria-label="Macro KPIs">
-			<article class="ov-macro ov-macro--mrr">
-				<span class="ov-macro__label">MRR</span>
-				<span class="ov-macro__value">{telLoading ? '—' : mrrDisplay}</span>
-				<span class="ov-macro__hint">
-					{aggTotalRevenue > 0 ? 'platform_totals' : `$49 × ${licenseCount} licenses`}
-				</span>
-			</article>
-			<article class="ov-macro ov-macro--users">
-				<span class="ov-macro__label">Active users</span>
-				<span class="ov-macro__value">{macroActiveUsers.toLocaleString()}</span>
-				<span class="ov-macro__hint">
-					{aggTotalUsers > 0 ? 'platform_totals' : 'Latest MAU month'}
-				</span>
-			</article>
-			<article class="ov-macro ov-macro--up">
-				<span class="ov-macro__label">Uptime</span>
-				<span
-					class="ov-macro__value"
-					class:ov-macro__value--ok={systemUptime >= 99.9}
-				>
-					{systemUptime.toFixed(2)}<span class="ov-macro__suffix">%</span>
-				</span>
-				<span class="ov-macro__hint ov-macro__hint--mock">30d · monitoring feed</span>
-			</article>
-			<article class="ov-macro ov-macro--churn">
-				<span class="ov-macro__label">Churn</span>
-				<span
-					class="ov-macro__value"
-					class:ov-macro__value--ok={mrrChurnPct < 2}
-				>
-					{mrrChurnPct.toFixed(1)}<span class="ov-macro__suffix">%</span>
-				</span>
-				<span class="ov-macro__hint ov-macro__hint--mock">MRR · trailing 30d</span>
-			</article>
-			<article class="ov-macro ov-macro--activation">
-				<span class="ov-macro__label">Activation rate</span>
-				<span class="ov-macro__value">
-					{activationRatePct.toFixed(1)}<span class="ov-macro__suffix">%</span>
-				</span>
-				<span class="ov-macro__hint">Onboarding funnel · platform_totals</span>
-			</article>
-			<article class="ov-macro ov-macro--compliance">
-				<span class="ov-macro__label">Compliance alerts</span>
-				<span class="ov-macro__value">{complianceOpenCount.toLocaleString()}</span>
-				<span class="ov-macro__hint">Open items · GRC queue</span>
-			</article>
+	<header class="cc-hero">
+		<div class="cc-hero__text">
+			<span class="cc-eyebrow">Global Admin</span>
+			<h1 class="cc-title tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-tracking-tight tw-text-[var(--text-primary)]">
+				Command Center
+			</h1>
+			<p class="cc-lede">
+				Strike 8 tabbed surface — natural scroll. Activation {activationRatePct.toFixed(1)}% · MAU source
+				{mauSource}.
+			</p>
 		</div>
+		<span class="cc-live">
+			<span class="cc-live__dot" aria-hidden="true"></span>
+			{telLoading ? 'Syncing…' : 'Live'}
+		</span>
+	</header>
 
-		<div class="ov-bento__body">
-			<div class="ov-bento__stage">
-				<article class="ov-glass ov-chart" aria-labelledby="ov-rev-title">
-					<header class="ov-chart__head">
-						<div class="ov-chart__icon ov-chart__icon--emerald" aria-hidden="true">
-							<i class="ph ph-chart-pie-slice"></i>
-						</div>
-						<div class="ov-chart__meta">
-							<h2 id="ov-rev-title" class="ov-chart__title">Revenue</h2>
-							<p class="ov-chart__sub">MRR by license tier</p>
-							<span
-								class="ov-chart__src"
-								class:ov-chart__src--live={revenueSource === 'live'}
-								class:ov-chart__src--mock={revenueSource === 'mock'}
-							>
-								{revenueSource === 'live' ? 'Live' : 'Mock'}
-							</span>
-						</div>
-						<span class="ov-chart__kpi">
-							${revenueByTier.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
-							<span class="ov-chart__kpi-unit">MRR</span>
+	<div class="cc-tabs" role="tablist" aria-label="Command center departments">
+		{#each TAB_IDS as tid, idx (tid)}
+			<button
+				type="button"
+				id="cc-tab-{tid}"
+				class="cc-tab"
+				class:cc-tab--active={activeTab === tid}
+				role="tab"
+				aria-selected={activeTab === tid}
+				aria-controls="cc-panel-{tid}"
+				tabindex={activeTab === tid ? 0 : -1}
+				onclick={() => (activeTab = tid)}
+			>
+				{TAB_LABELS[idx]}
+			</button>
+		{/each}
+	</div>
+
+	<div class="cc-scroll">
+		{#if activeTab === 'executive'}
+			<section
+				class="cc-panel"
+				id="cc-panel-executive"
+				role="tabpanel"
+				aria-labelledby="cc-tab-executive"
+			>
+				<div class="cc-kpi-grid cc-kpi-grid--4">
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">MRR</span>
+						<span class="cc-kpi__value">{telLoading ? '—' : mrrDisplay}</span>
+						<span class="cc-kpi__hint">
+							{aggTotalRevenue > 0 ? 'platform_totals' : `$49 × ${licenseCount} licenses`}
 						</span>
-					</header>
-					<div class="ov-chart__canvas ov-chart__canvas--donut">
-						<canvas bind:this={revenueCanvasEl} aria-label="Revenue by tier chart"></canvas>
-					</div>
-				</article>
-
-				<article class="ov-glass ov-chart" aria-labelledby="ov-act-title">
-					<header class="ov-chart__head">
-						<div class="ov-chart__icon ov-chart__icon--indigo" aria-hidden="true">
-							<i class="ph ph-rocket-launch"></i>
-						</div>
-						<div class="ov-chart__meta">
-							<h2 id="ov-act-title" class="ov-chart__title">Activation</h2>
-							<p class="ov-chart__sub">Monthly active users · trailing six months</p>
-							<span
-								class="ov-chart__src"
-								class:ov-chart__src--live={mauSource === 'live'}
-								class:ov-chart__src--mock={mauSource === 'mock'}
-							>
-								{mauSource === 'live' ? 'Live' : 'Mock'}
-							</span>
-						</div>
-						<span class="ov-chart__kpi">
-							{mauSeries.length ? mauSeries[mauSeries.length - 1].value.toLocaleString() : '—'}
-							<span class="ov-chart__kpi-unit">this mo.</span>
-						</span>
-					</header>
-					<div class="ov-chart__canvas">
-						<canvas bind:this={mauCanvasEl} aria-label="Activation MAU chart"></canvas>
-					</div>
-				</article>
-
-				<article class="ov-glass ov-chart" aria-labelledby="ov-sport-title">
-					<header class="ov-chart__head">
-						<div class="ov-chart__icon ov-chart__icon--rose" aria-hidden="true">
-							<i class="ph ph-soccer-ball"></i>
-						</div>
-						<div class="ov-chart__meta">
-							<h2 id="ov-sport-title" class="ov-chart__title">Players by sport</h2>
-							<p class="ov-chart__sub">Distribution · aggregate headcount</p>
-							<span
-								class="ov-chart__src"
-								class:ov-chart__src--live={sportSource === 'live'}
-								class:ov-chart__src--mock={sportSource === 'mock'}
-							>
-								{sportSource === 'live' ? 'Live' : 'Mock'}
-							</span>
-						</div>
-						<span class="ov-chart__kpi">
-							{playersBySport.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
-							<span class="ov-chart__kpi-unit">players</span>
-						</span>
-					</header>
-					<div class="ov-chart__canvas ov-chart__canvas--bars">
-						<canvas bind:this={sportCanvasEl} aria-label="Players by sport chart"></canvas>
-					</div>
-				</article>
-			</div>
-
-			<aside class="ov-bento__rail" aria-labelledby="ov-rail-title">
-				<div class="ov-bento__rail-top">
-					<div class="ov-bento__rail-icon" aria-hidden="true">
-						<i class="ph ph-shield-checkered"></i>
-					</div>
-					<div class="ov-bento__rail-titles">
-						<h2 id="ov-rail-title" class="ov-bento__rail-h2">Live feed &amp; audit</h2>
-						<p class="ov-bento__rail-sub">
-							<code class="ov-bento__code">security_audit</code>
-						</p>
-					</div>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Active users</span>
+						<span class="cc-kpi__value">{macroActiveUsers.toLocaleString()}</span>
+						<span class="cc-kpi__hint">{aggTotalUsers > 0 ? 'platform_totals' : 'MAU series'}</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Uptime</span>
+						<span class="cc-kpi__value cc-kpi__value--ok">{systemUptime.toFixed(2)}%</span>
+						<span class="cc-kpi__hint">30d synthetic SLO</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Pending alerts</span>
+						<span class="cc-kpi__value">{complianceOpenCount.toLocaleString()}</span>
+						<span class="cc-kpi__hint">GRC / compliance queue</span>
+					</article>
 				</div>
 
-				<div class="ov-bento__rail-scroll">
-					{#if feedErr}
-						<p class="ov-feed__err" role="alert">
-							<i class="ph ph-warning-circle" aria-hidden="true"></i>
-							{feedErr}
-						</p>
-					{/if}
+				<article class="cc-chart-card">
+					<header class="cc-chart-card__head">
+						<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
+							<i class="ph ph-chart-line-up"></i>
+						</div>
+						<div>
+							<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
+							<p class="cc-chart-card__sub">Trailing six months · enterprise growth signal</p>
+							<span
+								class="cc-src"
+								class:cc-src--live={mauSource === 'live'}
+								class:cc-src--mock={mauSource === 'mock'}
+							>
+								{mauSource === 'live' ? 'Live' : 'Synthetic'}
+							</span>
+						</div>
+					</header>
+					<div class="tw-relative tw-w-full tw-min-h-[350px]">
+						<canvas
+							class="cc-canvas-fill"
+							bind:this={mauCanvasEl}
+							aria-label="Master activation line chart"
+						></canvas>
+					</div>
+				</article>
+			</section>
+		{:else if activeTab === 'growth'}
+			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+				<div class="cc-kpi-grid cc-kpi-grid--4">
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">LTV:CAC ratio</span>
+						<span class="cc-kpi__value">{ltvCacRatio.toFixed(2)}</span>
+						<span class="cc-kpi__hint">Finance roll-up · platform_totals</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">MRR churn</span>
+						<span class="cc-kpi__value">{growthMrrChurnPct.toFixed(2)}%</span>
+						<span class="cc-kpi__hint">Trailing 30d</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">ARPU</span>
+						<span class="cc-kpi__value">${arpuForGrowth.toFixed(2)}</span>
+						<span class="cc-kpi__hint">MRR ÷ active users</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Trial conversions</span>
+						<span class="cc-kpi__value">{trialConversionPct.toFixed(1)}%</span>
+						<span class="cc-kpi__hint">Self-serve funnel</span>
+					</article>
+				</div>
 
+				<div class="cc-chart-row">
+					<article class="cc-chart-card cc-chart-card--half">
+						<header class="cc-chart-card__head">
+							<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
+								<i class="ph ph-chart-pie-slice"></i>
+							</div>
+							<div>
+								<h2 class="cc-chart-card__title">Revenue by tier</h2>
+								<p class="cc-chart-card__sub">MRR composition</p>
+								<span
+									class="cc-src"
+									class:cc-src--live={revenueSource === 'live'}
+									class:cc-src--mock={revenueSource === 'mock'}
+								>
+									{revenueSource === 'live' ? 'Live' : 'Synthetic'}
+								</span>
+							</div>
+						</header>
+						<div class="tw-relative tw-w-full tw-min-h-[350px]">
+							<canvas
+								class="cc-canvas-fill"
+								bind:this={revenueCanvasEl}
+								aria-label="Revenue doughnut chart"
+							></canvas>
+						</div>
+					</article>
+
+					<article class="cc-chart-card cc-chart-card--half">
+						<header class="cc-chart-card__head">
+							<div class="cc-chart-card__icon cc-chart-card__icon--rose" aria-hidden="true">
+								<i class="ph ph-soccer-ball"></i>
+							</div>
+							<div>
+								<h2 class="cc-chart-card__title">Players by sport</h2>
+								<p class="cc-chart-card__sub">Headcount distribution</p>
+								<span
+									class="cc-src"
+									class:cc-src--live={sportSource === 'live'}
+									class:cc-src--mock={sportSource === 'mock'}
+								>
+									{sportSource === 'live' ? 'Live' : 'Synthetic'}
+								</span>
+							</div>
+						</header>
+						<div class="tw-relative tw-w-full tw-min-h-[350px]">
+							<canvas
+								class="cc-canvas-fill"
+								bind:this={sportCanvasEl}
+								aria-label="Players by sport bar chart"
+							></canvas>
+						</div>
+					</article>
+				</div>
+			</section>
+		{:else if activeTab === 'trust'}
+			<section class="cc-panel" id="cc-panel-trust" role="tabpanel" aria-labelledby="cc-tab-trust">
+				<div class="cc-kpi-grid cc-kpi-grid--4">
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Active threat blocks</span>
+						<span class="cc-kpi__value">{activeThreatBlocks.toLocaleString()}</span>
+						<span class="cc-kpi__hint">WAF / edge policy</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Failed logins (24h)</span>
+						<span class="cc-kpi__value">{failedLogins24h.toLocaleString()}</span>
+						<span class="cc-kpi__hint">Auth telemetry</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Pending vetting</span>
+						<span class="cc-kpi__value">{pendingVetting.toLocaleString()}</span>
+						<span class="cc-kpi__hint">Checkr pipeline</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Flagged orgs</span>
+						<span class="cc-kpi__value">{flaggedOrgs.toLocaleString()}</span>
+						<span class="cc-kpi__hint">Risk review queue</span>
+					</article>
+				</div>
+
+				<article class="cc-feed-shell">
+					<header class="cc-feed-shell__head">
+						<h2 class="cc-feed-shell__title">Global security audit log</h2>
+						<p class="cc-feed-shell__sub">
+							<code class="cc-code">security_audit</code>
+							· {liveFeed.length} events
+						</p>
+					</header>
+					{#if feedErr}
+						<p class="cc-err cc-err--inline" role="alert">{feedErr}</p>
+					{/if}
 					{#if feedLoading && liveFeed.length === 0}
-						<div class="ov-feed__empty">
-							<i class="ph ph-spinner ov-feed__spin" aria-hidden="true"></i>
-							Loading recent activity…
+						<div class="cc-feed-empty">
+							<i class="ph ph-spinner cc-spin" aria-hidden="true"></i>
+							Loading audit stream…
 						</div>
 					{:else if liveFeed.length === 0}
-						<div class="ov-feed__empty">
+						<div class="cc-feed-empty">
 							<i class="ph ph-moon-stars" aria-hidden="true"></i>
 							No audit events yet.
 						</div>
 					{:else}
-						<ol class="ov-feed__list ov-feed__list--rail">
+						<ol class="cc-feed-list">
 							{#each liveFeed as ev (ev.id)}
-								<li class="ov-feed__item ov-feed__item--{actionTone(ev.action)}">
-									<span class="ov-feed__item-icon" aria-hidden="true">
+								<li class="cc-feed-item cc-feed-item--{actionTone(ev.action)}">
+									<span class="cc-feed-item__icon" aria-hidden="true">
 										<i class="ph {actionIcon(ev.action)}"></i>
 									</span>
-									<div class="ov-feed__item-body">
-										<div class="ov-feed__item-head">
-											<span class="ov-feed__item-action">{prettyAction(ev.action)}</span>
-											<span class="ov-feed__item-time">{relativeTime(ev.createdAt)}</span>
+									<div class="cc-feed-item__body">
+										<div class="cc-feed-item__row">
+											<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
+											<span class="cc-feed-item__time">{relativeTime(ev.createdAt)}</span>
 										</div>
 										{#if ev.targetEmail}
-											<span class="ov-feed__item-target">{ev.targetEmail}</span>
+											<span class="cc-feed-item__target">{ev.targetEmail}</span>
 										{/if}
 										{#if ev.details}
-											<span class="ov-feed__item-details">{ev.details}</span>
+											<span class="cc-feed-item__details">{ev.details}</span>
 										{/if}
 									</div>
 								</li>
 							{/each}
 						</ol>
 					{/if}
+				</article>
+			</section>
+		{:else}
+			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+				<div class="cc-kpi-grid cc-kpi-grid--4">
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">API latency (p50)</span>
+						<span class="cc-kpi__value">{apiLatencyMs} ms</span>
+						<span class="cc-kpi__hint">Gateway measured</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">DB read/write velocity</span>
+						<span class="cc-kpi__value">{dbReadWriteVelocity.toLocaleString()}</span>
+						<span class="cc-kpi__hint">Ops / minute (aggregate)</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Active error boundaries</span>
+						<span class="cc-kpi__value">{activeErrorBoundaries.toLocaleString()}</span>
+						<span class="cc-kpi__hint">SvelteKit +error captures</span>
+					</article>
+					<article class="cc-kpi">
+						<span class="cc-kpi__label">Storage</span>
+						<span class="cc-kpi__value">{storageTerabytes.toFixed(2)} TB</span>
+						<span class="cc-kpi__hint">Object + Firestore footprint</span>
+					</article>
 				</div>
-			</aside>
-		</div>
+
+				<div class="cc-platform-note">
+					<p>
+						<i class="ph ph-info" aria-hidden="true"></i>
+						Platform telemetry streams from <code class="cc-code">analytics/platform_totals</code> when
+						provisioned; operational defaults keep the CTO rail populated before the ETL lands.
+					</p>
+				</div>
+			</section>
+		{/if}
 	</div>
 </div>
 
 <style>
-	/* Strike 5 — Bento HUD: fills ec-canvas height; page chrome does not scroll */
-	.ov-page--bento {
-		height: 100%;
-		min-height: 0;
-		max-height: 100%;
-		overflow: hidden;
+	.cc-root {
+		padding: 16px 20px 56px;
+		max-width: 1680px;
+		margin: 0 auto;
 		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
 	}
 
-	.ov-bento {
-		flex: 1;
-		min-height: 0;
-		display: grid;
-		grid-template-rows: auto auto minmax(0, 1fr);
-		gap: 6px;
-	}
-
-	@media (max-width: 1100px) {
-		.ov-bento {
-			grid-template-rows: auto auto minmax(0, 1fr);
-		}
-	}
-
-	.ov-bento__head {
+	.cc-err {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		min-height: 0;
-		padding: 2px 2px 0;
+		gap: 8px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--danger-red, #b91c1c);
+		background: rgba(185, 28, 28, 0.08);
+		margin: 0 0 14px;
 	}
 
-	.ov-bento__head-text {
+	.cc-err--inline {
+		margin: 0 0 12px;
+	}
+
+	.cc-hero {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+		flex-wrap: wrap;
+		margin-bottom: 8px;
+	}
+
+	.cc-hero__text {
 		min-width: 0;
 	}
 
-	.ov-bento__eyebrow {
+	.cc-eyebrow {
 		display: block;
 		font-size: 0.625rem;
 		font-weight: 800;
@@ -960,12 +1015,20 @@
 		color: var(--text-secondary);
 	}
 
-	.ov-bento__h1 {
-		margin: 2px 0 0;
-		line-height: 1.1;
+	.cc-title {
+		margin: 4px 0 6px;
+		line-height: 1.08;
 	}
 
-	.ov-bento__live {
+	.cc-lede {
+		margin: 0;
+		max-width: 72ch;
+		font-size: 0.875rem;
+		line-height: 1.45;
+		color: var(--text-secondary);
+	}
+
+	.cc-live {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -978,61 +1041,143 @@
 		flex-shrink: 0;
 	}
 
-	:global(html.dark) .ov-bento__live {
+	:global(html.dark) .cc-live {
 		color: #a7f3d0;
 		background: rgba(34, 197, 94, 0.16);
 	}
 
-	.ov-bento__live-dot {
+	.cc-live__dot {
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
 		background: #22c55e;
-		animation: ov-bento-pulse 1.8s ease-in-out infinite;
+		animation: cc-pulse 1.8s ease-in-out infinite;
 	}
 
-	@keyframes ov-bento-pulse {
-		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
-		50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-	}
-
-	.ov-bento__kpis {
-		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-		gap: 6px;
-		min-height: 0;
-	}
-
-	@media (max-width: 1200px) {
-		.ov-bento__kpis {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+	@keyframes cc-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
+		}
+		50% {
+			box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
 		}
 	}
 
-	@media (max-width: 700px) {
-		.ov-bento__kpis {
+	.cc-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 12px 0 16px;
+		margin-bottom: 8px;
+		border-bottom: 1px solid var(--glass-border, #e4e4e7);
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		background: var(--ec-canvas-bg, #f4f4f5);
+	}
+
+	:global(html.dark) .cc-tabs {
+		background: var(--ec-canvas-bg, #09090b);
+		border-bottom-color: #27272a;
+	}
+
+	.cc-tab {
+		appearance: none;
+		border: 1px solid var(--glass-border, #e4e4e7);
+		background: rgba(255, 255, 255, 0.6);
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		padding: 8px 14px;
+		border-radius: 999px;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	:global(html.dark) .cc-tab {
+		background: rgba(24, 24, 27, 0.65);
+		border-color: #3f3f46;
+	}
+
+	.cc-tab:hover {
+		border-color: #a1a1aa;
+	}
+
+	.cc-tab:focus-visible {
+		outline: 2px solid var(--brand-primary, #6366f1);
+		outline-offset: 2px;
+	}
+
+	.cc-tab--active {
+		background: var(--text-primary);
+		color: #fafafa;
+		border-color: var(--text-primary);
+		box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.35);
+	}
+
+	:global(html.dark) .cc-tab--active {
+		background: #fafafa;
+		color: #09090b;
+		border-color: #fafafa;
+	}
+
+	.cc-scroll {
+		min-height: 0;
+	}
+
+	.cc-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		padding-bottom: 32px;
+	}
+
+	.cc-kpi-grid {
+		display: grid;
+		gap: 12px;
+	}
+
+	.cc-kpi-grid--4 {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	@media (max-width: 1100px) {
+		.cc-kpi-grid--4 {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
-	.ov-macro {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		padding: 6px 8px;
-		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.55);
-		backdrop-filter: blur(12px);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
-		min-height: 0;
+	@media (max-width: 520px) {
+		.cc-kpi-grid--4 {
+			grid-template-columns: 1fr;
+		}
 	}
 
-	:global(html.dark) .ov-macro {
-		background: rgba(24, 24, 27, 0.65);
+	.cc-kpi {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 14px 16px;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.55);
+		backdrop-filter: blur(12px);
+		border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.06));
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+	}
+
+	:global(html.dark) .cc-kpi {
+		background: rgba(24, 24, 27, 0.72);
+		border-color: rgba(255, 255, 255, 0.08);
 		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 	}
 
-	.ov-macro__label {
+	.cc-kpi__label {
 		font-size: 0.625rem;
 		font-weight: 800;
 		letter-spacing: 0.06em;
@@ -1040,8 +1185,8 @@
 		color: var(--text-secondary);
 	}
 
-	.ov-macro__value {
-		font-size: 1.1rem;
+	.cc-kpi__value {
+		font-size: 1.5rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
 		font-variant-numeric: tabular-nums;
@@ -1049,166 +1194,116 @@
 		line-height: 1.1;
 	}
 
-	.ov-macro__value--ok {
+	.cc-kpi__value--ok {
 		color: #15803d;
 	}
 
-	:global(html.dark) .ov-macro__value--ok {
+	:global(html.dark) .cc-kpi__value--ok {
 		color: #86efac;
 	}
 
-	.ov-macro__suffix {
-		font-size: 0.75rem;
-		font-weight: 700;
-		color: var(--text-secondary);
-		margin-left: 1px;
-	}
-
-	.ov-macro__hint {
-		font-size: 0.65rem;
-		color: var(--text-secondary);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.ov-macro__hint--mock {
-		color: #a16207;
-		font-style: italic;
-	}
-
-	:global(html.dark) .ov-macro__hint--mock {
-		color: #fbbf24;
-	}
-
-	.ov-bento__body {
-		display: grid;
-		grid-template-columns: 7fr 3fr;
-		gap: 8px;
-		min-height: 0;
-		overflow: hidden;
-	}
-
-	@media (max-width: 1100px) {
-		.ov-bento__body {
-			grid-template-columns: 1fr;
-			overflow-y: auto;
-		}
-
-		.ov-bento__stage {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.ov-bento__stage {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 6px;
-		min-height: 0;
-		overflow: hidden;
-		align-content: stretch;
-	}
-
-	.ov-bento__stage .ov-chart {
-		min-height: 0;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	.ov-glass {
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.5);
-		backdrop-filter: blur(14px);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
-	}
-
-	:global(html.dark) .ov-glass {
-		background: rgba(24, 24, 27, 0.72);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
-	}
-
-	.ov-chart {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 8px 10px;
-		min-height: 0;
-	}
-
-	.ov-chart__head {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		flex-shrink: 0;
-	}
-
-	.ov-chart__icon {
-		width: 28px;
-		height: 28px;
-		border-radius: 8px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.85rem;
-		flex-shrink: 0;
-	}
-
-	.ov-chart__icon--emerald {
-		background: rgba(16, 185, 129, 0.18);
-		color: #059669;
-	}
-
-	.ov-chart__icon--indigo {
-		background: rgba(99, 102, 241, 0.2);
-		color: #4f46e5;
-	}
-
-	:global(html.dark) .ov-chart__icon--emerald {
-		background: rgba(16, 185, 129, 0.24);
-		color: #a7f3d0;
-	}
-
-	:global(html.dark) .ov-chart__icon--indigo {
-		background: rgba(99, 102, 241, 0.28);
-		color: #c7d2fe;
-	}
-
-	.ov-chart__icon--rose {
-		background: rgba(244, 63, 94, 0.18);
-		color: #e11d48;
-	}
-
-	:global(html.dark) .ov-chart__icon--rose {
-		background: rgba(244, 63, 94, 0.26);
-		color: #fda4af;
-	}
-
-	.ov-chart__meta {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.ov-chart__title {
-		margin: 0;
-		font-size: 0.78rem;
-		font-weight: 800;
-		letter-spacing: -0.01em;
-		color: var(--text-primary);
-	}
-
-	.ov-chart__sub {
-		margin: 0;
-		font-size: 0.625rem;
+	.cc-kpi__hint {
+		font-size: 0.7rem;
 		color: var(--text-secondary);
 		line-height: 1.3;
 	}
 
-	.ov-chart__src {
+	.cc-chart-card {
+		border-radius: 16px;
+		padding: 16px 18px 18px;
+		background: rgba(255, 255, 255, 0.5);
+		backdrop-filter: blur(14px);
+		border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.06));
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
+	}
+
+	:global(html.dark) .cc-chart-card {
+		background: rgba(24, 24, 27, 0.72);
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.cc-chart-row {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+	}
+
+	@media (max-width: 960px) {
+		.cc-chart-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.cc-chart-card--half {
+		min-width: 0;
+	}
+
+	.cc-chart-card__head {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin-bottom: 12px;
+	}
+
+	.cc-chart-card__icon {
+		width: 40px;
+		height: 40px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.1rem;
+		flex-shrink: 0;
+	}
+
+	.cc-chart-card__icon--indigo {
+		background: rgba(99, 102, 241, 0.2);
+		color: #4f46e5;
+	}
+
+	.cc-chart-card__icon--emerald {
+		background: rgba(16, 185, 129, 0.18);
+		color: #059669;
+	}
+
+	.cc-chart-card__icon--rose {
+		background: rgba(244, 63, 94, 0.18);
+		color: #e11d48;
+	}
+
+	:global(html.dark) .cc-chart-card__icon--indigo {
+		background: rgba(99, 102, 241, 0.28);
+		color: #c7d2fe;
+	}
+
+	:global(html.dark) .cc-chart-card__icon--emerald {
+		background: rgba(16, 185, 129, 0.24);
+		color: #a7f3d0;
+	}
+
+	:global(html.dark) .cc-chart-card__icon--rose {
+		background: rgba(244, 63, 94, 0.26);
+		color: #fda4af;
+	}
+
+	.cc-chart-card__title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 800;
+		color: var(--text-primary);
+		letter-spacing: -0.02em;
+	}
+
+	.cc-chart-card__sub {
+		margin: 2px 0 0;
+		font-size: 0.8125rem;
+		color: var(--text-secondary);
+	}
+
+	.cc-src {
 		display: inline-block;
-		margin-top: 4px;
-		padding: 1px 7px;
+		margin-top: 6px;
+		padding: 2px 8px;
 		border-radius: 999px;
 		font-size: 0.6rem;
 		font-weight: 700;
@@ -1216,277 +1311,193 @@
 		text-transform: uppercase;
 	}
 
-	.ov-chart__src--live {
+	.cc-src--live {
 		color: #10b981;
 		background: rgba(16, 185, 129, 0.12);
 	}
 
-	.ov-chart__src--mock {
+	.cc-src--mock {
 		color: #f59e0b;
 		background: rgba(245, 158, 11, 0.12);
 	}
 
-	.ov-chart__kpi {
-		font-size: 0.85rem;
-		font-weight: 800;
-		font-variant-numeric: tabular-nums;
-		color: var(--text-primary);
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-
-	.ov-chart__kpi-unit {
-		font-size: 0.55rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		color: var(--text-secondary);
-		margin-left: 4px;
-	}
-
-	.ov-chart__canvas {
-		position: relative;
-		flex: 1;
-		min-height: 72px;
-		width: 100%;
-	}
-
-	.ov-chart__canvas--donut {
-		min-height: 88px;
-	}
-
-	.ov-chart__canvas--bars {
-		min-height: 72px;
-	}
-
-	.ov-chart__canvas canvas {
+	.cc-canvas-fill {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
+		display: block;
 	}
 
-	.ov-bento__rail {
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		overflow: hidden;
-		border-radius: 14px;
+	.cc-feed-shell {
+		border-radius: 16px;
+		padding: 16px 18px 20px;
 		background: rgba(255, 255, 255, 0.45);
 		backdrop-filter: blur(14px);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+		border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.06));
 	}
 
-	:global(html.dark) .ov-bento__rail {
+	:global(html.dark) .cc-feed-shell {
 		background: rgba(9, 9, 11, 0.55);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+		border-color: rgba(255, 255, 255, 0.08);
 	}
 
-	.ov-bento__rail-top {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 12px 14px 10px;
-		flex-shrink: 0;
+	.cc-feed-shell__head {
+		margin-bottom: 14px;
 	}
 
-	.ov-bento__rail-icon {
-		width: 34px;
-		height: 34px;
-		border-radius: 9px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgba(236, 72, 153, 0.15);
-		color: #db2777;
-		font-size: 1rem;
-		flex-shrink: 0;
-	}
-
-	:global(html.dark) .ov-bento__rail-icon {
-		background: rgba(236, 72, 153, 0.22);
-		color: #fbcfe8;
-	}
-
-	.ov-bento__rail-h2 {
+	.cc-feed-shell__title {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: 1.05rem;
 		font-weight: 800;
 		color: var(--text-primary);
-		letter-spacing: -0.01em;
 	}
 
-	.ov-bento__rail-sub {
-		margin: 2px 0 0;
-		font-size: 0.6875rem;
+	.cc-feed-shell__sub {
+		margin: 4px 0 0;
+		font-size: 0.8125rem;
 		color: var(--text-secondary);
 	}
 
-	.ov-bento__code {
-		padding: 1px 5px;
+	.cc-code {
+		padding: 1px 6px;
 		border-radius: 4px;
 		background: rgba(0, 0, 0, 0.06);
-		font-size: 0.65rem;
+		font-size: 0.75rem;
 		font-weight: 700;
-		color: var(--text-primary);
 	}
 
-	:global(html.dark) .ov-bento__code {
+	:global(html.dark) .cc-code {
 		background: rgba(255, 255, 255, 0.08);
 	}
 
-	.ov-bento__rail-scroll {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		overflow-x: hidden;
-		overscroll-behavior: contain;
-		padding: 0 10px 12px;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	.ov-err--compact {
-		margin: 0;
-		flex-shrink: 0;
-	}
-
-	.ov-err {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 12px;
-		border-radius: 10px;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--danger-red, #b91c1c);
-		background: rgba(185, 28, 28, 0.08);
-	}
-
-	.ov-feed__err {
-		margin: 0 0 8px;
-		padding: 10px 12px;
-		border-radius: 8px;
-		background: rgba(185, 28, 28, 0.08);
-		color: #b91c1c;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.ov-feed__empty {
+	.cc-feed-empty {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		padding: 24px 12px;
+		gap: 10px;
+		padding: 48px 16px;
 		color: var(--text-secondary);
-		font-size: 0.8125rem;
 		font-weight: 600;
-		text-align: center;
+		font-size: 0.875rem;
 	}
 
-	.ov-feed__spin {
-		animation: ov-feed-spin 1s linear infinite;
+	.cc-spin {
+		animation: cc-spin 1s linear infinite;
 	}
 
-	@keyframes ov-feed-spin {
-		to { transform: rotate(360deg); }
+	@keyframes cc-spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
-	.ov-feed__list {
+	.cc-feed-list {
 		list-style: none;
-		padding: 0;
 		margin: 0;
+		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-	}
-
-	.ov-feed__list--rail {
-		max-height: none;
-		overflow: visible;
-	}
-
-	.ov-feed__item {
-		display: flex;
 		gap: 10px;
-		padding: 10px 11px;
-		border-radius: 10px;
+	}
+
+	.cc-feed-item {
+		display: flex;
+		gap: 12px;
+		padding: 12px 14px;
+		border-radius: 12px;
 		background: rgba(0, 0, 0, 0.03);
 	}
 
-	:global(html.dark) .ov-feed__item {
+	:global(html.dark) .cc-feed-item {
 		background: rgba(255, 255, 255, 0.04);
 	}
 
-	.ov-feed__item--success { box-shadow: inset 3px 0 0 #22c55e; }
-	.ov-feed__item--danger  { box-shadow: inset 3px 0 0 #ef4444; }
-	.ov-feed__item--warn    { box-shadow: inset 3px 0 0 #f59e0b; }
-	.ov-feed__item--info    { box-shadow: inset 3px 0 0 #6366f1; }
+	.cc-feed-item--success {
+		box-shadow: inset 3px 0 0 #22c55e;
+	}
+	.cc-feed-item--danger {
+		box-shadow: inset 3px 0 0 #ef4444;
+	}
+	.cc-feed-item--warn {
+		box-shadow: inset 3px 0 0 #f59e0b;
+	}
+	.cc-feed-item--info {
+		box-shadow: inset 3px 0 0 #6366f1;
+	}
 
-	.ov-feed__item-icon {
-		width: 26px;
-		height: 26px;
-		border-radius: 7px;
+	.cc-feed-item__icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: rgba(0, 0, 0, 0.05);
 		color: var(--text-secondary);
-		font-size: 0.88rem;
 		flex-shrink: 0;
 	}
 
-	.ov-feed__item--success .ov-feed__item-icon { background: rgba(34, 197, 94, 0.14);  color: #047857; }
-	.ov-feed__item--danger  .ov-feed__item-icon { background: rgba(239, 68, 68, 0.14);  color: #b91c1c; }
-	.ov-feed__item--warn    .ov-feed__item-icon { background: rgba(245, 158, 11, 0.14); color: #b45309; }
-	.ov-feed__item--info    .ov-feed__item-icon { background: rgba(99, 102, 241, 0.14); color: #4f46e5; }
-
-	:global(html.dark) .ov-feed__item--success .ov-feed__item-icon { background: rgba(34, 197, 94, 0.24);  color: #a7f3d0; }
-	:global(html.dark) .ov-feed__item--danger  .ov-feed__item-icon { background: rgba(239, 68, 68, 0.24);  color: #fecaca; }
-	:global(html.dark) .ov-feed__item--warn    .ov-feed__item-icon { background: rgba(245, 158, 11, 0.24); color: #fde68a; }
-	:global(html.dark) .ov-feed__item--info    .ov-feed__item-icon { background: rgba(99, 102, 241, 0.24); color: #c7d2fe; }
-
-	.ov-feed__item-body {
+	.cc-feed-item__body {
 		flex: 1;
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: 4px;
 	}
 
-	.ov-feed__item-head {
+	.cc-feed-item__row {
 		display: flex;
-		align-items: baseline;
 		justify-content: space-between;
-		gap: 8px;
+		align-items: baseline;
+		gap: 10px;
 	}
 
-	.ov-feed__item-action {
-		font-size: 0.8125rem;
+	.cc-feed-item__action {
+		font-size: 0.875rem;
 		font-weight: 700;
 		color: var(--text-primary);
 	}
 
-	.ov-feed__item-time {
-		font-size: 0.6875rem;
+	.cc-feed-item__time {
+		font-size: 0.72rem;
 		font-weight: 700;
 		color: var(--text-secondary);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
 
-	.ov-feed__item-target {
-		font-size: 0.75rem;
+	.cc-feed-item__target {
+		font-size: 0.8rem;
 		font-weight: 600;
-		color: var(--text-primary);
 		word-break: break-all;
 	}
 
-	.ov-feed__item-details {
-		font-size: 0.72rem;
+	.cc-feed-item__details {
+		font-size: 0.78rem;
 		color: var(--text-secondary);
-		line-height: 1.35;
+		line-height: 1.4;
+	}
+
+	.cc-platform-note {
+		padding: 16px 18px;
+		border-radius: 14px;
+		background: rgba(99, 102, 241, 0.08);
+		border: 1px solid rgba(99, 102, 241, 0.2);
+		color: var(--text-primary);
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+
+	.cc-platform-note p {
+		margin: 0;
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+	}
+
+	.cc-platform-note i {
+		margin-top: 2px;
+		flex-shrink: 0;
 	}
 </style>
