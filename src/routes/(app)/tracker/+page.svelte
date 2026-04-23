@@ -8,6 +8,7 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
@@ -15,9 +16,7 @@
 	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
 	const logPlayerActivity = httpsCallable(functions, 'logPlayerActivity');
 
-	/**
-	 * @param {{ sets?: unknown; reps?: unknown }[]} items
-	 */
+	/** @param {{ sets?: unknown; reps?: unknown }[]} items */
 	function sessionTotalReps(items) {
 		let n = 0;
 		for (const i of items) {
@@ -30,8 +29,100 @@
 		return n;
 	}
 
+	/** @param {number} step */
+	function intensityMultiplierFromStep(step) {
+		if (step <= 3) return 1.0;
+		if (step <= 7) return 1.15;
+		return 1.35;
+	}
+
+	/** @param {number} step */
+	function intensityApiFromStep(step) {
+		if (step <= 3) return /** @type {const} */ ('low');
+		if (step <= 7) return /** @type {const} */ ('medium');
+		return /** @type {const} */ ('high');
+	}
+
 	const profile = $derived(authStore.userProfile);
 	const isPlayer = $derived(authStore.role === 'player');
+
+	const totalXpHud = $derived(
+		Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)),
+	);
+	const levelHud = $derived(getLevelProgressFromTotalXp(totalXpHud));
+	const xpToNextLabel = $derived(
+		levelHud.xpToNext <= 0
+			? '—'
+			: String(Math.max(0, levelHud.xpToNext - levelHud.xpIntoLevel)),
+	);
+	const streakDays = $derived(Math.max(0, Math.floor(Number(profile?.currentStreak) || 0)));
+
+	/** @type {'technical' | 'physical' | 'match' | 'recovery' | null} */
+	let workoutFocus = $state(null);
+	let intensitySlider = $state(5);
+	let sessionItems = $state([]);
+	let totalMinutes = $state('');
+	let outcome = $state('Good');
+	let calDate = $state('');
+	let calTime = $state('');
+	let workoutAccuracyAck = $state(false);
+	let homeworkAssignmentId = $state('');
+	let submitting = $state(false);
+
+	let selectWarmup = $state('');
+	let selectCore = $state('');
+	let selectBallWork = $state('');
+	let selectBasics = $state('');
+	let cardioDist = $state('');
+	let cardioTime = $state('');
+	let setsCore = $state('3');
+	let repsCore = $state('20');
+	let setsBall = $state('3');
+	let repsBall = $state('20');
+	let setsBasics = $state('3');
+	let repsBasics = $state('20');
+	let builderOpen = $state(false);
+
+	const warmupList = $derived(workoutsStore.byType('cardio'));
+	const coreList = $derived(workoutsStore.byType('core'));
+	const ballList = $derived(workoutsStore.byType('ball_mastery'));
+	const basicsList = $derived(workoutsStore.byType('foundation'));
+
+	const FOCUS_OPTIONS = /** @type {const} */ ([
+		{
+			id: 'technical',
+			label: 'Technical',
+			blurb: 'Touches, passing, finishing',
+			icon: 'ph-soccer-ball',
+		},
+		{
+			id: 'physical',
+			label: 'Physical',
+			blurb: 'Strength, speed, conditioning',
+			icon: 'ph-barbell',
+		},
+		{
+			id: 'match',
+			label: 'Match',
+			blurb: 'Games, scrimmages, reps',
+			icon: 'ph-flag',
+		},
+		{
+			id: 'recovery',
+			label: 'Recovery',
+			blurb: 'Mobility, reset, prehab',
+			icon: 'ph-pulse',
+		},
+	]);
+
+	const intensityApi = $derived(intensityApiFromStep(intensitySlider));
+	const repTotalEst = $derived(sessionTotalReps(sessionItems));
+	const minsEst = $derived(Math.max(0, parseInt(String(totalMinutes || '0'), 10) || 0));
+	const estimatedXp = $derived.by(() => {
+		const base = minsEst * 10 + repTotalEst * 2;
+		const m = intensityMultiplierFromStep(intensitySlider);
+		return Math.max(0, Math.floor(base * m));
+	});
 
 	$effect(() => {
 		if (!authStore.isLoading && authStore.role === 'parent') {
@@ -39,7 +130,6 @@
 		}
 	});
 
-	/** Silent daily XP / streak when a player opens the tracker. */
 	$effect(() => {
 		if (!browser) return;
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
@@ -59,21 +149,6 @@
 		};
 	});
 
-	// Session state
-	let sessionItems = $state([]);
-	let totalMinutes = $state('');
-	let outcome = $state('Good');
-	/** @type {'low' | 'medium' | 'high'} */
-	let intensity = $state('medium');
-	let calDate = $state('');
-	let calTime = $state('');
-
-	/** Athlete acknowledgment (self-log; parent-verified logs use /parent/log-workout). */
-	let workoutAccuracyAck = $state(false);
-
-	/** Epic 11: completing a coach assignment from the inbox. */
-	let homeworkAssignmentId = $state('');
-
 	$effect(() => {
 		if (!browser) return;
 		const aid = page.url.searchParams.get('assignmentId');
@@ -90,6 +165,9 @@
 				const name =
 					typeof dr.title === 'string' ? dr.title.trim() : 'Assigned drill';
 				sessionItems = [{ name, sets: 3, reps: 20 }];
+				untrack(() => {
+					workoutFocus = 'technical';
+				});
 			} catch (e) {
 				console.warn('[tracker] homework drill preload', e);
 			}
@@ -98,25 +176,6 @@
 			cancelled = true;
 		};
 	});
-
-	// Workout selects
-	let selectWarmup = $state('');
-	let selectCore = $state('');
-	let selectBallWork = $state('');
-	let selectBasics = $state('');
-	let cardioDist = $state('');
-	let cardioTime = $state('');
-	let setsCore = $state('3');
-	let repsCore = $state('20');
-	let setsBall = $state('3');
-	let repsBall = $state('20');
-	let setsBasics = $state('3');
-	let repsBasics = $state('20');
-
-	const warmupList = $derived(workoutsStore.byType('cardio'));
-	const coreList = $derived(workoutsStore.byType('core'));
-	const ballList = $derived(workoutsStore.byType('ball_mastery'));
-	const basicsList = $derived(workoutsStore.byType('foundation'));
 
 	const addDrill = (name, sets, reps) => {
 		if (!name || name === 'Select Workout...') return alert('Please select a drill first.');
@@ -131,9 +190,11 @@
 		sessionItems = [];
 		totalMinutes = '';
 		outcome = 'Good';
-		intensity = 'medium';
+		intensitySlider = 5;
 		workoutAccuracyAck = false;
 		homeworkAssignmentId = '';
+		workoutFocus = null;
+		builderOpen = false;
 	};
 
 	const getSessionDescription = () => {
@@ -146,7 +207,10 @@
 		if (!calDate || !calTime) return alert('Select Date and Time.');
 		const start = new Date(`${calDate}T${calTime}`).toISOString().replace(/-|:|\.\d\d\d/g, '');
 		const end = new Date(new Date(`${calDate}T${calTime}`).getTime() + 45 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
-		window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Soccer training')}&dates=${start}/${end}&details=${encodeURIComponent(getSessionDescription())}&sf=true&output=xml`, '_blank');
+		window.open(
+			`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Soccer training')}&dates=${start}/${end}&details=${encodeURIComponent(getSessionDescription())}&sf=true&output=xml`,
+			'_blank',
+		);
 	};
 
 	const downloadIcs = () => {
@@ -155,7 +219,17 @@
 		const formatICS = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, '').split('Z')[0];
 		const startDate = new Date(`${calDate}T${calTime}`);
 		const endDate = new Date(startDate.getTime() + 45 * 60000);
-		const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT', 'SUMMARY:⚽ Soccer Training', `DESCRIPTION:${getSessionDescription()}`, `DTSTART:${formatICS(startDate)}`, `DTEND:${formatICS(endDate)}`, 'END:VEVENT', 'END:VCALENDAR'].join('\n');
+		const ics = [
+			'BEGIN:VCALENDAR',
+			'VERSION:2.0',
+			'BEGIN:VEVENT',
+			'SUMMARY:⚽ Soccer Training',
+			`DESCRIPTION:${getSessionDescription()}`,
+			`DTSTART:${formatICS(startDate)}`,
+			`DTEND:${formatICS(endDate)}`,
+			'END:VEVENT',
+			'END:VCALENDAR',
+		].join('\n');
 		const link = document.createElement('a');
 		link.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
 		link.download = 'training_session.ics';
@@ -164,30 +238,36 @@
 		document.body.removeChild(link);
 	};
 
+	const focusLabel = $derived.by(() => {
+		const f = FOCUS_OPTIONS.find((x) => x.id === workoutFocus);
+		return f ? f.label : 'Session';
+	});
+
 	const submitWorkout = async () => {
-		if (sessionItems.length === 0) return alert('Add drills to your session first!');
+		if (!workoutFocus) return alert('Pick a workout focus (Technical, Physical, Match, or Recovery).');
 		if (!workoutAccuracyAck) {
 			return alert('Confirm the accuracy checkbox to submit your workout log.');
 		}
 		const mins = parseInt(totalMinutes || 0);
-		if (mins <= 0) return alert('Please enter valid total minutes.');
+		if (mins <= 0) return alert('Enter how many minutes you trained.');
 		if (!profile?.teamId || !profile?.playerName) return alert('User profile is incomplete.');
 		if (authStore.role !== 'player') {
 			return alert('Use the parent workout log for guardian-verified sessions.');
 		}
 
-		try {
-			const baseDrills =
-				sessionItems.map((i) => i.name).filter(Boolean).join(' · ') || 'Training session';
-			const drillType = `${baseDrills} (${outcome})`.slice(0, 200);
-			const repTotal = sessionTotalReps(sessionItems);
+		const baseDrills =
+			sessionItems.map((i) => i.name).filter(Boolean).join(' · ') || `${focusLabel} block`;
+		const drillType = `[${focusLabel}] ${baseDrills} (${outcome})`.slice(0, 200);
+		const repTotal = sessionTotalReps(sessionItems);
 
+		submitting = true;
+		try {
 			const res = await logTrainingSession({
 				drillType,
 				duration: mins,
 				reps: repTotal,
-				intensity,
-				...(homeworkAssignmentId ? { assignmentId: homeworkAssignmentId } : {})
+				intensity: intensityApi,
+				...(homeworkAssignmentId ? { assignmentId: homeworkAssignmentId } : {}),
 			});
 			const payload = res.data;
 			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
@@ -197,19 +277,24 @@
 					'elite_xp_pulse',
 					JSON.stringify({
 						fromTotal: Math.max(0, newTotal - earned),
-						toTotal: newTotal
-					})
+						toTotal: newTotal,
+					}),
 				);
 			}
 
-			confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#0f172a', '#fbbf24', '#3b82f6'] });
+			confetti({
+				particleCount: 100,
+				spread: 70,
+				origin: { y: 0.6 },
+				colors: ['#6366f1', '#a855f7', '#22d3ee', '#fbbf24'],
+			});
 			await Swal.fire({
 				title: 'Workout Logged!',
 				text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
 				icon: 'success',
-				confirmButtonColor: '#0f172a',
+				confirmButtonColor: '#4f46e5',
 				confirmButtonText: 'Continue',
-				customClass: { popup: 'card' }
+				customClass: { popup: 'card' },
 			});
 			await authStore.refresh({ silent: true });
 			clearForm();
@@ -217,497 +302,920 @@
 		} catch (e) {
 			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
 			alert('Could not log workout: ' + msg);
+		} finally {
+			submitting = false;
 		}
 	};
 </script>
 
-<div
-	class="view-section locked-dashboard-view tracker-page"
-	class:pos-tracker={isPlayer}
->
+<div class="view-section locked-dashboard-view tracker-page" class:pos-tracker={isPlayer}>
 	{#if isPlayer}
-		<header class="pos-tr-hero">
-			<div class="pos-tr-hero__copy">
-				<span class="pos-tr-hero__eyebrow">Training runway</span>
-				<h2 class="pos-tr-hero__title">Log workout</h2>
-				<p class="pos-tr-hero__sub">
-					Stack drills, set intensity, ship the session — XP hits when you confirm accuracy.
-				</p>
-			</div>
-			<div class="pos-tr-hero__badge" aria-hidden="true">
-				<i class="ph ph-lightning"></i>
-			</div>
-		</header>
-	{:else}
-		<h2 class="view-title">Log workout</h2>
-	{/if}
-
-	{#if homeworkAssignmentId && authStore.role === 'player'}
-		<div class="card tracker-hw-banner">
-			<div class="card-body">
-				<strong>Completing assigned homework</strong>
-				<p class="tracker-hw-banner__text">
-					This log will mark the assignment complete when you submit (server-verified).
-				</p>
-			</div>
-		</div>
-	{/if}
-
-	{#if authStore.role === 'player' && profile?.teamId && profile.teamId !== 'admin'}
-		<TeamLeaderboard />
-	{/if}
-
-	<div class="tracker-main-panel">
-	<div class="card">
-		<div class="card-body">
-			<!-- Part A: Cardio -->
-			<div class="tracker-box bg-orange">
-				<span class="section-label text-orange">Part A: Cardio Warm-Up</span>
-				<label for="selectWarmup">Select Warm-Up</label>
-				<select id="selectWarmup" bind:value={selectWarmup}>
-					<option value="" disabled>Select Workout...</option>
-					{#each warmupList as w}<option value={w.name}>{w.name}</option>{/each}
-				</select>
-				<div class="input-row">
-					<input type="number" bind:value={cardioDist} placeholder="Miles" class="flex-1" />
-					<span class="input-divider">/</span>
-					<input type="number" bind:value={cardioTime} placeholder="Mins" class="flex-1" />
-					<button class="action-btn btn-orange" onclick={() => addDrill(selectWarmup, cardioDist, cardioTime)}>+ Add</button>
+		<div class="gw-root">
+			<!-- 1. Player HUD -->
+			<section class="gw-hud" aria-label="Player progress">
+				<div class="gw-hud__cell">
+					<span class="gw-hud__label">Current level</span>
+					<span class="gw-hud__value gw-hud__value--level">Lv. {levelHud.level}</span>
 				</div>
-			</div>
-
-			<!-- Part B: Core -->
-			<div class="tracker-box bg-red">
-				<span class="section-label text-red">Part B: Core Strength</span>
-				<label for="selectCore">Select Core Exercise</label>
-				<select id="selectCore" bind:value={selectCore}>
-					<option value="" disabled>Select Workout...</option>
-					{#each coreList as w}<option value={w.name}>{w.name}</option>{/each}
-				</select>
-				<div class="input-row">
-					<input type="number" bind:value={setsCore} placeholder="Sets" class="w-50" />
-					<span class="input-divider">x</span>
-					<input type="number" bind:value={repsCore} placeholder="Reps" class="flex-1" />
-					<button class="action-btn btn-red" onclick={() => addDrill(selectCore, setsCore, repsCore)}>+ Add</button>
+				<div class="gw-hud__cell">
+					<span class="gw-hud__label">XP to next level</span>
+					<span class="gw-hud__value gw-hud__value--mono">{xpToNextLabel}</span>
 				</div>
-			</div>
-
-			<!-- Part C: Ball Handling -->
-			<div class="tracker-box bg-blue">
-				<span class="section-label text-blue">Part C: Ball Handling</span>
-				<label for="selectBallWork">Select Ball Work Exercise</label>
-				<select id="selectBallWork" bind:value={selectBallWork}>
-					<option value="" disabled>Select Workout...</option>
-					{#each ballList as w}<option value={w.name}>{w.name}</option>{/each}
-				</select>
-				<div class="input-row">
-					<input type="number" bind:value={setsBall} placeholder="Sets" class="w-50" />
-					<span class="input-divider">x</span>
-					<input type="number" bind:value={repsBall} placeholder="Reps" class="flex-1" />
-					<button class="action-btn btn-blue" onclick={() => addDrill(selectBallWork, setsBall, repsBall)}>+ Add</button>
+				<div class="gw-hud__cell">
+					<span class="gw-hud__label">Day streak</span>
+					<span class="gw-hud__value gw-hud__value--streak">
+						<i class="ph ph-fire" aria-hidden="true"></i>
+						{streakDays}d
+					</span>
 				</div>
-			</div>
+			</section>
 
-			<!-- Part D: Basics -->
-			<div class="tracker-box bg-green">
-				<span class="section-label text-green">Part D: Brilliant Basics</span>
-				<label for="selectBasics">Select Brilliant Basics Exercise</label>
-				<select id="selectBasics" bind:value={selectBasics}>
-					<option value="" disabled>Select Workout...</option>
-					{#each basicsList as w}<option value={w.name}>{w.name}</option>{/each}
-				</select>
-				<div class="input-row">
-					<input type="number" bind:value={setsBasics} placeholder="Sets" class="w-50" />
-					<span class="input-divider">x</span>
-					<input type="number" bind:value={repsBasics} placeholder="Reps" class="flex-1" />
-					<button class="action-btn btn-green" onclick={() => addDrill(selectBasics, setsBasics, repsBasics)}>+ Add</button>
+			{#if homeworkAssignmentId}
+				<div class="gw-banner">
+					<strong>Assigned homework</strong>
+					<p class="gw-banner__text">
+						This log completes the assignment when you submit (server-verified).
+					</p>
 				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Training Cart -->
-	<div class="tracker-box bg-light-blue">
-		<span class="section-label text-blue">Your Training Cart</span>
-		<ul class="session-list">
-			{#if sessionItems.length === 0}
-				<li class="session-empty">Empty. Select drills above to build your workout!</li>
-			{:else}
-				{#each sessionItems as item, idx}
-					<li class="session-item">
-						<div class="session-item-text">
-							<span class="session-item-title">{idx + 1}. {item.name}</span><br />
-							<span class="session-item-detail">({item.sets} x {item.reps})</span>
-						</div>
-						<button class="delete-btn" onclick={() => removeDrill(idx)}>✕</button>
-					</li>
-				{/each}
 			{/if}
-		</ul>
 
-		<div class="workout-summary-box">
-			<label>Total Session Time (Minutes)</label>
-			<input type="number" placeholder="e.g. 45" bind:value={totalMinutes} />
+			{#if profile?.teamId && profile.teamId !== 'admin'}
+				<div class="gw-section">
+					<TeamLeaderboard />
+				</div>
+			{/if}
 
-			<label>How did you do?</label>
-			<div class="outcome-row">
-				{#each ['Struggled', 'Good', 'Mastered'] as opt}
-					<button class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>
-						{opt}
-					</button>
-				{/each}
-			</div>
+			<!-- 2. Workout focus grid -->
+			<section class="gw-section" aria-labelledby="gw-focus-heading">
+				<h2 id="gw-focus-heading" class="gw-section__title">Workout focus</h2>
+				<p class="gw-section__hint">What dominated this session? One tap.</p>
+				<div class="gw-focus-grid" role="group" aria-label="Workout focus">
+					{#each FOCUS_OPTIONS as opt (opt.id)}
+						<button
+							type="button"
+							class="gw-focus-card"
+							class:gw-focus-card--active={workoutFocus === opt.id}
+							onclick={() => (workoutFocus = opt.id)}
+						>
+							<i class="ph {opt.icon} gw-focus-card__icon" aria-hidden="true"></i>
+							<span class="gw-focus-card__label">{opt.label}</span>
+							<span class="gw-focus-card__blurb">{opt.blurb}</span>
+						</button>
+					{/each}
+				</div>
+			</section>
 
-			<label>Intensity (XP multiplier)</label>
-			<div class="outcome-row">
-				{#each ['low', 'medium', 'high'] as tier}
-					<button
-						type="button"
-						class="outcome-btn"
-						class:active={intensity === tier}
-						onclick={() => (intensity = /** @type {'low' | 'medium' | 'high'} */ (tier))}
-					>
-						{tier}
-					</button>
-				{/each}
-			</div>
+			<!-- Duration + outcome -->
+			<section class="gw-section">
+				<label class="gw-field-label" for="gw-mins">Duration (minutes)</label>
+				<input
+					id="gw-mins"
+					class="gw-input"
+					type="number"
+					inputmode="numeric"
+					min="1"
+					max="240"
+					placeholder="e.g. 45"
+					bind:value={totalMinutes}
+				/>
 
-			<div class="verify-panel">
-				<span class="verify-heading">Submit workout (player account)</span>
-				<p class="verify-help">
-					XP is calculated on the server (<code>logTrainingSession</code>). This path is a
-					<strong>self-log</strong> (not guardian-verified). For a parent-verified session, a guardian must sign
-					in and use
-					<a class="parent-log-link" href="/parent/log-workout">Log workout for athlete</a>.
+				<span class="gw-field-label gw-field-label--spaced">How did it feel?</span>
+				<div class="gw-pills" role="group" aria-label="Session outcome">
+					{#each ['Struggled', 'Good', 'Mastered'] as opt}
+						<button
+							type="button"
+							class="gw-pill"
+							class:gw-pill--active={outcome === opt}
+							onclick={() => (outcome = opt)}
+						>
+							{opt}
+						</button>
+					{/each}
+				</div>
+			</section>
+
+			<!-- 3. Intensity slider -->
+			<section class="gw-section" aria-labelledby="gw-intensity-heading">
+				<div class="gw-intensity-head">
+					<h2 id="gw-intensity-heading" class="gw-section__title gw-section__title--inline">Intensity</h2>
+					<span class="gw-intensity-badge" aria-live="polite">{intensitySlider} / 10</span>
+				</div>
+				<p class="gw-section__hint">
+					Dials your XP multiplier ({intensityApi} · server-verified curve).
 				</p>
-				<label class="verify-check">
+				<div class="gw-slider-wrap">
+					<input
+						class="gw-slider"
+						type="range"
+						min="1"
+						max="10"
+						step="1"
+						bind:value={intensitySlider}
+						aria-valuemin={1}
+						aria-valuemax={10}
+						aria-valuenow={intensitySlider}
+						aria-valuetext="Intensity {intensitySlider} of 10"
+					/>
+					<div class="gw-slider-ticks" aria-hidden="true">
+						{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as n}
+							<span class:gw-slider-ticks__on={n <= intensitySlider}></span>
+						{/each}
+					</div>
+				</div>
+			</section>
+
+			<!-- Session payload: drills optional -->
+			<section class="gw-section">
+				<button
+					type="button"
+					class="gw-accordion-btn"
+					aria-expanded={builderOpen}
+					onclick={() => (builderOpen = !builderOpen)}
+				>
+					<span>Add specific drills (optional)</span>
+					<i class="ph ph-caret-down gw-accordion-btn__icon" class:gw-accordion-btn__icon--open={builderOpen} aria-hidden="true"></i>
+				</button>
+				{#if builderOpen}
+					<div class="gw-builder">
+						<div class="gw-builder__grid">
+							<div class="gw-builder__block">
+								<span class="gw-builder__tag">Cardio</span>
+								<select class="gw-select" bind:value={selectWarmup}>
+									<option value="" disabled>Pick warm-up…</option>
+									{#each warmupList as w}<option value={w.name}>{w.name}</option>{/each}
+								</select>
+								<div class="gw-builder__row">
+									<input class="gw-input gw-input--sm" type="number" bind:value={cardioDist} placeholder="Mi" />
+									<input class="gw-input gw-input--sm" type="number" bind:value={cardioTime} placeholder="Min" />
+									<button type="button" class="gw-mini-add" onclick={() => addDrill(selectWarmup, cardioDist, cardioTime)}>Add</button>
+								</div>
+							</div>
+							<div class="gw-builder__block">
+								<span class="gw-builder__tag">Core</span>
+								<select class="gw-select" bind:value={selectCore}>
+									<option value="" disabled>Pick exercise…</option>
+									{#each coreList as w}<option value={w.name}>{w.name}</option>{/each}
+								</select>
+								<div class="gw-builder__row">
+									<input class="gw-input gw-input--sm" type="number" bind:value={setsCore} placeholder="Sets" />
+									<input class="gw-input gw-input--sm" type="number" bind:value={repsCore} placeholder="Reps" />
+									<button type="button" class="gw-mini-add" onclick={() => addDrill(selectCore, setsCore, repsCore)}>Add</button>
+								</div>
+							</div>
+							<div class="gw-builder__block">
+								<span class="gw-builder__tag">Ball</span>
+								<select class="gw-select" bind:value={selectBallWork}>
+									<option value="" disabled>Pick drill…</option>
+									{#each ballList as w}<option value={w.name}>{w.name}</option>{/each}
+								</select>
+								<div class="gw-builder__row">
+									<input class="gw-input gw-input--sm" type="number" bind:value={setsBall} placeholder="Sets" />
+									<input class="gw-input gw-input--sm" type="number" bind:value={repsBall} placeholder="Reps" />
+									<button type="button" class="gw-mini-add" onclick={() => addDrill(selectBallWork, setsBall, repsBall)}>Add</button>
+								</div>
+							</div>
+							<div class="gw-builder__block">
+								<span class="gw-builder__tag">Basics</span>
+								<select class="gw-select" bind:value={selectBasics}>
+									<option value="" disabled>Pick drill…</option>
+									{#each basicsList as w}<option value={w.name}>{w.name}</option>{/each}
+								</select>
+								<div class="gw-builder__row">
+									<input class="gw-input gw-input--sm" type="number" bind:value={setsBasics} placeholder="Sets" />
+									<input class="gw-input gw-input--sm" type="number" bind:value={repsBasics} placeholder="Reps" />
+									<button type="button" class="gw-mini-add" onclick={() => addDrill(selectBasics, setsBasics, repsBasics)}>Add</button>
+								</div>
+							</div>
+						</div>
+						{#if sessionItems.length > 0}
+							<ul class="gw-cart">
+								{#each sessionItems as item, idx}
+									<li class="gw-cart__row">
+										<span class="gw-cart__text">
+											<strong>{item.name}</strong>
+											<span class="gw-cart__meta">{item.sets} × {item.reps}</span>
+										</span>
+										<button type="button" class="gw-cart__rm" onclick={() => removeDrill(idx)} aria-label="Remove">×</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
+			</section>
+
+			<section class="gw-section gw-section--schedule">
+				<span class="gw-field-label">Schedule instead</span>
+				<div class="gw-schedule-row">
+					<input class="gw-input" type="date" bind:value={calDate} />
+					<input class="gw-input" type="time" bind:value={calTime} />
+				</div>
+				<div class="gw-schedule-actions">
+					<button type="button" class="gw-btn-secondary" onclick={addToGoogleCalendar}>Google Calendar</button>
+					<button type="button" class="gw-btn-secondary" onclick={downloadIcs}>Download .ics</button>
+				</div>
+			</section>
+
+			<div class="gw-verify">
+				<p class="gw-verify__note">
+					XP is calculated on the server. Self-log — guardians use
+					<a class="gw-link" href="/parent/log-workout">parent verify</a>.
+				</p>
+				<label class="gw-check">
 					<input type="checkbox" bind:checked={workoutAccuracyAck} />
-					<span>I confirm this workout log is accurate to the best of my knowledge.</span>
+					<span>I confirm this log is accurate.</span>
 				</label>
 			</div>
 
-			<button class="primary-btn btn-log-workout" onclick={submitWorkout}>Log workout (earn XP)</button>
+			<!-- 4. Primary payload CTA -->
+			<button
+				type="button"
+				class="gw-submit"
+				disabled={submitting || estimatedXp < 1}
+				onclick={submitWorkout}
+			>
+				{#if submitting}
+					<span class="gw-submit__shine">Logging…</span>
+				{:else}
+					Log workout &amp; claim +{estimatedXp} XP
+				{/if}
+			</button>
 		</div>
-
-		<label>Schedule This Workout instead?</label>
-		<div class="schedule-row">
-			<input type="date" bind:value={calDate} class="schedule-input" />
-			<input type="time" bind:value={calTime} class="schedule-input" />
+	{:else}
+		<h2 class="view-title">Log workout</h2>
+		<div class="tracker-main-panel">
+			<div class="card">
+				<div class="card-body">
+					<div class="tracker-box bg-orange">
+						<span class="section-label text-orange">Part A: Cardio Warm-Up</span>
+						<label for="selectWarmup-legacy">Select Warm-Up</label>
+						<select id="selectWarmup-legacy" bind:value={selectWarmup}>
+							<option value="" disabled>Select Workout...</option>
+							{#each warmupList as w}<option value={w.name}>{w.name}</option>{/each}
+						</select>
+						<div class="input-row">
+							<input type="number" bind:value={cardioDist} placeholder="Miles" class="flex-1" />
+							<span class="input-divider">/</span>
+							<input type="number" bind:value={cardioTime} placeholder="Mins" class="flex-1" />
+							<button class="action-btn btn-orange" onclick={() => addDrill(selectWarmup, cardioDist, cardioTime)}>+ Add</button>
+						</div>
+					</div>
+					<div class="tracker-box bg-red">
+						<span class="section-label text-red">Part B: Core Strength</span>
+						<label for="selectCore-legacy">Select Core Exercise</label>
+						<select id="selectCore-legacy" bind:value={selectCore}>
+							<option value="" disabled>Select Workout...</option>
+							{#each coreList as w}<option value={w.name}>{w.name}</option>{/each}
+						</select>
+						<div class="input-row">
+							<input type="number" bind:value={setsCore} placeholder="Sets" class="w-50" />
+							<span class="input-divider">x</span>
+							<input type="number" bind:value={repsCore} placeholder="Reps" class="flex-1" />
+							<button class="action-btn btn-red" onclick={() => addDrill(selectCore, setsCore, repsCore)}>+ Add</button>
+						</div>
+					</div>
+					<div class="tracker-box bg-blue">
+						<span class="section-label text-blue">Part C: Ball Handling</span>
+						<label for="selectBallWork-legacy">Select Ball Work Exercise</label>
+						<select id="selectBallWork-legacy" bind:value={selectBallWork}>
+							<option value="" disabled>Select Workout...</option>
+							{#each ballList as w}<option value={w.name}>{w.name}</option>{/each}
+						</select>
+						<div class="input-row">
+							<input type="number" bind:value={setsBall} placeholder="Sets" class="w-50" />
+							<span class="input-divider">x</span>
+							<input type="number" bind:value={repsBall} placeholder="Reps" class="flex-1" />
+							<button class="action-btn btn-blue" onclick={() => addDrill(selectBallWork, setsBall, repsBall)}>+ Add</button>
+						</div>
+					</div>
+					<div class="tracker-box bg-green">
+						<span class="section-label text-green">Part D: Brilliant Basics</span>
+						<label for="selectBasics-legacy">Select Brilliant Basics Exercise</label>
+						<select id="selectBasics-legacy" bind:value={selectBasics}>
+							<option value="" disabled>Select Workout...</option>
+							{#each basicsList as w}<option value={w.name}>{w.name}</option>{/each}
+						</select>
+						<div class="input-row">
+							<input type="number" bind:value={setsBasics} placeholder="Sets" class="w-50" />
+							<span class="input-divider">x</span>
+							<input type="number" bind:value={repsBasics} placeholder="Reps" class="flex-1" />
+							<button class="action-btn btn-green" onclick={() => addDrill(selectBasics, setsBasics, repsBasics)}>+ Add</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tracker-box bg-light-blue">
+				<span class="section-label text-blue">Your Training Cart</span>
+				<ul class="session-list">
+					{#if sessionItems.length === 0}
+						<li class="session-empty">Empty. Select drills above to build your workout!</li>
+					{:else}
+						{#each sessionItems as item, idx}
+							<li class="session-item">
+								<div class="session-item-text">
+									<span class="session-item-title">{idx + 1}. {item.name}</span><br />
+									<span class="session-item-detail">({item.sets} x {item.reps})</span>
+								</div>
+								<button class="delete-btn" onclick={() => removeDrill(idx)}>✕</button>
+							</li>
+						{/each}
+					{/if}
+				</ul>
+				<div class="workout-summary-box">
+					<label for="legacy-mins">Total Session Time (Minutes)</label>
+					<input id="legacy-mins" type="number" placeholder="e.g. 45" bind:value={totalMinutes} />
+					<label>How did you do?</label>
+					<div class="outcome-row">
+						{#each ['Struggled', 'Good', 'Mastered'] as opt}
+							<button class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>{opt}</button>
+						{/each}
+					</div>
+					<label>Intensity (XP multiplier)</label>
+					<div class="outcome-row">
+						{#each ['low', 'medium', 'high'] as tier}
+							<button
+								type="button"
+								class="outcome-btn"
+								class:active={intensityApi === tier}
+								onclick={() => {
+									intensitySlider = tier === 'low' ? 2 : tier === 'medium' ? 5 : 9;
+								}}
+							>
+								{tier}
+							</button>
+						{/each}
+					</div>
+					<p class="verify-help">Use a player account to earn XP, or parent log for verified sessions.</p>
+					<button class="primary-btn btn-log-workout" onclick={() => alert('Open this page as a player to submit.')}>Log workout</button>
+				</div>
+			</div>
 		</div>
-
-		<div class="export-row">
-			<button class="secondary-btn btn-export" onclick={addToGoogleCalendar}>Add to Google Calendar</button>
-			<button class="secondary-btn btn-export" onclick={downloadIcs}>Download .ics</button>
-		</div>
-	</div>
-	</div>
+	{/if}
 </div>
 
 <style>
-	/* ─── Player OS (futuristic shell) ─────────────────────────── */
-	.pos-tracker.view-section {
-		padding-top: 0;
-	}
-
-	.pos-tr-hero {
+	/* ═══ Gamified workout logger (player) ═══ */
+	.gw-root {
 		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 16px;
-		margin-bottom: clamp(18px, 3vw, 26px);
-		padding: clamp(16px, 3vw, 22px);
+		flex-direction: column;
+		gap: 1.5rem;
+		padding: 0.25rem 0 1.5rem;
+		background: #09090b;
 		border-radius: 20px;
-		background: linear-gradient(
-			135deg,
-			rgba(34, 211, 238, 0.12),
-			rgba(168, 85, 247, 0.08)
-		);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.9);
+		max-width: 100%;
 	}
 
-	.pos-tr-hero__eyebrow {
-		display: inline-block;
+	.gw-hud {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 10px;
+		padding: 14px 12px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 16px;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+	}
+
+	@media (max-width: 360px) {
+		.gw-hud {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.gw-hud__cell {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+		padding: 8px 6px;
+	}
+
+	.gw-hud__label {
 		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgba(228, 228, 231, 0.55);
+	}
+
+	.gw-hud__value {
+		font-size: 1.35rem;
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		color: #fafafa;
+		line-height: 1.1;
+	}
+
+	.gw-hud__value--level {
+		background: linear-gradient(120deg, #fde68a 0%, #f59e0b 35%, #a855f7 90%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.gw-hud__value--mono {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.gw-hud__value--streak {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-variant-numeric: tabular-nums;
+		color: #fb923c;
+	}
+
+	.gw-hud__value--streak i {
+		font-size: 1.15rem;
+	}
+
+	.gw-banner {
+		padding: 12px 14px;
+		border-radius: 14px;
+		border: 1px solid rgba(99, 102, 241, 0.35);
+		background: rgba(79, 70, 229, 0.12);
+		color: #e4e4e7;
+		font-size: 0.88rem;
+	}
+
+	.gw-banner__text {
+		margin: 6px 0 0;
+		opacity: 0.9;
+		line-height: 1.45;
+	}
+
+	.gw-section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.gw-section--schedule {
+		padding: 14px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.02);
+	}
+
+	.gw-section__title {
+		margin: 0;
+		font-size: 0.78rem;
 		font-weight: 800;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--pp-accent-cool, #22d3ee);
-		margin-bottom: 6px;
+		color: rgba(228, 228, 231, 0.75);
 	}
 
-	.pos-tr-hero__title {
-		margin: 0 0 6px;
-		font-size: clamp(1.45rem, 4vw, 1.85rem);
-		font-weight: 900;
-		letter-spacing: -0.03em;
-		color: var(--pp-text-primary, #f4f4f5);
-	}
-
-	.pos-tr-hero__sub {
+	.gw-section__title--inline {
 		margin: 0;
-		max-width: 42ch;
-		font-size: 0.9rem;
-		font-weight: 600;
-		line-height: 1.5;
-		color: var(--pp-text-secondary, #c4c4ce);
 	}
 
-	.pos-tr-hero__badge {
-		flex-shrink: 0;
-		width: 48px;
-		height: 48px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 16px;
-		background: rgba(0, 0, 0, 0.35);
-		border: 1px solid rgba(34, 211, 238, 0.35);
-		color: var(--pp-accent-cool, #22d3ee);
-		font-size: 1.35rem;
-		box-shadow: 0 0 28px -6px rgba(34, 211, 238, 0.45);
+	.gw-section__hint {
+		margin: -2px 0 4px;
+		font-size: 0.8rem;
+		color: rgba(212, 212, 216, 0.65);
+		line-height: 1.4;
 	}
 
-	.pos-tracker .tracker-main-panel {
+	.gw-focus-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.gw-focus-card {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(14px, 2.5vw, 20px);
-	}
-
-	.pos-tracker :global(.card) {
-		border-radius: 20px;
-		overflow: hidden;
-	}
-
-	.pos-tracker :global(.card-body) {
-		padding: clamp(16px, 3vw, 22px);
-	}
-
-	.pos-tracker .tracker-box {
-		margin-bottom: 0;
-		padding: clamp(16px, 3vw, 20px);
-		border-radius: 18px;
+		align-items: flex-start;
+		gap: 6px;
+		min-height: 108px;
+		padding: 14px 14px 12px;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-left-width: 3px;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
-	}
-
-	.pos-tracker .tracker-box.bg-orange {
-		border-left-color: #fb923c;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
-			0 0 40px -20px rgba(251, 146, 60, 0.35);
-	}
-	.pos-tracker .tracker-box.bg-red {
-		border-left-color: #f87171;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
-			0 0 40px -20px rgba(248, 113, 113, 0.3);
-	}
-	.pos-tracker .tracker-box.bg-blue {
-		border-left-color: #38bdf8;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
-			0 0 40px -20px rgba(56, 189, 248, 0.3);
-	}
-	.pos-tracker .tracker-box.bg-green {
-		border-left-color: #34d399;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
-			0 0 40px -20px rgba(52, 211, 153, 0.3);
-	}
-	.pos-tracker .tracker-box.bg-light-blue {
-		background: rgba(34, 211, 238, 0.06);
-		border-left-color: var(--pp-accent-cool, #22d3ee);
-	}
-
-	.pos-tracker :global(.section-label) {
-		font-size: 0.78rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		margin-bottom: 12px;
-		opacity: 0.95;
-	}
-
-	.pos-tracker :global(label) {
-		font-size: 0.8rem;
-		font-weight: 700;
-		color: var(--pp-text-secondary, #c4c4ce);
-		margin-bottom: 6px;
-		display: block;
-	}
-
-	.pos-tracker :global(select),
-	.pos-tracker :global(input[type='number']),
-	.pos-tracker :global(input[type='date']),
-	.pos-tracker :global(input[type='time']) {
-		width: 100%;
-		box-sizing: border-box;
-		padding: 10px 12px;
-		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		background: rgba(0, 0, 0, 0.35);
-		color: var(--pp-text-primary, #f4f4f5);
+		color: #fafafa;
 		font: inherit;
-		font-weight: 600;
-	}
-
-	.pos-tracker :global(select):focus,
-	.pos-tracker :global(input):focus {
-		outline: none;
-		border-color: rgba(34, 211, 238, 0.5);
-		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
-	}
-
-	.pos-tracker :global(.input-row) {
-		align-items: center;
-	}
-
-	.pos-tracker :global(.input-divider) {
-		color: var(--pp-text-secondary, #c4c4ce);
-		font-weight: 800;
-	}
-
-	.pos-tracker :global(.action-btn) {
-		border: none;
-		border-radius: 12px;
-		font-weight: 800;
-		padding: 10px 14px;
+		text-align: left;
 		cursor: pointer;
 		transition:
-			transform 0.1s ease,
-			box-shadow 0.15s ease;
+			border-color 0.15s ease,
+			box-shadow 0.2s ease,
+			background 0.15s ease,
+			transform 0.1s ease;
+		-webkit-tap-highlight-color: transparent;
 	}
 
-	.pos-tracker :global(.action-btn:active) {
+	.gw-focus-card:hover {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(255, 255, 255, 0.16);
+	}
+
+	.gw-focus-card:active {
 		transform: scale(0.98);
 	}
 
-	.pos-tracker :global(.btn-orange) {
-		background: linear-gradient(145deg, #ea580c, #fb923c);
-		color: #0a0a0a;
-		box-shadow: 0 8px 20px -8px rgba(251, 146, 60, 0.6);
-	}
-	.pos-tracker :global(.btn-red) {
-		background: linear-gradient(145deg, #dc2626, #f87171);
-		color: #fff;
-		box-shadow: 0 8px 20px -8px rgba(248, 113, 113, 0.5);
-	}
-	.pos-tracker :global(.btn-blue) {
-		background: linear-gradient(145deg, #0284c7, #38bdf8);
-		color: #0a0a0a;
-		box-shadow: 0 8px 20px -8px rgba(56, 189, 248, 0.5);
-	}
-	.pos-tracker :global(.btn-green) {
-		background: linear-gradient(145deg, #059669, #34d399);
-		color: #0a0a0a;
-		box-shadow: 0 8px 20px -8px rgba(52, 211, 153, 0.5);
+	.gw-focus-card--active {
+		border-color: rgba(167, 139, 250, 0.65);
+		box-shadow:
+			0 0 0 1px rgba(99, 102, 241, 0.25),
+			0 0 28px -6px rgba(139, 92, 246, 0.45);
+		background: linear-gradient(145deg, rgba(79, 70, 229, 0.18), rgba(168, 85, 247, 0.1));
 	}
 
-	.pos-tracker :global(.session-list) {
+	.gw-focus-card__icon {
+		font-size: 1.5rem;
+		color: #a5b4fc;
+	}
+
+	.gw-focus-card--active .gw-focus-card__icon {
+		color: #c4b5fd;
+	}
+
+	.gw-focus-card__label {
+		font-size: 1rem;
+		font-weight: 900;
+		letter-spacing: -0.02em;
+	}
+
+	.gw-focus-card__blurb {
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: rgba(212, 212, 216, 0.65);
+		line-height: 1.35;
+	}
+
+	.gw-field-label {
+		font-size: 0.72rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgba(228, 228, 231, 0.55);
+	}
+
+	.gw-field-label--spaced {
+		margin-top: 0.75rem;
+	}
+
+	.gw-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 14px 14px;
 		border-radius: 14px;
-		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(0, 0, 0, 0.35);
+		color: #fafafa;
+		font: inherit;
+		font-weight: 600;
+		font-size: 1rem;
+	}
+
+	.gw-input:focus {
+		outline: none;
+		border-color: rgba(129, 140, 248, 0.55);
+		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+	}
+
+	.gw-input--sm {
+		padding: 10px;
+		font-size: 0.875rem;
+	}
+
+	.gw-pills {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.gw-pill {
+		flex: 1;
+		min-width: 92px;
+		padding: 12px 10px;
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+		color: rgba(228, 228, 231, 0.85);
+		font: inherit;
+		font-weight: 800;
+		font-size: 0.82rem;
+		cursor: pointer;
+		transition: background 0.12s ease, border-color 0.12s ease;
+	}
+
+	.gw-pill--active {
+		border-color: rgba(34, 211, 238, 0.45);
+		background: rgba(34, 211, 238, 0.12);
+		color: #fafafa;
+	}
+
+	.gw-intensity-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.gw-intensity-badge {
+		font-size: 0.9rem;
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		padding: 6px 12px;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(99, 102, 241, 0.15);
+		color: #c4b5fd;
+	}
+
+	.gw-slider-wrap {
+		position: relative;
+		padding: 8px 0 4px;
+	}
+
+	.gw-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 14px;
+		border-radius: 999px;
+		background: linear-gradient(90deg, rgba(55, 65, 81, 0.9), rgba(99, 102, 241, 0.35));
+		outline: none;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.gw-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: linear-gradient(145deg, #e0e7ff, #a855f7);
+		border: 2px solid rgba(255, 255, 255, 0.35);
+		box-shadow: 0 4px 16px rgba(79, 70, 229, 0.45);
+		cursor: grab;
+		margin-top: -1px;
+	}
+
+	.gw-slider::-webkit-slider-runnable-track {
+		height: 14px;
+		border-radius: 999px;
+	}
+
+	.gw-slider::-moz-range-thumb {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: linear-gradient(145deg, #e0e7ff, #a855f7);
+		border: 2px solid rgba(255, 255, 255, 0.35);
+		box-shadow: 0 4px 16px rgba(79, 70, 229, 0.45);
+		cursor: grab;
+	}
+
+	.gw-slider::-moz-range-track {
+		height: 14px;
+		border-radius: 999px;
+		background: linear-gradient(90deg, rgba(55, 65, 81, 0.9), rgba(99, 102, 241, 0.35));
+	}
+
+	.gw-slider-ticks {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 8px;
+		padding: 0 10px;
+	}
+
+	.gw-slider-ticks span {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.12);
+	}
+
+	.gw-slider-ticks__on {
+		background: rgba(167, 139, 250, 0.85);
+	}
+
+	.gw-accordion-btn {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 14px 16px;
+		border-radius: 14px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.03);
+		color: #fafafa;
+		font: inherit;
+		font-weight: 800;
+		font-size: 0.9rem;
+		cursor: pointer;
+	}
+
+	.gw-accordion-btn__icon {
+		transition: transform 0.2s ease;
+		font-size: 1.1rem;
+		color: rgba(228, 228, 231, 0.6);
+	}
+
+	.gw-accordion-btn__icon--open {
+		transform: rotate(180deg);
+	}
+
+	.gw-builder {
+		margin-top: 10px;
+		padding: 12px;
+		border-radius: 14px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		background: rgba(0, 0, 0, 0.25);
 	}
 
-	.pos-tracker :global(.session-item) {
-		border-bottom-color: rgba(255, 255, 255, 0.06);
-	}
-	.pos-tracker :global(.session-item:hover) {
-		background: rgba(255, 255, 255, 0.04);
-	}
-	.pos-tracker :global(.session-empty) {
-		color: var(--pp-text-secondary, #c4c4ce);
+	.gw-builder__grid {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 
-	.pos-tracker :global(.session-item-title) {
-		color: var(--pp-text-primary, #f4f4f5);
-	}
-	.pos-tracker :global(.session-item-detail) {
-		color: var(--pp-text-secondary, #c4c4ce);
-	}
-
-	.pos-tracker :global(.workout-summary-box) {
-		background: rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 16px;
-		margin-top: 16px;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+	.gw-builder__block {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
-	.pos-tracker .outcome-btn {
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		color: var(--pp-text-secondary, #c4c4ce);
-		border-radius: 14px;
-	}
-	.pos-tracker .outcome-btn.active {
-		border-color: var(--pp-accent-cool, #22d3ee);
-		background: linear-gradient(
-			145deg,
-			rgba(34, 211, 238, 0.25),
-			rgba(168, 85, 247, 0.12)
-		);
-		color: var(--pp-text-primary, #f4f4f5);
-		box-shadow: 0 0 24px -8px rgba(34, 211, 238, 0.35);
-	}
-
-	.pos-tracker .verify-panel {
-		background: rgba(0, 0, 0, 0.28);
-		border-color: rgba(255, 255, 255, 0.1);
-	}
-
-	.pos-tracker .verify-help,
-	.pos-tracker .verify-heading {
-		color: var(--pp-text-secondary, #c4c4ce);
-	}
-	.pos-tracker .verify-heading {
-		color: var(--pp-text-primary, #f4f4f5);
-		font-size: 0.82rem;
-		letter-spacing: 0.06em;
+	.gw-builder__tag {
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		color: rgba(167, 139, 250, 0.9);
 	}
 
-	.pos-tracker :global(.parent-log-link) {
-		color: var(--pp-accent-cool, #22d3ee);
+	.gw-builder__row {
+		display: flex;
+		gap: 8px;
+		align-items: center;
 	}
 
-	.pos-tracker :global(.primary-btn.btn-orange),
-	.pos-tracker :global(.btn-log-workout) {
-		background: linear-gradient(145deg, var(--pp-accent, #f59e0b), #fbbf24);
-		color: #0a0a0a;
-		font-weight: 900;
-		letter-spacing: 0.02em;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 16px;
-		padding: 14px 18px;
-		box-shadow: 0 16px 36px -12px rgba(245, 158, 11, 0.55);
+	.gw-builder__row .gw-input--sm {
+		flex: 1;
 	}
 
-	.pos-tracker :global(.secondary-btn) {
-		background: rgba(255, 255, 255, 0.06);
+	.gw-select {
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 10px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(0, 0, 0, 0.35);
+		color: #fafafa;
+		font: inherit;
+		font-size: 0.875rem;
+	}
+
+	.gw-mini-add {
+		flex-shrink: 0;
+		padding: 10px 14px;
+		border-radius: 10px;
+		border: none;
+		background: linear-gradient(135deg, #4f46e5, #7c3aed);
+		color: #fff;
+		font-weight: 800;
+		font-size: 0.75rem;
+		cursor: pointer;
+	}
+
+	.gw-cart {
+		list-style: none;
+		margin: 12px 0 0;
+		padding: 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.gw-cart__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		padding: 10px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+		font-size: 0.875rem;
+	}
+
+	.gw-cart__meta {
+		display: block;
+		font-size: 0.75rem;
+		color: rgba(212, 212, 216, 0.55);
+		margin-top: 2px;
+	}
+
+	.gw-cart__rm {
+		border: none;
+		background: transparent;
+		color: #f87171;
+		font-size: 1.25rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 4px 8px;
+	}
+
+	.gw-schedule-row {
+		display: flex;
+		gap: 10px;
+	}
+
+	.gw-schedule-actions {
+		display: flex;
+		gap: 8px;
+		margin-top: 10px;
+		flex-wrap: wrap;
+	}
+
+	.gw-btn-secondary {
+		flex: 1;
+		min-width: 120px;
+		padding: 10px 12px;
+		border-radius: 12px;
 		border: 1px solid rgba(255, 255, 255, 0.12);
-		color: var(--pp-text-primary, #f4f4f5);
+		background: rgba(255, 255, 255, 0.05);
+		color: #e4e4e7;
+		font: inherit;
+		font-weight: 700;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	.gw-verify {
+		padding: 12px;
 		border-radius: 14px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.02);
+	}
+
+	.gw-verify__note {
+		margin: 0 0 10px;
+		font-size: 0.78rem;
+		line-height: 1.45;
+		color: rgba(212, 212, 216, 0.65);
+	}
+
+	.gw-link {
+		color: #a5b4fc;
 		font-weight: 800;
 	}
 
-	.pos-tracker :global(.secondary-btn:hover) {
-		background: rgba(255, 255, 255, 0.1);
+	.gw-check {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: #e4e4e7;
+		cursor: pointer;
 	}
 
-	.tracker-hw-banner {
-		margin-bottom: clamp(14px, 2.5vw, 20px);
-		border-color: color-mix(in srgb, var(--brand-primary) 35%, var(--glass-border));
-		background: color-mix(in srgb, var(--brand-primary) 8%, var(--glass-bg));
+	.gw-check input {
+		margin-top: 3px;
 	}
-	.tracker-hw-banner__text {
-		margin: 8px 0 0;
-		font-size: 0.88rem;
-		line-height: 1.45;
+
+	.gw-submit {
+		width: 100%;
+		padding: 18px 20px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 16px;
+		background: linear-gradient(135deg, #4338ca 0%, #6366f1 40%, #7c3aed 75%, #9333ea 100%);
+		color: #fafafa;
+		font: inherit;
+		font-weight: 900;
+		font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+		letter-spacing: -0.01em;
+		cursor: pointer;
+		box-shadow:
+			0 16px 40px -12px rgba(79, 70, 229, 0.65),
+			inset 0 1px 0 rgba(255, 255, 255, 0.15);
+		transition: filter 0.15s ease, transform 0.1s ease;
+		min-height: 56px;
 	}
+
+	.gw-submit:hover:not(:disabled) {
+		filter: brightness(1.06);
+	}
+
+	.gw-submit:active:not(:disabled) {
+		transform: scale(0.99);
+	}
+
+	.gw-submit:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+		filter: grayscale(0.2);
+	}
+
+	.gw-submit__shine {
+		display: block;
+	}
+
+	/* Player shell: page padding harmony */
+	.pos-tracker.view-section {
+		padding-top: 0;
+	}
+
+	/* ─── Legacy non-player layout (unchanged essentials) ─── */
 	.tracker-box {
 		margin-bottom: clamp(16px, 3vw, 24px);
 	}
@@ -742,64 +1250,24 @@
 		width: 100%;
 		margin-bottom: 16px;
 	}
-	.schedule-row {
-		display: flex;
-		gap: 10px;
-		margin-bottom: 12px;
-	}
-	.export-row {
-		display: flex;
-		gap: 10px;
-	}
-	.schedule-input {
-		flex: 1;
-		margin: 0;
-	}
-	.btn-export {
-		flex: 1;
-	}
-	.verify-panel {
-		margin-bottom: clamp(14px, 2.5vw, 18px);
-		padding: clamp(12px, 2vw, 16px);
+	.workout-summary-box {
+		background: var(--input-bg);
+		border: 1px solid var(--border-subtle);
+		padding: 20px;
 		border-radius: 16px;
-		border: 1px solid var(--glass-border);
-		background: rgba(15, 23, 42, 0.03);
-		display: flex;
-		flex-direction: column;
-		gap: clamp(8px, 1.5vw, 12px);
-	}
-	:global(html.dark) .verify-panel {
-		background: rgba(15, 23, 42, 0.35);
-	}
-	.verify-heading {
-		font-weight: 800;
-		font-size: 0.95rem;
+		margin-top: 20px;
 	}
 	.verify-help {
-		margin: 0;
 		font-size: 0.85rem;
-		line-height: 1.45;
-		opacity: 0.9;
+		margin-bottom: 12px;
 	}
-	.parent-log-link {
-		font-weight: 800;
-		color: var(--aggie-blue);
-		text-decoration: underline;
+	.session-item-title {
+		font-weight: 700;
 	}
-	.verify-check {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.75rem;
-		font-size: 0.86rem;
-		font-weight: 600;
-		line-height: 1.45;
-		cursor: pointer;
+	.session-item-detail {
+		font-size: 0.85rem;
+		color: var(--muted-slate);
 	}
-	.verify-check input {
-		margin-top: 0.125rem;
-	}
-	.session-item-title { font-weight: 700; }
-	.session-item-detail { font-size: 0.85rem; color: var(--muted-slate); }
 	.delete-btn {
 		background: none;
 		border: none;

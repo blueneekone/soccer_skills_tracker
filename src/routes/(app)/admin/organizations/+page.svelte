@@ -15,7 +15,6 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import {
 		clubSportIconClass,
-		clubSportIconSuffix,
 		clubSportAccent,
 		normalizeClubSport
 	} from '$lib/utils/sport-icon.js';
@@ -103,6 +102,11 @@
 							? raw.directorEmail.trim()
 							: undefined,
 					isInfinite: raw?.isInfinite === true,
+					tier: typeof raw?.tier === 'string' && raw.tier.trim() ? raw.tier.trim() : undefined,
+					subscriptionTier:
+						typeof raw?.subscriptionTier === 'string' && raw.subscriptionTier.trim()
+							? raw.subscriptionTier.trim()
+							: undefined,
 					logoUrl:
 						typeof raw?.logoUrl === 'string' && raw.logoUrl.trim()
 							? raw.logoUrl.trim()
@@ -336,6 +340,27 @@
 		return 'unassigned';
 	}
 
+	/**
+	 * Table “License” column: promo flag overrides tier label.
+	 * @param {Club} cl
+	 */
+	function licenseMetaForClub(cl) {
+		if (cl?.isInfinite === true) {
+			return {
+				label: 'Promo',
+				accent: '#f59e0b',
+				icon: 'ph-infinity',
+			};
+		}
+		const key = tierForClub(cl);
+		const opt = TIER_OPTIONS.find((t) => t.key === key);
+		return {
+			label: opt?.label ?? 'Unassigned',
+			accent: opt?.accent ?? '#71717a',
+			icon: opt?.icon ?? 'ph-question',
+		};
+	}
+
 	/** Live tier distribution — drives the count chip next to each tier chip. */
 	const tierCounts = $derived.by(() => {
 		/** @type {Record<string, number>} */
@@ -516,6 +541,11 @@
 							? raw.directorEmail.trim()
 							: undefined,
 					isInfinite: raw?.isInfinite === true,
+					tier: typeof raw?.tier === 'string' && raw.tier.trim() ? raw.tier.trim() : undefined,
+					subscriptionTier:
+						typeof raw?.subscriptionTier === 'string' && raw.subscriptionTier.trim()
+							? raw.subscriptionTier.trim()
+							: undefined,
 					logoUrl:
 						typeof raw?.logoUrl === 'string' && raw.logoUrl.trim()
 							? raw.logoUrl.trim()
@@ -1088,6 +1118,7 @@
 					<th class="orgs3-dt__th orgs3-dt__th--logo" scope="col" aria-label="Logo"></th>
 					<th class="orgs3-dt__th" scope="col">Organization</th>
 					<th class="orgs3-dt__th" scope="col">Sport</th>
+					<th class="orgs3-dt__th orgs3-dt__th--license" scope="col">License</th>
 					<th class="orgs3-dt__th" scope="col">Director</th>
 					<th class="orgs3-dt__th orgs3-dt__th--center" scope="col">Teams</th>
 					<th class="orgs3-dt__th orgs3-dt__th--compliance" scope="col">Compliance</th>
@@ -1097,14 +1128,14 @@
 			<tbody>
 				{#if clubsLoading}
 					<tr>
-						<td colspan="7" class="orgs3-dt__td-loading" aria-busy="true">
+						<td colspan="8" class="orgs3-dt__td-loading" aria-busy="true">
 							<span class="orgs3-spinner" aria-hidden="true"></span>
 							Loading organizations…
 						</td>
 					</tr>
 				{:else if pagedClubs.length === 0}
 					<tr>
-						<td colspan="7" class="orgs3-dt__td-empty">
+						<td colspan="8" class="orgs3-dt__td-empty">
 							{clubs.length === 0 ? 'No organizations registered yet.' : 'No organizations match your filter.'}
 						</td>
 					</tr>
@@ -1113,7 +1144,7 @@
 						{@const compliance = getCompliance(cl.id)}
 						{@const teamCount  = teamsStore.teams.filter((t) => t.clubId === cl.id).length}
 						{@const accent     = clubSportAccent(cl?.sport)}
-						{@const sportSuffix = clubSportIconSuffix(cl?.sport)}
+						{@const licenseMeta = licenseMetaForClub(cl)}
 						<tr class="orgs3-dt__row">
 							<!-- Logo (sport-accented chip when no uploaded logo) -->
 							<td class="orgs3-dt__td orgs3-dt__td--logo">
@@ -1130,25 +1161,14 @@
 								{/if}
 							</td>
 
-							<!-- Name + ID (license chip stays on same row as the name) -->
+							<!-- Name + ID (sport icon lives in Logo + Sport columns only) -->
 							<td class="orgs3-dt__td orgs3-dt__td--name">
 								<div class="orgs3-org-primary">
 									<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
-										<span
-											class="orgs3-org-sport-badge"
-											style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
-											title="Sport: {accent.label}"
-											aria-hidden="true"
-										>
-											<i class="ph {sportSuffix}"></i>
-										</span>
 										<span class="orgs3-org-name-text">
 											{cl?.name || cl?.id || 'Unnamed Organization'}
 										</span>
 									</a>
-									{#if cl?.isInfinite === true}
-										<span class="orgs3-promo" title="Unlimited / Promo license">∞</span>
-									{/if}
 								</div>
 								<span class="orgs3-org-id">{cl?.id ?? ''}</span>
 							</td>
@@ -1157,6 +1177,18 @@
 							<td class="orgs3-dt__td orgs3-dt__td--muted">
 								<span class="orgs3-sport-pill" style="--sport-fg:{accent.fg}; --sport-ring:{accent.ring};">
 									{accent.label}
+								</span>
+							</td>
+
+							<!-- License (tier / promo) -->
+							<td class="orgs3-dt__td orgs3-dt__td--license">
+								<span
+									class="orgs3-license-pill"
+									style="--lic-accent:{licenseMeta.accent};"
+									title={cl?.isInfinite === true ? 'Enterprise / unlimited promo license' : `Subscription: ${licenseMeta.label}`}
+								>
+									<i class="ph {licenseMeta.icon}" aria-hidden="true"></i>
+									{licenseMeta.label}
 								</span>
 							</td>
 
@@ -2181,6 +2213,7 @@
 	}
 
 	.orgs3-dt__th--logo    { width: 44px; padding-left: 16px; vertical-align: middle; }
+	.orgs3-dt__th--license { width: 118px; vertical-align: middle; white-space: nowrap; }
 	.orgs3-dt__th--compliance { width: 130px; vertical-align: middle; }
 	.orgs3-dt__th--actions { width: 96px; text-align: right; padding-right: 16px; vertical-align: middle; }
 	/* Strike 2: center-align modifier for the Teams column (header + cell). */
@@ -2217,6 +2250,7 @@
 
 	.orgs3-dt__td--logo { width: 44px; padding-left: 16px; vertical-align: middle; }
 	.orgs3-dt__td--name { vertical-align: middle; }
+	.orgs3-dt__td--license { vertical-align: middle; }
 
 	.orgs3-dt__td--muted {
 		color: var(--text-secondary);
@@ -2332,7 +2366,7 @@
 		box-shadow: 0 0 0 3px var(--sport-glow, rgba(99, 102, 241, 0.14));
 	}
 
-	/* Name row: sport badge + name link + license chip share one baseline */
+	/* Name row: org link + id */
 	.orgs3-org-primary {
 		display: flex;
 		align-items: center;
@@ -2341,9 +2375,7 @@
 	}
 
 	.orgs3-org-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
+		display: block;
 		min-width: 0;
 		flex: 1 1 auto;
 		font-size: 0.8125rem;
@@ -2354,20 +2386,6 @@
 	}
 
 	.orgs3-org-link:hover { color: var(--brand-primary, #d97706); }
-
-	.orgs3-org-sport-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 22px;
-		height: 22px;
-		border-radius: 6px;
-		color: var(--sport-fg, #6366f1);
-		background: var(--sport-glow, rgba(99, 102, 241, 0.18));
-		border: 1px solid var(--sport-ring, rgba(99, 102, 241, 0.35));
-		font-size: 0.75rem;
-		flex-shrink: 0;
-	}
 
 	.orgs3-org-name-text {
 		overflow: hidden;
@@ -2397,20 +2415,6 @@
 		font-family: ui-monospace, monospace;
 		color: var(--text-secondary);
 		margin-top: 1px;
-	}
-
-	.orgs3-promo {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		font-size: 0.65rem;
-		font-weight: 900;
-		line-height: 1;
-		padding: 2px 6px;
-		border-radius: 999px;
-		background: linear-gradient(135deg, #fde68a, #fbbf24, #d97706);
-		color: #78350f;
 	}
 
 	/* ── Compliance Health column ───────────────────────────────────── */
