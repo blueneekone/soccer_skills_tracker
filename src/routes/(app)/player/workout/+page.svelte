@@ -29,11 +29,16 @@
     Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)),
   );
 
-  /** Display level, XP into this level, XP needed to complete this level (bar) */
   let level = $state(1);
   let currentXp = $state(0);
   let nextLevelXp = $state(100);
   let streak = $state(0);
+
+  const xpLoadPct = $derived(
+    nextLevelXp > 0
+      ? Math.min(100, (currentXp / nextLevelXp) * 100)
+      : 100,
+  );
 
   $effect(() => {
     const lp = getLevelProgressFromTotalXp(totalXpHud);
@@ -46,34 +51,115 @@
     streak = Math.max(0, Math.floor(Number(profile?.currentStreak) || 0));
   });
 
-  let selectedFocus = $state(/** @type {'technical' | 'physical' | 'match' | 'recovery' | null} */ ('technical'));
+  let xpTrackEl = $state(/** @type {HTMLDivElement | null} */ (null));
+  $effect(() => {
+    if (xpTrackEl) {
+      xpTrackEl.style.setProperty('--fill', `${xpLoadPct}%`);
+    }
+  });
+
+  let durGaugeEl = $state(/** @type {HTMLDivElement | null} */ (null));
+  let rpeGaugeEl = $state(/** @type {HTMLDivElement | null} */ (null));
+
+  /** @param {number} d */
+  const durationPct = (d) => ((Math.max(5, Math.min(120, d)) - 5) / (120 - 5)) * 100;
+  /** @param {number} r */
+  const rpePct = (r) => ((Math.max(1, Math.min(10, r)) - 1) / 9) * 100;
+
+  $effect(() => {
+    if (durGaugeEl) durGaugeEl.style.setProperty('--gauge', `${durationPct(duration)}%`);
+  });
+  $effect(() => {
+    if (rpeGaugeEl) rpeGaugeEl.style.setProperty('--gauge', `${rpePct(intensity)}%`);
+  });
+
+  /** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
+  let selectedFocus = $state('technical');
   let selectedDrill = $state(/** @type {string | null} */ (null));
   let intensity = $state(5);
   let duration = $state(30);
   let logSubmitting = $state(false);
+  /** @type {string | null} */
+  let activeQuestId = $state(null);
 
   const focusAreas = [
-    { id: /** @type {const} */ ('technical'), label: 'Technical', icon: 'ph-soccer-ball' },
-    { id: /** @type {const} */ ('physical'), label: 'Physical', icon: 'ph-barbell' },
-    { id: /** @type {const} */ ('match'), label: 'Match', icon: 'ph-flag' },
-    { id: /** @type {const} */ ('recovery'), label: 'Recovery', icon: 'ph-heartbeat' },
+    { id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
+    { id: /** @type {const} */ ('physical'), label: 'Physical', op: 'OP-PHY' },
+    { id: /** @type {const} */ ('tactical'), label: 'Tactical', op: 'OP-TAC' },
+    { id: /** @type {const} */ ('recovery'), label: 'Recovery', op: 'OP-RCV' },
   ];
 
   const drillsByFocus = {
-    technical: ['Juggling', 'Wall Passing', 'Cone Dribbling', 'Shooting', 'First Touch'],
+    technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
     physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
-    match: ['Film Study', 'Positional Awareness', 'Set Pieces', 'Scrimmage', 'Coach Assignment'],
-    recovery: ['Stretching', 'Ice Bath', 'Yoga', 'Light Jog', 'Foam Rolling'],
+    tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
+    recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
   };
 
   const availableDrills = $derived(
     selectedFocus ? drillsByFocus[selectedFocus] : [],
   );
 
-  $effect(() => {
-    // Only selectedFocus is a dependency: reset drill when user picks a new focus
-    if (selectedFocus) untrack(() => (selectedDrill = null));
-  });
+  /**
+   * @param {'technical' | 'physical' | 'tactical' | 'recovery'} id
+   */
+  function selectFocus(id) {
+    if (id !== selectedFocus) {
+      selectedDrill = null;
+      activeQuestId = null;
+    }
+    selectedFocus = id;
+  }
+
+  /**
+   * @typedef {{ id: string, op: string, title: string, threat: string, focus: 'technical' | 'physical' | 'tactical' | 'recovery', drill: string, duration: number, intensity: number, protocol: string }} QuestDef
+   */
+
+  /** @type {QuestDef[]} */
+  const dailyQuests = [
+    {
+      id: 'q1',
+      op: 'Q-7A',
+      title: 'Volume Chain',
+      threat: 'L3',
+      focus: 'technical',
+      drill: 'Juggling',
+      duration: 40,
+      intensity: 7,
+      protocol: 'Execute 100 Juggles — sustain touches, log on completion',
+    },
+    {
+      id: 'q2',
+      op: 'Q-2F',
+      title: 'Tactical High-Load',
+      threat: 'L4',
+      focus: 'tactical',
+      drill: 'Set Pieces',
+      duration: 55,
+      intensity: 9,
+      protocol: 'Log a High-Intensity Tactical Session (film or pitch)',
+    },
+    {
+      id: 'q3',
+      op: 'Q-3C',
+      title: 'Metabolic Overdrive',
+      threat: 'L2',
+      focus: 'physical',
+      drill: 'Agility Ladder',
+      duration: 25,
+      intensity: 8,
+      protocol: 'Sprint ladder: 5 rounds, full RPE report',
+    },
+  ];
+
+  /** @param {QuestDef} q */
+  function applyQuest(q) {
+    activeQuestId = q.id;
+    selectedFocus = q.focus;
+    selectedDrill = q.drill;
+    duration = q.duration;
+    intensity = q.intensity;
+  }
 
   const focusLabel = $derived(
     (focusAreas.find((f) => f.id === selectedFocus) ?? { label: 'Session' }).label,
@@ -121,127 +207,728 @@
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#6366f1', '#a855f7', '#22d3ee', '#fbbf24'],
+        colors: ['#00d4ff', '#39ff14', '#ff6b00', '#a855f7'],
       });
       await Swal.fire({
-        title: 'Workout Logged!',
+        title: 'Command executed',
         text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
         icon: 'success',
-        confirmButtonColor: '#4f46e5',
-        confirmButtonText: 'Continue',
+        confirmButtonColor: '#00d4ff',
+        confirmButtonText: 'Acknowledge',
         customClass: { popup: 'card' },
       });
       await authStore.refresh({ silent: true });
     } catch (e) {
       console.error(e);
       const msg = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Could not log workout.';
-      await Swal.fire({ title: 'Error', text: msg, icon: 'error' });
+      await Swal.fire({ title: 'Execution failed', text: msg, icon: 'error' });
     } finally {
       logSubmitting = false;
     }
   }
 </script>
 
-<div class="w-full h-full min-h-[calc(100vh-80px)] bg-[#09090b] text-white p-6 md:p-10">
-  <div class="max-w-4xl mx-auto space-y-10">
-    
-    <div class="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 bg-white/5 border border-white/10 rounded-2xl shadow-xl">
-      <div class="flex flex-col mb-6 md:mb-0">
-        <span class="text-sm font-semibold text-white/50 uppercase tracking-widest mb-1">Current Level</span>
-        <span class="text-4xl md:text-5xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Lv. {level}</span>
+<div
+  class="pw-cmd"
+  data-region="phoenix-siem-workout"
+>
+  <!-- Telemetry HUD -->
+  <header class="pw-hud" aria-label="Command telemetry">
+    <div class="pw-hud__cell pw-hud__cell--level">
+      <span class="pw-eyebrow">Clearance / Level</span>
+      <p class="pw-mono pw-hud__level" aria-live="polite">LVL.{String(level).padStart(2, '0')}</p>
+    </div>
+    <div class="pw-hud__cell pw-hud__cell--load">
+      <div class="pw-hud__row">
+        <span class="pw-eyebrow">System load (XP to next rank)</span>
+        <span class="pw-mono pw-cyber">{currentXp}<span class="pw-dim"> / </span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'}</span>
       </div>
-      
-      <div class="flex-1 w-full px-0 md:px-10 mb-6 md:mb-0">
-        <div class="flex justify-between text-sm font-bold text-white/50 mb-3 tracking-wide">
-          <span>{currentXp} XP</span>
-          <span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'} XP</span>
-        </div>
-        <div class="h-3 w-full bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
-          <div
-            class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-            style="width: {nextLevelXp > 0
-              ? Math.min(100, (currentXp / nextLevelXp) * 100)
-              : 100}%"
-          ></div>
-        </div>
-      </div>
-      
-      <div class="flex flex-col items-end">
-        <span class="text-sm font-semibold text-white/50 uppercase tracking-widest mb-1">Day Streak</span>
-        <span class="text-3xl md:text-4xl font-black text-orange-400 flex items-center gap-2">
-          <i class="ph-fill ph-fire"></i> {streak}
-        </span>
+      <div class="pw-loadbar" bind:this={xpTrackEl} role="progressbar" aria-valuenow={Math.round(xpLoadPct)} aria-valuemin="0" aria-valuemax="100" aria-label="XP progress">
+        <div class="pw-loadbar__fill"></div>
+        <div class="pw-loadbar__scan" aria-hidden="true"></div>
       </div>
     </div>
+    <div class="pw-hud__cell pw-hud__cell--streak">
+      <span class="pw-eyebrow">Uptime (day streak)</span>
+      <p class="pw-mono pw-hud__streak">
+        <i class="ph-fill ph-lightning pw-ico pw-ico--orange" aria-hidden="true"></i>
+        <span>{streak}D</span>
+      </p>
+    </div>
+  </header>
 
-    <div class="space-y-5">
-      <h2 class="text-2xl font-bold tracking-tight text-white/90">Select Focus Area</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {#each focusAreas as focus}
-          <button
-            class="relative flex flex-col items-center justify-center gap-4 p-6 rounded-2xl border transition-all duration-200 {selectedFocus === focus.id ? 'bg-indigo-500/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'}"
-            onclick={() => (selectedFocus = focus.id)}
-          >
-            <i class="ph {focus.icon} text-4xl {selectedFocus === focus.id ? 'text-indigo-400' : 'text-white/40'}"></i>
-            <span class="font-bold tracking-wide {selectedFocus === focus.id ? 'text-white' : 'text-white/60'}">{focus.label}</span>
-          </button>
+  <div class="pw-grid">
+    <!-- Active threats / daily quests -->
+    <aside class="pw-panel pw-panel--threat" aria-labelledby="pw-threats-heading">
+      <div class="pw-panel__head">
+        <span class="pw-eyebrow">Active threats / daily quests</span>
+        <h2 id="pw-threats-heading" class="pw-title">Ingest queue</h2>
+      </div>
+      <p class="pw-hint">Select a quest to pre-fill the execution terminal. Manual overrides allowed.</p>
+      <ul class="pw-questlist">
+        {#each dailyQuests as q (q.id)}
+          <li>
+            <button
+              type="button"
+              class="pw-quest"
+              class:pw-quest--active={activeQuestId === q.id}
+              onclick={() => applyQuest(q)}
+            >
+              <div class="pw-quest__top">
+                <span class="pw-mono pw-quest__code">{q.op}</span>
+                <span class="pw-quest__threat" class:pw-quest__threat--L2={q.threat === 'L2'} class:pw-quest__threat--L3={q.threat === 'L3'} class:pw-quest__threat--L4={q.threat === 'L4'}>
+                  {q.threat}
+                </span>
+              </div>
+              <span class="pw-quest__title">{q.title}</span>
+              <p class="pw-quest__proto">{q.protocol}</p>
+            </button>
+          </li>
         {/each}
-      </div>
-    </div>
+      </ul>
+    </aside>
 
-    {#if selectedFocus}
-      <div class="space-y-5">
-        <h2 class="text-2xl font-bold tracking-tight text-white/90">Select Specific Drill</h2>
-        <div class="flex flex-wrap gap-3">
+    <!-- Execution terminal -->
+    <section class="pw-panel pw-panel--term" aria-labelledby="pw-exec-heading">
+      <div class="pw-panel__head pw-panel__head--row">
+        <div>
+          <span class="pw-eyebrow">Execution terminal</span>
+          <h2 id="pw-exec-heading" class="pw-title">Workout logger</h2>
+        </div>
+        <div class="pw-mono pw-est">
+          <span class="pw-dim">EST. YIELD</span>
+          <span class="pw-green">+{estimatedLogXp} XP</span>
+        </div>
+      </div>
+
+      <div class="pw-section">
+        <span class="pw-eyebrow">1 · Focus area</span>
+        <div class="pw-focus" role="group" aria-label="Focus area">
+          {#each focusAreas as focus}
+            <button
+              type="button"
+              class="pw-focus__btn"
+              class:pw-focus__btn--on={selectedFocus === focus.id}
+              onclick={() => selectFocus(focus.id)}
+            >
+              <span class="pw-mono pw-focus__op">{focus.op}</span>
+              <span class="pw-focus__lab">{focus.label}</span>
+            </button>
+          {/each}
+        </div>
+      </div>
+
+      <div class="pw-section">
+        <span class="pw-eyebrow">2 · Sub-drill (dynamic)</span>
+        <div class="pw-subdrill" role="list">
           {#each availableDrills as drill}
             <button
-              class="px-6 py-3 rounded-full border text-sm md:text-base font-bold transition-all {selectedDrill === drill ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white/90'}"
-              onclick={() => (selectedDrill = drill)}
+              type="button"
+              class="pw-chip"
+              class:pw-chip--on={selectedDrill === drill}
+              onclick={() => {
+                activeQuestId = null;
+                selectedDrill = drill;
+              }}
             >
               {drill}
             </button>
           {/each}
         </div>
       </div>
-    {/if}
 
-    {#if selectedDrill}
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-white/5 border border-white/10 rounded-2xl">
-        <div>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white/90">Duration</h2>
-            <span class="text-3xl font-black text-indigo-400">{duration} <span class="text-sm font-medium text-white/40">mins</span></span>
+      <div class="pw-gauges">
+        <div class="pw-gauge">
+          <div class="pw-gauge__head">
+            <span class="pw-eyebrow">Time on task (min)</span>
+            <span class="pw-mono pw-cyber">{duration}</span>
           </div>
-          <input type="range" min="5" max="120" step="5" bind:value={duration} class="w-full h-3 bg-black/50 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
+          <div class="pw-gauge__bar" bind:this={durGaugeEl} aria-label="Duration">
+            <div class="pw-gauge__bar-fill"></div>
+          </div>
+          <input
+            class="pw-range"
+            type="range"
+            min="5"
+            max="120"
+            step="5"
+            bind:value={duration}
+            aria-label="Duration in minutes"
+          />
         </div>
-
-        <div>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white/90">Intensity (RPE)</h2>
-            <span class="text-3xl font-black text-orange-400">{intensity} <span class="text-sm font-medium text-white/40">/ 10</span></span>
+        <div class="pw-gauge">
+          <div class="pw-gauge__head">
+            <span class="pw-eyebrow">RPE (intensity 1–10)</span>
+            <span class="pw-mono pw-orange">{intensity} / 10</span>
           </div>
-          <input type="range" min="1" max="10" bind:value={intensity} class="w-full h-3 bg-black/50 rounded-lg appearance-none cursor-pointer accent-orange-500" />
-          <div class="flex justify-between text-xs font-bold text-white/30 px-1 mt-3 uppercase tracking-widest">
-            <span>Light</span>
-            <span>Match Pace</span>
-            <span>Max Effort</span>
+          <div class="pw-gauge__bar pw-gauge__bar--rpe" bind:this={rpeGaugeEl} aria-label="RPE">
+            <div class="pw-gauge__bar-fill"></div>
           </div>
+          <input
+            class="pw-range"
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            bind:value={intensity}
+            aria-label="RPE intensity"
+          />
         </div>
       </div>
-    {/if}
 
-    <button
-      class="w-full py-6 rounded-2xl font-black text-2xl tracking-wide transition-all duration-200 flex items-center justify-center gap-3 {selectedFocus && selectedDrill && !logSubmitting ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 shadow-[0_0_40px_rgba(99,102,241,0.4)] text-white hover:scale-[1.01]' : 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'}"
-      disabled={!selectedFocus || !selectedDrill || logSubmitting}
-      onclick={logWorkout}
-    >
-      {#if logSubmitting}
-        <span>Logging…</span>
-      {:else if selectedFocus && selectedDrill}
-        <i class="ph-bold ph-lightning text-3xl"></i> LOG WORKOUT & CLAIM +{estimatedLogXp} XP
-      {:else}
-        Select a drill to continue
-      {/if}
-    </button>
+      <div class="pw-execrow">
+        <button
+          type="button"
+          class="pw-exec"
+          disabled={!selectedDrill || logSubmitting}
+          onclick={logWorkout}
+        >
+          {#if logSubmitting}
+            <span class="pw-mono">TRANSMITTING…</span>
+          {:else}
+            <i class="ph ph-lightning" aria-hidden="true"></i>
+            <span>EXECUTE & CLAIM XP</span>
+            <span class="pw-mono pw-exec__xp">+{estimatedLogXp}</span>
+          {/if}
+        </button>
+        {#if !selectedDrill}
+          <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
+        {/if}
+      </div>
+    </section>
   </div>
 </div>
+
+<style>
+  .pw-cmd {
+    min-height: calc(100vh - 5rem);
+    box-sizing: border-box;
+    background: #000000;
+    color: #fafafa;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    --cyber: #00d4ff;
+    --toxic: #39ff14;
+    --threat: #ff6b00;
+    --border: rgba(255, 255, 255, 0.1);
+  }
+
+  .pw-eyebrow {
+    display: block;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .pw-title {
+    margin: 0.25rem 0 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .pw-mono {
+    font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .pw-dim {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .pw-cyber {
+    color: var(--cyber);
+  }
+
+  .pw-green {
+    color: var(--toxic);
+  }
+
+  .pw-orange {
+    color: var(--threat);
+  }
+
+  .pw-hint {
+    margin: 0.5rem 0 1.25rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .pw-hud {
+    display: grid;
+    grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 8rem);
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    align-items: stretch;
+    min-height: 6.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: clamp(1rem, 2vw, 1.5rem);
+    border: 1px solid var(--border);
+    background: #05050a;
+  }
+
+  .pw-hud__cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .pw-hud__cell--load {
+    min-width: 0;
+  }
+
+  .pw-hud__cell--level {
+    border-right: 1px solid var(--border);
+    padding-right: 1rem;
+  }
+
+  .pw-hud__level {
+    margin: 0;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--cyber);
+    line-height: 1;
+  }
+
+  .pw-hud__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .pw-loadbar {
+    --fill: 0%;
+    position: relative;
+    height: 0.5rem;
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .pw-loadbar__fill {
+    height: 100%;
+    width: var(--fill);
+    background: linear-gradient(90deg, #0a3a45 0%, var(--cyber) 55%, var(--toxic) 100%);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+  }
+
+  .pw-loadbar__scan {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    animation: pw-scan 2.5s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes pw-scan {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
+
+  .pw-hud__cell--streak {
+    text-align: right;
+    border-left: 1px solid var(--border);
+    padding-left: 1rem;
+  }
+
+  .pw-hud__streak {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--threat);
+  }
+
+  .pw-ico--orange {
+    color: var(--threat);
+    filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.8));
+  }
+
+  @media (max-width: 900px) {
+    .pw-hud {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    .pw-hud__cell--level,
+    .pw-hud__cell--streak {
+      border: none;
+      padding: 0;
+      text-align: left;
+    }
+    .pw-hud__streak {
+      justify-content: flex-start;
+    }
+  }
+
+  .pw-grid {
+    display: grid;
+    grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: start;
+  }
+
+  @media (max-width: 1024px) {
+    .pw-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .pw-panel {
+    border: 1px solid var(--border);
+    background: #05050a;
+    padding: 1.25rem;
+    min-height: 18rem;
+    min-width: 0;
+  }
+
+  .pw-panel--threat {
+    position: sticky;
+    top: 0.5rem;
+  }
+
+  .pw-panel__head {
+    margin-bottom: 0.25rem;
+  }
+
+  .pw-panel__head--row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .pw-est {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    font-size: 0.8rem;
+  }
+
+  .pw-questlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .pw-quest {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.85rem 0.9rem;
+    background: #000;
+    border: 1px solid var(--border);
+    color: #e5e5e5;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .pw-quest:hover {
+    border-color: rgba(0, 212, 255, 0.4);
+    box-shadow: 0 0 18px rgba(0, 212, 255, 0.12);
+  }
+
+  .pw-quest--active {
+    border-color: var(--toxic);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+  }
+
+  .pw-quest__top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+
+  .pw-quest__code {
+    font-size: 0.65rem;
+    color: var(--cyber);
+  }
+
+  .pw-quest__threat {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--border);
+  }
+
+  .pw-quest__threat--L2 {
+    color: var(--toxic);
+    border-color: rgba(57, 255, 20, 0.4);
+  }
+
+  .pw-quest__threat--L3 {
+    color: var(--threat);
+    border-color: rgba(255, 107, 0, 0.4);
+  }
+
+  .pw-quest__threat--L4 {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.5);
+  }
+
+  .pw-quest__title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+  }
+
+  .pw-quest__proto {
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .pw-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .pw-focus {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .pw-focus {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .pw-focus__btn {
+    padding: 0.6rem 0.5rem;
+    background: #000;
+    border: 1px solid var(--border);
+    color: #ccc;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+
+  .pw-focus__btn:hover {
+    border-color: rgba(0, 212, 255, 0.35);
+  }
+
+  .pw-focus__btn--on {
+    border-color: var(--cyber);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+  }
+
+  .pw-focus__op {
+    font-size: 0.6rem;
+    color: var(--cyber);
+  }
+
+  .pw-focus__lab {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .pw-subdrill {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .pw-chip {
+    padding: 0.4rem 0.7rem;
+    background: #000;
+    border: 1px solid var(--border);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
+  }
+
+  .pw-chip:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .pw-chip--on {
+    border-color: var(--toxic);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.18);
+  }
+
+  .pw-gauges {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .pw-gauges {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .pw-gauge {
+    min-width: 0;
+  }
+
+  .pw-gauge__head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+
+  .pw-gauge__bar {
+    --gauge: 0%;
+    height: 0.35rem;
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    margin-bottom: 0.2rem;
+  }
+
+  .pw-gauge__bar--rpe {
+    border-color: rgba(255, 107, 0, 0.3);
+  }
+
+  .pw-gauge__bar-fill {
+    height: 100%;
+    width: var(--gauge);
+  }
+
+  .pw-gauge:first-child .pw-gauge__bar-fill {
+    background: linear-gradient(90deg, #0a1e22, var(--cyber));
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  }
+
+  .pw-gauge:last-child .pw-gauge__bar-fill {
+    background: linear-gradient(90deg, #2a1a0a, var(--threat));
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+  }
+
+  .pw-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1.25rem;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .pw-range:focus {
+    outline: 1px solid var(--cyber);
+    outline-offset: 2px;
+  }
+
+  .pw-range::-webkit-slider-runnable-track {
+    height: 4px;
+    background: #111;
+    border: 1px solid var(--border);
+  }
+
+  .pw-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    background: #000;
+    border: 2px solid var(--cyber);
+    box-shadow: 0 0 8px var(--cyber);
+  }
+
+  .pw-gauge:last-child .pw-range::-webkit-slider-thumb {
+    border-color: var(--threat);
+    box-shadow: 0 0 8px var(--threat);
+  }
+
+  .pw-range::-moz-range-track {
+    height: 4px;
+    background: #111;
+    border: 1px solid var(--border);
+  }
+
+  .pw-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #000;
+    border: 2px solid var(--cyber);
+    box-shadow: 0 0 8px var(--cyber);
+  }
+
+  .pw-gauge:last-child .pw-range::-moz-range-thumb {
+    border-color: var(--threat);
+    box-shadow: 0 0 8px var(--threat);
+  }
+
+  .pw-execrow {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .pw-exec {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.5rem;
+    padding: 0.75rem 1rem;
+    background: #000;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .pw-exec:hover:not(:disabled) {
+    border-color: var(--toxic);
+    box-shadow: 0 0 32px rgba(57, 255, 20, 0.35), 0 0 18px rgba(0, 212, 255, 0.3);
+  }
+
+  .pw-exec:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    box-shadow: none;
+  }
+
+  .pw-exec__xp {
+    color: var(--toxic);
+  }
+
+  .pw-locked {
+    font-size: 0.65rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.35);
+    margin: 0;
+  }
+</style>
