@@ -757,6 +757,26 @@ html.dark .ec-icon-btn:hover {
 	width: 100%;
 }
 
+/* ── Strike 5 — Modal open: freeze shell scrollports ───────────────────────
+   `enterpriseModalScrollLock.js` sets `html[data-modal-open="true"]` and
+   inline `overflow:hidden` on `.ec-canvas` / `.ec-main` with scrollbar
+   compensation. These rules reinforce the lock for nested scrollers (sidebar
+   rail, mobile overflow) so background tables never drift while a modal or
+   full-screen scrim is active. */
+html[data-modal-open="true"] .ec-canvas,
+html[data-modal-open="true"] .ec-main {
+	overflow: hidden !important;
+	overscroll-behavior: none;
+}
+
+html[data-modal-open="true"] .ec-sidebar__nav {
+	overflow: hidden !important;
+}
+
+html[data-modal-open="true"] body {
+	overflow: hidden;
+}
+
 /*
  * Sub-page navigation bar — pinned directly below ec-topbar, outside the scroll flow.
  * Uses negative margins to break out of ec-canvas padding so it sits flush at the top edge.

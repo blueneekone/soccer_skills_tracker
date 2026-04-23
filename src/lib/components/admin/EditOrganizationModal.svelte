@@ -17,6 +17,7 @@
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
 
 	/**
 	 * @typedef {{
@@ -59,27 +60,12 @@
 	let okMsg  = $state('');
 
 	/**
-	 * Strike 3 (A1.2) — Body scroll lock while the modal is mounted + open.
-	 *
-	 * The background DataTable must not scroll or shift when a true fixed
-	 * overlay is active. We store the previous `overflow`/`paddingRight`
-	 * values and restore them on cleanup; padding-right compensates for the
-	 * vanished scrollbar so the canvas does not visually jump.
+	 * Strike 5 — Lock the *enterprise* scrollport (`.ec-canvas`), not `body`.
+	 * See `enterpriseModalScrollLock.js` + `html[data-modal-open]` CSS.
 	 */
 	$effect(() => {
 		if (typeof document === 'undefined' || !open) return;
-		const body = document.body;
-		const prevOverflow     = body.style.overflow;
-		const prevPaddingRight = body.style.paddingRight;
-		const scrollbarWidth   = window.innerWidth - document.documentElement.clientWidth;
-		body.style.overflow = 'hidden';
-		if (scrollbarWidth > 0) {
-			body.style.paddingRight = `${scrollbarWidth}px`;
-		}
-		return () => {
-			body.style.overflow     = prevOverflow;
-			body.style.paddingRight = prevPaddingRight;
-		};
+		return lockEnterpriseShellScroll();
 	});
 
 	/** Re-hydrate the form whenever a new club is handed in or the modal reopens. */

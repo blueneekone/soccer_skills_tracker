@@ -29,6 +29,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
+	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -443,7 +444,13 @@
 		return () => document.removeEventListener('click', onDocClick);
 	});
 
-	// ── Login As (impersonation) ─────────────────────────────────────────────
+	/** Strike 5 — GDPR purge scrim: same scroll lock as admin modals. */
+	$effect(() => {
+		if (typeof document === 'undefined' || purgeStep <= 0) return;
+		return lockEnterpriseShellScroll();
+	});
+
+	// ── Login As (impersonation) — mirrors /admin/organizations director flow ─
 	/** @param {UserRow} row */
 	const loginAs = async (row) => {
 		openMenuFor = '';
@@ -459,9 +466,11 @@
 		}
 		const ok = confirm(
 			`Begin impersonation session as ${row.email}?\n\n` +
-				'Every action you take will be attributed to this user. The session will be written to security_audit.'
+				'Every action will be attributed to this user until you sign out. Server-side audit rows land in security_audit.'
 		);
 		if (!ok) return;
+
+		const actorEmail = authStore.user?.email || 'unknown';
 
 		loginAsBusyFor = row.id;
 		try {
@@ -472,14 +481,13 @@
 			if (!payload.token) {
 				throw new Error('Impersonation token missing from response.');
 			}
-			// Sprint 2.6.1 — banner state now derives from the Firebase ID
-			// token's custom claims, which are carried by this custom token.
-			// Sign in first, then force-refresh the token result so the
-			// impersonationStore (claims-driven) resolves immediately and the
-			// banner renders on the very first paint of the destination route.
 			await signInWithCustomToken(auth, payload.token);
 			await impersonationStore.touch();
-			// Let the (app)/+layout.svelte waterfall route us to the correct dashboard.
+			await logSecurityEvent(
+				'IMPERSONATE_USER',
+				row.email,
+				`Platform admin ${actorEmail} assumed session as ${row.email} (${row.role})`,
+			);
 			await goto('/', { replaceState: true });
 		} catch (e) {
 			console.error('[global-users] impersonation failed', e);
@@ -744,7 +752,7 @@
 										disabled={loginAsBusyFor === row.id}
 									>
 										{#if loginAsBusyFor === row.id}
-											<i class="ph ph-spinner" aria-hidden="true"></i>
+											<i class="ph ph-circle-notch gu-menu__spin" aria-hidden="true"></i>
 										{:else}
 											<i class="ph ph-dots-three" aria-hidden="true"></i>
 										{/if}
@@ -752,8 +760,6 @@
 
 									{#if openMenuFor === row.id}
 										<div class="gu-menu" role="menu" data-user-menu>
-											<!-- Strike 1 — Edit Admin entry point. Visible for any user;
-											     mutates users/{id} and patches local $state immediately. -->
 											<button
 												type="button"
 												class="gu-menu__item"
@@ -770,11 +776,18 @@
 												type="button"
 												class="gu-menu__item"
 												role="menuitem"
-												onclick={() => loginAs(row)}
-												disabled={row.role === 'super_admin' || row.role === 'global_admin'}
+												disabled={row.role === 'super_admin' ||
+													row.role === 'global_admin' ||
+													loginAsBusyFor === row.id}
+												onclick={() => void loginAs(row)}
 											>
-												<i class="ph ph-user-switch" aria-hidden="true"></i>
-												<span>Login As</span>
+												{#if loginAsBusyFor === row.id}
+													<i class="ph ph-circle-notch gu-menu__spin" aria-hidden="true"></i>
+													<span>Launching session…</span>
+												{:else}
+													<i class="ph ph-sign-in" aria-hidden="true"></i>
+													<span>Login As</span>
+												{/if}
 												{#if row.role === 'super_admin' || row.role === 'global_admin'}
 													<span class="gu-menu__hint">global admin</span>
 												{/if}
@@ -1487,6 +1500,16 @@
 	}
 
 	.gu-menu__item i { color: #52525b; font-size: 1rem; }
+
+	.gu-menu__spin {
+		animation: gu-menu-spin 0.75s linear infinite;
+	}
+
+	@keyframes gu-menu-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
 
 	.gu-menu__item:hover:not(:disabled) { background: rgba(0, 0, 0, 0.05); }
 

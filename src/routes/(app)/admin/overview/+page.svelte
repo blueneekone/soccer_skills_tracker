@@ -6,36 +6,18 @@
 		doc,
 		getDoc,
 		query,
-		where,
 		orderBy,
 		limit as fbLimit,
 		getDocs,
-		getCountFromServer,
 	} from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
-	import { normalizeClubSport, clubSportAccent, KNOWN_SPORT_KEYS } from '$lib/utils/sport-icon.js';
 	import '$lib/styles/enterprise-console.css';
 
-	// ── KPI group 1: Gross Revenue & Receivables ─────────────────────────────────
-	let licenseCount        = $state(0);
-	let pastDueCount        = $state(0);
-	let outstandingInstalls = $state(0); // payment_plans count (graceful fallback)
+	// ── Strike 5 — Minimal license read for MRR fallback (no wide platform scan) ─
+	let licenseCount = $state(0);
+	let telLoading   = $state(false);
+	let telErr       = $state('');
 
-	// ── KPI group 2: Platform Health ─────────────────────────────────────────────
-	let totalClubs     = $state(0);
-	let totalTeams     = $state(0);
-	let totalAthletes  = $state(0);
-
-	// ── KPI group 3: Compliance & Logistics ──────────────────────────────────────
-	let pendingVpcCount    = $state(0);
-	let activeBookingCount = $state(0); // field_bookings count (graceful fallback)
-
-	// ── Loading / error ───────────────────────────────────────────────────────────
-	let telLoading = $state(false);
-	let telErr     = $state('');
-
-	// ── Single consolidated fetch — all telemetry data in one $effect ─────────────
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		let destroyed = false;
@@ -44,70 +26,9 @@
 
 		void (async () => {
 			try {
-				// All queries fire in parallel. New collections (payment_plans, field_bookings)
-				// use .catch(() => { data: () => ({ count: 0 }) }) so the entire Promise.all
-				// never rejects just because a collection doesn't exist yet.
-				const [
-					licensesSnap,
-					clubsSnap,
-					teamsCountSnap,
-					athletesCountSnap,
-					vpcCountSnap,
-					installmentsCountSnap,
-					bookingsCountSnap,
-				] = await Promise.all([
-					// Group 1 — Revenue
-					getDocs(collection(db, 'licenses')),
-					// Group 2 — Platform Health
-					getDocs(collection(db, 'clubs')),
-					getCountFromServer(collection(db, 'teams'))
-						.catch(() => getDocs(collection(db, 'teams'))
-							.then((s) => ({ data: () => ({ count: s.size }) }))
-							.catch(() => ({ data: () => ({ count: 0 }) })),
-						),
-					getCountFromServer(collection(db, 'player_lookup'))
-						.catch(() => getDocs(collection(db, 'player_lookup'))
-							.then((s) => ({ data: () => ({ count: s.size }) }))
-							.catch(() => ({ data: () => ({ count: 0 }) })),
-						),
-					// Group 3 — Compliance & Logistics
-					getCountFromServer(
-						query(collection(db, 'vpc_requests'), where('status', '==', 'pending_verification')),
-					).catch(() =>
-						getDocs(
-							query(collection(db, 'vpc_requests'), where('status', '==', 'pending_verification')),
-						).then((s) => ({ data: () => ({ count: s.size }) }))
-						 .catch(() => ({ data: () => ({ count: 0 }) })),
-					),
-					// Outstanding player installments — payment_plans collection may not exist yet
-					getCountFromServer(collection(db, 'payment_plans'))
-						.catch(() => ({ data: () => ({ count: 0 }) })),
-					// Active field/facility bookings — field_bookings collection may not exist yet
-					getCountFromServer(
-						query(collection(db, 'field_bookings'), where('status', '==', 'active')),
-					).catch(() => ({ data: () => ({ count: 0 }) })),
-				]);
-
+				const licensesSnap = await getDocs(collection(db, 'licenses'));
 				if (destroyed) return;
-
-				// ── Group 1: Revenue & Receivables ────────────────────────────
 				licenseCount = licensesSnap.size;
-				let pastDue = 0;
-				licensesSnap.forEach((d) => {
-					if (d.data().status === 'past_due') pastDue++;
-				});
-				pastDueCount        = pastDue;
-				outstandingInstalls = installmentsCountSnap.data().count;
-
-				// ── Group 2: Platform Health ──────────────────────────────────
-				totalClubs    = clubsSnap.size;
-				totalTeams    = teamsCountSnap.data().count;
-				totalAthletes = athletesCountSnap.data().count;
-
-				// ── Group 3: Compliance & Logistics ──────────────────────────
-				pendingVpcCount    = vpcCountSnap.data().count;
-				activeBookingCount = bookingsCountSnap.data().count;
-
 			} catch (e) {
 				if (!destroyed) telErr = e instanceof Error ? e.message : 'Could not load telemetry.';
 			} finally {
@@ -120,99 +41,10 @@
 		};
 	});
 
-	// ── Derived display values ────────────────────────────────────────────────────
-	/** Strike 1: prefer the aggregated `totalRevenue` when the analytics
-	 *  triggers have started writing. Fall back to the $49/license estimate. */
-	const mrrEstimate = $derived(
-		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49
-	);
-
-	/** Stripe-style MRR formatted string */
-	const mrrDisplay = $derived(
-		mrrEstimate >= 1000
-			? `$${(mrrEstimate / 1000).toFixed(1)}k`
-			: `$${mrrEstimate.toLocaleString()}`,
-	);
-
-	/** Strike 1: KPI scalars — prefer aggregated totals when live. */
-	const licenseCountDisplay = $derived(
-		aggTotalLicenses > 0 ? aggTotalLicenses : licenseCount
-	);
-	const totalClubsDisplay = $derived(
-		aggTotalClubs > 0 ? aggTotalClubs : totalClubs
-	);
-
-	const adminCount = $derived(teamsStore.admins.length);
-
-	// ── Strike 2 (Agent 3): CMO/CSO Command Center metrics ──────────────────
-	// Mocked gracefully until the backend triggers exist. Once the activation
-	// and compliance pipelines ship we'll swap these for values read from
-	// `analytics/platform_totals.activationRate` and `.complianceAlerts`.
-	/**
-	 * Activation Rate — percentage of licensed seats with at least one
-	 * logged workout in the last 7 days. Gracefully falls back to a mocked
-	 * ~62% until the `onWorkoutWritten` aggregation function is live.
-	 */
-	const activationRate = $derived.by(() => {
-		if (licenseCountDisplay <= 0) return 0;
-		// Mock baseline = 62%. Live rate will slot in here from the aggregated
-		// doc once the `activationRate7d` field is written by Cloud Functions.
-		return 62;
-	});
-
-	/**
-	 * Compliance Alerts — count of Coaches missing an up-to-date background
-	 * check. Until the Checkr integration and VPC rollups are wired, mock at
-	 * whichever value is higher: a synthetic `clamp(teams × 0.15)` or 3.
-	 */
-	const complianceAlerts = $derived.by(() => {
-		const synthetic = Math.round((totalTeams || 0) * 0.15);
-		return Math.max(3, synthetic);
-	});
-
-	// ═══════════════════════════════════════════════════════════════════════
-	// Strike 3 (Agent 3) — C-Suite KPI blocks.
-	//
-	//   • Tech:  System Uptime + API Latency  (mocked — swap in from
-	//            `analytics/platform_totals.uptime30d` /
-	//            `analytics/platform_totals.apiLatencyP50Ms` once the Cloud
-	//            Monitoring mirror Cloud Function is live).
-	//   • CEO:   LTV : CAC Ratio + MRR Churn  (mocked — swap in from the
-	//            finance ETL that lands on `analytics/platform_totals.ltvCac`
-	//            and `.mrrChurn`).
-	//   • CSO:   Active Threat Blocks         (mocked — swap in from the WAF
-	//            feed that writes `analytics/platform_totals.waf24h` +
-	//            `.failedLogins24h`).
-	//
-	// Each metric is a `$derived.by` so the swap-over to live data is a single
-	// field read when the backend catches up.
-	// ═══════════════════════════════════════════════════════════════════════
-
-	/** Tech — composite uptime across the last 30 days (percent, 4-digit). */
-	const systemUptime = $derived.by(() => 99.99);
-	/** Tech — API gateway p50 latency in milliseconds. */
-	const apiLatencyMs = $derived.by(() => 42);
-	/** CEO — lifetime value to customer-acquisition-cost ratio. */
-	const ltvCacRatio  = $derived.by(() => 4.2);
-	/** CEO — trailing 30-day MRR churn percentage (lower is better). */
-	const mrrChurnPct  = $derived.by(() => 1.2);
-
-	/**
-	 * CSO — Active Threat Blocks. WAF rejections + failed logins over the
-	 * last 24 hours. Mocked as a synthetic signal that responds gently to
-	 * platform size so the number does not look "too static" before live
-	 * data arrives.
-	 */
-	const activeThreatBlocks = $derived.by(() => {
-		const clubsSignal = totalClubsDisplay || 0;
-		const baseline = 18;
-		return baseline + Math.round(clubsSignal * 0.35);
-	});
-
 	// ═══════════════════════════════════════════════════════════════════════════
 	// Command Center datasets (Sprint 2.6.7 — Paranoid Patch)
 	// ═══════════════════════════════════════════════════════════════════════════
-	// Three premium Chart.js widgets + a live audit feed. Every chart dataset
+	// Two premium Chart.js widgets + a live audit feed. Every chart dataset
 	// is hydrated from a SINGLE aggregated document (`analytics/platform_totals`)
 	// — we never scan `users`, `licenses`, `player_lookup`, `teams`, or `clubs`
 	// here. A scheduled Cloud Function (future sprint) will own the writer
@@ -229,23 +61,38 @@
 	/** Revenue by license tier, sourced from `analytics/platform_totals.revenueByTier`. */
 	let revenueByTier = $state(/** @type {SeriesPoint[]} */ ([]));
 
-	/** Players per sport, sourced from `analytics/platform_totals.bySport`. */
-	let playersBySport = $state(/** @type {SeriesPoint[]} */ ([]));
-
 	/** Strike 1 — Per-chart data-source indicator. The Global Admin sees
 	 *  "Live" as soon as the analytics triggers backfill the aggregate doc,
 	 *  and "Mock" while the platform is still empty. */
 	/** @typedef {'live' | 'mock'} ChartSource */
 	let mauSource      = $state(/** @type {ChartSource} */ ('mock'));
 	let revenueSource  = $state(/** @type {ChartSource} */ ('mock'));
-	let sportSource    = $state(/** @type {ChartSource} */ ('mock'));
 
-	/** Aggregated platform totals (Strike 1 wiring). When these are > 0 the
-	 *  KPI row prefers them over full-collection scans. */
-	let aggTotalClubs    = $state(0);
-	let aggTotalLicenses = $state(0);
+	/** Aggregated platform totals — used for MRR + Active Users macro tiles. */
 	let aggTotalRevenue  = $state(0);
 	let aggTotalUsers    = $state(0);
+
+	/** Strike 5 — Bento top row: uptime % + churn % (mock until backend feeds). */
+	const systemUptime = $derived.by(() => 99.99);
+	const mrrChurnPct  = $derived.by(() => 1.2);
+
+	/** Prefer `platform_totals.totalUsers`, else the latest MAU series point. */
+	const macroActiveUsers = $derived.by(() => {
+		if (aggTotalUsers > 0) return aggTotalUsers;
+		const last = mauSeries.length ? mauSeries[mauSeries.length - 1].value : 0;
+		return Number.isFinite(last) ? Math.round(last) : 0;
+	});
+
+	/** Prefer aggregated `totalRevenue`, else $49 × license count. */
+	const mrrEstimate = $derived(
+		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49
+	);
+
+	const mrrDisplay = $derived(
+		mrrEstimate >= 1000
+			? `$${(mrrEstimate / 1000).toFixed(1)}k`
+			: `$${mrrEstimate.toLocaleString()}`,
+	);
 
 	/** Recent security_audit events (desc by createdAt). */
 	let liveFeed = $state(
@@ -255,9 +102,8 @@
 	let feedErr     = $state('');
 
 	/**
-	 * Pull MAU, revenue-by-tier, players-by-sport, and the live audit feed
-	 * in a single background batch. This runs once after the telemetry effect
-	 * settles — we don't block the KPI rows behind chart data.
+	 * Pull MAU, revenue-by-tier, and the live audit feed from `platform_totals`
+	 * plus `security_audit` (no wide collection scans).
 	 */
 	$effect(() => {
 		if (!browser) return;
@@ -268,7 +114,7 @@
 		feedErr = '';
 
 		// ═════════════════════════════════════════════════════════════════════
-		// Sprint 2.6.7 — Paranoid Patch. All three chart datasets derive from a
+		// Sprint 2.6.7 — Paranoid Patch. Chart datasets derive from a
 		// SINGLE aggregated document (`analytics/platform_totals`). No chart
 		// fans out a full collection scan on `users`, `licenses`, or any other
 		// per-entity collection. A scheduled Cloud Function (future sprint)
@@ -296,16 +142,6 @@
 			enterprise: 8000,
 		};
 
-		/** @type {Record<string, number>} */
-		const MOCK_PLAYERS_BY_SPORT = {
-			soccer: 1450,
-			basketball: 820,
-			volleyball: 340,
-			football: 210,
-			baseball: 180,
-			lacrosse: 75,
-		};
-
 		/** Canonical tier ordering + display labels for the donut chart. */
 		const TIER_DEFS = /** @type {const} */ ([
 			{ key: 'starter',    label: 'Starter'    },
@@ -328,10 +164,7 @@
 		}
 
 		/**
-		 * Read the aggregated totals doc + hydrate all three chart series.
-		 * Falls back to mocks inside `catch` (and anywhere the payload is
-		 * missing/malformed) so the dashboard never stalls and never triggers
-		 * a collection scan.
+		 * Read `analytics/platform_totals` + hydrate MAU + revenue charts and feed.
 		 */
 		(async () => {
 			/** @type {Record<string, unknown> | null} */
@@ -345,18 +178,11 @@
 				totals = null;
 			}
 
-			// Strike 1 — Hydrate aggregated KPI scalars so platform-health KPIs
-			// can prefer them over the collection scans once the analytics
-			// triggers (functions/analytics.js) have started writing.
 			if (totals && !destroyed) {
-				const tc = Number(totals.totalClubs);
-				const tl = Number(totals.totalLicenses);
 				const tr = Number(totals.totalRevenue);
 				const tu = Number(totals.totalUsers);
-				aggTotalClubs    = Number.isFinite(tc) && tc > 0 ? Math.round(tc) : 0;
-				aggTotalLicenses = Number.isFinite(tl) && tl > 0 ? Math.round(tl) : 0;
-				aggTotalRevenue  = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
-				aggTotalUsers    = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
+				aggTotalRevenue = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
+				aggTotalUsers   = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
 			}
 
 			// ── 1. MAU (Monthly Active Users) ─────────────────────────────────
@@ -450,50 +276,7 @@
 				}
 			}
 
-			// ── 3. Players by Sport ───────────────────────────────────────────
-			try {
-				/** @type {Record<string, number>} */
-				let bySport = {};
-				const raw = totals && (totals.bySport || totals.playersBySport);
-				if (raw && typeof raw === 'object') {
-					for (const [key, value] of Object.entries(raw)) {
-						const n = Number(value);
-						if (!Number.isFinite(n) || n < 0) continue;
-						const canonical = normalizeClubSport(key);
-						bySport[canonical] = (bySport[canonical] || 0) + Math.round(n);
-					}
-				}
-
-				const hasSignal = Object.values(bySport).some((v) => v > 0);
-				if (!hasSignal) bySport = { ...MOCK_PLAYERS_BY_SPORT };
-
-				const ordered = KNOWN_SPORT_KEYS
-					.map((key) => ({
-						label: clubSportAccent(key).label,
-						value: Math.round(bySport[key] || 0),
-					}))
-					.filter((s) => s.value > 0);
-
-				if (!destroyed) {
-					playersBySport = ordered.length
-						? ordered
-						: [{ label: 'No Players', value: 0 }];
-					sportSource = hasSignal ? 'live' : 'mock';
-				}
-			} catch (e) {
-				console.warn('[overview] Players-by-Sport hydrate failed — using mock series', e);
-				if (!destroyed) {
-					playersBySport = KNOWN_SPORT_KEYS
-						.map((key) => ({
-							label: clubSportAccent(key).label,
-							value: Math.round(MOCK_PLAYERS_BY_SPORT[key] || 0),
-						}))
-						.filter((s) => s.value > 0);
-					sportSource = 'mock';
-				}
-			}
-
-			// ── 4. Global Live Feed (security_audit, most recent first) ──────
+			// ── 3. Global Live Feed (security_audit, most recent first) ───────
 			try {
 				const feedQ = query(
 					collection(db, 'security_audit'),
@@ -549,7 +332,6 @@
 
 	let mauCanvasEl      = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 	let revenueCanvasEl  = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
-	let sportsCanvasEl   = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 
 	/** Read a CSS variable from the document root with a fallback. */
 	function cssVar(/** @type {string} */ name, /** @type {string} */ fallback) {
@@ -581,7 +363,7 @@
 						labels: series.map((p) => p.label),
 						datasets: [
 							{
-								label: 'Monthly Active Users',
+								label: 'Monthly active users',
 								data: series.map((p) => p.value),
 								borderColor: '#6366f1',
 								backgroundColor: 'rgba(99,102,241,0.18)',
@@ -716,81 +498,6 @@
 		};
 	});
 
-	/* ── Bar chart: Total Players by Sport ─────────────────────────────────── */
-	$effect(() => {
-		if (!browser || !sportsCanvasEl) return;
-		const target = sportsCanvasEl;
-		const series = playersBySport;
-		let destroyed = false;
-		/** @type {import('chart.js').Chart | null} */
-		let chart = null;
-
-		(async () => {
-			try {
-				const mod = await import('chart.js');
-				if (destroyed || !target.isConnected) return;
-				mod.Chart.register(...mod.registerables);
-				const muted = cssVar('--text-secondary', '#475569');
-				const grid  = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
-				const colors = series.map((p) => {
-					const key = String(p.label || '').toLowerCase();
-					return clubSportAccent(key).fg;
-				});
-				chart = new mod.Chart(target, {
-					type: 'bar',
-					data: {
-						labels: series.map((p) => p.label),
-						datasets: [
-							{
-								label: 'Players',
-								data: series.map((p) => p.value),
-								backgroundColor: colors,
-								borderRadius: 8,
-								borderSkipped: false,
-								maxBarThickness: 42,
-							},
-						],
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						animation: { duration: 420 },
-						plugins: {
-							legend: { display: false },
-							tooltip: {
-								backgroundColor: 'rgba(9,9,11,0.92)',
-								titleColor: '#fafafa',
-								bodyColor: '#d4d4d8',
-								padding: 10,
-								cornerRadius: 8,
-								displayColors: false,
-							},
-						},
-						scales: {
-							x: {
-								ticks: { color: muted, font: { size: 11, weight: 600 } },
-								grid:  { color: 'transparent' },
-							},
-							y: {
-								beginAtZero: true,
-								ticks: { color: muted, font: { size: 11 }, precision: 0 },
-								grid:  { color: grid, drawBorder: false },
-							},
-						},
-					},
-				});
-			} catch (e) {
-				console.warn('[overview] Sports chart init failed', e);
-			}
-		})();
-
-		return () => {
-			destroyed = true;
-			chart?.destroy();
-			chart = null;
-		};
-	});
-
 	// ═══════════════════════════════════════════════════════════════════════════
 	// Live feed helpers
 	// ═══════════════════════════════════════════════════════════════════════════
@@ -835,1137 +542,607 @@
 	}
 </script>
 
-<div class="ov-page" data-admin-shell="true">
-
-	<!-- Strike 3 (A1.1) — Compact Executive HUD header. Collapsed from the
-	     previous 3-line hero to a single row so the dense KPI grid and chart
-	     strip below both land above the fold on a 1080p monitor. -->
-	<header class="ov-hud-head" aria-labelledby="ov-hero-title">
-		<div class="ov-hud-head__title">
-			<span class="ov-hud-head__crumb">
-				<i class="ph ph-globe" aria-hidden="true"></i>
-				Global Admin
-			</span>
-			<h1 id="ov-hero-title" class="ov-hud-head__h1">Command Center</h1>
-		</div>
-		<div class="ov-hud-head__right">
-			<span class="ov-hud-head__chip">
-				<span class="ov-hud-head__chip-dot"></span>
-				{telLoading ? 'Syncing…' : 'Live'}
-			</span>
-		</div>
-	</header>
-
+<div class="ov-page ov-page--bento" data-admin-shell="true">
 	{#if telErr}
-		<p class="ov-err" role="alert">
+		<p class="ov-err ov-err--compact" role="alert">
 			<i class="ph ph-warning-circle" aria-hidden="true"></i>
 			{telErr}
 		</p>
 	{/if}
 
-	<!-- ═══════════════════════════════════════════════════════════════════════
-	     Strike 3 (A1.1 + A3.2) — Executive HUD: dense 12-column KPI grid.
-	     Groups are tagged by department (Sales, CEO, Growth, Security, Tech)
-	     through color tokens. Each micro-card spans 3 columns on desktop so
-	     4 metrics line up horizontally. Every metric below 1,080p-above-fold
-	     is intentional — no vertical stacking of department sections.
-	     ═══════════════════════════════════════════════════════════════════════ -->
-	<section class="ov-hud" aria-label="Executive HUD">
+	<!-- Strike 5 — Enterprise Bento: zero page scroll; only the right-rail scrolls. -->
+	<div class="ov-bento" aria-label="Executive command center">
+		<header class="ov-bento__head">
+			<div class="ov-bento__head-text">
+				<span class="ov-bento__eyebrow">Global Admin</span>
+				<h1 class="ov-bento__h1">Command Center</h1>
+			</div>
+			<span class="ov-bento__live">
+				<span class="ov-bento__live-dot" aria-hidden="true"></span>
+				{telLoading ? 'Syncing…' : 'Live'}
+			</span>
+		</header>
 
-		<!-- ── Row A — Sales / Revenue (CEO) ─────────────────────────────── -->
-		<div class="ov-hud__row-label ov-hud__row-label--sales">
-			<span class="ov-hud__row-dot" aria-hidden="true"></span>
-			<span>Sales &middot; Revenue</span>
+		<div class="ov-bento__kpis" aria-label="Macro KPIs">
+			<article class="ov-macro ov-macro--mrr">
+				<span class="ov-macro__label">MRR</span>
+				<span class="ov-macro__value">{telLoading ? '—' : mrrDisplay}</span>
+				<span class="ov-macro__hint">
+					{aggTotalRevenue > 0 ? 'platform_totals' : `$49 × ${licenseCount} licenses`}
+				</span>
+			</article>
+			<article class="ov-macro ov-macro--users">
+				<span class="ov-macro__label">Active users</span>
+				<span class="ov-macro__value">{macroActiveUsers.toLocaleString()}</span>
+				<span class="ov-macro__hint">
+					{aggTotalUsers > 0 ? 'platform_totals' : 'Latest MAU month'}
+				</span>
+			</article>
+			<article class="ov-macro ov-macro--up">
+				<span class="ov-macro__label">Uptime</span>
+				<span
+					class="ov-macro__value"
+					class:ov-macro__value--ok={systemUptime >= 99.9}
+				>
+					{systemUptime.toFixed(2)}<span class="ov-macro__suffix">%</span>
+				</span>
+				<span class="ov-macro__hint ov-macro__hint--mock">30d · monitoring feed</span>
+			</article>
+			<article class="ov-macro ov-macro--churn">
+				<span class="ov-macro__label">MRR churn</span>
+				<span
+					class="ov-macro__value"
+					class:ov-macro__value--ok={mrrChurnPct < 2}
+				>
+					{mrrChurnPct.toFixed(1)}<span class="ov-macro__suffix">%</span>
+				</span>
+				<span class="ov-macro__hint ov-macro__hint--mock">Trailing 30d · finance ETL</span>
+			</article>
 		</div>
 
-		<article class="ov-hud__kpi ov-hud__kpi--sales ov-hud__kpi--hero">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-trend-up"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Est. MRR</span>
-			</header>
-			<span class="ov-hud__kpi-value">{telLoading ? '—' : mrrDisplay}</span>
-			<span class="ov-hud__kpi-sub">
-				{aggTotalRevenue > 0 ? 'Live · platform_totals' : `@ $49 × ${licenseCount}`}
-			</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--sales">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-ticket"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Active Licenses</span>
-			</header>
-			<span class="ov-hud__kpi-value">
-				{telLoading ? '—' : licenseCountDisplay.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub">Billed seats</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--sales">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-scales"></i>
-				</span>
-				<span class="ov-hud__kpi-label">LTV : CAC</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={ltvCacRatio >= 3}
-				class:ov-hud__kpi-value--danger={ltvCacRatio < 1.5}
-			>
-				{ltvCacRatio.toFixed(1)}<span class="ov-hud__kpi-unit">: 1</span>
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Finance ETL · mocked</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--sales">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-chart-line-down"></i>
-				</span>
-				<span class="ov-hud__kpi-label">MRR Churn</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={mrrChurnPct < 2}
-				class:ov-hud__kpi-value--danger={mrrChurnPct >= 5}
-			>
-				{mrrChurnPct.toFixed(1)}<span class="ov-hud__kpi-unit">%</span>
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Trailing 30d · mocked</span>
-		</article>
-
-		<!-- ── Row B — Growth (Ops) ──────────────────────────────────────── -->
-		<div class="ov-hud__row-label ov-hud__row-label--growth">
-			<span class="ov-hud__row-dot" aria-hidden="true"></span>
-			<span>Growth &middot; Platform</span>
-		</div>
-
-		<article class="ov-hud__kpi ov-hud__kpi--growth ov-hud__kpi--hero">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-buildings"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Active Clubs</span>
-			</header>
-			<span class="ov-hud__kpi-value">
-				{telLoading ? '—' : totalClubsDisplay.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub">Across all sports</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--growth">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-users-three"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Teams</span>
-			</header>
-			<span class="ov-hud__kpi-value">
-				{telLoading ? '—' : totalTeams.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub">Rostered</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--growth">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-barbell"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Athletes</span>
-			</header>
-			<span class="ov-hud__kpi-value">
-				{telLoading ? '—' : totalAthletes.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub">Active players</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--growth">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-rocket-launch"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Activation</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={activationRate >= 50}
-				class:ov-hud__kpi-value--danger={activationRate > 0 && activationRate < 30}
-			>
-				{activationRate}<span class="ov-hud__kpi-unit">%</span>
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">7d workout · mocked</span>
-		</article>
-
-		<!-- ── Row C — Security (CSO) ───────────────────────────────────── -->
-		<div class="ov-hud__row-label ov-hud__row-label--security">
-			<span class="ov-hud__row-dot" aria-hidden="true"></span>
-			<span>Security &middot; Compliance</span>
-		</div>
-
-		<article
-			class="ov-hud__kpi ov-hud__kpi--security ov-hud__kpi--hero"
-			class:ov-hud__kpi--alert={activeThreatBlocks > 50}
-		>
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-shield-chevron"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Threat Blocks (24h)</span>
-			</header>
-			<span class="ov-hud__kpi-value">
-				{activeThreatBlocks.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">WAF + failed logins</span>
-		</article>
-
-		<article
-			class="ov-hud__kpi ov-hud__kpi--security"
-			class:ov-hud__kpi--alert={pendingVpcCount > 0}
-		>
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-shield-warning"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Pending VPC</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={!telLoading && pendingVpcCount === 0}
-				class:ov-hud__kpi-value--danger={pendingVpcCount > 0}
-			>
-				{#if telLoading}—{:else}{pendingVpcCount}{/if}
-			</span>
-			{#if pendingVpcCount > 0}
-				<a href="/admin/organizations" class="ov-hud__kpi-cta">
-					Review <i class="ph ph-arrow-right" aria-hidden="true"></i>
-				</a>
-			{:else}
-				<span class="ov-hud__kpi-sub">Unverified parental consents</span>
-			{/if}
-		</article>
-
-		<article
-			class="ov-hud__kpi ov-hud__kpi--security"
-			class:ov-hud__kpi--alert={complianceAlerts > 0}
-		>
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-user-focus"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Compliance Alerts</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={complianceAlerts === 0}
-				class:ov-hud__kpi-value--danger={complianceAlerts > 0}
-			>
-				{complianceAlerts}
-			</span>
-			{#if complianceAlerts > 0}
-				<a href="/admin/recruiters" class="ov-hud__kpi-cta">
-					Vetting queue <i class="ph ph-arrow-right" aria-hidden="true"></i>
-				</a>
-			{:else}
-				<span class="ov-hud__kpi-sub">Coaches missing Checkr</span>
-			{/if}
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--security">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-warning-circle"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Past Due</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={!telLoading && pastDueCount === 0}
-				class:ov-hud__kpi-value--danger={pastDueCount > 0}
-			>
-				{#if telLoading}—{:else}{pastDueCount}{/if}
-			</span>
-			<span class="ov-hud__kpi-sub">Delinquent licenses</span>
-		</article>
-
-		<!-- ── Row D — Tech (CTO) ───────────────────────────────────────── -->
-		<div class="ov-hud__row-label ov-hud__row-label--tech">
-			<span class="ov-hud__row-dot" aria-hidden="true"></span>
-			<span>Tech &middot; Infrastructure</span>
-		</div>
-
-		<article class="ov-hud__kpi ov-hud__kpi--tech ov-hud__kpi--hero">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-pulse"></i>
-				</span>
-				<span class="ov-hud__kpi-label">System Uptime (30d)</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={systemUptime >= 99.9}
-				class:ov-hud__kpi-value--danger={systemUptime < 99}
-			>
-				{systemUptime.toFixed(2)}<span class="ov-hud__kpi-unit">%</span>
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Cloud Monitoring · mocked</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--tech">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-gauge"></i>
-				</span>
-				<span class="ov-hud__kpi-label">API Latency (p50)</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--ok={apiLatencyMs < 100}
-				class:ov-hud__kpi-value--danger={apiLatencyMs >= 250}
-			>
-				{apiLatencyMs}<span class="ov-hud__kpi-unit">ms</span>
-			</span>
-			<span class="ov-hud__kpi-sub ov-hud__kpi-sub--mock">Gateway p50 · mocked</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--tech">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-map-trifold"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Field Bookings</span>
-			</header>
-			<span
-				class="ov-hud__kpi-value"
-				class:ov-hud__kpi-value--muted={activeBookingCount === 0}
-			>
-				{telLoading ? '—' : activeBookingCount.toLocaleString()}
-			</span>
-			<span class="ov-hud__kpi-sub">Active reservations</span>
-		</article>
-
-		<article class="ov-hud__kpi ov-hud__kpi--tech">
-			<header class="ov-hud__kpi-head">
-				<span class="ov-hud__kpi-icon" aria-hidden="true">
-					<i class="ph ph-crown"></i>
-				</span>
-				<span class="ov-hud__kpi-label">Platform Admins</span>
-			</header>
-			<span class="ov-hud__kpi-value">{adminCount}</span>
-			<span class="ov-hud__kpi-sub">Global admin seats</span>
-		</article>
-	</section>
-
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<!-- Command Center: 3 Chart.js widgets + Global Live Feed                 -->
-	<!-- ═══════════════════════════════════════════════════════════════════════ -->
-	<section class="ov-cc" aria-labelledby="ov-cc-title">
-		<div class="ov-cc__head">
-			<span class="ov-cc__icon" aria-hidden="true">
-				<i class="ph ph-chart-line"></i>
-			</span>
-			<h2 id="ov-cc-title" class="ov-cc__title">Analytics &amp; Live Feed</h2>
-			<span class="ov-cc__badge" aria-label="Live data">
-				<span class="ov-cc__badge-dot"></span>
-				Live
-			</span>
-		</div>
-
-		<div class="ov-cc__grid">
-			<div class="ov-cc__charts">
-				<article class="ov-card" aria-labelledby="ov-card-mau">
-					<header class="ov-card__head">
-						<div class="ov-card__icon ov-card__icon--indigo" aria-hidden="true">
-							<i class="ph ph-users-three"></i>
-						</div>
-						<div class="ov-card__head-body">
-							<h3 id="ov-card-mau" class="ov-card__title">Monthly Active Users</h3>
-							<p class="ov-card__sub">Unique sign-ins over the last six months</p>
-							<span
-								class="ov-card__src"
-								class:ov-card__src--live={mauSource === 'live'}
-								class:ov-card__src--mock={mauSource === 'mock'}
-								title={mauSource === 'live'
-									? 'Live data from analytics/platform_totals'
-									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
-							>
-								<span class="ov-card__src-dot" aria-hidden="true"></span>
-								{mauSource === 'live' ? 'Live' : 'Mock'}
-							</span>
-						</div>
-						<span class="ov-card__kpi">
-							{mauSeries.length ? mauSeries[mauSeries.length - 1].value.toLocaleString() : '—'}
-							<span class="ov-card__kpi-unit">this mo.</span>
-						</span>
-					</header>
-					<div class="ov-card__canvas">
-						<canvas bind:this={mauCanvasEl} aria-label="Monthly Active Users line chart"></canvas>
-					</div>
-				</article>
-
-				<article class="ov-card" aria-labelledby="ov-card-rev">
-					<header class="ov-card__head">
-						<div class="ov-card__icon ov-card__icon--emerald" aria-hidden="true">
+		<div class="ov-bento__body">
+			<div class="ov-bento__stage">
+				<article class="ov-glass ov-chart" aria-labelledby="ov-rev-title">
+					<header class="ov-chart__head">
+						<div class="ov-chart__icon ov-chart__icon--emerald" aria-hidden="true">
 							<i class="ph ph-chart-pie-slice"></i>
 						</div>
-						<div class="ov-card__head-body">
-							<h3 id="ov-card-rev" class="ov-card__title">Revenue by Tier</h3>
-							<p class="ov-card__sub">Active-license MRR grouped by plan</p>
+						<div class="ov-chart__meta">
+							<h2 id="ov-rev-title" class="ov-chart__title">Revenue</h2>
+							<p class="ov-chart__sub">MRR by license tier</p>
 							<span
-								class="ov-card__src"
-								class:ov-card__src--live={revenueSource === 'live'}
-								class:ov-card__src--mock={revenueSource === 'mock'}
-								title={revenueSource === 'live'
-									? 'Live data from analytics/platform_totals'
-									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
+								class="ov-chart__src"
+								class:ov-chart__src--live={revenueSource === 'live'}
+								class:ov-chart__src--mock={revenueSource === 'mock'}
 							>
-								<span class="ov-card__src-dot" aria-hidden="true"></span>
 								{revenueSource === 'live' ? 'Live' : 'Mock'}
 							</span>
 						</div>
-						<span class="ov-card__kpi">
+						<span class="ov-chart__kpi">
 							${revenueByTier.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
-							<span class="ov-card__kpi-unit">MRR</span>
+							<span class="ov-chart__kpi-unit">MRR</span>
 						</span>
 					</header>
-					<div class="ov-card__canvas ov-card__canvas--donut">
-						<canvas bind:this={revenueCanvasEl} aria-label="Revenue by Tier doughnut chart"></canvas>
+					<div class="ov-chart__canvas ov-chart__canvas--donut">
+						<canvas bind:this={revenueCanvasEl} aria-label="Revenue by tier chart"></canvas>
 					</div>
 				</article>
 
-				<article class="ov-card" aria-labelledby="ov-card-sports">
-					<header class="ov-card__head">
-						<div class="ov-card__icon ov-card__icon--amber" aria-hidden="true">
-							<i class="ph ph-basketball"></i>
+				<article class="ov-glass ov-chart" aria-labelledby="ov-act-title">
+					<header class="ov-chart__head">
+						<div class="ov-chart__icon ov-chart__icon--indigo" aria-hidden="true">
+							<i class="ph ph-rocket-launch"></i>
 						</div>
-						<div class="ov-card__head-body">
-							<h3 id="ov-card-sports" class="ov-card__title">Total Players by Sport</h3>
-							<p class="ov-card__sub">Enrolled athletes grouped by their team's sport</p>
+						<div class="ov-chart__meta">
+							<h2 id="ov-act-title" class="ov-chart__title">Activation</h2>
+							<p class="ov-chart__sub">Monthly active users · trailing six months</p>
 							<span
-								class="ov-card__src"
-								class:ov-card__src--live={sportSource === 'live'}
-								class:ov-card__src--mock={sportSource === 'mock'}
-								title={sportSource === 'live'
-									? 'Live data from analytics/platform_totals'
-									: 'Mock fallback — waiting on analytics triggers to populate platform_totals'}
+								class="ov-chart__src"
+								class:ov-chart__src--live={mauSource === 'live'}
+								class:ov-chart__src--mock={mauSource === 'mock'}
 							>
-								<span class="ov-card__src-dot" aria-hidden="true"></span>
-								{sportSource === 'live' ? 'Live' : 'Mock'}
+								{mauSource === 'live' ? 'Live' : 'Mock'}
 							</span>
 						</div>
-						<span class="ov-card__kpi">
-							{playersBySport.reduce((a, b) => a + (b.value || 0), 0).toLocaleString()}
-							<span class="ov-card__kpi-unit">players</span>
+						<span class="ov-chart__kpi">
+							{mauSeries.length ? mauSeries[mauSeries.length - 1].value.toLocaleString() : '—'}
+							<span class="ov-chart__kpi-unit">this mo.</span>
 						</span>
 					</header>
-					<div class="ov-card__canvas">
-						<canvas bind:this={sportsCanvasEl} aria-label="Total Players by Sport bar chart"></canvas>
+					<div class="ov-chart__canvas">
+						<canvas bind:this={mauCanvasEl} aria-label="Activation MAU chart"></canvas>
 					</div>
 				</article>
 			</div>
 
-			<aside class="ov-feed" aria-labelledby="ov-feed-title">
-				<header class="ov-feed__head">
-					<div class="ov-feed__icon" aria-hidden="true">
-						<i class="ph ph-broadcast"></i>
+			<aside class="ov-bento__rail" aria-labelledby="ov-rail-title">
+				<div class="ov-bento__rail-top">
+					<div class="ov-bento__rail-icon" aria-hidden="true">
+						<i class="ph ph-shield-checkered"></i>
 					</div>
-					<div class="ov-feed__head-body">
-						<h3 id="ov-feed-title" class="ov-feed__title">Global Live Feed</h3>
-						<p class="ov-feed__sub">Most recent events from <code>security_audit</code></p>
+					<div class="ov-bento__rail-titles">
+						<h2 id="ov-rail-title" class="ov-bento__rail-h2">Live feed &amp; audit</h2>
+						<p class="ov-bento__rail-sub">
+							<code class="ov-bento__code">security_audit</code>
+						</p>
 					</div>
-				</header>
+				</div>
 
-				{#if feedErr}
-					<p class="ov-feed__err" role="alert">
-						<i class="ph ph-warning-circle" aria-hidden="true"></i>
-						{feedErr}
-					</p>
-				{/if}
+				<div class="ov-bento__rail-scroll">
+					{#if feedErr}
+						<p class="ov-feed__err" role="alert">
+							<i class="ph ph-warning-circle" aria-hidden="true"></i>
+							{feedErr}
+						</p>
+					{/if}
 
-				{#if feedLoading && liveFeed.length === 0}
-					<div class="ov-feed__empty">
-						<i class="ph ph-spinner ov-feed__spin" aria-hidden="true"></i>
-						Loading recent activity…
-					</div>
-				{:else if liveFeed.length === 0}
-					<div class="ov-feed__empty">
-						<i class="ph ph-moon-stars" aria-hidden="true"></i>
-						No audit events yet. You're the quietest platform on earth.
-					</div>
-				{:else}
-					<ol class="ov-feed__list">
-						{#each liveFeed as ev (ev.id)}
-							<li class="ov-feed__item ov-feed__item--{actionTone(ev.action)}">
-								<span class="ov-feed__item-icon" aria-hidden="true">
-									<i class="ph {actionIcon(ev.action)}"></i>
-								</span>
-								<div class="ov-feed__item-body">
-									<div class="ov-feed__item-head">
-										<span class="ov-feed__item-action">{prettyAction(ev.action)}</span>
-										<span class="ov-feed__item-time">{relativeTime(ev.createdAt)}</span>
+					{#if feedLoading && liveFeed.length === 0}
+						<div class="ov-feed__empty">
+							<i class="ph ph-spinner ov-feed__spin" aria-hidden="true"></i>
+							Loading recent activity…
+						</div>
+					{:else if liveFeed.length === 0}
+						<div class="ov-feed__empty">
+							<i class="ph ph-moon-stars" aria-hidden="true"></i>
+							No audit events yet.
+						</div>
+					{:else}
+						<ol class="ov-feed__list ov-feed__list--rail">
+							{#each liveFeed as ev (ev.id)}
+								<li class="ov-feed__item ov-feed__item--{actionTone(ev.action)}">
+									<span class="ov-feed__item-icon" aria-hidden="true">
+										<i class="ph {actionIcon(ev.action)}"></i>
+									</span>
+									<div class="ov-feed__item-body">
+										<div class="ov-feed__item-head">
+											<span class="ov-feed__item-action">{prettyAction(ev.action)}</span>
+											<span class="ov-feed__item-time">{relativeTime(ev.createdAt)}</span>
+										</div>
+										{#if ev.targetEmail}
+											<span class="ov-feed__item-target">{ev.targetEmail}</span>
+										{/if}
+										{#if ev.details}
+											<span class="ov-feed__item-details">{ev.details}</span>
+										{/if}
 									</div>
-									{#if ev.targetEmail}
-										<span class="ov-feed__item-target">{ev.targetEmail}</span>
-									{/if}
-									{#if ev.details}
-										<span class="ov-feed__item-details">{ev.details}</span>
-									{/if}
-								</div>
-							</li>
-						{/each}
-					</ol>
-				{/if}
+								</li>
+							{/each}
+						</ol>
+					{/if}
+				</div>
 			</aside>
 		</div>
-	</section>
-
+	</div>
 </div>
 
 <style>
-	.ov-page {
+	/* Strike 5 — Bento HUD: fills ec-canvas height; page chrome does not scroll */
+	.ov-page--bento {
+		height: 100%;
+		min-height: 0;
+		max-height: 100%;
+		overflow: hidden;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: 8px;
 	}
 
-	/* ═══════════════════════════════════════════════════════════════════════
-	   Strike 3 (A1.1) — Executive HUD header + dense 12-col KPI grid.
-	   The old 3-row hero + 4 separate .ov-group sections have been collapsed
-	   into a single .ov-hud grid so the Command Center fits above the fold
-	   on 1080p monitors (no scrolling for the KPI strip).
-	   ═══════════════════════════════════════════════════════════════════════ */
-	.ov-hud-head {
+	.ov-bento {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		grid-template-rows: auto minmax(0, 0.2fr) minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	@media (max-width: 1100px) {
+		.ov-bento {
+			grid-template-rows: auto auto minmax(0, 1fr);
+		}
+	}
+
+	.ov-bento__head {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 16px;
-		padding: 10px 16px;
-		border-radius: 12px;
-		background: linear-gradient(135deg, rgba(99, 102, 241, 0.07), rgba(59, 130, 246, 0.03));
-		border: 1px solid rgba(99, 102, 241, 0.18);
+		gap: 12px;
+		min-height: 0;
+		padding: 2px 2px 0;
 	}
 
-	:global(html.dark) .ov-hud-head {
-		background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(30, 27, 75, 0.35));
-		border-color: rgba(99, 102, 241, 0.32);
-	}
-
-	.ov-hud-head__title {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+	.ov-bento__head-text {
 		min-width: 0;
 	}
 
-	.ov-hud-head__crumb {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 0.6875rem;
+	.ov-bento__eyebrow {
+		display: block;
+		font-size: 0.625rem;
 		font-weight: 800;
-		letter-spacing: 0.07em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--text-secondary);
 	}
 
-	.ov-hud-head__h1 {
-		margin: 0;
-		font-size: 1.25rem;
+	.ov-bento__h1 {
+		margin: 2px 0 0;
+		font-size: 1.125rem;
 		font-weight: 800;
 		letter-spacing: -0.02em;
 		color: var(--text-primary);
-		line-height: 1.1;
+		line-height: 1.15;
 	}
 
-	.ov-hud-head__right {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.ov-hud-head__chip {
+	.ov-bento__live {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		padding: 4px 10px;
 		border-radius: 999px;
-		background: rgba(34, 197, 94, 0.12);
-		border: 1px solid rgba(34, 197, 94, 0.35);
-		font-size: 0.72rem;
+		font-size: 0.6875rem;
 		font-weight: 700;
 		color: #047857;
+		background: rgba(34, 197, 94, 0.1);
+		flex-shrink: 0;
 	}
 
-	:global(html.dark) .ov-hud-head__chip {
-		background: rgba(34, 197, 94, 0.2);
-		border-color: rgba(34, 197, 94, 0.5);
+	:global(html.dark) .ov-bento__live {
 		color: #a7f3d0;
+		background: rgba(34, 197, 94, 0.16);
 	}
 
-	.ov-hud-head__chip-dot {
+	.ov-bento__live-dot {
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
 		background: #22c55e;
-		animation: ov-hud-pulse 1.8s ease-in-out infinite;
+		animation: ov-bento-pulse 1.8s ease-in-out infinite;
 	}
 
-	@keyframes ov-hud-pulse {
-		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
-		50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+	@keyframes ov-bento-pulse {
+		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+		50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
 	}
 
-	/* ── 12-column dense KPI grid ───────────────────────────────────── */
-	.ov-hud {
+	.ov-bento__kpis {
 		display: grid;
-		grid-template-columns: repeat(12, minmax(0, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 10px;
+		min-height: 0;
 	}
 
-	/* Row-label pills span all 12 cols — act as a thin department divider
-	   between the 4-card rows without shouting for attention. */
-	.ov-hud__row-label {
-		grid-column: 1 / -1;
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		margin: 2px 0 0;
-		font-size: 0.625rem;
-		font-weight: 800;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--text-secondary);
+	@media (max-width: 900px) {
+		.ov-bento__kpis {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
-	.ov-hud__row-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 999px;
-		background: currentColor;
-		box-shadow: 0 0 8px currentColor;
-	}
-
-	.ov-hud__row-label--sales    { color: #059669; }
-	.ov-hud__row-label--growth   { color: #4f46e5; }
-	.ov-hud__row-label--security { color: #b91c1c; }
-	.ov-hud__row-label--tech     { color: #0284c7; }
-
-	:global(html.dark) .ov-hud__row-label--sales    { color: #6ee7b7; }
-	:global(html.dark) .ov-hud__row-label--growth   { color: #c7d2fe; }
-	:global(html.dark) .ov-hud__row-label--security { color: #fca5a5; }
-	:global(html.dark) .ov-hud__row-label--tech     { color: #7dd3fc; }
-
-	/* ── Individual micro-KPI card ─────────────────────────────────── */
-	.ov-hud__kpi {
-		grid-column: span 3;
+	.ov-macro {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
-		padding: 12px 14px;
-		border-radius: 10px;
-		background: var(--glass-bg, #fff);
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-left: 3px solid transparent;
-		min-height: 84px;
-		position: relative;
-		transition: transform 0.12s ease, border-color 0.12s ease;
+		gap: 2px;
+		padding: 10px 12px;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.55);
+		backdrop-filter: blur(12px);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+		min-height: 0;
 	}
 
-	.ov-hud__kpi:hover {
-		transform: translateY(-1px);
+	:global(html.dark) .ov-macro {
+		background: rgba(24, 24, 27, 0.65);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 	}
 
-	:global(html.dark) .ov-hud__kpi {
-		background: #111113;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	/* Department tint — left rail + head-icon color. */
-	.ov-hud__kpi--sales    { border-left-color: #10b981; }
-	.ov-hud__kpi--growth   { border-left-color: #6366f1; }
-	.ov-hud__kpi--security { border-left-color: #ef4444; }
-	.ov-hud__kpi--tech     { border-left-color: #0ea5e9; }
-
-	.ov-hud__kpi--sales    .ov-hud__kpi-icon { background: rgba(16, 185, 129, 0.12);  color: #059669; }
-	.ov-hud__kpi--growth   .ov-hud__kpi-icon { background: rgba(99, 102, 241, 0.12);  color: #4f46e5; }
-	.ov-hud__kpi--security .ov-hud__kpi-icon { background: rgba(239, 68, 68, 0.12);   color: #b91c1c; }
-	.ov-hud__kpi--tech     .ov-hud__kpi-icon { background: rgba(14, 165, 233, 0.12);  color: #0284c7; }
-
-	:global(html.dark) .ov-hud__kpi--sales    .ov-hud__kpi-icon { background: rgba(16, 185, 129, 0.2);  color: #6ee7b7; }
-	:global(html.dark) .ov-hud__kpi--growth   .ov-hud__kpi-icon { background: rgba(99, 102, 241, 0.22); color: #c7d2fe; }
-	:global(html.dark) .ov-hud__kpi--security .ov-hud__kpi-icon { background: rgba(239, 68, 68, 0.22);  color: #fca5a5; }
-	:global(html.dark) .ov-hud__kpi--tech     .ov-hud__kpi-icon { background: rgba(14, 165, 233, 0.22); color: #7dd3fc; }
-
-	/* Hero card (first in each department row) carries a subtle surface tint. */
-	.ov-hud__kpi--hero {
-		background: linear-gradient(
-			135deg,
-			rgba(255, 255, 255, 0.92),
-			rgba(250, 250, 250, 0.65)
-		);
-	}
-
-	:global(html.dark) .ov-hud__kpi--hero {
-		background: linear-gradient(
-			135deg,
-			rgba(24, 24, 27, 0.95),
-			rgba(9, 9, 11, 0.85)
-		);
-	}
-
-	.ov-hud__kpi--alert { border-color: rgba(239, 68, 68, 0.45); }
-
-	:global(html.dark) .ov-hud__kpi--alert { border-color: rgba(252, 165, 165, 0.35); }
-
-	.ov-hud__kpi-head {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.ov-hud__kpi-icon {
-		width: 24px;
-		height: 24px;
-		border-radius: 6px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.8rem;
-		flex-shrink: 0;
-	}
-
-	.ov-hud__kpi-label {
-		font-size: 0.6875rem;
+	.ov-macro__label {
+		font-size: 0.625rem;
 		font-weight: 800;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--text-secondary);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
-	.ov-hud__kpi-value {
-		display: flex;
-		align-items: baseline;
-		gap: 2px;
-		margin-top: 2px;
-		font-size: 1.5rem;
+	.ov-macro__value {
+		font-size: 1.35rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: var(--text-primary);
 		font-variant-numeric: tabular-nums;
+		color: var(--text-primary);
 		line-height: 1.1;
 	}
 
-	.ov-hud__kpi--hero .ov-hud__kpi-value {
-		font-size: 1.85rem;
+	.ov-macro__value--ok {
+		color: #15803d;
 	}
 
-	.ov-hud__kpi-unit {
-		font-size: 0.72rem;
+	:global(html.dark) .ov-macro__value--ok {
+		color: #86efac;
+	}
+
+	.ov-macro__suffix {
+		font-size: 0.75rem;
 		font-weight: 700;
-		letter-spacing: 0.03em;
 		color: var(--text-secondary);
-		margin-left: 2px;
+		margin-left: 1px;
 	}
 
-	.ov-hud__kpi-value--ok     { color: #15803d; }
-	.ov-hud__kpi-value--danger { color: var(--danger-red, #b91c1c); }
-	.ov-hud__kpi-value--muted  { color: var(--text-secondary); font-size: 1.15rem; font-weight: 700; }
-
-	:global(html.dark) .ov-hud__kpi-value--ok     { color: #86efac; }
-	:global(html.dark) .ov-hud__kpi-value--danger { color: #fca5a5; }
-
-	.ov-hud__kpi-sub {
-		font-size: 0.7rem;
-		line-height: 1.3;
+	.ov-macro__hint {
+		font-size: 0.65rem;
 		color: var(--text-secondary);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
-	.ov-hud__kpi-sub--mock {
+	.ov-macro__hint--mock {
 		color: #a16207;
 		font-style: italic;
 	}
 
-	:global(html.dark) .ov-hud__kpi-sub--mock {
+	:global(html.dark) .ov-macro__hint--mock {
 		color: #fbbf24;
 	}
 
-	.ov-hud__kpi-cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		margin-top: 2px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		color: #b45309;
-		text-decoration: none;
-		width: fit-content;
-	}
-
-	.ov-hud__kpi-cta:hover { text-decoration: underline; }
-
-	:global(html.dark) .ov-hud__kpi-cta { color: #fbbf24; }
-
-	/* Responsive — give up column density on narrower laptops/tablets. */
-	@media (max-width: 1280px) {
-		.ov-hud__kpi { grid-column: span 6; }
-	}
-
-	@media (max-width: 720px) {
-		.ov-hud__kpi { grid-column: span 12; }
-	}
-
-	/* ── Error banner ───────────────────────────────────────────────── */
-	.ov-err {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin: 0;
-		padding: 12px 14px;
-		border-radius: 10px;
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--danger-red, #b91c1c);
-		background: rgba(185, 28, 28, 0.08);
-		border: 1px solid rgba(185, 28, 28, 0.25);
-	}
-
-	/* Strike 3 (A1.1) — Shared pulse keyframe (reused by `.ov-cc__badge-dot`
-	   below). Preserved from the old hero chip treatment. */
-	@keyframes ov-hero-pulse {
-		0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-		50%      { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-	}
-
-	/* ── Command Center section ─────────────────────────────────────── */
-	.ov-cc {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		border-radius: 14px;
-		padding: 18px;
-		background: var(--glass-bg, #ffffff);
-		border: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .ov-cc {
-		background: #111113;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.ov-cc__head {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 2px 4px 6px;
-	}
-
-	.ov-cc__icon {
-		width: 30px;
-		height: 30px;
-		border-radius: 8px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgba(99, 102, 241, 0.12);
-		color: #4f46e5;
-		font-size: 0.95rem;
-	}
-
-	:global(html.dark) .ov-cc__icon {
-		background: rgba(99, 102, 241, 0.2);
-		color: #c7d2fe;
-	}
-
-	.ov-cc__title {
-		flex: 1;
-		margin: 0;
-		font-size: 1rem;
-		font-weight: 800;
-		letter-spacing: -0.015em;
-		color: var(--text-primary);
-	}
-
-	.ov-cc__badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 4px 10px;
-		border-radius: 999px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		background: rgba(34, 197, 94, 0.1);
-		color: #047857;
-		border: 1px solid rgba(34, 197, 94, 0.3);
-	}
-
-	:global(html.dark) .ov-cc__badge {
-		background: rgba(34, 197, 94, 0.16);
-		color: #a7f3d0;
-		border-color: rgba(34, 197, 94, 0.35);
-	}
-
-	.ov-cc__badge-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: #22c55e;
-		animation: ov-hero-pulse 1.8s ease-in-out infinite;
-	}
-
-	.ov-cc__grid {
+	.ov-bento__body {
 		display: grid;
-		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-		gap: 14px;
+		grid-template-columns: 7fr 3fr;
+		gap: 12px;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	@media (max-width: 1100px) {
-		.ov-cc__grid { grid-template-columns: minmax(0, 1fr); }
+		.ov-bento__body {
+			grid-template-columns: 1fr;
+			overflow-y: auto;
+		}
 	}
 
-	.ov-cc__charts {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		grid-auto-rows: auto;
-		gap: 14px;
-	}
-
-	@media (max-width: 780px) {
-		.ov-cc__charts { grid-template-columns: minmax(0, 1fr); }
-	}
-
-	/* ── Chart card ─────────────────────────────────────────────────── */
-	.ov-card {
+	.ov-bento__stage {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-		padding: 16px;
-		border-radius: 12px;
-		background: #ffffff;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		min-height: 260px;
+		gap: 10px;
+		min-height: 0;
+		overflow: hidden;
 	}
 
-	/* MAU chart spans both columns on wide screens for more horizontal canvas */
-	.ov-card:first-child {
-		grid-column: 1 / -1;
+	.ov-bento__stage .ov-chart {
+		flex: 1;
+		min-height: 0;
 	}
 
-	:global(html.dark) .ov-card {
-		background: #18181b;
-		border-color: rgba(255, 255, 255, 0.08);
+	.ov-glass {
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.5);
+		backdrop-filter: blur(14px);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
 	}
 
-	.ov-card__head {
+	:global(html.dark) .ov-glass {
+		background: rgba(24, 24, 27, 0.72);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+	}
+
+	.ov-chart {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 12px 14px;
+		min-height: 120px;
+	}
+
+	.ov-chart__head {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
+		flex-shrink: 0;
 	}
 
-	.ov-card__icon {
-		width: 36px;
-		height: 36px;
+	.ov-chart__icon {
+		width: 32px;
+		height: 32px;
 		border-radius: 9px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.05rem;
+		font-size: 0.95rem;
 		flex-shrink: 0;
 	}
 
-	.ov-card__icon--indigo  { background: rgba(99, 102, 241, 0.14);  color: #4f46e5; }
-	.ov-card__icon--emerald { background: rgba(16, 185, 129, 0.14);  color: #059669; }
-	.ov-card__icon--amber   { background: rgba(251, 146, 60, 0.14);  color: #ea580c; }
-
-	:global(html.dark) .ov-card__icon--indigo  { background: rgba(99, 102, 241, 0.22);  color: #c7d2fe; }
-	:global(html.dark) .ov-card__icon--emerald { background: rgba(16, 185, 129, 0.22);  color: #a7f3d0; }
-	:global(html.dark) .ov-card__icon--amber   { background: rgba(251, 146, 60, 0.22);  color: #fed7aa; }
-
-	.ov-card__head-body {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+	.ov-chart__icon--emerald {
+		background: rgba(16, 185, 129, 0.18);
+		color: #059669;
 	}
 
-	.ov-card__title {
+	.ov-chart__icon--indigo {
+		background: rgba(99, 102, 241, 0.2);
+		color: #4f46e5;
+	}
+
+	:global(html.dark) .ov-chart__icon--emerald {
+		background: rgba(16, 185, 129, 0.24);
+		color: #a7f3d0;
+	}
+
+	:global(html.dark) .ov-chart__icon--indigo {
+		background: rgba(99, 102, 241, 0.28);
+		color: #c7d2fe;
+	}
+
+	.ov-chart__meta {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.ov-chart__title {
 		margin: 0;
-		font-size: 0.9375rem;
+		font-size: 0.875rem;
 		font-weight: 800;
 		letter-spacing: -0.01em;
 		color: var(--text-primary);
 	}
 
-	.ov-card__sub {
+	.ov-chart__sub {
 		margin: 0;
-		font-size: 0.75rem;
-		line-height: 1.35;
+		font-size: 0.6875rem;
 		color: var(--text-secondary);
+		line-height: 1.3;
 	}
 
-	/* Strike 1 — per-chart data-source chip. Makes it unambiguous whether the
-	   widget is rendering from analytics/platform_totals or the mock fallback. */
-	.ov-card__src {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		margin-top: 6px;
-		padding: 2px 8px;
+	.ov-chart__src {
+		display: inline-block;
+		margin-top: 4px;
+		padding: 1px 7px;
 		border-radius: 999px;
-		font-size: 0.6875rem;
-		font-weight: 600;
+		font-size: 0.6rem;
+		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		border: 1px solid transparent;
 	}
 
-	.ov-card__src-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 999px;
-		background: currentColor;
-		box-shadow: 0 0 8px currentColor;
-	}
-
-	.ov-card__src--live {
+	.ov-chart__src--live {
 		color: #10b981;
 		background: rgba(16, 185, 129, 0.12);
-		border-color: rgba(16, 185, 129, 0.35);
 	}
 
-	.ov-card__src--mock {
+	.ov-chart__src--mock {
 		color: #f59e0b;
-		background: rgba(245, 158, 11, 0.10);
-		border-color: rgba(245, 158, 11, 0.30);
+		background: rgba(245, 158, 11, 0.12);
 	}
 
-	.ov-card__kpi {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 4px;
-		font-size: 1.35rem;
+	.ov-chart__kpi {
+		font-size: 1rem;
 		font-weight: 800;
-		letter-spacing: -0.03em;
-		color: var(--text-primary);
 		font-variant-numeric: tabular-nums;
+		color: var(--text-primary);
 		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
-	.ov-card__kpi-unit {
-		font-size: 0.625rem;
+	.ov-chart__kpi-unit {
+		font-size: 0.55rem;
 		font-weight: 700;
-		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--text-secondary);
+		margin-left: 4px;
 	}
 
-	.ov-card__canvas {
+	.ov-chart__canvas {
 		position: relative;
+		flex: 1;
+		min-height: 120px;
 		width: 100%;
-		height: 220px;
 	}
 
-	.ov-card__canvas--donut {
-		height: 240px;
+	.ov-chart__canvas--donut {
+		min-height: 140px;
 	}
 
-	.ov-card__canvas canvas {
+	.ov-chart__canvas canvas {
 		position: absolute;
 		inset: 0;
-		width: 100% !important;
-		height: 100% !important;
+		width: 100%;
+		height: 100%;
 	}
 
-	/* ── Global Live Feed ────────────────────────────────────────────── */
-	.ov-feed {
+	.ov-bento__rail {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-		padding: 16px;
-		border-radius: 12px;
-		background: #ffffff;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		min-height: 260px;
+		min-height: 0;
+		overflow: hidden;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.45);
+		backdrop-filter: blur(14px);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
 	}
 
-	:global(html.dark) .ov-feed {
-		background: #18181b;
-		border-color: rgba(255, 255, 255, 0.08);
+	:global(html.dark) .ov-bento__rail {
+		background: rgba(9, 9, 11, 0.55);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 	}
 
-	.ov-feed__head {
+	.ov-bento__rail-top {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
+		padding: 12px 14px 10px;
+		flex-shrink: 0;
 	}
 
-	.ov-feed__icon {
-		width: 36px;
-		height: 36px;
+	.ov-bento__rail-icon {
+		width: 34px;
+		height: 34px;
 		border-radius: 9px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(236, 72, 153, 0.14);
+		background: rgba(236, 72, 153, 0.15);
 		color: #db2777;
-		font-size: 1.05rem;
+		font-size: 1rem;
 		flex-shrink: 0;
 	}
 
-	:global(html.dark) .ov-feed__icon {
+	:global(html.dark) .ov-bento__rail-icon {
 		background: rgba(236, 72, 153, 0.22);
 		color: #fbcfe8;
 	}
 
-	.ov-feed__head-body {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.ov-feed__title {
+	.ov-bento__rail-h2 {
 		margin: 0;
-		font-size: 0.9375rem;
+		font-size: 0.875rem;
 		font-weight: 800;
-		letter-spacing: -0.01em;
 		color: var(--text-primary);
+		letter-spacing: -0.01em;
 	}
 
-	.ov-feed__sub {
-		margin: 0;
-		font-size: 0.75rem;
-		line-height: 1.35;
+	.ov-bento__rail-sub {
+		margin: 2px 0 0;
+		font-size: 0.6875rem;
 		color: var(--text-secondary);
 	}
 
-	.ov-feed__sub code {
+	.ov-bento__code {
 		padding: 1px 5px;
 		border-radius: 4px;
 		background: rgba(0, 0, 0, 0.06);
-		font-size: 0.72rem;
+		font-size: 0.65rem;
 		font-weight: 700;
 		color: var(--text-primary);
 	}
 
-	:global(html.dark) .ov-feed__sub code {
+	:global(html.dark) .ov-bento__code {
 		background: rgba(255, 255, 255, 0.08);
 	}
 
-	.ov-feed__err {
+	.ov-bento__rail-scroll {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		padding: 0 10px 12px;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.ov-err--compact {
 		margin: 0;
+		flex-shrink: 0;
+	}
+
+	.ov-err {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
+		border-radius: 10px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--danger-red, #b91c1c);
+		background: rgba(185, 28, 28, 0.08);
+	}
+
+	.ov-feed__err {
+		margin: 0 0 8px;
 		padding: 10px 12px;
 		border-radius: 8px;
 		background: rgba(185, 28, 28, 0.08);
@@ -1982,23 +1159,18 @@
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		padding: 28px 14px;
+		padding: 24px 12px;
 		color: var(--text-secondary);
-		font-size: 0.875rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
-		border-radius: 10px;
-		border: 1px dashed var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .ov-feed__empty {
-		border-color: rgba(255, 255, 255, 0.1);
+		text-align: center;
 	}
 
 	.ov-feed__spin {
-		animation: ov-spin 1s linear infinite;
+		animation: ov-feed-spin 1s linear infinite;
 	}
 
-	@keyframes ov-spin {
+	@keyframes ov-feed-spin {
 		to { transform: rotate(360deg); }
 	}
 
@@ -2009,28 +1181,29 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		max-height: 540px;
-		overflow-y: auto;
+	}
+
+	.ov-feed__list--rail {
+		max-height: none;
+		overflow: visible;
 	}
 
 	.ov-feed__item {
 		display: flex;
 		gap: 10px;
-		padding: 10px 12px;
+		padding: 10px 11px;
 		border-radius: 10px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: rgba(0, 0, 0, 0.02);
+		background: rgba(0, 0, 0, 0.03);
 	}
 
 	:global(html.dark) .ov-feed__item {
-		background: rgba(255, 255, 255, 0.03);
-		border-color: rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.04);
 	}
 
-	.ov-feed__item--success { border-left: 3px solid #22c55e; }
-	.ov-feed__item--danger  { border-left: 3px solid #ef4444; }
-	.ov-feed__item--warn    { border-left: 3px solid #f59e0b; }
-	.ov-feed__item--info    { border-left: 3px solid #6366f1; }
+	.ov-feed__item--success { box-shadow: inset 3px 0 0 #22c55e; }
+	.ov-feed__item--danger  { box-shadow: inset 3px 0 0 #ef4444; }
+	.ov-feed__item--warn    { box-shadow: inset 3px 0 0 #f59e0b; }
+	.ov-feed__item--info    { box-shadow: inset 3px 0 0 #6366f1; }
 
 	.ov-feed__item-icon {
 		width: 26px;
@@ -2041,7 +1214,7 @@
 		justify-content: center;
 		background: rgba(0, 0, 0, 0.05);
 		color: var(--text-secondary);
-		font-size: 0.9rem;
+		font-size: 0.88rem;
 		flex-shrink: 0;
 	}
 
@@ -2073,7 +1246,6 @@
 	.ov-feed__item-action {
 		font-size: 0.8125rem;
 		font-weight: 700;
-		letter-spacing: -0.005em;
 		color: var(--text-primary);
 	}
 
@@ -2089,13 +1261,12 @@
 		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--text-primary);
-		font-variant-numeric: tabular-nums;
 		word-break: break-all;
 	}
 
 	.ov-feed__item-details {
 		font-size: 0.72rem;
 		color: var(--text-secondary);
-		line-height: 1.4;
+		line-height: 1.35;
 	}
 </style>
