@@ -1,0 +1,349 @@
+/**
+ * Shared SOAR/SIEM-style surfaces for workspace dashboards (director, coach, registrar, etc.).
+ * Prefix: wsd-
+ */
+
+.wsd-root {
+	box-sizing: border-box;
+}
+
+.wsd-hero {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 8px;
+}
+
+.wsd-hero__text {
+	min-width: 0;
+}
+
+.wsd-eyebrow {
+	display: block;
+	font-size: 0.625rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+}
+
+.wsd-hero__text > .wsd-title {
+	margin: 4px 0 6px;
+}
+
+.wsd-title {
+	font-size: clamp(1.75rem, 4vw, 2.75rem);
+	font-weight: 900;
+	letter-spacing: -0.04em;
+	line-height: 1.08;
+	color: var(--text-primary, #fafafa);
+}
+
+.wsd-lede {
+	margin: 0;
+	max-width: 72ch;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--text-secondary);
+}
+
+.wsd-lede-strong {
+	font-weight: 800;
+	color: #a5f3fc;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	font-size: 0.72em;
+}
+
+.wsd-hero__badges {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.wsd-hero__meta {
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.35);
+	font-variant-numeric: tabular-nums;
+}
+
+.wsd-live {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	color: #047857;
+	background: rgba(34, 197, 94, 0.1);
+	flex-shrink: 0;
+}
+
+:global(html.dark) .wsd-live {
+	color: #a7f3d0;
+	background: rgba(34, 197, 94, 0.16);
+}
+
+.wsd-live__dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #22c55e;
+	animation: wsd-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes wsd-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
+	}
+	50% {
+		box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+	}
+}
+
+/* Operations ribbon */
+.wsd-ribbon {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+	.wsd-ribbon {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 520px) {
+	.wsd-ribbon {
+		grid-template-columns: 1fr;
+	}
+}
+
+.wsd-ribbon__cell {
+	padding: 12px 14px;
+	border-radius: 12px;
+	background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
+	border: 1px solid rgba(34, 211, 238, 0.22);
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+		0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.wsd-ribbon__metric {
+	display: block;
+	font-size: 0.6rem;
+	font-weight: 800;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: rgba(165, 243, 252, 0.85);
+	margin-bottom: 4px;
+}
+
+.wsd-ribbon__value {
+	display: block;
+	font-size: 1.35rem;
+	font-weight: 900;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	color: #fafafa;
+	line-height: 1.1;
+}
+
+.wsd-ribbon__sub {
+	display: block;
+	margin-top: 4px;
+	font-size: 0.68rem;
+	font-weight: 600;
+	line-height: 1.35;
+	color: rgba(161, 161, 170, 0.95);
+}
+
+.wsd-legend {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+	margin: 0 0 18px;
+	padding: 8px 12px;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.45);
+}
+
+.wsd-legend__title {
+	color: rgba(255, 255, 255, 0.55);
+	margin-right: 4px;
+}
+
+.wsd-legend__items {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 14px;
+}
+
+.wsd-legend__items span {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.wsd-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 2px;
+	flex-shrink: 0;
+}
+
+.wsd-dot--crit {
+	background: #f87171;
+	box-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+}
+.wsd-dot--high {
+	background: #fb923c;
+	box-shadow: 0 0 8px rgba(251, 146, 60, 0.35);
+}
+.wsd-dot--med {
+	background: #facc15;
+}
+.wsd-dot--low {
+	background: #4ade80;
+}
+.wsd-dot--ok {
+	background: #34d399;
+}
+.wsd-dot--info {
+	background: #22d3ee;
+}
+
+/* Metric tiles */
+.wsd-metric {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px 18px;
+	border-radius: 14px;
+	background: linear-gradient(180deg, rgba(12, 12, 14, 0.98), rgba(9, 9, 11, 0.99));
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+	border-left: 3px solid rgba(113, 113, 122, 0.6);
+	min-width: 0;
+}
+
+.wsd-metric--crit {
+	border-left-color: #ef4444;
+	box-shadow:
+		0 14px 36px rgba(0, 0, 0, 0.4),
+		0 0 24px rgba(239, 68, 68, 0.12);
+}
+.wsd-metric--high {
+	border-left-color: #f97316;
+	box-shadow:
+		0 14px 36px rgba(0, 0, 0, 0.4),
+		0 0 20px rgba(249, 115, 22, 0.1);
+}
+.wsd-metric--med {
+	border-left-color: #eab308;
+}
+.wsd-metric--low {
+	border-left-color: #84cc16;
+}
+.wsd-metric--ok {
+	border-left-color: #22c55e;
+}
+.wsd-metric--info {
+	border-left-color: #06b6d4;
+}
+
+.wsd-metric__top {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 10px;
+}
+
+.wsd-metric__label {
+	font-size: 0.625rem;
+	font-weight: 800;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: rgba(161, 161, 170, 0.95);
+}
+
+.wsd-metric__delta {
+	font-size: 0.65rem;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.wsd-metric__delta--up {
+	color: #67e8f9;
+}
+.wsd-metric__delta--down {
+	color: #fde68a;
+}
+.wsd-metric__delta--flat {
+	color: #71717a;
+}
+
+.wsd-metric__value {
+	font-size: 1.35rem;
+	font-weight: 900;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	color: #fafafa;
+	line-height: 1.15;
+}
+
+@media (min-width: 1024px) {
+	.wsd-metric__value {
+		font-size: 1.5rem;
+	}
+}
+
+.wsd-metric--ok .wsd-metric__value {
+	color: #86efac;
+}
+
+.wsd-metric__hint {
+	font-size: 0.72rem;
+	font-weight: 600;
+	line-height: 1.35;
+	color: rgba(113, 113, 122, 0.98);
+}
+
+.wsd-metric-grid {
+	display: grid;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.wsd-body {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding-bottom: 8px;
+}
+
+.wsd-surface-accent {
+	border-radius: 14px;
+	border-top: 2px solid rgba(34, 211, 238, 0.3);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}

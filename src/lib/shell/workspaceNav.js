@@ -19,7 +19,7 @@ const adminLinks = [
 
 /** @type {ShellNavItem[]} */
 const directorLinks = [
-	{ tab: 'home', label: 'Home', icon: 'ph-house', href: '/director?tab=home' },
+	{ tab: 'home', label: 'Overview', icon: 'ph-house', href: '/director?tab=home' },
 	{ tab: 'teams', label: 'Roster & Teams', icon: 'ph-users-three', href: '/director?tab=teams' },
 	{ tab: 'field', label: 'Field Ops', icon: 'ph-map-pin', href: '/director?tab=field' },
 	{ tab: 'registrars', label: 'Registrars', icon: 'ph-swap', href: '/director?tab=registrars' },
@@ -32,7 +32,7 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ tab: 'home', label: 'Dashboard', icon: 'ph-house', href: '/coach?tab=home' },
+	{ tab: 'home', label: 'Overview', icon: 'ph-house', href: '/coach?tab=home' },
 	{ tab: 'roster', label: 'My Team', icon: 'ph-users-three', href: '/coach?tab=roster' },
 	{ tab: 'playbook', label: 'Playbook', icon: 'ph-book-open', href: '/coach?tab=playbook' },
 	{ tab: '', label: 'Drill Library', icon: 'ph-barbell', href: '/coach/drills' },
@@ -71,6 +71,7 @@ const parentLinks = [
 
 /** @type {ShellNavItem[]} */
 const registrarLinks = [
+	{ tab: '', label: 'Overview', icon: 'ph-chart-line', href: '/registrar/overview' },
 	{ tab: '', label: 'Compliance Desk', icon: 'ph-shield-check', href: '/registrar' },
 ];
 
@@ -189,6 +190,16 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 export function isShellNavActive(pathname, searchParams, item) {
 	try {
 		const u = new URL(item.href, 'https://placeholder.local');
+
+		if (pathname.startsWith('/registrar')) {
+			if (u.pathname === '/registrar') {
+				return pathname === '/registrar' || pathname === '/registrar/';
+			}
+			if (u.pathname.startsWith('/registrar/')) {
+				return pathname === u.pathname || pathname.startsWith(`${u.pathname}/`);
+			}
+			return false;
+		}
 
 		// Admin OS uses deep path-based routing — use prefix matching so drill-down
 		// pages (e.g. /admin/organizations/clubId) keep the parent link highlighted.

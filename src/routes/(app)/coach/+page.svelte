@@ -22,6 +22,8 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
+	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
@@ -114,6 +116,87 @@
 		if (!VALID_TABS.has(t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
+
+	const focusTeamName = $derived(
+		myTeams.find((t) => t.id === selectedTeamId)?.name || 'Team',
+	);
+
+	const coachRibbon = $derived([
+		{ k: 'Focus team', v: focusTeamName, s: 'Roster + drills scope' },
+		{ k: 'Roster depth', v: String(players.length), s: 'Athletes with data' },
+		{ k: 'Saved workouts', v: String(workoutsStore.workouts.length), s: 'Team drill library' },
+		{ k: 'Staff session', v: 'Active', s: 'Inbox + velocity' },
+	]);
+
+	const coachMetrics = $derived([
+		{
+			label: 'Athletes',
+			value: String(players.length),
+			hint: 'This team',
+			band: /** @type {const} */ ('info'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Team workouts',
+			value: String(workoutsStore.workouts.length),
+			hint: 'In rotation',
+			band: /** @type {const} */ ('low'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Leaderboard',
+			value: 'Live',
+			hint: 'Snapshot below',
+			band: /** @type {const} */ ('ok'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Video QA',
+			value: 'Queue',
+			hint: 'Verification tab',
+			band: /** @type {const} */ ('med'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Match day',
+			value: 'Ready',
+			hint: 'Eligibility tools',
+			band: /** @type {const} */ ('ok'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Messages',
+			value: 'Inbox',
+			hint: 'Sideline channel',
+			band: /** @type {const} */ ('info'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Plan density',
+			value: workoutsStore.workouts.length > 8 ? 'High' : 'Normal',
+			hint: 'Drills on file',
+			band:
+				workoutsStore.workouts.length > 12
+					? /** @type {const} */ ('med')
+					: /** @type {const} */ ('ok'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+		{
+			label: 'Club link',
+			value: clubId ? 'On' : '—',
+			hint: 'Branding + scope',
+			band: clubId ? /** @type {const} */ ('ok') : /** @type {const} */ ('info'),
+			delta: '—',
+			deltaDir: /** @type {const} */ ('flat'),
+		},
+	]);
 </script>
 
 <div class="ec-page ec-coach">
@@ -125,28 +208,38 @@
 					{#if clubId}
 						<ClubLogoMark size="lg" />
 					{/if}
-					<h2 class="coach-header coach-portal-title__h">Coaching Tools</h2>
 				</div>
-				<ActionInbox clubId={clubId || ''} teamId={selectedTeamId} />
-				<CoachTeamXpVelocityChart teamId={selectedTeamId} />
-				<div class="coach-home-grid">
-					<div class="ec-panel coach-home-card">
-						<div class="coach-home-card__head">Team leaderboard snapshot</div>
-						<TeamLeaderboard teamIdForStaff={selectedTeamId} compact />
+				<WorkspaceSocShell
+					eyebrow="Coach workspace · team operations"
+					title="Staff dashboard"
+					lede="Dense SOC-style readout for your bench: roster signal, drill inventory, and live inbox. Charts and tiles below stay scoped to the selected team."
+					ribbon={coachRibbon}
+					metaLine="Team pivot · client"
+				>
+					<WorkspaceSocMetricGrid metrics={coachMetrics} />
+					<div class="wsd-surface-accent tw-overflow-hidden tw-rounded-xl">
+						<ActionInbox clubId={clubId || ''} teamId={selectedTeamId} />
 					</div>
-					<div class="ec-panel coach-home-card">
-						<div class="coach-home-card__head">Roster snapshot</div>
-						{#if players.length === 0}
-							<p class="coach-home-card__empty">No roster data yet for this team.</p>
-						{:else}
-							<ul class="coach-home-roster" aria-label="Roster snapshot">
-								{#each players.slice(0, 12) as playerName (playerName)}
-									<li>{playerName}</li>
-								{/each}
-							</ul>
-						{/if}
+					<CoachTeamXpVelocityChart teamId={selectedTeamId} />
+					<div class="coach-home-grid">
+						<div class="ec-panel coach-home-card">
+							<div class="coach-home-card__head">Team leaderboard snapshot</div>
+							<TeamLeaderboard teamIdForStaff={selectedTeamId} compact />
+						</div>
+						<div class="ec-panel coach-home-card">
+							<div class="coach-home-card__head">Roster snapshot</div>
+							{#if players.length === 0}
+								<p class="coach-home-card__empty">No roster data yet for this team.</p>
+							{:else}
+								<ul class="coach-home-roster" aria-label="Roster snapshot">
+									{#each players.slice(0, 12) as playerName (playerName)}
+										<li>{playerName}</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
 					</div>
-				</div>
+				</WorkspaceSocShell>
 			{:else if activeTab === 'roster'}
 				<RosterTab teamId={selectedTeamId} teams={myTeams} />
 			{:else if activeTab === 'playbook'}

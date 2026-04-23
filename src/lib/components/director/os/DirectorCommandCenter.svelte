@@ -5,6 +5,8 @@
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
+	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
+	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -12,7 +14,7 @@
 		teams: 0,
 		pendingInvites: 0,
 		activeSeats: 0,
-		seatsLimit: 0
+		seatsLimit: 0,
 	});
 	let loadingKpis = $state(true);
 
@@ -32,10 +34,10 @@
 						query(
 							collection(db, 'coach_invites'),
 							where('clubId', '==', clubId),
-							where('status', '==', 'pending')
-						)
+							where('status', '==', 'pending'),
+						),
 					),
-					getDoc(doc(db, 'license_entitlements', clubId))
+					getDoc(doc(db, 'license_entitlements', clubId)),
 				]);
 				if (cancelled) return;
 				const entitlement = entitlementsSnap.exists() ? entitlementsSnap.data() : {};
@@ -43,7 +45,7 @@
 					teams: teamsSnap.data().count,
 					pendingInvites: invitesSnap.data().count,
 					activeSeats: typeof entitlement.active_seats === 'number' ? entitlement.active_seats : 0,
-					seatsLimit: typeof entitlement.seats_limit === 'number' ? entitlement.seats_limit : 0
+					seatsLimit: typeof entitlement.seats_limit === 'number' ? entitlement.seats_limit : 0,
 				};
 			} catch (e) {
 				console.error('[DirectorCommandCenter] KPI load failed', e);
@@ -55,64 +57,152 @@
 			cancelled = true;
 		};
 	});
+
+	const ribbonRows = $derived.by(() => {
+		const L = loadingKpis;
+		const cap = kpis.seatsLimit;
+		const pct =
+			cap > 0 ? `${Math.min(100, Math.round((kpis.activeSeats / cap) * 100))}%` : '—';
+		return [
+			{
+				k: 'Open invites',
+				v: L ? '…' : String(kpis.pendingInvites),
+				s: 'Coach seat pipeline',
+			},
+			{
+				k: 'Teams',
+				v: L ? '…' : String(kpis.teams),
+				s: 'Containers in club',
+			},
+			{
+				k: 'Seat draw',
+				v: L ? '…' : pct,
+				s: 'Utilization vs cap',
+			},
+			{
+				k: 'Orchestration',
+				v: 'Live',
+				s: 'Inbox + VPC workflows',
+			},
+		];
+	});
+
+	const metrics = $derived.by(() => {
+		const L = loadingKpis;
+		const cap = kpis.seatsLimit;
+		const util = cap > 0 ? kpis.activeSeats / cap : 0;
+		/** @type {'crit' | 'high' | 'med' | 'low' | 'ok' | 'info'} */
+		let utilBand = 'info';
+		if (cap <= 0) utilBand = 'info';
+		else if (util >= 0.98) utilBand = 'high';
+		else if (util >= 0.85) utilBand = 'med';
+		else utilBand = 'ok';
+
+		const inviteBand = kpis.pendingInvites > 5 ? 'med' : kpis.pendingInvites > 0 ? 'low' : 'ok';
+
+		return [
+			{
+				label: 'Teams',
+				value: L ? '…' : String(kpis.teams),
+				hint: 'Program containers',
+				band: /** @type {const} */ ('info'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Pending invites',
+				value: L ? '…' : String(kpis.pendingInvites),
+				hint: 'Coach seats',
+				band: inviteBand,
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Active seats',
+				value: L ? '…' : String(kpis.activeSeats),
+				hint: 'Billing draw',
+				band: /** @type {const} */ ('low'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Seat cap',
+				value: L ? '…' : cap ? String(cap) : '—',
+				hint: 'License entitlement',
+				band: /** @type {const} */ ('info'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Utilization',
+				value: L ? '…' : cap ? `${Math.round(util * 100)}%` : '—',
+				hint: 'Active / cap',
+				band: utilBand,
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Brand sync',
+				value: 'OK',
+				hint: 'Club assets · last publish',
+				band: /** @type {const} */ ('ok'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Policy posture',
+				value: 'Enforce',
+				hint: 'COPPA + waivers',
+				band: /** @type {const} */ ('ok'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+			{
+				label: 'Data region',
+				value: 'US',
+				hint: 'Primary residency',
+				band: /** @type {const} */ ('info'),
+				delta: '—',
+				deltaDir: /** @type {const} */ ('flat'),
+			},
+		];
+	});
 </script>
 
 <section class="tw-mb-8 tw-max-w-[min(100%,120rem)] tw-mx-auto" aria-labelledby="dir-os-heading">
-	<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4 tw-mb-6">
-		<div>
-		<h2
-			id="dir-os-heading"
-			class="tw-m-0 tw-text-2xl md:tw-text-3xl tw-font-black tw-tracking-tight dcc-heading"
-		>
-			Command center
-		</h2>
-		<p class="tw-m-0 tw-mt-2 tw-text-sm md:tw-text-base tw-max-w-2xl dcc-subheading">
-			Executive overview focused on alerts, core KPIs, and club analytics.
-		</p>
+	<WorkspaceSocShell
+		eyebrow="Director workspace · club operations"
+		title="Command center"
+		lede="SOAR-style executive surface: invites, households, and analytics. Severity bands mirror risk — scroll for queues and charts."
+		ribbon={ribbonRows}
+		metaLine="Club scope · client"
+	>
+		<h2 id="dir-os-heading" class="tw-sr-only">Director command center</h2>
+		<WorkspaceSocMetricGrid metrics={metrics} />
+
+		<div class="wsd-surface-accent tw-overflow-hidden tw-rounded-xl">
+			<ActionInbox {clubId} />
 		</div>
-	</div>
 
-	<ActionInbox {clubId} />
-
-	<div class="dcc-vpc-section">
-		<div class="dcc-vpc-section__head">
-			<i class="ph ph-shield-check" aria-hidden="true"></i>
-			<span>VPC approval queue</span>
+		<div class="dcc-vpc-section">
+			<div class="dcc-vpc-section__head">
+				<i class="ph ph-shield-check" aria-hidden="true"></i>
+				<span>VPC approval queue</span>
+			</div>
+			<VpcApprovalQueue {clubId} />
 		</div>
-		<VpcApprovalQueue {clubId} />
-	</div>
 
-	<DirectorAnalyticsCharts {clubId} />
-
-	<div class="dir-kpi-grid">
-		<article class="dir-kpi-card">
-			<p class="dir-kpi-card__label">Teams</p>
-			<p class="dir-kpi-card__value">{loadingKpis ? '...' : kpis.teams}</p>
-		</article>
-		<article class="dir-kpi-card">
-			<p class="dir-kpi-card__label">Pending invites</p>
-			<p class="dir-kpi-card__value">{loadingKpis ? '...' : kpis.pendingInvites}</p>
-		</article>
-		<article class="dir-kpi-card">
-			<p class="dir-kpi-card__label">Seat utilization</p>
-			<p class="dir-kpi-card__value">
-				{loadingKpis ? '...' : `${kpis.activeSeats}/${kpis.seatsLimit || 0}`}
-			</p>
-		</article>
-	</div>
-
+		<DirectorAnalyticsCharts {clubId} />
+	</WorkspaceSocShell>
 </section>
 
 <style>
-	.dcc-heading    { color: var(--text-primary); }
-	.dcc-subheading { color: var(--text-secondary); }
-
 	.dcc-vpc-section {
 		border: 1px solid rgba(245, 158, 11, 0.25);
 		border-radius: 14px;
 		background: rgba(245, 158, 11, 0.03);
 		padding: 10px 12px;
-		margin-bottom: 16px;
+		margin-bottom: 4px;
 	}
 
 	:global(html.dark) .dcc-vpc-section {
@@ -134,44 +224,5 @@
 
 	:global(html.dark) .dcc-vpc-section__head {
 		color: #fbbf24;
-	}
-
-	.dir-kpi-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 12px;
-		margin-bottom: 16px;
-		align-items: stretch;
-	}
-
-	.dir-kpi-card {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		background: #fafafa;
-		padding: 1.25rem;
-	}
-
-	:global(html.dark) .dir-kpi-card {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #0f0f11;
-	}
-
-	.dir-kpi-card__label {
-		margin: 0 0 0.35rem;
-		font-size: 0.75rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--text-secondary);
-	}
-
-	.dir-kpi-card__value {
-		margin: 0;
-		font-size: clamp(1.1rem, 3vw, 1.45rem);
-		font-weight: 900;
-		color: var(--text-primary);
 	}
 </style>
