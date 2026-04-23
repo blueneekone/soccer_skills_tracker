@@ -128,7 +128,9 @@
 			<div>
 				<h2 class="lb-title">Team leaderboard</h2>
 				<p class="lb-sub">
-					{compact ? 'Ranked by XP this week · tap a row to compare effort' : 'Top 15 by XP this week · 🔥 = streak'}
+					{compact
+						? 'Ranked by XP this week · tap a row to compare effort'
+						: 'Top 15 by XP this week · streak shows consecutive active weeks'}
 				</p>
 			</div>
 		</div>
@@ -201,7 +203,9 @@
 								<td class="lb-td-week">{row.xpThisWeek.toLocaleString()}</td>
 								<td class="lb-td-streak">
 									{#if row.streak > 0}
-										<span class="lb-fire" title="Current streak">🔥 {row.streak}</span>
+										<span class="lb-fire" title="Current streak"
+											><i class="ph ph-fire" aria-hidden="true"></i> {row.streak}</span
+										>
 									{:else}
 										<span class="lb-dash">—</span>
 									{/if}
@@ -558,7 +562,15 @@
 	}
 
 	.lb-fire {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.28em;
 		font-weight: 800;
+	}
+
+	.lb-fire .ph {
+		font-size: 1.05em;
+		opacity: 0.92;
 	}
 
 	.lb-dash {

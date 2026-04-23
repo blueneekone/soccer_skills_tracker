@@ -284,8 +284,8 @@
 	<div class="cal-header-row no-print">
 		<h2 class="view-title m-0">Player Stats</h2>
 		<div class="header-btns">
-			<button class="secondary-btn" onclick={exportCSV}>📥 Export CSV</button>
-			<button class="secondary-btn" onclick={() => window.print()}>🖨️ Print Report</button>
+			<button class="secondary-btn" onclick={exportCSV}>Export CSV</button>
+			<button class="secondary-btn" onclick={() => window.print()}>Print report</button>
 		</div>
 	</div>
 
@@ -400,7 +400,7 @@
 
 	<div class="bento-section">
 		<div class="card">
-			<div class="card-header">📈 Training Trend</div>
+			<div class="card-header">Training trend</div>
 			<div class="card-body">
 				<select bind:value={chartRange} class="trend-filter">
 					<option value="7">Last 7 Days</option>

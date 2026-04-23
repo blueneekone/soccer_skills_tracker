@@ -58,11 +58,11 @@
 <div class="ec-page ec-trophies view-section">
 	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-4">
 		<div class="tw-min-w-0 tw-col-span-1 xl:tw-col-span-12">
-			<h2 class="view-title">🏆 TROPHY ROOM</h2>
+			<h2 class="view-title">Achievements</h2>
 
 			<div class="bento-section">
 		<div class="card">
-			<div class="card-header trophy-header">RANK MEDALS</div>
+			<div class="card-header trophy-header">Rank medals</div>
 			<div class="card-body text-center overflow-x-auto">
 				<div class="trophy-flex">
 					{#each RANKS as rank, i}
@@ -79,7 +79,7 @@
 		</div>
 
 		<div class="card">
-			<div class="card-header milestone-header">MILESTONE BADGES</div>
+			<div class="card-header milestone-header">Milestone badges</div>
 			<div class="card-body text-center overflow-x-auto">
 				<div class="trophy-flex milestone-flex">
 					<div class="medal-container" class:medal-locked={!badge7Day}>
@@ -104,7 +104,7 @@
 	</div>
 
 			<div class="text-center">
-				<button class="primary-btn btn-claim-cert" onclick={claimCertificate}>🎉 CLAIM OFFICIAL CERTIFICATE 🎉</button>
+				<button class="primary-btn btn-claim-cert" onclick={claimCertificate}>Claim certificate</button>
 			</div>
 
 			<!-- Certificate Modal -->
@@ -114,7 +114,7 @@
 		{/snippet}
 		<div id="printableCertificate">
 			<div class="cert-border"></div>
-			<div class="cert-icon">⚽🏆🥇</div>
+			<div class="cert-icon" aria-hidden="true"><i class="ph ph-seal-check"></i></div>
 			<h1 class="cert-title">Certificate of Achievement</h1>
 			<p class="cert-subtitle">This certifies that</p>
 			<h2 class="cert-player-name">{profile?.playerName || 'Player'}</h2>
@@ -135,7 +135,7 @@
 			</div>
 		</div>
 		<div class="text-center no-print cert-buttons">
-			<button class="primary-btn btn-print" onclick={() => window.print()}>🖨️ Print Certificate</button>
+			<button class="primary-btn btn-print" onclick={() => window.print()}>Print certificate</button>
 			<button class="secondary-btn" onclick={() => (certModalOpen = false)}>Close</button>
 		</div>
 			</Modal>

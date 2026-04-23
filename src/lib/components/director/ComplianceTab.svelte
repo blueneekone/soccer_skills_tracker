@@ -39,7 +39,7 @@
 
 <div class="compliance-tab">
 	<div class="card">
-		<div class="card-header bg-red-header">🛂 Player Compliance Dashboard</div>
+		<div class="card-header bg-red-header">Player compliance</div>
 		<div class="card-body p-0 overflow-x-auto">
 			<table class="admin-table">
 				<thead>
@@ -66,7 +66,7 @@
 									<b>Contact:</b> {row.emergencyName} ({row.emergencyPhone})<br />
 									<b>Notes:</b> {row.medicalNotes || 'None'}
 								</td>
-								<td>{row.hasSignedWaiver ? '✅ Yes' : '❌ No'}</td>
+								<td>{row.hasSignedWaiver ? 'Yes' : 'No'}</td>
 								<td>
 									<select
 										value={row.clearanceStatus || 'CLEARED'}
@@ -75,9 +75,9 @@
 										class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
 										class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
 									>
-										<option value="CLEARED">✅ CLEARED</option>
-										<option value="PENDING_SAFESPORT">🟨 SAFESPORT PENDING</option>
-										<option value="RED_CARD">🟥 SUSPENDED (Red Card)</option>
+										<option value="CLEARED">Cleared</option>
+										<option value="PENDING_SAFESPORT">SafeSport pending</option>
+										<option value="RED_CARD">Suspended (red card)</option>
 									</select>
 								</td>
 							</tr>

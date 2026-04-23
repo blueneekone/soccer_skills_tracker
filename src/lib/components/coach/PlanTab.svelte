@@ -650,7 +650,7 @@
 
 	<div class="bento-section">
 		<div class="card">
-			<div class="card-header">📅 Manage Schedule</div>
+			<div class="card-header">Schedule</div>
 			<div class="card-body">
 				<div class="schedule-input-row">
 					<input type="date" bind:value={schedDate} />
@@ -683,7 +683,7 @@
 		</div>
 
 		<div class="card">
-			<div class="card-header bg-orange-header">🎯 Homework</div>
+			<div class="card-header bg-orange-header">Homework</div>
 			<div class="card-body">
 				<p class="plan-playbook-hint">
 					Assign drills from the global library using the <strong>Playbook</strong> tab (secure

@@ -47,7 +47,7 @@
 
 <div class="branding-tab">
 	<div class="card">
-		<div class="card-header">🎨 Club Branding</div>
+		<div class="card-header">Club branding</div>
 		<div class="card-body">
 			<label>Select Team/Club to Edit</label>
 			<select bind:value={selectedTeamId}>

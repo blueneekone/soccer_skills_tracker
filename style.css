@@ -1,5 +1,5 @@
 /* =======================================================
-   SSTRACKER - PLATINUM EDITION (Complete System UI v4.0.3)
+   SSTRACKER — global design system (enterprise console)
    ======================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -63,6 +63,9 @@
     /* Sprint 2.6.5 — enterprise console canvas token (was falling back to
        hard-coded #f4f4f5 in enterprise-console.css). */
     --ec-canvas-bg: #f4f4f5;
+
+    /* Operations accent — aligns with enterprise / SOC-style shell */
+    --ec-ops-accent: #22d3ee;
 }
 
 /* Elite Player Portal — same enterprise dark canvas */
@@ -255,20 +258,23 @@ html.dark .linked-badge-ui {
 .bento-span-full {
     grid-column: 1 / -1;
 }
+/* Card section titles — calm enterprise rhythm */
 .card-header {
-    font-size: 1.25rem;
-    font-weight: 600;
-    padding-bottom: 15px;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    padding: 0 0 14px;
+    margin: 0 0 var(--spacing-element);
     border-bottom: 1px solid var(--border-subtle);
-    margin-bottom: 20px;
     color: var(--text-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    border-radius: var(--radius-premium) var(--radius-premium) 0 0;
     min-width: 0;
+    background: transparent;
 }
 .card-header > * {
     min-width: 0;
@@ -377,17 +383,89 @@ html.dark .bento-card--glass {
 .border-orange { border: 1px solid #ea580c; }
 .border-aggie-blue { border: 1px solid var(--text-primary); }
 
-.bg-blue-header { background: #0a0a0a; color: #ffffff; padding: 15px var(--spacing-fluid); margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element) calc(var(--spacing-fluid) * -1); border-radius: var(--radius-premium) var(--radius-premium) 0 0; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
-.bg-gold-header { background: #f4f4f5; color: var(--text-primary); padding: 15px var(--spacing-fluid); margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element) calc(var(--spacing-fluid) * -1); border-radius: var(--radius-premium) var(--radius-premium) 0 0; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
-.bg-red-header { background: #7f1d1d; color: #ffffff; padding: 15px var(--spacing-fluid); margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element) calc(var(--spacing-fluid) * -1); border-radius: var(--radius-premium) var(--radius-premium) 0 0; }
-.bg-green-header { background: #065f46; color: #ffffff; padding: 15px var(--spacing-fluid); margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element) calc(var(--spacing-fluid) * -1); border-radius: var(--radius-premium) var(--radius-premium) 0 0; }
-.bg-orange-header { background: #7c2d12; color: #ffffff; padding: 15px var(--spacing-fluid); margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element) calc(var(--spacing-fluid) * -1); border-radius: var(--radius-premium) var(--radius-premium) 0 0; }
+/* Semantic section rails — left accent + neutral surface (replaces flat color blocks) */
+.bg-blue-header,
+.bg-gold-header,
+.bg-red-header,
+.bg-green-header,
+.bg-orange-header {
+    padding: 14px var(--spacing-fluid) 16px;
+    margin: calc(var(--spacing-fluid) * -1) calc(var(--spacing-fluid) * -1) var(--spacing-element)
+        calc(var(--spacing-fluid) * -1);
+    border-radius: var(--radius-premium) var(--radius-premium) 0 0;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.03), transparent 40%);
+    border-left: 3px solid var(--card-header-accent, var(--ec-ops-accent));
+    padding-left: calc(var(--spacing-fluid) - 3px);
+}
+.bg-blue-header {
+    --card-header-accent: #6366f1;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.09), transparent 45%);
+}
+.bg-gold-header {
+    --card-header-accent: #ca8a04;
+    background: linear-gradient(90deg, rgba(234, 179, 8, 0.1), transparent 45%);
+}
+.bg-red-header {
+    --card-header-accent: #ef4444;
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent 45%);
+}
+.bg-green-header {
+    --card-header-accent: #22c55e;
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.1), transparent 45%);
+}
+.bg-orange-header {
+    --card-header-accent: #ea580c;
+    background: linear-gradient(90deg, rgba(234, 88, 12, 0.1), transparent 45%);
+}
+html.dark .bg-blue-header,
+html.dark .bg-gold-header,
+html.dark .bg-red-header,
+html.dark .bg-green-header,
+html.dark .bg-orange-header {
+    color: #fafafa;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 50%);
+}
+html.dark .bg-blue-header {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.14), transparent 50%);
+}
+html.dark .bg-gold-header {
+    background: linear-gradient(90deg, rgba(234, 179, 8, 0.12), transparent 50%);
+}
+html.dark .bg-red-header {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.14), transparent 50%);
+}
+html.dark .bg-green-header {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.14), transparent 50%);
+}
+html.dark .bg-orange-header {
+    background: linear-gradient(90deg, rgba(234, 88, 12, 0.14), transparent 50%);
+}
+
+/* Page titles (athlete / household views) */
+.view-title {
+    font-size: clamp(1.2rem, 3.2vw, 1.65rem);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+    color: var(--text-primary);
+    margin: 0 0 1rem;
+}
+html.dark .view-title {
+    color: #fafafa;
+}
 
 /* ==========================================
    3. AUTHENTICATION UI & PWA PROMPT
    ========================================== */
 .auth-card { max-width: 440px; width: 95%; margin: auto; text-align: center; padding: 40px var(--spacing-fluid); }
-.logo-circle { width: 80px; height: 80px; background: #0a0a0a; border-radius: 50%; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: var(--shadow-premium); }
+.logo-circle { width: 80px; height: 80px; background: #0a0a0a; border-radius: 50%; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: var(--shadow-premium); color: #fafafa; }
+.logo-circle .ph { font-size: 2.25rem; line-height: 1; }
 .auth-title { font-size: 1.75rem; font-weight: 600; margin: 0 0 8px 0; }
 .auth-subtitle { color: var(--text-secondary); margin: 0 0 32px 0; font-size: 0.95rem; font-weight: 600; }
 .auth-divider { display: flex; align-items: center; margin: 24px 0; }
@@ -953,7 +1031,8 @@ html.dark .milestone-badge-shell {
 .cert-content { max-width: 800px; background: #fff; border-radius: 0; border: 1px solid rgba(0, 0, 0, 0.12); }
 #printableCertificate { padding: 40px; text-align: center; position: relative; background: #ffffff; }
 .cert-border { position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px; border: 1px solid rgba(0, 0, 0, 0.15); pointer-events: none; }
-.cert-icon { font-size: 4rem; margin-bottom: 10px; }
+.cert-icon { font-size: 4rem; margin-bottom: 10px; line-height: 1; }
+.cert-icon .ph { vertical-align: middle; }
 .cert-title { font-family: 'Times New Roman', serif; font-size: 3rem; color: var(--aggie-blue); margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px; }
 .cert-subtitle { font-size: 1.2rem; font-style: italic; color: #404040; margin-bottom: 20px; }
 .cert-player-name { font-size: 3.5rem; font-weight: 600; color: var(--text-primary); margin: 0 0 20px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.15); display: inline-block; padding: 0 40px; }

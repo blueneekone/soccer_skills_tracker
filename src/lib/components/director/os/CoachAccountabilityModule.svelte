@@ -148,7 +148,7 @@
 									Nudge coach
 								</button>
 							{/if}
-							<span class="acc-placeholder">Push notification — coming soon</span>
+							<span class="acc-placeholder">In-app push is not available for this action</span>
 						</div>
 					{/if}
 				</div>

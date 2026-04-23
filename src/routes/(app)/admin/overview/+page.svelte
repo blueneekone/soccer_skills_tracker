@@ -723,7 +723,7 @@
 	</header>
 
 	<div
-		class="cc-tabs tw-flex tw-flex-wrap tw-gap-1 tw-border-b tw-border-white/10 tw-bg-transparent tw-px-0 tw-py-0"
+		class="cc-tabs tw-flex tw-flex-wrap tw-gap-1 tw-border-b tw-border-white/10 tw-px-0 tw-py-0"
 		role="tablist"
 		aria-label="Command center departments"
 	>
@@ -1448,8 +1448,14 @@
 		padding-top: 8px;
 		position: sticky;
 		top: 0;
-		z-index: 5;
-		background: var(--ec-canvas-bg, #09090b);
+		z-index: 8;
+		/* Opaque bar so scrolling KPIs / charts never show through the sticky tabs */
+		background-color: var(--ec-canvas-bg, #09090b);
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	}
+
+	:global(html.dark) .cc-tabs {
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
 	}
 
 	.cc-tab {

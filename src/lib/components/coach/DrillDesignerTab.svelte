@@ -17,11 +17,11 @@
 	let spatialCanvas = null;
 
 	const DRAG_ITEMS = [
-		{ type: 'cone', emoji: '🟠', label: 'Cone' },
-		{ type: 'ball', emoji: '⚽', label: 'Ball' },
-		{ type: 'goal', emoji: '🥅', label: 'Goal' },
-		{ type: 'player_x', emoji: 'X', label: 'Player X' },
-		{ type: 'player_o', emoji: 'O', label: 'Player O' }
+		{ type: 'cone', glyph: '▲', label: 'Cone' },
+		{ type: 'ball', glyph: '●', label: 'Ball' },
+		{ type: 'goal', glyph: '⌂', label: 'Goal' },
+		{ type: 'player_x', glyph: 'X', label: 'Player X' },
+		{ type: 'player_o', glyph: 'O', label: 'Player O' },
 	];
 
 	onMount(async () => {
@@ -44,7 +44,7 @@
 		if (!spatialCanvas) return;
 		import('fabric').then(({ Text }) => {
 			const item = DRAG_ITEMS.find((d) => d.type === type);
-			const obj = new Text(item?.emoji || type, {
+			const obj = new Text(item?.glyph || type, {
 				left: x, top: y, fontSize: 24, fill: type === 'player_x' ? '#b91c1c' : '#0284c7',
 				fontFamily: 'Inter', fontWeight: '900', originX: 'center', originY: 'center',
 				hasControls: false, hasBorders: true, borderColor: '#fbbf24', hoverCursor: 'grab', moveCursor: 'grabbing'
@@ -83,7 +83,7 @@
 <div class="designer-tab">
 	<div class="bento-section">
 	<div class="card">
-		<div class="card-header">📐 Drill Designer</div>
+		<div class="card-header">Drill designer</div>
 		<div class="card-body">
 			<select bind:value={workoutType}>
 				<option value="foundation">Brilliant Basics</option>
@@ -113,7 +113,7 @@
 							onclick={() => spawnObject(item.type, 100, 100)}
 							onkeydown={(e) => e.key === 'Enter' && spawnObject(item.type, 100, 100)}
 						>
-							{item.emoji}
+							<span class="dd-drag-glyph">{item.glyph}</span>
 						</div>
 					{/each}
 					<div class="dd-sep" aria-hidden="true"></div>
@@ -220,6 +220,11 @@
 		cursor: grab;
 		transition: background 0.12s ease;
 		flex-shrink: 0;
+	}
+
+	.dd-drag-glyph {
+		font-weight: 900;
+		line-height: 1;
 	}
 
 	.dd-drag-item:hover {

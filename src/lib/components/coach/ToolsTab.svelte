@@ -29,7 +29,7 @@
 <div class="tools-tab">
 	{#if clubId}
 		<div class="card">
-			<div class="card-header">🗺️ Facility maps (read-only)</div>
+			<div class="card-header">Facility maps (read-only)</div>
 			<div class="card-body">
 				<p class="text-sm-sub tw-mb-3">
 					Club facility PDFs and images uploaded by your director.
@@ -40,10 +40,10 @@
 	{/if}
 
 	<div class="card">
-		<div class="card-header">⚙️ Coach Tools</div>
+		<div class="card-header">Coach tools</div>
 		<div class="card-body">
 			<p class="text-sm-sub">Export team drill library and session data.</p>
-			<button class="primary-btn btn-blue w-100" onclick={exportXlsx}>📊 Export Team Data (Excel)</button>
+			<button class="primary-btn btn-blue w-100" onclick={exportXlsx}>Export team data (Excel)</button>
 		</div>
 	</div>
 </div>

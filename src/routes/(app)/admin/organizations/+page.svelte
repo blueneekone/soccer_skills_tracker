@@ -860,7 +860,7 @@
 				{/if}
 			</div>
 
-			<!-- Strike 2 — Stack Sports import (secondary action, pre-Sprint 2.9). -->
+			<!-- Stack Sports import (secondary integration path). -->
 			<button
 				type="button"
 				class="orgs3-import-btn"
@@ -869,7 +869,6 @@
 			>
 				<i class="ph ph-cloud-arrow-down" aria-hidden="true"></i>
 				Import via Stack Sports API
-				<span class="orgs3-import-btn__chip">Beta</span>
 			</button>
 
 			<button
@@ -1939,23 +1938,7 @@
 		background: linear-gradient(135deg, rgba(79,70,229,0.18), rgba(139,92,246,0.18));
 	}
 
-	.orgs3-import-btn__chip {
-		padding: 1px 6px;
-		border-radius: 999px;
-		background: rgba(79, 70, 229, 0.15);
-		border: 1px solid rgba(79, 70, 229, 0.25);
-		font-size: 0.625rem;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		font-weight: 800;
-	}
-
-	:global(html.dark) .orgs3-import-btn__chip {
-		background: rgba(129, 140, 248, 0.18);
-		border-color: rgba(129, 140, 248, 0.3);
-	}
-
-	/* Strike 2 — Toast stack (Stack Sports import, etc.) */
+	/* Toast stack (Stack Sports import, etc.) */
 	.orgs3-toasts {
 		position: fixed;
 		right: 24px;

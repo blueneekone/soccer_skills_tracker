@@ -28,10 +28,10 @@
 
 	const statusLabel = $derived(
 		clearanceStatus === 'RED_CARD'
-			? '🟥 SUSPENDED (Red Card)'
+			? 'Suspended (red card)'
 			: clearanceStatus === 'PENDING_SAFESPORT'
-				? '🟨 PENDING SAFESPORT'
-				: '✅ CLEARED TO PLAY'
+				? 'SafeSport pending'
+				: 'Cleared to play'
 	);
 
 	/** Under-13 athletes: no canvas; VPC + director attestation instead. */
@@ -145,7 +145,7 @@
 </script>
 
 <div class="view-section">
-	<h2 class="view-title">🛂 Player Passport</h2>
+	<h2 class="view-title">Player passport</h2>
 
 	<div class="bento-section">
 		<div class="card border-green">
@@ -155,8 +155,8 @@
 					{statusLabel}
 				</div>
 				<p class="status-note">
-					This status is controlled by your Club Director. A Green "Cleared" status is required to participate in
-					official matches.
+					This status is controlled by your club director. A cleared status is required to participate in official
+					matches.
 				</p>
 			</div>
 		</div>
@@ -225,7 +225,7 @@
 			{/if}
 
 			<button type="button" class="primary-btn btn-green w-100" onclick={savePassport} disabled={saving}>
-				{saving ? 'Saving Securely...' : '💾 Save passport'}
+				{saving ? 'Saving…' : 'Save passport'}
 			</button>
 		</div>
 	</div>

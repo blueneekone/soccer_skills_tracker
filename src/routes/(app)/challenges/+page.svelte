@@ -68,7 +68,7 @@
 <div class="view-section">
 	<div class="card">
 		<div class="card-header bg-gold-header">
-			<h2 class="mt-0">🔥 Challenge Mode</h2>
+			<h2 class="mt-0">Challenges</h2>
 			<p class="challenge-subtitle">Watch the video, perform the reps, and log your official score.</p>
 		</div>
 	</div>

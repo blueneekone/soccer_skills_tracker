@@ -419,7 +419,7 @@
 							onclick={runAiAnalysis}
 							aria-busy={aiBusy}
 						>
-							✨ Analyze Tactic
+							Analyze tactic
 						</button>
 						<p class="strategy-ai-trigger-hint">
 							{#if !loadedTacticId}

@@ -229,7 +229,7 @@
 
 <div class="full-screen-center setup-theme">
 	<div class="auth-card">
-		<div class="logo-circle">⚽</div>
+		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">Complete Profile</h2>
 		<p class="auth-subtitle">Link your account to your organization.</p>
 
@@ -282,7 +282,7 @@
 			</p>
 		{:else if dobOutcome === 'minor_pending'}
 			<div class="minor-gate" role="alert">
-				<div class="minor-gate__icon">🔒</div>
+				<div class="minor-gate__icon" aria-hidden="true"><i class="ph ph-lock"></i></div>
 				<h3 class="minor-gate__title">Parental consent required</h3>
 				<p class="minor-gate__body">
 					Based on your date of birth, your account requires a parent or guardian to complete the
@@ -416,6 +416,8 @@
 	.minor-gate__icon {
 		font-size: 2.5rem;
 		margin-bottom: 0.75rem;
+		line-height: 1;
+		color: var(--text-secondary);
 	}
 	.minor-gate__title {
 		margin: 0 0 0.75rem;

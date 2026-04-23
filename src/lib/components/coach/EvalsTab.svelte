@@ -204,7 +204,7 @@
 <div class="evals-tab">
 	<div class="bento-section evals-bento">
 		<div class="card evals-pro-card">
-			<div class="card-header evals-pro-head">📊 Pro player card — verified metrics</div>
+			<div class="card-header evals-pro-head">Pro player card — verified metrics</div>
 			<div class="card-body evals-pro-body">
 				{#if !teamId}
 					<p class="evals-hint">Select a team to publish verified scouting metrics.</p>
@@ -350,7 +350,7 @@
 		</div>
 
 		<div class="card">
-			<div class="card-header bg-red-header">🚨 Recent Trial Submissions</div>
+			<div class="card-header bg-red-header">Recent trial submissions</div>
 			<div class="card-body p-0">
 				<ul class="session-list">
 					{#each trials as t}
@@ -398,7 +398,7 @@
 		</div>
 
 		<div class="card">
-			<div class="card-header bg-blue-header">📋 Submit Player Evaluation</div>
+			<div class="card-header bg-blue-header">Submit player evaluation</div>
 			<div class="card-body">
 				<select bind:value={evalPlayerSel}>
 					<option value="" disabled>Select Player...</option>

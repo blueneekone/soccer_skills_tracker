@@ -644,7 +644,7 @@
 						<div class="ss-upcoming-card__foot">
 							<span class="ss-upcoming-card__status">
 								<i class="ph ph-lock-simple" aria-hidden="true"></i>
-								Coming Soon
+								Not enabled
 							</span>
 							<button
 								type="button"

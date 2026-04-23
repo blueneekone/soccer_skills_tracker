@@ -31,7 +31,7 @@
 <div class="elig-badge-row">
 	{#if showIdentityWarning}
 		<span class="elig-warn-identity" title="No verified email or external member ID on file">
-			⚠️ Unverified Identity
+			<i class="ph ph-warning-circle" aria-hidden="true"></i> Unverified identity
 		</span>
 	{/if}
 
@@ -81,6 +81,7 @@
 	.elig-warn-identity {
 		display: inline-flex;
 		align-items: center;
+		gap: 0.35em;
 		padding: clamp(4px, 1vw, 6px) clamp(10px, 2vw, 14px);
 		border-radius: var(--radius-premium);
 		font-size: clamp(0.72rem, 2.4vw, 0.82rem);

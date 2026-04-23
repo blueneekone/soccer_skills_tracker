@@ -145,7 +145,7 @@
 		if (!calDate || !calTime) return alert('Select Date and Time.');
 		const start = new Date(`${calDate}T${calTime}`).toISOString().replace(/-|:|\.\d\d\d/g, '');
 		const end = new Date(new Date(`${calDate}T${calTime}`).getTime() + 45 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
-		window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('⚽ Soccer Training')}&dates=${start}/${end}&details=${encodeURIComponent(getSessionDescription())}&sf=true&output=xml`, '_blank');
+		window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Soccer training')}&dates=${start}/${end}&details=${encodeURIComponent(getSessionDescription())}&sf=true&output=xml`, '_blank');
 	};
 
 	const downloadIcs = () => {
@@ -207,7 +207,7 @@
 				text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
 				icon: 'success',
 				confirmButtonColor: '#0f172a',
-				confirmButtonText: 'Keep Grinding',
+				confirmButtonText: 'Continue',
 				customClass: { popup: 'card' }
 			});
 			await authStore.refresh({ silent: true });
@@ -221,7 +221,7 @@
 </script>
 
 <div class="view-section locked-dashboard-view tracker-page">
-	<h2 class="view-title">Log Workout</h2>
+	<h2 class="view-title">Log workout</h2>
 
 	{#if homeworkAssignmentId && authStore.role === 'player'}
 		<div class="card tracker-hw-banner">
@@ -334,7 +334,6 @@
 			<div class="outcome-row">
 				{#each ['Struggled', 'Good', 'Mastered'] as opt}
 					<button class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>
-						<span>{opt === 'Struggled' ? '🥵' : opt === 'Good' ? '👍' : '🔥'}</span>
 						{opt}
 					</button>
 				{/each}
@@ -349,7 +348,6 @@
 						class:active={intensity === tier}
 						onclick={() => (intensity = /** @type {'low' | 'medium' | 'high'} */ (tier))}
 					>
-						<span>{tier === 'low' ? '🌙' : tier === 'medium' ? '⚡' : '🔥'}</span>
 						{tier}
 					</button>
 				{/each}
@@ -369,7 +367,7 @@
 				</label>
 			</div>
 
-			<button class="primary-btn btn-log-workout" onclick={submitWorkout}>💾 Log Workout (+XP)</button>
+			<button class="primary-btn btn-log-workout" onclick={submitWorkout}>Log workout (earn XP)</button>
 		</div>
 
 		<label>Schedule This Workout instead?</label>
@@ -379,8 +377,8 @@
 		</div>
 
 		<div class="export-row">
-			<button class="secondary-btn btn-export" onclick={addToGoogleCalendar}>📅 Save to Google Cal</button>
-			<button class="secondary-btn btn-export" onclick={downloadIcs}>🗓️ Download .ICS</button>
+			<button class="secondary-btn btn-export" onclick={addToGoogleCalendar}>Add to Google Calendar</button>
+			<button class="secondary-btn btn-export" onclick={downloadIcs}>Download .ics</button>
 		</div>
 	</div>
 	</div>

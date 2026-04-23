@@ -77,7 +77,7 @@
 
 <div class="full-screen-center tw-flex tw-flex-col tw-items-stretch tw-justify-center">
 	<div class="auth-card">
-		<div class="logo-circle">⚽</div>
+		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
 		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
@@ -117,15 +117,13 @@
 
 	{#if showPwaPrompt}
 		<div class="pwa-prompt tw-mt-5">
-			<h3 class="pwa-title">📲 Install the App!</h3>
+			<h3 class="pwa-title">Install the app</h3>
 			<p class="pwa-text">To login and save your stats securely, install the app to your device.</p>
 			<div class="pwa-box">
 				<b>iOS / iPhone:</b> Tap the <b>Share</b> icon below, then tap <b>Add to Home Screen</b>.<br /><br />
 				<b>Android:</b> Tap the 3 dots menu and select <b>Install App</b>.
 			</div>
-			<button class="secondary-btn w-100 {gateCtl}" onclick={dismissPwa}>
-				Continue in Browser (Not Recommended)
-			</button>
+			<button class="secondary-btn w-100 {gateCtl}" onclick={dismissPwa}>Continue in browser</button>
 		</div>
 	{/if}
 </div>
