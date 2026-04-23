@@ -25,3 +25,16 @@ html {
 .auth-card .secondary-btn {
 	flex-shrink: 0 !important;
 }
+
+/* THE ULTIMATE MODAL SCROLL FIX */
+/* This forces the browser to reserve the scrollbar space permanently */
+html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll !important;
+}
+
+/* This locks the scrolling when a modal opens */
+body:has(dialog[open]), 
+body.modal-open {
+    overflow: hidden !important;
+}
