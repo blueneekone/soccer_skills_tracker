@@ -507,14 +507,17 @@
 		class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
 	>
 		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-2">
-			<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+			<div
+				class="tw-flex tw-w-full tw-max-w-sm tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-pl-3 tw-pr-3"
+				role="search"
+			>
 				<i
-					class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-base tw-text-zinc-400"
+					class="ph ph-magnifying-glass tw-shrink-0 tw-text-base tw-leading-none tw-text-zinc-400"
 					aria-hidden="true"
 				></i>
 				<input
 					type="search"
-					class="tw-w-full tw-!pl-10 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+					class="ar-toolbar-search-input tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-py-2 tw-text-sm tw-text-[var(--text-primary)] tw-outline-none placeholder:tw-text-zinc-500 focus:tw-ring-0"
 					bind:value={searchInput}
 					placeholder="Search by email, scout name, or agency"
 					aria-label="Filter recruiters"
@@ -1053,6 +1056,12 @@
 	:global(html.dark) .ar-table-wrap {
 		border-color: #27272a;
 		background: #0f0f12;
+	}
+
+	/* Flex row search: no absolute icon — text cannot slide under the glyph */
+	.ar-toolbar-search-input {
+		box-sizing: border-box;
+		appearance: none;
 	}
 
 	.ar-toolbar-sync {
