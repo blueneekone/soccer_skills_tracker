@@ -27,7 +27,9 @@
 	height: 100dvh;
 	max-height: 100dvh;
 	overflow: hidden;
-	background: var(--pp-bg);
+	background:
+		radial-gradient(120% 70% at 50% -15%, rgba(34, 211, 238, 0.07), transparent 50%),
+		var(--pp-bg);
 	box-sizing: border-box;
 }
 
@@ -73,7 +75,16 @@
 	-webkit-overflow-scrolling: touch;
 	padding: 16px 12px calc(var(--pp-bottomnav-height) + 16px + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
-	background: var(--pp-bg);
+	background: transparent;
+	scrollbar-color: rgba(245, 158, 11, 0.35) rgba(255, 255, 255, 0.04);
+}
+
+.ps-canvas::-webkit-scrollbar {
+	width: 8px;
+}
+.ps-canvas::-webkit-scrollbar-thumb {
+	background: rgba(245, 158, 11, 0.35);
+	border-radius: 999px;
 }
 
 /* ─── Bottom navigation ────────────────────────────────────────── */
@@ -89,7 +100,7 @@
 	height: calc(var(--pp-bottomnav-height) + env(safe-area-inset-bottom, 0px));
 	padding-bottom: env(safe-area-inset-bottom, 0px);
 	background: var(--pp-surface);
-	border-top: 1px solid var(--pp-border);
+	border-top: 1px solid rgba(34, 211, 238, 0.12);
 	-webkit-backdrop-filter: blur(12px) saturate(1.6);
 	backdrop-filter: blur(12px) saturate(1.6);
 }

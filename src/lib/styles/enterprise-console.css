@@ -3,6 +3,16 @@
  * Imported by EnterpriseConsoleShell for all authenticated app roles.
  */
 
+/* Operations-console accent (SOC-adjacent) — shared with workspace dashboards */
+:root {
+	--ec-ops-accent: #22d3ee;
+	--ec-ops-accent-dim: rgba(34, 211, 238, 0.5);
+	--ec-ops-sheen: rgba(34, 211, 238, 0.12);
+	--ec-ops-ambient: rgba(34, 211, 238, 0.045);
+	--ec-ops-glow: 0 0 42px rgba(34, 211, 238, 0.05);
+	--ec-ops-border-subtle: rgba(34, 211, 238, 0.22);
+}
+
 .ec-root {
 	display: flex;
 	flex-direction: row;
@@ -1466,4 +1476,126 @@ html.dark .adm-search {
 	flex: 1 1 22rem;
 	min-width: min(100%, 12rem);
 	max-width: min(100%, 36rem);
+}
+
+/* =============================================================================
+ * Operations polish — premium navigation, canvas atmosphere, elevated surfaces
+ * (app-wide; no KPI widgets). Extends base rules above.
+ * ============================================================================= */
+
+html.dark .ec-root {
+	background: linear-gradient(155deg, #070708 0%, #09090b 42%, #0a0a0c 100%);
+}
+
+html.dark .ec-main {
+	background:
+		radial-gradient(120% 50% at 50% -5%, var(--ec-ops-ambient), transparent 52%),
+		linear-gradient(180deg, #09090b 0%, #0b0b0e 100%);
+}
+
+html.dark .ec-sidebar {
+	border-right-color: rgba(34, 211, 238, 0.11);
+}
+
+html.dark .ec-mobile-header {
+	border-bottom-color: rgba(34, 211, 238, 0.12);
+	box-shadow: 0 1px 0 rgba(34, 211, 238, 0.05);
+}
+
+.ec-sidebar .ec-nav-link {
+	border-radius: 8px;
+}
+
+.ec-sidebar .ec-nav-link--active {
+	box-shadow: inset 3px 0 0 var(--ec-ops-accent);
+	background: linear-gradient(90deg, var(--ec-ops-sheen), transparent 78%);
+	color: var(--text-primary);
+	font-weight: 600;
+}
+
+html.dark .ec-sidebar .ec-nav-link--active {
+	color: #fafafa;
+}
+
+html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .ec-topbar {
+	background: linear-gradient(180deg, #0a0a0c 0%, #09090b 100%);
+	border-bottom-color: rgba(34, 211, 238, 0.14);
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .ec-cmd-trigger:focus-visible {
+	outline: 2px solid var(--ec-ops-accent-dim);
+	outline-offset: 2px;
+}
+
+.ec-canvas {
+	scrollbar-gutter: stable;
+}
+
+html.dark .ec-canvas {
+	scrollbar-color: rgba(34, 211, 238, 0.38) rgba(255, 255, 255, 0.04);
+}
+
+html.dark .ec-canvas::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+html.dark .ec-canvas::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, rgba(34, 211, 238, 0.5), rgba(34, 211, 238, 0.18));
+	border-radius: 999px;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+
+html.dark .ec-canvas::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.03);
+	border-radius: 999px;
+}
+
+html.dark .ec-page-subnav {
+	border-bottom-color: rgba(34, 211, 238, 0.1);
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+}
+
+html:not(.dark) .ec-panel {
+	box-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.8) inset,
+		0 12px 36px rgba(15, 23, 42, 0.06);
+	transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+html.dark .ec-panel {
+	border-color: rgba(255, 255, 255, 0.09);
+	border-top: 1px solid rgba(34, 211, 238, 0.14);
+	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
+	box-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.03) inset,
+		0 16px 48px rgba(0, 0, 0, 0.38),
+		var(--ec-ops-glow);
+	transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+html.dark .ec-table-wrap {
+	border-color: rgba(255, 255, 255, 0.09);
+	border-top: 1px solid rgba(34, 211, 238, 0.1);
+	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
+}
+
+html.dark .adm-toolbar {
+	border-bottom-color: rgba(34, 211, 238, 0.12);
+}
+
+html.dark .ec-drawer {
+	border-left: 1px solid rgba(34, 211, 238, 0.14);
+	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
+	box-shadow: -14px 0 52px rgba(0, 0, 0, 0.48);
+}
+
+html.dark .ec-drawer__head {
+	border-bottom-color: rgba(34, 211, 238, 0.1);
 }

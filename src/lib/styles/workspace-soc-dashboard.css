@@ -52,6 +52,7 @@
 .wsd-lede-strong {
 	font-weight: 800;
 	color: #a5f3fc;
+	color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 72%, #ffffff);
 	letter-spacing: 0.02em;
 	text-transform: uppercase;
 	font-size: 0.72em;
@@ -134,7 +135,7 @@
 	padding: 12px 14px;
 	border-radius: 12px;
 	background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
-	border: 1px solid rgba(34, 211, 238, 0.22);
+	border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.22));
 	box-shadow:
 		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
 		0 12px 28px rgba(0, 0, 0, 0.35);
