@@ -757,17 +757,6 @@ html.dark .ec-icon-btn:hover {
 	width: 100%;
 }
 
-/* ── Strike 13 — `body.modal-open` (Svelte modals): freeze shell scrollports */
-body.modal-open .ec-canvas,
-body.modal-open .ec-main {
-	overflow: hidden !important;
-	overscroll-behavior: none;
-}
-
-body.modal-open .ec-sidebar__nav {
-	overflow: hidden !important;
-}
-
 /*
  * Sub-page navigation bar — pinned directly below ec-topbar, outside the scroll flow.
  * Uses negative margins to break out of ec-canvas padding so it sits flush at the top edge.

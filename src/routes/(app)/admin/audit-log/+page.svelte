@@ -116,45 +116,53 @@
 		</div>
 	</div>
 
-	<div class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-4">
-		<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+	<div
+		class="tw-mb-4 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-3 tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
+	>
+		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-3">
+			<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+				<i
+					class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-base tw-text-zinc-400"
+					aria-hidden="true"
+				></i>
+				<input
+					type="search"
+					class="tw-w-full tw-!pl-10 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+					bind:value={searchQuery}
+					placeholder="Search events…"
+					autocomplete="off"
+					aria-label="Search audit log"
+				/>
+			</div>
+			<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+				<label
+					class="tw-mb-0 tw-whitespace-nowrap tw-text-sm tw-font-medium tw-text-zinc-500"
+					for="al-action-filter">Filters</label
+				>
+				<input
+					id="al-action-filter"
+					type="search"
+					class="al-filter-input tw-min-w-[140px] tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-px-2 tw-py-1.5 tw-text-sm"
+					bind:value={actionFilter}
+					placeholder="Action…"
+					autocomplete="off"
+					aria-label="Filter audit log by action"
+				/>
+			</div>
+		</div>
+		<button
+			type="button"
+			class="tw-inline-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-text-zinc-300 tw-transition-colors hover:tw-border-white/20 hover:tw-bg-white/10 hover:tw-text-white disabled:tw-cursor-not-allowed disabled:tw-opacity-40"
+			onclick={() => loadLogs()}
+			disabled={loading}
+			title={loading ? 'Loading…' : 'Refresh audit log'}
+			aria-label="Refresh audit log"
+		>
 			<i
-				class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-zinc-400"
+				class="ph ph-arrows-clockwise tw-text-lg {loading ? 'al-refresh-spin' : ''}"
 				aria-hidden="true"
 			></i>
-			<input
-				type="search"
-				class="tw-w-full tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pl-10 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
-				bind:value={searchQuery}
-				placeholder="Search events…"
-				autocomplete="off"
-				aria-label="Search audit log"
-			/>
-		</div>
-		<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
-			<label class="tw-mb-0 tw-whitespace-nowrap tw-text-xs tw-font-semibold tw-text-zinc-500" for="al-action-filter"
-				>Filters</label
-			>
-			<input
-				id="al-action-filter"
-				type="search"
-				class="al-filter-input tw-min-w-[140px]"
-				bind:value={actionFilter}
-				placeholder="Action…"
-				autocomplete="off"
-				aria-label="Filter audit log by action"
-			/>
-			<button
-				type="button"
-				class="secondary-btn al-refresh-btn"
-				onclick={() => loadLogs()}
-				disabled={loading}
-				aria-label="Refresh audit log"
-			>
-				<i class="ph ph-arrows-clockwise" aria-hidden="true"></i>
-				{loading ? 'Loading…' : 'Refresh'}
-			</button>
-		</div>
+		</button>
 	</div>
 
 	{#if loadErr}
@@ -299,6 +307,16 @@
 		align-items: center;
 		gap: 6px;
 		white-space: nowrap;
+	}
+
+	.al-refresh-spin {
+		animation: al-refresh-spin 0.85s linear infinite;
+	}
+
+	@keyframes al-refresh-spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	/* ── Error state ────────────────────────────────────────────────── */

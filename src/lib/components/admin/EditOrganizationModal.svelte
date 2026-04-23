@@ -17,6 +17,7 @@
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -96,6 +97,12 @@
 		};
 	});
 
+	$effect(() => {
+		if (!open || !club) return;
+		lockEnterpriseShellScroll();
+		return () => unlockEnterpriseShellScroll();
+	});
+
 	async function submit() {
 		errMsg = '';
 		okMsg = '';
@@ -157,8 +164,6 @@
 		}
 	}
 </script>
-
-<svelte:body class:modal-open={open} />
 
 {#if open && club}
 	<!-- Strike 2: true fixed-overlay modal. The outer `.eom-overlay` is a

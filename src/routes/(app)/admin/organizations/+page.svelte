@@ -671,12 +671,11 @@
 				<i class="ph ph-magnifying-glass orgs3-search-icon" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="orgs3-search"
+					class="orgs3-search tw-!pl-10 tw-text-sm"
 					bind:value={orgSearch}
 					placeholder="Filter organizations…"
 					autocomplete="off"
 					aria-label="Filter organizations"
-					style="padding-left: 2.75rem;"
 				/>
 			</div>
 
@@ -1349,20 +1348,20 @@
 
 	.orgs3-toolbar__title {
 		margin: 0;
-		font-size: 0.9375rem;
+		font-size: 0.875rem;
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		color: var(--text-primary);
 	}
 
 	.orgs3-toolbar__count {
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		color: var(--text-secondary);
 		font-variant-numeric: tabular-nums;
 	}
 
 	.orgs3-toolbar__sub {
-		font-size: 0.72rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		letter-spacing: 0.01em;
 		color: var(--text-secondary, #52525b);
@@ -1403,17 +1402,14 @@
 	}
 
 	.orgs3-search {
+		box-sizing: border-box;
 		height: 38px;
-		/* Strike 3 (A1.3) — padding-left lives on the input ITSELF (not the
-		   wrapper) so the placeholder text never slides underneath the
-		   Phosphor icon, even if a future global style targets the wrapper.
-		   2.75rem = 44px, comfortably past the 16px glyph at 0.75rem. */
-		padding: 0 14px 0 2.75rem;
+		/* Left padding: `tw-!pl-10` on the input; icon at `left: 0.75rem` (left-3). */
+		padding: 0 14px 0 0;
 		border-radius: 8px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--glass-bg, #fff);
 		font: inherit;
-		font-size: 0.875rem;
 		color: var(--text-primary);
 		outline: none;
 		width: 100%;
@@ -1450,7 +1446,7 @@
 		background: var(--glass-bg, #fff);
 		color: var(--text-primary);
 		font: inherit;
-		font-size: 0.8125rem;
+		font-size: 0.875rem;
 		font-weight: 600;
 		cursor: pointer;
 		transition: background 0.12s ease, border-color 0.12s ease;
@@ -1476,7 +1472,7 @@
 	}
 
 	.orgs3-filter-btn i {
-		font-size: 1rem;
+		font-size: 0.875rem;
 	}
 
 	.orgs3-filter-badge {

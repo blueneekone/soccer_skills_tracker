@@ -29,6 +29,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
+	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -549,9 +550,13 @@
 	const rangeStart = $derived(pageIndex * PAGE_SIZE + (rows.length > 0 ? 1 : 0));
 	const rangeEnd = $derived(pageIndex * PAGE_SIZE + rows.length);
 	const totalLabel = $derived(totalLoaded ? `${totalEstimate.toLocaleString()}` : '…');
-</script>
 
-<svelte:body class:modal-open={purgeStep > 0} />
+	$effect(() => {
+		if (purgeStep <= 0) return;
+		lockEnterpriseShellScroll();
+		return () => unlockEnterpriseShellScroll();
+	});
+</script>
 
 <div class="gu-root">
 	<!-- Strike 1 — Page Actions header: title + sub left, primary CTAs on the

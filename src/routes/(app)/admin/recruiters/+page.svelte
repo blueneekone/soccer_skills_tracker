@@ -503,31 +503,35 @@
 		<p class="ar-flash ar-flash--err" role="alert">{err}</p>
 	{/if}
 
-	<div class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-4">
-		<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
-			<i
-				class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-zinc-400"
-				aria-hidden="true"
-			></i>
-			<input
-				type="search"
-				class="tw-w-full tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pl-10 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
-				bind:value={searchInput}
-				placeholder="Search by email, scout name, or agency"
-				aria-label="Filter recruiters"
-				autocomplete="off"
-				spellcheck="false"
-			/>
+	<div
+		class="tw-mb-4 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
+	>
+		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-2">
+			<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
+				<i
+					class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-base tw-text-zinc-400"
+					aria-hidden="true"
+				></i>
+				<input
+					type="search"
+					class="tw-w-full tw-!pl-10 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+					bind:value={searchInput}
+					placeholder="Search by email, scout name, or agency"
+					aria-label="Filter recruiters"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+			</div>
 		</div>
 		<button
 			type="button"
-			class="ar-btn ar-btn--ghost ar-toolbar-sync tw-shrink-0"
+			class="tw-inline-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-text-zinc-300 tw-transition-colors hover:tw-border-white/20 hover:tw-bg-white/10 hover:tw-text-white disabled:tw-cursor-not-allowed disabled:tw-opacity-40"
 			onclick={() => void loadRecruiters()}
 			disabled={loading}
+			title={loading ? 'Syncing…' : 'Refresh'}
 			aria-label="Refresh recruiter list from Firestore"
 		>
-			<i class="ph ph-arrows-clockwise {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
-			{loading ? 'Syncing…' : 'Refresh'}
+			<i class="ph ph-arrows-clockwise tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
 		</button>
 	</div>
 

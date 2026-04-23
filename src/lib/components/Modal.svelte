@@ -1,4 +1,6 @@
 <script>
+	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
+
 	let {
 		open = $bindable(false),
 		title = '',
@@ -8,7 +10,9 @@
 		titleSlot
 	} = $props();
 
-	const close = () => { open = false; };
+	const close = () => {
+		open = false;
+	};
 
 	const handleBackdrop = (e) => {
 		if (e.target === e.currentTarget) close();
@@ -17,9 +21,14 @@
 	const handleKey = (e) => {
 		if (e.key === 'Escape') close();
 	};
+
+	$effect(() => {
+		if (!open) return;
+		lockEnterpriseShellScroll();
+		return () => unlockEnterpriseShellScroll();
+	});
 </script>
 
-<svelte:body class:modal-open={open} />
 <svelte:window onkeydown={handleKey} />
 
 {#if open}
