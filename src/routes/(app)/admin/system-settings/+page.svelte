@@ -723,9 +723,9 @@
 
 	.ss-page__title {
 		margin: 0 0 4px;
-		font-size: 1.125rem;
-		font-weight: 700;
-		letter-spacing: -0.03em;
+		font-size: 1.5rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 		color: var(--text-primary);
 	}
 

@@ -120,14 +120,14 @@
 		class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
 	>
 		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-3">
-			<div class="tw-relative tw-w-full tw-max-w-sm" role="search">
-				<i
-					class="ph ph-magnifying-glass tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw-z-[1] -tw-translate-y-1/2 tw-text-base tw-text-zinc-400"
-					aria-hidden="true"
-				></i>
+			<div
+				class="tw-flex tw-min-w-0 tw-w-full tw-max-w-sm tw-flex-1 tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-px-2.5 tw-py-1.5"
+				role="search"
+			>
+				<i class="ph ph-magnifying-glass tw-shrink-0 tw-text-base tw-text-zinc-400" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="tw-w-full tw-!pl-10 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-py-2 tw-pr-3 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500"
+					class="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500 focus:tw-outline-none focus:tw-ring-0"
 					bind:value={searchQuery}
 					placeholder="Search events…"
 					autocomplete="off"
@@ -262,13 +262,13 @@
 
 	.al-header__title {
 		margin: 0;
-		font-size: 1.25rem;
-		font-weight: 700;
+		font-size: 1.5rem;
+		font-weight: 800;
 		display: flex;
 		align-items: center;
 		gap: 8px;
 		color: var(--text-primary);
-		letter-spacing: -0.03em;
+		letter-spacing: -0.04em;
 	}
 
 	.al-header__sub {

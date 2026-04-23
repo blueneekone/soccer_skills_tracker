@@ -830,7 +830,7 @@
 		margin: 0 0 4px;
 		font-size: 1.5rem;
 		font-weight: 800;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.04em;
 		color: #18181b;
 	}
 

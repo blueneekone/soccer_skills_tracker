@@ -990,9 +990,9 @@
 
 	.gu-title {
 		margin: 0 0 4px;
-		font-size: 1.125rem;
-		font-weight: 700;
-		letter-spacing: -0.03em;
+		font-size: 1.5rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 		color: var(--text-primary);
 	}
 
@@ -1015,29 +1015,35 @@
 		justify-content: flex-end;
 	}
 
-	/* Strike 1 — Dedicated toolbar row above the table. Owns search exclusively. */
+	/* Strike 1 — Dedicated toolbar row above the table (Defender / action-bar shell). */
 	.gu-toolbar {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		flex-wrap: wrap;
+		padding: 10px 12px;
+		border-radius: 10px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: rgba(0, 0, 0, 0.02);
+	}
+
+	:global(html.dark) .gu-toolbar {
+		border-color: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.05);
 	}
 
 	.gu-search {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 6px 8px 6px 12px;
-		border-radius: 8px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: var(--glass-bg, #fff);
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
-	}
-
-	:global(html.dark) .gu-search {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.1);
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+		flex: 1 1 auto;
+		min-width: 0;
+		max-width: 28rem;
+		padding: 4px 0;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
 	}
 
 	.gu-search > i {

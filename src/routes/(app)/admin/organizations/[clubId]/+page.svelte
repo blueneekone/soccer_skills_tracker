@@ -574,9 +574,9 @@
 
 	.cd-identity__name {
 		margin: 0;
-		font-size: 1.4rem;
+		font-size: 1.5rem;
 		font-weight: 800;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.04em;
 		color: var(--text-primary);
 	}
 

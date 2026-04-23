@@ -661,10 +661,12 @@
 	<div class="orgs3-toolbar">
 		<div class="orgs3-toolbar__left">
 			<h1 class="orgs3-toolbar__title">Organizations</h1>
-			<span class="orgs3-toolbar__sub">Organization &rsaquo; Program &rsaquo; Team &rsaquo; Roster</span>
-			<span class="orgs3-toolbar__count">
-				{#if clubsLoading}—{:else}{filteredClubs.length} of {clubs.length}{/if}
-			</span>
+			<div class="orgs3-toolbar__meta">
+				<span class="orgs3-toolbar__sub">Organization &rsaquo; Program &rsaquo; Team &rsaquo; Roster</span>
+				<span class="orgs3-toolbar__count">
+					{#if clubsLoading}—{:else}{filteredClubs.length} of {clubs.length}{/if}
+				</span>
+			</div>
 		</div>
 		<div class="orgs3-toolbar__right">
 			<div class="orgs3-search-wrap">
@@ -1365,7 +1367,6 @@
 		font-weight: 500;
 		letter-spacing: 0.01em;
 		color: var(--text-secondary, #52525b);
-		margin-left: 4px;
 	}
 
 	.orgs3-toolbar__right {
