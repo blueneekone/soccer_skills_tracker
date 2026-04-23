@@ -355,7 +355,9 @@
 		transform: translate(-50%, -50%);
 		width: min(720px, calc(100vw - 32px));
 		max-height: min(92vh, 880px);
-		overflow: auto;
+		max-height: min(92dvh, calc(100dvh - 32px), 880px);
+		overflow-x: hidden;
+		overflow-y: auto;
 		border-radius: 16px;
 		background: #ffffff;
 		color: #18181b;

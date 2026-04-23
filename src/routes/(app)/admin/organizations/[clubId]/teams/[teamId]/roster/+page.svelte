@@ -358,7 +358,7 @@
 
 	.roster-search {
 		height: 34px;
-		padding: 0 12px 0 30px;
+		padding: 0 12px 0 2.5rem;
 		border-radius: 7px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--glass-bg, #fff);

@@ -15,41 +15,42 @@
 		authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Athlete',
 	);
 
-	/** Bottom nav links — mirrors athleteHouseholdLinks without workspace-jumping items. */
+	const firstName = $derived(
+		String(playerName)
+			.trim()
+			.split(/\s+/)[0] || playerName,
+	);
+
+	/** Bottom / rail nav — HQ first, then core athlete loops. */
 	const NAV_LINKS = [
-		{ href: '/stats',       icon: 'ph-chart-bar',   label: 'Stats' },
-		{ href: '/tracker',     icon: 'ph-list-checks',  label: 'Train' },
-		{ href: '/trophies',    icon: 'ph-trophy',       label: 'Trophies' },
-		{ href: '/challenges',  icon: 'ph-medal',        label: 'Challenges' },
-		{ href: '/settings',    icon: 'ph-gear',         label: 'Settings' },
+		{ href: '/player/dashboard', icon: 'ph-squares-four', label: 'HQ' },
+		{ href: '/stats', icon: 'ph-chart-bar', label: 'Stats' },
+		{ href: '/tracker', icon: 'ph-list-checks', label: 'Train' },
+		{ href: '/trophies', icon: 'ph-trophy', label: 'Trophies' },
+		{ href: '/challenges', icon: 'ph-medal', label: 'Challenges' },
+		{ href: '/settings', icon: 'ph-gear', label: 'Settings' },
 	];
 
 	/**
-	 * Returns true when the given href matches the current pathname.
 	 * @param {string} href
 	 */
 	function isActive(href) {
-		return page.url.pathname === href || page.url.pathname.startsWith(href + '/');
+		const path = page.url.pathname;
+		if (href === '/tracker' && path.startsWith('/player/workout')) return true;
+		if (path === href) return true;
+		/* Avoid treating every /player/* route as HQ */
+		if (href === '/player/dashboard') return false;
+		return path.startsWith(href + '/');
 	}
 </script>
 
 <div class="ps-root">
-	<!-- Compact top bar: wordmark + level progress ring -->
-	<header class="ps-topbar">
-		<div class="ps-topbar__brand">
-			<span class="ps-topbar__wordmark">SS Tracker</span>
-		</div>
-		<div class="ps-topbar__ring" aria-label="XP progress ring">
-			<LevelProgressRing {totalXp} size="md" variant="dark" />
-		</div>
-	</header>
+	<div class="ps-ambient" aria-hidden="true">
+		<div class="ps-ambient__grid"></div>
+		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
+		<div class="ps-ambient__glow ps-ambient__glow--b"></div>
+	</div>
 
-	<!-- Scrollable content area -->
-	<main class="ps-canvas">
-		{@render children?.()}
-	</main>
-
-	<!-- Sticky bottom navigation -->
 	<nav class="ps-bottom-nav" aria-label="Player navigation">
 		{#each NAV_LINKS as link (link.href)}
 			<a
@@ -60,8 +61,29 @@
 				data-sveltekit-preload-data="hover"
 			>
 				<i class="ph {link.icon} ps-bottom-nav__icon" aria-hidden="true"></i>
-				{link.label}
+				<span class="ps-bottom-nav__label">{link.label}</span>
 			</a>
 		{/each}
 	</nav>
+
+	<div class="ps-stack">
+		<header class="ps-topbar">
+			<div class="ps-topbar__brand">
+				<span class="ps-topbar__mark" aria-hidden="true">
+					<i class="ph ph-polygon"></i>
+				</span>
+				<div class="ps-topbar__hello">
+					<span class="ps-topbar__greet">Player OS</span>
+					<span class="ps-topbar__name">{firstName}</span>
+				</div>
+			</div>
+			<div class="ps-topbar__ring" aria-label="XP progress ring">
+				<LevelProgressRing {totalXp} size="md" variant="dark" />
+			</div>
+		</header>
+
+		<main class="ps-canvas">
+			{@render children?.()}
+		</main>
+	</div>
 </div>

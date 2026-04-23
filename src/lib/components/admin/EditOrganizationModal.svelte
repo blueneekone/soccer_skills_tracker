@@ -358,14 +358,12 @@
 		inset: 0;
 		z-index: 9999;
 		box-sizing: border-box;
-		/* One scrollport: the overlay. Centers short dialogs; tall forms scroll without clipping. */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		justify-content: center;
 		min-height: 100vh;
-		max-height: 100vh;
-		min-height: 100svh;
-		max-height: 100svh;
+		min-height: 100dvh;
 		padding: max(12px, env(safe-area-inset-top, 0px)) 16px max(12px, env(safe-area-inset-bottom, 0px));
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -379,10 +377,13 @@
 		position: relative;
 		width: min(720px, 100%);
 		max-width: 100%;
+		max-height: calc(100vh - 32px);
+		max-height: calc(100dvh - 32px);
 		flex-shrink: 0;
-		margin-block: auto;
+		margin-block: 0;
 		margin-inline: 0;
-		overflow: visible;
+		overflow-x: hidden;
+		overflow-y: auto;
 		border-radius: 16px;
 		background: #ffffff;
 		color: #18181b;

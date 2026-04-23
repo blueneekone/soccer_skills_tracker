@@ -1443,7 +1443,8 @@ html.dark .adm-search-icon {
 .adm-search {
 	box-sizing: border-box;
 	height: 38px;
-	padding: 0 14px 0 0;
+	/* Reserve space for .adm-search-icon (positioned at left: 0.75rem) */
+	padding: 0 14px 0 2.75rem;
 	border-radius: 8px;
 	border: 1px solid var(--border-subtle, #e5e5e5);
 	background: var(--glass-bg, #fff);

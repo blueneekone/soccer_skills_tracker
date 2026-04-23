@@ -457,7 +457,7 @@
 				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="adm-search tw-!pl-10 tw-text-sm"
+					class="adm-search tw-text-sm"
 					bind:value={searchInput}
 					placeholder="Search by email, scout name, or agency"
 					aria-label="Filter recruiters"

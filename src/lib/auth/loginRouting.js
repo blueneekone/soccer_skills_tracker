@@ -53,7 +53,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	}
 	if (role === 'player') {
 		return {
-			path: '/stats',
+			path: '/player/dashboard',
 			context: 'household',
 			pivotKey: 'ctx-player-home',
 		};

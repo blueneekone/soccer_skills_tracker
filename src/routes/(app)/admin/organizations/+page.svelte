@@ -673,7 +673,7 @@
 				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="adm-search tw-!pl-10 tw-text-sm"
+					class="adm-search tw-text-sm"
 					bind:value={orgSearch}
 					placeholder="Filter organizations…"
 					autocomplete="off"
@@ -1130,25 +1130,27 @@
 								{/if}
 							</td>
 
-							<!-- Name + ID (Sprint 2.6.5 — glowing inline sport icon) -->
+							<!-- Name + ID (license chip stays on same row as the name) -->
 							<td class="orgs3-dt__td orgs3-dt__td--name">
-								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
-									<span
-										class="orgs3-org-sport-badge"
-										style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
-										title="Sport: {accent.label}"
-										aria-hidden="true"
-									>
-										<i class="ph {sportSuffix}"></i>
-									</span>
-									<span class="orgs3-org-name-text">
-										{cl?.name || cl?.id || 'Unnamed Organization'}
-									</span>
-								</a>
+								<div class="orgs3-org-primary">
+									<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
+										<span
+											class="orgs3-org-sport-badge"
+											style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
+											title="Sport: {accent.label}"
+											aria-hidden="true"
+										>
+											<i class="ph {sportSuffix}"></i>
+										</span>
+										<span class="orgs3-org-name-text">
+											{cl?.name || cl?.id || 'Unnamed Organization'}
+										</span>
+									</a>
+									{#if cl?.isInfinite === true}
+										<span class="orgs3-promo" title="Unlimited / Promo license">∞</span>
+									{/if}
+								</div>
 								<span class="orgs3-org-id">{cl?.id ?? ''}</span>
-								{#if cl?.isInfinite === true}
-									<span class="orgs3-promo" title="Unlimited / Promo license">∞</span>
-								{/if}
 							</td>
 
 							<!-- Sport -->
@@ -2162,6 +2164,7 @@
 	.orgs3-dt__th {
 		padding: 8px 12px; /* py-2 equivalent */
 		text-align: left;
+		vertical-align: middle;
 		font-size: 0.6875rem;
 		font-weight: 800;
 		text-transform: uppercase;
@@ -2177,9 +2180,9 @@
 		border-bottom-color: rgba(255, 255, 255, 0.07);
 	}
 
-	.orgs3-dt__th--logo    { width: 44px; padding-left: 16px; }
-	.orgs3-dt__th--compliance { width: 130px; }
-	.orgs3-dt__th--actions { width: 96px; text-align: right; padding-right: 16px; }
+	.orgs3-dt__th--logo    { width: 44px; padding-left: 16px; vertical-align: middle; }
+	.orgs3-dt__th--compliance { width: 130px; vertical-align: middle; }
+	.orgs3-dt__th--actions { width: 96px; text-align: right; padding-right: 16px; vertical-align: middle; }
 	/* Strike 2: center-align modifier for the Teams column (header + cell). */
 	.orgs3-dt__th--center, .orgs3-dt__td--center { text-align: center; }
 
@@ -2212,8 +2215,8 @@
 		color: var(--text-primary);
 	}
 
-	.orgs3-dt__td--logo { width: 44px; padding-left: 16px; }
-	.orgs3-dt__td--name { vertical-align: top; padding-top: 10px; }
+	.orgs3-dt__td--logo { width: 44px; padding-left: 16px; vertical-align: middle; }
+	.orgs3-dt__td--name { vertical-align: middle; }
 
 	.orgs3-dt__td--muted {
 		color: var(--text-secondary);
@@ -2241,6 +2244,10 @@
 		color: var(--text-secondary);
 		font-size: 0.8rem;
 		font-weight: 600;
+	}
+
+	.orgs3-dt__td--num.orgs3-dt__td--center {
+		text-align: center;
 	}
 
 	.orgs3-dt__td--actions {
@@ -2325,11 +2332,20 @@
 		box-shadow: 0 0 0 3px var(--sport-glow, rgba(99, 102, 241, 0.14));
 	}
 
-	/* ── Org name cell (inline glowing sport badge + name) ──────────── */
+	/* Name row: sport badge + name link + license chip share one baseline */
+	.orgs3-org-primary {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-width: 0;
+	}
+
 	.orgs3-org-link {
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
+		min-width: 0;
+		flex: 1 1 auto;
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text-primary);
@@ -2384,15 +2400,17 @@
 	}
 
 	.orgs3-promo {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
 		font-size: 0.65rem;
 		font-weight: 900;
-		padding: 1px 5px;
+		line-height: 1;
+		padding: 2px 6px;
 		border-radius: 999px;
 		background: linear-gradient(135deg, #fde68a, #fbbf24, #d97706);
 		color: #78350f;
-		margin-left: 4px;
-		vertical-align: middle;
 	}
 
 	/* ── Compliance Health column ───────────────────────────────────── */

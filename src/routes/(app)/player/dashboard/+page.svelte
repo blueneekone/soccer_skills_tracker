@@ -228,7 +228,7 @@
 <section class="pd-wrap tier-{tier}">
 	<header class="pd-hero">
 		<div class="pd-hero__identity">
-			<span class="pd-hero__eyebrow">Player Dashboard</span>
+			<span class="pd-hero__eyebrow">Command center</span>
 			<h1 class="pd-hero__name">{profile?.playerName || 'Athlete'}</h1>
 			<span class="pd-hero__meta">
 				{#if profile?.teamId && profile.teamId !== 'admin'}
@@ -347,14 +347,10 @@
 <style>
 	.pd-wrap {
 		position: relative;
-		min-height: 100vh;
-		padding: 28px clamp(16px, 4vw, 32px) 100px;
+		padding: 4px 2px 12px;
 		color: #fafafa;
-		background:
-			radial-gradient(90% 60% at 50% -10%, rgba(168, 85, 247, 0.22), transparent 60%),
-			radial-gradient(60% 40% at 100% 40%, rgba(34, 211, 238, 0.14), transparent 60%),
-			#09090b;
-		overflow: hidden;
+		background: transparent;
+		overflow: visible;
 	}
 
 	.tabular-num {

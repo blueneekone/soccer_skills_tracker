@@ -888,7 +888,7 @@
 	.drill-lib__search input {
 		width: 100%;
 		height: 40px;
-		padding: 0 14px 0 36px;
+		padding: 0 14px 0 2.5rem;
 		border-radius: 10px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		background: #18181b;
