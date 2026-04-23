@@ -13,35 +13,48 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/** Strike 16 — Tabbed command center + Vanguard KPI grid + live charts */
+	/** Strike 16 — Tabbed command center (SOAR/SIEM-style statistical surfaces) */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
 	const TAB_LABELS = /** @type {const} */ (['Executive', 'Growth', 'Security', 'Platform']);
 
 	/** @type {'executive' | 'growth' | 'security' | 'platform'} */
 	let activeTab = $state('executive');
 
-	/** @type {{ label: string; value: string; hint: string }[]} */
-	let strike13Executive = $state([
-		{ label: 'MRR', value: '$42.5k', hint: 'Monthly recurring' },
-		{ label: 'ARR', value: '$510k', hint: 'Annual run rate' },
-		{ label: 'Active Orgs', value: '142', hint: 'Tenant footprint' },
-		{ label: 'Total Players', value: '12.4k', hint: 'Platform headcount' },
-		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly' },
-		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU' },
-		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross' },
-		{ label: 'LTV', value: '$12k', hint: 'Cohort average' },
+	/** SOC-style ribbon — headline operational telemetry (representative / demo). */
+	const SOC_RIBBON = /** @type {const} */ ([
+		{ k: 'MTTR', v: '18m', s: 'Incidents · rolling 7d p50' },
+		{ k: 'Playbooks', v: '2.4k', s: 'Automation runs · 24h' },
+		{ k: 'Detections', v: '847/s', s: 'Rule evaluations · pipeline' },
+		{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics · p95' },
 	]);
 
-	/** @type {{ label: string; value: string; hint: string }[]} */
+	/**
+	 * @typedef {'crit' | 'high' | 'med' | 'low' | 'ok' | 'info'} SocBand
+	 * @typedef {{ label: string, value: string, hint: string, band?: SocBand, delta?: string, deltaDir?: 'up' | 'down' | 'flat' }} SocMetric
+	 */
+
+	/** @type {SocMetric[]} */
+	let strike13Executive = $state([
+		{ label: 'MRR', value: '$42.5k', hint: 'Monthly recurring', band: 'info', delta: '+4.2%', deltaDir: 'up' },
+		{ label: 'ARR', value: '$510k', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
+		{ label: 'Active Orgs', value: '142', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
+		{ label: 'Total Players', value: '12.4k', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
+		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: '—', deltaDir: 'flat' },
+		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU', band: 'info', delta: '+$12', deltaDir: 'up' },
+		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross', band: 'ok', delta: '+0.4pp', deltaDir: 'up' },
+		{ label: 'LTV', value: '$12k', hint: 'Cohort average', band: 'info', delta: '+3%', deltaDir: 'up' },
+	]);
+
+	/** @type {SocMetric[]} */
 	let strike13Security = $state([
-		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy' },
-		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h' },
-		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions' },
-		{ label: 'Vetting Pending', value: '14', hint: 'Background queue' },
-		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review' },
-		{ label: 'API Abuse', value: '12', hint: 'Throttle / WAF' },
-		{ label: 'Escalate Privileges', value: '0', hint: 'Elevation attempts' },
-		{ label: 'Suspicious IPs', value: '4', hint: 'Threat intel' },
+		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy · 24h', band: 'info', delta: '+112', deltaDir: 'up' },
+		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: '−8%', deltaDir: 'down' },
+		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions', band: 'ok', delta: '0', deltaDir: 'flat' },
+		{ label: 'Vetting Pending', value: '14', hint: 'Background queue', band: 'med', delta: '+3', deltaDir: 'up' },
+		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: '−1', deltaDir: 'down' },
+		{ label: 'API Abuse', value: '12', hint: 'Throttle / WAF', band: 'med', delta: '+2', deltaDir: 'up' },
+		{ label: 'Priv. Escalation', value: '0', hint: 'Elevation attempts', band: 'ok', delta: '0', deltaDir: 'flat' },
+		{ label: 'Suspicious IPs', value: '4', hint: 'Threat intel feed', band: 'high', delta: '+1', deltaDir: 'up' },
 	]);
 
 	/** Growth / platform tiles (charts hydrate from Firestore aggregates). */
@@ -49,6 +62,78 @@
 		growth: { ltvCac: '4.2', churn: '1.2%', pipelineARR: '$1.8M', paybackMo: '14' },
 		platform: { apiLatency: '42ms', uptime: '99.99%', dbReads: '1.2M', storage: '2.4 TB' },
 	});
+
+	/** @type {SocMetric[]} */
+	const GROWTH_TILES = [
+		{
+			label: 'LTV:CAC',
+			value: MOCK_KPI.growth.ltvCac,
+			hint: 'Blended cohort',
+			band: 'ok',
+			delta: '+0.3',
+			deltaDir: 'up',
+		},
+		{
+			label: 'Churn',
+			value: MOCK_KPI.growth.churn,
+			hint: 'Logo + revenue',
+			band: 'low',
+			delta: '−0.1pp',
+			deltaDir: 'down',
+		},
+		{
+			label: 'Pipeline ARR',
+			value: MOCK_KPI.growth.pipelineARR,
+			hint: 'Weighted forecast',
+			band: 'info',
+			delta: '+$180k',
+			deltaDir: 'up',
+		},
+		{
+			label: 'CAC payback',
+			value: `${MOCK_KPI.growth.paybackMo} mo`,
+			hint: 'Months to recover',
+			band: 'med',
+			delta: '−1 mo',
+			deltaDir: 'down',
+		},
+	];
+
+	/** @type {SocMetric[]} */
+	const PLATFORM_TILES = [
+		{
+			label: 'API latency',
+			value: MOCK_KPI.platform.apiLatency,
+			hint: 'p50 edge → API',
+			band: 'ok',
+			delta: '−4ms',
+			deltaDir: 'down',
+		},
+		{
+			label: 'Uptime',
+			value: MOCK_KPI.platform.uptime,
+			hint: 'Trailing 30d SLO',
+			band: 'ok',
+			delta: '+0.01%',
+			deltaDir: 'up',
+		},
+		{
+			label: 'DB reads',
+			value: MOCK_KPI.platform.dbReads,
+			hint: 'Firestore aggregate',
+			band: 'info',
+			delta: '+8%',
+			deltaDir: 'up',
+		},
+		{
+			label: 'Storage',
+			value: MOCK_KPI.platform.storage,
+			hint: 'Object + media vault',
+			band: 'low',
+			delta: '+120 GB',
+			deltaDir: 'up',
+		},
+	];
 
 	/** @typedef {{ label: string, value: number }} SeriesPoint */
 	/** @typedef {'live' | 'mock'} ChartSource */
@@ -336,14 +421,14 @@
 							{
 								label: 'Monthly active users',
 								data: series.map((p) => p.value),
-								borderColor: '#6366f1',
-								backgroundColor: 'rgba(99,102,241,0.18)',
+								borderColor: '#22d3ee',
+								backgroundColor: 'rgba(34,211,238,0.14)',
 								borderWidth: 2.5,
 								tension: 0.35,
 								fill: true,
 								pointRadius: 3,
 								pointHoverRadius: 5,
-								pointBackgroundColor: '#6366f1',
+								pointBackgroundColor: '#22d3ee',
 								pointBorderColor: '#ffffff',
 								pointBorderWidth: 1.5,
 							},
@@ -404,7 +489,7 @@
 				if (destroyed || !target.isConnected) return;
 				mod.Chart.register(...mod.registerables);
 				const muted = cssVar('--text-secondary', '#475569');
-				const palette = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a78bfa'];
+				const palette = ['#22d3ee', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
 				chart = new mod.Chart(target, {
 					type: 'doughnut',
 					data: {
@@ -492,8 +577,8 @@
 							{
 								label: 'Players',
 								data: series.map((p) => p.value),
-								backgroundColor: 'rgba(244, 63, 94, 0.55)',
-								borderColor: 'rgba(244, 63, 94, 0.95)',
+								backgroundColor: 'rgba(34, 211, 238, 0.45)',
+								borderColor: 'rgba(34, 211, 238, 0.9)',
 								borderWidth: 1,
 								borderRadius: 4,
 								maxBarThickness: 28,
@@ -585,24 +670,56 @@
 	class="cc-root tw-box-border tw-mx-auto tw-flex tw-w-full tw-max-w-[1680px] tw-flex-col tw-px-5 tw-pt-4"
 	data-admin-shell="true"
 >
+	{#snippet socMetric(kpi)}
+		<article
+			class="cc-soc-card"
+			class:cc-soc-card--crit={kpi.band === 'crit'}
+			class:cc-soc-card--high={kpi.band === 'high'}
+			class:cc-soc-card--med={kpi.band === 'med'}
+			class:cc-soc-card--low={kpi.band === 'low'}
+			class:cc-soc-card--ok={kpi.band === 'ok'}
+			class:cc-soc-card--info={kpi.band === 'info' || !kpi.band}
+		>
+			<div class="cc-soc-card__top">
+				<span class="cc-soc-card__label">{kpi.label}</span>
+				{#if kpi.delta}
+					<span
+						class="cc-soc-card__delta"
+						class:cc-soc-card__delta--up={kpi.deltaDir === 'up'}
+						class:cc-soc-card__delta--down={kpi.deltaDir === 'down'}
+						class:cc-soc-card__delta--flat={kpi.deltaDir === 'flat' || !kpi.deltaDir}
+						>{kpi.delta}</span
+					>
+				{/if}
+			</div>
+			<span class="cc-soc-card__value">{kpi.value}</span>
+			<span class="cc-soc-card__hint">{kpi.hint}</span>
+		</article>
+	{/snippet}
+
 	<header class="cc-hero">
 		<div class="cc-hero__text">
-			<span class="cc-eyebrow">Global Admin</span>
+			<span class="cc-eyebrow">Global admin · operations console</span>
 			<h1
 				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-white md:tw-!text-5xl"
 				style="line-height: 1.08;"
 			>
-				Command Center
+				Command center
 			</h1>
 			<p class="cc-lede">
-				Strike 16 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
-				sports {sportSource}.
+				Dense statistical surfaces in the spirit of SOAR / SIEM control rooms: KPI ribbons, severity-banded
+				cards, and live audit ingest. Charts — MAU <strong class="cc-lede-strong">{mauSource}</strong>, revenue
+				<strong class="cc-lede-strong">{revenueSource}</strong>, sports
+				<strong class="cc-lede-strong">{sportSource}</strong>.
 			</p>
 		</div>
-		<span class="cc-live">
-			<span class="cc-live__dot" aria-hidden="true"></span>
-			Live
-		</span>
+		<div class="cc-hero__badges">
+			<span class="cc-live" title="Telemetry and audit stream connected">
+				<span class="cc-live__dot" aria-hidden="true"></span>
+				Live ingest
+			</span>
+			<span class="cc-hero__meta">Last refresh · client</span>
+		</div>
 	</header>
 
 	<div
@@ -628,6 +745,27 @@
 	</div>
 
 	<div class="cc-body tw-pb-12">
+		<div class="cc-soc-ribbon" aria-label="Operations snapshot">
+			{#each SOC_RIBBON as row (row.k)}
+				<div class="cc-soc-ribbon__cell">
+					<span class="cc-soc-ribbon__metric">{row.k}</span>
+					<span class="cc-soc-ribbon__value">{row.v}</span>
+					<span class="cc-soc-ribbon__sub">{row.s}</span>
+				</div>
+			{/each}
+		</div>
+		<p class="cc-soc-legend" aria-hidden="true">
+			<span class="cc-soc-legend__title">Severity key</span>
+			<span class="cc-soc-legend__items">
+				<span><i class="cc-soc-dot cc-soc-dot--crit"></i> critical</span>
+				<span><i class="cc-soc-dot cc-soc-dot--high"></i> high</span>
+				<span><i class="cc-soc-dot cc-soc-dot--med"></i> medium</span>
+				<span><i class="cc-soc-dot cc-soc-dot--low"></i> low</span>
+				<span><i class="cc-soc-dot cc-soc-dot--ok"></i> steady</span>
+				<span><i class="cc-soc-dot cc-soc-dot--info"></i> info</span>
+			</span>
+		</p>
+
 		{#if activeTab === 'executive'}
 			<section
 				class="cc-panel"
@@ -636,25 +774,14 @@
 				aria-labelledby="cc-tab-executive"
 			>
 				<div
-					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
 					{#each strike13Executive as kpi (kpi.label)}
-						<article
-							class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-						>
-							<span
-								class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-								>{kpi.label}</span
-							>
-							<span class="tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums lg:tw-text-2xl"
-								>{kpi.value}</span
-							>
-							<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
-						</article>
+						{@render socMetric(kpi)}
 					{/each}
 				</div>
 
-				<article class="cc-chart-card">
+				<article class="cc-chart-card cc-chart-card--soc">
 					<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
 							<i class="ph ph-chart-line-up"></i>
@@ -683,48 +810,15 @@
 		{:else if activeTab === 'growth'}
 			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 				<div
-					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>LTV:CAC</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.ltvCac}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Blended cohort</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>Churn</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.churn}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Logo + revenue</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>Pipeline ARR</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.pipelineARR}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Weighted forecast</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>CAC payback</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.paybackMo} mo</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Months to recover</span>
-					</article>
+					{#each GROWTH_TILES as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
 				</div>
 
 				<div class="cc-chart-row tw-min-w-0">
-					<article class="cc-chart-card cc-chart-card--half">
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
 						<header class="cc-chart-card__head">
 							<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
 								<i class="ph ph-chart-pie-slice"></i>
@@ -750,9 +844,9 @@
 						</div>
 					</article>
 
-					<article class="cc-chart-card cc-chart-card--half">
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
 						<header class="cc-chart-card__head">
-							<div class="cc-chart-card__icon cc-chart-card__icon--rose" aria-hidden="true">
+							<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
 								<i class="ph ph-soccer-ball"></i>
 							</div>
 							<div>
@@ -779,31 +873,51 @@
 			</section>
 		{:else if activeTab === 'security'}
 			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
-				<div
-					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
-				>
-					{#each strike13Security as kpi (kpi.label)}
-						<article
-							class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-						>
-							<span
-								class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-								>{kpi.label}</span
-							>
-							<span class="tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums lg:tw-text-2xl"
-								>{kpi.value}</span
-							>
-							<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
-						</article>
-					{/each}
+				<div class="cc-soc-split">
+					<div
+						class="cc-soc-grid tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-3"
+					>
+						{#each strike13Security as kpi (kpi.label)}
+							{@render socMetric(kpi)}
+						{/each}
+					</div>
+					<aside class="cc-soc-aside" aria-label="Automation and orchestration">
+						<div class="cc-soc-aside__head">
+							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
+							<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
+							<p class="cc-soc-aside__sub">Representative automation counters for executive review.</p>
+						</div>
+						<ul class="cc-soc-aside__list">
+							<li>
+								<span class="cc-soc-aside__k">Armed playbooks</span>
+								<span class="cc-soc-aside__v">12</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Open cases</span>
+								<span class="cc-soc-aside__v">7</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Auto-remediated (24h)</span>
+								<span class="cc-soc-aside__v">94%</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Mean queue depth</span>
+								<span class="cc-soc-aside__v">23</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">False-positive rate</span>
+								<span class="cc-soc-aside__v">4.1%</span>
+							</li>
+						</ul>
+					</aside>
 				</div>
 
-				<article class="cc-feed-shell">
+				<article class="cc-feed-shell cc-feed-shell--soc">
 					<header class="cc-feed-shell__head">
-						<h2 class="cc-feed-shell__title">Global security audit log</h2>
+						<h2 class="cc-feed-shell__title">Live event stream</h2>
 						<p class="cc-feed-shell__sub">
 							<code class="cc-code">security_audit</code>
-							· {liveFeed.length} events
+							· {liveFeed.length} events ingested
 						</p>
 					</header>
 					{#if feedErr}
@@ -847,44 +961,11 @@
 		{:else}
 			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 				<div
-					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>API latency</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.apiLatency}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">p50 edge → API</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>Uptime</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-emerald-400 tw-tabular-nums">{MOCK_KPI.platform.uptime}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Trailing 30d SLO</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>DB reads</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.dbReads}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Firestore aggregate</span>
-					</article>
-					<article
-						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
-					>
-						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
-							>Storage</span
-						>
-						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.storage}</span>
-						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Object + media vault</span>
-					</article>
+					{#each PLATFORM_TILES as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
 				</div>
 
 				<div class="cc-platform-note">
@@ -954,6 +1035,375 @@
 		font-size: 0.875rem;
 		line-height: 1.45;
 		color: var(--text-secondary);
+	}
+
+	.cc-lede-strong {
+		font-weight: 800;
+		color: #a5f3fc;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		font-size: 0.72em;
+	}
+
+	.cc-hero__badges {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 8px;
+		flex-shrink: 0;
+	}
+
+	.cc-hero__meta {
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.35);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Operations ribbon (SOAR / SIEM density) */
+	.cc-soc-ribbon {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 10px;
+		margin-bottom: 10px;
+	}
+
+	@media (max-width: 900px) {
+		.cc-soc-ribbon {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 520px) {
+		.cc-soc-ribbon {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.cc-soc-ribbon__cell {
+		padding: 12px 14px;
+		border-radius: 12px;
+		background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
+		border: 1px solid rgba(34, 211, 238, 0.22);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 12px 28px rgba(0, 0, 0, 0.35);
+	}
+
+	.cc-soc-ribbon__metric {
+		display: block;
+		font-size: 0.6rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: rgba(165, 243, 252, 0.85);
+		margin-bottom: 4px;
+	}
+
+	.cc-soc-ribbon__value {
+		display: block;
+		font-size: 1.35rem;
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+		color: #fafafa;
+		line-height: 1.1;
+	}
+
+	.cc-soc-ribbon__sub {
+		display: block;
+		margin-top: 4px;
+		font-size: 0.68rem;
+		font-weight: 600;
+		line-height: 1.35;
+		color: rgba(161, 161, 170, 0.95);
+	}
+
+	.cc-soc-legend {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 16px;
+		margin: 0 0 18px;
+		padding: 8px 12px;
+		border-radius: 10px;
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.45);
+	}
+
+	.cc-soc-legend__title {
+		color: rgba(255, 255, 255, 0.55);
+		margin-right: 4px;
+	}
+
+	.cc-soc-legend__items {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 14px;
+	}
+
+	.cc-soc-legend__items span {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.cc-soc-dot {
+		display: inline-block;
+		width: 8px;
+		height: 8px;
+		border-radius: 2px;
+		flex-shrink: 0;
+	}
+
+	.cc-soc-dot--crit {
+		background: #f87171;
+		box-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+	}
+	.cc-soc-dot--high {
+		background: #fb923c;
+		box-shadow: 0 0 8px rgba(251, 146, 60, 0.35);
+	}
+	.cc-soc-dot--med {
+		background: #facc15;
+	}
+	.cc-soc-dot--low {
+		background: #4ade80;
+	}
+	.cc-soc-dot--ok {
+		background: #34d399;
+	}
+	.cc-soc-dot--info {
+		background: #22d3ee;
+	}
+
+	/* Severity-banded metric tiles */
+	.cc-soc-card {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 16px 18px;
+		border-radius: 14px;
+		background: linear-gradient(180deg, rgba(12, 12, 14, 0.98), rgba(9, 9, 11, 0.99));
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+		border-left: 3px solid rgba(113, 113, 122, 0.6);
+		min-width: 0;
+	}
+
+	.cc-soc-card--crit {
+		border-left-color: #ef4444;
+		box-shadow:
+			0 14px 36px rgba(0, 0, 0, 0.4),
+			0 0 24px rgba(239, 68, 68, 0.12);
+	}
+	.cc-soc-card--high {
+		border-left-color: #f97316;
+		box-shadow:
+			0 14px 36px rgba(0, 0, 0, 0.4),
+			0 0 20px rgba(249, 115, 22, 0.1);
+	}
+	.cc-soc-card--med {
+		border-left-color: #eab308;
+	}
+	.cc-soc-card--low {
+		border-left-color: #84cc16;
+	}
+	.cc-soc-card--ok {
+		border-left-color: #22c55e;
+	}
+	.cc-soc-card--info {
+		border-left-color: #06b6d4;
+	}
+
+	.cc-soc-card__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 10px;
+	}
+
+	.cc-soc-card__label {
+		font-size: 0.625rem;
+		font-weight: 800;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		color: rgba(161, 161, 170, 0.95);
+	}
+
+	.cc-soc-card__delta {
+		font-size: 0.65rem;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.cc-soc-card__delta--up {
+		color: #67e8f9;
+	}
+	.cc-soc-card__delta--down {
+		color: #fde68a;
+	}
+	.cc-soc-card__delta--flat {
+		color: #71717a;
+	}
+
+	.cc-soc-card__value {
+		font-size: 1.35rem;
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+		color: #fafafa;
+		line-height: 1.15;
+	}
+
+	@media (min-width: 1024px) {
+		.cc-soc-card__value {
+			font-size: 1.5rem;
+		}
+	}
+
+	.cc-soc-card--ok .cc-soc-card__value {
+		color: #86efac;
+	}
+
+	.cc-soc-card__hint {
+		font-size: 0.72rem;
+		font-weight: 600;
+		line-height: 1.35;
+		color: rgba(113, 113, 122, 0.98);
+	}
+
+	.cc-soc-split {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+		gap: 16px;
+		align-items: start;
+		margin-bottom: 20px;
+	}
+
+	@media (max-width: 1100px) {
+		.cc-soc-split {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.cc-soc-aside {
+		padding: 16px 18px;
+		border-radius: 14px;
+		background: rgba(9, 9, 11, 0.75);
+		border: 1px solid rgba(34, 211, 238, 0.18);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+	}
+
+	.cc-soc-aside__head {
+		margin-bottom: 14px;
+	}
+
+	.cc-soc-aside__eyebrow {
+		display: block;
+		font-size: 0.58rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgba(34, 211, 238, 0.85);
+		margin-bottom: 4px;
+	}
+
+	.cc-soc-aside__title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 900;
+		letter-spacing: -0.02em;
+		color: #fafafa;
+	}
+
+	.cc-soc-aside__sub {
+		margin: 6px 0 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1.4;
+		color: rgba(161, 161, 170, 0.95);
+	}
+
+	.cc-soc-aside__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.cc-soc-aside__list li {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 12px;
+		padding: 10px 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
+		font-size: 0.78rem;
+	}
+
+	.cc-soc-aside__list li:first-child {
+		border-top: none;
+		padding-top: 0;
+	}
+
+	.cc-soc-aside__k {
+		font-weight: 600;
+		color: rgba(212, 212, 216, 0.95);
+	}
+
+	.cc-soc-aside__v {
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		color: #e4e4e7;
+	}
+
+	.cc-chart-card--soc {
+		border-top: 2px solid rgba(34, 211, 238, 0.35);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.06) inset,
+			0 18px 40px rgba(0, 0, 0, 0.18);
+	}
+
+	:global(html.dark) .cc-chart-card--soc {
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.04) inset,
+			0 18px 48px rgba(0, 0, 0, 0.45);
+	}
+
+	.cc-chart-card__icon--cyan {
+		background: rgba(34, 211, 238, 0.2);
+		color: #22d3ee;
+	}
+
+	:global(html.dark) .cc-chart-card__icon--cyan {
+		background: rgba(34, 211, 238, 0.22);
+		color: #a5f3fc;
+	}
+
+	.cc-feed-shell--soc {
+		border-top: 2px solid rgba(99, 102, 241, 0.35);
+		background: rgba(9, 9, 11, 0.35);
+	}
+
+	:global(html.dark) .cc-feed-shell--soc {
+		background: rgba(9, 9, 11, 0.72);
+		border-color: rgba(129, 140, 248, 0.35);
+	}
+
+	.cc-feed-shell--soc .cc-feed-shell__title {
+		font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+		letter-spacing: -0.03em;
 	}
 
 	.cc-live {
