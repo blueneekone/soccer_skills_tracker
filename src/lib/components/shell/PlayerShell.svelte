@@ -25,7 +25,7 @@
 	const NAV_LINKS = [
 		{ href: '/player/dashboard', icon: 'ph-squares-four', label: 'HQ' },
 		{ href: '/stats', icon: 'ph-chart-bar', label: 'Stats' },
-		{ href: '/tracker', icon: 'ph-list-checks', label: 'Train' },
+		{ href: '/player/workout', icon: 'ph-list-checks', label: 'Train' },
 		{ href: '/trophies', icon: 'ph-trophy', label: 'Trophies' },
 		{ href: '/challenges', icon: 'ph-medal', label: 'Challenges' },
 		{ href: '/settings', icon: 'ph-gear', label: 'Settings' },
@@ -36,7 +36,6 @@
 	 */
 	function isActive(href) {
 		const path = page.url.pathname;
-		if (href === '/tracker' && path.startsWith('/player/workout')) return true;
 		if (path === href) return true;
 		/* Avoid treating every /player/* route as HQ */
 		if (href === '/player/dashboard') return false;
