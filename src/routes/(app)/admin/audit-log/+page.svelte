@@ -117,7 +117,7 @@
 	</div>
 
 	<div
-		class="tw-mb-4 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-3 tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
+		class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
 	>
 		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-3">
 			<div class="tw-relative tw-w-full tw-max-w-sm" role="search">

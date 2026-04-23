@@ -72,7 +72,7 @@
 	};
 
 	const gateCtl =
-		'tw-w-full tw-shrink-0 tw-rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-2.5 tw-text-base';
+		'tw-w-full tw-shrink-0 tw-rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-3 tw-text-base';
 </script>
 
 <div class="full-screen-center tw-flex tw-flex-col tw-items-stretch tw-justify-center">

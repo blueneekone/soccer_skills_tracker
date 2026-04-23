@@ -17,7 +17,7 @@
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
+	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -99,8 +99,8 @@
 
 	$effect(() => {
 		if (!open || !club) return;
-		lockEnterpriseShellScroll();
-		return () => unlockEnterpriseShellScroll();
+		lockBody();
+		return () => unlockBody();
 	});
 
 	async function submit() {

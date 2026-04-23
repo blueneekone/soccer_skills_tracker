@@ -13,7 +13,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/** Strike 13 — Tabbed command center + hyper-density KPIs + live charts */
+	/** Strike 16 — Tabbed command center + Vanguard KPI grid + live charts */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
 	const TAB_LABELS = /** @type {const} */ (['Executive', 'Growth', 'Security', 'Platform']);
 
@@ -595,7 +595,7 @@
 				Command Center
 			</h1>
 			<p class="cc-lede">
-				Strike 13 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
+				Strike 16 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
 				sports {sportSource}.
 			</p>
 		</div>
@@ -636,11 +636,11 @@
 				aria-labelledby="cc-tab-executive"
 			>
 				<div
-					class="tw-grid tw-grid-cols-2 tw-gap-4 lg:tw-grid-cols-4 xl:tw-grid-cols-8"
+					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
 					{#each strike13Executive as kpi (kpi.label)}
 						<article
-							class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+							class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 						>
 							<span
 								class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
@@ -649,7 +649,7 @@
 							<span class="tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums lg:tw-text-2xl"
 								>{kpi.value}</span
 							>
-							<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
+							<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
 						</article>
 					{/each}
 				</div>
@@ -671,7 +671,7 @@
 							</span>
 						</div>
 					</header>
-					<div class="tw-relative tw-h-[320px] tw-min-w-0 tw-w-full">
+					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 						<canvas
 							class="cc-canvas-fill"
 							bind:this={mauCanvasEl}
@@ -683,43 +683,43 @@
 		{:else if activeTab === 'growth'}
 			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 				<div
-					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>LTV:CAC</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.ltvCac}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Blended cohort</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Blended cohort</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>Churn</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.churn}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Logo + revenue</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Logo + revenue</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>Pipeline ARR</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.pipelineARR}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Weighted forecast</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Weighted forecast</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>CAC payback</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.growth.paybackMo} mo</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Months to recover</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Months to recover</span>
 					</article>
 				</div>
 
@@ -741,7 +741,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-h-[320px] tw-min-w-0 tw-w-full">
+						<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={revenueCanvasEl}
@@ -767,7 +767,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-h-[320px] tw-min-w-0 tw-w-full">
+						<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={sportCanvasEl}
@@ -780,11 +780,11 @@
 		{:else if activeTab === 'security'}
 			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 				<div
-					class="tw-grid tw-grid-cols-2 tw-gap-4 lg:tw-grid-cols-4 xl:tw-grid-cols-8"
+					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
 					{#each strike13Security as kpi (kpi.label)}
 						<article
-							class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+							class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 						>
 							<span
 								class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
@@ -793,7 +793,7 @@
 							<span class="tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums lg:tw-text-2xl"
 								>{kpi.value}</span
 							>
-							<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
+							<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">{kpi.hint}</span>
 						</article>
 					{/each}
 				</div>
@@ -847,43 +847,43 @@
 		{:else}
 			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 				<div
-					class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 lg:tw-grid-cols-4"
+					class="tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-4"
 				>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>API latency</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.apiLatency}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">p50 edge → API</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">p50 edge → API</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>Uptime</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-emerald-400 tw-tabular-nums">{MOCK_KPI.platform.uptime}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Trailing 30d SLO</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Trailing 30d SLO</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>DB reads</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.dbReads}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Firestore aggregate</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Firestore aggregate</span>
 					</article>
 					<article
-						class="tw-flex tw-flex-col tw-rounded-xl tw-border tw-border-white/10 tw-bg-white/5 tw-p-4"
+						class="tw-flex tw-flex-col tw-gap-1 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-[#09090b] tw-p-6 tw-shadow-lg"
 					>
 						<span class="tw-text-[0.625rem] tw-font-extrabold tw-tracking-wide tw-text-zinc-400 tw-uppercase"
 							>Storage</span
 						>
 						<span class="tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-white tw-tabular-nums">{MOCK_KPI.platform.storage}</span>
-						<span class="tw-mt-auto tw-text-xs tw-leading-snug tw-text-zinc-500">Object + media vault</span>
+						<span class="tw-text-xs tw-leading-snug tw-text-zinc-500">Object + media vault</span>
 					</article>
 				</div>
 

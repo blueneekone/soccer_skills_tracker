@@ -1,5 +1,5 @@
 <script>
-	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
+	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 
 	let {
 		open = $bindable(false),
@@ -24,8 +24,8 @@
 
 	$effect(() => {
 		if (!open) return;
-		lockEnterpriseShellScroll();
-		return () => unlockEnterpriseShellScroll();
+		lockBody();
+		return () => unlockBody();
 	});
 </script>
 

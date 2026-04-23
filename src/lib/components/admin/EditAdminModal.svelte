@@ -18,7 +18,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
+	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -91,8 +91,8 @@
 
 	$effect(() => {
 		if (!open || !admin) return;
-		lockEnterpriseShellScroll();
-		return () => unlockEnterpriseShellScroll();
+		lockBody();
+		return () => unlockBody();
 	});
 
 	async function submit() {

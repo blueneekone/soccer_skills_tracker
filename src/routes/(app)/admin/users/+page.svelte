@@ -29,7 +29,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { lockEnterpriseShellScroll, unlockEnterpriseShellScroll } from '$lib/utils/enterpriseShellScrollLock.js';
+	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -553,8 +553,8 @@
 
 	$effect(() => {
 		if (purgeStep <= 0) return;
-		lockEnterpriseShellScroll();
-		return () => unlockEnterpriseShellScroll();
+		lockBody();
+		return () => unlockBody();
 	});
 </script>
 
