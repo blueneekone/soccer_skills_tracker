@@ -559,64 +559,69 @@
 </script>
 
 <div class="gu-root">
-	<!-- Strike 1 — Page Actions header: title + sub left, primary CTAs on the
-	     top-right. The Add Admin button is now pinned to Page Actions and
-	     sits completely separate from the DataTable search row below. -->
-	<header class="gu-head">
-		<div class="gu-head__left">
-			<h1 class="gu-title">Global Users</h1>
-			<p class="gu-sub">
-				Every account across every tenant. Email-prefix search is server-side; no client
-				enumeration of the full collection.
-			</p>
+	<div class="adm-toolbar">
+		<div class="adm-toolbar__left">
+			<h1 class="adm-toolbar__title">Global Users</h1>
+			<div class="adm-toolbar__meta">
+				<span class="adm-toolbar__sub">
+					Every account across every tenant. Email-prefix search is server-side; no client
+					enumeration of the full collection.
+				</span>
+				<span class="adm-toolbar__count">
+					{#if loading && rows.length === 0}
+						…
+					{:else}
+						{rangeStart}–{rangeEnd} of {totalLabel} loaded
+					{/if}
+				</span>
+			</div>
 		</div>
-
-		<div class="gu-page-actions" role="group" aria-label="Page actions">
-			<button
-				type="button"
-				class="gu-add-admin-btn"
-				onclick={() => (showAddAdmin = true)}
-				aria-haspopup="dialog"
-			>
-				<i class="ph ph-user-plus" aria-hidden="true"></i>
-				Add Admin
-			</button>
-		</div>
-	</header>
-
-	<!-- Strike 1 — DataTable toolbar owns the search input exclusively. -->
-	<div class="gu-toolbar">
-		<div class="gu-search" role="search">
-			<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-			<input
-				type="search"
-				bind:value={searchInput}
-				onkeydown={onSearchKey}
-				placeholder="Search by email prefix (press Enter)"
-				aria-label="Search users by email"
-				autocomplete="off"
-				spellcheck="false"
-			/>
-			{#if searchApplied}
+		<div class="adm-toolbar__right">
+			<div class="gu-page-actions" role="group" aria-label="Page actions">
 				<button
 					type="button"
-					class="gu-search__clear"
-					onclick={clearSearch}
-					aria-label="Clear search"
-					title="Clear search"
+					class="gu-add-admin-btn"
+					onclick={() => (showAddAdmin = true)}
+					aria-haspopup="dialog"
 				>
-					<i class="ph ph-x" aria-hidden="true"></i>
+					<i class="ph ph-user-plus" aria-hidden="true"></i>
+					Add Admin
 				</button>
-			{/if}
-			<button
-				type="button"
-				class="gu-search__submit"
-				onclick={runSearch}
-				disabled={loading}
-				aria-label="Run search"
-			>
-				Search
-			</button>
+			</div>
+			<div class="adm-toolbar__search-flex">
+				<div class="gu-search" role="search">
+					<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+					<input
+						type="search"
+						bind:value={searchInput}
+						onkeydown={onSearchKey}
+						placeholder="Search by email prefix (press Enter)"
+						aria-label="Search users by email"
+						autocomplete="off"
+						spellcheck="false"
+					/>
+					{#if searchApplied}
+						<button
+							type="button"
+							class="gu-search__clear"
+							onclick={clearSearch}
+							aria-label="Clear search"
+							title="Clear search"
+						>
+							<i class="ph ph-x" aria-hidden="true"></i>
+						</button>
+					{/if}
+					<button
+						type="button"
+						class="gu-search__submit"
+						onclick={runSearch}
+						disabled={loading}
+						aria-label="Run search"
+					>
+						Search
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -977,36 +982,7 @@
 		box-sizing: border-box;
 	}
 
-	/* ── Header ─────────────────────────────────────────────────────── */
-	.gu-head {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-end;
-		gap: 16px;
-		flex-wrap: wrap;
-	}
-
-	.gu-head__left { min-width: 240px; }
-
-	.gu-title {
-		margin: 0 0 4px;
-		font-size: 1.5rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--text-primary);
-	}
-
-	.gu-sub {
-		margin: 0;
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-		max-width: 540px;
-	}
-
-	:global(html.dark) .gu-sub { color: #d4d4d8; }
-
-	/* Strike 1 — Page Actions slot: primary CTAs pinned top-right, away from
-	   the DataTable search row. */
+	/* Primary CTA cluster (sits in .adm-toolbar__right) */
 	.gu-page-actions {
 		display: inline-flex;
 		align-items: center;
@@ -1015,35 +991,24 @@
 		justify-content: flex-end;
 	}
 
-	/* Strike 1 — Dedicated toolbar row above the table (Defender / action-bar shell). */
-	.gu-toolbar {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		flex-wrap: wrap;
-		padding: 10px 12px;
-		border-radius: 10px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: rgba(0, 0, 0, 0.02);
-	}
-
-	:global(html.dark) .gu-toolbar {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: rgba(255, 255, 255, 0.05);
-	}
-
 	.gu-search {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 		flex: 1 1 auto;
 		min-width: 0;
-		max-width: 28rem;
-		padding: 4px 0;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		box-shadow: none;
+		width: 100%;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+	}
+
+	:global(html.dark) .gu-search {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.1);
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 	}
 
 	.gu-search > i {

@@ -357,14 +357,18 @@
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 16px;
 		box-sizing: border-box;
-		/* Single scrollport is `.eom-root` — avoids a second bar on the overlay */
+		/* One scrollport: the overlay. Centers short dialogs; tall forms scroll without clipping. */
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-height: 100vh;
+		max-height: 100vh;
+		min-height: 100svh;
+		max-height: 100svh;
+		padding: max(12px, env(safe-area-inset-top, 0px)) 16px max(12px, env(safe-area-inset-bottom, 0px));
 		overflow-x: hidden;
-		overflow-y: hidden;
+		overflow-y: auto;
 		overscroll-behavior: contain;
 		background: rgba(9, 9, 11, 0.55);
 		backdrop-filter: blur(6px) saturate(1.4);
@@ -375,13 +379,10 @@
 		position: relative;
 		width: min(720px, 100%);
 		max-width: 100%;
-		/* Fit inside padded overlay (16px × 2); dvh avoids mobile chrome jump vs 100vh */
-		max-height: min(880px, calc(100dvh - 32px));
-		min-height: 0;
-		flex-shrink: 1;
-		overflow-x: hidden;
-		overflow-y: auto;
-		scrollbar-gutter: stable;
+		flex-shrink: 0;
+		margin-block: auto;
+		margin-inline: 0;
+		overflow: visible;
 		border-radius: 16px;
 		background: #ffffff;
 		color: #18181b;

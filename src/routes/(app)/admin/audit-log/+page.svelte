@@ -103,66 +103,57 @@
 
 <div class="al-page">
 
-	<!-- ── Header ─────────────────────────────────────────────────────────────── -->
-	<div class="al-header">
-		<div class="al-header__text">
-			<h1 class="al-header__title">
+	<div class="adm-toolbar al-page__toolbar">
+		<div class="adm-toolbar__left">
+			<h1 class="adm-toolbar__title adm-toolbar__title--icon">
 				<i class="ph ph-shield-check" aria-hidden="true"></i>
 				Security Audit Log
 			</h1>
-			<p class="al-header__sub">
-				Immutable platform-level event history. Showing {filteredLogs.length} of {totalLoaded} loaded events.
-			</p>
+			<div class="adm-toolbar__meta">
+				<span class="adm-toolbar__sub">Immutable platform-level event history.</span>
+				<span class="adm-toolbar__count">
+					Showing {filteredLogs.length} of {totalLoaded} loaded events
+				</span>
+			</div>
 		</div>
-	</div>
-
-	<div
-		class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
-	>
-		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-3">
-			<div
-				class="tw-flex tw-min-w-0 tw-w-full tw-max-w-sm tw-flex-1 tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-px-2.5 tw-py-1.5"
-				role="search"
-			>
-				<i class="ph ph-magnifying-glass tw-shrink-0 tw-text-base tw-text-zinc-400" aria-hidden="true"></i>
+		<div class="adm-toolbar__right">
+			<div class="adm-search-wrap">
+				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-sm tw-text-[var(--text-primary)] placeholder:tw-text-zinc-500 focus:tw-outline-none focus:tw-ring-0"
+					class="adm-search tw-!pl-10 tw-text-sm"
 					bind:value={searchQuery}
 					placeholder="Search events…"
 					autocomplete="off"
 					aria-label="Search audit log"
 				/>
 			</div>
-			<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
-				<label
-					class="tw-mb-0 tw-whitespace-nowrap tw-text-sm tw-font-medium tw-text-zinc-500"
-					for="al-action-filter">Filters</label
-				>
+			<div class="al-toolbar__filter">
+				<label class="al-toolbar__filter-label" for="al-action-filter">Filters</label>
 				<input
 					id="al-action-filter"
 					type="search"
-					class="al-filter-input tw-min-w-[140px] tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-px-2 tw-py-1.5 tw-text-sm"
+					class="al-filter-input"
 					bind:value={actionFilter}
 					placeholder="Action…"
 					autocomplete="off"
 					aria-label="Filter audit log by action"
 				/>
 			</div>
+			<button
+				type="button"
+				class="al-toolbar-refresh"
+				onclick={() => loadLogs()}
+				disabled={loading}
+				title={loading ? 'Loading…' : 'Refresh audit log'}
+				aria-label="Refresh audit log"
+			>
+				<i
+					class="ph ph-arrows-clockwise tw-text-lg {loading ? 'al-refresh-spin' : ''}"
+					aria-hidden="true"
+				></i>
+			</button>
 		</div>
-		<button
-			type="button"
-			class="tw-inline-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-text-zinc-300 tw-transition-colors hover:tw-border-white/20 hover:tw-bg-white/10 hover:tw-text-white disabled:tw-cursor-not-allowed disabled:tw-opacity-40"
-			onclick={() => loadLogs()}
-			disabled={loading}
-			title={loading ? 'Loading…' : 'Refresh audit log'}
-			aria-label="Refresh audit log"
-		>
-			<i
-				class="ph ph-arrows-clockwise tw-text-lg {loading ? 'al-refresh-spin' : ''}"
-				aria-hidden="true"
-			></i>
-		</button>
 	</div>
 
 	{#if loadErr}
@@ -251,49 +242,71 @@
 		gap: 20px;
 	}
 
-	/* ── Header ─────────────────────────────────────────────────────── */
-	.al-header {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 16px;
-		flex-wrap: wrap;
+	.al-page__toolbar {
+		margin-bottom: 4px;
 	}
 
-	.al-header__title {
-		margin: 0;
-		font-size: 1.5rem;
-		font-weight: 800;
+	.al-toolbar__filter {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		color: var(--text-primary);
-		letter-spacing: -0.04em;
-	}
-
-	.al-header__sub {
-		margin: 4px 0 0;
-		font-size: 0.875rem;
-		color: var(--text-secondary);
-	}
-
-	.al-header__actions {
-		display: flex;
-		align-items: center;
-		gap: 10px;
 		flex-wrap: wrap;
+	}
+
+	.al-toolbar__filter-label {
+		margin: 0;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--text-secondary);
+		white-space: nowrap;
+	}
+
+	.al-toolbar-refresh {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
 		flex-shrink: 0;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #fff);
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition:
+			background 0.12s ease,
+			border-color 0.12s ease,
+			color 0.12s ease;
+	}
+
+	.al-toolbar-refresh:hover:not(:disabled) {
+		border-color: var(--brand-primary, #f59e0b);
+		color: var(--text-primary);
+	}
+
+	.al-toolbar-refresh:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	:global(html.dark) .al-toolbar-refresh {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.1);
+		color: #d4d4d8;
 	}
 
 	.al-filter-input {
-		padding: 8px 12px;
+		height: 38px;
+		padding: 0 12px;
 		border-radius: 8px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--input-bg, #fff);
 		font: inherit;
 		font-size: 0.875rem;
 		color: var(--text-primary);
-		width: 220px;
+		min-width: 140px;
+		width: 200px;
+		max-width: 100%;
 		box-sizing: border-box;
 	}
 

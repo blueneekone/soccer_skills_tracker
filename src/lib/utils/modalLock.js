@@ -1,5 +1,5 @@
 /**
- * Modal scroll lock — targets the real scrollport (`.cc-scroll` or `.ec-canvas`),
+ * Modal scroll lock — targets the enterprise shell scrollport (`.ec-canvas`),
  * preserves scroll position, and pads for the scrollbar gutter so nothing shifts sideways.
  */
 
@@ -11,10 +11,10 @@ let snapshot = null;
 /** @returns {HTMLElement | null} */
 function pickScrollHost() {
 	if (typeof document === 'undefined') return null;
-	const cc = document.querySelector('.cc-scroll');
-	if (cc instanceof HTMLElement) return cc;
 	const ec = document.querySelector('.ec-canvas');
 	if (ec instanceof HTMLElement) return ec;
+	const ps = document.querySelector('.ps-canvas');
+	if (ps instanceof HTMLElement) return ps;
 	return document.documentElement;
 }
 
@@ -24,11 +24,8 @@ export function lockBody() {
 	if (!el) return;
 
 	if (depth === 0) {
-		const computed = window.getComputedStyle(el);
 		const gutter = Math.max(0, el.offsetWidth - el.clientWidth);
-		const computedPad = parseFloat(computed.paddingRight) || 0;
-		/* `scrollbar-gutter: stable` already reserves width — extra padding shifts layout */
-		const hasStableGutter = /\bstable\b/i.test(computed.scrollbarGutter || '');
+		const computedPad = parseFloat(window.getComputedStyle(el).paddingRight) || 0;
 		snapshot = {
 			el,
 			overflow: el.style.overflow,
@@ -36,7 +33,7 @@ export function lockBody() {
 			scrollTop: el.scrollTop,
 		};
 		el.style.overflow = 'hidden';
-		if (gutter > 0 && !hasStableGutter) {
+		if (gutter > 0) {
 			el.style.paddingRight = `${computedPad + gutter}px`;
 		}
 	}

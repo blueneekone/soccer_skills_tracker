@@ -582,7 +582,7 @@
 </script>
 
 <div
-	class="cc-root tw-box-border tw-mx-auto tw-flex tw-h-[calc(100vh-80px)] tw-min-h-0 tw-w-full tw-max-w-[1680px] tw-flex-col tw-overflow-hidden tw-px-5 tw-pt-4"
+	class="cc-root tw-box-border tw-mx-auto tw-flex tw-w-full tw-max-w-[1680px] tw-flex-col tw-px-5 tw-pt-4"
 	data-admin-shell="true"
 >
 	<header class="cc-hero">
@@ -627,7 +627,7 @@
 		{/each}
 	</div>
 
-	<div class="cc-scroll tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-pb-12">
+	<div class="cc-body tw-pb-12">
 		{#if activeTab === 'executive'}
 			<section
 				class="cc-panel"
@@ -1036,9 +1036,8 @@
 		border-bottom-color: rgba(255, 255, 255, 0.85);
 	}
 
-	.cc-scroll {
+	.cc-body {
 		overscroll-behavior: contain;
-		scrollbar-gutter: stable;
 	}
 
 	.cc-panel {

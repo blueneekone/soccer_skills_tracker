@@ -439,15 +439,42 @@
 </script>
 
 <div class="ar-root">
-	<header class="ar-head">
-		<div class="ar-head__left">
-			<h1 class="ar-title">Recruiter Marketplace</h1>
-			<p class="ar-sub">
-				Super-admin oversight for NCAA, Pro and Club scouts. Approve, reject, and monitor
-				subscription health. Every action is written to <code>security_audit</code>.
-			</p>
+	<div class="adm-toolbar">
+		<div class="adm-toolbar__left">
+			<h1 class="adm-toolbar__title">Recruiter Marketplace</h1>
+			<div class="adm-toolbar__meta">
+				<span class="adm-toolbar__sub">
+					Super-admin oversight for NCAA, Pro and Club scouts. Approve, reject, and monitor
+					subscription health. Every action is written to <code>security_audit</code>.
+				</span>
+				<span class="adm-toolbar__count">
+					{filteredRows.length} of {rows.length} scouts
+				</span>
+			</div>
 		</div>
-		<div class="ar-head__right">
+		<div class="adm-toolbar__right">
+			<div class="adm-search-wrap adm-search--narrow">
+				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
+				<input
+					type="search"
+					class="adm-search tw-!pl-10 tw-text-sm"
+					bind:value={searchInput}
+					placeholder="Search by email, scout name, or agency"
+					aria-label="Filter recruiters"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+			</div>
+			<button
+				type="button"
+				class="ar-toolbar-refresh"
+				onclick={() => void loadRecruiters()}
+				disabled={loading}
+				title={loading ? 'Syncing…' : 'Refresh'}
+				aria-label="Refresh recruiter list from Firestore"
+			>
+				<i class="ph ph-arrows-clockwise tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
+			</button>
 			<div class="ar-tabs" role="tablist" aria-label="Verification filter">
 				<button
 					type="button"
@@ -491,7 +518,7 @@
 				</button>
 			</div>
 		</div>
-	</header>
+	</div>
 
 	{#if flashErr}
 		<p class="ar-flash ar-flash--err" role="alert">{flashErr}</p>
@@ -503,43 +530,7 @@
 		<p class="ar-flash ar-flash--err" role="alert">{err}</p>
 	{/if}
 
-	<div
-		class="tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-white/10 tw-bg-white/5 tw-p-2"
-	>
-		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-2">
-			<div
-				class="tw-flex tw-w-full tw-max-w-sm tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-pl-3 tw-pr-3"
-				role="search"
-			>
-				<i
-					class="ph ph-magnifying-glass tw-shrink-0 tw-text-base tw-leading-none tw-text-zinc-400"
-					aria-hidden="true"
-				></i>
-				<input
-					type="search"
-					class="ar-toolbar-search-input tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-py-2 tw-text-sm tw-text-[var(--text-primary)] tw-outline-none placeholder:tw-text-zinc-500 focus:tw-ring-0"
-					bind:value={searchInput}
-					placeholder="Search by email, scout name, or agency"
-					aria-label="Filter recruiters"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</div>
-		</div>
-		<button
-			type="button"
-			class="tw-inline-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-white/10 tw-bg-white/5 tw-text-zinc-300 tw-transition-colors hover:tw-border-white/20 hover:tw-bg-white/10 hover:tw-text-white disabled:tw-cursor-not-allowed disabled:tw-opacity-40"
-			onclick={() => void loadRecruiters()}
-			disabled={loading}
-			title={loading ? 'Syncing…' : 'Refresh'}
-			aria-label="Refresh recruiter list from Firestore"
-		>
-			<i class="ph ph-arrows-clockwise tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
-		</button>
-	</div>
-
 	<div class="ar-table-wrap" role="region" aria-label="Recruiters table" tabindex="-1">
-		<div class="ar-table-scroll">
 		<table class="ar-table">
 			<thead>
 				<tr>
@@ -760,7 +751,6 @@
 				{/if}
 			</tbody>
 		</table>
-		</div>
 	</div>
 
 	{#if toasts.length > 0}
@@ -806,107 +796,44 @@
 		color: #fafafa;
 	}
 
-	/* ── Header ──────────────────────────────────────────────────────────── */
-	.ar-head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 16px;
-	}
-
-	.ar-head__left {
-		min-width: 0;
-	}
-
-	.ar-head__right {
-		display: flex;
+	.ar-toolbar-refresh {
+		display: inline-flex;
 		align-items: center;
-		gap: 12px;
-		flex-wrap: wrap;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		flex-shrink: 0;
+		border-radius: 8px;
+		border: 1px solid var(--border-subtle, #e5e5e5);
+		background: var(--glass-bg, #ffffff);
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition:
+			background 0.12s ease,
+			border-color 0.12s ease,
+			color 0.12s ease;
 	}
 
-	.ar-title {
-		margin: 0 0 4px;
-		font-size: 1.5rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: #18181b;
+	.ar-toolbar-refresh:hover:not(:disabled) {
+		border-color: var(--brand-primary, #f59e0b);
+		color: var(--text-primary);
+		background: rgba(245, 158, 11, 0.08);
 	}
 
-	:global(html.dark) .ar-title {
-		color: #fafafa;
+	.ar-toolbar-refresh:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
-	.ar-sub {
-		margin: 0;
-		max-width: 72ch;
-		font-size: 0.875rem;
-		line-height: 1.45;
-		color: #52525b;
-	}
-
-	:global(html.dark) .ar-sub {
+	:global(html.dark) .ar-toolbar-refresh {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.1);
 		color: #d4d4d8;
 	}
 
-	.ar-sub code {
-		padding: 1px 6px;
-		border-radius: 4px;
-		background: #e4e4e7;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-		font-size: 0.8125rem;
-	}
-
-	:global(html.dark) .ar-sub code {
-		background: #27272a;
+	:global(html.dark) .ar-toolbar-refresh:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.08);
 		color: #fafafa;
-	}
-
-	.ar-filter {
-		display: inline-flex;
-		align-items: center;
-		gap: 10px;
-		padding: 8px 14px;
-		/* Sprint 2.6.5 — widen to Tailwind w-96 (24rem / 384px). */
-		min-width: 24rem;
-		border-radius: 10px;
-		border: 1px solid #e4e4e7;
-		background: #ffffff;
-		box-shadow: inset 0 1px 2px rgba(24, 24, 27, 0.04);
-	}
-
-	:global(html.dark) .ar-filter {
-		border-color: #27272a;
-		background: rgba(255, 255, 255, 0.04);
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-	}
-
-	.ar-filter i {
-		color: #71717a;
-	}
-
-	:global(html.dark) .ar-filter i {
-		color: #a1a1aa;
-	}
-
-	.ar-filter input {
-		flex: 1;
-		min-width: 0;
-		appearance: none;
-		border: 0;
-		background: transparent;
-		color: inherit;
-		font: inherit;
-		font-size: 0.875rem;
-	}
-
-	.ar-filter input:focus {
-		outline: none;
-	}
-
-	.ar-filter input::placeholder {
-		color: #a1a1aa;
 	}
 
 	.ar-tabs {
@@ -1043,30 +970,18 @@
 
 	/* ── Table ───────────────────────────────────────────────────────────── */
 	.ar-table-wrap {
-		flex: 1 1 auto;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		overflow: hidden;
+		width: 100%;
 		border-radius: 12px;
 		border: 1px solid #e4e4e7;
 		background: #ffffff;
+		overflow-x: auto;
+		overflow-y: visible;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	:global(html.dark) .ar-table-wrap {
 		border-color: #27272a;
 		background: #0f0f12;
-	}
-
-	/* Flex row search: no absolute icon — text cannot slide under the glyph */
-	.ar-toolbar-search-input {
-		box-sizing: border-box;
-		appearance: none;
-	}
-
-	.ar-toolbar-sync {
-		flex-shrink: 0;
-		gap: 8px;
 	}
 
 	.ar-toolbar-sync__spin {
@@ -1077,12 +992,6 @@
 		to {
 			transform: rotate(360deg);
 		}
-	}
-
-	.ar-table-scroll {
-		flex: 1 1 auto;
-		min-height: 0;
-		overflow: auto;
 	}
 
 	.ar-table {
@@ -1733,17 +1642,7 @@
 
 	/* ── Responsive ──────────────────────────────────────────────────────── */
 	@media (max-width: 960px) {
-		.ar-head {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.ar-head__right {
-			width: 100%;
-		}
-
-		.ar-filter {
-			min-width: 0;
+		.adm-toolbar__right {
 			width: 100%;
 		}
 

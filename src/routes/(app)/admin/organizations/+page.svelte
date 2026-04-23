@@ -657,23 +657,23 @@
 
 <div class="orgs3-page">
 
-	<!-- ── Page toolbar ──────────────────────────────────────────────────────── -->
-	<div class="orgs3-toolbar">
-		<div class="orgs3-toolbar__left">
-			<h1 class="orgs3-toolbar__title">Organizations</h1>
-			<div class="orgs3-toolbar__meta">
-				<span class="orgs3-toolbar__sub">Organization &rsaquo; Program &rsaquo; Team &rsaquo; Roster</span>
-				<span class="orgs3-toolbar__count">
+	<!-- ── Page toolbar (shared .adm-toolbar — enterprise-console.css) ───────── -->
+	<div class="adm-toolbar">
+		<div class="adm-toolbar__left">
+			<h1 class="adm-toolbar__title">Organizations</h1>
+			<div class="adm-toolbar__meta">
+				<span class="adm-toolbar__sub">Organization &rsaquo; Program &rsaquo; Team &rsaquo; Roster</span>
+				<span class="adm-toolbar__count">
 					{#if clubsLoading}—{:else}{filteredClubs.length} of {clubs.length}{/if}
 				</span>
 			</div>
 		</div>
-		<div class="orgs3-toolbar__right">
-			<div class="orgs3-search-wrap">
-				<i class="ph ph-magnifying-glass orgs3-search-icon" aria-hidden="true"></i>
+		<div class="adm-toolbar__right">
+			<div class="adm-search-wrap">
+				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
 				<input
 					type="search"
-					class="orgs3-search tw-!pl-10 tw-text-sm"
+					class="adm-search tw-!pl-10 tw-text-sm"
 					bind:value={orgSearch}
 					placeholder="Filter organizations…"
 					autocomplete="off"
@@ -1325,111 +1325,6 @@
 		gap: 0;
 	}
 
-	/* ── Page toolbar ───────────────────────────────────────────────── */
-	.orgs3-toolbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		flex-wrap: wrap;
-		padding-bottom: 14px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		margin-bottom: 0;
-	}
-
-	:global(html.dark) .orgs3-toolbar {
-		border-bottom-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.orgs3-toolbar__left {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-		flex-shrink: 0;
-	}
-
-	.orgs3-toolbar__title {
-		margin: 0;
-		font-size: 0.875rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		color: var(--text-primary);
-	}
-
-	.orgs3-toolbar__count {
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.orgs3-toolbar__sub {
-		font-size: 0.8125rem;
-		font-weight: 500;
-		letter-spacing: 0.01em;
-		color: var(--text-secondary, #52525b);
-	}
-
-	.orgs3-toolbar__right {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		flex-wrap: wrap;
-	}
-
-	/* ── Search (Sprint 2.6.5 — pl-10 / icon no longer overlaps text) ─ */
-	.orgs3-search-wrap {
-		position: relative;
-		display: flex;
-		align-items: center;
-		width: 320px;
-		max-width: 100%;
-	}
-
-	/* Strike 2 — icon absolutely positioned `left-3` (0.75rem / 12px) to
-	   match the Tailwind spec and the `pl-10` input padding. */
-	.orgs3-search-icon {
-		position: absolute;
-		left: 0.75rem;
-		top: 50%;
-		transform: translateY(-50%);
-		font-size: 0.95rem;
-		color: rgba(0, 0, 0, 0.42);
-		pointer-events: none;
-		line-height: 1;
-	}
-
-	:global(html.dark) .orgs3-search-icon {
-		color: #d4d4d8;
-	}
-
-	.orgs3-search {
-		box-sizing: border-box;
-		height: 38px;
-		/* Left padding: `tw-!pl-10` on the input; icon at `left: 0.75rem` (left-3). */
-		padding: 0 14px 0 0;
-		border-radius: 8px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: var(--glass-bg, #fff);
-		font: inherit;
-		color: var(--text-primary);
-		outline: none;
-		width: 100%;
-		transition: border-color 0.12s ease, box-shadow 0.12s ease;
-	}
-
-	.orgs3-search:focus {
-		border-color: var(--brand-primary, #f59e0b);
-	}
-
-	:global(html.dark) .orgs3-search {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.10);
-		color: #fafafa;
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-	}
-
-	.orgs3-search--sm { width: 200px; }
-
 	/* ── Strike 1: Enterprise Filter popover ─────────────────────────── */
 	.orgs3-filter {
 		position: relative;
@@ -1749,11 +1644,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
 		gap: 6px;
-		max-height: 156px;
-		overflow-y: auto;
 		padding: 2px 2px 2px 0;
-		/* Slim scrollbar so 1,000-org tenants stay legible. */
-		scrollbar-width: thin;
 	}
 
 	.orgs3-filter-state-chip {
