@@ -359,17 +359,27 @@
 		align-items: center;
 		justify-content: center;
 		padding: 16px;
+		box-sizing: border-box;
+		/* Single scrollport is `.eom-root` — avoids a second bar on the overlay */
+		overflow-x: hidden;
+		overflow-y: hidden;
+		overscroll-behavior: contain;
 		background: rgba(9, 9, 11, 0.55);
 		backdrop-filter: blur(6px) saturate(1.4);
 		-webkit-backdrop-filter: blur(6px) saturate(1.4);
-		box-sizing: border-box;
 	}
 
 	.eom-root {
 		position: relative;
 		width: min(720px, 100%);
-		max-height: min(92vh, 880px);
-		overflow: auto;
+		max-width: 100%;
+		/* Fit inside padded overlay (16px × 2); dvh avoids mobile chrome jump vs 100vh */
+		max-height: min(880px, calc(100dvh - 32px));
+		min-height: 0;
+		flex-shrink: 1;
+		overflow-x: hidden;
+		overflow-y: auto;
+		scrollbar-gutter: stable;
 		border-radius: 16px;
 		background: #ffffff;
 		color: #18181b;
