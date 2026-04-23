@@ -14,6 +14,7 @@
 
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
+	const isPlayer = $derived(role === 'player');
 
 	const isMinorAccount = $derived.by(() => {
 		const p = profile;
@@ -97,13 +98,28 @@
 	}
 </script>
 
-<div class="view-section settings-page">
+<div class="view-section settings-page" class:pos-settings={isPlayer}>
+	{#if isPlayer}
+		<header class="pos-set-hero">
+			<div class="pos-set-hero__copy">
+				<span class="pos-set-hero__eyebrow">Control room</span>
+				<h2 class="pos-set-hero__title">Profile &amp; settings</h2>
+				<p class="pos-set-hero__sub">
+					Identity, privacy, and appearance — everything that follows you across Player OS.
+				</p>
+			</div>
+			<div class="pos-set-hero__icon" aria-hidden="true">
+				<i class="ph ph-sliders-horizontal"></i>
+			</div>
+		</header>
+	{/if}
+
 	<div class="card">
 		<div class="card-header">
-			<span>Profile &amp; settings</span>
+			<span>{isPlayer ? 'Account' : 'Profile & settings'}</span>
 		</div>
 		<div class="card-body settings-body">
-			<p class="text-sm-sub settings-lead">
+			<p class="text-sm-sub settings-lead" class:pos-set-lead--muted={isPlayer}>
 				Account details below stay in sync with Firebase. Club and team association is locked after setup for
 				data integrity; contact your club director to move you to another team.
 			</p>
@@ -193,7 +209,13 @@
 				<p class="settings-save-ok" role="status">{saveMsg}</p>
 			{/if}
 
-			<button class="primary-btn btn-orange w-100" type="button" onclick={saveProfile} disabled={saving}>
+			<button
+				class="primary-btn btn-orange w-100"
+				class:pos-set-save={isPlayer}
+				type="button"
+				onclick={saveProfile}
+				disabled={saving}
+			>
 				{saving ? 'Saving…' : 'Save changes'}
 			</button>
 		</div>
@@ -201,6 +223,138 @@
 </div>
 
 <style>
+	/* ─── Player OS settings ───────────────────────────────────── */
+	.pos-settings.settings-page {
+		padding-top: 0;
+	}
+
+	.pos-set-hero {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: clamp(18px, 3vw, 24px);
+		padding: clamp(16px, 3vw, 22px);
+		border-radius: 20px;
+		background: linear-gradient(
+			135deg,
+			rgba(245, 158, 11, 0.12),
+			rgba(34, 211, 238, 0.1)
+		);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.9);
+	}
+
+	.pos-set-hero__eyebrow {
+		display: inline-block;
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--pp-accent, #f59e0b);
+		margin-bottom: 6px;
+	}
+
+	.pos-set-hero__title {
+		margin: 0 0 6px;
+		font-size: clamp(1.35rem, 4vw, 1.75rem);
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-set-hero__sub {
+		margin: 0;
+		max-width: 44ch;
+		font-size: 0.88rem;
+		font-weight: 600;
+		line-height: 1.5;
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-set-hero__icon {
+		flex-shrink: 0;
+		width: 48px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 16px;
+		background: rgba(0, 0, 0, 0.35);
+		border: 1px solid rgba(245, 158, 11, 0.35);
+		color: var(--pp-accent, #f59e0b);
+		font-size: 1.35rem;
+		box-shadow: 0 0 28px -6px rgba(245, 158, 11, 0.35);
+	}
+
+	.pos-set-lead--muted {
+		opacity: 0.88;
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-settings :global(.card-header) {
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		font-size: 0.72rem;
+	}
+
+	.pos-settings .settings-field {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.pos-settings .settings-label {
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-settings .settings-value {
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-settings .settings-divider {
+		border-top-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.pos-settings .settings-input {
+		background: rgba(0, 0, 0, 0.35);
+		border-color: rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-settings .settings-input:focus {
+		outline: none;
+		border-color: rgba(34, 211, 238, 0.45);
+		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+	}
+
+	.pos-settings .theme-btn {
+		background: rgba(255, 255, 255, 0.05);
+		border-color: rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-settings .theme-btn.active {
+		border-color: var(--pp-accent-cool, #22d3ee);
+		box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+		background: rgba(34, 211, 238, 0.1);
+	}
+
+	.pos-settings .minor-privacy-note {
+		background: rgba(0, 0, 0, 0.28);
+		border-color: rgba(255, 255, 255, 0.1);
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-set-save.primary-btn {
+		background: linear-gradient(145deg, var(--pp-accent, #f59e0b), #fbbf24);
+		color: #0a0a0a;
+		font-weight: 900;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		box-shadow: 0 16px 36px -12px rgba(245, 158, 11, 0.55);
+	}
+
 	.settings-body {
 		display: flex;
 		flex-direction: column;

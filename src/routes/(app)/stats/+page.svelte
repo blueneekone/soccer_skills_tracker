@@ -172,12 +172,19 @@
 		if (!browser) {
 			return { bar: '#0f172a', tick: '#334155', grid: 'rgba(15,23,42,0.12)' };
 		}
+		if (isPlayerRole && document.querySelector('.ps-root')) {
+			return {
+				bar: 'rgba(34, 211, 238, 0.85)',
+				tick: 'rgba(196, 196, 206, 0.9)',
+				grid: 'rgba(255,255,255,0.06)',
+			};
+		}
 		const cs = getComputedStyle(document.documentElement);
 		const pick = (name, fallback) => (cs.getPropertyValue(name).trim() || fallback);
 		return {
 			bar: pick('--chart-bar', '#0f172a'),
 			tick: pick('--chart-tick', '#334155'),
-			grid: pick('--chart-grid', 'rgba(15,23,42,0.12)')
+			grid: pick('--chart-grid', 'rgba(15,23,42,0.12)'),
 		};
 	};
 
@@ -215,6 +222,7 @@
 	$effect(() => {
 		chartThemeKey;
 		chartJsReady;
+		isPlayerRole;
 		if (!ChartCtor || !chartEl || loading) return;
 		const { labels, data } = buildChartData(chartRange);
 		const { bar, tick, grid } = chartColors();
@@ -280,14 +288,37 @@
 	});
 </script>
 
-<div class="ec-page ec-player-stats view-section">
-	<div class="cal-header-row no-print">
-		<h2 class="view-title m-0">Player Stats</h2>
-		<div class="header-btns">
-			<button class="secondary-btn" onclick={exportCSV}>Export CSV</button>
-			<button class="secondary-btn" onclick={() => window.print()}>Print report</button>
+<div
+	class="ec-page ec-player-stats view-section"
+	class:pos-stats={isPlayerRole}
+>
+	{#if isPlayerRole}
+		<header class="pos-st-hero no-print">
+			<div class="pos-st-hero__copy">
+				<span class="pos-st-hero__eyebrow">Performance lab</span>
+				<h2 class="pos-st-hero__title">Your stats</h2>
+				<p class="pos-st-hero__sub">
+					Volume, trials, recruiting, and streak intel — tuned for how you actually train.
+				</p>
+			</div>
+			<div class="header-btns pos-st-hero__actions">
+				<button type="button" class="secondary-btn" onclick={exportCSV}>Export CSV</button>
+				<button type="button" class="secondary-btn" onclick={() => window.print()}>
+					Print report
+				</button>
+			</div>
+		</header>
+	{:else}
+		<div class="cal-header-row no-print">
+			<h2 class="view-title m-0">Player Stats</h2>
+			<div class="header-btns">
+				<button type="button" class="secondary-btn" onclick={exportCSV}>Export CSV</button>
+				<button type="button" class="secondary-btn" onclick={() => window.print()}>
+					Print report
+				</button>
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6">
 		<div
@@ -469,6 +500,151 @@
 <style>
 	.ec-player-stats {
 		padding-bottom: 1.5rem;
+	}
+
+	/* ─── Player OS stats runway ───────────────────────────────── */
+	.pos-stats.ec-player-stats {
+		padding-bottom: 0.5rem;
+	}
+
+	.pos-st-hero {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: clamp(14px, 3vw, 22px);
+		margin-bottom: clamp(18px, 3vw, 26px);
+		padding: clamp(16px, 3vw, 22px);
+		border-radius: 20px;
+		background: linear-gradient(
+			125deg,
+			rgba(168, 85, 247, 0.14),
+			rgba(34, 211, 238, 0.08)
+		);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.9);
+	}
+
+	.pos-st-hero__eyebrow {
+		display: inline-block;
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--pp-accent-violet, #a855f7);
+		margin-bottom: 6px;
+	}
+
+	.pos-st-hero__title {
+		margin: 0 0 6px;
+		font-size: clamp(1.45rem, 4vw, 1.85rem);
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-st-hero__sub {
+		margin: 0;
+		max-width: 48ch;
+		font-size: 0.9rem;
+		font-weight: 600;
+		line-height: 1.5;
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-st-hero__actions {
+		flex-shrink: 0;
+	}
+
+	.pos-stats :global(.secondary-btn) {
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-primary, #f4f4f5);
+		border-radius: 14px;
+		font-weight: 800;
+	}
+
+	.pos-stats :global(.secondary-btn:hover) {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.pos-stats :global(.bento-section) {
+		margin-bottom: clamp(14px, 2.5vw, 20px);
+	}
+
+	.pos-stats :global(.card-header) {
+		font-weight: 800;
+		letter-spacing: 0.02em;
+	}
+
+	.pos-stats :global(.card-header.bg-gold-header) {
+		background: linear-gradient(
+			90deg,
+			rgba(245, 158, 11, 0.2),
+			rgba(34, 211, 238, 0.08)
+		);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.pos-stats :global(.admin-table th) {
+		background: rgba(0, 0, 0, 0.35);
+		color: var(--pp-text-primary, #f4f4f5);
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.pos-stats :global(.admin-table td) {
+		border-bottom-color: rgba(255, 255, 255, 0.06);
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-stats :global(.cal-day) {
+		background: rgba(255, 255, 255, 0.04);
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.pos-stats :global(.cal-day.has-log) {
+		background: rgba(34, 211, 238, 0.12);
+		border-color: rgba(34, 211, 238, 0.35);
+	}
+
+	.pos-stats :global(.cal-day.has-log:hover) {
+		background: rgba(34, 211, 238, 0.2);
+	}
+
+	.pos-stats :global(.trend-filter) {
+		background: rgba(0, 0, 0, 0.35);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-primary, #f4f4f5);
+		border-radius: 12px;
+		padding: 8px 12px;
+		font-weight: 700;
+	}
+
+	.pos-stats .recruit-center-shell {
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.pos-stats .recruit-center-header {
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.pos-stats .recruit-center-title {
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-stats .recruit-center-sub {
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-stats .recruit-switch input:checked + .recruit-switch-ui {
+		background: linear-gradient(135deg, #22d3ee, #a855f7);
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.pos-stats .recruit-qr-frame {
+		background: rgba(0, 0, 0, 0.35);
+		border-color: rgba(255, 255, 255, 0.12);
 	}
 
 	.stats-table-wrap {

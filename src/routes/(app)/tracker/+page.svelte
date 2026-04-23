@@ -31,6 +31,7 @@
 	}
 
 	const profile = $derived(authStore.userProfile);
+	const isPlayer = $derived(authStore.role === 'player');
 
 	$effect(() => {
 		if (!authStore.isLoading && authStore.role === 'parent') {
@@ -220,8 +221,26 @@
 	};
 </script>
 
-<div class="view-section locked-dashboard-view tracker-page">
-	<h2 class="view-title">Log workout</h2>
+<div
+	class="view-section locked-dashboard-view tracker-page"
+	class:pos-tracker={isPlayer}
+>
+	{#if isPlayer}
+		<header class="pos-tr-hero">
+			<div class="pos-tr-hero__copy">
+				<span class="pos-tr-hero__eyebrow">Training runway</span>
+				<h2 class="pos-tr-hero__title">Log workout</h2>
+				<p class="pos-tr-hero__sub">
+					Stack drills, set intensity, ship the session — XP hits when you confirm accuracy.
+				</p>
+			</div>
+			<div class="pos-tr-hero__badge" aria-hidden="true">
+				<i class="ph ph-lightning"></i>
+			</div>
+		</header>
+	{:else}
+		<h2 class="view-title">Log workout</h2>
+	{/if}
 
 	{#if homeworkAssignmentId && authStore.role === 'player'}
 		<div class="card tracker-hw-banner">
@@ -385,6 +404,300 @@
 </div>
 
 <style>
+	/* ─── Player OS (futuristic shell) ─────────────────────────── */
+	.pos-tracker.view-section {
+		padding-top: 0;
+	}
+
+	.pos-tr-hero {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: clamp(18px, 3vw, 26px);
+		padding: clamp(16px, 3vw, 22px);
+		border-radius: 20px;
+		background: linear-gradient(
+			135deg,
+			rgba(34, 211, 238, 0.12),
+			rgba(168, 85, 247, 0.08)
+		);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.9);
+	}
+
+	.pos-tr-hero__eyebrow {
+		display: inline-block;
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--pp-accent-cool, #22d3ee);
+		margin-bottom: 6px;
+	}
+
+	.pos-tr-hero__title {
+		margin: 0 0 6px;
+		font-size: clamp(1.45rem, 4vw, 1.85rem);
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+
+	.pos-tr-hero__sub {
+		margin: 0;
+		max-width: 42ch;
+		font-size: 0.9rem;
+		font-weight: 600;
+		line-height: 1.5;
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-tr-hero__badge {
+		flex-shrink: 0;
+		width: 48px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 16px;
+		background: rgba(0, 0, 0, 0.35);
+		border: 1px solid rgba(34, 211, 238, 0.35);
+		color: var(--pp-accent-cool, #22d3ee);
+		font-size: 1.35rem;
+		box-shadow: 0 0 28px -6px rgba(34, 211, 238, 0.45);
+	}
+
+	.pos-tracker .tracker-main-panel {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(14px, 2.5vw, 20px);
+	}
+
+	.pos-tracker :global(.card) {
+		border-radius: 20px;
+		overflow: hidden;
+	}
+
+	.pos-tracker :global(.card-body) {
+		padding: clamp(16px, 3vw, 22px);
+	}
+
+	.pos-tracker .tracker-box {
+		margin-bottom: 0;
+		padding: clamp(16px, 3vw, 20px);
+		border-radius: 18px;
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-left-width: 3px;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+	}
+
+	.pos-tracker .tracker-box.bg-orange {
+		border-left-color: #fb923c;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+			0 0 40px -20px rgba(251, 146, 60, 0.35);
+	}
+	.pos-tracker .tracker-box.bg-red {
+		border-left-color: #f87171;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+			0 0 40px -20px rgba(248, 113, 113, 0.3);
+	}
+	.pos-tracker .tracker-box.bg-blue {
+		border-left-color: #38bdf8;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+			0 0 40px -20px rgba(56, 189, 248, 0.3);
+	}
+	.pos-tracker .tracker-box.bg-green {
+		border-left-color: #34d399;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+			0 0 40px -20px rgba(52, 211, 153, 0.3);
+	}
+	.pos-tracker .tracker-box.bg-light-blue {
+		background: rgba(34, 211, 238, 0.06);
+		border-left-color: var(--pp-accent-cool, #22d3ee);
+	}
+
+	.pos-tracker :global(.section-label) {
+		font-size: 0.78rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		margin-bottom: 12px;
+		opacity: 0.95;
+	}
+
+	.pos-tracker :global(label) {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--pp-text-secondary, #c4c4ce);
+		margin-bottom: 6px;
+		display: block;
+	}
+
+	.pos-tracker :global(select),
+	.pos-tracker :global(input[type='number']),
+	.pos-tracker :global(input[type='date']),
+	.pos-tracker :global(input[type='time']) {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 10px 12px;
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.35);
+		color: var(--pp-text-primary, #f4f4f5);
+		font: inherit;
+		font-weight: 600;
+	}
+
+	.pos-tracker :global(select):focus,
+	.pos-tracker :global(input):focus {
+		outline: none;
+		border-color: rgba(34, 211, 238, 0.5);
+		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+	}
+
+	.pos-tracker :global(.input-row) {
+		align-items: center;
+	}
+
+	.pos-tracker :global(.input-divider) {
+		color: var(--pp-text-secondary, #c4c4ce);
+		font-weight: 800;
+	}
+
+	.pos-tracker :global(.action-btn) {
+		border: none;
+		border-radius: 12px;
+		font-weight: 800;
+		padding: 10px 14px;
+		cursor: pointer;
+		transition:
+			transform 0.1s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.pos-tracker :global(.action-btn:active) {
+		transform: scale(0.98);
+	}
+
+	.pos-tracker :global(.btn-orange) {
+		background: linear-gradient(145deg, #ea580c, #fb923c);
+		color: #0a0a0a;
+		box-shadow: 0 8px 20px -8px rgba(251, 146, 60, 0.6);
+	}
+	.pos-tracker :global(.btn-red) {
+		background: linear-gradient(145deg, #dc2626, #f87171);
+		color: #fff;
+		box-shadow: 0 8px 20px -8px rgba(248, 113, 113, 0.5);
+	}
+	.pos-tracker :global(.btn-blue) {
+		background: linear-gradient(145deg, #0284c7, #38bdf8);
+		color: #0a0a0a;
+		box-shadow: 0 8px 20px -8px rgba(56, 189, 248, 0.5);
+	}
+	.pos-tracker :global(.btn-green) {
+		background: linear-gradient(145deg, #059669, #34d399);
+		color: #0a0a0a;
+		box-shadow: 0 8px 20px -8px rgba(52, 211, 153, 0.5);
+	}
+
+	.pos-tracker :global(.session-list) {
+		border-radius: 14px;
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(0, 0, 0, 0.25);
+	}
+
+	.pos-tracker :global(.session-item) {
+		border-bottom-color: rgba(255, 255, 255, 0.06);
+	}
+	.pos-tracker :global(.session-item:hover) {
+		background: rgba(255, 255, 255, 0.04);
+	}
+	.pos-tracker :global(.session-empty) {
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-tracker :global(.session-item-title) {
+		color: var(--pp-text-primary, #f4f4f5);
+	}
+	.pos-tracker :global(.session-item-detail) {
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+
+	.pos-tracker :global(.workout-summary-box) {
+		background: rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 16px;
+		margin-top: 16px;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+	}
+
+	.pos-tracker .outcome-btn {
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-secondary, #c4c4ce);
+		border-radius: 14px;
+	}
+	.pos-tracker .outcome-btn.active {
+		border-color: var(--pp-accent-cool, #22d3ee);
+		background: linear-gradient(
+			145deg,
+			rgba(34, 211, 238, 0.25),
+			rgba(168, 85, 247, 0.12)
+		);
+		color: var(--pp-text-primary, #f4f4f5);
+		box-shadow: 0 0 24px -8px rgba(34, 211, 238, 0.35);
+	}
+
+	.pos-tracker .verify-panel {
+		background: rgba(0, 0, 0, 0.28);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.pos-tracker .verify-help,
+	.pos-tracker .verify-heading {
+		color: var(--pp-text-secondary, #c4c4ce);
+	}
+	.pos-tracker .verify-heading {
+		color: var(--pp-text-primary, #f4f4f5);
+		font-size: 0.82rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.pos-tracker :global(.parent-log-link) {
+		color: var(--pp-accent-cool, #22d3ee);
+	}
+
+	.pos-tracker :global(.primary-btn.btn-orange),
+	.pos-tracker :global(.btn-log-workout) {
+		background: linear-gradient(145deg, var(--pp-accent, #f59e0b), #fbbf24);
+		color: #0a0a0a;
+		font-weight: 900;
+		letter-spacing: 0.02em;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 16px;
+		padding: 14px 18px;
+		box-shadow: 0 16px 36px -12px rgba(245, 158, 11, 0.55);
+	}
+
+	.pos-tracker :global(.secondary-btn) {
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--pp-text-primary, #f4f4f5);
+		border-radius: 14px;
+		font-weight: 800;
+	}
+
+	.pos-tracker :global(.secondary-btn:hover) {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
 	.tracker-hw-banner {
 		margin-bottom: clamp(14px, 2.5vw, 20px);
 		border-color: color-mix(in srgb, var(--brand-primary) 35%, var(--glass-border));
