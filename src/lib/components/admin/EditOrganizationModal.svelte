@@ -18,6 +18,7 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import { portal } from '$lib/actions/portal.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -173,6 +174,7 @@
 	     the modal — the inner card uses `stopPropagation`. -->
 	<div
 		class="eom-overlay"
+		use:portal
 		role="presentation"
 		onclick={() => !saving && onClose?.()}
 		onkeydown={(e) => { if (e.key === 'Escape' && !saving) onClose?.(); }}

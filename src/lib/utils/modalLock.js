@@ -24,8 +24,11 @@ export function lockBody() {
 	if (!el) return;
 
 	if (depth === 0) {
+		const computed = window.getComputedStyle(el);
 		const gutter = Math.max(0, el.offsetWidth - el.clientWidth);
-		const computedPad = parseFloat(window.getComputedStyle(el).paddingRight) || 0;
+		const computedPad = parseFloat(computed.paddingRight) || 0;
+		/* `scrollbar-gutter: stable` already reserves width — extra padding shifts layout */
+		const hasStableGutter = /\bstable\b/i.test(computed.scrollbarGutter || '');
 		snapshot = {
 			el,
 			overflow: el.style.overflow,
@@ -33,7 +36,7 @@ export function lockBody() {
 			scrollTop: el.scrollTop,
 		};
 		el.style.overflow = 'hidden';
-		if (gutter > 0) {
+		if (gutter > 0 && !hasStableGutter) {
 			el.style.paddingRight = `${computedPad + gutter}px`;
 		}
 	}

@@ -1038,6 +1038,7 @@
 
 	.cc-scroll {
 		overscroll-behavior: contain;
+		scrollbar-gutter: stable;
 	}
 
 	.cc-panel {

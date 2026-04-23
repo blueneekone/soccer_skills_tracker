@@ -752,6 +752,8 @@ html.dark .ec-icon-btn:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
+	/* Reserve gutter so hiding scroll (modal lock) does not widen content / flash bars */
+	scrollbar-gutter: stable;
 	padding: 16px 20px calc(6rem + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
 	width: 100%;

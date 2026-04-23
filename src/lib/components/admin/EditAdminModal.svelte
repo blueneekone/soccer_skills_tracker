@@ -19,6 +19,7 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import { portal } from '$lib/actions/portal.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -190,6 +191,7 @@
 	     dimmed scrim + blur. z-index 9999 keeps it above everything. -->
 	<div
 		class="eam-overlay"
+		use:portal
 		role="presentation"
 		onclick={() => !saving && onClose?.()}
 		onkeydown={(e) => { if (e.key === 'Escape' && !saving) onClose?.(); }}
