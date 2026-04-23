@@ -49,10 +49,6 @@
 		return teamsStore.getCoachTeams(userEmail);
 	});
 
-	const isDirectorView = $derived(
-		role === 'super_admin' || role === 'global_admin' || role === 'director',
-	);
-
 	const canOverrideEligibility = $derived(
 		role === 'super_admin' || role === 'global_admin' || role === 'director',
 	);
@@ -200,9 +196,8 @@
 </script>
 
 <div class="ec-page ec-coach">
-	<!-- Main canvas: sidebar navigation handles all tab switching -->
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-items-stretch">
-		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-8">
+	<!-- Team scope: WorkspaceContextSwitcher + ?teamId= only (no in-page team picker). -->
+	<div class="tw-flex tw-flex-col tw-gap-6">
 			{#if activeTab === 'home'}
 				<div class="coach-portal-title">
 					{#if clubId}
@@ -264,79 +259,12 @@
 			{:else if activeTab === 'tools'}
 				<ToolsTab teamId={selectedTeamId} clubId={clubId || ''} />
 			{/if}
-		</div>
-
-		<div class="tw-flex tw-flex-col tw-gap-6 xl:tw-col-span-4">
-			{#if isDirectorView}
-				<div class="ec-panel ec-coach__select">
-					<div class="ec-coach__select-head">Director Access</div>
-					<div class="ec-coach__select-body">
-						<label class="ec-coach__label" for="coach-dir-team">View Team Data</label>
-						<select id="coach-dir-team" bind:value={selectedTeamId}>
-							{#each myTeams as t (t.id)}
-								<option value={t.id}>{t.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
-			{:else if myTeams.length > 1}
-				<div class="ec-panel ec-coach__select">
-					<div class="ec-coach__select-body">
-						<label class="ec-coach__label" for="coach-team-pick">Team</label>
-						<select id="coach-team-pick" bind:value={selectedTeamId} aria-label="Select team">
-							{#each myTeams as t (t.id)}
-								<option value={t.id}>{t.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
-			{/if}
-		</div>
 	</div>
 </div>
 
 <style>
 	.ec-coach {
 		padding-bottom: 8px;
-	}
-
-	.ec-coach__select {
-		padding: 0;
-		margin-bottom: 0;
-		overflow: hidden;
-	}
-
-	.ec-coach__select-head {
-		padding: 10px 14px;
-		font-size: 12px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--text-secondary);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-		background: #ffffff;
-	}
-
-	:global(html.dark) .ec-coach__select-head {
-		border-bottom-color: rgba(255, 255, 255, 0.08);
-		background: #09090b;
-	}
-
-	.ec-coach__select-body {
-		padding: 12px 14px;
-		background: #ffffff;
-	}
-
-	:global(html.dark) .ec-coach__select-body {
-		background: #09090b;
-	}
-
-	.ec-coach__label {
-		display: block;
-		font-size: 12px;
-		font-weight: 600;
-		margin-bottom: 6px;
-		color: var(--text-secondary);
 	}
 
 	.coach-portal-title {
@@ -346,16 +274,6 @@
 		flex-wrap: wrap;
 		margin-bottom: clamp(12px, 2vw, 20px);
 	}
-
-	.coach-portal-title__h {
-		margin: 0;
-	}
-
-	.coach-header {
-		font-size: clamp(1.4rem, 4vw, 1.8rem);
-		font-weight: 900;
-	}
-	select { margin-bottom: 0; }
 
 	.coach-home-grid {
 		display: grid;
