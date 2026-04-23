@@ -359,10 +359,15 @@
 </script>
 
 <div class="ss-page">
-	<!-- Page heading -->
-	<div class="ss-page__head">
-		<h1 class="ss-page__title">System Settings</h1>
-		<p class="ss-page__sub">Platform-level configuration. Changes here affect all tenants.</p>
+	<div class="adm-toolbar ss-toolbar">
+		<div class="adm-toolbar__left">
+			<h1 class="adm-toolbar__title">System Settings</h1>
+			<div class="adm-toolbar__meta">
+				<span class="adm-toolbar__sub">
+					Platform-level configuration. Changes here affect all tenants.
+				</span>
+			</div>
+		</div>
 	</div>
 
 	<!-- Tabs -->
@@ -719,20 +724,8 @@
 		max-width: 960px;
 	}
 
-	.ss-page__head { margin-bottom: 20px; }
-
-	.ss-page__title {
-		margin: 0 0 4px;
-		font-size: 1.5rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--text-primary);
-	}
-
-	.ss-page__sub {
-		margin: 0;
-		font-size: 0.875rem;
-		color: var(--text-secondary);
+	.ss-toolbar {
+		margin-bottom: 8px;
 	}
 
 	/* ── Tabs ────────────────────────────────────────────────────────── */

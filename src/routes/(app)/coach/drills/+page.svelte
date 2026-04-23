@@ -1129,8 +1129,6 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		max-height: 240px;
-		overflow-y: auto;
 		border: 1px solid rgba(0, 0, 0, 0.08);
 		border-radius: 10px;
 	}

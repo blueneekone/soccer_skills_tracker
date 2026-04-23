@@ -710,10 +710,7 @@
 		line-height: 1.55;
 	}
 
-	/* Disclosure scrollbox ──────────────────────────────────────────────────── */
 	.vpc-disclosure {
-		max-height: 260px;
-		overflow-y: auto;
 		border: 1px solid rgba(15,23,42,0.1);
 		border-radius: var(--radius-inner, 12px);
 		padding: 1rem 1.1rem;
