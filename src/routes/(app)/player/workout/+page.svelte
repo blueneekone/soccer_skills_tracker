@@ -1,39 +1,144 @@
 <script>
-  // Mock Data
-  let level = 12;
-  let currentXp = 850;
-  let nextLevelXp = 1000;
-  let streak = 4;
-  
-  // Interactive State
-  let selectedFocus = $state(null);
-  let selectedDrill = $state(null);
+  import { goto } from '$app/navigation';
+  import { untrack } from 'svelte';
+  import { httpsCallable } from 'firebase/functions';
+  import { functions } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
+  import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+  import Swal from 'sweetalert2';
+  import confetti from 'canvas-confetti';
+
+  const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
+
+  /** @param {number} step */
+  function intensityMultiplierFromStep(step) {
+    if (step <= 3) return 1.0;
+    if (step <= 7) return 1.15;
+    return 1.35;
+  }
+
+  /** @param {number} step */
+  function intensityApiFromStep(step) {
+    if (step <= 3) return /** @type {const} */ ('low');
+    if (step <= 7) return /** @type {const} */ ('medium');
+    return /** @type {const} */ ('high');
+  }
+
+  const profile = $derived(authStore.userProfile);
+  const totalXpHud = $derived(
+    Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)),
+  );
+
+  /** Display level, XP into this level, XP needed to complete this level (bar) */
+  let level = $state(1);
+  let currentXp = $state(0);
+  let nextLevelXp = $state(100);
+  let streak = $state(0);
+
+  $effect(() => {
+    const lp = getLevelProgressFromTotalXp(totalXpHud);
+    level = lp.level;
+    currentXp = lp.xpIntoLevel;
+    nextLevelXp = lp.xpToNext;
+  });
+
+  $effect(() => {
+    streak = Math.max(0, Math.floor(Number(profile?.currentStreak) || 0));
+  });
+
+  let selectedFocus = $state(/** @type {'technical' | 'physical' | 'match' | 'recovery' | null} */ ('technical'));
+  let selectedDrill = $state(/** @type {string | null} */ (null));
   let intensity = $state(5);
   let duration = $state(30);
+  let logSubmitting = $state(false);
 
   const focusAreas = [
-    { id: 'technical', label: 'Technical', icon: 'ph-soccer-ball' },
-    { id: 'physical', label: 'Physical', icon: 'ph-barbell' },
-    { id: 'tactical', label: 'Tactical', icon: 'ph-strategy' },
-    { id: 'recovery', label: 'Recovery', icon: 'ph-heartbeat' }
+    { id: /** @type {const} */ ('technical'), label: 'Technical', icon: 'ph-soccer-ball' },
+    { id: /** @type {const} */ ('physical'), label: 'Physical', icon: 'ph-barbell' },
+    { id: /** @type {const} */ ('match'), label: 'Match', icon: 'ph-flag' },
+    { id: /** @type {const} */ ('recovery'), label: 'Recovery', icon: 'ph-heartbeat' },
   ];
 
   const drillsByFocus = {
     technical: ['Juggling', 'Wall Passing', 'Cone Dribbling', 'Shooting', 'First Touch'],
     physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
-    tactical: ['Film Study', 'Positional Awareness', 'Set Pieces', 'Coach Assignment'],
-    recovery: ['Stretching', 'Ice Bath', 'Yoga', 'Light Jog', 'Foam Rolling']
+    match: ['Film Study', 'Positional Awareness', 'Set Pieces', 'Scrimmage', 'Coach Assignment'],
+    recovery: ['Stretching', 'Ice Bath', 'Yoga', 'Light Jog', 'Foam Rolling'],
   };
 
-  let availableDrills = $derived(selectedFocus ? drillsByFocus[selectedFocus] : []);
+  const availableDrills = $derived(
+    selectedFocus ? drillsByFocus[selectedFocus] : [],
+  );
 
   $effect(() => {
-    if (selectedFocus) selectedDrill = null;
+    // Only selectedFocus is a dependency: reset drill when user picks a new focus
+    if (selectedFocus) untrack(() => (selectedDrill = null));
   });
 
-  function logWorkout() {
-    if (!selectedFocus || !selectedDrill) return;
-    alert(`Logged ${duration} mins of ${selectedDrill} at Intensity ${intensity}. +150 XP!`);
+  const focusLabel = $derived(
+    (focusAreas.find((f) => f.id === selectedFocus) ?? { label: 'Session' }).label,
+  );
+
+  const estimatedLogXp = $derived.by(() => {
+    const m = intensityMultiplierFromStep(intensity);
+    const base = duration * 10;
+    return Math.max(0, Math.floor(base * m));
+  });
+
+  $effect(() => {
+    if (!authStore.isLoading && authStore.role === 'parent') {
+      untrack(() => goto('/parent/log-workout', { replaceState: true }));
+    }
+  });
+
+  async function logWorkout() {
+    if (!selectedFocus || !selectedDrill || logSubmitting) return;
+    if (authStore.role !== 'player') {
+      return Swal.fire({ title: 'Players only', text: 'Use the parent workout log for your player.', icon: 'info' });
+    }
+    if (!profile?.teamId || !profile?.playerName) {
+      return Swal.fire({ title: 'Profile incomplete', text: 'Team and player name are required.', icon: 'warning' });
+    }
+    const drillType = `[${focusLabel}] ${selectedDrill} (Player workout)`.slice(0, 200);
+    logSubmitting = true;
+    try {
+      const res = await logTrainingSession({
+        drillType,
+        duration: Math.max(0, Math.floor(Number(duration) || 0)),
+        reps: 0,
+        intensity: intensityApiFromStep(intensity),
+      });
+      const payload = res.data;
+      const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
+      const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : totalXpHud + earned;
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem(
+          'elite_xp_pulse',
+          JSON.stringify({ fromTotal: Math.max(0, newTotal - earned), toTotal: newTotal }),
+        );
+      }
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#6366f1', '#a855f7', '#22d3ee', '#fbbf24'],
+      });
+      await Swal.fire({
+        title: 'Workout Logged!',
+        text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
+        icon: 'success',
+        confirmButtonColor: '#4f46e5',
+        confirmButtonText: 'Continue',
+        customClass: { popup: 'card' },
+      });
+      await authStore.refresh({ silent: true });
+    } catch (e) {
+      console.error(e);
+      const msg = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Could not log workout.';
+      await Swal.fire({ title: 'Error', text: msg, icon: 'error' });
+    } finally {
+      logSubmitting = false;
+    }
   }
 </script>
 
@@ -49,10 +154,15 @@
       <div class="flex-1 w-full px-0 md:px-10 mb-6 md:mb-0">
         <div class="flex justify-between text-sm font-bold text-white/50 mb-3 tracking-wide">
           <span>{currentXp} XP</span>
-          <span>{nextLevelXp} XP</span>
+          <span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'} XP</span>
         </div>
         <div class="h-3 w-full bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
-          <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style="width: {(currentXp / nextLevelXp) * 100}%"></div>
+          <div
+            class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+            style="width: {nextLevelXp > 0
+              ? Math.min(100, (currentXp / nextLevelXp) * 100)
+              : 100}%"
+          ></div>
         </div>
       </div>
       
@@ -70,7 +180,7 @@
         {#each focusAreas as focus}
           <button
             class="relative flex flex-col items-center justify-center gap-4 p-6 rounded-2xl border transition-all duration-200 {selectedFocus === focus.id ? 'bg-indigo-500/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'}"
-            onclick={() => selectedFocus = focus.id}
+            onclick={() => (selectedFocus = focus.id)}
           >
             <i class="ph {focus.icon} text-4xl {selectedFocus === focus.id ? 'text-indigo-400' : 'text-white/40'}"></i>
             <span class="font-bold tracking-wide {selectedFocus === focus.id ? 'text-white' : 'text-white/60'}">{focus.label}</span>
@@ -86,7 +196,7 @@
           {#each availableDrills as drill}
             <button
               class="px-6 py-3 rounded-full border text-sm md:text-base font-bold transition-all {selectedDrill === drill ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white/90'}"
-              onclick={() => selectedDrill = drill}
+              onclick={() => (selectedDrill = drill)}
             >
               {drill}
             </button>
@@ -121,12 +231,14 @@
     {/if}
 
     <button
-      class="w-full py-6 rounded-2xl font-black text-2xl tracking-wide transition-all duration-200 flex items-center justify-center gap-3 {selectedFocus && selectedDrill ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 shadow-[0_0_40px_rgba(99,102,241,0.4)] text-white hover:scale-[1.01]' : 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'}"
-      disabled={!selectedFocus || !selectedDrill}
+      class="w-full py-6 rounded-2xl font-black text-2xl tracking-wide transition-all duration-200 flex items-center justify-center gap-3 {selectedFocus && selectedDrill && !logSubmitting ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 shadow-[0_0_40px_rgba(99,102,241,0.4)] text-white hover:scale-[1.01]' : 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'}"
+      disabled={!selectedFocus || !selectedDrill || logSubmitting}
       onclick={logWorkout}
     >
-      {#if selectedFocus && selectedDrill}
-        <i class="ph-bold ph-lightning text-3xl"></i> LOG WORKOUT & CLAIM +150 XP
+      {#if logSubmitting}
+        <span>Logging…</span>
+      {:else if selectedFocus && selectedDrill}
+        <i class="ph-bold ph-lightning text-3xl"></i> LOG WORKOUT & CLAIM +{estimatedLogXp} XP
       {:else}
         Select a drill to continue
       {/if}
