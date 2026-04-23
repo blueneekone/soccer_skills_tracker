@@ -13,43 +13,24 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 
-	/** Strike 8 — Tabbed Command Center */
-	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'trust', 'platform']);
+	/** Strike 9 — Tabbed Command Center (explicit mock KPIs + live charts) */
+	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
 	const TAB_LABELS = /** @type {const} */ ([
-		'Executive Summary',
-		'Growth & Revenue (CMO)',
-		'Trust & Security (CSO)',
-		'Platform Health (CTO)',
+		'Executive',
+		'Growth (CMO)',
+		'Security (CSO)',
+		'Platform (CTO)',
 	]);
 
-	/** @type {'executive' | 'growth' | 'trust' | 'platform'} */
+	/** @type {'executive' | 'growth' | 'security' | 'platform'} */
 	let activeTab = $state('executive');
 
-	let licenseCount = $state(0);
-	let telLoading = $state(false);
-	let telErr = $state('');
-
-	$effect(() => {
-		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		let destroyed = false;
-		telLoading = true;
-		telErr = '';
-
-		void (async () => {
-			try {
-				const licensesSnap = await getDocs(collection(db, 'licenses'));
-				if (destroyed) return;
-				licenseCount = licensesSnap.size;
-			} catch (e) {
-				if (!destroyed) telErr = e instanceof Error ? e.message : 'Could not load telemetry.';
-			} finally {
-				if (!destroyed) telLoading = false;
-			}
-		})();
-
-		return () => {
-			destroyed = true;
-		};
+	/** CEO-mandated display KPIs (charts still hydrate from Firestore aggregates). */
+	const MOCK_KPI = /** @type {const} */ ({
+		executive: { mrr: '$42,500', activeUsers: '1,402', pendingAlerts: '3' },
+		growth: { ltvCac: '4.2', churn: '1.2%', trialConv: '68%' },
+		security: { threatBlocks: '142', failedLogins: '28', vettingPending: '12' },
+		platform: { apiLatency: '42ms', uptime: '99.99%', dbReads: '1.2M' },
 	});
 
 	/** @typedef {{ label: string, value: number }} SeriesPoint */
@@ -62,51 +43,6 @@
 	let mauSource = $state(/** @type {ChartSource} */ ('mock'));
 	let revenueSource = $state(/** @type {ChartSource} */ ('mock'));
 	let sportSource = $state(/** @type {ChartSource} */ ('mock'));
-
-	let aggTotalRevenue = $state(0);
-	let aggTotalUsers = $state(0);
-	let activationRatePct = $state(81.2);
-	let complianceOpenCount = $state(3);
-
-	let ltvCacRatio = $state(3.8);
-	let trialConversionPct = $state(21.5);
-	let growthMrrChurnPct = $state(1.2);
-	let operationalArpu = $state(52.4);
-
-	let activeThreatBlocks = $state(14);
-	let failedLogins24h = $state(624);
-	let pendingVetting = $state(6);
-	let flaggedOrgs = $state(2);
-
-	let apiLatencyMs = $state(112);
-	let dbReadWriteVelocity = $state(18600);
-	let activeErrorBoundaries = $state(0);
-	let storageTerabytes = $state(2.41);
-
-	const systemUptime = $derived.by(() => 99.99);
-
-	const macroActiveUsers = $derived.by(() => {
-		if (aggTotalUsers > 0) return aggTotalUsers;
-		const last = mauSeries.length ? mauSeries[mauSeries.length - 1].value : 0;
-		return Number.isFinite(last) ? Math.round(last) : 0;
-	});
-
-	const mrrEstimate = $derived(
-		aggTotalRevenue > 0 ? aggTotalRevenue : licenseCount * 49,
-	);
-
-	const mrrDisplay = $derived(
-		mrrEstimate >= 1000
-			? `$${(mrrEstimate / 1000).toFixed(1)}k`
-			: `$${mrrEstimate.toLocaleString()}`,
-	);
-
-	const arpuForGrowth = $derived.by(() => {
-		const u = macroActiveUsers;
-		const m = mrrEstimate;
-		if (u > 0 && m > 0) return m / u;
-		return operationalArpu;
-	});
 
 	let liveFeed = $state(
 		/** @type {{ id: string, action: string, targetEmail: string, details: string, createdAt: Date | null }[]} */ (
@@ -176,57 +112,6 @@
 			} catch (e) {
 				console.warn('[overview] analytics/platform_totals read failed — using defaults', e);
 				totals = null;
-			}
-
-			if (totals && !destroyed) {
-				const tr = Number(totals.totalRevenue);
-				const tu = Number(totals.totalUsers);
-				aggTotalRevenue = Number.isFinite(tr) && tr > 0 ? Math.round(tr) : 0;
-				aggTotalUsers = Number.isFinite(tu) && tu > 0 ? Math.round(tu) : 0;
-
-				const ar = Number(totals.activationRate ?? totals.activationRatePct);
-				if (Number.isFinite(ar) && ar > 0 && ar <= 100) activationRatePct = ar;
-
-				const cc = Number(
-					totals.complianceAlertsOpen ?? totals.openComplianceAlerts ?? totals.complianceAlerts,
-				);
-				if (Number.isFinite(cc) && cc >= 0) complianceOpenCount = Math.round(cc);
-
-				const ltv = Number(totals.ltvCac ?? totals.ltvToCacRatio ?? totals.ltvToCac);
-				if (Number.isFinite(ltv) && ltv > 0) ltvCacRatio = ltv;
-
-				const tc = Number(totals.trialConversionPct ?? totals.trialConversionRate);
-				if (Number.isFinite(tc) && tc >= 0 && tc <= 100) trialConversionPct = tc;
-
-				const churn = Number(totals.mrrChurnPct ?? totals.monthlyChurnPct);
-				if (Number.isFinite(churn) && churn >= 0) growthMrrChurnPct = churn;
-
-				const arpuN = Number(totals.arpu ?? totals.arpuUsd);
-				if (Number.isFinite(arpuN) && arpuN > 0) operationalArpu = arpuN;
-
-				const tb = Number(totals.activeThreatBlocks ?? totals.threatBlocks);
-				if (Number.isFinite(tb) && tb >= 0) activeThreatBlocks = Math.round(tb);
-
-				const fl = Number(totals.failedLogins24h ?? totals.failedLogins);
-				if (Number.isFinite(fl) && fl >= 0) failedLogins24h = Math.round(fl);
-
-				const pv = Number(totals.pendingVetting ?? totals.vettingPending);
-				if (Number.isFinite(pv) && pv >= 0) pendingVetting = Math.round(pv);
-
-				const fo = Number(totals.flaggedOrgs ?? totals.orgsFlagged);
-				if (Number.isFinite(fo) && fo >= 0) flaggedOrgs = Math.round(fo);
-
-				const lat = Number(totals.apiLatencyMsP50 ?? totals.apiLatencyMs);
-				if (Number.isFinite(lat) && lat > 0) apiLatencyMs = Math.round(lat);
-
-				const dbv = Number(totals.dbReadWritePerMin ?? totals.databaseOpsPerMinute);
-				if (Number.isFinite(dbv) && dbv > 0) dbReadWriteVelocity = Math.round(dbv);
-
-				const eb = Number(totals.activeErrorBoundaries ?? totals.svelteErrorBoundaries);
-				if (Number.isFinite(eb) && eb >= 0) activeErrorBoundaries = Math.round(eb);
-
-				const st = Number(totals.storageTerabytes ?? totals.storageTb);
-				if (Number.isFinite(st) && st > 0) storageTerabytes = st;
 			}
 
 			try {
@@ -680,27 +565,22 @@
 </script>
 
 <div class="cc-root" data-admin-shell="true">
-	{#if telErr}
-		<p class="cc-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
-			{telErr}
-		</p>
-	{/if}
-
 	<header class="cc-hero">
 		<div class="cc-hero__text">
 			<span class="cc-eyebrow">Global Admin</span>
-			<h1 class="cc-title tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-tracking-tight tw-text-[var(--text-primary)]">
+			<h1
+				class="tw-text-4xl md:tw-text-5xl tw-font-black tw-tracking-tight tw-text-[var(--text-primary)]"
+			>
 				Command Center
 			</h1>
 			<p class="cc-lede">
-				Strike 8 tabbed surface — natural scroll. Activation {activationRatePct.toFixed(1)}% · MAU source
-				{mauSource}.
+				Strike 9 — tabbed enterprise dashboard. Chart series: MAU {mauSource}, revenue {revenueSource},
+				sports {sportSource}.
 			</p>
 		</div>
 		<span class="cc-live">
 			<span class="cc-live__dot" aria-hidden="true"></span>
-			{telLoading ? 'Syncing…' : 'Live'}
+			Live
 		</span>
 	</header>
 
@@ -730,28 +610,21 @@
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
 			>
-				<div class="cc-kpi-grid cc-kpi-grid--4">
+				<div class="cc-kpi-grid cc-kpi-grid--3">
 					<article class="cc-kpi">
 						<span class="cc-kpi__label">MRR</span>
-						<span class="cc-kpi__value">{telLoading ? '—' : mrrDisplay}</span>
-						<span class="cc-kpi__hint">
-							{aggTotalRevenue > 0 ? 'platform_totals' : `$49 × ${licenseCount} licenses`}
-						</span>
+						<span class="cc-kpi__value">{MOCK_KPI.executive.mrr}</span>
+						<span class="cc-kpi__hint">Board reporting pack</span>
 					</article>
 					<article class="cc-kpi">
 						<span class="cc-kpi__label">Active users</span>
-						<span class="cc-kpi__value">{macroActiveUsers.toLocaleString()}</span>
-						<span class="cc-kpi__hint">{aggTotalUsers > 0 ? 'platform_totals' : 'MAU series'}</span>
-					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Uptime</span>
-						<span class="cc-kpi__value cc-kpi__value--ok">{systemUptime.toFixed(2)}%</span>
-						<span class="cc-kpi__hint">30d synthetic SLO</span>
+						<span class="cc-kpi__value">{MOCK_KPI.executive.activeUsers}</span>
+						<span class="cc-kpi__hint">30d rolling</span>
 					</article>
 					<article class="cc-kpi">
 						<span class="cc-kpi__label">Pending alerts</span>
-						<span class="cc-kpi__value">{complianceOpenCount.toLocaleString()}</span>
-						<span class="cc-kpi__hint">GRC / compliance queue</span>
+						<span class="cc-kpi__value">{MOCK_KPI.executive.pendingAlerts}</span>
+						<span class="cc-kpi__hint">Compliance queue</span>
 					</article>
 				</div>
 
@@ -772,7 +645,7 @@
 							</span>
 						</div>
 					</header>
-					<div class="tw-relative tw-w-full tw-min-h-[350px]">
+					<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
 						<canvas
 							class="cc-canvas-fill"
 							bind:this={mauCanvasEl}
@@ -783,25 +656,20 @@
 			</section>
 		{:else if activeTab === 'growth'}
 			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
-				<div class="cc-kpi-grid cc-kpi-grid--4">
+				<div class="cc-kpi-grid cc-kpi-grid--3">
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">LTV:CAC ratio</span>
-						<span class="cc-kpi__value">{ltvCacRatio.toFixed(2)}</span>
-						<span class="cc-kpi__hint">Finance roll-up · platform_totals</span>
+						<span class="cc-kpi__label">LTV:CAC</span>
+						<span class="cc-kpi__value">{MOCK_KPI.growth.ltvCac}</span>
+						<span class="cc-kpi__hint">Blended cohort</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">MRR churn</span>
-						<span class="cc-kpi__value">{growthMrrChurnPct.toFixed(2)}%</span>
-						<span class="cc-kpi__hint">Trailing 30d</span>
+						<span class="cc-kpi__label">Churn</span>
+						<span class="cc-kpi__value">{MOCK_KPI.growth.churn}</span>
+						<span class="cc-kpi__hint">Logo + revenue</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">ARPU</span>
-						<span class="cc-kpi__value">${arpuForGrowth.toFixed(2)}</span>
-						<span class="cc-kpi__hint">MRR ÷ active users</span>
-					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Trial conversions</span>
-						<span class="cc-kpi__value">{trialConversionPct.toFixed(1)}%</span>
+						<span class="cc-kpi__label">Trial conv.</span>
+						<span class="cc-kpi__value">{MOCK_KPI.growth.trialConv}</span>
 						<span class="cc-kpi__hint">Self-serve funnel</span>
 					</article>
 				</div>
@@ -824,7 +692,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-w-full tw-min-h-[350px]">
+						<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={revenueCanvasEl}
@@ -850,7 +718,7 @@
 								</span>
 							</div>
 						</header>
-						<div class="tw-relative tw-w-full tw-min-h-[350px]">
+						<div class="tw-relative tw-w-full tw-h-[400px] tw-min-h-[400px]">
 							<canvas
 								class="cc-canvas-fill"
 								bind:this={sportCanvasEl}
@@ -860,28 +728,23 @@
 					</article>
 				</div>
 			</section>
-		{:else if activeTab === 'trust'}
-			<section class="cc-panel" id="cc-panel-trust" role="tabpanel" aria-labelledby="cc-tab-trust">
-				<div class="cc-kpi-grid cc-kpi-grid--4">
+		{:else if activeTab === 'security'}
+			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+				<div class="cc-kpi-grid cc-kpi-grid--3">
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">Active threat blocks</span>
-						<span class="cc-kpi__value">{activeThreatBlocks.toLocaleString()}</span>
-						<span class="cc-kpi__hint">WAF / edge policy</span>
+						<span class="cc-kpi__label">Threat blocks</span>
+						<span class="cc-kpi__value">{MOCK_KPI.security.threatBlocks}</span>
+						<span class="cc-kpi__hint">WAF / policy engine</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">Failed logins (24h)</span>
-						<span class="cc-kpi__value">{failedLogins24h.toLocaleString()}</span>
-						<span class="cc-kpi__hint">Auth telemetry</span>
+						<span class="cc-kpi__label">Failed logins</span>
+						<span class="cc-kpi__value">{MOCK_KPI.security.failedLogins}</span>
+						<span class="cc-kpi__hint">Rolling 24h</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">Pending vetting</span>
-						<span class="cc-kpi__value">{pendingVetting.toLocaleString()}</span>
-						<span class="cc-kpi__hint">Checkr pipeline</span>
-					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Flagged orgs</span>
-						<span class="cc-kpi__value">{flaggedOrgs.toLocaleString()}</span>
-						<span class="cc-kpi__hint">Risk review queue</span>
+						<span class="cc-kpi__label">Vetting pending</span>
+						<span class="cc-kpi__value">{MOCK_KPI.security.vettingPending}</span>
+						<span class="cc-kpi__hint">Background checks</span>
 					</article>
 				</div>
 
@@ -933,34 +796,29 @@
 			</section>
 		{:else}
 			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
-				<div class="cc-kpi-grid cc-kpi-grid--4">
+				<div class="cc-kpi-grid cc-kpi-grid--3">
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">API latency (p50)</span>
-						<span class="cc-kpi__value">{apiLatencyMs} ms</span>
-						<span class="cc-kpi__hint">Gateway measured</span>
+						<span class="cc-kpi__label">API latency</span>
+						<span class="cc-kpi__value">{MOCK_KPI.platform.apiLatency}</span>
+						<span class="cc-kpi__hint">p50 edge → API</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">DB read/write velocity</span>
-						<span class="cc-kpi__value">{dbReadWriteVelocity.toLocaleString()}</span>
-						<span class="cc-kpi__hint">Ops / minute (aggregate)</span>
+						<span class="cc-kpi__label">Uptime</span>
+						<span class="cc-kpi__value cc-kpi__value--ok">{MOCK_KPI.platform.uptime}</span>
+						<span class="cc-kpi__hint">Trailing 30d SLO</span>
 					</article>
 					<article class="cc-kpi">
-						<span class="cc-kpi__label">Active error boundaries</span>
-						<span class="cc-kpi__value">{activeErrorBoundaries.toLocaleString()}</span>
-						<span class="cc-kpi__hint">SvelteKit +error captures</span>
-					</article>
-					<article class="cc-kpi">
-						<span class="cc-kpi__label">Storage</span>
-						<span class="cc-kpi__value">{storageTerabytes.toFixed(2)} TB</span>
-						<span class="cc-kpi__hint">Object + Firestore footprint</span>
+						<span class="cc-kpi__label">DB reads</span>
+						<span class="cc-kpi__value">{MOCK_KPI.platform.dbReads}</span>
+						<span class="cc-kpi__hint">Firestore aggregate</span>
 					</article>
 				</div>
 
 				<div class="cc-platform-note">
 					<p>
 						<i class="ph ph-info" aria-hidden="true"></i>
-						Platform telemetry streams from <code class="cc-code">analytics/platform_totals</code> when
-						provisioned; operational defaults keep the CTO rail populated before the ETL lands.
+						KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
+						<code class="cc-code">analytics/platform_totals</code> when available.
 					</p>
 				</div>
 			</section>
@@ -970,6 +828,12 @@
 
 <style>
 	.cc-root {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		height: 100%;
+		width: 100%;
 		padding: 16px 20px 56px;
 		max-width: 1680px;
 		margin: 0 auto;
@@ -1015,7 +879,8 @@
 		color: var(--text-secondary);
 	}
 
-	.cc-title {
+	/* H1 sizing is entirely Tailwind (tw-text-4xl … tw-font-black); only rhythm here. */
+	.cc-hero__text > h1 {
 		margin: 4px 0 6px;
 		line-height: 1.08;
 	}
@@ -1128,7 +993,10 @@
 	}
 
 	.cc-scroll {
+		flex: 1;
 		min-height: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.cc-panel {
@@ -1143,18 +1011,12 @@
 		gap: 12px;
 	}
 
-	.cc-kpi-grid--4 {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+	.cc-kpi-grid--3 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
-	@media (max-width: 1100px) {
-		.cc-kpi-grid--4 {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 520px) {
-		.cc-kpi-grid--4 {
+	@media (max-width: 900px) {
+		.cc-kpi-grid--3 {
 			grid-template-columns: 1fr;
 		}
 	}

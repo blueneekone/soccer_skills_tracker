@@ -18,8 +18,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
-
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -55,12 +53,6 @@
 	let saving = $state(false);
 	let errMsg = $state('');
 	let okMsg  = $state('');
-
-	/** Strike 8 — Full shell + document scroll lock while modal is open. */
-	$effect(() => {
-		if (typeof document === 'undefined' || !open) return;
-		return lockEnterpriseShellScroll();
-	});
 
 	/** Rehydrate when the modal is opened against a new admin. */
 	$effect(() => {
@@ -184,6 +176,8 @@
 		}
 	}
 </script>
+
+<svelte:body class:modal-open={open} />
 
 {#if open && admin}
 	<!-- Strike 2: true fixed-overlay modal. See EditOrganizationModal for

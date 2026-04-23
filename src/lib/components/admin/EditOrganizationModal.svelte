@@ -17,8 +17,6 @@
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
-
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -58,15 +56,6 @@
 	let saving = $state(false);
 	let errMsg = $state('');
 	let okMsg  = $state('');
-
-	/**
-	 * Strike 8 — `lockEnterpriseShellScroll()` locks html, body (fixed + width),
-	 * `.ec-canvas`, and `.ec-main` while this modal is open.
-	 */
-	$effect(() => {
-		if (typeof document === 'undefined' || !open) return;
-		return lockEnterpriseShellScroll();
-	});
 
 	/** Re-hydrate the form whenever a new club is handed in or the modal reopens. */
 	$effect(() => {
@@ -168,6 +157,8 @@
 		}
 	}
 </script>
+
+<svelte:body class:modal-open={open} />
 
 {#if open && club}
 	<!-- Strike 2: true fixed-overlay modal. The outer `.eom-overlay` is a

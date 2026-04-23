@@ -1,5 +1,13 @@
 @tailwind utilities;
 
+/* Strike 9 — CSS scroll lock when modals set `modal-open` on body (see Modal + admin modals). */
+body.modal-open,
+body.modal-open .ec-main,
+body.modal-open .ec-canvas {
+	overflow: hidden !important;
+	touch-action: none !important;
+}
+
 /**
  * Strike 7 — Global UI enforcement (imported after style.css).
  * Login gateway: neutralize flex shrink / cramped controls from the shell.
@@ -15,7 +23,7 @@
 .auth-card input[type='password'] {
 	box-sizing: border-box;
 	width: 100%;
-	min-height: 3rem;
+	min-height: 50px;
 	padding: 0.75rem 1rem;
 	font-size: 1.125rem;
 	line-height: 1.5;
@@ -24,7 +32,7 @@
 
 .auth-card .primary-btn,
 .auth-card .secondary-btn {
-	min-height: 3rem;
+	min-height: 50px;
 	padding: 0.75rem 1rem;
 	font-size: 1.125rem;
 	line-height: 1.5;

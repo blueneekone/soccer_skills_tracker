@@ -1,6 +1,4 @@
 <script>
-	import { lockEnterpriseShellScroll } from '$lib/utils/enterpriseModalScrollLock.js';
-
 	let {
 		open = $bindable(false),
 		title = '',
@@ -12,11 +10,6 @@
 
 	const close = () => { open = false; };
 
-	$effect(() => {
-		if (typeof document === 'undefined' || !open) return;
-		return lockEnterpriseShellScroll();
-	});
-
 	const handleBackdrop = (e) => {
 		if (e.target === e.currentTarget) close();
 	};
@@ -26,6 +19,7 @@
 	};
 </script>
 
+<svelte:body class:modal-open={open} />
 <svelte:window onkeydown={handleKey} />
 
 {#if open}
