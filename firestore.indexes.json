@@ -196,6 +196,14 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "verifiedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "assigned_missions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetPlayerKey", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

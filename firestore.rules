@@ -1129,7 +1129,28 @@ service cloud.firestore {
           || directorScopedToTeam(request.resource.data.teamId)
           || coachStaffCanAccessTeam(request.resource.data.teamId)
         );
-      allow update, delete: if false;
+      // Only the addressee can transition pending → completed after they log the assignment.
+      allow update: if authed() && playerVpcAllowed()
+        && tokenRole() == 'player'
+        && emailKey() == resource.data.targetPlayerKey
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'completed'
+        && request.resource.data.missionSource == 'player_os'
+        && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.deployMode == resource.data.deployMode
+        && request.resource.data.targetPlayerKey == resource.data.targetPlayerKey
+        && request.resource.data.playerName == resource.data.playerName
+        && request.resource.data.focusArea == resource.data.focusArea
+        && request.resource.data.specificDrill == resource.data.specificDrill
+        && request.resource.data.targetDurationMinutes == resource.data.targetDurationMinutes
+        && request.resource.data.targetRpe == resource.data.targetRpe
+        && request.resource.data.intensity == resource.data.intensity
+        && request.resource.data.xpBounty == resource.data.xpBounty
+        && request.resource.data.batchId == resource.data.batchId
+        && request.resource.data.dueDate == resource.data.dueDate
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
     }
 
     // Sprint 2.6.4: Dopamine Engine — player workouts (Action Board).

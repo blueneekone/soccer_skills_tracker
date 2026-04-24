@@ -3,7 +3,8 @@
   import { goto } from '$app/navigation';
   import { untrack } from 'svelte';
   import { httpsCallable } from 'firebase/functions';
-  import { functions } from '$lib/firebase.js';
+  import { db, functions } from '$lib/firebase.js';
+  import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
@@ -72,7 +73,7 @@
   let rpeGaugeEl = $state(/** @type {HTMLDivElement | null} */ (null));
 
   /** @param {number} d */
-  const durationPct = (d) => ((Math.max(5, Math.min(120, d)) - 5) / (120 - 5)) * 100;
+  const durationPct = (d) => ((Math.max(1, Math.min(1440, d)) - 1) / (1440 - 1)) * 100;
   /** @param {number} r */
   const rpePct = (r) => ((Math.max(1, Math.min(10, r)) - 1) / 9) * 100;
 
@@ -91,6 +92,92 @@
   let logSubmitting = $state(false);
   /** @type {string | null} */
   let activeQuestId = $state(null);
+  /** @type {string | null} */
+  let activeMissionId = $state(null);
+  /** @type {Array<Record<string, unknown> & { id: string }>} */
+  let incomingMissions = $state([]);
+  /** @type {string} */
+  let missionsErr = $state('');
+
+  const FOCUS_LABEL_TO_ID = /** @type {const} */ ({
+    Technical: 'technical',
+    Physical: 'physical',
+    Tactical: 'tactical',
+    Recovery: 'recovery',
+  });
+
+  /**
+   * @param {unknown} area
+   * @returns {'technical' | 'physical' | 'tactical' | 'recovery'}
+   */
+  function focusIdFromArea(area) {
+    const s = String(area || '').trim();
+    if (s in FOCUS_LABEL_TO_ID) {
+      // @ts-ignore index
+      return FOCUS_LABEL_TO_ID[/** @type {keyof typeof FOCUS_LABEL_TO_ID} */ (s)];
+    }
+    const low = s.toLowerCase();
+    for (const [label, id] of Object.entries(FOCUS_LABEL_TO_ID)) {
+      if (label.toLowerCase() === low) {
+        return id;
+      }
+    }
+    if (low.includes('physical')) return 'physical';
+    if (low.includes('tactical')) return 'tactical';
+    if (low.includes('recover')) return 'recovery';
+    return 'technical';
+  }
+
+  /**
+   * @param {unknown} ts
+   */
+  function fmtDue(ts) {
+    if (!ts || typeof ts !== 'object') return '—';
+    const t = /** @type {{ toDate?: () => Date }} */ (ts);
+    if (typeof t.toDate !== 'function') return '—';
+    try {
+      const d = t.toDate();
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '—';
+    }
+  }
+
+  $effect(() => {
+    if (!browser) return;
+    const em = (authStore.user?.email || '').toLowerCase().trim();
+    if (authStore.role !== 'player' || !em) {
+      incomingMissions = [];
+      missionsErr = '';
+      return;
+    }
+    missionsErr = '';
+    const qy = query(
+      collection(db, 'assigned_missions'),
+      where('targetPlayerKey', '==', em),
+      where('status', '==', 'pending'),
+    );
+    const unsub = onSnapshot(
+      qy,
+      (snap) => {
+        incomingMissions = snap.docs.map((d) => {
+          const x = d.data() || {};
+          return /** @type {Record<string, unknown> & { id: string }} */ ({
+            id: d.id,
+            ...x,
+          });
+        });
+      },
+      (e) => {
+        missionsErr = e instanceof Error ? e.message : 'Mission link offline.';
+        console.error('[Player OS] assigned_missions', e);
+      },
+    );
+    return () => {
+      unsub();
+    };
+  });
 
   const focusAreas = [
     { id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
@@ -117,8 +204,21 @@
     if (id !== selectedFocus) {
       selectedDrill = null;
       activeQuestId = null;
+      activeMissionId = null;
     }
     selectedFocus = id;
+  }
+
+  /**
+   * @param {Record<string, unknown> & { id: string }} m
+   */
+  function applyMission(m) {
+    activeQuestId = null;
+    activeMissionId = m.id;
+    selectedFocus = focusIdFromArea(m.focusArea);
+    selectedDrill = String(m.specificDrill || '') || null;
+    duration = Math.max(1, Math.min(1440, Math.floor(Number(m.targetDurationMinutes) || 30)));
+    intensity = Math.max(1, Math.min(10, Math.floor(Number(m.targetRpe) || 5)));
   }
 
   /**
@@ -165,6 +265,7 @@
   /** @param {QuestDef} q */
   function applyQuest(q) {
     activeQuestId = q.id;
+    activeMissionId = null;
     selectedFocus = q.focus;
     selectedDrill = q.drill;
     duration = q.duration;
@@ -174,6 +275,12 @@
   const focusLabel = $derived(
     (focusAreas.find((f) => f.id === selectedFocus) ?? { label: 'Session' }).label,
   );
+
+  const missionBounty = $derived.by(() => {
+    if (!activeMissionId) return null;
+    const row = incomingMissions.find((r) => r.id === activeMissionId);
+    return row != null ? Math.max(0, Math.floor(Number(row.xpBounty) || 0)) : null;
+  });
 
   const estimatedLogXp = $derived.by(() => {
     const m = intensityMultiplierFromStep(intensity);
@@ -231,6 +338,17 @@
           JSON.stringify({ fromTotal: Math.max(0, newTotal - earned), toTotal: newTotal }),
         );
       }
+      let missionCloseNote = '';
+      if (activeMissionId) {
+        const mid = activeMissionId;
+        try {
+          await updateDoc(doc(db, 'assigned_missions', mid), { status: 'completed' });
+          activeMissionId = null;
+        } catch (me) {
+          console.error('[Player OS] complete mission', me);
+          missionCloseNote = ' | Directive not cleared in Firestore (retry or ask staff).';
+        }
+      }
       if (typeof payload?.level === 'number' && payload.level > oldLevel) {
         window.dispatchEvent(
           new CustomEvent('phoenix:level-up', {
@@ -246,7 +364,7 @@
       });
       await Swal.fire({
         title: 'Command executed',
-        text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
+        text: `+${earned} XP · Level ${payload?.level ?? '—'}${missionCloseNote}`,
         icon: 'success',
         confirmButtonColor: '#00d4ff',
         confirmButtonText: 'Acknowledge',
@@ -300,6 +418,43 @@
         <h2 id="pw-threats-heading" class="pw-title">Ingest queue</h2>
       </div>
       <p class="pw-hint">Select a quest to pre-fill the execution terminal. Manual overrides allowed.</p>
+      {#if missionsErr}
+        <p class="pw-err" role="alert">{missionsErr}</p>
+      {/if}
+      {#if incomingMissions.length > 0}
+        <p class="pw-tx-eyebrow">INCOMING TRANSMISSION</p>
+        <ul class="pw-txlist" aria-label="Coach-assigned missions">
+          {#each incomingMissions as m (m.id)}
+            <li>
+              <button
+                type="button"
+                class="pw-tx"
+                class:pw-tx--active={activeMissionId === m.id}
+                onclick={() => applyMission(m)}
+              >
+                <div class="pw-tx__grid">
+                  <span class="pw-mono pw-tx__k">BATCH</span>
+                  <span class="pw-mono pw-tx__v">{String(m.batchId || '—').slice(0, 8)}<span class="pw-dim">…</span></span>
+                  <span class="pw-mono pw-tx__k">FOCUS</span>
+                  <span class="pw-mono pw-tx__v">{m.focusArea}</span>
+                  <span class="pw-mono pw-tx__k">DRILL</span>
+                  <span class="pw-mono pw-tx__v pw-tx__drill">{m.specificDrill}</span>
+                  <span class="pw-mono pw-tx__k">DUR</span>
+                  <span class="pw-mono pw-tx__v">{m.targetDurationMinutes} MIN</span>
+                  <span class="pw-mono pw-tx__k">RPE</span>
+                  <span class="pw-mono pw-tx__v">{m.targetRpe} / 10</span>
+                  <span class="pw-mono pw-tx__k">YIELD</span>
+                  <span class="pw-mono pw-tx__v pw-green">{m.xpBounty} XP</span>
+                  <span class="pw-mono pw-tx__k">DUE</span>
+                  <span class="pw-mono pw-tx__v">{fmtDue(m.dueDate)}</span>
+                </div>
+              </button>
+            </li>
+          {/each}
+        </ul>
+        <p class="pw-divider" aria-hidden="true"></p>
+      {/if}
+      <p class="pw-subq-eyebrow">Station drills (synthetic)</p>
       <ul class="pw-questlist">
         {#each dailyQuests as q (q.id)}
           <li>
@@ -331,10 +486,23 @@
           <h2 id="pw-exec-heading" class="pw-title">Workout logger</h2>
         </div>
         <div class="pw-mono pw-est">
-          <span class="pw-dim">EST. YIELD</span>
+          <span class="pw-dim">EST. YIELD (MODEL)</span>
           <span class="pw-green">+{estimatedLogXp} XP</span>
+          {#if missionBounty != null}
+            <span class="pw-dim pw-est__bounty">DIRECTIVE CAP</span>
+            <span class="pw-mono" style="color: var(--toxic)">{missionBounty} XP</span>
+          {/if}
         </div>
       </div>
+      {#if activeMissionId}
+        <p class="pw-mono pw-armed" role="status">
+          ARMED: MISSION
+          {String(incomingMissions.find((r) => r.id === activeMissionId)?.batchId || '—').slice(0, 8)}<span
+            class="pw-dim"
+            >· EXECUTION SYNCS TO FILE ON TRANSMIT</span
+          >
+        </p>
+      {/if}
 
       <div class="pw-section">
         <span class="pw-eyebrow">1 · Focus area</span>
@@ -363,6 +531,7 @@
               class:pw-chip--on={selectedDrill === drill}
               onclick={() => {
                 activeQuestId = null;
+                activeMissionId = null;
                 selectedDrill = drill;
               }}
             >
@@ -370,6 +539,12 @@
             </button>
           {/each}
         </div>
+        {#if selectedDrill && !availableDrills.includes(selectedDrill)}
+          <p class="pw-ghostline">
+            <span class="pw-eyebrow">Off-catalog transmit</span>
+            <span class="pw-mono pw-cyber">{selectedDrill}</span>
+          </p>
+        {/if}
       </div>
 
       <div class="pw-gauges">
@@ -384,9 +559,9 @@
           <input
             class="pw-range"
             type="range"
-            min="5"
-            max="120"
-            step="5"
+            min="1"
+            max="1440"
+            step="1"
             bind:value={duration}
             aria-label="Duration in minutes"
           />
@@ -489,6 +664,145 @@
     font-size: 0.75rem;
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.45);
+  }
+
+  .pw-err {
+    font-size: 0.7rem;
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    padding: 0.5rem 0.65rem;
+    margin: 0 0 0.75rem;
+    background: #0a0000;
+  }
+
+  .pw-tx-eyebrow {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    color: #39ff14;
+    margin: 0 0 0.6rem;
+    text-shadow: 0 0 12px rgba(57, 255, 20, 0.45);
+    animation: pw-pulse-ops 2.2s ease-in-out infinite;
+  }
+
+  @keyframes pw-pulse-ops {
+    0%,
+    100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .pw-txlist {
+    list-style: none;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .pw-tx {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.7rem 0.75rem;
+    background: #000;
+    color: #e5e5e5;
+    border: 1px solid rgba(0, 212, 255, 0.45);
+    cursor: pointer;
+    box-shadow:
+      0 0 0 1px rgba(57, 255, 20, 0.15),
+      0 0 20px rgba(0, 212, 255, 0.12);
+    animation: pw-tx-breathe 2.4s ease-in-out infinite;
+    transition: border-color 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  @keyframes pw-tx-breathe {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1px rgba(0, 212, 255, 0.2),
+        0 0 16px rgba(0, 212, 255, 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(57, 255, 20, 0.35),
+        0 0 24px rgba(0, 212, 255, 0.28);
+    }
+  }
+
+  .pw-tx:hover {
+    border-color: rgba(57, 255, 20, 0.55);
+  }
+
+  .pw-tx--active {
+    border-color: #39ff14;
+    box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.5), 0 0 28px rgba(57, 255, 20, 0.25);
+    animation: none;
+  }
+
+  .pw-tx__grid {
+    display: grid;
+    grid-template-columns: minmax(2.2rem, auto) 1fr;
+    gap: 0.2rem 0.6rem;
+    font-size: 0.65rem;
+    align-items: baseline;
+  }
+
+  .pw-tx__k {
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.55rem;
+  }
+
+  .pw-tx__v {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .pw-tx__drill {
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .pw-divider {
+    height: 1px;
+    margin: 0.85rem 0 1rem;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.4), transparent);
+    border: 0;
+  }
+
+  .pw-subq-eyebrow {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.35);
+    margin: 0 0 0.65rem;
+  }
+
+  .pw-armed {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: #39ff14;
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    background: #000;
+    padding: 0.45rem 0.6rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .pw-ghostline {
+    margin: 0.4rem 0 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .pw-est__bounty {
+    font-size: 0.6rem;
+    margin-top: 0.2rem;
   }
 
   .pw-hud {
