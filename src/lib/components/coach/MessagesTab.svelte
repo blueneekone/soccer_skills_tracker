@@ -266,7 +266,7 @@
 	}
 
 	function openSchedule() {
-		goto('/coach?tab=plan');
+		goto('/coach/drills');
 	}
 
 	const broadcastChannels = $derived(channels.filter((c) => c.type === 'broadcast'));

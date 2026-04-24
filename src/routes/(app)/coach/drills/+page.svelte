@@ -20,6 +20,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 
 	const secureAssignHomework = httpsCallable(functions, 'secureAssignHomework');
 
@@ -60,8 +62,17 @@
 
 	const currentTeam = $derived(myTeams.find((t) => t.id === selectedTeamId));
 
-	/** @type {'mission' | 'library'} */
+	/** @type {'mission' | 'library' | 'designer'} */
 	let pageView = $state('mission');
+
+	const onWorkoutSaved = () => {
+		if (selectedTeamId) void workoutsStore.loadForTeam(selectedTeamId);
+	};
+
+	$effect(() => {
+		if (!selectedTeamId) return;
+		void workoutsStore.loadForTeam(selectedTeamId);
+	});
 
 	const FOCUS_AREAS = [
 		{ id: /** @type {const} */ ('technical'), label: 'Technical' },
@@ -556,6 +567,14 @@
 				>
 					Drill library
 				</button>
+				<button
+					type="button"
+					class="cdm-seg__btn"
+					class:cdm-seg__btn--on={pageView === 'designer'}
+					onclick={() => (pageView = 'designer')}
+				>
+					Spatial designer
+				</button>
 			</nav>
 		</div>
 		<div class="drill-lib__head-actions">
@@ -710,6 +729,14 @@
 					{/if}
 				</button>
 			</aside>
+		</div>
+	{:else if pageView === 'designer'}
+		<div class="cdm-designer" data-region="spatial-designer">
+			<DrillDesignerTab
+				teamId={selectedTeamId}
+				workouts={workoutsStore.workouts}
+				{onWorkoutSaved}
+			/>
 		</div>
 	{:else}
 	<nav class="drill-lib__tabs" aria-label="Drill library sections">

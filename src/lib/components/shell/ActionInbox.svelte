@@ -44,7 +44,7 @@
 							id: 'trials',
 							label: `Review ${n} pending video trial${n === 1 ? '' : 's'}`,
 							meta: 'Videos · Verification',
-							href: '/coach?tab=videos',
+							href: '/coach',
 						});
 					}
 				} else if (role === 'player' && uid) {

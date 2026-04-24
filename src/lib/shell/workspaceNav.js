@@ -32,18 +32,9 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ tab: 'home', label: 'Overview', icon: 'ph-house', href: '/coach?tab=home' },
-	{ tab: 'roster', label: 'My Team', icon: 'ph-users-three', href: '/coach?tab=roster' },
-	{ tab: 'playbook', label: 'Playbook', icon: 'ph-book-open', href: '/coach?tab=playbook' },
-	{ tab: '', label: 'Drill Library', icon: 'ph-barbell', href: '/coach/drills' },
-	{ tab: 'videos', label: 'Videos', icon: 'ph-video-camera', href: '/coach?tab=videos' },
-	{ tab: 'matchday', label: 'Match Day', icon: 'ph-soccer-ball', href: '/coach?tab=matchday' },
-	{ tab: 'messages', label: 'Messages', icon: 'ph-chat-circle', href: '/coach?tab=messages' },
-	{ tab: 'plan', label: 'Plan', icon: 'ph-calendar', href: '/coach?tab=plan' },
-	{ tab: 'evals', label: 'Evals', icon: 'ph-clipboard-text', href: '/coach?tab=evals' },
-	{ tab: 'strategy', label: 'Strategy', icon: 'ph-paint-brush', href: '/coach?tab=strategy' },
-	{ tab: 'design', label: 'Drill Designer', icon: 'ph-ruler', href: '/coach?tab=design' },
-	{ tab: 'tools', label: 'Tools', icon: 'ph-gear', href: '/coach?tab=tools' },
+	{ label: 'Squad Telemetry', href: '/coach', icon: 'ph-users' },
+	{ label: 'Tactical Command', href: '/coach/tactical', icon: 'ph-strategy' },
+	{ label: 'Mission Dispatch', href: '/coach/drills', icon: 'ph-rocket-launch' },
 ];
 
 /**
@@ -203,15 +194,22 @@ export function isShellNavActive(pathname, searchParams, item) {
 			return pathname === u.pathname || pathname.startsWith(u.pathname + '/');
 		}
 
+		// Coach OS: three path pillars (Squad Telemetry, Tactical, Mission) — not ?tab=.
+		if (pathname.startsWith('/coach') && (item.href === '/coach' || item.href === '/coach/tactical' || item.href === '/coach/drills')) {
+			if (item.href === '/coach') {
+				return pathname === '/coach' || pathname === '/coach/';
+			}
+			if (item.href === '/coach/tactical') {
+				return pathname === '/coach/tactical' || pathname.startsWith('/coach/tactical/');
+			}
+			if (item.href === '/coach/drills') {
+				return pathname === '/coach/drills' || pathname.startsWith('/coach/drills/');
+			}
+		}
+
 		if (u.pathname !== pathname) return false;
 		const curTab = searchParams.get('tab') || '';
 		const wantTab = u.searchParams.get('tab');
-
-		if (pathname === '/coach') {
-			const cur = curTab || 'home';
-			const want = wantTab || 'home';
-			return cur === want;
-		}
 		if (pathname === '/director') {
 			const cur = curTab || 'home';
 			const want = wantTab || 'home';

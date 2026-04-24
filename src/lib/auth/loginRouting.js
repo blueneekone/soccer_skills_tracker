@@ -32,7 +32,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	}
 	if (role === 'coach') {
 		return {
-			path: '/coach?tab=roster',
+			path: '/coach',
 			context: 'coach',
 			pivotKey: 'ctx-coach-default',
 		};
