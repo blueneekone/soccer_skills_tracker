@@ -1,8 +1,26 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { signOut } from 'firebase/auth';
+	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import '$lib/styles/player-shell.css';
+
+	let disconnectBusy = $state(false);
+
+	async function disconnect() {
+		if (disconnectBusy) return;
+		disconnectBusy = true;
+		try {
+			await signOut(auth);
+		} catch (e) {
+			console.error('[PlayerShell] signOut', e);
+		} finally {
+			disconnectBusy = false;
+		}
+		await goto('/login', { replaceState: true });
+	}
 
 	/** @type {{ children?: import('svelte').Snippet }} */
 	let { children } = $props();
@@ -76,8 +94,18 @@
 					<span class="ps-topbar__name">{firstName}</span>
 				</div>
 			</div>
-			<div class="ps-topbar__ring" aria-label="XP progress ring">
-				<LevelProgressRing {totalXp} size="md" variant="dark" />
+			<div class="ps-topbar__actions tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2">
+				<button
+					type="button"
+					class="tw-min-h-11 tw-min-w-[5.5rem] tw-shrink-0 tw-touch-manipulation tw-border tw-border-red-500/30 tw-bg-black/40 tw-px-3 tw-py-2.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-500 tw-transition-colors hover:tw-border-red-500/60 hover:tw-bg-red-950/50 hover:tw-text-red-400 active:tw-bg-red-950/70 disabled:tw-opacity-50"
+					disabled={disconnectBusy}
+					onclick={disconnect}
+				>
+					{disconnectBusy ? '…' : 'DISCONNECT'}
+				</button>
+				<div class="ps-topbar__ring" aria-label="XP progress ring">
+					<LevelProgressRing {totalXp} size="md" variant="dark" />
+				</div>
 			</div>
 		</header>
 
