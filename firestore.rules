@@ -1077,6 +1077,61 @@ service cloud.firestore {
       );
     }
 
+    // Project Phoenix — Coach OS → Player OS: Mission Deployment (per-athlete fan-out)
+    match /assigned_missions/{missionId} {
+      allow read: if authed() && playerVpcAllowed() && (
+        isSuper()
+        || directorScopedToTeam(resource.data.teamId)
+        || coachStaffCanAccessTeam(resource.data.teamId)
+        || (tokenRole() == 'player' && emailKey() == resource.data.targetPlayerKey)
+        || (resource.data.keys().hasAll(['playerName'])
+            && parentCanSeePlayerName(resource.data.playerName))
+      );
+      allow create: if authed() && playerVpcAllowed()
+        && request.resource.data.keys().hasAll([
+          'teamId', 'createdBy', 'deployMode', 'targetPlayerKey', 'playerName',
+          'focusArea', 'specificDrill', 'targetDurationMinutes', 'targetRpe',
+          'intensity', 'xpBounty', 'status', 'batchId', 'createdAt', 'missionSource', 'dueDate'
+        ])
+        && request.resource.data.keys().size() <= 32
+        && request.resource.data.missionSource == 'player_os'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.teamId is string
+        && request.resource.data.teamId.size() > 0
+        && request.resource.data.deployMode in ['squad', 'individual']
+        && request.resource.data.intensity in ['low', 'medium', 'high']
+        && request.resource.data.xpBounty is int
+        && request.resource.data.xpBounty >= 1
+        && request.resource.data.xpBounty <= 2000000
+        && request.resource.data.targetDurationMinutes is int
+        && request.resource.data.targetDurationMinutes >= 1
+        && request.resource.data.targetDurationMinutes <= 1440
+        && request.resource.data.targetRpe is int
+        && request.resource.data.targetRpe >= 1
+        && request.resource.data.targetRpe <= 10
+        && request.resource.data.targetPlayerKey is string
+        && request.resource.data.targetPlayerKey
+           == request.resource.data.targetPlayerKey.lower()
+        && request.resource.data.playerName is string
+        && request.resource.data.playerName.size() > 0
+        && request.resource.data.playerName.size() <= 200
+        && request.resource.data.focusArea is string
+        && request.resource.data.focusArea.size() > 0
+        && request.resource.data.focusArea.size() <= 64
+        && request.resource.data.specificDrill is string
+        && request.resource.data.specificDrill.size() > 0
+        && request.resource.data.specificDrill.size() <= 200
+        && request.resource.data.batchId is string
+        && request.resource.data.batchId.size() > 0
+        && (
+          isSuper()
+          || directorScopedToTeam(request.resource.data.teamId)
+          || coachStaffCanAccessTeam(request.resource.data.teamId)
+        );
+      allow update, delete: if false;
+    }
+
     // Sprint 2.6.4: Dopamine Engine — player workouts (Action Board).
     //
     // The canonical write path is the `logTrainingSession` Cloud Function

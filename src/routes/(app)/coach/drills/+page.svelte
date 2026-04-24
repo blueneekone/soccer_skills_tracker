@@ -1,5 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
+	import { untrack } from 'svelte';
 	import {
 		addDoc,
 		collection,
@@ -9,7 +10,9 @@
 		orderBy,
 		query,
 		serverTimestamp,
+		Timestamp,
 		where,
+		writeBatch,
 	} from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { auth, db, functions } from '$lib/firebase.js';
@@ -56,6 +59,65 @@
 	});
 
 	const currentTeam = $derived(myTeams.find((t) => t.id === selectedTeamId));
+
+	/** @type {'mission' | 'library'} */
+	let pageView = $state('mission');
+
+	const FOCUS_AREAS = [
+		{ id: /** @type {const} */ ('technical'), label: 'Technical' },
+		{ id: /** @type {const} */ ('physical'), label: 'Physical' },
+		{ id: /** @type {const} */ ('tactical'), label: 'Tactical' },
+		{ id: /** @type {const} */ ('recovery'), label: 'Recovery' },
+	];
+	const MISSION_DRILLS = {
+		technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
+		physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
+		tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
+		recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
+	};
+
+	/** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
+	let missionFocus = $state('technical');
+	/** @type {string} */
+	let missionDrill = $state('Juggling');
+	let missionDuration = $state(45);
+	let missionRpe = $state(6);
+	/** @type {'squad' | 'individual'} */
+	let deployMode = $state('squad');
+	/** @type {string} */
+	let selectedPlayerEmail = $state('');
+	let deployBusy = $state(false);
+	let deployErr = $state('');
+	let deployOk = $state('');
+
+	const missionDrillOptions = $derived(MISSION_DRILLS[missionFocus] || []);
+
+	$effect(() => {
+		missionFocus;
+		const list = missionDrillOptions;
+		if (list.length && !list.includes(missionDrill)) {
+			untrack(() => {
+				missionDrill = list[0];
+			});
+		}
+	});
+
+	/** @param {number} rpe */
+	function rpeMultiplier(rpe) {
+		if (rpe <= 3) return 1.0;
+		if (rpe <= 7) return 1.15;
+		return 1.35;
+	}
+	/** @param {number} rpe */
+	function rpeToIntensity(rpe) {
+		if (rpe <= 3) return /** @type {const} */ ('low');
+		if (rpe <= 7) return /** @type {const} */ ('medium');
+		return /** @type {const} */ ('high');
+	}
+
+	const missionXpBounty = $derived(
+		Math.max(1, Math.floor(missionDuration * 10 * rpeMultiplier(missionRpe))),
+	);
 
 	// ── Drill library data loads ─────────────────────────────────────────────
 	/** @typedef {{ id: string, title: string, category: string, metricType: string, videoUrl: string, description: string, durationMinutes: number, baseXp: number, source: 'team' | 'global', createdBy?: string }} DrillRow */
@@ -303,8 +365,75 @@
 	let loadingRoster = $state(false);
 	let selectedEmails = $state(/** @type {Set<string>} */ (new Set()));
 
+	const canDeploy = $derived.by(() => {
+		if (!selectedTeamId) return false;
+		if (deployBusy) return false;
+		if (roster.length === 0) return false;
+		if (deployMode === 'individual' && !selectedPlayerEmail) return false;
+		return true;
+	});
+
+	async function deployMission() {
+		if (!canDeploy || !selectedTeamId) return;
+		const coach = auth.currentUser;
+		if (!coach?.uid) {
+			deployErr = 'Session expired. Sign in again.';
+			return;
+		}
+		const focusLabel =
+			(FOCUS_AREAS.find((f) => f.id === missionFocus) ?? { label: 'Session' }).label;
+		const targets =
+			deployMode === 'squad' ?
+				roster.slice() :
+				roster.filter((r) => r.email === selectedPlayerEmail);
+		if (targets.length === 0) {
+			deployErr = 'No target athletes in scope.';
+			return;
+		}
+		deployBusy = true;
+		deployErr = '';
+		deployOk = '';
+		const batchId = crypto.randomUUID();
+		const due = Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+		const rpe = missionRpe;
+		const intensity = rpeToIntensity(rpe);
+		const xp = missionXpBounty;
+		try {
+			const batch = writeBatch(db);
+			for (const t of targets) {
+				const ref = doc(collection(db, 'assigned_missions'));
+				batch.set(ref, {
+					teamId: selectedTeamId,
+					createdBy: coach.uid,
+					deployMode,
+					targetPlayerKey: t.email,
+					playerName: t.playerName,
+					focusArea: focusLabel,
+					specificDrill: missionDrill,
+					targetDurationMinutes: Math.max(1, Math.min(1440, Math.floor(missionDuration))),
+					targetRpe: Math.max(1, Math.min(10, Math.floor(missionRpe))),
+					intensity,
+					xpBounty: xp,
+					status: 'pending',
+					batchId,
+					createdAt: serverTimestamp(),
+					dueDate: due,
+					missionSource: 'player_os',
+				});
+			}
+			await batch.commit();
+			deployOk = `Ordnance away · ${targets.length} row(s) ingested. Batch ${batchId.slice(0, 8).toUpperCase()}`;
+		} catch (e) {
+			deployErr =
+				e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Deploy failed.';
+		} finally {
+			deployBusy = false;
+		}
+	}
+
 	$effect(() => {
-		if (!browser || !selectedTeamId || !assignOpen) return;
+		if (!browser || !selectedTeamId) return;
+		if (!assignOpen && pageView !== 'mission') return;
 		loadingRoster = true;
 		let cancelled = false;
 		(async () => {
@@ -400,16 +529,34 @@
 </script>
 
 <svelte:head>
-	<title>Drill Library · SSTRACKER</title>
+	<title>Coach · Field Station · SSTRACKER</title>
 </svelte:head>
 
-<section class="drill-lib">
+<section class="drill-lib cdm-page">
 	<header class="drill-lib__head">
 		<div>
-			<h1 class="drill-lib__title">Drill Library</h1>
+			<h1 class="drill-lib__title">Field operations</h1>
 			<p class="drill-lib__sub">
 				Team › {currentTeam?.name || selectedTeamId || '—'}
 			</p>
+			<nav class="cdm-seg" aria-label="Coach section">
+				<button
+					type="button"
+					class="cdm-seg__btn"
+					class:cdm-seg__btn--on={pageView === 'mission'}
+					onclick={() => (pageView = 'mission')}
+				>
+					Mission deploy
+				</button>
+				<button
+					type="button"
+					class="cdm-seg__btn"
+					class:cdm-seg__btn--on={pageView === 'library'}
+					onclick={() => (pageView = 'library')}
+				>
+					Drill library
+				</button>
+			</nav>
 		</div>
 		<div class="drill-lib__head-actions">
 			{#if myTeams.length > 1}
@@ -422,13 +569,149 @@
 					</select>
 				</label>
 			{/if}
-			<button type="button" class="drill-lib__btn drill-lib__btn--primary" onclick={openAddDrill}>
-				<i class="ph ph-plus-circle" aria-hidden="true"></i>
-				<span>Add Drill</span>
-			</button>
+			{#if pageView === 'library'}
+				<button type="button" class="drill-lib__btn drill-lib__btn--primary" onclick={openAddDrill}>
+					<i class="ph ph-plus-circle" aria-hidden="true"></i>
+					<span>Add Drill</span>
+				</button>
+			{/if}
 		</div>
 	</header>
 
+	{#if pageView === 'mission'}
+		<div class="cdm-grid" data-region="mission-deployment">
+			<aside class="cdm-panel cdm-panel--target" aria-labelledby="cdm-target-h">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Phase 1 · Target acquisition</span>
+					<h2 id="cdm-target-h" class="cdm-h2">Assignee scope</h2>
+				</div>
+				<div class="cdm-toggle" role="group" aria-label="Deployment mode">
+					<button
+						type="button"
+						class="cdm-toggle__btn"
+						class:cdm-toggle__btn--on={deployMode === 'squad'}
+						onclick={() => {
+							deployMode = 'squad';
+							selectedPlayerEmail = '';
+						}}
+					>
+						Deploy to squad
+					</button>
+					<button
+						type="button"
+						class="cdm-toggle__btn"
+						class:cdm-toggle__btn--on={deployMode === 'individual'}
+						onclick={() => (deployMode = 'individual')}
+					>
+						Deploy to individual
+					</button>
+				</div>
+				{#if loadingRoster}
+					<p class="cdm-muted">Scanning roster…</p>
+				{:else if roster.length === 0}
+					<p class="cdm-muted">No player accounts on this team.</p>
+				{:else}
+					{#if deployMode === 'individual'}
+						<label class="cdm-field">
+							<span class="cdm-eyebrow">Select athlete</span>
+							<select class="cdm-select" bind:value={selectedPlayerEmail}>
+								<option value="">— designate target —</option>
+								{#each roster as p (p.email)}
+									<option value={p.email}>{p.playerName} · {p.email}</option>
+								{/each}
+							</select>
+						</label>
+					{:else}
+						<ul class="cdm-roster" aria-label="Squad roster">
+							{#each roster as p (p.email)}
+								<li class="cdm-roster__row">
+									<span class="cdm-mono cdm-roster__name">{p.playerName}</span>
+									<span class="cdm-mono cdm-roster__em">{p.email}</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				{/if}
+			</aside>
+
+			<div class="cdm-panel cdm-panel--params" aria-labelledby="cdm-params-h">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Phase 2 · Mission parameters</span>
+					<h2 id="cdm-params-h" class="cdm-h2">Tactical loadout</h2>
+				</div>
+				<label class="cdm-field">
+					<span class="cdm-eyebrow">Focus area</span>
+					<select class="cdm-select" bind:value={missionFocus}>
+						{#each FOCUS_AREAS as f}
+							<option value={f.id}>{f.label}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="cdm-field">
+					<span class="cdm-eyebrow">Specific drill</span>
+					<select class="cdm-select" bind:value={missionDrill}>
+						{#each missionDrillOptions as d}
+							<option value={d}>{d}</option>
+						{/each}
+					</select>
+				</label>
+				<div class="cdm-gauge">
+					<div class="cdm-gauge__head">
+						<span class="cdm-eyebrow">Target duration (min)</span>
+						<span class="cdm-mono cdm-cyber">{missionDuration}</span>
+					</div>
+					<input
+						class="cdm-range"
+						type="range"
+						min="5"
+						max="120"
+						step="5"
+						bind:value={missionDuration}
+					/>
+				</div>
+				<div class="cdm-gauge">
+					<div class="cdm-gauge__head">
+						<span class="cdm-eyebrow">Target intensity (RPE 1–10)</span>
+						<span class="cdm-mono cdm-orange">{missionRpe}</span>
+					</div>
+					<input class="cdm-range cdm-range--rpe" type="range" min="1" max="10" step="1" bind:value={missionRpe} />
+				</div>
+			</div>
+
+			<aside class="cdm-panel cdm-panel--payload" aria-labelledby="cdm-payload-h">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Phase 3 · Payload</span>
+					<h2 id="cdm-payload-h" class="cdm-h2">Yield projection</h2>
+				</div>
+				<div class="cdm-bounty">
+					<span class="cdm-eyebrow">XP bounty (on compliant execution)</span>
+					<p class="cdm-mono cdm-bounty__val">{missionXpBounty}</p>
+				</div>
+				<p class="cdm-hint">
+					Est. uses training load model: minutes × 10 × RPE band (low 1.0 / mid 1.15 / high 1.35). Due +7d UTC.
+				</p>
+				{#if deployErr}
+					<p class="cdm-err" role="alert">{deployErr}</p>
+				{/if}
+				{#if deployOk}
+					<p class="cdm-ok" role="status">{deployOk}</p>
+				{/if}
+				<button
+					type="button"
+					class="cdm-deploy"
+					disabled={!canDeploy}
+					onclick={() => deployMission()}
+				>
+					{#if deployBusy}
+						<span class="cdm-mono">Transmitting…</span>
+					{:else}
+						<i class="ph ph-lightning" aria-hidden="true"></i>
+						Authorize & deploy mission
+					{/if}
+				</button>
+			</aside>
+		</div>
+	{:else}
 	<nav class="drill-lib__tabs" aria-label="Drill library sections">
 		<button
 			type="button"
@@ -560,6 +843,7 @@
 			</tbody>
 		</table>
 	</div>
+	{/if}
 </section>
 
 <Modal bind:open={addOpen} title="Add Custom Drill" maxWidth="520px">
@@ -699,12 +983,275 @@
 </Modal>
 
 <style>
+	.cdm-page {
+		--cdm-bg: #000000;
+		--cdm-panel: #05050a;
+		--cdm-line: rgba(255, 255, 255, 0.1);
+		--cdm-cyber: #00d4ff;
+		--cdm-toxic: #39ff14;
+		--cdm-threat: #ff6b00;
+		background: var(--cdm-bg);
+	}
+
 	.drill-lib {
 		display: flex;
 		flex-direction: column;
 		gap: 18px;
 		padding: 24px clamp(16px, 3vw, 32px) 48px;
 		color: var(--text-primary, #fafafa);
+	}
+
+	.cdm-seg {
+		display: inline-flex;
+		gap: 4px;
+		margin-top: 12px;
+		padding: 4px;
+		border: 1px solid var(--cdm-line);
+		background: var(--cdm-panel);
+	}
+
+	.cdm-seg__btn {
+		padding: 6px 14px;
+		font-size: 0.65rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		border: 0;
+		background: transparent;
+		color: rgba(255, 255, 255, 0.45);
+		cursor: pointer;
+	}
+
+	.cdm-seg__btn--on {
+		background: #000;
+		color: var(--cdm-cyber);
+		box-shadow: 0 0 14px rgba(0, 212, 255, 0.2);
+	}
+
+	.cdm-grid {
+		display: grid;
+		grid-template-columns: minmax(16rem, 1fr) minmax(0, 1.2fr) minmax(14rem, 0.9fr);
+		gap: clamp(0.75rem, 1.5vw, 1rem);
+		align-items: start;
+		min-width: 0;
+	}
+
+	@media (max-width: 1100px) {
+		.cdm-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.cdm-panel {
+		border: 1px solid var(--cdm-line);
+		background: var(--cdm-panel);
+		padding: 1rem 1.1rem;
+		min-width: 0;
+	}
+
+	.cdm-panel__head {
+		margin-bottom: 0.75rem;
+	}
+
+	.cdm-h2 {
+		margin: 0.2rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #f4f4f5;
+	}
+
+	.cdm-eyebrow {
+		display: block;
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: rgba(255, 255, 255, 0.45);
+	}
+
+	.cdm-muted {
+		font-size: 0.8rem;
+		color: rgba(255, 255, 255, 0.4);
+		margin: 0.5rem 0 0;
+	}
+
+	.cdm-mono {
+		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+	}
+
+	.cdm-cyber {
+		color: var(--cdm-cyber);
+	}
+
+	.cdm-orange {
+		color: var(--cdm-threat);
+	}
+
+	.cdm-toggle {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 6px;
+		margin-bottom: 1rem;
+	}
+
+	.cdm-toggle__btn {
+		padding: 0.5rem 0.4rem;
+		font-size: 0.6rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		border: 1px solid var(--cdm-line);
+		background: #000;
+		color: rgba(255, 255, 255, 0.5);
+		cursor: pointer;
+	}
+
+	.cdm-toggle__btn--on {
+		border-color: var(--cdm-cyber);
+		color: #fff;
+		box-shadow: 0 0 16px rgba(0, 212, 255, 0.15);
+	}
+
+	.cdm-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-bottom: 0.85rem;
+	}
+
+	.cdm-select {
+		min-height: 2.5rem;
+		padding: 0 0.6rem;
+		border: 1px solid var(--cdm-line);
+		background: #000;
+		color: #fff;
+		font-size: 0.8rem;
+	}
+
+	.cdm-roster {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		max-height: 280px;
+		overflow: auto;
+		border: 1px solid var(--cdm-line);
+	}
+
+	.cdm-roster__row {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 0.5rem 0.65rem;
+		border-bottom: 1px solid var(--cdm-line);
+		font-size: 0.72rem;
+	}
+
+	.cdm-roster__row:last-child {
+		border-bottom: 0;
+	}
+
+	.cdm-roster__em {
+		font-size: 0.65rem;
+		color: rgba(255, 255, 255, 0.35);
+	}
+
+	.cdm-gauge {
+		margin-bottom: 1rem;
+	}
+
+	.cdm-gauge__head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 0.35rem;
+	}
+
+	.cdm-range {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 0.4rem;
+		background: #000;
+		border: 1px solid var(--cdm-line);
+	}
+
+	.cdm-range::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 14px;
+		height: 14px;
+		background: #000;
+		border: 2px solid var(--cdm-cyber);
+		box-shadow: 0 0 8px var(--cdm-cyber);
+	}
+
+	.cdm-range--rpe::-webkit-slider-thumb {
+		border-color: var(--cdm-threat);
+		box-shadow: 0 0 8px var(--cdm-threat);
+	}
+
+	.cdm-bounty {
+		padding: 1rem;
+		border: 1px solid rgba(57, 255, 20, 0.25);
+		background: #000;
+		margin-bottom: 0.75rem;
+	}
+
+	.cdm-bounty__val {
+		margin: 0.3rem 0 0;
+		font-size: 1.75rem;
+		font-weight: 800;
+		color: var(--cdm-toxic);
+		text-shadow: 0 0 20px rgba(57, 255, 20, 0.35);
+	}
+
+	.cdm-hint {
+		margin: 0 0 1rem;
+		font-size: 0.65rem;
+		line-height: 1.45;
+		color: rgba(255, 255, 255, 0.4);
+	}
+
+	.cdm-err {
+		margin: 0 0 0.5rem;
+		font-size: 0.75rem;
+		color: #fca5a5;
+	}
+
+	.cdm-ok {
+		margin: 0 0 0.5rem;
+		font-size: 0.75rem;
+		color: #86efac;
+	}
+
+	.cdm-deploy {
+		width: 100%;
+		min-height: 3.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		cursor: pointer;
+		border: 1px solid rgba(0, 212, 255, 0.45);
+		background: #000;
+		color: #fff;
+		transition: box-shadow 0.2s, border-color 0.2s;
+	}
+
+	.cdm-deploy:hover:not(:disabled) {
+		border-color: var(--cdm-toxic);
+		box-shadow: 0 0 32px rgba(57, 255, 20, 0.35), 0 0 20px rgba(0, 212, 255, 0.25);
+	}
+
+	.cdm-deploy:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	.sr-only {
