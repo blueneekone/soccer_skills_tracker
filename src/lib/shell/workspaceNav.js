@@ -49,6 +49,7 @@ const athleteHouseholdLinks = [
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
+	{ tab: '', label: 'Clearance', icon: 'ph-shield-check', href: '/parent/household' },
 	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
 	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
 	{ tab: '', label: 'Log Workout', icon: 'ph-user-check', href: '/parent/log-workout' },

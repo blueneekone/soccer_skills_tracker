@@ -675,6 +675,11 @@ service cloud.firestore {
       allow create, update, delete: if isSuper();
     }
 
+    // Sprint 5.1 — parent-provisioned operative login bridge (server / CF only; no client R/W)
+    match /operative_dispatches/{docId} {
+      allow read, create, update, delete: if false;
+    }
+
     match /clubs/{clubId} {
       allow read: if authed();
       allow create, delete: if isSuper();

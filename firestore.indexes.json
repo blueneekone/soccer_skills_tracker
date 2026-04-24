@@ -204,6 +204,14 @@
         { "fieldPath": "targetPlayerKey", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "operative_dispatches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "childEmail", "order": "ASCENDING" },
+        { "fieldPath": "dispatchCode", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

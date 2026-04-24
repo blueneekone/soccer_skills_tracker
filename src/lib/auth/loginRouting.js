@@ -46,7 +46,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	}
 	if (role === 'parent') {
 		return {
-			path: '/parent/vpc',
+			path: '/parent/household',
 			context: 'household',
 			pivotKey: 'ctx-parent-portal',
 		};

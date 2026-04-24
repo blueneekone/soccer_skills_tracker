@@ -7610,6 +7610,261 @@ exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// Sprint 5.1 — Household Provisioning Engine (COPPA: minors never self-create)
+// Client direct writes to `operative_dispatches` are denied; all via onCall.
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parent: digital COPPA / liability signature — stamps household + coppaSigned.
+ * Creates a household if the parent has none (requires clubId on users/{email}).
+ */
+exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'No email on session.');
+  }
+  const uRef = db.collection('users').doc(email);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'User profile not found.');
+  }
+  const u = uSnap.data();
+  if (u.role !== 'parent') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only parent accounts may sign the household waiver.',
+    );
+  }
+  const clubId = typeof u.clubId === 'string' ? u.clubId.trim() : '';
+  if (!clubId) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Your profile is missing a club. Complete organization setup first.',
+    );
+  }
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  let hid = typeof u.householdId === 'string' ? u.householdId.trim() : '';
+  if (!hid) {
+    hid = db.collection('households').doc().id;
+    const hRef = db.collection('households').doc(hid);
+    const pe = Array.isArray(u.playerEmails) ? u.playerEmails : [];
+    const pn = Array.isArray(u.playerNames) ? u.playerNames : [];
+    await hRef.set({
+      clubId,
+      parentEmails: [email],
+      playerEmails: [...new Set([...pe].map((x) => normEmail(/** @type {string} */(x))).filter(Boolean))],
+      playerNames: [...new Set([...pn].filter((x) => typeof x === 'string' && x.trim()))],
+      coppaSigned: true,
+      coppaSignedAt: now,
+      primaryParentUid: request.auth.uid,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await uRef.set({householdId: hid}, {merge: true});
+    return {ok: true, householdId: hid, createdHousehold: true};
+  }
+  const hRef = db.collection('households').doc(hid);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    throw new HttpsError('not-found', 'Household not found. Contact support.');
+  }
+  const hData = hSnap.data();
+  if (hData.clubId !== clubId) {
+    throw new HttpsError('permission-denied', 'Household club does not match your profile.');
+  }
+  const parents = new Set(
+      [...(hData.parentEmails || []), email].map((x) => normEmail(/** @type {string} */(x))).filter(Boolean),
+  );
+  await hRef.set(
+      {
+        parentEmails: [...parents],
+        coppaSigned: true,
+        coppaSignedAt: now,
+        primaryParentUid: request.auth.uid,
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  return {ok: true, householdId: hid, createdHousehold: false};
+});
+
+/**
+ * Parent: add minor operative (Auth + users row + dispatch credentials). Requires prior COPPA signature.
+ */
+exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const childEmail = normEmail(data.childEmail);
+  const childName =
+    typeof data.childName === 'string' ? data.childName.trim().slice(0, 200) : '';
+  if (!childEmail || !childName) {
+    throw new HttpsError('invalid-argument', 'childEmail and childName are required.');
+  }
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const parentEmail = normEmail(request.auth.token.email);
+  if (!parentEmail) {
+    throw new HttpsError('invalid-argument', 'No email on session.');
+  }
+  if (childEmail === parentEmail) {
+    throw new HttpsError('invalid-argument', 'Child email must differ from parent email.');
+  }
+  const pRef = db.collection('users').doc(parentEmail);
+  const pSnap = await pRef.get();
+  if (!pSnap.exists || pSnap.data().role !== 'parent') {
+    throw new HttpsError('permission-denied', 'Only parent accounts may provision operatives.');
+  }
+  const pu = pSnap.data();
+  const hid =
+    typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
+  if (!hid) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Sign the household waiver before generating operative credentials.',
+    );
+  }
+  const hRef = db.collection('households').doc(hid);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    throw new HttpsError('not-found', 'Household not found.');
+  }
+  const h = hSnap.data();
+  if (!h.coppaSigned) {
+    throw new HttpsError(
+        'failed-precondition',
+        'COPPA waiver is not on file. Sign the waiver first.',
+    );
+  }
+  const parentList = Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : [];
+  if (!parentList.includes(parentEmail)) {
+    throw new HttpsError('permission-denied', 'You are not an authorized parent on this household.');
+  }
+  const clubId = typeof pu.clubId === 'string' ? pu.clubId.trim() : '';
+  if (!clubId || h.clubId !== clubId) {
+    throw new HttpsError('failed-precondition', 'Club scope mismatch.');
+  }
+  const existingPlayers = (h.playerEmails || []).map(normEmail);
+  if (existingPlayers.includes(childEmail)) {
+    throw new HttpsError(
+        'already-exists',
+        'This athlete email is already in your household.',
+    );
+  }
+  const dispatchCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  let childUid;
+  try {
+    const existing = await admin.auth().getUserByEmail(childEmail);
+    childUid = existing.uid;
+  } catch (e) {
+    if (e.code !== 'auth/user-not-found') {
+      throw e;
+    }
+    const rec = await admin.auth().createUser({
+      email: childEmail,
+      password: crypto.randomBytes(32).toString('hex'),
+      displayName: childName,
+    });
+    childUid = rec.uid;
+  }
+  const uRef = db.collection('users').doc(childEmail);
+  const uExisting = await uRef.get();
+  if (uExisting.exists) {
+    const role = uExisting.data().role;
+    if (role && role !== 'player') {
+      throw new HttpsError(
+          'failed-precondition',
+          'This email is already in use with a different role. Contact your club.',
+      );
+    }
+  }
+  await uRef.set(
+      {
+        role: 'player',
+        clubId,
+        householdId: hid,
+        playerName: childName,
+        parentProvisioned: true,
+        parentProvisionerEmail: parentEmail,
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  const mergedPlayers = [...new Set([...existingPlayers, childEmail])];
+  const nameSet = new Set(
+      Array.isArray(h.playerNames) ? h.playerNames.filter((x) => typeof x === 'string') : [],
+  );
+  nameSet.add(childName);
+  await hRef.set(
+      {
+        playerEmails: mergedPlayers,
+        playerNames: [...nameSet],
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  const dispRef = db.collection('operative_dispatches').doc();
+  await dispRef.set({
+    householdId: hid,
+    childEmail,
+    childName,
+    dispatchCode,
+    childUid,
+    parentUid: request.auth.uid,
+    parentEmail,
+    createdAt: now,
+  });
+  return {
+    ok: true,
+    householdId: hid,
+    childEmail,
+    dispatchCode,
+    message:
+      'Share this dispatch code with your athlete. It is also stored server-side for Operative sign-in.',
+  };
+});
+
+/**
+ * Public: operatives sign in with email + dispatch code (custom token).
+ */
+exports.operativeSignInWithDispatch = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const em = normEmail(data.email);
+  const code = typeof data.dispatchCode === 'string' ?
+    data.dispatchCode.trim().toUpperCase() :
+    '';
+  if (!em || !code) {
+    throw new HttpsError('invalid-argument', 'email and dispatchCode are required.');
+  }
+  const q = await db
+      .collection('operative_dispatches')
+      .where('childEmail', '==', em)
+      .where('dispatchCode', '==', code)
+      .limit(1)
+      .get();
+  if (q.empty) {
+    throw new HttpsError('permission-denied', 'Invalid email or dispatch code.');
+  }
+  const row = q.docs[0].data();
+  const childUid = row.childUid;
+  if (!childUid || typeof childUid !== 'string') {
+    throw new HttpsError('internal', 'Provision record is incomplete.');
+  }
+  const hSnap = await db.collection('households').doc(row.householdId).get();
+  if (!hSnap.exists || hSnap.data().coppaSigned !== true) {
+    throw new HttpsError(
+        'failed-precondition',
+        'This household is not authorized. A parent must sign compliance first.',
+    );
+  }
+  const customToken = await admin.auth().createCustomToken(childUid);
+  return {customToken, householdId: row.householdId};
+});
+
+// ─────────────────────────────────────────────────────────────────────────
 // Strike 1 (Agent 3) — Analytics aggregation triggers.
 //
 // The Global Admin "Command Center" reads from `analytics/platform_totals`,
