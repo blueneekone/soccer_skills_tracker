@@ -25,20 +25,29 @@
 		const teams = myTeams;
 		if (teams.length === 0) return;
 
+		// Priority 1: context store pivot — set by WorkspaceContextSwitcher
 		const pivot = workspaceContextStore.activeTeamId?.trim();
 		if (pivot && teams.some((t) => t.id === pivot)) {
-			if (selectedTeamId !== pivot) selectedTeamId = pivot;
+			if (selectedTeamId !== pivot) {
+			    selectedTeamId = pivot;
+			}
 			return;
 		}
 
+		// Priority 2: URL teamId param
 		const urlTeam = page.url.searchParams.get('teamId')?.trim();
 		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
-			if (selectedTeamId !== urlTeam) selectedTeamId = urlTeam;
+			if (selectedTeamId !== urlTeam) {
+				selectedTeamId = urlTeam;
+				workspaceContextStore.setActiveTeamId(urlTeam); // FIXED: Force sync to global store
+			}
 			return;
 		}
 
-		if (!selectedTeamId) {
+		// Priority 3: Default to first team if nothing matches
+		if (!selectedTeamId || !teams.some((t) => t.id === selectedTeamId)) {
 			selectedTeamId = teams[0].id;
+			workspaceContextStore.setActiveTeamId(teams[0].id); // FIXED: Force sync to global store
 		}
 	});
 

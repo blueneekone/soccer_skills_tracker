@@ -19,19 +19,38 @@
 		'home', 'teams', 'field', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
 	]);
 
-	/** Effective tenant for Firestore; super_admin uses QA scope (active club or first org). */
-	const clubId = $derived.by(() => {
-		const role = authStore.role;
+/** Effective tenant for Firestore; dynamically syncs with Context Switcher */
+	let clubId = $state('');
+
+	$effect(() => {
+		if (!teamsStore.loaded || teamsStore.clubs.length === 0) return;
+
 		const prof = authStore.userProfile;
-		const raw = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
-		if (raw && raw !== 'admin') return raw;
-		if (role === 'super_admin' || role === 'global_admin') {
-			const a = workspaceContextStore.activeClubId?.trim();
-			if (a) return a;
-			const first = teamsStore.clubs[0]?.id;
-			if (first) return first;
+		const activeCtx = workspaceContextStore.activeClubId?.trim();
+		const rawProfileId = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+
+		let targetId = '';
+
+		// Priority 1: Did the user click a club in the Context Switcher?
+		if (activeCtx && teamsStore.clubs.some(c => c.id === activeCtx)) {
+			targetId = activeCtx;
+		} 
+		// Priority 2: Are they hard-assigned to a club in their user profile?
+		else if (rawProfileId && rawProfileId !== 'admin') {
+			targetId = rawProfileId;
+		} 
+		// Priority 3: Fallback to the first available club
+		else {
+			targetId = teamsStore.clubs[0].id;
 		}
-		return '';
+
+		// Sync local state for the UI
+		if (clubId !== targetId) clubId = targetId;
+		
+		// Force sync to global store so the Context Switcher highlights the correct club
+		if (workspaceContextStore.activeClubId !== targetId) {
+			workspaceContextStore.setActiveClubId(targetId);
+		}
 	});
 
 	let activeTab = $state(page.url.searchParams.get('tab') || 'home');
