@@ -6,7 +6,40 @@
  * and `super_admin` (legacy, still present on un-refreshed JWTs and older
  * `users/{email}` docs). Both resolve to identical authority until the legacy
  * value is fully decommissioned.
+ *
+ * **Enterprise soft-delete:** `users/{email}.status === 'suspended'` revokes
+ * Operative access; JWT may lag — Firestore + auth store `onSnapshot` are source
+ * of truth for the session.
  */
+
+/** Match `users/{email}.status` set by Global Admin "Revoke access". */
+export const USER_ACCOUNT_STATUS = Object.freeze({
+	suspended: 'suspended',
+});
+
+/**
+ * Auth store / routing: reserved synthetic role when the account is soft-deleted.
+ * @type {const}
+ */
+export const SYNTHETIC_SUSPENDED_ROLE = 'suspended';
+
+/**
+ * @param {string | null | undefined} r
+ * @returns {boolean}
+ */
+export function isSyntheticSuspendedRole(r) {
+	return r === SYNTHETIC_SUSPENDED_ROLE;
+}
+
+/**
+ * @param {Record<string, unknown> | null | undefined} profile
+ * @returns {boolean}
+ */
+export function isAccountSuspendedProfile(profile) {
+	if (!profile || typeof profile !== 'object') return false;
+	return String(/** @type {Record<string, unknown>} */ (profile).status || '').toLowerCase() ===
+		USER_ACCOUNT_STATUS.suspended;
+}
 
 /**
  * @param {string | null | undefined} role

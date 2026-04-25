@@ -1,6 +1,8 @@
 import { auth, db } from '$lib/firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { resolveUserProfile, isProfileComplete as computeIsProfileComplete } from '$lib/auth/profile.js';
+import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
 
 // ---------------------------------------------------------------------------
 // Reactive auth state (Svelte 5 class-based runes pattern)
@@ -18,8 +20,67 @@ function createAuthStore() {
 		isProfileComplete = computeIsProfileComplete(profile);
 	}
 
+	const ACCESS_REVOKED_KEY = 'sstrack_access_revoked';
+
+	/** @type {null | (() => void)} */
+	let userStatusUnsub = null;
+
+	/** @param {import('firebase/auth').User} u */
+	function attachUserStatusListener(u) {
+		if (userStatusUnsub) {
+			userStatusUnsub();
+			userStatusUnsub = null;
+		}
+		const em = u.email;
+		if (!em) return;
+		const r = doc(db, 'users', em.toLowerCase());
+		userStatusUnsub = onSnapshot(
+			r,
+			(snap) => {
+				if (!snap.exists()) return;
+				const d = snap.data();
+				if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (d))) {
+					try {
+						if (typeof sessionStorage !== 'undefined') {
+							sessionStorage.setItem(ACCESS_REVOKED_KEY, '1');
+						}
+					} catch {
+						/* ignore */
+					}
+					void signOut(auth);
+				}
+			},
+			(e) => {
+				console.warn('[auth store] users/{email} status listener', e);
+			},
+		);
+	}
+
+	/**
+	 * @param {{ role: string, profile: Record<string, unknown> }} resolved
+	 * @returns {Promise<boolean>} true = signed out, caller must skip setting store
+	 */
+	async function signOutIfSuspended(resolved) {
+		if (resolved.role === SYNTHETIC_SUSPENDED_ROLE) {
+			try {
+				if (typeof sessionStorage !== 'undefined') {
+					sessionStorage.setItem(ACCESS_REVOKED_KEY, '1');
+				}
+			} catch {
+				/* ignore */
+			}
+			await signOut(auth);
+			return true;
+		}
+		return false;
+	}
+
 	// Initialise listener once
 	onAuthStateChanged(auth, async (firebaseUser) => {
+		if (userStatusUnsub) {
+			userStatusUnsub();
+			userStatusUnsub = null;
+		}
 		if (!firebaseUser) {
 			user = null;
 			userProfile = null;
@@ -35,8 +96,12 @@ function createAuthStore() {
 
 		try {
 			const resolved = await resolveUserProfile(db, firebaseUser, true);
+			if (await signOutIfSuspended(resolved)) {
+				return;
+			}
 			role = resolved.role;
 			setProfile(resolved.profile);
+			attachUserStatusListener(firebaseUser);
 		} catch (err) {
 			console.error('[auth store] init error:', err);
 		} finally {
@@ -74,6 +139,9 @@ function createAuthStore() {
 			if (!silent) isLoading = true;
 			try {
 				const resolved = await resolveUserProfile(db, auth.currentUser, true);
+				if (await signOutIfSuspended(resolved)) {
+					return;
+				}
 				role = resolved.role;
 				setProfile(resolved.profile);
 			} catch (err) {

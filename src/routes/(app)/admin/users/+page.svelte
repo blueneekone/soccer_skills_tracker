@@ -9,20 +9,24 @@
 	 * Row actions:
 	 *   • Login As       → impersonateUserFn → signInWithCustomToken.
 	 *   • Purge User Data → double-confirmation modal → purgeUserDataFn.
+	 *   • Revoke access → soft delete (status suspended, roles cleared) via updateDoc.
 	 */
 
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import {
 		collection,
+		doc,
 		getCountFromServer,
 		getDocs,
 		limit,
 		orderBy,
 		query,
 		startAfter,
+		updateDoc,
 		where
 	} from 'firebase/firestore';
+	import { isAccountSuspendedProfile, USER_ACCOUNT_STATUS } from '$lib/auth/roles.js';
 	import { signInWithCustomToken } from 'firebase/auth';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -52,6 +56,7 @@
 	 *   lastActiveAt: number,
 	 *   lastActiveSource: string,
 	 *   photoURL: string,
+	 *   status?: string,
 	 * }} UserRow
 	 */
 
@@ -100,6 +105,11 @@
 	/** @type {UserRow | null} */
 	let editingAdmin = $state(null);
 	let showEditAdmin = $state(false);
+
+	/** @type {UserRow | null} */
+	let deactivateTarget = $state(null);
+	let deactivateBusy = $state(false);
+	let deactivateErr = $state('');
 
 	/** @param {UserRow} row */
 	function openEditAdmin(row) {
@@ -320,6 +330,7 @@
 				const clubId = typeof raw.clubId === 'string' ? raw.clubId.trim() : '';
 				const teamId = typeof raw.teamId === 'string' ? raw.teamId.trim() : '';
 				const photoURL = typeof raw.photoURL === 'string' ? raw.photoURL : '';
+				const status = typeof raw.status === 'string' ? raw.status.trim() : '';
 
 				// Resolve "last active" from any of several timestamp-like fields.
 				const candidates = [
@@ -340,7 +351,8 @@
 					teamId,
 					lastActiveAt: picked.v,
 					lastActiveSource: picked.k,
-					photoURL
+					photoURL,
+					status
 				});
 			});
 
@@ -556,6 +568,65 @@
 		lockBody();
 		return () => unlockBody();
 	});
+
+	$effect(() => {
+		if (!deactivateTarget) return;
+		lockBody();
+		return () => unlockBody();
+	});
+
+	/** @param {UserRow} row */
+	function canDeactivateUser(row) {
+		const me = (authStore.user?.email || '').toLowerCase();
+		if (row.email.toLowerCase() === me) return false;
+		if (row.role === 'super_admin' || row.role === 'global_admin') return false;
+		/** @type {Record<string, unknown>} */
+		const r = /** @type {Record<string, unknown>} */ ({ ...row, status: row.status });
+		if (isAccountSuspendedProfile(r)) return false;
+		return true;
+	}
+
+	/** @param {UserRow} row */
+	function openDeactivate(row) {
+		openMenuFor = '';
+		deactivateErr = '';
+		deactivateTarget = row;
+	}
+
+	function closeDeactivate() {
+		if (deactivateBusy) return;
+		deactivateTarget = null;
+		deactivateErr = '';
+	}
+
+	const confirmDeactivate = async () => {
+		if (!deactivateTarget || deactivateBusy) return;
+		const row = deactivateTarget;
+		const key = row.email.toLowerCase();
+		deactivateBusy = true;
+		deactivateErr = '';
+		try {
+			await updateDoc(doc(db, 'users', key), {
+				status: USER_ACCOUNT_STATUS.suspended,
+				roles: [],
+				role: 'guest',
+			});
+			await logSecurityEvent('SUSPEND_USER', key, 'Enterprise deactivation from Global Users');
+			rows = rows.map((r) =>
+				r.id === key || r.email.toLowerCase() === key ?
+					{ ...r, status: 'suspended', role: 'guest' } :
+					r,
+			);
+			flashOk = `Access revoked for ${row.email} — account suspended.`;
+			deactivateTarget = null;
+			deactivateErr = '';
+		} catch (e) {
+			console.error('[global-users] suspend failed', e);
+			deactivateErr = e instanceof Error ? e.message : 'Could not suspend account.';
+		} finally {
+			deactivateBusy = false;
+		}
+	};
 </script>
 
 <div class="gu-root">
@@ -624,25 +695,6 @@
 			</div>
 		</div>
 	</div>
-
-	<AddAdminModal
-		bind:open={showAddAdmin}
-		onClose={() => (showAddAdmin = false)}
-		onGranted={(em) => {
-			flashOk = `${em} granted admin access.`;
-			showAddAdmin = false;
-		}}
-	/>
-
-	<EditAdminModal
-		bind:open={showEditAdmin}
-		admin={editingAdmin}
-		onClose={closeEditAdmin}
-		onSaved={(patch) => {
-			applyAdminPatchLocally(patch);
-			flashOk = `Saved changes for ${patch.email || patch.id}.`;
-		}}
-	/>
 
 	<!-- Flash messages -->
 	{#if flashErr}
@@ -726,9 +778,14 @@
 								</div>
 							</td>
 							<td class="gu-td">
-								<span class="gu-role {roleToneClass(row.role)}">
-									{roleLabel(row.role)}
-								</span>
+								<div class="gu-role-cell">
+									<span class="gu-role {roleToneClass(row.role)}">
+										{roleLabel(row.role)}
+									</span>
+									{#if (row.status || '').toLowerCase() === 'suspended'}
+										<span class="gu-suspended-pill" title="Access revoked">Suspended</span>
+									{/if}
+								</div>
 							</td>
 							<td class="gu-td">
 								{#if row.clubId}
@@ -804,6 +861,19 @@
 												type="button"
 												class="gu-menu__item gu-menu__item--danger"
 												role="menuitem"
+												onclick={() => openDeactivate(row)}
+												disabled={!canDeactivateUser(row)}
+											>
+												<i class="ph ph-prohibit" aria-hidden="true"></i>
+												<span>Revoke access / Deactivate</span>
+											</button>
+
+											<div class="gu-menu__sep" aria-hidden="true"></div>
+
+											<button
+												type="button"
+												class="gu-menu__item gu-menu__item--danger"
+												role="menuitem"
 												onclick={() => openPurge(row)}
 												disabled={row.role === 'super_admin' || row.role === 'global_admin'}
 											>
@@ -846,6 +916,85 @@
 		</div>
 	</footer>
 </div>
+
+<!-- Modals: root-level siblings (fixed overlays anchor to the viewport, not scroll regions). -->
+<AddAdminModal
+	bind:open={showAddAdmin}
+	onClose={() => (showAddAdmin = false)}
+	onGranted={(em) => {
+		flashOk = `${em} granted admin access.`;
+		showAddAdmin = false;
+	}}
+/>
+
+<EditAdminModal
+	bind:open={showEditAdmin}
+	admin={editingAdmin}
+	onClose={closeEditAdmin}
+	onSaved={(patch) => {
+		applyAdminPatchLocally(patch);
+		flashOk = `Saved changes for ${patch.email || patch.id}.`;
+	}}
+/>
+
+{#if deactivateTarget}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div
+		class="gu-deactivate-scrim"
+		role="presentation"
+		onclick={closeDeactivate}
+		onkeydown={(e) => e.key === 'Escape' && closeDeactivate()}
+	>
+		<div
+			class="gu-deactivate-card"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="gu-deact-title"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+		>
+			<header class="gu-deactivate-card__head">
+				<div class="gu-deactivate-card__icon" aria-hidden="true">
+					<i class="ph-bold ph-warning-octagon"></i>
+				</div>
+				<div>
+					<h2 id="gu-deact-title" class="gu-deactivate-card__title">Revoke access</h2>
+					<p class="gu-deactivate-card__sub">Account suspension — no data purge</p>
+				</div>
+			</header>
+			<div class="gu-deactivate-card__body">
+				<p class="gu-deactivate-card__lede">
+					Are you sure? This will
+					<strong>immediately sever this user&rsquo;s access</strong> to the Operative OS. Their session
+					is cut off in real time; the account remains in Firestore for audit.
+				</p>
+				<div class="gu-deactivate-card__target">
+					<div class="gu-deactivate-card__name">
+						{deactivateTarget.displayName || deactivateTarget.playerName || deactivateTarget.email}
+					</div>
+					<div class="gu-deactivate-card__email">{deactivateTarget.email}</div>
+				</div>
+				{#if deactivateErr}
+					<p class="gu-flash gu-flash--err" role="alert">{deactivateErr}</p>
+				{/if}
+			</div>
+			<footer class="gu-deactivate-card__foot">
+				<button type="button" class="gu-btn gu-btn--ghost" onclick={closeDeactivate} disabled={deactivateBusy}>
+					Cancel
+				</button>
+				<button
+					type="button"
+					class="gu-deactivate-btn"
+					onclick={confirmDeactivate}
+					disabled={deactivateBusy}
+				>
+					{deactivateBusy ? 'Applying…' : 'Revoke access now'}
+				</button>
+			</footer>
+		</div>
+	</div>
+{/if}
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      GDPR Purge — double confirmation modal
@@ -1576,6 +1725,151 @@
 	.gu-btn--danger:hover:not(:disabled) { background: #b91c1c; }
 
 	.gu-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+	/* ── Deactivate (soft delete) — stark red, no soft glow ───────────── */
+	.gu-role-cell {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.gu-suspended-pill {
+		display: inline-block;
+		padding: 2px 8px;
+		border-radius: 4px;
+		font-size: 0.625rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #fecaca;
+		background: #450a0a;
+		border: 1px solid #991b1b;
+	}
+
+	.gu-deactivate-scrim {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: grid;
+		place-items: center;
+		padding: 20px;
+		background: rgba(0, 0, 0, 0.72);
+		backdrop-filter: none;
+	}
+
+	.gu-deactivate-card {
+		width: 100%;
+		max-width: 440px;
+		padding: 22px 22px 18px;
+		border-radius: 4px;
+		border: 2px solid #b91c1c;
+		background: #0f0a0a;
+		box-shadow: none;
+		color: #fef2f2;
+	}
+
+	.gu-deactivate-card__head {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin-bottom: 14px;
+	}
+
+	.gu-deactivate-card__icon {
+		width: 40px;
+		height: 40px;
+		display: grid;
+		place-items: center;
+		border: 1px solid #b91c1c;
+		background: #450a0a;
+		color: #f87171;
+		font-size: 22px;
+		flex-shrink: 0;
+	}
+
+	.gu-deactivate-card__title {
+		margin: 0 0 2px;
+		font-size: 1.05rem;
+		font-weight: 900;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: #fef2f2;
+	}
+
+	.gu-deactivate-card__sub {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: #f87171;
+	}
+
+	.gu-deactivate-card__body {
+		margin-bottom: 16px;
+	}
+
+	.gu-deactivate-card__lede {
+		margin: 0 0 12px;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: #fecdd3;
+	}
+
+	.gu-deactivate-card__lede strong {
+		color: #fff;
+	}
+
+	.gu-deactivate-card__target {
+		padding: 10px 12px;
+		border: 1px solid #7f1d1d;
+		background: #1c0a0a;
+		border-radius: 2px;
+	}
+
+	.gu-deactivate-card__name {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: #fff;
+	}
+
+	.gu-deactivate-card__email {
+		margin-top: 2px;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-size: 0.8rem;
+		color: #fecaca;
+	}
+
+	.gu-deactivate-card__foot {
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+	}
+
+	.gu-deactivate-btn {
+		appearance: none;
+		border: 2px solid #dc2626;
+		background: #b91c1c;
+		color: #fff;
+		font: inherit;
+		font-size: 0.8125rem;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		padding: 10px 16px;
+		border-radius: 2px;
+		cursor: pointer;
+	}
+
+	.gu-deactivate-btn:hover:not(:disabled) {
+		background: #991b1b;
+	}
+
+	.gu-deactivate-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 
 	/* ── Modal ──────────────────────────────────────────────────────── */
 	.gu-modal-bg {

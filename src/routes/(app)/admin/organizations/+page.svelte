@@ -1309,16 +1309,6 @@
 		</table>
 	</div>
 
-	<!-- Strike 1 — Edit Organization modal (live $state patch via applyClubPatchLocally). -->
-	<EditOrganizationModal
-		bind:open={showEditModal}
-		club={editingClub}
-		onClose={closeEdit}
-		onSaved={(updated) => {
-			applyClubPatchLocally(updated);
-		}}
-	/>
-
 	<!-- ── Pagination ─────────────────────────────────────────────────────────── -->
 	{#if orgTotalPages > 1}
 		<div class="orgs3-pager" role="navigation" aria-label="Organizations pagination">
@@ -1347,6 +1337,16 @@
 
 
 </div>
+
+<!-- Modal: root-level sibling so fixed positioning is viewport-relative (not the table scroll area). -->
+<EditOrganizationModal
+	bind:open={showEditModal}
+	club={editingClub}
+	onClose={closeEdit}
+	onSaved={(updated) => {
+		applyClubPatchLocally(updated);
+	}}
+/>
 
 <style>
 	/* ─────────────────────────────────────────────────────────────────────────── */

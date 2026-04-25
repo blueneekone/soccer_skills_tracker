@@ -11,6 +11,7 @@
  */
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getIdTokenResult } from 'firebase/auth';
+import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
 
 /**
  * @param {Record<string, unknown> | null | undefined} baseProfile
@@ -30,6 +31,7 @@ export function fallbackPlayerName(baseProfile, email) {
  */
 export function isProfileComplete(profile) {
 	if (!profile) return false;
+	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
 	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
@@ -60,6 +62,26 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	const userSnap = await getDoc(userRef);
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
 	const fbName = fallbackPlayerName(baseProfile, firebaseUser.email);
+
+	const isJwtPlatformAdmin =
+		tokenResult.claims.isGlobalAdmin === true ||
+		tokenResult.claims.isSuperAdmin === true ||
+		role === 'global_admin' ||
+		role === 'super_admin';
+
+	// Enterprise soft-delete: never trust stale JWT if Firestore says suspended.
+	// (Platform admins in-token are protected — operator cannot soft-delete a Global Admin account.)
+	if (baseProfile && isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (baseProfile)) && !isJwtPlatformAdmin) {
+		return {
+			role: SYNTHETIC_SUSPENDED_ROLE,
+			profile: {
+				...(baseProfile || {}),
+				status: 'suspended',
+				role: typeof baseProfile.role === 'string' ? baseProfile.role : 'guest',
+				playerName: fbName,
+			},
+		};
+	}
 
 	if (role === 'super_admin' || role === 'global_admin' || role === 'director') {
 		return {

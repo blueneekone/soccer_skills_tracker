@@ -33,6 +33,8 @@
 
 	let errorMsg = $state('');
 	let opError = $state('');
+	/** Shown after soft-delete sign-out (sessionStorage flag from auth store). */
+	let accessRevokedBanner = $state(false);
 	let showPwaPrompt = $state(false);
 	let adultBusy = $state(false);
 	let opBusy = $state(false);
@@ -56,6 +58,14 @@
 
 	onMount(() => {
 		getRedirectResult(auth).catch(() => {});
+		try {
+			if (sessionStorage.getItem('sstrack_access_revoked') === '1') {
+				accessRevokedBanner = true;
+				sessionStorage.removeItem('sstrack_access_revoked');
+			}
+		} catch {
+			/* private mode / denied */
+		}
 		const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 		const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
 		showPwaPrompt = isIos && !isInStandaloneMode && !navigator.userAgent.includes('Chrome');
@@ -211,6 +221,21 @@
 	<div class="auth-card tw-mx-auto tw-flex tw-w-full tw-max-w-md tw-flex-1 tw-flex-col tw-px-4 tw-pt-8 tw-pb-12">
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
+
+		{#if accessRevokedBanner}
+			<div
+				class="tw-mb-2 tw-rounded tw-border-2 tw-border-red-600 tw-bg-red-950/90 tw-px-3 tw-py-2.5 tw-text-left"
+				role="alert"
+			>
+				<p class="tw-m-0 tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-red-200">
+					Access revoked
+				</p>
+				<p class="tw-m-0 tw-mt-1 tw-text-sm tw-font-medium tw-text-red-100">
+					Your account has been suspended. You can no longer access the Operative OS. Contact your organization
+					if you believe this is an error.
+				</p>
+			</div>
+		{/if}
 
 		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4">
 			<div
