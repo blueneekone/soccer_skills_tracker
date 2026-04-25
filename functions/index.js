@@ -2542,6 +2542,189 @@ exports.secureUpdateJersey = onCall({region: REGION}, async (request) => {
   return {ok: true};
 });
 
+/**
+ * Coach / director: batch FieldValue increments for match-day telemetry.
+ * Server-side only (client cannot write player_stats or foreign users/*).
+ * Updates player_stats/{playerKey} and mirrors into users/{emailKey}.stats.
+ */
+exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const teamId =
+      typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
+  const rows = Array.isArray(data.rows) ? data.rows : [];
+  if (!teamId) {
+    throw new HttpsError('invalid-argument', 'teamId is required.');
+  }
+  if (rows.length === 0) {
+    throw new HttpsError('invalid-argument', 'No stat rows to commit.');
+  }
+  if (rows.length > 50) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Too many players in one commit (max 50).',
+    );
+  }
+
+  await assertCanSecureAddPlayer(request, teamId);
+
+  /**
+   * @param {unknown} v
+   * @param {number} max
+   * @return {number}
+   */
+  const clamp = (v, max) => {
+    const n = parseInt(String(v), 10);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.min(n, max);
+  };
+
+  const inc = admin.firestore.FieldValue.increment;
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  const [rosterSnap, lookupSnap] = await Promise.all([
+    db.collection('rosters').doc(teamId).get(),
+    db.collection('player_lookup').where('teamId', '==', teamId).get(),
+  ]);
+  const rosterNames = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
+    rosterSnap.data().players :
+    [];
+  const rosterSet = new Set(
+      rosterNames
+          .map((n) => (typeof n === 'string' ? n.trim() : String(n)))
+          .filter(Boolean),
+  );
+  const nameToEmail = {};
+  lookupSnap.forEach((d) => {
+    const p = d.data() || {};
+    const pn = typeof p.playerName === 'string' ? p.playerName.trim() : '';
+    if (pn) nameToEmail[pn] = d.id;
+  });
+
+  /** @type {Map<string, { g: number, a: number, sh: number, sv: number }>} */
+  const ag = new Map();
+  for (const row of rows) {
+    const playerKey =
+        typeof row.playerKey === 'string' ? row.playerKey.trim() : '';
+    if (!playerKey) continue;
+    const goals = clamp(row.goals, 30);
+    const assists = clamp(row.assists, 30);
+    const shots = clamp(row.shots, 100);
+    const saves = clamp(row.saves, 100);
+    if (goals + assists + shots + saves === 0) continue;
+    const prev = ag.get(playerKey) || {g: 0, a: 0, sh: 0, sv: 0};
+    ag.set(playerKey, {
+      g: prev.g + goals,
+      a: prev.a + assists,
+      sh: prev.sh + shots,
+      sv: prev.sv + saves,
+    });
+  }
+  if (ag.size === 0) {
+    throw new HttpsError('invalid-argument', 'All stat deltas are zero or invalid.');
+  }
+
+  const psKeys = Array.from(ag.keys());
+  const psRefs = psKeys.map((k) => db.collection('player_stats').doc(k));
+  const psSnaps = await Promise.all(psRefs.map((r) => r.get()));
+
+  for (let i = 0; i < psKeys.length; i++) {
+    const k = psKeys[i];
+    const psSnap = psSnaps[i];
+    if (psSnap.exists) {
+      const tid = psSnap.data().teamId;
+      if (tid !== teamId) {
+        throw new HttpsError(
+            'permission-denied',
+            'A player is not on this team.',
+        );
+      }
+    } else {
+      if (!rosterSet.has(k)) {
+        throw new HttpsError(
+            'failed-precondition',
+            `Not on active roster: ${k}`,
+        );
+      }
+    }
+  }
+
+  const userMirrorOps = [];
+  for (let i = 0; i < psKeys.length; i++) {
+    const playerKey = psKeys[i];
+    const psSnap = psSnaps[i];
+    const displayName =
+        psSnap.exists &&
+        typeof psSnap.data().playerName === 'string' &&
+        psSnap.data().playerName.trim() ?
+          psSnap.data().playerName.trim() :
+          playerKey;
+    const em = nameToEmail[displayName] || nameToEmail[playerKey] || null;
+    const d = ag.get(playerKey) || {g: 0, a: 0, sh: 0, sv: 0};
+    if (em) {
+      userMirrorOps.push({em, d});
+    }
+  }
+  const uRefs = userMirrorOps.map((o) => db.collection('users').doc(o.em));
+  const uSnaps = uRefs.length ? await Promise.all(uRefs.map((r) => r.get())) : [];
+
+  const batch = db.batch();
+  let writes = 0;
+  for (let i = 0; i < psKeys.length; i++) {
+    const playerKey = psKeys[i];
+    const d = ag.get(playerKey) || {g: 0, a: 0, sh: 0, sv: 0};
+    const psRef = psRefs[i];
+    const psSnap = psSnaps[i];
+    const displayName =
+        psSnap.exists &&
+        typeof psSnap.data().playerName === 'string' &&
+        psSnap.data().playerName.trim() ?
+          psSnap.data().playerName.trim() :
+          playerKey;
+
+    batch.set(
+        psRef,
+        {
+          teamId,
+          playerName: displayName,
+          goals: inc(d.g),
+          assists: inc(d.a),
+          shots: inc(d.sh),
+          saves: inc(d.sv),
+          updatedAt: now,
+        },
+        {merge: true},
+    );
+    writes++;
+  }
+  for (let i = 0; i < userMirrorOps.length; i++) {
+    if (!uSnaps[i] || !uSnaps[i].exists) {
+      continue;
+    }
+    const {em, d} = userMirrorOps[i];
+    batch.set(
+        db.collection('users').doc(em),
+        {
+          'stats.goals': inc(d.g),
+          'stats.assists': inc(d.a),
+          'stats.shots': inc(d.sh),
+          'stats.saves': inc(d.sv),
+          updatedAt: now,
+        },
+        {merge: true},
+    );
+    writes++;
+  }
+
+  if (writes > 500) {
+    throw new HttpsError('failed-precondition', 'Batch too large; try fewer players.');
+  }
+  await batch.commit();
+  return {ok: true, players: ag.size, writes};
+});
+
 /** super_admin: create sport module (no client writes). */
 exports.createSportModule = onCall({region: REGION}, async (request) => {
   assertSuperAdmin(request);

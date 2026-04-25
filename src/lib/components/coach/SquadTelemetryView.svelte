@@ -17,6 +17,7 @@
 	import Swal from 'sweetalert2';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
 
 	let { teamId = '', teams = [] } = $props();
 
@@ -406,6 +407,13 @@
 			</div>
 		</div>
 	</section>
+
+	<MatchLogger
+		teamId={teamId}
+		players={players}
+		getStatsId={(p) => resolveStatsId(p, playerStats)}
+		onCommitted={loadRoster}
+	/>
 
 	{#if feedback}
 		<p

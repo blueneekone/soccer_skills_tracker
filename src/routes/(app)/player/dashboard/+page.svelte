@@ -7,7 +7,78 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const profile = $derived(authStore.userProfile);
+	const user = $derived(authStore.user);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
+
+	/** @param {string | undefined} uid */
+	function getOperativeAvatarUrl(uid) {
+		const seed = uid && uid.length > 0 ? uid : 'anonymous';
+		return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}&baseColor=05050A&primaryColor=06b6d4`;
+	}
+
+	const operativeAvatarSrc = $derived(getOperativeAvatarUrl(user?.uid || email || undefined));
+
+	/** @param {unknown} v */
+	function statNum(v) {
+		const n = Number(v);
+		if (!Number.isFinite(n)) return 0;
+		return n;
+	}
+
+	/**
+	 * First present numeric field; 0 is valid.
+	 * @param {Record<string, unknown>} s
+	 * @param {string[]} keys
+	 */
+	function coalesceStat(s, keys) {
+		for (const k of keys) {
+			if (!Object.prototype.hasOwnProperty.call(s, k)) continue;
+			const v = s[k];
+			if (v === undefined || v === null || v === '') continue;
+			return statNum(v);
+		}
+		return 0;
+	}
+
+	/** @param {number} p */
+	function formatPassPct(p) {
+		if (!Number.isFinite(p)) return '0';
+		return Math.abs(p - Math.round(p)) < 1e-6 ? String(Math.round(p)) : p.toFixed(1);
+	}
+
+	const gameDayStats = $derived.by(() => {
+		const raw = profile && typeof profile.stats === 'object' && profile.stats !== null ? profile.stats : null;
+		/** @type {Record<string, unknown>} */
+		const s = raw ? /** @type {Record<string, unknown>} */ (raw) : {};
+		return {
+			goals: coalesceStat(s, ['goals', 'gameDayGoals']),
+			assists: coalesceStat(s, ['assists', 'gameDayAssists']),
+			shots: coalesceStat(s, ['shots', 'gameDayShots']),
+			passPct: coalesceStat(s, ['passPct', 'passPercent', 'passingPct', 'gameDayPassPct']),
+		};
+	});
+
+	/** Mobile / coarse pointer: tap to flip; md+ uses hover */
+	let operativeCardFlipped = $state(false);
+
+	function operativeTapFlipEnabled() {
+		if (typeof window === 'undefined') return false;
+		return (
+			window.matchMedia('(max-width: 767.98px)').matches ||
+			window.matchMedia('(hover: none)').matches
+		);
+	}
+
+	function onOperativeCardActivate() {
+		if (!operativeTapFlipEnabled()) return;
+		operativeCardFlipped = !operativeCardFlipped;
+	}
+
+	function onOperativeKeydown(/** @type {KeyboardEvent} */ e) {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		e.preventDefault();
+		onOperativeCardActivate();
+	}
 
 	/** @typedef {{ id: string, seasonLabel?: string, physical?: Record<string, unknown>, technical?: Record<string, unknown> }} SeasonRow */
 
@@ -250,6 +321,108 @@
 		</div>
 	</header>
 
+	<div
+		class="oid-wrap tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md"
+		class:oid-wrap--flipped={operativeCardFlipped}
+	>
+		<p
+			class="oid-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
+		>
+			Tap to flip · hover to flip
+		</p>
+		<div
+			class="oid-surface tw-relative tw-w-full tw-cursor-pointer tw-perspective-[1000px] tw-outline-none"
+			role="button"
+			tabindex="0"
+			aria-pressed={operativeCardFlipped}
+			aria-label="Operative ID card. Tap on mobile or hover on desktop to view game day telemetry."
+			onclick={onOperativeCardActivate}
+			onkeydown={onOperativeKeydown}
+		>
+			<div class="oid-flipper tw-relative tw-h-[min(52vw,260px)] tw-w-full tw-transform-gpu">
+				<div
+					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)] tw-backface-hidden tw-[transform:rotateY(0deg)]"
+				>
+					<div class="tw-flex tw-w-full tw-flex-col tw-items-center tw-gap-3">
+						<div
+							class="tw-flex tw-h-24 tw-w-24 tw-shrink-0 tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-500/50 tw-bg-black/60 tw-p-1 tw-shadow-[inset_0_0_12px_rgba(6,182,212,0.25)]"
+						>
+							<img
+								class="tw-h-full tw-w-full tw-object-cover"
+								src={operativeAvatarSrc}
+								alt=""
+								width="96"
+								height="96"
+								loading="lazy"
+								decoding="async"
+								fetchpriority="low"
+							/>
+						</div>
+						<div class="tw-w-full tw-text-center">
+							<p class="tw-mb-0.5 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/90">
+								Operative
+							</p>
+							<p
+								class="tw-m-0 tw-text-lg tw-font-black tw-leading-tight tw-tracking-tight tw-text-white [overflow-wrap:anywhere]"
+							>
+								{profile?.playerName || 'Athlete'}
+							</p>
+							<p class="tw-mt-1 tw-font-mono tw-text-xs tw-text-cyan-200/90">
+								TEAM_ID:
+								{#if profile?.teamId && profile.teamId !== 'admin'}
+									<span class="tw-text-cyan-300">{profile.teamId}</span>
+								{:else}
+									<span class="tw-text-zinc-500">UNASSIGNED</span>
+								{/if}
+							</p>
+						</div>
+					</div>
+					<div
+						class="tw-w-full tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/40 tw-px-3 tw-py-2 tw-text-center tw-text-[11px] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-emerald-400 tw-shadow-[0_0_20px_rgba(52,211,153,0.35)]"
+					>
+						Clearance: Active
+					</div>
+				</div>
+
+				<div
+					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-flex tw-h-full tw-w-full tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)] tw-backface-hidden tw-[transform:rotateY(180deg)]"
+				>
+					<p
+						class="tw-mb-3 tw-border-b tw-border-cyan-500/30 tw-pb-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-400/90"
+					>
+						Telemetry · Game day
+					</p>
+					<div
+						class="tw-grid tw-flex-1 tw-grid-cols-2 tw-gap-2 tw-font-mono tw-text-sm tw-text-cyan-100/95"
+					>
+						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
+							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500">Goals</span>
+							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.goals}</span>
+						</div>
+						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
+							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500"
+								>Assists</span
+							>
+							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.assists}</span>
+						</div>
+						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
+							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500">Shots</span>
+							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.shots}</span>
+						</div>
+						<div class="oid-tel tw-col-span-2 tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
+							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500"
+								>Pass %</span
+							>
+							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300"
+								>{formatPassPct(gameDayStats.passPct)}%</span
+							>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="pd-stat-grid">
 		<div class="pd-stat tw-min-w-0">
 			<span class="pd-stat__label">XP</span>
@@ -378,6 +551,22 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
+	}
+
+	/* 3D Operative ID: preserve-3d; tap (.oid-wrap--flipped) + fine-pointer hover */
+	.oid-flipper {
+		transform-style: preserve-3d;
+		transform: rotateY(0deg);
+		transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+		will-change: transform;
+	}
+	.oid-wrap--flipped .oid-flipper {
+		transform: rotateY(180deg);
+	}
+	@media (min-width: 768px) and (hover: hover) {
+		.oid-wrap:hover .oid-flipper {
+			transform: rotateY(180deg);
+		}
 	}
 
 	.pd-hero {

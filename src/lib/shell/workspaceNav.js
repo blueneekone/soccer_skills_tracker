@@ -198,7 +198,12 @@ export function isShellNavActive(pathname, searchParams, item) {
 		// Coach OS: three path pillars (Squad Telemetry, Tactical, Mission) — not ?tab=.
 		if (pathname.startsWith('/coach') && (item.href === '/coach' || item.href === '/coach/tactical' || item.href === '/coach/drills')) {
 			if (item.href === '/coach') {
-				return pathname === '/coach' || pathname === '/coach/';
+				return (
+					pathname === '/coach' ||
+					pathname === '/coach/' ||
+					pathname === '/coach/dashboard' ||
+					pathname === '/coach/dashboard/'
+				);
 			}
 			if (item.href === '/coach/tactical') {
 				return pathname === '/coach/tactical' || pathname.startsWith('/coach/tactical/');

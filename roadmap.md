@@ -42,3 +42,30 @@
 - **Sprint 6.2:** TCG Loot Box Engine (XP tracking, digital pack-opening animations).
 - **Sprint 6.3:** The Digital Binder (Pro Cards, Peer Cards, Holographic self-upgrades).
 - **Sprint 6.4:** Scout Network & VPC Gating (Charge colleges SaaS fees to view verified player highlight reels).
+
+---
+
+## Next major phase — Sprint 6: The Quartermaster (The Player Reward Economy)
+
+**Objective:** Gamify the Player OS through cosmetic progression to drive sustained engagement with telemetry logging.
+
+**Note:** This phase name shares the “Sprint 6” label with the epic list above; treat the Quartermaster as the **Player OS reward-economy** track (cosmetics + spendable currency from real activity). Leaderboards / TCG / recruiting items in Epic 6 can run in parallel or be sequenced after logistics (Epic 5) as capacity allows.
+
+### Core features
+
+**The XP engine**  
+Convert logged workouts and Game Day stats into a spendable digital currency (e.g. **Credits** or **Rep**).
+
+**The Armory (cosmetic shop)**  
+A UI where players spend that currency on non-pay-to-win upgrades.
+
+**Avatar upgrades**  
+Unlock new [DiceBear](https://www.dicebear.com/) API styles (e.g. move from `bottts` to `pixel-art`, `lorelei`, or other packs) as rewards.
+
+**ID card themes**  
+Unlock new Tailwind-driven border styles and background effects for the 3D flipping Operative ID card (e.g. **Neon Demon**, **Glitch-Hacked**).
+
+### Architecture rules
+
+- Store **only string references** for unlocked / equipped cosmetics on the user’s Firestore document (e.g. `equippedTheme: 'neon'`, `avatarStyle: 'pixel-art'`), keyed from a small server- or client-side catalog.
+- **Zero extra storage overhead** for asset binaries: cosmetics are rendered from known presets + API params, not uploaded files.
