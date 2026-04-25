@@ -61,7 +61,7 @@
 	}
 </script>
 
-<div class="ps-root">
+<div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>

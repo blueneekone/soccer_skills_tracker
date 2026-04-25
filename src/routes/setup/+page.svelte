@@ -3,18 +3,15 @@
 	import { auth, db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { signOut } from 'firebase/auth';
-	import { doc, setDoc, getDoc } from 'firebase/firestore';
+	import { doc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
 	const listTeamsForClub = httpsCallable(functions, 'listTeamsForClub');
-	const playerSelfReportDobFn = httpsCallable(functions, 'playerSelfReportDob');
 
 	// Redirect logic — global admins (JWT claims or role token) skip profile completion.
-	// Accepts both `isGlobalAdmin`/`global_admin` (new canonical) and `isSuperAdmin`/`super_admin`
-	// (legacy, still present on un-refreshed JWTs) during the Sprint 2.7 migration.
 	$effect(() => {
 		if (authStore.isLoading) return;
 
@@ -48,10 +45,10 @@
 		})();
 	});
 
-	// Load clubs for dropdowns
+	// Load all clubs for organization pickers (setup scope).
 	$effect(() => {
 		if (authStore.isAuthenticated && !teamsStore.loaded) {
-			teamsStore.load(authStore.role || 'player', {
+			teamsStore.load('parent', {
 				coachEmail: auth.currentUser?.email ?? '',
 				scope: 'setup',
 				routePath: '/setup',
@@ -59,29 +56,22 @@
 		}
 	});
 
-	let accountKind = $state(/** @type {'player' | 'parent'} */ ('player'));
-	let parentDisplayName = $state('');
+	/** Phase 4 — players are parent-provisioned only; no self-serve athlete path. */
+	let setupRole = $state(/** @type {'director' | 'coach' | 'parent'} */ ('parent'));
+	let displayName = $state('');
 	let selectedClubId = $state('');
 	let selectedTeamId = $state('');
-	let selectedPlayerName = $state('');
-	let manualPlayerName = $state('');
-	let dateOfBirth = $state('');
-	let showManualEntry = $state(false);
-	let rosterPlayers = $state([]);
-	let rosterLoading = $state(false);
 	let errorMsg = $state('');
 	let saving = $state(false);
 	let clubTeams = $state([]);
 	let clubTeamsLoading = $state(false);
-	/** @type {'idle' | 'minor_pending'} */
-	let dobOutcome = $state('idle');
 
-	const today = new Date().toISOString().split('T')[0];
-	const minDobDate = (() => {
-		const d = new Date();
-		d.setFullYear(d.getFullYear() - 100);
-		return d.toISOString().split('T')[0];
-	})();
+	const basePrivacy = {
+		privacyProfile: 'strict_minor_defaults',
+		telemetryOptIn: false,
+		biometricOrVideoConsentAt: null,
+		consentPolicyVersion: '2026-04',
+	};
 
 	$effect(() => {
 		if (!selectedClubId) {
@@ -89,7 +79,7 @@
 			clubTeamsLoading = false;
 			return;
 		}
-		if (accountKind !== 'player') {
+		if (setupRole !== 'coach') {
 			clubTeams = [];
 			clubTeamsLoading = false;
 			return;
@@ -113,110 +103,98 @@
 		};
 	});
 
-	function setAccountKind(kind) {
-		accountKind = kind;
+	function setSetupRole(/** @type {'director' | 'coach' | 'parent'} */ kind) {
+		setupRole = kind;
 		selectedTeamId = '';
-		selectedPlayerName = '';
-		rosterPlayers = [];
-		showManualEntry = false;
-		manualPlayerName = '';
-		dateOfBirth = '';
-		dobOutcome = 'idle';
 		errorMsg = '';
 	}
 
-	async function onTeamChange() {
-		selectedPlayerName = '';
-		showManualEntry = false;
-		rosterPlayers = [];
-		if (!selectedTeamId) return;
-		rosterLoading = true;
-		try {
-			const snap = await getDoc(doc(db, 'rosters', selectedTeamId));
-			rosterPlayers = snap.exists() && snap.data().players ? [...snap.data().players].sort() : [];
-		} catch (e) {
-			console.error(e);
-		} finally {
-			rosterLoading = false;
-		}
-	}
-
-	function onPlayerChange() {
-		showManualEntry = selectedPlayerName === 'manual';
+	function roleBtnClass(/** @type {'director' | 'coach' | 'parent'} */ id) {
+		const on = setupRole === id;
+		return [
+			'tw-flex tw-min-h-[3.25rem] tw-w-full tw-flex-1 tw-items-center tw-justify-center tw-rounded-lg tw-border-2 tw-px-3 tw-py-3',
+			'tw-text-center tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-widest tw-transition-colors',
+			on
+				? 'tw-border-cyan-500 tw-bg-cyan-900/20 tw-text-cyan-400 tw-shadow-[0_0_18px_rgba(34,211,238,0.12)]'
+				: 'tw-border-gray-700 tw-bg-transparent tw-text-gray-500 hover:tw-border-gray-600 hover:tw-text-gray-400',
+		].join(' ');
 	}
 
 	async function completeSetup() {
-		if (accountKind === 'parent') {
-			const name = parentDisplayName.trim();
-			if (!selectedClubId || !name) {
-				return (errorMsg = 'Please select a club and enter your display name.');
-			}
-			saving = true;
-			errorMsg = '';
-			try {
-				const userEmail = auth.currentUser.email.toLowerCase();
-				const userRef = doc(db, 'users', userEmail);
-				const profileData = {
-					clubId: selectedClubId,
-					role: 'parent',
-					playerName: name,
-					joinedAt: new Date(),
-					privacyProfile: 'strict_minor_defaults',
-					telemetryOptIn: false,
-					biometricOrVideoConsentAt: null,
-					consentPolicyVersion: '2026-04'
-				};
-				await setDoc(userRef, profileData, { merge: true });
-				await authStore.refresh({ silent: true });
-				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
-			} catch (err) {
-				errorMsg = 'Error saving profile: ' + err.message;
-				saving = false;
-			}
-			return;
+		const name = displayName.trim();
+		if (!selectedClubId) {
+			return (errorMsg = 'Please select your club / organization.');
+		}
+		if (!name) {
+			return (errorMsg = 'Please enter your display name.');
 		}
 
-		const finalName = selectedPlayerName === 'manual' ? manualPlayerName.trim() : selectedPlayerName;
-		if (!selectedClubId || !selectedTeamId || !finalName) {
-			return (errorMsg = 'Please select a club, team, and player name.');
+		if (setupRole === 'coach' && !selectedTeamId) {
+			return (errorMsg = 'Please select your team.');
 		}
+
+		const userEmail = auth.currentUser?.email?.toLowerCase();
+		if (!userEmail) {
+			return (errorMsg = 'No signed-in email — try signing in again.');
+		}
+
 		saving = true;
 		errorMsg = '';
 		try {
-			const userEmail = auth.currentUser.email.toLowerCase();
 			const userRef = doc(db, 'users', userEmail);
+			const joinedAt = new Date();
 
-			const profileData = {
-				clubId: selectedClubId,
-				teamId: selectedTeamId,
-				playerName: finalName,
-				joinedAt: new Date(),
-				privacyProfile: 'strict_minor_defaults',
-				telemetryOptIn: false,
-				biometricOrVideoConsentAt: null,
-				consentPolicyVersion: '2026-04'
-			};
-
-			await setDoc(userRef, profileData, { merge: true });
-			await authStore.refresh({ silent: true });
-
-			if (dateOfBirth.trim()) {
-				try {
-					const dobResult = await playerSelfReportDobFn({ dateOfBirth: dateOfBirth.trim() });
-					const r = /** @type {any} */ (dobResult.data);
-					if (r.isMinor === true) {
-						dobOutcome = 'minor_pending';
-						saving = false;
-						return;
-					}
-				} catch (dobErr) {
-					console.warn('[setup] DOB report failed — continuing setup:', dobErr);
-				}
+			if (setupRole === 'parent') {
+				await setDoc(
+					userRef,
+					{
+						clubId: selectedClubId,
+						role: 'parent',
+						playerName: name,
+						joinedAt,
+						...basePrivacy,
+					},
+					{ merge: true },
+				);
+			} else if (setupRole === 'director') {
+				await setDoc(
+					userRef,
+					{
+						clubId: selectedClubId,
+						role: 'director',
+						playerName: name,
+						teamId: 'admin',
+						joinedAt,
+						...basePrivacy,
+					},
+					{ merge: true },
+				);
+			} else {
+				const team = clubTeams.find((t) => t.id === selectedTeamId);
+				const clubFromTeam =
+					team && typeof team.clubId === 'string' && team.clubId.trim() ?
+						team.clubId.trim()
+					:	selectedClubId;
+				await setDoc(
+					userRef,
+					{
+						clubId: clubFromTeam,
+						teamId: selectedTeamId,
+						role: 'coach',
+						playerName: name,
+						joinedAt,
+						...basePrivacy,
+					},
+					{ merge: true },
+				);
 			}
 
+			await authStore.refresh({ silent: true });
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} catch (err) {
-			errorMsg = 'Error saving profile: ' + err.message;
+			errorMsg =
+				'Error saving profile: ' +
+				(err && typeof err === 'object' && 'message' in err ? String(/** @type {*} */ (err).message) : 'unknown');
 			saving = false;
 		}
 	}
@@ -234,77 +212,84 @@
 		<p class="auth-subtitle">Link your account to your organization.</p>
 
 		<p class="kind-label">I am registering as</p>
-		<div class="account-kind-row" role="group" aria-label="Account type">
+		<div
+			class="tw-mb-5 tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-flex-nowrap sm:tw-gap-3"
+			role="group"
+			aria-label="Registration role"
+		>
 			<button
 				type="button"
-				class="kind-btn"
-				class:kind-btn-active={accountKind === 'player'}
-				onclick={() => setAccountKind('player')}
+				class={roleBtnClass('director')}
+				aria-pressed={setupRole === 'director'}
+				onclick={() => setSetupRole('director')}
 			>
-				Athlete
+				Director<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
+					>(Club admin)</span
+				>
 			</button>
 			<button
 				type="button"
-				class="kind-btn"
-				class:kind-btn-active={accountKind === 'parent'}
-				onclick={() => setAccountKind('parent')}
+				class={roleBtnClass('coach')}
+				aria-pressed={setupRole === 'coach'}
+				onclick={() => setSetupRole('coach')}
 			>
-				Parent / guardian
+				Coach<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
+					>(Team leader)</span
+				>
+			</button>
+			<button
+				type="button"
+				class={roleBtnClass('parent')}
+				aria-pressed={setupRole === 'parent'}
+				onclick={() => setSetupRole('parent')}
+			>
+				Parent<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
+					>(Household manager)</span
+				>
 			</button>
 		</div>
 
-		<label>Select Your Club / Organization</label>
+		<label for="setup-club">Select your club / organization</label>
 		<select
+			id="setup-club"
 			bind:value={selectedClubId}
 			onchange={() => {
 				selectedTeamId = '';
-				selectedPlayerName = '';
-				rosterPlayers = [];
 			}}
 		>
-			<option value="">Select your club...</option>
+			<option value="">Select your club…</option>
 			{#each teamsStore.clubs as club}
 				<option value={club.id}>{club.name || club.id}</option>
 			{/each}
 		</select>
 
-		{#if accountKind === 'parent'}
-			<label>Your name (as parent / guardian)</label>
-			<input
-				type="text"
-				bind:value={parentDisplayName}
-				placeholder="e.g. Jane Doe"
-				autocomplete="name"
-			/>
-			<p class="setup-helper-text">
-				You do not need a team roster slot. After you finish, your club director can link your account to your
-				athlete’s household for consent workflows.
-			</p>
-		{:else if dobOutcome === 'minor_pending'}
-			<div class="minor-gate" role="alert">
-				<div class="minor-gate__icon" aria-hidden="true"><i class="ph ph-lock"></i></div>
-				<h3 class="minor-gate__title">Parental consent required</h3>
-				<p class="minor-gate__body">
-					Based on your date of birth, your account requires a parent or guardian to complete the
-					consent process before you can access training data.
-				</p>
-				<p class="minor-gate__body">
-					A <strong>Parent / Guardian</strong> must create an account on this platform, then visit
-					<strong>Parent dashboard → Consent</strong> to complete verification.
-				</p>
-				<button
-					class="primary-btn btn-orange w-100"
-					onclick={() => goto('/vpc-pending', { replaceState: true })}
-				>
-					Got it — view my status
-				</button>
-			</div>
-		{:else}
-			<label>Select Your Team</label>
-			<select bind:value={selectedTeamId} disabled={!selectedClubId || clubTeamsLoading} onchange={onTeamChange}>
+		<label for="setup-name">
+			{#if setupRole === 'parent'}
+				Your name (as parent / guardian)
+			{:else if setupRole === 'director'}
+				Your name (as club director)
+			{:else}
+				Your name (as coach)
+			{/if}
+		</label>
+		<input
+			id="setup-name"
+			type="text"
+			bind:value={displayName}
+			placeholder="e.g. Alex Morgan"
+			autocomplete="name"
+		/>
+
+		{#if setupRole === 'coach'}
+			<label for="setup-team">Select your team</label>
+			<select
+				id="setup-team"
+				bind:value={selectedTeamId}
+				disabled={!selectedClubId || clubTeamsLoading}
+			>
 				<option value="">
 					{!selectedClubId
-						? 'Select a club first...'
+						? 'Select a club first…'
 						: clubTeamsLoading
 							? 'Loading teams…'
 							: 'Select your team…'}
@@ -313,43 +298,19 @@
 					<option value={team.id}>{team.name || team.id}</option>
 				{/each}
 			</select>
+		{/if}
 
-			<label>Select Player Name</label>
-			<select bind:value={selectedPlayerName} disabled={!selectedTeamId || rosterLoading} onchange={onPlayerChange}>
-				{#if rosterLoading}
-					<option value="">Loading players...</option>
-				{:else}
-					<option value="">Select your name...</option>
-					{#each rosterPlayers as p}
-						<option value={p}>{p}</option>
-					{/each}
-					{#if rosterPlayers.length > 0}
-						<option value="manual">My name isn't listed (manual entry)</option>
-					{/if}
-				{/if}
-			</select>
-
-			{#if showManualEntry}
-				<div class="manual-entry">
-					<label>Type Player Name</label>
-					<input type="text" placeholder="First and Last Name" bind:value={manualPlayerName} />
-					<p class="setup-helper-text">
-						Your coach will need to approve this entry before your XP counts toward the team leaderboard.
-					</p>
-				</div>
-			{/if}
-
-			<label for="setup-dob">Date of Birth <span class="setup-optional">(optional — used for COPPA compliance)</span></label>
-			<input
-				id="setup-dob"
-				type="date"
-				bind:value={dateOfBirth}
-				min={minDobDate}
-				max={today}
-			/>
+		{#if setupRole === 'parent'}
 			<p class="setup-helper-text">
-				If you are under 17, a parent or guardian must complete the consent flow before you can log workouts.
+				Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a “player
+				account” here.
 			</p>
+		{:else if setupRole === 'director'}
+			<p class="setup-helper-text">
+				Club-scoped access. You’ll manage your organization from the director console after setup.
+			</p>
+		{:else}
+			<p class="setup-helper-text">Pick the team you lead. Claims sync after you save (via the clearance server).</p>
 		{/if}
 
 		{#if errorMsg}
@@ -357,9 +318,9 @@
 		{/if}
 
 		<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving}>
-			{saving ? 'Saving Profile...' : 'Complete Setup'}
+			{saving ? 'Saving profile…' : 'Complete setup'}
 		</button>
-		<button class="secondary-btn w-100" onclick={handleLogout}>Cancel &amp; Logout</button>
+		<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Cancel &amp; logout</button>
 	</div>
 </div>
 
@@ -370,65 +331,15 @@
 		opacity: 0.9;
 	}
 
-	.account-kind-row {
-		display: flex;
-		gap: clamp(8px, 2vw, 12px);
-		margin-bottom: clamp(14px, 2.5vw, 20px);
-	}
-
-	.kind-btn {
-		flex: 1;
-		padding: clamp(10px, 2vw, 14px);
-		border-radius: 16px;
-		border: 1px solid var(--glass-border, rgba(148, 163, 184, 0.35));
-		background: rgba(255, 255, 255, 0.06);
-		cursor: pointer;
-		font-weight: 600;
-	}
-
-	.kind-btn-active {
-		border-color: rgba(251, 191, 36, 0.65);
-		box-shadow: 0 8px 24px -8px rgba(15, 23, 42, 0.2);
-	}
-
-	:global(html.dark) .kind-btn {
-		background: rgba(15, 23, 42, 0.45);
-	}
-
 	select,
 	input {
 		margin-bottom: 12px;
 	}
-	.manual-entry {
-		margin-bottom: 12px;
-	}
 
-	.setup-optional {
-		font-size: 0.75rem;
-		opacity: 0.6;
-		font-weight: 400;
-	}
-
-	.minor-gate {
-		text-align: center;
-		padding: 1.25rem 0.5rem 0.75rem;
-	}
-	.minor-gate__icon {
-		font-size: 2.5rem;
-		margin-bottom: 0.75rem;
-		line-height: 1;
-		color: var(--text-secondary);
-	}
-	.minor-gate__title {
-		margin: 0 0 0.75rem;
-		font-size: 1.1rem;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-	.minor-gate__body {
-		margin: 0 0 0.75rem;
-		font-size: 0.85rem;
-		color: var(--text-secondary);
-		line-height: 1.55;
+	.setup-helper-text {
+		margin: 0 0 14px;
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--text-secondary, #a1a1aa);
 	}
 </style>

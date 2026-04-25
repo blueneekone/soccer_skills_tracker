@@ -113,7 +113,7 @@
 </script>
 
 <div
-	class="login-gate tw-flex tw-min-h-screen tw-w-full tw-max-w-full tw-flex-col tw-items-stretch tw-justify-center tw-overflow-x-hidden tw-bg-black tw-px-3 tw-py-6 sm:tw-px-4"
+	class="login-gate tw-flex tw-min-h-screen tw-w-full tw-max-w-full tw-flex-col tw-items-stretch tw-justify-start tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black tw-px-3 tw-pt-6 tw-pb-12 sm:tw-px-4"
 >
 	<div class="auth-card tw-mx-auto tw-w-full tw-max-w-md">
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
@@ -122,7 +122,7 @@
 
 		<div class="tw-mx-auto tw-flex tw-w-full tw-min-w-0 tw-max-w-[400px] tw-flex-col tw-gap-6">
 			<!-- Adult clearance -->
-			<section class="tw-min-w-0" aria-labelledby="lg-adult">
+			<section class="tw-min-w-0 tw-shrink-0" aria-labelledby="lg-adult">
 				<p class="tw-mb-2 tw-text-center tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-[0.28em] tw-text-white/45">
 					Adult clearance
 				</p>
@@ -187,7 +187,10 @@
 			</div>
 
 			<!-- Operative dispatch -->
-			<section class="tw-min-w-0 tw-rounded-lg tw-border tw-border-cyan-500/25 tw-bg-[#05050a] tw-p-3 tw-shadow-[0_0_20px_rgba(0,212,255,0.08)] sm:tw-p-4" aria-labelledby="lg-op">
+			<section
+				class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/25 tw-bg-[#05050a] tw-p-3 tw-shadow-[0_0_20px_rgba(0,212,255,0.08)] sm:tw-p-4"
+				aria-labelledby="lg-op"
+			>
 				<p class="tw-mb-1 tw-text-center tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-300/80">
 					Operative dispatch
 				</p>

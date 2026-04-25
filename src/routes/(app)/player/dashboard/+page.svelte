@@ -225,12 +225,16 @@
 	<title>Player Dashboard · SSTRACKER</title>
 </svelte:head>
 
-<section class="pd-wrap tier-{tier}">
+<section class="pd-wrap tw-min-w-0 tw-w-full tw-max-w-full tw-overflow-x-hidden tw-box-border tier-{tier}">
 	<header class="pd-hero">
-		<div class="pd-hero__identity">
+		<div class="pd-hero__identity tw-min-w-0">
 			<span class="pd-hero__eyebrow">Command center</span>
-			<h1 class="pd-hero__name">{profile?.playerName || 'Athlete'}</h1>
-			<span class="pd-hero__meta">
+			<h1 class="pd-hero__name tw-break-words tw-text-balance [overflow-wrap:anywhere]">
+				{profile?.playerName || 'Athlete'}
+			</h1>
+			<span
+				class="pd-hero__meta tw-break-words [overflow-wrap:break-word] tw-whitespace-normal"
+			>
 				{#if profile?.teamId && profile.teamId !== 'admin'}
 					Team {profile.teamId}
 				{:else}
@@ -239,42 +243,43 @@
 			</span>
 		</div>
 
-		<div class="pd-hero__card pd-card" aria-label="Overall rating">
+		<div class="pd-hero__card pd-card tw-min-w-0 tw-shrink-0" aria-label="Overall rating">
 			<span class="pd-card__label">Overall</span>
-			<span class="pd-card__rating tabular-num">{overallRating || '—'}</span>
-			<span class="pd-card__tier">{tier.toUpperCase()}</span>
+			<span class="pd-card__rating tabular-num tw-max-w-full tw-text-center">{overallRating || '—'}</span>
+			<span class="pd-card__tier tw-max-w-full tw-text-center tw-truncate">{tier.toUpperCase()}</span>
 		</div>
 	</header>
 
 	<div class="pd-stat-grid">
-		<div class="pd-stat">
+		<div class="pd-stat tw-min-w-0">
 			<span class="pd-stat__label">XP</span>
-			<span class="pd-stat__value tabular-num">{xp.toLocaleString()}</span>
+			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{xp.toLocaleString()}</span>
 		</div>
-		<div class="pd-stat">
+		<div class="pd-stat tw-min-w-0">
 			<span class="pd-stat__label">Level</span>
-			<span class="pd-stat__value tabular-num">{level}</span>
+			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{level}</span>
 		</div>
-		<div class="pd-stat">
+		<div class="pd-stat tw-min-w-0">
 			<span class="pd-stat__label">Streak</span>
-			<span class="pd-stat__value tabular-num">{streak}d</span>
+			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{streak}d</span>
 		</div>
-		<div class="pd-stat">
+		<div class="pd-stat tw-min-w-0">
 			<span class="pd-stat__label">Best Streak</span>
-			<span class="pd-stat__value tabular-num">{longestStreak}d</span>
+			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{longestStreak}d</span>
 		</div>
 	</div>
 
-	<section class="pd-radar-shell">
+	<section class="pd-radar-shell tw-min-w-0">
 		<header class="pd-radar-head">
-			<div>
-				<h2 class="pd-radar-title">Player Stat Radar</h2>
-				<p class="pd-radar-sub">
-					Five-axis profile across the core attributes. Update metrics in the Field Ops combine to see new shapes.
+			<div class="pd-radar-head__blurb tw-min-w-0">
+				<h2 class="pd-radar-title tw-break-words">Player Stat Radar</h2>
+				<p class="pd-radar-sub tw-whitespace-normal tw-break-words [overflow-wrap:anywhere]">
+					Five-axis profile across the core attributes. Update metrics in the Field Ops combine to see new
+					shapes.
 				</p>
 			</div>
 			{#if seasons.length > 1}
-				<label class="pd-season-picker">
+				<label class="pd-season-picker tw-shrink-0">
 					<span class="sr-only">Season</span>
 					<select bind:value={selectedSeasonId}>
 						{#each seasons as s (s.id)}
@@ -286,39 +291,41 @@
 		</header>
 
 		{#if loadError}
-			<div class="pd-alert" role="alert">{loadError}</div>
+			<div class="pd-alert tw-whitespace-normal tw-break-words [overflow-wrap:anywhere]" role="alert"
+				>{loadError}</div
+			>
 		{/if}
 
 		<div class="pd-radar-body">
-			<div class="pd-radar-canvas">
+			<div class="pd-radar-canvas tw-min-w-0">
 				<canvas bind:this={canvasEl}></canvas>
 			</div>
 
-			<ul class="pd-attrs" aria-label="Attribute breakdown">
-				<li class="pd-attr">
+			<ul class="pd-attrs tw-min-w-0" aria-label="Attribute breakdown">
+				<li class="pd-attr tw-min-w-0">
 					<span class="pd-attr__abbr">PAC</span>
 					<span class="pd-attr__label">Pace</span>
-					<span class="pd-attr__val tabular-num">{radarValues.pace}</span>
+					<span class="pd-attr__val tabular-num tw-min-w-0 tw-shrink-0">{radarValues.pace}</span>
 				</li>
-				<li class="pd-attr">
+				<li class="pd-attr tw-min-w-0">
 					<span class="pd-attr__abbr">SHO</span>
 					<span class="pd-attr__label">Shooting</span>
-					<span class="pd-attr__val tabular-num">{radarValues.shooting}</span>
+					<span class="pd-attr__val tabular-num tw-min-w-0 tw-shrink-0">{radarValues.shooting}</span>
 				</li>
-				<li class="pd-attr">
+				<li class="pd-attr tw-min-w-0">
 					<span class="pd-attr__abbr">PAS</span>
 					<span class="pd-attr__label">Passing</span>
-					<span class="pd-attr__val tabular-num">{radarValues.passing}</span>
+					<span class="pd-attr__val tabular-num tw-min-w-0 tw-shrink-0">{radarValues.passing}</span>
 				</li>
-				<li class="pd-attr">
+				<li class="pd-attr tw-min-w-0">
 					<span class="pd-attr__abbr">DRI</span>
 					<span class="pd-attr__label">Dribbling</span>
-					<span class="pd-attr__val tabular-num">{radarValues.dribbling}</span>
+					<span class="pd-attr__val tabular-num tw-min-w-0 tw-shrink-0">{radarValues.dribbling}</span>
 				</li>
-				<li class="pd-attr">
+				<li class="pd-attr tw-min-w-0">
 					<span class="pd-attr__abbr">PHY</span>
 					<span class="pd-attr__label">Physical</span>
-					<span class="pd-attr__val tabular-num">{radarValues.physical}</span>
+					<span class="pd-attr__val tabular-num tw-min-w-0 tw-shrink-0">{radarValues.physical}</span>
 				</li>
 			</ul>
 		</div>
@@ -326,19 +333,20 @@
 		{#if loading}
 			<p class="pd-loading">Loading season metrics…</p>
 		{:else if seasons.length === 0}
-			<p class="pd-loading">
-				No combine metrics recorded yet. Your coach or director can log baseline attributes under Field Ops → Combine.
+			<p class="pd-loading tw-whitespace-normal tw-break-words [overflow-wrap:anywhere]">
+				No combine metrics recorded yet. Your coach or director can log baseline attributes under Field Ops →
+				Combine.
 			</p>
 		{/if}
 	</section>
 
 	<nav class="pd-quick-nav" aria-label="Quick actions">
-		<button type="button" class="pd-quick-nav__btn" onclick={goToQuests}>
-			<i class="ph ph-lightning" aria-hidden="true"></i>
+		<button type="button" class="pd-quick-nav__btn tw-min-w-0" onclick={goToQuests}>
+			<i class="ph ph-lightning tw-shrink-0" aria-hidden="true"></i>
 			<span class="pd-quick-nav__label">Today's Quests</span>
 		</button>
-		<button type="button" class="pd-quick-nav__btn" onclick={goToStats}>
-			<i class="ph ph-chart-line-up" aria-hidden="true"></i>
+		<button type="button" class="pd-quick-nav__btn tw-min-w-0" onclick={goToStats}>
+			<i class="ph ph-chart-line-up tw-shrink-0" aria-hidden="true"></i>
 			<span class="pd-quick-nav__label">Career Stats</span>
 		</button>
 	</nav>
@@ -347,10 +355,13 @@
 <style>
 	.pd-wrap {
 		position: relative;
+		min-width: 0;
+		max-width: 100%;
 		padding: 4px 2px 12px;
 		color: #fafafa;
 		background: transparent;
-		overflow: visible;
+		box-sizing: border-box;
+		overflow-x: hidden;
 	}
 
 	.tabular-num {
@@ -376,6 +387,12 @@
 		gap: 18px;
 		margin-bottom: 22px;
 		flex-wrap: wrap;
+		min-width: 0;
+	}
+
+	.pd-hero__identity {
+		flex: 1 1 0;
+		min-width: 0;
 	}
 
 	.pd-hero__eyebrow {
@@ -395,12 +412,17 @@
 		font-size: clamp(1.75rem, 5vw, 2.4rem);
 		font-weight: 900;
 		letter-spacing: -0.02em;
+		overflow-wrap: anywhere;
+		word-wrap: break-word;
 	}
 
 	.pd-hero__meta {
 		color: #a1a1aa;
 		font-size: 13px;
 		font-weight: 700;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		word-wrap: break-word;
 	}
 
 	.pd-hero__card {
@@ -498,15 +520,21 @@
 
 	.pd-stat-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
 		gap: 12px;
 		margin-bottom: 22px;
+		min-width: 0;
+	}
+
+	.pd-stat-grid > * {
+		min-width: 0;
 	}
 
 	.pd-stat {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		min-width: 0;
 		padding: 14px 16px;
 		border-radius: 14px;
 		background: rgba(255, 255, 255, 0.03);
@@ -525,11 +553,15 @@
 		font-size: 24px;
 		font-weight: 900;
 		color: #fafafa;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.pd-radar-shell {
 		padding: 20px;
 		border-radius: 20px;
+		min-width: 0;
 		background: rgba(255, 255, 255, 0.02);
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		backdrop-filter: blur(12px);
@@ -544,6 +576,12 @@
 		gap: 16px;
 		margin-bottom: 14px;
 		flex-wrap: wrap;
+		min-width: 0;
+	}
+
+	.pd-radar-head__blurb {
+		flex: 1 1 0;
+		min-width: 0;
 	}
 
 	.pd-radar-title {
@@ -558,7 +596,10 @@
 		color: #a1a1aa;
 		font-size: 13px;
 		line-height: 1.5;
-		max-width: 500px;
+		max-width: min(500px, 100%);
+		white-space: normal;
+		overflow-wrap: anywhere;
+		word-wrap: break-word;
 	}
 
 	.pd-season-picker select {
@@ -573,9 +614,14 @@
 
 	.pd-radar-body {
 		display: grid;
-		grid-template-columns: minmax(300px, 1.3fr) minmax(220px, 1fr);
+		grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
 		gap: 24px;
 		align-items: center;
+		min-width: 0;
+	}
+
+	.pd-radar-body > * {
+		min-width: 0;
 	}
 
 	@media (max-width: 780px) {
@@ -587,6 +633,7 @@
 	.pd-radar-canvas {
 		position: relative;
 		width: 100%;
+		min-width: 0;
 		height: clamp(280px, 48vw, 420px);
 	}
 
@@ -603,13 +650,15 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+		min-width: 0;
 	}
 
 	.pd-attr {
 		display: grid;
-		grid-template-columns: 52px 1fr auto;
+		grid-template-columns: 52px minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 12px;
+		min-width: 0;
 		padding: 12px 14px;
 		border-radius: 12px;
 		background: rgba(0, 0, 0, 0.35);
@@ -621,6 +670,7 @@
 		align-items: center;
 		justify-content: center;
 		width: 52px;
+		flex-shrink: 0;
 		padding: 4px 0;
 		border-radius: 8px;
 		background: linear-gradient(135deg, #a855f7, #6366f1);
@@ -634,6 +684,10 @@
 		font-weight: 700;
 		font-size: 14px;
 		color: #fafafa;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.pd-attr__val {
@@ -644,6 +698,8 @@
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
+		min-width: 0;
+		flex-shrink: 0;
 	}
 
 	.pd-alert {
@@ -654,12 +710,20 @@
 		color: #fecaca;
 		font-size: 13px;
 		margin-bottom: 14px;
+		min-width: 0;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		word-wrap: break-word;
 	}
 
 	.pd-loading {
 		margin: 14px 0 0;
 		color: #a1a1aa;
 		font-size: 13.5px;
+		min-width: 0;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		word-wrap: break-word;
 	}
 
 	.pd-quick-nav {
@@ -696,5 +760,15 @@
 	.pd-quick-nav__btn i {
 		font-size: 18px;
 		color: #22d3ee;
+		flex-shrink: 0;
+	}
+
+	.pd-quick-nav__label {
+		min-width: 0;
+		flex: 1 1 0;
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
