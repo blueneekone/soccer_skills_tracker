@@ -76,8 +76,8 @@
 	let evalRows = $state([]);
 
 	/**
-	 * COPPA posture for linked operatives: known only when we have a `users/{email}` row.
-	 * @type {Record<string, 'compliant' | 'non-compliant' | 'unverified'>}
+	 * Link column: linked + valid users doc; unlinked roster names stay unverified.
+	 * @type {Record<string, 'compliant' | 'unverified'>}
 	 */
 	let complianceByPlayer = $state({});
 
@@ -109,6 +109,7 @@
 		const myGen = ++rosterLoadGen;
 		loading = true;
 		try {
+			// Concurrency: never fail the whole load on a single rejected request; user fetches use allSettled below.
 			const settled = await Promise.allSettled([
 				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 				getDoc(doc(db, 'rosters', teamId)),
@@ -217,39 +218,25 @@
 				const linkId = linkedDocIdForPlayerName(em, name);
 				if (linkId != null) {
 					const ukey = usersCollectionKey(linkId);
-					if (!userSnapByEmail[ukey]) {
-						// `player_lookup` points at a `users` doc that is missing or blocked — do not break the table.
-						continue;
-					}
+					const uSnap = userSnapByEmail[ukey];
+					// Only include fulfilled, existing `users` docs (or skip orphan lookup targets).
+					if (!uSnap) continue;
+					const data = uSnap.data();
+					const role = typeof data?.role === 'string' ? data.role : '';
+					const hasHh = typeof data?.householdId === 'string' && data.householdId.trim() !== '';
+					// Legacy COPPA: player rows without a household are dropped so they never break the table.
+					if (role === 'player' && !hasHh) continue;
 				}
 				nextPlayers.push(name);
 			}
 			nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 			players = nextPlayers;
 
-			/** @type {Record<string, 'compliant' | 'non-compliant' | 'unverified'>} */
+			/** @type {Record<string, 'compliant' | 'unverified'>} */
 			const nextCompliance = {};
 			for (const name of nextPlayers) {
 				const linkId = linkedDocIdForPlayerName(em, name);
-				if (linkId == null) {
-					nextCompliance[name] = 'unverified';
-					continue;
-				}
-				const ukey = usersCollectionKey(linkId);
-				const uSnap = userSnapByEmail[ukey];
-				if (!uSnap) {
-					nextCompliance[name] = 'unverified';
-					continue;
-				}
-				const data = uSnap.data();
-				const role = typeof data?.role === 'string' ? data.role : '';
-				const hasHh =
-					typeof data?.householdId === 'string' && data.householdId.trim() !== '';
-				if (role === 'player' && !hasHh) {
-					nextCompliance[name] = 'non-compliant';
-				} else {
-					nextCompliance[name] = 'compliant';
-				}
+				nextCompliance[name] = linkId != null ? 'compliant' : 'unverified';
 			}
 			complianceByPlayer = nextCompliance;
 		} catch (e) {
@@ -660,10 +647,11 @@
 									<td class="stw__mono">
 										{jerseys[p] != null && String(jerseys[p]).trim() ? jerseys[p] : '—'}
 									</td>
-									<td class="stw__mono" class:stw__green={copa === 'compliant' && (linkedPlayers.has(rowLabel) || linkedPlayers.has(p))} class:stw__nc={copa === 'non-compliant'}>
-										{#if copa === 'non-compliant'}
-											NON-COMPLIANT
-										{:else if linkedPlayers.has(rowLabel) || linkedPlayers.has(p)}
+									<td
+										class="stw__mono"
+										class:stw__green={copa === 'compliant' && (linkedPlayers.has(rowLabel) || linkedPlayers.has(p))}
+									>
+										{#if linkedPlayers.has(rowLabel) || linkedPlayers.has(p)}
 											LIVE
 										{:else}
 											—
@@ -821,13 +809,6 @@
 	}
 	.stw__green {
 		color: var(--st-g);
-	}
-
-	.stw__nc {
-		color: #fb923c;
-		font-weight: 800;
-		font-size: 0.68rem;
-		letter-spacing: 0.06em;
 	}
 
 	.stw__grid {
