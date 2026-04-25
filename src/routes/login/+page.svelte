@@ -100,7 +100,7 @@
 				(/** @type {*} */(err).code === 'auth/email-already-in-use' ||
 					String(/** @type {*} */(err).code).includes('email-already-in-use'))
 			) {
-				errorMsg = 'This email is already registered. Use AUTHENTICATE to sign in.';
+				errorMsg = 'This email is already registered. Use Login.';
 			} else {
 				errorMsg =
 					err && typeof err === 'object' && 'message' in err
@@ -152,20 +152,14 @@
 </script>
 
 <div
-	class="login-gate tw-flex tw-min-h-screen tw-w-full tw-max-w-full tw-flex-col tw-items-stretch tw-justify-start tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black tw-px-3 tw-pt-6 tw-pb-12 sm:tw-px-4"
+	class="login-gate tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-stretch tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black"
 >
-	<div class="auth-card tw-mx-auto tw-w-full tw-max-w-md">
+	<div class="auth-card tw-mx-auto tw-flex tw-w-full tw-max-w-md tw-flex-1 tw-flex-col tw-px-4 tw-pt-8 tw-pb-12">
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
-		<p class="auth-subtitle">Skills &amp; Workout Tracker</p>
 
-		<div class="tw-mx-auto tw-flex tw-w-full tw-min-w-0 tw-max-w-[400px] tw-flex-col tw-gap-6">
-			<!-- Adult clearance -->
-			<section class="tw-min-w-0 tw-shrink-0" aria-labelledby="lg-adult">
-				<p class="tw-mb-2 tw-text-center tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-[0.28em] tw-text-white/45">
-					Adult clearance
-				</p>
-				<h3 id="lg-adult" class="tw-sr-only">Directors, coaches, parents</h3>
+		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-5">
+			<section class="tw-min-w-0 tw-shrink-0" aria-label="Sign in or create account">
 				<div class="tw-flex tw-flex-col tw-gap-3">
 					<button
 						type="button"
@@ -177,7 +171,7 @@
 							width="18"
 							alt=""
 						/>
-						Continue with Google
+						Google
 					</button>
 
 					<div class="auth-divider">
@@ -186,10 +180,45 @@
 						<hr class="divider-line" />
 					</div>
 
+					<div
+						class="tw-flex tw-w-full tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black/50 tw-p-0.5"
+						role="tablist"
+						aria-label="Login or create vault"
+					>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={!isSignUp}
+							class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
+							class:login-seg__btn--active={!isSignUp}
+							class:login-seg__btn--idle={isSignUp}
+							onclick={() => {
+								isSignUp = false;
+								errorMsg = '';
+							}}
+						>
+							LOGIN
+						</button>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={isSignUp}
+							class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
+							class:login-seg__btn--active={isSignUp}
+							class:login-seg__btn--idle={!isSignUp}
+							onclick={() => {
+								isSignUp = true;
+								errorMsg = '';
+							}}
+						>
+							CREATE VAULT
+						</button>
+					</div>
+
 					<input
 						type="email"
 						class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
-						placeholder="Email (adults)"
+						placeholder="Email"
 						autocomplete="email"
 						bind:value={email}
 					/>
@@ -207,44 +236,12 @@
 
 					<button
 						type="button"
-						class="primary-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-bold tw-uppercase tw-tracking-widest {gateCtl}"
+						class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(34,211,238,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
 						disabled={adultBusy}
 						onclick={handleEmailLogin}
 					>
-						{adultBusy ? (isSignUp ? 'Creating…' : 'Authenticating…') : isSignUp ? 'INITIALIZE' : 'LOGIN'}
+						{adultBusy ? 'WORKING…' : isSignUp ? 'INITIALIZE VAULT' : 'AUTHENTICATE'}
 					</button>
-					<p class="tw-mb-1 tw-text-center tw-text-[0.65rem] tw-leading-relaxed tw-text-white/50">
-						{#if !isSignUp}
-							<span>Don't have an Operative account? </span>
-							<button
-								type="button"
-								class="tw-cursor-pointer tw-border-none tw-bg-transparent tw-p-0 tw-text-center tw-font-extrabold tw-tracking-[0.12em] tw-text-cyan-400 tw-underline tw-underline-offset-2 tw-transition hover:tw-text-cyan-300"
-								onclick={() => {
-									isSignUp = true;
-									errorMsg = '';
-								}}
-							>
-								[ CREATE VAULT ]
-							</button>
-						{:else}
-							<span>Already have clearance? </span>
-							<button
-								type="button"
-								class="tw-cursor-pointer tw-border-none tw-bg-transparent tw-p-0 tw-text-center tw-font-extrabold tw-tracking-[0.12em] tw-text-cyan-400 tw-underline tw-underline-offset-2 tw-transition hover:tw-text-cyan-300"
-								onclick={() => {
-									isSignUp = false;
-									errorMsg = '';
-								}}
-							>
-								[ AUTHENTICATE ]
-							</button>
-						{/if}
-					</p>
-					<p class="tw-text-center tw-text-[0.65rem] tw-leading-relaxed tw-text-white/40">
-						{isSignUp
-							? 'Adults: you will link your organization on the next screen. Minors cannot self-register; use Operative dispatch below.'
-							: 'New adult accounts can open a vault above, or are issued by your organization. Minors cannot self-register.'}
-					</p>
 				</div>
 			</section>
 
@@ -254,26 +251,18 @@
 				<hr class="divider-line" />
 			</div>
 
-			<!-- Operative dispatch -->
 			<section
-				class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/25 tw-bg-[#05050a] tw-p-3 tw-shadow-[0_0_20px_rgba(0,212,255,0.08)] sm:tw-p-4"
-				aria-labelledby="lg-op"
+				class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/20 tw-bg-[#05050a] tw-p-3"
+				aria-label="Dispatch code"
 			>
-				<p class="tw-mb-1 tw-text-center tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-300/80">
-					Operative dispatch
-				</p>
-				<h3 id="lg-op" class="tw-mb-2 tw-text-center tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/80">
-					Player ingress
-				</h3>
-				<p class="tw-mb-3 tw-text-center tw-text-[0.7rem] tw-leading-relaxed tw-text-white/45">
-					Use the email and dispatch code issued by your parent from the Household Clearance Center. No
-					public registration.
+				<p class="tw-mb-2 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80">
+					Dispatch
 				</p>
 				<div class="tw-flex tw-flex-col tw-gap-3">
 					<input
 						type="email"
 						class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-text-white"
-						placeholder="Operative email"
+						placeholder="Email"
 						autocomplete="email"
 						inputmode="email"
 						bind:value={opEmail}
@@ -281,7 +270,7 @@
 					<input
 						type="text"
 						class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-font-mono tw-tracking-wider tw-text-cyan-200"
-						placeholder="Dispatch code"
+						placeholder="Code"
 						autocomplete="one-time-code"
 						inputmode="text"
 						spellcheck="false"
@@ -292,11 +281,11 @@
 					{/if}
 					<button
 						type="button"
-						class="tw-w-full tw-min-h-[3.25rem] tw-border tw-border-cyan-500/40 tw-bg-black tw-px-4 tw-text-sm tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200 tw-shadow-[0_0_18px_rgba(0,212,255,0.15)] tw-transition-all hover:tw-shadow-[0_0_28px_rgba(0,212,255,0.28)] disabled:tw-opacity-40"
+						class="tw-w-full tw-min-h-[3.25rem] tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black tw-px-4 tw-text-sm tw-font-extrabold tw-uppercase tw-tracking-[0.15em] tw-text-cyan-200 tw-shadow-[0_0_14px_rgba(0,212,255,0.12)] tw-transition hover:tw-shadow-[0_0_24px_rgba(0,212,255,0.2)] disabled:tw-opacity-40"
 						disabled={opBusy}
 						onclick={handleOperativeLogin}
 					>
-						{opBusy ? 'Verifying…' : 'Enter clearance'}
+						{opBusy ? '…' : 'Go'}
 					</button>
 				</div>
 			</section>
@@ -304,7 +293,7 @@
 	</div>
 
 	{#if showPwaPrompt}
-		<div class="pwa-prompt tw-mt-5">
+		<div class="pwa-prompt tw-mx-auto tw-mt-5 tw-w-full tw-max-w-md tw-px-4">
 			<h3 class="pwa-title">Install the app</h3>
 			<p class="pwa-text">To login and save your stats securely, install the app to your device.</p>
 			<div class="pwa-box">
@@ -319,5 +308,20 @@
 <style>
 	.auth-card {
 		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* Segmented control: active = cyan; inactive = muted */
+	.login-seg__btn--active {
+		background: rgba(6, 182, 212, 0.22);
+		color: #ecfeff;
+		box-shadow: inset 0 0 0 1.5px rgba(34, 211, 238, 0.55);
+	}
+	.login-seg__btn--idle {
+		background: transparent;
+		color: rgba(161, 161, 170, 0.9);
+	}
+	.login-seg__btn--idle:hover {
+		color: rgba(228, 228, 231, 0.95);
 	}
 </style>
