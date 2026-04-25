@@ -381,10 +381,7 @@
   }
 </script>
 
-<div
-  class="pw-cmd"
-  data-region="phoenix-siem-workout"
->
+<div class="pw-cmd" data-region="phoenix-siem-workout">
   <!-- Telemetry HUD -->
   <header class="pw-hud" aria-label="Command telemetry">
     <div class="pw-hud__cell pw-hud__cell--level">
@@ -610,8 +607,11 @@
 </div>
 
 <style>
+  /* Mobile: grow with content — single scroll on .ps-canvas (no nested scroll trap). */
   .pw-cmd {
-    min-height: calc(100vh - 5rem);
+    min-height: 0;
+    height: auto;
+    overflow: visible;
     box-sizing: border-box;
     background: #000000;
     color: #fafafa;
@@ -620,6 +620,12 @@
     --toxic: #39ff14;
     --threat: #ff6b00;
     --border: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    .pw-cmd {
+      min-height: calc(100vh - 5rem);
+    }
   }
 
   .pw-eyebrow {
@@ -926,6 +932,7 @@
     grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
     gap: clamp(1rem, 2vw, 1.5rem);
     align-items: start;
+    overflow: visible;
   }
 
   @media (max-width: 1024px) {
@@ -938,13 +945,33 @@
     border: 1px solid var(--border);
     background: #05050a;
     padding: 1.25rem;
-    min-height: 18rem;
     min-width: 0;
+    overflow: visible;
   }
 
+  @media (min-width: 768px) {
+    .pw-panel {
+      min-height: 18rem;
+    }
+  }
+
+  /* Sticky + optional internal scroll only on md+; mobile uses document scroll. */
   .pw-panel--threat {
-    position: sticky;
-    top: 0.5rem;
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  @media (min-width: 768px) {
+    .pw-panel--threat {
+      position: sticky;
+      top: 0.5rem;
+      align-self: start;
+      max-height: calc(100vh - 6.5rem);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 
   .pw-panel__head {
