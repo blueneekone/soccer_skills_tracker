@@ -4,10 +4,19 @@
 	import { collection, getDocs } from 'firebase/firestore';
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
+	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 
 	const profile = $derived(authStore.userProfile);
 	const user = $derived(authStore.user);
+	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
+	const totalXpHud = $derived(
+		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
+	);
+	const rankProgress = $derived(getCurrentRank(totalXpHud));
+	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 
 	/** DiceBear bottts — matches API: seed={uid}, base #05050A, primary #06b6d4. */
@@ -127,6 +136,16 @@
 		return () => {
 			cancelled = true;
 		};
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const u = authStore.user;
+		if (authStore.role === 'player' && u?.uid) {
+			playerEngine.attach(u.uid);
+			return () => playerEngine.detach();
+		}
+		playerEngine.detach();
 	});
 
 	const selectedSeason = $derived(
@@ -296,6 +315,33 @@
 </svelte:head>
 
 <section class="pd-wrap tw-min-w-0 tw-w-full tw-max-w-full tw-overflow-x-hidden tw-box-border tier-{tier}">
+	<div
+		class="pd-rank-bar tw-mb-6 tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-4 tw-border-b tw-border-cyan-500/20 tw-pb-5"
+		aria-label="Career rank progress"
+	>
+		<LevelProgressRing
+			currentXp={rankProgress.xpInCurrentTier}
+			nextRankXp={rankProgress.xpToNextRank}
+			rankName={rankProgress.rank}
+			totalXp={totalXpHud}
+			level={osLevel}
+			size="lg"
+			variant="dark"
+		/>
+		<div class="tw-min-w-0 tw-flex-1">
+			<p
+				class="tw-m-0 tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-500/80"
+			>
+				Active rank
+			</p>
+			<p
+				class="tw-m-0 tw-break-words tw-text-2xl tw-font-black tw-uppercase tw-tracking-widest tw-text-cyan-100 [overflow-wrap:anywhere] sm:tw-text-3xl"
+			>
+				{rankProgress.rank}
+			</p>
+		</div>
+	</div>
+
 	<header class="pd-hero">
 		<div class="pd-hero__identity tw-min-w-0">
 			<span class="pd-hero__eyebrow">Command center</span>

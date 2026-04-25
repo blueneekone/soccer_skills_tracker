@@ -35,6 +35,8 @@ const STRIPE_PRICE_RECRUITER = defineString(
 
 const stripeLib = require('stripe');
 
+const {calculateTrainingSessionEarnedXp} = require('./gamificationWorkoutXp');
+
 const REGION = 'us-central1';
 
 const {GoogleGenAI} = require('@google/genai');
@@ -4044,13 +4046,6 @@ function utcWeekMondayKey() {
  * @param {string} raw
  * @return {number}
  */
-function intensityMultiplierTraining(raw) {
-  const s = String(raw || '').toLowerCase();
-  if (s === 'high') return 1.35;
-  if (s === 'medium') return 1.15;
-  return 1.0;
-}
-
 /**
  * Epic 2/3: server-side XP, workout_logs, player_stats/{uid}, team_stats.
  */
@@ -4195,10 +4190,11 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
     );
   }
 
-  const baseXp = duration * 10 + reps * 2;
-  const earned = Math.floor(
-      baseXp * intensityMultiplierTraining(intensityRaw),
-  );
+  const earned = calculateTrainingSessionEarnedXp({
+    duration,
+    reps,
+    intensity: intensityRaw,
+  });
   if (earned < 1) {
     throw new HttpsError(
         'invalid-argument',
@@ -4336,7 +4332,7 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
         {
           teamId,
           playerName,
-          total_xp: newTotal,
+          total_xp: admin.firestore.FieldValue.increment(earned),
           current_level: lv.level,
           reps_this_week: repsWeek,
           minutes_this_week: minsWeek,
@@ -4349,12 +4345,10 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
         {merge: true},
     );
 
-    const prevUserXp =
-        typeof uTx.xp === 'number' && !Number.isNaN(uTx.xp) ?
-          Math.floor(uTx.xp) :
-          0;
+    const xpInc = admin.firestore.FieldValue.increment(earned);
     tx.update(uRef, {
-      xp: prevUserXp + earned,
+      xp: xpInc,
+      totalXp: xpInc,
     });
 
     const clubId =

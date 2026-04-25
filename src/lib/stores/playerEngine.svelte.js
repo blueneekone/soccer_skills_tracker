@@ -8,7 +8,12 @@ import { db } from '$lib/firebase.js';
 import { getCardTierFromLevel, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 
 function createPlayerEngine() {
-	let totalXp = $state(0);
+	/** `player_stats.total_xp` from the last Firestore snapshot (no UI optimism). */
+	let serverTotalXp = $state(0);
+	/** Added before server catch-up; reconciled when `total_xp` advances (see onSnapshot). */
+	let optimisticXp = $state(0);
+	/** @type {null | number} */
+	let lastServerXp = null;
 	let streakDays = $state(0);
 	/** After first `player_stats` snapshot (may be empty doc). */
 	let hydrated = $state(false);
@@ -25,13 +30,24 @@ function createPlayerEngine() {
 		}
 		boundUid = null;
 		hydrated = false;
-		totalXp = 0;
+		serverTotalXp = 0;
+		optimisticXp = 0;
+		lastServerXp = null;
 		streakDays = 0;
 	}
 
 	return {
 		get totalXp() {
-			return totalXp;
+			return serverTotalXp + optimisticXp;
+		},
+		/**
+		 * Instantly nudges the HUD before `logTrainingSession` round-trips; use same delta
+		 * as the server/negative to revert on failure. Server snapshots reconcile the bonus away.
+		 * @param {number} d
+		 */
+		bumpBy(d) {
+			const n = Math.floor(Number(d) || 0);
+			optimisticXp = Math.max(0, optimisticXp + n);
 		},
 		get streakDays() {
 			return streakDays;
@@ -40,10 +56,10 @@ function createPlayerEngine() {
 			return hydrated;
 		},
 		get displayLevel() {
-			return getLevelProgressFromTotalXp(totalXp).level;
+			return getLevelProgressFromTotalXp(this.totalXp).level;
 		},
 		get cardTier() {
-			return getCardTierFromLevel(getLevelProgressFromTotalXp(totalXp).level);
+			return getCardTierFromLevel(getLevelProgressFromTotalXp(this.totalXp).level);
 		},
 		/**
 		 * Live aggregate from `player_stats` (server-maintained by `logTrainingSession`).
@@ -60,15 +76,25 @@ function createPlayerEngine() {
 				(snap) => {
 					hydrated = true;
 					if (!snap.exists()) {
-						totalXp = 0;
+						lastServerXp = 0;
+						serverTotalXp = 0;
+						optimisticXp = 0;
 						streakDays = 0;
 						// Caller may still fall back to `users` profile (pre-first-log or legacy)
 						return;
 					}
 					const d = snap.data();
 					const tx = d.total_xp;
-					totalXp =
+					const newServer =
 						typeof tx === 'number' && !Number.isNaN(tx) ? Math.max(0, Math.floor(tx)) : 0;
+					if (newServer > (lastServerXp ?? 0)) {
+						optimisticXp = Math.max(
+							0,
+							optimisticXp - (newServer - (lastServerXp ?? 0)),
+						);
+					}
+					lastServerXp = newServer;
+					serverTotalXp = newServer;
 					const st = d.streak_days;
 					streakDays =
 						typeof st === 'number' && !Number.isNaN(st) ? Math.max(0, Math.floor(st)) : 0;

@@ -26,7 +26,16 @@
 	let { children } = $props();
 
 	const totalXp = $derived(
-		typeof authStore.userProfile?.totalXp === 'number' ? authStore.userProfile.totalXp : 0,
+		Math.max(
+			0,
+			Math.floor(
+				Number(
+					typeof authStore.userProfile?.totalXp === 'number' ?
+						authStore.userProfile.totalXp
+					:	(authStore.userProfile?.xp ?? 0),
+				) || 0,
+			),
+		),
 	);
 
 	const playerName = $derived(

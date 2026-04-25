@@ -7,7 +7,7 @@
   import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
-  import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+  import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import confetti from 'canvas-confetti';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
@@ -22,13 +22,6 @@
   };
 
   const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
-
-  /** @param {number} step */
-  function intensityMultiplierFromStep(step) {
-    if (step <= 3) return 1.0;
-    if (step <= 7) return 1.15;
-    return 1.35;
-  }
 
   /** @param {number} step */
   function intensityApiFromStep(step) {
@@ -293,9 +286,11 @@
   });
 
   const estimatedLogXp = $derived.by(() => {
-    const m = intensityMultiplierFromStep(intensity);
-    const base = duration * 10;
-    return Math.max(0, Math.floor(base * m));
+    return calculateTrainingSessionEarnedXp({
+      duration: Math.max(0, Math.floor(Number(duration) || 0)),
+      reps: 0,
+      intensity: intensityApiFromStep(intensity),
+    });
   });
 
   $effect(() => {
@@ -313,14 +308,22 @@
       return Swal.fire({ title: 'Profile incomplete', text: 'Team and player name are required.', icon: 'warning' });
     }
     const drillType = `[${focusLabel}] ${selectedDrill} (Player workout)`.slice(0, 200);
+    const dMin = Math.max(0, Math.floor(Number(duration) || 0));
+    const intensityCall = intensityApiFromStep(intensity);
+    const expectedXp = calculateTrainingSessionEarnedXp({
+      duration: dMin,
+      reps: 0,
+      intensity: intensityCall,
+    });
     const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
     logSubmitting = true;
+    playerEngine.bumpBy(expectedXp);
     try {
       const res = await logTrainingSession({
         drillType,
-        duration: Math.max(0, Math.floor(Number(duration) || 0)),
+        duration: dMin,
         reps: 0,
-        intensity: intensityApiFromStep(intensity),
+        intensity: intensityCall,
       });
       const payload = res.data;
       const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
@@ -382,6 +385,7 @@
       });
       await authStore.refresh({ silent: true });
     } catch (e) {
+      playerEngine.bumpBy(-expectedXp);
       console.error(e);
       const msg = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Could not log workout.';
       await Swal.fire({ title: 'Execution failed', text: msg, icon: 'error' });
