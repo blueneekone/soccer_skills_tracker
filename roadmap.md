@@ -1,5 +1,24 @@
 # PROJECT PHOENIX (SSTRACKER) - THE BILLION-DOLLAR ROADMAP
-**Vision:** The dominant Global Sports Data Ecosystem, eclipsing PlayMetrics and HUDL. 
+
+## Product Vision & Ecosystem
+
+North-star directives for every product decision, feature, and sprint. All future development should trace back to these three operating systems.
+
+### Player OS (Weaponized Gamification)
+
+Implement deep RPG progression mechanics. At-home physical training must be converted into **XP**, unlocking **ranks**, **visual ID card upgrades**, and **Quartermaster** currency. The goal is to maximize **daily active engagement** and **physical outdoor activity**.
+
+### Coach OS (Tactical Telemetry)
+
+Move beyond static scheduling. Create **automated feedback loops** where game-day statistical deficiencies seamlessly generate at-home training **Bounties** for the roster.
+
+### Parent OS (ROI & Security)
+
+Provide parents with visual **Skill Trees** tracking their athlete’s development, wrapped in an **impenetrable, zero-trust COPPA compliance vault**.
+
+---
+
+**Vision:** The dominant Global Sports Data Ecosystem, eclipsing PlayMetrics and HUDL.  
 **Core Philosophy:** Enterprise UI (SIEM/SOAR standard), secure multi-tenant data, and addictive gamification (TCG dynamics).
 
 ## COMPLETED EPICS
