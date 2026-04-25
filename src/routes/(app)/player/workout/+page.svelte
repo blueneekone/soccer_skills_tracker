@@ -10,6 +10,16 @@
   import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import confetti from 'canvas-confetti';
+  import IntelModal from '$lib/components/ui/IntelModal.svelte';
+
+  const TELEMETRY_INTEL = {
+    title: 'TELEMETRY LOGGING',
+    instructions: [
+      '1. Select your drill or exercise.',
+      '2. Input your exact reps, sets, or time.',
+      '3. Honest data feeds the algorithm. Your stats will update your Operative ID Card on the main dashboard.',
+    ],
+  };
 
   const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
 
@@ -482,13 +492,16 @@
           <span class="pw-eyebrow">Execution terminal</span>
           <h2 id="pw-exec-heading" class="pw-title">Workout logger</h2>
         </div>
-        <div class="pw-mono pw-est">
-          <span class="pw-dim">EST. YIELD (MODEL)</span>
-          <span class="pw-green">+{estimatedLogXp} XP</span>
-          {#if missionBounty != null}
-            <span class="pw-dim pw-est__bounty">DIRECTIVE CAP</span>
-            <span class="pw-mono" style="color: var(--toxic)">{missionBounty} XP</span>
-          {/if}
+        <div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+          <IntelModal title={TELEMETRY_INTEL.title} instructions={TELEMETRY_INTEL.instructions} />
+          <div class="pw-mono pw-est">
+            <span class="pw-dim">EST. YIELD (MODEL)</span>
+            <span class="pw-green">+{estimatedLogXp} XP</span>
+            {#if missionBounty != null}
+              <span class="pw-dim pw-est__bounty">DIRECTIVE CAP</span>
+              <span class="pw-mono" style="color: var(--toxic)">{missionBounty} XP</span>
+            {/if}
+          </div>
         </div>
       </div>
       {#if activeMissionId}

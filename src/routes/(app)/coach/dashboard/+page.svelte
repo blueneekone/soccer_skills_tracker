@@ -61,6 +61,7 @@
 
 <div class="ec-page ec-coach st-pillar1">
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col">
+		<!-- Dispatch protocol <IntelModal>: lives in SquadTelemetryView beside “Generate dispatch code”. -->
 		<SquadTelemetryView teamId={selectedTeamId} teams={myTeams} />
 	</div>
 </div>

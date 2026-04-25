@@ -18,6 +18,16 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
+	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+
+	const DISPATCH_INTEL = {
+		title: 'DISPATCH PROTOCOL',
+		instructions: [
+			'1. Generate your 6-character code.',
+			'2. Text this code to your team parents.',
+			'3. Parents create an account, sign the COPPA waiver, and enter this code to instantly drop their player onto your roster.',
+		],
+	};
 
 	let { teamId = '', teams = [] } = $props();
 
@@ -386,24 +396,32 @@
 					Parents enter this code when provisioning an operative to link the account to this squad.
 				</p>
 			</div>
-			<div class="tw-flex tw-flex-col tw-items-stretch tw-gap-2 sm:tw-min-w-[14rem] sm:tw-items-end">
-				{#if teamInviteCode}
-					<div
-						class="stw__mono tw-select-all tw-rounded tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-3 tw-py-2 tw-text-center tw-text-base tw-font-bold tw-tracking-widest tw-text-cyan-300"
-						title="Team invite code"
-					>
-						{teamInviteCode}
-					</div>
-				{:else}
-					<button
-						type="button"
-						class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(34,211,238,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
-						disabled={!teamId || inviteBusy}
-						onclick={generateTeamDispatchCode}
-					>
-						{inviteBusy ? 'Issuing…' : 'Generate dispatch code'}
-					</button>
-				{/if}
+			<div
+				class="tw-flex tw-flex-col tw-items-stretch tw-gap-2 sm:tw-min-w-[14rem] sm:tw-items-end"
+			>
+				<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-2">
+					<IntelModal
+						title={DISPATCH_INTEL.title}
+						instructions={DISPATCH_INTEL.instructions}
+					/>
+					{#if teamInviteCode}
+						<div
+							class="stw__mono tw-flex tw-min-h-[2.75rem] tw-select-all tw-items-center tw-justify-center tw-rounded tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-3 tw-py-2 tw-text-base tw-font-bold tw-tracking-widest tw-text-cyan-300"
+							title="Team invite code"
+						>
+							{teamInviteCode}
+						</div>
+					{:else}
+						<button
+							type="button"
+							class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(34,211,238,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
+							disabled={!teamId || inviteBusy}
+							onclick={generateTeamDispatchCode}
+						>
+							{inviteBusy ? 'Issuing…' : 'Generate dispatch code'}
+						</button>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</section>

@@ -3,6 +3,16 @@
 	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
+	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+
+	const TACTICAL_INTEL = {
+		title: 'TACTICAL BUILDER',
+		instructions: [
+			'1. Drag and drop players/cones onto the pitch.',
+			'2. Draw movement vectors to design drills.',
+			'3. Save your schematic to deploy to the team.',
+		],
+	};
 	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,
@@ -445,6 +455,10 @@
 		<!-- Dark workspace — managed by FocusedWorkspaceWrapper (fullscreen, escape, island) -->
 		<FocusedWorkspaceWrapper>
 			{#snippet toolbar()}
+				<span class="strategy-island-intel">
+					<IntelModal title={TACTICAL_INTEL.title} instructions={TACTICAL_INTEL.instructions} />
+				</span>
+				<div class="strategy-island-sep" aria-hidden="true"></div>
 				<button
 					type="button"
 					class="strategy-island-btn"
@@ -733,6 +747,16 @@
 	}
 
 	/* ─── Island toolbar items (rendered inside fw-island pill) ── */
+	.strategy-island-intel {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		margin: 0 2px 0 0;
+	}
+	.strategy-island-intel :global(.im-trigger) {
+		transform: scale(0.92);
+		transform-origin: center;
+	}
 	.strategy-island-btn {
 		display: inline-flex;
 		align-items: center;
