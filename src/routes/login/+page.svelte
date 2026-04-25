@@ -14,7 +14,11 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { onMount } from 'svelte';
 
-	const operativeSignInWithDispatch = httpsCallable(functions, 'operativeSignInWithDispatch');
+	const validatePlayerOTP = httpsCallable(functions, 'validatePlayerOTP');
+
+	/** 'operative' = kids (OTP); 'command' = adults (email, Google) */
+	/** @type {'operative' | 'command'} */
+	let authSurface = $state('command');
 
 	/** Adult flow */
 	let email = $state('');
@@ -22,8 +26,9 @@
 	/** @type {boolean} */
 	let isSignUp = $state(false);
 
-	/** Operative flow (parent-provisioned minors) */
-	let opEmail = $state('');
+	/** Operative flow: display name, email, or callsign (matches validatePlayerOTP) */
+	let opUsername = $state('');
+	/** 6-char OTP (XXX-XXX or XXXXXX) */
 	let dispatchCode = $state('');
 
 	let errorMsg = $state('');
@@ -115,32 +120,81 @@
 		}
 	};
 
+	/**
+	 * @param {unknown} err
+	 * @returns {string}
+	 */
+	function mapOtpSignInError(err) {
+		const e = err && typeof err === 'object' ? err : null;
+		const fnCode = e && 'code' in e ? String(/** @type {*} */ (e).code) : '';
+		const msg = e && 'message' in e ? String(/** @type {*} */ (e).message) : '';
+		const m = msg.toLowerCase();
+
+		if (m.includes('code has expired') || (m.includes('expired') && m.includes('code'))) {
+			return 'Code Expired';
+		}
+		if (fnCode === 'functions/not-found') {
+			return 'Invalid Username';
+		}
+		if (fnCode === 'functions/failed-precondition' && m.includes('multiple players')) {
+			return 'Use your full sign-in email as username.';
+		}
+		if (fnCode === 'functions/invalid-argument') {
+			return 'Enter your username and a 6-character dispatch code.';
+		}
+		if (fnCode === 'functions/internal') {
+			return 'Sign-in failed. Ask a parent for a new code.';
+		}
+		if (fnCode === 'functions/permission-denied') {
+			if (m.includes('expired')) {
+				return 'Code Expired';
+			}
+			if (m.includes('invalid or expired') || m.includes('invalid code')) {
+				return 'Code already used';
+			}
+			return 'Code already used';
+		}
+		if (m.includes('invalid or expired') || m.includes('invalid code')) {
+			return 'Code already used';
+		}
+		if (msg && msg.length < 180) {
+			return msg;
+		}
+		return 'Sign-in failed. Try again or ask a parent for a new code.';
+	}
+
 	const handleOperativeLogin = async () => {
 		errorMsg = '';
 		opError = '';
-		const em = opEmail.trim().toLowerCase();
-		const code = dispatchCode.trim().toUpperCase();
-		if (!em || !code) {
-			opError = 'Enter operative email and dispatch code from your parent.';
+		const uname = opUsername.trim();
+		const codeRaw = dispatchCode.trim();
+		if (!uname || !codeRaw) {
+			opError = 'Enter your username and the 6-character dispatch code from a parent.';
+			return;
+		}
+		/** accept XXX-XXXX or 6 alnum (backend normalizes) */
+		const alnum = codeRaw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+		if (alnum.length !== 6) {
+			opError = 'The dispatch code must be 6 letters or numbers (e.g. A7K-2M9).';
 			return;
 		}
 		opBusy = true;
 		try {
 			/** @type {unknown} */
-			const res = await operativeSignInWithDispatch({ email: em, dispatchCode: code });
+			const res = await validatePlayerOTP({ username: uname, otpCode: codeRaw });
 			const data = res && typeof res === 'object' && 'data' in res ? res.data : res;
 			const token =
 				data && typeof data === 'object' && 'customToken' in data ?
-					String(/** @type {*} */(data).customToken) :
+					String(/** @type {*} */ (data).customToken) :
 					'';
 			if (!token) {
-				opError = 'Invalid response from clearance server.';
+				opError = 'Invalid response from sign-in. Try again.';
 				return;
 			}
 			await signInWithCustomToken(auth, token);
+			await authStore.refresh({ silent: true });
 		} catch (err) {
-			const codeStr = err && typeof err === 'object' && 'message' in err ? String(/** @type {*} */(err).message) : 'Clearance failed';
-			opError = codeStr;
+			opError = mapOtpSignInError(err);
 		} finally {
 			opBusy = false;
 		}
@@ -158,137 +212,184 @@
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
 
-		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-5">
-			<section class="tw-min-w-0 tw-shrink-0" aria-label="Sign in or create account">
-				<div class="tw-flex tw-flex-col tw-gap-3">
-					<button
-						type="button"
-						class="primary-btn btn-google tw-w-full tw-transform-gpu {gateCtl}"
-						onclick={handleGoogleLogin}
-					>
-						<img
-							src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-							width="18"
-							alt=""
-						/>
-						Google
-					</button>
-
-					<div class="auth-divider">
-						<hr class="divider-line" />
-						<span class="divider-text">OR</span>
-						<hr class="divider-line" />
-					</div>
-
-					<div
-						class="tw-flex tw-w-full tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black/50 tw-p-0.5"
-						role="tablist"
-						aria-label="Login or create vault"
-					>
-						<button
-							type="button"
-							role="tab"
-							aria-selected={!isSignUp}
-							class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
-							class:login-seg__btn--active={!isSignUp}
-							class:login-seg__btn--idle={isSignUp}
-							onclick={() => {
-								isSignUp = false;
-								errorMsg = '';
-							}}
-						>
-							LOGIN
-						</button>
-						<button
-							type="button"
-							role="tab"
-							aria-selected={isSignUp}
-							class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
-							class:login-seg__btn--active={isSignUp}
-							class:login-seg__btn--idle={!isSignUp}
-							onclick={() => {
-								isSignUp = true;
-								errorMsg = '';
-							}}
-						>
-							CREATE VAULT
-						</button>
-					</div>
-
-					<input
-						type="email"
-						class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
-						placeholder="Email"
-						autocomplete="email"
-						bind:value={email}
-					/>
-					<input
-						type="password"
-						class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
-						placeholder="Password"
-						autocomplete={isSignUp ? 'new-password' : 'current-password'}
-						bind:value={password}
-					/>
-
-					{#if errorMsg}
-						<div class="auth-error-msg" role="alert">{errorMsg}</div>
-					{/if}
-
-					<button
-						type="button"
-						class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(34,211,238,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
-						disabled={adultBusy}
-						onclick={handleEmailLogin}
-					>
-						{adultBusy ? 'WORKING…' : isSignUp ? 'INITIALIZE VAULT' : 'AUTHENTICATE'}
-					</button>
-				</div>
-			</section>
-
-			<div class="auth-divider" aria-hidden="true">
-				<hr class="divider-line" />
-				<span class="divider-text">·</span>
-				<hr class="divider-line" />
+		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4">
+			<div
+				class="tw-flex tw-w-full tw-rounded-lg tw-border tw-border-cyan-500/50 tw-bg-black/60 tw-p-0.5"
+				role="tablist"
+				aria-label="Operative or command sign-in"
+			>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={authSurface === 'operative'}
+					class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-text-[0.55rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors sm:tw-px-2 sm:tw-text-[0.6rem] sm:tw-tracking-[0.12em]"
+					class:login-seg__btn--active={authSurface === 'operative'}
+					class:login-seg__btn--idle={authSurface !== 'operative'}
+					onclick={() => {
+						authSurface = 'operative';
+						errorMsg = '';
+					}}
+				>
+					Operative (kids)
+				</button>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={authSurface === 'command'}
+					class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-text-[0.55rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors sm:tw-px-2 sm:tw-text-[0.6rem] sm:tw-tracking-[0.12em]"
+					class:login-seg__btn--active={authSurface === 'command'}
+					class:login-seg__btn--idle={authSurface !== 'command'}
+					onclick={() => {
+						authSurface = 'command';
+						opError = '';
+					}}
+				>
+					Command (adults)
+				</button>
 			</div>
 
-			<section
-				class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/20 tw-bg-[#05050a] tw-p-3"
-				aria-label="Dispatch code"
-			>
-				<p class="tw-mb-2 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80">
-					Dispatch
-				</p>
-				<div class="tw-flex tw-flex-col tw-gap-3">
-					<input
-						type="email"
-						class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-text-white"
-						placeholder="Email"
-						autocomplete="email"
-						inputmode="email"
-						bind:value={opEmail}
-					/>
-					<input
-						type="text"
-						class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-font-mono tw-tracking-wider tw-text-cyan-200"
-						placeholder="Code"
-						autocomplete="one-time-code"
-						inputmode="text"
-						spellcheck="false"
-						bind:value={dispatchCode}
-					/>
-					{#if opError}
-						<div class="auth-error-msg" role="alert">{opError}</div>
-					{/if}
-					<button
-						type="button"
-						class="tw-w-full tw-min-h-[3.25rem] tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black tw-px-4 tw-text-sm tw-font-extrabold tw-uppercase tw-tracking-[0.15em] tw-text-cyan-200 tw-shadow-[0_0_14px_rgba(0,212,255,0.12)] tw-transition hover:tw-shadow-[0_0_24px_rgba(0,212,255,0.2)] disabled:tw-opacity-40"
-						disabled={opBusy}
-						onclick={handleOperativeLogin}
+			<p class="tw-m-0 tw-text-center tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-cyan-500/80">
+				{authSurface === 'operative' ? 'Operative login' : 'Command login · email, Google, password'}
+			</p>
+
+			{#if authSurface === 'command'}
+				<section class="tw-min-w-0 tw-shrink-0" aria-label="Adult sign-in or create account">
+					<div class="tw-flex tw-flex-col tw-gap-3">
+						<button
+							type="button"
+							class="primary-btn btn-google tw-w-full tw-transform-gpu {gateCtl}"
+							onclick={handleGoogleLogin}
+						>
+							<img
+								src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+								width="18"
+								alt=""
+							/>
+							Google
+						</button>
+
+						<div class="auth-divider">
+							<hr class="divider-line" />
+							<span class="divider-text">OR</span>
+							<hr class="divider-line" />
+						</div>
+
+						<div
+							class="tw-flex tw-w-full tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black/50 tw-p-0.5"
+							role="tablist"
+							aria-label="Login or create vault"
+						>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={!isSignUp}
+								class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
+								class:login-seg__btn--active={!isSignUp}
+								class:login-seg__btn--idle={isSignUp}
+								onclick={() => {
+									isSignUp = false;
+									errorMsg = '';
+								}}
+							>
+								LOGIN
+							</button>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={isSignUp}
+								class="login-seg__btn tw-cursor-pointer tw-flex-1 tw-rounded-md tw-border-0 tw-py-2.5 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.12em] tw-transition-colors"
+								class:login-seg__btn--active={isSignUp}
+								class:login-seg__btn--idle={!isSignUp}
+								onclick={() => {
+									isSignUp = true;
+									errorMsg = '';
+								}}
+							>
+								CREATE VAULT
+							</button>
+						</div>
+
+						<input
+							type="email"
+							class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+							placeholder="Email"
+							autocomplete="email"
+							bind:value={email}
+						/>
+						<input
+							type="password"
+							class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+							placeholder="Password"
+							autocomplete={isSignUp ? 'new-password' : 'current-password'}
+							bind:value={password}
+						/>
+
+						{#if errorMsg}
+							<div class="auth-error-msg" role="alert">{errorMsg}</div>
+						{/if}
+
+						<button
+							type="button"
+							class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(34,211,238,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
+							disabled={adultBusy}
+							onclick={handleEmailLogin}
+						>
+							{adultBusy ? 'WORKING…' : isSignUp ? 'INITIALIZE VAULT' : 'AUTHENTICATE'}
+						</button>
+					</div>
+				</section>
+			{:else}
+				<section
+					class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/20 tw-bg-[#05050a] tw-p-3"
+					aria-label="Operative sign-in with parent dispatch"
+				>
+					<p
+						class="tw-mb-1 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
 					>
-						{opBusy ? '…' : 'Go'}
-					</button>
-				</div>
-			</section>
+						Dispatch
+					</p>
+					<p class="tw-mb-3 tw-text-center tw-text-xs tw-text-white/45">Username and 6-character code</p>
+					<div class="tw-flex tw-flex-col tw-gap-3">
+						<label class="tw-m-0">
+							<span class="login-field-label">Username</span>
+							<input
+								id="op-username"
+								type="text"
+								class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-text-white"
+								placeholder="Name or sign-in email"
+								autocomplete="username"
+								inputmode="text"
+								bind:value={opUsername}
+							/>
+						</label>
+						<label class="tw-m-0">
+							<span class="login-field-label">Dispatch code</span>
+							<input
+								id="op-dispatch"
+								type="text"
+								class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-font-mono tw-tracking-wider tw-text-cyan-200"
+								placeholder="e.g. A7K-2M9"
+								autocomplete="one-time-code"
+								inputmode="text"
+								spellcheck="false"
+								maxlength="8"
+								bind:value={dispatchCode}
+							/>
+						</label>
+						{#if opError}
+							<div class="auth-error-msg" role="alert">{opError}</div>
+						{/if}
+						<button
+							type="button"
+							class="tw-w-full tw-min-h-[3.25rem] tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-black tw-px-4 tw-text-sm tw-font-extrabold tw-uppercase tw-tracking-[0.15em] tw-text-cyan-200 tw-shadow-[0_0_14px_rgba(0,212,255,0.12)] tw-transition hover:tw-shadow-[0_0_24px_rgba(0,212,255,0.2)] disabled:tw-opacity-40"
+							disabled={opBusy}
+							onclick={handleOperativeLogin}
+						>
+							{opBusy ? '…' : 'Sign in'}
+						</button>
+					</div>
+				</section>
+			{/if}
 		</div>
 	</div>
 
@@ -323,5 +424,14 @@
 	}
 	.login-seg__btn--idle:hover {
 		color: rgba(228, 228, 231, 0.95);
+	}
+	.login-field-label {
+		display: block;
+		margin-bottom: 0.35rem;
+		font-size: 0.58rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgba(103, 232, 249, 0.55);
 	}
 </style>

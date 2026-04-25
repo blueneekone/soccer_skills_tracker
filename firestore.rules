@@ -680,6 +680,11 @@ service cloud.firestore {
       allow read, create, update, delete: if false;
     }
 
+    // Ephemeral OTP (generatePlayerOTP / validatePlayerOTP) — Admin SDK / CF only
+    match /auth_challenges/{code} {
+      allow read, create, update, delete: if false;
+    }
+
     match /clubs/{clubId} {
       allow read: if authed();
       allow create, delete: if isSuper();

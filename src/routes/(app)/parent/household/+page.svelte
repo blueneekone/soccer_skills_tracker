@@ -5,6 +5,7 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const DISPATCH_CODE_INTEL = {
@@ -18,6 +19,7 @@
 
 	const parentSignCoppaWaiver = httpsCallable(functions, 'parentSignCoppaWaiver');
 	const parentProvisionOperative = httpsCallable(functions, 'parentProvisionOperative');
+	const generatePlayerOTP = httpsCallable(functions, 'generatePlayerOTP');
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
@@ -41,6 +43,50 @@
 	let lastDispatch = $state('');
 	/** @type {string} */
 	let teamDispatchCode = $state('');
+
+	/** @type {Array<{ email: string; name: string }>} */
+	let operativeRows = $state([]);
+
+	/** @type {string | null} */
+	let otpGenBusyKey = $state(null);
+
+	/** @type {false | { code: string; expiresAt: number; displayName: string }} */
+	let otpDialog = $state(/** @type {false | { code: string; expiresAt: number; displayName: string }} */ (false));
+
+	/** Ticks so countdown text updates every second. */
+	let otpCountdownTick = $state(0);
+
+	/** @type {boolean} */
+	let copyFeedback = $state(false);
+
+	$effect(() => {
+		if (!browser) return;
+		if (otpDialog === false) return;
+		lockBody();
+		return () => unlockBody();
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		if (!otpDialog) return;
+		const id = setInterval(() => {
+			otpCountdownTick = Date.now();
+		}, 1000);
+		return () => clearInterval(id);
+	});
+
+	const otpSecondsLeft = $derived.by(() => {
+		if (!otpDialog || typeof otpDialog !== 'object' || !('expiresAt' in otpDialog)) return 0;
+		void otpCountdownTick;
+		return Math.max(0, Math.ceil((otpDialog.expiresAt - Date.now()) / 1000));
+	});
+
+	const otpCountdownLabel = $derived.by(() => {
+		const s = otpSecondsLeft;
+		const m = Math.floor(s / 60);
+		const r = s % 60;
+		return `${m}:${r.toString().padStart(2, '0')}`;
+	});
 
 	$effect(() => {
 		if (browser && !authStore.isLoading && authStore.isAuthenticated) {
@@ -68,6 +114,7 @@
 						householdId = '';
 						coppaAt = null;
 						coppaSigned = false;
+						operativeRows = [];
 						loadBusy = false;
 					}
 					return;
@@ -80,9 +127,27 @@
 					const d = snap.data() || {};
 					coppaSigned = d.coppaSigned === true;
 					coppaAt = d.coppaSignedAt ?? null;
+					const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
+					const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
+					operativeRows = pe
+						.map((em, i) => {
+							const email = String(em || '')
+								.trim()
+								.toLowerCase();
+							const nm =
+								typeof pnames[i] === 'string' && pnames[i].trim() ?
+									pnames[i].trim() :
+									'';
+							return {
+								email,
+								name: nm || (email ? email.split('@')[0] : 'Operative'),
+							};
+						})
+						.filter((r) => r.email);
 				} else {
 					coppaSigned = false;
 					coppaAt = null;
+					operativeRows = [];
 				}
 			} catch (e) {
 				if (!cancelled) loadErr = e instanceof Error ? e.message : 'Read failed';
@@ -158,6 +223,29 @@
 			childEmail = '';
 			teamDispatchCode = '';
 			await authStore.refresh({ silent: true });
+			if (householdId) {
+				const hs = await getDoc(doc(db, 'households', householdId));
+				if (hs.exists()) {
+					const x = hs.data() || {};
+					const pe = Array.isArray(x.playerEmails) ? x.playerEmails : [];
+					const pnames = Array.isArray(x.playerNames) ? x.playerNames : [];
+					operativeRows = pe
+						.map((em, i) => {
+							const email = String(em || '')
+								.trim()
+								.toLowerCase();
+							const nm =
+								typeof pnames[i] === 'string' && pnames[i].trim() ?
+									pnames[i].trim() :
+									'';
+							return {
+								email,
+								name: nm || (email ? email.split('@')[0] : 'Operative'),
+							};
+						})
+						.filter((r) => r.email);
+				}
+			}
 		} catch (e) {
 			actErr = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Provision failed';
 		} finally {
@@ -173,11 +261,76 @@
 			return '—';
 		}
 	}
+
+	function closeOtpDialog() {
+		otpDialog = false;
+		copyFeedback = false;
+	}
+
+	/**
+	 * @param {{ email: string; name: string }} row
+	 */
+	async function generateOtpForRow(row) {
+		actErr = '';
+		if (!coppaSigned) {
+			actErr = 'Sign the waiver before issuing login dispatch codes.';
+			return;
+		}
+		otpGenBusyKey = row.email;
+		try {
+			const res = await generatePlayerOTP({ childEmail: row.email });
+			const data = res && typeof res === 'object' && 'data' in res ? res.data : res;
+			const code =
+				data && typeof data === 'object' && data.code != null ? String(data.code) : '';
+			const iso =
+				data && typeof data === 'object' && data.expiresAt != null ?
+					String(data.expiresAt) :
+					'';
+			if (!code) {
+				throw new Error('No code returned.');
+			}
+			const expiresAt = iso ?
+				new Date(iso).getTime() :
+				Date.now() + 10 * 60 * 1000;
+			otpDialog = { code, expiresAt, displayName: row.name };
+		} catch (e) {
+			const msg =
+				e && typeof e === 'object' && 'message' in e ?
+					String(/** @type {*} */ (e).message) :
+					'Could not generate code.';
+			actErr = msg;
+		} finally {
+			otpGenBusyKey = null;
+		}
+	}
+
+	async function copyOtpToClipboard() {
+		if (!browser || !otpDialog || typeof otpDialog !== 'object') return;
+		try {
+			await navigator.clipboard.writeText(otpDialog.code);
+			copyFeedback = true;
+			setTimeout(() => {
+				copyFeedback = false;
+			}, 2000);
+		} catch {
+			actErr = 'Clipboard unavailable. Copy the code manually.';
+		}
+	}
+
+	/** @param {KeyboardEvent} e */
+	function onOtpKeydown(e) {
+		if (e.key === 'Escape' && otpDialog) {
+			e.preventDefault();
+			closeOtpDialog();
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>Household · Clearance · SSTRACKER</title>
 </svelte:head>
+
+<svelte:window onkeydown={onOtpKeydown} />
 
 <div
 	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-black tw-px-3 tw-pb-10 tw-pt-4 md:tw-px-6"
@@ -252,6 +405,50 @@
 				{coppaSigned ? 'Waiver on file' : 'Sign waiver &amp; authorize'}
 			</button>
 		</section>
+
+		<!-- Linked operatives — ephemeral OTP login -->
+		{#if operativeRows.length > 0}
+			<section
+				class="phh-surface tw-min-w-0 tw-border tw-border-cyan-500/25 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				aria-labelledby="phh-active-ops"
+			>
+				<div class="tw-mb-3">
+					<span class="phh-eyebrow tw-text-cyan-200/80">Household roster</span>
+					<h2
+						id="phh-active-ops"
+						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+					>
+						Active operatives
+					</h2>
+				</div>
+				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
+					Issue a 10-minute code your athlete can enter with their name or email on the login
+					page.
+				</p>
+				<ul class="tw-m-0 tw-list-none tw-space-y-3 tw-p-0">
+					{#each operativeRows as row (row.email)}
+						<li
+							class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+						>
+							<div class="tw-min-w-0">
+								<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
+									{row.name}
+								</p>
+								<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">{row.email}</p>
+							</div>
+							<button
+								type="button"
+								class="phh-dispatch-gen"
+								disabled={!coppaSigned || otpGenBusyKey !== null || actionBusy}
+								onclick={() => generateOtpForRow(row)}
+							>
+								{otpGenBusyKey === row.email ? 'Working…' : 'Generate login dispatch'}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
 
 		<!-- Operative generation -->
 		<section
@@ -352,6 +549,47 @@
 	{/if}
 </div>
 
+{#if otpDialog}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div
+		class="phh-otp-backdrop"
+		role="presentation"
+		onclick={closeOtpDialog}
+	>
+		<div
+			class="phh-otp-panel"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="phh-otp-title"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Login dispatch (OTP)</p>
+			<h3 id="phh-otp-title" class="phh-otp-h3 tw-m-0">
+				{otpDialog.displayName}
+			</h3>
+			<p class="phh-mono phh-otp-code tw-my-4 tw-text-center tw-tracking-[0.2em] tw-text-[#7dff9a]">
+				{otpDialog.code}
+			</p>
+			<div
+				class="phh-otp-ttl tw-mb-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"
+			>
+				<span class="phh-eyebrow !tw-m-0 tw-text-[0.6rem]">Expires in</span>
+				<span class="phh-mono tw-text-lg tw-font-black tw-text-cyan-300 tw-tabular-nums"
+					>{otpCountdownLabel}</span
+				>
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
+				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn" onclick={copyOtpToClipboard}>
+					{copyFeedback ? 'Copied' : 'Copy to clipboard'}
+				</button>
+				<button type="button" class="phh-btn phh-otp-btn phh-otp-btn--close" onclick={closeOtpDialog}
+					>Dismiss</button
+				>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <style>
 	:global([data-region='household-clearance'] *) {
 		box-sizing: border-box;
@@ -425,5 +663,90 @@
 	}
 	.phh-btn--cyan:hover:not(:disabled) {
 		box-shadow: 0 0 22px rgba(0, 212, 255, 0.35);
+	}
+
+	.phh-dispatch-gen {
+		flex-shrink: 0;
+		align-self: stretch;
+		padding: 0.55rem 0.75rem;
+		font-size: 0.58rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+		color: #67e8f9;
+		background: rgba(8, 47, 73, 0.55);
+		border: 1px solid rgba(34, 211, 238, 0.45);
+		border-radius: 0.2rem;
+		cursor: pointer;
+		box-shadow: none;
+		transition:
+			background 0.12s ease,
+			border-color 0.12s ease;
+	}
+
+	.phh-dispatch-gen:hover:not(:disabled) {
+		background: rgba(8, 47, 73, 0.75);
+		border-color: rgba(34, 211, 238, 0.65);
+	}
+
+	.phh-dispatch-gen:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.phh-otp-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 1300;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		background: rgba(0, 0, 0, 0.78);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+	}
+
+	.phh-otp-panel {
+		width: 100%;
+		max-width: 22rem;
+		padding: 1.25rem 1.25rem 1rem;
+		border: 1px solid rgba(34, 211, 238, 0.5);
+		border-radius: 0.35rem;
+		background: #05050a;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 28px rgba(34, 211, 238, 0.12);
+	}
+
+	.phh-otp-h3 {
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: #fff;
+		letter-spacing: 0.02em;
+	}
+
+	.phh-otp-code {
+		font-size: clamp(1.5rem, 5vw, 1.9rem);
+		font-weight: 800;
+		line-height: 1.2;
+		text-shadow: 0 0 18px rgba(125, 255, 154, 0.25);
+	}
+
+	.phh-otp-ttl {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.phh-otp-btn {
+		min-height: 2.75rem;
+		margin: 0;
+	}
+
+	.phh-otp-btn--close {
+		border-color: rgba(255, 255, 255, 0.2);
+		color: rgba(255, 255, 255, 0.8);
+	}
+
+	.phh-otp-btn--close:hover {
+		border-color: rgba(255, 255, 255, 0.4);
 	}
 </style>

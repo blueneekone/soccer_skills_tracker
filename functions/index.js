@@ -8118,6 +8118,245 @@ exports.operativeSignInWithDispatch = onCall({region: REGION}, async (request) =
   return {customToken, householdId: row.householdId};
 });
 
+/**
+ * @param {number} n Length
+ * @return {string} Random A–Z0-9 string
+ */
+function randomAlphaNumChunk(n) {
+  const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const buf = crypto.randomBytes(n);
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    s += cs[buf[i] % cs.length];
+  }
+  return s;
+}
+
+/**
+ * 6 characters + hyphen, e.g. A7K-2M9P (XXX-XXX).
+ * @return {string}
+ */
+function generateOtpCodeString() {
+  return `${randomAlphaNumChunk(3)}-${randomAlphaNumChunk(3)}`;
+}
+
+/**
+ * @param {unknown} raw
+ * @return {string} Normalized doc id, e.g. A7K-2M9P
+ */
+function normOtpCode(raw) {
+  if (raw == null || typeof raw !== 'string') {
+    return '';
+  }
+  const alnum = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (alnum.length !== 6) {
+    return '';
+  }
+  return `${alnum.slice(0, 3)}-${alnum.slice(3)}`;
+}
+
+/**
+ * @param {string} raw Username, callsign, or email
+ * @return {Promise<string>} Firebase Auth UID
+ */
+async function resolveUserUidFromUsernameOrCallsign(raw) {
+  const u = typeof raw === 'string' ? raw.trim() : '';
+  if (!u) {
+    throw new HttpsError('invalid-argument', 'username is required.');
+  }
+  if (u.includes('@')) {
+    const em = normEmail(u);
+    if (!em) {
+      throw new HttpsError('invalid-argument', 'Invalid email.');
+    }
+    const us = await db.collection('users').doc(em).get();
+    if (!us.exists) {
+      throw new HttpsError('not-found', 'No user found for that email.');
+    }
+    const role = us.data().role;
+    if (role && role !== 'player') {
+      throw new HttpsError(
+          'failed-precondition',
+          'That account is not a player profile.',
+      );
+    }
+    try {
+      const rec = await admin.auth().getUserByEmail(em);
+      return rec.uid;
+    } catch (e) {
+      if (e && e.code === 'auth/user-not-found') {
+        throw new HttpsError('not-found', 'No sign-in account for that email.');
+      }
+      throw e;
+    }
+  }
+  const q = await db
+      .collection('users')
+      .where('playerName', '==', u)
+      .limit(2)
+      .get();
+  if (q.empty) {
+    throw new HttpsError(
+        'not-found',
+        'No player matches that name or callsign.',
+    );
+  }
+  if (q.size > 1) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Multiple players share that name. Use your sign-in email instead.',
+    );
+  }
+  const em = q.docs[0].id;
+  const rec = await admin.auth().getUserByEmail(em);
+  return rec.uid;
+}
+
+/**
+ * @param {{ email: string, householdId: string }} actor
+ * @param {string} childUid
+ */
+async function assertChildInParentHousehold(actor, childUid) {
+  let childUser;
+  try {
+    childUser = await admin.auth().getUser(childUid);
+  } catch (e) {
+    if (e && e.code === 'auth/user-not-found') {
+      throw new HttpsError('not-found', 'Child account not found.');
+    }
+    throw e;
+  }
+  const childEm = normEmail(childUser.email);
+  if (!childEm) {
+    throw new HttpsError('failed-precondition', 'Child has no email on file.');
+  }
+  const hSnap = await db.collection('households').doc(actor.householdId).get();
+  if (!hSnap.exists) {
+    throw new HttpsError('not-found', 'Household not found.');
+  }
+  const h = hSnap.data();
+  const players = (h.playerEmails || [])
+      .map((x) => normEmail(String(x)))
+      .filter(Boolean);
+  if (!players.includes(childEm)) {
+    throw new HttpsError(
+        'permission-denied',
+        'That player is not linked to your household.',
+    );
+  }
+  const parents = (h.parentEmails || [])
+      .map((x) => normEmail(String(x)))
+      .filter(Boolean);
+  if (!parents.includes(actor.email)) {
+    throw new HttpsError(
+        'permission-denied',
+        'You are not an authorized parent on this household.',
+    );
+  }
+  const uSnap = await db.collection('users').doc(childEm).get();
+  if (uSnap.exists) {
+    const r = uSnap.data().role;
+    if (r && r !== 'player') {
+      throw new HttpsError('failed-precondition', 'Target account is not a player.');
+    }
+  }
+}
+
+/**
+ * Parent-only: store a 10-minute OTP in `auth_challenges/{code}` for player
+ * sign-in.
+ */
+exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  let childUid = typeof data.childUid === 'string' ? data.childUid.trim() : '';
+  const childEm = normEmail(
+      typeof data.childEmail === 'string' ? data.childEmail : '',
+  );
+  if (!childUid && childEm) {
+    try {
+      const ur = await admin.auth().getUserByEmail(childEm);
+      childUid = ur.uid;
+    } catch (e) {
+      if (e && e.code === 'auth/user-not-found') {
+        throw new HttpsError('not-found', 'No account for that child email.');
+      }
+      throw e;
+    }
+  }
+  if (!childUid) {
+    throw new HttpsError(
+        'invalid-argument',
+        'childUid or childEmail is required.',
+    );
+  }
+  const actor = assertParent(request);
+  await assertChildInParentHousehold(actor, childUid);
+  const parentUid = request.auth.uid;
+  const nowMs = Date.now();
+  const tenMin = 10 * 60 * 1000;
+  const expiresAt = admin.firestore.Timestamp.fromMillis(nowMs + tenMin);
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const code = generateOtpCodeString();
+    const ref = db.collection('auth_challenges').doc(code);
+    const snap = await ref.get();
+    if (snap.exists) {
+      continue;
+    }
+    await ref.set({
+      childUid,
+      parentUid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt,
+    });
+    return {code, expiresAt: expiresAt.toDate().toISOString()};
+  }
+  throw new HttpsError('unavailable', 'Could not issue a unique code. Try again.');
+});
+
+/**
+ * Public: validate 6-char OTP; mints a custom token for the child (one use).
+ */
+exports.validatePlayerOTP = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const username = typeof data.username === 'string' ? data.username : '';
+  const rawOtp = data.otpCode != null ? String(data.otpCode) : '';
+  const otpCode = normOtpCode(rawOtp);
+  if (!username.trim() || !otpCode) {
+    throw new HttpsError(
+        'invalid-argument',
+        'username and a 6-character otpCode are required.',
+    );
+  }
+  const childUid = await resolveUserUidFromUsernameOrCallsign(username);
+  const ref = db.collection('auth_challenges').doc(otpCode);
+  await db.runTransaction(async (t) => {
+    const snap = await t.get(ref);
+    if (!snap.exists) {
+      throw new HttpsError('permission-denied', 'Invalid or expired code.');
+    }
+    const d = snap.data();
+    const ch = typeof d.childUid === 'string' ? d.childUid.trim() : '';
+    if (!ch || ch !== childUid) {
+      throw new HttpsError('permission-denied', 'Invalid or expired code.');
+    }
+    const ex = d.expiresAt;
+    if (!ex || typeof ex.toMillis !== 'function') {
+      t.delete(ref);
+      throw new HttpsError('internal', 'Challenge data is invalid.');
+    }
+    if (ex.toMillis() <= Date.now()) {
+      t.delete(ref);
+      throw new HttpsError(
+          'permission-denied',
+          'Code has expired. Ask your parent for a new one.',
+      );
+    }
+    t.delete(ref);
+  });
+  const customToken = await admin.auth().createCustomToken(childUid);
+  return {customToken};
+});
+
 // ─────────────────────────────────────────────────────────────────────────
 // Strike 1 (Agent 3) — Analytics aggregation triggers.
 //
