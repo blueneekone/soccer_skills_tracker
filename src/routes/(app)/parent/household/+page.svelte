@@ -29,6 +29,8 @@
 	let childEmail = $state('');
 	/** @type {string} */
 	let lastDispatch = $state('');
+	/** @type {string} */
+	let teamDispatchCode = $state('');
 
 	$effect(() => {
 		if (browser && !authStore.isLoading && authStore.isAuthenticated) {
@@ -126,19 +128,25 @@
 		actionBusy = true;
 		lastDispatch = '';
 		try {
-			/** @type {unknown} */
-			const res = await parentProvisionOperative({
+			const teamCodeOpt = teamDispatchCode.trim();
+			/** @type {Record<string, string>} */
+			const payload = {
 				childName: childName.trim(),
 				childEmail: childEmail.trim().toLowerCase(),
-			});
+			};
+			if (teamCodeOpt) {
+				payload.teamInviteCode = teamCodeOpt;
+			}
+			const res = await parentProvisionOperative(payload);
 			const data = res && typeof res === 'object' && 'data' in res ? res.data : res;
-			const code =
+			const outCode =
 				data && typeof data === 'object' && 'dispatchCode' in data ?
 					String(/** @type {*} */(data).dispatchCode) :
 					'';
-			lastDispatch = code;
+			lastDispatch = outCode;
 			childName = '';
 			childEmail = '';
+			teamDispatchCode = '';
 			await authStore.refresh({ silent: true });
 		} catch (e) {
 			actErr = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Provision failed';
@@ -273,6 +281,19 @@
 						bind:value={childEmail}
 					/>
 				</label>
+				<label class="phh-field tw-block tw-w-full md:tw-col-span-2">
+					<span class="phh-eyebrow tw-mb-1 tw-block tw-text-cyan-300/80"
+						>Team dispatch code <span class="tw-text-white/40">(optional)</span></span
+					>
+					<input
+						class="phh-input phh-input--cyan"
+						type="text"
+						autocomplete="off"
+						spellcheck="false"
+						placeholder="e.g. AB-1K2M"
+						bind:value={teamDispatchCode}
+					/>
+				</label>
 			</div>
 			<div class="tw-mt-4">
 				<button
@@ -346,6 +367,17 @@
 		outline: 1px solid #00d4ff;
 		outline-offset: 1px;
 		box-shadow: 0 0 18px rgba(0, 212, 255, 0.2);
+	}
+	.phh-input--cyan {
+		min-height: 3.25rem;
+		border: 1px solid rgba(0, 212, 255, 0.45);
+		background: #000;
+	}
+	.phh-input--cyan:focus {
+		outline: 1px solid #00d4ff;
+		outline-offset: 1px;
+		border-color: rgba(0, 212, 255, 0.7);
+		box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
 	}
 	.phh-btn {
 		background: #000;

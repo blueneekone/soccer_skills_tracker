@@ -7692,7 +7692,27 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
 });
 
 /**
+ * Normalize team invite codes (e.g. AG-7B2X) for lookup.
+ * @param {unknown} raw
+ * @return {string}
+ */
+function normTeamInviteCode(raw) {
+  if (raw == null || typeof raw !== 'string') {
+    return '';
+  }
+  const t = raw.trim();
+  if (!t) {
+    return '';
+  }
+  return t
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .replace(/^(.{2})(.{4})$/, '$1-$2');
+}
+
+/**
  * Parent: add minor operative (Auth + users row + dispatch credentials). Requires prior COPPA signature.
+ * Optional `teamInviteCode`: links the child to a team (Strike 26) via `teams.inviteCode` and `playerUids`.
  */
 exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   const data = request.data || {};
@@ -7712,6 +7732,11 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   if (childEmail === parentEmail) {
     throw new HttpsError('invalid-argument', 'Child email must differ from parent email.');
   }
+  const rawTeamCode = data.teamInviteCode;
+  const teamCodeNorm =
+    typeof rawTeamCode === 'string' && rawTeamCode.trim() ?
+      normTeamInviteCode(rawTeamCode) :
+      '';
   const pRef = db.collection('users').doc(parentEmail);
   const pSnap = await pRef.get();
   if (!pSnap.exists || pSnap.data().role !== 'parent') {
@@ -7753,6 +7778,39 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
         'This athlete email is already in your household.',
     );
   }
+  let teamRef = null;
+  let teamIdForUser = null;
+  if (teamCodeNorm) {
+    const tq = await db
+        .collection('teams')
+        .where('inviteCode', '==', teamCodeNorm)
+        .limit(2)
+        .get();
+    if (tq.empty) {
+      throw new HttpsError(
+          'not-found',
+          'No team matches this team dispatch code. Check with the coach and try again.',
+      );
+    }
+    if (tq.size > 1) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Multiple teams share this code. Contact the club to resolve.',
+      );
+    }
+    const tdoc = tq.docs[0];
+    const tData = tdoc.data();
+    const tidClub =
+      typeof tData.clubId === 'string' ? tData.clubId.trim() : '';
+    if (tidClub !== clubId) {
+      throw new HttpsError(
+          'permission-denied',
+          'That team is not in your club. Use a code from your organization.',
+      );
+    }
+    teamRef = tdoc.ref;
+    teamIdForUser = tdoc.id;
+  }
   const dispatchCode = crypto.randomBytes(4).toString('hex').toUpperCase();
   const now = admin.firestore.FieldValue.serverTimestamp();
   let childUid;
@@ -7781,24 +7839,28 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
       );
     }
   }
-  await uRef.set(
-      {
-        role: 'player',
-        clubId,
-        householdId: hid,
-        playerName: childName,
-        parentProvisioned: true,
-        parentProvisionerEmail: parentEmail,
-        updatedAt: now,
-      },
-      {merge: true},
-  );
   const mergedPlayers = [...new Set([...existingPlayers, childEmail])];
   const nameSet = new Set(
       Array.isArray(h.playerNames) ? h.playerNames.filter((x) => typeof x === 'string') : [],
   );
   nameSet.add(childName);
-  await hRef.set(
+  const userPayload = {
+    role: 'player',
+    clubId,
+    householdId: hid,
+    playerName: childName,
+    parentProvisioned: true,
+    parentProvisionerEmail: parentEmail,
+    updatedAt: now,
+  };
+  if (teamIdForUser) {
+    userPayload.teamId = teamIdForUser;
+  }
+  const dispRef = db.collection('operative_dispatches').doc();
+  const batch = db.batch();
+  batch.set(uRef, userPayload, {merge: true});
+  batch.set(
+      hRef,
       {
         playerEmails: mergedPlayers,
         playerNames: [...nameSet],
@@ -7806,8 +7868,7 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
       },
       {merge: true},
   );
-  const dispRef = db.collection('operative_dispatches').doc();
-  await dispRef.set({
+  batch.set(dispRef, {
     householdId: hid,
     childEmail,
     childName,
@@ -7815,13 +7876,23 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     childUid,
     parentUid: request.auth.uid,
     parentEmail,
+    ...(teamIdForUser ? {teamId: teamIdForUser, teamInviteCode: teamCodeNorm} : {}),
     createdAt: now,
   });
+  if (teamRef) {
+    batch.update(teamRef, {
+      playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
+      updatedAt: now,
+    });
+  }
+  await batch.commit();
   return {
     ok: true,
     householdId: hid,
     childEmail,
     dispatchCode,
+    teamLinked: Boolean(teamIdForUser),
+    teamId: teamIdForUser || null,
     message:
       'Share this dispatch code with your athlete. It is also stored server-side for Operative sign-in.',
   };

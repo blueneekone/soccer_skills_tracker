@@ -11,6 +11,8 @@
 		query,
 		where,
 		orderBy,
+		updateDoc,
+		serverTimestamp,
 	} from 'firebase/firestore';
 	import Swal from 'sweetalert2';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
@@ -41,6 +43,9 @@
 	let removingName = $state(null);
 	/** @type {{ type: 'error' | 'success' | 'info'; text: string } | null} */
 	let feedback = $state(null);
+	/** Strike 26: team invite for parent-driven roster dispatch */
+	let teamInviteCode = $state('');
+	let inviteBusy = $state(false);
 	let addName = $state('');
 	let addEmail = $state('');
 	let addJersey = $state('');
@@ -60,11 +65,18 @@
 		if (!teamId) return;
 		loading = true;
 		try {
-			const [statsSnap, rosterSnap, linkSnap] = await Promise.all([
+			const [statsSnap, rosterSnap, linkSnap, teamSnap] = await Promise.all([
 				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 				getDoc(doc(db, 'rosters', teamId)),
 				getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
+				getDoc(doc(db, 'teams', teamId)),
 			]);
+			if (teamSnap.exists()) {
+				const ic = teamSnap.data()?.inviteCode;
+				teamInviteCode = typeof ic === 'string' && ic.trim() ? ic.trim() : '';
+			} else {
+				teamInviteCode = '';
+			}
 
 			playerStats = {};
 			statsSnap.forEach((d) => {
@@ -89,11 +101,41 @@
 			players = Array.from(combined).sort();
 		} catch (e) {
 			console.error('[SquadTelemetry] roster', e);
+			teamInviteCode = '';
 			feedback = { type: 'error', text: 'Roster load failed.' };
 		} finally {
 			loading = false;
 		}
 	};
+
+	function genDispatchInvite() {
+		const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+		let s = '';
+		for (let i = 0; i < 6; i++) {
+			s += chars[Math.floor(Math.random() * chars.length)];
+		}
+		return `${s.slice(0, 2)}-${s.slice(2)}`;
+	}
+
+	async function generateTeamDispatchCode() {
+		if (!teamId || inviteBusy) return;
+		inviteBusy = true;
+		feedback = null;
+		try {
+			const code = genDispatchInvite();
+			await updateDoc(doc(db, 'teams', teamId), {
+				inviteCode: code,
+				updatedAt: serverTimestamp(),
+			});
+			teamInviteCode = code;
+			feedback = { type: 'success', text: 'Team dispatch code issued.' };
+		} catch (e) {
+			console.error(e);
+			feedback = { type: 'error', text: 'Could not save dispatch code.' };
+		} finally {
+			inviteBusy = false;
+		}
+	}
 
 	$effect(() => {
 		if (teamId) void loadRoster();
@@ -331,6 +373,39 @@
 			</div>
 		</div>
 	</header>
+
+	<section
+		class="stw__dispatch tw-mb-4 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-px-4"
+		aria-labelledby="stw-dispatch"
+	>
+		<div class="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
+			<div class="tw-min-w-0">
+				<p id="stw-dispatch" class="stw__eyebrow tw-mb-1 tw-text-cyan-400/90">Strike 26 · Team dispatch</p>
+				<p class="stw__meta tw-m-0 tw-text-xs tw-text-white/60">
+					Parents enter this code when provisioning an operative to link the account to this squad.
+				</p>
+			</div>
+			<div class="tw-flex tw-flex-col tw-items-stretch tw-gap-2 sm:tw-min-w-[14rem] sm:tw-items-end">
+				{#if teamInviteCode}
+					<div
+						class="stw__mono tw-select-all tw-rounded tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-3 tw-py-2 tw-text-center tw-text-base tw-font-bold tw-tracking-widest tw-text-cyan-300"
+						title="Team invite code"
+					>
+						{teamInviteCode}
+					</div>
+				{:else}
+					<button
+						type="button"
+						class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(34,211,238,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
+						disabled={!teamId || inviteBusy}
+						onclick={generateTeamDispatchCode}
+					>
+						{inviteBusy ? 'Issuing…' : 'Generate dispatch code'}
+					</button>
+				{/if}
+			</div>
+		</div>
+	</section>
 
 	{#if feedback}
 		<p

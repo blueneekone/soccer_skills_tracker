@@ -3,6 +3,7 @@
 	import '../app.css';
 	import { browser } from '$app/environment';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
+	import PwaInstallPrompt from '$lib/components/ui/PwaInstallPrompt.svelte';
 
 	let { children } = $props();
 
@@ -12,3 +13,4 @@
 </script>
 
 {@render children()}
+<PwaInstallPrompt />
