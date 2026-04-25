@@ -9,7 +9,10 @@
 	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
-	/** Route-level deps: `MatchLogger` / `LiveTelemetrySection` are mounted from `SquadTelemetryView`. */
+	/**
+	 * `MatchLogger` is imported at the route; it is mounted inside the LIVE TELEMETRY
+	 * block via `LiveTelemetrySection` in `SquadTelemetryView` (immediately under the HUD).
+	 */
 	void [MatchLogger, LiveTelemetrySection];
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
@@ -66,7 +69,8 @@
 
 <div class="ec-page ec-coach st-pillar1">
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col">
-		<!-- Dispatch protocol <IntelModal>: lives in SquadTelemetryView beside “Generate dispatch code”. -->
+		<!-- LIVE TELEMETRY: <LiveTelemetrySection> → <MatchLogger /> (roster + stat ingest) in SquadTelemetryView. -->
+		<!-- Dispatch <IntelModal> + Strike 26: same view. -->
 		<SquadTelemetryView teamId={selectedTeamId} teams={myTeams} />
 	</div>
 </div>

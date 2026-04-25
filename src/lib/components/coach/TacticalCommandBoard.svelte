@@ -61,13 +61,26 @@
 	let libraryError = $state('');
 	let saveBusy = $state(false);
 
+	/** Resolves to Firestore `teams/{id}` — pivot from `teamId` prop or `workspaceContextStore.activeTeamId`. */
 	const resolvedTeamId = $derived((teamId || workspaceContextStore.activeTeamId || '').trim());
 
-	/** @type {'soccer' | 'basketball'} */
+	/**
+	 * Multi-domain surface: `teams.sport` on the active team (from workspace + `teamsStore`).
+	 * @type {'soccer' | 'basketball'}
+	 */
 	const boardSport = $derived.by(() => {
 		const row = teamsStore.teams.find((t) => t.id === resolvedTeamId);
 		const s = String(row?.sport ?? 'soccer').toLowerCase().trim();
 		return s === 'basketball' ? 'basketball' : 'soccer';
+	});
+
+	/** Dynamic board shell background (layer under pitch SVGs / canvas) — not used in whiteboard mode. */
+	const boardFieldSurfaceStyle = $derived.by(() => {
+		if (whiteboard) return '';
+		if (boardSport === 'basketball') {
+			return 'background: linear-gradient(165deg, #9a3412 0%, #7c2d12 48%, #713f12 100%);';
+		}
+		return 'background: #4ade80;';
 	});
 
 	/**
@@ -180,7 +193,10 @@
 		const scaleY = canvas.height / (rect.height || 1);
 		const x = (e.clientX - rect.left) * scaleX;
 		const y = (e.clientY - rect.top) * scaleY;
-		return { x, y, ...toNorm(x, y) };
+		const raw = toNorm(x, y);
+		const nx = Math.min(1, Math.max(0, raw.nx));
+		const ny = Math.min(1, Math.max(0, raw.ny));
+		return { x, y, nx, ny };
 	};
 
 	/** @param {PointerEvent} e */
@@ -226,6 +242,7 @@
 	function handleWindowPointerMove(e) {
 		if (!pointerSession) return;
 		if (pointerSession.kind === 'token' && e.pointerId === pointerSession.pointerId) {
+			e.preventDefault();
 			const { nx, ny } = getPos(e);
 			const id = pointerSession.id;
 			strokes = strokes.map((s) => {
@@ -266,6 +283,15 @@
 
 	/**
 	 * @param {PointerEvent} e
+	 */
+	function onTokenLostPointerCapture(e) {
+		if (pointerSession?.kind === 'token' && e.pointerId === pointerSession.pointerId) {
+			pointerSession = null;
+		}
+	}
+
+	/**
+	 * @param {PointerEvent} e
 	 * @param {string} tokenId
 	 */
 	function onTokenPointerDown(e, tokenId) {
@@ -273,6 +299,14 @@
 		e.stopPropagation();
 		if (e.button !== 0) return;
 		pointerSession = { kind: 'token', id: tokenId, pointerId: e.pointerId };
+		const t = e.currentTarget;
+		if (t && typeof t.setPointerCapture === 'function') {
+			try {
+				t.setPointerCapture(e.pointerId);
+			} catch {
+				/* ignore */
+			}
+		}
 	}
 
 	function clearBoard() {
@@ -580,37 +614,40 @@
 				>
 					<i class="ph ph-arrow-up-right" aria-hidden="true"></i>
 				</button>
-				<button
-					type="button"
-					class="strategy-island-btn"
-					class:strategy-island-btn--active={currentTool === 'X'}
-					onclick={() => (currentTool = 'X')}
-					title="X Player"
-					aria-label="X player marker"
-					aria-pressed={currentTool === 'X'}
-				>
-					<i class="ph ph-x" aria-hidden="true"></i>
-				</button>
-				<button
-					type="button"
-					class="strategy-island-btn"
-					class:strategy-island-btn--active={currentTool === 'O'}
-					onclick={() => (currentTool = 'O')}
-					title="O Player"
-					aria-label="O player marker"
-					aria-pressed={currentTool === 'O'}
-				>
-					<i class="ph ph-circle" aria-hidden="true"></i>
-				</button>
-				<button
-					type="button"
-					class="strategy-island-clear-siem"
-					onclick={clearBoard}
-					title="Clear board"
-					aria-label="Clear board"
-				>
-					CLR
-				</button>
+				<div class="strategy-island-sep" aria-hidden="true"></div>
+				<div class="strategy-island-token-cluster" role="group" aria-label="Plays and board">
+					<button
+						type="button"
+						class="strategy-island-btn"
+						class:strategy-island-btn--active={currentTool === 'X'}
+						onclick={() => (currentTool = 'X')}
+						title="X Player"
+						aria-label="X player marker"
+						aria-pressed={currentTool === 'X'}
+					>
+						<i class="ph ph-x" aria-hidden="true"></i>
+					</button>
+					<button
+						type="button"
+						class="strategy-island-btn"
+						class:strategy-island-btn--active={currentTool === 'O'}
+						onclick={() => (currentTool = 'O')}
+						title="O Player"
+						aria-label="O player marker"
+						aria-pressed={currentTool === 'O'}
+					>
+						<i class="ph ph-circle" aria-hidden="true"></i>
+					</button>
+					<button
+						type="button"
+						class="strategy-island-clear-siem"
+						onclick={clearBoard}
+						title="Clear board"
+						aria-label="Clear board"
+					>
+						CLR
+					</button>
+				</div>
 				<div class="strategy-island-sep" aria-hidden="true"></div>
 				<label class="strategy-island-color" title="Stroke colour" aria-label="Stroke colour">
 					<span
@@ -641,6 +678,8 @@
 					class:strategy-canvas-wrap--wb={whiteboard}
 					class:strategy-canvas-wrap--bb={boardSport === 'basketball' && !whiteboard}
 					class:strategy-canvas-wrap--soccer={boardSport === 'soccer' && !whiteboard}
+					class:strategy-canvas-wrap--token-drag={pointerSession?.kind === 'token'}
+					style={boardFieldSurfaceStyle}
 					bind:this={boardRef}
 				>
 					{#if whiteboard}
@@ -701,9 +740,12 @@
 								class="strategy-token"
 								class:strategy-token--x={tok.type === 'x'}
 								class:strategy-token--o={tok.type === 'o'}
+								class:strategy-token--dragging={pointerSession?.kind === 'token' &&
+									pointerSession.id === tok.id}
 								style="left: {tok.nx * 100}%; top: {tok.ny * 100}%; --strategy-token-color: {tok.color};"
 								aria-label={tok.type === 'x' ? 'X marker' : 'O marker'}
 								onpointerdown={(e) => onTokenPointerDown(e, tok.id)}
+								onlostpointercapture={onTokenLostPointerCapture}
 							>
 								{#if tok.type === 'x'}
 									<span class="strategy-token-glyph" aria-hidden="true">X</span>
@@ -866,19 +908,29 @@
 		background: #4ade80;
 		aspect-ratio: 4 / 3;
 		width: 100%;
+		touch-action: none;
 		/* shadow-2xl equivalent on dark background */
 		box-shadow:
 			0 25px 50px -12px rgba(0, 0, 0, 0.65),
 			0 0 0 1px rgba(255, 255, 255, 0.06);
 	}
 
+	.strategy-canvas-wrap--token-drag {
+		cursor: grabbing;
+	}
+
+	/* Token tools + clear — grouped in the bottom island (toolbar) */
+	.strategy-island-token-cluster {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		flex-shrink: 0;
+	}
+
 	.strategy-canvas-wrap--wb {
 		background: #ffffff;
 	}
-
-	.strategy-canvas-wrap--bb {
-		background: linear-gradient(165deg, #9a3412 0%, #7c2d12 48%, #713f12 100%);
-	}
+	/* Basketball / soccer field fills use inline `boardFieldSurfaceStyle` on the wrap. */
 
 	.strategy-bb-floor {
 		position: absolute;
@@ -961,6 +1013,10 @@
 		cursor: grabbing;
 	}
 
+	.strategy-token--dragging {
+		z-index: 90;
+	}
+
 	.strategy-token-glyph {
 		font: 800 1.1rem/1 'Inter', system-ui, sans-serif;
 		color: var(--strategy-token-color, #0f172a);
@@ -1013,7 +1069,7 @@
 		pointer-events: none;
 	}
 
-	/* Compact SIEM-style clear — pairs with token tool group */
+	/* Compact flat SIEM clear — no glow/shadow; sits flush in token cluster */
 	.strategy-island-clear-siem {
 		display: inline-flex;
 		align-items: center;
@@ -1021,18 +1077,17 @@
 		height: 28px;
 		min-width: 2.5rem;
 		padding: 0 8px;
-		margin: 0 2px 0 4px;
+		margin: 0;
 		border-radius: 6px;
 		font-size: 0.625rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
 		font-variant-numeric: tabular-nums;
 		text-transform: uppercase;
-		color: #22d3ee;
 		color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 88%, #ffffff);
 		background: rgba(15, 23, 42, 0.55);
-		border: 1px solid color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 50%, rgba(255, 255, 255, 0.12));
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		border: 1px solid color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 45%, rgba(255, 255, 255, 0.1));
+		box-shadow: none;
 		cursor: pointer;
 		flex-shrink: 0;
 		transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
@@ -1040,17 +1095,17 @@
 
 	.strategy-island-clear-siem:hover {
 		background: rgba(15, 23, 42, 0.72);
-		border-color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 65%, #ffffff);
+		border-color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 60%, #ffffff);
 	}
 
 	:global(html.dark) .strategy-island-clear-siem {
 		color: #67e8f9;
 		background: rgba(8, 47, 73, 0.45);
-		border-color: rgba(34, 211, 238, 0.45);
+		border-color: rgba(34, 211, 238, 0.4);
 	}
 
 	:global(html.dark) .strategy-island-clear-siem:hover {
-		background: rgba(8, 47, 73, 0.65);
+		background: rgba(8, 47, 73, 0.62);
 	}
 
 	.strategy-island-btn:hover {

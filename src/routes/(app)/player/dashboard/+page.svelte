@@ -10,11 +10,11 @@
 	const user = $derived(authStore.user);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 
-	/** DiceBear bottts — seed = Firebase Auth UID (deterministic avatar). */
+	/** DiceBear bottts — matches API: seed={uid}, base #05050A, primary #06b6d4. */
 	const dicebearOperativeSrc = $derived(
-		`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
-			user?.uid && String(user.uid).length > 0 ? String(user.uid) : 'anonymous',
-		)}&baseColor=05050A&primaryColor=06b6d4`,
+		`https://api.dicebear.com/7.x/bottts/svg?seed=${
+			user?.uid && String(user.uid).length > 0 ? encodeURIComponent(String(user.uid)) : 'anonymous'
+		}&baseColor=05050A&primaryColor=06b6d4`,
 	);
 
 	/** @param {unknown} v */
@@ -321,7 +321,7 @@
 	</header>
 
 	<div
-		class="oid-wrap tw-group tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md tw-perspective-[1000px]"
+		class="oid-wrap tw-group tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md tw-perspective-1000"
 		class:oid-wrap--flipped={operativeCardFlipped}
 	>
 		<p
@@ -338,11 +338,12 @@
 			onclick={onOperativeCardActivate}
 			onkeydown={onOperativeKeydown}
 		>
+			<!-- Flip layer: relative w-full h-full · transition & preserve-3d · group-hover:rotate-y-180 (tw- prefix) -->
 			<div
-				class="oid-flipper tw-relative tw-h-full tw-min-h-[min(52vw,260px)] tw-w-full tw-transform-gpu tw-transform tw-transform-style-3d tw-transition-transform tw-duration-500 tw-ease-out tw-will-change-transform group-hover:tw-[transform:rotateY(180deg)]"
+				class="oid-flipper tw-relative tw-h-full tw-w-full tw-min-h-[min(52vw,260px)] tw-transform-gpu tw-transform tw-[transform-style:preserve-3d] tw-transition-transform tw-duration-500 tw-ease-out tw-will-change-transform group-hover:tw-rotate-y-180"
 			>
 				<div
-					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
+					class="oid-face oid-face--front tw-absolute tw-h-full tw-w-full tw-backface-hidden tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
 				>
 					<div class="tw-flex tw-w-full tw-flex-col tw-items-center tw-gap-3">
 						<div
@@ -386,7 +387,7 @@
 				</div>
 
 				<div
-					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-rotate-y-180 tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)]"
+					class="oid-face oid-face--back tw-absolute tw-h-full tw-w-full tw-backface-hidden tw-inset-0 tw-rotate-y-180 tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)]"
 				>
 					<p
 						class="tw-mb-3 tw-border-b tw-border-cyan-500/30 tw-pb-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-400/90"

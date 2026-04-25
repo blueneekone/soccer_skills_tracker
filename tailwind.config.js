@@ -6,7 +6,15 @@ export default {
 		preflight: false
 	},
 	theme: {
-		extend: {}
+		extend: {
+			// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
+			perspective: {
+				1000: '1000px',
+			},
+			rotate: {
+				'y-180': 'rotateY(180deg)',
+			},
+		},
 	},
 	plugins: []
 };

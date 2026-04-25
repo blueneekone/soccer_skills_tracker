@@ -4,7 +4,17 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
+	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+
+	const DISPATCH_CODE_INTEL = {
+		title: 'DISPATCH CODES',
+		instructions: [
+			'1. A Dispatch Code securely links your player to their official team roster.',
+			'2. Head Coaches generate these secure codes and text them to parents.',
+			'3. If you do not have a code, please ask your coach before continuing.',
+		],
+	};
 
 	const parentSignCoppaWaiver = httpsCallable(functions, 'parentSignCoppaWaiver');
 	const parentProvisionOperative = httpsCallable(functions, 'parentProvisionOperative');
@@ -281,11 +291,21 @@
 						bind:value={childEmail}
 					/>
 				</label>
-				<label class="phh-field tw-block tw-w-full md:tw-col-span-2">
-					<span class="phh-eyebrow tw-mb-1 tw-block tw-text-cyan-300/80"
-						>Team dispatch code <span class="tw-text-white/40">(optional)</span></span
-					>
+				<div class="phh-field tw-block tw-w-full md:tw-col-span-2">
+					<div class="tw-mb-1 tw-flex tw-items-center tw-gap-2">
+						<label
+							for="phh-dispatch-code"
+							class="phh-eyebrow tw-m-0 tw-block tw-text-cyan-300/80"
+						>
+							Dispatch Code <span class="tw-text-white/40">(optional)</span>
+						</label>
+						<IntelModal
+							title={DISPATCH_CODE_INTEL.title}
+							instructions={DISPATCH_CODE_INTEL.instructions}
+						/>
+					</div>
 					<input
+						id="phh-dispatch-code"
 						class="phh-input phh-input--cyan"
 						type="text"
 						autocomplete="off"
@@ -293,7 +313,10 @@
 						placeholder="e.g. AB-1K2M"
 						bind:value={teamDispatchCode}
 					/>
-				</label>
+					<p class="tw-mt-1 tw-text-xs tw-text-slate-400">
+						Your 6-digit team code (Provided by your coach).
+					</p>
+				</div>
 			</div>
 			<div class="tw-mt-4">
 				<button
