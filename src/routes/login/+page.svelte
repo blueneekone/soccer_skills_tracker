@@ -6,6 +6,7 @@
 		signInWithPopup,
 		GoogleAuthProvider,
 		signInWithEmailAndPassword,
+		createUserWithEmailAndPassword,
 		signInWithCustomToken,
 		getRedirectResult,
 	} from 'firebase/auth';
@@ -18,6 +19,8 @@
 	/** Adult flow */
 	let email = $state('');
 	let password = $state('');
+	/** @type {boolean} */
+	let isSignUp = $state(false);
 
 	/** Operative flow (parent-provisioned minors) */
 	let opEmail = $state('');
@@ -29,7 +32,14 @@
 	let adultBusy = $state(false);
 	let opBusy = $state(false);
 
+	/**
+	 * While the email/password handler drives `goto()` (sign-up vs sign-in fork), skip this
+	 * effect so it cannot override `/complete-profile` vs `/` (sign-in must not hit complete-profile).
+	 */
+	let skipPasswordGateAutoRedirect = $state(false);
+
 	$effect(() => {
+		if (skipPasswordGateAutoRedirect) return;
 		if (!authStore.isLoading && authStore.isAuthenticated) {
 			if (authStore.isProfileComplete) {
 				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
@@ -67,12 +77,41 @@
 			return;
 		}
 		adultBusy = true;
+		skipPasswordGateAutoRedirect = true;
+		const wasSignUp = isSignUp;
 		try {
-			await signInWithEmailAndPassword(auth, email, password);
+			if (isSignUp) {
+				await createUserWithEmailAndPassword(auth, email, password);
+			} else {
+				await signInWithEmailAndPassword(auth, email, password);
+			}
+			await authStore.refresh({ silent: true });
+			// Strict fork: vault creation → complete-profile; sign-in → `/` (root splash routes by profile)
+			if (wasSignUp) {
+				await goto('/complete-profile', { replaceState: true });
+			} else {
+				await goto('/', { replaceState: true });
+			}
 		} catch (err) {
-			errorMsg = err && typeof err === 'object' && 'message' in err ? String(/** @type {*} */(err).message) : 'Sign-in failed';
+			if (
+				err &&
+				typeof err === 'object' &&
+				'code' in err &&
+				(/** @type {*} */(err).code === 'auth/email-already-in-use' ||
+					String(/** @type {*} */(err).code).includes('email-already-in-use'))
+			) {
+				errorMsg = 'This email is already registered. Use AUTHENTICATE to sign in.';
+			} else {
+				errorMsg =
+					err && typeof err === 'object' && 'message' in err
+						? String(/** @type {*} */(err).message)
+						: isSignUp
+							? 'Account creation failed'
+							: 'Sign-in failed';
+			}
 		} finally {
 			adultBusy = false;
+			skipPasswordGateAutoRedirect = false;
 		}
 	};
 
@@ -158,7 +197,7 @@
 						type="password"
 						class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
 						placeholder="Password"
-						autocomplete="current-password"
+						autocomplete={isSignUp ? 'new-password' : 'current-password'}
 						bind:value={password}
 					/>
 
@@ -172,10 +211,39 @@
 						disabled={adultBusy}
 						onclick={handleEmailLogin}
 					>
-						{adultBusy ? 'Authenticating…' : 'Sign in'}
+						{adultBusy ? (isSignUp ? 'Creating…' : 'Authenticating…') : isSignUp ? 'INITIALIZE' : 'LOGIN'}
 					</button>
+					<p class="tw-mb-1 tw-text-center tw-text-[0.65rem] tw-leading-relaxed tw-text-white/50">
+						{#if !isSignUp}
+							<span>Don't have an Operative account? </span>
+							<button
+								type="button"
+								class="tw-cursor-pointer tw-border-none tw-bg-transparent tw-p-0 tw-text-center tw-font-extrabold tw-tracking-[0.12em] tw-text-cyan-400 tw-underline tw-underline-offset-2 tw-transition hover:tw-text-cyan-300"
+								onclick={() => {
+									isSignUp = true;
+									errorMsg = '';
+								}}
+							>
+								[ CREATE VAULT ]
+							</button>
+						{:else}
+							<span>Already have clearance? </span>
+							<button
+								type="button"
+								class="tw-cursor-pointer tw-border-none tw-bg-transparent tw-p-0 tw-text-center tw-font-extrabold tw-tracking-[0.12em] tw-text-cyan-400 tw-underline tw-underline-offset-2 tw-transition hover:tw-text-cyan-300"
+								onclick={() => {
+									isSignUp = false;
+									errorMsg = '';
+								}}
+							>
+								[ AUTHENTICATE ]
+							</button>
+						{/if}
+					</p>
 					<p class="tw-text-center tw-text-[0.65rem] tw-leading-relaxed tw-text-white/40">
-						New adult accounts are issued by your organization. Minors cannot self-register.
+						{isSignUp
+							? 'Adults: you will link your organization on the next screen. Minors cannot self-register; use Operative dispatch below.'
+							: 'New adult accounts can open a vault above, or are issued by your organization. Minors cannot self-register.'}
 					</p>
 				</div>
 			</section>
