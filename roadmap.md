@@ -68,3 +68,20 @@ Unlock new Tailwind-driven border styles and background effects for the 3D flipp
 - **Sprint 7.2:** TCG Loot Box Engine (XP tracking, digital pack-opening animations).
 - **Sprint 7.3:** The Digital Binder (Pro Cards, Peer Cards, Holographic self-upgrades).
 - **Sprint 7.4:** Scout Network & VPC Gating (Charge colleges SaaS fees to view verified player highlight reels).
+
+---
+
+## Next major phase — Sprint 8: The War Room (Tactical & Film)
+
+**Objective:** Equip coaches with elite visual planning tools without bloating infrastructure costs.
+
+### Core features
+
+**The VOD library (zero-cost video)**  
+Add video to the **Workout Builder**: coaches paste unlisted YouTube or Vimeo URLs; the app parses and **embeds via iframe** on the Player OS. **No raw `.mp4` uploads** (protects storage and egress costs).
+
+**The tactical board**  
+An interactive **2D whiteboard** (evaluate **Fabric.js** vs **Svelte + SVG**) so coaches can drag-and-drop markers (e.g. cones), draw movement vectors, and design custom drills.
+
+**Save & deploy**  
+Save visual drills as **reusable templates** and **push** them to **specific player cohorts** (targeted delivery on top of the existing coach → squad flows).
