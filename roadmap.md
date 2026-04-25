@@ -2,7 +2,7 @@
 
 ## Product Vision & Ecosystem
 
-North-star directives for every product decision, feature, and sprint. All future development should trace back to these three operating systems.
+North-star **Core Ecosystem Directives** for every product decision, feature, and sprint. All future development should trace back to these four pillars: (1) Player OS, (2) Coach OS, (3) Parent OS, and (4) agnostic multi-sport architecture.
 
 ### Player OS (Weaponized Gamification)
 
@@ -15,6 +15,10 @@ Move beyond static scheduling. Create **automated feedback loops** where game-da
 ### Parent OS (ROI & Security)
 
 Provide parents with visual **Skill Trees** tracking their athlete’s development, wrapped in an **impenetrable, zero-trust COPPA compliance vault**.
+
+### Agnostic Multi-Sport Architecture
+
+The platform is **not** strictly a soccer app. All database schemas, telemetry loggers, Player ID cards, and Tactical Boards must be **sport-agnostic**. UI elements and stat tracking must **dynamically populate** from a central configuration mapping—e.g. terminology, court or pitch SVGs, and sport-specific metrics driven by the active team’s **`sport`** attribute. **Never** hardcode sport-specific strings into core components.
 
 ---
 
