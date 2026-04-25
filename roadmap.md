@@ -2,7 +2,16 @@
 
 ## Product Vision & Ecosystem
 
-North-star **Core Ecosystem Directives** for every product decision, feature, and sprint. All future development should trace back to these four pillars: (1) Player OS, (2) Coach OS, (3) Parent OS, and (4) agnostic multi-sport architecture.
+North-star **Core Ecosystem Directives** for every product decision, feature, and sprint. All future development should trace back to these four pillars: (1) Player OS, (2) Coach OS, (3) Parent OS, and (4) agnostic multi-sport architecture—plus the **Ultimate Metric** below, which governs prioritization and tradeoffs.
+
+### The Ultimate Metric (Player & Parent First)
+
+Every feature must be evaluated through this lens:
+
+- **Does it increase a player’s physical engagement and skill development?**
+- **Does it provide tangible ROI and security peace-of-mind for the parent?**
+
+Administrative ease is **secondary** to user growth. Staff tooling and back-office efficiency matter, but they must not outrank player/parent value when priorities collide.
 
 ### Player OS (Weaponized Gamification)
 
@@ -19,6 +28,20 @@ Provide parents with visual **Skill Trees** tracking their athlete’s developme
 ### Agnostic Multi-Sport Architecture
 
 The platform is **not** strictly a soccer app. All database schemas, telemetry loggers, Player ID cards, and Tactical Boards must be **sport-agnostic**. UI elements and stat tracking must **dynamically populate** from a central configuration mapping—e.g. terminology, court or pitch SVGs, and sport-specific metrics driven by the active team’s **`sport`** attribute. **Never** hardcode sport-specific strings into core components.
+
+**Long-term scaling:** When a new sport is added, its configuration block **must** ship as a complete **5-Pillar Sport Payload**:
+
+1. **Taxonomy** — Positions (and any sport-specific role/lineup model).
+2. **Telemetry Dictionary** — Game stats and event vocabulary the loggers and dashboards understand.
+3. **Combine Metrics** — Recruiting baselines and measurable benchmarks for that sport.
+4. **Tactical Assets** — Pitch/court SVGs, tokens, and board chrome for the tactical surfaces.
+5. **Baseline Workout Libraries** — Sport-specific drills wired into the gamification engine (XP, bounties, progression).
+
+This payload is the contract between “multi-sport” branding and real product depth: no sport ships as a thin rename of another.
+
+### The Admin AI Generator (Enterprise / future)
+
+**Admin OS — future Enterprise feature:** a **generative AI** tool that automatically researches and formats the **5-Pillar Sport Payload** for any new sport a Director requests—reducing or eliminating manual hardcoding of sport packs. Logged here as a north-star capability for platform scale, not a near-term commitment date.
 
 ---
 
