@@ -10,13 +10,12 @@
 	const user = $derived(authStore.user);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 
-	/** @param {string | undefined} uid */
-	function getOperativeAvatarUrl(uid) {
-		const seed = uid && uid.length > 0 ? uid : 'anonymous';
-		return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}&baseColor=05050A&primaryColor=06b6d4`;
-	}
-
-	const operativeAvatarSrc = $derived(getOperativeAvatarUrl(user?.uid || email || undefined));
+	/** DiceBear bottts — seed = Firebase Auth UID (deterministic avatar). */
+	const dicebearOperativeSrc = $derived(
+		`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
+			user?.uid && String(user.uid).length > 0 ? String(user.uid) : 'anonymous',
+		)}&baseColor=05050A&primaryColor=06b6d4`,
+	);
 
 	/** @param {unknown} v */
 	function statNum(v) {
@@ -322,7 +321,7 @@
 	</header>
 
 	<div
-		class="oid-wrap tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md"
+		class="oid-wrap tw-group tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md tw-perspective-[1000px]"
 		class:oid-wrap--flipped={operativeCardFlipped}
 	>
 		<p
@@ -331,7 +330,7 @@
 			Tap to flip · hover to flip
 		</p>
 		<div
-			class="oid-surface tw-relative tw-w-full tw-cursor-pointer tw-perspective-[1000px] tw-outline-none"
+			class="oid-surface tw-relative tw-h-full tw-w-full tw-cursor-pointer tw-outline-none"
 			role="button"
 			tabindex="0"
 			aria-pressed={operativeCardFlipped}
@@ -339,17 +338,19 @@
 			onclick={onOperativeCardActivate}
 			onkeydown={onOperativeKeydown}
 		>
-			<div class="oid-flipper tw-relative tw-h-[min(52vw,260px)] tw-w-full tw-transform-gpu">
+			<div
+				class="oid-flipper tw-relative tw-h-full tw-min-h-[min(52vw,260px)] tw-w-full tw-transform-gpu tw-transform tw-transform-style-3d tw-transition-transform tw-duration-500 tw-ease-out tw-will-change-transform group-hover:tw-[transform:rotateY(180deg)]"
+			>
 				<div
-					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)] tw-backface-hidden tw-[transform:rotateY(0deg)]"
+					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
 				>
 					<div class="tw-flex tw-w-full tw-flex-col tw-items-center tw-gap-3">
 						<div
 							class="tw-flex tw-h-24 tw-w-24 tw-shrink-0 tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-500/50 tw-bg-black/60 tw-p-1 tw-shadow-[inset_0_0_12px_rgba(6,182,212,0.25)]"
 						>
 							<img
-								class="tw-h-full tw-w-full tw-object-cover"
-								src={operativeAvatarSrc}
+								class="tw-h-full tw-w-full tw-object-contain"
+								src={dicebearOperativeSrc}
 								alt=""
 								width="96"
 								height="96"
@@ -385,7 +386,7 @@
 				</div>
 
 				<div
-					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-flex tw-h-full tw-w-full tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)] tw-backface-hidden tw-[transform:rotateY(180deg)]"
+					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-rotate-y-180 tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)]"
 				>
 					<p
 						class="tw-mb-3 tw-border-b tw-border-cyan-500/30 tw-pb-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-400/90"
@@ -553,20 +554,9 @@
 		border: 0;
 	}
 
-	/* 3D Operative ID: preserve-3d; tap (.oid-wrap--flipped) + fine-pointer hover */
-	.oid-flipper {
-		transform-style: preserve-3d;
-		transform: rotateY(0deg);
-		transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-		will-change: transform;
-	}
+	/* 3D Operative ID: tap-to-flip (coarse / touch); desktop flip uses Tailwind group-hover on .oid-flipper */
 	.oid-wrap--flipped .oid-flipper {
 		transform: rotateY(180deg);
-	}
-	@media (min-width: 768px) and (hover: hover) {
-		.oid-wrap:hover .oid-flipper {
-			transform: rotateY(180deg);
-		}
 	}
 
 	.pd-hero {

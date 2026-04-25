@@ -17,7 +17,7 @@
 	import Swal from 'sweetalert2';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
+	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
 	const DISPATCH_INTEL = {
@@ -50,6 +50,9 @@
 	let loading = $state(false);
 	let addSaving = $state(false);
 	let removeBusy = $state(false);
+	/** Roster load generation — avoid stale `loading` / state when `teamId` changes mid-flight. */
+	let rosterLoadGen = 0;
+
 	/** @type {string | null} */
 	let removingName = $state(null);
 	/** @type {{ type: 'error' | 'success' | 'info'; text: string } | null} */
@@ -72,17 +75,80 @@
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
 	let evalRows = $state([]);
 
+	/**
+	 * COPPA posture for linked operatives: known only when we have a `users/{email}` row.
+	 * @type {Record<string, 'compliant' | 'non-compliant' | 'unverified'>}
+	 */
+	let complianceByPlayer = $state({});
+
+	/**
+	 * @param {Record<string, string>} em
+	 * @param {string} name
+	 */
+	function linkedDocIdForPlayerName(em, name) {
+		if (em[name] != null) return em[name];
+		if (typeof name === 'string') {
+			const t = name.trim();
+			if (t !== name && em[t] != null) return em[t];
+		}
+		return undefined;
+	}
+
+	/** `users/*` keys are lowercased emails; other ids pass through. */
+	function usersCollectionKey(id) {
+		const s = String(id).trim();
+		if (!s) return s;
+		return s.includes('@') ? s.toLowerCase() : s;
+	}
+
 	const loadRoster = async () => {
-		if (!teamId) return;
+		if (!teamId) {
+			loading = false;
+			return;
+		}
+		const myGen = ++rosterLoadGen;
 		loading = true;
 		try {
-			const [statsSnap, rosterSnap, linkSnap, teamSnap] = await Promise.all([
+			const settled = await Promise.allSettled([
 				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 				getDoc(doc(db, 'rosters', teamId)),
 				getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
 				getDoc(doc(db, 'teams', teamId)),
 			]);
-			if (teamSnap.exists()) {
+
+			/** @type {import('firebase/firestore').QuerySnapshot | null} */
+			let statsSnap = null;
+			if (settled[0].status === 'fulfilled') {
+				statsSnap = settled[0].value;
+			} else {
+				console.error('[SquadTelemetry] player_stats', settled[0].reason);
+			}
+
+			/** @type {import('firebase/firestore').DocumentSnapshot | null} */
+			let rosterSnap = null;
+			if (settled[1].status === 'fulfilled') {
+				rosterSnap = settled[1].value;
+			} else {
+				console.error('[SquadTelemetry] rosters', settled[1].reason);
+			}
+
+			/** @type {import('firebase/firestore').QuerySnapshot | null} */
+			let linkSnap = null;
+			if (settled[2].status === 'fulfilled') {
+				linkSnap = settled[2].value;
+			} else {
+				console.error('[SquadTelemetry] player_lookup', settled[2].reason);
+			}
+
+			/** @type {import('firebase/firestore').DocumentSnapshot | null} */
+			let teamSnap = null;
+			if (settled[3].status === 'fulfilled') {
+				teamSnap = settled[3].value;
+			} else {
+				console.error('[SquadTelemetry] teams', settled[3].reason);
+			}
+
+			if (teamSnap?.exists()) {
 				const ic = teamSnap.data()?.inviteCode;
 				teamInviteCode = typeof ic === 'string' && ic.trim() ? ic.trim() : '';
 			} else {
@@ -90,32 +156,110 @@
 			}
 
 			playerStats = {};
-			statsSnap.forEach((d) => {
-				playerStats[d.id] = d.data();
-			});
+			if (statsSnap) {
+				statsSnap.forEach((d) => {
+					playerStats[d.id] = d.data();
+				});
+			}
 
-			const rosterNames = rosterSnap.exists() ? rosterSnap.data().players || [] : [];
-			jerseys = rosterSnap.exists() ? rosterSnap.data().jerseys || {} : {};
+			const rosterNames = Array.isArray(rosterSnap?.data()?.players) ? rosterSnap.data().players : [];
+			jerseys =
+				rosterSnap?.exists() && typeof rosterSnap.data()?.jerseys === 'object' && rosterSnap.data().jerseys
+					? /** @type {Record<string, string>} */ (rosterSnap.data().jerseys)
+					: {};
 
 			linkedPlayers = new Set();
 			const em = /** @type {Record<string, string>} */ ({});
-			linkSnap.forEach((d) => {
-				const data = d.data();
-				if (typeof data.playerName === 'string' && data.playerName.trim()) {
-					linkedPlayers.add(data.playerName);
-					em[data.playerName.trim()] = d.id;
-				}
-			});
+			if (linkSnap) {
+				linkSnap.forEach((d) => {
+					const data = d.data();
+					if (typeof data.playerName === 'string' && data.playerName.trim()) {
+						linkedPlayers.add(data.playerName);
+						em[data.playerName.trim()] = d.id;
+					}
+				});
+			}
 			nameToEmail = em;
 
 			const combined = new Set([...rosterNames, ...Object.keys(playerStats)]);
-			players = Array.from(combined).sort();
+
+			/** @type {string[]} */
+			const userDocKeys = [
+				...new Set(
+					Object.values(em)
+						.map((x) => (typeof x === 'string' ? usersCollectionKey(x) : ''))
+						.filter(Boolean),
+				),
+			];
+
+			const userSettled =
+				userDocKeys.length === 0 ?
+					[]
+				:	await Promise.allSettled(
+						userDocKeys.map((key) => getDoc(doc(db, 'users', key))),
+					);
+
+			/** @type {Record<string, import('firebase/firestore').DocumentSnapshot>} */
+			const userSnapByEmail = {};
+			userSettled.forEach((r, i) => {
+				const key = userDocKeys[i];
+				if (r.status === 'fulfilled' && r.value.exists()) {
+					userSnapByEmail[key] = r.value;
+				} else if (r.status === 'rejected') {
+					console.error(`[SquadTelemetry] users/${key}`, r.reason);
+				}
+			});
+
+			/** @type {string[]} */
+			const nextPlayers = [];
+			for (const rawName of combined) {
+				const name = typeof rawName === 'string' ? rawName : String(rawName);
+				const linkId = linkedDocIdForPlayerName(em, name);
+				if (linkId != null) {
+					const ukey = usersCollectionKey(linkId);
+					if (!userSnapByEmail[ukey]) {
+						// `player_lookup` points at a `users` doc that is missing or blocked — do not break the table.
+						continue;
+					}
+				}
+				nextPlayers.push(name);
+			}
+			nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+			players = nextPlayers;
+
+			/** @type {Record<string, 'compliant' | 'non-compliant' | 'unverified'>} */
+			const nextCompliance = {};
+			for (const name of nextPlayers) {
+				const linkId = linkedDocIdForPlayerName(em, name);
+				if (linkId == null) {
+					nextCompliance[name] = 'unverified';
+					continue;
+				}
+				const ukey = usersCollectionKey(linkId);
+				const uSnap = userSnapByEmail[ukey];
+				if (!uSnap) {
+					nextCompliance[name] = 'unverified';
+					continue;
+				}
+				const data = uSnap.data();
+				const role = typeof data?.role === 'string' ? data.role : '';
+				const hasHh =
+					typeof data?.householdId === 'string' && data.householdId.trim() !== '';
+				if (role === 'player' && !hasHh) {
+					nextCompliance[name] = 'non-compliant';
+				} else {
+					nextCompliance[name] = 'compliant';
+				}
+			}
+			complianceByPlayer = nextCompliance;
 		} catch (e) {
 			console.error('[SquadTelemetry] roster', e);
 			teamInviteCode = '';
 			feedback = { type: 'error', text: 'Roster load failed.' };
 		} finally {
-			loading = false;
+			if (myGen === rosterLoadGen) {
+				loading = false;
+			}
 		}
 	};
 
@@ -149,7 +293,14 @@
 	}
 
 	$effect(() => {
-		if (teamId) void loadRoster();
+		if (!teamId) {
+			loading = false;
+			players = [];
+			playerStats = {};
+			complianceByPlayer = {};
+			return;
+		}
+		void loadRoster();
 	});
 
 	$effect(() => {
@@ -385,6 +536,13 @@
 		</div>
 	</header>
 
+	<LiveTelemetrySection
+		teamId={teamId}
+		players={players}
+		getStatsId={(p) => resolveStatsId(p, playerStats)}
+		onCommitted={loadRoster}
+	/>
+
 	<section
 		class="stw__dispatch tw-mb-4 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-px-4"
 		aria-labelledby="stw-dispatch"
@@ -425,13 +583,6 @@
 			</div>
 		</div>
 	</section>
-
-	<MatchLogger
-		teamId={teamId}
-		players={players}
-		getStatsId={(p) => resolveStatsId(p, playerStats)}
-		onCommitted={loadRoster}
-	/>
 
 	{#if feedback}
 		<p
@@ -477,6 +628,7 @@
 									typeof playerStats[sid]?.playerName === 'string'
 										? String(playerStats[sid].playerName)
 										: p}
+								{@const copa = complianceByPlayer[p] ?? 'unverified'}
 								<tr
 									class="stw__row"
 									role="button"
@@ -508,8 +660,14 @@
 									<td class="stw__mono">
 										{jerseys[p] != null && String(jerseys[p]).trim() ? jerseys[p] : '—'}
 									</td>
-									<td class="stw__mono stw__green">
-										{linkedPlayers.has(rowLabel) || linkedPlayers.has(p) ? 'LIVE' : '—'}
+									<td class="stw__mono" class:stw__green={copa === 'compliant' && (linkedPlayers.has(rowLabel) || linkedPlayers.has(p))} class:stw__nc={copa === 'non-compliant'}>
+										{#if copa === 'non-compliant'}
+											NON-COMPLIANT
+										{:else if linkedPlayers.has(rowLabel) || linkedPlayers.has(p)}
+											LIVE
+										{:else}
+											—
+										{/if}
 									</td>
 								</tr>
 							{/each}
@@ -663,6 +821,13 @@
 	}
 	.stw__green {
 		color: var(--st-g);
+	}
+
+	.stw__nc {
+		color: #fb923c;
+		font-weight: 800;
+		font-size: 0.68rem;
+		letter-spacing: 0.06em;
 	}
 
 	.stw__grid {

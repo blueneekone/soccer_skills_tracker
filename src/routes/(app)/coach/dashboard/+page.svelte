@@ -4,8 +4,13 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
+	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
+	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
 	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+
+	/** Route-level deps: `MatchLogger` / `LiveTelemetrySection` are mounted from `SquadTelemetryView`. */
+	void [MatchLogger, LiveTelemetrySection];
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 

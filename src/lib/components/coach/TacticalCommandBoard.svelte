@@ -2,6 +2,8 @@
 	import { onMount, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
@@ -27,6 +29,8 @@
 
 	let { teamId = '' } = $props();
 
+	/** Board shell — tokens + coords are relative to this rect. */
+	let boardRef = $state(/** @type {HTMLDivElement | undefined} */ (undefined));
 	let canvas;
 	let ctx;
 	let isDrawing = $state(false);
@@ -57,6 +61,63 @@
 	let libraryError = $state('');
 	let saveBusy = $state(false);
 
+	const resolvedTeamId = $derived((teamId || workspaceContextStore.activeTeamId || '').trim());
+
+	/** @type {'soccer' | 'basketball'} */
+	const boardSport = $derived.by(() => {
+		const row = teamsStore.teams.find((t) => t.id === resolvedTeamId);
+		const s = String(row?.sport ?? 'soccer').toLowerCase().trim();
+		return s === 'basketball' ? 'basketball' : 'soccer';
+	});
+
+	/**
+	 * @type {null | { kind: 'draw'; pointerId: number } | { kind: 'token'; id: string; pointerId: number }}
+	 */
+	let pointerSession = $state(null);
+
+	function newTokenId() {
+		if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+			return crypto.randomUUID();
+		}
+		return `tok_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+	}
+
+	$effect(() => {
+		const raw = strokes;
+		let changed = false;
+		const out = raw.map((s) => {
+			const o = /** @type {Record<string, unknown>} */ (s);
+			if ((o.type === 'x' || o.type === 'o') && (typeof o.id !== 'string' || !o.id)) {
+				changed = true;
+				return { ...o, id: newTokenId() };
+			}
+			return s;
+		});
+		if (changed) strokes = /** @type {typeof raw} */ (out);
+	});
+
+	/** X / O markers — rendered as DOM for reliable drag; paths stay on canvas. */
+	const tokenItems = $derived.by(() => {
+		/** @type {Array<{ id: string; type: 'x' | 'o'; nx: number; ny: number; color: string }>} */
+		const out = [];
+		for (const raw of strokes) {
+			const s = /** @type {Record<string, unknown>} */ (raw);
+			if (s.type !== 'x' && s.type !== 'o') continue;
+			if (typeof s.id !== 'string' || !s.id) continue;
+			const nx = typeof s.nx === 'number' ? s.nx : 0;
+			const ny = typeof s.ny === 'number' ? s.ny : 0;
+			const color = typeof s.color === 'string' ? s.color : '#0f172a';
+			out.push({
+				id: s.id,
+				type: /** @type {'x' | 'o'} */ (s.type),
+				nx,
+				ny,
+				color,
+			});
+		}
+		return out;
+	});
+
 	const resize = () => {
 		if (!canvas?.parentElement?.offsetWidth) return;
 		const cont = canvas.parentElement;
@@ -77,6 +138,7 @@
 		const h = canvas.height;
 		for (const raw of strokes) {
 			const s = /** @type {Record<string, unknown>} */ (raw);
+			if (s.type === 'x' || s.type === 'o') continue;
 			const color = typeof s.color === 'string' ? s.color : '#0f172a';
 			ctx.strokeStyle = color;
 			ctx.fillStyle = color;
@@ -93,19 +155,6 @@
 					ctx.lineTo(pts[i].nx * w, pts[i].ny * h);
 				}
 				ctx.stroke();
-			} else if (s.type === 'x') {
-				const nx = typeof s.nx === 'number' ? s.nx : 0;
-				const ny = typeof s.ny === 'number' ? s.ny : 0;
-				ctx.font = 'bold 24px Inter';
-				ctx.textAlign = 'center';
-				ctx.textBaseline = 'middle';
-				ctx.fillText('X', nx * w, ny * h);
-			} else if (s.type === 'o') {
-				const nx = typeof s.nx === 'number' ? s.nx : 0;
-				const ny = typeof s.ny === 'number' ? s.ny : 0;
-				ctx.beginPath();
-				ctx.arc(nx * w, ny * h, 12, 0, 2 * Math.PI);
-				ctx.stroke();
 			}
 		}
 	}
@@ -118,73 +167,120 @@
 		return () => window.removeEventListener('resize', resize);
 	});
 
+	/**
+	 * Pointer position in canvas pixels and normalized [0,1] relative to the board.
+	 * @param {PointerEvent} e
+	 */
 	const getPos = (e) => {
-		const rect = canvas.getBoundingClientRect();
-		return {
-			x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-			y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top,
-		};
+		if (!canvas || !boardRef) {
+			return { x: 0, y: 0, nx: 0, ny: 0 };
+		}
+		const rect = boardRef.getBoundingClientRect();
+		const scaleX = canvas.width / (rect.width || 1);
+		const scaleY = canvas.height / (rect.height || 1);
+		const x = (e.clientX - rect.left) * scaleX;
+		const y = (e.clientY - rect.top) * scaleY;
+		return { x, y, ...toNorm(x, y) };
 	};
 
-	const startDraw = (e) => {
-		if (!canvas || !ctx) return;
+	/** @param {PointerEvent} e */
+	function handleCanvasPointerDown(e) {
+		if (!canvas || !ctx || e.button !== 0) return;
+		if (e.target !== canvas) return;
+
 		const pos = getPos(e);
-		ctx.strokeStyle = currentColor;
-		ctx.fillStyle = currentColor;
-		ctx.lineWidth = 4;
-		ctx.lineCap = 'round';
+
+		if (currentTool === 'X' || currentTool === 'O') {
+			strokes = [
+				...strokes,
+				{
+					type: currentTool === 'X' ? 'x' : 'o',
+					color: currentColor,
+					nx: pos.nx,
+					ny: pos.ny,
+					id: newTokenId(),
+				},
+			];
+			return;
+		}
+
 		if (currentTool === 'pen' || currentTool === 'arrow') {
 			isDrawing = true;
+			pointerSession = { kind: 'draw', pointerId: e.pointerId };
 			activePath = {
 				type: 'path',
 				tool: currentTool,
 				color: currentColor,
 				points: [toNorm(pos.x, pos.y)],
 			};
+			ctx.strokeStyle = currentColor;
+			ctx.fillStyle = currentColor;
+			ctx.lineWidth = 4;
+			ctx.lineCap = 'round';
 			ctx.beginPath();
 			ctx.moveTo(pos.x, pos.y);
-		} else if (currentTool === 'X') {
-			ctx.font = 'bold 24px Inter';
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
-			ctx.fillText('X', pos.x, pos.y);
-			strokes = [
-				...strokes,
-				{ type: 'x', color: currentColor, ...toNorm(pos.x, pos.y) },
-			];
-		} else if (currentTool === 'O') {
-			ctx.beginPath();
-			ctx.arc(pos.x, pos.y, 12, 0, 2 * Math.PI);
-			ctx.stroke();
-			strokes = [
-				...strokes,
-				{ type: 'o', color: currentColor, ...toNorm(pos.x, pos.y) },
-			];
 		}
-	};
+	}
 
-	const draw = (e) => {
+	/** @param {PointerEvent} e */
+	function handleWindowPointerMove(e) {
+		if (!pointerSession) return;
+		if (pointerSession.kind === 'token' && e.pointerId === pointerSession.pointerId) {
+			const { nx, ny } = getPos(e);
+			const id = pointerSession.id;
+			strokes = strokes.map((s) => {
+				const o = /** @type {Record<string, unknown>} */ (s);
+				if (o.id === id && (o.type === 'x' || o.type === 'o')) {
+					return { ...o, nx, ny };
+				}
+				return s;
+			});
+			return;
+		}
+		if (pointerSession.kind !== 'draw' || e.pointerId !== pointerSession.pointerId) return;
 		if (!isDrawing || !activePath) return;
 		e.preventDefault();
 		const pos = getPos(e);
 		activePath.points.push(toNorm(pos.x, pos.y));
-		ctx.lineTo(pos.x, pos.y);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(pos.x, pos.y);
-	};
+		ctx?.lineTo(pos.x, pos.y);
+		ctx?.stroke();
+		ctx?.beginPath();
+		ctx?.moveTo(pos.x, pos.y);
+	}
 
-	const endDraw = () => {
-		if (isDrawing && activePath && activePath.points.length >= 2) {
-			strokes = [...strokes, activePath];
+	/** @param {PointerEvent} e */
+	function handleWindowPointerUp(e) {
+		if (pointerSession?.kind === 'token' && e.pointerId === pointerSession.pointerId) {
+			pointerSession = null;
+			return;
 		}
-		isDrawing = false;
-		activePath = null;
-	};
+		if (pointerSession?.kind === 'draw' && e.pointerId === pointerSession.pointerId) {
+			pointerSession = null;
+			if (isDrawing && activePath && activePath.points.length >= 2) {
+				strokes = [...strokes, activePath];
+			}
+			isDrawing = false;
+			activePath = null;
+		}
+	}
+
+	/**
+	 * @param {PointerEvent} e
+	 * @param {string} tokenId
+	 */
+	function onTokenPointerDown(e, tokenId) {
+		e.preventDefault();
+		e.stopPropagation();
+		if (e.button !== 0) return;
+		pointerSession = { kind: 'token', id: tokenId, pointerId: e.pointerId };
+	}
 
 	function clearBoard() {
 		strokes = [];
 		loadedTacticId = '';
+		pointerSession = null;
+		isDrawing = false;
+		activePath = null;
 		if (ctx && canvas) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
@@ -370,6 +466,12 @@
 
 </script>
 
+<svelte:window
+	onpointermove={handleWindowPointerMove}
+	onpointerup={handleWindowPointerUp}
+	onpointercancel={handleWindowPointerUp}
+/>
+
 <div class="strategy-tab">
 	<div class="bento-section strategy-bento">
 		<div class="card strategy-library">
@@ -396,9 +498,6 @@
 							onclick={saveTactic}
 						>
 							{saveBusy ? 'Saving…' : 'Save tactic'}
-						</button>
-						<button type="button" class="secondary-btn strategy-btn" onclick={clearBoard}>
-							Clear board
 						</button>
 					</div>
 
@@ -503,6 +602,15 @@
 				>
 					<i class="ph ph-circle" aria-hidden="true"></i>
 				</button>
+				<button
+					type="button"
+					class="strategy-island-clear-siem"
+					onclick={clearBoard}
+					title="Clear board"
+					aria-label="Clear board"
+				>
+					CLR
+				</button>
 				<div class="strategy-island-sep" aria-hidden="true"></div>
 				<label class="strategy-island-color" title="Stroke colour" aria-label="Stroke colour">
 					<span
@@ -526,26 +634,85 @@
 				</button>
 			{/snippet}
 
-			<!-- Pitch centered inside the dark workspace -->
+			<!-- Pitch / court centered inside the dark workspace -->
 			<div class="strategy-pitch-area">
-				<div class="strategy-canvas-wrap" class:strategy-canvas-wrap--wb={whiteboard}>
-					<div
-						class="strategy-pitch-bg pitch-lines"
-						class:strategy-pitch-bg--wb={whiteboard}
-					></div>
-					<!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_mouse_events_have_key_events -->
+				<div
+					class="strategy-canvas-wrap"
+					class:strategy-canvas-wrap--wb={whiteboard}
+					class:strategy-canvas-wrap--bb={boardSport === 'basketball' && !whiteboard}
+					class:strategy-canvas-wrap--soccer={boardSport === 'soccer' && !whiteboard}
+					bind:this={boardRef}
+				>
+					{#if whiteboard}
+						<div class="strategy-field-bg strategy-field-bg--wb" aria-hidden="true"></div>
+					{:else if boardSport === 'basketball'}
+						<div class="strategy-bb-floor" aria-hidden="true">
+							<svg
+								class="strategy-bb-svg"
+								viewBox="0 0 100 60"
+								preserveAspectRatio="xMidYMid meet"
+							>
+								<rect width="100" height="60" fill="#b45309" rx="0.8" />
+								<rect
+									x="2"
+									y="2"
+									width="96"
+									height="56"
+									fill="none"
+									stroke="rgba(255,255,255,0.88)"
+									stroke-width="0.5"
+									rx="0.6"
+								/>
+								<line
+									x1="50"
+									y1="2"
+									x2="50"
+									y2="58"
+									stroke="rgba(255,255,255,0.9)"
+									stroke-width="0.45"
+								/>
+								<rect
+									x="20"
+									y="18"
+									width="60"
+									height="24"
+									fill="none"
+									stroke="rgba(255,255,255,0.88)"
+									stroke-width="0.4"
+									rx="0.4"
+								/>
+								<circle cx="50" cy="30" r="4.2" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="0.4" />
+							</svg>
+						</div>
+					{:else}
+						<div class="strategy-pitch-bg pitch-lines"></div>
+					{/if}
+					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 					<canvas
 						bind:this={canvas}
 						class="strategy-canvas"
-						onmousedown={startDraw}
-						onmouseup={endDraw}
-						onmousemove={draw}
-						onmouseout={endDraw}
-						ontouchstart={startDraw}
-						ontouchend={endDraw}
-						ontouchmove={draw}
+						onpointerdown={handleCanvasPointerDown}
 						aria-label="Strategy board canvas"
 					></canvas>
+					<div class="strategy-token-layer">
+						{#each tokenItems as tok (tok.id)}
+							<button
+								type="button"
+								class="strategy-token"
+								class:strategy-token--x={tok.type === 'x'}
+								class:strategy-token--o={tok.type === 'o'}
+								style="left: {tok.nx * 100}%; top: {tok.ny * 100}%; --strategy-token-color: {tok.color};"
+								aria-label={tok.type === 'x' ? 'X marker' : 'O marker'}
+								onpointerdown={(e) => onTokenPointerDown(e, tok.id)}
+							>
+								{#if tok.type === 'x'}
+									<span class="strategy-token-glyph" aria-hidden="true">X</span>
+								{:else}
+									<span class="strategy-token-glyph strategy-token-glyph--o" aria-hidden="true"></span>
+								{/if}
+							</button>
+						{/each}
+					</div>
 					{#if aiBusy}
 						<div class="strategy-ai-overlay" aria-live="polite" aria-busy="true">
 							<div class="strategy-ai-overlay-glass">
@@ -709,16 +876,37 @@
 		background: #ffffff;
 	}
 
-	.strategy-canvas-wrap--wb :global(.pitch-lines) {
-		border-color: rgba(148, 163, 184, 0.55);
+	.strategy-canvas-wrap--bb {
+		background: linear-gradient(165deg, #9a3412 0%, #7c2d12 48%, #713f12 100%);
 	}
 
-	.strategy-canvas-wrap--wb :global(.pitch-lines)::before {
-		border-left-color: rgba(148, 163, 184, 0.55);
+	.strategy-bb-floor {
+		position: absolute;
+		inset: 5%;
+		pointer-events: none;
+		z-index: 1;
+		border-radius: calc(var(--radius-premium) - 6px);
+		overflow: hidden;
 	}
 
-	.strategy-canvas-wrap--wb :global(.pitch-lines)::after {
-		border-color: rgba(148, 163, 184, 0.55);
+	.strategy-bb-svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.strategy-field-bg--wb {
+		position: absolute;
+		inset: 5%;
+		pointer-events: none;
+		z-index: 1;
+		border: 1px solid rgba(148, 163, 184, 0.5);
+		border-radius: calc(var(--radius-premium) - 6px);
+		background: #ffffff;
+	}
+
+	.strategy-canvas-wrap--wb .strategy-field-bg--wb {
+		box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
 	}
 
 	.strategy-pitch-bg {
@@ -732,10 +920,6 @@
 		border-radius: calc(var(--radius-premium) - 6px);
 	}
 
-	.strategy-pitch-bg--wb {
-		border-color: rgba(148, 163, 184, 0.45);
-	}
-
 	.strategy-canvas {
 		position: absolute;
 		top: 0;
@@ -744,6 +928,53 @@
 		height: 100%;
 		touch-action: none;
 		z-index: 10;
+	}
+
+	.strategy-token-layer {
+		position: absolute;
+		inset: 0;
+		z-index: 20;
+		pointer-events: none;
+	}
+
+	.strategy-token {
+		position: absolute;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		margin: 0;
+		padding: 0;
+		border: none;
+		background: transparent;
+		transform: translate(-50%, -50%);
+		cursor: grab;
+		touch-action: none;
+		pointer-events: auto;
+		z-index: 25;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	.strategy-token:active {
+		cursor: grabbing;
+	}
+
+	.strategy-token-glyph {
+		font: 800 1.1rem/1 'Inter', system-ui, sans-serif;
+		color: var(--strategy-token-color, #0f172a);
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+	}
+
+	.strategy-token-glyph--o {
+		display: block;
+		width: 1.1rem;
+		height: 1.1rem;
+		border: 2.5px solid var(--strategy-token-color, #0f172a);
+		border-radius: 50%;
+		box-sizing: border-box;
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	/* ─── Island toolbar items (rendered inside fw-island pill) ── */
@@ -780,6 +1011,46 @@
 	.strategy-island-btn i {
 		font-size: 1.1rem;
 		pointer-events: none;
+	}
+
+	/* Compact SIEM-style clear — pairs with token tool group */
+	.strategy-island-clear-siem {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: 28px;
+		min-width: 2.5rem;
+		padding: 0 8px;
+		margin: 0 2px 0 4px;
+		border-radius: 6px;
+		font-size: 0.625rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		font-variant-numeric: tabular-nums;
+		text-transform: uppercase;
+		color: #22d3ee;
+		color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 88%, #ffffff);
+		background: rgba(15, 23, 42, 0.55);
+		border: 1px solid color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 50%, rgba(255, 255, 255, 0.12));
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+	}
+
+	.strategy-island-clear-siem:hover {
+		background: rgba(15, 23, 42, 0.72);
+		border-color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 65%, #ffffff);
+	}
+
+	:global(html.dark) .strategy-island-clear-siem {
+		color: #67e8f9;
+		background: rgba(8, 47, 73, 0.45);
+		border-color: rgba(34, 211, 238, 0.45);
+	}
+
+	:global(html.dark) .strategy-island-clear-siem:hover {
+		background: rgba(8, 47, 73, 0.65);
 	}
 
 	.strategy-island-btn:hover {
