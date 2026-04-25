@@ -71,17 +71,17 @@ Unlock new Tailwind-driven border styles and background effects for the 3D flipp
 
 ---
 
-## Next major phase — Sprint 8: The War Room (Tactical & Film)
+## Next major phase — Sprint 8: Video Telemetry & Advanced Onboarding
 
-**Objective:** Equip coaches with elite visual planning tools without bloating infrastructure costs.
+**Objective:** Deepen the coach and player experience with **embedded video** in workout flows and **stronger onboarding**—contextual help first, then guided tours—while keeping **storage and infra costs flat** (no raw file hosting for VOD).
 
 ### Core features
 
 **The VOD library (zero-cost video)**  
 Add video to the **Workout Builder**: coaches paste unlisted YouTube or Vimeo URLs; the app parses and **embeds via iframe** on the Player OS. **No raw `.mp4` uploads** (protects storage and egress costs).
 
-**The tactical board**  
-An interactive **2D whiteboard** (evaluate **Fabric.js** vs **Svelte + SVG**) so coaches can drag-and-drop markers (e.g. cones), draw movement vectors, and design custom drills.
+**Interactive app tours & Universal Intel**  
+Deploy **universal [ ? ] help modals** across the platform, and eventually upgrade to **interactive, step-by-step tours** (e.g. [Shepherd.js](https://shepherdjs.dev/)) to guide new coaches through **complex drill design** and related workflows.
 
 **Save & deploy**  
 Save visual drills as **reusable templates** and **push** them to **specific player cohorts** (targeted delivery on top of the existing coach → squad flows).
