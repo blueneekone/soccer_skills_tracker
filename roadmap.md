@@ -37,19 +37,9 @@
 - Integrate Stripe for B2B Club licensing and B2C Parent dues. 
 - Build the Logic Gate: Tie compliance/billing status to the Player OS lockout function.
 
-## FUTURE PHASE: EPIC 6 - THE DOPAMINE ENGINE & RECRUITING
-- **Sprint 6.1:** The Global & Club XP Leaderboards.
-- **Sprint 6.2:** TCG Loot Box Engine (XP tracking, digital pack-opening animations).
-- **Sprint 6.3:** The Digital Binder (Pro Cards, Peer Cards, Holographic self-upgrades).
-- **Sprint 6.4:** Scout Network & VPC Gating (Charge colleges SaaS fees to view verified player highlight reels).
-
----
-
 ## Next major phase — Sprint 6: The Quartermaster (The Player Reward Economy)
 
 **Objective:** Gamify the Player OS through cosmetic progression to drive sustained engagement with telemetry logging.
-
-**Note:** This phase name shares the “Sprint 6” label with the epic list above; treat the Quartermaster as the **Player OS reward-economy** track (cosmetics + spendable currency from real activity). Leaderboards / TCG / recruiting items in Epic 6 can run in parallel or be sequenced after logistics (Epic 5) as capacity allows.
 
 ### Core features
 
@@ -69,3 +59,12 @@ Unlock new Tailwind-driven border styles and background effects for the 3D flipp
 
 - Store **only string references** for unlocked / equipped cosmetics on the user’s Firestore document (e.g. `equippedTheme: 'neon'`, `avatarStyle: 'pixel-art'`), keyed from a small server- or client-side catalog.
 - **Zero extra storage overhead** for asset binaries: cosmetics are rendered from known presets + API params, not uploaded files.
+
+---
+
+## Next major phase — Sprint 7: The Dopamine Engine & Recruiting
+
+- **Sprint 7.1:** The Global & Club XP Leaderboards.
+- **Sprint 7.2:** TCG Loot Box Engine (XP tracking, digital pack-opening animations).
+- **Sprint 7.3:** The Digital Binder (Pro Cards, Peer Cards, Holographic self-upgrades).
+- **Sprint 7.4:** Scout Network & VPC Gating (Charge colleges SaaS fees to view verified player highlight reels).
