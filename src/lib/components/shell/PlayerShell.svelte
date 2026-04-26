@@ -37,6 +37,7 @@
 		{ href: '/stats', icon: 'ph-chart-bar', label: 'Stats' },
 		{ href: '/player/workout', icon: 'ph-list-checks', label: 'Train' },
 		{ href: '/trophies', icon: 'ph-trophy', label: 'Trophies' },
+		{ href: '/player/armory', icon: 'ph-shield-check', label: 'Armory' },
 		{ href: '/settings', icon: 'ph-gear', label: 'Settings' },
 	];
 
