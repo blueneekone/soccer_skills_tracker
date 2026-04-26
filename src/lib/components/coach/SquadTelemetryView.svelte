@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
@@ -52,6 +53,8 @@
 	let removeBusy = $state(false);
 	/** Roster load generation — avoid stale `loading` / state when `teamId` changes mid-flight. */
 	let rosterLoadGen = 0;
+	/** Trial/eval async generation — drop stale results when `teamId` changes. */
+	let signalsLoadGen = 0;
 
 	/** @type {string | null} */
 	let removingName = $state(null);
@@ -150,41 +153,24 @@
 		}
 	}
 
-	const loadRoster = async () => {
-		if (!teamId) {
+	/**
+	 * @param {string} [overrideTeamId] When passed from the `$effect` untrack run, use this id for the whole load (avoids racing reactive `teamId`).
+	 */
+	const loadRoster = async (overrideTeamId) => {
+		const tid = typeof overrideTeamId === 'string' && overrideTeamId ? overrideTeamId : teamId;
+		if (!tid) {
 			loading = false;
 			return;
 		}
 		const myGen = ++rosterLoadGen;
 		loading = true;
 		try {
-			const teamRow = teams.find((t) => t.id === teamId);
-			const currentClubId =
-				teamRow && typeof teamRow === 'object' && 'clubId' in teamRow && teamRow.clubId != null ?
-					String(/** @type {{ clubId?: string }} */ (teamRow).clubId)
-				:	'—';
-			const currentTeamId = teamId;
-			const playerLookupRosterPromise = (async () => {
-				console.log('🚨 WIRETAP INTERCEPT: Firing Roster Query');
-				console.log('--> Target Club ID:', currentClubId);
-				console.log('--> Target Team ID:', currentTeamId);
-				const snap = await getDocs(
-					query(collection(db, 'player_lookup'), where('teamId', '==', teamId)),
-				);
-				console.log('✅ WIRETAP RESULT: Found', snap.docs.length, 'players.');
-				console.log(
-					'--> Player Data:',
-					snap.docs.map((d) => d.data()),
-				);
-				return snap;
-			})();
-
 			// Concurrency: never fail the whole load on a single rejected request; user fetches use allSettled below.
 			const settled = await Promise.allSettled([
-				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
-				getDoc(doc(db, 'rosters', teamId)),
-				playerLookupRosterPromise,
-				getDoc(doc(db, 'teams', teamId)),
+				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', tid))),
+				getDoc(doc(db, 'rosters', tid)),
+				getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', tid))),
+				getDoc(doc(db, 'teams', tid)),
 			]);
 
 			/** @type {import('firebase/firestore').QuerySnapshot | null} */
@@ -347,80 +333,99 @@
 	}
 
 	$effect(() => {
-		if (!teamId) {
-			loading = false;
-			players = [];
-			playerStats = {};
-			complianceByPlayer = {};
-			return;
-		}
-		void loadRoster();
+		const currentTeamId = teamId;
+		untrack(() => {
+			if (!currentTeamId) {
+				loading = false;
+				players = [];
+				playerStats = {};
+				complianceByPlayer = {};
+				return;
+			}
+			void loadRoster(currentTeamId);
+		});
 	});
 
 	$effect(() => {
-		if (!browser || !teamId) {
-			vpcItems = [];
-			vpcLoading = false;
-			return;
-		}
-		vpcLoading = true;
-		const q = query(
-			collection(db, 'trial_scores'),
-			where('teamId', '==', teamId),
-			where('status', '==', 'pending_verification'),
-			orderBy('submittedAt', 'desc'),
-		);
-		const unsub = onSnapshot(
-			q,
-			(s) => {
+		const currentTeamId = teamId;
+		/** @type {(() => void) | undefined} */
+		let unsub;
+		untrack(() => {
+			if (!browser || !currentTeamId) {
 				vpcItems = [];
-				s.forEach((d) => vpcItems.push({ id: d.id, ...d.data() }));
 				vpcLoading = false;
-			},
-			() => {
-				vpcErr = 'VPC queue could not be subscribed.';
-				vpcLoading = false;
-			},
-		);
-		return () => unsub();
+				return;
+			}
+			vpcLoading = true;
+			const q = query(
+				collection(db, 'trial_scores'),
+				where('teamId', '==', currentTeamId),
+				where('status', '==', 'pending_verification'),
+				orderBy('submittedAt', 'desc'),
+			);
+			unsub = onSnapshot(
+				q,
+				(s) => {
+					vpcItems = [];
+					s.forEach((d) => vpcItems.push({ id: d.id, ...d.data() }));
+					vpcLoading = false;
+				},
+				() => {
+					vpcErr = 'VPC queue could not be subscribed.';
+					vpcLoading = false;
+				},
+			);
+		});
+		return () => {
+			if (unsub) unsub();
+		};
 	});
 
 	$effect(() => {
-		if (!teamId) {
-			trialRows = [];
-			evalRows = [];
-			return;
-		}
-		(async () => {
-			try {
-				const tSnap = await getDocs(
-					query(collection(db, 'trials'), where('teamId', '==', teamId)),
-				);
-				const tr = [];
-				tSnap.forEach((d) => tr.push({ id: d.id, ...d.data() }));
-				tr.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-				trialRows = tr.slice(0, 8);
-			} catch (e) {
-				console.error(e);
+		const currentTeamId = teamId;
+		untrack(() => {
+			const gen = ++signalsLoadGen;
+			if (!currentTeamId) {
 				trialRows = [];
-			}
-			try {
-				const eSnap = await getDocs(
-					query(collection(db, 'evaluations'), where('teamId', '==', teamId)),
-				);
-				const er = [];
-				eSnap.forEach((d) => er.push({ id: d.id, ...d.data() }));
-				er.sort((a, b) => {
-					const ta = a.timestamp?.seconds || 0;
-					const tb = b.timestamp?.seconds || 0;
-					return tb - ta;
-				});
-				evalRows = er.slice(0, 6);
-			} catch (e) {
-				console.error(e);
 				evalRows = [];
+				return;
 			}
-		})();
+			void (async () => {
+				/** @type {typeof trialRows} */
+				let nextTrials = [];
+				/** @type {typeof evalRows} */
+				let nextEvals = [];
+				try {
+					const tSnap = await getDocs(
+						query(collection(db, 'trials'), where('teamId', '==', currentTeamId)),
+					);
+					const tr = [];
+					tSnap.forEach((d) => tr.push({ id: d.id, ...d.data() }));
+					tr.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+					nextTrials = tr.slice(0, 8);
+				} catch (e) {
+					console.error(e);
+				}
+				try {
+					const eSnap = await getDocs(
+						query(collection(db, 'evaluations'), where('teamId', '==', currentTeamId)),
+					);
+					const er = [];
+					eSnap.forEach((d) => er.push({ id: d.id, ...d.data() }));
+					er.sort((a, b) => {
+						const ta = a.timestamp?.seconds || 0;
+						const tb = b.timestamp?.seconds || 0;
+						return tb - ta;
+					});
+					nextEvals = er.slice(0, 6);
+				} catch (e) {
+					console.error(e);
+				}
+				if (gen !== signalsLoadGen) return;
+				trialRows = nextTrials;
+				evalRows = nextEvals;
+			})();
+		});
 	});
 
 	function showSeatHardLockModal() {

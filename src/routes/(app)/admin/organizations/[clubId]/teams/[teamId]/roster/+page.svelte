@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { db } from '$lib/firebase.js';
 	import {
@@ -24,6 +25,9 @@
 	const ctx = getContext('adminClubCtx');
 
 	const teamId = $derived(page.params.teamId || '');
+	const authReady = $derived(!authStore.isLoading && authStore.isAuthenticated);
+	/** Canceled stale roster fetches when `teamId` or auth gating flaps. */
+	let rosterFetchGen = 0;
 
 	// ── Team meta (name for breadcrumb) ──────────────────────────────────────────
 	/** @type {{ id: string, name?: string, coachEmail?: string } | null} */
@@ -65,46 +69,40 @@
 		return m ? `U${m[1]}` : null;
 	}
 
-	// ── Data fetch — team doc + roster ───────────────────────────────────────────
+	// ── Data fetch — team doc + roster (deps: authReady + teamId; no $effect → $state sync loops) ──
 	$effect(() => {
-		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		const gen = ++rosterFetchGen;
+		if (!authReady) return;
+
 		const tid = teamId;
 		if (!tid) {
-			teamErr = 'No team ID in URL.';
+			untrack(() => {
+				teamErr = 'No team ID in URL.';
+				teamDoc = null;
+				roster = [];
+				teamLoading = false;
+				rosterLoading = false;
+			});
 			return;
 		}
 
 		let cancelled = false;
-		teamLoading = true;
-		rosterLoading = true;
-		teamErr = '';
-		rosterErr = '';
+
+		untrack(() => {
+			teamLoading = true;
+			rosterLoading = true;
+			teamErr = '';
+			rosterErr = '';
+		});
 
 		void (async () => {
 			try {
-				const currentClubId = ctx.clubId;
-				const currentTeamId = tid;
-				const rosterQueryPromise = (async () => {
-					console.log('🚨 WIRETAP INTERCEPT: Firing Roster Query');
-					console.log('--> Target Club ID:', currentClubId);
-					console.log('--> Target Team ID:', currentTeamId);
-					const snap = await getDocs(
-						query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
-					);
-					console.log('✅ WIRETAP RESULT: Found', snap.docs.length, 'players.');
-					console.log(
-						'--> Player Data:',
-						snap.docs.map((d) => d.data()),
-					);
-					return snap;
-				})();
-
 				const [teamSnap, rosterSnap] = await Promise.all([
 					getDoc(doc(db, 'teams', tid)),
-					rosterQueryPromise,
+					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', tid))),
 				]);
 
-				if (cancelled) return;
+				if (cancelled || gen !== rosterFetchGen) return;
 
 				if (teamSnap.exists()) {
 					const d = teamSnap.data();
@@ -135,14 +133,15 @@
 						teamId:     typeof data.teamId === 'string' ? data.teamId : tid,
 					});
 				});
+				if (gen !== rosterFetchGen) return;
 				roster = rows.sort((a, b) => a.playerName.localeCompare(b.playerName));
 				rosterLoading = false;
 			} catch (e) {
-				if (cancelled) return;
+				if (cancelled || gen !== rosterFetchGen) return;
 				const msg = e instanceof Error ? e.message : 'Could not load roster.';
-				teamErr    = teamErr    || msg;
-				rosterErr  = msg;
-				teamLoading   = false;
+				teamErr = teamErr || msg;
+				rosterErr = msg;
+				teamLoading = false;
 				rosterLoading = false;
 			}
 		})();
