@@ -82,9 +82,26 @@
 
 		void (async () => {
 			try {
+				const currentClubId = ctx.clubId;
+				const currentTeamId = tid;
+				const rosterQueryPromise = (async () => {
+					console.log('🚨 WIRETAP INTERCEPT: Firing Roster Query');
+					console.log('--> Target Club ID:', currentClubId);
+					console.log('--> Target Team ID:', currentTeamId);
+					const snap = await getDocs(
+						query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
+					);
+					console.log('✅ WIRETAP RESULT: Found', snap.docs.length, 'players.');
+					console.log(
+						'--> Player Data:',
+						snap.docs.map((d) => d.data()),
+					);
+					return snap;
+				})();
+
 				const [teamSnap, rosterSnap] = await Promise.all([
 					getDoc(doc(db, 'teams', tid)),
-					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', tid))),
+					rosterQueryPromise,
 				]);
 
 				if (cancelled) return;

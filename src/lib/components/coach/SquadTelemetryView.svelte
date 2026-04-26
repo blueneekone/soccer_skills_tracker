@@ -109,11 +109,32 @@
 		const myGen = ++rosterLoadGen;
 		loading = true;
 		try {
+			const teamRow = teams.find((t) => t.id === teamId);
+			const currentClubId =
+				teamRow && typeof teamRow === 'object' && 'clubId' in teamRow && teamRow.clubId != null ?
+					String(/** @type {{ clubId?: string }} */ (teamRow).clubId)
+				:	'—';
+			const currentTeamId = teamId;
+			const playerLookupRosterPromise = (async () => {
+				console.log('🚨 WIRETAP INTERCEPT: Firing Roster Query');
+				console.log('--> Target Club ID:', currentClubId);
+				console.log('--> Target Team ID:', currentTeamId);
+				const snap = await getDocs(
+					query(collection(db, 'player_lookup'), where('teamId', '==', teamId)),
+				);
+				console.log('✅ WIRETAP RESULT: Found', snap.docs.length, 'players.');
+				console.log(
+					'--> Player Data:',
+					snap.docs.map((d) => d.data()),
+				);
+				return snap;
+			})();
+
 			// Concurrency: never fail the whole load on a single rejected request; user fetches use allSettled below.
 			const settled = await Promise.allSettled([
 				getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 				getDoc(doc(db, 'rosters', teamId)),
-				getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
+				playerLookupRosterPromise,
 				getDoc(doc(db, 'teams', teamId)),
 			]);
 
