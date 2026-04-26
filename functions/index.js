@@ -8016,6 +8016,8 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     teamRef = tdoc.ref;
     teamIdForUser = tdoc.id;
   }
+  const parentTeamIdRaw = typeof pu.teamId === 'string' ? pu.teamId.trim() : '';
+  const currentTeamId = teamIdForUser || (parentTeamIdRaw ? parentTeamIdRaw : null);
   const dispatchCode = crypto.randomBytes(4).toString('hex').toUpperCase();
   const now = admin.firestore.FieldValue.serverTimestamp();
   let childUid;
@@ -8098,8 +8100,15 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     return em.endsWith('@operative.local') ? em.split('@')[0] : '';
   });
   const dispRef = db.collection('operative_dispatches').doc();
+  const plRef = db.collection('player_lookup').doc(childEmail);
   const batch = db.batch();
   batch.set(uRef, userPayload, {merge: true});
+  batch.set(plRef, {
+    clubId,
+    teamId: currentTeamId,
+    playerName: childName,
+    role: 'player',
+  }, {merge: true});
   batch.set(
       hRef,
       {
