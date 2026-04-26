@@ -150,7 +150,7 @@
 			return 'Use your full sign-in email as username.';
 		}
 		if (fnCode === 'functions/invalid-argument') {
-			return 'Enter your username and a 6-character dispatch code.';
+			return 'Enter your username and a 6-character clearance code.';
 		}
 		if (fnCode === 'functions/internal') {
 			return 'Sign-in failed. Ask a parent for a new code.';
@@ -179,13 +179,13 @@
 		const uname = opUsername.trim();
 		const codeRaw = dispatchCode.trim();
 		if (!uname || !codeRaw) {
-			opError = 'Enter your username and the 6-character dispatch code from a parent.';
+			opError = 'Enter your username and the 6-character clearance code from a parent.';
 			return;
 		}
 		/** accept XXX-XXXX or 6 alnum (backend normalizes) */
 		const alnum = codeRaw.toUpperCase().replace(/[^A-Z0-9]/g, '');
 		if (alnum.length !== 6) {
-			opError = 'The dispatch code must be 6 letters or numbers (e.g. A7K-2M9).';
+			opError = 'The clearance code must be 6 letters or numbers (e.g. A7K-2M9).';
 			return;
 		}
 		opBusy = true;
@@ -216,9 +216,12 @@
 </script>
 
 <div
-	class="login-gate tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-stretch tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black"
+	class="login-gate tw-box-border tw-flex tw-min-h-[100dvh] tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black tw-p-4"
 >
-	<div class="auth-card tw-mx-auto tw-flex tw-w-full tw-max-w-md tw-flex-1 tw-flex-col tw-px-4 tw-pt-8 tw-pb-12">
+	<div class="auth-card auth-card--login-surface tw-flex tw-w-full tw-max-w-md tw-flex-col">
+		<div
+			class="tw-w-full tw-text-center tw-pt-2 tw-pb-8 sm:tw-rounded-2xl sm:tw-border sm:tw-border-cyan-500/20 sm:tw-bg-cyan-950/25 sm:tw-p-8 sm:tw-shadow-2xl"
+		>
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
 
@@ -366,14 +369,14 @@
 			{:else}
 				<section
 					class="tw-min-w-0 tw-shrink-0 tw-rounded-lg tw-border tw-border-cyan-500/20 tw-bg-[#05050a] tw-p-3"
-					aria-label="Operative sign-in with parent dispatch"
+					aria-label="Operative sign-in with parent clearance code"
 				>
 					<p
 						class="tw-mb-1 tw-text-center tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
 					>
-						Dispatch
+						Clearance
 					</p>
-					<p class="tw-mb-3 tw-text-center tw-text-xs tw-text-white/45">Username and 6-character code</p>
+					<p class="tw-mb-3 tw-text-center tw-text-xs tw-text-white/45">Username and 6-character clearance code</p>
 					<div class="tw-flex tw-flex-col tw-gap-3">
 						<label class="tw-m-0">
 							<span class="login-field-label">Username</span>
@@ -388,12 +391,12 @@
 							/>
 						</label>
 						<label class="tw-m-0">
-							<span class="login-field-label">Dispatch code</span>
+							<span class="login-field-label">Clearance code</span>
 							<input
-								id="op-dispatch"
+								id="op-clearance"
 								type="text"
 								class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-font-mono tw-tracking-wider tw-text-cyan-200"
-								placeholder="e.g. A7K-2M9"
+								placeholder="Clearance code (e.g. A7K-2M9)"
 								autocomplete="one-time-code"
 								inputmode="text"
 								spellcheck="false"
@@ -401,6 +404,9 @@
 								bind:value={dispatchCode}
 							/>
 						</label>
+						<p class="tw-m-0 tw-text-center tw-text-[0.7rem] tw-leading-snug tw-text-white/40">
+							Get this temporary 6-character code from your parent.
+						</p>
 						{#if opError}
 							<div class="auth-error-msg" role="alert">{opError}</div>
 						{/if}
@@ -416,10 +422,11 @@
 				</section>
 			{/if}
 		</div>
+		</div>
 	</div>
 
 	{#if showPwaPrompt}
-		<div class="pwa-prompt tw-mx-auto tw-mt-5 tw-w-full tw-max-w-md tw-px-4">
+		<div class="pwa-prompt tw-mt-6 tw-w-full tw-max-w-md">
 			<h3 class="pwa-title">Install the app</h3>
 			<p class="pwa-text">To login and save your stats securely, install the app to your device.</p>
 			<div class="pwa-box">
@@ -432,11 +439,6 @@
 </div>
 
 <style>
-	.auth-card {
-		max-width: 100%;
-		box-sizing: border-box;
-	}
-
 	/* Segmented control: active = cyan; inactive = muted */
 	.login-seg__btn--active {
 		background: rgba(6, 182, 212, 0.22);
