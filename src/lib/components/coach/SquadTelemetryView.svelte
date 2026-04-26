@@ -101,6 +101,55 @@
 		return s.includes('@') ? s.toLowerCase() : s;
 	}
 
+	/**
+	 * @param {unknown} e
+	 * @returns {boolean}
+	 */
+	function isFirestorePermissionError(e) {
+		if (!e || typeof e !== 'object') return false;
+		const o = /** @type {Record<string, unknown>} */ (e);
+		if (String(o.code || '') === 'permission-denied') return true;
+		const msg = String(o.message || '');
+		return /insufficient|missing or insufficient permissions/i.test(msg);
+	}
+
+	/**
+	 * Minimal `DocumentSnapshot`-shaped object so roster iteration keeps working.
+	 * @param {string} emailKey
+	 */
+	function restrictedUserSnapshotPlaceholder(emailKey) {
+		return {
+			exists: () => true,
+			id: emailKey,
+			/** @returns {Record<string, unknown>} */
+			data: () => ({
+				email: emailKey,
+				playerName: 'Restricted Operative',
+				isRestricted: true,
+				role: 'parent',
+			}),
+		};
+	}
+
+	/**
+	 * @param {string} key
+	 * @returns {Promise<import('firebase/firestore').DocumentSnapshot | ReturnType<typeof restrictedUserSnapshotPlaceholder>>}
+	 */
+	async function getUserDocOrRestrictedPlaceholder(key) {
+		try {
+			return await getDoc(doc(db, 'users', key));
+		} catch (e) {
+			if (isFirestorePermissionError(e)) {
+				console.warn(
+					`[SquadTelemetry] users/${key}: missing or insufficient permissions (restricted placeholder)`,
+				);
+			} else {
+				console.error(`[SquadTelemetry] users/${key}`, e);
+			}
+			return restrictedUserSnapshotPlaceholder(key);
+		}
+	}
+
 	const loadRoster = async () => {
 		if (!teamId) {
 			loading = false;
@@ -214,23 +263,20 @@
 				),
 			];
 
-			const userSettled =
+			const userSnaps =
 				userDocKeys.length === 0 ?
 					[]
-				:	await Promise.allSettled(
-						userDocKeys.map((key) => getDoc(doc(db, 'users', key))),
-					);
+				:	await Promise.all(userDocKeys.map((key) => getUserDocOrRestrictedPlaceholder(key)));
 
-			/** @type {Record<string, import('firebase/firestore').DocumentSnapshot>} */
+			/** @type {Record<string, import('firebase/firestore').DocumentSnapshot | ReturnType<typeof restrictedUserSnapshotPlaceholder>>} */
 			const userSnapByEmail = {};
-			userSettled.forEach((r, i) => {
+			for (let i = 0; i < userDocKeys.length; i++) {
 				const key = userDocKeys[i];
-				if (r.status === 'fulfilled' && r.value.exists()) {
-					userSnapByEmail[key] = r.value;
-				} else if (r.status === 'rejected') {
-					console.error(`[SquadTelemetry] users/${key}`, r.reason);
+				const sn = userSnaps[i];
+				if (sn && sn.exists()) {
+					userSnapByEmail[key] = sn;
 				}
-			});
+			}
 
 			/** @type {string[]} */
 			const nextPlayers = [];

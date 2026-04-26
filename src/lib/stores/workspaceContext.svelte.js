@@ -1,7 +1,7 @@
 /**
  * Workspace context: switcher pivot + active role bucket + scoped club/team for zero-trust UI.
  * Defensive sessionStorage: never throw on read/write; profile fill when cache is empty is driven
- * synchronously from `auth.svelte.js` (no $effect here — avoids Svelte 5 effect_orphan / update-depth loops in store modules).
+ * from `auth.svelte.js` via `hydrateContext` only (no $effect: never write club/team/context reactively).
  */
 
 import { browser } from '$app/environment';
@@ -121,29 +121,42 @@ if (browser) {
 }
 
 /**
- * @param {Record<string, unknown> | null | undefined} prof
+ * Tenancy from the resolved `users/{email}` document — only called from the auth store after
+ * `resolveUserProfile` (synchronous, no $effect, no self-triggering reactivity on auth changes).
+ * For coaches, club/team always follow the profile (source of truth), never a placeholder.
+ *
+ * @param {import('firebase/auth').User | null} user
  * @param {string} role
+ * @param {Record<string, unknown> | null | undefined} profile
  */
-function applyHydrationFromProfile(prof, role) {
+function hydrateContextImpl(user, role, profile) {
 	if (!browser) return;
-	if (!prof) return;
+	if (!user || !profile) return;
 	const pid =
-		typeof prof.clubId === 'string' && prof.clubId.trim() ? prof.clubId.trim() : '';
+		typeof profile.clubId === 'string' && profile.clubId.trim() ? profile.clubId.trim() : '';
 	const tidRaw =
-		typeof prof.teamId === 'string' && prof.teamId.trim() ? prof.teamId.trim() : '';
-	const tid = tidRaw && tidRaw !== 'admin' ? tidRaw : '';
-	/* Circuit breaker: never assign the same $state value twice — avoids reactivity / layout $effect depth churn. */
+		typeof profile.teamId === 'string' && profile.teamId.trim() ? profile.teamId.trim() : '';
+	/** @type {string} */
+	const teamId = tidRaw && tidRaw !== 'admin' ? tidRaw : '';
+	if (role === 'coach') {
+		/* never leave club/team as undefined / null; Firestore is authoritative for staff */
+		if (activeClubId !== pid) activeClubId = pid;
+		if (activeTeamId !== teamId) activeTeamId = teamId;
+		persistToSession();
+		return;
+	}
+	/* other roles: backfill only when session cache is still empty (director, player, global QA, etc.) */
 	if (!(activeClubId && activeClubId.trim()) && pid && activeClubId !== pid) {
 		activeClubId = pid;
 		persistToSession();
 	}
 	if (
 		!(activeTeamId && activeTeamId.trim()) &&
-		tid &&
-		(role === 'coach' || role === 'player' || role === 'super_admin' || role === 'global_admin') &&
-		activeTeamId !== tid
+		teamId &&
+		(role === 'player' || role === 'super_admin' || role === 'global_admin') &&
+		activeTeamId !== teamId
 	) {
-		activeTeamId = tid;
+		activeTeamId = teamId;
 		persistToSession();
 	}
 }
@@ -165,13 +178,12 @@ export const workspaceContextStore = {
 		return isSidebarOpen;
 	},
 	/**
-	 * If session cache did not set club/team, copy from Firestore `users/{email}` (via resolved profile).
-	 * Call from the auth store only, right after `setProfile` in `onAuthStateChanged` / `refresh` — not from `$effect`.
-	 * @param {Record<string, unknown> | null | undefined} prof
+	 * @param {import('firebase/auth').User | null} user
 	 * @param {string} role
+	 * @param {Record<string, unknown> | null | undefined} profile
 	 */
-	hydrateFromUserProfileIfEmpty(prof, role) {
-		applyHydrationFromProfile(prof, role);
+	hydrateContext(user, role, profile) {
+		hydrateContextImpl(user, role, profile);
 	},
 	/**
 	 * @param {string} key

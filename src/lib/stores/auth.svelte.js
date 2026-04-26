@@ -122,7 +122,7 @@ function createAuthStore() {
 			}
 			if (role !== resolved.role) role = resolved.role;
 			setProfile(resolved.profile);
-			workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
+			workspaceContextStore.hydrateContext(firebaseUser, resolved.role, resolved.profile);
 			attachUserStatusListener(firebaseUser);
 		} catch (err) {
 			console.error('[auth store] init error:', err);
@@ -166,7 +166,7 @@ function createAuthStore() {
 				}
 				if (role !== resolved.role) role = resolved.role;
 				setProfile(resolved.profile);
-				workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
+				workspaceContextStore.hydrateContext(auth.currentUser, resolved.role, resolved.profile);
 			} catch (err) {
 				console.error('[auth store] refresh error:', err);
 			} finally {
