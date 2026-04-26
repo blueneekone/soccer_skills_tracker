@@ -1,5 +1,7 @@
 /**
  * Phase 0 RBAC: single source of truth for role-gated route prefixes under (app).
+ * Unauthenticated or anonymous sessions: `(app)/+layout.svelte` + `onAuthStateChanged` in
+ * `auth.svelte.js` redirect to `/login` before shell UI is shown.
  * Keep in sync with Firestore rules / custom claims.
  *
  * Sprint 1.3/1.4: athlete dashboards default-deny for parent/registrar/coach/director

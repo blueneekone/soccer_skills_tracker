@@ -65,17 +65,20 @@
 		};
 	});
 
-	// Auth guard + role guard + COPPA 2026 minor holding gate.
-	// untrack() on every goto() prevents the URL change from re-triggering this effect,
-	// which would otherwise create an infinite reactive loop.
+	// Auth guard: driven by `onAuthStateChanged` in `auth.svelte.js` (cache wipe → no user).
+	// untrack() on every `goto` avoids reactive loops; `browser` avoids SSR `goto` noise.
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (!authStore.isAuthenticated) {
-			untrack(() => goto('/login', { replaceState: true }));
+			if (browser) {
+				untrack(() => goto('/login', { replaceState: true }));
+			}
 			return;
 		}
 		if (!authStore.isProfileComplete) {
-			untrack(() => goto('/setup', { replaceState: true }));
+			if (browser) {
+				untrack(() => goto('/setup', { replaceState: true }));
+			}
 			return;
 		}
 
@@ -90,13 +93,17 @@
 			prof?.vpcStatus !== 'not_required' &&
 			!currentPath.startsWith('/vpc-pending')
 		) {
-			untrack(() => goto('/vpc-pending', { replaceState: true }));
+			if (browser) {
+				untrack(() => goto('/vpc-pending', { replaceState: true }));
+			}
 			return;
 		}
 
 		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
 			const dest = untrack(() => applyLoginWaterfall(authStore.role, authStore.userProfile));
-			untrack(() => goto(dest, { replaceState: true }));
+			if (browser) {
+				untrack(() => goto(dest, { replaceState: true }));
+			}
 			return;
 		}
 	});
@@ -225,8 +232,17 @@
 </script>
 
 {#if authStore.isLoading}
-	<div class="splash-loading">
-		<div class="splash-spinner"></div>
+	<div
+		class="auth-splash"
+		role="status"
+		aria-live="polite"
+		aria-label="Verifying your session with Firebase"
+	>
+		<div class="auth-splash__mark" aria-hidden="true">
+			<i class="ph ph-polygon"></i>
+		</div>
+		<div class="auth-splash__spinner" aria-hidden="true"></div>
+		<p class="auth-splash__label">SSTRACKER</p>
 	</div>
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
@@ -248,26 +264,91 @@
 		</EnterpriseConsoleShell>
 		<PlayerDetailDrawer />
 	{/if}
+{:else}
+	<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->
+	<div
+		class="auth-splash auth-splash--quiet"
+		role="status"
+		aria-live="polite"
+		aria-label="Redirecting"
+	>
+		<div class="auth-splash__spinner" aria-hidden="true"></div>
+	</div>
 {/if}
 
 <style>
-	.splash-loading {
+	.auth-splash {
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		min-height: 100vh;
+		gap: 1.25rem;
+		min-height: 100dvh;
+		background: var(--sst-bg, #0a0a0a);
+		color: #fafafa;
 	}
 
-	.splash-spinner {
-		width: 48px;
-		height: 48px;
-		border: 4px solid var(--glass-border);
-		border-top-color: var(--aggie-gold);
+	.auth-splash--quiet {
+		gap: 0.5rem;
+	}
+
+	.auth-splash__mark {
+		display: flex;
+		width: 4rem;
+		height: 4rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: 1rem;
+		border: 1px solid rgba(34, 211, 238, 0.2);
+		background: linear-gradient(145deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.12));
+		box-shadow: 0 0 2rem -0.5rem rgba(34, 211, 238, 0.35);
+		animation: authPulse 1.6s ease-in-out infinite;
+	}
+
+	.auth-splash__mark .ph {
+		font-size: 1.6rem;
+		color: #22d3ee;
+	}
+
+	.auth-splash__label {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 800;
+		letter-spacing: 0.32em;
+		text-transform: uppercase;
+		color: rgba(250, 250, 250, 0.5);
+	}
+
+	.auth-splash__spinner {
+		width: 2.5rem;
+		height: 2.5rem;
+		border: 3px solid rgba(250, 250, 250, 0.12);
+		border-top-color: #f0c75e;
 		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
+		animation: authSpin 0.75s linear infinite;
 	}
 
-	@keyframes spin {
-		to { transform: rotate(360deg); }
+	.auth-splash--quiet .auth-splash__spinner {
+		width: 1.75rem;
+		height: 1.75rem;
+		border-width: 2px;
+	}
+
+	@keyframes authSpin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes authPulse {
+		0%,
+		100% {
+			opacity: 0.7;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 1;
+			transform: scale(1.04);
+		}
 	}
 </style>

@@ -4,6 +4,20 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { resolveUserProfile, isProfileComplete as computeIsProfileComplete } from '$lib/auth/profile.js';
 import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
 
+/**
+ * Defensive `sessionStorage.getItem` (private mode / SSR / denied).
+ * @param {string} key
+ * @returns {string | null}
+ */
+export function getSessionItemSafe(key) {
+	try {
+		if (typeof sessionStorage === 'undefined' || !sessionStorage) return null;
+		return sessionStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Reactive auth state (Svelte 5 class-based runes pattern)
 // ---------------------------------------------------------------------------
@@ -75,7 +89,7 @@ function createAuthStore() {
 		return false;
 	}
 
-	// Initialise listener once
+	// Single source: Firebase `onAuthStateChanged` (fires on cache clear → null, token refresh, sign-in).
 	onAuthStateChanged(auth, async (firebaseUser) => {
 		if (userStatusUnsub) {
 			userStatusUnsub();
@@ -91,12 +105,15 @@ function createAuthStore() {
 			return;
 		}
 
+		// Do not let protected UI render until Firestore profile + role are resolved.
+		isLoading = true;
 		user = firebaseUser;
 		isAuthenticated = true;
 
 		try {
 			const resolved = await resolveUserProfile(db, firebaseUser, true);
 			if (await signOutIfSuspended(resolved)) {
+				isLoading = false;
 				return;
 			}
 			role = resolved.role;
