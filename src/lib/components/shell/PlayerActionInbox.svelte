@@ -10,43 +10,30 @@
 
 	let loading = $state(true);
 	let drillCount = $state(0);
-	let pendingVideoCount = $state(0);
 
 	$effect(() => {
 		if (!browser || !uid || role !== 'player') {
 			loading = false;
 			drillCount = 0;
-			pendingVideoCount = 0;
 			return;
 		}
 		let cancelled = false;
 		loading = true;
 		(async () => {
 			try {
-				const [aSnap, vSnap] = await Promise.all([
-					getDocs(
-						query(
-							collection(db, 'assignments'),
-							where('playerId', '==', uid),
-							where('status', '==', 'pending'),
-						),
+				const aSnap = await getDocs(
+					query(
+						collection(db, 'assignments'),
+						where('playerId', '==', uid),
+						where('status', '==', 'pending'),
 					),
-					getDocs(
-						query(
-							collection(db, 'trial_scores'),
-							where('playerId', '==', uid),
-							where('status', '==', 'pending_verification'),
-						),
-					),
-				]);
+				);
 				if (cancelled) return;
 				drillCount = aSnap.size;
-				pendingVideoCount = vSnap.size;
 			} catch (e) {
 				console.error('[PlayerActionInbox]', e);
 				if (!cancelled) {
 					drillCount = 0;
-					pendingVideoCount = 0;
 				}
 			} finally {
 				if (!cancelled) loading = false;
@@ -59,10 +46,6 @@
 
 	function startDrills() {
 		goto('/tracker');
-	}
-
-	function uploadChallenge() {
-		goto('/challenges');
 	}
 </script>
 
@@ -91,23 +74,6 @@
 				</div>
 				<button type="button" class="pai__btn pai__btn--primary" onclick={startDrills}>
 					Start
-				</button>
-			</div>
-
-			<div class="pai__card">
-				<div class="pai__card-top">
-					<span class="pai__kicker">Coach challenges</span>
-					<h3 class="pai__title">
-						{#if pendingVideoCount > 0}
-							{pendingVideoCount} challenge video{pendingVideoCount === 1 ? '' : 's'} awaiting coach review — keep
-							raising the bar.
-						{:else}
-							Active challenges (like the 100 juggles challenge) need your best clip — upload when you’re ready.
-						{/if}
-					</h3>
-				</div>
-				<button type="button" class="pai__btn pai__btn--accent" onclick={uploadChallenge}>
-					Upload video
 				</button>
 			</div>
 		</div>
@@ -155,12 +121,6 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 10px;
-	}
-
-	@media (min-width: 640px) {
-		.pai__grid {
-			grid-template-columns: 1fr 1fr;
-		}
 	}
 
 	.pai__card {
@@ -214,12 +174,6 @@
 		background: var(--brand-primary, #6366f1);
 		color: #0f172a;
 		border-color: color-mix(in srgb, var(--brand-primary, #6366f1) 55%, #0f172a);
-	}
-
-	.pai__btn--accent {
-		background: linear-gradient(135deg, #fde68a, #f59e0b);
-		color: #0f172a;
-		border-color: rgba(180, 83, 9, 0.35);
 	}
 
 	.pai__btn:hover {

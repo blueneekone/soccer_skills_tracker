@@ -9,7 +9,24 @@
 		playerDisplayName = '',
 		/** Pre-loaded seasons (e.g. public callable). When set, skips Firestore. */
 		prefetchedSeasons = undefined,
+		/** Shown on the 3D card front (default matches Quartermaster / tier copy). */
+		rankLabel = 'Recruit',
+		/** Back-face header. */
+		telemetryTitle = 'OPERATIVE TELEMETRY',
+		/** Optional back-face rows; when blank, a short fallback line is shown. */
+		telemetryTotalXp = '',
+		telemetryWorkouts = '',
+		telemetryJoinDate = '',
 	} = $props();
+
+	/** 3D Operative ID card */
+	let isFlipped = $state(false);
+
+	function onOperativeIdKeydown(/** @type {KeyboardEvent} */ e) {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		e.preventDefault();
+		isFlipped = !isFlipped;
+	}
 
 	/** @type {null | typeof import('chart.js').Chart} */
 	let ChartCtor = null;
@@ -79,6 +96,10 @@
 	});
 
 	const selected = $derived(seasons.find((s) => s.id === selectedId));
+
+	const hasTelemetryDetails = $derived(
+		telemetryTotalXp !== '' || telemetryWorkouts !== '' || telemetryJoinDate !== '',
+	);
 
 	function num(v) {
 		const n = Number(v);
@@ -178,6 +199,99 @@
 
 {#if playerEmailKey}
 	<div class="pro-card-outer bento-section">
+		<div class="ppc-id-wrap">
+			<p
+				class="ppc-flip-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-500/80"
+			>
+				Click to flip
+			</p>
+			<div
+				class="tw-relative tw-w-full tw-max-w-[280px] tw-mx-auto tw-aspect-[2/3] tw-cursor-pointer"
+				style="perspective: 1000px;"
+				role="button"
+				tabindex="0"
+				aria-pressed={isFlipped}
+				aria-label="Operative ID card. Click to view operative telemetry on the back."
+				onclick={() => (isFlipped = !isFlipped)}
+				onkeydown={onOperativeIdKeydown}
+			>
+				<div
+					class="tw-relative tw-w-full tw-h-full tw-transition-transform tw-duration-700"
+					style="transform-style: preserve-3d;{isFlipped ? ' transform: rotateY(180deg);' : ''}"
+				>
+					<div
+						class="tw-absolute tw-inset-0 tw-bg-slate-800 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center tw-border tw-border-slate-700"
+						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
+					>
+						<div
+							class="tw-w-24 tw-h-24 tw-mx-auto tw-mb-4 tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-flex tw-items-center tw-justify-center"
+						>
+							<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
+						</div>
+						<h2
+							class="tw-m-0 tw-mb-2 tw-w-full tw-text-center tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere] tw-break-words"
+						>
+							{playerDisplayName || 'Operative'}
+						</h2>
+						<p
+							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-cyan-400"
+						>
+							{rankLabel}
+						</p>
+					</div>
+					<div
+						class="tw-absolute tw-inset-0 tw-bg-slate-900 tw-rounded-2xl tw-p-6 tw-border tw-border-cyan-500 tw-flex tw-flex-col tw-h-full tw-min-h-0 tw-text-left"
+						style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;"
+					>
+						<p
+							class="tw-m-0 tw-mb-3 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
+						>
+							{telemetryTitle}
+						</p>
+						{#if hasTelemetryDetails}
+							<dl class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 tw-text-sm">
+								{#if telemetryTotalXp !== ''}
+									<div
+										class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2"
+									>
+										<dt class="tw-m-0 tw-text-slate-500">Total XP</dt>
+										<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
+											>{telemetryTotalXp}</dd
+										>
+									</div>
+								{/if}
+								{#if telemetryWorkouts !== ''}
+									<div
+										class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2"
+									>
+										<dt class="tw-m-0 tw-text-slate-500">Workouts logged</dt>
+										<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
+											>{telemetryWorkouts}</dd
+										>
+									</div>
+								{/if}
+								{#if telemetryJoinDate !== ''}
+									<div class="tw-flex tw-justify-between tw-gap-2 tw-pb-2">
+										<dt class="tw-m-0 tw-text-slate-500">Join date</dt>
+										<dd
+											class="tw-m-0 tw-text-right tw-font-mono tw-text-xs tw-text-cyan-200/90 [overflow-wrap:anywhere]"
+										>
+											{telemetryJoinDate}
+										</dd>
+									</div>
+								{/if}
+							</dl>
+						{:else}
+							<p class="tw-m-0 tw-flex-1 tw-text-xs tw-leading-relaxed tw-text-slate-500">
+								Combine and scouting metrics for this operative’s file appear in the section below when
+								available.
+							</p>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div class="card pro-card-shell">
 			<div class="pro-card-header-row">
 				<div>
@@ -286,6 +400,10 @@
 {/if}
 
 <style>
+	.ppc-id-wrap {
+		margin-bottom: clamp(16px, 3vw, 24px);
+	}
+
 	.pro-card-outer {
 		grid-template-columns: 1fr;
 		gap: clamp(16px, 3vw, 24px);

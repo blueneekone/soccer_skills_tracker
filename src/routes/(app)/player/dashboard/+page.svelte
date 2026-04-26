@@ -5,6 +5,7 @@
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -18,54 +19,6 @@
 	const rankProgress = $derived(getCurrentRank(totalXpHud));
 	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
-
-	/** @param {unknown} ts */
-	function formatJoinLabel(ts) {
-		if (ts == null) return '—';
-		if (ts instanceof Date && !Number.isNaN(ts.getTime())) {
-			return ts.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-		}
-		if (typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof /** @type {{ toDate: () => Date }} */ (ts).toDate === 'function') {
-			const d = /** @type {{ toDate: () => Date }} */ (ts).toDate();
-			if (d instanceof Date && !Number.isNaN(d.getTime())) {
-				return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-			}
-		}
-		if (typeof ts === 'number' && Number.isFinite(ts)) {
-			return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-		}
-		if (typeof ts === 'string' && ts.trim()) {
-			const d = new Date(ts);
-			if (!Number.isNaN(d.getTime())) {
-				return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-			}
-		}
-		return '—';
-	}
-
-	const joinDateLabel = $derived(formatJoinLabel(profile?.joinedAt ?? profile?.createdAt));
-
-	const workoutsLoggedCount = $derived.by(() => {
-		const p = profile;
-		if (!p) return 0;
-		const st = p.stats;
-		const fromStats =
-			st && typeof st === 'object' && st !== null && 'workoutsLogged' in st ?
-				(/** @type {Record<string, unknown>} */ (st)).workoutsLogged :
-				undefined;
-		const raw = p.workoutsLogged ?? p.workoutsCount ?? fromStats;
-		const n = Number(raw);
-		return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
-	});
-
-	/** 3D Operative ID card: click outer wrapper to flip */
-	let isFlipped = $state(false);
-
-	function onOperativeIdKeydown(/** @type {KeyboardEvent} */ e) {
-		if (e.key !== 'Enter' && e.key !== ' ') return;
-		e.preventDefault();
-		isFlipped = !isFlipped;
-	}
 
 	/** @typedef {{ id: string, seasonLabel?: string, physical?: Record<string, unknown>, technical?: Record<string, unknown> }} SeasonRow */
 
@@ -279,108 +232,38 @@
 <section
 	class="pd-wrap tw-mx-auto tw-min-w-0 tw-w-full tw-max-w-3xl tw-overflow-x-hidden tw-box-border tw-px-2"
 >
-	<div class="pd-hq tw-flex tw-w-full tw-flex-col tw-items-stretch tw-gap-6">
+	<div
+		class="tw-flex tw-flex-col tw-items-center tw-gap-8 tw-w-full tw-max-w-md tw-mx-auto tw-pb-24"
+		data-region="player-hq-column"
+	>
 		<div class="tw-w-full">
-		<p
-			class="oid-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
-		>
-			Click to flip
-		</p>
-		<div
-			class="tw-relative tw-w-full tw-max-w-[280px] tw-mx-auto tw-aspect-[2/3] tw-cursor-pointer tw-outline-none"
-			role="button"
-			tabindex="0"
-			aria-pressed={isFlipped}
-			aria-label="Operative ID card. Click to view operative telemetry on the back."
-			style="perspective: 1000px;"
-			onclick={() => (isFlipped = !isFlipped)}
-			onkeydown={onOperativeIdKeydown}
-		>
-			<div
-				class={`tw-relative tw-h-full tw-w-full tw-transition-transform tw-duration-700 tw-preserve-3d${
-					isFlipped ? ' tw-[transform:rotateY(180deg)]' : ''
-				}`}
-			>
-				<div
-					class="tw-absolute tw-inset-0 tw-backface-hidden tw-bg-slate-800 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-items-center tw-text-center"
-				>
-					<div
-						class="tw-w-24 tw-h-24 tw-mx-auto tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-mb-4 tw-flex tw-items-center tw-justify-center"
-					>
-						<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
-					</div>
-					<h2
-						class="tw-m-0 tw-mb-2 tw-w-full tw-break-words tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere]"
-					>
-						{profile?.playerName || 'Athlete'}
-					</h2>
-					<p
-						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-cyan-400"
-					>
-						{rankProgress.rank}
-					</p>
-				</div>
-
-				<div
-					class="tw-absolute tw-inset-0 tw-backface-hidden tw-[transform:rotateY(180deg)] tw-bg-slate-900 tw-rounded-2xl tw-p-6 tw-border tw-border-slate-700 tw-flex tw-flex-col tw-h-full tw-min-h-0"
-				>
-					<p
-						class="tw-m-0 tw-mb-4 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
-					>
-						OPERATIVE TELEMETRY
-					</p>
-					<dl class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-text-left tw-text-sm">
-						<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2">
-							<dt class="tw-m-0 tw-text-slate-500">Total XP</dt>
-							<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
-								>{totalXpHud.toLocaleString()}</dd
-							>
-						</div>
-						<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2">
-							<dt class="tw-m-0 tw-text-slate-500">Workouts logged</dt>
-							<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300">{workoutsLoggedCount}</dd>
-						</div>
-						<div class="tw-flex tw-justify-between tw-gap-2 tw-pb-2">
-							<dt class="tw-m-0 tw-text-slate-500">Join date</dt>
-							<dd class="tw-m-0 tw-text-right tw-font-mono tw-text-xs tw-text-cyan-200/90">
-								{joinDateLabel}
-							</dd>
-						</div>
-					</dl>
-					<div
-						class="tw-mt-auto tw-flex tw-h-9 tw-w-full tw-items-end tw-justify-center tw-gap-[2px] tw-pt-3"
-						aria-hidden="true"
-					>
-						{#each [8, 2, 3, 1, 1, 4, 1, 2, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1] as h, i (i)}
-							<div
-								class="tw-w-[2px] tw-shrink-0 tw-rounded-[1px] tw-bg-cyan-200/30"
-								style="height: {4 + h}px"
-							></div>
-						{/each}
-					</div>
-				</div>
-			</div>
+			<ProPlayerCard
+				playerEmailKey={email}
+				playerDisplayName={profile?.playerName || ''}
+				prefetchedSeasons={seasons}
+				rankLabel={rankProgress.rank}
+			/>
 		</div>
-	</div>
-
 		<div
 			class="pd-progress-stack tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4"
 			aria-label="Career progress and activity"
 		>
 			<div
-				class="pd-rank-bar tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-4 tw-border-b tw-border-cyan-500/20 tw-pb-5"
+				class="pd-rank-bar tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-items-center tw-gap-4 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-border-b tw-border-cyan-500/20 tw-pb-5"
 				aria-label="Career rank progress"
 			>
-				<LevelProgressRing
-					currentXp={rankProgress.xpInCurrentTier}
-					nextRankXp={rankProgress.xpToNextRank}
-					rankName={rankProgress.rank}
-					totalXp={totalXpHud}
-					level={osLevel}
-					size="lg"
-					variant="dark"
-				/>
-				<div class="tw-min-w-0 tw-flex-1">
+				<div class="tw-mx-auto tw-w-fit tw-shrink-0 sm:tw-mx-0">
+					<LevelProgressRing
+						currentXp={rankProgress.xpInCurrentTier}
+						nextRankXp={rankProgress.xpToNextRank}
+						rankName={rankProgress.rank}
+						totalXp={totalXpHud}
+						level={osLevel}
+						size="lg"
+						variant="dark"
+					/>
+				</div>
+				<div class="tw-w-full tw-min-w-0 tw-text-center sm:tw-flex-1 sm:tw-text-left">
 					<p
 						class="tw-m-0 tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-500/80"
 					>
@@ -413,8 +296,10 @@
 			</div>
 		</div>
 		<div class="tw-w-full tw-min-w-0">
+			<!-- Active assignments / action inbox (assignments, drills) -->
 			<PlayerActionInbox />
 		</div>
+	</div>
 
 		<section class="pd-radar-shell tw-min-w-0">
 		<header class="pd-radar-head">
@@ -497,7 +382,6 @@
 			<span class="pd-quick-nav__label">Career Stats</span>
 		</button>
 	</nav>
-	</div>
 </section>
 
 <style>

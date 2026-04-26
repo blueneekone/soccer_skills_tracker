@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { getAvailableItems } from '$lib/gamification/armory.js';
+	import { getAvailableItems, processDeploymentRequest } from '$lib/gamification/armory.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import Swal from 'sweetalert2';
 
@@ -34,6 +34,8 @@
 
 	const lineItems = $derived(getAvailableItems(operativeLevel));
 
+	let armoryBusy = $state(false);
+
 	$effect(() => {
 		if (!browser) return;
 		const u = authStore.user;
@@ -45,21 +47,70 @@
 	});
 
 	/**
-	 * Phase 2 mock: no TC deduction yet (Phase 3 ledger).
+	 * Quartermaster: deduct TC via {@link processDeploymentRequest}, then optimistically update local profile.
 	 * @param {import('$lib/gamification/armory.js').QuartermasterItem} item
 	 */
-	function requestDeployment(item) {
-		void Swal.fire({
-			text: `${item.title} requested. Awaiting Command approval.`,
-			icon: 'success',
-			toast: true,
-			position: 'top-end',
-			showConfirmButton: false,
-			timer: 4500,
-			timerProgressBar: true,
-			background: '#05050a',
-			color: '#e5e5e5',
-		});
+	async function requestDeployment(item) {
+		if (armoryBusy) return;
+		/** @type {import('firebase/auth').User | null} */
+		const u = authStore.user;
+		/** `users/{email}` profile — `clubId` is not on Firebase `User` in the client SDK. */
+		const prof = profile;
+		const clubId = typeof prof?.clubId === 'string' && prof.clubId.trim() ? prof.clubId.trim() : '';
+		if (!u) {
+			void Swal.fire({
+				text: 'You must be signed in to request deployment.',
+				icon: 'error',
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+			return;
+		}
+		if (!clubId) {
+			void Swal.fire({
+				text: 'Missing club context. Complete team setup or contact Command.',
+				icon: 'error',
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+			return;
+		}
+		armoryBusy = true;
+		try {
+			await processDeploymentRequest(u, item, clubId);
+			const after = authStore.userProfile;
+			if (after) {
+				const o = /** @type {Record<string, unknown> & { tacticalCredits?: number }} */ (after);
+				const prev = Math.max(0, Math.floor(Number(o.tacticalCredits) || 0));
+				authStore.setProfile({ ...o, tacticalCredits: Math.max(0, prev - item.cost) });
+			}
+			void Swal.fire({
+				text: `DEPLOYMENT CONFIRMED: ${item.title} requested. Credits deducted.`,
+				icon: 'success',
+				toast: true,
+				position: 'top-end',
+				showConfirmButton: false,
+				timer: 4500,
+				timerProgressBar: true,
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : 'Deployment could not be completed.';
+			void Swal.fire({
+				text: msg,
+				icon: 'error',
+				toast: true,
+				position: 'top-end',
+				showConfirmButton: false,
+				timer: 5000,
+				timerProgressBar: true,
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+		} finally {
+			armoryBusy = false;
+		}
 	}
 </script>
 
@@ -112,7 +163,10 @@
 					<button
 						type="button"
 						class="qa-btn qa-btn--ready"
-						onclick={() => requestDeployment(item)}
+						disabled={armoryBusy}
+						onclick={async () => {
+							await requestDeployment(item);
+						}}
 					>
 						REQUEST DEPLOYMENT
 					</button>

@@ -1,3 +1,6 @@
+import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { db } from '$lib/firebase.js';
+
 /**
  * Quartermaster gamification — **The Ledger** (Path B).
  * Enterprise catalog: all `cost` values are denominated in **Tactical Credits** (TC);
@@ -74,4 +77,102 @@ export function getAvailableItems(playerLevel) {
 	return [...QUARTERMASTER_INVENTORY]
 		.filter((item) => L >= item.minLevel)
 		.sort((a, b) => a.cost - b.cost);
+}
+
+/**
+ * Firestore `users/{id}` in this app is typically keyed by **lowercased email**; falls back to Auth `uid`
+ * when email is missing (e.g. rare anonymous flows).
+ * @param {{ uid?: string, email?: string | null, displayName?: string | null, callSign?: string }} u
+ * @returns {string}
+ */
+function getUserDocumentId(u) {
+	if (u && typeof u.email === 'string' && u.email.trim()) {
+		return u.email.trim().toLowerCase();
+	}
+	return String(u?.uid || '');
+}
+
+/**
+ * @param {{ uid?: string, email?: string | null, displayName?: string | null, callSign?: string }} u
+ * @returns {string}
+ */
+function getPlayerNameForFulfillment(u) {
+	const d = u && typeof u.displayName === 'string' && u.displayName.trim() ? u.displayName.trim() : '';
+	if (d) return d;
+	const cs = u && typeof u.callSign === 'string' && u.callSign.trim() ? u.callSign.trim() : '';
+	if (cs) return cs;
+	if (u && typeof u.email === 'string' && u.email.includes('@')) {
+		const first = u.email.split('@')[0] || '';
+		if (first) return first;
+	}
+	return 'Operative';
+}
+
+/**
+ * Deducts Tactical Credits and creates a club-scoped fulfillment request (Quartermaster / Path B).
+ *
+ * @param {{ uid?: string, email?: string | null, displayName?: string | null, callSign?: string }} user — Firebase Auth user or compatible object
+ * @param {QuartermasterItem} item
+ * @param {string} clubId
+ * @returns {Promise<string>} The new fulfillment document id
+ */
+export async function processDeploymentRequest(user, item, clubId) {
+	const club = typeof clubId === 'string' ? clubId.trim() : '';
+	if (!club) {
+		throw new Error('processDeploymentRequest: clubId is required.');
+	}
+	if (!user || (!user.uid && !user.email)) {
+		throw new Error('processDeploymentRequest: user with uid or email is required.');
+	}
+	const idKey = getUserDocumentId(user);
+	if (!idKey) {
+		throw new Error('processDeploymentRequest: could not resolve user document id.');
+	}
+
+	const userRef = doc(db, 'users', idKey);
+	const fulfillmentsCol = collection(db, 'organizations', club, 'fulfillments');
+	const fulfillmentRef = doc(fulfillmentsCol);
+
+	const cost = Math.max(0, Math.floor(Number(item?.cost) || 0));
+	const itemId = typeof item?.id === 'string' ? item.id : '';
+	const itemTitle = typeof item?.title === 'string' ? item.title : '';
+	const itemType = item?.type === 'physical' || item?.type === 'digital' ? item.type : 'digital';
+	if (!itemId) {
+		throw new Error('processDeploymentRequest: item.id is required.');
+	}
+
+	const playerName = getPlayerNameForFulfillment(/** @type {Parameters<typeof getPlayerNameForFulfillment>[0]} */ (user));
+	const playerId = String(user.uid || idKey);
+
+	const fulfillmentPayload = {
+		playerId,
+		playerName,
+		itemId,
+		itemTitle,
+		cost,
+		type: itemType,
+		status: 'pending',
+		requestedAt: serverTimestamp(),
+	};
+
+	try {
+		const fulfillmentId = await runTransaction(db, async (transaction) => {
+			const userSnap = await transaction.get(userRef);
+			if (!userSnap.exists()) {
+				throw new Error('User profile not found.');
+			}
+			const data = userSnap.data();
+			const credits = Math.max(0, Math.floor(Number(data?.tacticalCredits) || 0));
+			if (credits < cost) {
+				throw new Error('Insufficient Tactical Credits.');
+			}
+			transaction.update(userRef, { tacticalCredits: credits - cost });
+			transaction.set(fulfillmentRef, fulfillmentPayload);
+			return fulfillmentRef.id;
+		});
+		return fulfillmentId;
+	} catch (e) {
+		console.error('[armory] processDeploymentRequest', e);
+		throw e;
+	}
 }

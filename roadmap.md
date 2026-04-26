@@ -131,3 +131,27 @@ Deploy **universal [ ? ] help modals** across the platform, and eventually upgra
 
 **Save & deploy**  
 Save visual drills as **reusable templates** and **push** them to **specific player cohorts** (targeted delivery on top of the existing coach → squad flows).
+
+---
+
+## Phase 9: The Automated Dispatch Engine (AI Coach)
+
+**Mission profile:** Close the loop between **field performance** and **at-home execution** without adding staff overhead. The platform becomes a **tactical co-pilot**: every logged workout is a **signal**; the system responds with **targeted, standards-aligned homework**—while preserving **Command authority** as non-negotiable.
+
+### Core loop (Gen 2 server surface)
+
+- **Trigger:** A **Gen 2 Firebase Cloud Function** named **`onWorkoutLogged`**, bound to the canonical path where **player workout submissions** land (e.g. `workout_logs` / training-session writes, aligned with existing `logTrainingSession` and Player OS mirrors).
+- **Evaluate:** The function **scores or classifies** the submission against **performance thresholds** (per sport pack, per team policy, and per athlete baseline where configured)—not a black-box “AI score,” but a **rules engine + optional model tier** you can audit.
+- **Dispatch:** On a match condition, the engine **injects** a **targeted homework payload** into the athlete’s **`activeAssignments` / Action Inbox** surface (same contract the Player OS already reads for “drills due”), so the **next best rep** is always one tap away.
+- **Observability:** Every injection is **traceable** (function run id, source workout id, threshold branch, target assignment id)—**Enterprise SOAR** standard: no silent state changes in production.
+
+### The Command Override Protocol
+
+**This is a hard rule, not a preference.**
+
+- **Human Coach curriculum is sovereign.** If a **Coach** has **active manual assignments** for a player or team, or a **curriculum / drill track locked in** (explicit scope: player, roster, or team), the Automated Dispatch Engine **must not** overwrite, supersede, or “fight” that contract.
+- **Deferral path (default when Command is in control):** The Cloud Function **defers to the Coach’s parameters**—thresholds, suggested homework, and delivery windows are **reconciled** against what Command already published.
+- **Assisted path (when auto-dispatch would add value without seizing the roster):** If the engine proposes homework that is **not** already covered by a locked curriculum, the pipeline **routes the suggestion to the Coach** (Director OS / Coach surface) for **one-click approval** before it is written as a player-facing assignment. **No auto-assignment** to the athlete without that gate when an override or lock is active.
+- **Rationale:** Minors, liability, and club trust require **an accountable human** on the field side of the wire. Automation **augments** Command; it does **not** replace the **Chain of Command**.
+
+**Principle:** *Instrument everything. Decide nothing over a Coach that has already staked the curriculum.*
