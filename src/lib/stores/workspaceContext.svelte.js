@@ -1,10 +1,10 @@
 /**
  * Workspace context: switcher pivot + active role bucket + scoped club/team for zero-trust UI.
- * Defensive sessionStorage: never throw on read/write; re-hydrate from user profile when cache is empty.
+ * Defensive sessionStorage: never throw on read/write; profile fill when cache is empty is driven
+ * synchronously from `auth.svelte.js` (no $effect here — avoids Svelte 5 effect_orphan in store modules).
  */
 
 import { browser } from '$app/environment';
-import { authStore } from '$lib/stores/auth.svelte.js';
 
 // ── sessionStorage keys (tenant scope; tab session) ───────────────────────
 const K_PIVOT = 'sst-ws-pivot';
@@ -118,22 +118,17 @@ if (browser) {
 }
 
 /**
- * If session cache is empty, wait for auth + Firestore user profile, then set club/team from `users/{email}`.
- * Firebase Auth has no `clubId`; it lives on the resolved `authStore.userProfile` document.
+ * @param {Record<string, unknown> | null | undefined} prof
+ * @param {string} role
  */
-$effect(() => {
+function applyHydrationFromProfile(prof, role) {
 	if (!browser) return;
-	if (authStore.isLoading) return;
-	if (!authStore.isAuthenticated) return;
-	const prof = authStore.userProfile;
 	if (!prof) return;
-	const role = authStore.role;
 	const pid =
 		typeof prof.clubId === 'string' && prof.clubId.trim() ? prof.clubId.trim() : '';
 	const tidRaw =
 		typeof prof.teamId === 'string' && prof.teamId.trim() ? prof.teamId.trim() : '';
 	const tid = tidRaw && tidRaw !== 'admin' ? tidRaw : '';
-
 	if (!(activeClubId && activeClubId.trim()) && pid) {
 		activeClubId = pid;
 		persistToSession();
@@ -144,7 +139,7 @@ $effect(() => {
 			persistToSession();
 		}
 	}
-});
+}
 
 export const workspaceContextStore = {
 	get activePivotKey() {
@@ -161,6 +156,15 @@ export const workspaceContextStore = {
 	},
 	get isSidebarOpen() {
 		return isSidebarOpen;
+	},
+	/**
+	 * If session cache did not set club/team, copy from Firestore `users/{email}` (via resolved profile).
+	 * Call from the auth store only, right after `setProfile` in `onAuthStateChanged` / `refresh` — not from `$effect`.
+	 * @param {Record<string, unknown> | null | undefined} prof
+	 * @param {string} role
+	 */
+	hydrateFromUserProfileIfEmpty(prof, role) {
+		applyHydrationFromProfile(prof, role);
 	},
 	/**
 	 * @param {string} key

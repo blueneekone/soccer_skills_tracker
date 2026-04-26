@@ -3,6 +3,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { resolveUserProfile, isProfileComplete as computeIsProfileComplete } from '$lib/auth/profile.js';
 import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
+import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 /**
  * Defensive `sessionStorage.getItem` (private mode / SSR / denied).
@@ -102,6 +103,7 @@ function createAuthStore() {
 			isAuthenticated = false;
 			isProfileComplete = false;
 			isLoading = false;
+			workspaceContextStore.clear();
 			return;
 		}
 
@@ -118,6 +120,7 @@ function createAuthStore() {
 			}
 			role = resolved.role;
 			setProfile(resolved.profile);
+			workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
 			attachUserStatusListener(firebaseUser);
 		} catch (err) {
 			console.error('[auth store] init error:', err);
@@ -161,6 +164,7 @@ function createAuthStore() {
 				}
 				role = resolved.role;
 				setProfile(resolved.profile);
+				workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
 			} catch (err) {
 				console.error('[auth store] refresh error:', err);
 			} finally {
