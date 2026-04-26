@@ -152,7 +152,32 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 					showBilling: false,
 				};
 			}
-			if (role === 'player' || role === 'super_admin') {
+			// If activeContext fell through to default, still give staff a real nav (not only Settings).
+			if (role === 'coach') {
+				return {
+					workspaceLabel: 'Coach',
+					mobileTitle: 'Coach',
+					links: coachLinks,
+					showBilling: false,
+				};
+			}
+			if (role === 'director') {
+				return {
+					workspaceLabel: 'Director',
+					mobileTitle: 'Director',
+					links: directorLinks,
+					showBilling: true,
+				};
+			}
+			if (role === 'admin' || role === 'global_admin' || role === 'super_admin') {
+				return {
+					workspaceLabel: 'Global Admin',
+					mobileTitle: 'Global Admin',
+					links: adminLinks,
+					showBilling: false,
+				};
+			}
+			if (role === 'player') {
 				return {
 					workspaceLabel: 'Player',
 					mobileTitle: 'Player',
@@ -163,7 +188,10 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 			return {
 				workspaceLabel: 'Workspace',
 				mobileTitle: 'App',
-				links: [{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' }],
+				links: [
+					{ tab: '', label: 'Home', icon: 'ph-house', href: '/' },
+					{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
+				],
 				showBilling: false,
 			};
 		}
