@@ -50,7 +50,7 @@
 <div class="tw-inline-flex tw-align-middle">
 	<button
 		type="button"
-		class="im-trigger tw-inline-flex tw-items-center tw-justify-center tw-min-h-[1.75rem] tw-px-2 tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(6,182,212,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(34,211,238,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
+		class="im-trigger tw-inline-flex tw-items-center tw-justify-center !tw-min-h-0 !tw-h-5 !tw-w-auto !tw-px-1.5 !tw-py-0 !tw-text-[0.55rem] tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(6,182,212,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(34,211,238,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
 		onclick={openModal}
 		aria-haspopup="dialog"
 		aria-expanded={open}
