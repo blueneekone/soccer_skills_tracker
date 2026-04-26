@@ -20,7 +20,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import { workoutsStore, saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
 	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 
 	const secureAssignHomework = httpsCallable(functions, 'secureAssignHomework');
@@ -62,12 +62,109 @@
 
 	const currentTeam = $derived(myTeams.find((t) => t.id === selectedTeamId));
 
-	/** @type {'mission' | 'library' | 'designer'} */
+	/** @type {'mission' | 'library' | 'designer' | 'schedule'} */
 	let pageView = $state('mission');
+
+	/** @type {'game' | 'practice'} */
+	let scheduleEventKind = $state('practice');
+	let scheduleTitle = $state('');
+	let scheduleStartLocal = $state('');
+	let schedNotify1h = $state(false);
+	let schedNotify30m = $state(true);
+	let schedNotifyMorning = $state(false);
+	let scheduleSaveBusy = $state(false);
+	let scheduleErr = $state('');
+	let scheduleOk = $state('');
+
+	/** @type {Array<Record<string, unknown>>} */
+	const scheduleRows = $derived.by(() => {
+		const w = workoutsStore.workouts;
+		return w
+			.filter(
+				(/** @type {Record<string, unknown>} */ x) =>
+					x.recordType === 'scheduled_event' || x.type === 'scheduled',
+			)
+			.sort(
+				(/** @type {Record<string, unknown>} */ a, /** @type {Record<string, unknown>} */ b) => {
+					const t = (/** @type {Record<string, unknown>} */ e) =>
+						Number(e.startTimestamp) ||
+						(typeof e.startTimeUnix === 'number' ? e.startTimeUnix * 1000 : 0);
+					return t(a) - t(b);
+				},
+			);
+	});
 
 	const onWorkoutSaved = () => {
 		if (selectedTeamId) void workoutsStore.loadForTeam(selectedTeamId);
 	};
+
+	async function submitScheduleEvent() {
+		if (!selectedTeamId || !scheduleStartLocal) {
+			scheduleErr = 'Choose a start date and time.';
+			return;
+		}
+		const start = new Date(scheduleStartLocal);
+		if (Number.isNaN(start.getTime())) {
+			scheduleErr = 'Invalid start time.';
+			return;
+		}
+		scheduleSaveBusy = true;
+		scheduleErr = '';
+		scheduleOk = '';
+		const keys = /** @type {string[]} */ ([]);
+		if (schedNotify1h) {
+			keys.push('h1');
+		}
+		if (schedNotify30m) {
+			keys.push('m30');
+		}
+		if (schedNotifyMorning) {
+			keys.push('morning');
+		}
+		try {
+			await saveTeamScheduledEvent({
+				teamId: selectedTeamId,
+				eventKind: scheduleEventKind,
+				title: scheduleTitle,
+				startAt: start,
+				reminderKeys: keys,
+				source: 'coach_form'
+			});
+			scheduleOk = 'Event saved with notification preferences.';
+			await workoutsStore.loadForTeam(selectedTeamId);
+		} catch (e) {
+			scheduleErr = e instanceof Error ? e.message : 'Could not save event.';
+		} finally {
+			scheduleSaveBusy = false;
+		}
+	}
+
+	/**
+	 * @param {Record<string, unknown> & {
+	 *   startTimestamp?: number;
+	 *   startTimeUnix?: number;
+	 *   startTime?: { toDate?: () => Date };
+	 * }} ev
+	 */
+	function formatScheduleStart(ev) {
+		const ts = ev.startTimestamp;
+		if (typeof ts === 'number' && ts > 0) {
+			return new Date(ts).toLocaleString();
+		}
+		const t = ev.startTime;
+		if (t && typeof t === 'object' && 'toDate' in t && typeof t.toDate === 'function') {
+			try {
+				return t.toDate().toLocaleString();
+			} catch {
+				/* ignore */
+			}
+		}
+		const u = ev.startTimeUnix;
+		if (typeof u === 'number' && u > 0) {
+			return new Date(u * 1000).toLocaleString();
+		}
+		return '—';
+	}
 
 	$effect(() => {
 		if (!selectedTeamId) return;
@@ -575,6 +672,14 @@
 				>
 					Spatial designer
 				</button>
+				<button
+					type="button"
+					class="cdm-seg__btn"
+					class:cdm-seg__btn--on={pageView === 'schedule'}
+					onclick={() => (pageView = 'schedule')}
+				>
+					Team schedule
+				</button>
 			</nav>
 		</div>
 		<div class="drill-lib__head-actions">
@@ -737,6 +842,114 @@
 				workouts={workoutsStore.workouts}
 				{onWorkoutSaved}
 			/>
+		</div>
+	{:else if pageView === 'schedule'}
+		<div class="cdm-grid cdm-grid--schedule" data-region="team-schedule">
+			<div class="cdm-panel" aria-labelledby="cdm-sch-h">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Schedule</span>
+					<h2 id="cdm-sch-h" class="cdm-h2">Game or practice</h2>
+					<p class="cdm-muted" style="margin:0 0 1rem; font-size:0.8rem; max-width: 36rem">
+						<code>reminderOffsets</code> is an array: minute values (e.g. 60, 30) and optionally the
+						string <code>morning</code> for &ldquo;Morning of.&rdquo;
+						<code>startTimestamp</code> is the event start in Unix milliseconds for dispatch
+						timing.
+					</p>
+				</div>
+				<div class="cdm-sch-form">
+					<label class="cdm-field">
+						<span class="cdm-eyebrow">Event type</span>
+						<select class="cdm-select" bind:value={scheduleEventKind}>
+							<option value="practice">Practice</option>
+							<option value="game">Game</option>
+						</select>
+					</label>
+					<label class="cdm-field">
+						<span class="cdm-eyebrow">Title (optional)</span>
+						<input
+							class="cdm-select"
+							type="text"
+							placeholder="e.g. Scrimmage vs North"
+							bind:value={scheduleTitle}
+							maxlength="200"
+						/>
+					</label>
+					<label class="cdm-field">
+						<span class="cdm-eyebrow">Start</span>
+						<input
+							class="cdm-select"
+							type="datetime-local"
+							bind:value={scheduleStartLocal}
+							required
+						/>
+					</label>
+					<fieldset class="cdm-sch-triggers">
+						<legend class="cdm-eyebrow" style="margin-bottom:0.5rem">Notification triggers</legend>
+						<div class="cdm-sch-toggles">
+							<label class="cdm-sch-ch">
+								<input type="checkbox" bind:checked={schedNotify1h} />
+								1 hour before
+							</label>
+							<label class="cdm-sch-ch">
+								<input type="checkbox" bind:checked={schedNotify30m} />
+								30 minutes before
+							</label>
+							<label class="cdm-sch-ch">
+								<input type="checkbox" bind:checked={schedNotifyMorning} />
+								Morning of
+							</label>
+						</div>
+					</fieldset>
+					{#if scheduleErr}
+						<p class="cdm-err" role="alert">{scheduleErr}</p>
+					{/if}
+					{#if scheduleOk}
+						<p class="cdm-ok" role="status">{scheduleOk}</p>
+					{/if}
+					<button
+						type="button"
+						class="cdm-deploy"
+						disabled={!selectedTeamId || !scheduleStartLocal || scheduleSaveBusy}
+						onclick={() => void submitScheduleEvent()}
+					>
+						{#if scheduleSaveBusy}
+							Saving…
+						{:else}
+							Save event
+						{/if}
+					</button>
+				</div>
+			</div>
+			<aside class="cdm-panel cdm-panel--payload" aria-labelledby="cdm-sch-list">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Ingested</span>
+					<h2 id="cdm-sch-list" class="cdm-h2">Scheduled for this team</h2>
+				</div>
+				{#if scheduleRows.length === 0}
+					<p class="cdm-muted">No team events in <code>team_workouts</code> yet.</p>
+				{:else}
+					<ul class="cdm-sch-list">
+						{#each scheduleRows as ev (ev.id)}
+							<li class="cdm-sch-li">
+								<div class="cdm-sch-li__top">
+									<span class="cdm-sch-pill"
+										>{String(ev.eventKind || ev.type || '—')}</span
+									>
+									<time class="cdm-sch-time">{formatScheduleStart(/** @type {*} */ (ev))}</time>
+								</div>
+								<p class="cdm-sch-name">{String(ev.name || '—')}</p>
+								<p class="cdm-sch-meta">
+									<span>reminderOffsets: {JSON.stringify(ev.reminderOffsets || [])}</span>
+									<br />
+									<span class="cdm-mono"
+										>startTimestamp: {String(ev.startTimestamp != null ? ev.startTimestamp : '—')}</span
+									>
+								</p>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</aside>
 		</div>
 	{:else}
 	<nav class="drill-lib__tabs" aria-label="Drill library sections">
@@ -1279,6 +1492,86 @@
 	.cdm-deploy:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	.cdm-grid--schedule {
+		align-items: start;
+	}
+
+	.cdm-sch-triggers {
+		border: 1px solid var(--cdm-line, rgba(255, 255, 255, 0.1));
+		border-radius: 0.5rem;
+		padding: 0.75rem 1rem;
+		margin: 0 0 0.5rem;
+	}
+
+	.cdm-sch-toggles {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1.25rem;
+	}
+
+	.cdm-sch-ch {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.75rem;
+		cursor: pointer;
+	}
+
+	.cdm-sch-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		max-height: min(50vh, 420px);
+		overflow: auto;
+	}
+
+	.cdm-sch-li {
+		border: 1px solid var(--cdm-line, rgba(255, 255, 255, 0.1));
+		border-radius: 0.5rem;
+		padding: 0.6rem 0.75rem;
+		background: #000;
+	}
+
+	.cdm-sch-li__top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.cdm-sch-pill {
+		font-size: 0.6rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		padding: 0.2rem 0.45rem;
+		border: 1px solid rgba(0, 212, 255, 0.35);
+		color: var(--cdm-cyber, #22d3ee);
+	}
+
+	.cdm-sch-time {
+		font-size: 0.65rem;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.cdm-sch-name {
+		margin: 0 0 0.35rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.cdm-sch-meta {
+		margin: 0;
+		font-size: 0.6rem;
+		line-height: 1.4;
+		color: rgba(255, 255, 255, 0.45);
+		word-break: break-word;
 	}
 
 	.sr-only {

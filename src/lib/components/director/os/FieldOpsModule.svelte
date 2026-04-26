@@ -7,6 +7,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
+	import { saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
 	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 
@@ -52,6 +53,10 @@
 	let activityType = $state('Practice');
 	let startTimeInput = $state('18:00');
 	let endTimeInput = $state('19:00');
+	/** Notification trigger toggles (persisted to `team_workouts` for reminder dispatch) */
+	let notify1h = $state(false);
+	let notify30m = $state(true);
+	let notifyMorning = $state(false);
 	let booking = $state(false);
 	let conflictMsg = $state(/** @type {string | null} */ (null));
 	let dragTeamId = $state(/** @type {string | null} */ (null));
@@ -246,6 +251,38 @@
 				endTime: endD.toISOString(),
 				activityType
 			});
+			const rKeys = /** @type {string[]} */ ([]);
+			if (notify1h) {
+				rKeys.push('h1');
+			}
+			if (notify30m) {
+				rKeys.push('m30');
+			}
+			if (notifyMorning) {
+				rKeys.push('morning');
+			}
+			try {
+				await saveTeamScheduledEvent({
+					teamId: bookingTeamId,
+					eventKind: activityType,
+					title: '',
+					startAt: startD,
+					endAt: endD,
+					reminderKeys: rKeys,
+					source: 'field_booking',
+					fieldId,
+					scheduleDate
+				});
+			} catch (e2) {
+				const msg2 =
+					e2 && typeof e2 === 'object' && 'message' in e2 ?
+						String(/** @type {{ message?: string }} */ (e2).message) :
+						String(e2);
+				console.error('[FieldOps] reminder payload write', e2);
+				alert(
+					`Field was booked, but saving notification settings failed: ${msg2}. You can re-enter this session in the coach Team schedule tab.`,
+				);
+			}
 		} catch (e) {
 			const msg =
 				e && typeof e === 'object' && 'message' in e ?
@@ -480,6 +517,29 @@
 					End
 					<input type="time" bind:value={endTimeInput} class="tw-rounded-lg tw-border tw-px-2 tw-py-2" />
 				</label>
+				<div
+					class="tw-flex tw-flex-col tw-gap-2 sm:tw-col-span-2 lg:tw-col-span-4"
+					role="group"
+					aria-label="Notification triggers"
+				>
+					<span class="tw-text-xs tw-font-bold" style="color: var(--text-secondary);"
+						>Notification triggers</span
+					>
+					<div class="tw-flex tw-flex-wrap tw-gap-3">
+						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
+							<input type="checkbox" bind:checked={notify1h} class="tw-rounded" />
+							1 hour before
+						</label>
+						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
+							<input type="checkbox" bind:checked={notify30m} class="tw-rounded" />
+							30 minutes before
+						</label>
+						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
+							<input type="checkbox" bind:checked={notifyMorning} class="tw-rounded" />
+							Morning of
+						</label>
+					</div>
+				</div>
 				<button
 					type="button"
 					class="dir-os-btn-primary sm:tw-col-span-2 lg:tw-col-span-4"

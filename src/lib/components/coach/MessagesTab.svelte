@@ -4,25 +4,38 @@
 	import {
 		collection,
 		query,
-		where,
 		orderBy,
 		limit,
 		onSnapshot,
 		addDoc,
 		updateDoc,
 		doc,
-		getDocs,
-		getDoc,
 		serverTimestamp,
 	} from 'firebase/firestore';
-	import { db, functions } from '$lib/firebase.js';
-	import { httpsCallable } from 'firebase/functions';
+	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import NewMessageModal from './NewMessageModal.svelte';
 
-	const sendChannelMessageFn = httpsCallable(functions, 'sendChannelMessage');
+	let { teamId = '', players: _players = [], clubId: _clubId = '' } = $props();
 
-	let { teamId = '', players = [], clubId = '' } = $props();
+	/** @type {Array<{ id: string; label: string; description: string; icon: string }>} */
+	const DEFAULT_CHANNELS = [
+		{ id: 'game-day', label: 'Game Day', description: 'Matchday logistics & squad notes', icon: 'ph-trophy' },
+		{
+			id: 'practice-sessions',
+			label: 'Practice',
+			description: 'Session plans, drills, and attendance',
+			icon: 'ph-soccer-ball',
+		},
+		{
+			id: 'general',
+			label: 'General',
+			description: 'Everyday team conversation',
+			icon: 'ph-chats-circle',
+		},
+	];
+
+	/** Default landing channel; path: teams/{teamId}/channels/{activeChannel}/messages */
+	let activeChannel = $state(/** @type {string} */ ('game-day'));
 
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
 	const myUid = $derived(authStore.user?.uid || '');
@@ -37,158 +50,43 @@
 	const canModerate = $derived(
 		authStore.role === 'coach' ||
 			authStore.role === 'director' ||
-			authStore.role === 'super_admin' || authStore.role === 'global_admin',
+			authStore.role === 'super_admin' ||
+			authStore.role === 'global_admin',
 	);
-	const canCreateChannel = $derived(canModerate && !!clubId);
 
-	/** @type {Array<{ id: string; name: string; type: string; memberIds: string[]; safesportMonitored: boolean; ccParentEmails: string[]; teamId?: string }>} */
-	let channels = $state([]);
-	let channelsLoading = $state(true);
-	let channelsErr = $state('');
-
-	let selectedChannelId = $state('');
-
-	/** @type {Array<{ id: string; senderId: string; senderName: string; senderRole: string; text: string; timestamp?: import('firebase/firestore').Timestamp; deleted?: boolean; safesportMonitored?: boolean }>} */
+	/** @type {Array<{ id: string; senderId: string; senderName: string; senderRole: string; text: string; timestamp?: import('firebase/firestore').Timestamp; deleted?: boolean }>} */
 	let messages = $state([]);
 	let messagesLoading = $state(false);
 	let messagesErr = $state('');
 
 	let draft = $state('');
 	let sending = $state(false);
-	let seeding = $state(false);
-	let newMessageOpen = $state(false);
+	/** @type {HTMLDivElement | null} */
+	let scrollEl = $state(null);
 
-	const selectedChannel = $derived(channels.find((c) => c.id === selectedChannelId) ?? null);
-
-	const broadcastReadOnly = $derived(
-		selectedChannel?.type === 'broadcast' &&
-			(authStore.role === 'parent' || authStore.role === 'player'),
+	const activeChannelDef = $derived(
+		DEFAULT_CHANNELS.find((c) => c.id === activeChannel) ?? DEFAULT_CHANNELS[0],
 	);
 
 	/**
-	 * Collect lowercase email keys for team roster + coach (for channel membership).
-	 * @param {string} tid
-	 * @returns {Promise<string[]>}
+	 * @param {string} id
 	 */
-	async function collectTeamMemberEmails(tid) {
-		const emails = new Set();
-		if (myEmail) emails.add(myEmail);
-		try {
-			const teamSnap = await getDoc(doc(db, 'teams', tid));
-			if (teamSnap.exists()) {
-				const ce = teamSnap.data().coachEmail;
-				if (ce) emails.add(String(ce).toLowerCase());
-				const asst = teamSnap.data().assistants;
-				if (Array.isArray(asst)) {
-					asst.forEach((a) => {
-						if (typeof a === 'string') emails.add(a.toLowerCase());
-					});
-				}
-			}
-			const uq = query(collection(db, 'users'), where('teamId', '==', tid));
-			const us = await getDocs(uq);
-			us.forEach((d) => emails.add(d.id.toLowerCase()));
-		} catch (e) {
-			console.error('[MessagesTab] collectTeamMemberEmails', e);
-		}
-		return Array.from(emails);
-	}
-
-	async function ensureDefaultChannels() {
-		if (!browser || !clubId || !teamId || !myUid || !canCreateChannel || seeding) return;
-		seeding = true;
-		try {
-			const col = collection(db, 'clubs', clubId, 'channels');
-			const q = query(col, where('teamId', '==', teamId));
-			const snap = await getDocs(q);
-			if (!snap.empty) return;
-			const memberIds = await collectTeamMemberEmails(teamId);
-			if (memberIds.length === 0) return;
-			await addDoc(col, {
-				name: 'Team announcements',
-				type: 'broadcast',
-				memberIds,
-				teamId,
-				createdBy: myUid,
-				createdAt: serverTimestamp(),
-			});
-			await addDoc(col, {
-				name: 'Team chat',
-				type: 'group',
-				memberIds,
-				teamId,
-				createdBy: myUid,
-				createdAt: serverTimestamp(),
-			});
-		} catch (e) {
-			console.error('[MessagesTab] seed', e);
-		} finally {
-			seeding = false;
-		}
+	function isAllowedChannelId(id) {
+		return DEFAULT_CHANNELS.some((c) => c.id === id);
 	}
 
 	$effect(() => {
-		if (!browser || !clubId || !teamId) {
-			channels = [];
-			channelsLoading = false;
+		if (!browser || !teamId) {
+			messages = [];
 			return;
 		}
-		channelsLoading = true;
-		channelsErr = '';
-		const col = collection(db, 'clubs', clubId, 'channels');
-		const q = query(col, where('teamId', '==', teamId));
-		const unsub = onSnapshot(
-			q,
-			(snap) => {
-			channels = snap.docs.map((d) => {
-				const x = d.data();
-				return {
-					id: d.id,
-					name: typeof x.name === 'string' ? x.name : 'Channel',
-					type: x.type === 'dm' ? 'dm' : x.type === 'broadcast' ? 'broadcast' : 'group',
-					memberIds: Array.isArray(x.memberIds)
-						? x.memberIds.map((e) => String(e).toLowerCase())
-						: [],
-					safesportMonitored: x.safesportMonitored === true,
-					ccParentEmails: Array.isArray(x.ccParentEmails)
-						? x.ccParentEmails.map((e) => String(e).toLowerCase())
-						: [],
-					...(typeof x.teamId === 'string' ? { teamId: x.teamId } : {}),
-				};
-			});
-				channelsLoading = false;
-				if (!selectedChannelId && channels.length > 0) {
-					selectedChannelId = channels[0].id;
-				}
-			},
-			(e) => {
-				console.error('[MessagesTab] channels', e);
-				channelsErr = e instanceof Error ? e.message : 'Could not load channels.';
-				channelsLoading = false;
-			},
-		);
-		return () => unsub();
-	});
-
-	$effect(() => {
-		if (!browser || !clubId || !teamId || !canCreateChannel) return;
-		if (channelsLoading) return;
-		if (channels.length > 0) return;
-		void ensureDefaultChannels();
-	});
-
-	$effect(() => {
-		if (!browser || !clubId || !selectedChannelId) {
-			messages = [];
+		if (!isAllowedChannelId(activeChannel)) {
 			return;
 		}
 		messagesLoading = true;
 		messagesErr = '';
-		const mq = query(
-			collection(db, 'clubs', clubId, 'channels', selectedChannelId, 'messages'),
-			orderBy('timestamp', 'desc'),
-			limit(100),
-		);
+		const colPath = collection(db, 'teams', teamId, 'channels', activeChannel, 'messages');
+		const mq = query(colPath, orderBy('timestamp', 'desc'), limit(100));
 		const unsub = onSnapshot(
 			mq,
 			(snap) => {
@@ -203,7 +101,6 @@
 						text: String(x.text || ''),
 						timestamp: x.timestamp,
 						deleted: x.deleted === true,
-						safesportMonitored: x.safesportMonitored === true,
 					});
 				});
 				messages = rows.reverse();
@@ -218,29 +115,27 @@
 		return () => unsub();
 	});
 
+	$effect(() => {
+		void messages;
+		void activeChannel;
+		queueMicrotask(() => {
+			if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+		});
+	});
+
 	async function sendMessage() {
-		if (!clubId || !selectedChannelId || !draft.trim() || broadcastReadOnly || sending) return;
+		if (!teamId || !draft.trim() || !isAllowedChannelId(activeChannel) || sending) return;
 		sending = true;
 		const text = draft.trim().slice(0, 8000);
 		try {
-			if (selectedChannel?.safesportMonitored) {
-				// Monitored channels: route through server-side callable.
-				// The callable verifies CC integrity, re-adds missing parents,
-				// and writes via Admin SDK (client writes are blocked by Rules).
-				await sendChannelMessageFn({ clubId, channelId: selectedChannelId, text });
-			} else {
-				await addDoc(
-					collection(db, 'clubs', clubId, 'channels', selectedChannelId, 'messages'),
-					{
-						senderId: myUid,
-						senderName: myName,
-						senderRole: myRole,
-						text,
-						timestamp: serverTimestamp(),
-						deleted: false,
-					},
-				);
-			}
+			await addDoc(collection(db, 'teams', teamId, 'channels', activeChannel, 'messages'), {
+				senderId: myUid,
+				senderName: myName,
+				senderRole: myRole,
+				text,
+				timestamp: serverTimestamp(),
+				deleted: false,
+			});
 			draft = '';
 		} catch (e) {
 			alert(e instanceof Error ? e.message : String(e));
@@ -253,11 +148,11 @@
 	 * @param {string} messageId
 	 */
 	async function softDeleteMessage(messageId) {
-		if (!clubId || !selectedChannelId || !canModerate) return;
+		if (!teamId || !isAllowedChannelId(activeChannel) || !canModerate) return;
 		if (!confirm('Remove this message for everyone?')) return;
 		try {
 			await updateDoc(
-				doc(db, 'clubs', clubId, 'channels', selectedChannelId, 'messages', messageId),
+				doc(db, 'teams', teamId, 'channels', activeChannel, 'messages', messageId),
 				{ deleted: true },
 			);
 		} catch (e) {
@@ -268,10 +163,6 @@
 	function openSchedule() {
 		goto('/coach/drills');
 	}
-
-	const broadcastChannels = $derived(channels.filter((c) => c.type === 'broadcast'));
-	const groupChannels = $derived(channels.filter((c) => c.type === 'group'));
-	const dmChannels = $derived(channels.filter((c) => c.type === 'dm'));
 
 	/**
 	 * @param {import('firebase/firestore').Timestamp | undefined} ts
@@ -291,772 +182,809 @@
 	}
 
 	/**
-	 * @param {string} channelId
+	 * @param {import('firebase/firestore').Timestamp | undefined} ts
 	 */
-	function onNewChannelCreated(channelId) {
-		selectedChannelId = channelId;
+	function fmtIso(ts) {
+		if (!ts || typeof ts.toDate !== 'function') return '';
+		try {
+			return ts.toDate().toISOString();
+		} catch {
+			return '';
+		}
+	}
+
+	/**
+	 * @param {import('firebase/firestore').Timestamp | undefined} ts
+	 */
+	function dayLabel(ts) {
+		if (!ts || typeof ts.toDate !== 'function') return '';
+		try {
+			const d = ts.toDate();
+			const today = new Date();
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+			if (d.toDateString() === today.toDateString()) return 'Today';
+			if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+			return d.toLocaleDateString(undefined, {
+				weekday: 'long',
+				month: 'short',
+				day: 'numeric',
+				year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
+			});
+		} catch {
+			return '';
+		}
+	}
+
+	/**
+	 * @param {import('firebase/firestore').Timestamp | undefined} a
+	 * @param {import('firebase/firestore').Timestamp | undefined} b
+	 */
+	function sameCalendarDay(a, b) {
+		if (!a || !b || typeof a.toDate !== 'function' || typeof b.toDate !== 'function') {
+			return false;
+		}
+		try {
+			return a.toDate().toDateString() === b.toDate().toDateString();
+		} catch {
+			return false;
+		}
+	}
+
+	/**
+	 * @param {string} name
+	 */
+	function initialsFor(name) {
+		const t = (name || '?').trim();
+		if (!t) return '?';
+		const parts = t.split(/\s+/).filter(Boolean);
+		if (parts.length >= 2) {
+			return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
+		}
+		return t.slice(0, 2).toUpperCase();
 	}
 </script>
 
-<NewMessageModal
-	open={newMessageOpen}
-	onClose={() => (newMessageOpen = false)}
-	clubId={clubId}
-	teamId={teamId}
-	myEmail={myEmail}
-	myUid={myUid}
-	myRole={myRole}
-	onChannelCreated={onNewChannelCreated}
-/>
-
-<div class="comms-hub" aria-label="Team communications">
-	{#if !clubId}
-		<p class="comms-hub__muted">Join a club with a team scope to use Comms Hub.</p>
-	{:else if !teamId}
-		<p class="comms-hub__muted">Select a team to load channels.</p>
+<div class="matrix" aria-label="Team channel messaging">
+	{#if !teamId}
+		<p class="matrix__hint">Select a team to open channels.</p>
 	{:else}
-		<!-- Pane 1 -->
-		<aside class="comms-hub__pane comms-hub__pane--nav" aria-label="Channels">
-			<div class="comms-hub__pane-head">
-				<span class="comms-hub__pane-head-title">Channels</span>
-				{#if canCreateChannel}
-					<button
-						type="button"
-						class="comms-hub__new-chat"
-						aria-label="New chat"
-						onclick={() => (newMessageOpen = true)}
-					>
-						<i class="ph ph-pencil-simple" aria-hidden="true"></i>
-					</button>
-				{/if}
-			</div>
-			{#if channelsLoading || seeding}
-				<p class="comms-hub__muted">Loading…</p>
-			{:else if channelsErr}
-				<p class="comms-hub__err" role="alert">{channelsErr}</p>
-			{:else}
-				<div class="comms-hub__nav-scroll">
-					{#if broadcastChannels.length > 0}
-						<p class="comms-hub__group-label">Announcements</p>
-						<ul class="comms-hub__nav-list">
-							{#each broadcastChannels as c (c.id)}
-								<li>
-									<button
-										type="button"
-										class="comms-hub__nav-item"
-										class:comms-hub__nav-item--active={selectedChannelId === c.id}
-										onclick={() => (selectedChannelId = c.id)}
-									>
-										<i class="ph ph-megaphone" aria-hidden="true"></i>
-										<span class="comms-hub__nav-text">{c.name}</span>
-									</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-					{#if groupChannels.length > 0}
-						<p class="comms-hub__group-label">Team chats</p>
-						<ul class="comms-hub__nav-list">
-							{#each groupChannels as c (c.id)}
-								<li>
-									<button
-										type="button"
-										class="comms-hub__nav-item"
-										class:comms-hub__nav-item--active={selectedChannelId === c.id}
-										onclick={() => (selectedChannelId = c.id)}
-									>
-										<i class="ph ph-chats-circle" aria-hidden="true"></i>
-										<span class="comms-hub__nav-text">{c.name}</span>
-										{#if c.safesportMonitored}
-											<i
-												class="ph ph-shield-check comms-hub__nav-shield"
-												title="SafeSport monitored"
-												aria-label="SafeSport monitored"
-											></i>
-										{/if}
-									</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-					{#if dmChannels.length > 0}
-						<p class="comms-hub__group-label">Direct messages</p>
-						<ul class="comms-hub__nav-list">
-							{#each dmChannels as c (c.id)}
-								<li>
-									<button
-										type="button"
-										class="comms-hub__nav-item"
-										class:comms-hub__nav-item--active={selectedChannelId === c.id}
-										onclick={() => (selectedChannelId = c.id)}
-									>
-										<i class="ph ph-user-circle" aria-hidden="true"></i>
-										<span class="comms-hub__nav-text">{c.name}</span>
-										{#if c.safesportMonitored}
-											<i
-												class="ph ph-shield-check comms-hub__nav-shield"
-												title="SafeSport monitored"
-												aria-label="SafeSport monitored"
-											></i>
-										{/if}
-									</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
-			{/if}
-		</aside>
+		<!-- Mobile: top channel scroller -->
+		<div class="matrix__strip md:hidden" role="tablist" aria-label="Channels">
+			{#each DEFAULT_CHANNELS as ch (ch.id)}
+				<button
+					type="button"
+					class="matrix__chip"
+					role="tab"
+					aria-selected={activeChannel === ch.id}
+					class:matrix__chip--on={activeChannel === ch.id}
+					onclick={() => (activeChannel = ch.id)}
+				>
+					<i class="ph {ch.icon}" aria-hidden="true"></i>
+					<span>{ch.label}</span>
+				</button>
+			{/each}
+		</div>
 
-		<!-- Pane 2 -->
-		<section class="comms-hub__pane comms-hub__pane--main" aria-label="Conversation">
-			{#if selectedChannel}
-				<div class="comms-hub__chat-head">
-					<h2 class="comms-hub__title">{selectedChannel.name}</h2>
-					<div class="comms-hub__head-badges">
-						<span class="comms-hub__badge">{selectedChannel.type}</span>
-						{#if selectedChannel.safesportMonitored}
-							<span
-								class="comms-hub__badge comms-hub__badge--safesport"
-								title="All messages in this thread are logged for SafeSport compliance."
-							>
-								<i class="ph ph-shield-check" aria-hidden="true"></i>
-								SafeSport monitored
-							</span>
-						{/if}
-					</div>
+		<div class="matrix__shell">
+			<!-- Desktop: left channel rail -->
+			<aside class="matrix__rail" aria-label="Channel list">
+				<div class="matrix__rail-head">
+					<span class="matrix__rail-title">Channels</span>
+					<span class="matrix__rail-hint">Team matrix</span>
 				</div>
-				<div class="comms-hub__stream" role="log" aria-live="polite">
+				<nav class="matrix__nav">
+					{#each DEFAULT_CHANNELS as ch (ch.id)}
+						<button
+							type="button"
+							class="matrix__ch"
+							class:matrix__ch--active={activeChannel === ch.id}
+							onclick={() => (activeChannel = ch.id)}
+						>
+							<span class="matrix__ch-hash" aria-hidden="true">#</span>
+							<div class="matrix__ch-text">
+								<span class="matrix__ch-label">{ch.label}</span>
+								<span class="matrix__ch-sub">{ch.description}</span>
+							</div>
+						</button>
+					{/each}
+				</nav>
+			</aside>
+
+			<section class="matrix__main" aria-label="Channel conversation">
+				<header class="matrix__head">
+					<div class="matrix__head-titles">
+						<h2 class="matrix__h2">
+							<span class="matrix__h2-hash">#</span>{activeChannelDef.label}
+						</h2>
+						<p class="matrix__h2-sub">{activeChannelDef.description}</p>
+					</div>
+					<div class="matrix__head-aside" aria-hidden="true">
+						<span class="matrix__id-badge">{activeChannel}</span>
+					</div>
+				</header>
+
+				<div
+					class="matrix__scroll"
+					role="log"
+					aria-live="polite"
+					bind:this={scrollEl}
+				>
 					{#if messagesLoading}
-						<p class="comms-hub__muted">Loading messages…</p>
+						<p class="matrix__hint">Loading messages…</p>
 					{:else if messagesErr}
-						<p class="comms-hub__err" role="alert">{messagesErr}</p>
+						<p class="matrix__err" role="alert">{messagesErr}</p>
 					{:else if messages.length === 0}
-						<p class="comms-hub__muted">No messages yet. Start the thread below.</p>
+						<p class="matrix__empty">No messages in this channel yet. Say hello below.</p>
 					{:else}
-						{#each messages as m (m.id)}
+						{#each messages as m, i (m.id)}
+							{#if i === 0 || !sameCalendarDay(m.timestamp, messages[i - 1]?.timestamp)}
+								<div class="matrix__day" role="separator">
+									<span class="matrix__day-line" aria-hidden="true"></span>
+									<time
+										class="matrix__day-label"
+										datetime={m.timestamp && typeof m.timestamp.toDate === 'function'
+											? m.timestamp.toDate().toISOString().slice(0, 10)
+											: ''}
+										>{dayLabel(m.timestamp)}</time
+									>
+									<span class="matrix__day-line" aria-hidden="true"></span>
+								</div>
+							{/if}
 							<div
-								class="comms-hub__msg-row"
-								class:comms-hub__msg-row--mine={m.senderId === myUid}
+								class="matrix__row"
+								class:matrix__row--mine={m.senderId === myUid}
 							>
-								<div class="comms-hub__bubble-wrap">
+								{#if m.senderId !== myUid}
+									<div
+										class="matrix__avatar matrix__avatar--other"
+										class:matrix__avatar--staff={m.senderRole === 'coach' || m.senderRole === 'director' || m.senderRole === 'super_admin' || m.senderRole === 'global_admin'}
+										aria-hidden="true"
+										title={m.senderName}
+									>
+										<span class="matrix__avatar-inner">{initialsFor(m.senderName)}</span>
+									</div>
+								{/if}
+								<div class="matrix__content">
 									{#if m.deleted}
-										<div class="comms-hub__bubble comms-hub__bubble--removed">
-											This message was removed by an admin.
+										<div class="matrix__bubble matrix__bubble--deleted">
+											This message was removed.
 										</div>
 									{:else}
 										<div
-											class="comms-hub__bubble"
-											class:comms-hub__bubble--mine={m.senderId === myUid}
+											class="matrix__bubble"
+											class:matrix__bubble--mine={m.senderId === myUid}
 										>
-											<span class="comms-hub__bubble-meta">
-												{m.senderName}
-												<span class="comms-hub__bubble-role">{m.senderRole}</span>
-											</span>
-											<p class="comms-hub__bubble-text">{m.text}</p>
-											<span class="comms-hub__bubble-time">
-												{fmtTime(m.timestamp)}
-												{#if m.safesportMonitored}
-													<i
-														class="ph ph-shield-check comms-hub__bubble-shield"
-														title="SafeSport logged"
-														aria-label="SafeSport logged"
-													></i>
-												{/if}
-											</span>
+											<div class="matrix__bubble-top">
+												<span class="matrix__name">{m.senderName}</span>
+												<span class="matrix__role-pill">{m.senderRole}</span>
+											</div>
+											<p class="matrix__text">{m.text}</p>
+											<time
+												class="matrix__time"
+												datetime={fmtIso(m.timestamp)}>{fmtTime(m.timestamp)}</time
+											>
 										</div>
 										{#if canModerate && !m.deleted}
 											<button
 												type="button"
-												class="comms-hub__del"
+												class="matrix__mod"
 												onclick={() => void softDeleteMessage(m.id)}
 											>
-												Delete
+												Remove
 											</button>
 										{/if}
 									{/if}
 								</div>
+								{#if m.senderId === myUid}
+									<div
+										class="matrix__avatar matrix__avatar--self"
+										class:matrix__avatar--staff={m.senderRole === 'coach' || m.senderRole === 'director' || m.senderRole === 'super_admin' || m.senderRole === 'global_admin'}
+										aria-hidden="true"
+										title={m.senderName}
+									>
+										<span class="matrix__avatar-inner">{initialsFor(m.senderName)}</span>
+									</div>
+								{/if}
 							</div>
 						{/each}
 					{/if}
 				</div>
-				{#if selectedChannel?.safesportMonitored}
-					<div class="comms-hub__safesport-notice" role="note">
-						<i class="ph ph-shield-check" aria-hidden="true"></i>
-						<span>
-							This thread is SafeSport monitored. Parents are automatically CC'd and all
-							messages are audit-logged.
-						</span>
-					</div>
-				{/if}
-				<div class="comms-hub__composer">
-					{#if broadcastReadOnly}
-						<p class="comms-hub__readonly">Read-only: Announcements channel</p>
-					{:else}
-						<textarea
-							class="comms-hub__input"
-							rows="2"
-							maxlength="8000"
-							placeholder="Write a message…"
-							bind:value={draft}
-							onkeydown={(e) => {
-								if (e.key === 'Enter' && !e.shiftKey) {
-									e.preventDefault();
-									void sendMessage();
-								}
-							}}
-						></textarea>
-						<button
-							type="button"
-							class="comms-hub__send"
-							disabled={sending || !draft.trim()}
-							onclick={() => void sendMessage()}
-						>
-							{sending ? 'Sending…' : 'Send'}
-						</button>
-					{/if}
-				</div>
-			{:else}
-				<p class="comms-hub__muted">Select a channel.</p>
-			{/if}
-		</section>
 
-		<!-- Pane 3 -->
-		<aside class="comms-hub__pane comms-hub__pane--detail" aria-label="Channel details">
-			{#if selectedChannel}
-				<h3 class="comms-hub__detail-title">Details</h3>
-				<p class="comms-hub__detail-name">{selectedChannel.name}</p>
+				<footer class="matrix__footer">
+					<textarea
+						class="matrix__input"
+						rows="2"
+						maxlength="8000"
+						placeholder="Message #{activeChannelDef.label}…"
+						bind:value={draft}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' && !e.shiftKey) {
+								e.preventDefault();
+								void sendMessage();
+							}
+						}}
+					></textarea>
+					<button
+						type="button"
+						class="matrix__send"
+						disabled={sending || !draft.trim()}
+						onclick={() => void sendMessage()}
+					>
+						{sending ? '…' : 'Send'}
+					</button>
+				</footer>
+			</section>
 
-				{#if selectedChannel.safesportMonitored}
-					<div class="comms-hub__detail-safesport-badge">
-						<i class="ph ph-shield-check" aria-hidden="true"></i>
-						<span>SafeSport monitored</span>
-					</div>
-					{#if selectedChannel.ccParentEmails.length > 0}
-						<p class="comms-hub__detail-sub">
-							CC'd parents ({selectedChannel.ccParentEmails.length})
-						</p>
-						<ul class="comms-hub__members comms-hub__members--cc">
-							{#each selectedChannel.ccParentEmails as e (e)}
-								<li class="comms-hub__member comms-hub__member--cc">
-									<i class="ph ph-user-circle-gear" aria-hidden="true"></i>
-									{e}
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				{/if}
-
-				<p class="comms-hub__detail-sub">Members ({selectedChannel.memberIds.length})</p>
-				<ul class="comms-hub__members">
-					{#each selectedChannel.memberIds as e (e)}
-						<li class="comms-hub__member">{e}</li>
-					{/each}
-				</ul>
-				<button type="button" class="comms-hub__schedule-btn" onclick={openSchedule}>
-					View team schedule
+			<aside class="matrix__context" aria-label="Channel details">
+				<h3 class="matrix__context-h">Context</h3>
+				<p class="matrix__context-p">
+					<strong>#{activeChannelDef.label}</strong>
+					· live path <code class="matrix__code">teams/{teamId}/channels/{activeChannel}/messages</code>
+				</p>
+				<button type="button" class="matrix__link" onclick={openSchedule}>
+					Open training &amp; schedule
 				</button>
-			{:else}
-				<p class="comms-hub__muted">—</p>
-			{/if}
-		</aside>
+			</aside>
+		</div>
 	{/if}
 </div>
 
 <style>
-	.comms-hub {
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
-		min-height: min(70vh, 720px);
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		background: #ffffff;
-		overflow-x: hidden;
-		overflow-y: visible;
-		box-sizing: border-box;
-	}
-
-	:global(html.dark) .comms-hub {
-		border-color: rgba(255, 255, 255, 0.12);
-		background: #0f0f11;
-	}
-
-	.comms-hub__muted {
-		margin: 0;
-		font-size: 13px;
-		color: var(--text-secondary);
-		padding: 12px;
-	}
-
-	.comms-hub__err {
-		margin: 0;
-		font-size: 13px;
-		color: #b91c1c;
-		padding: 8px;
-	}
-
-	.comms-hub__pane--nav {
-		width: 16rem;
-		min-width: 16rem;
-		border-right: 1px solid #e5e5e5;
-		background: #fafafa;
+	.matrix {
+		--mx-radius: 18px;
+		--mx-surface: #f4f6fa;
+		--mx-elev: #ffffff;
+		--mx-border: #e2e8f0;
 		display: flex;
 		flex-direction: column;
-		min-height: 0;
+		min-height: min(70vh, 720px);
+		border: 1px solid var(--mx-border);
+		border-radius: var(--mx-radius);
+		background: var(--mx-surface);
+		overflow: hidden;
+		box-sizing: border-box;
+		box-shadow:
+			0 1px 0 rgba(15, 23, 42, 0.04),
+			0 12px 40px -16px rgba(15, 23, 42, 0.12);
 	}
 
-	:global(html.dark) .comms-hub__pane--nav {
-		border-right-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
+	:global(html.dark) .matrix {
+		--mx-surface: #0a0a0c;
+		--mx-elev: #111113;
+		border-color: rgba(255, 255, 255, 0.09);
+		box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.55);
 	}
 
-	.comms-hub__pane-head {
+	.matrix__hint,
+	.matrix__empty {
+		margin: 0;
+		padding: 16px 20px;
+		font-size: 13px;
+		color: var(--text-secondary, #64748b);
+	}
+	.matrix__err {
+		margin: 0;
+		padding: 12px 20px;
+		font-size: 13px;
+		color: #b91c1c;
+	}
+
+	/* Mobile top strip */
+	.matrix__strip {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
 		gap: 8px;
-		padding: 10px 12px 10px 14px;
-		border-bottom: 1px solid #e5e5e5;
+		padding: 10px 12px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		border-bottom: 1px solid #e2e8f0;
+		background: #fff;
+		flex-shrink: 0;
 	}
 
-	.comms-hub__pane-head-title {
+	:global(html.dark) .matrix__strip {
+		background: #111113;
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.matrix__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 14px;
+		border-radius: 9999px;
+		border: 1px solid #e2e8f0;
+		background: #f8fafc;
+		color: var(--text-primary, #0f172a);
+		font: inherit;
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+	:global(html.dark) .matrix__chip {
+		background: #18181b;
+		border-color: rgba(255, 255, 255, 0.12);
+		color: #e4e4e7;
+	}
+	.matrix__chip--on {
+		background: color-mix(in srgb, var(--brand-primary, #f59e0b) 20%, #fff);
+		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 50%, #e2e8f0);
+	}
+
+	.matrix__shell {
+		display: flex;
+		flex: 1 1 auto;
+		min-height: 0;
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	@media (min-width: 768px) {
+		.matrix__strip {
+			display: none;
+		}
+	}
+
+	/* Left rail (desktop) */
+	.matrix__rail {
+		display: none;
+		width: 15rem;
+		min-width: 15rem;
+		flex-direction: column;
+		border-right: 1px solid #e2e8f0;
+		background: #fff;
+	}
+
+	@media (min-width: 768px) {
+		.matrix__rail {
+			display: flex;
+		}
+	}
+
+	:global(html.dark) .matrix__rail {
+		background: #09090b;
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	.matrix__rail-head {
+		padding: 14px 16px 10px;
+		border-bottom: 1px solid #e2e8f0;
+	}
+	:global(html.dark) .matrix__rail-head {
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+	.matrix__rail-title {
+		display: block;
 		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--text-secondary, #64748b);
+	}
+	.matrix__rail-hint {
+		font-size: 11px;
+		color: #94a3b8;
+	}
+
+	.matrix__nav {
+		display: flex;
+		flex-direction: column;
+		padding: 8px 0 12px;
+		gap: 2px;
+		overflow-y: auto;
+	}
+	.matrix__ch {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		text-align: left;
+		border: none;
+		background: transparent;
+		padding: 10px 14px 10px 12px;
+		cursor: pointer;
+		color: inherit;
+		font: inherit;
+	}
+	.matrix__ch:hover {
+		background: rgba(15, 23, 42, 0.04);
+	}
+	:global(html.dark) .matrix__ch:hover {
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.matrix__ch--active {
+		background: rgba(245, 158, 11, 0.1);
+		border-left: 3px solid var(--brand-primary, #f59e0b);
+		padding-left: 9px;
+	}
+	.matrix__ch-hash {
+		font-size: 13px;
+		font-weight: 800;
+		color: #94a3b8;
+		margin-top: 2px;
+	}
+	.matrix__ch-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+	.matrix__ch-label {
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--text-primary, #0f172a);
+	}
+	.matrix__ch-sub {
+		font-size: 10px;
+		font-weight: 500;
+		color: #94a3b8;
+		line-height: 1.3;
+	}
+
+	.matrix__main {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		background: #f8fafc;
+	}
+	:global(html.dark) .matrix__main {
+		background: #0c0c0e;
+	}
+
+	.matrix__head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 16px 20px 14px;
+		border-bottom: 1px solid var(--mx-border, #e2e8f0);
+		background: var(--mx-elev, #fff);
+	}
+	:global(html.dark) .matrix__head {
+		background: var(--mx-elev, #111113);
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+	.matrix__h2 {
+		margin: 0;
+		font-size: 17px;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--text-primary, #0f172a);
+	}
+	.matrix__h2-hash {
+		color: #94a3b8;
+		font-weight: 700;
+		margin-right: 2px;
+	}
+	.matrix__h2-sub {
+		margin: 4px 0 0;
+		font-size: 12px;
+		color: #64748b;
+		font-weight: 500;
+	}
+	.matrix__id-badge {
+		font-size: 10px;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--text-secondary);
-	}
-
-	.comms-hub__new-chat {
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 32px;
-		height: 32px;
-		padding: 0;
-		border: 1px solid #e5e5e5;
-		border-radius: 10px;
-		background: #ffffff;
-		color: var(--text-primary);
-		cursor: pointer;
-		font-size: 16px;
-	}
-
-	.comms-hub__new-chat:hover {
-		background: rgba(0, 0, 0, 0.04);
-		border-color: #d4d4d8;
-	}
-
-	:global(html.dark) .comms-hub__new-chat {
-		background: #18181b;
-		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	:global(html.dark) .comms-hub__new-chat:hover {
-		background: rgba(255, 255, 255, 0.06);
-	}
-
-	:global(html.dark) .comms-hub__pane-head {
-		border-bottom-color: rgba(255, 255, 255, 0.1);
-	}
-
-	.comms-hub__nav-scroll {
-		flex: 1 1 auto;
-		overflow: visible;
-		padding: 8px 0 12px;
-		min-height: 0;
-	}
-
-	.comms-hub__group-label {
-		margin: 10px 14px 6px;
-		font-size: 10px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--text-secondary);
-	}
-
-	.comms-hub__nav-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.comms-hub__nav-item {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 14px;
-		border: none;
-		background: transparent;
-		cursor: pointer;
-		font: inherit;
-		font-size: 13px;
-		font-weight: 500;
-		color: var(--text-primary);
-		text-align: left;
-	}
-
-	.comms-hub__nav-item:hover {
-		background: rgba(0, 0, 0, 0.04);
-	}
-
-	.comms-hub__nav-item--active {
-		background: rgba(0, 0, 0, 0.06);
-		border-left: 3px solid var(--brand-primary, #f59e0b);
-		padding-left: 11px;
-	}
-
-	.comms-hub__nav-text {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		flex: 1;
-		min-width: 0;
-	}
-
-	.comms-hub__nav-shield {
-		flex-shrink: 0;
-		font-size: 12px;
-		color: #059669;
-		margin-left: auto;
-	}
-
-	.comms-hub__pane--main {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		background: #ffffff;
-	}
-
-	:global(html.dark) .comms-hub__pane--main {
-		background: #0f0f11;
-	}
-
-	.comms-hub__chat-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 10px;
-		padding: 12px 16px;
-		border-bottom: 1px solid #e5e5e5;
-		background: #fafafa;
-	}
-
-	:global(html.dark) .comms-hub__chat-head {
-		border-bottom-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
-	}
-
-	.comms-hub__title {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.comms-hub__head-badges {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		flex-shrink: 0;
-	}
-
-	.comms-hub__badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		font-size: 10px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--text-secondary);
-		border: 1px solid #e5e5e5;
+		color: #94a3b8;
+		border: 1px solid #e2e8f0;
 		border-radius: 8px;
 		padding: 4px 8px;
 	}
 
-	.comms-hub__badge--safesport {
-		color: #059669;
-		background: rgba(16, 185, 129, 0.08);
-		border-color: rgba(16, 185, 129, 0.35);
+	.matrix__day {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin: 4px 0 16px;
+		user-select: none;
+	}
+	.matrix__day-line {
+		flex: 1;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, #cbd5e1 20%, #cbd5e1 80%, transparent);
+		opacity: 0.7;
+	}
+	:global(html.dark) .matrix__day-line {
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgba(255, 255, 255, 0.12) 18%,
+			rgba(255, 255, 255, 0.12) 82%,
+			transparent
+		);
+	}
+	.matrix__day-label {
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #64748b;
+		white-space: nowrap;
 	}
 
-	.comms-hub__stream {
-		flex: 0 1 auto;
-		overflow: visible;
-		padding: 16px;
+	.matrix__scroll {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		padding: 20px 18px 16px;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-		min-height: 0;
+		min-height: 180px;
+		max-height: min(52vh, 520px);
+		scroll-behavior: smooth;
 	}
 
-	.comms-hub__msg-row {
+	.matrix__row {
 		display: flex;
-		justify-content: flex-start;
+		align-items: flex-end;
+		gap: 10px;
+		max-width: 820px;
+	}
+	.matrix__row--mine {
+		margin-left: auto;
+		flex-direction: row;
+	}
+	.matrix__row:not(.matrix__row--mine) {
+		margin-right: auto;
 	}
 
-	.comms-hub__msg-row--mine {
-		justify-content: flex-end;
+	.matrix__avatar {
+		position: relative;
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+	}
+	.matrix__avatar-inner {
+		font-size: 12px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		line-height: 1;
+	}
+	.matrix__avatar--other {
+		background: linear-gradient(150deg, #e8eeff, #c7d2fe);
+		color: #1e1b4b;
+		border: 1px solid rgba(99, 102, 241, 0.25);
+	}
+	.matrix__avatar--self {
+		background: linear-gradient(150deg, #fff7ed, #fed7aa);
+		color: #7c2d12;
+		border: 1px solid rgba(245, 158, 11, 0.4);
+	}
+	.matrix__avatar--staff.matrix__avatar--other {
+		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+	}
+	.matrix__avatar--staff.matrix__avatar--self {
+		box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+	}
+	:global(html.dark) .matrix__avatar--other {
+		background: linear-gradient(150deg, #1e1b4b, #312e81);
+		color: #c7d2fe;
+		border-color: rgba(99, 102, 241, 0.45);
+	}
+	:global(html.dark) .matrix__avatar--self {
+		background: linear-gradient(150deg, #431407, #7c2d12);
+		color: #fdba74;
+		border-color: rgba(245, 158, 11, 0.35);
 	}
 
-	.comms-hub__bubble-wrap {
-		max-width: min(100%, 520px);
+	.matrix__content {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 4px;
+		min-width: 0;
 	}
-
-	.comms-hub__msg-row--mine .comms-hub__bubble-wrap {
+	.matrix__row--mine .matrix__content {
 		align-items: flex-end;
 	}
 
-	.comms-hub__bubble {
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		padding: 10px 12px;
-		background: #f4f4f5;
-		font-size: 13px;
-		line-height: 1.45;
-		color: var(--text-primary);
+	.matrix__bubble {
+		background: #fff;
+		border: 1px solid #e2e8f0;
+		border-radius: 16px 16px 16px 4px;
+		padding: 10px 14px 8px;
+		max-width: min(100%, 520px);
+		box-shadow:
+			0 1px 0 rgba(15, 23, 42, 0.04),
+			0 4px 14px -4px rgba(15, 23, 42, 0.08);
 	}
-
-	.comms-hub__bubble--mine {
-		background: color-mix(in srgb, var(--brand-primary, #f59e0b) 18%, #ffffff);
-		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 35%, #e5e5e5);
+	.matrix__row--mine .matrix__bubble {
+		border-radius: 16px 16px 4px 16px;
+		background: color-mix(in srgb, var(--brand-primary, #f59e0b) 10%, #fff);
+		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 28%, #e2e8f0);
 	}
-
-	:global(html.dark) .comms-hub__bubble {
-		background: #18181b;
-		border-color: rgba(255, 255, 255, 0.1);
+	:global(html.dark) .matrix__bubble {
+		background: #141416;
+		border-color: rgba(255, 255, 255, 0.09);
+		box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.45);
 	}
-
-	:global(html.dark) .comms-hub__bubble--mine {
-		background: rgba(245, 158, 11, 0.15);
-		border-color: rgba(245, 158, 11, 0.35);
+	:global(html.dark) .matrix__row--mine .matrix__bubble {
+		background: rgba(245, 158, 11, 0.1);
+		border-color: rgba(245, 158, 11, 0.32);
 	}
-
-	.comms-hub__bubble--removed {
-		font-style: italic;
-		color: var(--text-secondary);
+	.matrix__bubble--deleted {
 		font-size: 12px;
+		font-style: italic;
+		color: #94a3b8;
+		box-shadow: none;
 	}
 
-	.comms-hub__bubble-meta {
-		display: block;
-		font-size: 11px;
-		font-weight: 700;
-		margin-bottom: 6px;
-		color: var(--text-secondary);
-	}
-
-	.comms-hub__bubble-role {
-		font-weight: 600;
-		margin-left: 6px;
-		opacity: 0.85;
-	}
-
-	.comms-hub__bubble-text {
-		margin: 0 0 6px;
-		white-space: pre-wrap;
-		word-break: break-word;
-	}
-
-	.comms-hub__bubble-time {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		font-size: 10px;
-		color: var(--text-secondary);
-	}
-
-	.comms-hub__bubble-shield {
-		font-size: 11px;
-		color: #059669;
-	}
-
-	.comms-hub__del {
-		font-size: 11px;
-		font-weight: 600;
-		padding: 2px 0;
-		border: none;
-		background: none;
-		cursor: pointer;
-		color: var(--text-secondary);
-		text-decoration: underline;
-	}
-
-	.comms-hub__composer {
-		border-top: 1px solid #e5e5e5;
-		padding: 12px 16px;
-		background: #fafafa;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
-		align-items: flex-end;
-	}
-
-	:global(html.dark) .comms-hub__composer {
-		border-top-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
-	}
-
-	.comms-hub__safesport-notice {
+	.matrix__bubble-top {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 8px 16px;
+		flex-wrap: wrap;
+		margin-bottom: 4px;
+	}
+	.matrix__name {
 		font-size: 12px;
-		font-weight: 600;
-		color: #047857;
-		background: rgba(16, 185, 129, 0.07);
-		border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+		font-weight: 800;
+		color: #0f172a;
+		letter-spacing: -0.01em;
 	}
-
-	.comms-hub__readonly {
+	:global(html.dark) .matrix__name {
+		color: #f4f4f5;
+	}
+	.matrix__role-pill {
+		font-size: 9px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #64748b;
+		background: #f1f5f9;
+		border: 1px solid #e2e8f0;
+		border-radius: 6px;
+		padding: 2px 6px;
+		line-height: 1.2;
+	}
+	:global(html.dark) .matrix__role-pill {
+		color: #a1a1aa;
+		background: #18181b;
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+	.matrix__text {
 		margin: 0;
-		width: 100%;
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--text-secondary);
+		font-size: 14px;
+		line-height: 1.5;
+		white-space: pre-wrap;
+		word-break: break-word;
+		color: #1e293b;
+	}
+	:global(html.dark) .matrix__text {
+		color: #e2e8f0;
+	}
+	.matrix__time {
+		font-size: 10px;
+		color: #94a3b8;
+		margin-top: 2px;
+		display: block;
+	}
+	.matrix__mod {
+		font-size: 10px;
+		font-weight: 700;
+		border: none;
+		background: none;
+		cursor: pointer;
+		color: #94a3b8;
+		text-decoration: underline;
+		padding: 0;
 	}
 
-	.comms-hub__input {
+	.matrix__footer {
+		display: flex;
+		gap: 10px;
+		align-items: flex-end;
+		padding: 12px 16px 16px;
+		border-top: 1px solid #e2e8f0;
+		background: #fff;
+	}
+	:global(html.dark) .matrix__footer {
+		background: #111113;
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+	.matrix__input {
 		flex: 1;
-		min-width: 0;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
+		border: 1px solid #e2e8f0;
+		border-radius: 12px;
 		padding: 10px 12px;
 		font: inherit;
 		font-size: 13px;
 		resize: vertical;
 		min-height: 44px;
-		background: #ffffff;
-		color: var(--text-primary);
+		background: #f8fafc;
 	}
-
-	:global(html.dark) .comms-hub__input {
-		background: #0f0f11;
+	:global(html.dark) .matrix__input {
+		background: #0c0c0e;
 		border-color: rgba(255, 255, 255, 0.12);
+		color: #e4e4e7;
 	}
-
-	.comms-hub__send {
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		padding: 10px 18px;
+	.matrix__send {
+		border: none;
+		border-radius: 12px;
+		padding: 10px 20px;
 		font-size: 13px;
-		font-weight: 700;
+		font-weight: 800;
 		cursor: pointer;
 		background: var(--brand-primary, #f59e0b);
 		color: #0f172a;
+		flex-shrink: 0;
+	}
+	.matrix__send:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
-	.comms-hub__pane--detail {
+	/* Right context panel — hide on small screens */
+	.matrix__context {
 		display: none;
-		width: 16rem;
-		min-width: 16rem;
-		border-left: 1px solid #e5e5e5;
-		background: #fafafa;
-		padding: 14px;
-		flex-direction: column;
-		gap: 10px;
 	}
-
-	@media (min-width: 1024px) {
-		.comms-hub__pane--detail {
+	@media (min-width: 1280px) {
+		.matrix__context {
 			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			width: 15rem;
+			min-width: 15rem;
+			padding: 16px 14px;
+			border-left: 1px solid #e2e8f0;
+			background: #fff;
+		}
+		:global(html.dark) .matrix__context {
+			background: #09090b;
+			border-color: rgba(255, 255, 255, 0.08);
 		}
 	}
-
-	:global(html.dark) .comms-hub__pane--detail {
-		border-left-color: rgba(255, 255, 255, 0.1);
-		background: #09090b;
-	}
-
-	.comms-hub__detail-title {
+	.matrix__context-h {
 		margin: 0;
 		font-size: 11px;
-		font-weight: 700;
+		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--text-secondary);
+		color: #94a3b8;
 	}
-
-	.comms-hub__detail-name {
+	.matrix__context-p {
 		margin: 0;
-		font-size: 14px;
-		font-weight: 700;
-		color: var(--text-primary);
+		font-size: 11px;
+		line-height: 1.45;
+		color: #64748b;
+		word-break: break-word;
 	}
-
-	.comms-hub__detail-sub {
-		margin: 0;
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--text-secondary);
-	}
-
-	.comms-hub__detail-safesport-badge {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 6px 10px;
+	.matrix__code {
+		font-size: 10px;
+		display: block;
+		margin-top: 4px;
+		padding: 6px 8px;
 		border-radius: 8px;
-		background: rgba(16, 185, 129, 0.09);
-		border: 1px solid rgba(16, 185, 129, 0.28);
-		font-size: 11px;
-		font-weight: 700;
-		color: #047857;
+		background: #f1f5f9;
+		color: #334155;
 	}
-
-	.comms-hub__members {
-		list-style: none;
-		margin: 0;
-		padding: 0;
+	:global(html.dark) .matrix__code {
+		background: #18181b;
+		color: #a1a1aa;
+	}
+	.matrix__link {
+		margin-top: 4px;
+		padding: 8px 12px;
+		border-radius: 10px;
+		border: 1px solid #e2e8f0;
+		background: #f8fafc;
+		font: inherit;
 		font-size: 12px;
-		color: var(--text-primary);
-	}
-
-	.comms-hub__members--cc {
-		margin-bottom: 4px;
-	}
-
-	.comms-hub__member {
-		padding: 4px 0;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-		word-break: break-all;
-	}
-
-	.comms-hub__member--cc {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		color: #059669;
-		font-weight: 600;
-		font-size: 11px;
-	}
-
-	.comms-hub__schedule-btn {
-		margin-top: auto;
-		width: 100%;
-		padding: 10px 12px;
-		border-radius: 14px;
-		border: 1px solid #e5e5e5;
-		background: #ffffff;
-		font-size: 13px;
-		font-weight: 600;
+		font-weight: 700;
 		cursor: pointer;
-		color: var(--text-primary);
+		color: var(--text-primary, #0f172a);
 	}
-
-	:global(html.dark) .comms-hub__schedule-btn {
-		background: #0f0f11;
+	:global(html.dark) .matrix__link {
+		background: #18181b;
 		border-color: rgba(255, 255, 255, 0.12);
+		color: #e4e4e7;
 	}
 </style>

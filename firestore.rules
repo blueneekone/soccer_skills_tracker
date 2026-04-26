@@ -275,6 +275,20 @@ service cloud.firestore {
               && get(/databases/$(database)/documents/teams/$(tid)).data.assistants.hasAny([emailKey()])));
     }
 
+    // Team channel matrix: teams/{teamId}/channels/{channelId}/messages
+    function canAccessTeamChannelMatrix(tid) {
+      return authed() && tid != null
+        && exists(/databases/$(database)/documents/teams/$(tid))
+        && (
+          isSuper()
+          || directorScopedToTeam(tid)
+          || registrarTeamInClub(tid)
+          || sameTeam(tid)
+          || coachStaffCanAccessTeam(tid)
+          || (isParent() && userDoc().keys().hasAll(['teamId']) && userDoc().teamId == tid)
+        );
+    }
+
     // Epic 2.4: team drill library + structured workouts (read for players/parents).
     function canReadTeamPracticeLibrary(tid) {
       return authed() && tid != null
@@ -824,6 +838,18 @@ service cloud.firestore {
       allow update, delete: if isSuper()
         || (isDirector() && resource.data.clubId == tokenClub())
         || (isCoach() && sameTeam(teamId));
+
+      // Channel matrix: teams/{teamId}/channels/{channelId}/messages
+      // UI channels: game-day | practice-sessions | general (client-side; any channelId path is allowed here).
+      // Doc shape (see messageCreateShapeOk): senderId, senderName, senderRole, text, timestamp, deleted.
+      match /channels/{channelId}/messages/{messageId} {
+        allow read: if canAccessTeamChannelMatrix(teamId);
+        allow create: if canAccessTeamChannelMatrix(teamId) && messageCreateShapeOk();
+        allow update: if canAccessTeamChannelMatrix(teamId)
+          && messageSoftDeleteOk()
+          && (isSuper() || isCoach() || isDirector());
+        allow delete: if false;
+      }
 
       // Epic 2.3: saved tactical boards (coaches / directors / super_admin only).
       match /tactics/{tacticId} {

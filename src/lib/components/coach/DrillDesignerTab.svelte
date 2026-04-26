@@ -7,6 +7,13 @@
 
 	let { teamId = '', workouts = [], onWorkoutSaved } = $props();
 
+	/** @type {Array<Record<string, unknown> & { id?: string }>} */
+	const templateWorkouts = $derived(
+		workouts.filter(
+			(w) => w.recordType !== 'scheduled_event' && w.type !== 'scheduled',
+		),
+	);
+
 	let workoutType = $state('foundation');
 	let workoutName = $state('');
 	let workoutLevel = $state('1');
@@ -149,10 +156,10 @@
 		<div class="card-header">Saved Drills for This Team</div>
 		<div class="card-body p-0">
 			<ul class="session-list">
-				{#if workouts.length === 0}
+				{#if templateWorkouts.length === 0}
 					<li class="session-empty">No custom workouts found for this team.</li>
 				{:else}
-					{#each workouts as w}
+					{#each templateWorkouts as w}
 						<li class="session-item workout-item">
 							<div class="flex-1">
 								<b>{w.name}</b>
