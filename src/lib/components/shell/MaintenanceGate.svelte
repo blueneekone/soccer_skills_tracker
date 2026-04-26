@@ -10,8 +10,7 @@
 	 * being locked out of their own kill switch.
 	 */
 
-	import { auth } from '$lib/firebase.js';
-	import { signOut } from 'firebase/auth';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
 
 	/** @type {{ message?: string }} */
@@ -24,16 +23,15 @@
 	);
 
 	let signingOut = $state(false);
-	const handleSignOut = async () => {
+	const onSignOut = async () => {
 		if (signingOut) return;
 		signingOut = true;
 		try {
-			await signOut(auth);
+			await handleSignOut();
 		} catch (err) {
-			console.error('[maintenance] signOut failed', err);
+			console.error('[maintenance] sign out', err);
 		} finally {
 			signingOut = false;
-			if (typeof window !== 'undefined') window.location.replace('/login');
 		}
 	};
 </script>
@@ -59,7 +57,7 @@
 			<button
 				type="button"
 				class="mnt-btn-secondary"
-				onclick={handleSignOut}
+				onclick={() => void onSignOut()}
 				disabled={signingOut}
 			>
 				{signingOut ? 'Signing out…' : 'Sign out'}

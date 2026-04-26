@@ -151,6 +151,15 @@ function createTeamsStore() {
 			lastLoadKey = '';
 		},
 
+		/** After sign-out: drop cached org data so the next login cannot see prior tenant rows. */
+		clearSession() {
+			teams = [];
+			clubs = [];
+			admins = [];
+			loaded = false;
+			lastLoadKey = '';
+		},
+
 		/** Filter teams that a coach email manages (head or assistant) */
 		getCoachTeams(email) {
 			return teams.filter((t) => {

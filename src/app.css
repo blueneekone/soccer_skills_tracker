@@ -14,6 +14,21 @@ html {
 	width: 100%;
 }
 
+/* Auth routes: override legacy style.css "liquid" .auth-card so max-w-md + desktop SIEM card chrome can apply. */
+.auth-card.auth-card--login-surface {
+	box-sizing: border-box;
+	max-width: 28rem;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	border-radius: 0;
+}
+
 .auth-card input[type='email'],
 .auth-card input[type='password'] {
 	box-sizing: border-box;

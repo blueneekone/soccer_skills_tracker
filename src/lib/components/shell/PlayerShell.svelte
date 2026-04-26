@@ -1,8 +1,6 @@
 <script>
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { signOut } from 'firebase/auth';
-	import { auth } from '$lib/firebase.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import '$lib/styles/player-shell.css';
@@ -13,13 +11,12 @@
 		if (disconnectBusy) return;
 		disconnectBusy = true;
 		try {
-			await signOut(auth);
+			await handleSignOut();
 		} catch (e) {
-			console.error('[PlayerShell] signOut', e);
+			console.error('[PlayerShell] sign out', e);
 		} finally {
 			disconnectBusy = false;
 		}
-		await goto('/login', { replaceState: true });
 	}
 
 	/** @type {{ children?: import('svelte').Snippet }} */

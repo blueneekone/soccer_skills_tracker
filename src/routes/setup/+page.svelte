@@ -2,10 +2,10 @@
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
-	import { signOut } from 'firebase/auth';
 	import { doc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
@@ -200,8 +200,7 @@
 	}
 
 	async function handleLogout() {
-		await signOut(auth);
-		goto('/login', { replaceState: true });
+		await handleSignOut();
 	}
 </script>
 

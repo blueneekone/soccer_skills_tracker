@@ -2,8 +2,7 @@
 	import { setContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { signOut } from 'firebase/auth';
-	import { auth } from '$lib/firebase.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
@@ -82,11 +81,6 @@
 
 	function toggleDesktopSidebar() {
 		workspaceContextStore.toggleSidebar();
-	}
-
-	async function handleSignOut() {
-		await signOut(auth);
-		goto('/login', { replaceState: true });
 	}
 
 	// ── Global Command Palette ───────────────────────────────────────────────────
@@ -181,7 +175,7 @@
 						<i class="ph ph-lifebuoy" aria-hidden="true"></i>
 						<span class="ec-nav-link__label">Support / Help Desk</span>
 					</a>
-					<button type="button" class="ec-nav-link" onclick={handleSignOut}>
+					<button type="button" class="ec-nav-link" onclick={() => void handleSignOut()}>
 						<i class="ph ph-sign-out" aria-hidden="true"></i>
 						<span class="ec-nav-link__label">Sign out</span>
 					</button>

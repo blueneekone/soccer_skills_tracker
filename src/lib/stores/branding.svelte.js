@@ -63,7 +63,23 @@ function createBrandingStore() {
 			secondaryColor = '#fbbf24';
 			bgUrl = '';
 			applyToCss();
-		}
+		},
+
+		/** Client-only: reset to defaults (e.g. after sign-out; no Firestore I/O). */
+		resetLocalDefaults() {
+			appName = 'SSTRACKER';
+			logoUrl = '';
+			primaryColor = '#0f172a';
+			secondaryColor = '#fbbf24';
+			bgUrl = '';
+			if (typeof document !== 'undefined') {
+				document.body.style.backgroundImage = '';
+				document.body.style.backgroundSize = '';
+				document.body.style.backgroundPosition = '';
+				document.body.style.backgroundAttachment = '';
+			}
+			applyToCss();
+		},
 	};
 }
 

@@ -21,7 +21,8 @@
 
 import { browser } from '$app/environment';
 import { auth } from '$lib/firebase.js';
-import { onIdTokenChanged, signOut } from 'firebase/auth';
+import { onIdTokenChanged } from 'firebase/auth';
+import { handleSignOut } from '$lib/auth/signOutFlow.js';
 
 /**
  * @typedef {{
@@ -137,21 +138,16 @@ function createImpersonationStore() {
 	}
 
 	/**
-	 * Hard exit: sign out the impersonation session. After signOut,
-	 * onIdTokenChanged will fire with `currentUser === null` and the store
-	 * resets. The admin returns to /login and must re-authenticate as
-	 * themselves.
+	 * Hard exit: public route + sign out + clear client state (see signOutFlow).
+	 * onIdTokenChanged then resets session when `currentUser === null`.
 	 */
 	async function exit() {
 		try {
-			await signOut(auth);
+			await handleSignOut();
 		} catch (err) {
-			console.error('[impersonation] signOut failed', err);
+			console.error('[impersonation] sign out', err);
 		}
 		session = emptySession();
-		if (browser) {
-			window.location.replace('/login');
-		}
 	}
 
 	return {

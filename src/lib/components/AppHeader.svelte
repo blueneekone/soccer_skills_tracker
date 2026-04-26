@@ -1,18 +1,12 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/firebase.js';
-	import { signOut } from 'firebase/auth';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { clubSportIconSuffix } from '$lib/utils/sport-icon.js';
-
-	const handleLogout = async () => {
-		await signOut(auth);
-		goto('/login', { replaceState: true });
-	};
 
 	const goHome = () =>
 		goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
@@ -54,7 +48,7 @@
 				<span class="support-text">Support</span>
 			</button>
 		{/if}
-		<button class="nav-logout-btn" onclick={handleLogout}>Sign Out</button>
+		<button class="nav-logout-btn" type="button" onclick={() => void handleSignOut()}>Sign Out</button>
 	</div>
 </header>
 
