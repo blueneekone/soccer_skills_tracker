@@ -10,7 +10,6 @@
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 
 	const profile = $derived(authStore.userProfile);
-	const user = $derived(authStore.user);
 	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
 	const totalXpHud = $derived(
 		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
@@ -18,13 +17,6 @@
 	const rankProgress = $derived(getCurrentRank(totalXpHud));
 	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
-
-	/** DiceBear bottts — matches API: seed={uid}, base #05050A, primary #06b6d4. */
-	const dicebearOperativeSrc = $derived(
-		`https://api.dicebear.com/7.x/bottts/svg?seed=${
-			user?.uid && String(user.uid).length > 0 ? encodeURIComponent(String(user.uid)) : 'anonymous'
-		}&baseColor=05050A&primaryColor=06b6d4`,
-	);
 
 	/** @param {unknown} v */
 	function statNum(v) {
@@ -66,26 +58,13 @@
 		};
 	});
 
-	/** Mobile / coarse pointer: tap to flip; md+ uses hover */
-	let operativeCardFlipped = $state(false);
+	/** 3D Operative ID card: click outer wrapper to flip */
+	let isFlipped = $state(false);
 
-	function operativeTapFlipEnabled() {
-		if (typeof window === 'undefined') return false;
-		return (
-			window.matchMedia('(max-width: 767.98px)').matches ||
-			window.matchMedia('(hover: none)').matches
-		);
-	}
-
-	function onOperativeCardActivate() {
-		if (!operativeTapFlipEnabled()) return;
-		operativeCardFlipped = !operativeCardFlipped;
-	}
-
-	function onOperativeKeydown(/** @type {KeyboardEvent} */ e) {
+	function onOperativeIdKeydown(/** @type {KeyboardEvent} */ e) {
 		if (e.key !== 'Enter' && e.key !== ' ') return;
 		e.preventDefault();
-		onOperativeCardActivate();
+		isFlipped = !isFlipped;
 	}
 
 	/** @typedef {{ id: string, seasonLabel?: string, physical?: Record<string, unknown>, technical?: Record<string, unknown> }} SeasonRow */
@@ -366,45 +345,46 @@
 		</div>
 	</header>
 
-	<div
-		class="oid-wrap tw-group tw-mx-auto tw-mb-6 tw-w-full tw-max-w-md tw-perspective-1000"
-		class:oid-wrap--flipped={operativeCardFlipped}
-	>
+	<div class="tw-mb-6 tw-w-full">
 		<p
 			class="oid-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
 		>
-			Tap to flip · hover to flip
+			Click to flip
 		</p>
 		<div
-			class="oid-surface tw-relative tw-h-full tw-w-full tw-cursor-pointer tw-outline-none"
+			class="tw-relative tw-mx-auto tw-aspect-[2/3] tw-w-full tw-max-w-sm tw-cursor-pointer tw-outline-none"
 			role="button"
 			tabindex="0"
-			aria-pressed={operativeCardFlipped}
-			aria-label="Operative ID card. Tap on mobile or hover on desktop to view game day telemetry."
-			onclick={onOperativeCardActivate}
-			onkeydown={onOperativeKeydown}
+			aria-pressed={isFlipped}
+			aria-label="Operative ID card. Click to view game day telemetry on the back."
+			style="perspective: 1000px;"
+			onclick={() => (isFlipped = !isFlipped)}
+			onkeydown={onOperativeIdKeydown}
 		>
-			<!-- Flip layer: relative w-full h-full · transition & preserve-3d · group-hover:rotate-y-180 (tw- prefix) -->
 			<div
-				class="oid-flipper tw-relative tw-h-full tw-w-full tw-min-h-[min(52vw,260px)] tw-transform-gpu tw-transform tw-[transform-style:preserve-3d] tw-transition-transform tw-duration-500 tw-ease-out tw-will-change-transform group-hover:tw-rotate-y-180"
+				class="tw-relative tw-h-full tw-w-full tw-transform-gpu tw-will-change-transform tw-transition-transform tw-duration-700"
+				style="transform-style: preserve-3d;{isFlipped
+					? ' transform: rotateY(180deg);'
+					: ' transform: none;'}"
 			>
 				<div
-					class="oid-face oid-face--front tw-absolute tw-h-full tw-w-full tw-backface-hidden tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
+					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
 				>
 					<div class="tw-flex tw-w-full tw-flex-col tw-items-center tw-gap-3">
 						<div
-							class="tw-flex tw-h-24 tw-w-24 tw-shrink-0 tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-500/50 tw-bg-black/60 tw-p-1 tw-shadow-[inset_0_0_12px_rgba(6,182,212,0.25)]"
+							class="tw-w-24 tw-h-24 tw-rounded-full tw-bg-slate-700 tw-mx-auto tw-border-2 tw-border-cyan-500 tw-overflow-hidden"
 						>
-							<img
-								class="tw-h-full tw-w-full tw-object-contain"
-								src={dicebearOperativeSrc}
-								alt=""
-								width="96"
-								height="96"
-								loading="lazy"
-								decoding="async"
-								fetchpriority="low"
-							/>
+							<svg
+								class="tw-block tw-h-full tw-w-full tw-text-slate-500"
+								viewBox="0 0 64 64"
+								fill="currentColor"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M32 8c-6.1 0-11 4.5-11 10 0 3.4 1.6 6.3 4.1 7.8C19.1 30.3 10 40.1 10 52.5V56h44v-3.5C54 40.1 44.9 30.3 35.9 25.8 38.4 24.3 40 21.4 40 18c0-5.5-4.9-10-11-10z"
+								/>
+							</svg>
 						</div>
 						<div class="tw-w-full tw-text-center">
 							<p class="tw-mb-0.5 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/90">
@@ -433,7 +413,7 @@
 				</div>
 
 				<div
-					class="oid-face oid-face--back tw-absolute tw-h-full tw-w-full tw-backface-hidden tw-inset-0 tw-rotate-y-180 tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)]"
+					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)] tw-[transform:rotateY(180deg)]"
 				>
 					<p
 						class="tw-mb-3 tw-border-b tw-border-cyan-500/30 tw-pb-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-400/90"
@@ -599,11 +579,6 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
-	}
-
-	/* 3D Operative ID: tap-to-flip (coarse / touch); desktop flip uses Tailwind group-hover on .oid-flipper */
-	.oid-wrap--flipped .oid-flipper {
-		transform: rotateY(180deg);
 	}
 
 	.pd-hero {

@@ -10,6 +10,17 @@ import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
  */
 
 /**
+ * True when Firestore `users/{email}` has `roles` including `player` (child accounts
+ * provisioned by a parent; onboarding can be skipped).
+ * @param {Record<string, unknown> | null | undefined} profile
+ * @returns {boolean}
+ */
+export function userDocHasPlayerRole(profile) {
+	if (!profile || !Array.isArray(profile.roles)) return false;
+	return profile.roles.includes('player');
+}
+
+/**
  * @param {string} role
  * @param {Record<string, unknown> | null | undefined} profile
  * @returns {{ path: string; context: LoginActiveContext; pivotKey: string }}
@@ -20,6 +31,14 @@ export function getLoginWaterfallDestination(role, profile) {
 			path: '/admin/overview',
 			context: 'admin',
 			pivotKey: 'ctx-platform-admin',
+		};
+	}
+	/** Parent-linked player: skip profile completeness / setup; parent already onboarded. */
+	if (userDocHasPlayerRole(profile)) {
+		return {
+			path: '/player/dashboard',
+			context: 'household',
+			pivotKey: 'ctx-player-home',
 		};
 	}
 	if (role === 'director') {

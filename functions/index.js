@@ -4451,6 +4451,7 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
     totalXp: out.totalXp,
     level: out.level,
     streakDays: out.streak,
+    athleteUid,
   };
 });
 

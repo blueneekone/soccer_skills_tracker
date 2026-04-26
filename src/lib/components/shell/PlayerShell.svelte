@@ -2,7 +2,6 @@
 	import { page } from '$app/state';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import '$lib/styles/player-shell.css';
 
 	let disconnectBusy = $state(false);
@@ -22,19 +21,6 @@
 	/** @type {{ children?: import('svelte').Snippet }} */
 	let { children } = $props();
 
-	const totalXp = $derived(
-		Math.max(
-			0,
-			Math.floor(
-				Number(
-					typeof authStore.userProfile?.totalXp === 'number' ?
-						authStore.userProfile.totalXp
-					:	(authStore.userProfile?.xp ?? 0),
-				) || 0,
-			),
-		),
-	);
-
 	const playerName = $derived(
 		authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Athlete',
 	);
@@ -51,7 +37,6 @@
 		{ href: '/stats', icon: 'ph-chart-bar', label: 'Stats' },
 		{ href: '/player/workout', icon: 'ph-list-checks', label: 'Train' },
 		{ href: '/trophies', icon: 'ph-trophy', label: 'Trophies' },
-		{ href: '/challenges', icon: 'ph-medal', label: 'Challenges' },
 		{ href: '/settings', icon: 'ph-gear', label: 'Settings' },
 	];
 
@@ -109,9 +94,6 @@
 				>
 					{disconnectBusy ? '…' : 'DISCONNECT'}
 				</button>
-				<div class="ps-topbar__ring" aria-label="XP progress ring">
-					<LevelProgressRing {totalXp} size="md" variant="dark" />
-				</div>
 			</div>
 		</header>
 

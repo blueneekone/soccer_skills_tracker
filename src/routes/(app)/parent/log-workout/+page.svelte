@@ -1,68 +1,147 @@
 <script>
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
-	import { functions, db } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import { writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
+	import {
+		calculateWorkoutXp,
+		calculateTrainingSessionEarnedXp,
+		getLevelProgressFromTotalXp,
+	} from '$lib/gamification/level.js';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
+	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+
+	const TELEMETRY_INTEL = {
+		title: 'GUARDIAN TELEMETRY',
+		instructions: [
+			"1. Select the Operative (household player) who performed the work.",
+			'2. Set focus, sub-drill, duration, and RPE to match the session.',
+			'3. Log training — XP follows the same engine as the Player OS and updates their profile and stats.',
+		],
+	};
 
 	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
 
-	/**
-	 * @param {{ sets?: unknown; reps?: unknown }[]} items
-	 */
-	function sessionTotalReps(items) {
-		let n = 0;
-		for (const i of items) {
-			const s = Number(i.sets);
-			const r = Number(i.reps);
-			if (Number.isFinite(s) && Number.isFinite(r) && s >= 0 && r >= 0) {
-				n += Math.floor(s * r);
-			}
-		}
-		return n;
+	/** @param {number} step */
+	function intensityApiFromStep(step) {
+		if (step <= 3) return /** @type {const} */ ('low');
+		if (step <= 7) return /** @type {const} */ ('medium');
+		return /** @type {const} */ ('high');
 	}
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
 
+	/** @type {Array<{ email: string; playerName: string; teamId: string }>} */
 	let children = $state([]);
 	let childrenLoading = $state(true);
 	let selectedChildEmail = $state('');
-	let sessionItems = $state([]);
-	let totalMinutes = $state('');
-	let outcome = $state('Good');
-	/** @type {'low' | 'medium' | 'high'} */
-	let intensity = $state('medium');
+	/** @type {Record<string, unknown> & { email?: string } | null} */
+	let childProfile = $state(null);
+	let childProfileLoading = $state(false);
+
+	/** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
+	let selectedFocus = $state('technical');
+	let selectedDrill = $state(/** @type {string | null} */ (null));
+	let intensity = $state(5);
+	let duration = $state(30);
+	let logSubmitting = $state(false);
+
 	let verifierLegalName = $state('');
 	let parentVerifiedAck = $state(false);
 
-	let selectWarmup = $state('');
-	let selectCore = $state('');
-	let selectBallWork = $state('');
-	let selectBasics = $state('');
-	let cardioDist = $state('');
-	let cardioTime = $state('');
-	let setsCore = $state('3');
-	let repsCore = $state('20');
-	let setsBall = $state('3');
-	let repsBall = $state('20');
-	let setsBasics = $state('3');
-	let repsBasics = $state('20');
+	let durGaugeEl = $state(/** @type {HTMLDivElement | null} */ (null));
+	let rpeGaugeEl = $state(/** @type {HTMLDivElement | null} */ (null));
+	let xpTrackEl = $state(/** @type {HTMLDivElement | null} */ (null));
+
+	/** @param {number} d */
+	const durationPct = (d) => ((Math.max(1, Math.min(1440, d)) - 1) / (1440 - 1)) * 100;
+	/** @param {number} r */
+	const rpePct = (r) => ((Math.max(1, Math.min(10, r)) - 1) / 9) * 100;
+
+	$effect(() => {
+		if (durGaugeEl) durGaugeEl.style.setProperty('--gauge', `${durationPct(duration)}%`);
+	});
+	$effect(() => {
+		if (rpeGaugeEl) rpeGaugeEl.style.setProperty('--gauge', `${rpePct(intensity)}%`);
+	});
+
+	const childXp = $derived(
+		Math.max(0, Math.floor(Number(childProfile?.totalXp ?? childProfile?.xp) || 0)),
+	);
+	const levelProgress = $derived(getLevelProgressFromTotalXp(childXp));
+	const level = $derived(levelProgress.level);
+	const currentXp = $derived(levelProgress.xpIntoLevel);
+	const nextLevelXp = $derived(levelProgress.xpToNext);
+	const streak = $derived(Math.max(0, Math.floor(Number(childProfile?.currentStreak) || 0)));
+
+	const xpLoadPct = $derived(
+		nextLevelXp > 0 ? Math.min(100, (currentXp / nextLevelXp) * 100) : 100,
+	);
+
+	$effect(() => {
+		if (xpTrackEl) {
+			xpTrackEl.style.setProperty('--fill', `${xpLoadPct}%`);
+		}
+	});
+
+	/**
+	 * Engine preview: same curve as `calculateTrainingSessionEarnedXp` (wraps
+	 * {@link calculateWorkoutXp} with session multipliers) — must match the callable.
+	 */
+	const estimatedLogXp = $derived.by(() => {
+		const dMin = Math.max(0, Math.floor(Number(duration) || 0));
+		const ir = intensityApiFromStep(intensity);
+		const mult = ir === 'high' ? 1.35 : ir === 'medium' ? 1.15 : 1.0;
+		return calculateWorkoutXp({
+			totalReps: 0,
+			intenseMinutes: dMin,
+			sportPayload: {
+				gamification: {
+					xpPerRep: 2 * mult,
+					xpPerIntenseMinute: 10 * mult,
+				},
+			},
+		});
+	});
+
+	const focusAreas = [
+		{ id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
+		{ id: /** @type {const} */ ('physical'), label: 'Physical', op: 'OP-PHY' },
+		{ id: /** @type {const} */ ('tactical'), label: 'Tactical', op: 'OP-TAC' },
+		{ id: /** @type {const} */ ('recovery'), label: 'Recovery', op: 'OP-RCV' },
+	];
+
+	const drillsByFocus = {
+		technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
+		physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
+		tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
+		recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
+	};
+
+	const availableDrills = $derived(
+		selectedFocus ? drillsByFocus[selectedFocus] : [],
+	);
+
+	const focusLabel = $derived(
+		(focusAreas.find((f) => f.id === selectedFocus) ?? { label: 'Session' }).label,
+	);
 
 	const selectedChild = $derived(children.find((c) => c.email === selectedChildEmail) || null);
-
-	const warmupList = $derived(workoutsStore.byType('cardio'));
-	const coreList = $derived(workoutsStore.byType('core'));
-	const ballList = $derived(workoutsStore.byType('ball_mastery'));
-	const basicsList = $derived(workoutsStore.byType('foundation'));
+	const childDisplayName = $derived(
+		(typeof childProfile?.playerName === 'string' && childProfile.playerName) ||
+			selectedChild?.playerName ||
+			'Operative',
+	);
 
 	$effect(() => {
 		if (!authStore.isLoading && role !== 'parent') {
-			untrack(() => goto('/parent/vpc', { replaceState: true }));
+			untrack(() => goto('/parent/household', { replaceState: true }));
 		}
 	});
 
@@ -91,12 +170,12 @@
 					rows.push({
 						email: em,
 						playerName: u.playerName || em,
-						teamId: u.teamId || ''
+						teamId: u.teamId || '',
 					});
 				}
 				if (!cancelled) children = rows;
 			} catch (e) {
-				console.error(e);
+				console.error('[parent log-workout] household', e);
 				if (!cancelled) children = [];
 			} finally {
 				if (!cancelled) childrenLoading = false;
@@ -108,384 +187,863 @@
 	});
 
 	$effect(() => {
-		const tid = selectedChild?.teamId;
-		if (tid) workoutsStore.loadForTeam(tid);
+		if (!browser) return;
+		const em = selectedChildEmail.trim().toLowerCase();
+		if (!em) {
+			childProfile = null;
+			childProfileLoading = false;
+			return;
+		}
+		let cancelled = false;
+		childProfileLoading = true;
+		(async () => {
+			try {
+				const snap = await getDoc(doc(db, 'users', em));
+				if (cancelled) return;
+				if (!snap.exists()) {
+					childProfile = null;
+					return;
+				}
+				childProfile = { email: em, ...snap.data() };
+			} catch (e) {
+				console.error('[parent log-workout] child profile', e);
+				if (!cancelled) childProfile = null;
+			} finally {
+				if (!cancelled) childProfileLoading = false;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	const addDrill = (name, sets, reps) => {
-		if (!name || name === 'Select Workout...') return alert('Please select a drill first.');
-		sessionItems = [...sessionItems, { name, sets: sets || 1, reps: reps || 1 }];
-	};
-
-	const removeDrill = (idx) => {
-		sessionItems = sessionItems.filter((_, i) => i !== idx);
-	};
+	/**
+	 * @param {'technical' | 'physical' | 'tactical' | 'recovery'} id
+	 */
+	function selectFocus(id) {
+		if (id !== selectedFocus) {
+			selectedDrill = null;
+		}
+		selectedFocus = id;
+	}
 
 	const fullNameOk = (raw) => {
 		const parts = raw.trim().split(/\s+/).filter(Boolean);
 		return parts.length >= 2 && raw.trim().length >= 4;
 	};
 
-	const clearForm = () => {
-		sessionItems = [];
-		totalMinutes = '';
-		outcome = 'Good';
-		intensity = 'medium';
-		verifierLegalName = '';
-		parentVerifiedAck = false;
-	};
-
-	const submitWorkout = async () => {
-		if (!selectedChildEmail) return alert('Select an athlete linked to your household.');
-		if (sessionItems.length === 0) return alert('Add drills to the session first.');
-		if (!parentVerifiedAck) return alert('Confirm the verification checkbox.');
-		if (!fullNameOk(verifierLegalName)) {
-			return alert('Enter your full legal name (first and last) as the verifying guardian.');
+	async function logWorkout() {
+		if (logSubmitting) return;
+		if (!selectedChildEmail) {
+			return Swal.fire({ title: 'No operative', text: 'Select a household player first.', icon: 'warning' });
 		}
-		const mins = parseInt(totalMinutes || 0);
-		if (mins <= 0) return alert('Enter valid total minutes.');
+		if (!childProfile || !childProfile?.teamId || childProfile.teamId === 'admin') {
+			return Swal.fire({ title: 'Profile incomplete', text: 'The selected player needs a team on file.', icon: 'warning' });
+		}
+		if (!selectedDrill) {
+			return Swal.fire({ title: 'Sub-drill required', text: 'Choose a sub-drill before transmit.', icon: 'info' });
+		}
+		if (!parentVerifiedAck) {
+			return Swal.fire({ title: 'Attestation', text: 'Confirm the verification checkbox.', icon: 'info' });
+		}
+		if (!fullNameOk(verifierLegalName)) {
+			return Swal.fire({
+				title: 'Guardian name',
+				text: 'Enter your full legal name (first and last) as the verifying parent.',
+				icon: 'info',
+			});
+		}
+		const dMin = Math.max(0, Math.floor(Number(duration) || 0));
+		if (dMin < 1) {
+			return Swal.fire({ title: 'Duration', text: 'Set time on task to at least 1 minute.', icon: 'info' });
+		}
+		const intensityCall = intensityApiFromStep(intensity);
+		const expectedXp = calculateTrainingSessionEarnedXp({
+			duration: dMin,
+			reps: 0,
+			intensity: intensityCall,
+		});
+		if (expectedXp < 1) {
+			return Swal.fire({ title: 'Zero yield', text: 'Increase duration or RPE to earn XP.', icon: 'warning' });
+		}
 
+		const drillType = `[${focusLabel}] ${selectedDrill} (Parent proxy)`.slice(0, 200);
+		const emailKey = selectedChildEmail.trim().toLowerCase();
+		const teamId = String(childProfile.teamId);
+		const playerName = childDisplayName;
+
+		logSubmitting = true;
 		try {
-			const baseDrills =
-				sessionItems.map((i) => i.name).filter(Boolean).join(' · ') || 'Training session';
-			const drillType = `${baseDrills} (${outcome})`.slice(0, 200);
-			const repTotal = sessionTotalReps(sessionItems);
-
 			const res = await logTrainingSession({
-				playerEmail: selectedChildEmail,
+				playerEmail: emailKey,
 				verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
 				drillType,
-				duration: mins,
-				reps: repTotal,
-				intensity
+				duration: dMin,
+				reps: 0,
+				intensity: intensityCall,
 			});
 			const payload = res.data;
 			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
-			confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#0f172a', '#fbbf24', '#3b82f6'] });
-			await Swal.fire({
-				title: 'Workout logged',
-				text: `Guardian-verified · +${earned} XP for the athlete.`,
-				icon: 'success',
-				confirmButtonColor: '#0f172a'
+			const athUid =
+				payload && typeof payload.athleteUid === 'string' && payload.athleteUid ? payload.athleteUid : '';
+
+			if (athUid) {
+				try {
+					await writePlayerOsWorkout({
+						emailKey,
+						userUid: athUid,
+						teamId,
+						focus: focusLabel,
+						drill: String(selectedDrill),
+						duration: dMin,
+						intensityRpe: intensity,
+						earnedXp: earned,
+					});
+				} catch (we) {
+					console.error('[Parent OS] users/', emailKey, '/workouts', we);
+				}
+			}
+
+			confetti({
+				particleCount: 100,
+				spread: 70,
+				origin: { y: 0.6 },
+				colors: ['#00d4ff', '#39ff14', '#ff6b00', '#a855f7'],
 			});
-			clearForm();
-			goto('/parent/vpc');
+			await Swal.fire({
+				text: `Workout Logged. ${playerName} awarded ${earned} XP.`,
+				icon: 'success',
+				confirmButtonColor: '#00d4ff',
+				confirmButtonText: 'Acknowledge',
+				customClass: { popup: 'card' },
+			});
+			await goto('/parent/household', { replaceState: true });
 		} catch (e) {
-			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
-			alert('Could not log workout: ' + msg);
+			console.error(e);
+			const msg =
+				e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Could not log workout.';
+			await Swal.fire({ title: 'Execution failed', text: msg, icon: 'error' });
+		} finally {
+			logSubmitting = false;
 		}
-	};
+	}
 </script>
 
-<div class="view-section">
-	<h2 class="view-title">Log workout for athlete</h2>
-	<p class="lead">
-		Parent accounts verify sessions on behalf of a linked minor or athlete. XP is awarded by the secure
-		<code>logTrainingSession</code> function.
-	</p>
+<svelte:head>
+	<title>Log workout (guardian) · SSTRACKER</title>
+</svelte:head>
 
-	<div class="card">
-		<div class="card-body">
-			{#if childrenLoading}
-				<p class="muted">Loading linked athletes…</p>
-			{:else if children.length === 0}
-				<p class="muted">No athlete accounts linked to your household yet. Ask your director to connect player emails.</p>
-			{:else}
-				<label class="field-label" for="child-pick">Athlete</label>
-				<select id="child-pick" class="field-control" bind:value={selectedChildEmail}>
-					<option value="">— Select —</option>
-					{#each children as c}
-						<option value={c.email}>{c.playerName} ({c.email})</option>
-					{/each}
-				</select>
+<div class="pw-cmd" data-region="parent-siem-workout">
+	<header class="plw-strap tw-mb-3 tw-text-center" aria-label="Context">
+		<p class="pw-mono tw-m-0 tw-text-[0.6rem] tw-uppercase tw-tracking-[0.25em] tw-text-cyan-500/80">
+			Parent proxy · training intake
+		</p>
+	</header>
 
-				{#if selectedChild?.teamId}
-					<div class="tracker-box bg-orange">
-						<span class="section-label text-orange">Cardio</span>
-						<label for="pwarm">Warm-Up</label>
-						<select id="pwarm" bind:value={selectWarmup}>
-							<option value="" disabled>Select…</option>
-							{#each warmupList as w}<option value={w.name}>{w.name}</option>{/each}
-						</select>
-						<div class="input-row">
-							<input type="number" bind:value={cardioDist} placeholder="Miles" class="flex-1" />
-							<span class="input-divider">/</span>
-							<input type="number" bind:value={cardioTime} placeholder="Mins" class="flex-1" />
-							<button type="button" class="action-btn btn-orange" onclick={() => addDrill(selectWarmup, cardioDist, cardioTime)}>+ Add</button>
-						</div>
-					</div>
-
-					<div class="tracker-box bg-red">
-						<span class="section-label text-red">Core</span>
-						<label for="pcore">Core</label>
-						<select id="pcore" bind:value={selectCore}>
-							<option value="" disabled>Select…</option>
-							{#each coreList as w}<option value={w.name}>{w.name}</option>{/each}
-						</select>
-						<div class="input-row">
-							<input type="number" bind:value={setsCore} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
-							<input type="number" bind:value={repsCore} placeholder="Reps" class="flex-1" />
-							<button type="button" class="action-btn btn-red" onclick={() => addDrill(selectCore, setsCore, repsCore)}>+ Add</button>
-						</div>
-					</div>
-
-					<div class="tracker-box bg-blue">
-						<span class="section-label text-blue">Ball</span>
-						<label for="pball">Ball work</label>
-						<select id="pball" bind:value={selectBallWork}>
-							<option value="" disabled>Select…</option>
-							{#each ballList as w}<option value={w.name}>{w.name}</option>{/each}
-						</select>
-						<div class="input-row">
-							<input type="number" bind:value={setsBall} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
-							<input type="number" bind:value={repsBall} placeholder="Reps" class="flex-1" />
-							<button type="button" class="action-btn btn-blue" onclick={() => addDrill(selectBallWork, setsBall, repsBall)}>+ Add</button>
-						</div>
-					</div>
-
-					<div class="tracker-box bg-green">
-						<span class="section-label text-green">Basics</span>
-						<label for="pbasic">Brilliant basics</label>
-						<select id="pbasic" bind:value={selectBasics}>
-							<option value="" disabled>Select…</option>
-							{#each basicsList as w}<option value={w.name}>{w.name}</option>{/each}
-						</select>
-						<div class="input-row">
-							<input type="number" bind:value={setsBasics} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
-							<input type="number" bind:value={repsBasics} placeholder="Reps" class="flex-1" />
-							<button type="button" class="action-btn btn-green" onclick={() => addDrill(selectBasics, setsBasics, repsBasics)}>+ Add</button>
-						</div>
-					</div>
-
-					<div class="cart">
-						<span class="section-label text-blue">Session</span>
-						<ul class="session-list">
-							{#if sessionItems.length === 0}
-								<li class="session-empty">Add drills above.</li>
-							{:else}
-								{#each sessionItems as item, idx}
-									<li class="session-item">
-										<div>
-											<b>{idx + 1}. {item.name}</b>
-											<span class="detail">({item.sets} × {item.reps})</span>
-										</div>
-										<button type="button" class="delete-btn" onclick={() => removeDrill(idx)}>✕</button>
-									</li>
-								{/each}
-							{/if}
-						</ul>
-
-						<label class="field-label" for="pmins">Total minutes</label>
-						<input id="pmins" class="field-control" type="number" bind:value={totalMinutes} placeholder="e.g. 45" />
-
-						<span class="field-label">How did they do?</span>
-						<div class="outcome-row">
-							{#each ['Struggled', 'Good', 'Mastered'] as opt}
-								<button type="button" class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>
-									{opt}
-								</button>
-							{/each}
-						</div>
-
-						<span class="field-label">Intensity (XP multiplier)</span>
-						<div class="outcome-row">
-							{#each ['low', 'medium', 'high'] as tier}
-								<button
-									type="button"
-									class="outcome-btn"
-									class:active={intensity === tier}
-									onclick={() => (intensity = /** @type {'low' | 'medium' | 'high'} */ (tier))}
-								>
-									{tier}
-								</button>
-							{/each}
-						</div>
-
-						<div class="verify-panel">
-							<span class="verify-heading">Guardian attestation</span>
-							<label class="field-label" for="plegal">Your full legal name</label>
-							<input
-								id="plegal"
-								class="field-control"
-								type="text"
-								autocomplete="name"
-								placeholder="First and last name"
-								bind:value={verifierLegalName}
-							/>
-							<label class="verify-check">
-								<input type="checkbox" bind:checked={parentVerifiedAck} />
-								<span>I confirm this session was completed as logged for the selected athlete.</span>
-							</label>
-						</div>
-
-						<button type="button" class="primary-btn w-full" onclick={submitWorkout}>Save verified workout</button>
-					</div>
-				{:else if selectedChildEmail}
-					<p class="muted">Selected athlete has no team on file yet.</p>
-				{/if}
-			{/if}
+	<header class="pw-hud" aria-label="Operative clearance (selected child)">
+		<div class="pw-hud__cell pw-hud__cell--level">
+			<span class="pw-eyebrow">Operative / Level</span>
+			<p class="pw-mono pw-hud__level" aria-live="polite">
+				{selectedChildEmail ? `LVL.${String(level).padStart(2, '0')}` : '—'}
+			</p>
 		</div>
+		<div class="pw-hud__cell pw-hud__cell--load">
+			<div class="pw-hud__row">
+				<span class="pw-eyebrow">System load (XP to next level)</span>
+				<span class="pw-mono pw-cyber"
+					>{selectedChildEmail ? currentXp : '—'}<span class="pw-dim"> / </span
+					>{!selectedChildEmail ? '—' : nextLevelXp > 0 ? nextLevelXp : 'MAX'}</span
+				>
+			</div>
+			<div
+				class="pw-loadbar"
+				bind:this={xpTrackEl}
+				role="progressbar"
+				aria-valuenow={Math.round(xpLoadPct)}
+				aria-valuemin="0"
+				aria-valuemax="100"
+				aria-label="XP progress (selected operative)"
+			>
+				<div class="pw-loadbar__fill"></div>
+				<div class="pw-loadbar__scan" aria-hidden="true"></div>
+			</div>
+		</div>
+		<div class="pw-hud__cell pw-hud__cell--streak">
+			<span class="pw-eyebrow">Uptime (day streak)</span>
+			<p class="pw-mono pw-hud__streak">
+				<i class="ph-fill ph-lightning pw-ico pw-ico--orange" aria-hidden="true"></i>
+				<span>{selectedChildEmail ? `${streak}D` : '—'}</span>
+			</p>
+		</div>
+	</header>
+
+	<div class="pw-grid plw-onecol">
+		<section class="pw-panel pw-panel--term" aria-labelledby="plw-exec-heading">
+			<div class="pw-panel__head pw-panel__head--row">
+				<div>
+					<span class="pw-eyebrow">Target selector</span>
+					<h2 id="plw-exec-heading" class="pw-title">Guardian execution terminal</h2>
+				</div>
+				<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+					<IntelModal title={TELEMETRY_INTEL.title} instructions={TELEMETRY_INTEL.instructions} />
+					<div class="pw-mono pw-est">
+						<span class="pw-dim">EST. YIELD (MODEL)</span>
+						<span class="pw-green">+{estimatedLogXp} XP</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="pw-section">
+				<span class="pw-eyebrow">0 · Operative (household)</span>
+				{#if childrenLoading}
+					<p class="pw-mono tw-text-sm tw-text-zinc-400">Loading household roster…</p>
+				{:else if children.length === 0}
+					<p class="pw-mono tw-text-sm tw-text-amber-300/90">
+						No player emails linked. Ask your director to attach athletes to the household.
+					</p>
+				{:else}
+					<label class="plw-sr" for="plw-child">Operative</label>
+					<select
+						id="plw-child"
+						class="plw-select"
+						bind:value={selectedChildEmail}
+						aria-label="Select operative receiving XP"
+					>
+						<option value="">— Select operative —</option>
+						{#each children as c}
+							<option value={c.email}>{c.playerName} · {c.email}</option>
+						{/each}
+					</select>
+				{/if}
+			</div>
+
+			{#if childProfileLoading}
+				<p class="pw-mono tw-mb-3 tw-text-xs tw-text-cyan-500/80">Syncing operative profile…</p>
+			{/if}
+
+			<div class="pw-section">
+				<span class="pw-eyebrow">1 · Focus area</span>
+				<div class="pw-focus" role="group" aria-label="Focus area">
+					{#each focusAreas as focus}
+						<button
+							type="button"
+							class="pw-focus__btn"
+							class:pw-focus__btn--on={selectedFocus === focus.id}
+							disabled={!selectedChildEmail}
+							onclick={() => selectFocus(focus.id)}
+						>
+							<span class="pw-mono pw-focus__op">{focus.op}</span>
+							<span class="pw-focus__lab">{focus.label}</span>
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<div class="pw-section">
+				<span class="pw-eyebrow">2 · Sub-drill (dynamic)</span>
+				<div class="pw-subdrill" role="list">
+					{#each availableDrills as drill}
+						<button
+							type="button"
+							class="pw-chip"
+							class:pw-chip--on={selectedDrill === drill}
+							disabled={!selectedChildEmail}
+							onclick={() => {
+								selectedDrill = drill;
+							}}
+						>
+							{drill}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<div class="pw-gauges">
+				<div class="pw-gauge">
+					<div class="pw-gauge__head">
+						<span class="pw-eyebrow">Time on task (min)</span>
+						<span class="pw-mono pw-cyber">{duration}</span>
+					</div>
+					<div class="pw-gauge__bar" bind:this={durGaugeEl} aria-label="Duration">
+						<div class="pw-gauge__bar-fill"></div>
+					</div>
+					<input
+						class="pw-range"
+						type="range"
+						min="1"
+						max="1440"
+						step="1"
+						bind:value={duration}
+						aria-label="Duration in minutes"
+					/>
+				</div>
+				<div class="pw-gauge">
+					<div class="pw-gauge__head">
+						<span class="pw-eyebrow">RPE (intensity 1–10)</span>
+						<span class="pw-mono pw-orange">{intensity} / 10</span>
+					</div>
+					<div class="pw-gauge__bar pw-gauge__bar--rpe" bind:this={rpeGaugeEl} aria-label="RPE">
+						<div class="pw-gauge__bar-fill"></div>
+					</div>
+					<input
+						class="pw-range"
+						type="range"
+						min="1"
+						max="10"
+						step="1"
+						bind:value={intensity}
+						aria-label="RPE intensity"
+					/>
+				</div>
+			</div>
+
+			<div class="plw-guardian tw-mb-4 tw-rounded tw-border tw-border-cyan-500/25 tw-bg-black/40 tw-p-3">
+				<span class="pw-eyebrow tw-mb-2 tw-block">Guardian attestation</span>
+				<label class="plw-sr" for="plw-legal">Your full legal name</label>
+				<input
+					id="plw-legal"
+					class="plw-input"
+					type="text"
+					autocomplete="name"
+					placeholder="First and last (verifying parent)"
+					bind:value={verifierLegalName}
+				/>
+				<label class="plw-check">
+					<input type="checkbox" bind:checked={parentVerifiedAck} />
+					<span>I confirm this session was completed as logged for the selected operative.</span>
+				</label>
+			</div>
+
+			<div class="pw-execrow">
+				<button
+					type="button"
+					class="pw-exec"
+					disabled={!selectedChildEmail || !selectedDrill || logSubmitting || !children.length}
+					onclick={logWorkout}
+				>
+					{#if logSubmitting}
+						<span class="pw-mono">TRANSMITTING…</span>
+					{:else}
+						<i class="ph ph-lightning" aria-hidden="true"></i>
+						<span>LOG FOR OPERATIVE · +{estimatedLogXp} XP</span>
+					{/if}
+				</button>
+				{#if !selectedChildEmail}
+					<p class="pw-mono pw-locked">Select an operative to arm the logger</p>
+				{:else if !selectedDrill}
+					<p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
+				{/if}
+			</div>
+		</section>
 	</div>
 </div>
 
 <style>
-	.lead {
-		font-size: 0.9rem;
-		line-height: 1.5;
-		opacity: 0.92;
-		margin-bottom: clamp(12px, 2vw, 18px);
+	.plw-strap p {
+		margin: 0;
 	}
-	.field-label {
-		display: block;
-		font-weight: 800;
-		font-size: 0.82rem;
-		margin-top: clamp(10px, 2vw, 14px);
-		margin-bottom: 6px;
+
+	.plw-onecol {
+		grid-template-columns: 1fr;
 	}
-	.field-control {
+
+	.plw-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.plw-select {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.4rem;
+		padding: 0.6rem 0.75rem;
+		font-family: ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+		font-size: 0.8rem;
+		background: #000;
+		color: #e5e5e5;
+		border: 1px solid rgba(0, 212, 255, 0.45);
+		border-radius: 0.25rem;
+	}
+
+	.plw-input {
 		width: 100%;
 		box-sizing: border-box;
-		padding: clamp(10px, 2vw, 12px);
-		border-radius: 14px;
-		border: 1px solid var(--glass-border);
+		padding: 0.5rem 0.6rem;
+		margin-bottom: 0.6rem;
 		font: inherit;
-		background: var(--glass-bg);
-		color: inherit;
+		background: #000;
+		color: #fafafa;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.25rem;
 	}
-	.tracker-box {
-		margin-bottom: clamp(14px, 2.5vw, 20px);
-		padding: clamp(10px, 2vw, 14px);
-		border-radius: 16px;
-		border: 1px solid var(--glass-border);
-	}
-	.section-label {
-		display: block;
-		font-weight: 800;
-		font-size: 0.85rem;
-		margin-bottom: 8px;
-	}
-	.input-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-top: 8px;
-	}
-	.input-divider {
-		opacity: 0.6;
-	}
-	.flex-1 {
-		flex: 1;
-	}
-	.w-50 {
-		width: 48px;
-	}
-	.action-btn {
-		padding: 8px 12px;
-		border-radius: 12px;
-		border: none;
-		cursor: pointer;
-		font-weight: 700;
-		color: white;
-	}
-	.btn-orange {
-		background: #ea580c;
-	}
-	.btn-red {
-		background: #dc2626;
-	}
-	.btn-blue {
-		background: #2563eb;
-	}
-	.btn-green {
-		background: #16a34a;
-	}
-	.cart {
-		margin-top: clamp(12px, 2vw, 18px);
-	}
-	.session-list {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 12px;
-	}
-	.session-empty {
-		padding: 12px;
-		opacity: 0.8;
-	}
-	.session-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 10px 0;
-		border-bottom: 1px solid var(--glass-border);
-	}
-	.detail {
-		font-size: 0.85rem;
-		opacity: 0.85;
-		margin-left: 8px;
-	}
-	.delete-btn {
-		background: none;
-		border: none;
-		color: var(--danger-red);
-		cursor: pointer;
-		font-size: 1rem;
-	}
-	.outcome-row {
-		display: flex;
-		gap: 8px;
-		flex-wrap: wrap;
-		margin-bottom: 12px;
-	}
-	.outcome-btn {
-		flex: 1;
-		min-width: 90px;
-		padding: 10px;
-		border-radius: 12px;
-		border: 2px solid var(--glass-border);
-		background: var(--glass-bg);
-		cursor: pointer;
-		font-weight: 700;
-	}
-	.outcome-btn.active {
-		border-color: var(--aggie-blue);
-		background: var(--aggie-blue);
-		color: white;
-	}
-	.verify-panel {
-		padding: clamp(12px, 2vw, 16px);
-		border-radius: 16px;
-		border: 1px solid var(--glass-border);
-		background: rgba(15, 23, 42, 0.03);
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		margin-bottom: 16px;
-	}
-	:global(html.dark) .verify-panel {
-		background: rgba(15, 23, 42, 0.35);
-	}
-	.verify-heading {
-		font-weight: 800;
-	}
-	.verify-check {
+
+	.plw-check {
 		display: flex;
 		align-items: flex-start;
-		gap: 0.75rem;
-		font-size: 0.88rem;
-		font-weight: 600;
-		line-height: 1.45;
+		gap: 0.6rem;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 	}
-	.verify-check input {
-		margin-top: 0.125rem;
+
+	.plw-check input {
+		margin-top: 0.15rem;
 	}
-	.w-full {
+
+	/* ——— Player OS SIEM skin (local copy for parent route) ——— */
+	.pw-cmd {
+		min-height: 0;
+		height: auto;
+		overflow: visible;
+		box-sizing: border-box;
+		background: #000000;
+		color: #fafafa;
+		padding: clamp(1rem, 2vw, 1.5rem);
+		--cyber: #00d4ff;
+		--toxic: #39ff14;
+		--threat: #ff6b00;
+		--border: rgba(255, 255, 255, 0.1);
+	}
+
+	@media (min-width: 768px) {
+		.pw-cmd {
+			min-height: calc(100vh - 5rem);
+		}
+	}
+
+	.pw-eyebrow {
+		display: block;
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: rgba(255, 255, 255, 0.45);
+	}
+
+	.pw-title {
+		margin: 0.25rem 0 0;
+		font-size: 1.125rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.pw-mono {
+		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+		font-feature-settings: 'tnum' 1;
+	}
+
+	.pw-dim {
+		color: rgba(255, 255, 255, 0.4);
+	}
+
+	.pw-cyber {
+		color: var(--cyber);
+	}
+
+	.pw-green {
+		color: var(--toxic);
+	}
+
+	.pw-orange {
+		color: var(--threat);
+	}
+
+	.pw-hud {
+		display: grid;
+		grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 8rem);
+		gap: clamp(0.75rem, 2vw, 1.5rem);
+		align-items: stretch;
+		min-height: 6.5rem;
+		padding: 1rem 1.25rem;
+		margin-bottom: clamp(1rem, 2vw, 1.5rem);
+		border: 1px solid var(--border);
+		background: #05050a;
+	}
+
+	.pw-hud__cell {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
+	.pw-hud__cell--load {
+		min-width: 0;
+	}
+
+	.pw-hud__cell--level {
+		border-right: 1px solid var(--border);
+		padding-right: 1rem;
+	}
+
+	.pw-hud__level {
+		margin: 0;
+		font-size: clamp(1.75rem, 4vw, 2.5rem);
+		font-weight: 800;
+		color: var(--cyber);
+		line-height: 1;
+	}
+
+	.pw-hud__row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.75rem;
+	}
+
+	.pw-loadbar {
+		--fill: 0%;
+		position: relative;
+		height: 0.5rem;
 		width: 100%;
+		background: #000;
+		border: 1px solid var(--border);
+		overflow: hidden;
 	}
-	.muted {
-		opacity: 0.85;
+
+	.pw-loadbar__fill {
+		height: 100%;
+		width: var(--fill);
+		background: linear-gradient(90deg, #0a3a45 0%, var(--cyber) 55%, var(--toxic) 100%);
+		box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+	}
+
+	.pw-loadbar__scan {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+		animation: plw-scan 2.5s linear infinite;
+		pointer-events: none;
+	}
+
+	@keyframes plw-scan {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(200%);
+		}
+	}
+
+	.pw-hud__cell--streak {
+		text-align: right;
+		border-left: 1px solid var(--border);
+		padding-left: 1rem;
+	}
+
+	.pw-hud__streak {
+		margin: 0;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.35rem;
+		font-size: 1.75rem;
+		font-weight: 700;
+		color: var(--threat);
+	}
+
+	.pw-ico--orange {
+		color: var(--threat);
+		filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.8));
+	}
+
+	@media (max-width: 900px) {
+		.pw-hud {
+			grid-template-columns: 1fr;
+			min-height: 0;
+		}
+		.pw-hud__cell--level,
+		.pw-hud__cell--streak {
+			border: none;
+			padding: 0;
+			text-align: left;
+		}
+		.pw-hud__streak {
+			justify-content: flex-start;
+		}
+	}
+
+	.pw-grid {
+		display: grid;
+		gap: clamp(1rem, 2vw, 1.5rem);
+		align-items: start;
+		overflow: visible;
+	}
+
+	.pw-panel {
+		border: 1px solid var(--border);
+		background: #05050a;
+		padding: 1.25rem;
+		min-width: 0;
+		overflow: visible;
+	}
+
+	.pw-panel__head {
+		margin-bottom: 0.25rem;
+	}
+
+	.pw-panel__head--row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.pw-est {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.2rem;
+		font-size: 0.8rem;
+	}
+
+	.pw-section {
+		margin-bottom: 1.25rem;
+	}
+
+	.pw-focus {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.5rem;
+	}
+
+	@media (min-width: 640px) {
+		.pw-focus {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	.pw-focus__btn {
+		padding: 0.6rem 0.5rem;
+		background: #000;
+		border: 1px solid var(--border);
+		color: #ccc;
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
+		transition: border-color 0.12s, box-shadow 0.12s;
+	}
+
+	.pw-focus__btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.pw-focus__btn:hover:not(:disabled) {
+		border-color: rgba(0, 212, 255, 0.35);
+	}
+
+	.pw-focus__btn--on {
+		border-color: var(--cyber);
+		box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+	}
+
+	.pw-focus__op {
+		font-size: 0.6rem;
+		color: var(--cyber);
+	}
+
+	.pw-focus__lab {
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+
+	.pw-subdrill {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.pw-chip {
+		padding: 0.4rem 0.7rem;
+		background: #000;
+		border: 1px solid var(--border);
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.75rem;
+		cursor: pointer;
+		transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
+	}
+
+	.pw-chip:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	.pw-chip:hover:not(:disabled) {
+		color: #fff;
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.pw-chip--on {
+		border-color: var(--toxic);
+		color: #fff;
+		box-shadow: 0 0 12px rgba(57, 255, 20, 0.18);
+	}
+
+	.pw-gauges {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.25rem;
+		margin-bottom: 1.5rem;
+	}
+
+	@media (max-width: 640px) {
+		.pw-gauges {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.pw-gauge {
+		min-width: 0;
+	}
+
+	.pw-gauge__head {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 0.4rem;
+	}
+
+	.pw-gauge__bar {
+		--gauge: 0%;
+		height: 0.35rem;
+		width: 100%;
+		background: #000;
+		border: 1px solid var(--border);
+		margin-bottom: 0.2rem;
+	}
+
+	.pw-gauge__bar--rpe {
+		border-color: rgba(255, 107, 0, 0.3);
+	}
+
+	.pw-gauge__bar-fill {
+		height: 100%;
+		width: var(--gauge);
+	}
+
+	.pw-gauge:first-child .pw-gauge__bar-fill {
+		background: linear-gradient(90deg, #0a1e22, var(--cyber));
+		box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+	}
+
+	.pw-gauge:last-child .pw-gauge__bar-fill {
+		background: linear-gradient(90deg, #2a1a0a, var(--threat));
+		box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+	}
+
+	.pw-range {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 1.25rem;
+		background: transparent;
+		cursor: pointer;
+		margin: 0;
+	}
+
+	.pw-range:focus {
+		outline: 1px solid var(--cyber);
+		outline-offset: 2px;
+	}
+
+	.pw-range::-webkit-slider-runnable-track {
+		height: 4px;
+		background: #111;
+		border: 1px solid var(--border);
+	}
+
+	.pw-range::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		margin-top: -6px;
+		background: #000;
+		border: 2px solid var(--cyber);
+		box-shadow: 0 0 8px var(--cyber);
+	}
+
+	.pw-gauge:last-child .pw-range::-webkit-slider-thumb {
+		border-color: var(--threat);
+		box-shadow: 0 0 8px var(--threat);
+	}
+
+	.pw-range::-moz-range-track {
+		height: 4px;
+		background: #111;
+		border: 1px solid var(--border);
+	}
+
+	.pw-range::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		background: #000;
+		border: 2px solid var(--cyber);
+		box-shadow: 0 0 8px var(--cyber);
+	}
+
+	.pw-gauge:last-child .pw-range::-moz-range-thumb {
+		border-color: var(--threat);
+		box-shadow: 0 0 8px var(--threat);
+	}
+
+	.pw-execrow {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.5rem;
+	}
+
+	.pw-exec {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 3.5rem;
+		padding: 0.75rem 1rem;
+		background: #000;
+		border: 1px solid rgba(0, 212, 255, 0.4);
+		color: #fff;
+		font-size: 0.85rem;
+		font-weight: 800;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: box-shadow 0.2s ease, border-color 0.2s ease;
+	}
+
+	.pw-exec:hover:not(:disabled) {
+		border-color: var(--toxic);
+		box-shadow:
+			0 0 32px rgba(57, 255, 20, 0.35),
+			0 0 18px rgba(0, 212, 255, 0.3);
+	}
+
+	.pw-exec:disabled {
+		cursor: not-allowed;
+		opacity: 0.4;
+		box-shadow: none;
+	}
+
+	.pw-locked {
+		font-size: 0.65rem;
+		text-align: center;
+		color: rgba(255, 255, 255, 0.35);
+		margin: 0;
 	}
 </style>

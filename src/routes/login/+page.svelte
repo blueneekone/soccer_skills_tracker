@@ -26,7 +26,7 @@
 	/** @type {boolean} */
 	let isSignUp = $state(false);
 
-	/** Operative flow: display name, email, or callsign (matches validatePlayerOTP) */
+	/** Operative flow: display name or callsign (matches validatePlayerOTP) */
 	let opUsername = $state('');
 	/** 6-char OTP (XXX-XXX or XXXXXX) */
 	let dispatchCode = $state('');
@@ -136,7 +136,7 @@
 		const uname = opUsername.trim();
 		const codeRaw = dispatchCode.trim();
 		if (!uname || !codeRaw) {
-			opError = 'Enter your username and the 6-character clearance code from a parent.';
+			opError = 'Enter your operative callsign and the 6-character clearance code from a parent.';
 			return;
 		}
 		/** accept XXX-XXXX or 6 alnum (backend normalizes) */
@@ -336,17 +336,20 @@
 					>
 						Clearance
 					</p>
-					<p class="tw-mb-3 tw-text-center tw-text-xs tw-text-white/45">Username and 6-character clearance code</p>
+					<p class="tw-mb-3 tw-text-center tw-text-xs tw-text-white/45">
+						Operative Callsign and 6-character clearance code
+					</p>
 					<div class="tw-flex tw-flex-col tw-gap-3">
-						<label class="tw-m-0">
-							<span class="login-field-label">Username</span>
+						<label class="tw-m-0" for="op-username">
+							<span class="login-field-label">Operative Callsign</span>
 							<input
 								id="op-username"
 								type="text"
 								class="{gateCtl} tw-border-cyan-500/20 tw-bg-black tw-text-white"
-								placeholder="Name or sign-in email"
-								autocomplete="username"
+								placeholder="Operative Callsign"
+								autocomplete="off"
 								inputmode="text"
+								spellcheck="false"
 								bind:value={opUsername}
 							/>
 						</label>

@@ -12,6 +12,7 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getIdTokenResult } from 'firebase/auth';
 import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
+import { userDocHasPlayerRole } from '$lib/auth/loginRouting.js';
 
 /**
  * @param {Record<string, unknown> | null | undefined} baseProfile
@@ -32,6 +33,7 @@ export function fallbackPlayerName(baseProfile, email) {
 export function isProfileComplete(profile) {
 	if (!profile) return false;
 	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
+	if (userDocHasPlayerRole(/** @type {Record<string, unknown>} */ (profile))) return true;
 	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
