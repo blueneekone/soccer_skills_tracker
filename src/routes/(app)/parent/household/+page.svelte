@@ -2,7 +2,17 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
-	import { doc, getDoc } from 'firebase/firestore';
+	import {
+		collection,
+		doc,
+		getDoc,
+		getDocs,
+		limit,
+		query,
+		updateDoc,
+		where,
+		writeBatch,
+	} from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
@@ -44,11 +54,26 @@
 	/** @type {string} */
 	let teamDispatchCode = $state('');
 
-	/** @type {Array<{ email: string; name: string; callsign: string }>} */
+	/**
+	 * @typedef {Object} OperativeRow
+	 * @property {string} email
+	 * @property {string} name
+	 * @property {string} callsign
+	 * @property {string} loginCallsign
+	 * @property {string} dispatchCode
+	 * @property {string | null} pendingGamertag
+	 * @property {number} gamertagChangesLeft
+	 * @property {string} hudErr
+	 */
+
+	/** @type {OperativeRow[]} */
 	let operativeRows = $state([]);
 
 	/** @type {string | null} */
 	let otpGenBusyKey = $state(null);
+
+	/** @type {string | null} */
+	let gtActionBusyKey = $state(null);
 
 	/** @type {false | { code: string; expiresAt: number; displayName: string }} */
 	let otpDialog = $state(/** @type {false | { code: string; expiresAt: number; displayName: string }} */ (false));
@@ -87,6 +112,197 @@
 		const r = s % 60;
 		return `${m}:${r.toString().padStart(2, '0')}`;
 	});
+
+	/**
+	 * @param {Record<string, unknown>} d
+	 * @returns {Array<{ email: string; name: string; callsign: string }>}
+	 */
+	function baseRowsFromHousehold(d) {
+		const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
+		const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
+		const pcall = Array.isArray(d.playerCallsigns) ? d.playerCallsigns : [];
+		return pe
+			.map((em, i) => {
+				const email = String(em || '')
+					.trim()
+					.toLowerCase();
+				const nm =
+					typeof pnames[i] === 'string' && pnames[i].trim() ? pnames[i].trim() : '';
+				const callsign =
+					typeof pcall[i] === 'string' && pcall[i].trim() ?
+						pcall[i].trim()
+					:	email && email.endsWith('@operative.local') ?
+						email.split('@')[0]
+					:	'';
+				return {
+					email,
+					callsign,
+					name: nm || (email ? email.split('@')[0] : 'Operative'),
+				};
+			})
+			.filter((r) => r.email);
+	}
+
+	/**
+	 * @param {{ email: string; name: string; callsign: string }} row
+	 * @returns {Promise<OperativeRow>}
+	 */
+	async function enrichOperativeRow(row) {
+		const em = row.email;
+		if (!em.endsWith('@operative.local')) {
+			return {
+				...row,
+				loginCallsign: '',
+				dispatchCode: '',
+				pendingGamertag: null,
+				gamertagChangesLeft: 3,
+				hudErr: '',
+			};
+		}
+		const local = em.includes('@') ? em.split('@')[0] : em;
+		let pendingGamertag = null;
+		let gamertagChangesLeft = 3;
+		let dispatchCode = '';
+		let hudErr = '';
+		try {
+			const uSnap = await getDoc(doc(db, 'users', em));
+			const dSnap = await getDocs(
+				query(collection(db, 'operative_dispatches'), where('childEmail', '==', em), limit(20)),
+			);
+			if (uSnap.exists()) {
+				const ud = uSnap.data() || {};
+				if (typeof ud.pendingGamertag === 'string' && ud.pendingGamertag.trim()) {
+					pendingGamertag = ud.pendingGamertag.trim();
+				}
+				if (typeof ud.gamertagChangesLeft === 'number' && !Number.isNaN(ud.gamertagChangesLeft)) {
+					gamertagChangesLeft = ud.gamertagChangesLeft;
+				}
+			}
+			if (!dSnap.empty) {
+				let best = dSnap.docs[0];
+				let bestMs = 0;
+				for (const qd of dSnap.docs) {
+					const x = qd.data();
+					const t = x && typeof x.createdAt?.toMillis === 'function' ? x.createdAt.toMillis() : 0;
+					if (t >= bestMs) {
+						bestMs = t;
+						best = qd;
+					}
+				}
+				const b = best.data() || {};
+				dispatchCode = typeof b.dispatchCode === 'string' ? b.dispatchCode.trim() : '';
+			}
+		} catch (e) {
+			hudErr = e instanceof Error ? e.message : 'Load failed';
+		}
+		return {
+			...row,
+			loginCallsign: local,
+			dispatchCode,
+			pendingGamertag,
+			gamertagChangesLeft,
+			hudErr,
+		};
+	}
+
+	/**
+	 * @param {Record<string, unknown>} d
+	 * @returns {Promise<OperativeRow[]>}
+	 */
+	async function buildEnrichedOperativeRows(d) {
+		const base = baseRowsFromHousehold(d);
+		return Promise.all(base.map((r) => enrichOperativeRow(r)));
+	}
+
+	/** @returns {Promise<void>} */
+	async function refreshHouseholdOperatives() {
+		const hid = householdId && String(householdId).trim() ? String(householdId) : '';
+		if (!hid) {
+			operativeRows = [];
+			return;
+		}
+		const hs = await getDoc(doc(db, 'households', hid));
+		if (hs.exists()) {
+			operativeRows = await buildEnrichedOperativeRows(hs.data() || {});
+		} else {
+			operativeRows = [];
+		}
+	}
+
+	/**
+	 * @param {OperativeRow} row
+	 */
+	async function approveGamertagForRow(row) {
+		actErr = '';
+		if (!coppaSigned) {
+			actErr = 'Sign the waiver before approving a Gamertag change.';
+			return;
+		}
+		const em = row.email;
+		if (!em.endsWith('@operative.local') || !row.pendingGamertag) return;
+		if (row.gamertagChangesLeft <= 0) {
+			actErr = 'No gamertag changes remaining for this operative.';
+			return;
+		}
+		gtActionBusyKey = em;
+		try {
+			const uref = doc(db, 'users', em);
+			const snap = await getDoc(uref);
+			if (!snap.exists()) {
+				throw new Error('Operative profile not found.');
+			}
+			const d = snap.data() || {};
+			const pending = typeof d.pendingGamertag === 'string' ? d.pendingGamertag.trim() : '';
+			if (!pending) {
+				throw new Error('No pending request.');
+			}
+			const left = typeof d.gamertagChangesLeft === 'number' ? d.gamertagChangesLeft : 3;
+			if (left <= 0) {
+				throw new Error('No changes remaining.');
+			}
+			const nextLeft = left - 1;
+			const batch = writeBatch(db);
+			batch.update(uref, {
+				gamertag: pending,
+				playerName: pending,
+				pendingGamertag: null,
+				gamertagChangesLeft: nextLeft,
+			});
+			const plref = doc(db, 'player_lookup', em);
+			const pls = await getDoc(plref);
+			if (pls.exists()) {
+				batch.update(plref, { playerName: pending });
+			}
+			await batch.commit();
+			await refreshHouseholdOperatives();
+		} catch (e) {
+			actErr = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Approve failed';
+		} finally {
+			gtActionBusyKey = null;
+		}
+	}
+
+	/**
+	 * @param {OperativeRow} row
+	 */
+	async function denyGamertagForRow(row) {
+		actErr = '';
+		if (!coppaSigned) {
+			actErr = 'Sign the waiver before updating gamertag requests.';
+			return;
+		}
+		const em = row.email;
+		if (!em.endsWith('@operative.local') || !row.pendingGamertag) return;
+		gtActionBusyKey = em;
+		try {
+			await updateDoc(doc(db, 'users', em), { pendingGamertag: null });
+			await refreshHouseholdOperatives();
+		} catch (e) {
+			actErr = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Deny failed';
+		} finally {
+			gtActionBusyKey = null;
+		}
+	}
 
 	$effect(() => {
 		if (browser && !authStore.isLoading && authStore.isAuthenticated) {
@@ -127,31 +343,7 @@
 					const d = snap.data() || {};
 					coppaSigned = d.coppaSigned === true;
 					coppaAt = d.coppaSignedAt ?? null;
-					const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
-					const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
-					const pcall = Array.isArray(d.playerCallsigns) ? d.playerCallsigns : [];
-					operativeRows = pe
-						.map((em, i) => {
-							const email = String(em || '')
-								.trim()
-								.toLowerCase();
-							const nm =
-								typeof pnames[i] === 'string' && pnames[i].trim() ?
-									pnames[i].trim() :
-									'';
-							const callsign =
-								typeof pcall[i] === 'string' && pcall[i].trim() ?
-									pcall[i].trim() :
-									email && email.endsWith('@operative.local') ?
-										email.split('@')[0] :
-										'';
-							return {
-								email,
-								callsign,
-								name: nm || (email ? email.split('@')[0] : 'Operative'),
-							};
-						})
-						.filter((r) => r.email);
+					operativeRows = await buildEnrichedOperativeRows(d);
 				} else {
 					coppaSigned = false;
 					coppaAt = null;
@@ -245,32 +437,7 @@
 			if (householdId) {
 				const hs = await getDoc(doc(db, 'households', householdId));
 				if (hs.exists()) {
-					const x = hs.data() || {};
-					const pe = Array.isArray(x.playerEmails) ? x.playerEmails : [];
-					const pnames = Array.isArray(x.playerNames) ? x.playerNames : [];
-					const pcall = Array.isArray(x.playerCallsigns) ? x.playerCallsigns : [];
-					operativeRows = pe
-						.map((em, i) => {
-							const email = String(em || '')
-								.trim()
-								.toLowerCase();
-							const nm =
-								typeof pnames[i] === 'string' && pnames[i].trim() ?
-									pnames[i].trim() :
-									'';
-							const callsign =
-								typeof pcall[i] === 'string' && pcall[i].trim() ?
-									pcall[i].trim() :
-									email && email.endsWith('@operative.local') ?
-										email.split('@')[0] :
-										'';
-							return {
-								email,
-								callsign,
-								name: nm || (email ? email.split('@')[0] : 'Operative'),
-							};
-						})
-						.filter((r) => r.email);
+					operativeRows = await buildEnrichedOperativeRows(hs.data() || {});
 				}
 			}
 		} catch (e) {
@@ -455,24 +622,100 @@
 				<ul class="tw-m-0 tw-list-none tw-space-y-3 tw-p-0">
 					{#each operativeRows as row (row.email)}
 						<li
-							class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+							class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3"
 						>
 							<div class="tw-min-w-0">
 								<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
 									{row.name}
 								</p>
-								<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">
-									{row.callsign ? `Callsign: ${row.callsign}` : row.email}
-								</p>
+								{#if row.email.endsWith('@operative.local')}
+									<div class="phh-cmd-hud tw-mt-2 tw-border tw-border-cyan-500/20 tw-bg-black/60 tw-px-2 tw-py-2">
+										<p class="phh-eyebrow tw-mb-0.5 !tw-text-[0.5rem] tw-text-cyan-200/60">
+											Login Callsign
+										</p>
+										<p class="phh-cmd-callsign phh-mono tw-m-0 tw-text-lg tw-font-black tw-text-cyan-200 sm:tw-text-xl">
+											{row.loginCallsign || '—'}
+										</p>
+										<p
+											class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-white/40"
+										>
+											{row.email}
+										</p>
+										<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-gap-2">
+											<span class="phh-eyebrow !tw-m-0 !tw-text-[0.5rem]">Dispatch</span>
+											{#if row.hudErr}
+												<span class="phh-mono tw-text-xs tw-text-amber-300/80">{row.hudErr}</span>
+											{:else if row.dispatchCode}
+												<span
+													class="phh-mono tw-text-sm tw-font-bold tw-tracking-widest tw-text-[#7dff9a]"
+													>{row.dispatchCode}</span
+												>
+											{:else}
+												<span class="phh-mono tw-text-xs tw-text-white/35">—</span>
+											{/if}
+										</div>
+									</div>
+									{#if row.pendingGamertag}
+										<div
+											class="phh-gt-queue tw-mt-2 tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-2.5 tw-py-2.5"
+											role="status"
+										>
+											<p
+												class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-amber-200/90"
+											>
+												Action required
+											</p>
+											<p class="tw-m-0 tw-text-xs tw-leading-relaxed tw-text-amber-50/90">
+												Operative requested a new Gamertag: <span class="tw-font-semibold"
+													>{row.pendingGamertag}</span
+												>. They have
+												<span class="tw-font-semibold">{row.gamertagChangesLeft}</span> changes
+												remaining.
+											</p>
+											<div
+												class="tw-mt-2 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center"
+											>
+												<button
+													type="button"
+													class="phh-gt-approve"
+													disabled={!coppaSigned ||
+														gtActionBusyKey !== null ||
+														actionBusy ||
+														row.gamertagChangesLeft <= 0}
+													onclick={() => approveGamertagForRow(row)}
+												>
+													{gtActionBusyKey === row.email ? '…' : 'Approve'}
+												</button>
+												<button
+													type="button"
+													class="phh-gt-deny"
+													disabled={!coppaSigned || gtActionBusyKey !== null || actionBusy}
+													onclick={() => denyGamertagForRow(row)}
+												>
+													{gtActionBusyKey === row.email ? '…' : 'Deny'}
+												</button>
+											</div>
+										</div>
+									{/if}
+								{:else}
+									<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">
+										{row.callsign ? `Callsign: ${row.callsign}` : row.email}
+									</p>
+								{/if}
 							</div>
-							<button
-								type="button"
-								class="phh-dispatch-gen"
-								disabled={!coppaSigned || otpGenBusyKey !== null || actionBusy}
-								onclick={() => generateOtpForRow(row)}
-							>
-								{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
-							</button>
+							<div class="tw-flex tw-shrink-0 sm:tw-justify-end">
+								<button
+									type="button"
+									class="phh-dispatch-gen tw-w-full sm:tw-w-auto"
+									disabled={!coppaSigned ||
+										otpGenBusyKey !== null ||
+										gtActionBusyKey !== null ||
+										actionBusy}
+									onclick={() => generateOtpForRow(row)}
+								>
+									{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
+								</button>
+							</div>
 						</li>
 					{/each}
 				</ul>
@@ -726,6 +969,42 @@
 
 	.phh-dispatch-gen:disabled {
 		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.phh-cmd-callsign {
+		font-variant-ligatures: none;
+		letter-spacing: 0.04em;
+	}
+
+	.phh-gt-approve,
+	.phh-gt-deny {
+		min-height: 2.5rem;
+		padding: 0.4rem 0.9rem;
+		font-size: 0.65rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+		border-radius: 0.2rem;
+		cursor: pointer;
+	}
+	.phh-gt-approve {
+		color: #05050a;
+		background: linear-gradient(180deg, #7dff9a 0%, #3ecf6a 100%);
+		border: 1px solid rgba(125, 255, 154, 0.9);
+	}
+	.phh-gt-approve:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+	.phh-gt-deny {
+		color: #fecaca;
+		background: rgba(127, 29, 29, 0.4);
+		border: 1px solid rgba(248, 113, 113, 0.45);
+	}
+	.phh-gt-deny:disabled {
+		opacity: 0.45;
 		cursor: not-allowed;
 	}
 
