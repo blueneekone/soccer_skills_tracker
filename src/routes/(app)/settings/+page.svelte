@@ -15,6 +15,9 @@
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
 	const isPlayer = $derived(role === 'player');
+	const isOperativeProxy = $derived(
+		(authStore.user?.email || '').toLowerCase().endsWith('@operative.local') && role === 'player',
+	);
 
 	const isMinorAccount = $derived.by(() => {
 		const p = profile;
@@ -74,6 +77,10 @@
 		}
 		if (!auth.currentUser?.email) {
 			errorMsg = 'Not signed in.';
+			return;
+		}
+		if (isOperativeProxy) {
+			errorMsg = 'Call sign changes use the Operative Call sign screen.';
 			return;
 		}
 		saving = true;
@@ -145,14 +152,32 @@
 
 			<hr class="settings-divider" />
 
-			<label class="settings-label-block" for="display-name">Display name</label>
-			<input
-				id="display-name"
-				class="settings-input"
-				type="text"
-				autocomplete="name"
-				bind:value={playerName}
-			/>
+			{#if isOperativeProxy}
+				<p class="settings-label-block">Display / call sign</p>
+				<p class="text-sm-sub settings-lead" style="margin: 0 0 0.75rem">
+					Call sign &amp; display changes go through
+					<a href="/operative/profile" style="color: var(--pp-accent, #f59e0b); font-weight: 600"
+						>Call sign (Operative)</a
+					>
+					— parent approval is required. The value below is read-only here.
+				</p>
+				<input
+					class="settings-input"
+					type="text"
+					readonly
+					aria-label="Call sign (read only)"
+					value={String(profile?.playerName || playerName || '—')}
+				/>
+			{:else}
+				<label class="settings-label-block" for="display-name">Display name</label>
+				<input
+					id="display-name"
+					class="settings-input"
+					type="text"
+					autocomplete="name"
+					bind:value={playerName}
+				/>
+			{/if}
 
 			{#if isMinorAccount}
 				<span class="settings-label-block">Privacy profile</span>

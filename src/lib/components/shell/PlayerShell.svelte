@@ -49,6 +49,10 @@
 
 	const playerUid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
+	const email = $derived((authStore.user?.email || '').toLowerCase());
+	const isOperativeProxy = $derived(
+		email.endsWith('@operative.local') && role === 'player',
+	);
 
 	$effect(() => {
 		if (!browser || !playerUid || role !== 'player') {
@@ -168,6 +172,9 @@
 		if (path === href) return true;
 		/* Avoid treating every /player/* route as HQ */
 		if (href === '/player/dashboard') return false;
+		if (href === '/operative/profile') {
+			return path === '/operative/profile' || path.startsWith('/operative/');
+		}
 		return path.startsWith(href + '/');
 	}
 </script>

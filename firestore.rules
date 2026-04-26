@@ -554,6 +554,84 @@ service cloud.firestore {
         && request.resource.data.recruitProfilePublic is bool;
     }
 
+    // Operative proxy only: quarantine a requested callsign — parent/Admin approves later.
+    function operativePlayerPendingGamertagPatch(userId) {
+      return authed()
+        && emailKey() == userId.lower()
+        && tokenRole() == 'player'
+        && userId.lower().matches('.*@operative[.]local$')
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
+        && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+        && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor', 'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pendingGamertag'])
+        && request.resource.data.keys().hasAny(['pendingGamertag'])
+        && request.resource.data.pendingGamertag is string
+        && request.resource.data.pendingGamertag.size() > 0
+        && request.resource.data.pendingGamertag.size() <= 200;
+    }
+
+    // Parent: deny operative gamertag request (clear pending only).
+    function parentDenyOperativePendingGamertag(userId) {
+      return isParent()
+        && parentHouseholdAllowsChildEmail(userId.lower())
+        && userId.lower().matches('.*@operative[.]local$')
+        && resource.data.get('role', '') == 'player'
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
+        && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+        && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor', 'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pendingGamertag'])
+        && request.resource.data.get('pendingGamertag', null) == null
+        && resource.data.get('pendingGamertag', null) != null;
+    }
+
+    // Parent: apply pending gamertag to live profile; decrement change budget.
+    function parentApproveOperativeGamertag(userId) {
+      return isParent()
+        && parentHouseholdAllowsChildEmail(userId.lower())
+        && userId.lower().matches('.*@operative[.]local$')
+        && resource.data.get('role', '') == 'player'
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
+        && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+        && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor', 'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'])
+        && resource.data.keys().hasAny(['pendingGamertag'])
+        && resource.data.get('pendingGamertag', null) is string
+        && resource.data.get('pendingGamertag', null).size() > 0
+        && request.resource.data.get('pendingGamertag', null) == null
+        && request.resource.data.get('gamertag', null) == resource.data.get('pendingGamertag', null)
+        && request.resource.data.get('playerName', null) == resource.data.get('pendingGamertag', null)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['gamertag', 'pendingGamertag', 'gamertagChangesLeft', 'playerName'])
+        && request.resource.data.gamertagChangesLeft is int
+        && request.resource.data.gamertagChangesLeft == resource.data.get('gamertagChangesLeft', 3) - 1
+        && request.resource.data.gamertagChangesLeft >= 0
+        && resource.data.get('gamertagChangesLeft', 3) > 0;
+    }
+
+    // player_lookup: parent syncs display name to match a pending (pre-commit user doc still has pending).
+    function parentOperativePlayerLookupNameApprove(inviteId) {
+      return isParent()
+        && parentHouseholdAllowsChildEmail(inviteId.lower())
+        && inviteId.lower().matches('.*@operative[.]local$')
+        && request.resource.data.get('teamId', null) == resource.data.get('teamId', null)
+        && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playerName'])
+        && request.resource.data.playerName
+             == get(/databases/$(database)/documents/users/$(inviteId.lower()))
+                  .data.get('pendingGamertag', null)
+        && request.resource.data.playerName is string
+        && request.resource.data.playerName.size() > 0
+        && request.resource.data.playerName.size() <= 200;
+    }
+
     match /users/{userId} {
       allow read: if authed() && (
         emailKey() == userId.lower()
@@ -605,9 +683,12 @@ service cloud.firestore {
           && request.resource.data.get('clubId', null) == resource.data.get('clubId', null)
           && request.resource.data.get('householdId', null) == resource.data.get('householdId', null)
           && !request.resource.data.diff(resource.data).affectedKeys()
-               .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor'])
+               .hasAny(['dateOfBirth', 'vpcStatus', 'isMinor', 'pendingGamertag', 'gamertag', 'gamertagChangesLeft'])
           && userGamificationFieldsUnchanged())
         || playerRecruitProfilePublicSelfPatch(userId)
+        || operativePlayerPendingGamertagPatch(userId)
+        || parentDenyOperativePendingGamertag(userId)
+        || parentApproveOperativeGamertag(userId)
         || isSuper()
         || registrarUserTeamPatchOk(userId)
       );
@@ -689,9 +770,15 @@ service cloud.firestore {
       allow create, update, delete: if isSuper();
     }
 
-    // Sprint 5.1 — parent-provisioned operative login bridge (server / CF only; no client R/W)
+    // Parent reads dispatch code for their household operatives; writes remain server-only.
     match /operative_dispatches/{docId} {
-      allow read, create, update, delete: if false;
+      allow read: if authed() && (
+        isSuper()
+        || (isParent()
+            && resource.data.keys().hasAll(['childEmail', 'dispatchCode'])
+            && parentHouseholdAllowsChildEmail(string(resource.data.childEmail).lower()))
+      );
+      allow create, update, delete: if false;
     }
 
     // Ephemeral OTP (generatePlayerOTP / validatePlayerOTP) — Admin SDK / CF only
@@ -1001,8 +1088,10 @@ service cloud.firestore {
         || (isRegistrar() && tokenClub() != null && lookupRowInActorClub())
         || (isCoach() && resource.data.keys().hasAll(['teamId'])
             && coachStaffCanAccessTeam(resource.data.teamId))
+        || (isParent() && parentHouseholdAllowsChildEmail(inviteId.lower()))
       );
-      allow write: if false;
+      allow create, delete: if false;
+      allow update: if isSuper() || parentOperativePlayerLookupNameApprove(inviteId);
     }
 
     match /team_workouts/{docId} {

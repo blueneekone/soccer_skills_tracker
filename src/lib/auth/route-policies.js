@@ -15,6 +15,7 @@ export const ROLE_ROUTE_POLICIES = {
 	'/registrar': ['super_admin', 'global_admin', 'director', 'registrar'],
 	'/parent': ['parent'],
 	'/player': ['player', 'super_admin', 'global_admin'],
+	'/operative': ['player', 'super_admin', 'global_admin'],
 	'/tracker': ['player', 'super_admin', 'global_admin'],
 	'/stats': ['player', 'super_admin', 'global_admin'],
 	'/challenges': ['player', 'super_admin', 'global_admin'],
