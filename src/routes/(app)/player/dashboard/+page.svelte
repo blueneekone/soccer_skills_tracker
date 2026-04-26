@@ -1,12 +1,11 @@
 <script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { collection, getDocs } from 'firebase/firestore';
+	import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
-	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
@@ -104,9 +103,65 @@
 		return { pace, shooting, passing, dribbling, physical };
 	});
 
-	const xp = $derived(Number(profile?.xp) || 0);
 	const streak = $derived(Number(profile?.currentStreak) || 0);
 	const longestStreak = $derived(Number(profile?.longestStreak) || streak);
+
+	/** @type {string} */
+	let teamAssignmentLabel = $state('');
+
+	$effect(() => {
+		if (!browser) return;
+		const tid = /** @type {string | undefined} */ (profile?.teamId);
+		if (!tid || tid === 'admin') {
+			teamAssignmentLabel = '';
+			return;
+		}
+		let cancelled = false;
+		(async () => {
+			try {
+				const snap = await getDoc(doc(db, 'teams', tid));
+				if (cancelled) return;
+				if (snap.exists()) {
+					const d = snap.data();
+					teamAssignmentLabel =
+						typeof d.teamName === 'string' && d.teamName.trim() ?
+							d.teamName.trim()
+						:	tid;
+				} else {
+					teamAssignmentLabel = tid;
+				}
+			} catch (e) {
+				console.error('[player dashboard] team label', e);
+				if (!cancelled) teamAssignmentLabel = tid;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	/**
+	 * @param {string} rankName
+	 */
+	function rankDescription(rankName) {
+		const m = {
+			Recruit:
+				'Induction tier — establish your training baseline, combine metrics, and daily discipline.',
+			Operative: 'Field clearance — you are live on standard missions, quests, and team reporting.',
+			Specialist: 'Advanced status — high-volume logging and stat discipline are expected at this level.',
+			Elite: 'Apex tier — you represent the competitive ceiling; every session counts for the org.',
+		};
+		return (
+			m[/** @type {keyof typeof m} */ (rankName)] ||
+			'Your rank tracks career XP; keep training, logging, and comp exposure to advance.'
+		);
+	}
+
+	const callsign = $derived(
+		(profile?.playerName && String(profile.playerName).trim()) ||
+			email.split('@')[0] ||
+			'—',
+	);
 
 	// ── Chart.js radar (Svelte 5 $effect lifecycle — zero onDestroy) ─────────
 	let canvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
@@ -229,14 +284,14 @@
 	<title>Player Dashboard · SSTRACKER</title>
 </svelte:head>
 
-<section
-	class="pd-wrap tw-mx-auto tw-min-w-0 tw-w-full tw-max-w-3xl tw-overflow-x-hidden tw-box-border tw-px-2"
+<div
+	class="pd-wrap tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-space-y-8 tw-overflow-x-hidden tw-px-2 tw-pb-24"
 >
 	<div
-		class="tw-flex tw-flex-col tw-items-center tw-gap-8 tw-w-full tw-max-w-md tw-mx-auto tw-pb-24"
+		class="tw-grid tw-grid-cols-1 tw-items-start tw-gap-8 md:tw-grid-cols-12"
 		data-region="player-hq-column"
 	>
-		<div class="tw-w-full">
+		<div class="tw-col-span-1 md:tw-col-span-5 lg:tw-col-span-4">
 			<ProPlayerCard
 				playerEmailKey={email}
 				playerDisplayName={profile?.playerName || ''}
@@ -245,63 +300,112 @@
 			/>
 		</div>
 		<div
-			class="pd-progress-stack tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4"
-			aria-label="Career progress and activity"
+			class="tw-col-span-1 tw-flex tw-flex-col tw-gap-6 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-6 md:tw-col-span-7 lg:tw-col-span-8"
+			aria-label="Career progress and intel"
 		>
-			<div
-				class="pd-rank-bar tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-items-center tw-gap-4 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between tw-border-b tw-border-cyan-500/20 tw-pb-5"
-				aria-label="Career rank progress"
-			>
-				<div class="tw-mx-auto tw-w-fit tw-shrink-0 sm:tw-mx-0">
-					<LevelProgressRing
-						currentXp={rankProgress.xpInCurrentTier}
-						nextRankXp={rankProgress.xpToNextRank}
-						rankName={rankProgress.rank}
-						totalXp={totalXpHud}
-						level={osLevel}
-						size="lg"
-						variant="dark"
-					/>
-				</div>
-				<div class="tw-w-full tw-min-w-0 tw-text-center sm:tw-flex-1 sm:tw-text-left">
-					<p
-						class="tw-m-0 tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-500/80"
-					>
-						Active rank
-					</p>
-					<p
-						class="tw-m-0 tw-break-words tw-text-2xl tw-font-black tw-uppercase tw-tracking-widest tw-text-cyan-100 [overflow-wrap:anywhere] sm:tw-text-3xl"
-					>
-						{rankProgress.rank}
-					</p>
-				</div>
+			<div class="tw-flex tw-w-full tw-min-w-0 tw-justify-center sm:tw-justify-start">
+				<LevelProgressRing
+					currentXp={rankProgress.xpInCurrentTier}
+					nextRankXp={rankProgress.xpToNextRank}
+					rankName={rankProgress.rank}
+					totalXp={totalXpHud}
+					level={osLevel}
+					size="lg"
+					variant="dark"
+				/>
 			</div>
-			<div class="pd-stat-grid">
-				<div class="pd-stat tw-min-w-0">
-					<span class="pd-stat__label">XP</span>
-					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{xp.toLocaleString()}</span>
-				</div>
-				<div class="pd-stat tw-min-w-0">
-					<span class="pd-stat__label">Level</span>
-					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{osLevel}</span>
-				</div>
-				<div class="pd-stat tw-min-w-0">
-					<span class="pd-stat__label">Streak</span>
-					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{streak}d</span>
-				</div>
-				<div class="pd-stat tw-min-w-0">
-					<span class="pd-stat__label">Best Streak</span>
-					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{longestStreak}d</span>
-				</div>
+			<div class="tw-min-w-0 tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-black/25 tw-p-5">
+				<p
+					class="tw-m-0 tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.4em] tw-text-cyan-500/90"
+				>
+					Operative dossier
+				</p>
+				<dl class="tw-m-0 tw-mt-4 tw-flex tw-min-w-0 tw-flex-col tw-gap-4">
+					<div>
+						<dt class="tw-m-0 tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-widest tw-text-zinc-500">
+							Callsign
+						</dt>
+						<dd
+							class="tw-m-0 tw-mt-1 tw-break-words tw-text-lg tw-font-bold tw-uppercase tw-tracking-wide tw-text-zinc-100 [overflow-wrap:anywhere]"
+						>
+							{callsign}
+						</dd>
+					</div>
+					<div>
+						<dt class="tw-m-0 tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-widest tw-text-zinc-500">
+							Current rank
+						</dt>
+						<dd
+							class="tw-m-0 tw-mt-1 tw-text-base tw-font-semibold tw-text-cyan-100 [overflow-wrap:anywhere]"
+						>
+							{rankProgress.rank}
+						</dd>
+						<p class="tw-m-0 tw-mt-2 tw-text-sm tw-leading-relaxed tw-text-zinc-400 [overflow-wrap:anywhere]">
+							{rankDescription(rankProgress.rank)}
+						</p>
+					</div>
+					<div>
+						<dt class="tw-m-0 tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-widest tw-text-zinc-500">
+							Team assignment
+						</dt>
+						<dd
+							class="tw-m-0 tw-mt-1 tw-text-base tw-font-medium tw-text-zinc-200 [overflow-wrap:anywhere]"
+						>
+							{teamAssignmentLabel || '— Unassigned / pending lineup'}
+						</dd>
+					</div>
+				</dl>
 			</div>
-		</div>
-		<div class="tw-w-full tw-min-w-0">
-			<!-- Active assignments / action inbox (assignments, drills) -->
-			<PlayerActionInbox />
 		</div>
 	</div>
 
-		<section class="pd-radar-shell tw-min-w-0">
+	<div
+		class="tw-grid tw-w-full tw-grid-cols-2 tw-gap-4 tw-border-y tw-border-slate-800 tw-bg-slate-900 tw-p-6 md:tw-grid-cols-4"
+		aria-label="Career telemetry"
+	>
+		<div
+			class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-slate-950/50 tw-px-4 tw-py-5"
+		>
+			<span class="tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-zinc-500"
+				>Total XP</span
+			>
+			<span class="tabular-num tw-text-2xl tw-font-black tw-tracking-tight tw-text-zinc-50 md:tw-text-3xl">
+				{totalXpHud.toLocaleString()}
+			</span>
+		</div>
+		<div
+			class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-slate-950/50 tw-px-4 tw-py-5"
+		>
+			<span class="tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-zinc-500"
+				>Current level</span
+			>
+			<span class="tabular-num tw-text-2xl tw-font-black tw-tracking-tight tw-text-zinc-50 md:tw-text-3xl">
+				{osLevel}
+			</span>
+		</div>
+		<div
+			class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-slate-950/50 tw-px-4 tw-py-5"
+		>
+			<span class="tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-zinc-500"
+				>Active streak</span
+			>
+			<span class="tabular-num tw-text-2xl tw-font-black tw-tracking-tight tw-text-cyan-200 md:tw-text-3xl">
+				{streak}<span class="tw-text-lg tw-font-bold tw-text-zinc-500">d</span>
+			</span>
+		</div>
+		<div
+			class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-slate-950/50 tw-px-4 tw-py-5"
+		>
+			<span class="tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-zinc-500"
+				>Best streak</span
+			>
+			<span class="tabular-num tw-text-2xl tw-font-black tw-tracking-tight tw-text-zinc-50 md:tw-text-3xl">
+				{longestStreak}<span class="tw-text-lg tw-font-bold tw-text-zinc-500">d</span>
+			</span>
+		</div>
+	</div>
+
+	<section class="pd-radar-shell tw-min-w-0">
 		<header class="pd-radar-head">
 			<div class="pd-radar-head__blurb tw-min-w-0">
 				<h2 class="pd-radar-title tw-break-words">Player Stat Radar</h2>
@@ -382,7 +486,7 @@
 			<span class="pd-quick-nav__label">Career Stats</span>
 		</button>
 	</nav>
-</section>
+</div>
 
 <style>
 	.pd-wrap {
@@ -410,46 +514,6 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
-	}
-
-	.pd-stat-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
-		gap: 12px;
-		margin-bottom: 22px;
-		min-width: 0;
-	}
-
-	.pd-stat-grid > * {
-		min-width: 0;
-	}
-
-	.pd-stat {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 0;
-		padding: 14px 16px;
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-	}
-
-	.pd-stat__label {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #a1a1aa;
-		font-weight: 800;
-	}
-
-	.pd-stat__value {
-		font-size: 24px;
-		font-weight: 900;
-		color: #fafafa;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	.pd-radar-shell {

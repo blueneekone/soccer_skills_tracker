@@ -82,6 +82,22 @@
 		return Math.min(1, Math.max(0, a / d));
 	});
 
+	/** 0–100% within current career rank (thermochromic ring). */
+	const progressPercentage = $derived(
+		Math.round(Math.min(1, Math.max(0, rankFill)) * 100),
+	);
+
+	/** @type {string} */
+	const ringColor = $derived.by(() => {
+		const p = progressPercentage;
+		/** Cyan: high progress in tier. */
+		if (p >= 67) return '#06b6d4';
+		/** Amber: mid. */
+		if (p >= 34) return '#f59e0b';
+		/** Red: early tier progress. */
+		return '#ef4444';
+	});
+
 	const segInto = $derived(levelInfo.xpIntoLevel);
 	const segNeed = $derived(levelInfo.xpToNext);
 
@@ -148,11 +164,12 @@
 	>
 		<circle class="lp-ring__track" cx="64" cy="64" r={R} fill="none" stroke-width={strokeW} />
 		<circle
-			class="lp-ring__fill"
+			class="lp-ring__fill tw-transition-colors tw-duration-1000"
 			cx="64"
 			cy="64"
 			r={R}
 			fill="none"
+			stroke={ringColor}
 			stroke-width={strokeW}
 			stroke-linecap="round"
 			stroke-dasharray={c}
@@ -196,10 +213,6 @@
 
 	.lp-ring--light .lp-ring__track {
 		stroke: #cbd5e1;
-	}
-
-	.lp-ring--light .lp-ring__fill {
-		stroke: #0891b2;
 	}
 
 	.lp-ring__center {
