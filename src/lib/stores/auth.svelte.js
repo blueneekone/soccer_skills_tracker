@@ -20,7 +20,9 @@ export function getSessionItemSafe(key) {
 }
 
 // ---------------------------------------------------------------------------
-// Reactive auth state (Svelte 5 class-based runes pattern)
+// Reactive auth state: no $effect in this file (avoids effect_update_depth_exceeded
+// and effect_orphan). `onAuthStateChanged` and `onSnapshot` only mutate $state
+// in their callbacks, synchronously; profile hydration to workspace is a no-op if values unchanged.
 // ---------------------------------------------------------------------------
 function createAuthStore() {
 	let user = $state(null);
@@ -102,30 +104,30 @@ function createAuthStore() {
 			role = 'guest';
 			isAuthenticated = false;
 			isProfileComplete = false;
-			isLoading = false;
+			if (isLoading !== false) isLoading = false;
 			workspaceContextStore.clear();
 			return;
 		}
 
 		// Do not let protected UI render until Firestore profile + role are resolved.
-		isLoading = true;
+		if (isLoading !== true) isLoading = true;
 		user = firebaseUser;
 		isAuthenticated = true;
 
 		try {
 			const resolved = await resolveUserProfile(db, firebaseUser, true);
 			if (await signOutIfSuspended(resolved)) {
-				isLoading = false;
+				if (isLoading !== false) isLoading = false;
 				return;
 			}
-			role = resolved.role;
+			if (role !== resolved.role) role = resolved.role;
 			setProfile(resolved.profile);
 			workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
 			attachUserStatusListener(firebaseUser);
 		} catch (err) {
 			console.error('[auth store] init error:', err);
 		} finally {
-			isLoading = false;
+			if (isLoading !== false) isLoading = false;
 		}
 	});
 
@@ -156,19 +158,19 @@ function createAuthStore() {
 		async refresh(opts = {}) {
 			if (!auth.currentUser) return;
 			const { silent = false } = opts;
-			if (!silent) isLoading = true;
+			if (!silent && isLoading !== true) isLoading = true;
 			try {
 				const resolved = await resolveUserProfile(db, auth.currentUser, true);
 				if (await signOutIfSuspended(resolved)) {
 					return;
 				}
-				role = resolved.role;
+				if (role !== resolved.role) role = resolved.role;
 				setProfile(resolved.profile);
 				workspaceContextStore.hydrateFromUserProfileIfEmpty(resolved.profile, resolved.role);
 			} catch (err) {
 				console.error('[auth store] refresh error:', err);
 			} finally {
-				if (!silent) isLoading = false;
+				if (!silent && isLoading !== false) isLoading = false;
 			}
 		}
 	};

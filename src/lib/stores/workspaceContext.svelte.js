@@ -1,7 +1,7 @@
 /**
  * Workspace context: switcher pivot + active role bucket + scoped club/team for zero-trust UI.
  * Defensive sessionStorage: never throw on read/write; profile fill when cache is empty is driven
- * synchronously from `auth.svelte.js` (no $effect here — avoids Svelte 5 effect_orphan in store modules).
+ * synchronously from `auth.svelte.js` (no $effect here — avoids Svelte 5 effect_orphan / update-depth loops in store modules).
  */
 
 import { browser } from '$app/environment';
@@ -84,25 +84,28 @@ function loadCachedWorkspaceState() {
 	const c = safeSessionGet(K_CONTEXT);
 	const cl = safeSessionGet(K_CLUB);
 	const t = safeSessionGet(K_TEAM);
-	if (p !== null && typeof p === 'string') {
+	if (p !== null && typeof p === 'string' && p !== activePivotKey) {
 		activePivotKey = p;
 	}
 	if (c !== null) {
 		if (typeof c === 'string' && c) {
 			/** @type {typeof activeContext} */
 			const v = c;
-			activeContext = /** @type {typeof activeContext} */ (
+			const next = /** @type {typeof activeContext} */ (
 				['', 'admin', 'director', 'coach', 'registrar', 'recruiter', 'household'].includes(v) ? v : ''
 			);
-		} else {
+			if (activeContext !== next) activeContext = next;
+		} else if (activeContext !== '') {
 			activeContext = '';
 		}
 	}
 	if (cl !== null) {
-		activeClubId = typeof cl === 'string' ? cl.trim() : '';
+		const next = typeof cl === 'string' ? cl.trim() : '';
+		if (activeClubId !== next) activeClubId = next;
 	}
 	if (t !== null) {
-		activeTeamId = typeof t === 'string' ? t.trim() : '';
+		const next = typeof t === 'string' ? t.trim() : '';
+		if (activeTeamId !== next) activeTeamId = next;
 	}
 }
 
@@ -129,15 +132,19 @@ function applyHydrationFromProfile(prof, role) {
 	const tidRaw =
 		typeof prof.teamId === 'string' && prof.teamId.trim() ? prof.teamId.trim() : '';
 	const tid = tidRaw && tidRaw !== 'admin' ? tidRaw : '';
-	if (!(activeClubId && activeClubId.trim()) && pid) {
+	/* Circuit breaker: never assign the same $state value twice — avoids reactivity / layout $effect depth churn. */
+	if (!(activeClubId && activeClubId.trim()) && pid && activeClubId !== pid) {
 		activeClubId = pid;
 		persistToSession();
 	}
-	if (!(activeTeamId && activeTeamId.trim()) && tid) {
-		if (role === 'coach' || role === 'player' || role === 'super_admin' || role === 'global_admin') {
-			activeTeamId = tid;
-			persistToSession();
-		}
+	if (
+		!(activeTeamId && activeTeamId.trim()) &&
+		tid &&
+		(role === 'coach' || role === 'player' || role === 'super_admin' || role === 'global_admin') &&
+		activeTeamId !== tid
+	) {
+		activeTeamId = tid;
+		persistToSession();
 	}
 }
 
@@ -204,22 +211,25 @@ export const workspaceContextStore = {
 	},
 	/** @param {boolean} open */
 	setSidebarOpen(open) {
-		isSidebarOpen = Boolean(open);
+		const b = Boolean(open);
+		if (isSidebarOpen === b) return;
+		isSidebarOpen = b;
 	},
 	toggleSidebar() {
 		isSidebarOpen = !isSidebarOpen;
 	},
 	/** Clear club/team scope (call before applying a new workspace pivot). */
 	resetScope() {
+		if (activeClubId === '' && activeTeamId === '') return;
 		activeClubId = '';
 		activeTeamId = '';
 	},
 	clear() {
-		activePivotKey = '';
-		activeContext = '';
-		activeClubId = '';
-		activeTeamId = '';
-		isSidebarOpen = true;
+		if (activePivotKey !== '') activePivotKey = '';
+		if (activeContext !== '') activeContext = '';
+		if (activeClubId !== '') activeClubId = '';
+		if (activeTeamId !== '') activeTeamId = '';
+		if (isSidebarOpen !== true) isSidebarOpen = true;
 		clearSessionWorkspaceKeys();
 	},
 };
