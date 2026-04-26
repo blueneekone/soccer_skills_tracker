@@ -38,13 +38,13 @@
 	/** @type {string} */
 	let childName = $state('');
 	/** @type {string} */
-	let childEmail = $state('');
+	let operativeCallsign = $state('');
 	/** @type {string} */
 	let lastDispatch = $state('');
 	/** @type {string} */
 	let teamDispatchCode = $state('');
 
-	/** @type {Array<{ email: string; name: string }>} */
+	/** @type {Array<{ email: string; name: string; callsign: string }>} */
 	let operativeRows = $state([]);
 
 	/** @type {string | null} */
@@ -129,6 +129,7 @@
 					coppaAt = d.coppaSignedAt ?? null;
 					const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
 					const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
+					const pcall = Array.isArray(d.playerCallsigns) ? d.playerCallsigns : [];
 					operativeRows = pe
 						.map((em, i) => {
 							const email = String(em || '')
@@ -138,8 +139,15 @@
 								typeof pnames[i] === 'string' && pnames[i].trim() ?
 									pnames[i].trim() :
 									'';
+							const callsign =
+								typeof pcall[i] === 'string' && pcall[i].trim() ?
+									pcall[i].trim() :
+									email && email.endsWith('@operative.local') ?
+										email.split('@')[0] :
+										'';
 							return {
 								email,
+								callsign,
 								name: nm || (email ? email.split('@')[0] : 'Operative'),
 							};
 						})
@@ -196,10 +204,21 @@
 			actErr = 'Complete COPPA & liability clearance before provisioning operatives.';
 			return;
 		}
-		if (!childName.trim() || !childEmail.trim()) {
-			actErr = 'Enter the operative display name and email.';
+		const oper = operativeCallsign.trim();
+		const slug = oper.toLowerCase().replace(/[^a-z0-9]/g, '');
+		if (!childName.trim() || !oper) {
+			actErr = 'Enter the operative display name and Operative Callsign (username).';
 			return;
 		}
+		if (slug.length < 2) {
+			actErr = 'Operative Callsign must include at least two letters or numbers.';
+			return;
+		}
+		if (slug.length > 32) {
+			actErr = 'Operative Callsign: use a shorter name (2–32 letters or numbers after normalizing).';
+			return;
+		}
+		// Server builds the same proxy as `${slug}@operative.local` for Firebase Auth; payload sends operativeCallsign only.
 		actionBusy = true;
 		lastDispatch = '';
 		try {
@@ -207,7 +226,7 @@
 			/** @type {Record<string, string>} */
 			const payload = {
 				childName: childName.trim(),
-				childEmail: childEmail.trim().toLowerCase(),
+				operativeCallsign: oper,
 			};
 			if (teamCodeOpt) {
 				payload.teamInviteCode = teamCodeOpt;
@@ -220,7 +239,7 @@
 					'';
 			lastDispatch = outCode;
 			childName = '';
-			childEmail = '';
+			operativeCallsign = '';
 			teamDispatchCode = '';
 			await authStore.refresh({ silent: true });
 			if (householdId) {
@@ -229,6 +248,7 @@
 					const x = hs.data() || {};
 					const pe = Array.isArray(x.playerEmails) ? x.playerEmails : [];
 					const pnames = Array.isArray(x.playerNames) ? x.playerNames : [];
+					const pcall = Array.isArray(x.playerCallsigns) ? x.playerCallsigns : [];
 					operativeRows = pe
 						.map((em, i) => {
 							const email = String(em || '')
@@ -238,8 +258,15 @@
 								typeof pnames[i] === 'string' && pnames[i].trim() ?
 									pnames[i].trim() :
 									'';
+							const callsign =
+								typeof pcall[i] === 'string' && pcall[i].trim() ?
+									pcall[i].trim() :
+									email && email.endsWith('@operative.local') ?
+										email.split('@')[0] :
+										'';
 							return {
 								email,
+								callsign,
 								name: nm || (email ? email.split('@')[0] : 'Operative'),
 							};
 						})
@@ -422,8 +449,8 @@
 					</h2>
 				</div>
 				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
-					Issue a 10-minute code your athlete can enter with their name or email on the login
-					page.
+					Issue a 10-minute code your athlete can enter with their Operative Callsign and code on
+					the login page.
 				</p>
 				<ul class="tw-m-0 tw-list-none tw-space-y-3 tw-p-0">
 					{#each operativeRows as row (row.email)}
@@ -434,7 +461,9 @@
 								<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
 									{row.name}
 								</p>
-								<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">{row.email}</p>
+								<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">
+									{row.callsign ? `Callsign: ${row.callsign}` : row.email}
+								</p>
 							</div>
 							<button
 								type="button"
@@ -462,8 +491,9 @@
 				</h2>
 			</div>
 			<p class="tw-mb-4 tw-text-sm tw-text-white/55">
-				Register the minor’s <span class="tw-text-white/80">legal display name</span> and
-				<span class="tw-text-white/80">email you control</span>. The engine issues a one-time
+				Register the minor’s <span class="tw-text-white/80">legal display name</span> and a unique
+				<span class="tw-text-white/80">Operative Callsign</span> (username for sign-in). A proxy
+				account is created automatically. The engine issues a one-time
 				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 			</p>
 			<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-3 md:tw-grid md:tw-grid-cols-2 md:tw-gap-4">
@@ -478,14 +508,15 @@
 					/>
 				</label>
 				<label class="phh-field tw-block tw-w-full">
-					<span class="phh-eyebrow tw-mb-1 tw-block">Operative email</span>
+					<span class="phh-eyebrow tw-mb-1 tw-block"
+						>Operative Callsign <span class="tw-text-red-300/80">(required)</span></span
+					>
 					<input
 						class="phh-input"
-						type="email"
-						autocomplete="email"
-						inputmode="email"
-						placeholder="athlete@example.com"
-						bind:value={childEmail}
+						type="text"
+						autocomplete="username"
+						placeholder="e.g. Red-Fox, striker99"
+						bind:value={operativeCallsign}
 					/>
 				</label>
 				<div class="phh-field tw-block tw-w-full md:tw-col-span-2">

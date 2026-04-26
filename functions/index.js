@@ -468,6 +468,18 @@ function normEmail(e) {
 }
 
 /**
+ * Lowercase a-z0-9 only, for Operative proxy local-part and login lookup.
+ * @param {unknown} raw
+ * @return {string}
+ */
+function normOperativeCallsignSlug(raw) {
+  if (raw == null || typeof raw !== 'string') {
+    return '';
+  }
+  return raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
  * @param {string} url
  * @return {boolean}
  */
@@ -7893,11 +7905,26 @@ function normTeamInviteCode(raw) {
  */
 exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   const data = request.data || {};
-  const childEmail = normEmail(data.childEmail);
   const childName =
     typeof data.childName === 'string' ? data.childName.trim().slice(0, 200) : '';
-  if (!childEmail || !childName) {
-    throw new HttpsError('invalid-argument', 'childEmail and childName are required.');
+  const rawCallsign =
+    typeof data.operativeCallsign === 'string' ? data.operativeCallsign.trim().slice(0, 200) : '';
+  const operSlug = normOperativeCallsignSlug(rawCallsign);
+  if (!rawCallsign || !childName) {
+    throw new HttpsError(
+        'invalid-argument',
+        'operativeCallsign and childName are required.',
+    );
+  }
+  if (operSlug.length < 2 || operSlug.length > 32) {
+    throw new HttpsError(
+        'invalid-argument',
+        'Operative Callsign must yield 2–32 letters or numbers (after normalizing).',
+    );
+  }
+  const childEmail = normEmail(`${operSlug}@operative.local`);
+  if (!childEmail) {
+    throw new HttpsError('invalid-argument', 'Invalid operative proxy email.');
   }
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
@@ -8008,11 +8035,19 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   const uRef = db.collection('users').doc(childEmail);
   const uExisting = await uRef.get();
   if (uExisting.exists) {
-    const role = uExisting.data().role;
+    const uData = uExisting.data() || {};
+    const role = uData.role;
     if (role && role !== 'player') {
       throw new HttpsError(
           'failed-precondition',
           'This email is already in use with a different role. Contact your club.',
+      );
+    }
+    const exHid = typeof uData.householdId === 'string' ? uData.householdId.trim() : '';
+    if (exHid && exHid !== hid) {
+      throw new HttpsError(
+          'already-exists',
+          'That Operative Callsign is already in use. Choose a different one.',
       );
     }
   }
@@ -8026,6 +8061,8 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     clubId,
     householdId: hid,
     playerName: childName,
+    operativeCallsign: rawCallsign,
+    operativeCallsignSlug: operSlug,
     parentProvisioned: true,
     parentProvisionerEmail: parentEmail,
     updatedAt: now,
@@ -8033,6 +8070,32 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   if (teamIdForUser) {
     userPayload.teamId = teamIdForUser;
   }
+  const prevPE = (h.playerEmails || [])
+      .map((x) => normEmail(String(x || '')))
+      .filter(Boolean);
+  const prevCalls = Array.isArray(h.playerCallsigns) ? h.playerCallsigns : [];
+  const callByEmail = new Map();
+  for (let i = 0; i < prevPE.length; i++) {
+    const em = prevPE[i];
+    const c =
+        prevCalls[i] != null && String(prevCalls[i]).trim() ?
+          String(prevCalls[i]).trim() :
+          em && em.endsWith('@operative.local') ?
+            em.split('@')[0] :
+            '';
+    callByEmail.set(em, c);
+  }
+  callByEmail.set(childEmail, rawCallsign);
+  const playerCallsigns = mergedPlayers.map((em) => {
+    if (!em) {
+      return '';
+    }
+    const fromMap = callByEmail.get(em);
+    if (fromMap != null && String(fromMap).trim()) {
+      return String(fromMap).trim();
+    }
+    return em.endsWith('@operative.local') ? em.split('@')[0] : '';
+  });
   const dispRef = db.collection('operative_dispatches').doc();
   const batch = db.batch();
   batch.set(uRef, userPayload, {merge: true});
@@ -8041,6 +8104,7 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
       {
         playerEmails: mergedPlayers,
         playerNames: [...nameSet],
+        playerCallsigns,
         updatedAt: now,
       },
       {merge: true},
@@ -8182,6 +8246,39 @@ async function resolveUserUidFromUsernameOrCallsign(raw) {
         throw new HttpsError('not-found', 'No sign-in account for that email.');
       }
       throw e;
+    }
+  }
+  const operSlug = normOperativeCallsignSlug(u);
+  if (operSlug.length >= 2) {
+    const operQ = await db
+        .collection('users')
+        .where('operativeCallsignSlug', '==', operSlug)
+        .limit(2)
+        .get();
+    if (!operQ.empty) {
+      if (operQ.size > 1) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Multiple operatives share that callsign. Use the proxy email for sign-in instead.',
+        );
+      }
+      const em = operQ.docs[0].id;
+      const d = operQ.docs[0].data() || {};
+      if (d.role && d.role !== 'player') {
+        throw new HttpsError(
+            'failed-precondition',
+            'That account is not a player profile.',
+        );
+      }
+      try {
+        const rec = await admin.auth().getUserByEmail(em);
+        return rec.uid;
+      } catch (e) {
+        if (e && e.code === 'auth/user-not-found') {
+          throw new HttpsError('not-found', 'No sign-in account for that callsign.');
+        }
+        throw e;
+      }
     }
   }
   const q = await db

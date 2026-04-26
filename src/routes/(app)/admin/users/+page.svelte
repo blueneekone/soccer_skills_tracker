@@ -34,6 +34,7 @@
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import { portal } from '$lib/actions/portal.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -57,6 +58,8 @@
 	 *   lastActiveSource: string,
 	 *   photoURL: string,
 	 *   status?: string,
+	 *   uid?: string,
+	 *   roles?: string[],
 	 * }} UserRow
 	 */
 
@@ -331,6 +334,8 @@
 				const teamId = typeof raw.teamId === 'string' ? raw.teamId.trim() : '';
 				const photoURL = typeof raw.photoURL === 'string' ? raw.photoURL : '';
 				const status = typeof raw.status === 'string' ? raw.status.trim() : '';
+				const uid = typeof raw.uid === 'string' && raw.uid.trim() ? raw.uid.trim() : '';
+				const roles = Array.isArray(raw.roles) ? /** @type {string[]} */ (raw.roles.filter((x) => typeof x === 'string')) : [];
 
 				// Resolve "last active" from any of several timestamp-like fields.
 				const candidates = [
@@ -352,7 +357,9 @@
 					lastActiveAt: picked.v,
 					lastActiveSource: picked.k,
 					photoURL,
-					status
+					status,
+					uid,
+					roles
 				});
 			});
 
@@ -575,10 +582,18 @@
 		return () => unlockBody();
 	});
 
+	/** True if this row is the signed-in admin (no self-suspend). */
+	/** @param {UserRow} row */
+	function isRevokeTargetSelf(row) {
+		const myUid = authStore.user?.uid;
+		if (myUid && row.uid && row.uid === myUid) return true;
+		const me = (authStore.user?.email || '').toLowerCase();
+		return Boolean(me) && row.email.toLowerCase() === me;
+	}
+
 	/** @param {UserRow} row */
 	function canDeactivateUser(row) {
-		const me = (authStore.user?.email || '').toLowerCase();
-		if (row.email.toLowerCase() === me) return false;
+		if (isRevokeTargetSelf(row)) return false;
 		if (row.role === 'super_admin' || row.role === 'global_admin') return false;
 		/** @type {Record<string, unknown>} */
 		const r = /** @type {Record<string, unknown>} */ ({ ...row, status: row.status });
@@ -599,12 +614,18 @@
 		deactivateErr = '';
 	}
 
-	const confirmDeactivate = async () => {
+	/** Firestore soft-delete: suspend account and clear roles (operates on `users` doc id = email). */
+	async function handleRevokeAccess() {
 		if (!deactivateTarget || deactivateBusy) return;
 		const row = deactivateTarget;
+		if (isRevokeTargetSelf(row)) {
+			deactivateErr = 'You cannot suspend your own account.';
+			return;
+		}
 		const key = row.email.toLowerCase();
 		deactivateBusy = true;
 		deactivateErr = '';
+		flashErr = '';
 		try {
 			await updateDoc(doc(db, 'users', key), {
 				status: USER_ACCOUNT_STATUS.suspended,
@@ -614,7 +635,7 @@
 			await logSecurityEvent('SUSPEND_USER', key, 'Enterprise deactivation from Global Users');
 			rows = rows.map((r) =>
 				r.id === key || r.email.toLowerCase() === key ?
-					{ ...r, status: 'suspended', role: 'guest' } :
+					{ ...r, status: 'suspended', role: 'guest', roles: [] } :
 					r,
 			);
 			flashOk = `Access revoked for ${row.email} — account suspended.`;
@@ -626,7 +647,7 @@
 		} finally {
 			deactivateBusy = false;
 		}
-	};
+	}
 </script>
 
 <div class="gu-root">
@@ -941,6 +962,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="gu-deactivate-scrim"
+		use:portal
 		role="presentation"
 		onclick={closeDeactivate}
 		onkeydown={(e) => e.key === 'Escape' && closeDeactivate()}
@@ -986,8 +1008,9 @@
 				<button
 					type="button"
 					class="gu-deactivate-btn"
-					onclick={confirmDeactivate}
-					disabled={deactivateBusy}
+					onclick={() => void handleRevokeAccess()}
+					disabled={deactivateBusy ||
+						(deactivateTarget != null && isRevokeTargetSelf(deactivateTarget))}
 				>
 					{deactivateBusy ? 'Applying…' : 'Revoke access now'}
 				</button>
@@ -1002,6 +1025,7 @@
 {#if purgeStep > 0}
 	<div
 		class="gu-modal-bg"
+		use:portal
 		role="presentation"
 		onclick={closePurge}
 		onkeydown={(e) => {
