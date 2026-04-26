@@ -16,5 +16,12 @@ export default {
 			},
 		},
 	},
-	plugins: []
+	plugins: [
+		({ addUtilities }) => {
+			addUtilities({
+				// tw-preserve-3d (prefixed) — 3D flip children need transform-style: preserve-3d
+				'.preserve-3d': { transformStyle: 'preserve-3d' },
+			});
+		},
+	],
 };

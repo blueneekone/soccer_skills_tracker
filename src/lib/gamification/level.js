@@ -17,7 +17,6 @@ export const MAX_PLAYER_LEVEL = 99;
  */
 export const RANK_THRESHOLDS = Object.freeze([
 	{ rank: 'Recruit', minXp: 0 },
-	{ rank: 'Rookie', minXp: 1000 },
 	{ rank: 'Operative', minXp: 5000 },
 	{ rank: 'Specialist', minXp: 15000 },
 	{ rank: 'Elite', minXp: 50000 },

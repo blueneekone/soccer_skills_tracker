@@ -5,6 +5,7 @@
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
@@ -18,44 +19,43 @@
 	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 
-	/** @param {unknown} v */
-	function statNum(v) {
-		const n = Number(v);
-		if (!Number.isFinite(n)) return 0;
-		return n;
-	}
-
-	/**
-	 * First present numeric field; 0 is valid.
-	 * @param {Record<string, unknown>} s
-	 * @param {string[]} keys
-	 */
-	function coalesceStat(s, keys) {
-		for (const k of keys) {
-			if (!Object.prototype.hasOwnProperty.call(s, k)) continue;
-			const v = s[k];
-			if (v === undefined || v === null || v === '') continue;
-			return statNum(v);
+	/** @param {unknown} ts */
+	function formatJoinLabel(ts) {
+		if (ts == null) return '—';
+		if (ts instanceof Date && !Number.isNaN(ts.getTime())) {
+			return ts.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 		}
-		return 0;
+		if (typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof /** @type {{ toDate: () => Date }} */ (ts).toDate === 'function') {
+			const d = /** @type {{ toDate: () => Date }} */ (ts).toDate();
+			if (d instanceof Date && !Number.isNaN(d.getTime())) {
+				return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+			}
+		}
+		if (typeof ts === 'number' && Number.isFinite(ts)) {
+			return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+		}
+		if (typeof ts === 'string' && ts.trim()) {
+			const d = new Date(ts);
+			if (!Number.isNaN(d.getTime())) {
+				return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+			}
+		}
+		return '—';
 	}
 
-	/** @param {number} p */
-	function formatPassPct(p) {
-		if (!Number.isFinite(p)) return '0';
-		return Math.abs(p - Math.round(p)) < 1e-6 ? String(Math.round(p)) : p.toFixed(1);
-	}
+	const joinDateLabel = $derived(formatJoinLabel(profile?.joinedAt ?? profile?.createdAt));
 
-	const gameDayStats = $derived.by(() => {
-		const raw = profile && typeof profile.stats === 'object' && profile.stats !== null ? profile.stats : null;
-		/** @type {Record<string, unknown>} */
-		const s = raw ? /** @type {Record<string, unknown>} */ (raw) : {};
-		return {
-			goals: coalesceStat(s, ['goals', 'gameDayGoals']),
-			assists: coalesceStat(s, ['assists', 'gameDayAssists']),
-			shots: coalesceStat(s, ['shots', 'gameDayShots']),
-			passPct: coalesceStat(s, ['passPct', 'passPercent', 'passingPct', 'gameDayPassPct']),
-		};
+	const workoutsLoggedCount = $derived.by(() => {
+		const p = profile;
+		if (!p) return 0;
+		const st = p.stats;
+		const fromStats =
+			st && typeof st === 'object' && st !== null && 'workoutsLogged' in st ?
+				(/** @type {Record<string, unknown>} */ (st)).workoutsLogged :
+				undefined;
+		const raw = p.workoutsLogged ?? p.workoutsCount ?? fromStats;
+		const n = Number(raw);
+		return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
 	});
 
 	/** 3D Operative ID card: click outer wrapper to flip */
@@ -151,14 +151,7 @@
 		return { pace, shooting, passing, dribbling, physical };
 	});
 
-	const overallRating = $derived.by(() => {
-		const v = radarValues;
-		const total = v.pace + v.shooting + v.passing + v.dribbling + v.physical;
-		return Math.round(total / 5);
-	});
-
 	const xp = $derived(Number(profile?.xp) || 0);
-	const level = $derived(Math.floor(Math.sqrt(xp / 50)) + 1);
 	const streak = $derived(Number(profile?.currentStreak) || 0);
 	const longestStreak = $derived(Number(profile?.longestStreak) || streak);
 
@@ -277,200 +270,153 @@
 	function goToStats() {
 		goto('/stats');
 	}
-
-	function ratingTier(rating) {
-		if (rating >= 85) return 'legendary';
-		if (rating >= 75) return 'gold';
-		if (rating >= 60) return 'silver';
-		if (rating >= 40) return 'bronze';
-		return 'rookie';
-	}
-
-	const tier = $derived(ratingTier(overallRating));
 </script>
 
 <svelte:head>
 	<title>Player Dashboard · SSTRACKER</title>
 </svelte:head>
 
-<section class="pd-wrap tw-min-w-0 tw-w-full tw-max-w-full tw-overflow-x-hidden tw-box-border tier-{tier}">
-	<div
-		class="pd-rank-bar tw-mb-6 tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-4 tw-border-b tw-border-cyan-500/20 tw-pb-5"
-		aria-label="Career rank progress"
-	>
-		<LevelProgressRing
-			currentXp={rankProgress.xpInCurrentTier}
-			nextRankXp={rankProgress.xpToNextRank}
-			rankName={rankProgress.rank}
-			totalXp={totalXpHud}
-			level={osLevel}
-			size="lg"
-			variant="dark"
-		/>
-		<div class="tw-min-w-0 tw-flex-1">
-			<p
-				class="tw-m-0 tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-500/80"
-			>
-				Active rank
-			</p>
-			<p
-				class="tw-m-0 tw-break-words tw-text-2xl tw-font-black tw-uppercase tw-tracking-widest tw-text-cyan-100 [overflow-wrap:anywhere] sm:tw-text-3xl"
-			>
-				{rankProgress.rank}
-			</p>
-		</div>
-	</div>
-
-	<header class="pd-hero">
-		<div class="pd-hero__identity tw-min-w-0">
-			<span class="pd-hero__eyebrow">Command center</span>
-			<h1 class="pd-hero__name tw-break-words tw-text-balance [overflow-wrap:anywhere]">
-				{profile?.playerName || 'Athlete'}
-			</h1>
-			<span
-				class="pd-hero__meta tw-break-words [overflow-wrap:break-word] tw-whitespace-normal"
-			>
-				{#if profile?.teamId && profile.teamId !== 'admin'}
-					Team {profile.teamId}
-				{:else}
-					Household athlete
-				{/if}
-			</span>
-		</div>
-
-		<div class="pd-hero__card pd-card tw-min-w-0 tw-shrink-0" aria-label="Overall rating">
-			<span class="pd-card__label">Overall</span>
-			<span class="pd-card__rating tabular-num tw-max-w-full tw-text-center">{overallRating || '—'}</span>
-			<span class="pd-card__tier tw-max-w-full tw-text-center tw-truncate">{tier.toUpperCase()}</span>
-		</div>
-	</header>
-
-	<div class="tw-mb-6 tw-w-full">
+<section
+	class="pd-wrap tw-mx-auto tw-min-w-0 tw-w-full tw-max-w-3xl tw-overflow-x-hidden tw-box-border tw-px-2"
+>
+	<div class="pd-hq tw-flex tw-w-full tw-flex-col tw-items-stretch tw-gap-6">
+		<div class="tw-w-full">
 		<p
 			class="oid-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-400/80"
 		>
 			Click to flip
 		</p>
 		<div
-			class="tw-relative tw-mx-auto tw-aspect-[2/3] tw-w-full tw-max-w-sm tw-cursor-pointer tw-outline-none"
+			class="tw-relative tw-w-full tw-max-w-[280px] tw-mx-auto tw-aspect-[2/3] tw-cursor-pointer tw-outline-none"
 			role="button"
 			tabindex="0"
 			aria-pressed={isFlipped}
-			aria-label="Operative ID card. Click to view game day telemetry on the back."
+			aria-label="Operative ID card. Click to view operative telemetry on the back."
 			style="perspective: 1000px;"
 			onclick={() => (isFlipped = !isFlipped)}
 			onkeydown={onOperativeIdKeydown}
 		>
 			<div
-				class="tw-relative tw-h-full tw-w-full tw-transform-gpu tw-will-change-transform tw-transition-transform tw-duration-700"
-				style="transform-style: preserve-3d;{isFlipped
-					? ' transform: rotateY(180deg);'
-					: ' transform: none;'}"
+				class={`tw-relative tw-h-full tw-w-full tw-transition-transform tw-duration-700 tw-preserve-3d${
+					isFlipped ? ' tw-[transform:rotateY(180deg)]' : ''
+				}`}
 			>
 				<div
-					class="oid-face oid-face--front tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-items-center tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-cyan-500/80 tw-bg-[#05050A] tw-px-5 tw-py-5 tw-shadow-[0_0_32px_-8px_rgba(6,182,212,0.45)]"
+					class="tw-absolute tw-inset-0 tw-backface-hidden tw-bg-slate-800 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-items-center tw-text-center"
 				>
-					<div class="tw-flex tw-w-full tw-flex-col tw-items-center tw-gap-3">
-						<div
-							class="tw-w-24 tw-h-24 tw-rounded-full tw-bg-slate-700 tw-mx-auto tw-border-2 tw-border-cyan-500 tw-overflow-hidden"
-						>
-							<svg
-								class="tw-block tw-h-full tw-w-full tw-text-slate-500"
-								viewBox="0 0 64 64"
-								fill="currentColor"
-								aria-hidden="true"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M32 8c-6.1 0-11 4.5-11 10 0 3.4 1.6 6.3 4.1 7.8C19.1 30.3 10 40.1 10 52.5V56h44v-3.5C54 40.1 44.9 30.3 35.9 25.8 38.4 24.3 40 21.4 40 18c0-5.5-4.9-10-11-10z"
-								/>
-							</svg>
-						</div>
-						<div class="tw-w-full tw-text-center">
-							<p class="tw-mb-0.5 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/90">
-								Operative
-							</p>
-							<p
-								class="tw-m-0 tw-text-lg tw-font-black tw-leading-tight tw-tracking-tight tw-text-white [overflow-wrap:anywhere]"
-							>
-								{profile?.playerName || 'Athlete'}
-							</p>
-							<p class="tw-mt-1 tw-font-mono tw-text-xs tw-text-cyan-200/90">
-								TEAM_ID:
-								{#if profile?.teamId && profile.teamId !== 'admin'}
-									<span class="tw-text-cyan-300">{profile.teamId}</span>
-								{:else}
-									<span class="tw-text-zinc-500">UNASSIGNED</span>
-								{/if}
-							</p>
-						</div>
-					</div>
 					<div
-						class="tw-w-full tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/40 tw-px-3 tw-py-2 tw-text-center tw-text-[11px] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-emerald-400 tw-shadow-[0_0_20px_rgba(52,211,153,0.35)]"
+						class="tw-w-24 tw-h-24 tw-mx-auto tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-mb-4 tw-flex tw-items-center tw-justify-center"
 					>
-						Clearance: Active
+						<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
 					</div>
+					<h2
+						class="tw-m-0 tw-mb-2 tw-w-full tw-break-words tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere]"
+					>
+						{profile?.playerName || 'Athlete'}
+					</h2>
+					<p
+						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-cyan-400"
+					>
+						{rankProgress.rank}
+					</p>
 				</div>
 
 				<div
-					class="oid-face oid-face--back tw-absolute tw-inset-0 tw-h-full tw-w-full tw-backface-hidden tw-flex tw-flex-col tw-rounded-2xl tw-border-2 tw-border-cyan-500/70 tw-bg-[#05050A] tw-px-4 tw-py-4 tw-shadow-[0_0_28px_-6px_rgba(6,182,212,0.4)] tw-[transform:rotateY(180deg)]"
+					class="tw-absolute tw-inset-0 tw-backface-hidden tw-[transform:rotateY(180deg)] tw-bg-slate-900 tw-rounded-2xl tw-p-6 tw-border tw-border-slate-700 tw-flex tw-flex-col tw-h-full tw-min-h-0"
 				>
 					<p
-						class="tw-mb-3 tw-border-b tw-border-cyan-500/30 tw-pb-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-cyan-400/90"
+						class="tw-m-0 tw-mb-4 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
 					>
-						Telemetry · Game day
+						OPERATIVE TELEMETRY
 					</p>
+					<dl class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-text-left tw-text-sm">
+						<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2">
+							<dt class="tw-m-0 tw-text-slate-500">Total XP</dt>
+							<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
+								>{totalXpHud.toLocaleString()}</dd
+							>
+						</div>
+						<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2">
+							<dt class="tw-m-0 tw-text-slate-500">Workouts logged</dt>
+							<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300">{workoutsLoggedCount}</dd>
+						</div>
+						<div class="tw-flex tw-justify-between tw-gap-2 tw-pb-2">
+							<dt class="tw-m-0 tw-text-slate-500">Join date</dt>
+							<dd class="tw-m-0 tw-text-right tw-font-mono tw-text-xs tw-text-cyan-200/90">
+								{joinDateLabel}
+							</dd>
+						</div>
+					</dl>
 					<div
-						class="tw-grid tw-flex-1 tw-grid-cols-2 tw-gap-2 tw-font-mono tw-text-sm tw-text-cyan-100/95"
+						class="tw-mt-auto tw-flex tw-h-9 tw-w-full tw-items-end tw-justify-center tw-gap-[2px] tw-pt-3"
+						aria-hidden="true"
 					>
-						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
-							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500">Goals</span>
-							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.goals}</span>
-						</div>
-						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
-							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500"
-								>Assists</span
-							>
-							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.assists}</span>
-						</div>
-						<div class="oid-tel tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
-							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500">Shots</span>
-							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300">{gameDayStats.shots}</span>
-						</div>
-						<div class="oid-tel tw-col-span-2 tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-2">
-							<span class="tw-block tw-text-[10px] tw-uppercase tw-tracking-wider tw-text-zinc-500"
-								>Pass %</span
-							>
-							<span class="tabular-num tw-text-xl tw-font-bold tw-text-cyan-300"
-								>{formatPassPct(gameDayStats.passPct)}%</span
-							>
-						</div>
+						{#each [8, 2, 3, 1, 1, 4, 1, 2, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1] as h, i (i)}
+							<div
+								class="tw-w-[2px] tw-shrink-0 tw-rounded-[1px] tw-bg-cyan-200/30"
+								style="height: {4 + h}px"
+							></div>
+						{/each}
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="pd-stat-grid">
-		<div class="pd-stat tw-min-w-0">
-			<span class="pd-stat__label">XP</span>
-			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{xp.toLocaleString()}</span>
+		<div
+			class="pd-progress-stack tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4"
+			aria-label="Career progress and activity"
+		>
+			<div
+				class="pd-rank-bar tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-4 tw-border-b tw-border-cyan-500/20 tw-pb-5"
+				aria-label="Career rank progress"
+			>
+				<LevelProgressRing
+					currentXp={rankProgress.xpInCurrentTier}
+					nextRankXp={rankProgress.xpToNextRank}
+					rankName={rankProgress.rank}
+					totalXp={totalXpHud}
+					level={osLevel}
+					size="lg"
+					variant="dark"
+				/>
+				<div class="tw-min-w-0 tw-flex-1">
+					<p
+						class="tw-m-0 tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-500/80"
+					>
+						Active rank
+					</p>
+					<p
+						class="tw-m-0 tw-break-words tw-text-2xl tw-font-black tw-uppercase tw-tracking-widest tw-text-cyan-100 [overflow-wrap:anywhere] sm:tw-text-3xl"
+					>
+						{rankProgress.rank}
+					</p>
+				</div>
+			</div>
+			<div class="pd-stat-grid">
+				<div class="pd-stat tw-min-w-0">
+					<span class="pd-stat__label">XP</span>
+					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{xp.toLocaleString()}</span>
+				</div>
+				<div class="pd-stat tw-min-w-0">
+					<span class="pd-stat__label">Level</span>
+					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{osLevel}</span>
+				</div>
+				<div class="pd-stat tw-min-w-0">
+					<span class="pd-stat__label">Streak</span>
+					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{streak}d</span>
+				</div>
+				<div class="pd-stat tw-min-w-0">
+					<span class="pd-stat__label">Best Streak</span>
+					<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{longestStreak}d</span>
+				</div>
+			</div>
 		</div>
-		<div class="pd-stat tw-min-w-0">
-			<span class="pd-stat__label">Level</span>
-			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{level}</span>
+		<div class="tw-w-full tw-min-w-0">
+			<PlayerActionInbox />
 		</div>
-		<div class="pd-stat tw-min-w-0">
-			<span class="pd-stat__label">Streak</span>
-			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{streak}d</span>
-		</div>
-		<div class="pd-stat tw-min-w-0">
-			<span class="pd-stat__label">Best Streak</span>
-			<span class="pd-stat__value tabular-num tw-min-w-0 tw-truncate">{longestStreak}d</span>
-		</div>
-	</div>
 
-	<section class="pd-radar-shell tw-min-w-0">
+		<section class="pd-radar-shell tw-min-w-0">
 		<header class="pd-radar-head">
 			<div class="pd-radar-head__blurb tw-min-w-0">
 				<h2 class="pd-radar-title tw-break-words">Player Stat Radar</h2>
@@ -551,6 +497,7 @@
 			<span class="pd-quick-nav__label">Career Stats</span>
 		</button>
 	</nav>
+	</div>
 </section>
 
 <style>
@@ -579,144 +526,6 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
-	}
-
-	.pd-hero {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-end;
-		gap: 18px;
-		margin-bottom: 22px;
-		flex-wrap: wrap;
-		min-width: 0;
-	}
-
-	.pd-hero__identity {
-		flex: 1 1 0;
-		min-width: 0;
-	}
-
-	.pd-hero__eyebrow {
-		display: inline-block;
-		padding: 4px 10px;
-		border-radius: 999px;
-		background: rgba(34, 211, 238, 0.14);
-		color: #67e8f9;
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.pd-hero__name {
-		margin: 10px 0 4px;
-		font-size: clamp(1.75rem, 5vw, 2.4rem);
-		font-weight: 900;
-		letter-spacing: -0.02em;
-		overflow-wrap: anywhere;
-		word-wrap: break-word;
-	}
-
-	.pd-hero__meta {
-		color: #a1a1aa;
-		font-size: 13px;
-		font-weight: 700;
-		white-space: normal;
-		overflow-wrap: anywhere;
-		word-wrap: break-word;
-	}
-
-	.pd-hero__card {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 2px;
-		width: 148px;
-		padding: 16px 12px;
-		border-radius: 18px;
-		background:
-			linear-gradient(150deg, rgba(250, 204, 21, 0.18), rgba(168, 85, 247, 0.12)) padding-box,
-			linear-gradient(150deg, #facc15, #a855f7) border-box;
-		border: 2px solid transparent;
-		box-shadow: 0 18px 36px -18px rgba(250, 204, 21, 0.5);
-	}
-
-	.tier-silver .pd-hero__card {
-		background:
-			linear-gradient(150deg, rgba(226, 232, 240, 0.18), rgba(148, 163, 184, 0.1)) padding-box,
-			linear-gradient(150deg, #e2e8f0, #64748b) border-box;
-		box-shadow: 0 18px 36px -18px rgba(148, 163, 184, 0.5);
-	}
-
-	.tier-bronze .pd-hero__card {
-		background:
-			linear-gradient(150deg, rgba(251, 146, 60, 0.18), rgba(180, 83, 9, 0.1)) padding-box,
-			linear-gradient(150deg, #fb923c, #b45309) border-box;
-		box-shadow: 0 18px 36px -18px rgba(251, 146, 60, 0.5);
-	}
-
-	.tier-rookie .pd-hero__card {
-		background:
-			linear-gradient(150deg, rgba(163, 163, 163, 0.18), rgba(82, 82, 82, 0.1)) padding-box,
-			linear-gradient(150deg, #a3a3a3, #525252) border-box;
-		box-shadow: 0 18px 36px -18px rgba(163, 163, 163, 0.5);
-	}
-
-	.pd-card__label {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #fde68a;
-		font-weight: 800;
-	}
-
-	.tier-silver .pd-card__label {
-		color: #cbd5e1;
-	}
-
-	.tier-bronze .pd-card__label {
-		color: #fed7aa;
-	}
-
-	.tier-rookie .pd-card__label {
-		color: #d4d4d4;
-	}
-
-	.pd-card__rating {
-		font-size: 44px;
-		font-weight: 900;
-		letter-spacing: -0.03em;
-		line-height: 1;
-		background: linear-gradient(135deg, #fef9c3, #facc15);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-	}
-
-	.tier-silver .pd-card__rating {
-		background: linear-gradient(135deg, #f8fafc, #94a3b8);
-		-webkit-background-clip: text;
-		background-clip: text;
-	}
-
-	.tier-bronze .pd-card__rating {
-		background: linear-gradient(135deg, #fed7aa, #b45309);
-		-webkit-background-clip: text;
-		background-clip: text;
-	}
-
-	.tier-rookie .pd-card__rating {
-		background: linear-gradient(135deg, #fafafa, #a3a3a3);
-		-webkit-background-clip: text;
-		background-clip: text;
-	}
-
-	.pd-card__tier {
-		font-size: 11px;
-		font-weight: 900;
-		letter-spacing: 0.22em;
-		color: #fafafa;
 	}
 
 	.pd-stat-grid {
