@@ -300,7 +300,7 @@
 	async function generateOtpForRow(row) {
 		actErr = '';
 		if (!coppaSigned) {
-			actErr = 'Sign the waiver before issuing login dispatch codes.';
+			actErr = 'Sign the waiver before issuing clearance codes.';
 			return;
 		}
 		otpGenBusyKey = row.email;
@@ -449,7 +449,7 @@
 					</h2>
 				</div>
 				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
-					Issue a 10-minute code your athlete can enter with their Operative Callsign and code on
+					Issue a 10-minute clearance code your athlete can enter with their Operative Callsign on
 					the login page.
 				</p>
 				<ul class="tw-m-0 tw-list-none tw-space-y-3 tw-p-0">
@@ -471,7 +471,7 @@
 								disabled={!coppaSigned || otpGenBusyKey !== null || actionBusy}
 								onclick={() => generateOtpForRow(row)}
 							>
-								{otpGenBusyKey === row.email ? 'Working…' : 'Generate login dispatch'}
+								{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
 							</button>
 						</li>
 					{/each}
@@ -594,12 +594,15 @@
 			aria-labelledby="phh-otp-title"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Login dispatch (OTP)</p>
+			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Clearance code</p>
 			<h3 id="phh-otp-title" class="phh-otp-h3 tw-m-0">
 				{otpDialog.displayName}
 			</h3>
 			<p class="phh-mono phh-otp-code tw-my-4 tw-text-center tw-tracking-[0.2em] tw-text-[#7dff9a]">
 				{otpDialog.code}
+			</p>
+			<p class="tw-mb-3 tw-text-center tw-text-xs tw-leading-relaxed tw-text-white/45">
+				This clearance code expires 10 minutes after it is generated.
 			</p>
 			<div
 				class="phh-otp-ttl tw-mb-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"

@@ -8214,7 +8214,10 @@ function normOtpCode(raw) {
 }
 
 /**
- * @param {string} raw Username, callsign, or email
+ * Resolves a player auth UID for OTP login. Queries (in order):
+ * `users` doc by email, else `users` where `operativeCallsignSlug`, else
+ * `users` where `playerName` (exact, case-sensitive in Firestore).
+ * @param {string} raw Username, callsign, or email (pre-trim/lower in callers as needed)
  * @return {Promise<string>} Firebase Auth UID
  */
 async function resolveUserUidFromUsernameOrCallsign(raw) {
@@ -8405,46 +8408,82 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Public: validate 6-char OTP; mints a custom token for the child (one use).
+ * Public: validate 6-char Clearance Code; mints a custom token for the child
+ * (one use). Unauthenticated by design (child login) — do not require
+ * `request.auth`.
  */
 exports.validatePlayerOTP = onCall({region: REGION}, async (request) => {
+  // request.auth is intentionally ignored — unauthenticated child login.
   const data = request.data || {};
-  const username = typeof data.username === 'string' ? data.username : '';
-  const rawOtp = data.otpCode != null ? String(data.otpCode) : '';
-  const otpCode = normOtpCode(rawOtp);
-  if (!username.trim() || !otpCode) {
+  const uRaw = typeof data.username === 'string' ? data.username : '';
+  const username = uRaw.trim().toLowerCase();
+  const oRaw = data.otpCode != null ? String(data.otpCode) : '';
+  const otpForNorm = oRaw.trim().toLowerCase();
+  const otpCode = normOtpCode(otpForNorm);
+  if (!username || !otpCode) {
     throw new HttpsError(
         'invalid-argument',
-        'username and a 6-character otpCode are required.',
+        'username and a 6-character Clearance Code are required.',
     );
   }
-  const childUid = await resolveUserUidFromUsernameOrCallsign(username);
+  let childUid;
+  try {
+    childUid = await resolveUserUidFromUsernameOrCallsign(username);
+  } catch (e) {
+    if (e instanceof HttpsError) {
+      if (e.code === 'not-found') {
+        throw new HttpsError('not-found', 'Callsign not found in database.');
+      }
+      if (e.code === 'invalid-argument') {
+        throw e;
+      }
+    }
+    console.error('validatePlayerOTP resolve user failed', e);
+    throw new HttpsError('internal', 'Server failed to resolve user.');
+  }
   const ref = db.collection('auth_challenges').doc(otpCode);
-  await db.runTransaction(async (t) => {
-    const snap = await t.get(ref);
-    if (!snap.exists) {
-      throw new HttpsError('permission-denied', 'Invalid or expired code.');
-    }
-    const d = snap.data();
-    const ch = typeof d.childUid === 'string' ? d.childUid.trim() : '';
-    if (!ch || ch !== childUid) {
-      throw new HttpsError('permission-denied', 'Invalid or expired code.');
-    }
-    const ex = d.expiresAt;
-    if (!ex || typeof ex.toMillis !== 'function') {
+  try {
+    await db.runTransaction(async (t) => {
+      const snap = await t.get(ref);
+      if (!snap.exists) {
+        throw new HttpsError('not-found', 'Invalid or expired Clearance Code.');
+      }
+      const d = snap.data() || {};
+      const ch = typeof d.childUid === 'string' ? d.childUid.trim() : '';
+      if (!ch || ch !== childUid) {
+        throw new HttpsError('not-found', 'Invalid or expired Clearance Code.');
+      }
+      const ex = d.expiresAt;
+      if (!ex || typeof ex.toMillis !== 'function') {
+        t.delete(ref);
+        throw new HttpsError(
+            'internal',
+            'Server failed to read clearance challenge.',
+        );
+      }
+      if (ex.toMillis() <= Date.now()) {
+        t.delete(ref);
+        throw new HttpsError('not-found', 'Invalid or expired Clearance Code.');
+      }
       t.delete(ref);
-      throw new HttpsError('internal', 'Challenge data is invalid.');
+    });
+  } catch (e) {
+    if (e instanceof HttpsError) {
+      throw e;
     }
-    if (ex.toMillis() <= Date.now()) {
-      t.delete(ref);
-      throw new HttpsError(
-          'permission-denied',
-          'Code has expired. Ask your parent for a new one.',
-      );
-    }
-    t.delete(ref);
-  });
-  const customToken = await admin.auth().createCustomToken(childUid);
+    console.error('validatePlayerOTP challenge transaction', e);
+    throw new HttpsError(
+        'internal',
+        'Server failed to validate Clearance Code.',
+    );
+  }
+  let customToken;
+  try {
+    customToken = await admin.auth().createCustomToken(childUid);
+  } catch (error) {
+    console.error('Token Minting Error:', error);
+    throw new HttpsError('internal', 'Server failed to mint login token.');
+  }
   return {customToken};
 });
 

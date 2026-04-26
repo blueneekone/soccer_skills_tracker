@@ -130,49 +130,6 @@
 		}
 	};
 
-	/**
-	 * @param {unknown} err
-	 * @returns {string}
-	 */
-	function mapOtpSignInError(err) {
-		const e = err && typeof err === 'object' ? err : null;
-		const fnCode = e && 'code' in e ? String(/** @type {*} */ (e).code) : '';
-		const msg = e && 'message' in e ? String(/** @type {*} */ (e).message) : '';
-		const m = msg.toLowerCase();
-
-		if (m.includes('code has expired') || (m.includes('expired') && m.includes('code'))) {
-			return 'Code Expired';
-		}
-		if (fnCode === 'functions/not-found') {
-			return 'Invalid Username';
-		}
-		if (fnCode === 'functions/failed-precondition' && m.includes('multiple players')) {
-			return 'Use your full sign-in email as username.';
-		}
-		if (fnCode === 'functions/invalid-argument') {
-			return 'Enter your username and a 6-character clearance code.';
-		}
-		if (fnCode === 'functions/internal') {
-			return 'Sign-in failed. Ask a parent for a new code.';
-		}
-		if (fnCode === 'functions/permission-denied') {
-			if (m.includes('expired')) {
-				return 'Code Expired';
-			}
-			if (m.includes('invalid or expired') || m.includes('invalid code')) {
-				return 'Code already used';
-			}
-			return 'Code already used';
-		}
-		if (m.includes('invalid or expired') || m.includes('invalid code')) {
-			return 'Code already used';
-		}
-		if (msg && msg.length < 180) {
-			return msg;
-		}
-		return 'Sign-in failed. Try again or ask a parent for a new code.';
-	}
-
 	const handleOperativeLogin = async () => {
 		errorMsg = '';
 		opError = '';
@@ -203,8 +160,12 @@
 			}
 			await signInWithCustomToken(auth, token);
 			await authStore.refresh({ silent: true });
-		} catch (err) {
-			opError = mapOtpSignInError(err);
+		} catch (error) {
+			console.error('Login Pipeline Failure:', error);
+			opError =
+				error && typeof error === 'object' && 'message' in error ?
+					String(/** @type {*} */ (error).message) :
+					'Sign-in failed. Try again.';
 		} finally {
 			opBusy = false;
 		}
@@ -216,12 +177,11 @@
 </script>
 
 <div
-	class="login-gate tw-box-border tw-flex tw-min-h-[100dvh] tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black tw-p-4"
+	class="login-gate tw-box-border tw-flex tw-min-h-[100dvh] tw-w-full tw-flex-col tw-px-4 tw-py-8 sm:tw-items-center sm:tw-justify-center sm:tw-py-12 tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black"
 >
-	<div class="auth-card auth-card--login-surface tw-flex tw-w-full tw-max-w-md tw-flex-col">
-		<div
-			class="tw-w-full tw-text-center tw-pt-2 tw-pb-8 sm:tw-rounded-2xl sm:tw-border sm:tw-border-cyan-500/20 sm:tw-bg-cyan-950/25 sm:tw-p-8 sm:tw-shadow-2xl"
-		>
+	<div
+		class="auth-card auth-card--login-surface tw-flex tw-w-full tw-max-w-md tw-flex-col tw-text-center sm:tw-mx-auto sm:tw-rounded-2xl sm:tw-border sm:tw-border-slate-700 sm:tw-bg-slate-800/50 sm:tw-p-8 sm:tw-shadow-2xl"
+	>
 		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
 		<h2 class="auth-title">SSTRACKER</h2>
 
@@ -422,11 +382,10 @@
 				</section>
 			{/if}
 		</div>
-		</div>
 	</div>
 
 	{#if showPwaPrompt}
-		<div class="pwa-prompt tw-mt-6 tw-w-full tw-max-w-md">
+		<div class="pwa-prompt tw-mt-6 tw-w-full tw-max-w-md sm:tw-mx-auto">
 			<h3 class="pwa-title">Install the app</h3>
 			<p class="pwa-text">To login and save your stats securely, install the app to your device.</p>
 			<div class="pwa-box">
