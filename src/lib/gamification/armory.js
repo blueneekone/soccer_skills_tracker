@@ -1,81 +1,77 @@
 /**
- * Quartermaster — Operative OS reward catalog (Path B: Tactical Credits economy).
- * SIEM / enterprise framing: commissary issues kit against clearance level, not charisma.
+ * Quartermaster gamification — **The Ledger** (Path B).
+ * Enterprise catalog: all `cost` values are denominated in **Tactical Credits** (TC);
+ * the ledger is the system of record for list prices. Redemption and balance enforcement
+ * live in consuming modules (not this pure-data layer).
  *
  * @typedef {'physical' | 'digital'} ArmoryItemType
  *
  * @typedef {object} QuartermasterItem
- * @property {string} id
- * @property {string} title
- * @property {string} description
- * @property {ArmoryItemType} type
- * @property {number} cost — Tactical Credits (TC), integer ≥ 0
- * @property {number} minLevel — minimum Operative level to reveal this SKU in the armory
- * @property {string} icon — Phosphor icon class suffix (e.g. `ph-target` → `class="ph ph-target"`)
+ * @property {string} id — Stable SKU key for armory / fulfillment pipelines.
+ * @property {string} title — Human-readable line item in Command / Quartermaster UIs.
+ * @property {string} description — In-universe and compliance-safe marketing copy.
+ * @property {ArmoryItemType} type — Fulfillment channel: on-field kit vs. in-app entitlements.
+ * @property {number} cost — **Tactical Credits (TC)** required at list price; non-negative integer.
+ * @property {number} minLevel — Minimum Operative level before this row appears in the available catalog.
+ * @property {string} icon — Phosphor icon class token (e.g. `ph-crosshair` with `class="ph ph-crosshair"`).
  */
 
-/** @type {ReadonlyArray<QuartermasterItem>} */
+/**
+ * Authoritative **Quartermaster** SKU table. Every {@link QuartermasterItem.cost} is in **Tactical Credits**.
+ * @type {ReadonlyArray<QuartermasterItem>}
+ */
 export const QUARTERMASTER_INVENTORY = Object.freeze([
 	{
-		id: 'item_patch_sniper',
+		id: 'patch_sniper',
 		title: 'Sniper Certification Patch',
 		description:
-			'Woven command patch for verified finishing drills. Issued to operatives with cleared L3 threat vectors — show it on the touchline, not the timeline.',
+			'Physical embroidered patch. Awarded for elite striking accuracy. Attach to your training kit.',
 		type: 'physical',
-		cost: 85,
-		minLevel: 4,
+		cost: 1500,
+		minLevel: 5,
 		icon: 'ph-crosshair',
 	},
 	{
-		id: 'item_border_thermal',
-		title: 'Thermal HUD Card Border',
-		description:
-			'Digital frame for your Operative ID: faux thermal sweep, no sensor drift. Simulates SIEM heat-map without touching production telemetry.',
+		id: 'digi_border_neon',
+		title: 'Neon Operative Border',
+		description: 'Digital UI upgrade. Surrounds your Player ID card with a glowing tactical border.',
 		type: 'digital',
-		cost: 40,
+		cost: 500,
 		minLevel: 2,
-		icon: 'ph-squares-four',
+		icon: 'ph-bounding-box',
 	},
 	{
-		id: 'item_wrist_ledger',
-		title: 'Field Ops Wrist Ledger',
+		id: 'tactical_override',
+		title: 'Tactical Override: Choose Drill',
 		description:
-			'Pocket-sized waterproof log for reps and RPE when the sideline app is a no-go. Quartermaster-stamped; not a medical device — training intel only.',
-		type: 'physical',
-		cost: 120,
-		minLevel: 6,
-		icon: 'ph-notebook',
-	},
-	{
-		id: 'item_badge_calm',
-		title: 'Calm-Under-Scan Pin',
-		description:
-			'Lapel pin: “No false positives.” Awarded in-universe to operatives who hold composure through full-session monitoring drills.',
-		type: 'physical',
-		cost: 55,
-		minLevel: 3,
-		icon: 'ph-shield-check',
-	},
-	{
-		id: 'item_avatar_orbit',
-		title: 'Low-Orbit Avatar Halo',
-		description:
-			'Cosmetic ring asset for your roster portrait — subtle parallax, Command-approved palette. Denied for accounts below clearance; no refund on downgrade.',
+			'Submit a request to HQ to choose the closing drill for the next training session.',
 		type: 'digital',
-		cost: 200,
+		cost: 800,
+		minLevel: 3,
+		icon: 'ph-whistle',
+	},
+	{
+		id: 'gear_armband',
+		title: "Captain's Tactical Armband",
+		description: 'Physical gear. High-visibility armband authorizing field command during scrimmages.',
+		type: 'physical',
+		cost: 5000,
 		minLevel: 10,
-		icon: 'ph-planet',
+		icon: 'ph-shield-star',
 	},
 ]);
 
 /**
- * Returns armory line items the operative is cleared to *see* at this level
- * (catalog rows at or below their clearance). Purchase still costs {@link QuartermasterItem.cost} TC.
+ * Returns catalog rows the operative is **cleared to obtain** at the given level: `minLevel <= playerLevel`.
+ * Results are ordered by **Tactical Credits** list price, ascending (budget-friendly first).
+ * Does not deduct TC; balance checks belong to the wallet / checkout flow.
  *
- * @param {number} playerLevel — current Operative level (1–99 in typical play)
- * @returns {QuartermasterItem[]}
+ * @param {number} playerLevel — Current Operative level (floor-coerced; sub-threshold yields empty set).
+ * @returns {QuartermasterItem[]} Shallow-copied, sorted subset of {@link QUARTERMASTER_INVENTORY}; prices remain in **Tactical Credits**.
  */
 export function getAvailableItems(playerLevel) {
 	const L = Math.max(0, Math.floor(Number(playerLevel) || 0));
-	return QUARTERMASTER_INVENTORY.filter((item) => L >= item.minLevel);
+	return [...QUARTERMASTER_INVENTORY]
+		.filter((item) => L >= item.minLevel)
+		.sort((a, b) => a.cost - b.cost);
 }
