@@ -14,6 +14,7 @@
 			content="black-translucent"
 		/>
 		<meta name="mobile-web-app-capable" content="yes" />
+		<!-- CSP: production uses Content-Security-Policy-Report-Only via Firebase Hosting (firebase.json). Intentionally no meta CSP here so Vite dev HMR is not blocked. -->
 		<!-- Phosphor icons CDN (lightweight icon font, not a bundled library) -->
 		<script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 		%sveltekit.head%

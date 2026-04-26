@@ -1,6 +1,8 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
+// Content-Security-Policy: production (report-only) is set in firebase.json (hosting.headers), not here.
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
