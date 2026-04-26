@@ -8,7 +8,7 @@
 </script>
 
 <div
-	class="login-gate tw-box-border tw-flex tw-min-h-[100dvh] tw-w-full tw-flex-col tw-px-4 tw-py-8 sm:tw-items-center sm:tw-justify-center sm:tw-py-12 tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black"
+	class="login-gate tw-box-border tw-grid tw-min-h-[100dvh] tw-w-full tw-place-items-center tw-p-4 sm:tw-p-8 tw-overflow-x-hidden tw-overflow-y-auto tw-bg-black"
 >
 	<div
 		class="auth-card auth-card--login-surface tw-flex tw-w-full tw-max-w-md tw-flex-col tw-text-center sm:tw-mx-auto sm:tw-rounded-2xl sm:tw-border sm:tw-border-slate-700 sm:tw-bg-slate-800/50 sm:tw-p-8 sm:tw-shadow-2xl"
