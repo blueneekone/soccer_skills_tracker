@@ -1,26 +1,16 @@
 <script>
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import { collection, onSnapshot, query, where } from 'firebase/firestore';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { db } from '$lib/firebase.js';
-	import RedAlertModal from '$lib/components/notifications/RedAlertModal.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import '$lib/styles/player-shell.css';
 
-	/** Dismiss red alert for this browser tab session (defer or accept). */
-	const RED_ALERT_SESSION_KEY = 'ss-player-red-alert-dismissed';
-
 	let disconnectBusy = $state(false);
 	let isInboxOpen = $state(false);
 	let pendingAssignmentCount = $state(0);
-	/** @type {{ id: string, drillId?: string } | null} */
-	let firstPendingAssignment = $state(null);
-	/** Firestore `pending` rows not explicitly acknowledged (opt-in fields). */
-	let hasUnacknowledgedPending = $state(false);
-	let showRedAlert = $state(false);
 
 	async function disconnect() {
 		if (disconnectBusy) return;
@@ -49,16 +39,10 @@
 
 	const playerUid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
-	const email = $derived((authStore.user?.email || '').toLowerCase());
-	const isOperativeProxy = $derived(
-		email.endsWith('@operative.local') && role === 'player',
-	);
 
 	$effect(() => {
 		if (!browser || !playerUid || role !== 'player') {
 			pendingAssignmentCount = 0;
-			firstPendingAssignment = null;
-			hasUnacknowledgedPending = false;
 			return;
 		}
 		const q = query(
@@ -70,89 +54,14 @@
 			q,
 			(snap) => {
 				pendingAssignmentCount = snap.size;
-				if (snap.empty) {
-					firstPendingAssignment = null;
-					hasUnacknowledgedPending = false;
-					return;
-				}
-				/** @param {import('firebase/firestore').DocumentData} x */
-				function isUnack(x) {
-					if (x.alertAcknowledged === true) return false;
-					if (x.playerAlertAcknowledged === true) return false;
-					if (x.acknowledgedByPlayer === true) return false;
-					return true;
-				}
-				hasUnacknowledgedPending = snap.docs.some((d) => isUnack(d.data()));
-				const rows = snap.docs
-					.filter((d) => isUnack(d.data()))
-					.map((d) => {
-						const x = d.data();
-						return {
-							id: d.id,
-							dueMs:
-								x.dueDate && typeof x.dueDate.toMillis === 'function' ?
-									x.dueDate.toMillis()
-								:	0,
-							drillId: typeof x.drillId === 'string' ? x.drillId.trim() : undefined,
-						};
-					});
-				if (rows.length === 0) {
-					firstPendingAssignment = null;
-					return;
-				}
-				rows.sort((a, b) => a.dueMs - b.dueMs);
-				const top = rows[0];
-				firstPendingAssignment = top ? { id: top.id, drillId: top.drillId } : null;
 			},
 			(e) => {
 				console.error('[PlayerShell] assignments snapshot', e);
 				pendingAssignmentCount = 0;
-				firstPendingAssignment = null;
-				hasUnacknowledgedPending = false;
 			},
 		);
 		return () => unsub();
 	});
-
-	$effect(() => {
-		if (!browser || !playerUid || role !== 'player') {
-			showRedAlert = false;
-			return;
-		}
-		if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(RED_ALERT_SESSION_KEY) === '1') {
-			showRedAlert = false;
-			return;
-		}
-		showRedAlert = hasUnacknowledgedPending;
-	});
-
-	function suppressRedAlertForSession() {
-		if (browser) {
-			try {
-				sessionStorage.setItem(RED_ALERT_SESSION_KEY, '1');
-			} catch {
-				/* private mode, etc. */
-			}
-		}
-		showRedAlert = false;
-	}
-
-	function onRedAlertAccept() {
-		suppressRedAlertForSession();
-		const a = firstPendingAssignment;
-		if (a?.id) {
-			const q = new URLSearchParams();
-			q.set('assignmentId', a.id);
-			if (a.drillId) q.set('drillId', a.drillId);
-			void goto(`/tracker?${q.toString()}`);
-			return;
-		}
-		void goto('/player/workout');
-	}
-
-	function onRedAlertDefer() {
-		suppressRedAlertForSession();
-	}
 
 	/** Bottom / rail nav — HQ first, then core athlete loops. */
 	const NAV_LINKS = [
@@ -180,7 +89,6 @@
 </script>
 
 <div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
-	<RedAlertModal open={showRedAlert} onAccept={onRedAlertAccept} onDefer={onRedAlertDefer} />
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
@@ -220,7 +128,7 @@
 						class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-cyan-500/25 tw-bg-black/50 tw-text-cyan-200 tw-transition hover:tw-border-cyan-400/50 hover:tw-bg-cyan-950/30 hover:tw-text-cyan-100"
 						aria-expanded={isInboxOpen}
 						aria-controls="ps-action-inbox-panel"
-						aria-label="Action inbox, assignments and drills"
+						aria-label="Alerts — notifications and assignments"
 						onclick={() => (isInboxOpen = !isInboxOpen)}
 					>
 						<i class="ph ph-bell tw-text-lg" aria-hidden="true"></i>
@@ -249,7 +157,7 @@
 				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-cyan-500/20 tw-bg-zinc-950/85 tw-px-3 tw-py-3 tw-shadow-[0_20px_50px_rgba(0,0,0,0.65)] [backdrop-filter:blur(18px) saturate(1.2)] [webkit-backdrop-filter:blur(18px) saturate(1.2)]"
 				style="top: var(--pp-topbar-height);"
 				role="region"
-				aria-label="Action inbox"
+				aria-label="Alerts"
 			>
 				<ActiveAssignmentsInbox />
 			</div>

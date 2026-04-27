@@ -7394,6 +7394,143 @@ async function collectFcmTokensForUids(uids) {
 }
 
 /**
+ * Player OS: coach deploy → assigned_missions/{id} → FCM to target player (device_tokens).
+ */
+exports.onMissionAssigned = onDocumentCreated(
+    {
+      document: 'assigned_missions/{missionId}',
+      region: REGION,
+    },
+    async (event) => {
+      const missionId = event.params.missionId || '';
+      const snap = event.data;
+      if (!snap) {
+        console.error('[onMissionAssigned] missing event.data', {missionId});
+        return;
+      }
+      const data = snap.data() || {};
+      const targetPlayerKey =
+          typeof data.targetPlayerKey === 'string' ?
+            data.targetPlayerKey.trim().toLowerCase() :
+            '';
+      const playerName =
+          typeof data.playerName === 'string' ? data.playerName.trim() : '';
+      const specificDrill =
+          typeof data.specificDrill === 'string' ?
+            data.specificDrill.trim() :
+            '';
+      const focusArea =
+          typeof data.focusArea === 'string' ? data.focusArea.trim() : '';
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      const xpBounty =
+          typeof data.xpBounty === 'number' && Number.isFinite(data.xpBounty) ?
+            data.xpBounty :
+            0;
+
+      console.log('[onMissionAssigned] assignment ingested', {
+        missionId,
+        targetPlayerKey,
+        playerName,
+        teamId,
+        specificDrill,
+        focusArea,
+        xpBounty,
+      });
+
+      if (!targetPlayerKey || !targetPlayerKey.includes('@')) {
+        console.error('[onMissionAssigned] invalid or missing targetPlayerKey', {
+          missionId,
+          targetPlayerKey,
+        });
+        return;
+      }
+
+      let uid = '';
+      try {
+        const userRecord = await admin.auth().getUserByEmail(targetPlayerKey);
+        uid = userRecord.uid || '';
+      } catch (e) {
+        console.error('[onMissionAssigned] auth.getUserByEmail failed', {
+          missionId,
+          targetPlayerKey,
+          err: e && e.message ? e.message : String(e),
+        });
+        return;
+      }
+      if (!uid) {
+        console.error('[onMissionAssigned] empty uid after auth lookup', {
+          missionId,
+          targetPlayerKey,
+        });
+        return;
+      }
+
+      let tokens = [];
+      try {
+        tokens = await collectFcmTokensForUids([uid]);
+      } catch (e) {
+        console.error('[onMissionAssigned] collectFcmTokensForUids failed', {
+          missionId,
+          uid,
+          err: e && e.message ? e.message : String(e),
+        });
+        return;
+      }
+
+      if (tokens.length === 0) {
+        console.log('[onMissionAssigned] no registered device tokens; skip FCM', {
+          missionId,
+          uid,
+          targetPlayerKey,
+        });
+        return;
+      }
+
+      const title = 'New mission deployed';
+      const bodyParts = [];
+      if (specificDrill) bodyParts.push(specificDrill);
+      if (focusArea) bodyParts.push(focusArea);
+      const body =
+          bodyParts.length > 0 ?
+            `${playerName ? playerName + ' — ' : ''}${bodyParts.join(' · ')}` +
+              (xpBounty > 0 ? ` · ${xpBounty} XP` : '') :
+            'Your coach assigned a new mission. Open SSTRACKER to begin.';
+
+      const chunkSize = 500;
+      for (let i = 0; i < tokens.length; i += chunkSize) {
+        const chunk = tokens.slice(i, i + chunkSize);
+        try {
+          await admin.messaging().sendMulticast({
+            tokens: chunk,
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              kind: 'assigned_mission',
+              missionId: String(missionId),
+              teamId,
+              targetPlayerKey,
+              focusArea,
+              specificDrill,
+            },
+          });
+          console.log('[onMissionAssigned] FCM multicast dispatched', {
+            missionId,
+            tokenCount: chunk.length,
+          });
+        } catch (e) {
+          console.error('[onMissionAssigned] sendMulticast failed', {
+            missionId,
+            err: e && e.message ? e.message : String(e),
+          });
+        }
+      }
+    },
+);
+
+/**
  * Firestore: new skill trial logged under trials/ — notify linked parents.
  * Path matches client writes (challenges + coach Evals).
  * Video trials use trial_scores/ + onTrialScoreWritten (player FCM on verify).

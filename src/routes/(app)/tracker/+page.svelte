@@ -9,7 +9,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import Swal from 'sweetalert2';
 	import confetti from 'canvas-confetti';
 
@@ -336,12 +335,6 @@
 					<p class="gw-banner__text">
 						This log completes the assignment when you submit (server-verified).
 					</p>
-				</div>
-			{/if}
-
-			{#if profile?.teamId && profile.teamId !== 'admin'}
-				<div class="gw-section">
-					<TeamLeaderboard />
 				</div>
 			{/if}
 

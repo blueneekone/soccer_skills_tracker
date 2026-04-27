@@ -49,10 +49,10 @@
 	}
 </script>
 
-<div class="pai" aria-label="Your training actions">
+<div class="pai" aria-label="Alerts and assignments">
 	<div class="pai__head">
 		<i class="ph ph-lightning" aria-hidden="true"></i>
-		<span>Action inbox</span>
+		<span>Alerts</span>
 	</div>
 
 	{#if loading}
