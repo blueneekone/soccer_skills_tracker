@@ -1,42 +1,278 @@
 <script>
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { doc, onSnapshot } from 'firebase/firestore';
+	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import '$lib/styles/director-os.css';
 
 	const isPlayerRole = $derived(authStore.role === 'player');
+
+	const userUid = $derived(authStore.user?.uid ?? '');
 
 	/** @type {null | typeof import('chart.js').Chart} */
 	let ChartCtor = $state(null);
 	let chartOk = $state(false);
 	/** @type {HTMLCanvasElement | undefined} */
 	let radarCanvas = $state();
+	/** @type {HTMLCanvasElement | undefined} */
+	let workoutCanvas = $state();
 
 	/** Skill vector 0–100: Technical, Physical, Tactical, Mental */
-	let skillsVector = $state(
-		/** @type {number[]} */ ([78, 84, 71, 88]),
-	);
+	let skillsVector = $state(/** @type {number[]} */ ([10, 10, 10, 10]));
+
+	/** @type {Array<{ month: string; xp: number }>} */
+	let monthlyPerformance = $state([]);
+
+	let dossierLevel = $state(1);
+	let dossierXp = $state(0);
 
 	/**
 	 * @typedef {{ id: string; title: string; phIcon: string; unlocked: boolean; tier?: 'standard' | 'elite' }} BadgeDef
-	 * @type {BadgeDef[]}
 	 */
-	const initialBadges = () => [
-		{ id: 'streak', title: '100_DAY_STREAK', phIcon: 'ph-fire', unlocked: true, tier: 'elite' },
-		{ id: 'marksman', title: 'ELITE_MARKSMAN', phIcon: 'ph-target', unlocked: true, tier: 'elite' },
-		{ id: 'vector', title: 'VECTOR_ACE', phIcon: 'ph-radar', unlocked: true, tier: 'standard' },
-		{ id: 'iron', title: 'IRON_LUNGS', phIcon: 'ph-wind', unlocked: true, tier: 'standard' },
-		{ id: 'ghost', title: 'GHOST_PRESS', phIcon: 'ph-ghost', unlocked: false },
-		{ id: 'crown', title: 'DYNASTY_MODE', phIcon: 'ph-crown', unlocked: false },
-		{ id: 'sword', title: 'BLADE_RUNNER', phIcon: 'ph-sword', unlocked: false },
-		{ id: 'lock', title: 'ZERO_DAY_PROTOCOL', phIcon: 'ph-shield-chevron', unlocked: false },
-		{ id: 'flame', title: 'COMBUSTION_99', phIcon: 'ph-flame', unlocked: false },
-		{ id: 'medal', title: 'ORBITAL_STRIKE', phIcon: 'ph-medal', unlocked: false },
-		{ id: 'timer', title: 'CHRONO_LOCK', phIcon: 'ph-timer', unlocked: false },
-		{ id: 'code', title: 'OVERRIDE_KEY', phIcon: 'ph-key', unlocked: false },
-	];
 
-	let badges = $state(initialBadges());
+	/** @param {unknown} raw */
+	function parseTrialScore(raw) {
+		const s = String(raw ?? '').trim();
+		const frac = /^(\d+)\s*\/\s*(\d+)$/.exec(s);
+		if (frac) {
+			const a = Number(frac[1]);
+			const b = Number(frac[2]);
+			if (b > 0 && Number.isFinite(a)) {
+				return Math.min(100, Math.max(0, Math.round((100 * a) / b)));
+			}
+		}
+		const n = parseFloat(s);
+		if (Number.isFinite(n)) return Math.min(100, Math.max(0, Math.round(n)));
+		const low = s.toLowerCase();
+		if (low.includes('master')) return 92;
+		if (low.includes('good')) return 72;
+		if (low.includes('struggle')) return 45;
+		return 55;
+	}
+
+	/**
+	 * @param {string} skill
+	 * @returns {'technical' | 'physical' | 'tactical' | 'mental'}
+	 */
+	function categorizeSkill(skill) {
+		const k = skill.toLowerCase();
+		if (
+			/(strength|speed|stamina|physical|conditioning|agility|jump|sprint|power)/.test(k)
+		) {
+			return 'physical';
+		}
+		if (/(tactical|position|press|shape|transition|defense|attack|team)/.test(k)) {
+			return 'tactical';
+		}
+		if (/(mental|decision|composure|leadership|focus|discipline)/.test(k)) {
+			return 'mental';
+		}
+		return 'technical';
+	}
+
+	/**
+	 * @param {Record<string, unknown>} scores
+	 */
+	function skillVectorFromTrials(scores) {
+		const buckets = {
+			technical: /** @type {number[]} */ ([]),
+			physical: /** @type {number[]} */ ([]),
+			tactical: /** @type {number[]} */ ([]),
+			mental: /** @type {number[]} */ ([]),
+		};
+		if (!scores || typeof scores !== 'object') {
+			return [10, 10, 10, 10];
+		}
+		for (const [skill, raw] of Object.entries(scores)) {
+			const v = parseTrialScore(raw);
+			const cat = categorizeSkill(skill);
+			buckets[cat].push(v);
+		}
+		const avg = (/** @type {number[]} */ arr) =>
+			arr.length ?
+				Math.min(99, Math.max(0, Math.round(arr.reduce((a, b) => a + b, 0) / arr.length))) :
+				null;
+		return [
+			avg(buckets.technical) ?? 10,
+			avg(buckets.physical) ?? 10,
+			avg(buckets.tactical) ?? 10,
+			avg(buckets.mental) ?? 10,
+		];
+	}
+
+	/**
+	 * @param {number} level
+	 * @param {number} totalXp
+	 * @returns {BadgeDef[]}
+	 */
+	function computeBadges(level, totalXp) {
+		const lv = Math.max(1, Math.floor(level || 1));
+		const xp = Math.max(0, Math.floor(totalXp || 0));
+		return [
+			{
+				id: 'streak',
+				title: '100_DAY_STREAK',
+				phIcon: 'ph-fire',
+				unlocked: lv >= 8 || xp >= 12000,
+				tier: 'elite',
+			},
+			{
+				id: 'marksman',
+				title: 'ELITE_MARKSMAN',
+				phIcon: 'ph-target',
+				unlocked: lv >= 14 || xp >= 28000,
+				tier: 'elite',
+			},
+			{
+				id: 'vector',
+				title: 'VECTOR_ACE',
+				phIcon: 'ph-radar',
+				unlocked: lv >= 6 || xp >= 9000,
+				tier: 'standard',
+			},
+			{
+				id: 'iron',
+				title: 'IRON_LUNGS',
+				phIcon: 'ph-wind',
+				unlocked: lv >= 10 || xp >= 18000,
+				tier: 'standard',
+			},
+			{
+				id: 'ghost',
+				title: 'GHOST_PRESS',
+				phIcon: 'ph-ghost',
+				unlocked: lv >= 18 || xp >= 42000,
+				tier: 'elite',
+			},
+			{
+				id: 'crown',
+				title: 'DYNASTY_MODE',
+				phIcon: 'ph-crown',
+				unlocked: lv >= 22 || xp >= 55000,
+				tier: 'elite',
+			},
+			{
+				id: 'sword',
+				title: 'BLADE_RUNNER',
+				phIcon: 'ph-sword',
+				unlocked: lv >= 16 || xp >= 38000,
+				tier: 'standard',
+			},
+			{
+				id: 'lock',
+				title: 'ZERO_DAY_PROTOCOL',
+				phIcon: 'ph-shield-chevron',
+				unlocked: lv >= 12 || xp >= 24000,
+				tier: 'standard',
+			},
+			{
+				id: 'flame',
+				title: 'COMBUSTION_99',
+				phIcon: 'ph-flame',
+				unlocked: lv >= 26 || xp >= 72000,
+				tier: 'elite',
+			},
+			{
+				id: 'medal',
+				title: 'ORBITAL_STRIKE',
+				phIcon: 'ph-medal',
+				unlocked: lv >= 20 || xp >= 48000,
+				tier: 'elite',
+			},
+			{
+				id: 'timer',
+				title: 'CHRONO_LOCK',
+				phIcon: 'ph-timer',
+				unlocked: lv >= 24 || xp >= 62000,
+				tier: 'standard',
+			},
+			{
+				id: 'code',
+				title: 'OVERRIDE_KEY',
+				phIcon: 'ph-key',
+				unlocked: lv >= 30 || xp >= 95000,
+				tier: 'elite',
+			},
+		];
+	}
+
+	let badges = $state(/** @type {BadgeDef[]} */ (computeBadges(1, 0)));
+
+	$effect(() => {
+		if (!browser || !userUid) return;
+
+		const ref = doc(db, 'public_player_profiles', userUid);
+		const unsub = onSnapshot(
+			ref,
+			(snap) => {
+				const profileXp = Math.max(
+					0,
+					Math.floor(
+						Number(
+							authStore.userProfile?.totalXp ??
+								authStore.userProfile?.xp ??
+								0,
+						),
+					),
+				);
+				const lvFallback = getLevelProgressFromTotalXp(profileXp).level;
+
+				if (!snap.exists()) {
+					skillsVector = [10, 10, 10, 10];
+					monthlyPerformance = [];
+					dossierLevel = lvFallback;
+					dossierXp = profileXp;
+					badges = computeBadges(lvFallback, profileXp);
+					return;
+				}
+
+				const d = snap.data() || {};
+				const vts =
+					d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
+						/** @type {Record<string, unknown>} */ (d.verified_trial_scores) :
+						{};
+				skillsVector = skillVectorFromTrials(vts);
+
+				const mp = d.monthly_performance;
+				monthlyPerformance = Array.isArray(mp) ?
+					mp
+						.filter(
+							(/** @type {unknown} */ row) =>
+								row &&
+								typeof row === 'object' &&
+								typeof /** @type {{month?: unknown}} */ (row).month === 'string',
+						)
+						.map((/** @type {unknown} */ row) => {
+							const r = /** @type {{month?: string; xp?: unknown}} */ (row);
+							const xp =
+								typeof r.xp === 'number' && !Number.isNaN(r.xp) ?
+									Math.floor(r.xp) :
+									0;
+							return { month: String(r.month ?? ''), xp };
+						}) :
+					[];
+
+				const lv =
+					typeof d.current_level === 'number' && !Number.isNaN(d.current_level) ?
+						Math.floor(d.current_level) :
+						lvFallback;
+				const tx =
+					typeof d.total_xp === 'number' && !Number.isNaN(d.total_xp) ?
+						Math.floor(d.total_xp) :
+						profileXp;
+
+				dossierLevel = lv;
+				dossierXp = tx;
+				badges = computeBadges(lv, tx);
+			},
+			(e) => {
+				console.warn('[stats] public_player_profiles snapshot', e);
+			},
+		);
+		return () => unsub();
+	});
 
 	onMount(() => {
 		if (!browser) return;
@@ -114,6 +350,90 @@
 		};
 	});
 
+	/** @type {import('chart.js').Chart | null} */
+	let workoutChartInst = null;
+
+	$effect(() => {
+		chartOk;
+		workoutCanvas;
+		ChartCtor;
+		const rows = monthlyPerformance;
+		if (!chartOk || !ChartCtor || !workoutCanvas || !browser) return;
+
+		const labels = rows.map((r) => String(r.month ?? ''));
+		const data = rows.map((r) =>
+			typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+		);
+
+		if (workoutChartInst) {
+			workoutChartInst.destroy();
+			workoutChartInst = null;
+		}
+
+		workoutChartInst = new ChartCtor(workoutCanvas, {
+			type: 'line',
+			data: {
+				labels,
+				datasets: [
+					{
+						label: 'MONTHLY_XP',
+						data,
+						borderColor: 'rgba(0, 255, 200, 0.92)',
+						backgroundColor: 'rgba(34, 211, 238, 0.14)',
+						fill: true,
+						tension: 0.32,
+						borderWidth: 2,
+						pointBackgroundColor: 'rgba(52, 211, 153, 0.95)',
+						pointBorderColor: 'rgba(0, 255, 200, 1)',
+						pointRadius: 3,
+					},
+				],
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				animation: { duration: 380 },
+				plugins: {
+					legend: {
+						display: true,
+						labels: {
+							color: 'rgba(226, 232, 240, 0.85)',
+							font: { family: 'ui-monospace, monospace', size: 10 },
+						},
+					},
+					tooltip: {
+						backgroundColor: 'rgba(0,0,0,0.9)',
+						borderColor: 'rgba(255,255,255,0.12)',
+						borderWidth: 1,
+						titleFont: { family: 'ui-monospace, monospace' },
+						bodyFont: { family: 'ui-monospace, monospace' },
+					},
+				},
+				scales: {
+					x: {
+						ticks: { color: 'rgba(148, 163, 184, 0.95)', font: { family: 'ui-monospace, monospace', size: 9 } },
+						grid: { color: 'rgba(34, 211, 255, 0.12)' },
+					},
+					y: {
+						beginAtZero: true,
+						ticks: {
+							color: 'rgba(148, 163, 184, 0.95)',
+							font: { family: 'ui-monospace, monospace', size: 9 },
+						},
+						grid: { color: 'rgba(0, 255, 200, 0.08)' },
+					},
+				},
+			},
+		});
+
+		return () => {
+			if (workoutChartInst) {
+				workoutChartInst.destroy();
+				workoutChartInst = null;
+			}
+		};
+	});
+
 	/** @param {BadgeDef} b @param {number} i */
 	function lockedLine(b, i) {
 		if (b.unlocked) return b.title;
@@ -141,7 +461,7 @@
 				<span class="dossier-mono dossier-tx-tag">RDR_V4</span>
 			</div>
 			<p class="dossier-radar__hint no-print">
-				Vector overlay · 0–100 scale · auto-refresh on field inject (mock)
+				Vector overlay · 0–100 · coach-verified trials + dossier sync
 			</p>
 			<div class="dossier-radar__chart tw-min-w-0 tw-h-[300px] tw-relative">
 				<canvas
@@ -151,7 +471,30 @@
 				></canvas>
 			</div>
 			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
-				GRD_LINE_NEON=OK · ANGLE_LINES=0.20 · AXIS=SUPPRESSED
+				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · PIPE=PUBLIC_PROFILE
+			</div>
+		</section>
+
+		<section
+			class="dossier-panel dossier-workout"
+			aria-label="Workout telemetry"
+		>
+			<div class="dossier-radar__head">
+				<span class="dossier-label">Workout Telemetry</span>
+				<span class="dossier-mono dossier-tx-tag">WX_MONTHLY</span>
+			</div>
+			<p class="dossier-radar__hint no-print">
+				Verified monthly XP from dossier workout logs (UTC buckets)
+			</p>
+			<div class="dossier-workout__chart tw-min-w-0 tw-h-[260px] tw-relative">
+				<canvas
+					bind:this={workoutCanvas}
+					class="dossier-canvas"
+					aria-label="Monthly training XP trend"
+				></canvas>
+			</div>
+			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
+				SERIES_LEN={monthlyPerformance.length} · AXIS=MONTH · UNITS=XP
 			</div>
 		</section>
 	</div>
@@ -229,6 +572,12 @@
 		grid-template-columns: 1fr;
 		gap: clamp(0.75rem, 2vw, 1.25rem);
 		margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
+	}
+
+	@media (min-width: 960px) {
+		.dossier-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
 	.dossier-panel {
@@ -392,6 +741,9 @@
 	}
 	.tw-h-\[300px\] {
 		height: 300px;
+	}
+	.tw-h-\[260px\] {
+		height: 260px;
 	}
 	.tw-relative {
 		position: relative;

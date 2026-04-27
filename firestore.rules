@@ -1130,7 +1130,9 @@ service cloud.firestore {
 
     // Epic 16: sanitized athlete index for recruiter search (Admin SDK triggers only).
     match /public_player_profiles/{uid} {
-      allow read: if isSuper() || recruiterSubscriptionActive();
+      allow read: if isSuper()
+        || recruiterSubscriptionActive()
+        || (authed() && request.auth.uid == uid);
       allow create, update, delete: if false;
     }
 
