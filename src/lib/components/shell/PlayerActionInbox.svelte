@@ -1,6 +1,5 @@
 <script>
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -10,11 +9,14 @@
 
 	let loading = $state(true);
 	let drillCount = $state(0);
+	/** @type {Array<{ id: string; title: string }>} */
+	let assignmentRows = $state([]);
 
 	$effect(() => {
 		if (!browser || !uid || role !== 'player') {
 			loading = false;
 			drillCount = 0;
+			assignmentRows = [];
 			return;
 		}
 		let cancelled = false;
@@ -30,10 +32,25 @@
 				);
 				if (cancelled) return;
 				drillCount = aSnap.size;
+				/** @type {Array<{ id: string; title: string }>} */
+				const rows = [];
+				aSnap.forEach((d) => {
+					const x = d.data() || {};
+					const title =
+						typeof x.drillTitle === 'string' && x.drillTitle.trim() ?
+							x.drillTitle.trim()
+						: typeof x.title === 'string' && x.title.trim() ?
+							x.title.trim()
+						: 'Assignment';
+					rows.push({ id: d.id, title });
+				});
+				rows.sort((a, b) => a.title.localeCompare(b.title));
+				assignmentRows = rows;
 			} catch (e) {
 				console.error('[PlayerActionInbox]', e);
 				if (!cancelled) {
 					drillCount = 0;
+					assignmentRows = [];
 				}
 			} finally {
 				if (!cancelled) loading = false;
@@ -43,10 +60,6 @@
 			cancelled = true;
 		};
 	});
-
-	function startDrills() {
-		goto('/tracker');
-	}
 </script>
 
 <div class="pai" aria-label="Alerts and assignments">
@@ -72,9 +85,23 @@
 						{/if}
 					</h3>
 				</div>
-				<button type="button" class="pai__btn pai__btn--primary" onclick={startDrills}>
-					Start
-				</button>
+				{#if assignmentRows.length > 0}
+					<details class="pai__details">
+						<summary class="pai__summary">Assignment details</summary>
+						<ul class="pai__list">
+							{#each assignmentRows as row (row.id)}
+								<li class="pai__li">{row.title}</li>
+							{/each}
+						</ul>
+					</details>
+				{/if}
+				<a
+					href="/player/armory"
+					class="pai__btn pai__btn--primary"
+					data-sveltekit-preload-data="hover"
+				>
+					Open Armory
+				</a>
 			</div>
 		</div>
 	{/if}
@@ -178,5 +205,47 @@
 
 	.pai__btn:hover {
 		filter: brightness(1.03);
+	}
+
+	a.pai__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		box-sizing: border-box;
+	}
+
+	.pai__details {
+		width: 100%;
+		border-radius: 10px;
+		border: 1px solid #e5e5e5;
+		padding: 8px 10px;
+		background: rgba(0, 0, 0, 0.02);
+		box-sizing: border-box;
+	}
+
+	:global(html.dark) .pai__details {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.pai__summary {
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 800;
+		color: var(--text-secondary);
+		list-style-position: outside;
+	}
+
+	.pai__list {
+		margin: 8px 0 0;
+		padding-left: 1.15rem;
+		font-size: 13px;
+		line-height: 1.45;
+		color: var(--text-primary);
+	}
+
+	.pai__li {
+		margin-bottom: 4px;
 	}
 </style>

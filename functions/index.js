@@ -943,17 +943,42 @@ async function syncPublicPlayerProfile(uid) {
 
 /**
  * Epic 16: sanitized global index for recruiter search (Admin SDK only writes).
+ * `statId` may be Auth UID or legacy keyed doc — resolve before syncing public profile.
  */
 exports.updatePublicProfile = onDocumentWritten(
     {
-      document: 'player_stats/{uid}',
+      document: 'player_stats/{statId}',
       region: REGION,
     },
     async (event) => {
-      const uid = event.params.uid;
-      if (!uid) return;
+      const statId = event.params.statId;
+      if (!statId) return;
+
+      const after =
+          event.data && event.data.after ? event.data.after.data() : null;
+      const teamId = after ? after.teamId : null;
+
       try {
-        await syncPublicPlayerProfile(uid);
+        try {
+          const au = await admin.auth().getUser(statId);
+          await syncPublicPlayerProfile(au.uid);
+          return;
+        } catch (_err) {
+          /* Not a UID — proceed to name resolution. */
+        }
+
+        if (!teamId) return;
+
+        const snap = await db.collection('users')
+            .where('teamId', '==', teamId)
+            .where('playerName', '==', statId)
+            .limit(1)
+            .get();
+
+        if (snap.empty) return;
+        const email = snap.docs[0].id;
+        const ur = await admin.auth().getUserByEmail(email);
+        await syncPublicPlayerProfile(ur.uid);
       } catch (e) {
         logger.error('updatePublicProfile player_stats', e);
       }
@@ -2642,7 +2667,21 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
   }
 
   const psKeys = Array.from(ag.keys());
-  const psRefs = psKeys.map((k) => db.collection('player_stats').doc(k));
+  /** @type {FirebaseFirestore.DocumentReference[]} */
+  const psRefs = [];
+  for (const k of psKeys) {
+    const em = nameToEmail[k] || null;
+    let docId = k;
+    if (em) {
+      try {
+        const rec = await admin.auth().getUserByEmail(em);
+        docId = rec.uid;
+      } catch (_e) {
+        /* leave docId = k */
+      }
+    }
+    psRefs.push(db.collection('player_stats').doc(docId));
+  }
   const psSnaps = await Promise.all(psRefs.map((r) => r.get()));
 
   for (let i = 0; i < psKeys.length; i++) {
@@ -7405,7 +7444,7 @@ exports.onMissionAssigned = onDocumentCreated(
       region: REGION,
     },
     async (event) => {
-      const missionId = event.params.missionId || '';
+      const missionId = event.params.missionId;
       const snap = event.data;
       if (!snap) {
         logger.error('onMissionAssigned: missing event.data', {missionId});
@@ -7515,6 +7554,55 @@ exports.onMissionAssigned = onDocumentCreated(
             playerId,
             err: e instanceof Error ? e.message : String(e),
           });
+        }
+      }
+    },
+);
+
+/**
+ * Drill library: new row in assignments/ → FCM to player (device_tokens).
+ */
+exports.onAssignmentCreated = onDocumentCreated(
+    {
+      document: 'assignments/{assignmentId}',
+      region: REGION,
+    },
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+      const data = snap.data();
+      if (!data || !data.playerId || !data.teamId) return;
+      const playerId =
+          typeof data.playerId === 'string' ? data.playerId.trim() : '';
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      if (!playerId || !teamId) return;
+
+      let tokens = [];
+      try {
+        tokens = await collectFcmTokensForUids([playerId]);
+      } catch (e) {
+        logger.error('onAssignmentCreated: token load failed', e);
+        return;
+      }
+      if (tokens.length === 0) return;
+
+      const title = 'New Training Assigned! 📋';
+      const body = 'Check your Armory for a new drill.';
+      const chunkSize = 500;
+      for (let i = 0; i < tokens.length; i += chunkSize) {
+        const chunk = tokens.slice(i, i + chunkSize);
+        try {
+          await admin.messaging().sendMulticast({
+            tokens: chunk,
+            notification: {title, body},
+            data: {
+              kind: 'library_assignment',
+              teamId,
+            },
+          });
+        } catch (e) {
+          logger.error('onAssignmentCreated FCM failed', e);
         }
       }
     },
@@ -8263,6 +8351,9 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
       playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
       updatedAt: now,
     });
+    batch.set(db.collection('rosters').doc(teamIdForUser), {
+      players: admin.firestore.FieldValue.arrayUnion(childName),
+    }, {merge: true});
   }
   await batch.commit();
   return {
