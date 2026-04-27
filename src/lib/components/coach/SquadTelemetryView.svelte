@@ -439,7 +439,7 @@
 	 * @param {Record<string, Record<string, unknown>>} ps
 	 * @param {string} name
 	 */
-	function resolveStatsId(name) {
+	function resolveStatsId(name, ps) {
 		if (ps[name]) return name;
 		const id = Object.keys(ps).find((k) => (ps[k]?.playerName) === name);
 		return id || name;
