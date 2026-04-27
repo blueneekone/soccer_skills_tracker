@@ -19,9 +19,7 @@ html {
 	box-sizing: border-box;
 	max-width: 28rem;
 	width: 100%;
-	margin-left: auto;
-	margin-right: auto;
-	margin-bottom: 0;
+	margin: 0 auto !important;
 	padding: 0;
 	background: transparent;
 	border: none;
