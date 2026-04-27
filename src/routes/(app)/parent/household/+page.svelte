@@ -16,6 +16,7 @@
 	import { db, functions } from '$lib/firebase.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const DISPATCH_CODE_INTEL = {
@@ -530,15 +531,26 @@
 	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-black tw-px-3 tw-pb-10 tw-pt-4 md:tw-px-6"
 	data-region="household-clearance"
 >
-	<header class="tw-mb-6 tw-text-center">
-		<p class="phh-eyebrow tw-mb-1">Parent OS · TIER-0 ACCESS</p>
-		<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
-			Household Clearance Center
-		</h1>
-		<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-white/50">
-			Classified provisioning. Minors do not self-register. Digital signatures and dispatch codes
-			are the only valid ingress paths.
-		</p>
+	<header class="phh-page-head tw-mb-6">
+		<div class="phh-page-head__actions">
+			<button
+				type="button"
+				class="phh-sign-out"
+				onclick={() => void handleSignOut()}
+			>
+				Secure Sign Out
+			</button>
+		</div>
+		<div class="tw-text-center">
+			<p class="phh-eyebrow tw-mb-1">Parent OS · TIER-0 ACCESS</p>
+			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
+				Household Clearance Center
+			</h1>
+			<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-white/50">
+				Classified provisioning. Minors do not self-register. Digital signatures and dispatch codes
+				are the only valid ingress paths.
+			</p>
+		</div>
 	</header>
 
 	{#if loadErr}
@@ -870,6 +882,37 @@
 <style>
 	:global([data-region='household-clearance'] *) {
 		box-sizing: border-box;
+	}
+	.phh-page-head {
+		position: relative;
+	}
+	.phh-page-head__actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 0.5rem;
+	}
+	.phh-sign-out {
+		font-size: 0.58rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+		color: rgba(255, 255, 255, 0.5);
+		background: rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.25rem;
+		padding: 0.4rem 0.75rem;
+		cursor: pointer;
+		touch-action: manipulation;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+	.phh-sign-out:hover {
+		color: #fecaca;
+		border-color: rgba(248, 113, 113, 0.45);
+		box-shadow: 0 0 18px rgba(248, 113, 113, 0.12);
 	}
 	.phh-eyebrow {
 		font-size: 0.6rem;

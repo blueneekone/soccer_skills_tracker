@@ -38,7 +38,7 @@ const coachLinks = [
 ];
 
 /**
- * Player OS (SIEM/SOAR): quests + logger = Command Center; trophies + stats = Operative Dossier.
+ * Player OS (SIEM/SOAR): quests + logger = Command Center; stats = Operative Dossier.
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
@@ -51,7 +51,6 @@ const athleteHouseholdLinks = [
 const parentLinks = [
 	{ tab: '', label: 'Clearance', icon: 'ph-shield-check', href: '/parent/household' },
 	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
-	{ tab: '', label: 'Trophy Room', icon: 'ph-trophy', href: '/trophies' },
 	{ tab: '', label: 'Log Workout', icon: 'ph-user-check', href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments', icon: 'ph-credit-card', href: '/pricing' },
 	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },
