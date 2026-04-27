@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -39,7 +40,7 @@
 		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
 			if (selectedTeamId !== urlTeam) {
 				selectedTeamId = urlTeam;
-				workspaceContextStore.setActiveTeamId(urlTeam); // FIXED: Force sync to global store
+				untrack(() => workspaceContextStore.setActiveTeamId(urlTeam));
 			}
 			return;
 		}
@@ -47,7 +48,7 @@
 		// Priority 3: Default to first team if nothing matches
 		if (!selectedTeamId || !teams.some((t) => t.id === selectedTeamId)) {
 			selectedTeamId = teams[0].id;
-			workspaceContextStore.setActiveTeamId(teams[0].id); // FIXED: Force sync to global store
+			untrack(() => workspaceContextStore.setActiveTeamId(teams[0].id));
 		}
 	});
 

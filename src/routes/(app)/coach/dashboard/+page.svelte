@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
@@ -143,14 +144,14 @@
 		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
 			if (selectedTeamId !== urlTeam) {
 				selectedTeamId = urlTeam;
-				workspaceContextStore.setActiveTeamId(urlTeam);
+				untrack(() => workspaceContextStore.setActiveTeamId(urlTeam));
 			}
 			return;
 		}
 
 		if (!selectedTeamId || !teams.some((t) => t.id === selectedTeamId)) {
 			selectedTeamId = teams[0].id;
-			workspaceContextStore.setActiveTeamId(teams[0].id);
+			untrack(() => workspaceContextStore.setActiveTeamId(teams[0].id));
 		}
 	});
 

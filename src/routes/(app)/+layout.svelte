@@ -148,32 +148,34 @@
 		const pivot = workspaceContextStore.activePivotKey;
 		const prof = authStore.userProfile;
 
-		workspaceContextStore.resetScope();
+		untrack(() => {
+			workspaceContextStore.resetScope();
 
-		if (path.startsWith('/admin')) {
-			workspaceContextStore.setActiveContext('admin');
-		} else if (path.startsWith('/director')) {
-			const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
-			if (cid) workspaceContextStore.setActiveClubId(cid);
-			workspaceContextStore.setActiveContext('director');
-		} else if (path.startsWith('/registrar')) {
-			const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
-			if (cid) workspaceContextStore.setActiveClubId(cid);
-			workspaceContextStore.setActiveContext('registrar');
-		} else if (path.startsWith('/coach')) {
-			const m = /^ctx-coach-(.+)$/.exec(pivot);
-			if (m?.[1]) workspaceContextStore.setActiveTeamId(m[1]);
-			else if (prof?.teamId && prof.teamId !== 'admin') {
-				workspaceContextStore.setActiveTeamId(prof.teamId);
+			if (path.startsWith('/admin')) {
+				workspaceContextStore.setActiveContext('admin');
+			} else if (path.startsWith('/director')) {
+				const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+				if (cid) workspaceContextStore.setActiveClubId(cid);
+				workspaceContextStore.setActiveContext('director');
+			} else if (path.startsWith('/registrar')) {
+				const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+				if (cid) workspaceContextStore.setActiveClubId(cid);
+				workspaceContextStore.setActiveContext('registrar');
+			} else if (path.startsWith('/coach')) {
+				const m = /^ctx-coach-(.+)$/.exec(pivot);
+				if (m?.[1]) workspaceContextStore.setActiveTeamId(m[1]);
+				else if (prof?.teamId && prof.teamId !== 'admin') {
+					workspaceContextStore.setActiveTeamId(prof.teamId);
+				}
+				workspaceContextStore.setActiveContext('coach');
+			} else if (path.startsWith('/recruiter')) {
+				workspaceContextStore.setActiveContext('recruiter');
+			} else if (path.startsWith('/parent')) {
+				workspaceContextStore.setActiveContext('household');
+			} else {
+				workspaceContextStore.setActiveContext('household');
 			}
-			workspaceContextStore.setActiveContext('coach');
-		} else if (path.startsWith('/recruiter')) {
-			workspaceContextStore.setActiveContext('recruiter');
-		} else if (path.startsWith('/parent')) {
-			workspaceContextStore.setActiveContext('household');
-		} else {
-			workspaceContextStore.setActiveContext('household');
-		}
+		});
 	});
 
 	// Global Admin QA: default active club/team from loaded org data when profile has no tenant.

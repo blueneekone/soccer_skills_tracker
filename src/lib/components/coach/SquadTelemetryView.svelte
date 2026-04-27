@@ -268,7 +268,6 @@
 			const nextPlayers = [];
 			for (const rawName of combined) {
 				const name = typeof rawName === 'string' ? rawName : String(rawName);
-				const linkId = linkedDocIdForPlayerName(em, name);
 				nextPlayers.push(name);
 			}
 			nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
