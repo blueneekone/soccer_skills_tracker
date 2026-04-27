@@ -238,7 +238,7 @@
 			}
 			nameToEmail = em;
 
-			const combined = new Set([...rosterNames, ...Object.keys(playerStats)]);
+			const combined = new Set([...rosterNames, ...Object.keys(playerStats), ...Object.keys(em)]);
 
 			/** @type {string[]} */
 			const userDocKeys = [

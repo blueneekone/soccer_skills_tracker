@@ -1,9 +1,9 @@
 <script>
-	import { setContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
@@ -13,33 +13,8 @@
 	/** @type {{ breadcrumb?: string, children?: import('svelte').Snippet }} */
 	let { breadcrumb = '', children } = $props();
 
-	let drawerOpen = $state(false);
-	/** @type {{ title?: string, body?: string, meta?: string, href?: string } | null} */
-	let drawerPayload = $state(null);
-
-	setContext('enterpriseDrawer', {
-		/**
-		 * @param {{ title?: string, body?: string, meta?: string, href?: string }} opts
-		 */
-		open(opts = {}) {
-			drawerPayload = {
-				title: opts.title ?? 'Details',
-				body: opts.body ?? '',
-				meta: opts.meta ?? '',
-				href: typeof opts.href === 'string' ? opts.href : ''
-			};
-			drawerOpen = true;
-		},
-		close() {
-			drawerOpen = false;
-		},
-		get isOpen() {
-			return drawerOpen;
-		}
-	});
-
 	function closeDrawer() {
-		drawerOpen = false;
+		enterprisePlayerDrawer.close();
 	}
 
 	const nav = $derived.by(() =>
@@ -243,32 +218,37 @@
 <!-- Overlay + drawer (team / record details) -->
 <div
 	class="ec-drawer-backdrop"
-	class:ec-drawer-backdrop--open={drawerOpen}
+	class:ec-drawer-backdrop--open={enterprisePlayerDrawer.isOpen}
 	role="presentation"
-	aria-hidden={!drawerOpen}
+	aria-hidden={!enterprisePlayerDrawer.isOpen}
 	onclick={closeDrawer}
 ></div>
-<aside class="ec-drawer" class:ec-drawer--open={drawerOpen} aria-hidden={!drawerOpen} aria-label="Detail panel">
+<aside
+	class="ec-drawer"
+	class:ec-drawer--open={enterprisePlayerDrawer.isOpen}
+	aria-hidden={!enterprisePlayerDrawer.isOpen}
+	aria-label="Detail panel"
+>
 	<div class="ec-drawer__head">
-		<h2 class="ec-drawer__title">{drawerPayload?.title ?? 'Details'}</h2>
+		<h2 class="ec-drawer__title">{enterprisePlayerDrawer.payload?.title ?? 'Details'}</h2>
 		<button type="button" class="ec-drawer__close" onclick={closeDrawer} aria-label="Close panel">
 			<i class="ph ph-x ecs-icon-md" aria-hidden="true"></i>
 		</button>
 	</div>
 	<div class="ec-drawer__body">
-		{#if drawerPayload?.meta}
-			<p class="ec-drawer__meta">{drawerPayload.meta}</p>
+		{#if enterprisePlayerDrawer.payload?.meta}
+			<p class="ec-drawer__meta">{enterprisePlayerDrawer.payload.meta}</p>
 		{/if}
-		{#if drawerPayload?.body}
-			<div class="ec-drawer__text">{drawerPayload.body}</div>
+		{#if enterprisePlayerDrawer.payload?.body}
+			<div class="ec-drawer__text">{enterprisePlayerDrawer.payload.body}</div>
 		{:else}
 			<p class="ecs-empty-msg">No selection.</p>
 		{/if}
-		{#if drawerPayload?.href}
+		{#if enterprisePlayerDrawer.payload?.href}
 			<p class="ec-drawer__actions">
 				<a
 					class="ec-drawer__cta"
-					href={drawerPayload.href}
+					href={enterprisePlayerDrawer.payload.href}
 					data-sveltekit-preload-data="hover"
 					onclick={() => closeDrawer()}
 				>

@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { doc, setDoc, getDoc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -13,9 +14,6 @@
 
 	/** @type {() => void} */
 	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
-
-	/** @type {{ open?: (o: { title?: string; body?: string; meta?: string }) => void } | undefined} */
-	const enterpriseDrawer = getContext('enterpriseDrawer');
 
 	const isReadOnly = $derived(
 		isSubscriptionReadOnly(
@@ -44,7 +42,7 @@
 	 * @param {{ id: string; name?: string }} t
 	 */
 	function openTeamDrawer(t) {
-		enterpriseDrawer?.open?.({
+		enterprisePlayerDrawer.open({
 			title: t.name || t.id,
 			meta: t.id,
 			body: `Team ID: ${t.id}\nClub: ${clubId || '—'}\n\nManage seat allocation under Licenses & Seats.`,

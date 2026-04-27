@@ -36,6 +36,9 @@ function createEnterprisePlayerDrawer() {
 	/** When true, PlayerDetailDrawer scrolls to Household & Compliance first. */
 	let focusCompliance = $state(false);
 
+	/** @type {{ title?: string, body?: string, meta?: string, href?: string } | null} */
+	let consolePayload = $state(null);
+
 	return {
 		get selected() {
 			return selected;
@@ -46,24 +49,54 @@ function createEnterprisePlayerDrawer() {
 		get focusCompliance() {
 			return focusCompliance;
 		},
+		/** Text/detail drawer hosted in EnterpriseConsoleShell (director, etc.). */
+		get payload() {
+			return consolePayload;
+		},
+		get isOpen() {
+			return consolePayload != null;
+		},
 		/**
-		 * @param {PlayerDrawerRow} row
+		 * Player roster: pass a {@link PlayerDrawerRow} with `statsDocId`.
+		 * Enterprise console side panel: pass `{ title, body?, meta?, href? }` (no `statsDocId`).
+		 * @param {PlayerDrawerRow | { title?: string, body?: string, meta?: string, href?: string }} row
 		 * @param {PlayerDrawerActionCallbacks} [callbacks]
 		 * @param {{ focusCompliance?: boolean }} [options]
 		 */
 		open(row, callbacks = undefined, options = undefined) {
-			selected = row;
-			actions = callbacks ?? null;
-			focusCompliance =
-				options?.focusCompliance === true || row?.source === 'registrar';
+			if (
+				row &&
+				typeof row === 'object' &&
+				'statsDocId' in row &&
+				typeof /** @type {PlayerDrawerRow} */(row).statsDocId === 'string'
+			) {
+				consolePayload = null;
+				/** @type {PlayerDrawerRow} */
+				const r = /** @type {PlayerDrawerRow} */(row);
+				selected = r;
+				actions = callbacks ?? null;
+				focusCompliance =
+					options?.focusCompliance === true || r.source === 'registrar';
+				return;
+			}
+			if (row && typeof row === 'object' && 'title' in row) {
+				selected = null;
+				actions = null;
+				focusCompliance = false;
+				const o = /** @type {{ title?: string, body?: string, meta?: string, href?: string }} */(row);
+				consolePayload = {
+					title: o.title ?? 'Details',
+					body: typeof o.body === 'string' ? o.body : '',
+					meta: typeof o.meta === 'string' ? o.meta : '',
+					href: typeof o.href === 'string' ? o.href : '',
+				};
+			}
 		},
 		close() {
 			selected = null;
 			actions = null;
 			focusCompliance = false;
-		},
-		get isOpen() {
-			return selected != null;
+			consolePayload = null;
 		},
 	};
 }
