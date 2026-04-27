@@ -1058,6 +1058,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Coach-initiated roster removal queue — approved by Director (outside SquadTelemetry CF flows).
+    match /roster_drop_requests/{reqId} {
+      allow create: if authed()
+        && isCoach()
+        && request.resource.data.keys().hasAll(['teamId', 'playerName', 'reason', 'status', 'requestedAt'])
+        && request.resource.data.teamId is string
+        && request.resource.data.playerName is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 10
+        && request.resource.data.status == 'pending'
+        && sameTeam(request.resource.data.teamId);
+      allow read, update, delete: if false;
+    }
+
     match /coach_lookup/{coachId} {
       allow read: if authed() && (
         emailKey() == coachId.lower()

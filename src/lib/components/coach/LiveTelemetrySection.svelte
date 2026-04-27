@@ -23,7 +23,11 @@
 		<h2 id="stw-live-telemetry" class="stw__live-title">LIVE TELEMETRY</h2>
 		<p class="stw__live-sub">Ingest match events with rapid + taps, then commit to Firestore.</p>
 	</div>
-	<MatchLogger {teamId} {players} {getStatsId} {onCommitted} />
+	<div
+		class="stw__live-scroll tw-w-full tw-overflow-x-auto tw-pb-4 [&_.ml-row]:tw-flex-nowrap [&_.ml-mets]:tw-min-w-min [&_.ml-name]:tw-whitespace-nowrap [&_.ml-lbl]:tw-whitespace-nowrap [&_.ml-val]:tw-whitespace-nowrap [&_.ml-metric]:tw-whitespace-nowrap"
+	>
+		<MatchLogger {teamId} {players} {getStatsId} {onCommitted} />
+	</div>
 </section>
 
 <style>

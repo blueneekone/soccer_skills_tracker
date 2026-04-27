@@ -300,10 +300,10 @@
 			/>
 		</div>
 		<div
-			class="tw-col-span-1 tw-flex tw-flex-col tw-gap-6 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-6 md:tw-col-span-7 lg:tw-col-span-8"
+			class="tw-col-span-1 tw-flex tw-flex-col md:tw-flex-row tw-items-center md:tw-items-stretch tw-gap-6 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-6 md:tw-col-span-7 lg:tw-col-span-8"
 			aria-label="Career progress and intel"
 		>
-			<div class="tw-flex tw-w-full tw-min-w-0 tw-justify-center sm:tw-justify-start">
+			<div class="tw-flex tw-shrink-0 tw-items-center tw-justify-center">
 				<LevelProgressRing
 					currentXp={rankProgress.xpInCurrentTier}
 					nextRankXp={rankProgress.xpToNextRank}
@@ -314,7 +314,7 @@
 					variant="dark"
 				/>
 			</div>
-			<div class="tw-min-w-0 tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-black/25 tw-p-5">
+			<div class="tw-flex-1 tw-w-full tw-min-w-0 tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-black/25 tw-p-5 tw-flex tw-flex-col tw-justify-center">
 				<p
 					class="tw-m-0 tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.4em] tw-text-cyan-500/90"
 				>

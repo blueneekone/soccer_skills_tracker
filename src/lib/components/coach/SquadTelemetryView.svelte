@@ -4,6 +4,7 @@
 	import { db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
+		addDoc,
 		collection,
 		doc,
 		getDoc,
@@ -34,6 +35,7 @@
 
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
+	const secureUpdateJersey = httpsCallable(functions, 'secureUpdateJersey');
 	const verifyVideoTrial = httpsCallable(functions, 'verifyVideoTrial');
 
 	const currentTeam = $derived(teams.find((t) => t.id === teamId));
@@ -511,18 +513,112 @@
 		})();
 	}
 
+	/**
+	 * @param {string} name Roster display name
+	 */
+	async function editPlayerProfile(name) {
+		if (!teamId || !name) return;
+		const curJersey =
+			jerseys[name] != null && String(jerseys[name]).trim() ?
+				String(jerseys[name]).trim()
+			:	'';
+		const normalizedName = name.replace(/\s+/g, ' ');
+		const result = await Swal.fire({
+			title: 'Update jersey number',
+			input: 'text',
+			inputLabel: 'Jersey number',
+			inputValue: curJersey,
+			showCancelButton: true,
+			confirmButtonText: 'Save',
+			cancelButtonText: 'Cancel',
+			background: '#05050a',
+			color: '#fafafa',
+			inputValidator: (v) =>
+				v != null && String(v).length > 16 ? 'Use at most 16 characters.' : undefined,
+		});
+		if (!result.isConfirmed) return;
+		enterprisePlayerDrawer.close();
+		try {
+			await secureUpdateJersey({
+				teamId,
+				playerName: normalizedName,
+				jersey: String(result.value ?? '').trim(),
+			});
+			await loadRoster();
+			feedback = { type: 'success', text: 'Jersey updated.' };
+		} catch (err) {
+			const code = /** @type {{ code?: string }} */ (err).code || '';
+			const msg = /** @type {{ message?: string }} */ (err).message || '';
+			feedback = { type: 'error', text: mapCallableErrorToMessage(code, msg) };
+		}
+	}
+
+	/**
+	 * @param {string} name Roster display name
+	 */
+	async function initiateDropRequest(name) {
+		enterprisePlayerDrawer.close();
+		const result = await Swal.fire({
+			title: 'Official Drop Request',
+			html:
+				'<p style="text-align:left;color:rgba(250,250,250,0.88);margin:0 0 14px;font-size:0.9rem;">Dropping a player requires Director approval. Provide your required drop note below.</p>',
+			input: 'textarea',
+			showCancelButton: true,
+			confirmButtonText: 'Submit request',
+			background: '#05050a',
+			color: '#fafafa',
+			inputValidator: (value) => {
+				if (!value || String(value).trim().length < 10) {
+					return 'Enter at least 10 characters.';
+				}
+				return undefined;
+			},
+		});
+		if (!result.isConfirmed || result.value == null) return;
+		const reason = String(result.value).trim();
+		try {
+			await addDoc(collection(db, 'roster_drop_requests'), {
+				teamId,
+				playerName: name,
+				reason,
+				status: 'pending',
+				requestedAt: serverTimestamp(),
+			});
+			await Swal.fire({
+				icon: 'success',
+				title: 'Drop request sent to Director.',
+				background: '#05050a',
+				color: '#fafafa',
+			});
+		} catch {
+			feedback = { type: 'error', text: 'Could not submit drop request.' };
+		}
+	}
+
 	function openDrawer(p) {
 		const statsId = resolveStatsId(p, playerStats);
 		const em = nameToEmail[p] || null;
-		enterprisePlayerDrawer.open({
-			id: `${teamId}_${p}`,
-			displayName: p,
-			teamId,
-			teamLabel: currentTeam?.name || teamId,
-			statsDocId: statsId,
-			playerEmail: em,
-			jersey: jerseys[p] != null && String(jerseys[p]).trim() ? String(jerseys[p]) : null,
-		});
+		enterprisePlayerDrawer.open(
+			{
+				id: `${teamId}_${p}`,
+				displayName: p,
+				teamId,
+				teamLabel: currentTeam?.name || teamId,
+				statsDocId: statsId,
+				playerEmail: em,
+				jersey:
+					jerseys[p] != null && String(jerseys[p]).trim() ? String(jerseys[p]) : null,
+				ageGroup: null,
+				position: null,
+				status: 'active',
+				lastActiveLabel: '—',
+				source: 'coach',
+			},
+			{
+				editProfile: () => void editPlayerProfile(p),
+				removeFromRoster: () => void initiateDropRequest(p),
+			},
+		);
 	}
 
 	/**
