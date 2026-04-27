@@ -980,7 +980,8 @@ exports.updatePublicProfileOnTrial = onDocumentWritten(
       const teamId =
           typeof data.teamId === 'string' ? data.teamId.trim() : '';
       const playerName =
-          typeof data.player === 'string' ? data.player.trim() : '';
+          typeof data.player === 'string' ? data.player.trim() :
+          (typeof data.playerName === 'string' ? data.playerName.trim() : '');
       if (!teamId || !playerName) return;
       try {
         const snap = await db.collection('users')
@@ -7394,7 +7395,9 @@ async function collectFcmTokensForUids(uids) {
 }
 
 /**
- * Player OS: coach deploy → assigned_missions/{id} → FCM to target player (device_tokens).
+ * Player OS: coach deploy → assigned_missions/{missionId} → FCM to player
+ * (`device_tokens/{playerId}`). Resolves Auth uid from `targetPlayerKey` email
+ * when `playerId` is omitted (legacy rows).
  */
 exports.onMissionAssigned = onDocumentCreated(
     {
@@ -7405,97 +7408,84 @@ exports.onMissionAssigned = onDocumentCreated(
       const missionId = event.params.missionId || '';
       const snap = event.data;
       if (!snap) {
-        console.error('[onMissionAssigned] missing event.data', {missionId});
+        logger.error('onMissionAssigned: missing event.data', {missionId});
         return;
       }
       const data = snap.data() || {};
-      const targetPlayerKey =
-          typeof data.targetPlayerKey === 'string' ?
-            data.targetPlayerKey.trim().toLowerCase() :
-            '';
-      const playerName =
-          typeof data.playerName === 'string' ? data.playerName.trim() : '';
-      const specificDrill =
-          typeof data.specificDrill === 'string' ?
-            data.specificDrill.trim() :
-            '';
-      const focusArea =
-          typeof data.focusArea === 'string' ? data.focusArea.trim() : '';
       const teamId =
           typeof data.teamId === 'string' ? data.teamId.trim() : '';
-      const xpBounty =
-          typeof data.xpBounty === 'number' && Number.isFinite(data.xpBounty) ?
-            data.xpBounty :
-            0;
+      let playerId =
+          typeof data.playerId === 'string' ? data.playerId.trim() : '';
 
-      console.log('[onMissionAssigned] assignment ingested', {
+      if (!teamId) {
+        logger.error('onMissionAssigned: missing teamId', {missionId});
+        return;
+      }
+
+      if (!playerId) {
+        const targetPlayerKey =
+            typeof data.targetPlayerKey === 'string' ?
+              data.targetPlayerKey.trim().toLowerCase() :
+              '';
+        if (!targetPlayerKey || !targetPlayerKey.includes('@')) {
+          logger.error('onMissionAssigned: missing playerId and valid targetPlayerKey', {
+            missionId,
+            teamId,
+          });
+          return;
+        }
+        try {
+          const ur = await admin.auth().getUserByEmail(targetPlayerKey);
+          playerId = ur.uid || '';
+        } catch (e) {
+          logger.error('onMissionAssigned: auth lookup failed', {
+            missionId,
+            teamId,
+            targetPlayerKey,
+            err: e instanceof Error ? e.message : String(e),
+          });
+          return;
+        }
+      }
+
+      if (!playerId) {
+        logger.error('onMissionAssigned: could not resolve playerId', {
+          missionId,
+          teamId,
+        });
+        return;
+      }
+
+      logger.info('onMissionAssigned: assignment ingested', {
         missionId,
-        targetPlayerKey,
-        playerName,
         teamId,
-        specificDrill,
-        focusArea,
-        xpBounty,
+        playerId,
       });
-
-      if (!targetPlayerKey || !targetPlayerKey.includes('@')) {
-        console.error('[onMissionAssigned] invalid or missing targetPlayerKey', {
-          missionId,
-          targetPlayerKey,
-        });
-        return;
-      }
-
-      let uid = '';
-      try {
-        const userRecord = await admin.auth().getUserByEmail(targetPlayerKey);
-        uid = userRecord.uid || '';
-      } catch (e) {
-        console.error('[onMissionAssigned] auth.getUserByEmail failed', {
-          missionId,
-          targetPlayerKey,
-          err: e && e.message ? e.message : String(e),
-        });
-        return;
-      }
-      if (!uid) {
-        console.error('[onMissionAssigned] empty uid after auth lookup', {
-          missionId,
-          targetPlayerKey,
-        });
-        return;
-      }
 
       let tokens = [];
       try {
-        tokens = await collectFcmTokensForUids([uid]);
+        tokens = await collectFcmTokensForUids([playerId]);
       } catch (e) {
-        console.error('[onMissionAssigned] collectFcmTokensForUids failed', {
+        logger.error('onMissionAssigned: token load failed', {
           missionId,
-          uid,
-          err: e && e.message ? e.message : String(e),
+          playerId,
+          err: e instanceof Error ? e.message : String(e),
         });
         return;
       }
 
       if (tokens.length === 0) {
-        console.log('[onMissionAssigned] no registered device tokens; skip FCM', {
+        logger.info('onMissionAssigned: no device tokens; skip FCM', {
           missionId,
-          uid,
-          targetPlayerKey,
+          teamId,
+          playerId,
         });
         return;
       }
 
-      const title = 'New mission deployed';
-      const bodyParts = [];
-      if (specificDrill) bodyParts.push(specificDrill);
-      if (focusArea) bodyParts.push(focusArea);
+      const title = 'New Training Mission! 🎯';
       const body =
-          bodyParts.length > 0 ?
-            `${playerName ? playerName + ' — ' : ''}${bodyParts.join(' · ')}` +
-              (xpBounty > 0 ? ` · ${xpBounty} XP` : '') :
-            'Your coach assigned a new mission. Open SSTRACKER to begin.';
+          'Your coach just deployed a new mission. Head to the Armory to accept it.';
 
       const chunkSize = 500;
       for (let i = 0; i < tokens.length; i += chunkSize) {
@@ -7511,19 +7501,19 @@ exports.onMissionAssigned = onDocumentCreated(
               kind: 'assigned_mission',
               missionId: String(missionId),
               teamId,
-              targetPlayerKey,
-              focusArea,
-              specificDrill,
+              playerId,
             },
           });
-          console.log('[onMissionAssigned] FCM multicast dispatched', {
+          logger.info('onMissionAssigned: sendMulticast ok', {
             missionId,
+            playerId,
             tokenCount: chunk.length,
           });
         } catch (e) {
-          console.error('[onMissionAssigned] sendMulticast failed', {
+          logger.error('onMissionAssigned: sendMulticast failed', {
             missionId,
-            err: e && e.message ? e.message : String(e),
+            playerId,
+            err: e instanceof Error ? e.message : String(e),
           });
         }
       }
@@ -7547,7 +7537,8 @@ exports.onTrialScoreAdded = onDocumentCreated(
       const teamId =
           typeof data.teamId === 'string' ? data.teamId.trim() : '';
       const playerName =
-          typeof data.player === 'string' ? data.player.trim() : '';
+          typeof data.player === 'string' ? data.player.trim() :
+          (typeof data.playerName === 'string' ? data.playerName.trim() : '');
       const skill =
           typeof data.skill === 'string' && data.skill.trim() ?
             data.skill.trim() :
