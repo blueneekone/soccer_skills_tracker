@@ -837,14 +837,11 @@ async function syncPublicPlayerProfile(uid) {
   const now = new Date();
   const sixMonthsAgo = new Date(now);
   sixMonthsAgo.setUTCMonth(sixMonthsAgo.getUTCMonth() - 6);
-  const logsSnap = await uRef.collection('workout_logs')
-      .orderBy('timestamp', 'desc')
-      .limit(400)
-      .get();
+  const lgSnap = await db.collection('workout_logs').where('playerId', '==', uid).get();
 
   /** @type {Record<string, number>} */
   const monthXp = {};
-  logsSnap.forEach((doc) => {
+  lgSnap.forEach((doc) => {
     const lg = doc.data() || {};
     const ts = lg.timestamp;
     const t =
@@ -981,9 +978,13 @@ exports.updatePublicProfile = onDocumentWritten(
             .get();
 
         if (snap.empty) return;
-        const email = snap.docs[0].id;
-        const ur = await admin.auth().getUserByEmail(email);
-        await syncPublicPlayerProfile(ur.uid);
+        const rawId = snap.docs[0].id;
+        let playerUid = rawId;
+        if (typeof rawId === 'string' && rawId.includes('@')) {
+          const ur = await admin.auth().getUserByEmail(normEmail(rawId));
+          playerUid = ur.uid;
+        }
+        await syncPublicPlayerProfile(playerUid);
       } catch (e) {
         logger.error('updatePublicProfile player_stats', e);
       }
@@ -1021,14 +1022,18 @@ exports.updatePublicProfileOnTrial = onDocumentWritten(
             .get();
         if (snap.empty) return;
         for (const doc of snap.docs) {
-          const em = normEmail(doc.id);
-          if (!em) continue;
-          try {
-            const ur = await admin.auth().getUserByEmail(em);
-            await syncPublicPlayerProfile(ur.uid);
-          } catch (e) {
-            logger.warn('updatePublicProfileOnTrial uid', e);
+          const rawId = doc.id;
+          let playerUid = rawId;
+          if (typeof rawId === 'string' && rawId.includes('@')) {
+            try {
+              const ur = await admin.auth().getUserByEmail(normEmail(rawId));
+              playerUid = ur.uid;
+            } catch (e) {
+              logger.warn('updatePublicProfileOnTrial uid', e);
+              continue;
+            }
           }
+          await syncPublicPlayerProfile(playerUid);
         }
       } catch (e) {
         logger.error('updatePublicProfileOnTrial', e);
@@ -2629,9 +2634,9 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
   const inc = admin.firestore.FieldValue.increment;
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  const [rosterSnap, lookupSnap] = await Promise.all([
+  const [rosterSnap, usersSnap] = await Promise.all([
     db.collection('rosters').doc(teamId).get(),
-    db.collection('player_lookup').where('teamId', '==', teamId).get(),
+    db.collection('users').where('teamId', '==', teamId).get(),
   ]);
   const rosterNames = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
     rosterSnap.data().players :
@@ -2641,11 +2646,12 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
           .map((n) => (typeof n === 'string' ? n.trim() : String(n)))
           .filter(Boolean),
   );
-  const nameToEmail = {};
-  lookupSnap.forEach((d) => {
-    const p = d.data() || {};
-    const pn = typeof p.playerName === 'string' ? p.playerName.trim() : '';
-    if (pn) nameToEmail[pn] = d.id;
+  const nameToUid = {};
+  usersSnap.forEach((d) => {
+    const dd = d.data() || {};
+    const pn =
+        typeof dd.playerName === 'string' ? dd.playerName.trim() : '';
+    if (pn) nameToUid[pn] = d.id;
   });
 
   /** @type {Map<string, { g: number, a: number, sh: number, sv: number }>} */
@@ -2675,17 +2681,15 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
   /** @type {FirebaseFirestore.DocumentReference[]} */
   const psRefs = [];
   for (const k of psKeys) {
-    const em = nameToEmail[k] || null;
-    let docId = k;
-    if (em) {
+    let pid = nameToUid[k] || k;
+    if (typeof pid === 'string' && pid.includes('@')) {
       try {
-        const rec = await admin.auth().getUserByEmail(em);
-        docId = rec.uid;
+        pid = (await admin.auth().getUserByEmail(normEmail(pid))).uid;
       } catch (_e) {
-        /* leave docId = k */
+        /* leave pid — may be roster-only key */
       }
     }
-    psRefs.push(db.collection('player_stats').doc(docId));
+    psRefs.push(db.collection('player_stats').doc(pid));
   }
   const psSnaps = await Promise.all(psRefs.map((r) => r.get()));
 
@@ -2720,7 +2724,7 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
         psSnap.data().playerName.trim() ?
           psSnap.data().playerName.trim() :
           playerKey;
-    const em = nameToEmail[displayName] || nameToEmail[playerKey] || null;
+    const em = nameToUid[displayName] || nameToUid[playerKey] || null;
     const d = ag.get(playerKey) || {g: 0, a: 0, sh: 0, sv: 0};
     if (em) {
       userMirrorOps.push({em, d});
@@ -4264,8 +4268,7 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
   const yesterdayStr = utcYmdAddDays(todayStr, -1);
   const weekKey = utcWeekMondayKey();
 
-  const logRef = db.collection('users').doc(playerEmail)
-      .collection('workout_logs').doc();
+  const logRef = db.collection('workout_logs').doc();
   const logId = logRef.id;
   const psRef = db.collection('player_stats').doc(athleteUid);
   const tsRef = db.collection('team_stats').doc(teamId);
@@ -4371,6 +4374,7 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
       teamId,
       playerName,
       playerEmail,
+      playerId: athleteUid,
       verificationMethod,
       submittedByUid: request.auth.uid,
       timestamp: now,
@@ -8737,13 +8741,16 @@ exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
 /** Epic 16: Instant graph rebuild on workout log */
 exports.onWorkoutLogCreated = onDocumentCreated(
     {
-      document: 'users/{email}/workout_logs/{logId}',
+      document: 'workout_logs/{logId}',
       region: REGION,
     },
     async (event) => {
       try {
-        const ur = await admin.auth().getUserByEmail(event.params.email);
-        await syncPublicPlayerProfile(ur.uid);
+        const snap = event.data;
+        if (!snap) return;
+        const data = snap.data();
+        if (!data || !data.playerId) return;
+        await syncPublicPlayerProfile(data.playerId);
       } catch (e) {
         logger.error('onWorkoutLogCreated rebuild failed', e);
       }
