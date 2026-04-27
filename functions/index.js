@@ -807,11 +807,19 @@ async function syncPublicPlayerProfile(uid) {
   /** @type {Record<string, string>} */
   const verifiedTrialScores = {};
   if (teamId && playerName) {
-    const trialSnap = await db.collection('trials')
+    let trialSnap = await db.collection('trials')
         .where('teamId', '==', teamId)
         .where('player', '==', playerName)
         .limit(80)
         .get();
+
+    if (trialSnap.empty) {
+      trialSnap = await db.collection('trials')
+          .where('teamId', '==', teamId)
+          .where('playerName', '==', playerName)
+          .limit(80)
+          .get();
+    }
     trialSnap.forEach((d) => {
       const t = d.data() || {};
       if (t.isCoach !== true) return;
@@ -844,10 +852,7 @@ async function syncPublicPlayerProfile(uid) {
           ts.toDate() :
           null;
     if (!t || t < sixMonthsAgo) return;
-    const earned =
-        typeof lg.earnedXP === 'number' && !Number.isNaN(lg.earnedXP) ?
-          Math.floor(lg.earnedXP) :
-          0;
+    const earned = Math.floor(Number(lg.earnedXP) || Number(lg.earnedXp) || Number(lg.earned) || 0);
     const key =
         `${t.getUTCFullYear()}-` +
         `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
@@ -8728,3 +8733,19 @@ const analyticsTriggers = require('./analytics');
 exports.onAnalyticsUserWritten = analyticsTriggers.onUserWritten;
 exports.onAnalyticsClubWritten = analyticsTriggers.onClubWritten;
 exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
+
+/** Epic 16: Instant graph rebuild on workout log */
+exports.onWorkoutLogCreated = onDocumentCreated(
+    {
+      document: 'users/{email}/workout_logs/{logId}',
+      region: REGION,
+    },
+    async (event) => {
+      try {
+        const ur = await admin.auth().getUserByEmail(event.params.email);
+        await syncPublicPlayerProfile(ur.uid);
+      } catch (e) {
+        logger.error('onWorkoutLogCreated rebuild failed', e);
+      }
+    },
+);
