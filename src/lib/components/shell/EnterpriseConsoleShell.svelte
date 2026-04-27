@@ -9,6 +9,7 @@
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
+	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 
 	/** @type {{ breadcrumb?: string, children?: import('svelte').Snippet }} */
 	let { breadcrumb = '', children } = $props();
@@ -215,49 +216,7 @@
 <!-- Global Command Palette (Cmd+K) -->
 <CommandPalette bind:open={cmdPaletteOpen} />
 
-<!-- Overlay + drawer (team / record details) -->
-<div
-	class="ec-drawer-backdrop"
-	class:ec-drawer-backdrop--open={enterprisePlayerDrawer.isOpen}
-	role="presentation"
-	aria-hidden={!enterprisePlayerDrawer.isOpen}
-	onclick={closeDrawer}
-></div>
-<aside
-	class="ec-drawer"
-	class:ec-drawer--open={enterprisePlayerDrawer.isOpen}
-	aria-hidden={!enterprisePlayerDrawer.isOpen}
-	aria-label="Detail panel"
->
-	<div class="ec-drawer__head">
-		<h2 class="ec-drawer__title">{enterprisePlayerDrawer.payload?.title ?? 'Details'}</h2>
-		<button type="button" class="ec-drawer__close" onclick={closeDrawer} aria-label="Close panel">
-			<i class="ph ph-x ecs-icon-md" aria-hidden="true"></i>
-		</button>
-	</div>
-	<div class="ec-drawer__body">
-		{#if enterprisePlayerDrawer.payload?.meta}
-			<p class="ec-drawer__meta">{enterprisePlayerDrawer.payload.meta}</p>
-		{/if}
-		{#if enterprisePlayerDrawer.payload?.body}
-			<div class="ec-drawer__text">{enterprisePlayerDrawer.payload.body}</div>
-		{:else}
-			<p class="ecs-empty-msg">No selection.</p>
-		{/if}
-		{#if enterprisePlayerDrawer.payload?.href}
-			<p class="ec-drawer__actions">
-				<a
-					class="ec-drawer__cta"
-					href={enterprisePlayerDrawer.payload.href}
-					data-sveltekit-preload-data="hover"
-					onclick={() => closeDrawer()}
-				>
-					Continue
-				</a>
-			</p>
-		{/if}
-	</div>
-</aside>
+,PlayerDetailDrawer />
 
 <style>
 	.ecs-icon-lg   { font-size: 1.5rem; }

@@ -269,17 +269,6 @@
 			for (const rawName of combined) {
 				const name = typeof rawName === 'string' ? rawName : String(rawName);
 				const linkId = linkedDocIdForPlayerName(em, name);
-				if (linkId != null) {
-					const ukey = usersCollectionKey(linkId);
-					const uSnap = userSnapByEmail[ukey];
-					// Only include fulfilled, existing `users` docs (or skip orphan lookup targets).
-					if (!uSnap) continue;
-					const data = uSnap.data();
-					const role = typeof data?.role === 'string' ? data.role : '';
-					const hasHh = typeof data?.householdId === 'string' && data.householdId.trim() !== '';
-					// Legacy COPPA: player rows without a household are dropped so they never break the table.
-					if (role === 'player' && !hasHh) continue;
-				}
 				nextPlayers.push(name);
 			}
 			nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
