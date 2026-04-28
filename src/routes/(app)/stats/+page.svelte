@@ -5,6 +5,7 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import '$lib/styles/director-os.css';
 
 	const isPlayerRole = $derived(authStore.role === 'player');
@@ -538,6 +539,10 @@
 >
 	<h1 class="tw-text-2xl tw-font-bold tw-text-white tw-mb-6">Operative Analytics</h1>
 
+	<section class="stats-team-lb tw-mb-8 tw-min-w-0" aria-label="Team leaderboard HQ">
+		<TeamLeaderboard compact />
+	</section>
+
 	<div
 		class="dossier-grid"
 		role="region"
@@ -902,5 +907,26 @@
 	}
 	.tw-relative {
 		position: relative;
+	}
+
+	/* Team leaderboard strip — readable on Operative Analytics dark shell */
+	:global(.stats-team-lb .lb-shell--compact) {
+		background: rgba(5, 5, 12, 0.92) !important;
+		border: 1px solid rgba(148, 163, 184, 0.22) !important;
+		box-shadow: none !important;
+	}
+	:global(.stats-team-lb .lb-title) {
+		color: #f8fafc !important;
+	}
+	:global(.stats-team-lb .lb-sub),
+	:global(.stats-team-lb .lb-hint) {
+		color: rgba(226, 232, 240, 0.72) !important;
+	}
+	:global(.stats-team-lb .lb-compact-row) {
+		background: rgba(15, 23, 42, 0.65) !important;
+		border-color: rgba(148, 163, 184, 0.2) !important;
+	}
+	:global(.stats-team-lb .lb-compact-name) {
+		color: #f1f5f9 !important;
 	}
 </style>

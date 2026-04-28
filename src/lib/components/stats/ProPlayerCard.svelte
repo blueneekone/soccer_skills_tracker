@@ -206,7 +206,7 @@
 				Click to flip
 			</p>
 			<div
-				class="tw-relative tw-w-full tw-max-w-[280px] tw-mx-auto tw-aspect-[2/3] tw-cursor-pointer"
+				class="ppc-flip-scene tw-relative tw-mx-auto tw-h-[360px] tw-w-full tw-max-w-[280px] tw-cursor-pointer tw-overflow-hidden tw-rounded-2xl"
 				style="perspective: 1000px;"
 				role="button"
 				tabindex="0"
@@ -216,11 +216,11 @@
 				onkeydown={onOperativeIdKeydown}
 			>
 				<div
-					class="tw-relative tw-w-full tw-h-full tw-transition-transform tw-duration-700"
+					class="ppc-flip-inner tw-relative tw-h-full tw-w-full tw-transition-transform tw-duration-700"
 					style="transform-style: preserve-3d;{isFlipped ? ' transform: rotateY(180deg);' : ''}"
 				>
 					<div
-						class="tw-absolute tw-inset-0 tw-bg-slate-800 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center tw-border tw-border-slate-700"
+						class="ppc-face ppc-face--front tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-700 tw-bg-slate-800 tw-p-6"
 						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<div
@@ -240,16 +240,18 @@
 						</p>
 					</div>
 					<div
-						class="tw-absolute tw-inset-0 tw-bg-slate-900 tw-rounded-2xl tw-p-6 tw-border tw-border-cyan-500 tw-flex tw-flex-col tw-h-full tw-min-h-0 tw-text-left"
+						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-border-cyan-500 tw-bg-slate-900 tw-p-5 tw-text-left"
 						style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<p
-							class="tw-m-0 tw-mb-3 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
+							class="tw-m-0 tw-mb-2 tw-shrink-0 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
 						>
 							{telemetryTitle}
 						</p>
 						{#if hasTelemetryDetails}
-							<dl class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 tw-text-sm">
+							<dl
+								class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 tw-overflow-y-auto tw-pr-1 tw-text-sm"
+							>
 								{#if telemetryTotalXp !== ''}
 									<div
 										class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2"
@@ -282,29 +284,19 @@
 								{/if}
 							</dl>
 						{:else}
-							<p class="tw-m-0 tw-flex-1 tw-text-xs tw-leading-relaxed tw-text-slate-500">
-								Combine and scouting metrics for this operative’s file appear in the section below when
-								available.
-							</p>
+							<p class="tw-m-0 tw-flex-1 tw-text-center tw-font-mono tw-text-[11px] tw-text-slate-600">—</p>
 						{/if}
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="card pro-card-shell">
-			<div class="pro-card-header-row">
-				<div>
-					<h2 class="pro-card-title">Pro player card</h2>
-					<p class="pro-card-sub">
-						{#if playerDisplayName}
-							<span class="pro-card-name">{playerDisplayName}</span>
-							·
-						{/if}
-						Longitudinal scouting profile
-					</p>
-				</div>
-				{#if selected?.verifiedBy}
+			<div class="card pro-card-shell">
+				<div class="pro-card-header-row">
+					<div>
+						<h2 class="pro-card-title">Pro player card</h2>
+					</div>
+					{#if selected?.verifiedBy}
 					<div class="pro-verified-badge" title="Coach-endorsed verified metrics">
 						<span class="pro-verified-icon" aria-hidden="true">✓</span>
 						<span>Coach verified</span>
@@ -404,6 +396,11 @@
 		margin-bottom: clamp(16px, 3vw, 24px);
 	}
 
+	.ppc-flip-scene {
+		transform: translateZ(0);
+		contain: layout paint;
+	}
+
 	.pro-card-outer {
 		grid-template-columns: 1fr;
 		gap: clamp(16px, 3vw, 24px);
@@ -432,18 +429,6 @@
 		font-size: clamp(1.15rem, 3.5vw, 1.45rem);
 		font-weight: 900;
 		letter-spacing: -0.02em;
-	}
-
-	.pro-card-sub {
-		margin: 6px 0 0;
-		font-size: clamp(0.86rem, 2.4vw, 0.92rem);
-		color: var(--text-secondary);
-		font-weight: 600;
-	}
-
-	.pro-card-name {
-		font-weight: 800;
-		color: var(--text-primary);
 	}
 
 	.pro-verified-badge {

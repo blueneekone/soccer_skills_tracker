@@ -6,6 +6,7 @@
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
+	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
@@ -285,13 +286,13 @@
 </svelte:head>
 
 <div
-	class="pd-wrap tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-space-y-8 tw-overflow-x-hidden tw-px-2 tw-pb-24"
+	class="pd-wrap tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-space-y-8 tw-overflow-x-hidden tw-px-3 sm:tw-px-4 tw-pb-24"
 >
 	<div
-		class="tw-grid tw-grid-cols-1 tw-items-start tw-gap-8 md:tw-grid-cols-12"
+		class="pd-hq-grid tw-grid tw-grid-cols-1 tw-items-stretch tw-gap-6 lg:tw-grid-cols-12 lg:tw-gap-8"
 		data-region="player-hq-column"
 	>
-		<div class="tw-col-span-1 md:tw-col-span-5 lg:tw-col-span-4">
+		<div class="tw-col-span-1 tw-min-w-0 lg:tw-col-span-5 xl:tw-col-span-4">
 			<ProPlayerCard
 				playerEmailKey={email}
 				playerDisplayName={profile?.playerName || ''}
@@ -300,7 +301,7 @@
 			/>
 		</div>
 		<div
-			class="tw-col-span-1 tw-flex tw-flex-col md:tw-flex-row tw-items-center md:tw-items-stretch tw-gap-6 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-6 md:tw-col-span-7 lg:tw-col-span-8"
+			class="tw-col-span-1 tw-flex tw-min-w-0 tw-flex-col tw-gap-6 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-5 tw-shadow-xl sm:tw-p-6 md:tw-flex-row md:tw-items-stretch md:tw-gap-8 lg:tw-col-span-7 xl:tw-col-span-8"
 			aria-label="Career progress and intel"
 		>
 			<div class="tw-flex tw-shrink-0 tw-items-center tw-justify-center">
@@ -358,6 +359,10 @@
 			</div>
 		</div>
 	</div>
+
+	<section class="pd-team-lb tw-min-w-0" aria-label="Team leaderboard">
+		<TeamLeaderboard compact />
+	</section>
 
 	<div
 		class="tw-grid tw-w-full tw-grid-cols-2 tw-gap-4 tw-border-y tw-border-slate-800 tw-bg-slate-900 tw-p-6 md:tw-grid-cols-4"
@@ -498,6 +503,27 @@
 		background: transparent;
 		box-sizing: border-box;
 		overflow-x: hidden;
+	}
+
+	.pd-hq-grid {
+		min-width: 0;
+	}
+
+	:global(.pd-team-lb .lb-shell--compact) {
+		background: rgba(15, 23, 42, 0.72) !important;
+		border: 1px solid rgba(51, 65, 85, 0.65) !important;
+		box-shadow: 0 12px 36px -20px rgba(0, 0, 0, 0.55) !important;
+	}
+	:global(.pd-team-lb .lb-title) {
+		color: #f8fafc !important;
+	}
+	:global(.pd-team-lb .lb-sub),
+	:global(.pd-team-lb .lb-hint) {
+		color: rgba(226, 232, 240, 0.78) !important;
+	}
+	:global(.pd-team-lb .lb-compact-row) {
+		background: rgba(2, 6, 23, 0.52) !important;
+		border-color: rgba(71, 85, 105, 0.42) !important;
 	}
 
 	.tabular-num {
