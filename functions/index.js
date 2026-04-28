@@ -22,6 +22,12 @@ const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret(
 /** Epic 4: Gemini Developer API key (Secret Manager). */
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 
+/** Tomorrow.io webhook query secret —
+ *  firebase functions:secrets:set FACILITY_WEATHER_WEBHOOK_TOKEN */
+const FACILITY_WEATHER_WEBHOOK_TOKEN = defineSecret(
+    'FACILITY_WEATHER_WEBHOOK_TOKEN',
+);
+
 /** Epic 9: Stripe billing (Secret Manager). */
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
@@ -8824,6 +8830,316 @@ exports.validatePlayerOTP = onCall({region: REGION}, async (request) => {
   }
   return {customToken};
 });
+
+/**
+ * Collect Auth UIDs for players (via player_lookup email keys) and coaches
+ * (coachEmail + assistants) on all teams in the club — used for strike alerts.
+ * @param {string} clubId
+ * @return {Promise<string[]>}
+ */
+async function collectPlayerCoachUidsForClub(clubId) {
+  if (!clubId) return [];
+  const teamSnap = await db
+      .collection('teams')
+      .where('clubId', '==', clubId)
+      .get();
+  /** @type {Set<string>} */
+  const emails = new Set();
+  const teamIds = [];
+  for (const doc of teamSnap.docs) {
+    teamIds.push(doc.id);
+    const d = doc.data() || {};
+    const coach =
+        typeof d.coachEmail === 'string' ? normEmail(d.coachEmail) : '';
+    if (coach) emails.add(coach);
+    const asst = d.assistants;
+    if (Array.isArray(asst)) {
+      for (const a of asst) {
+        if (typeof a === 'string') emails.add(normEmail(a));
+      }
+    }
+  }
+  for (const tid of teamIds) {
+    let plSnap;
+    try {
+      plSnap = await db
+          .collection('player_lookup')
+          .where('teamId', '==', tid)
+          .get();
+    } catch (e) {
+      logger.warn('collectPlayerCoachUidsForClub: player_lookup query failed', {
+        tid,
+        err: e instanceof Error ? e.message : String(e),
+      });
+      continue;
+    }
+    for (const pd of plSnap.docs) {
+      const em = normEmail(pd.id);
+      if (em && em.includes('@')) emails.add(em);
+    }
+  }
+  /** @type {string[]} */
+  const uids = [];
+  const emArr = [...emails];
+  await Promise.all(
+      emArr.map(async (em) => {
+        if (!em) return;
+        try {
+          const ur = await admin.auth().getUserByEmail(em);
+          if (ur && ur.uid) uids.push(ur.uid);
+        } catch (_e) {
+          /* no Firebase Auth user for this roster email */
+        }
+      }),
+  );
+  return [...new Set(uids)];
+}
+
+/**
+ * Parse Tomorrow.io-style JSON for facility routing + alert rule display name.
+ * Prefer explicit clubId + facilityId; allow facilityId as clubId__facilityDocId.
+ * @param {Record<string, unknown>} body
+ * @return {{ clubId: string, facilityId: string, ruleName: string }}
+ */
+function parseFacilityWeatherPayload(body) {
+  const r = body && typeof body === 'object' ? body : {};
+  let clubId =
+      typeof r.clubId === 'string' ? r.clubId.trim() : '';
+  let facilityId =
+      typeof r.facilityId === 'string' ? r.facilityId.trim() : '';
+  const params =
+      r.parameters && typeof r.parameters === 'object' ?
+        /** @type {Record<string, unknown>} */ (r.parameters) :
+        {};
+  if (!facilityId && typeof params.facilityId === 'string') {
+    facilityId = params.facilityId.trim();
+  }
+  if (!clubId && typeof params.clubId === 'string') {
+    clubId = params.clubId.trim();
+  }
+  if (!clubId && facilityId.includes('__')) {
+    const parts = facilityId.split('__');
+    if (parts.length >= 2) {
+      clubId = parts[0].trim();
+      facilityId = parts.slice(1).join('__').trim();
+    }
+  }
+  let ruleName = '';
+  const ruleObj = r.rule && typeof r.rule === 'object' ?
+    /** @type {Record<string, unknown>} */ (r.rule) :
+    null;
+  if (ruleObj && typeof ruleObj.name === 'string') {
+    ruleName = ruleObj.name.trim();
+  }
+  if (!ruleName && r.alert && typeof r.alert === 'object') {
+    const alertObj = /** @type {Record<string, unknown>} */ (r.alert);
+    const innerRule = alertObj.rule;
+    if (innerRule && typeof innerRule === 'object') {
+      const ir = /** @type {Record<string, unknown>} */ (innerRule);
+      if (typeof ir.name === 'string') ruleName = ir.name.trim();
+    }
+  }
+  return {clubId, facilityId, ruleName};
+}
+
+/**
+ * Real-time Tomorrow.io webhook: lightning proximity → LOCKED facility doc +
+ * emergency FCM to club roster coaches & players.
+ *
+ * Configure Insights HTTP destination URL including query param:
+ * `?token=<FACILITY_WEATHER_WEBHOOK_TOKEN>` (Secret Manager).
+ *
+ * JSON body: clubId + facilityId + rule.name (e.g. Lightning Strike).
+ * Or send facilityId as yourClubId__yourFacilityDocId.
+ */
+exports.facilityWeatherWebhook = onRequest(
+    {
+      region: REGION,
+      cors: false,
+      invoker: 'public',
+      secrets: [FACILITY_WEATHER_WEBHOOK_TOKEN],
+    },
+    async (req, res) => {
+      if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed');
+        return;
+      }
+      const token =
+          typeof req.query.token === 'string' ?
+            req.query.token.trim() :
+            '';
+      const expected = FACILITY_WEATHER_WEBHOOK_TOKEN.value();
+      if (!expected || token !== expected) {
+        res.status(403).send('Forbidden');
+        return;
+      }
+
+      const raw = req.rawBody;
+      if (!raw || !Buffer.isBuffer(raw)) {
+        logger.error('facilityWeatherWebhook: missing rawBody buffer');
+        res.status(400).send('Invalid body');
+        return;
+      }
+
+      /** @type {Record<string, unknown>} */
+      let body;
+      try {
+        body = JSON.parse(raw.toString('utf8'));
+      } catch (e) {
+        logger.warn('facilityWeatherWebhook: invalid JSON', {err: String(e)});
+        res.status(400).send('Invalid JSON');
+        return;
+      }
+
+      const {clubId, facilityId, ruleName} = parseFacilityWeatherPayload(body);
+      const lightning = /lightning/i.test(ruleName);
+      if (!lightning) {
+        logger.info('facilityWeatherWebhook: ignored (not lightning)', {
+          ruleName,
+          facilityId,
+          clubId,
+        });
+        res.status(200).json({received: true, processed: false});
+        return;
+      }
+      if (!clubId || !facilityId) {
+        logger.warn(
+            'facilityWeatherWebhook: missing clubId/facilityId',
+            {clubId, facilityId, ruleName},
+        );
+        res.status(400).json({error: 'clubId and facilityId required'});
+        return;
+      }
+
+      const lockStartedMs = Date.now();
+      const facRef = db
+          .collection('clubs')
+          .doc(clubId)
+          .collection('facilities')
+          .doc(facilityId);
+
+      let facilitySnap;
+      try {
+        facilitySnap = await facRef.get();
+      } catch (e) {
+        logger.error('facilityWeatherWebhook: facility read failed', {
+          clubId,
+          facilityId,
+          err: e instanceof Error ? e.message : String(e),
+        });
+        res.status(500).send('Facility read failed');
+        return;
+      }
+      if (!facilitySnap.exists) {
+        logger.warn('facilityWeatherWebhook: unknown facility document', {
+          clubId,
+          facilityId,
+          ruleName,
+        });
+        res.status(404).json({error: 'Unknown facility'});
+        return;
+      }
+
+      try {
+        await facRef.set(
+            {
+              status: 'LOCKED',
+              lockReason: 'Lightning Proximity - 30 Minute Delay',
+              lockedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+      } catch (e) {
+        logger.error('facilityWeatherWebhook: facility lock write failed', {
+          clubId,
+          facilityId,
+          err: e instanceof Error ? e.message : String(e),
+        });
+        res.status(500).send('Lock failed');
+        return;
+      }
+
+      logger.warn('facilityWeatherWebhook: LIGHTNING_LOCKDOWN', {
+        facilityId,
+        clubId,
+        ruleName,
+        lockStartedMs,
+        message:
+            'Facility locked — audit trail timestamp (ms since epoch): ' +
+            String(lockStartedMs),
+      });
+
+      let uids = [];
+      try {
+        uids = await collectPlayerCoachUidsForClub(clubId);
+      } catch (e) {
+        logger.error('facilityWeatherWebhook: UID resolution failed', {
+          clubId,
+          err: e instanceof Error ? e.message : String(e),
+        });
+      }
+
+      let tokens = [];
+      try {
+        tokens = await collectFcmTokensForUids(uids);
+      } catch (e) {
+        logger.error('facilityWeatherWebhook: FCM token load failed', {
+          clubId,
+          err: e instanceof Error ? e.message : String(e),
+        });
+      }
+
+      const title = '🚨 RED ALERT: LIGHTNING 🚨';
+      const bodyText =
+          'Lightning strike detected within 10 miles. Clear the pitch immediately. ' +
+          'The 30-minute safety clock has started.';
+      const chunkSize = 500;
+      if (tokens.length > 0) {
+        for (let i = 0; i < tokens.length; i += chunkSize) {
+          const chunk = tokens.slice(i, i + chunkSize);
+          try {
+            await admin.messaging().sendMulticast({
+              tokens: chunk,
+              notification: {
+                title,
+                body: bodyText,
+              },
+              data: {
+                kind: 'emergency_weather',
+                facilityId: String(facilityId),
+              },
+            });
+            logger.info('facilityWeatherWebhook: sendMulticast ok', {
+              clubId,
+              facilityId,
+              tokenCount: chunk.length,
+              lockStartedMs,
+            });
+          } catch (e) {
+            logger.error('facilityWeatherWebhook: sendMulticast failed', {
+              clubId,
+              facilityId,
+              err: e instanceof Error ? e.message : String(e),
+            });
+          }
+        }
+      } else {
+        logger.info('facilityWeatherWebhook: no FCM tokens for club roster', {
+          clubId,
+          facilityId,
+          uidCount: uids.length,
+        });
+      }
+
+      res.status(200).json({
+        received: true,
+        processed: true,
+        facilityId,
+        clubId,
+        lockStartedMs,
+      });
+    },
+);
 
 // ─────────────────────────────────────────────────────────────────────────
 // Strike 1 (Agent 3) — Analytics aggregation triggers.
