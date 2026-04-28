@@ -21,12 +21,7 @@ const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret(
 );
 /** Epic 4: Gemini Developer API key (Secret Manager). */
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
-
-/** Tomorrow.io webhook query secret —
- *  firebase functions:secrets:set FACILITY_WEATHER_WEBHOOK_TOKEN */
-const FACILITY_WEATHER_WEBHOOK_TOKEN = defineSecret(
-    'FACILITY_WEATHER_WEBHOOK_TOKEN',
-);
+const WEBHOOK_AUTH_TOKEN = defineSecret('WEBHOOK_AUTH_TOKEN');
 
 /** Epic 9: Stripe billing (Secret Manager). */
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
@@ -8947,19 +8942,12 @@ function parseFacilityWeatherPayload(body) {
  * emergency FCM to club roster coaches & players.
  *
  * Configure Insights HTTP destination URL including query param:
- * `?token=<FACILITY_WEATHER_WEBHOOK_TOKEN>` (Secret Manager).
+ * `?token=<WEBHOOK_AUTH_TOKEN>` (Secret Manager).
  *
  * JSON body: clubId + facilityId + rule.name (e.g. Lightning Strike).
  * Or send facilityId as yourClubId__yourFacilityDocId.
  */
-exports.facilityWeatherWebhook = onRequest(
-    {
-      region: REGION,
-      cors: false,
-      invoker: 'public',
-      secrets: [FACILITY_WEATHER_WEBHOOK_TOKEN],
-    },
-    async (req, res) => {
+exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_AUTH_TOKEN] }, async (req, res) => {
       if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');
         return;
@@ -8968,8 +8956,8 @@ exports.facilityWeatherWebhook = onRequest(
           typeof req.query.token === 'string' ?
             req.query.token.trim() :
             '';
-      const expected = FACILITY_WEATHER_WEBHOOK_TOKEN.value();
-      if (!expected || token !== expected) {
+      const expectedToken = WEBHOOK_AUTH_TOKEN.value();
+      if (!expectedToken || token !== expectedToken) {
         res.status(403).send('Forbidden');
         return;
       }
@@ -9138,8 +9126,7 @@ exports.facilityWeatherWebhook = onRequest(
         clubId,
         lockStartedMs,
       });
-    },
-);
+});
 
 // ─────────────────────────────────────────────────────────────────────────
 // Strike 1 (Agent 3) — Analytics aggregation triggers.
