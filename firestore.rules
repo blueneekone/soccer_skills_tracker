@@ -201,6 +201,75 @@ service cloud.firestore {
         || (d.tacticalCanvasJson is string && d.tacticalCanvasJson.size() <= 500000);
     }
 
+    function facilityOperationalFieldsOk(d) {
+      return (!d.keys().hasAny(['status'])
+          || (d.status is string && d.status in ['Active', 'Locked', 'LOCKED']))
+        && (!d.keys().hasAny(['lockReason'])
+          || (d.lockReason is string && d.lockReason.size() <= 500))
+        && (!d.keys().hasAny(['lockedAt'])
+          || d.lockedAt is timestamp);
+    }
+
+    function facilityRegistryCreateOk(d) {
+      return d.keys().hasAll(['name', 'latitude', 'longitude', 'routingUrl', 'status'])
+        && d.name is string
+        && d.name.size() > 0
+        && d.name.size() <= 200
+        && d.latitude >= -90.0 && d.latitude <= 90.0
+        && d.longitude >= -180.0 && d.longitude <= 180.0
+        && facilityRoutingUrlOk(d.routingUrl)
+        && d.status in ['Active', 'Locked']
+        && (!d.keys().hasAny(['address'])
+          || (d.address is string && d.address.size() <= 500))
+        && facilityOperationalFieldsOk(d)
+        && facilityTacticalJsonOk(d)
+        && !d.keys().hasAny(['mapStoragePath', 'mapDownloadUrl', 'type', 'uploadedAt']);
+    }
+
+    function facilityRegistryUpdateOk(r, d) {
+      return r.keys().hasAll(['name', 'latitude', 'longitude', 'routingUrl'])
+        && !r.keys().hasAny(['mapStoragePath'])
+        && d.keys().hasAll(['name', 'latitude', 'longitude', 'routingUrl', 'status'])
+        && !(d.keys().hasAny(['mapStoragePath', 'mapDownloadUrl', 'type', 'uploadedAt']))
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 200
+        && d.latitude >= -90.0 && d.latitude <= 90.0
+        && d.longitude >= -180.0 && d.longitude <= 180.0
+        && facilityRoutingUrlOk(d.routingUrl)
+        && d.status in ['Active', 'Locked', 'LOCKED']
+        && facilityLogisticsConsistent(d)
+        && facilityOperationalFieldsOk(d)
+        && facilityTacticalJsonOk(d)
+        && (
+          !d.keys().hasAny(['address'])
+          || (d.address is string && d.address.size() <= 500)
+        );
+    }
+
+    function deploymentCalendarEntryWriteOk(d) {
+      return d.keys().hasAll(['clubId', 'title', 'startsAt'])
+        && d.clubId is string
+        && d.clubId.size() > 0
+        && d.clubId.size() <= 128
+        && d.title is string
+        && d.title.size() > 0
+        && d.title.size() <= 500
+        && d.startsAt is timestamp
+        && (!d.keys().hasAny(['kind'])
+          || (d.kind is string && d.kind.size() <= 64))
+        && (!d.keys().hasAny(['endsAt'])
+          || d.endsAt is timestamp)
+        && (!d.keys().hasAny(['facilityId'])
+          || (d.facilityId is string && d.facilityId.size() <= 256))
+        && (!d.keys().hasAny(['teamIds'])
+          || (d.teamIds is list && d.teamIds.size() <= 50))
+        && (!d.keys().hasAny(['visibility'])
+          || (d.visibility is string && d.visibility.size() <= 32))
+        && (!d.keys().hasAny(['createdAt'])
+          || d.createdAt is timestamp)
+        && (!d.keys().hasAny(['updatedAt'])
+          || d.updatedAt is timestamp);
+    }
+
     // Epic 18 — marketing funnel (directors may update only clubs.marketing).
     function clubMarketingMapOk(m) {
       return m is map
@@ -805,47 +874,65 @@ service cloud.firestore {
         allow create: if authed()
           && isDirector()
           && tokenClub() == clubId
-          && request.resource.data.keys().hasAll([
-            'name',
-            'mapStoragePath',
-            'mapDownloadUrl',
-            'type',
-            'uploadedAt'
-          ])
-          && request.resource.data.name is string
-          && request.resource.data.name.size() > 0
-          && request.resource.data.name.size() <= 200
-          && request.resource.data.mapStoragePath is string
-          && request.resource.data.mapStoragePath.matches(
-            '^clubs/' + clubId + '/facility_maps/.+'
-          )
-          && request.resource.data.mapDownloadUrl is string
-          && request.resource.data.mapDownloadUrl.size() > 0
-          && request.resource.data.mapDownloadUrl.size() <= 2048
-          && request.resource.data.type in ['image', 'pdf']
-          && request.resource.data.uploadedAt is timestamp
           && (
-            !request.resource.data.keys().hasAny(['address'])
-            || (request.resource.data.address is string
-              && request.resource.data.address.size() <= 500)
-          )
-          && facilityLogisticsConsistent(request.resource.data)
-          && facilityTacticalJsonOk(request.resource.data);
+            (
+              request.resource.data.keys().hasAll([
+                'name',
+                'mapStoragePath',
+                'mapDownloadUrl',
+                'type',
+                'uploadedAt'
+              ])
+              && request.resource.data.name is string
+              && request.resource.data.name.size() > 0
+              && request.resource.data.name.size() <= 200
+              && request.resource.data.mapStoragePath is string
+              && request.resource.data.mapStoragePath.matches(
+                '^clubs/' + clubId + '/facility_maps/.+'
+              )
+              && request.resource.data.mapDownloadUrl is string
+              && request.resource.data.mapDownloadUrl.size() > 0
+              && request.resource.data.mapDownloadUrl.size() <= 2048
+              && request.resource.data.type in ['image', 'pdf']
+              && request.resource.data.uploadedAt is timestamp
+              && (
+                !request.resource.data.keys().hasAny(['address'])
+                || (request.resource.data.address is string
+                  && request.resource.data.address.size() <= 500)
+              )
+              && facilityLogisticsConsistent(request.resource.data)
+              && facilityTacticalJsonOk(request.resource.data)
+              && facilityOperationalFieldsOk(request.resource.data)
+            )
+            || facilityRegistryCreateOk(request.resource.data)
+          );
 
         allow update: if authed()
           && isDirector()
           && tokenClub() == clubId
-          && request.resource.data.name == resource.data.name
-          && request.resource.data.mapStoragePath == resource.data.mapStoragePath
-          && request.resource.data.mapDownloadUrl == resource.data.mapDownloadUrl
-          && request.resource.data.type == resource.data.type
-          && request.resource.data.uploadedAt == resource.data.uploadedAt
-          && facilityLogisticsConsistent(request.resource.data)
+          && facilityOperationalFieldsOk(request.resource.data)
           && facilityTacticalJsonOk(request.resource.data)
           && (
-            !request.resource.data.keys().hasAny(['address'])
-            || (request.resource.data.address is string
-              && request.resource.data.address.size() <= 500)
+            facilityRegistryUpdateOk(resource.data, request.resource.data)
+            || (
+              resource.data.keys().hasAll([
+                'mapStoragePath',
+                'mapDownloadUrl',
+                'type',
+                'uploadedAt'
+              ])
+              && request.resource.data.name == resource.data.name
+              && request.resource.data.mapStoragePath == resource.data.mapStoragePath
+              && request.resource.data.mapDownloadUrl == resource.data.mapDownloadUrl
+              && request.resource.data.type == resource.data.type
+              && request.resource.data.uploadedAt == resource.data.uploadedAt
+              && facilityLogisticsConsistent(request.resource.data)
+              && (
+                !request.resource.data.keys().hasAny(['address'])
+                || (request.resource.data.address is string
+                  && request.resource.data.address.size() <= 500)
+              )
+            )
           );
 
         allow delete: if authed()
@@ -1588,7 +1675,7 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Epic 5.3: deployment calendar (Director Field Ops) — tenant-scoped read; writes via callable TBD.
+    // Epic 5.3: deployment calendar — tenant-scoped reads; director/registrar writes.
     match /deployment_calendar_entries/{entryId} {
       allow read: if authed() && (
         isSuper()
@@ -1599,7 +1686,19 @@ service cloud.firestore {
           && (isDirector() || isRegistrar())
         )
       );
-      allow create, update, delete: if false;
+      allow create: if authed()
+        && (isDirector() || isRegistrar())
+        && tokenClub() != null
+        && request.resource.data.clubId == tokenClub()
+        && deploymentCalendarEntryWriteOk(request.resource.data);
+      allow update: if authed()
+        && (isDirector() || isRegistrar())
+        && resource.data.clubId == tokenClub()
+        && request.resource.data.clubId == resource.data.clubId
+        && deploymentCalendarEntryWriteOk(request.resource.data);
+      allow delete: if authed()
+        && (isDirector() || isRegistrar())
+        && resource.data.clubId == tokenClub();
     }
 
     // Epic 3 Sprint 5: aggregated seat usage vs purchased cap (Admin SDK / callable only).

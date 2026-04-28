@@ -5,6 +5,7 @@
 	import {
 		collection,
 		deleteDoc,
+		deleteField,
 		doc,
 		onSnapshot,
 		serverTimestamp,
@@ -17,7 +18,7 @@
 	import LogisticsMap from '$lib/components/director/os/LogisticsMap.svelte';
 
 	/**
-	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath: string; mapDownloadUrl: string; type: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string }} FacilityMapRow
+	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath?: string; mapDownloadUrl?: string; type?: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string; status?: string; lockReason?: string; lockedAt?: import('firebase/firestore').Timestamp }} FacilityMapRow
 	 */
 
 	let { clubId = '', canManage = false } = $props();
@@ -37,6 +38,16 @@
 	let draftLng = $state(null);
 	let logisticsSaving = $state(false);
 	let logisticsSaveErr = $state('');
+	/** Registry form (logistics-only facility docs — no vault map asset required). */
+	let regName = $state('');
+	let regAddress = $state('');
+	let regLat = $state('');
+	let regLng = $state('');
+	let regStatus = $state(/** @type {'Active' | 'Locked'} */ ('Active'));
+	let regSaving = $state(false);
+	let regErr = $state('');
+	/** @type {'Active' | 'Locked' | 'LOCKED'} */
+	let draftStatus = $state('Active');
 
 	const previewRow = $derived.by(() => {
 		if (!previewId) return /** @type {FacilityMapRow | null} */ (null);
@@ -72,24 +83,36 @@
 						typeof x.tacticalCanvasJson === 'string' && x.tacticalCanvasJson.trim() ?
 							x.tacticalCanvasJson
 						:	undefined;
+					const mapStoragePath =
+						typeof x.mapStoragePath === 'string' ? x.mapStoragePath : '';
+					const mapDownloadUrl =
+						typeof x.mapDownloadUrl === 'string' ? x.mapDownloadUrl : '';
+					const status = typeof x.status === 'string' ? x.status : '';
+					const lockReason = typeof x.lockReason === 'string' ? x.lockReason : '';
+					const lockedAt = x.lockedAt;
+					const hasVaultMap = Boolean(mapStoragePath && mapDownloadUrl);
 					return {
 						id: d.id,
 						name: typeof x.name === 'string' ? x.name : d.id,
 						address: typeof x.address === 'string' ? x.address : '',
-						mapStoragePath: String(x.mapStoragePath || ''),
-						mapDownloadUrl: String(x.mapDownloadUrl || ''),
-						type: x.type === 'pdf' ? 'pdf' : 'image',
+						...(mapStoragePath ? { mapStoragePath } : {}),
+						...(mapDownloadUrl ? { mapDownloadUrl } : {}),
+						...(hasVaultMap ? { type: x.type === 'pdf' ? 'pdf' : 'image' } : {}),
 						uploadedAt: x.uploadedAt,
 						...(lat !== undefined ? { latitude: lat } : {}),
 						...(lng !== undefined ? { longitude: lng } : {}),
 						...(routingUrl ? { routingUrl } : {}),
 						...(tacticalCanvasJson ? { tacticalCanvasJson } : {}),
+						...(status ? { status } : {}),
+						...(lockReason ? { lockReason } : {}),
+						...(lockedAt ? { lockedAt } : {}),
 					};
 				});
 				list.sort((a, b) => {
 					const ta = a.uploadedAt?.toMillis?.() ?? 0;
 					const tb = b.uploadedAt?.toMillis?.() ?? 0;
-					return tb - ta;
+					if (tb !== ta) return tb - ta;
+					return a.name.localeCompare(b.name);
 				});
 				rows = list;
 			},
@@ -106,6 +129,7 @@
 		draftAddress = '';
 		draftLat = null;
 		draftLng = null;
+		draftStatus = 'Active';
 	}
 
 	/**
@@ -118,6 +142,69 @@
 		draftLat = typeof row.latitude === 'number' ? row.latitude : null;
 		draftLng = typeof row.longitude === 'number' ? row.longitude : null;
 		logisticsSaveErr = '';
+		const st = row.status || '';
+		draftStatus =
+			st === 'LOCKED' ? 'LOCKED' :
+			st === 'Locked' ? 'Locked' :
+			st === 'Active' ? 'Active' :
+			'Active';
+	}
+
+	/**
+	 * @param {FacilityMapRow} row
+	 */
+	function statusTone(row) {
+		const s = row.status || '';
+		if (s === 'LOCKED' || s === 'Locked') return 'locked';
+		return 'active';
+	}
+
+	async function saveRegistryFacility() {
+		regErr = '';
+		if (!clubId || !canManage) return;
+		const nameTrim = regName.trim();
+		if (!nameTrim) {
+			regErr = 'Facility name is required.';
+			return;
+		}
+		const lat = parseFloat(regLat);
+		const lng = parseFloat(regLng);
+		if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+			regErr = 'Enter valid latitude and longitude.';
+			return;
+		}
+		if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+			regErr = 'Coordinates are out of range.';
+			return;
+		}
+		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+		const fid =
+			typeof crypto !== 'undefined' && crypto.randomUUID ?
+				crypto.randomUUID()
+			:	`fac_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+		regSaving = true;
+		try {
+			await setDoc(doc(db, 'clubs', clubId, 'facilities', fid), {
+				name: nameTrim.slice(0, 200),
+				address: regAddress.trim().slice(0, 500),
+				latitude: lat,
+				longitude: lng,
+				routingUrl,
+				status: regStatus,
+			});
+			regName = '';
+			regAddress = '';
+			regLat = '';
+			regLng = '';
+			regStatus = 'Active';
+		} catch (e) {
+			regErr =
+				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
+					String(/** @type {{ message?: string }} */ (e).message)
+				:	String(e);
+		} finally {
+			regSaving = false;
+		}
 	}
 
 	$effect(() => {
@@ -226,6 +313,7 @@
 				mapDownloadUrl,
 				type,
 				uploadedAt: serverTimestamp(),
+				status: 'Active',
 			});
 			mapName = '';
 			mapAddress = '';
@@ -255,10 +343,12 @@
 	async function removeRow(row) {
 		if (!canManage || !clubId) return;
 		if (!confirm(`Remove “${row.name}” from the vault?`)) return;
-		try {
-			await deleteObject(ref(storage, row.mapStoragePath));
-		} catch {
-			/* file may already be gone */
+		if (row.mapStoragePath) {
+			try {
+				await deleteObject(ref(storage, row.mapStoragePath));
+			} catch {
+				/* file may already be gone */
+			}
 		}
 		try {
 			await deleteDoc(doc(db, 'clubs', clubId, 'facilities', row.id));
@@ -272,18 +362,28 @@
 		logisticsSaveErr = '';
 		if (!canManage || !clubId || !previewId) return;
 		if (draftLat == null || draftLng == null) {
-			alert('Click the map to place a pin for this facility.');
+			alert('Enter latitude and longitude (use the map pin or fields above).');
 			return;
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${draftLat},${draftLng}`;
 		logisticsSaving = true;
 		try {
-			await updateDoc(doc(db, 'clubs', clubId, 'facilities', previewId), {
+			/** @type {Record<string, unknown>} */
+			const patch = {
 				address: draftAddress.trim().slice(0, 500),
 				latitude: draftLat,
 				longitude: draftLng,
 				routingUrl,
-			});
+				status:
+					draftStatus === 'LOCKED' ? 'LOCKED' :
+					draftStatus === 'Locked' ? 'Locked' :
+					'Active',
+			};
+			if (draftStatus === 'Active') {
+				patch.lockReason = deleteField();
+				patch.lockedAt = deleteField();
+			}
+			await updateDoc(doc(db, 'clubs', clubId, 'facilities', previewId), patch);
 		} catch (e) {
 			logisticsSaveErr =
 				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
@@ -308,6 +408,92 @@
 </script>
 
 <div class="fm-vault">
+	{#if canManage && clubId}
+		<section
+			class="fm-panel fm-panel--registry"
+			aria-labelledby="fm-reg-h"
+		>
+			<h4 id="fm-reg-h" class="fm-panel__title">Facility logistics registry</h4>
+			<p class="fm-panel__hint">
+				Add or edit facilities with precise coordinates for routing and automated weather defense.
+				Firestore document IDs are shown in the vault table for webhook correlation.
+			</p>
+			<div class="fm-registry__grid">
+				<div class="fm-registry__field">
+					<label class="fm-label" for="fm-reg-name">Facility name</label>
+					<input
+						id="fm-reg-name"
+						class="fm-input"
+						type="text"
+						bind:value={regName}
+						placeholder="e.g. North Training Pitch"
+						autocomplete="off"
+						disabled={regSaving}
+					/>
+				</div>
+				<div class="fm-registry__field fm-registry__field--wide">
+					<label class="fm-label" for="fm-reg-addr">Address</label>
+					<input
+						id="fm-reg-addr"
+						class="fm-input"
+						type="text"
+						bind:value={regAddress}
+						placeholder="Street, city, state"
+						autocomplete="off"
+						disabled={regSaving}
+					/>
+				</div>
+				<div class="fm-registry__coord">
+					<label class="fm-label fm-label--coord" for="fm-reg-lat">Latitude</label>
+					<input
+						id="fm-reg-lat"
+						class="fm-input fm-input--coord"
+						type="number"
+						step="any"
+						bind:value={regLat}
+						placeholder="e.g. 40.7128"
+						disabled={regSaving}
+					/>
+				</div>
+				<div class="fm-registry__coord">
+					<label class="fm-label fm-label--coord" for="fm-reg-lng">Longitude</label>
+					<input
+						id="fm-reg-lng"
+						class="fm-input fm-input--coord"
+						type="number"
+						step="any"
+						bind:value={regLng}
+						placeholder="e.g. -74.0060"
+						disabled={regSaving}
+					/>
+				</div>
+				<p class="fm-lightning-hint fm-registry__field--wide">
+					<strong>Required for Tomorrow.io Automated Lightning Defense.</strong>
+				</p>
+				<div class="fm-registry__field">
+					<label class="fm-label" for="fm-reg-status">Status</label>
+					<select id="fm-reg-status" class="fm-input" bind:value={regStatus} disabled={regSaving}>
+						<option value="Active">Active</option>
+						<option value="Locked">Locked</option>
+					</select>
+				</div>
+				<div class="fm-registry__actions">
+					<button
+						type="button"
+						class="fm-btn fm-btn--primary"
+						disabled={regSaving || !regName.trim()}
+						onclick={() => void saveRegistryFacility()}
+					>
+						{regSaving ? 'Saving…' : 'Save facility'}
+					</button>
+				</div>
+			</div>
+			{#if regErr}
+				<p class="fm-err" role="alert">{regErr}</p>
+			{/if}
+		</section>
+	{/if}
+
 	<div class="fm-vault__grid">
 		<section class="fm-panel fm-panel--upload" aria-label="Upload facility map">
 			<h4 class="fm-panel__title">Upload map</h4>
@@ -401,6 +587,10 @@
 							<tr>
 								<th>Name</th>
 								<th>Type</th>
+								<th>Lat</th>
+								<th>Lng</th>
+								<th>Status</th>
+								<th>Doc ID</th>
 								<th>Uploaded</th>
 								{#if canManage}
 									<th style="width: 5rem;">Actions</th>
@@ -422,7 +612,30 @@
 									tabindex="0"
 								>
 									<td class="ec-table__strong">{row.name}</td>
-									<td class="ec-muted">{row.type === 'pdf' ? 'PDF' : 'Image'}</td>
+									<td class="ec-muted">
+										{#if row.type}
+											{row.type === 'pdf' ? 'PDF' : 'Image'}
+										{:else}
+											<span class="fm-badge fm-badge--logistics">Logistics</span>
+										{/if}
+									</td>
+									<td class="ec-muted fm-mono">
+										{typeof row.latitude === 'number' ? row.latitude.toFixed(5) : '—'}
+									</td>
+									<td class="ec-muted fm-mono">
+										{typeof row.longitude === 'number' ? row.longitude.toFixed(5) : '—'}
+									</td>
+									<td>
+										{#if statusTone(row) === 'locked'}
+											<span class="fm-status fm-status--locked">Locked</span>
+										{:else}
+											<span class="fm-status fm-status--active">Active</span>
+										{/if}
+										{#if row.status === 'LOCKED'}
+											<span class="fm-status fm-status--strike" title={row.lockReason || ''}>AUTO</span>
+										{/if}
+									</td>
+									<td class="fm-docid" title={row.id}>{row.id}</td>
 									<td class="ec-muted">{fmtTime(row.uploadedAt)}</td>
 									{#if canManage}
 										<td>
@@ -473,7 +686,58 @@
 		<div class="ec-drawer__body fm-preview-body">
 			<!-- Location and logistics: always rendered for a selected facility (map handles missing API key). -->
 			<section class="fm-logistics-bento" aria-labelledby="fm-location-h">
-				<h3 id="fm-location-h" class="fm-logistics__title">Location & Routing</h3>
+				<h3 id="fm-location-h" class="fm-logistics__title">Location & routing matrix</h3>
+				{#if previewRow.lockReason || previewRow.status === 'LOCKED'}
+					<p class="fm-lock-banner" role="status">
+						<strong>Lock:</strong>
+						{previewRow.lockReason || 'Automated lightning hold — facility CLOSED.'}
+					</p>
+				{/if}
+				{#if canManage}
+					<div class="fm-coord-grid">
+						<div>
+							<label class="fm-label fm-label--coord" for="fm-draft-lat">Latitude</label>
+							<input
+								id="fm-draft-lat"
+								class="fm-input fm-input--coord"
+								type="number"
+								step="any"
+								value={draftLat ?? ''}
+								oninput={(e) => {
+									const v = parseFloat(e.currentTarget.value);
+									draftLat = Number.isFinite(v) ? v : null;
+								}}
+								placeholder="Latitude"
+							/>
+						</div>
+						<div>
+							<label class="fm-label fm-label--coord" for="fm-draft-lng">Longitude</label>
+							<input
+								id="fm-draft-lng"
+								class="fm-input fm-input--coord"
+								type="number"
+								step="any"
+								value={draftLng ?? ''}
+								oninput={(e) => {
+									const v = parseFloat(e.currentTarget.value);
+									draftLng = Number.isFinite(v) ? v : null;
+								}}
+								placeholder="Longitude"
+							/>
+						</div>
+					</div>
+					<p class="fm-lightning-hint">
+						<strong>Required for Tomorrow.io Automated Lightning Defense.</strong>
+					</p>
+					<label class="fm-label" for="fm-draft-status">Operational status</label>
+					<select id="fm-draft-status" class="fm-input fm-input--status" bind:value={draftStatus}>
+						<option value="Active">Active</option>
+						<option value="Locked">Locked (manual)</option>
+						<option value="LOCKED" disabled={draftStatus !== 'LOCKED'}>
+							LOCKED (automated strike — select Active to clear)
+						</option>
+					</select>
+				{/if}
 				<div class="fm-logistics-map-slot">
 					{#key previewId}
 						<LogisticsMap
@@ -503,13 +767,6 @@
 						placeholder="Street, city, state"
 						autocomplete="off"
 					/>
-					<p class="fm-logistics__coords" aria-live="polite">
-						{#if draftLat != null && draftLng != null}
-							{draftLat.toFixed(6)}, {draftLng.toFixed(6)}
-						{:else}
-							Click the map to set coordinates.
-						{/if}
-					</p>
 					<button
 						type="button"
 						class="fm-btn fm-btn--primary"
@@ -551,18 +808,22 @@
 				<p class="fm-preview-meta">{previewRow.address}</p>
 			{/if}
 
-			{#if previewRow.type === 'image'}
+			{#if previewRow.mapDownloadUrl && previewRow.type === 'image'}
 				<img
 					class="fm-preview-img"
 					src={previewRow.mapDownloadUrl}
 					alt=""
 					loading="lazy"
 				/>
-			{:else}
+			{:else if previewRow.mapDownloadUrl && previewRow.type === 'pdf'}
 				{#if pdfBusy}
 					<p class="fm-preview-meta">Rendering PDF…</p>
 				{/if}
 				<canvas bind:this={pdfCanvasEl} class="fm-preview-canvas"></canvas>
+			{:else}
+				<p class="fm-preview-meta fm-preview-meta--asset">
+					No tactical map uploaded — logistics registry only. Upload a PDF or image from the vault panel to attach a field diagram.
+				</p>
 			{/if}
 		</div>
 	{:else if previewOpen}
@@ -629,6 +890,158 @@
 		margin: 0;
 		font-size: 13px;
 		color: var(--text-secondary);
+	}
+
+	.fm-panel--registry {
+		border-color: rgba(220, 38, 38, 0.22);
+		box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.06);
+	}
+
+	.fm-registry__grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px 14px;
+		align-items: end;
+	}
+
+	.fm-registry__field--wide {
+		grid-column: 1 / -1;
+	}
+
+	.fm-registry__coord {
+		min-width: 0;
+	}
+
+	.fm-registry__actions {
+		grid-column: 1 / -1;
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 4px;
+	}
+
+	.fm-coord-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px 14px;
+		margin-bottom: 8px;
+	}
+
+	.fm-label--coord {
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: var(--text-primary);
+	}
+
+	.fm-input--coord {
+		font-family: ui-monospace, monospace;
+		font-size: 13px;
+		font-weight: 600;
+		border-color: rgba(220, 38, 38, 0.35);
+		background: color-mix(in srgb, var(--text-primary, #fafafa) 4%, transparent);
+	}
+
+	:global(html.dark) .fm-input--coord {
+		border-color: rgba(248, 113, 113, 0.45);
+		background: rgba(15, 23, 42, 0.55);
+	}
+
+	.fm-input--status {
+		font-weight: 600;
+		margin-bottom: 12px;
+	}
+
+	.fm-lightning-hint {
+		margin: 0 0 12px;
+		padding: 8px 10px;
+		border-radius: 8px;
+		font-size: 11px;
+		line-height: 1.45;
+		color: var(--text-secondary);
+		background: rgba(220, 38, 38, 0.08);
+		border: 1px solid rgba(220, 38, 38, 0.2);
+	}
+
+	:global(html.dark) .fm-lightning-hint {
+		background: rgba(220, 38, 38, 0.12);
+		border-color: rgba(248, 113, 113, 0.25);
+	}
+
+	.fm-lock-banner {
+		margin: 0 0 12px;
+		padding: 8px 10px;
+		border-radius: 8px;
+		font-size: 12px;
+		line-height: 1.45;
+		color: #fecaca;
+		background: rgba(127, 29, 29, 0.45);
+		border: 1px solid rgba(248, 113, 113, 0.35);
+	}
+
+	.fm-mono {
+		font-family: ui-monospace, monospace;
+		font-variant-numeric: tabular-nums;
+		font-size: 12px;
+	}
+
+	.fm-docid {
+		max-width: 140px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: ui-monospace, monospace;
+		font-size: 10px;
+		color: var(--text-secondary);
+		vertical-align: middle;
+	}
+
+	.fm-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.fm-badge--logistics {
+		border: 1px solid rgba(148, 163, 184, 0.45);
+		color: #94a3b8;
+		background: rgba(15, 23, 42, 0.55);
+	}
+
+	.fm-status {
+		display: inline-flex;
+		align-items: center;
+		padding: 2px 8px;
+		border-radius: 6px;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		margin-right: 4px;
+	}
+
+	.fm-status--active {
+		color: #86efac;
+		background: rgba(22, 101, 52, 0.45);
+		border: 1px solid rgba(34, 197, 94, 0.45);
+	}
+
+	.fm-status--locked {
+		color: #fecaca;
+		background: rgba(127, 29, 29, 0.55);
+		border: 1px solid rgba(248, 113, 113, 0.45);
+	}
+
+	.fm-status--strike {
+		color: #fde047;
+		background: rgba(113, 63, 18, 0.55);
+		border: 1px solid rgba(234, 179, 8, 0.35);
+		font-size: 9px;
 	}
 
 	.fm-label {
@@ -867,6 +1280,14 @@
 		width: 100%;
 		font-size: 12px;
 		color: var(--text-secondary);
+	}
+
+	.fm-preview-meta--asset {
+		padding: 12px;
+		border-radius: 10px;
+		border: 1px dashed rgba(148, 163, 184, 0.35);
+		background: rgba(15, 23, 42, 0.35);
+		line-height: 1.5;
 	}
 
 	.fm-preview-img {

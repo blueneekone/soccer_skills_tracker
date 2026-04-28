@@ -10,7 +10,7 @@
 	import { saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
 	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
-	import DeploymentCalendarPanel from '$lib/components/director/os/DeploymentCalendarPanel.svelte';
+	import DeploymentCalendar from '$lib/components/director/os/DeploymentCalendar.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -382,7 +382,7 @@
 			<FacilityMapVault {clubId} canManage={!isReadOnly} />
 		</section>
 
-		<DeploymentCalendarPanel {clubId} />
+		<DeploymentCalendar {clubId} canManage={!isReadOnly} />
 
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
