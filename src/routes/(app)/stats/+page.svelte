@@ -4,8 +4,9 @@
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
+	import { dossierRadarFromPlayerStats } from '$lib/utils/sport-attributes.js';
 	import '$lib/styles/director-os.css';
 
 	const isPlayerRole = $derived(authStore.role === 'player');
@@ -20,8 +21,10 @@
 	/** @type {HTMLCanvasElement | undefined} */
 	let workoutCanvas = $state();
 
-	/** Skill vector 0–100: Technical, Physical, Tactical, Mental */
-	let skillsVector = $state(/** @type {number[]} */ ([10, 10, 10, 10]));
+	/** Skill vector 0–100 — sport-specific axes from verify trials + player_stats skills */
+	let skillsVector = $state(/** @type {number[]} */ ([10, 10, 10, 10, 10, 10]));
+	let radarLabels = $state(/** @type {string[]} */ (['PACE', 'SKILL', 'PASS', 'DEF', 'PHY', 'TECH']));
+	let radarTag = $state('RDR_S6_generic');
 
 	/** @type {Array<{ month: string; xp: number }>} */
 	let monthlyPerformance = $state([]);
@@ -37,76 +40,6 @@
 	/**
 	 * @typedef {{ id: string; title: string; phIcon: string; unlocked: boolean; tier?: 'standard' | 'elite' }} BadgeDef
 	 */
-
-	/** @param {unknown} raw */
-	function parseTrialScore(raw) {
-		const s = String(raw ?? '').trim();
-		const frac = /^(\d+)\s*\/\s*(\d+)$/.exec(s);
-		if (frac) {
-			const a = Number(frac[1]);
-			const b = Number(frac[2]);
-			if (b > 0 && Number.isFinite(a)) {
-				return Math.min(100, Math.max(0, Math.round((100 * a) / b)));
-			}
-		}
-		const n = parseFloat(s);
-		if (Number.isFinite(n)) return Math.min(100, Math.max(0, Math.round(n)));
-		const low = s.toLowerCase();
-		if (low.includes('master')) return 92;
-		if (low.includes('good')) return 72;
-		if (low.includes('struggle')) return 45;
-		return 55;
-	}
-
-	/**
-	 * @param {string} skill
-	 * @returns {'technical' | 'physical' | 'tactical' | 'mental'}
-	 */
-	function categorizeSkill(skill) {
-		const k = skill.toLowerCase();
-		if (
-			/(strength|speed|stamina|physical|conditioning|agility|jump|sprint|power)/.test(k)
-		) {
-			return 'physical';
-		}
-		if (/(tactical|position|press|shape|transition|defense|attack|team)/.test(k)) {
-			return 'tactical';
-		}
-		if (/(mental|decision|composure|leadership|focus|discipline)/.test(k)) {
-			return 'mental';
-		}
-		return 'technical';
-	}
-
-	/**
-	 * @param {Record<string, unknown>} scores
-	 */
-	function skillVectorFromTrials(scores) {
-		const buckets = {
-			technical: /** @type {number[]} */ ([]),
-			physical: /** @type {number[]} */ ([]),
-			tactical: /** @type {number[]} */ ([]),
-			mental: /** @type {number[]} */ ([]),
-		};
-		if (!scores || typeof scores !== 'object') {
-			return [10, 10, 10, 10];
-		}
-		for (const [skill, raw] of Object.entries(scores)) {
-			const v = parseTrialScore(raw);
-			const cat = categorizeSkill(skill);
-			buckets[cat].push(v);
-		}
-		const avg = (/** @type {number[]} */ arr) =>
-			arr.length ?
-				Math.min(99, Math.max(0, Math.round(arr.reduce((a, b) => a + b, 0) / arr.length))) :
-				null;
-		return [
-			avg(buckets.technical) ?? 10,
-			avg(buckets.physical) ?? 10,
-			avg(buckets.tactical) ?? 10,
-			avg(buckets.mental) ?? 10,
-		];
-	}
 
 	/** Monthly XP chart rows — mirrored on `player_stats` when recruit profile is private. */
 	function parseMonthlyPerformance(mp) {
@@ -267,6 +200,58 @@
 
 	let badges = $state(/** @type {BadgeDef[]} */ (computeBadges(1, 0)));
 
+	/** @type {Record<string, unknown> | null} */
+	let playerStatsSnapshot = $state(null);
+
+	function resolveTeamSportRaw() {
+		const tid =
+			typeof authStore.userProfile?.teamId === 'string' ?
+				authStore.userProfile.teamId.trim()
+			:	'';
+		const teamRow = tid ? teamsStore.teams.find((t) => t.id === tid) : null;
+		let sportRaw =
+			typeof teamRow?.sport === 'string' && teamRow.sport.trim() ?
+				teamRow.sport.trim()
+			:	'';
+		if (!sportRaw && typeof authStore.userProfile?.clubId === 'string') {
+			const cid = authStore.userProfile.clubId.trim();
+			const club = teamsStore.clubs.find((c) => c.id === cid);
+			sportRaw =
+				typeof club?.sport === 'string' && club.sport.trim() ?
+					club.sport.trim()
+				:	'';
+		}
+		return sportRaw || undefined;
+	}
+
+	/**
+	 * @param {Record<string, unknown>} d
+	 */
+	function applyRadarFromPlayerStats(d) {
+		const vt =
+			d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
+				/** @type {Record<string, unknown>} */ (d.verified_trial_scores)
+			:	{};
+		const dr = dossierRadarFromPlayerStats(
+			/** @type {Record<string, unknown>} */ (d),
+			vt,
+			resolveTeamSportRaw(),
+		);
+		skillsVector = dr.values;
+		radarLabels = dr.labels;
+		radarTag = dr.radarTag;
+	}
+
+	$effect(() => {
+		teamsStore.teams;
+		teamsStore.clubs;
+		authStore.userProfile?.teamId;
+		authStore.userProfile?.clubId;
+		const snap = playerStatsSnapshot;
+		if (!snap) return;
+		applyRadarFromPlayerStats(snap);
+	});
+
 	$effect(() => {
 		if (!browser || !userUid) return;
 
@@ -319,14 +304,11 @@
 			refPs,
 			(snap) => {
 				const d = snap.exists() ? snap.data() || {} : {};
+				playerStatsSnapshot = /** @type {Record<string, unknown>} */ (d);
 				monthlyPerformance = parseMonthlyPerformance(d.monthly_performance);
 				dailyPerformance = parseDailyPerformance(d.daily_performance);
 				weeklyPerformance = parseWeeklyPerformance(d.weekly_performance);
-				const vt =
-					d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
-						/** @type {Record<string, unknown>} */ (d.verified_trial_scores) :
-						{};
-				skillsVector = skillVectorFromTrials(vt);
+				applyRadarFromPlayerStats(/** @type {Record<string, unknown>} */ (d));
 			},
 			(e) => {
 				console.warn('[stats] player_stats snapshot', e);
@@ -353,13 +335,14 @@
 		chartOk;
 		radarCanvas;
 		ChartCtor;
+		radarLabels;
 		const values = skillsVector;
 		if (!chartOk || !ChartCtor || !radarCanvas || !browser) return;
 
 		let inst = new ChartCtor(radarCanvas, {
 			type: 'radar',
 			data: {
-				labels: ['TECHNICAL', 'PHYSICAL', 'TACTICAL', 'MENTAL'],
+				labels: radarLabels,
 				datasets: [
 					{
 						label: 'SKILL_VECTOR',
@@ -539,10 +522,6 @@
 >
 	<h1 class="tw-text-2xl tw-font-bold tw-text-white tw-mb-6">Operative Analytics</h1>
 
-	<section class="stats-team-lb tw-mb-8 tw-min-w-0" aria-label="Team leaderboard HQ">
-		<TeamLeaderboard compact />
-	</section>
-
 	<div
 		class="dossier-grid"
 		role="region"
@@ -554,20 +533,20 @@
 		>
 			<div class="dossier-radar__head">
 				<span class="dossier-label">Telemetry matrix</span>
-				<span class="dossier-mono dossier-tx-tag">RDR_V4</span>
+				<span class="dossier-mono dossier-tx-tag">{radarTag}</span>
 			</div>
 			<p class="dossier-radar__hint no-print">
-				Vector overlay · 0–100 · coach-verified trials + dossier sync
+				Sport-attribute radar · 0–100 · coach trials overlay + dossier skills fallback
 			</p>
 			<div class="dossier-radar__chart tw-min-w-0 tw-h-[300px] tw-relative">
 				<canvas
 					bind:this={radarCanvas}
 					class="dossier-canvas"
-					aria-label="Skill dimensions radar: Technical, Physical, Tactical, Mental"
+					aria-label={`Sport skill radar: ${radarLabels.join(', ')}`}
 				></canvas>
 			</div>
 			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
-				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · PIPE=PLAYER_STATS_TRIALS
+				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · {radarTag} · SRC=PLAYER_STATS
 			</div>
 		</section>
 

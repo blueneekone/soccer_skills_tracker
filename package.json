@@ -22,6 +22,8 @@
     "vite": "^6.0.6"
   },
   "dependencies": {
+    "@dicebear/adventurer": "^9.4.2",
+    "@dicebear/core": "^9.4.2",
     "@googlemaps/js-api-loader": "^2.0.2",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",

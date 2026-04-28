@@ -113,3 +113,77 @@ export function deriveSkillValuesForSchema(d, schema, totalXp, streakDays) {
 	});
 	return { values, labels };
 }
+
+/**
+ * Parse coach-entered trial result strings into a 0–100 dossier score.
+ * Mirrors analytics normalization used on `/stats`.
+ *
+ * @param {unknown} raw
+ * @returns {number}
+ */
+export function parseCoachTrialResult(raw) {
+	const s = String(raw ?? '').trim();
+	const frac = /^(\d+)\s*\/\s*(\d+)$/.exec(s);
+	if (frac) {
+		const a = Number(frac[1]);
+		const b = Number(frac[2]);
+		if (b > 0 && Number.isFinite(a)) {
+			return Math.min(100, Math.max(0, Math.round((100 * a) / b)));
+		}
+	}
+	const n = parseFloat(s);
+	if (Number.isFinite(n)) return Math.min(100, Math.max(0, Math.round(n)));
+	const low = s.toLowerCase();
+	if (low.includes('master')) return 92;
+	if (low.includes('good')) return 72;
+	if (low.includes('struggle')) return 45;
+	return 55;
+}
+
+/**
+ * Six-axis dossier radar: coach-verified `verified_trial_scores` keyed by sport attributes when possible,
+ * with deriveSkillValuesForSchema filling gaps (parity with Elite/combine-style ratings).
+ *
+ * @param {Record<string, unknown> | null | undefined} psData `player_stats` snapshot
+ * @param {Record<string, unknown>} verifiedTrialScores
+ * @param {string | undefined} sportRaw team/club sport string
+ * @returns {{ values: number[]; labels: string[]; radarTag: string }}
+ */
+export function dossierRadarFromPlayerStats(psData, verifiedTrialScores, sportRaw) {
+	const schema = getAttributeSchemaForSport(sportRaw);
+	const xp = typeof psData?.total_xp === 'number' && !Number.isNaN(psData.total_xp) ?
+		Math.max(0, Math.floor(psData.total_xp))
+	:	0;
+	const streakRaw =
+		typeof psData?.current_streak === 'number' && !Number.isNaN(psData.current_streak) ?
+			psData.current_streak
+		:	typeof psData?.currentStreak === 'number' && !Number.isNaN(psData.currentStreak) ?
+				psData.currentStreak
+			:	0;
+	const st = Math.max(0, Math.floor(streakRaw));
+
+	const base = deriveSkillValuesForSchema(psData, schema, xp, st);
+	const vt = verifiedTrialScores && typeof verifiedTrialScores === 'object' ? verifiedTrialScores : {};
+
+	const parsedPairs = Object.entries(vt).map(([k, raw]) => ({
+		k: String(k).toLowerCase(),
+		v: parseCoachTrialResult(raw),
+	}));
+	const avgTrial =
+		parsedPairs.length ?
+			Math.round(parsedPairs.reduce((a, p) => a + p.v, 0) / parsedPairs.length) :
+			null;
+
+	const values = schema.keys.map((key, i) => {
+		const exact = vt[key];
+		if (exact != null) return parseCoachTrialResult(exact);
+		const fuzzy = parsedPairs.find((p) => p.k === key.toLowerCase());
+		if (fuzzy) return fuzzy.v;
+		if (avgTrial != null) return Math.min(99, Math.max(10, avgTrial));
+		return base.values[i] ?? 45;
+	});
+
+	const labels = schema.labels.map((l) => String(l).toUpperCase());
+	const radarTag = `RDR_S6_${schema.canonicalKey}`;
+	return { values, labels, radarTag };
+}

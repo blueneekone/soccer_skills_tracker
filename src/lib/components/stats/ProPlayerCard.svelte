@@ -3,12 +3,26 @@
 	import { onMount } from 'svelte';
 	import { collection, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
+	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
+
+	const PRO_CARD_INTEL = {
+		title: 'PRO PLAYER CARD',
+		instructions: [
+			'Until coach-verified season metrics publish here, this area stays minimal beside your operative portrait. Use the briefing chip next to the heading anytime.',
+			'When seasons arrive, chips appear above the radar chart with verified metric blocks for your selection.',
+			'When endorsement metadata exists for that row, a Coach verified badge shows beside this heading.',
+		],
+	};
 
 	let {
 		playerEmailKey = '',
 		playerDisplayName = '',
 		/** Pre-loaded seasons (e.g. public callable). When set, skips Firestore. */
 		prefetchedSeasons = undefined,
+		/** Optional DiceBear seed bundle from `users.operativeAvatar` (JSON only). */
+		operativeAvatar = undefined,
 		/** Shown on the 3D card front (default matches Quartermaster / tier copy). */
 		rankLabel = 'Recruit',
 		/** Back-face header. */
@@ -18,6 +32,8 @@
 		telemetryWorkouts = '',
 		telemetryJoinDate = '',
 	} = $props();
+
+	const avatarDesign = $derived(parseOperativeAvatar(operativeAvatar));
 
 	/** 3D Operative ID card */
 	let isFlipped = $state(false);
@@ -224,9 +240,13 @@
 						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<div
-							class="tw-w-24 tw-h-24 tw-mx-auto tw-mb-4 tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-flex tw-items-center tw-justify-center"
+							class="tw-w-24 tw-h-24 tw-mx-auto tw-mb-4 tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-flex tw-items-center tw-justify-center tw-overflow-hidden"
 						>
-							<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
+							{#if avatarDesign}
+								<OperativeAvatarPreview seed={avatarDesign.seed} size={96} class="tw-rounded-full" />
+							{:else}
+								<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
+							{/if}
 						</div>
 						<h2
 							class="tw-m-0 tw-mb-2 tw-w-full tw-text-center tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere] tw-break-words"
@@ -293,8 +313,9 @@
 
 			<div class="card pro-card-shell">
 				<div class="pro-card-header-row">
-					<div>
+					<div class="pro-card-title-row">
 						<h2 class="pro-card-title">Pro player card</h2>
+						<IntelModal title={PRO_CARD_INTEL.title} instructions={PRO_CARD_INTEL.instructions} />
 					</div>
 					{#if selected?.verifiedBy}
 					<div class="pro-verified-badge" title="Coach-endorsed verified metrics">
@@ -307,9 +328,9 @@
 			{#if loading}
 				<p class="pro-card-hint">Loading profile…</p>
 			{:else if seasons.length === 0}
-				<p class="pro-card-hint">
-					No season metrics yet. When your coach publishes verified stats, they will
-					appear here with a radar chart and endorsement badge.
+				<p class="pro-card-hint pro-card-hint--empty">
+					<span class="tw-sr-only">No verified season metrics loaded.</span>
+					<span aria-hidden="true">—</span>
 				</p>
 			{:else}
 				<div class="pro-season-chips" role="tablist" aria-label="Season">
@@ -431,6 +452,14 @@
 		letter-spacing: -0.02em;
 	}
 
+	.pro-card-title-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+
 	.pro-verified-badge {
 		display: inline-flex;
 		align-items: center;
@@ -464,6 +493,14 @@
 		color: var(--text-secondary);
 		line-height: 1.55;
 		font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+	}
+
+	.pro-card-hint--empty {
+		text-align: center;
+		font-family: ui-monospace, monospace;
+		font-size: 1.25rem;
+		color: rgba(148, 163, 184, 0.35);
+		padding: clamp(12px, 3vw, 20px) 0;
 	}
 
 	.pro-season-chips {

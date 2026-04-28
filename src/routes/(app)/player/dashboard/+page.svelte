@@ -298,6 +298,7 @@
 				playerDisplayName={profile?.playerName || ''}
 				prefetchedSeasons={seasons}
 				rankLabel={rankProgress.rank}
+				operativeAvatar={profile?.operativeAvatar}
 			/>
 		</div>
 		<div

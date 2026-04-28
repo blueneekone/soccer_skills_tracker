@@ -33,6 +33,7 @@ const directorLinks = [
 /** @type {ShellNavItem[]} */
 const coachLinks = [
 	{ label: 'Squad Telemetry', href: '/coach', icon: 'ph-users' },
+	{ label: 'Trial Builder', href: '/coach/trial-builder', icon: 'ph-target' },
 	{ label: 'Tactical Command', href: '/coach/tactical', icon: 'ph-strategy' },
 	{ label: 'Mission Dispatch', href: '/coach/drills', icon: 'ph-rocket-launch' },
 ];

@@ -12,6 +12,8 @@
 	let displayName = $state('');
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
 	let seasons = $state([]);
+	/** @type {{ v: number; seed: string } | undefined} */
+	let operativeAvatarDesign = $state(undefined);
 
 	$effect(() => {
 		if (!browser) return;
@@ -24,15 +26,31 @@
 		status = 'loading';
 		displayName = '';
 		seasons = [];
+		operativeAvatarDesign = undefined;
 		(async () => {
 			try {
 				const fn = httpsCallable(functions, 'getPublicRecruitProfile');
 				const res = await fn({ playerKey: key });
-				/** @type {{ ok?: boolean, displayName?: string | null, seasons?: unknown, playerKey?: string }} */
+				/** @type {{ ok?: boolean, displayName?: string | null, seasons?: unknown, playerKey?: string, operativeAvatar?: { v?: unknown, seed?: unknown } }} */
 				const payload = res.data;
 				if (cancelled) return;
 				if (payload?.ok === true && typeof payload.playerKey === 'string') {
 					displayName = typeof payload.displayName === 'string' ? payload.displayName : '';
+					const oa = payload.operativeAvatar;
+					if (
+						oa &&
+						typeof oa === 'object' &&
+						oa.v === 1 &&
+						typeof oa.seed === 'string' &&
+						oa.seed.trim()
+					) {
+						operativeAvatarDesign = {
+							v: 1,
+							seed: String(oa.seed).trim().slice(0, 128),
+						};
+					} else {
+						operativeAvatarDesign = undefined;
+					}
 					const rawSeasons = payload.seasons;
 					seasons = Array.isArray(rawSeasons)
 						? /** @type {typeof seasons} */ (rawSeasons.slice())
@@ -81,6 +99,7 @@
 		playerEmailKey={playerKeyNorm}
 		playerDisplayName={displayName || ''}
 		prefetchedSeasons={seasons}
+		operativeAvatar={operativeAvatarDesign}
 	/>
 {:else}
 	<section class="recruit-panel recruit-panel--unavailable glass-panel">

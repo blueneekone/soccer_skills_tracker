@@ -6472,11 +6472,28 @@ exports.getPublicRecruitProfile = onCall(
         }
       });
 
+      const rawOa = u.operativeAvatar;
+      /** @type {{ v: number, seed: string } | null} */
+      let operativeAvatar = null;
+      if (
+        rawOa &&
+        typeof rawOa === 'object' &&
+        rawOa.v === 1 &&
+        typeof rawOa.seed === 'string' &&
+        rawOa.seed.trim()
+      ) {
+        operativeAvatar = {
+          v: 1,
+          seed: String(rawOa.seed).trim().slice(0, 128),
+        };
+      }
+
       return {
         ok: true,
         playerKey,
         displayName: typeof u.playerName === 'string' ? u.playerName : null,
         seasons,
+        operativeAvatar,
       };
     },
 );

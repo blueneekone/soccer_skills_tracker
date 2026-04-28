@@ -4,6 +4,11 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
+	import OperativeAvatarDesigner from '$lib/components/player/OperativeAvatarDesigner.svelte';
+	import {
+		OPERATIVE_AVATAR_VERSION,
+		parseOperativeAvatar,
+	} from '$lib/avatars/operativeAvatar.js';
 
 	let playerName = $state('');
 	let privacyProfile = $state('strict_minor_defaults');
@@ -11,6 +16,13 @@
 	let errorMsg = $state('');
 	let saveMsg = $state('');
 	let saving = $state(false);
+
+	const defaultAvatar = () => ({
+		v: OPERATIVE_AVATAR_VERSION,
+		seed: `v${OPERATIVE_AVATAR_VERSION}|22|55|38|71`,
+	});
+
+	let operativeAvatar = $state(defaultAvatar());
 
 	const profile = $derived(authStore.userProfile);
 	const role = $derived(authStore.role);
@@ -65,6 +77,8 @@
 			privacyProfile = 'strict_minor_defaults';
 			telemetryOptIn = false;
 		}
+		const parsedAv = parseOperativeAvatar(profile?.operativeAvatar);
+		if (parsedAv) operativeAvatar = parsedAv;
 	});
 
 	async function saveProfile() {
@@ -92,9 +106,28 @@
 				playerName: trimmed || profile?.playerName || auth.currentUser.email.split('@')[0],
 				privacyProfile: privacy,
 				telemetryOptIn: telemetry,
-				settingsUpdatedAt: new Date()
+				settingsUpdatedAt: new Date(),
+				...(isPlayer && !isOperativeProxy ? { operativeAvatar } : {}),
 			};
 			await updateDoc(userRef, payload);
+			// #region agent log
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Debug-Session-Id': 'dd2828',
+				},
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					runId: 'avatar-save',
+					hypothesisId: 'H2',
+					location: 'settings/+page.svelte:saveProfile',
+					message: 'operative_avatar_saved',
+					data: { hasAvatar: Boolean(isPlayer && !isOperativeProxy) },
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+			// #endregion
 			await authStore.refresh({ silent: true });
 			saveMsg = 'Profile saved.';
 		} catch (err) {
@@ -196,6 +229,19 @@
 				<input type="checkbox" bind:checked={telemetryOptIn} disabled={isMinorAccount} />
 				<span>Allow optional telemetry / analytics sharing (separate from core app use)</span>
 			</label>
+
+			<hr class="settings-divider" />
+
+			{#if isPlayer && !isOperativeProxy}
+				<span class="settings-label-block">Operative avatar</span>
+				<p class="text-sm-sub settings-lead" style="margin: 0 0 0.75rem">
+					Choose a vector operative portrait — only a short seed is stored (generated illustration).
+					No photo uploads.
+				</p>
+				<div style="margin-bottom: 1rem">
+					<OperativeAvatarDesigner bind:operativeAvatar />
+				</div>
+			{/if}
 
 			<hr class="settings-divider" />
 
