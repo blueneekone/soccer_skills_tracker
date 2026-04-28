@@ -12,6 +12,7 @@
 	 *   • Revoke access → soft delete (status suspended, roles cleared) via updateDoc.
 	 */
 
+	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import {
@@ -82,6 +83,10 @@
 	let pageIndex = $state(0);
 	let hasNextPage = $state(false);
 
+	/** RBAC matrix segment — drives Firestore role filters + UI tabs. */
+	/** @type {'admins' | 'directors' | 'coaches' | 'parents_players'} */
+	let activeTab = $state('directors');
+
 	// Club name lookup (small map — clubs collection is bounded).
 	/** @type {Map<string, string>} */
 	let clubNameMap = $state(new Map());
@@ -137,6 +142,7 @@
 	const ROLE_LABELS = /** @type {const} */ ({
 		super_admin: 'Global Admin',
 		global_admin: 'Global Admin',
+		admin: 'Global Admin',
 		director: 'Director',
 		coach: 'Coach',
 		registrar: 'Registrar',
@@ -151,11 +157,48 @@
 		return ROLE_LABELS[/** @type {keyof typeof ROLE_LABELS} */ (role)] || (role || 'Unknown');
 	}
 
+	/**
+	 * Firestore role filter for the selected matrix tab (parity with stored `users.role`).
+	 * @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab
+	 */
+	function roleFilterForTab(tab) {
+		switch (tab) {
+			case 'admins':
+				return { kind: /** @type {'in'} */ ('in'), values: ['super_admin', 'global_admin', 'admin'] };
+			case 'directors':
+				return { kind: /** @type {'eq'} */ ('eq'), value: 'director' };
+			case 'coaches':
+				return { kind: 'eq', value: 'coach' };
+			case 'parents_players':
+				return { kind: 'in', values: ['parent', 'player'] };
+			default:
+				return { kind: 'eq', value: 'director' };
+		}
+	}
+
+	/** @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab */
+	function emptyMessageForTab(tab) {
+		switch (tab) {
+			case 'admins':
+				return 'No Global Admins found in this organization.';
+			case 'directors':
+				return 'No Directors found in this organization.';
+			case 'coaches':
+				return 'No Coaches found in this organization.';
+			case 'parents_players':
+				return 'No Parents or Players found in this organization.';
+			default:
+				return 'No users found.';
+		}
+	}
+
 	/** @param {string} role */
 	function roleToneClass(role) {
 		switch (role) {
 			case 'super_admin':
-			case 'global_admin': return 'gu-role--crimson';
+			case 'global_admin':
+			case 'admin':
+				return 'gu-role--crimson';
 			case 'director': return 'gu-role--indigo';
 			case 'coach': return 'gu-role--amber';
 			case 'registrar': return 'gu-role--teal';
@@ -268,42 +311,50 @@
 	}
 
 	/**
-	 * Build the base query shared by count + page fetches.
-	 * Every caller funnels through `normalizeEmailPrefix` so there is exactly
-	 * one place where term casing can drift.
+	 * Build the base query shared by count + page fetches (RBAC tab + optional email prefix).
+	 * Composite index: users — role ASC, email ASC (see firestore.indexes.json).
 	 * @param {string} searchTerm
+	 * @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab
 	 */
-	function buildBaseQuery(searchTerm) {
+	function buildBaseQuery(searchTerm, tab) {
 		const col = collection(db, 'users');
 		const term = normalizeEmailPrefix(searchTerm);
-		if (term) {
-			// Email range prefix search — NO client-side filtering.
-			return query(
-				col,
-				where('email', '>=', term),
-				where('email', '<=', term + '\uf8ff'),
-				orderBy('email')
-			);
+		const rf = roleFilterForTab(tab);
+		/** @type {import('firebase/firestore').QueryConstraint[]} */
+		const parts = [];
+		if (rf.kind === 'eq') {
+			parts.push(where('role', '==', rf.value));
+		} else {
+			parts.push(where('role', 'in', rf.values));
 		}
-		return query(col, orderBy('email'));
+		if (term) {
+			parts.push(where('email', '>=', term));
+			parts.push(where('email', '<=', term + '\uf8ff'));
+		}
+		parts.push(orderBy('email'));
+		return query(col, ...parts);
 	}
 
 	/**
 	 * @param {string} searchTerm
 	 * @param {string} afterEmail Cursor (empty string for first page)
+	 * @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab
 	 */
-	function buildPageQuery(searchTerm, afterEmail) {
-		const base = buildBaseQuery(searchTerm);
+	function buildPageQuery(searchTerm, afterEmail, tab) {
+		const base = buildBaseQuery(searchTerm, tab);
 		if (afterEmail) {
 			return query(base, startAfter(afterEmail), limit(PAGE_SIZE + 1));
 		}
 		return query(base, limit(PAGE_SIZE + 1));
 	}
 
-	/** @param {string} searchTerm */
-	async function loadCount(searchTerm) {
+	/**
+	 * @param {string} searchTerm
+	 * @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab
+	 */
+	async function loadCount(searchTerm, tab) {
 		try {
-			const snap = await getCountFromServer(buildBaseQuery(searchTerm));
+			const snap = await getCountFromServer(buildBaseQuery(searchTerm, tab));
 			totalEstimate = snap.data().count;
 		} catch (e) {
 			console.warn('[global-users] count unavailable', e);
@@ -316,12 +367,13 @@
 	/**
 	 * @param {string} searchTerm
 	 * @param {string} afterEmail
+	 * @param {'admins' | 'directors' | 'coaches' | 'parents_players'} tab
 	 */
-	async function loadPage(searchTerm, afterEmail) {
+	async function loadPage(searchTerm, afterEmail, tab) {
 		loading = true;
 		err = '';
 		try {
-			const snap = await getDocs(buildPageQuery(searchTerm, afterEmail));
+			const snap = await getDocs(buildPageQuery(searchTerm, afterEmail, tab));
 			/** @type {UserRow[]} */
 			const next = [];
 			snap.forEach((d) => {
@@ -383,11 +435,16 @@
 			return;
 		}
 
+		const segment = activeTab;
+		const term = searchApplied;
+
 		let cancelled = false;
 		(async () => {
 			await loadClubNames();
 			if (cancelled) return;
-			await Promise.all([loadCount(''), loadPage('', '')]);
+			cursorStack = [''];
+			pageIndex = 0;
+			await Promise.all([loadCount(term, segment), loadPage(term, '', segment)]);
 		})();
 
 		return () => {
@@ -405,7 +462,7 @@
 		searchApplied = term;
 		cursorStack = [''];
 		pageIndex = 0;
-		await Promise.all([loadCount(term), loadPage(term, '')]);
+		await Promise.all([loadCount(term, activeTab), loadPage(term, '', activeTab)]);
 	};
 
 	const clearSearch = async () => {
@@ -413,7 +470,7 @@
 		searchApplied = '';
 		cursorStack = [''];
 		pageIndex = 0;
-		await Promise.all([loadCount(''), loadPage('', '')]);
+		await Promise.all([loadCount('', activeTab), loadPage('', '', activeTab)]);
 	};
 
 	/** @param {KeyboardEvent} e */
@@ -433,7 +490,7 @@
 		const cursor = rows[rows.length - 1].email || rows[rows.length - 1].id;
 		cursorStack = [...cursorStack, cursor];
 		pageIndex = pageIndex + 1;
-		await loadPage(searchApplied, cursor);
+		await loadPage(searchApplied, cursor, activeTab);
 	};
 
 	const goPrev = async () => {
@@ -442,7 +499,7 @@
 		cursorStack = next;
 		pageIndex = pageIndex - 1;
 		const cursor = next[next.length - 1] ?? '';
-		await loadPage(searchApplied, cursor);
+		await loadPage(searchApplied, cursor, activeTab);
 	};
 
 	// ── Row menu ─────────────────────────────────────────────────────────────
@@ -556,7 +613,7 @@
 			closePurge();
 			// Reload current page so the row disappears.
 			const cursor = cursorStack[pageIndex] ?? '';
-			await Promise.all([loadCount(searchApplied), loadPage(searchApplied, cursor)]);
+			await Promise.all([loadCount(searchApplied, activeTab), loadPage(searchApplied, cursor, activeTab)]);
 		} catch (e) {
 			console.error('[global-users] purge failed', e);
 			purgeErr = e instanceof Error ? e.message : 'Purge failed.';
@@ -731,7 +788,7 @@
 	<!-- Summary strip -->
 	<div class="gu-summary">
 		<span class="gu-summary__item">
-			<span class="gu-summary__k">Total users</span>
+			<span class="gu-summary__k">Segment total</span>
 			<span class="gu-summary__v">{totalLabel}</span>
 		</span>
 		{#if searchApplied}
@@ -746,6 +803,58 @@
 				{rows.length > 0 ? `${rangeStart.toLocaleString()}–${rangeEnd.toLocaleString()}` : '0'}
 			</span>
 		</span>
+	</div>
+
+	<!-- RBAC matrix tabs (above the DataTable) -->
+	<div
+		class="tw-mb-4 tw-flex tw-flex-wrap tw-gap-1 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-950/60 tw-p-1"
+		role="tablist"
+		aria-label="User segments by role"
+	>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'admins'}
+			class="tw-rounded-md tw-border-b-2 tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-500/80 {activeTab === 'admins'
+				? 'tw-border-amber-400 tw-bg-indigo-600 tw-text-white tw-shadow-inner tw-ring-2 tw-ring-indigo-400/50'
+				: 'tw-border-transparent tw-bg-transparent tw-text-slate-400 hover:tw-bg-slate-800/80 hover:tw-text-slate-100'}"
+			onclick={() => (activeTab = 'admins')}
+		>
+			Global Admins
+		</button>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'directors'}
+			class="tw-rounded-md tw-border-b-2 tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-500/80 {activeTab === 'directors'
+				? 'tw-border-amber-400 tw-bg-indigo-600 tw-text-white tw-shadow-inner tw-ring-2 tw-ring-indigo-400/50'
+				: 'tw-border-transparent tw-bg-transparent tw-text-slate-400 hover:tw-bg-slate-800/80 hover:tw-text-slate-100'}"
+			onclick={() => (activeTab = 'directors')}
+		>
+			Directors
+		</button>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'coaches'}
+			class="tw-rounded-md tw-border-b-2 tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-500/80 {activeTab === 'coaches'
+				? 'tw-border-amber-400 tw-bg-indigo-600 tw-text-white tw-shadow-inner tw-ring-2 tw-ring-indigo-400/50'
+				: 'tw-border-transparent tw-bg-transparent tw-text-slate-400 hover:tw-bg-slate-800/80 hover:tw-text-slate-100'}"
+			onclick={() => (activeTab = 'coaches')}
+		>
+			Coaches
+		</button>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'parents_players'}
+			class="tw-rounded-md tw-border-b-2 tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-transition-colors focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-500/80 {activeTab === 'parents_players'
+				? 'tw-border-amber-400 tw-bg-indigo-600 tw-text-white tw-shadow-inner tw-ring-2 tw-ring-indigo-400/50'
+				: 'tw-border-transparent tw-bg-transparent tw-text-slate-400 hover:tw-bg-slate-800/80 hover:tw-text-slate-100'}"
+			onclick={() => (activeTab = 'parents_players')}
+		>
+			Parents &amp; Players
+		</button>
 	</div>
 
 	<!-- DataTable -->
@@ -769,7 +878,11 @@
 				{:else if rows.length === 0}
 					<tr>
 						<td colspan="6" class="gu-td-empty">
-							{searchApplied ? 'No users match the search.' : 'No users found.'}
+							{#if searchApplied}
+								No users in this segment match the search.
+							{:else}
+								{emptyMessageForTab(activeTab)}
+							{/if}
 						</td>
 					</tr>
 				{:else}

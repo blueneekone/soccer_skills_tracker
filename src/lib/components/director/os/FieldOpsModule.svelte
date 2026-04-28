@@ -5,6 +5,7 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
 	import { saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
@@ -12,7 +13,46 @@
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 	import DeploymentCalendar from '$lib/components/director/os/DeploymentCalendar.svelte';
 
-	let { clubId = '' } = $props();
+	let { clubId: clubIdProp = '' } = $props();
+
+	/**
+	 * Prefer parent prop; else mirror director tenant resolution (switcher → profile →
+	 * license JWT claim → first club). Avoids "No club scope" while teams hydrate.
+	 */
+	const resolvedClubId = $derived.by(() => {
+		const fromProp =
+			typeof clubIdProp === 'string' ? clubIdProp.trim() : '';
+		if (fromProp) return fromProp;
+
+		const activeCtx =
+			typeof workspaceContextStore.activeClubId === 'string' ?
+				workspaceContextStore.activeClubId.trim() :
+				'';
+		if (
+			activeCtx &&
+			teamsStore.loaded &&
+			teamsStore.clubs.some((c) => c.id === activeCtx)
+		) {
+			return activeCtx;
+		}
+
+		const prof = authStore.userProfile;
+		const rawProfileId =
+			typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
+		if (rawProfileId && rawProfileId !== 'admin') return rawProfileId;
+
+		const lic =
+			typeof licenseEntitlementStore.clubIdResolved === 'string' ?
+				licenseEntitlementStore.clubIdResolved.trim() :
+				'';
+		if (lic) return lic;
+
+		if (teamsStore.loaded && teamsStore.clubs.length > 0) {
+			return teamsStore.clubs[0].id;
+		}
+
+		return '';
+	});
 
 	const isReadOnly = $derived(
 		isSubscriptionReadOnly(
@@ -63,7 +103,9 @@
 	let dragTeamId = $state(/** @type {string | null} */ (null));
 	let dropHintSlot = $state(/** @type {number | null} */ (null));
 
-	const clubTeams = $derived(teamsStore.teams.filter((t) => t.clubId === clubId));
+	const clubTeams = $derived(
+		teamsStore.teams.filter((t) => t.clubId === resolvedClubId)
+	);
 
 	function pad2(n) {
 		return n < 10 ? `0${n}` : `${n}`;
@@ -118,11 +160,11 @@
 	});
 
 	$effect(() => {
-		if (!clubId) {
+		if (!resolvedClubId) {
 			fields = [];
 			return;
 		}
-		const q = query(collection(db, 'fields'), where('clubId', '==', clubId));
+		const q = query(collection(db, 'fields'), where('clubId', '==', resolvedClubId));
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
@@ -198,7 +240,7 @@
 			openReadOnlyUpgrade();
 			return;
 		}
-		if (!clubId || !newFieldName.trim()) return;
+		if (!resolvedClubId || !newFieldName.trim()) return;
 		savingField = true;
 		try {
 			const slug = newFieldName
@@ -206,10 +248,10 @@
 				.replace(/[^a-z0-9]+/g, '_')
 				.replace(/^_|_$/g, '')
 				.slice(0, 64);
-			const fid = `${clubId}_${slug || 'field'}_${Date.now().toString(36)}`;
+			const fid = `${resolvedClubId}_${slug || 'field'}_${Date.now().toString(36)}`;
 			await directorUpsertField({
 				fieldId: fid,
-				clubId,
+				clubId: resolvedClubId,
 				name: newFieldName.trim(),
 				location: newFieldLocation.trim(),
 				status: 'active'
@@ -362,9 +404,7 @@
 		</div>
 	</div>
 
-	{#if !clubId}
-		<p class="tw-m-0 tw-text-sm" style="color: var(--danger-red);">No club scope.</p>
-	{:else}
+	{#if resolvedClubId}
 		<section
 			class="tw-rounded-xl tw-border tw-p-4 tw-mb-4"
 			style="border-color: rgba(15, 23, 42, 0.1); background: #fafafa;"
@@ -379,10 +419,10 @@
 				Upload PDFs or images of your facilities. 				In the facility drawer, set a map pin, address, routing link, and tactical canvas for parents and
 				coaches. Coaches can open read-only maps from their tools tab.
 			</p>
-			<FacilityMapVault {clubId} canManage={!isReadOnly} />
+			<FacilityMapVault clubId={resolvedClubId} canManage={!isReadOnly} />
 		</section>
 
-		<DeploymentCalendar {clubId} canManage={!isReadOnly} />
+		<DeploymentCalendar clubId={resolvedClubId} canManage={!isReadOnly} />
 
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
@@ -564,6 +604,31 @@
 				</div>
 			{/if}
 		{/if}
+	{:else}
+		<div
+			class="tw-rounded-xl tw-border tw-p-5 tw-max-w-2xl"
+			style="
+				border-color: rgba(148, 163, 184, 0.45);
+				background: linear-gradient(
+					165deg,
+					rgba(15, 23, 42, 0.92) 0%,
+					rgba(30, 41, 59, 0.88) 100%
+				);
+				box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+			"
+			role="alert"
+		>
+			<p
+				class="tw-m-0 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider"
+				style="color: rgba(251, 191, 36, 0.95); letter-spacing: 0.08em;"
+			>
+				Security lock
+			</p>
+			<p class="tw-m-0 tw-mt-2 tw-text-sm tw-leading-relaxed" style="color: #e2e8f0;">
+				Your account is not bound to a specific Organization. Contact a Global Admin to assign your Club
+				Scope.
+			</p>
+		</div>
 	{/if}
 </div>
 
