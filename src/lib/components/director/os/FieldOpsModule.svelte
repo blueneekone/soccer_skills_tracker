@@ -393,36 +393,37 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-4">
-	<div class="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
-		<div>
-			<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight" style="color: var(--text-primary);">
-				Field Ops
-			</h3>
-			<p class="tw-m-0 tw-text-sm tw-mt-1" style="color: var(--text-secondary);">
-				Master Schedule For Your Pitches — conflicts are blocked server-side.
-			</p>
-		</div>
+	<div
+		class="tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-gradient-to-br tw-from-slate-950 tw-via-slate-900 tw-to-slate-950 tw-px-4 tw-py-3 tw-shadow-xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-sm"
+	>
+		<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight tw-text-slate-100">
+			Field Ops
+		</h3>
+		<p class="tw-m-0 tw-mt-1 tw-text-sm tw-text-slate-400">
+			Master schedule for your pitches — conflicts are blocked server-side.
+		</p>
 	</div>
 
 	{#if resolvedClubId}
-		<section
-			class="tw-rounded-xl tw-border tw-p-4 tw-mb-4"
-			style="border-color: rgba(15, 23, 42, 0.1); background: #fafafa;"
+		<!-- Liquid glass split: deployments (1/3) + facility vault / map (2/3) -->
+		<div
+			class="field-ops-split tw-mb-6 tw-grid tw-min-h-[min(560px,72vh)] tw-grid-cols-1 tw-gap-4 tw-items-stretch lg:tw-grid-cols-[minmax(260px,1fr)_minmax(0,2fr)]"
 		>
-			<h4
-				class="tw-m-0 tw-mb-1 tw-text-sm tw-font-extrabold tw-tracking-tight"
-				style="color: var(--text-primary);"
+			<div
+				class="tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/95 tw-shadow-2xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-md"
 			>
-				Static Map Vault
-			</h4>
-			<p class="tw-m-0 tw-mb-3 tw-text-xs" style="color: var(--text-secondary);">
-				Upload PDFs or images of your facilities. 				In the facility drawer, set a map pin, address, routing link, and tactical canvas for parents and
-				coaches. Coaches can open read-only maps from their tools tab.
-			</p>
-			<FacilityMapVault clubId={resolvedClubId} canManage={!isReadOnly} />
-		</section>
-
-		<DeploymentCalendar clubId={resolvedClubId} canManage={!isReadOnly} />
+				<DeploymentCalendar
+					clubId={resolvedClubId}
+					canManage={!isReadOnly}
+					embedded
+				/>
+			</div>
+			<div
+				class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/95 tw-shadow-2xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-md"
+			>
+				<FacilityMapVault clubId={resolvedClubId} canManage={!isReadOnly} embedded />
+			</div>
+		</div>
 
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">

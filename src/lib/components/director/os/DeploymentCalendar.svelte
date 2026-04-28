@@ -17,7 +17,23 @@
 	 * @typedef {{ id: string; title?: string; kind?: string; startsAt?: unknown; endsAt?: unknown; facilityId?: string; teamIds?: string[] }} CalRow
 	 */
 
-	let { clubId = '', canManage = true } = $props();
+	let { clubId = '', canManage = true, embedded = false } = $props();
+
+	/** @param {string | undefined} k */
+	function kindBadgeClass(k) {
+		const v = typeof k === 'string' ? k.toLowerCase() : '';
+		if (v === 'match') return 'dep-badge dep-badge--match';
+		if (v === 'tournament') return 'dep-badge dep-badge--tournament';
+		return 'dep-badge dep-badge--practice';
+	}
+
+	/** @param {string | undefined} k */
+	function kindAccent(k) {
+		const v = typeof k === 'string' ? k.toLowerCase() : '';
+		if (v === 'match') return 'dep-kind--match';
+		if (v === 'tournament') return 'dep-kind--tournament';
+		return 'dep-kind--practice';
+	}
 
 	let rows = $state(/** @type {CalRow[]} */ ([]));
 	let facilities = $state(/** @type {Array<{ id: string; name: string }>} */ ([]));
@@ -206,21 +222,18 @@
 	}
 </script>
 
-<section
-	class="tw-rounded-xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-p-4 tw-mb-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-	aria-labelledby="dep-cal-head"
->
-	<div class="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3 tw-mb-3">
+{#snippet depCalHead()}
+	<div class="tw-flex tw-shrink-0 tw-flex-wrap tw-items-start tw-justify-between tw-gap-3 tw-border-b tw-border-slate-800/90 tw-bg-slate-950/60 tw-px-4 tw-py-3 tw-backdrop-blur-sm">
 		<div>
 			<h4
 				id="dep-cal-head"
-				class="tw-m-0 tw-text-sm tw-font-black tw-uppercase tw-tracking-[0.12em] tw-text-slate-300"
+				class="tw-m-0 tw-text-[11px] tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-slate-400"
 			>
-				Tactical deployment calendar
+				Tactical deployments
 			</h4>
-			<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-slate-500">
-				Logistics & scheduling matrix —
-				<code class="tw-rounded tw-bg-black/40 tw-px-1 tw-py-0.5 tw-text-[10px] tw-text-emerald-400/90"
+			<p class="tw-m-0 tw-mt-1 tw-text-[11px] tw-leading-relaxed tw-text-slate-500">
+				Live logistics matrix ·
+				<code class="tw-rounded tw-bg-black/50 tw-px-1 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-emerald-400/85"
 					>deployment_calendar_entries</code
 				>
 			</p>
@@ -228,7 +241,7 @@
 		{#if canManage}
 			<button
 				type="button"
-				class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-emerald-500/35 tw-bg-emerald-950/40 tw-px-3 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-transition hover:tw-border-emerald-400/55 hover:tw-bg-emerald-950/70"
+				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-950/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
 				onclick={openModal}
 			>
 				<i class="ph ph-plus-circle tw-text-base" aria-hidden="true"></i>
@@ -236,63 +249,145 @@
 			</button>
 		{/if}
 	</div>
+{/snippet}
 
+{#snippet depCalBody()}
 	{#if !clubId}
-		<p class="tw-m-0 tw-text-xs tw-text-red-400">No club scope.</p>
+		<p class="tw-m-0 tw-p-4 tw-text-xs tw-text-red-400">No club scope.</p>
 	{:else if loading}
-		<p class="tw-m-0 tw-text-sm tw-text-slate-500">Loading logistics feed…</p>
+		<p class="tw-m-0 tw-p-4 tw-text-sm tw-text-slate-500">Loading logistics feed…</p>
 	{:else if listErr}
-		<p class="tw-m-0 tw-text-sm tw-text-red-400">{listErr}</p>
+		<p class="tw-m-0 tw-p-4 tw-text-sm tw-text-red-400">{listErr}</p>
 	{:else if rows.length === 0}
 		<div
-			class="tw-rounded-lg tw-border tw-border-dashed tw-border-slate-700 tw-bg-black/30 tw-px-4 tw-py-10 tw-text-center"
+			class="tw-mx-3 tw-my-4 tw-rounded-xl tw-border tw-border-dashed tw-border-slate-700/80 tw-bg-black/25 tw-px-4 tw-py-10 tw-text-center"
 		>
-			<p class="tw-m-0 tw-text-sm tw-font-semibold tw-text-slate-200">No deployments scheduled</p>
-			<p class="tw-mt-2 tw-m-0 tw-text-xs tw-text-slate-500">
+			<p class="tw-m-0 tw-text-sm tw-font-semibold tw-tracking-tight tw-text-slate-200">
+				No deployments scheduled
+			</p>
+			<p class="tw-mt-2 tw-m-0 tw-text-xs tw-leading-relaxed tw-text-slate-500">
 				Practice, match, and tournament windows appear here for audit and field coordination.
 			</p>
 		</div>
 	{:else}
-		<div
-			class="tw-grid tw-gap-px tw-overflow-hidden tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-800/80"
-			style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));"
-		>
+		<div class="dep-cal-list tw-flex tw-flex-col tw-gap-2 tw-p-3 tw-pb-4">
 			{#each rows as row (row.id)}
 				<article
-					class="tw-bg-slate-950 tw-p-3 tw-min-h-[96px] tw-flex tw-flex-col tw-gap-1 tw-border tw-border-transparent hover:tw-border-slate-700/90"
+					class="dep-cal-card group tw-relative tw-flex tw-min-h-[88px] tw-flex-col tw-gap-1.5 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800/90 tw-bg-gradient-to-br tw-from-slate-950/90 tw-to-slate-900/70 tw-p-3 tw-pl-4 tw-shadow-inner tw-transition tw-duration-200 hover:tw-bg-slate-800/50 hover:tw-shadow-[0_8px_32px_rgba(0,0,0,0.35)] {kindAccent(
+						row.kind,
+					)}"
 				>
-					<p class="tw-m-0 tw-text-[13px] tw-font-bold tw-leading-snug tw-text-slate-100">
+					<div
+						class="dep-cal-card__accent tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-1 tw-rounded-l-xl tw-opacity-90"
+						aria-hidden="true"
+					></div>
+					<p
+						class="tw-m-0 tw-text-[13px] tw-font-semibold tw-leading-snug tw-tracking-tight tw-text-slate-100"
+					>
 						{typeof row.title === 'string' ? row.title : 'Deployment'}
 					</p>
-					<p class="tw-m-0 tw-text-[11px] tw-font-mono tw-tabular-nums tw-text-slate-400">
+					<p class="tw-m-0 tw-font-mono tw-text-[11px] tw-tabular-nums tw-tracking-tight tw-text-slate-400">
 						{formatStart(row.startsAt)}
 					</p>
-					<div class="tw-mt-auto tw-flex tw-flex-wrap tw-gap-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wide">
-						<span class="tw-rounded tw-bg-slate-900 tw-px-1.5 tw-py-0.5 tw-text-slate-400">
-							{kindLabel(row.kind)}
-						</span>
+					<div
+						class="tw-mt-auto tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.08em]"
+					>
+						<span class={kindBadgeClass(row.kind)}>{kindLabel(row.kind)}</span>
 						{#if row.facilityId}
 							<span
-								class="tw-rounded tw-bg-black/50 tw-px-1.5 tw-py-0.5 tw-text-emerald-400/90"
+								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-md tw-border tw-border-emerald-500/25 tw-bg-emerald-950/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-emerald-300/95"
 								title={facilityLabel(row.facilityId)}
 							>
-								📍 {facilityLabel(row.facilityId)}
+								<i class="ph ph-map-pin tw-text-emerald-400/90" aria-hidden="true"></i>
+								{facilityLabel(row.facilityId)}
 							</span>
 						{/if}
 						{#if row.teamIds && row.teamIds[0]}
-							<span class="tw-rounded tw-bg-black/50 tw-px-1.5 tw-py-0.5 tw-text-cyan-400/85">
+							<span
+								class="tw-rounded-md tw-border tw-border-cyan-500/25 tw-bg-cyan-950/35 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-cyan-300/90"
+							>
 								{teamLabel(row.teamIds[0])}
 							</span>
 						{/if}
 					</div>
-					<p class="tw-m-0 tw-text-[10px] tw-font-mono tw-text-slate-600 tw-truncate" title={row.id}>
-						ID {row.id}
+					<p class="tw-m-0 tw-font-mono tw-text-[9px] tw-text-slate-600 tw-truncate" title={row.id}>
+						OP {row.id.slice(0, 8)}…
 					</p>
 				</article>
 			{/each}
 		</div>
 	{/if}
-</section>
+{/snippet}
+
+{#if embedded}
+	<div
+		class="tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-overflow-hidden tw-text-slate-100"
+		aria-labelledby="dep-cal-head"
+	>
+		{@render depCalHead()}
+		<div class="tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-overflow-x-hidden">
+			{@render depCalBody()}
+		</div>
+	</div>
+{:else}
+	<section
+		class="tw-mb-4 tw-rounded-xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+		aria-labelledby="dep-cal-head"
+	>
+		{@render depCalHead()}
+		<div class="tw-mt-3">
+			{@render depCalBody()}
+		</div>
+	</section>
+{/if}
+
+<style>
+	.dep-cal-card.dep-kind--practice .dep-cal-card__accent {
+		background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+		box-shadow: 0 0 16px rgba(52, 211, 153, 0.42);
+	}
+
+	.dep-cal-card.dep-kind--match .dep-cal-card__accent {
+		background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+		box-shadow: 0 0 16px rgba(251, 146, 60, 0.38);
+	}
+
+	.dep-cal-card.dep-kind--tournament .dep-cal-card__accent {
+		background: linear-gradient(180deg, #c4b5fd 0%, #7c3aed 100%);
+		box-shadow: 0 0 16px rgba(167, 139, 250, 0.35);
+	}
+
+	.dep-badge {
+		display: inline-flex;
+		align-items: center;
+		border-radius: 6px;
+		padding: 3px 9px;
+		font-size: 10px;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border: 1px solid transparent;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	.dep-badge--practice {
+		color: #6ee7b7;
+		background: rgba(6, 78, 59, 0.55);
+		border-color: rgba(52, 211, 153, 0.38);
+	}
+
+	.dep-badge--match {
+		color: #fdba74;
+		background: rgba(124, 45, 18, 0.55);
+		border-color: rgba(251, 146, 60, 0.42);
+	}
+
+	.dep-badge--tournament {
+		color: #ddd6fe;
+		background: rgba(76, 29, 149, 0.48);
+		border-color: rgba(167, 139, 250, 0.42);
+	}
+</style>
 
 {#if modalOpen}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->

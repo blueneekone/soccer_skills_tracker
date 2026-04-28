@@ -400,41 +400,58 @@
 	</div>
 {:else}
 	{#key resetFlip}
-		<div class="fd-map-toolbar">
-			{#if !readonly}
-				<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}>
-					Clear field drawings
-				</button>
-			{/if}
+		<div class="fd-map-shell">
+			<div class="fd-map-toolbar">
+				{#if !readonly}
+					<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}>
+						Clear field drawings
+					</button>
+				{/if}
+			</div>
+			<div
+				id="facility-map"
+				bind:this={mapRoot}
+				class="fd-map-root"
+				role="application"
+				aria-label={readonly ? 'Facility satellite map' : 'Satellite map — draw fields or click to set routing pin'}
+			></div>
 		</div>
-		<div
-			id="facility-map"
-			bind:this={mapRoot}
-			class="fd-map-root"
-			role="application"
-			aria-label={readonly ? 'Facility satellite map' : 'Satellite map — draw fields or click to set routing pin'}
-		></div>
 	{/key}
 {/if}
 
 <style>
+	.fd-map-shell {
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+
 	.fd-map-root {
 		box-sizing: border-box;
+		flex: 1 1 auto;
+		min-height: 280px;
 		width: 100%;
-		min-height: min(78vh, 720px);
-		height: min(78vh, 720px);
-		border-radius: 0;
-		border: 1px solid rgba(15, 23, 42, 0.85);
+		height: 100%;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid rgba(51, 65, 85, 0.85);
 		margin: 0;
+		background: rgb(15 23 42);
 	}
 
 	:global(html.dark) .fd-map-root {
-		border-color: rgba(148, 163, 184, 0.35);
+		border-color: rgba(71, 85, 105, 0.75);
+		background: rgb(15 23 42);
 	}
 
 	.fd-map-toolbar {
 		display: flex;
 		justify-content: flex-end;
+		flex-shrink: 0;
 		margin-bottom: 8px;
 	}
 
@@ -459,8 +476,8 @@
 	.fd-map-empty {
 		box-sizing: border-box;
 		display: flex;
-		min-height: min(78vh, 720px);
-		height: min(78vh, 720px);
+		flex: 1 1 auto;
+		min-height: 280px;
 		width: 100%;
 		flex-direction: column;
 		align-items: center;
@@ -468,8 +485,9 @@
 		gap: 0.75rem;
 		padding: 1rem 1.25rem;
 		text-align: center;
-		border-radius: 14px;
-		border: 1px solid #e4e4e7;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid rgb(51 65 85 / 0.65);
 	}
 
 	.fd-map-empty--no-key {

@@ -22,7 +22,7 @@
 	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath?: string; mapDownloadUrl?: string; type?: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string; status?: string; lockReason?: string; lockedAt?: import('firebase/firestore').Timestamp; mapData?: string }} FacilityMapRow
 	 */
 
-	let { clubId = '', canManage = false } = $props();
+	let { clubId = '', canManage = false, embedded = false } = $props();
 
 	let rows = $state(/** @type {FacilityMapRow[]} */ ([]));
 	let mapName = $state('');
@@ -473,7 +473,7 @@
 	}
 </script>
 
-<div class="fm-vault">
+<div class="fm-vault" class:fm-vault--embedded={embedded}>
 	{#if canManage && clubId}
 		<section
 			class="fm-panel fm-panel--registry"
@@ -911,6 +911,30 @@
 		width: 100%;
 	}
 
+	.fm-vault--embedded {
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		max-height: 100%;
+		overflow: hidden;
+		height: 100%;
+	}
+
+	.fm-vault--embedded > section.fm-panel--registry {
+		flex-shrink: 0;
+		max-height: 42%;
+		overflow-y: auto;
+	}
+
+	.fm-vault--embedded .fm-vault__grid {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+		align-content: start;
+	}
+
 	.fm-vault__grid {
 		display: grid;
 		grid-template-columns: 1fr;
@@ -936,6 +960,22 @@
 	:global(html.dark) .fm-panel {
 		background: #0f0f11;
 		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.fm-vault--embedded .fm-panel {
+		border-radius: 0;
+		border-width: 0 0 1px;
+		border-color: rgb(30 41 59);
+		background: rgb(15 23 42 / 0.92);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+	}
+
+	.fm-vault--embedded .fm-panel__title {
+		color: rgb(241 245 249);
+	}
+
+	.fm-vault--embedded .fm-panel__hint {
+		color: rgb(148 163 184);
 	}
 
 	.fm-panel__title {
@@ -1300,25 +1340,43 @@
 
 	.fm-logistics-map-slot {
 		margin-bottom: 12px;
-		min-height: 500px;
+		min-height: 0;
 		display: flex;
 		flex-direction: column;
+		flex: 1 1 auto;
 	}
 
 	.fm-logistics-map-slot > :global(*) {
 		flex: 1 1 auto;
-		min-height: 500px;
+		min-height: min(52vh, 640px);
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
 	}
 
 	.fm-logistics-map-slot--drawing {
-		margin-left: -16px;
-		margin-right: -16px;
-		width: calc(100% + 32px);
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		margin-left: 0;
+		margin-right: 0;
+		width: 100%;
 		max-width: none;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid rgb(51 65 85 / 0.85);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
 	}
 
 	.fm-logistics-map-slot--drawing > :global(*) {
-		min-height: min(78vh, 720px);
+		flex: 1 1 auto;
+		min-height: min(52vh, 640px);
+		height: auto;
+	}
+
+	.fm-vault--embedded .fm-logistics-map-slot--drawing > :global(*) {
+		min-height: min(58vh, 680px);
 	}
 
 	.fm-routing-uri-input {
