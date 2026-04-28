@@ -57,10 +57,11 @@ export function getLoginWaterfallDestination(role, profile) {
 		};
 	}
 	if (role === 'registrar') {
+		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
-			path: '/registrar',
-			context: 'registrar',
-			pivotKey: 'ctx-registrar',
+			path: '/director?tab=registrars',
+			context: 'director',
+			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};
 	}
 	if (role === 'parent') {
@@ -108,7 +109,6 @@ export function getContextFromHref(href) {
 		if (path.startsWith('/admin')) return 'admin';
 		if (path.startsWith('/director')) return 'director';
 		if (path.startsWith('/coach')) return 'coach';
-		if (path.startsWith('/registrar')) return 'registrar';
 		if (path.startsWith('/recruiter')) return 'recruiter';
 		if (path.startsWith('/parent')) return 'household';
 		if (path === '/home' || path.startsWith('/home/')) return 'household';

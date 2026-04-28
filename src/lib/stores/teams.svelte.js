@@ -187,13 +187,11 @@ export function resolveTeamsLoadScope(pathname, role) {
 	/** Global Admin QA: load full org catalog on staff dashboards (no club/team on profile). */
 	if (
 		(role === 'super_admin' || role === 'global_admin') &&
-		(pathname.startsWith('/director') ||
-			pathname.startsWith('/coach') ||
-			pathname.startsWith('/registrar'))
+		(pathname.startsWith('/director') || pathname.startsWith('/coach'))
 	) {
 		return 'admin_full';
 	}
-	if (pathname.startsWith('/director') || pathname.startsWith('/registrar')) return 'club';
+	if (pathname.startsWith('/director')) return 'club';
 	if (pathname.startsWith('/coach')) return 'coach';
 	if (pathname.startsWith('/recruiter')) return 'none';
 	if (role === 'director' || role === 'registrar') return 'club';

@@ -15,3 +15,18 @@ Concise sprint-by-sprint checkpoint against roadmap intent (**Epic 5** in [`road
 
 - Canonical workout logging for XP remains in **`workout_logs`** and callable flows ([`functions/index.js`](../functions/index.js), `logTrainingSession` creates `workout_logs` docs ~4354+)—relevant background for Epic 5 telemetry bus and downstream Phase 9 specs.
 - This document is descriptive, not scope approval; align priorities with [`roadmap.md`](../roadmap.md).
+
+---
+
+## Remaining build (Epic 5 — tracked deliverables)
+
+| Item | Status | Artifacts |
+|------|--------|-----------|
+| **5.6** Player OS billing gate | **Shipped (client)** | [`src/lib/enterprise/playerOsAccess.js`](../src/lib/enterprise/playerOsAccess.js) (`computePlayerOsBlocked`); [`src/lib/components/shell/PlayerShell.svelte`](../src/lib/components/shell/PlayerShell.svelte) + [`src/lib/components/shell/PlayerReadOnlyBillingBanner.svelte`](../src/lib/components/shell/PlayerReadOnlyBillingBanner.svelte). Entitlements via [`src/lib/stores/licenseEntitlement.svelte.js`](../src/lib/stores/licenseEntitlement.svelte.js); Stripe field names from [`functions/index.js`](../functions/index.js) `stripeWebhook` / `license_entitlements`. |
+| **5.2** Registrar / Director consolidation | **Doc + optional redirect** | [`docs/REGISTRAR_DIRECTOR_MIGRATION.md`](REGISTRAR_DIRECTOR_MIGRATION.md); [`src/routes/(app)/registrar/+layout.svelte`](../src/routes/(app)/registrar/+layout.svelte) → `/director?tab=registrars`; `registrar` on [`src/lib/auth/route-policies.js`](../src/lib/auth/route-policies.js) `/director`. |
+| **5.3** Deployment calendar | **Scaffold** | [`docs/DEPLOYMENT_CALENDAR_SCHEMA.md`](DEPLOYMENT_CALENDAR_SCHEMA.md); [`src/lib/components/director/os/DeploymentCalendarPanel.svelte`](../src/lib/components/director/os/DeploymentCalendarPanel.svelte) in Field Ops; [`firestore.rules`](../firestore.rules), [`firestore.indexes.json`](../firestore.indexes.json). |
+| **5.4** Weather lock | **Doc only** | [`docs/WEATHER_LOCK_DESIGN.md`](WEATHER_LOCK_DESIGN.md). |
+| **5.5** Messaging audit | **Inventory** | [`docs/FCM_AND_MESSAGING_MATRIX.md`](FCM_AND_MESSAGING_MATRIX.md). |
+| **5.1** COPPA / signup matrix | **Doc** | [`docs/COPPA_SIGNUP_MATRIX.md`](COPPA_SIGNUP_MATRIX.md). |
+
+**Manual / follow-up:** Stripe and weather provider secrets; deploy Firestore index for `deployment_calendar_entries`; optional `evaluateFieldWeatherLock` implementation per weather doc; full registrar parity QA before removing `/registrar` pages.

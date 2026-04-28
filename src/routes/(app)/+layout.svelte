@@ -157,10 +157,6 @@
 				const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
 				if (cid) workspaceContextStore.setActiveClubId(cid);
 				workspaceContextStore.setActiveContext('director');
-			} else if (path.startsWith('/registrar')) {
-				const cid = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
-				if (cid) workspaceContextStore.setActiveClubId(cid);
-				workspaceContextStore.setActiveContext('registrar');
 			} else if (path.startsWith('/coach')) {
 				const m = /^ctx-coach-(.+)$/.exec(pivot);
 				if (m?.[1]) workspaceContextStore.setActiveTeamId(m[1]);
@@ -185,7 +181,7 @@
 		const path = page.url.pathname;
 		const clubs = teamsStore.clubs;
 		const teamRows = teamsStore.teams;
-		if ((path.startsWith('/director') || path.startsWith('/registrar')) && clubs.length > 0) {
+		if (path.startsWith('/director') && clubs.length > 0) {
 			const cur = workspaceContextStore.activeClubId?.trim();
 			if (!cur) workspaceContextStore.setActiveClubId(clubs[0].id);
 		} else if (path.startsWith('/coach') && teamRows.length > 0) {
@@ -201,7 +197,7 @@
 		}
 		const path = page.url.pathname;
 		let cid = typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '';
-		if ((authStore.role === 'super_admin' || authStore.role === 'global_admin') && (path.startsWith('/director') || path.startsWith('/registrar'))) {
+		if ((authStore.role === 'super_admin' || authStore.role === 'global_admin') && path.startsWith('/director')) {
 			const a = workspaceContextStore.activeClubId?.trim();
 			if (a) cid = a;
 			else if (!cid || cid === 'admin') cid = teamsStore.clubs[0]?.id || '';

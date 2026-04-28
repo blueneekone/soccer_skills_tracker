@@ -107,6 +107,10 @@
 	min-width: 0;
 }
 
+.ps-stack .ps-scroll-shell {
+	-webkit-overflow-scrolling: touch;
+}
+
 /* ─── Top bar ─────────────────────────────────────────────────── */
 .ps-topbar {
 	flex-shrink: 0;
@@ -197,6 +201,12 @@
 	scrollbar-color: rgba(245, 158, 11, 0.35) rgba(255, 255, 255, 0.04);
 }
 
+/* Scroll lives on parent (.tw-overflow-y-auto); inner sits above gradient — no double scrollbars */
+.ps-canvas.ps-canvas--scroll-inner {
+	overflow-y: visible;
+	overflow-x: hidden;
+}
+
 .ps-canvas::-webkit-scrollbar {
 	width: 8px;
 }
@@ -274,6 +284,12 @@
 
 .ps-bottom-nav__link--active .ps-bottom-nav__icon {
 	color: var(--pp-bg);
+}
+
+.ps-bottom-nav__link--gated {
+	opacity: 0.52;
+	cursor: not-allowed;
+	filter: grayscale(0.4);
 }
 
 .ps-bottom-nav__icon {

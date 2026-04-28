@@ -1,11 +1,15 @@
 <script>
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { collection, onSnapshot, query, where } from 'firebase/firestore';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
+	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
 	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
+	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
 	import '$lib/styles/player-shell.css';
 
 	let disconnectBusy = $state(false);
@@ -39,6 +43,17 @@
 
 	const playerUid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
+
+	const playerOsGate = $derived(
+		computePlayerOsBlocked(
+			{
+				role: authStore.userProfile?.role ?? role,
+				clubId: authStore.userProfile?.clubId,
+			},
+			licenseEntitlementStore.clubDoc,
+			licenseEntitlementStore.entitlement
+		)
+	);
 
 	$effect(() => {
 		if (!browser || !playerUid || role !== 'player') {
@@ -85,6 +100,18 @@
 		}
 		return path.startsWith(href + '/');
 	}
+
+	const PRIMARY_LOCK_HREFS = new Set(['/player/workout', '/player/armory']);
+
+	/**
+	 * @param {string} href
+	 * @param {MouseEvent} e
+	 */
+	function onNavClick(href, e) {
+		if (!playerOsGate.blocked || !PRIMARY_LOCK_HREFS.has(href)) return;
+		e.preventDefault();
+		void goto('/settings');
+	}
 </script>
 
 <div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
@@ -96,12 +123,16 @@
 
 	<nav class="ps-bottom-nav" aria-label="Player navigation">
 		{#each NAV_LINKS as link (link.href)}
+			{@const gated = playerOsGate.blocked && PRIMARY_LOCK_HREFS.has(link.href)}
 			<a
 				class="ps-bottom-nav__link"
 				class:ps-bottom-nav__link--active={isActive(link.href)}
+				class:ps-bottom-nav__link--gated={gated}
 				href={link.href}
 				aria-current={isActive(link.href) ? 'page' : undefined}
+				aria-disabled={gated ? 'true' : undefined}
 				data-sveltekit-preload-data="hover"
+				onclick={(e) => onNavClick(link.href, e)}
 			>
 				<i class="ph {link.icon} ps-bottom-nav__icon" aria-hidden="true"></i>
 				<span class="ps-bottom-nav__label">{link.label}</span>
@@ -110,6 +141,13 @@
 	</nav>
 
 	<div class="ps-stack">
+		{#if playerOsGate.blocked}
+			<PlayerReadOnlyBillingBanner
+				reasons={playerOsGate.reasons}
+				onPricing={async () => await goto('/pricing')}
+				onSettings={async () => await goto('/settings')}
+			/>
+		{/if}
 		<header class="ps-topbar">
 			<div class="ps-topbar__brand">
 				<span class="ps-topbar__mark" aria-hidden="true">
@@ -162,8 +200,14 @@
 			</div>
 		{/if}
 
-		<main class="ps-canvas">
-			{@render children?.()}
-		</main>
+		<div class="ps-scroll-shell tw-relative tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
+			<div
+				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-bg-gradient-to-br tw-from-slate-900 tw-to-black"
+				aria-hidden="true"
+			></div>
+			<main class="ps-canvas ps-canvas--scroll-inner tw-relative tw-z-[1]">
+				{@render children?.()}
+			</main>
+		</div>
 	</div>
 </div>

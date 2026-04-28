@@ -42,7 +42,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 			items: [
 				{ id: 'ctx-qa-director', label: 'QA: Director View', href: '/director' },
 				{ id: 'ctx-qa-coach', label: 'QA: Coach View', href: '/coach' },
-				{ id: 'ctx-qa-registrar', label: 'QA: Registrar View', href: '/registrar' },
+				{ id: 'ctx-qa-registrar', label: 'QA: Registrar View', href: '/director?tab=registrars' },
 			],
 		});
 	}
@@ -97,7 +97,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	if (role === 'registrar') {
 		sections.push({
 			title: 'Registrar',
-			items: [{ id: 'ctx-registrar', label: 'Registrar Workspace', href: '/registrar' }],
+			items: [{ id: 'ctx-registrar', label: 'Registrar workspace', href: '/director?tab=registrars' }],
 		});
 	}
 
@@ -143,6 +143,9 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 		}
 		const cl = cid ? clubs.find((c) => c.id === cid) : null;
 		const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || cid || 'Club';
+		if (role === 'registrar') {
+			return { title: `Registrar · ${name}`, sub: 'Compliance' };
+		}
 		return { title: `Director · ${name}`, sub: 'Workspace' };
 	}
 	if (pathname.startsWith('/coach')) {
@@ -176,15 +179,6 @@ export function getShellContextLabel(pathname, role, profile, clubs, teams, emai
 	}
 	if (pathname.startsWith('/parent')) {
 		return { title: 'Parent · Household', sub: 'Workspace' };
-	}
-	if (pathname.startsWith('/registrar')) {
-		if ((role === 'super_admin' || role === 'global_admin') && clubs.length > 0) {
-			const cid = activeClub || clubs[0].id;
-			const cl = clubs.find((c) => c.id === cid);
-			const name = (cl && typeof cl.name === 'string' && cl.name.trim()) || cid || 'Club';
-			return { title: `Registrar · ${name}`, sub: 'QA' };
-		}
-		return { title: 'Registrar Workspace', sub: 'Compliance' };
 	}
 	if (pathname.startsWith('/recruiter')) {
 		return { title: 'Recruiter', sub: 'Workspace' };

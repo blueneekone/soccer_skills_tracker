@@ -212,6 +212,14 @@
         { "fieldPath": "childEmail", "order": "ASCENDING" },
         { "fieldPath": "dispatchCode", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "deployment_calendar_entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clubId", "order": "ASCENDING" },
+        { "fieldPath": "startsAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

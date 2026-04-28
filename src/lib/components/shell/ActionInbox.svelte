@@ -110,7 +110,7 @@
 						id: 'vpc-approvals',
 						label: `${vpcN} VPC approval${vpcN === 1 ? '' : 's'} awaiting director sign-off`,
 						meta: 'Privacy · Consent',
-						href: '/director?tab=overview',
+						href: '/director?tab=household',
 					});
 				}
 			} else if (role === 'registrar' && clubId) {
@@ -139,7 +139,7 @@
 							id: 'passport-pending',
 							label: `${passportPending} passport${passportPending === 1 ? '' : 's'} pending verification`,
 							meta: 'Compliance · Passports',
-							href: '/registrar',
+							href: '/director?tab=registrars',
 						});
 					}
 					if (!cancelled && waiverMissing > 0) {
@@ -147,7 +147,7 @@
 							id: 'waiver-missing',
 							label: `${waiverMissing} player${waiverMissing === 1 ? '' : 's'} missing waiver${waiverMissing === 1 ? '' : 's'}`,
 							meta: 'Compliance · Waivers',
-							href: '/registrar',
+							href: '/director?tab=registrars',
 						});
 					}
 				} else if (role === 'parent' && authStore.userProfile?.playerName) {

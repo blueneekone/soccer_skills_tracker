@@ -1588,6 +1588,20 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Epic 5.3: deployment calendar (Director Field Ops) — tenant-scoped read; writes via callable TBD.
+    match /deployment_calendar_entries/{entryId} {
+      allow read: if authed() && (
+        isSuper()
+        || (
+          resource.data.keys().hasAll(['clubId'])
+          && resource.data.clubId != null
+          && resource.data.clubId == tokenClub()
+          && (isDirector() || isRegistrar())
+        )
+      );
+      allow create, update, delete: if false;
+    }
+
     // Epic 3 Sprint 5: aggregated seat usage vs purchased cap (Admin SDK / callable only).
     match /license_entitlements/{clubId} {
       allow read: if authed() && canReadLicenseEntitlement(clubId);

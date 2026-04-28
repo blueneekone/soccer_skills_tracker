@@ -58,12 +58,6 @@ const parentLinks = [
 ];
 
 /** @type {ShellNavItem[]} */
-const registrarLinks = [
-	{ tab: '', label: 'Overview', icon: 'ph-chart-line', href: '/registrar/overview' },
-	{ tab: '', label: 'Compliance Desk', icon: 'ph-shield-check', href: '/registrar' },
-];
-
-/** @type {ShellNavItem[]} */
 const recruiterLinks = [
 	{ tab: '', label: 'Recruiter Search', icon: 'ph-magnifying-glass', href: '/recruiter' },
 ];
@@ -78,7 +72,6 @@ export function inferWorkspaceContextFromPathname(pathname) {
 	if (p.startsWith('/admin')) return 'admin';
 	if (p.startsWith('/director')) return 'director';
 	if (p.startsWith('/coach')) return 'coach';
-	if (p.startsWith('/registrar')) return 'registrar';
 	if (p.startsWith('/recruiter')) return 'recruiter';
 	return 'household';
 }
@@ -129,10 +122,10 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 			};
 		case 'registrar':
 			return {
-				workspaceLabel: 'Registrar Workspace',
-				mobileTitle: 'Registrar Workspace',
-				links: registrarLinks,
-				showBilling: false,
+				workspaceLabel: 'Registrar',
+				mobileTitle: 'Director',
+				links: directorLinks,
+				showBilling: true,
 			};
 		case 'recruiter':
 			return {
@@ -206,16 +199,6 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 export function isShellNavActive(pathname, searchParams, item) {
 	try {
 		const u = new URL(item.href, 'https://placeholder.local');
-
-		if (pathname.startsWith('/registrar')) {
-			if (u.pathname === '/registrar') {
-				return pathname === '/registrar' || pathname === '/registrar/';
-			}
-			if (u.pathname.startsWith('/registrar/')) {
-				return pathname === u.pathname || pathname.startsWith(`${u.pathname}/`);
-			}
-			return false;
-		}
 
 		// Admin OS uses deep path-based routing — use prefix matching so drill-down
 		// pages (e.g. /admin/organizations/clubId) keep the parent link highlighted.
