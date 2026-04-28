@@ -1,0 +1,515 @@
+<script>
+	import { browser } from '$app/environment';
+	import { untrack } from 'svelte';
+
+	/**
+	 * @typedef {{ lat: number; lng: number }} LatLng
+	 * @typedef {{ name: string; path: LatLng[] }} FacilityPolygonRecord
+	 * @typedef {{ label?: string; lat: number; lng: number }} FacilityMarkerRecord
+	 * @typedef {{ version: 1; polygons: FacilityPolygonRecord[]; markers: FacilityMarkerRecord[] }} FacilityMapData
+	 */
+
+	let {
+		latitude = $bindable(/** @type {number | null} */ (null)),
+		longitude = $bindable(/** @type {number | null} */ (null)),
+		mapData = $bindable(/** @type {FacilityMapData} */ ({ version: 1, polygons: [], markers: [] })),
+		readonly = false,
+	} = $props();
+
+	const apiKeyFromEnv =
+		typeof import.meta.env.VITE_GOOGLE_MAPS_API_KEY === 'string' ?
+			import.meta.env.VITE_GOOGLE_MAPS_API_KEY.trim()
+		:	'';
+	const apiKeyFallback =
+		typeof import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY === 'string' ?
+			import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY.trim()
+		:	'';
+	const apiKey = apiKeyFromEnv || apiKeyFallback;
+
+	let mapRoot = $state(/** @type {HTMLDivElement | null} */ (null));
+	let loadError = $state(false);
+
+	/** Set after Maps JS initializes — drives routing-pin sync from coord inputs. */
+	let mapHandles = $state(
+		/** @type {null | { map: any; g: any; routingMarker: any | null; routingIcon: any }} */ (null),
+	);
+
+	let resetFlip = $state(0);
+
+	/**
+	 * @param {string} hex
+	 */
+	function markerSvgDataUrl(hex) {
+		const svg =
+			`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 24 24">` +
+			`<path fill="${hex}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>` +
+			`</svg>`;
+		return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+	}
+
+	function brandPrimaryHex() {
+		if (!browser) return '#f59e0b';
+		const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim();
+		if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
+		return '#f59e0b';
+	}
+
+	/**
+	 * @param {any} map
+	 * @param {any} g
+	 * @param {FacilityMapData} data
+	 * @param {any[]} polygonSink
+	 * @param {any[]} markerSink
+	 */
+	function hydrateFromMapData(map, g, data, polygonSink, markerSink) {
+		for (const p of polygonSink.splice(0)) {
+			try {
+				p.setMap(null);
+			} catch {
+				/* ignore */
+			}
+		}
+		for (const m of markerSink.splice(0)) {
+			try {
+				m.setMap(null);
+			} catch {
+				/* ignore */
+			}
+		}
+
+		const bounds = new g.maps.LatLngBounds();
+
+		for (const polyRec of data.polygons || []) {
+			if (!polyRec?.path?.length || typeof polyRec.name !== 'string') continue;
+			const path = polyRec.path.map(
+				(pt) =>
+					new g.maps.LatLng(
+						typeof pt.lat === 'number' ? pt.lat : Number(pt.lat),
+						typeof pt.lng === 'number' ? pt.lng : Number(pt.lng)
+					),
+			);
+			const poly = new g.maps.Polygon({
+				paths: path,
+				map,
+				fillColor: '#22c55e',
+				fillOpacity: 0.22,
+				strokeColor: '#22c55e',
+				strokeOpacity: 0.95,
+				strokeWeight: 2,
+				editable: false,
+				draggable: false,
+			});
+			polygonSink.push(poly);
+			path.forEach((/** @type {any} */ ll) => bounds.extend(ll));
+		}
+
+		for (const mr of data.markers || []) {
+			if (typeof mr.lat !== 'number' || typeof mr.lng !== 'number') continue;
+			const pos = new g.maps.LatLng(mr.lat, mr.lng);
+			const marker = new g.maps.Marker({
+				map,
+				position: pos,
+				title: mr.label || '',
+			});
+			markerSink.push(marker);
+			bounds.extend(pos);
+		}
+
+		if (!bounds.isEmpty()) {
+			map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
+			g.maps.event.addListenerOnce(map, 'idle', () => {
+				const z = map.getZoom();
+				if (typeof z === 'number' && z > 19) map.setZoom(19);
+			});
+		}
+	}
+
+	$effect(() => {
+		const lat = latitude;
+		const lng = longitude;
+		const h = mapHandles;
+		if (!h?.map || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+		const pos = { lat, lng };
+		if (!h.routingMarker) {
+			h.routingMarker = new h.g.maps.Marker({
+				map: h.map,
+				position: pos,
+				icon: h.routingIcon,
+				zIndex: 99999,
+			});
+		} else {
+			h.routingMarker.setPosition(pos);
+		}
+	});
+
+	$effect(() => {
+		if (!browser || !mapRoot || !apiKey) return;
+
+		loadError = false;
+
+		const lat0 = untrack(() => latitude);
+		const lng0 = untrack(() => longitude);
+		const readOnly = readonly;
+		const initialMapData = untrack(() => structuredClone(mapData));
+
+		let cancelled = false;
+		/** @type {any} */
+		let map = null;
+		/** @type {any} */
+		let routingMarker = null;
+		/** @type {any} */
+		let mapClickListener = null;
+		/** @type {any} */
+		let overlayListener = null;
+		/** @type {any} */
+		let drawingManager = null;
+		/** @type {any[]} */
+		const drawnPolygons = [];
+		/** @type {any[]} */
+		const drawnMarkers = [];
+
+		mapHandles = null;
+
+		(async () => {
+			try {
+				const { setOptions, importLibrary } = await import('@googlemaps/js-api-loader');
+				setOptions({
+					key: apiKey,
+					v: 'weekly',
+					libraries: ['drawing', 'places'],
+				});
+				await importLibrary('maps');
+				await importLibrary('drawing');
+				await importLibrary('places');
+				if (cancelled || !mapRoot) return;
+
+				const g = globalThis.google;
+				if (!g?.maps) {
+					loadError = true;
+					return;
+				}
+
+				const center =
+					lat0 != null && lng0 != null ?
+						{ lat: lat0, lng: lng0 }
+					:	{ lat: 39.8283, lng: -98.5795 };
+				const zoom = lat0 != null && lng0 != null ? 17 : 4;
+
+				map = new g.maps.Map(mapRoot, {
+					center,
+					zoom,
+					mapTypeId: g.maps.MapTypeId.HYBRID,
+					mapTypeControl: true,
+					streetViewControl: false,
+					fullscreenControl: true,
+					clickableIcons: false,
+				});
+
+				const iconUrl = markerSvgDataUrl(brandPrimaryHex());
+				const routingIcon = {
+					url: iconUrl,
+					scaledSize: new g.maps.Size(32, 40),
+					anchor: new g.maps.Point(16, 40),
+				};
+
+				if (lat0 != null && lng0 != null) {
+					routingMarker = new g.maps.Marker({
+						map,
+						position: center,
+						icon: routingIcon,
+						zIndex: 99999,
+					});
+				}
+
+				mapHandles = { map, g, routingMarker, routingIcon };
+
+				hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
+
+				if (!readOnly) {
+					drawingManager = new g.maps.drawing.DrawingManager({
+						drawingMode: null,
+						drawingControl: true,
+						drawingControlOptions: {
+							position: g.maps.ControlPosition.TOP_CENTER,
+							drawingModes: [g.maps.drawing.OverlayType.POLYGON, g.maps.drawing.OverlayType.MARKER],
+						},
+						polygonOptions: {
+							fillColor: '#22c55e',
+							fillOpacity: 0.25,
+							strokeColor: '#22c55e',
+							strokeOpacity: 1,
+							strokeWeight: 2,
+							editable: false,
+							draggable: false,
+						},
+						markerOptions: {
+							draggable: false,
+						},
+					});
+					drawingManager.setMap(map);
+
+					overlayListener = g.maps.event.addListener(drawingManager, 'overlaycomplete', (/** @type {any} */ e) => {
+						if (cancelled) return;
+						drawingManager.setDrawingMode(null);
+
+						if (e.type === g.maps.drawing.OverlayType.POLYGON) {
+							const poly = e.overlay;
+							const path = poly.getPath();
+							const coords = [];
+							for (let i = 0; i < path.getLength(); i++) {
+								const ll = path.getAt(i);
+								coords.push({ lat: ll.lat(), lng: ll.lng() });
+							}
+							const rawName =
+								typeof window !== 'undefined' ?
+									window.prompt('Name this field (e.g. Field 1, North Pitch)', '')
+								:	null;
+							const name = rawName != null ? String(rawName).trim() : '';
+							if (!name) {
+								poly.setMap(null);
+								return;
+							}
+							poly.setEditable(false);
+							poly.setDraggable(false);
+							drawnPolygons.push(poly);
+							mapData = {
+								version: 1,
+								polygons: [...mapData.polygons, { name, path: coords }],
+								markers: [...mapData.markers],
+							};
+						} else if (e.type === g.maps.drawing.OverlayType.MARKER) {
+							const m = e.overlay;
+							const pos = m.getPosition();
+							if (!pos) {
+								m.setMap(null);
+								return;
+							}
+							const raw =
+								typeof window !== 'undefined' ?
+									window.prompt('Label this marker (optional)', '')
+								:	null;
+							const label = raw != null ? String(raw).trim() : '';
+							drawnMarkers.push(m);
+							mapData = {
+								version: 1,
+								polygons: [...mapData.polygons],
+								markers: [
+									...mapData.markers,
+									{
+										...(label ? { label } : {}),
+										lat: pos.lat(),
+										lng: pos.lng(),
+									},
+								],
+							};
+						}
+					});
+
+					mapClickListener = map.addListener('click', (/** @type {any} */ e) => {
+						if (cancelled || !e.latLng) return;
+						if (drawingManager && drawingManager.getDrawingMode() !== null) return;
+						const plat = e.latLng.lat();
+						const plng = e.latLng.lng();
+						const h = mapHandles;
+						if (h?.routingMarker) {
+							h.routingMarker.setMap(null);
+						}
+						const nm = new g.maps.Marker({
+							map,
+							position: { lat: plat, lng: plng },
+							icon: routingIcon,
+							zIndex: 99999,
+						});
+						routingMarker = nm;
+						if (mapHandles) {
+							mapHandles = { ...mapHandles, routingMarker: nm };
+						}
+						latitude = plat;
+						longitude = plng;
+					});
+				}
+			} catch (e) {
+				console.error('[FacilityDrawingMap]', e);
+				loadError = true;
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+			mapHandles = null;
+			const ggl = globalThis.google;
+			if (overlayListener && ggl?.maps?.event) {
+				ggl.maps.event.removeListener(overlayListener);
+			}
+			if (mapClickListener && ggl?.maps?.event) {
+				ggl.maps.event.removeListener(mapClickListener);
+			}
+			if (drawingManager && ggl?.maps?.event) {
+				ggl.maps.event.clearInstanceListeners(drawingManager);
+			}
+			for (const p of drawnPolygons) {
+				try {
+					p.setMap(null);
+				} catch {
+					/* ignore */
+				}
+			}
+			drawnPolygons.length = 0;
+			for (const m of drawnMarkers) {
+				try {
+					m.setMap(null);
+				} catch {
+					/* ignore */
+				}
+			}
+			drawnMarkers.length = 0;
+			if (routingMarker) {
+				routingMarker.setMap(null);
+				routingMarker = null;
+			}
+			if (map && ggl?.maps?.event) {
+				ggl.maps.event.clearInstanceListeners(map);
+			}
+			map = null;
+			drawingManager = null;
+		};
+	});
+
+	function requestRemountForClear() {
+		resetFlip += 1;
+		mapData = { version: 1, polygons: [], markers: [] };
+	}
+</script>
+
+{#if !apiKey}
+	<div
+		class="fd-map-empty fd-map-empty--no-key"
+		role="img"
+		aria-label="Google Maps API key required"
+	>
+		<i class="ph ph-lock-key fd-map-empty__icon" aria-hidden="true"></i>
+		<p class="fd-map-empty__text">
+			Set <code class="fd-map-code">VITE_GOOGLE_MAPS_API_KEY</code> (or
+			<code class="fd-map-code">VITE_PUBLIC_GOOGLE_MAPS_API_KEY</code>) to enable satellite drawing tools.
+		</p>
+	</div>
+{:else if loadError}
+	<div class="fd-map-empty fd-map-empty--error" role="img" aria-label="Google Maps failed to load">
+		<i class="ph ph-map-pin fd-map-empty__icon" aria-hidden="true"></i>
+		<p class="fd-map-empty__text">Unable to load Google Maps. Check your API key and billing.</p>
+	</div>
+{:else}
+	{#key resetFlip}
+		<div class="fd-map-toolbar">
+			{#if !readonly}
+				<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}>
+					Clear field drawings
+				</button>
+			{/if}
+		</div>
+		<div
+			id="facility-map"
+			bind:this={mapRoot}
+			class="fd-map-root"
+			role="application"
+			aria-label={readonly ? 'Facility satellite map' : 'Satellite map — draw fields or click to set routing pin'}
+		></div>
+	{/key}
+{/if}
+
+<style>
+	.fd-map-root {
+		box-sizing: border-box;
+		width: 100%;
+		min-height: min(78vh, 720px);
+		height: min(78vh, 720px);
+		border-radius: 0;
+		border: 1px solid rgba(15, 23, 42, 0.85);
+		margin: 0;
+	}
+
+	:global(html.dark) .fd-map-root {
+		border-color: rgba(148, 163, 184, 0.35);
+	}
+
+	.fd-map-toolbar {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 8px;
+	}
+
+	.fd-map-clear {
+		font: inherit;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		padding: 6px 12px;
+		border-radius: 8px;
+		cursor: pointer;
+		color: #fecaca;
+		background: rgba(127, 29, 29, 0.55);
+		border: 1px solid rgba(248, 113, 113, 0.45);
+	}
+
+	.fd-map-clear:hover {
+		filter: brightness(1.06);
+	}
+
+	.fd-map-empty {
+		box-sizing: border-box;
+		display: flex;
+		min-height: min(78vh, 720px);
+		height: min(78vh, 720px);
+		width: 100%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		padding: 1rem 1.25rem;
+		text-align: center;
+		border-radius: 14px;
+		border: 1px solid #e4e4e7;
+	}
+
+	.fd-map-empty--no-key {
+		background-color: #18181b;
+		background-image: repeating-linear-gradient(
+			135deg,
+			transparent,
+			transparent 10px,
+			rgba(113, 113, 122, 0.09) 10px,
+			rgba(113, 113, 122, 0.09) 11px
+		);
+	}
+
+	.fd-map-empty--error {
+		background-color: #18181b;
+		border-color: rgba(248, 113, 113, 0.35);
+	}
+
+	.fd-map-empty__icon {
+		font-size: 2.25rem;
+		line-height: 1;
+		color: #fbbf24;
+	}
+
+	.fd-map-empty__text {
+		margin: 0;
+		max-width: 26rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.45;
+		color: #d4d4d8;
+	}
+
+	.fd-map-code {
+		font-family: ui-monospace, monospace;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #fde047;
+		background: rgba(15, 23, 42, 0.75);
+		padding: 1px 6px;
+		border-radius: 4px;
+	}
+</style>

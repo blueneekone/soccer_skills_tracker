@@ -15,10 +15,11 @@
 	import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 	import '$lib/styles/enterprise-console.css';
 	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
-	import LogisticsMap from '$lib/components/director/os/LogisticsMap.svelte';
+	import FacilityDrawingMap from '$lib/components/field-ops/FacilityDrawingMap.svelte';
 
 	/**
-	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath?: string; mapDownloadUrl?: string; type?: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string; status?: string; lockReason?: string; lockedAt?: import('firebase/firestore').Timestamp }} FacilityMapRow
+	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
+	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath?: string; mapDownloadUrl?: string; type?: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string; status?: string; lockReason?: string; lockedAt?: import('firebase/firestore').Timestamp; mapData?: string }} FacilityMapRow
 	 */
 
 	let { clubId = '', canManage = false } = $props();
@@ -48,6 +49,15 @@
 	let regErr = $state('');
 	/** @type {'Active' | 'Locked' | 'LOCKED'} */
 	let draftStatus = $state('Active');
+
+	/** Google Drawing overlay payload; persisted as Firestore string field `mapData`. */
+	let draftMapData = $state(
+		/** @type {FacilityMapDataPayload} */ ({
+			version: 1,
+			polygons: [],
+			markers: [],
+		}),
+	);
 
 	const previewRow = $derived.by(() => {
 		if (!previewId) return /** @type {FacilityMapRow | null} */ (null);
@@ -90,6 +100,11 @@
 					const status = typeof x.status === 'string' ? x.status : '';
 					const lockReason = typeof x.lockReason === 'string' ? x.lockReason : '';
 					const lockedAt = x.lockedAt;
+					const mapDataRaw = x.mapData;
+					const mapData =
+						typeof mapDataRaw === 'string' && mapDataRaw.trim() ?
+							mapDataRaw
+						:	undefined;
 					const hasVaultMap = Boolean(mapStoragePath && mapDownloadUrl);
 					return {
 						id: d.id,
@@ -106,6 +121,7 @@
 						...(status ? { status } : {}),
 						...(lockReason ? { lockReason } : {}),
 						...(lockedAt ? { lockedAt } : {}),
+						...(mapData ? { mapData } : {}),
 					};
 				});
 				list.sort((a, b) => {
@@ -130,6 +146,48 @@
 		draftLat = null;
 		draftLng = null;
 		draftStatus = 'Active';
+		draftMapData = { version: 1, polygons: [], markers: [] };
+	}
+
+	/**
+	 * @param {unknown} raw
+	 */
+	function parseFacilityMapData(raw) {
+		if (typeof raw !== 'string' || !raw.trim()) {
+			return { version: 1, polygons: [], markers: [] };
+		}
+		try {
+			const o = JSON.parse(raw);
+			if (!o || typeof o !== 'object') throw new Error('bad');
+			const polys = Array.isArray(o.polygons) ? o.polygons : [];
+			const markers = Array.isArray(o.markers) ? o.markers : [];
+			const cleanPolys = [];
+			for (const p of polys) {
+				if (!p || typeof p !== 'object' || typeof p.name !== 'string' || !Array.isArray(p.path)) continue;
+				const path = [];
+				for (const pt of p.path) {
+					if (!pt || typeof pt !== 'object') continue;
+					const lat = typeof pt.lat === 'number' ? pt.lat : Number(pt.lat);
+					const lng = typeof pt.lng === 'number' ? pt.lng : Number(pt.lng);
+					if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+					path.push({ lat, lng });
+				}
+				if (path.length >= 3) cleanPolys.push({ name: p.name.trim().slice(0, 120), path });
+			}
+			const cleanMarks = [];
+			for (const m of markers) {
+				if (!m || typeof m !== 'object') continue;
+				const lat = typeof m.lat === 'number' ? m.lat : Number(m.lat);
+				const lng = typeof m.lng === 'number' ? m.lng : Number(m.lng);
+				if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+				const label =
+					typeof m.label === 'string' && m.label.trim() ? m.label.trim().slice(0, 120) : undefined;
+				cleanMarks.push(label ? { label, lat, lng } : { lat, lng });
+			}
+			return { version: /** @type {1} */ (1), polygons: cleanPolys, markers: cleanMarks };
+		} catch {
+			return { version: 1, polygons: [], markers: [] };
+		}
 	}
 
 	/**
@@ -148,6 +206,7 @@
 			st === 'Locked' ? 'Locked' :
 			st === 'Active' ? 'Active' :
 			'Active';
+		draftMapData = parseFacilityMapData(row.mapData);
 	}
 
 	/**
@@ -365,6 +424,12 @@
 			alert('Enter latitude and longitude (use the map pin or fields above).');
 			return;
 		}
+		const mdJson = JSON.stringify(draftMapData);
+		if (mdJson.length > 500000) {
+			logisticsSaveErr =
+				'Field drawing data exceeds the 500 KB limit. Clear drawings or simplify shapes, then try again.';
+			return;
+		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${draftLat},${draftLng}`;
 		logisticsSaving = true;
 		try {
@@ -378,6 +443,7 @@
 					draftStatus === 'LOCKED' ? 'LOCKED' :
 					draftStatus === 'Locked' ? 'Locked' :
 					'Active',
+				mapData: mdJson,
 			};
 			if (draftStatus === 'Active') {
 				patch.lockReason = deleteField();
@@ -738,11 +804,12 @@
 						</option>
 					</select>
 				{/if}
-				<div class="fm-logistics-map-slot">
+				<div class="fm-logistics-map-slot fm-logistics-map-slot--drawing">
 					{#key previewId}
-						<LogisticsMap
+						<FacilityDrawingMap
 							bind:latitude={draftLat}
 							bind:longitude={draftLng}
+							bind:mapData={draftMapData}
 							readonly={!canManage}
 						/>
 					{/key}
@@ -773,7 +840,7 @@
 						disabled={logisticsSaving}
 						onclick={() => void saveLogistics()}
 					>
-						{logisticsSaving ? 'Saving…' : 'Save logistics'}
+						{logisticsSaving ? 'Saving…' : 'Save facility'}
 					</button>
 					{#if logisticsSaveErr}
 						<p class="fm-err" role="alert">{logisticsSaveErr}</p>
@@ -1241,6 +1308,17 @@
 	.fm-logistics-map-slot > :global(*) {
 		flex: 1 1 auto;
 		min-height: 500px;
+	}
+
+	.fm-logistics-map-slot--drawing {
+		margin-left: -16px;
+		margin-right: -16px;
+		width: calc(100% + 32px);
+		max-width: none;
+	}
+
+	.fm-logistics-map-slot--drawing > :global(*) {
+		min-height: min(78vh, 720px);
 	}
 
 	.fm-routing-uri-input {

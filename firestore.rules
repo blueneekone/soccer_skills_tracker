@@ -207,7 +207,9 @@ service cloud.firestore {
         && (!d.keys().hasAny(['lockReason'])
           || (d.lockReason is string && d.lockReason.size() <= 500))
         && (!d.keys().hasAny(['lockedAt'])
-          || d.lockedAt is timestamp);
+          || d.lockedAt is timestamp)
+        && (!d.keys().hasAny(['mapData'])
+          || (d.mapData is string && d.mapData.size() <= 500000));
     }
 
     function facilityRegistryCreateOk(d) {
