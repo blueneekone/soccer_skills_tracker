@@ -102,6 +102,27 @@
 		];
 	}
 
+	/** Monthly XP chart rows — mirrored on `player_stats` when recruit profile is private. */
+	function parseMonthlyPerformance(mp) {
+		return Array.isArray(mp) ?
+			mp
+				.filter(
+					(/** @type {unknown} */ row) =>
+						row &&
+						typeof row === 'object' &&
+						typeof /** @type {{month?: unknown}} */ (row).month === 'string',
+				)
+				.map((/** @type {unknown} */ row) => {
+					const r = /** @type {{month?: string; xp?: unknown}} */ (row);
+					const xp =
+						typeof r.xp === 'number' && !Number.isNaN(r.xp) ?
+							Math.floor(r.xp) :
+							0;
+					return { month: String(r.month ?? ''), xp };
+				}) :
+			[];
+	}
+
 	/**
 	 * @param {number} level
 	 * @param {number} totalXp
@@ -203,9 +224,11 @@
 	$effect(() => {
 		if (!browser || !userUid) return;
 
-		const ref = doc(db, 'public_player_profiles', userUid);
-		const unsub = onSnapshot(
-			ref,
+		const refPub = doc(db, 'public_player_profiles', userUid);
+		const refPs = doc(db, 'player_stats', userUid);
+
+		const unsubPub = onSnapshot(
+			refPub,
 			(snap) => {
 				const profileXp = Math.max(
 					0,
@@ -221,7 +244,6 @@
 
 				if (!snap.exists()) {
 					skillsVector = [10, 10, 10, 10];
-					monthlyPerformance = [];
 					dossierLevel = lvFallback;
 					dossierXp = profileXp;
 					badges = computeBadges(lvFallback, profileXp);
@@ -234,25 +256,6 @@
 						/** @type {Record<string, unknown>} */ (d.verified_trial_scores) :
 						{};
 				skillsVector = skillVectorFromTrials(vts);
-
-				const mp = d.monthly_performance;
-				monthlyPerformance = Array.isArray(mp) ?
-					mp
-						.filter(
-							(/** @type {unknown} */ row) =>
-								row &&
-								typeof row === 'object' &&
-								typeof /** @type {{month?: unknown}} */ (row).month === 'string',
-						)
-						.map((/** @type {unknown} */ row) => {
-							const r = /** @type {{month?: string; xp?: unknown}} */ (row);
-							const xp =
-								typeof r.xp === 'number' && !Number.isNaN(r.xp) ?
-									Math.floor(r.xp) :
-									0;
-							return { month: String(r.month ?? ''), xp };
-						}) :
-					[];
 
 				const lv =
 					typeof d.current_level === 'number' && !Number.isNaN(d.current_level) ?
@@ -271,7 +274,22 @@
 				console.warn('[stats] public_player_profiles snapshot', e);
 			},
 		);
-		return () => unsub();
+
+		const unsubPs = onSnapshot(
+			refPs,
+			(snap) => {
+				const d = snap.exists() ? snap.data() || {} : {};
+				monthlyPerformance = parseMonthlyPerformance(d.monthly_performance);
+			},
+			(e) => {
+				console.warn('[stats] player_stats snapshot', e);
+			},
+		);
+
+		return () => {
+			unsubPub();
+			unsubPs();
+		};
 	});
 
 	onMount(() => {

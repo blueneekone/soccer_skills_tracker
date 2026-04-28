@@ -754,8 +754,62 @@ async function syncPublicPlayerProfile(uid) {
     return;
   }
 
+  const psSnap = await db.collection('player_stats').doc(uid).get();
+  if (!psSnap.exists) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
+      reason: 'no_player_stats',
+      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
+    }, 'H3');
+    await pubRef.delete().catch(() => {});
+    return;
+  }
+  const ps = psSnap.data() || {};
+
+  const nowAgg = new Date();
+  const sixMonthsAgo = new Date(nowAgg);
+  sixMonthsAgo.setUTCMonth(sixMonthsAgo.getUTCMonth() - 6);
+  const lgSnap = await db.collection('workout_logs').where('playerId', '==', uid).get();
+
+  /** @type {Record<string, number>} */
+  const monthXp = {};
+  lgSnap.forEach((doc) => {
+    const lg = doc.data() || {};
+    const ts = lg.timestamp;
+    const t =
+        ts instanceof admin.firestore.Timestamp ?
+          ts.toDate() :
+          null;
+    if (!t || t < sixMonthsAgo) return;
+    const earned = Math.floor(Number(lg.earnedXP) || Number(lg.earnedXp) || Number(lg.earned) || 0);
+    const key =
+        `${t.getUTCFullYear()}-` +
+        `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
+    monthXp[key] = (monthXp[key] || 0) + earned;
+  });
+
+  /** @type {Array<{ month: string, xp: number }>} */
+  const monthlyXp = Object.keys(monthXp)
+      .sort()
+      .map((month) => ({month, xp: monthXp[month]}));
+
+  await db.collection('player_stats').doc(uid).set(
+      {
+        monthly_performance: monthlyXp,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      {merge: true},
+  );
+  dbgWorkout('syncPublicPlayerProfile', 'player_stats_monthly_merged', {
+    uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
+    monthlyRows: monthlyXp.length,
+    workoutLogsInWindow: lgSnap.size,
+  }, 'H2');
+
   if (u.recruitProfilePublic !== true) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'recruit_not_public'}, 'H2');
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
+      reason: 'recruit_not_public',
+      note: 'monthly_performance mirrored on player_stats',
+    }, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -776,17 +830,6 @@ async function syncPublicPlayerProfile(uid) {
     await pubRef.delete().catch(() => {});
     return;
   }
-
-  const psSnap = await db.collection('player_stats').doc(uid).get();
-  if (!psSnap.exists) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
-      reason: 'no_player_stats',
-      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
-    }, 'H3');
-    await pubRef.delete().catch(() => {});
-    return;
-  }
-  const ps = psSnap.data() || {};
   const totalXp =
       typeof ps.total_xp === 'number' && !Number.isNaN(ps.total_xp) ?
         Math.floor(ps.total_xp) :
@@ -879,33 +922,6 @@ async function syncPublicPlayerProfile(uid) {
       verifiedTrialScores[skill] = res;
     });
   }
-
-  const now = new Date();
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setUTCMonth(sixMonthsAgo.getUTCMonth() - 6);
-  const lgSnap = await db.collection('workout_logs').where('playerId', '==', uid).get();
-
-  /** @type {Record<string, number>} */
-  const monthXp = {};
-  lgSnap.forEach((doc) => {
-    const lg = doc.data() || {};
-    const ts = lg.timestamp;
-    const t =
-        ts instanceof admin.firestore.Timestamp ?
-          ts.toDate() :
-          null;
-    if (!t || t < sixMonthsAgo) return;
-    const earned = Math.floor(Number(lg.earnedXP) || Number(lg.earnedXp) || Number(lg.earned) || 0);
-    const key =
-        `${t.getUTCFullYear()}-` +
-        `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
-    monthXp[key] = (monthXp[key] || 0) + earned;
-  });
-
-  /** @type {Array<{ month: string, xp: number }>} */
-  const monthlyXp = Object.keys(monthXp)
-      .sort()
-      .map((month) => ({month, xp: monthXp[month]}));
 
   let verifiedVideoUrl = null;
   let verifiedVideoScoreId = null;
