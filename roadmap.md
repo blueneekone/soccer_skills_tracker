@@ -57,29 +57,33 @@ This payload is the contract between “multi-sport” branding and real product
 ## CURRENT PHASE: EPIC 5 - THE ENTERPRISE LOGISTICS ENGINE
 **Architecture Shift:** Unified Telemetry Bus, Zero-Trust COPPA Compliance, Safe-Comms Triad.
 
-### Sprint 5.1: The Household Provisioning Engine (COPPA Lock) [ ACTIVE ]
+### Implementation note (last updated: April 2026)
+
+Epic 5 is delivered across **multiple sub-sprints** with **partial** completion on several roadmap bullets (not everything in the bullets below lands as “done” in one release). Sprint-level **evidence checklist** lives in **`docs/EPIC5_STATUS.md`**.
+
+### Sprint 5.1: The Household Provisioning Engine (COPPA Lock) (`partial`)
 - Tear down standard open-signup flows.
 - Build Parent-First invite flow, liability waiver digital signatures, and `coppaSigned` verification.
 - Build the Operative Generation system (Parents spawn child login credentials).
 
-### Sprint 5.2: Director OS & Registrar Consolidation
+### Sprint 5.2: Director OS & Registrar Consolidation (`partial`)
 - Nuke the standalone `/registrar` application.
 - Build the "Compliance Matrix" into the Director OS to track Household onboarding and billing states.
 
-### Sprint 5.3: The Logistics & Scheduling Matrix
+### Sprint 5.3: The Logistics & Scheduling Matrix (`partial`)
 - Build the Facility Vault (where Directors map field GPS coordinates).
 - Build the tactical deployment calendar for practice and match scheduling.
 
-### Sprint 5.4: The Meteorological Defense System
+### Sprint 5.4: The Meteorological Defense System (`not evidenced in codebase`)
 - Integrate a Weather API (Tomorrow.io / StrikeAlert) with Firebase Cloud Functions.
 - Logic Lock: If Lightning Strike = True AND distance to Field Coordinates <= 6 miles THEN Field Status = LOCKED.
 
-### Sprint 5.5: Safe-Comms & FCM Push Network
+### Sprint 5.5: Safe-Comms & FCM Push Network (`partial`)
 - Implement Firebase Cloud Messaging (FCM).
 - Build the Broadcast system for Coaches/Directors.
 - Build the Triad Protocol (Player + Parent + Coach). ZERO 1-on-1 private messaging allowed for minors.
 
-### Sprint 5.6: Stripe Monetization Engine & Director Portal
+### Sprint 5.6: Stripe Monetization Engine & Director Portal (`partial`)
 - Integrate Stripe for B2B Club licensing and B2C Parent dues. 
 - Build the Logic Gate: Tie compliance/billing status to the Player OS lockout function.
 
