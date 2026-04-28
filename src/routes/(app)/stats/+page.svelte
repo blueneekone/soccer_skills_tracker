@@ -24,6 +24,11 @@
 
 	/** @type {Array<{ month: string; xp: number }>} */
 	let monthlyPerformance = $state([]);
+	/** @type {Array<{ day: string; xp: number }>} */
+	let dailyPerformance = $state([]);
+	/** @type {Array<{ week: string; xp: number }>} */
+	let weeklyPerformance = $state([]);
+	let workoutViewMode = $state(/** @type {'daily' | 'weekly' | 'monthly'} */ ('monthly'));
 
 	let dossierLevel = $state(1);
 	let dossierXp = $state(0);
@@ -119,6 +124,46 @@
 							Math.floor(r.xp) :
 							0;
 					return { month: String(r.month ?? ''), xp };
+				}) :
+			[];
+	}
+
+	function parseDailyPerformance(raw) {
+		return Array.isArray(raw) ?
+			raw
+				.filter(
+					(/** @type {unknown} */ row) =>
+						row &&
+						typeof row === 'object' &&
+						typeof /** @type {{day?: unknown}} */ (row).day === 'string',
+				)
+				.map((/** @type {unknown} */ row) => {
+					const r = /** @type {{day?: string; xp?: unknown}} */ (row);
+					const xp =
+						typeof r.xp === 'number' && !Number.isNaN(r.xp) ?
+							Math.floor(r.xp) :
+							0;
+					return { day: String(r.day ?? ''), xp };
+				}) :
+			[];
+	}
+
+	function parseWeeklyPerformance(raw) {
+		return Array.isArray(raw) ?
+			raw
+				.filter(
+					(/** @type {unknown} */ row) =>
+						row &&
+						typeof row === 'object' &&
+						typeof /** @type {{week?: unknown}} */ (row).week === 'string',
+				)
+				.map((/** @type {unknown} */ row) => {
+					const r = /** @type {{week?: string; xp?: unknown}} */ (row);
+					const xp =
+						typeof r.xp === 'number' && !Number.isNaN(r.xp) ?
+							Math.floor(r.xp) :
+							0;
+					return { week: String(r.week ?? ''), xp };
 				}) :
 			[];
 	}
@@ -243,7 +288,6 @@
 				const lvFallback = getLevelProgressFromTotalXp(profileXp).level;
 
 				if (!snap.exists()) {
-					skillsVector = [10, 10, 10, 10];
 					dossierLevel = lvFallback;
 					dossierXp = profileXp;
 					badges = computeBadges(lvFallback, profileXp);
@@ -251,11 +295,6 @@
 				}
 
 				const d = snap.data() || {};
-				const vts =
-					d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
-						/** @type {Record<string, unknown>} */ (d.verified_trial_scores) :
-						{};
-				skillsVector = skillVectorFromTrials(vts);
 
 				const lv =
 					typeof d.current_level === 'number' && !Number.isNaN(d.current_level) ?
@@ -280,6 +319,13 @@
 			(snap) => {
 				const d = snap.exists() ? snap.data() || {} : {};
 				monthlyPerformance = parseMonthlyPerformance(d.monthly_performance);
+				dailyPerformance = parseDailyPerformance(d.daily_performance);
+				weeklyPerformance = parseWeeklyPerformance(d.weekly_performance);
+				const vt =
+					d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
+						/** @type {Record<string, unknown>} */ (d.verified_trial_scores) :
+						{};
+				skillsVector = skillVectorFromTrials(vt);
 			},
 			(e) => {
 				console.warn('[stats] player_stats snapshot', e);
@@ -375,13 +421,40 @@
 		chartOk;
 		workoutCanvas;
 		ChartCtor;
-		const rows = monthlyPerformance;
+		workoutViewMode;
+		monthlyPerformance;
+		dailyPerformance;
+		weeklyPerformance;
 		if (!chartOk || !ChartCtor || !workoutCanvas || !browser) return;
 
-		const labels = rows.map((r) => String(r.month ?? ''));
-		const data = rows.map((r) =>
-			typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
-		);
+		/** @type {string[]} */
+		let labels = [];
+		/** @type {number[]} */
+		let data = [];
+		let dsLabel = 'MONTHLY_XP';
+
+		if (workoutViewMode === 'daily') {
+			const rows = dailyPerformance;
+			labels = rows.map((r) => String(r.day ?? '').slice(5));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'DAILY_XP';
+		} else if (workoutViewMode === 'weekly') {
+			const rows = weeklyPerformance;
+			labels = rows.map((r) => String(r.week ?? '').slice(5));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'WEEKLY_XP';
+		} else {
+			const rows = monthlyPerformance;
+			labels = rows.map((r) => String(r.month ?? ''));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'MONTHLY_XP';
+		}
 
 		if (workoutChartInst) {
 			workoutChartInst.destroy();
@@ -394,7 +467,7 @@
 				labels,
 				datasets: [
 					{
-						label: 'MONTHLY_XP',
+						label: dsLabel,
 						data,
 						borderColor: 'rgba(0, 255, 200, 0.92)',
 						backgroundColor: 'rgba(34, 211, 238, 0.14)',
@@ -489,7 +562,7 @@
 				></canvas>
 			</div>
 			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
-				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · PIPE=PUBLIC_PROFILE
+				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · PIPE=PLAYER_STATS_TRIALS
 			</div>
 		</section>
 
@@ -499,20 +572,58 @@
 		>
 			<div class="dossier-radar__head">
 				<span class="dossier-label">Workout Telemetry</span>
-				<span class="dossier-mono dossier-tx-tag">WX_MONTHLY</span>
+				<span class="dossier-mono dossier-tx-tag">
+					{workoutViewMode === 'daily' ?
+						'WX_DAILY_14' :
+						workoutViewMode === 'weekly' ?
+							'WX_WEEK_8' :
+							'WX_MONTHLY'}
+				</span>
+			</div>
+			<div class="dossier-workout__seg" role="group" aria-label="Workout aggregation window">
+				<button
+					type="button"
+					class="dossier-seg"
+					class:dossier-seg--on={workoutViewMode === 'daily'}
+					onclick={() => (workoutViewMode = 'daily')}
+				>
+					Daily
+				</button>
+				<button
+					type="button"
+					class="dossier-seg"
+					class:dossier-seg--on={workoutViewMode === 'weekly'}
+					onclick={() => (workoutViewMode = 'weekly')}
+				>
+					Weekly
+				</button>
+				<button
+					type="button"
+					class="dossier-seg"
+					class:dossier-seg--on={workoutViewMode === 'monthly'}
+					onclick={() => (workoutViewMode = 'monthly')}
+				>
+					Monthly
+				</button>
 			</div>
 			<p class="dossier-radar__hint no-print">
-				Verified monthly XP from dossier workout logs (UTC buckets)
+				Training XP from workout logs — UTC day / Monday-week / calendar-month buckets (toggle above)
 			</p>
 			<div class="dossier-workout__chart tw-min-w-0 tw-h-[260px] tw-relative">
 				<canvas
 					bind:this={workoutCanvas}
 					class="dossier-canvas"
-					aria-label="Monthly training XP trend"
+					aria-label="Training XP trend by selected period"
 				></canvas>
 			</div>
 			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
-				SERIES_LEN={monthlyPerformance.length} · AXIS=MONTH · UNITS=XP
+				{#if workoutViewMode === 'daily'}
+					SERIES=DAILY · N={dailyPerformance.length} · UTC · XP
+				{:else if workoutViewMode === 'weekly'}
+					SERIES=WEEKLY · N={weeklyPerformance.length} · MON_START · XP
+				{:else}
+					SERIES=MONTHLY · N={monthlyPerformance.length} · YYYY-MM · XP
+				{/if}
 			</div>
 		</section>
 	</div>
@@ -629,6 +740,32 @@
 		align-items: center;
 		justify-content: space-between;
 		margin-bottom: 0.35rem;
+	}
+
+	.dossier-workout__seg {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin: 0 0 0.5rem;
+	}
+
+	.dossier-seg {
+		font-family: ui-monospace, monospace;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		padding: 6px 10px;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: rgba(0, 0, 0, 0.35);
+		color: rgba(226, 232, 240, 0.75);
+		border-radius: 0;
+		cursor: pointer;
+	}
+
+	.dossier-seg--on {
+		border-color: rgba(45, 212, 191, 0.75);
+		color: rgba(167, 243, 208, 0.95);
+		background: rgba(6, 78, 59, 0.25);
 	}
 
 	.dossier-radar__hint {

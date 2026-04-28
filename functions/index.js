@@ -39,33 +39,6 @@ const {calculateTrainingSessionEarnedXp} = require('./gamificationWorkoutXp');
 
 const REGION = 'us-central1';
 
-// #region agent log dd2828
-/** Debug ingest for workout pipeline (session dd2828). */
-function dbgWorkout(loc, msg, data, hypothesisId) {
-  const payload = {
-    sessionId: 'dd2828',
-    location: loc,
-    message: msg,
-    data: {...data, hypothesisId},
-    timestamp: Date.now(),
-    hypothesisId,
-    runId: data && typeof data.runId === 'string' ? data.runId : 'pre-fix',
-  };
-  fetch(
-      'http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Debug-Session-Id': 'dd2828',
-        },
-        body: JSON.stringify(payload),
-      },
-  ).catch(() => {});
-  logger.info('[DBG-dd2828]', loc, msg, data || {});
-}
-// #endregion
-
 const {GoogleGenAI} = require('@google/genai');
 
 /**
@@ -717,7 +690,6 @@ function topAttributesFromMetrics(physical, technical) {
  */
 async function syncPublicPlayerProfile(uid) {
   if (!uid || typeof uid !== 'string') {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'bad_uid'}, 'H2');
     return;
   }
   const pubRef = db.collection('public_player_profiles').doc(uid);
@@ -728,38 +700,27 @@ async function syncPublicPlayerProfile(uid) {
     email = normEmail(au.email);
   } catch (e) {
     logger.warn('syncPublicPlayerProfile: invalid uid', uid, e);
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
-      reason: 'auth_user_missing',
-      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
-    }, 'H2');
     return;
   }
   if (!email) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'no_email'}, 'H2');
     return;
   }
 
   const uRef = db.collection('users').doc(email);
   const uSnap = await uRef.get();
   if (!uSnap.exists) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'no_users_doc'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
   const u = uSnap.data() || {};
   const role = typeof u.role === 'string' ? u.role : 'player';
   if (role !== 'player') {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'role_not_player'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
 
   const psSnap = await db.collection('player_stats').doc(uid).get();
   if (!psSnap.exists) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
-      reason: 'no_player_stats',
-      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
-    }, 'H3');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -768,10 +729,18 @@ async function syncPublicPlayerProfile(uid) {
   const nowAgg = new Date();
   const sixMonthsAgo = new Date(nowAgg);
   sixMonthsAgo.setUTCMonth(sixMonthsAgo.getUTCMonth() - 6);
+  const fourteenDaysAgo = new Date(nowAgg);
+  fourteenDaysAgo.setUTCDate(fourteenDaysAgo.getUTCDate() - 14);
+
   const lgSnap = await db.collection('workout_logs').where('playerId', '==', uid).get();
 
   /** @type {Record<string, number>} */
   const monthXp = {};
+  /** @type {Record<string, number>} */
+  const dayXp = {};
+  /** @type {Record<string, number>} */
+  const weekXp = {};
+
   lgSnap.forEach((doc) => {
     const lg = doc.data() || {};
     const ts = lg.timestamp;
@@ -779,12 +748,22 @@ async function syncPublicPlayerProfile(uid) {
         ts instanceof admin.firestore.Timestamp ?
           ts.toDate() :
           null;
-    if (!t || t < sixMonthsAgo) return;
+    if (!t) return;
     const earned = Math.floor(Number(lg.earnedXP) || Number(lg.earnedXp) || Number(lg.earned) || 0);
-    const key =
-        `${t.getUTCFullYear()}-` +
-        `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
-    monthXp[key] = (monthXp[key] || 0) + earned;
+    if (earned <= 0) return;
+
+    if (t >= sixMonthsAgo) {
+      const mk =
+          `${t.getUTCFullYear()}-` +
+          `${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
+      monthXp[mk] = (monthXp[mk] || 0) + earned;
+    }
+    if (t >= fourteenDaysAgo) {
+      const dk = t.toISOString().slice(0, 10);
+      dayXp[dk] = (dayXp[dk] || 0) + earned;
+    }
+    const wk = utcWeekMondayKeyFromDate(t);
+    weekXp[wk] = (weekXp[wk] || 0) + earned;
   });
 
   /** @type {Array<{ month: string, xp: number }>} */
@@ -792,24 +771,78 @@ async function syncPublicPlayerProfile(uid) {
       .sort()
       .map((month) => ({month, xp: monthXp[month]}));
 
+  /** @type {Array<{ day: string, xp: number }>} */
+  const dailyPerformance = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(
+        Date.UTC(nowAgg.getUTCFullYear(), nowAgg.getUTCMonth(), nowAgg.getUTCDate() - i),
+    );
+    const key = d.toISOString().slice(0, 10);
+    dailyPerformance.push({day: key, xp: dayXp[key] || 0});
+  }
+
+  const anchorMondayStr = utcWeekMondayKeyFromDate(nowAgg);
+  const anchorMonday = parseUtcYmd(anchorMondayStr);
+  /** @type {Array<{ week: string, xp: number }>} */
+  const weeklyPerformance = [];
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date(anchorMonday);
+    d.setUTCDate(d.getUTCDate() - i * 7);
+    const key = d.toISOString().slice(0, 10);
+    weeklyPerformance.push({week: key, xp: weekXp[key] || 0});
+  }
+
+  const playerNameForTrials =
+      typeof ps.playerName === 'string' && ps.playerName.trim() ?
+        ps.playerName.trim() :
+        (typeof u.playerName === 'string' ? u.playerName.trim() : '');
+  const teamIdForTrials =
+      typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ?
+        u.teamId.trim() :
+        '';
+
+  /** @type {Record<string, string>} */
+  const verifiedTrialScores = {};
+  if (teamIdForTrials && playerNameForTrials) {
+    let trialSnap = await db.collection('trials')
+        .where('teamId', '==', teamIdForTrials)
+        .where('player', '==', playerNameForTrials)
+        .limit(80)
+        .get();
+
+    if (trialSnap.empty) {
+      trialSnap = await db.collection('trials')
+          .where('teamId', '==', teamIdForTrials)
+          .where('playerName', '==', playerNameForTrials)
+          .limit(80)
+          .get();
+    }
+    trialSnap.forEach((d) => {
+      const tr = d.data() || {};
+      if (tr.isCoach !== true) return;
+      const skill =
+          typeof tr.skill === 'string' && tr.skill.trim() ?
+            tr.skill.trim() :
+            '';
+      const res =
+          typeof tr.result === 'string' ? tr.result.trim() : '';
+      if (!skill || !res) return;
+      verifiedTrialScores[skill] = res;
+    });
+  }
+
   await db.collection('player_stats').doc(uid).set(
       {
         monthly_performance: monthlyXp,
+        daily_performance: dailyPerformance,
+        weekly_performance: weeklyPerformance,
+        verified_trial_scores: verifiedTrialScores,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       {merge: true},
   );
-  dbgWorkout('syncPublicPlayerProfile', 'player_stats_monthly_merged', {
-    uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
-    monthlyRows: monthlyXp.length,
-    workoutLogsInWindow: lgSnap.size,
-  }, 'H2');
 
   if (u.recruitProfilePublic !== true) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
-      reason: 'recruit_not_public',
-      note: 'monthly_performance mirrored on player_stats',
-    }, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -820,13 +853,11 @@ async function syncPublicPlayerProfile(uid) {
       !dob ||
       !(dob instanceof admin.firestore.Timestamp);
   if (dobBad) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'dob_gate'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
   const age = computeAgeYears(dob);
   if (age < 16) {
-    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'under_16'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -893,37 +924,6 @@ async function syncPublicPlayerProfile(uid) {
         '';
   /** @type {string} */
   let resolvedClubId = '';
-  /** @type {Record<string, string>} */
-  const verifiedTrialScores = {};
-  if (teamId && playerName) {
-    let trialSnap = await db.collection('trials')
-        .where('teamId', '==', teamId)
-        .where('player', '==', playerName)
-        .limit(80)
-        .get();
-
-    if (trialSnap.empty) {
-      trialSnap = await db.collection('trials')
-          .where('teamId', '==', teamId)
-          .where('playerName', '==', playerName)
-          .limit(80)
-          .get();
-    }
-    trialSnap.forEach((d) => {
-      const t = d.data() || {};
-      if (t.isCoach !== true) return;
-      const skill =
-          typeof t.skill === 'string' && t.skill.trim() ?
-            t.skill.trim() :
-            '';
-      const res =
-          typeof t.result === 'string' ? t.result.trim() : '';
-      if (!skill || !res) return;
-      verifiedTrialScores[skill] = res;
-    });
-  }
-
-  let verifiedVideoUrl = null;
   let verifiedVideoScoreId = null;
   try {
     const vSnap = await db.collection('trial_scores')
@@ -1003,11 +1003,6 @@ async function syncPublicPlayerProfile(uid) {
       },
       {merge: true},
   );
-  dbgWorkout('syncPublicPlayerProfile', 'published', {
-    uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
-    monthlyRows: monthlyXp.length,
-    workoutLogsInWindow: lgSnap.size,
-  }, 'H2');
 }
 
 /**
@@ -4171,9 +4166,30 @@ function utcWeekMondayKey() {
 }
 
 /**
- * @param {string} raw
- * @return {number}
+ * Monday UTC yyyy-mm-dd for the week containing `d` (local UTC calendar).
+ * @param {Date} d
+ * @return {string}
  */
+function utcWeekMondayKeyFromDate(d) {
+  const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dow = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() - (dow - 1));
+  return utc.toISOString().slice(0, 10);
+}
+
+/**
+ * Parse yyyy-mm-dd → UTC noon (stable ordering).
+ * @param {string} ymd
+ * @return {Date}
+ */
+function parseUtcYmd(ymd) {
+  const parts = String(ymd).split('-').map((x) => parseInt(x, 10));
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) {
+    return new Date(0);
+  }
+  return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 12, 0, 0));
+}
+
 /**
  * Epic 2/3: server-side XP, workout_logs, player_stats/{uid}, team_stats.
  */
@@ -4560,12 +4576,6 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
       logger.error('logTrainingSession assignment completion', e);
     }
   }
-
-  dbgWorkout('logTrainingSession', 'committed', {
-    uidTail: athleteUid.length > 4 ? athleteUid.slice(-4) : 'short',
-    logTail: logId.length > 6 ? logId.slice(-6) : logId,
-    earnedXP: out.earnedXP,
-  }, 'H4');
 
   return {
     ok: true,
@@ -8821,16 +8831,9 @@ exports.onWorkoutLogCreated = onDocumentCreated(
       try {
         const snap = event.data;
         if (!snap) {
-          dbgWorkout('onWorkoutLogCreated', 'no_snapshot', {}, 'H1');
           return;
         }
         const data = snap.data();
-        dbgWorkout('onWorkoutLogCreated', 'trigger', {
-          hasPlayerId: !!(data && data.playerId),
-          pidTail: data && data.playerId ?
-            String(data.playerId).slice(-4) :
-            '',
-        }, 'H1');
         if (!data || !data.playerId) return;
         await syncPublicPlayerProfile(data.playerId);
       } catch (e) {
