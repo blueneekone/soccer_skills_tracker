@@ -39,6 +39,33 @@ const {calculateTrainingSessionEarnedXp} = require('./gamificationWorkoutXp');
 
 const REGION = 'us-central1';
 
+// #region agent log dd2828
+/** Debug ingest for workout pipeline (session dd2828). */
+function dbgWorkout(loc, msg, data, hypothesisId) {
+  const payload = {
+    sessionId: 'dd2828',
+    location: loc,
+    message: msg,
+    data: {...data, hypothesisId},
+    timestamp: Date.now(),
+    hypothesisId,
+    runId: data && typeof data.runId === 'string' ? data.runId : 'pre-fix',
+  };
+  fetch(
+      'http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Debug-Session-Id': 'dd2828',
+        },
+        body: JSON.stringify(payload),
+      },
+  ).catch(() => {});
+  logger.info('[DBG-dd2828]', loc, msg, data || {});
+}
+// #endregion
+
 const {GoogleGenAI} = require('@google/genai');
 
 /**
@@ -689,7 +716,10 @@ function topAttributesFromMetrics(physical, technical) {
  * @return {Promise<void>}
  */
 async function syncPublicPlayerProfile(uid) {
-  if (!uid || typeof uid !== 'string') return;
+  if (!uid || typeof uid !== 'string') {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'bad_uid'}, 'H2');
+    return;
+  }
   const pubRef = db.collection('public_player_profiles').doc(uid);
 
   let email = '';
@@ -698,24 +728,34 @@ async function syncPublicPlayerProfile(uid) {
     email = normEmail(au.email);
   } catch (e) {
     logger.warn('syncPublicPlayerProfile: invalid uid', uid, e);
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
+      reason: 'auth_user_missing',
+      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
+    }, 'H2');
     return;
   }
-  if (!email) return;
+  if (!email) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'no_email'}, 'H2');
+    return;
+  }
 
   const uRef = db.collection('users').doc(email);
   const uSnap = await uRef.get();
   if (!uSnap.exists) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'no_users_doc'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
   const u = uSnap.data() || {};
   const role = typeof u.role === 'string' ? u.role : 'player';
   if (role !== 'player') {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'role_not_player'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
 
   if (u.recruitProfilePublic !== true) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'recruit_not_public'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -726,17 +766,23 @@ async function syncPublicPlayerProfile(uid) {
       !dob ||
       !(dob instanceof admin.firestore.Timestamp);
   if (dobBad) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'dob_gate'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
   const age = computeAgeYears(dob);
   if (age < 16) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {reason: 'under_16'}, 'H2');
     await pubRef.delete().catch(() => {});
     return;
   }
 
   const psSnap = await db.collection('player_stats').doc(uid).get();
   if (!psSnap.exists) {
+    dbgWorkout('syncPublicPlayerProfile', 'early_exit', {
+      reason: 'no_player_stats',
+      uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
+    }, 'H3');
     await pubRef.delete().catch(() => {});
     return;
   }
@@ -941,6 +987,11 @@ async function syncPublicPlayerProfile(uid) {
       },
       {merge: true},
   );
+  dbgWorkout('syncPublicPlayerProfile', 'published', {
+    uidTail: uid.length > 4 ? uid.slice(-4) : 'short',
+    monthlyRows: monthlyXp.length,
+    workoutLogsInWindow: lgSnap.size,
+  }, 'H2');
 }
 
 /**
@@ -4493,6 +4544,12 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
       logger.error('logTrainingSession assignment completion', e);
     }
   }
+
+  dbgWorkout('logTrainingSession', 'committed', {
+    uidTail: athleteUid.length > 4 ? athleteUid.slice(-4) : 'short',
+    logTail: logId.length > 6 ? logId.slice(-6) : logId,
+    earnedXP: out.earnedXP,
+  }, 'H4');
 
   return {
     ok: true,
@@ -8747,8 +8804,17 @@ exports.onWorkoutLogCreated = onDocumentCreated(
     async (event) => {
       try {
         const snap = event.data;
-        if (!snap) return;
+        if (!snap) {
+          dbgWorkout('onWorkoutLogCreated', 'no_snapshot', {}, 'H1');
+          return;
+        }
         const data = snap.data();
+        dbgWorkout('onWorkoutLogCreated', 'trigger', {
+          hasPlayerId: !!(data && data.playerId),
+          pidTail: data && data.playerId ?
+            String(data.playerId).slice(-4) :
+            '',
+        }, 'H1');
         if (!data || !data.playerId) return;
         await syncPublicPlayerProfile(data.playerId);
       } catch (e) {
