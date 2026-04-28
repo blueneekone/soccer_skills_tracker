@@ -59,6 +59,22 @@
 		}),
 	);
 
+	/** Hero satellite map (main vault frame); draft state lives in drawer — separate bind targets avoid dual-map conflicts. */
+	let heroFacilityId = $state('');
+	/** @type {number | null} */
+	let heroLat = $state(null);
+	/** @type {number | null} */
+	let heroLng = $state(null);
+	let heroMapData = $state(
+		/** @type {FacilityMapDataPayload} */ ({
+			version: 1,
+			polygons: [],
+			markers: [],
+		}),
+	);
+	let heroSaving = $state(false);
+	let heroSaveErr = $state('');
+
 	const previewRow = $derived.by(() => {
 		if (!previewId) return /** @type {FacilityMapRow | null} */ (null);
 		return rows.find((r) => r.id === previewId) ?? null;
@@ -137,6 +153,40 @@
 		return () => unsub();
 	});
 
+	/**
+	 * @param {FacilityMapRow} row
+	 */
+	function applyHeroFromRow(row) {
+		heroFacilityId = row.id;
+		heroLat = typeof row.latitude === 'number' ? row.latitude : null;
+		heroLng = typeof row.longitude === 'number' ? row.longitude : null;
+		heroMapData = parseFacilityMapData(row.mapData);
+	}
+
+	function syncHeroFromSelection() {
+		const row = rows.find((r) => r.id === heroFacilityId);
+		if (!row) return;
+		applyHeroFromRow(row);
+	}
+
+	/** Default hero facility when list loads or current id is missing. */
+	$effect(() => {
+		if (!clubId) return;
+		if (rows.length === 0) {
+			heroFacilityId = '';
+			return;
+		}
+		if (!heroFacilityId || !rows.some((r) => r.id === heroFacilityId)) {
+			heroFacilityId = rows[0].id;
+		}
+	});
+
+	/** Hydrate hero lat/lng/mapData when club or selected facility id changes. */
+	$effect(() => {
+		if (!clubId || !heroFacilityId) return;
+		syncHeroFromSelection();
+	});
+
 	function closePreview() {
 		previewOpen = false;
 		previewId = null;
@@ -207,7 +257,16 @@
 			st === 'Active' ? 'Active' :
 			'Active';
 		draftMapData = parseFacilityMapData(row.mapData);
+		applyHeroFromRow(row);
 	}
+
+	/** Hero dropdown ↔ drawer: switching facility in hero updates an open drawer to the same row. */
+	$effect(() => {
+		if (!previewOpen || !heroFacilityId || !previewId) return;
+		if (heroFacilityId === previewId) return;
+		const row = rows.find((r) => r.id === heroFacilityId);
+		if (row) openPreview(row);
+	});
 
 	/**
 	 * @param {FacilityMapRow} row
@@ -415,6 +474,55 @@
 			alert(e instanceof Error ? e.message : String(e));
 		}
 		if (previewId === row.id) closePreview();
+		if (heroFacilityId === row.id) {
+			heroFacilityId = '';
+		}
+	}
+
+	async function saveHeroFacility() {
+		heroSaveErr = '';
+		if (!canManage || !clubId || !heroFacilityId) return;
+		if (heroLat == null || heroLng == null) {
+			alert('Place the routing pin on the map or pick a facility with coordinates.');
+			return;
+		}
+		const row = rows.find((r) => r.id === heroFacilityId);
+		const mdJson = JSON.stringify(heroMapData);
+		if (mdJson.length > 500000) {
+			heroSaveErr =
+				'Field drawing data exceeds the 500 KB limit. Clear drawings or simplify shapes, then try again.';
+			return;
+		}
+		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${heroLat},${heroLng}`;
+		heroSaving = true;
+		try {
+			const st = row?.status || '';
+			const statusOut =
+				st === 'LOCKED' ? 'LOCKED' :
+				st === 'Locked' ? 'Locked' :
+				'Active';
+			/** @type {Record<string, unknown>} */
+			const patch = {
+				address: typeof row?.address === 'string' ? row.address.trim().slice(0, 500) : '',
+				latitude: heroLat,
+				longitude: heroLng,
+				routingUrl,
+				status: statusOut,
+				mapData: mdJson,
+			};
+			if (statusOut === 'Active') {
+				patch.lockReason = deleteField();
+				patch.lockedAt = deleteField();
+			}
+			await updateDoc(doc(db, 'clubs', clubId, 'facilities', heroFacilityId), patch);
+		} catch (e) {
+			heroSaveErr =
+				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
+					String(/** @type {{ message?: string }} */ (e).message)
+				:	String(e);
+		} finally {
+			heroSaving = false;
+		}
 	}
 
 	async function saveLogistics() {
@@ -556,6 +664,65 @@
 			</div>
 			{#if regErr}
 				<p class="fm-err" role="alert">{regErr}</p>
+			{/if}
+		</section>
+	{/if}
+
+	{#if clubId}
+		<section
+			class="fm-panel fm-panel--embedded-map"
+			class:fm-panel--hero-in-page={!embedded}
+			aria-label="Facility satellite map"
+		>
+			<h4 class="fm-panel__title">Satellite map & field drawings</h4>
+			<p class="fm-panel__hint">
+				Select a facility, place the routing pin, and draw polygons. Save persists <code class="fm-inline-code"
+					>mapData</code
+				>
+				and coordinates to Firestore.
+			</p>
+			{#if rows.length > 0}
+				<div class="fm-embedded-map-toolbar">
+					<label class="fm-label fm-embedded-map-toolbar__label" for="fm-hero-fac">Facility</label>
+					<select
+						id="fm-hero-fac"
+						class="fm-input fm-embedded-map-toolbar__select"
+						bind:value={heroFacilityId}
+					>
+						{#each rows as r (r.id)}
+							<option value={r.id}>{r.name}</option>
+						{/each}
+					</select>
+					{#if canManage}
+						<button
+							type="button"
+							class="fm-btn fm-btn--primary fm-embedded-map-toolbar__save"
+							disabled={heroSaving || !heroFacilityId}
+							onclick={() => void saveHeroFacility()}
+						>
+							{heroSaving ? 'Saving…' : 'Save map & pin'}
+						</button>
+					{/if}
+				</div>
+				<div
+					class="fm-embedded-map-frame tw-flex tw-h-full tw-w-full tw-min-h-[600px] tw-flex-col"
+				>
+					{#key heroFacilityId}
+						<FacilityDrawingMap
+							bind:latitude={heroLat}
+							bind:longitude={heroLng}
+							bind:mapData={heroMapData}
+							readonly={!canManage}
+						/>
+					{/key}
+				</div>
+				{#if heroSaveErr}
+					<p class="fm-err" role="alert">{heroSaveErr}</p>
+				{/if}
+			{:else}
+				<p class="fm-panel__hint">
+					Add a facility via the registry above to enable the map and routing pin.
+				</p>
 			{/if}
 		</section>
 	{/if}
@@ -926,6 +1093,67 @@
 		flex-shrink: 0;
 		max-height: 42%;
 		overflow-y: auto;
+	}
+
+	.fm-panel--embedded-map {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	/* Standalone vault page (non-embedded): breathing room above upload/vault grid */
+	.fm-panel--hero-in-page {
+		margin-bottom: 16px;
+	}
+
+	.fm-inline-code {
+		font-family: ui-monospace, monospace;
+		font-size: 11px;
+		padding: 2px 6px;
+		border-radius: 4px;
+		background: rgba(15, 23, 42, 0.85);
+		border: 1px solid rgba(52, 211, 153, 0.25);
+		color: rgb(167 243 208);
+	}
+
+	.fm-embedded-map-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 10px 14px;
+		margin-bottom: 12px;
+	}
+
+	.fm-embedded-map-toolbar__label {
+		margin-bottom: 0;
+		flex: 0 0 auto;
+	}
+
+	.fm-embedded-map-toolbar__select {
+		flex: 1 1 12rem;
+		max-width: 18rem;
+		margin-bottom: 0;
+	}
+
+	.fm-embedded-map-toolbar__save {
+		flex: 0 0 auto;
+		margin-left: auto;
+	}
+
+	.fm-embedded-map-frame {
+		flex: 1 1 auto;
+		min-height: 600px;
+		width: 100%;
+		box-sizing: border-box;
+		position: relative;
+	}
+
+	.fm-embedded-map-frame > :global(*) {
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
 	}
 
 	.fm-vault--embedded .fm-vault__grid {
