@@ -34,7 +34,7 @@ const STRIPE_PRICE_RECRUITER = defineString(
     {default: ''},
 );
 
-const stripeLib = require('stripe');
+const stripe = require('stripe');
 
 const {calculateTrainingSessionEarnedXp} = require('./gamificationWorkoutXp');
 
@@ -7185,8 +7185,8 @@ exports.createStripeCheckoutSession = onCall(
         );
       }
 
-      const stripe = stripeLib(secret);
-      const priceId = priceIdForTierType(stripe, tierTypeRaw);
+      const stripeClient = stripe(secret);
+      const priceId = priceIdForTierType(stripeClient, tierTypeRaw);
       if (!priceId || typeof priceId !== 'string') {
         throw new HttpsError(
             'failed-precondition',
@@ -7209,7 +7209,7 @@ exports.createStripeCheckoutSession = onCall(
             request.auth.token.email :
             undefined;
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await stripeClient.checkout.sessions.create({
         mode: 'subscription',
         line_items: [{price: priceId, quantity: quantity}],
         success_url: successUrl,
@@ -7277,18 +7277,19 @@ exports.stripeWebhook = onRequest(
         return;
       }
 
-      const stripe = stripeLib(secretKey);
+      const stripeClient = stripe(secretKey);
       let event;
       try {
-        event = stripe.webhooks.constructEvent(rawBody, sig, whSecret);
+        event = stripeClient.webhooks.constructEvent(rawBody, sig, whSecret);
       } catch (err) {
-        logger.error('stripeWebhook signature verification failed', err);
-        res.status(400).send('Webhook signature verification failed');
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.error(`Webhook signature verification failed: ${msg}`);
+        res.status(400).send(`Webhook Error: ${msg}`);
         return;
       }
 
       try {
-        await handleStripeWebhookEvent(stripe, event);
+        await handleStripeWebhookEvent(stripeClient, event);
       } catch (err) {
         logger.error('stripeWebhook handler error', err);
         res.status(500).send('Handler error');
@@ -7310,7 +7311,13 @@ async function handleStripeWebhookEvent(stripe, event) {
     const session = /** @type {import('stripe').Stripe.Checkout.Session} */ (
       event.data.object
     );
-    const clubId = session.metadata && session.metadata.clubId;
+    let clubId =
+        session.metadata && session.metadata.clubId ?
+          String(session.metadata.clubId).trim() :
+          '';
+    if (!clubId && session.client_reference_id) {
+      clubId = String(session.client_reference_id).trim();
+    }
     const tierType =
         session.metadata && session.metadata.tierType ?
           String(session.metadata.tierType).toLowerCase() :
@@ -7387,8 +7394,34 @@ async function handleStripeWebhookEvent(stripe, event) {
  */
 async function syncSubscriptionStatusFromStripeObject(stripe, sub, status) {
   void stripe;
-  const clubId =
-      sub.metadata && sub.metadata.clubId ? String(sub.metadata.clubId) : '';
+  let clubId =
+      sub.metadata && sub.metadata.clubId ?
+        String(sub.metadata.clubId).trim() :
+        '';
+  if (!clubId && typeof sub.id === 'string') {
+    try {
+      const snap = await db
+          .collection('license_entitlements')
+          .where('stripe_subscription_id', '==', sub.id)
+          .limit(2)
+          .get();
+      if (!snap.empty) {
+        if (snap.size > 1) {
+          logger.warn(
+              'subscription event: multiple license_entitlements for sub id',
+              {subId: sub.id},
+          );
+        }
+        clubId = snap.docs[0].id;
+      }
+    } catch (e) {
+      logger.error('subscription event: club lookup by subscription id failed', {
+        subId: sub.id,
+        err: e instanceof Error ? e.message : String(e),
+      });
+      return;
+    }
+  }
   if (!clubId) {
     logger.warn('subscription event: missing clubId in subscription metadata');
     return;
