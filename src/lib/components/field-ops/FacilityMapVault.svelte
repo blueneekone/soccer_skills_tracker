@@ -741,14 +741,16 @@
 				<div
 					class="fm-embedded-map-frame tw-flex tw-h-full tw-w-full tw-min-h-[600px] tw-flex-col"
 				>
-					{#key heroFacilityId}
-						<FacilityDrawingMap
-							bind:latitude={heroLat}
-							bind:longitude={heroLng}
-							bind:mapData={heroMapData}
-							readonly={!canManage}
-						/>
-					{/key}
+					{#if heroFacilityId}
+						{#key heroFacilityId}
+							<FacilityDrawingMap
+								bind:latitude={heroLat}
+								bind:longitude={heroLng}
+								bind:mapData={heroMapData}
+								readonly={!canManage}
+							/>
+						{/key}
+					{/if}
 				</div>
 				{#if heroSaveErr}
 					<p class="fm-err" role="alert">{heroSaveErr}</p>
@@ -1184,10 +1186,11 @@
 		position: relative;
 	}
 
+	/* Do not force min-height:0 on map shell — collides with Maps needing a definite px height */
 	.fm-embedded-map-frame > :global(*) {
 		flex: 1 1 auto;
-		min-height: 0;
-		height: 100%;
+		min-height: 500px;
+		align-self: stretch;
 	}
 
 	.fm-vault--embedded .fm-vault__grid {
@@ -1515,9 +1518,21 @@
 		cursor: pointer;
 	}
 
+	/* Avoid washing label contrast — disabled vault CTAs looked blank next to hybrid panels */
 	.fm-btn:disabled {
-		opacity: 0.6;
+		opacity: 1;
 		cursor: not-allowed;
+		filter: grayscale(0.08);
+		background: #cbd5e1;
+		color: #0f172a;
+		border-color: rgba(15, 23, 42, 0.12);
+	}
+
+	:global(html.dark) .fm-btn:disabled {
+		background: #475569;
+		color: #f8fafc;
+		border-color: rgba(255, 255, 255, 0.14);
+		filter: none;
 	}
 
 	.fm-btn--secondary:hover:not(:disabled) {
@@ -1534,23 +1549,75 @@
 		background: rgba(254, 226, 226, 0.35);
 	}
 
+	:global(html.dark) .fm-btn:not(.fm-btn--primary):not(.fm-btn--danger) {
+		background: #18181b;
+		border-color: rgba(255, 255, 255, 0.12);
+		color: var(--text-primary);
+	}
+
+	:global(html.dark) .fm-btn--danger {
+		background: rgba(127, 29, 29, 0.35);
+		color: #fecaca;
+		border-color: rgba(248, 113, 113, 0.45);
+	}
+
+	:global(html.dark) .fm-btn--danger:hover:not(:disabled) {
+		background: rgba(153, 27, 27, 0.42);
+	}
+
+	/* SIEM / enterprise ops — cyan rim + dark slab (enterprise-console --ec-ops-* family) */
 	.fm-btn--primary {
-		background: var(--brand-primary, #f59e0b);
-		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 55%, #0f172a);
-		color: #0f172a;
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		padding: 9px 14px;
+		border-radius: 10px;
+		border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.28));
+		background: linear-gradient(
+			155deg,
+			rgba(34, 211, 238, 0.16) 0%,
+			rgba(15, 23, 42, 0.94) 48%,
+			rgba(9, 9, 11, 0.98) 100%
+		);
+		color: #ecfeff;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 10px 22px rgba(0, 0, 0, 0.28);
 	}
 
 	.fm-btn--primary:hover:not(:disabled) {
-		filter: brightness(0.97);
-	}
-
-	:global(html.dark) .fm-btn {
-		background: #18181b;
-		border-color: rgba(255, 255, 255, 0.12);
+		opacity: 1;
+		filter: none;
+		border-color: rgba(34, 211, 238, 0.52);
+		background: linear-gradient(
+			155deg,
+			rgba(34, 211, 238, 0.26) 0%,
+			rgba(15, 23, 42, 0.9) 48%,
+			rgba(9, 9, 11, 0.96) 100%
+		);
+		color: #ffffff;
 	}
 
 	:global(html.dark) .fm-btn--primary {
-		color: #0f172a;
+		border-color: rgba(34, 211, 238, 0.38);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+			0 12px 28px rgba(0, 0, 0, 0.38);
+	}
+
+	.fm-btn.fm-btn--primary:disabled {
+		opacity: 1;
+		background: rgba(51, 65, 85, 0.65);
+		border-color: rgba(148, 163, 184, 0.35);
+		color: rgba(248, 250, 252, 0.82);
+		filter: grayscale(0.12);
+	}
+
+	:global(html.dark) .fm-btn.fm-btn--primary:disabled {
+		background: rgba(51, 65, 85, 0.72);
+		border-color: rgba(148, 163, 184, 0.28);
+		color: rgba(241, 245, 249, 0.78);
 	}
 
 	.fm-err {

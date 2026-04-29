@@ -1,6 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
+	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey } from '$lib/maps/ensureGoogleMaps.js';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -16,15 +17,7 @@
 		readonly = false,
 	} = $props();
 
-	const apiKeyFromEnv =
-		typeof import.meta.env.VITE_GOOGLE_MAPS_API_KEY === 'string' ?
-			import.meta.env.VITE_GOOGLE_MAPS_API_KEY.trim()
-		:	'';
-	const apiKeyFallback =
-		typeof import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY === 'string' ?
-			import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY.trim()
-		:	'';
-	const apiKey = apiKeyFromEnv || apiKeyFallback;
+	const apiKey = getGoogleMapsApiKey();
 
 	let mapRoot = $state(/** @type {HTMLDivElement | null} */ (null));
 	let loadError = $state(false);
@@ -79,6 +72,19 @@
 		const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim();
 		if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
 		return '#f59e0b';
+	}
+
+	/**
+	 * Initial overlay snapshot. structuredClone($bindable mapData) can throw (DataCloneError) on reactive Proxies,
+	 * which aborted the map mount effect before ensureGoogleMapsLoaded ran — see debug-dd2828 logs with map-effect-enter but no bootstrap.
+	 * @param {FacilityMapData} data
+	 */
+	function snapshotFacilityMapData(data) {
+		try {
+			return /** @type {FacilityMapData} */ (JSON.parse(JSON.stringify(data)));
+		} catch {
+			return { version: /** @type {const} */ (1), polygons: [], markers: [] };
+		}
 	}
 
 	/**
@@ -172,12 +178,30 @@
 	$effect(() => {
 		if (!browser || !mapRoot || !apiKey) return;
 
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				location: 'FacilityDrawingMap.svelte:map-effect-enter',
+				message: 'map mount effect running',
+				data: {
+					hypothesisId: 'X',
+					rootW: mapRoot.clientWidth,
+					rootH: mapRoot.clientHeight,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
+
 		loadError = false;
 
 		const lat0 = untrack(() => latitude);
 		const lng0 = untrack(() => longitude);
-		const readOnly = readonly;
-		const initialMapData = untrack(() => structuredClone(mapData));
+		const readOnly = untrack(() => readonly);
+		const initialMapData = untrack(() => snapshotFacilityMapData(mapData));
 
 		let cancelled = false;
 		/** @type {ResizeObserver | null} */
@@ -199,20 +223,64 @@
 
 		mapHandles = null;
 
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				location: 'FacilityDrawingMap.svelte:pre-async',
+				message: 'past mapData snapshot, entering loader',
+				data: {
+					hypothesisId: 'R',
+					polygonsN: initialMapData.polygons?.length ?? 0,
+					markersN: initialMapData.markers?.length ?? 0,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
+
 		(async () => {
 			try {
-				const { setOptions, importLibrary } = await import('@googlemaps/js-api-loader');
-				setOptions({
-					key: apiKey,
-					v: 'weekly',
-					libraries: ['drawing', 'places'],
-				});
-				await importLibrary('maps');
-				await importLibrary('drawing');
-				await importLibrary('places');
+				const g = await ensureGoogleMapsLoaded();
+				// #region agent log
+				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+					body: JSON.stringify({
+						sessionId: 'dd2828',
+						location: 'FacilityDrawingMap.svelte:post-await',
+						message: 'ensureGoogleMapsLoaded settled',
+						data: {
+							hypothesisId: 'C',
+							cancelled,
+							hasMapRoot: Boolean(mapRoot),
+						},
+						timestamp: Date.now(),
+					}),
+				}).catch(() => {});
+				// #endregion
 				if (cancelled || !mapRoot) return;
 
-				const g = globalThis.google;
+				// #region agent log
+				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+					body: JSON.stringify({
+						sessionId: 'dd2828',
+						location: 'FacilityDrawingMap.svelte:bootstrap',
+						message: 'ensureGoogleMapsLoaded resolved',
+						data: {
+							hypothesisId: 'S',
+							loaderKind: 'classic-script',
+							hasDrawing: Boolean(g.maps?.drawing?.DrawingManager),
+						},
+						timestamp: Date.now(),
+					}),
+				}).catch(() => {});
+				// #endregion
+
 				if (!g?.maps) {
 					loadError = true;
 					return;
@@ -232,6 +300,66 @@
 					streetViewControl: false,
 					fullscreenControl: true,
 					clickableIcons: false,
+				});
+
+				const kickResize = () => {
+					if (cancelled || !map) return;
+					try {
+						g.maps.event.trigger(map, 'resize');
+					} catch {
+						/* ignore */
+					}
+				};
+				requestAnimationFrame(() => {
+					requestAnimationFrame(() => kickResize());
+				});
+				g.maps.event.addListenerOnce(map, 'idle', () => {
+					kickResize();
+					// #region agent log
+					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+						body: JSON.stringify({
+							sessionId: 'dd2828',
+							location: 'FacilityDrawingMap.svelte:idle',
+							message: 'map idle (tiles/layout)',
+							data: {
+								hypothesisId: 'M',
+								runId: 'idle-resize',
+								zoom: typeof map.getZoom === 'function' ? map.getZoom() : null,
+								cLat: center.lat,
+								cLng: center.lng,
+								rootW: mapRoot?.clientWidth ?? 0,
+								rootH: mapRoot?.clientHeight ?? 0,
+								gmChildren:
+									mapRoot && typeof mapRoot.querySelectorAll === 'function' ?
+										mapRoot.querySelectorAll('.gm-style,canvas,iframe').length
+									:	0,
+							},
+							timestamp: Date.now(),
+						}),
+					}).catch(() => {});
+					// #endregion
+				});
+				g.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+					// #region agent log
+					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+						body: JSON.stringify({
+							sessionId: 'dd2828',
+							location: 'FacilityDrawingMap.svelte:tilesloaded',
+							message: 'first tiles loaded',
+							data: {
+								hypothesisId: 'P',
+								runId: 'tiles',
+								rootW: mapRoot?.clientWidth ?? 0,
+								rootH: mapRoot?.clientHeight ?? 0,
+							},
+							timestamp: Date.now(),
+						}),
+					}).catch(() => {});
+					// #endregion
 				});
 
 				const iconUrl = markerSvgDataUrl(brandPrimaryHex());
@@ -293,113 +421,180 @@
 					/* ignore */
 				}
 
-				hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
+				try {
+					hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
+				} catch (he) {
+					console.warn('[FacilityDrawingMap] hydrateFromMapData failed', he);
+					// #region agent log
+					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+						body: JSON.stringify({
+							sessionId: 'dd2828',
+							location: 'FacilityDrawingMap.svelte:hydrate-fail',
+							message: 'hydrateFromMapData threw (map kept)',
+							data: {
+								hypothesisId: 'H2',
+								errShort:
+									he instanceof Error ?
+										he.message.slice(0, 160)
+									:	String(he).slice(0, 160),
+							},
+							timestamp: Date.now(),
+						}),
+					}).catch(() => {});
+					// #endregion
+				}
 
 				if (!readOnly) {
-					drawingManager = new g.maps.drawing.DrawingManager({
-						drawingMode: null,
-						drawingControl: true,
-						drawingControlOptions: {
-							position: g.maps.ControlPosition.TOP_CENTER,
-							drawingModes: [g.maps.drawing.OverlayType.POLYGON, g.maps.drawing.OverlayType.MARKER],
-						},
-						polygonOptions: {
-							fillColor: '#22c55e',
-							fillOpacity: 0.25,
-							strokeColor: '#22c55e',
-							strokeOpacity: 1,
-							strokeWeight: 2,
-							editable: false,
-							draggable: false,
-						},
-						markerOptions: {
-							draggable: false,
-						},
-					});
-					drawingManager.setMap(map);
+					try {
+						if (g.maps?.drawing?.DrawingManager) {
+							drawingManager = new g.maps.drawing.DrawingManager({
+								drawingMode: null,
+								drawingControl: true,
+								drawingControlOptions: {
+									position: g.maps.ControlPosition.TOP_CENTER,
+									drawingModes: [g.maps.drawing.OverlayType.POLYGON, g.maps.drawing.OverlayType.MARKER],
+								},
+								polygonOptions: {
+									fillColor: '#22c55e',
+									fillOpacity: 0.25,
+									strokeColor: '#22c55e',
+									strokeOpacity: 1,
+									strokeWeight: 2,
+									editable: false,
+									draggable: false,
+								},
+								markerOptions: {
+									draggable: false,
+								},
+							});
+							drawingManager.setMap(map);
 
-					overlayListener = g.maps.event.addListener(drawingManager, 'overlaycomplete', (/** @type {any} */ e) => {
-						if (cancelled) return;
-						drawingManager.setDrawingMode(null);
+							overlayListener = g.maps.event.addListener(drawingManager, 'overlaycomplete', (/** @type {any} */ e) => {
+								if (cancelled) return;
+								drawingManager.setDrawingMode(null);
 
-						if (e.type === g.maps.drawing.OverlayType.POLYGON) {
-							const poly = e.overlay;
-							const path = poly.getPath();
-							const coords = [];
-							for (let i = 0; i < path.getLength(); i++) {
-								const ll = path.getAt(i);
-								coords.push({ lat: ll.lat(), lng: ll.lng() });
-							}
-							const rawName =
-								typeof window !== 'undefined' ?
-									window.prompt('Name this field (e.g. Field 1, North Pitch)', '')
-								:	null;
-							const name = rawName != null ? String(rawName).trim() : '';
-							if (!name) {
-								poly.setMap(null);
-								return;
-							}
-							poly.setEditable(false);
-							poly.setDraggable(false);
-							drawnPolygons.push(poly);
-							mapData = {
-								version: 1,
-								polygons: [...mapData.polygons, { name, path: coords }],
-								markers: [...mapData.markers],
-							};
-						} else if (e.type === g.maps.drawing.OverlayType.MARKER) {
-							const m = e.overlay;
-							const pos = m.getPosition();
-							if (!pos) {
-								m.setMap(null);
-								return;
-							}
-							const raw =
-								typeof window !== 'undefined' ?
-									window.prompt('Label this marker (optional)', '')
-								:	null;
-							const label = raw != null ? String(raw).trim() : '';
-							drawnMarkers.push(m);
-							mapData = {
-								version: 1,
-								polygons: [...mapData.polygons],
-								markers: [
-									...mapData.markers,
-									{
-										...(label ? { label } : {}),
-										lat: pos.lat(),
-										lng: pos.lng(),
-									},
-								],
-							};
+								if (e.type === g.maps.drawing.OverlayType.POLYGON) {
+									const poly = e.overlay;
+									const path = poly.getPath();
+									const coords = [];
+									for (let i = 0; i < path.getLength(); i++) {
+										const ll = path.getAt(i);
+										coords.push({ lat: ll.lat(), lng: ll.lng() });
+									}
+									const rawName =
+										typeof window !== 'undefined' ?
+											window.prompt('Name this field (e.g. Field 1, North Pitch)', '')
+										:	null;
+									const name = rawName != null ? String(rawName).trim() : '';
+									if (!name) {
+										poly.setMap(null);
+										return;
+									}
+									poly.setEditable(false);
+									poly.setDraggable(false);
+									drawnPolygons.push(poly);
+									mapData = {
+										version: 1,
+										polygons: [...mapData.polygons, { name, path: coords }],
+										markers: [...mapData.markers],
+									};
+								} else if (e.type === g.maps.drawing.OverlayType.MARKER) {
+									const m = e.overlay;
+									const pos = m.getPosition();
+									if (!pos) {
+										m.setMap(null);
+										return;
+									}
+									const raw =
+										typeof window !== 'undefined' ?
+											window.prompt('Label this marker (optional)', '')
+										:	null;
+									const label = raw != null ? String(raw).trim() : '';
+									drawnMarkers.push(m);
+									mapData = {
+										version: 1,
+										polygons: [...mapData.polygons],
+										markers: [
+											...mapData.markers,
+											{
+												...(label ? { label } : {}),
+												lat: pos.lat(),
+												lng: pos.lng(),
+											},
+										],
+									};
+								}
+							});
 						}
-					});
 
-					mapClickListener = map.addListener('click', (/** @type {any} */ e) => {
-						if (cancelled || !e.latLng) return;
-						if (drawingManager && drawingManager.getDrawingMode() !== null) return;
-						const plat = e.latLng.lat();
-						const plng = e.latLng.lng();
-						const h = mapHandles;
-						if (h?.routingMarker) {
-							h.routingMarker.setMap(null);
-						}
-						const nm = new g.maps.Marker({
-							map,
-							position: { lat: plat, lng: plng },
-							icon: routingIcon,
-							zIndex: 99999,
+						mapClickListener = map.addListener('click', (/** @type {any} */ e) => {
+							if (cancelled || !e.latLng) return;
+							if (drawingManager && drawingManager.getDrawingMode() !== null) return;
+							const plat = e.latLng.lat();
+							const plng = e.latLng.lng();
+							const h = mapHandles;
+							if (h?.routingMarker) {
+								h.routingMarker.setMap(null);
+							}
+							const nm = new g.maps.Marker({
+								map,
+								position: { lat: plat, lng: plng },
+								icon: routingIcon,
+								zIndex: 99999,
+							});
+							routingMarker = nm;
+							if (mapHandles) {
+								mapHandles = { ...mapHandles, routingMarker: nm };
+							}
+							latitude = plat;
+							longitude = plng;
 						});
-						routingMarker = nm;
-						if (mapHandles) {
-							mapHandles = { ...mapHandles, routingMarker: nm };
-						}
-						latitude = plat;
-						longitude = plng;
-					});
+					} catch (te) {
+						console.warn('[FacilityDrawingMap] drawing tools / click setup failed', te);
+						// #region agent log
+						fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+							body: JSON.stringify({
+								sessionId: 'dd2828',
+								location: 'FacilityDrawingMap.svelte:drawing-fail',
+								message: 'drawing or click setup threw (map kept)',
+								data: {
+									hypothesisId: 'T',
+									errShort:
+										te instanceof Error ?
+											te.message.slice(0, 160)
+										:	String(te).slice(0, 160),
+								},
+								timestamp: Date.now(),
+							}),
+						}).catch(() => {});
+						// #endregion
+					}
 				}
 			} catch (e) {
 				console.error('[FacilityDrawingMap]', e);
+				// #region agent log
+				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+					body: JSON.stringify({
+						sessionId: 'dd2828',
+						location: 'FacilityDrawingMap.svelte:catch',
+						message: 'map init failed',
+						data: {
+							hypothesisId: 'Y',
+							errShort:
+								e instanceof Error ?
+									e.message.slice(0, 160)
+								:	String(e).slice(0, 160),
+						},
+						timestamp: Date.now(),
+					}),
+				}).catch(() => {});
+				// #endregion
 				loadError = true;
 			}
 		})();
@@ -509,12 +704,16 @@
 		height: 100%;
 	}
 
+	/* Explicit px height — Maps JS often renders no tiles when height resolves from % flex alone
+	   (see LogisticsMap.svelte). Keep min-height as floor inside embedded Field Ops vault. */
 	.fd-map-root {
 		box-sizing: border-box;
 		flex: 1 1 auto;
-		min-height: 280px;
+		min-height: 500px;
+		height: 500px;
 		width: 100%;
-		height: 100%;
+		position: relative;
+		z-index: 1;
 		border-radius: 12px;
 		overflow: hidden;
 		border: 1px solid rgba(51, 65, 85, 0.85);

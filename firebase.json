@@ -20,7 +20,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy-Report-Only",
-            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; font-src 'self' data: https:; worker-src 'self'; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://sstracker.app https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.cloudfunctions.net; frame-src 'self' https://accounts.google.com https://www.gstatic.com https://*.google.com; frame-ancestors 'self'; upgrade-insecure-requests"
+            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://static.cloudflareinsights.com https://maps.googleapis.com https://maps.gstatic.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; font-src 'self' data: https:; worker-src 'self' blob: https://maps.googleapis.com https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://sstracker.app https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.cloudfunctions.net; frame-src 'self' https://accounts.google.com https://www.gstatic.com https://*.google.com; frame-ancestors 'self'; upgrade-insecure-requests"
           }
         ]
       }

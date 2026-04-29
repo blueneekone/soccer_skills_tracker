@@ -1,6 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
+	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey } from '$lib/maps/ensureGoogleMaps.js';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -12,10 +13,7 @@
 		readonly = false,
 	} = $props();
 
-	const apiKey =
-		typeof import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY === 'string' ?
-			import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY.trim()
-		:	'';
+	const apiKey = getGoogleMapsApiKey();
 
 	let mapRoot = $state(/** @type {HTMLDivElement | null} */ (null));
 	let loadError = $state(false);
@@ -45,7 +43,7 @@
 
 		const lat0 = untrack(() => latitude);
 		const lng0 = untrack(() => longitude);
-		const readOnly = readonly;
+		const readOnly = untrack(() => readonly);
 
 		let cancelled = false;
 		/** @type {any} */
@@ -57,16 +55,9 @@
 
 		(async () => {
 			try {
-				/**
-				 * v2+ uses `setOptions` + `importLibrary` (`Loader` is deprecated and throws).
-				 * @see https://github.com/googlemaps/js-api-loader/blob/main/MIGRATION.md
-				 */
-				const { setOptions, importLibrary } = await import('@googlemaps/js-api-loader');
-				setOptions({ key: apiKey, v: 'weekly' });
-				await importLibrary('maps');
+				const g = await ensureGoogleMapsLoaded();
 				if (cancelled || !mapRoot) return;
 
-				const g = globalThis.google;
 				if (!g?.maps) {
 					loadError = true;
 					return;
