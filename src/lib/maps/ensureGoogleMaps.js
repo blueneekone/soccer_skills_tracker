@@ -18,9 +18,22 @@ export function getGoogleMapsApiKey() {
 	return a || b || '';
 }
 
+/** Required for {@link https://developers.google.com/maps/documentation/javascript/advanced-markers/overview Advanced markers} (replaces deprecated Marker). Create under Google Cloud → Map Management → Map IDs. */
+export function getGoogleMapsMapId() {
+	const a =
+		typeof import.meta.env.VITE_GOOGLE_MAPS_MAP_ID === 'string' ?
+			import.meta.env.VITE_GOOGLE_MAPS_MAP_ID.trim()
+		:	'';
+	const b =
+		typeof import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_MAP_ID === 'string' ?
+			import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_MAP_ID.trim()
+		:	'';
+	return a || b || '';
+}
+
 /**
- * Loads Maps JS via `callback=` — runtime logs showed map DOM sized (`map-effect-enter`) but
- * no `bootstrap`: `onload` + polling for `google.maps.Map` never completed on weekly builds.
+ * Loads Maps JS via `callback=` — avoids polling races from npm loaders.
+ * Loads core JS only (no deprecated `libraries=drawing`; polygon UX uses google.maps.Polygon + clicks).
  *
  * @see https://developers.google.com/maps/documentation/javascript/overview#Loading_the_Maps_JavaScript_API
  * @param {string} apiKey
@@ -31,13 +44,11 @@ function loadMapsScriptClassic(apiKey) {
 			reject(new Error('Google Maps is browser-only'));
 			return;
 		}
-		// Truthy non-function stubs (extensions/tests) must not skip the real loader.
 		if (typeof globalThis.google?.maps?.Map === 'function') {
 			resolve();
 			return;
 		}
 
-		/** Strip failed/incomplete loads so the next attempt gets a fresh script+callback. */
 		document.querySelectorAll('script[data-sst-google-maps="1"]').forEach((el) => el.remove());
 
 		const cbName = `__sstGmReady_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -60,24 +71,7 @@ function loadMapsScriptClassic(apiKey) {
 			}
 		}
 
-		// Google calls this when the library has finished initializing (preferred vs onload + polling).
 		globalThis[cbName] = () => {
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					location: 'ensureGoogleMaps.js:callback',
-					message: 'Maps API callback invoked',
-					data: {
-						hypothesisId: 'Z2',
-						hasMapCtor: Boolean(globalThis.google?.maps?.Map),
-					},
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 			try {
 				cleanup();
 				if (!globalThis.google?.maps?.Map) {
@@ -90,7 +84,6 @@ function loadMapsScriptClassic(apiKey) {
 			}
 		};
 
-		/** Documented global for invalid keys / referrer / billing. */
 		const prevGmFail = globalThis.gm_authFailure;
 		pendingAuthCleanup = () => {
 			if (globalThis.gm_authFailure === gmFail) {
@@ -110,28 +103,12 @@ function loadMapsScriptClassic(apiKey) {
 		const s = document.createElement('script');
 		s.setAttribute('data-sst-google-maps', '1');
 		s.async = true;
-		s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=drawing&v=weekly&callback=${cbName}`;
+		s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&loading=async&v=weekly&callback=${cbName}`;
 		s.onerror = () => {
 			cleanup();
 			reject(new Error('Failed to fetch maps.googleapis.com/maps/api/js (blocked network/CSP)'));
 		};
 		document.head.appendChild(s);
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				location: 'ensureGoogleMaps.js:script-insert',
-				message: 'classic Maps script tag appended',
-				data: {
-					hypothesisId: 'Z1',
-					cbLen: cbName.length,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
 	});
 }
 

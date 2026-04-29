@@ -1,7 +1,8 @@
 <script>
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
-	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey } from '$lib/maps/ensureGoogleMaps.js';
+	import { createAdvancedPinMarker } from '$lib/maps/advancedMarkers.js';
+	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -18,54 +19,37 @@
 	} = $props();
 
 	const apiKey = getGoogleMapsApiKey();
+	const mapsMapId = getGoogleMapsMapId();
 
 	let mapRoot = $state(/** @type {HTMLDivElement | null} */ (null));
 	let loadError = $state(false);
 
-	/** Set after Maps JS initializes — drives routing-pin sync from coord inputs. */
 	let mapHandles = $state(
-		/** @type {null | { map: any; g: any; routingMarker: any | null; routingIcon: any }} */ (null),
+		/** @type {null | { map: any; g: any; routingMarker: any | null }} */ (null),
 	);
 
 	let resetFlip = $state(0);
 
-	/** Debug dd2828 — map init inputs (hypothesis F/G). */
-	$effect(() => {
-		if (!browser) return;
-		void latitude;
-		void longitude;
-		void loadError;
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				location: 'FacilityDrawingMap.svelte:state',
-				message: 'map inputs',
-				data: {
-					hypothesisId: 'F',
-					hasApiKey: Boolean(apiKey),
-					loadError,
-					lat: latitude,
-					lng: longitude,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
-	});
+	/** Replaces deprecated DrawingManager — click map to add vertices; Finish closes polygon. */
+	let manualDrawMode = $state(/** @type {null | 'polygon' | 'marker'} */ (null));
+	let polygonDraftPts = $state(/** @type {{ lat: number; lng: number }[]} */ ([]));
 
-	/**
-	 * @param {string} hex
-	 */
-	function markerSvgDataUrl(hex) {
-		const svg =
-			`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 24 24">` +
-			`<path fill="${hex}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>` +
-			`</svg>`;
-		return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-	}
+	/** Polyline preview while drafting (module scope so toolbar handlers can clear). */
+	let polygonDraftPreview = /** @type {any} */ (null);
+
+	/** Mutable draft points — Maps click listener reads this ref so mode/path stay fresh outside Svelte's reactive closure. */
+	const polygonDraftPtsRef = { pts: /** @type {{ lat: number; lng: number }[]} */ ([]) };
+
+	/** Synced from manualDrawMode — external Maps listeners must not read stale $state closures. */
+	const interactionModeRef = { value: /** @type {null | 'polygon' | 'marker'} */ (null) };
+
+	/** Set once the map instance exists — used by polygon toolbar actions. */
+	/** @type {null | { drawnPolygons: any[]; drawnMarkers: any[]; map: any; g: any }} */
+	let facilityDrawRefs = null;
+
+	$effect(() => {
+		interactionModeRef.value = manualDrawMode;
+	});
 
 	function brandPrimaryHex() {
 		if (!browser) return '#f59e0b';
@@ -74,11 +58,6 @@
 		return '#f59e0b';
 	}
 
-	/**
-	 * Initial overlay snapshot. structuredClone($bindable mapData) can throw (DataCloneError) on reactive Proxies,
-	 * which aborted the map mount effect before ensureGoogleMapsLoaded ran — see debug-dd2828 logs with map-effect-enter but no bootstrap.
-	 * @param {FacilityMapData} data
-	 */
 	function snapshotFacilityMapData(data) {
 		try {
 			return /** @type {FacilityMapData} */ (JSON.parse(JSON.stringify(data)));
@@ -94,7 +73,7 @@
 	 * @param {any[]} polygonSink
 	 * @param {any[]} markerSink
 	 */
-	function hydrateFromMapData(map, g, data, polygonSink, markerSink) {
+	async function hydrateFromMapData(map, g, data, polygonSink, markerSink) {
 		for (const p of polygonSink.splice(0)) {
 			try {
 				p.setMap(null);
@@ -104,7 +83,7 @@
 		}
 		for (const m of markerSink.splice(0)) {
 			try {
-				m.setMap(null);
+				m.map = null;
 			} catch {
 				/* ignore */
 			}
@@ -118,7 +97,7 @@
 				(pt) =>
 					new g.maps.LatLng(
 						typeof pt.lat === 'number' ? pt.lat : Number(pt.lat),
-						typeof pt.lng === 'number' ? pt.lng : Number(pt.lng)
+						typeof pt.lng === 'number' ? pt.lng : Number(pt.lng),
 					),
 			);
 			const poly = new g.maps.Polygon({
@@ -138,14 +117,14 @@
 
 		for (const mr of data.markers || []) {
 			if (typeof mr.lat !== 'number' || typeof mr.lng !== 'number') continue;
-			const pos = new g.maps.LatLng(mr.lat, mr.lng);
-			const marker = new g.maps.Marker({
+			const marker = await createAdvancedPinMarker(
+				g,
 				map,
-				position: pos,
-				title: mr.label || '',
-			});
+				{ lat: mr.lat, lng: mr.lng },
+				{ title: mr.label || '', background: '#22c55e', zIndex: 40 },
+			);
 			markerSink.push(marker);
-			bounds.extend(pos);
+			bounds.extend({ lat: mr.lat, lng: mr.lng });
 		}
 
 		if (!bounds.isEmpty()) {
@@ -157,44 +136,80 @@
 		}
 	}
 
+	function cancelPolygonDraft(clearMode = true) {
+		polygonDraftPtsRef.pts.length = 0;
+		polygonDraftPts = [];
+		if (polygonDraftPreview) {
+			try {
+				polygonDraftPreview.setMap(null);
+			} catch {
+				/* ignore */
+			}
+			polygonDraftPreview = null;
+		}
+		if (clearMode) manualDrawMode = null;
+	}
+
+	function togglePolygonMode() {
+		if (manualDrawMode === 'polygon') {
+			cancelPolygonDraft(true);
+		} else {
+			manualDrawMode = 'polygon';
+			cancelPolygonDraft(false);
+		}
+	}
+
+	function toggleMarkerMode() {
+		if (manualDrawMode === 'marker') {
+			manualDrawMode = null;
+		} else {
+			cancelPolygonDraft(false);
+			manualDrawMode = 'marker';
+		}
+	}
+
+	function finishPolygonDraft() {
+		const refs = facilityDrawRefs;
+		if (!refs?.map || polygonDraftPtsRef.pts.length < 3) return;
+		const rawName =
+			typeof window !== 'undefined' ?
+				window.prompt('Name this field (e.g. Field 1, North Pitch)', '')
+			:	null;
+		const name = rawName != null ? String(rawName).trim() : '';
+		if (!name) return;
+
+		const coords = polygonDraftPtsRef.pts.map((p) => ({ lat: p.lat, lng: p.lng }));
+		const path = coords.map((p) => new refs.g.maps.LatLng(p.lat, p.lng));
+		const poly = new refs.g.maps.Polygon({
+			paths: path,
+			map: refs.map,
+			fillColor: '#22c55e',
+			fillOpacity: 0.25,
+			strokeColor: '#22c55e',
+			strokeOpacity: 1,
+			strokeWeight: 2,
+			editable: false,
+			draggable: false,
+		});
+		refs.drawnPolygons.push(poly);
+		mapData = {
+			version: 1,
+			polygons: [...mapData.polygons, { name, path: coords }],
+			markers: [...mapData.markers],
+		};
+		cancelPolygonDraft(true);
+	}
+
 	$effect(() => {
 		const lat = latitude;
 		const lng = longitude;
 		const h = mapHandles;
-		if (!h?.map || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
-		const pos = { lat, lng };
-		if (!h.routingMarker) {
-			h.routingMarker = new h.g.maps.Marker({
-				map: h.map,
-				position: pos,
-				icon: h.routingIcon,
-				zIndex: 99999,
-			});
-		} else {
-			h.routingMarker.setPosition(pos);
-		}
+		if (!h?.routingMarker || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+		h.routingMarker.position = { lat, lng };
 	});
 
 	$effect(() => {
-		if (!browser || !mapRoot || !apiKey) return;
-
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				location: 'FacilityDrawingMap.svelte:map-effect-enter',
-				message: 'map mount effect running',
-				data: {
-					hypothesisId: 'X',
-					rootW: mapRoot.clientWidth,
-					rootH: mapRoot.clientHeight,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
+		if (!browser || !mapRoot || !apiKey || !mapsMapId) return;
 
 		loadError = false;
 
@@ -204,82 +219,20 @@
 		const initialMapData = untrack(() => snapshotFacilityMapData(mapData));
 
 		let cancelled = false;
-		/** @type {ResizeObserver | null} */
-		let resizeObs = null;
-		/** @type {any} */
-		let map = null;
-		/** @type {any} */
-		let routingMarker = null;
-		/** @type {any} */
-		let mapClickListener = null;
-		/** @type {any} */
-		let overlayListener = null;
-		/** @type {any} */
-		let drawingManager = null;
-		/** @type {any[]} */
-		const drawnPolygons = [];
-		/** @type {any[]} */
-		const drawnMarkers = [];
+		let resizeObs = /** @type {ResizeObserver | null} */ (null);
+		let map = /** @type {any} */ (null);
+		let routingMarker = /** @type {any} */ (null);
+		let mapClickListener = /** @type {any} */ (null);
+		const drawnPolygons = /** @type {any[]} */ ([]);
+		const drawnMarkers = /** @type {any[]} */ ([]);
 
 		mapHandles = null;
-
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				location: 'FacilityDrawingMap.svelte:pre-async',
-				message: 'past mapData snapshot, entering loader',
-				data: {
-					hypothesisId: 'R',
-					polygonsN: initialMapData.polygons?.length ?? 0,
-					markersN: initialMapData.markers?.length ?? 0,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
+		facilityDrawRefs = null;
 
 		(async () => {
 			try {
 				const g = await ensureGoogleMapsLoaded();
-				// #region agent log
-				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-					body: JSON.stringify({
-						sessionId: 'dd2828',
-						location: 'FacilityDrawingMap.svelte:post-await',
-						message: 'ensureGoogleMapsLoaded settled',
-						data: {
-							hypothesisId: 'C',
-							cancelled,
-							hasMapRoot: Boolean(mapRoot),
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-				// #endregion
 				if (cancelled || !mapRoot) return;
-
-				// #region agent log
-				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-					body: JSON.stringify({
-						sessionId: 'dd2828',
-						location: 'FacilityDrawingMap.svelte:bootstrap',
-						message: 'ensureGoogleMapsLoaded resolved',
-						data: {
-							hypothesisId: 'S',
-							loaderKind: 'classic-script',
-							hasDrawing: Boolean(g.maps?.drawing?.DrawingManager),
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-				// #endregion
 
 				if (!g?.maps) {
 					loadError = true;
@@ -293,6 +246,7 @@
 				const zoom = lat0 != null && lng0 != null ? 17 : 4;
 
 				map = new g.maps.Map(mapRoot, {
+					mapId: mapsMapId,
 					center,
 					zoom,
 					mapTypeId: g.maps.MapTypeId.HYBRID,
@@ -313,102 +267,24 @@
 				requestAnimationFrame(() => {
 					requestAnimationFrame(() => kickResize());
 				});
-				g.maps.event.addListenerOnce(map, 'idle', () => {
-					kickResize();
-					// #region agent log
-					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-						body: JSON.stringify({
-							sessionId: 'dd2828',
-							location: 'FacilityDrawingMap.svelte:idle',
-							message: 'map idle (tiles/layout)',
-							data: {
-								hypothesisId: 'M',
-								runId: 'idle-resize',
-								zoom: typeof map.getZoom === 'function' ? map.getZoom() : null,
-								cLat: center.lat,
-								cLng: center.lng,
-								rootW: mapRoot?.clientWidth ?? 0,
-								rootH: mapRoot?.clientHeight ?? 0,
-								gmChildren:
-									mapRoot && typeof mapRoot.querySelectorAll === 'function' ?
-										mapRoot.querySelectorAll('.gm-style,canvas,iframe').length
-									:	0,
-							},
-							timestamp: Date.now(),
-						}),
-					}).catch(() => {});
-					// #endregion
-				});
-				g.maps.event.addListenerOnce(map, 'tilesloaded', () => {
-					// #region agent log
-					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-						body: JSON.stringify({
-							sessionId: 'dd2828',
-							location: 'FacilityDrawingMap.svelte:tilesloaded',
-							message: 'first tiles loaded',
-							data: {
-								hypothesisId: 'P',
-								runId: 'tiles',
-								rootW: mapRoot?.clientWidth ?? 0,
-								rootH: mapRoot?.clientHeight ?? 0,
-							},
-							timestamp: Date.now(),
-						}),
-					}).catch(() => {});
-					// #endregion
-				});
 
-				const iconUrl = markerSvgDataUrl(brandPrimaryHex());
-				const routingIcon = {
-					url: iconUrl,
-					scaledSize: new g.maps.Size(32, 40),
-					anchor: new g.maps.Point(16, 40),
-				};
+				facilityDrawRefs = { drawnPolygons, drawnMarkers, map, g };
 
 				if (lat0 != null && lng0 != null) {
-					routingMarker = new g.maps.Marker({
-						map,
-						position: center,
-						icon: routingIcon,
+					routingMarker = await createAdvancedPinMarker(g, map, center, {
+						title: 'Routing pin',
+						background: brandPrimaryHex(),
 						zIndex: 99999,
 					});
 				}
 
-				mapHandles = { map, g, routingMarker, routingIcon };
+				mapHandles = { map, g, routingMarker };
 
 				if (typeof ResizeObserver !== 'undefined' && mapRoot) {
-					let resizeLogged = false;
 					resizeObs = new ResizeObserver(() => {
 						if (cancelled || !map) return;
 						try {
 							g.maps.event.trigger(map, 'resize');
-							const rw = mapRoot?.clientWidth ?? 0;
-							const rh = mapRoot?.clientHeight ?? 0;
-							if (!resizeLogged && rw > 0 && rh > 0) {
-								resizeLogged = true;
-								// #region agent log
-								fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-									method: 'POST',
-									headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-									body: JSON.stringify({
-										sessionId: 'dd2828',
-										location: 'FacilityDrawingMap.svelte:resize',
-										message: 'map resize after nonzero layout',
-										data: {
-											hypothesisId: 'G',
-											runId: 'post-fix',
-											mapRootW: rw,
-											mapRootH: rh,
-										},
-										timestamp: Date.now(),
-									}),
-								}).catch(() => {});
-								// #endregion
-							}
 						} catch {
 							/* ignore */
 						}
@@ -422,185 +298,106 @@
 				}
 
 				try {
-					hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
+					await hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
 				} catch (he) {
 					console.warn('[FacilityDrawingMap] hydrateFromMapData failed', he);
-					// #region agent log
-					fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-						body: JSON.stringify({
-							sessionId: 'dd2828',
-							location: 'FacilityDrawingMap.svelte:hydrate-fail',
-							message: 'hydrateFromMapData threw (map kept)',
-							data: {
-								hypothesisId: 'H2',
-								errShort:
-									he instanceof Error ?
-										he.message.slice(0, 160)
-									:	String(he).slice(0, 160),
-							},
-							timestamp: Date.now(),
-						}),
-					}).catch(() => {});
-					// #endregion
 				}
 
 				if (!readOnly) {
-					try {
-						if (g.maps?.drawing?.DrawingManager) {
-							drawingManager = new g.maps.drawing.DrawingManager({
-								drawingMode: null,
-								drawingControl: true,
-								drawingControlOptions: {
-									position: g.maps.ControlPosition.TOP_CENTER,
-									drawingModes: [g.maps.drawing.OverlayType.POLYGON, g.maps.drawing.OverlayType.MARKER],
-								},
-								polygonOptions: {
-									fillColor: '#22c55e',
-									fillOpacity: 0.25,
+					mapClickListener = map.addListener('click', (/** @type {any} */ e) => {
+						if (cancelled || !e.latLng) return;
+						const plat = e.latLng.lat();
+						const plng = e.latLng.lng();
+
+						if (interactionModeRef.value === 'polygon') {
+							polygonDraftPtsRef.pts.push({ lat: plat, lng: plng });
+							polygonDraftPts = [...polygonDraftPtsRef.pts];
+							if (!polygonDraftPreview) {
+								polygonDraftPreview = new g.maps.Polyline({
+									path: polygonDraftPtsRef.pts,
 									strokeColor: '#22c55e',
 									strokeOpacity: 1,
 									strokeWeight: 2,
-									editable: false,
-									draggable: false,
-								},
-								markerOptions: {
-									draggable: false,
-								},
-							});
-							drawingManager.setMap(map);
-
-							overlayListener = g.maps.event.addListener(drawingManager, 'overlaycomplete', (/** @type {any} */ e) => {
-								if (cancelled) return;
-								drawingManager.setDrawingMode(null);
-
-								if (e.type === g.maps.drawing.OverlayType.POLYGON) {
-									const poly = e.overlay;
-									const path = poly.getPath();
-									const coords = [];
-									for (let i = 0; i < path.getLength(); i++) {
-										const ll = path.getAt(i);
-										coords.push({ lat: ll.lat(), lng: ll.lng() });
-									}
-									const rawName =
-										typeof window !== 'undefined' ?
-											window.prompt('Name this field (e.g. Field 1, North Pitch)', '')
-										:	null;
-									const name = rawName != null ? String(rawName).trim() : '';
-									if (!name) {
-										poly.setMap(null);
-										return;
-									}
-									poly.setEditable(false);
-									poly.setDraggable(false);
-									drawnPolygons.push(poly);
-									mapData = {
-										version: 1,
-										polygons: [...mapData.polygons, { name, path: coords }],
-										markers: [...mapData.markers],
-									};
-								} else if (e.type === g.maps.drawing.OverlayType.MARKER) {
-									const m = e.overlay;
-									const pos = m.getPosition();
-									if (!pos) {
-										m.setMap(null);
-										return;
-									}
-									const raw =
-										typeof window !== 'undefined' ?
-											window.prompt('Label this marker (optional)', '')
-										:	null;
-									const label = raw != null ? String(raw).trim() : '';
-									drawnMarkers.push(m);
-									mapData = {
-										version: 1,
-										polygons: [...mapData.polygons],
-										markers: [
-											...mapData.markers,
-											{
-												...(label ? { label } : {}),
-												lat: pos.lat(),
-												lng: pos.lng(),
-											},
-										],
-									};
-								}
-							});
+									map,
+									clickable: false,
+								});
+							} else {
+								polygonDraftPreview.setPath(polygonDraftPtsRef.pts);
+							}
+							return;
 						}
 
-						mapClickListener = map.addListener('click', (/** @type {any} */ e) => {
-							if (cancelled || !e.latLng) return;
-							if (drawingManager && drawingManager.getDrawingMode() !== null) return;
-							const plat = e.latLng.lat();
-							const plng = e.latLng.lng();
+						if (interactionModeRef.value === 'marker') {
+							void (async () => {
+								const refs = facilityDrawRefs;
+								if (!refs?.map || cancelled) return;
+								const raw =
+									typeof window !== 'undefined' ?
+										window.prompt('Label this marker (optional)', '')
+									:	null;
+								const label = raw != null ? String(raw).trim() : '';
+								const m = await createAdvancedPinMarker(g, refs.map, { lat: plat, lng: plng }, {
+									title: label || 'Marker',
+									background: '#22c55e',
+									zIndex: 50,
+								});
+								refs.drawnMarkers.push(m);
+								mapData = {
+									version: 1,
+									polygons: [...mapData.polygons],
+									markers: [
+										...mapData.markers,
+										label ?
+											{
+												label,
+												lat: plat,
+												lng: plng,
+											}
+										:	{
+												lat: plat,
+												lng: plng,
+											},
+									],
+								};
+								manualDrawMode = null;
+							})();
+							return;
+						}
+
+						void (async () => {
 							const h = mapHandles;
-							if (h?.routingMarker) {
-								h.routingMarker.setMap(null);
+							if (!h?.map) return;
+							if (h.routingMarker) {
+								try {
+									h.routingMarker.map = null;
+								} catch {
+									/* ignore */
+								}
 							}
-							const nm = new g.maps.Marker({
-								map,
-								position: { lat: plat, lng: plng },
-								icon: routingIcon,
+							const nm = await createAdvancedPinMarker(g, h.map, { lat: plat, lng: plng }, {
+								title: 'Routing pin',
+								background: brandPrimaryHex(),
 								zIndex: 99999,
 							});
 							routingMarker = nm;
-							if (mapHandles) {
-								mapHandles = { ...mapHandles, routingMarker: nm };
-							}
+							mapHandles = { ...h, routingMarker: nm };
 							latitude = plat;
 							longitude = plng;
-						});
-					} catch (te) {
-						console.warn('[FacilityDrawingMap] drawing tools / click setup failed', te);
-						// #region agent log
-						fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-							body: JSON.stringify({
-								sessionId: 'dd2828',
-								location: 'FacilityDrawingMap.svelte:drawing-fail',
-								message: 'drawing or click setup threw (map kept)',
-								data: {
-									hypothesisId: 'T',
-									errShort:
-										te instanceof Error ?
-											te.message.slice(0, 160)
-										:	String(te).slice(0, 160),
-								},
-								timestamp: Date.now(),
-							}),
-						}).catch(() => {});
-						// #endregion
-					}
+						})();
+					});
 				}
 			} catch (e) {
 				console.error('[FacilityDrawingMap]', e);
-				// #region agent log
-				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-					body: JSON.stringify({
-						sessionId: 'dd2828',
-						location: 'FacilityDrawingMap.svelte:catch',
-						message: 'map init failed',
-						data: {
-							hypothesisId: 'Y',
-							errShort:
-								e instanceof Error ?
-									e.message.slice(0, 160)
-								:	String(e).slice(0, 160),
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-				// #endregion
 				loadError = true;
 			}
 		})();
 
 		return () => {
 			cancelled = true;
+			facilityDrawRefs = null;
+			cancelPolygonDraft(false);
+			polygonDraftPtsRef.pts.length = 0;
+			polygonDraftPreview = null;
 			if (resizeObs && mapRoot) {
 				try {
 					resizeObs.unobserve(mapRoot);
@@ -612,14 +409,8 @@
 			}
 			mapHandles = null;
 			const ggl = globalThis.google;
-			if (overlayListener && ggl?.maps?.event) {
-				ggl.maps.event.removeListener(overlayListener);
-			}
 			if (mapClickListener && ggl?.maps?.event) {
 				ggl.maps.event.removeListener(mapClickListener);
-			}
-			if (drawingManager && ggl?.maps?.event) {
-				ggl.maps.event.clearInstanceListeners(drawingManager);
 			}
 			for (const p of drawnPolygons) {
 				try {
@@ -631,21 +422,24 @@
 			drawnPolygons.length = 0;
 			for (const m of drawnMarkers) {
 				try {
-					m.setMap(null);
+					m.map = null;
 				} catch {
 					/* ignore */
 				}
 			}
 			drawnMarkers.length = 0;
 			if (routingMarker) {
-				routingMarker.setMap(null);
+				try {
+					routingMarker.map = null;
+				} catch {
+					/* ignore */
+				}
 				routingMarker = null;
 			}
 			if (map && ggl?.maps?.event) {
 				ggl.maps.event.clearInstanceListeners(map);
 			}
 			map = null;
-			drawingManager = null;
 		};
 	});
 
@@ -667,6 +461,14 @@
 			<code class="fd-map-code">VITE_PUBLIC_GOOGLE_MAPS_API_KEY</code>) to enable satellite drawing tools.
 		</p>
 	</div>
+{:else if !mapsMapId}
+	<div class="fd-map-empty fd-map-empty--no-key" role="img" aria-label="Google Maps Map ID required">
+		<i class="ph ph-map-pin fd-map-empty__icon" aria-hidden="true"></i>
+		<p class="fd-map-empty__text">
+			Set <code class="fd-map-code">VITE_GOOGLE_MAPS_MAP_ID</code> (Google Cloud → Map Management → Map IDs) so Advanced
+			Markers work — required after Google deprecated classic markers.
+		</p>
+	</div>
 {:else if loadError}
 	<div class="fd-map-empty fd-map-empty--error" role="img" aria-label="Google Maps failed to load">
 		<i class="ph ph-map-pin fd-map-empty__icon" aria-hidden="true"></i>
@@ -677,9 +479,33 @@
 		<div class="fd-map-shell">
 			<div class="fd-map-toolbar">
 				{#if !readonly}
-					<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}>
-						Clear field drawings
-					</button>
+					<div class="fd-map-draw-group">
+						<button
+							type="button"
+							class="fd-map-draw-btn"
+							class:fd-map-draw-btn--active={manualDrawMode === 'polygon'}
+							onclick={() => togglePolygonMode()}
+						>
+							Draw field
+						</button>
+						<button
+							type="button"
+							class="fd-map-draw-btn"
+							class:fd-map-draw-btn--active={manualDrawMode === 'marker'}
+							onclick={() => toggleMarkerMode()}
+						>
+							Place marker
+						</button>
+						{#if manualDrawMode === 'polygon' && polygonDraftPts.length >= 3}
+							<button type="button" class="fd-map-draw-btn fd-map-draw-btn--primary" onclick={() => finishPolygonDraft()}>
+								Finish polygon
+							</button>
+						{/if}
+						{#if manualDrawMode === 'polygon' && polygonDraftPts.length > 0}
+							<button type="button" class="fd-map-draw-btn" onclick={() => cancelPolygonDraft(true)}> Cancel </button>
+						{/if}
+					</div>
+					<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}> Clear field drawings </button>
 				{/if}
 			</div>
 			<div
@@ -704,8 +530,6 @@
 		height: 100%;
 	}
 
-	/* Explicit px height — Maps JS often renders no tiles when height resolves from % flex alone
-	   (see LogisticsMap.svelte). Keep min-height as floor inside embedded Field Ops vault. */
 	.fd-map-root {
 		box-sizing: border-box;
 		flex: 1 1 auto;
@@ -728,9 +552,48 @@
 
 	.fd-map-toolbar {
 		display: flex;
-		justify-content: flex-end;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
 		flex-shrink: 0;
 		margin-bottom: 8px;
+	}
+
+	.fd-map-draw-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.fd-map-draw-btn {
+		font: inherit;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 6px 10px;
+		border-radius: 8px;
+		cursor: pointer;
+		color: #e2e8f0;
+		background: rgba(30, 41, 59, 0.85);
+		border: 1px solid rgba(71, 85, 105, 0.65);
+	}
+
+	.fd-map-draw-btn:hover {
+		filter: brightness(1.08);
+	}
+
+	.fd-map-draw-btn--active {
+		border-color: rgba(34, 197, 94, 0.65);
+		box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
+	}
+
+	.fd-map-draw-btn--primary {
+		color: #ecfdf5;
+		background: rgba(22, 101, 52, 0.65);
+		border-color: rgba(34, 197, 94, 0.55);
 	}
 
 	.fd-map-clear {
@@ -745,6 +608,7 @@
 		color: #fecaca;
 		background: rgba(127, 29, 29, 0.55);
 		border: 1px solid rgba(248, 113, 113, 0.45);
+		margin-left: auto;
 	}
 
 	.fd-map-clear:hover {

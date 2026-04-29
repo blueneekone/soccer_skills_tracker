@@ -1,7 +1,8 @@
 <script>
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
-	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey } from '$lib/maps/ensureGoogleMaps.js';
+	import { createAdvancedPinMarker } from '$lib/maps/advancedMarkers.js';
+	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -14,30 +15,13 @@
 	} = $props();
 
 	const apiKey = getGoogleMapsApiKey();
+	const mapsMapId = getGoogleMapsMapId();
 
 	let mapRoot = $state(/** @type {HTMLDivElement | null} */ (null));
 	let loadError = $state(false);
 
-	/**
-	 * @param {string} hex
-	 */
-	function markerSvgDataUrl(hex) {
-		const svg =
-			`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 24 24">` +
-			`<path fill="${hex}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>` +
-			`</svg>`;
-		return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-	}
-
-	function brandPrimaryHex() {
-		if (!browser) return '#f59e0b';
-		const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim();
-		if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
-		return '#f59e0b';
-	}
-
 	$effect(() => {
-		if (!browser || !mapRoot || !apiKey) return;
+		if (!browser || !mapRoot || !apiKey || !mapsMapId) return;
 
 		loadError = false;
 
@@ -46,12 +30,9 @@
 		const readOnly = untrack(() => readonly);
 
 		let cancelled = false;
-		/** @type {any} */
-		let map = null;
-		/** @type {any} */
-		let marker = null;
-		/** @type {any} */
-		let clickListener = null;
+		let map = /** @type {any} */ (null);
+		let marker = /** @type {any} */ (null);
+		let clickListener = /** @type {any} */ (null);
 
 		(async () => {
 			try {
@@ -70,6 +51,7 @@
 				const zoom = lat0 != null && lng0 != null ? 16 : 4;
 
 				map = new g.maps.Map(mapRoot, {
+					mapId: mapsMapId,
 					center,
 					zoom,
 					mapTypeControl: false,
@@ -78,18 +60,11 @@
 					clickableIcons: false,
 				});
 
-				const iconUrl = markerSvgDataUrl(brandPrimaryHex());
-				const icon = {
-					url: iconUrl,
-					scaledSize: new g.maps.Size(32, 40),
-					anchor: new g.maps.Point(16, 40),
-				};
-
 				if (lat0 != null && lng0 != null) {
-					marker = new g.maps.Marker({
-						map,
-						position: center,
-						icon,
+					marker = await createAdvancedPinMarker(g, map, center, {
+						title: 'Facility location',
+						background: '#f59e0b',
+						zIndex: 10,
 					});
 				}
 
@@ -98,17 +73,27 @@
 						if (!e.latLng || cancelled) return;
 						const lat = e.latLng.lat();
 						const lng = e.latLng.lng();
-						if (marker) {
-							marker.setMap(null);
-							marker = null;
-						}
-						marker = new g.maps.Marker({
-							map,
-							position: { lat, lng },
-							icon,
-						});
-						latitude = lat;
-						longitude = lng;
+						void (async () => {
+							try {
+								if (marker) {
+									try {
+										marker.map = null;
+									} catch {
+										/* ignore */
+									}
+									marker = null;
+								}
+								marker = await createAdvancedPinMarker(g, map, { lat, lng }, {
+									title: 'Facility location',
+									background: '#f59e0b',
+									zIndex: 10,
+								});
+								latitude = lat;
+								longitude = lng;
+							} catch (err) {
+								console.error('[LogisticsMap]', err);
+							}
+						})();
 					});
 				}
 			} catch (e) {
@@ -123,7 +108,11 @@
 				globalThis.google.maps.event.removeListener(clickListener);
 			}
 			if (marker) {
-				marker.setMap(null);
+				try {
+					marker.map = null;
+				} catch {
+					/* ignore */
+				}
 				marker = null;
 			}
 			if (map && globalThis.google?.maps?.event) {
@@ -143,6 +132,14 @@
 		<i class="ph ph-lock-key logistics-map-empty__icon" aria-hidden="true"></i>
 		<p class="logistics-map-empty__text">
 			Google Maps API Key Required. Configure in .env to activate visual routing.
+		</p>
+	</div>
+{:else if !mapsMapId}
+	<div class="logistics-map-empty logistics-map-empty--no-key" role="img" aria-label="Google Maps Map ID required">
+		<i class="ph ph-map-pin logistics-map-empty__icon" aria-hidden="true"></i>
+		<p class="logistics-map-empty__text">
+			Set <code class="lm-code">VITE_GOOGLE_MAPS_MAP_ID</code> (Google Cloud → Map Management → Map IDs) for Advanced
+			Markers.
 		</p>
 	</div>
 {:else if loadError}
@@ -166,11 +163,15 @@
 {/if}
 
 <style>
+	.lm-code {
+		font-family: ui-monospace, monospace;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #d97706;
+	}
+
 	.logistics-map-root {
 		box-sizing: border-box;
-		/* Explicit height is critical — Google Maps API silently fails to render
-		   tiles inside a 0-height container. Use min-height so parent containers
-		   using flex-1 can stretch beyond this floor. */
 		min-height: 500px;
 		height: 500px;
 		width: 100%;
@@ -182,7 +183,6 @@
 		border-color: #404040;
 	}
 
-	/* Enterprise empty state — works without Tailwind (e.g. coach tools tab). */
 	.logistics-map-empty {
 		box-sizing: border-box;
 		display: flex;
