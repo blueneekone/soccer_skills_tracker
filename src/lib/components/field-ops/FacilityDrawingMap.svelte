@@ -36,6 +36,33 @@
 
 	let resetFlip = $state(0);
 
+	/** Debug dd2828 — map init inputs (hypothesis F/G). */
+	$effect(() => {
+		if (!browser) return;
+		void latitude;
+		void longitude;
+		void loadError;
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				location: 'FacilityDrawingMap.svelte:state',
+				message: 'map inputs',
+				data: {
+					hypothesisId: 'F',
+					hasApiKey: Boolean(apiKey),
+					loadError,
+					lat: latitude,
+					lng: longitude,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
+	});
+
 	/**
 	 * @param {string} hex
 	 */
@@ -153,6 +180,8 @@
 		const initialMapData = untrack(() => structuredClone(mapData));
 
 		let cancelled = false;
+		/** @type {ResizeObserver | null} */
+		let resizeObs = null;
 		/** @type {any} */
 		let map = null;
 		/** @type {any} */
@@ -222,6 +251,47 @@
 				}
 
 				mapHandles = { map, g, routingMarker, routingIcon };
+
+				if (typeof ResizeObserver !== 'undefined' && mapRoot) {
+					let resizeLogged = false;
+					resizeObs = new ResizeObserver(() => {
+						if (cancelled || !map) return;
+						try {
+							g.maps.event.trigger(map, 'resize');
+							const rw = mapRoot?.clientWidth ?? 0;
+							const rh = mapRoot?.clientHeight ?? 0;
+							if (!resizeLogged && rw > 0 && rh > 0) {
+								resizeLogged = true;
+								// #region agent log
+								fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+									body: JSON.stringify({
+										sessionId: 'dd2828',
+										location: 'FacilityDrawingMap.svelte:resize',
+										message: 'map resize after nonzero layout',
+										data: {
+											hypothesisId: 'G',
+											runId: 'post-fix',
+											mapRootW: rw,
+											mapRootH: rh,
+										},
+										timestamp: Date.now(),
+									}),
+								}).catch(() => {});
+								// #endregion
+							}
+						} catch {
+							/* ignore */
+						}
+					});
+					resizeObs.observe(mapRoot);
+				}
+				try {
+					g.maps.event.trigger(map, 'resize');
+				} catch {
+					/* ignore */
+				}
 
 				hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
 
@@ -336,6 +406,15 @@
 
 		return () => {
 			cancelled = true;
+			if (resizeObs && mapRoot) {
+				try {
+					resizeObs.unobserve(mapRoot);
+				} catch {
+					/* ignore */
+				}
+				resizeObs.disconnect();
+				resizeObs = null;
+			}
 			mapHandles = null;
 			const ggl = globalThis.google;
 			if (overlayListener && ggl?.maps?.event) {

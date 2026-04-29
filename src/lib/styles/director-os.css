@@ -116,16 +116,36 @@ html.dark .dir-os-btn-primary {
 	transform: scale(0.98);
 }
 
+/* Disabled must stay readable — global opacity was washing out label text (logs: opacity 0.55). */
 .dir-os-btn-primary:disabled {
-	opacity: 0.55;
+	opacity: 1;
 	cursor: not-allowed;
+	background: #94a3b8;
+	color: #0f172a;
+	border: 1px solid rgba(15, 23, 42, 0.14);
+	box-shadow: none;
+}
+
+html.dark .dir-os-btn-primary:disabled {
+	background: #475569;
+	color: #f8fafc;
+	border-color: rgba(255, 255, 255, 0.14);
 }
 
 /* Epic 9: subscription read-only — still clickable to open upgrade modal */
 .dir-os-btn-primary.dir-os-btn--readonly {
-	opacity: 0.68;
+	opacity: 1;
 	cursor: not-allowed;
-	filter: grayscale(0.2);
+	filter: grayscale(0.15);
+	background: color-mix(in srgb, #94a3b8 88%, #0f172a);
+	color: #f8fafc;
+	border: 1px solid rgba(15, 23, 42, 0.14);
+}
+
+html.dark .dir-os-btn-primary.dir-os-btn--readonly {
+	background: color-mix(in srgb, #475569 92%, #0f172a);
+	color: #f1f5f9;
+	border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Entitlement meter */

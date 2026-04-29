@@ -12,6 +12,8 @@
 		where,
 	} from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	/**
 	 * @typedef {{ id: string; title?: string; kind?: string; startsAt?: unknown; endsAt?: unknown; facilityId?: string; teamIds?: string[] }} CalRow
@@ -112,6 +114,36 @@
 
 	function openModal() {
 		saveErr = '';
+		// #region agent log
+		{
+			const matchForProp = teamsStore.teams.filter((t) => t.clubId === clubId).length;
+			const ws = typeof workspaceContextStore.activeClubId === 'string' ?
+					workspaceContextStore.activeClubId.trim()
+				:	'';
+			const prof =
+				typeof authStore.userProfile?.clubId === 'string' ?
+					authStore.userProfile.clubId.trim()
+				:	'';
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					location: 'DeploymentCalendar.svelte:openModal',
+					message: 'teams vs club ids',
+					data: {
+						hypothesisId: 'K',
+						propClubShort: clubId.slice(0, 8),
+						workspaceClubShort: ws.slice(0, 8),
+						profileClubShort: prof.slice(0, 8),
+						teamsTotal: teamsStore.teams.length,
+						matchForPropClub: matchForProp,
+					},
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+		}
+		// #endregion
 		const now = new Date();
 		now.setMinutes(0, 0, 0);
 		const end = new Date(now.getTime() + 90 * 60 * 1000);

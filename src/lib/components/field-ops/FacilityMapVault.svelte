@@ -17,6 +17,40 @@
 	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
 	import FacilityDrawingMap from '$lib/components/field-ops/FacilityDrawingMap.svelte';
 
+	/** Debug dd2828 — hero map frame dimensions (hypothesis G). */
+	$effect(() => {
+		if (!browser || !clubId) return;
+		void rows.length;
+		void heroFacilityId;
+		void heroLat;
+		void heroLng;
+		void embedded;
+		void tick().then(() => {
+			const frame = document.querySelector('.fm-embedded-map-frame');
+			// #region agent log
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					location: 'FacilityMapVault.svelte:hero',
+					message: 'hero map context',
+					data: {
+						hypothesisId: 'G',
+						rowsLen: rows.length,
+						heroFacilityShort: (heroFacilityId || '').slice(0, 8),
+						heroLat,
+						heroLng,
+						embedded,
+						frameH: frame?.clientHeight ?? 0,
+					},
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+			// #endregion
+		});
+	});
+
 	/**
 	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
 	 * @typedef {{ id: string; name: string; address?: string; mapStoragePath?: string; mapDownloadUrl?: string; type?: 'image' | 'pdf'; uploadedAt?: import('firebase/firestore').Timestamp; latitude?: number; longitude?: number; routingUrl?: string; tacticalCanvasJson?: string; status?: string; lockReason?: string; lockedAt?: import('firebase/firestore').Timestamp; mapData?: string }} FacilityMapRow
