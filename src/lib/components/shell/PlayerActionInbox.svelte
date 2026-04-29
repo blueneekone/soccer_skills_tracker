@@ -128,7 +128,7 @@
 <style>
 	.pai {
 		position: relative;
-		z-index: 1;
+		z-index: 50;
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
 		background: #ffffff;
@@ -172,7 +172,7 @@
 
 	.pai__card {
 		position: relative;
-		z-index: 1;
+		z-index: 50;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -214,10 +214,12 @@
 		gap: 8px;
 		align-items: center;
 		position: relative;
-		z-index: 2;
+		z-index: 50;
 	}
 
 	.pai__btn {
+		position: relative;
+		z-index: 50;
 		align-self: flex-start;
 		font: inherit;
 		font-size: 12px;
@@ -264,6 +266,8 @@
 	}
 
 	.pai__details {
+		position: relative;
+		z-index: 50;
 		width: 100%;
 		border-radius: 10px;
 		border: 1px solid #e5e5e5;
@@ -278,6 +282,8 @@
 	}
 
 	.pai__summary {
+		position: relative;
+		z-index: 50;
 		cursor: pointer;
 		font-size: 12px;
 		font-weight: 800;
@@ -308,6 +314,8 @@
 	}
 
 	.pai__li-link {
+		position: relative;
+		z-index: 50;
 		display: inline;
 		color: inherit;
 		text-decoration: underline;
