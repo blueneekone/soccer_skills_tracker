@@ -38,6 +38,10 @@
 	let draftLng = $state(null);
 	let logisticsSaving = $state(false);
 	let logisticsSaveErr = $state('');
+	/** After a successful logistics write, block snapshot-driven hero hydrate for this facility briefly (stale cache). */
+	let logisticsPostSaveHydrateQuietUntil = $state(0);
+	/** Facility id protected by `logisticsPostSaveHydrateQuietUntil` (paired with timestamp). */
+	let logisticsQuietFacilityId = $state(/** @type {string | null} */ (null));
 	/** Registry form (logistics-only facility docs — no vault map asset required). */
 	let regName = $state('');
 	let regAddress = $state('');
@@ -301,6 +305,14 @@
 		) {
 			return;
 		}
+		/** Do not push pre-ack snapshot into hero while quiet window protects this doc after logistics save. */
+		if (
+			logisticsPostSaveHydrateQuietUntil > Date.now() &&
+			logisticsQuietFacilityId &&
+			row?.id === logisticsQuietFacilityId
+		) {
+			return;
+		}
 
 		const key = `${clubId}:${heroFacilityId}`;
 		if (key === lastHeroHydrateKey && snapSig === lastAppliedHydrateSig) return;
@@ -331,6 +343,8 @@
 		previewOpen = false;
 		previewId = null;
 		pdfBusy = false;
+		logisticsPostSaveHydrateQuietUntil = 0;
+		logisticsQuietFacilityId = null;
 		logisticsSaveErr = '';
 		draftAddress = '';
 		draftName = '';
@@ -401,6 +415,14 @@
 		 * draftLat/draftLng/draftMapData and snap the routing marker back until the write settles.
 		 */
 		if (logisticsSaving && previewOpen && previewId === row.id) {
+			return;
+		}
+		if (
+			logisticsPostSaveHydrateQuietUntil > Date.now() &&
+			logisticsQuietFacilityId === row.id &&
+			previewOpen &&
+			previewId === row.id
+		) {
 			return;
 		}
 		previewId = row.id;
@@ -608,6 +630,7 @@
 	async function saveLogistics() {
 		logisticsSaveErr = '';
 		if (!canManage || !clubId || !previewId) return;
+		const savingFacilityId = previewId;
 		const nameTrim = draftName.trim().slice(0, 200);
 		if (!nameTrim) {
 			logisticsSaveErr = 'Facility name is required.';
@@ -624,6 +647,7 @@
 			return;
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${draftLat},${draftLng}`;
+		/** Set before any await so reactive hydrates and pin sync never see a window with saving false mid-flight. */
 		logisticsSaving = true;
 		try {
 			/** @type {Record<string, unknown>} */
@@ -644,11 +668,15 @@
 				patch.lockedAt = deleteField();
 			}
 			await updateDoc(doc(db, 'clubs', clubId, 'facilities', previewId), patch);
+			logisticsQuietFacilityId = savingFacilityId;
+			logisticsPostSaveHydrateQuietUntil = Date.now() + 450;
 		} catch (e) {
 			logisticsSaveErr =
 				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
 					String(/** @type {{ message?: string }} */ (e).message)
 				:	String(e);
+			logisticsQuietFacilityId = null;
+			logisticsPostSaveHydrateQuietUntil = 0;
 		} finally {
 			logisticsSaving = false;
 		}

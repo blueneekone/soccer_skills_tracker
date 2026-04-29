@@ -514,38 +514,74 @@
 		syncPolygonClickableForMarkerPlacement();
 	}
 
+	/**
+	 * Apply parent lat/lng to the Advanced Marker. Debounced so a brief unlock after `updateDoc` does not
+	 * snap the pin to a stale prop before the parent draft state settles; skipped entirely while locked (in-flight save).
+	 */
+	const ROUTING_PIN_PROP_SYNC_MS = 72;
 	$effect(() => {
 		const locked = lockRoutingPinSync;
 		const lat = latitude;
 		const lng = longitude;
 		const h = mapHandles;
-		if (locked) return;
-		if (!h?.routingMarker || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
-		h.routingMarker.position = { lat, lng };
-		// #region agent log
-		queueMicrotask(() => {
-			const mk = mapHandles?.routingMarker;
-			if (!mk) return;
-			const plain = markerPositionToPlain(mk.position);
-			if (!plain) return;
-			const drift =
-				Math.abs(plain.lat - lat) > 1e-6 || Math.abs(plain.lng - lng) > 1e-6;
-			if (!drift) return;
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'post-map-await-fix',
-					hypothesisId: 'H_MAP_DRIFT',
-					location: 'FacilityDrawingMap.svelte:routingPinSync',
-					message: 'routing_marker_position_mismatch',
-					data: { bindLat: lat, bindLng: lng, markerLat: plain.lat, markerLng: plain.lng },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-		});
-		// #endregion
+
+		let timeoutId = /** @type {ReturnType<typeof setTimeout> | null} */ (null);
+
+		if (locked) {
+			return () => {
+				if (timeoutId != null) clearTimeout(timeoutId);
+			};
+		}
+		if (!h?.routingMarker || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+			return () => {
+				if (timeoutId != null) clearTimeout(timeoutId);
+			};
+		}
+
+		timeoutId = setTimeout(() => {
+			timeoutId = null;
+			if (lockRoutingPinSync) return;
+			const cur = mapHandles;
+			const latN = latitude;
+			const lngN = longitude;
+			if (!cur?.routingMarker || latN == null || lngN == null || !Number.isFinite(latN) || !Number.isFinite(lngN)) {
+				return;
+			}
+			cur.routingMarker.position = { lat: latN, lng: lngN };
+			// #region agent log
+			queueMicrotask(() => {
+				const mk = mapHandles?.routingMarker;
+				if (!mk) return;
+				const plain = markerPositionToPlain(mk.position);
+				if (!plain) return;
+				const drift =
+					Math.abs(plain.lat - latN) > 1e-6 || Math.abs(plain.lng - lngN) > 1e-6;
+				if (!drift) return;
+				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+					body: JSON.stringify({
+						sessionId: 'dd2828',
+						runId: 'post-map-await-fix',
+						hypothesisId: 'H_MAP_DRIFT',
+						location: 'FacilityDrawingMap.svelte:routingPinSync',
+						message: 'routing_marker_position_mismatch',
+						data: {
+							bindLat: latN,
+							bindLng: lngN,
+							markerLat: plain.lat,
+							markerLng: plain.lng,
+						},
+						timestamp: Date.now(),
+					}),
+				}).catch(() => {});
+			});
+			// #endregion
+		}, ROUTING_PIN_PROP_SYNC_MS);
+
+		return () => {
+			if (timeoutId != null) clearTimeout(timeoutId);
+		};
 	});
 
 	/**
@@ -554,6 +590,7 @@
 	 */
 	$effect(() => {
 		if (!browser || readonly) return;
+		if (lockRoutingPinSync) return;
 		const lat = latitude;
 		const lng = longitude;
 		const h = mapHandles;

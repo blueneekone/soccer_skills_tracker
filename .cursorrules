@@ -34,3 +34,25 @@ When asked to add gamification logic (XP, Streaks, Dynamic Drills) to an existin
 2. Maintain DOM stability (prevent scroll jumps) and never squish layouts. Use standard SIEM dashboard grid structures.
 3. If modifying an existing file, surgical precision is required. Do NOT delete existing imports, cloud functions, or complex logic unless explicitly told to "gut" or "replace" it.
 4. Read `ROADMAP.md` before executing any task to maintain architectural context.
+
+## 🛑 STRICT UI/UX & FUNCTIONAL INTEGRITY MANDATES 🛑
+You are forbidden from making the following "Junior Developer" errors during UI overhauls:
+
+1. **The Z-Index / Pointer-Event Trap:**
+   - When creating background gradients, glassmorphism overlays, or floating UI elements, you MUST ensure they do not block mouse clicks.
+   - ALL decorative overlays must utilize `pointer-events-none` and negative `z-index` classes (e.g., `-z-10`).
+   - ALL interactive elements (`<button>`, `<a>`, inputs) must be explicitly kept accessible, using `relative z-10` or higher if necessary.
+
+2. **The "Naked UI" Component Regression:**
+   - When asked to restyle a page or component, you MUST NOT delete, comment out, or "mock" existing functional child components or import statements. 
+   - Example: If restyling a map dashboard, you must keep the actual `<GoogleMap />` component intact inside the new visual wrapper. DO NOT replace functional code with static HTML placeholders to save time.
+
+3. **Context Overload & Hallucination Prevention:**
+   - If a user prompt requires changing multiple complex files and you are hitting output limits, DO NOT silently skip files or provide partial code pretending it is complete.
+   - You must stop and explicitly state: *"This request is too large to execute safely in one pass. I have completed File A. Please prompt me to continue with File B."*
+
+4. **The "Liquid Glass" Enterprise Aesthetic:**
+   - Default to true dark mode (`bg-slate-950` or `bg-black`).
+   - Cards/Containers should use `bg-slate-900/60 backdrop-blur-xl border border-white/5`.
+   - Typography should be clean: Subheaders use uppercase, wide-tracking (`tracking-widest text-slate-400 text-xs`). 
+   - Avoid standard HTML tables; use Flexbox/CSS Grid cards for lists and leaderboards.
