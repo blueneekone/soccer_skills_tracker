@@ -7,6 +7,7 @@
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
+	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
@@ -176,9 +177,63 @@
 </svelte:head>
 
 <div
-	class="lobby-root tw-relative tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-overflow-x-hidden tw-bg-black tw-px-3 tw-pb-28 tw-pt-4 sm:tw-px-5"
+	class="lobby-page tw-min-w-0 tw-overflow-x-hidden tw-bg-black tw-text-slate-50"
 	data-region="player-lobby"
 >
+	<!-- Phase 1: full-bleed top HUD -->
+	<header
+		class="lobby-hud-bar tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-center tw-border-b tw-border-white/10 tw-bg-slate-900/80 tw-py-4 tw-backdrop-blur-xl"
+		aria-label="Combat HUD"
+	>
+		<div
+			class="tw-flex tw-w-full tw-max-w-6xl tw-flex-col tw-items-stretch tw-gap-5 tw-px-6 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+		>
+			<div class="lobby-hud-ring tw-flex tw-shrink-0 tw-items-center tw-justify-center sm:tw-justify-start">
+				<div class="lobby-hud-ring__inner">
+					<LevelProgressRing
+						currentXp={rankProgress.xpInCurrentTier}
+						nextRankXp={rankProgress.xpToNextRank}
+						rankName={rankProgress.rank}
+						totalXp={totalXpHud}
+						level={osLevel}
+						size="md"
+						variant="dark"
+						showLevelSegment={true}
+					/>
+				</div>
+			</div>
+			<div class="tw-min-w-0 tw-flex-1 sm:tw-max-w-md md:tw-max-w-lg">
+				<PlayerActivityStreak compact />
+			</div>
+		</div>
+	</header>
+
+	<div
+		class="lobby-root tw-relative tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-0 sm:tw-px-5"
+	>
+		<!-- Phase 2: primary action row -->
+		<nav
+			class="lobby-action-row tw-mb-8 tw-grid tw-grid-cols-2 tw-gap-4"
+			aria-label="Primary navigation"
+		>
+			<a
+				href={resolve('/player/workout')}
+				class="lobby-action-btn tw-flex tw-min-h-[5.5rem] tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-slate-700 tw-bg-gradient-to-r tw-from-slate-800 tw-to-slate-900 tw-p-6 tw-text-center tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-100 tw-no-underline tw-shadow-lg tw-transition tw-duration-200 hover:tw-border-cyan-500/50 hover:tw-shadow-[0_0_24px_rgba(34,211,238,0.25)] active:tw-scale-[0.99] sm:tw-min-h-[6.5rem]"
+				data-sveltekit-preload-data="hover"
+			>
+				<i class="ph ph-lightning tw-mb-2 tw-text-2xl tw-text-cyan-400" aria-hidden="true"></i>
+				<span class="tw-text-xs sm:tw-text-sm">Today's quests</span>
+			</a>
+			<a
+				href={resolve('/stats')}
+				class="lobby-action-btn tw-flex tw-min-h-[5.5rem] tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-slate-700 tw-bg-gradient-to-r tw-from-slate-800 tw-to-slate-900 tw-p-6 tw-text-center tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-100 tw-no-underline tw-shadow-lg tw-transition tw-duration-200 hover:tw-border-cyan-500/50 hover:tw-shadow-[0_0_24px_rgba(34,211,238,0.25)] active:tw-scale-[0.99] sm:tw-min-h-[6.5rem]"
+				data-sveltekit-preload-data="hover"
+			>
+				<i class="ph ph-chart-line-up tw-mb-2 tw-text-2xl tw-text-fuchsia-400" aria-hidden="true"></i>
+				<span class="tw-text-xs sm:tw-text-sm">Career stats</span>
+			</a>
+		</nav>
+
 	<div
 		class="lobby-hero lobby-glass tw-isolate tw-mb-8 tw-grid tw-min-h-[300px] tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-p-6 md:tw-grid-cols-2 md:tw-items-stretch md:tw-gap-10 md:tw-p-8"
 		aria-label="Operative profile"
@@ -216,29 +271,12 @@
 				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-backdrop-blur-md md:tw-gap-6 md:tw-p-5"
 				aria-label="Combat telemetry HUD"
 			>
-				<div>
-					<p class="lobby-eyebrow tw-mb-3 tw-text-center md:tw-text-left">Combat level</p>
-					<div
-						class="ring-mega tw-mx-auto tw-flex tw-w-full tw-max-w-[min(100%,22rem)] tw-flex-col tw-items-center md:tw-mx-0 md:tw-max-w-none"
-					>
-						<div class="ring-mega__inner">
-							<LevelProgressRing
-								currentXp={rankProgress.xpInCurrentTier}
-								nextRankXp={rankProgress.xpToNextRank}
-								rankName={rankProgress.rank}
-								totalXp={totalXpHud}
-								level={osLevel}
-								size="lg"
-								variant="dark"
-								showLevelSegment={true}
-							/>
-						</div>
-					</div>
-				</div>
-
 				<div
 					class="tw-w-full tw-min-w-0 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-950/40 tw-p-4 tw-backdrop-blur-sm"
 				>
+					<p class="lobby-eyebrow tw-mb-3 tw-text-center tw-text-cyan-400/80 md:tw-text-left">
+						Combat level
+					</p>
 					<div class="tw-mb-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
 						<span
 							class="tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-400"
@@ -422,28 +460,34 @@
 			</span>
 		</div>
 	</div>
-
-	<nav class="lobby-quick tw-relative tw-z-10 tw-grid tw-gap-3" aria-label="Quick actions">
-		<a
-			href={resolve('/player/workout')}
-			class="lobby-glass lobby-quick__btn tw-relative tw-z-10 tw-flex tw-min-h-[3.25rem] tw-cursor-pointer tw-items-center tw-justify-center tw-px-4 tw-py-3 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
-			data-sveltekit-preload-data="hover"
-		>
-			<i class="ph ph-lightning tw-shrink-0 tw-text-cyan-400" aria-hidden="true"></i>
-			<span class="lobby-quick__label">Today's quests</span>
-		</a>
-		<a
-			href={resolve('/stats')}
-			class="lobby-glass lobby-quick__btn tw-relative tw-z-10 tw-flex tw-min-h-[3.25rem] tw-cursor-pointer tw-items-center tw-justify-center tw-px-4 tw-py-3 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
-			data-sveltekit-preload-data="hover"
-		>
-			<i class="ph ph-chart-line-up tw-shrink-0 tw-text-fuchsia-400" aria-hidden="true"></i>
-			<span class="lobby-quick__label">Career stats</span>
-		</a>
-	</nav>
+</div>
 </div>
 
 <style>
+	.lobby-hud-ring__inner {
+		transform: scale(1.12);
+		transform-origin: center center;
+	}
+
+	@media (min-width: 640px) {
+		.lobby-hud-ring__inner {
+			transform: scale(1.18);
+		}
+	}
+
+	.lobby-hud-bar :global(.pas__title) {
+		color: rgb(148 163 184);
+		letter-spacing: 0.14em;
+	}
+
+	.lobby-hud-bar :global(.pas__val) {
+		color: rgb(241 245 249);
+	}
+
+	.lobby-hud-bar :global(.pas__unit) {
+		color: rgb(226 232 240);
+	}
+
 	.lobby-root {
 		color: #f8fafc;
 	}
@@ -519,17 +563,6 @@
 		}
 		50% {
 			transform: rotateX(5deg) rotateY(-8deg) translateY(-10px);
-		}
-	}
-
-	.ring-mega__inner {
-		transform: scale(1.55);
-		transform-origin: center center;
-	}
-
-	@media (max-width: 480px) {
-		.ring-mega__inner {
-			transform: scale(1.28);
 		}
 	}
 
@@ -611,49 +644,17 @@
 		color: rgba(226, 232, 240, 0.78) !important;
 	}
 
-	:global(.pd-team-lb .lb-compact-row) {
-		background: rgba(15, 23, 42, 0.5) !important;
-		border-color: rgba(71, 85, 105, 0.45) !important;
+	:global(.pd-team-lb .lb-card) {
+		background: rgba(15, 23, 42, 0.55) !important;
+		border-color: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	:global(.pd-team-lb .lb-card:hover) {
+		background: rgba(30, 41, 59, 0.65) !important;
 	}
 
 	.tabular-num {
 		font-variant-numeric: tabular-nums;
-	}
-
-	.lobby-quick {
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	}
-
-	.lobby-quick__btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 10px;
-		font-weight: 900;
-		font-size: 0.82rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: #f1f5f9;
-		cursor: pointer;
-		transition:
-			border-color 0.25s ease,
-			box-shadow 0.25s ease,
-			transform 0.18s ease;
-	}
-
-	.lobby-quick__btn:hover {
-		border-color: rgb(34 211 238 / 0.35);
-		box-shadow:
-			0 0 0 1px rgb(34 211 238 / 0.12),
-			0 18px 40px -16px rgb(0 0 0 / 0.55);
-	}
-
-	.lobby-quick__btn:active {
-		transform: translateY(1px) scale(0.99);
-	}
-
-	a.lobby-quick__btn {
-		color: inherit;
 	}
 
 	.lobby-stat-tile {
@@ -666,10 +667,4 @@
 		box-shadow: 0 0 0 1px rgb(34 211 238 / 0.08);
 	}
 
-	.lobby-quick__label {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 </style>

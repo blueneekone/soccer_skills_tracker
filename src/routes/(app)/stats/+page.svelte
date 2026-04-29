@@ -901,11 +901,11 @@
 	:global(.stats-team-lb .lb-hint) {
 		color: rgba(226, 232, 240, 0.72) !important;
 	}
-	:global(.stats-team-lb .lb-compact-row) {
+	:global(.stats-team-lb .lb-card) {
 		background: rgba(15, 23, 42, 0.65) !important;
-		border-color: rgba(148, 163, 184, 0.2) !important;
+		border-color: rgba(148, 163, 184, 0.18) !important;
 	}
-	:global(.stats-team-lb .lb-compact-name) {
+	:global(.stats-team-lb .lb-card-name) {
 		color: #f1f5f9 !important;
 	}
 </style>

@@ -522,6 +522,30 @@
 		if (locked) return;
 		if (!h?.routingMarker || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
 		h.routingMarker.position = { lat, lng };
+		// #region agent log
+		queueMicrotask(() => {
+			const mk = mapHandles?.routingMarker;
+			if (!mk) return;
+			const plain = markerPositionToPlain(mk.position);
+			if (!plain) return;
+			const drift =
+				Math.abs(plain.lat - lat) > 1e-6 || Math.abs(plain.lng - lng) > 1e-6;
+			if (!drift) return;
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					runId: 'post-map-await-fix',
+					hypothesisId: 'H_MAP_DRIFT',
+					location: 'FacilityDrawingMap.svelte:routingPinSync',
+					message: 'routing_marker_position_mismatch',
+					data: { bindLat: lat, bindLng: lng, markerLat: plain.lat, markerLng: plain.lng },
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+		});
+		// #endregion
 	});
 
 	/**
@@ -543,7 +567,10 @@
 			/** @type {any} */
 			let nm;
 			try {
-				nm = await createAdvancedPinMarker(g, map, { lat, lng }, {
+				const latA = untrack(() => latitude);
+				const lngA = untrack(() => longitude);
+				if (latA == null || lngA == null || !Number.isFinite(latA) || !Number.isFinite(lngA)) return;
+				nm = await createAdvancedPinMarker(g, map, { lat: latA, lng: lngA }, {
 					title: 'Routing pin',
 					background: brandPrimaryHex(),
 					zIndex: 99999,
@@ -564,7 +591,11 @@
 			wireRoutingPinDrag(g, nm);
 			mapHandles = { ...cur, routingMarker: nm };
 			try {
-				map.panTo({ lat, lng });
+				const latP = untrack(() => latitude);
+				const lngP = untrack(() => longitude);
+				if (latP != null && lngP != null && Number.isFinite(latP) && Number.isFinite(lngP)) {
+					map.panTo({ lat: latP, lng: lngP });
+				}
 				map.setZoom(17);
 			} catch {
 				/* ignore */
@@ -579,8 +610,6 @@
 
 		loadError = false;
 
-		const lat0 = untrack(() => latitude);
-		const lng0 = untrack(() => longitude);
 		const readOnly = untrack(() => readonly);
 		const initialMapData = untrack(() => snapshotFacilityMapData(mapData));
 
@@ -604,6 +633,10 @@
 					loadError = true;
 					return;
 				}
+
+				/** Props may update while `ensureGoogleMapsLoaded()` resolves — read bindables after await. */
+				const lat0 = untrack(() => latitude);
+				const lng0 = untrack(() => longitude);
 
 				const center =
 					lat0 != null && lng0 != null ?
@@ -636,15 +669,24 @@
 
 				facilityDrawRefs = { drawnPolygons, drawnMarkers, map, g };
 
-				if (lat0 != null && lng0 != null) {
-					routingMarker = await createAdvancedPinMarker(g, map, center, {
-						title: 'Routing pin',
-						background: brandPrimaryHex(),
-						zIndex: 99999,
-						draggable: !readOnly,
-					});
-					if (!readOnly && routingMarker) {
-						wireRoutingPinDrag(g, routingMarker);
+				{
+					const latPin = untrack(() => latitude);
+					const lngPin = untrack(() => longitude);
+					if (latPin != null && lngPin != null && Number.isFinite(latPin) && Number.isFinite(lngPin)) {
+						routingMarker = await createAdvancedPinMarker(
+							g,
+							map,
+							{ lat: latPin, lng: lngPin },
+							{
+								title: 'Routing pin',
+								background: brandPrimaryHex(),
+								zIndex: 99999,
+								draggable: !readOnly,
+							},
+						);
+						if (!readOnly && routingMarker) {
+							wireRoutingPinDrag(g, routingMarker);
+						}
 					}
 				}
 

@@ -102,16 +102,6 @@
 	});
 
 	/**
-	 * @param {number} rank
-	 */
-	function tierClass(rank) {
-		if (rank === 1) return 'lb-row--gold';
-		if (rank === 2) return 'lb-row--silver';
-		if (rank === 3) return 'lb-row--bronze';
-		return '';
-	}
-
-	/**
 	 * @param {string} name
 	 */
 	function initialsFromName(name) {
@@ -143,78 +133,65 @@
 			<p class="lb-hint">
 				No weekly stats yet. Log training to earn XP and climb the board.
 			</p>
-		{:else if compact}
-			<ul class="lb-compact-list" aria-label="Team XP rankings">
+		{:else}
+			<ul class="lb-list" aria-label="Team XP rankings">
 				{#each entries as row (row.playerKey)}
 					<li
-						class="lb-compact-row {tierClass(row.rank)}"
-						class:lb-compact-row--me={row.isCurrentUser}
+						class="lb-card"
+						class:lb-card--gold={row.rank === 1}
+						class:lb-card--silver={row.rank === 2}
+						class:lb-card--bronze={row.rank === 3}
+						class:lb-card--me={row.isCurrentUser}
 					>
-						<span class="lb-compact-rank" aria-hidden="true">
-							{#if row.rank <= 3}
-								<span class="lb-rank-podium lb-rank-podium--{row.rank}">{row.rank}</span>
-							{:else}
-								<span class="lb-rank-num">{row.rank}</span>
-							{/if}
-						</span>
-						<div class="lb-compact-avatar" aria-hidden="true">{initialsFromName(row.displayName)}</div>
-						<div class="lb-compact-name-block">
-							<span class="lb-compact-name">{row.displayName}</span>
-							{#if row.isCurrentUser}
-								<span class="lb-you">You</span>
-							{/if}
-						</div>
-						<span class="lb-compact-xp">{row.xpThisWeek.toLocaleString()} XP</span>
-					</li>
-				{/each}
-			</ul>
-		{:else}
-			<div class="lb-table-wrap">
-				<table class="lb-table">
-					<thead>
-						<tr>
-							<th class="lb-th-rank">#</th>
-							<th>Player</th>
-							<th class="lb-th-num">Lv</th>
-							<th class="lb-th-week">XP week</th>
-							<th class="lb-th-streak">Streak</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each entries as row (row.playerKey)}
-							<tr
-								class="lb-row {tierClass(row.rank)}"
-								class:lb-row--me={row.isCurrentUser}
-							>
-								<td class="lb-td-rank">
-									{#if row.rank <= 3}
-										<span class="lb-rank-podium lb-rank-podium--{row.rank}">{row.rank}</span>
-									{:else}
-										<span class="lb-rank-num">{row.rank}</span>
-									{/if}
-								</td>
-								<td class="lb-td-name">
-									{row.displayName}
+						<div class="lb-card-left">
+							<span class="lb-card-rank" aria-hidden="true">
+								{#if row.rank <= 3}
+									<span class="lb-rank-podium lb-rank-podium--{row.rank}">{row.rank}</span>
+								{:else}
+									<span class="lb-rank-num">{row.rank}</span>
+								{/if}
+							</span>
+							<div class="lb-card-avatar" aria-hidden="true">
+								{initialsFromName(row.displayName)}
+							</div>
+							<div class="lb-card-id">
+								<div class="lb-card-name-row">
+									<span class="lb-card-name">{row.displayName}</span>
 									{#if row.isCurrentUser}
 										<span class="lb-you">You</span>
 									{/if}
-								</td>
-								<td class="lb-td-num">{row.currentLevel}</td>
-								<td class="lb-td-week">{row.xpThisWeek.toLocaleString()}</td>
-								<td class="lb-td-streak">
-									{#if row.streak > 0}
-										<span class="lb-fire" title="Current streak"
-											><i class="ph ph-fire" aria-hidden="true"></i> {row.streak}</span
-										>
-									{:else}
-										<span class="lb-dash">—</span>
-									{/if}
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+								</div>
+								{#if !compact}
+									<p class="lb-card-meta">
+										<span>Lv {row.currentLevel}</span>
+										<span class="lb-card-meta-sep" aria-hidden="true">·</span>
+										{#if row.streak > 0}
+											<span class="lb-card-meta-streak" title="Consecutive active weeks">
+												<i class="ph ph-fire" aria-hidden="true"></i>
+												{row.streak} streak
+											</span>
+										{:else}
+											<span class="lb-card-meta-muted">No streak</span>
+										{/if}
+									</p>
+								{/if}
+							</div>
+						</div>
+						<div class="lb-card-right">
+							<span class="lb-xp-badge">
+								{row.xpThisWeek.toLocaleString()}
+								<span class="lb-xp-suffix">XP</span>
+							</span>
+							{#if compact && row.streak > 0}
+								<span class="lb-card-streak-compact" title="Streak">
+									<i class="ph ph-fire" aria-hidden="true"></i>
+									{row.streak}
+								</span>
+							{/if}
+						</div>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	</div>
 </div>
@@ -235,129 +212,205 @@
 		border-color: rgba(255, 255, 255, 0.1) !important;
 	}
 
-	.lb-compact-list {
+	.lb-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 0.75rem;
 	}
 
-	.lb-compact-row {
-		display: grid;
-		grid-template-columns: auto auto 1fr auto;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 12px;
-		border-radius: 12px;
-		border: 1px solid #e5e5e5;
-		background: #ffffff;
-	}
-
-	:global(html.dark) .lb-compact-row {
-		background: #09090b;
-		border-color: rgba(255, 255, 255, 0.1);
-	}
-
-	.lb-compact-row--me {
-		outline: 2px solid var(--brand-primary, #6366f1);
-		outline-offset: 0;
-		box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-primary, #6366f1) 25%, transparent);
-	}
-
-	.lb-compact-rank {
-		min-width: 2rem;
+	.lb-card {
 		display: flex;
-		justify-content: center;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 1rem;
+		border-radius: 0.75rem;
+		border: 1px solid rgb(255 255 255 / 0.05);
+		background: rgb(15 23 42 / 0.5);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		box-sizing: border-box;
+		transition:
+			background 0.2s ease,
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
 	}
 
-	.lb-compact-avatar {
-		width: 36px;
-		height: 36px;
+	.lb-card:hover {
+		background: rgb(30 41 59 / 0.72);
+		border-color: rgb(255 255 255 / 0.08);
+	}
+
+	.lb-card--me {
+		border-color: rgb(16 185 129 / 0.5);
+		background: rgb(6 78 59 / 0.2);
+		box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+	}
+
+	.lb-card--me:hover {
+		background: rgb(6 78 59 / 0.28);
+		border-color: rgb(52 211 153 / 0.55);
+	}
+
+	.lb-card--gold {
+		box-shadow:
+			inset 0 0 0 1px rgb(245 158 11 / 0.2),
+			0 0 20px rgb(245 158 11 / 0.08);
+	}
+
+	.lb-card--silver {
+		box-shadow:
+			inset 0 0 0 1px rgb(148 163 184 / 0.18),
+			0 0 18px rgb(148 163 184 / 0.06);
+	}
+
+	.lb-card--bronze {
+		box-shadow:
+			inset 0 0 0 1px rgb(194 65 12 / 0.18),
+			0 0 18px rgb(194 65 12 / 0.06);
+	}
+
+	.lb-card-left {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-width: 0;
+		flex: 1 1 auto;
+	}
+
+	.lb-card-rank {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.25rem;
+	}
+
+	.lb-rank-num {
+		font-size: 1.125rem;
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		color: rgb(226 232 240);
+		text-shadow: 0 0 14px rgb(34 211 238 / 0.35);
+	}
+
+	.lb-card-avatar {
+		width: 2.5rem;
+		height: 2.5rem;
 		border-radius: 999px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 0.72rem;
+		font-size: 0.7rem;
 		font-weight: 900;
-		color: #0f172a;
-		background: linear-gradient(145deg, #e4e4e7, #d4d4d8);
-		border: 1px solid #e5e5e5;
+		letter-spacing: -0.02em;
+		color: rgb(15 23 42);
 		flex-shrink: 0;
+		background: linear-gradient(145deg, rgb(226 232 240), rgb(148 163 184));
+		border: 1px solid rgb(255 255 255 / 0.12);
+		box-shadow:
+			0 4px 12px rgb(0 0 0 / 0.35),
+			inset 0 1px 0 rgb(255 255 255 / 0.35);
 	}
 
-	.lb-compact-name-block {
+	.lb-card-id {
 		min-width: 0;
+		flex: 1 1 auto;
+	}
+
+	.lb-card-name-row {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 0.5rem;
 		flex-wrap: wrap;
+		min-width: 0;
 	}
 
-	.lb-compact-name {
+	.lb-card-name {
 		font-weight: 800;
-		font-size: 0.9rem;
-		color: var(--text-primary);
+		font-size: 0.95rem;
+		color: var(--pp-text, var(--text-primary, #f8fafc));
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.lb-compact-xp {
+	.lb-card-meta {
+		margin: 0.2rem 0 0;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: rgb(148 163 184);
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-wrap: wrap;
+	}
+
+	.lb-card-meta-sep {
+		opacity: 0.5;
+	}
+
+	.lb-card-meta-streak {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		color: rgb(251 146 60);
+	}
+
+	.lb-card-meta-streak .ph {
+		font-size: 0.85em;
+	}
+
+	.lb-card-meta-muted {
+		color: rgb(100 116 139);
+	}
+
+	.lb-card-right {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.25rem;
+		text-align: right;
+	}
+
+	.lb-xp-badge {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-size: 1.25rem;
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
-		font-size: 0.85rem;
-		color: var(--brand-primary, #6366f1);
+		line-height: 1.1;
+		color: rgb(52 211 153);
+		text-shadow:
+			0 0 12px rgb(52 211 153 / 0.45),
+			0 0 24px rgb(16 185 129 / 0.25);
 		white-space: nowrap;
 	}
 
-	.lb-compact-row.lb-row--gold {
-		background: linear-gradient(
-			90deg,
-			rgba(245, 158, 11, 0.12) 0%,
-			#ffffff 55%
-		);
+	.lb-xp-suffix {
+		margin-left: 0.15rem;
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgb(110 231 183 / 0.9);
+		vertical-align: 0.05em;
 	}
 
-	.lb-compact-row.lb-row--silver {
-		background: linear-gradient(
-			90deg,
-			rgba(148, 163, 184, 0.15) 0%,
-			#ffffff 55%
-		);
+	.lb-card-streak-compact {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: rgb(251 146 60);
 	}
 
-	.lb-compact-row.lb-row--bronze {
-		background: linear-gradient(
-			90deg,
-			rgba(180, 83, 9, 0.12) 0%,
-			#ffffff 55%
-		);
-	}
-
-	:global(html.dark) .lb-compact-row.lb-row--gold {
-		background: linear-gradient(
-			90deg,
-			rgba(245, 158, 11, 0.15) 0%,
-			#09090b 55%
-		);
-	}
-
-	:global(html.dark) .lb-compact-row.lb-row--silver {
-		background: linear-gradient(
-			90deg,
-			rgba(148, 163, 184, 0.12) 0%,
-			#09090b 55%
-		);
-	}
-
-	:global(html.dark) .lb-compact-row.lb-row--bronze {
-		background: linear-gradient(
-			90deg,
-			rgba(180, 83, 9, 0.12) 0%,
-			#09090b 55%
-		);
+	.lb-card-streak-compact .ph {
+		font-size: 0.9em;
 	}
 
 	.lb-outer {
@@ -408,79 +461,6 @@
 		color: var(--danger-red);
 	}
 
-	.lb-table-wrap {
-		overflow-x: auto;
-		border-radius: var(--radius-premium);
-		border: 1px solid var(--pp-border, var(--glass-border));
-		background: var(--pp-surface, rgba(15, 23, 42, 0.4));
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
-	}
-
-	.lb-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: clamp(0.88rem, 2.2vw, 0.95rem);
-	}
-
-	.lb-table th,
-	.lb-table td {
-		padding: clamp(12px, 2vw, 14px) clamp(14px, 2.5vw, 16px);
-		text-align: left;
-		border-bottom: 1px solid var(--pp-border, var(--border-subtle));
-	}
-
-	.lb-table thead th {
-		font-size: 0.72rem;
-		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		font-weight: 900;
-		color: var(--pp-text-muted, var(--text-secondary));
-		background: var(--pp-surface-elevated, var(--surface-subtle));
-	}
-
-	.lb-th-rank {
-		width: 4.5rem;
-	}
-
-	.lb-th-num,
-	.lb-th-week,
-	.lb-th-streak {
-		text-align: right;
-		width: 5rem;
-	}
-
-	.lb-row:last-child td {
-		border-bottom: none;
-	}
-
-	.lb-row--gold {
-		background: linear-gradient(
-			90deg,
-			rgba(245, 158, 11, 0.28) 0%,
-			transparent 70%
-		);
-		box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
-	}
-
-	.lb-row--silver {
-		background: linear-gradient(
-			90deg,
-			rgba(148, 163, 184, 0.22) 0%,
-			transparent 70%
-		);
-		box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
-	}
-
-	.lb-row--bronze {
-		background: linear-gradient(
-			90deg,
-			rgba(180, 83, 9, 0.2) 0%,
-			transparent 70%
-		);
-		box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.3);
-	}
-
 	.lb-rank-podium {
 		display: inline-flex;
 		align-items: center;
@@ -495,43 +475,25 @@
 	.lb-rank-podium--1 {
 		background: linear-gradient(145deg, #fde68a, #f59e0b);
 		color: #0f172a;
-		box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+		box-shadow:
+			0 0 20px rgba(245, 158, 11, 0.55),
+			0 0 36px rgba(245, 158, 11, 0.2);
 	}
 
 	.lb-rank-podium--2 {
 		background: linear-gradient(145deg, #e2e8f0, #94a3b8);
 		color: #0f172a;
-		box-shadow: 0 0 14px rgba(148, 163, 184, 0.4);
+		box-shadow:
+			0 0 16px rgba(148, 163, 184, 0.5),
+			0 0 28px rgba(148, 163, 184, 0.15);
 	}
 
 	.lb-rank-podium--3 {
 		background: linear-gradient(145deg, #fdba74, #c2410c);
 		color: #fff;
-		box-shadow: 0 0 14px rgba(194, 65, 12, 0.35);
-	}
-
-	.lb-row--me {
-		outline: 2px solid var(--pp-accent, var(--brand-primary));
-		outline-offset: -2px;
 		box-shadow:
-			inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-			0 0 22px color-mix(in srgb, var(--pp-accent, var(--brand-primary)) 22%, transparent);
-		position: relative;
-		z-index: 1;
-	}
-
-	.lb-td-rank {
-		font-weight: 900;
-		white-space: nowrap;
-	}
-
-	.lb-rank-num {
-		font-variant-numeric: tabular-nums;
-	}
-
-	.lb-td-name {
-		font-weight: 700;
-		color: var(--pp-text, var(--text-primary));
+			0 0 16px rgba(194, 65, 12, 0.45),
+			0 0 28px rgba(194, 65, 12, 0.15);
 	}
 
 	.lb-you {
@@ -548,33 +510,4 @@
 		vertical-align: middle;
 	}
 
-	.lb-td-num,
-	.lb-td-week,
-	.lb-td-streak {
-		text-align: right;
-		font-variant-numeric: tabular-nums;
-		font-weight: 800;
-		color: var(--pp-text, var(--text-primary));
-	}
-
-	.lb-td-week {
-		color: var(--pp-accent, var(--brand-primary));
-	}
-
-	.lb-fire {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.28em;
-		font-weight: 800;
-	}
-
-	.lb-fire .ph {
-		font-size: 1.05em;
-		opacity: 0.92;
-	}
-
-	.lb-dash {
-		color: var(--pp-text-muted, var(--text-secondary));
-		font-weight: 600;
-	}
 </style>

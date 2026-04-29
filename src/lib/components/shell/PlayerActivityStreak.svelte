@@ -4,6 +4,9 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
+	/** When true, transparent chrome for embedding in top HUD bars. */
+	let { compact = false } = $props();
+
 	let streakDays = $state(0);
 	let loading = $state(true);
 
@@ -34,7 +37,7 @@
 	});
 </script>
 
-<section class="pas" aria-label="Activity streak">
+<section class="pas" class:pas--compact={compact} aria-label="Activity streak">
 	<div class="pas__icon-wrap" aria-hidden="true">
 		<i class="ph ph-fire pas__fire"></i>
 	</div>
@@ -69,6 +72,24 @@
 	:global(html.dark) .pas {
 		background: #0f0f11;
 		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.pas--compact {
+		padding: 0;
+		border: none;
+		background: transparent;
+		box-shadow: none;
+		gap: 10px;
+		align-items: center;
+	}
+
+	:global(html.dark) .pas--compact {
+		background: transparent;
+		border: none;
+	}
+
+	.pas--compact .pas__hint {
+		display: none;
 	}
 
 	.pas__icon-wrap {
