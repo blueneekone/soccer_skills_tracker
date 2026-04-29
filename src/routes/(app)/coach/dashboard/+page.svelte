@@ -2,27 +2,24 @@
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 	import Swal from 'sweetalert2';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { db, functions } from '$lib/firebase.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { httpsCallable } from 'firebase/functions';
-	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
-	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
 	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-
-	/**
-	 * `MatchLogger` is imported at the route; it is mounted inside the LIVE TELEMETRY
-	 * block via `LiveTelemetrySection` in `SquadTelemetryView` (immediately under the HUD).
-	 */
-	void [MatchLogger, LiveTelemetrySection];
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
+	import CoachSquadReadinessCard from '$lib/components/coach/CoachSquadReadinessCard.svelte';
 
 	const claimCoachInvite = httpsCallable(functions, 'claimCoachInvite');
 
 	let selectedTeamId = $state('');
 	let coachInviteClaimTried = $state(false);
+	let matchDayMode = $state(false);
 
 	const role = $derived(authStore.role);
 	const userEmail = $derived(authStore.user?.email || '');
@@ -45,8 +42,8 @@
 
 	const coachClubId = $derived(
 		typeof selectedTeam?.clubId === 'string' && selectedTeam.clubId.trim() ?
-			selectedTeam.clubId.trim() :
-			'',
+			selectedTeam.clubId.trim()
+		:	'',
 	);
 
 	/**
@@ -160,17 +157,117 @@
 		coachInviteClaimTried = true;
 		void claimCoachInvite({}).catch(() => {});
 	});
+
+	function enterMatchDay() {
+		matchDayMode = true;
+	}
+
+	function exitMatchDay() {
+		matchDayMode = false;
+	}
 </script>
 
 <svelte:head>
 	<title>Coach dashboard · SSTRACKER</title>
 </svelte:head>
 
-<div class="ec-page ec-coach st-pillar1">
-	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col">
-		<!-- LIVE TELEMETRY: <LiveTelemetrySection> → <MatchLogger /> (roster + stat ingest) in SquadTelemetryView. -->
-		<!-- Dispatch <IntelModal> + Strike 26: same view. -->
-		<SquadTelemetryView teamId={selectedTeamId} teams={myTeams} />
+<div class="ec-page ec-coach st-pillar1 coach-dash-root">
+	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-0">
+		{#if matchDayMode}
+			<div
+				class="tw-mb-4 tw-flex tw-flex-col tw-gap-3 tw-rounded-xl tw-border tw-border-cyan-500/25 tw-bg-slate-950/70 tw-p-4 tw-backdrop-blur-md sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+			>
+				<div class="tw-min-w-0">
+					<p class="dash-eyebrow tw-mb-1">Match day</p>
+					<p class="tw-m-0 tw-text-sm tw-font-medium tw-tracking-tight tw-text-slate-200">
+						Live telemetry and match logger are active. Stand down when the fixture is complete.
+					</p>
+				</div>
+				<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+					<a
+						class="dash-link-tactical tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-600 tw-bg-slate-900/80 tw-px-4 tw-py-2.5 tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-300 tw-transition-all tw-duration-300 hover:tw-border-cyan-500/40 hover:tw-text-cyan-200"
+						href={resolve('/coach/tactical')}>Tactical canvas</a
+					>
+					<button
+						type="button"
+						class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-rose-500/35 tw-bg-rose-950/30 tw-px-4 tw-py-2.5 tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-rose-200 tw-transition-all tw-duration-300 hover:tw-border-rose-400/50"
+						onclick={exitMatchDay}
+					>
+						End match day
+					</button>
+				</div>
+			</div>
+			<SquadTelemetryView teamId={selectedTeamId} teams={myTeams} showLiveTelemetry={true} />
+		{:else}
+			<header
+				class="coach-dash-hero tw-mb-8 tw-flex tw-flex-col tw-gap-4 tw-border-b tw-border-slate-800/80 tw-pb-6 lg:tw-flex-row lg:tw-items-start lg:tw-justify-between"
+			>
+				<div class="tw-min-w-0">
+					<p class="dash-eyebrow tw-mb-2">Command overview</p>
+					<h1 class="dash-display tw-m-0">Coach dashboard</h1>
+					<p class="tw-mt-2 tw-max-w-xl tw-text-sm tw-leading-relaxed tw-text-slate-400">
+						{selectedTeam?.name || 'Select a workspace team'} · glass bento layout
+					</p>
+				</div>
+				<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-stretch tw-gap-2 sm:tw-items-end">
+					<button
+						type="button"
+						class="match-day-cta tw-relative tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-400/40 tw-bg-gradient-to-br tw-from-cyan-500/15 tw-via-slate-900/90 tw-to-slate-950 tw-px-6 tw-py-4 tw-text-left tw-shadow-[0_0_48px_rgba(34,211,238,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] tw-transition-all tw-duration-300 hover:tw-border-cyan-300/55 hover:tw-shadow-[0_0_64px_rgba(34,211,238,0.35)] active:tw-scale-[0.99] sm:tw-min-w-[min(100%,22rem)] sm:tw-text-right"
+						onclick={enterMatchDay}
+					>
+						<span
+							class="tw-block tw-font-sans tw-text-[0.62rem] tw-font-black tw-uppercase tw-tracking-[0.35em] tw-text-cyan-100/95"
+							>[ initiate match day mode ]</span
+						>
+						<span
+							class="tw-mt-1 tw-block tw-font-sans tw-text-[0.65rem] tw-font-medium tw-tracking-wide tw-text-slate-400"
+							>Telemetry · match logger</span
+						>
+					</button>
+					<a
+						class="tw-text-center tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-widest tw-text-slate-500 tw-transition-colors hover:tw-text-cyan-400/90 sm:tw-text-right"
+						href={resolve('/coach')}>Full squad roster &amp; signals →</a
+					>
+				</div>
+			</header>
+
+			<div
+				class="tw-mb-10 tw-grid tw-grid-cols-1 tw-gap-6 lg:tw-grid-cols-3"
+				aria-label="Coach dashboard bento"
+			>
+				<section
+					class="coach-glass-card tw-min-h-0 lg:tw-col-start-1 lg:tw-row-start-1"
+					aria-labelledby="dash-inbox-title"
+				>
+					<p id="dash-inbox-title" class="dash-card-eyebrow">Inbox</p>
+					<h2 class="dash-card-title tw-sr-only">Action inbox</h2>
+					<div class="dash-inbox-host">
+						<ActionInbox teamId={selectedTeamId} />
+					</div>
+				</section>
+
+				<section
+					class="coach-glass-card coach-glass-card--wide tw-min-h-0 lg:tw-col-span-2 lg:tw-col-start-2 lg:tw-row-start-1"
+					aria-labelledby="dash-analytics-title"
+				>
+					<p id="dash-analytics-title" class="dash-card-eyebrow">Analytics</p>
+					<h2 class="dash-card-title">Team XP velocity</h2>
+					<div class="coach-chart-shell tw-mt-3 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900/80 tw-p-3 tw-backdrop-blur-md">
+						<CoachTeamXpVelocityChart teamId={selectedTeamId} />
+					</div>
+				</section>
+
+				<section
+					class="coach-glass-card tw-min-h-0 lg:tw-col-start-3 lg:tw-row-start-2"
+					aria-labelledby="dash-readiness-title"
+				>
+					<p id="dash-readiness-title" class="dash-card-eyebrow">Field status</p>
+					<div class="tw-mt-1">
+						<CoachSquadReadinessCard teamId={selectedTeamId} />
+					</div>
+				</section>
+			</div>
+		{/if}
 	</div>
 
 	<section
@@ -230,6 +327,125 @@
 </div>
 
 <style>
+	.coach-dash-root {
+		padding: clamp(1rem, 2.5vw, 1.5rem) clamp(1rem, 3vw, 1.75rem) 0;
+		box-sizing: border-box;
+	}
+
+	.coach-dash-hero {
+		font-family: ui-sans-serif, system-ui, Inter, Segoe UI, Roboto, sans-serif;
+	}
+
+	.dash-eyebrow {
+		margin: 0;
+		font-size: 0.65rem;
+		font-weight: 800;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: rgb(148 163 184);
+	}
+
+	.dash-display {
+		font-size: clamp(1.65rem, 4vw, 2.35rem);
+		font-weight: 900;
+		letter-spacing: -0.03em;
+		color: rgb(248 250 252);
+	}
+
+	.dash-card-eyebrow {
+		margin: 0 0 0.35rem;
+		font-size: 0.6rem;
+		font-weight: 800;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: rgb(148 163 184);
+	}
+
+	.dash-card-title {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		color: rgb(241 245 249);
+	}
+
+	.coach-glass-card {
+		border-radius: 1rem;
+		border: 1px solid rgb(30 41 55);
+		background: linear-gradient(
+			155deg,
+			rgb(15 23 42 / 0.55) 0%,
+			rgb(2 6 23 / 0.72) 48%,
+			rgb(15 23 42 / 0.45) 100%
+		);
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.04),
+			0 0 0 1px rgb(34 211 238 / 0.04),
+			0 18px 48px rgb(0 0 0 / 0.35);
+		padding: clamp(1rem, 2.2vw, 1.25rem);
+		transition:
+			border-color 0.3s ease,
+			box-shadow 0.3s ease;
+	}
+
+	.coach-glass-card:hover {
+		border-color: rgb(34 211 238 / 0.3);
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox) {
+		margin-bottom: 0;
+		border-radius: 0.65rem;
+		border-color: rgb(51 65 85 / 0.85);
+		background: rgb(15 23 42 / 0.55);
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox__head) {
+		color: rgb(148 163 184);
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox__row) {
+		border-color: rgb(51 65 85 / 0.75);
+		background: rgb(2 6 23 / 0.55);
+		color: rgb(241 245 249);
+		transition:
+			border-color 0.3s ease,
+			background 0.3s ease;
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox__row:hover) {
+		border-color: rgb(34 211 238 / 0.28);
+		background: rgb(15 23 42 / 0.75);
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox__label) {
+		color: rgb(248 250 252);
+	}
+
+	.dash-inbox-host :global(.ec-action-inbox__meta) {
+		color: rgb(148 163 184);
+	}
+
+	.coach-chart-shell :global(.ec-coach-xp) {
+		margin-bottom: 0;
+		gap: 0.75rem;
+	}
+
+	.coach-chart-shell :global(.ec-coach-xp__card) {
+		border-color: rgb(51 65 85 / 0.9);
+		background: rgb(2 6 23 / 0.55);
+	}
+
+	.coach-chart-shell :global(.ec-coach-xp__title),
+	.coach-chart-shell :global(.ec-coach-xp__sub) {
+		color: rgb(203 213 225);
+	}
+
+	.coach-chart-shell :global(.ec-coach-xp__total) {
+		color: rgb(34 211 238);
+	}
+
 	.ec-coach.st-pillar1 {
 		padding: 0;
 		min-height: 0;

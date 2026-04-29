@@ -47,6 +47,14 @@
 							href: '/coach',
 						});
 					}
+					if (!cancelled) {
+						next.push({
+							id: 'messages-hub',
+							label: 'Open messages hub',
+							meta: 'Comms · team inbox',
+							href: '/messages',
+						});
+					}
 				} else if (role === 'player' && uid) {
 					const q = query(
 						collection(db, 'assignments'),
@@ -69,7 +77,7 @@
 							href: '/tracker',
 						});
 					}
-			} else if (role === 'director' && clubId) {
+				} else if (role === 'director' && clubId) {
 				const q = query(
 					collection(db, 'coach_invites'),
 					where('clubId', '==', clubId),

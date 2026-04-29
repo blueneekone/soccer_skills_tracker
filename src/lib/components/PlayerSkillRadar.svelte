@@ -2,9 +2,14 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
+	/**
+	 * `lobby` — dark tactical grid + neon polygon (player dashboard AAA style).
+	 * @type {{ labels?: string[], values?: number[], variant?: 'default' | 'lobby' }}
+	 */
 	let {
 		labels = [],
 		values = [],
+		variant = /** @type {'default' | 'lobby'} */ ('default'),
 	} = $props();
 
 	/** @type {null | typeof import('chart.js').Chart} */
@@ -61,10 +66,17 @@
 		}
 
 		const cs = getComputedStyle(document.documentElement);
-		const brand = cs.getPropertyValue('--brand-primary').trim() || '#f59e0b';
-		const grid = cs.getPropertyValue('--chart-grid').trim() || 'rgba(15,23,42,0.12)';
-		const tick = cs.getPropertyValue('--chart-tick').trim() || '#334155';
-		const fill = withAlpha(brand, 0.2);
+		const brandDefault = cs.getPropertyValue('--brand-primary').trim() || '#f59e0b';
+		const gridDefault = cs.getPropertyValue('--chart-grid').trim() || 'rgba(15,23,42,0.12)';
+		const tickDefault = cs.getPropertyValue('--chart-tick').trim() || '#334155';
+
+		const lobby = variant === 'lobby';
+		const brand = lobby ? '#22d3ee' : brandDefault;
+		const grid = lobby ? 'rgba(51, 65, 85, 0.55)' : gridDefault;
+		const tick = lobby ? 'rgba(148, 163, 184, 0.55)' : tickDefault;
+		const angle = lobby ? 'rgba(34, 211, 238, 0.22)' : grid;
+		const fill = lobby ? 'rgba(34, 211, 238, 0.22)' : withAlpha(brand, 0.2);
+		const borderW = lobby ? 2.5 : 2;
 
 		radarInstance = new ChartCtor(radarEl, {
 			type: 'radar',
@@ -75,11 +87,12 @@
 						label: 'Skills',
 						data,
 						backgroundColor: fill,
-						borderColor: brand,
-						borderWidth: 2,
-						pointBackgroundColor: brand,
-						pointBorderColor: '#fff',
-						pointHoverBackgroundColor: '#fff',
+						borderColor: lobby ? '#a855f7' : brand,
+						borderWidth: borderW,
+						pointBackgroundColor: lobby ? '#22d3ee' : brand,
+						pointBorderColor: lobby ? '#020617' : '#fff',
+						pointBorderWidth: lobby ? 2 : 1,
+						pointHoverBackgroundColor: lobby ? '#f472b6' : '#fff',
 					},
 				],
 			},
@@ -94,8 +107,11 @@
 							backdropColor: 'transparent',
 						},
 						grid: { color: grid },
-						angleLines: { color: grid },
-						pointLabels: { color: tick, font: { size: 11, weight: '600' } },
+						angleLines: { color: angle },
+						pointLabels: {
+							color: lobby ? '#e2e8f0' : tick,
+							font: { size: lobby ? 11 : 11, weight: '700' },
+						},
 					},
 				},
 				plugins: {
@@ -115,7 +131,7 @@
 	});
 </script>
 
-<div class="psr">
+<div class="psr" class:psr--lobby={variant === 'lobby'}>
 	<div class="psr__canvas-wrap">
 		<canvas bind:this={radarEl} class="psr__canvas"></canvas>
 	</div>
@@ -130,6 +146,10 @@
 		position: relative;
 		height: min(300px, 58vw);
 		width: 100%;
+	}
+
+	.psr--lobby .psr__canvas-wrap {
+		height: min(360px, 64vw);
 	}
 
 	.psr__canvas {

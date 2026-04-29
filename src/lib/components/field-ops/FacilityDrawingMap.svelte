@@ -16,6 +16,17 @@
 		longitude = $bindable(/** @type {number | null} */ (null)),
 		mapData = $bindable(/** @type {FacilityMapData} */ ({ version: 1, polygons: [], markers: [] })),
 		readonly = false,
+		/** Bump when parent hydrates coords from Firestore so map remounts with correct center (refresh). Not tied to drag. */
+		coordRevision = 0,
+		/**
+		 * While true, do not move the routing pin from reactively synced lat/lng props (Firestore can briefly
+		 * broadcast stale coords during an in-flight save). Drag/click placement still updates bindables.
+		 */
+		lockRoutingPinSync = false,
+		/** Embedded vault hero: save handler placed beside Clear. */
+		onSaveMap = undefined,
+		saveBusy = false,
+		saveDisabled = false,
 	} = $props();
 
 	const apiKey = getGoogleMapsApiKey();
@@ -217,6 +228,35 @@
 				polygons: [...mapData.polygons],
 				markers: mapData.markers.map((m, i) => (i === idx ? { ...m, lat: plain.lat, lng: plain.lng } : m)),
 			};
+		});
+	}
+
+	/**
+	 * Persist routing pin position after drag (Advanced Marker).
+	 * @param {any} g
+	 * @param {any} marker
+	 */
+	function wireRoutingPinDrag(g, marker) {
+		g.maps.event.addListener(marker, 'gmp-dragend', () => {
+			const plain = markerPositionToPlain(marker.position);
+			if (!plain) return;
+			latitude = plain.lat;
+			longitude = plain.lng;
+			// #region agent log
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					runId: 'post-fix',
+					hypothesisId: 'H2',
+					location: 'FacilityDrawingMap.svelte:routingPin:gmp-dragend',
+					message: 'routing pin drag persisted',
+					data: { lat: plain.lat, lng: plain.lng },
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+			// #endregion
 		});
 	}
 
@@ -490,15 +530,67 @@
 	}
 
 	$effect(() => {
+		const locked = lockRoutingPinSync;
 		const lat = latitude;
 		const lng = longitude;
 		const h = mapHandles;
+		if (locked) return;
 		if (!h?.routingMarker || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
 		h.routingMarker.position = { lat, lng };
 	});
 
+	/**
+	 * Coordinates may hydrate after map mount (parent Firestore snapshot); initial loader uses untrack(latitude).
+	 * Without this, refresh showed Kansas zoom 4 with no pin until interaction.
+	 */
+	$effect(() => {
+		if (!browser || readonly) return;
+		const lat = latitude;
+		const lng = longitude;
+		const h = mapHandles;
+		if (!h?.map || !h?.g) return;
+		if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+		if (h.routingMarker) return;
+
+		void (async () => {
+			const g = h.g;
+			const map = h.map;
+			/** @type {any} */
+			let nm;
+			try {
+				nm = await createAdvancedPinMarker(g, map, { lat, lng }, {
+					title: 'Routing pin',
+					background: brandPrimaryHex(),
+					zIndex: 99999,
+					draggable: !readonly,
+				});
+			} catch {
+				return;
+			}
+			const cur = mapHandles;
+			if (!cur || cur.map !== map || cur.routingMarker) {
+				try {
+					nm.map = null;
+				} catch {
+					/* ignore */
+				}
+				return;
+			}
+			wireRoutingPinDrag(g, nm);
+			mapHandles = { ...cur, routingMarker: nm };
+			try {
+				map.panTo({ lat, lng });
+				map.setZoom(17);
+			} catch {
+				/* ignore */
+			}
+		})();
+	});
+
 	$effect(() => {
 		if (!browser || !mapRoot || !apiKey || !mapsMapId) return;
+
+		void coordRevision;
 
 		loadError = false;
 
@@ -564,7 +656,11 @@
 						title: 'Routing pin',
 						background: brandPrimaryHex(),
 						zIndex: 99999,
+						draggable: !readOnly,
 					});
+					if (!readOnly && routingMarker) {
+						wireRoutingPinDrag(g, routingMarker);
+					}
 				}
 
 				mapHandles = { map, g, routingMarker };
@@ -687,11 +783,28 @@
 								title: 'Routing pin',
 								background: brandPrimaryHex(),
 								zIndex: 99999,
+								draggable: true,
 							});
 							routingMarker = nm;
 							mapHandles = { ...h, routingMarker: nm };
+							wireRoutingPinDrag(g, nm);
 							latitude = plat;
 							longitude = plng;
+							// #region agent log
+							fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+								body: JSON.stringify({
+									sessionId: 'dd2828',
+									runId: 'pre-fix',
+									hypothesisId: 'H2',
+									location: 'FacilityDrawingMap.svelte:mapClick:routingPin',
+									message: 'routing pin placed via map click',
+									data: { plat, plng },
+									timestamp: Date.now(),
+								}),
+							}).catch(() => {});
+							// #endregion
 						})();
 					});
 				}
@@ -791,23 +904,38 @@
 			<div class="fd-map-toolbar">
 				{#if !readonly}
 					<div class="fd-map-toolbar__cluster">
-						<div class="fd-map-draw-group">
+						<div class="fd-map-toolbar__acts">
 							<button
 								type="button"
-								class="fd-map-draw-btn"
-								class:fd-map-draw-btn--active={manualDrawMode === 'polygon'}
+								class="fd-map-act fd-map-act--blue"
+								class:fd-map-act--active={manualDrawMode === 'polygon'}
 								onclick={() => togglePolygonMode()}
 							>
 								Draw field
 							</button>
 							<button
 								type="button"
-								class="fd-map-draw-btn"
-								class:fd-map-draw-btn--active={manualDrawMode === 'marker'}
+								class="fd-map-act fd-map-act--blue"
+								class:fd-map-act--active={manualDrawMode === 'marker'}
 								onclick={() => toggleMarkerMode()}
 							>
 								Place marker
 							</button>
+							<button type="button" class="fd-map-act fd-map-act--blue" onclick={() => requestRemountForClear()}>
+								Clear field drawings
+							</button>
+							{#if typeof onSaveMap === 'function'}
+								<button
+									type="button"
+									class="fd-map-act fd-map-act--green"
+									disabled={saveBusy || saveDisabled}
+									onclick={() => void onSaveMap()}
+								>
+									{saveBusy ? 'Saving…' : 'Save map & pin'}
+								</button>
+							{/if}
+						</div>
+						<div class="fd-map-draw-group">
 							{#if manualDrawMode === 'polygon' && polygonDraftPts.length >= 3}
 								<button type="button" class="fd-map-draw-btn fd-map-draw-btn--primary" onclick={() => finishPolygonDraft()}>
 									Finish polygon
@@ -880,13 +1008,6 @@
 							</p>
 						{/if}
 					</div>
-					<button
-						type="button"
-						class="fd-map-clear fd-map-clear--cta"
-						onclick={() => requestRemountForClear()}
-					>
-						Clear field drawings
-					</button>
 				{/if}
 			</div>
 			<div
@@ -956,6 +1077,120 @@
 			width: 100%;
 			flex-basis: 100%;
 		}
+	}
+
+	.fd-map-toolbar__acts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		flex-basis: 100%;
+		box-sizing: border-box;
+	}
+
+	.fd-map-act {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		font: inherit;
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		min-height: 42px;
+		padding: 9px 14px;
+		border-radius: 10px;
+		cursor: pointer;
+		touch-action: manipulation;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease,
+			filter 0.15s ease;
+	}
+
+	.fd-map-act--blue {
+		border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.28));
+		background: linear-gradient(
+			155deg,
+			rgba(34, 211, 238, 0.16) 0%,
+			rgba(15, 23, 42, 0.94) 48%,
+			rgba(9, 9, 11, 0.98) 100%
+		);
+		color: #ecfeff;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 10px 22px rgba(0, 0, 0, 0.28);
+	}
+
+	.fd-map-act--blue:hover:not(:disabled) {
+		border-color: rgba(34, 211, 238, 0.52);
+		background: linear-gradient(
+			155deg,
+			rgba(34, 211, 238, 0.26) 0%,
+			rgba(15, 23, 42, 0.9) 48%,
+			rgba(9, 9, 11, 0.96) 100%
+		);
+		color: #ffffff;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
+			0 12px 26px rgba(0, 0, 0, 0.32);
+	}
+
+	.fd-map-act--blue.fd-map-act--active {
+		border-color: var(--ec-ops-accent, #22d3ee);
+		box-shadow:
+			var(--shadow-premium),
+			var(--ec-ops-glow, 0 0 24px rgba(34, 211, 238, 0.12)),
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+	}
+
+	.fd-map-act--green {
+		border: 1px solid rgba(52, 211, 153, 0.42);
+		background: linear-gradient(
+			155deg,
+			rgba(52, 211, 153, 0.22) 0%,
+			rgba(15, 23, 42, 0.92) 48%,
+			rgba(9, 9, 11, 0.98) 100%
+		);
+		color: #ecfdf5;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 10px 22px rgba(0, 0, 0, 0.28);
+	}
+
+	.fd-map-act--green:hover:not(:disabled) {
+		border-color: rgba(52, 211, 153, 0.62);
+		background: linear-gradient(
+			155deg,
+			rgba(52, 211, 153, 0.34) 0%,
+			rgba(15, 23, 42, 0.88) 48%,
+			rgba(9, 9, 11, 0.96) 100%
+		);
+		color: #ffffff;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
+			0 12px 26px rgba(0, 0, 0, 0.32);
+	}
+
+	.fd-map-act:disabled {
+		opacity: 1;
+		cursor: not-allowed;
+		filter: grayscale(0.12);
+		background: rgba(51, 65, 85, 0.65);
+		border-color: rgba(148, 163, 184, 0.35);
+		color: rgba(248, 250, 252, 0.82);
+	}
+
+	:global(html.dark) .fd-map-act--blue:not(:disabled):not(.fd-map-act--active) {
+		border-color: rgba(34, 211, 238, 0.38);
+	}
+
+	:global(html.dark) .fd-map-act--green:not(:disabled) {
+		border-color: rgba(52, 211, 153, 0.45);
 	}
 
 	.fd-map-field-style {
@@ -1175,75 +1410,12 @@
 		border-color: color-mix(in srgb, var(--brand-primary) 55%, #000);
 	}
 
-	.fd-map-clear {
-		margin-left: auto;
-		flex-shrink: 0;
-		align-self: flex-start;
-	}
-
-	/* Matches FacilityMapVault `.fm-btn--primary` / Save map & pin — rose/red accent instead of cyan */
-	.fd-map-clear--cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		font: inherit;
-		font-size: 0.6875rem;
-		font-weight: 800;
-		letter-spacing: 0.07em;
-		text-transform: uppercase;
-		padding: 9px 14px;
-		border-radius: 10px;
-		border: 1px solid rgba(248, 113, 113, 0.32);
-		background: linear-gradient(
-			155deg,
-			rgba(239, 68, 68, 0.2) 0%,
-			rgba(15, 23, 42, 0.94) 48%,
-			rgba(9, 9, 11, 0.98) 100%
-		);
-		color: #fecaca;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-			0 10px 22px rgba(0, 0, 0, 0.28);
-		cursor: pointer;
-		touch-action: manipulation;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease,
-			box-shadow 0.15s ease;
-	}
-
-	.fd-map-clear--cta:hover {
-		border-color: rgba(248, 113, 113, 0.52);
-		background: linear-gradient(
-			155deg,
-			rgba(239, 68, 68, 0.32) 0%,
-			rgba(15, 23, 42, 0.9) 48%,
-			rgba(9, 9, 11, 0.96) 100%
-		);
-		color: #ffffff;
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
-			0 12px 26px rgba(0, 0, 0, 0.32);
-	}
-
-	:global(html.dark) .fd-map-clear--cta {
-		border-color: rgba(248, 113, 113, 0.4);
-		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
-			0 12px 28px rgba(0, 0, 0, 0.38);
-	}
-
 	@media (max-width: 639px) {
-		.fd-map-clear {
-			margin-left: 0;
-			align-self: stretch;
-		}
-
-		.fd-map-clear--cta {
-			width: 100%;
+		.fd-map-toolbar__acts .fd-map-act {
+			flex: 1 1 auto;
 			justify-content: center;
 			text-align: center;
+			min-width: 0;
 		}
 	}
 

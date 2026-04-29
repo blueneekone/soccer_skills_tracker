@@ -12,44 +12,11 @@
 		setDoc,
 		updateDoc,
 	} from 'firebase/firestore';
-	import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+	import { deleteObject, ref } from 'firebase/storage';
 	import '$lib/styles/enterprise-console.css';
+	import Modal from '$lib/components/Modal.svelte';
 	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
 	import FacilityDrawingMap from '$lib/components/field-ops/FacilityDrawingMap.svelte';
-
-	/** Debug dd2828 — hero map frame dimensions (hypothesis G). */
-	$effect(() => {
-		if (!browser || !clubId) return;
-		void rows.length;
-		void heroFacilityId;
-		void heroLat;
-		void heroLng;
-		void embedded;
-		void tick().then(() => {
-			const frame = document.querySelector('.fm-embedded-map-frame');
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					location: 'FacilityMapVault.svelte:hero',
-					message: 'hero map context',
-					data: {
-						hypothesisId: 'G',
-						rowsLen: rows.length,
-						heroFacilityShort: (heroFacilityId || '').slice(0, 8),
-						heroLat,
-						heroLng,
-						embedded,
-						frameH: frame?.clientHeight ?? 0,
-					},
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
-		});
-	});
 
 	/**
 	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
@@ -59,14 +26,11 @@
 	let { clubId = '', canManage = false, embedded = false } = $props();
 
 	let rows = $state(/** @type {FacilityMapRow[]} */ ([]));
-	let mapName = $state('');
-	let mapAddress = $state('');
-	let uploading = $state(false);
-	let uploadErr = $state('');
-	let dragOver = $state(false);
 	let previewId = $state(/** @type {string | null} */ (null));
 	let previewOpen = $state(false);
 	let draftAddress = $state('');
+	/** Editable facility display name (drawer logistics save). */
+	let draftName = $state('');
 	/** @type {number | null} */
 	let draftLat = $state(null);
 	/** @type {number | null} */
@@ -109,6 +73,25 @@
 	let heroSaving = $state(false);
 	let heroSaveErr = $state('');
 
+	/**
+	 * Last `${clubId}:${facilityId}` we hydrated hero editor state from Firestore for.
+	 * Prevents `applyHeroFromRow` on every `onSnapshot` — that overwrote unsaved pin moves (logs §77–85 vs §84–85).
+	 */
+	let lastHeroHydrateKey = $state('');
+	/** Bump when Firestore hydrates hero row so map effect remounts with correct initial center (refresh). */
+	let heroCoordRevision = $state(0);
+
+	let facilityEditOpen = $state(false);
+	let facilityEditId = $state(/** @type {string | null} */ (null));
+	let facilityEditName = $state('');
+	let facilityEditAddress = $state('');
+	let facilityEditLatStr = $state('');
+	let facilityEditLngStr = $state('');
+	/** @type {'Active' | 'Locked' | 'LOCKED'} */
+	let facilityEditStatus = $state('Active');
+	let facilityEditSaving = $state(false);
+	let facilityEditErr = $state('');
+
 	const previewRow = $derived.by(() => {
 		if (!previewId) return /** @type {FacilityMapRow | null} */ (null);
 		return rows.find((r) => r.id === previewId) ?? null;
@@ -124,6 +107,20 @@
 	let pdfCanvasEl = $state(null);
 	let pdfBusy = $state(false);
 
+	/**
+	 * Coerce Firestore lat/lng (numbers or legacy strings) to finite numbers.
+	 * @param {unknown} v
+	 * @returns {number | undefined}
+	 */
+	function readFirestoreCoord(v) {
+		if (typeof v === 'number' && Number.isFinite(v)) return v;
+		if (typeof v === 'string' && v.trim()) {
+			const n = Number(v);
+			return Number.isFinite(n) ? n : undefined;
+		}
+		return undefined;
+	}
+
 	$effect(() => {
 		if (!clubId) {
 			rows = [];
@@ -135,8 +132,8 @@
 			(snap) => {
 				const list = snap.docs.map((d) => {
 					const x = d.data();
-					const lat = typeof x.latitude === 'number' ? x.latitude : undefined;
-					const lng = typeof x.longitude === 'number' ? x.longitude : undefined;
+					const lat = readFirestoreCoord(x.latitude);
+					const lng = readFirestoreCoord(x.longitude);
 					const routingUrl =
 						typeof x.routingUrl === 'string' && x.routingUrl ? x.routingUrl : undefined;
 					const tacticalCanvasJson =
@@ -195,15 +192,11 @@
 		heroLat = typeof row.latitude === 'number' ? row.latitude : null;
 		heroLng = typeof row.longitude === 'number' ? row.longitude : null;
 		heroMapData = parseFacilityMapData(row.mapData);
+		if (clubId) lastHeroHydrateKey = `${clubId}:${row.id}`;
+		heroCoordRevision += 1;
 	}
 
-	function syncHeroFromSelection() {
-		const row = rows.find((r) => r.id === heroFacilityId);
-		if (!row) return;
-		applyHeroFromRow(row);
-	}
-
-	/** Default hero facility when list loads or current id is missing. */
+	/** Default hero facility when list loads or current id is missing. Prefer last selection per club (localStorage). */
 	$effect(() => {
 		if (!clubId) return;
 		if (rows.length === 0) {
@@ -211,14 +204,81 @@
 			return;
 		}
 		if (!heroFacilityId || !rows.some((r) => r.id === heroFacilityId)) {
-			heroFacilityId = rows[0].id;
+			let preferred = '';
+			if (browser) {
+				try {
+					preferred = localStorage.getItem(`fm-vault-hero-facility:${clubId}`) ?? '';
+				} catch {
+					preferred = '';
+				}
+			}
+			if (preferred && rows.some((r) => r.id === preferred)) {
+				heroFacilityId = preferred;
+			} else {
+				heroFacilityId = rows[0].id;
+			}
 		}
 	});
 
-	/** Hydrate hero lat/lng/mapData when club or selected facility id changes. */
+	/** Remember embedded-map facility selection across refresh (same browser profile). */
 	$effect(() => {
-		if (!clubId || !heroFacilityId) return;
-		syncHeroFromSelection();
+		if (!browser || !clubId || !heroFacilityId) return;
+		try {
+			localStorage.setItem(`fm-vault-hero-facility:${clubId}`, heroFacilityId);
+		} catch {
+			/* ignore quota / private mode */
+		}
+	});
+
+	/** Hydrate hero from Firestore when club/facility selection changes — not on every snapshot (`rows` churn). */
+	$effect(() => {
+		void rows.length;
+		if (!clubId) {
+			lastHeroHydrateKey = '';
+			return;
+		}
+		/**
+		 * Snapshot-driven hydrate must pause during any facility write: hero save blocks stale overwrite of the pin,
+		 * and logistics save blocks hydrate too — `rows.find` runs every snapshot and `lastHeroHydrateKey` can miss
+		 * edge cases while drawer coords differ from hero.
+		 */
+		if (
+			heroSaving ||
+			logisticsSaving ||
+			(facilityEditSaving && facilityEditId && facilityEditId === heroFacilityId)
+		) {
+			return;
+		}
+		if (!heroFacilityId) {
+			lastHeroHydrateKey = '';
+			return;
+		}
+		const key = `${clubId}:${heroFacilityId}`;
+		if (key === lastHeroHydrateKey) return;
+		const row = rows.find((r) => r.id === heroFacilityId);
+		if (!row) return;
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				runId: 'hydrate-trace',
+				hypothesisId: 'H_HYDRATE_APPLY',
+				location: 'FacilityMapVault.svelte:heroHydrateEffect',
+				message: 'applyHeroFromRow from snapshot',
+				data: {
+					rowLat: row.latitude,
+					rowLng: row.longitude,
+					prevHeroLat: heroLat,
+					prevHeroLng: heroLng,
+					lastKeyTail: String(lastHeroHydrateKey).slice(-24),
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
+		applyHeroFromRow(row);
 	});
 
 	function closePreview() {
@@ -227,6 +287,7 @@
 		pdfBusy = false;
 		logisticsSaveErr = '';
 		draftAddress = '';
+		draftName = '';
 		draftLat = null;
 		draftLng = null;
 		draftStatus = 'Active';
@@ -288,9 +349,33 @@
 	 * @param {FacilityMapRow} row
 	 */
 	function openPreview(row) {
+		/**
+		 * While saving logistics, Firestore snapshots may still carry pre-write coords/mapData.
+		 * Re-running openPreview for the same row (table click or downstream effects) would clobber
+		 * draftLat/draftLng/draftMapData and snap the routing marker back until the write settles.
+		 */
+		if (logisticsSaving && previewOpen && previewId === row.id) {
+			// #region agent log
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					runId: 'hydrate-trace',
+					hypothesisId: 'H_OPEN_PREVIEW_BLOCK',
+					location: 'FacilityMapVault.svelte:openPreview',
+					message: 'skipped openPreview during logistics save (same row)',
+					data: { rowIdShort: String(row.id || '').slice(0, 12) },
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+			// #endregion
+			return;
+		}
 		previewId = row.id;
 		previewOpen = true;
 		draftAddress = row.address ?? '';
+		draftName = typeof row.name === 'string' ? row.name.trim().slice(0, 200) : '';
 		draftLat = typeof row.latitude === 'number' ? row.latitude : null;
 		draftLng = typeof row.longitude === 'number' ? row.longitude : null;
 		logisticsSaveErr = '';
@@ -416,89 +501,6 @@
 		};
 	});
 
-	const MAX_BYTES = 10 * 1024 * 1024;
-
-	/**
-	 * @param {File} file
-	 */
-	function validateFile(file) {
-		if (file.size >= MAX_BYTES) return 'File must be under 10 MB.';
-		const ok =
-			file.type.startsWith('image/') ||
-			file.type === 'application/pdf' ||
-			/\.pdf$/i.test(file.name);
-		if (!ok) return 'Only PDF or image files are allowed.';
-		return '';
-	}
-
-	/**
-	 * @param {File} file
-	 */
-	async function uploadFile(file) {
-		uploadErr = '';
-		if (!clubId || !canManage) return;
-		const err = validateFile(file);
-		if (err) {
-			uploadErr = err;
-			return;
-		}
-		const nameTrim = mapName.trim() || file.name.replace(/\.[^.]+$/, '') || 'Facility map';
-		const fid =
-			typeof crypto !== 'undefined' && crypto.randomUUID ?
-				crypto.randomUUID() :
-				`m_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-		const ext =
-			file.type === 'application/pdf' ?
-				'pdf'
-			: file.type === 'image/png' ?
-				'png'
-			: file.type === 'image/jpeg' || file.type === 'image/jpg' ?
-				'jpg'
-			: file.type === 'image/webp' ?
-				'webp'
-			: file.type === 'image/gif' ?
-				'gif'
-			:	'bin';
-		const path = `clubs/${clubId}/facility_maps/${fid}.${ext}`;
-		const storageRef = ref(storage, path);
-
-		uploading = true;
-		try {
-			await uploadBytes(storageRef, file, { contentType: file.type || undefined });
-			const mapDownloadUrl = await getDownloadURL(storageRef);
-			const type = file.type === 'application/pdf' || ext === 'pdf' ? 'pdf' : 'image';
-			const addressTrim = mapAddress.trim();
-			await setDoc(doc(db, 'clubs', clubId, 'facilities', fid), {
-				name: nameTrim.slice(0, 200),
-				...(addressTrim ? { address: addressTrim.slice(0, 500) } : {}),
-				mapStoragePath: path,
-				mapDownloadUrl,
-				type,
-				uploadedAt: serverTimestamp(),
-				status: 'Active',
-			});
-			mapName = '';
-			mapAddress = '';
-		} catch (e) {
-			uploadErr =
-				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
-					String(/** @type {{ message?: string }} */ (e).message)
-				:	String(e);
-		} finally {
-			uploading = false;
-		}
-	}
-
-	/**
-	 * @param {DragEvent} e
-	 */
-	function onDrop(e) {
-		e.preventDefault();
-		dragOver = false;
-		const f = e.dataTransfer?.files?.[0];
-		if (f) void uploadFile(f);
-	}
-
 	/**
 	 * @param {FacilityMapRow} row
 	 */
@@ -526,11 +528,13 @@
 	async function saveHeroFacility() {
 		heroSaveErr = '';
 		if (!canManage || !clubId || !heroFacilityId) return;
+		const row = rows.find((r) => r.id === heroFacilityId);
+		const rawName = typeof row?.name === 'string' ? row.name.trim() : '';
+		const nameTrim = (rawName || heroFacilityId).slice(0, 200);
 		if (heroLat == null || heroLng == null) {
 			alert('Place the routing pin on the map or pick a facility with coordinates.');
 			return;
 		}
-		const row = rows.find((r) => r.id === heroFacilityId);
 		const mdJson = JSON.stringify(heroMapData);
 		if (mdJson.length > 500000) {
 			heroSaveErr =
@@ -538,6 +542,27 @@
 			return;
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${heroLat},${heroLng}`;
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				runId: 'post-name-fix',
+				hypothesisId: 'H_SAVE_NAME',
+				location: 'FacilityMapVault.svelte:saveHeroFacility',
+				message: 'persist hero coords',
+				data: {
+					heroFacilityShort: (heroFacilityId || '').slice(0, 10),
+					nameLen: nameTrim.length,
+					nameFromRow: Boolean(rawName),
+					heroLat,
+					heroLng,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
 		heroSaving = true;
 		try {
 			const st = row?.status || '';
@@ -547,6 +572,7 @@
 				'Active';
 			/** @type {Record<string, unknown>} */
 			const patch = {
+				name: nameTrim,
 				address: typeof row?.address === 'string' ? row.address.trim().slice(0, 500) : '',
 				latitude: heroLat,
 				longitude: heroLng,
@@ -572,6 +598,11 @@
 	async function saveLogistics() {
 		logisticsSaveErr = '';
 		if (!canManage || !clubId || !previewId) return;
+		const nameTrim = draftName.trim().slice(0, 200);
+		if (!nameTrim) {
+			logisticsSaveErr = 'Facility name is required.';
+			return;
+		}
 		if (draftLat == null || draftLng == null) {
 			alert('Enter latitude and longitude (use the map pin or fields above).');
 			return;
@@ -584,9 +615,29 @@
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${draftLat},${draftLng}`;
 		logisticsSaving = true;
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				runId: 'hydrate-trace',
+				hypothesisId: 'H_LOGISTICS_SAVE_START',
+				location: 'FacilityMapVault.svelte:saveLogistics',
+				message: 'saveLogistics start',
+				data: {
+					previewIdShort: String(previewId || '').slice(0, 12),
+					draftLat,
+					draftLng,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
 		try {
 			/** @type {Record<string, unknown>} */
 			const patch = {
+				name: nameTrim,
 				address: draftAddress.trim().slice(0, 500),
 				latitude: draftLat,
 				longitude: draftLng,
@@ -609,6 +660,79 @@
 				:	String(e);
 		} finally {
 			logisticsSaving = false;
+		}
+	}
+
+	/**
+	 * @param {FacilityMapRow} row
+	 */
+	function openFacilityEditModal(row) {
+		facilityEditErr = '';
+		facilityEditId = row.id;
+		facilityEditName = typeof row.name === 'string' ? row.name : '';
+		facilityEditAddress = typeof row.address === 'string' ? row.address : '';
+		facilityEditLatStr =
+			typeof row.latitude === 'number' && Number.isFinite(row.latitude) ? String(row.latitude) : '';
+		facilityEditLngStr =
+			typeof row.longitude === 'number' && Number.isFinite(row.longitude) ? String(row.longitude) : '';
+		const st = row.status || '';
+		facilityEditStatus =
+			st === 'LOCKED' ? 'LOCKED' :
+			st === 'Locked' ? 'Locked' :
+			'Active';
+		facilityEditOpen = true;
+	}
+
+	async function saveFacilityEditModal() {
+		facilityEditErr = '';
+		if (!canManage || !clubId || !facilityEditId) return;
+		const nameTrim = facilityEditName.trim().slice(0, 200);
+		if (!nameTrim) {
+			facilityEditErr = 'Facility name is required.';
+			return;
+		}
+		const lat = Number(facilityEditLatStr.trim());
+		const lng = Number(facilityEditLngStr.trim());
+		if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+			facilityEditErr = 'Enter valid latitude and longitude.';
+			return;
+		}
+		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+		facilityEditSaving = true;
+		try {
+			const st = facilityEditStatus;
+			const statusOut =
+				st === 'LOCKED' ? 'LOCKED' :
+				st === 'Locked' ? 'Locked' :
+				'Active';
+			/** @type {Record<string, unknown>} */
+			const patch = {
+				name: nameTrim,
+				address: facilityEditAddress.trim().slice(0, 500),
+				latitude: lat,
+				longitude: lng,
+				routingUrl,
+				status: statusOut,
+			};
+			if (statusOut === 'Active') {
+				patch.lockReason = deleteField();
+				patch.lockedAt = deleteField();
+			}
+			await updateDoc(doc(db, 'clubs', clubId, 'facilities', facilityEditId), patch);
+			if (heroFacilityId === facilityEditId) {
+				heroLat = lat;
+				heroLng = lng;
+				heroCoordRevision += 1;
+			}
+			facilityEditOpen = false;
+			facilityEditId = null;
+		} catch (e) {
+			facilityEditErr =
+				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
+					String(/** @type {{ message?: string }} */ (e).message)
+				:	String(e);
+		} finally {
+			facilityEditSaving = false;
 		}
 	}
 
@@ -737,16 +861,6 @@
 							<option value={r.id}>{r.name}</option>
 						{/each}
 					</select>
-					{#if canManage}
-						<button
-							type="button"
-							class="fm-btn fm-btn--primary fm-embedded-map-toolbar__save"
-							disabled={heroSaving || !heroFacilityId}
-							onclick={() => void saveHeroFacility()}
-						>
-							{heroSaving ? 'Saving…' : 'Save map & pin'}
-						</button>
-					{/if}
 				</div>
 				<div
 					class="fm-embedded-map-frame tw-flex tw-h-full tw-w-full tw-min-h-[600px] tw-flex-col"
@@ -758,6 +872,11 @@
 								bind:longitude={heroLng}
 								bind:mapData={heroMapData}
 								readonly={!canManage}
+								coordRevision={heroCoordRevision}
+								lockRoutingPinSync={heroSaving}
+								onSaveMap={() => void saveHeroFacility()}
+								saveBusy={heroSaving}
+								saveDisabled={heroSaving || !heroFacilityId}
 							/>
 						{/key}
 					{/if}
@@ -773,94 +892,15 @@
 		</section>
 	{/if}
 
-	<div class="fm-vault__grid">
-		<section class="fm-panel fm-panel--upload" aria-label="Upload facility map">
-			<h4 class="fm-panel__title">Upload map</h4>
-			<p class="fm-panel__hint">
-				PDF or image, max 10 MB. Stored under your club only ({canManage ? 'director' : 'view only'}).
-			</p>
-			{#if canManage}
-				<label class="fm-label" for="fm-map-name">Map name</label>
-				<input
-					id="fm-map-name"
-					class="fm-input"
-					type="text"
-					bind:value={mapName}
-					placeholder="e.g. North pitch — overhead"
-					disabled={uploading}
-					autocomplete="off"
-				/>
-				<label class="fm-label" for="fm-map-addr">Address <span class="fm-optional">(optional)</span></label>
-				<input
-					id="fm-map-addr"
-					class="fm-input"
-					type="text"
-					bind:value={mapAddress}
-					placeholder="Field location notes"
-					disabled={uploading}
-					autocomplete="off"
-				/>
-				<div
-					class="fm-dropzone"
-					class:fm-dropzone--active={dragOver}
-					role="button"
-					tabindex="0"
-					ondragenter={(e) => {
-						e.preventDefault();
-						dragOver = true;
-					}}
-					ondragleave={() => (dragOver = false)}
-					ondragover={(e) => {
-						e.preventDefault();
-						dragOver = true;
-					}}
-					ondrop={onDrop}
-					onkeydown={(e) => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault();
-							document.getElementById('fm-file-input')?.click();
-						}
-					}}
-				>
-					<input
-						id="fm-file-input"
-						type="file"
-						accept="image/*,application/pdf"
-						class="fm-file-input"
-						disabled={uploading}
-						onchange={(e) => {
-							const f = e.currentTarget.files?.[0];
-							if (f) void uploadFile(f);
-							e.currentTarget.value = '';
-						}}
-					/>
-					<i class="ph ph-upload-simple fm-dropzone__icon" aria-hidden="true"></i>
-					<p class="fm-dropzone__text">
-						Drop a file here or <span class="fm-link">browse</span>
-					</p>
-					<button
-						type="button"
-						class="fm-btn fm-btn--secondary"
-						disabled={uploading}
-						onclick={() => document.getElementById('fm-file-input')?.click()}
-					>
-						{uploading ? 'Uploading…' : 'Choose file'}
-					</button>
-				</div>
-				{#if uploadErr}
-					<p class="fm-err" role="alert">{uploadErr}</p>
-				{/if}
-			{:else}
-				<p class="fm-panel__hint">Sign in as a director to upload maps.</p>
-			{/if}
-		</section>
-
-		<section class="fm-panel" aria-label="Facility map vault">
+	<section class="fm-panel fm-panel--vault-wide" aria-label="Facility map vault">
 			<h4 class="fm-panel__title">Vault</h4>
+			<p class="fm-panel__hint fm-panel__hint--vault">
+				Facilities for routing, drawings, and logistics. Use Edit to change name, address, coordinates, or status.
+			</p>
 			{#if rows.length === 0}
-				<p class="fm-panel__empty">No maps yet.</p>
+				<p class="fm-panel__empty">No facilities yet.</p>
 			{:else}
-				<div class="ec-table-wrap fm-table-wrap">
+				<div class="ec-table-wrap fm-table-wrap fm-table-wrap--vault">
 					<table class="ec-table">
 						<thead>
 							<tr>
@@ -872,7 +912,7 @@
 								<th>Doc ID</th>
 								<th>Uploaded</th>
 								{#if canManage}
-									<th style="width: 5rem;">Actions</th>
+									<th class="fm-table-actions-col">Actions</th>
 								{/if}
 							</tr>
 						</thead>
@@ -917,7 +957,17 @@
 									<td class="fm-docid" title={row.id}>{row.id}</td>
 									<td class="ec-muted">{fmtTime(row.uploadedAt)}</td>
 									{#if canManage}
-										<td>
+										<td class="fm-table-actions">
+											<button
+												type="button"
+												class="fm-btn fm-btn--secondary"
+												onclick={(e) => {
+													e.stopPropagation();
+													openFacilityEditModal(row);
+												}}
+											>
+												Edit
+											</button>
 											<button
 												type="button"
 												class="fm-btn fm-btn--danger"
@@ -937,8 +987,88 @@
 				</div>
 			{/if}
 		</section>
-	</div>
 </div>
+
+<Modal bind:open={facilityEditOpen} title="Edit facility" maxWidth="560px">
+	<form
+		class="fm-modal-edit"
+		onsubmit={(e) => {
+			e.preventDefault();
+			void saveFacilityEditModal();
+		}}
+	>
+		<label class="fm-label" for="fm-edit-name">Facility name</label>
+		<input
+			id="fm-edit-name"
+			class="fm-input"
+			type="text"
+			bind:value={facilityEditName}
+			maxlength={200}
+			autocomplete="off"
+			disabled={facilityEditSaving}
+		/>
+		<label class="fm-label" for="fm-edit-addr">Address</label>
+		<input
+			id="fm-edit-addr"
+			class="fm-input"
+			type="text"
+			bind:value={facilityEditAddress}
+			autocomplete="off"
+			disabled={facilityEditSaving}
+		/>
+		<div class="fm-coord-grid">
+			<div>
+				<label class="fm-label fm-label--coord" for="fm-edit-lat">Latitude</label>
+				<input
+					id="fm-edit-lat"
+					class="fm-input fm-input--coord"
+					type="text"
+					inputmode="decimal"
+					bind:value={facilityEditLatStr}
+					disabled={facilityEditSaving}
+				/>
+			</div>
+			<div>
+				<label class="fm-label fm-label--coord" for="fm-edit-lng">Longitude</label>
+				<input
+					id="fm-edit-lng"
+					class="fm-input fm-input--coord"
+					type="text"
+					inputmode="decimal"
+					bind:value={facilityEditLngStr}
+					disabled={facilityEditSaving}
+				/>
+			</div>
+		</div>
+		<label class="fm-label" for="fm-edit-status">Operational status</label>
+		<select
+			id="fm-edit-status"
+			class="fm-input fm-input--status"
+			bind:value={facilityEditStatus}
+			disabled={facilityEditSaving}
+		>
+			<option value="Active">Active</option>
+			<option value="Locked">Locked (manual)</option>
+			<option value="LOCKED">LOCKED (automated)</option>
+		</select>
+		{#if facilityEditErr}
+			<p class="fm-err" role="alert">{facilityEditErr}</p>
+		{/if}
+		<div class="fm-modal-edit__actions">
+			<button
+				type="button"
+				class="fm-btn fm-btn--secondary"
+				disabled={facilityEditSaving}
+				onclick={() => (facilityEditOpen = false)}
+			>
+				Cancel
+			</button>
+			<button type="submit" class="fm-btn fm-btn--primary" disabled={facilityEditSaving}>
+				{facilityEditSaving ? 'Saving…' : 'Save changes'}
+			</button>
+		</div>
+	</form>
+</Modal>
 
 <!-- Preview drawer (enterprise panel) -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -973,6 +1103,18 @@
 					</p>
 				{/if}
 				{#if canManage}
+					<div class="fm-logistics-name-field">
+						<label class="fm-label" for="fm-draft-name">Facility name</label>
+						<input
+							id="fm-draft-name"
+							class="fm-input fm-logistics-input"
+							type="text"
+							bind:value={draftName}
+							placeholder="e.g. North Training Pitch"
+							autocomplete="off"
+							disabled={logisticsSaving}
+						/>
+					</div>
 					<div class="fm-coord-grid">
 						<div>
 							<label class="fm-label fm-label--coord" for="fm-draft-lat">Latitude</label>
@@ -1024,6 +1166,7 @@
 							bind:longitude={draftLng}
 							bind:mapData={draftMapData}
 							readonly={!canManage}
+							lockRoutingPinSync={logisticsSaving}
 						/>
 					{/key}
 				</div>
@@ -1102,7 +1245,7 @@
 				<canvas bind:this={pdfCanvasEl} class="fm-preview-canvas"></canvas>
 			{:else}
 				<p class="fm-preview-meta fm-preview-meta--asset">
-					No tactical map uploaded — logistics registry only. Upload a PDF or image from the vault panel to attach a field diagram.
+					No tactical map asset — logistics registry only.
 				</p>
 			{/if}
 		</div>
@@ -1178,14 +1321,10 @@
 	}
 
 	.fm-embedded-map-toolbar__select {
-		flex: 1 1 12rem;
-		max-width: 18rem;
+		flex: 1 1 18rem;
+		max-width: min(36rem, 100%);
+		min-width: 0;
 		margin-bottom: 0;
-	}
-
-	.fm-embedded-map-toolbar__save {
-		flex: 0 0 auto;
-		margin-left: auto;
 	}
 
 	.fm-embedded-map-frame {
@@ -1203,25 +1342,60 @@
 		align-self: stretch;
 	}
 
-	.fm-vault--embedded .fm-vault__grid {
+	.fm-vault--embedded .fm-panel--vault-wide {
 		flex: 1 1 auto;
 		min-height: 0;
 		overflow-y: auto;
 		align-content: start;
+		width: 100%;
+		max-width: none;
 	}
 
-	.fm-vault__grid {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 16px;
-		align-items: start;
+	.fm-panel--vault-wide {
+		width: 100%;
+		max-width: none;
+		box-sizing: border-box;
 	}
 
-	@media (min-width: 1024px) {
-		.fm-vault__grid {
-			grid-template-columns: minmax(280px, 1fr) minmax(0, 1.2fr);
-			gap: 20px;
-		}
+	.fm-panel__hint--vault {
+		margin-bottom: 14px;
+	}
+
+	.fm-table-wrap--vault {
+		width: 100%;
+		max-width: none;
+	}
+
+	.fm-table-actions-col {
+		width: 11rem;
+		text-align: right;
+	}
+
+	.fm-table-actions {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		justify-content: flex-end;
+		align-items: center;
+	}
+
+	.fm-modal-edit {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+	}
+
+	.fm-modal-edit .fm-input--status {
+		margin-bottom: 0;
+	}
+
+	.fm-modal-edit__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+		margin-top: 14px;
+		flex-wrap: wrap;
 	}
 
 	.fm-panel {
@@ -1299,6 +1473,15 @@
 		display: flex;
 		justify-content: flex-end;
 		margin-top: 4px;
+	}
+
+	.fm-logistics-name-field {
+		margin-bottom: 12px;
+	}
+
+	.fm-logistics-name-field .fm-logistics-input {
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.fm-coord-grid {
@@ -1454,66 +1637,6 @@
 	:global(html.dark) .fm-input {
 		background: #18181b;
 		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	.fm-dropzone {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 10px;
-		min-height: 160px;
-		padding: 20px;
-		border-radius: 14px;
-		border: 1px dashed #d4d4d8;
-		background: #fafafa;
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease;
-	}
-
-	:global(html.dark) .fm-dropzone {
-		border-color: #3f3f46;
-		background: #18181b;
-	}
-
-	.fm-dropzone--active {
-		border-color: #71717a;
-		background: #f4f4f5;
-	}
-
-	:global(html.dark) .fm-dropzone--active {
-		background: #27272a;
-		border-color: #a1a1aa;
-	}
-
-	.fm-file-input {
-		position: absolute;
-		width: 0;
-		height: 0;
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.fm-dropzone__icon {
-		font-size: 2rem;
-		color: var(--text-secondary);
-	}
-
-	.fm-dropzone__text {
-		margin: 0;
-		font-size: 13px;
-		color: var(--text-secondary);
-		text-align: center;
-	}
-
-	.fm-link {
-		font-weight: 600;
-		color: var(--text-primary);
-		text-decoration: underline;
-		text-underline-offset: 2px;
 	}
 
 	.fm-btn {

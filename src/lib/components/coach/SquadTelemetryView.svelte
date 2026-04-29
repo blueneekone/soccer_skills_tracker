@@ -31,7 +31,7 @@
 		],
 	};
 
-	let { teamId = '', teams = [] } = $props();
+	let { teamId = '', teams = [], showLiveTelemetry = true } = $props();
 
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
@@ -679,12 +679,14 @@
 		</div>
 	</header>
 
-	<LiveTelemetrySection
-		teamId={teamId}
-		players={players}
-		getStatsId={(p) => resolveStatsId(p, playerStats)}
-		onCommitted={loadRoster}
-	/>
+	{#if showLiveTelemetry}
+		<LiveTelemetrySection
+			teamId={teamId}
+			players={players}
+			getStatsId={(p) => resolveStatsId(p, playerStats)}
+			onCommitted={loadRoster}
+		/>
+	{/if}
 
 	<section
 		class="stw__dispatch tw-mb-4 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-px-4"
