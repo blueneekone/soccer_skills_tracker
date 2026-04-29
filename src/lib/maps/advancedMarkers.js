@@ -5,7 +5,7 @@
  * @param {typeof globalThis.google} g
  * @param {google.maps.Map} map
  * @param {{ lat: number; lng: number }} position
- * @param {{ title?: string; background?: string; borderColor?: string; glyphColor?: string; zIndex?: number }} [opts]
+ * @param {{ title?: string; background?: string; borderColor?: string; glyphColor?: string; zIndex?: number; draggable?: boolean }} [opts]
  */
 export async function createAdvancedPinMarker(g, map, position, opts = {}) {
 	const { AdvancedMarkerElement, PinElement } = await g.maps.importLibrary('marker');
@@ -20,6 +20,7 @@ export async function createAdvancedPinMarker(g, map, position, opts = {}) {
 		content: pin.element,
 		title: opts.title ?? '',
 		zIndex: opts.zIndex ?? 1,
+		gmpDraggable: opts.draggable === true,
 	});
 	return marker;
 }

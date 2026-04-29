@@ -256,7 +256,17 @@
 					if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
 					path.push({ lat, lng });
 				}
-				if (path.length >= 3) cleanPolys.push({ name: p.name.trim().slice(0, 120), path });
+				if (path.length >= 3) {
+					const entry = { name: p.name.trim().slice(0, 120), path };
+					const col =
+						typeof p.color === 'string' ?
+							p.color.trim().slice(0, 9)
+						:	'';
+					if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(col)) {
+						entry.color = col.length === 4 ? `#${col[1]}${col[1]}${col[2]}${col[2]}${col[3]}${col[3]}` : col;
+					}
+					cleanPolys.push(entry);
+				}
 			}
 			const cleanMarks = [];
 			for (const m of markers) {

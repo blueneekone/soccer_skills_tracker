@@ -6,7 +6,7 @@
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
-	 * @typedef {{ name: string; path: LatLng[] }} FacilityPolygonRecord
+	 * @typedef {{ name: string; path: LatLng[]; color?: string }} FacilityPolygonRecord
 	 * @typedef {{ label?: string; lat: number; lng: number }} FacilityMarkerRecord
 	 * @typedef {{ version: 1; polygons: FacilityPolygonRecord[]; markers: FacilityMarkerRecord[] }} FacilityMapData
 	 */
@@ -30,6 +30,263 @@
 
 	let resetFlip = $state(0);
 
+	/** Selected saved field polygon for color editing (index into mapData.polygons / drawnPolygons). */
+	let selectedPolygonIndex = $state(/** @type {number | null} */ (null));
+
+	/** Selected facility marker for removal (index into mapData.markers). */
+	let selectedMarkerIndex = $state(/** @type {number | null} */ (null));
+
+	/** Close draft polygon when click is within this distance (m) of the first vertex (snap-to-close). */
+	const SNAP_CLOSE_METERS = 28;
+
+	/** Draw polygons below facility pins so markers stay visible on top. */
+	const FACILITY_POLYGON_Z_INDEX = 5;
+	const FACILITY_MARKER_Z_INDEX = 120;
+
+	/**
+	 * While placing markers, polygons must not capture clicks so taps pass through to the map.
+	 */
+	function syncPolygonClickableForMarkerPlacement() {
+		const refs = facilityDrawRefs;
+		if (!refs?.drawnPolygons?.length) return;
+		const passthrough = manualDrawMode === 'marker';
+		for (const poly of refs.drawnPolygons) {
+			try {
+				poly.setOptions({ clickable: !passthrough });
+			} catch {
+				/* ignore */
+			}
+		}
+	}
+
+	$effect(() => {
+		const n = mapData.polygons.length;
+		if (selectedPolygonIndex !== null && (selectedPolygonIndex < 0 || selectedPolygonIndex >= n)) {
+			selectedPolygonIndex = null;
+		}
+	});
+
+	$effect(() => {
+		const n = mapData.markers.length;
+		if (selectedMarkerIndex !== null && (selectedMarkerIndex < 0 || selectedMarkerIndex >= n)) {
+			selectedMarkerIndex = null;
+		}
+	});
+
+	/**
+	 * Great-circle distance in meters (for snap-to-close near first vertex).
+	 * @param {{ lat: number; lng: number }} a
+	 * @param {{ lat: number; lng: number }} b
+	 */
+	function haversineMeters(a, b) {
+		const R = 6371000;
+		const dLat = (((b.lat - a.lat) * Math.PI) / 180);
+		const dLng = (((b.lng - a.lng) * Math.PI) / 180);
+		const lat1 = (a.lat * Math.PI) / 180;
+		const lat2 = (b.lat * Math.PI) / 180;
+		const s =
+			Math.sin(dLat / 2) ** 2 +
+			Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+		return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+	}
+
+	/** Read a hex token from `:root` for Google Maps Pin/Polygon APIs. */
+	function cssVarHex(/** @type {string} */ name, /** @type {string} */ fallback) {
+		if (!browser) return fallback;
+		const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+		if (!/^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(raw)) return fallback;
+		if (raw.length === 4) {
+			return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`;
+		}
+		return raw;
+	}
+
+	/** Facility polygons & pin fills — `--brand-accent` from global design system. */
+	function defaultFieldColorHex() {
+		return cssVarHex('--brand-accent', '#10b981');
+	}
+
+	function facilityPinBorderHex() {
+		return cssVarHex('--enterprise-primary-bg', '#0a0a0a');
+	}
+
+	function facilityPinGlyphHex() {
+		return cssVarHex('--enterprise-primary-fg', '#ffffff');
+	}
+
+	/** @param {string | undefined} hex */
+	function normalizeFieldColorHex(hex) {
+		if (typeof hex === 'string') {
+			const t = hex.trim();
+			if (/^#[0-9a-fA-F]{6}$/.test(t)) return t;
+			if (/^#[0-9a-fA-F]{3}$/.test(t)) {
+				return `#${t[1]}${t[1]}${t[2]}${t[2]}${t[3]}${t[3]}`;
+			}
+		}
+		return defaultFieldColorHex();
+	}
+
+	/** @param {string | undefined} hex */
+	function fieldPolygonPaint(hex) {
+		const h = normalizeFieldColorHex(hex);
+		return {
+			fillColor: h,
+			strokeColor: h,
+			fillOpacity: 0.22,
+			strokeOpacity: 0.95,
+			strokeWeight: 2,
+		};
+	}
+
+	/**
+	 * Keep bindable mapData.path in sync when the user drags polygon vertices; attach selection click.
+	 * @param {any} g
+	 * @param {any} poly
+	 * @param {number} recordIndex index into mapData.polygons
+	 * @param {boolean} polygonsLocked
+	 */
+	function wireSavedPolygon(g, poly, recordIndex, polygonsLocked) {
+		poly.__facilityPolygonIndex = recordIndex;
+		if (polygonsLocked) return;
+		poly.setOptions({ editable: true, draggable: false });
+		const path = poly.getPath();
+		const syncPathToMapData = () => {
+			const nextPath = /** @type {{ lat: number; lng: number }[]} */ ([]);
+			path.forEach((/** @type {any} */ ll) => {
+				nextPath.push({ lat: ll.lat(), lng: ll.lng() });
+			});
+			mapData = {
+				version: 1,
+				polygons: mapData.polygons.map((rec, i) => (i === recordIndex ? { ...rec, path: nextPath } : rec)),
+				markers: [...mapData.markers],
+			};
+		};
+		for (const ev of /** @type {const} */ (['set_at', 'insert_at', 'remove_at'])) {
+			g.maps.event.addListener(path, ev, syncPathToMapData);
+		}
+		g.maps.event.addListener(poly, 'click', () => {
+			selectedPolygonIndex = recordIndex;
+			selectedMarkerIndex = null;
+		});
+	}
+
+	/**
+	 * Select marker on click; stop propagation when possible so the map does not also place the routing pin.
+	 * @param {any} g
+	 * @param {any} marker AdvancedMarkerElement
+	 */
+	function wireFacilityMarkerClick(g, marker) {
+		const handler = () => {
+			const idx = marker.__facilityMarkerIndex;
+			if (typeof idx !== 'number') return;
+			selectedMarkerIndex = idx;
+			selectedPolygonIndex = null;
+		};
+		g.maps.event.addListener(marker, 'gmp-click', (/** @type {any} */ e) => {
+			try {
+				e?.stop?.();
+			} catch {
+				/* ignore */
+			}
+			handler();
+		});
+	}
+
+	/** @param {any} pos google.maps.LatLng | LatLngLiteral */
+	function markerPositionToPlain(pos) {
+		if (pos == null) return null;
+		const lat = typeof pos.lat === 'function' ? pos.lat() : pos.lat;
+		const lng = typeof pos.lng === 'function' ? pos.lng() : pos.lng;
+		if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+		return { lat, lng };
+	}
+
+	/**
+	 * Persist marker position after drag (editable facility pins).
+	 * @param {any} g
+	 * @param {any} marker
+	 */
+	function wireFacilityMarkerDrag(g, marker) {
+		const idx = marker.__facilityMarkerIndex;
+		if (typeof idx !== 'number') return;
+		g.maps.event.addListener(marker, 'gmp-dragend', () => {
+			const plain = markerPositionToPlain(marker.position);
+			if (!plain) return;
+			mapData = {
+				version: 1,
+				polygons: [...mapData.polygons],
+				markers: mapData.markers.map((m, i) => (i === idx ? { ...m, lat: plain.lat, lng: plain.lng } : m)),
+			};
+		});
+	}
+
+	function removeSelectedFacilityMarker() {
+		const idx = selectedMarkerIndex;
+		const refs = facilityDrawRefs;
+		if (idx == null || !refs || idx < 0 || idx >= mapData.markers.length) return;
+		const m = refs.drawnMarkers[idx];
+		if (m) {
+			try {
+				m.map = null;
+			} catch {
+				/* ignore */
+			}
+		}
+		refs.drawnMarkers.splice(idx, 1);
+		mapData = {
+			version: 1,
+			polygons: [...mapData.polygons],
+			markers: mapData.markers.filter((_, i) => i !== idx),
+		};
+		for (let j = 0; j < refs.drawnMarkers.length; j++) {
+			refs.drawnMarkers[j].__facilityMarkerIndex = j;
+		}
+		selectedMarkerIndex = null;
+	}
+
+	function applySelectedPolygonColorFromPicker(hexInput) {
+		const idx = selectedPolygonIndex;
+		if (idx == null || idx < 0 || idx >= mapData.polygons.length) return;
+		const hex = normalizeFieldColorHex(hexInput);
+		mapData = {
+			version: 1,
+			polygons: mapData.polygons.map((rec, i) => (i === idx ? { ...rec, color: hex } : rec)),
+			markers: [...mapData.markers],
+		};
+		const refs = facilityDrawRefs;
+		const poly = refs?.drawnPolygons.find(
+			(/** @type {any} */ p) => p.__facilityPolygonIndex === idx,
+		);
+		if (poly) poly.setOptions(fieldPolygonPaint(hex));
+	}
+
+	/** @param {string} raw */
+	function applySelectedMarkerLabelInput(raw) {
+		const idx = selectedMarkerIndex;
+		if (idx == null || idx < 0 || idx >= mapData.markers.length) return;
+		const trimmed = String(raw ?? '').trim().slice(0, 120);
+		const cur = mapData.markers[idx];
+		mapData = {
+			version: 1,
+			polygons: [...mapData.polygons],
+			markers: mapData.markers.map((m, i) => {
+				if (i !== idx) return m;
+				const next = /** @type {typeof cur} */ ({ lat: m.lat, lng: m.lng });
+				if (trimmed) next.label = trimmed;
+				return next;
+			}),
+		};
+		const refs = facilityDrawRefs;
+		const marker = refs?.drawnMarkers[idx];
+		if (marker) {
+			try {
+				marker.title = trimmed || 'Marker';
+			} catch {
+				/* ignore */
+			}
+		}
+	}
+
 	/** Replaces deprecated DrawingManager — click map to add vertices; Finish closes polygon. */
 	let manualDrawMode = $state(/** @type {null | 'polygon' | 'marker'} */ (null));
 	let polygonDraftPts = $state(/** @type {{ lat: number; lng: number }[]} */ ([]));
@@ -52,10 +309,7 @@
 	});
 
 	function brandPrimaryHex() {
-		if (!browser) return '#f59e0b';
-		const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim();
-		if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
-		return '#f59e0b';
+		return cssVarHex('--brand-primary', '#6366f1');
 	}
 
 	function snapshotFacilityMapData(data) {
@@ -72,8 +326,9 @@
 	 * @param {FacilityMapData} data
 	 * @param {any[]} polygonSink
 	 * @param {any[]} markerSink
+	 * @param {boolean} polygonsLocked when true (readonly map), polygons are not editable and emit no path sync
 	 */
-	async function hydrateFromMapData(map, g, data, polygonSink, markerSink) {
+	async function hydrateFromMapData(map, g, data, polygonSink, markerSink, polygonsLocked) {
 		for (const p of polygonSink.splice(0)) {
 			try {
 				p.setMap(null);
@@ -91,7 +346,9 @@
 
 		const bounds = new g.maps.LatLngBounds();
 
-		for (const polyRec of data.polygons || []) {
+		const polys = data.polygons || [];
+		for (let i = 0; i < polys.length; i++) {
+			const polyRec = polys[i];
 			if (!polyRec?.path?.length || typeof polyRec.name !== 'string') continue;
 			const path = polyRec.path.map(
 				(pt) =>
@@ -100,30 +357,45 @@
 						typeof pt.lng === 'number' ? pt.lng : Number(pt.lng),
 					),
 			);
+			const paint = fieldPolygonPaint(polyRec.color);
 			const poly = new g.maps.Polygon({
 				paths: path,
 				map,
-				fillColor: '#22c55e',
-				fillOpacity: 0.22,
-				strokeColor: '#22c55e',
-				strokeOpacity: 0.95,
-				strokeWeight: 2,
+				zIndex: FACILITY_POLYGON_Z_INDEX,
+				...paint,
 				editable: false,
 				draggable: false,
 			});
 			polygonSink.push(poly);
+			wireSavedPolygon(g, poly, i, polygonsLocked);
 			path.forEach((/** @type {any} */ ll) => bounds.extend(ll));
 		}
 
-		for (const mr of data.markers || []) {
+		syncPolygonClickableForMarkerPlacement();
+
+		const marks = data.markers || [];
+		for (let mi = 0; mi < marks.length; mi++) {
+			const mr = marks[mi];
 			if (typeof mr.lat !== 'number' || typeof mr.lng !== 'number') continue;
 			const marker = await createAdvancedPinMarker(
 				g,
 				map,
 				{ lat: mr.lat, lng: mr.lng },
-				{ title: mr.label || '', background: '#22c55e', zIndex: 40 },
+				{
+					title: mr.label || '',
+					background: defaultFieldColorHex(),
+					borderColor: facilityPinBorderHex(),
+					glyphColor: facilityPinGlyphHex(),
+					zIndex: FACILITY_MARKER_Z_INDEX,
+					draggable: !polygonsLocked,
+				},
 			);
+			marker.__facilityMarkerIndex = mi;
 			markerSink.push(marker);
+			if (!polygonsLocked) {
+				wireFacilityMarkerClick(g, marker);
+				wireFacilityMarkerDrag(g, marker);
+			}
 			bounds.extend({ lat: mr.lat, lng: mr.lng });
 		}
 
@@ -148,15 +420,26 @@
 			polygonDraftPreview = null;
 		}
 		if (clearMode) manualDrawMode = null;
+		interactionModeRef.value = manualDrawMode;
 	}
 
 	function togglePolygonMode() {
 		if (manualDrawMode === 'polygon') {
-			cancelPolygonDraft(true);
-		} else {
-			manualDrawMode = 'polygon';
-			cancelPolygonDraft(false);
+			if (polygonDraftPtsRef.pts.length >= 3) {
+				finishPolygonDraft();
+			}
+			if (manualDrawMode === 'polygon') {
+				cancelPolygonDraft(true);
+			}
+			interactionModeRef.value = manualDrawMode;
+			syncPolygonClickableForMarkerPlacement();
+			return;
 		}
+		selectedMarkerIndex = null;
+		manualDrawMode = 'polygon';
+		cancelPolygonDraft(false);
+		interactionModeRef.value = manualDrawMode;
+		syncPolygonClickableForMarkerPlacement();
 	}
 
 	function toggleMarkerMode() {
@@ -164,8 +447,11 @@
 			manualDrawMode = null;
 		} else {
 			cancelPolygonDraft(false);
+			selectedPolygonIndex = null;
 			manualDrawMode = 'marker';
 		}
+		interactionModeRef.value = manualDrawMode;
+		syncPolygonClickableForMarkerPlacement();
 	}
 
 	function finishPolygonDraft() {
@@ -180,24 +466,27 @@
 
 		const coords = polygonDraftPtsRef.pts.map((p) => ({ lat: p.lat, lng: p.lng }));
 		const path = coords.map((p) => new refs.g.maps.LatLng(p.lat, p.lng));
+		const paint = fieldPolygonPaint(defaultFieldColorHex());
 		const poly = new refs.g.maps.Polygon({
 			paths: path,
 			map: refs.map,
-			fillColor: '#22c55e',
+			zIndex: FACILITY_POLYGON_Z_INDEX,
+			...paint,
 			fillOpacity: 0.25,
-			strokeColor: '#22c55e',
-			strokeOpacity: 1,
-			strokeWeight: 2,
 			editable: false,
 			draggable: false,
 		});
 		refs.drawnPolygons.push(poly);
+		const newIndex = mapData.polygons.length;
 		mapData = {
 			version: 1,
-			polygons: [...mapData.polygons, { name, path: coords }],
+			polygons: [...mapData.polygons, { name, path: coords, color: defaultFieldColorHex() }],
 			markers: [...mapData.markers],
 		};
+		wireSavedPolygon(refs.g, poly, newIndex, readonly);
+		selectedPolygonIndex = newIndex;
 		cancelPolygonDraft(true);
+		syncPolygonClickableForMarkerPlacement();
 	}
 
 	$effect(() => {
@@ -298,7 +587,7 @@
 				}
 
 				try {
-					await hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers);
+					await hydrateFromMapData(map, g, initialMapData, drawnPolygons, drawnMarkers, readOnly);
 				} catch (he) {
 					console.warn('[FacilityDrawingMap] hydrateFromMapData failed', he);
 				}
@@ -310,12 +599,21 @@
 						const plng = e.latLng.lng();
 
 						if (interactionModeRef.value === 'polygon') {
-							polygonDraftPtsRef.pts.push({ lat: plat, lng: plng });
-							polygonDraftPts = [...polygonDraftPtsRef.pts];
+							const pts = polygonDraftPtsRef.pts;
+							const click = { lat: plat, lng: plng };
+							if (
+								pts.length >= 3 &&
+								haversineMeters(pts[0], click) <= SNAP_CLOSE_METERS
+							) {
+								finishPolygonDraft();
+								return;
+							}
+							pts.push(click);
+							polygonDraftPts = [...pts];
 							if (!polygonDraftPreview) {
 								polygonDraftPreview = new g.maps.Polyline({
 									path: polygonDraftPtsRef.pts,
-									strokeColor: '#22c55e',
+									strokeColor: defaultFieldColorHex(),
 									strokeOpacity: 1,
 									strokeWeight: 2,
 									map,
@@ -338,10 +636,17 @@
 								const label = raw != null ? String(raw).trim() : '';
 								const m = await createAdvancedPinMarker(g, refs.map, { lat: plat, lng: plng }, {
 									title: label || 'Marker',
-									background: '#22c55e',
-									zIndex: 50,
+									background: defaultFieldColorHex(),
+									borderColor: facilityPinBorderHex(),
+									glyphColor: facilityPinGlyphHex(),
+									zIndex: FACILITY_MARKER_Z_INDEX,
+									draggable: true,
 								});
+								const markerIdx = mapData.markers.length;
+								m.__facilityMarkerIndex = markerIdx;
 								refs.drawnMarkers.push(m);
+								wireFacilityMarkerClick(g, m);
+								wireFacilityMarkerDrag(g, m);
 								mapData = {
 									version: 1,
 									polygons: [...mapData.polygons],
@@ -360,11 +665,15 @@
 									],
 								};
 								manualDrawMode = null;
+								interactionModeRef.value = manualDrawMode;
+								syncPolygonClickableForMarkerPlacement();
 							})();
 							return;
 						}
 
 						void (async () => {
+							selectedMarkerIndex = null;
+							selectedPolygonIndex = null;
 							const h = mapHandles;
 							if (!h?.map) return;
 							if (h.routingMarker) {
@@ -444,6 +753,8 @@
 	});
 
 	function requestRemountForClear() {
+		selectedPolygonIndex = null;
+		selectedMarkerIndex = null;
 		resetFlip += 1;
 		mapData = { version: 1, polygons: [], markers: [] };
 	}
@@ -479,33 +790,103 @@
 		<div class="fd-map-shell">
 			<div class="fd-map-toolbar">
 				{#if !readonly}
-					<div class="fd-map-draw-group">
-						<button
-							type="button"
-							class="fd-map-draw-btn"
-							class:fd-map-draw-btn--active={manualDrawMode === 'polygon'}
-							onclick={() => togglePolygonMode()}
-						>
-							Draw field
-						</button>
-						<button
-							type="button"
-							class="fd-map-draw-btn"
-							class:fd-map-draw-btn--active={manualDrawMode === 'marker'}
-							onclick={() => toggleMarkerMode()}
-						>
-							Place marker
-						</button>
-						{#if manualDrawMode === 'polygon' && polygonDraftPts.length >= 3}
-							<button type="button" class="fd-map-draw-btn fd-map-draw-btn--primary" onclick={() => finishPolygonDraft()}>
-								Finish polygon
+					<div class="fd-map-toolbar__cluster">
+						<div class="fd-map-draw-group">
+							<button
+								type="button"
+								class="fd-map-draw-btn"
+								class:fd-map-draw-btn--active={manualDrawMode === 'polygon'}
+								onclick={() => togglePolygonMode()}
+							>
+								Draw field
 							</button>
+							<button
+								type="button"
+								class="fd-map-draw-btn"
+								class:fd-map-draw-btn--active={manualDrawMode === 'marker'}
+								onclick={() => toggleMarkerMode()}
+							>
+								Place marker
+							</button>
+							{#if manualDrawMode === 'polygon' && polygonDraftPts.length >= 3}
+								<button type="button" class="fd-map-draw-btn fd-map-draw-btn--primary" onclick={() => finishPolygonDraft()}>
+									Finish polygon
+								</button>
+							{/if}
+							{#if manualDrawMode === 'polygon' && polygonDraftPts.length > 0}
+								<button type="button" class="fd-map-draw-btn" onclick={() => cancelPolygonDraft(true)}> Cancel </button>
+							{/if}
+							{#if manualDrawMode === 'polygon' && polygonDraftPts.length >= 3}
+								<p class="fd-map-draft-hint">
+									Tap near your first point (~30&nbsp;m) to snap closed, or use Finish polygon.
+								</p>
+							{/if}
+						</div>
+						{#if selectedPolygonIndex !== null && mapData.polygons[selectedPolygonIndex]}
+							<div class="fd-map-field-style">
+								<span class="fd-map-field-style__label">Selected field</span>
+								<label class="fd-map-field-style__color">
+									<span class="fd-map-field-style__hint">Color</span>
+									<input
+										type="color"
+										value={normalizeFieldColorHex(mapData.polygons[selectedPolygonIndex].color)}
+										aria-label="Field polygon color"
+										oninput={(e) =>
+											applySelectedPolygonColorFromPicker(/** @type {HTMLInputElement} */ (e.currentTarget).value)}
+									/>
+								</label>
+								<button type="button" class="fd-map-draw-btn" onclick={() => (selectedPolygonIndex = null)}>
+									Done styling
+								</button>
+							</div>
+							<p class="fd-map-field-style__tip">Tip: drag the hollow squares on the outline to reshape.</p>
 						{/if}
-						{#if manualDrawMode === 'polygon' && polygonDraftPts.length > 0}
-							<button type="button" class="fd-map-draw-btn" onclick={() => cancelPolygonDraft(true)}> Cancel </button>
+						{#if selectedMarkerIndex !== null && mapData.markers[selectedMarkerIndex]}
+							<div class="fd-map-marker-style">
+								<div class="fd-map-marker-style__head">
+									<span class="fd-map-field-style__label">Selected marker</span>
+								</div>
+								<div class="fd-map-marker-style__field">
+									<label class="fd-map-marker-label" for={`fd-marker-label-${selectedMarkerIndex}`}>
+										<span class="fd-map-field-style__hint">Label</span>
+										<input
+											id={`fd-marker-label-${selectedMarkerIndex}`}
+											type="text"
+											class="fd-map-marker-label-input"
+											value={mapData.markers[selectedMarkerIndex].label ?? ''}
+											placeholder="Optional label"
+											maxlength={120}
+											aria-label="Marker label"
+											oninput={(e) =>
+												applySelectedMarkerLabelInput(/** @type {HTMLInputElement} */ (e.currentTarget).value)}
+										/>
+									</label>
+								</div>
+								<div class="fd-map-marker-style__actions">
+									<button
+										type="button"
+										class="fd-map-draw-btn fd-map-marker-remove"
+										onclick={() => removeSelectedFacilityMarker()}
+									>
+										Remove marker
+									</button>
+									<button type="button" class="fd-map-draw-btn" onclick={() => (selectedMarkerIndex = null)}>
+										Done
+									</button>
+								</div>
+							</div>
+							<p class="fd-map-marker-style__tip">
+								Edit the label above (saved with your map). Drag the pin to move it. Use Place marker mode to drop pins on top of fields.
+							</p>
 						{/if}
 					</div>
-					<button type="button" class="fd-map-clear" onclick={() => requestRemountForClear()}> Clear field drawings </button>
+					<button
+						type="button"
+						class="fd-map-clear fd-map-clear--cta"
+						onclick={() => requestRemountForClear()}
+					>
+						Clear field drawings
+					</button>
 				{/if}
 			</div>
 			<div
@@ -538,26 +919,211 @@
 		width: 100%;
 		position: relative;
 		z-index: 1;
-		border-radius: 12px;
+		border-radius: var(--radius-inner);
 		overflow: hidden;
-		border: 1px solid rgba(51, 65, 85, 0.85);
+		border: 1px solid var(--glass-border);
 		margin: 0;
-		background: rgb(15 23 42);
+		background: var(--glass-bg);
+		box-shadow: var(--shadow-premium);
 	}
 
 	:global(html.dark) .fd-map-root {
-		border-color: rgba(71, 85, 105, 0.75);
-		background: rgb(15 23 42);
+		border-color: var(--glass-border);
+		background: var(--glass-bg);
 	}
 
 	.fd-map-toolbar {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: space-between;
-		gap: 8px;
+		gap: var(--spacing-element);
 		flex-shrink: 0;
-		margin-bottom: 8px;
+		margin-bottom: var(--spacing-element);
+	}
+
+	.fd-map-toolbar__cluster {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	@media (max-width: 639px) {
+		.fd-map-toolbar__cluster {
+			width: 100%;
+			flex-basis: 100%;
+		}
+	}
+
+	.fd-map-field-style {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 10px;
+		border-radius: var(--radius-inner);
+		border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.22));
+		background: var(--ec-ops-sheen, rgba(34, 211, 238, 0.12));
+		box-shadow: var(--ec-ops-glow, none);
+	}
+
+	.fd-map-field-style__label {
+		font-size: 11px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--ec-ops-accent, #22d3ee);
+	}
+
+	.fd-map-field-style__hint {
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--text-secondary);
+		margin-right: 4px;
+	}
+
+	.fd-map-field-style__color {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		cursor: pointer;
+	}
+
+	.fd-map-field-style__color input[type='color'] {
+		width: 32px;
+		height: 28px;
+		padding: 0;
+		border: 1px solid var(--input-border);
+		border-radius: 6px;
+		cursor: pointer;
+		background: var(--input-bg);
+	}
+
+	.fd-map-marker-style {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+		padding: 10px 12px;
+		flex: 1 1 100%;
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+		border-radius: var(--radius-inner);
+		border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.22));
+		background: var(--ec-ops-ambient, rgba(34, 211, 238, 0.045));
+		box-shadow: var(--shadow-premium);
+	}
+
+	.fd-map-marker-style__head {
+		flex-shrink: 0;
+	}
+
+	.fd-map-marker-style__field {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.fd-map-marker-style__actions {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		margin-top: 2px;
+	}
+
+	@media (min-width: 640px) {
+		.fd-map-marker-style__actions {
+			flex-wrap: nowrap;
+		}
+	}
+
+	.fd-map-marker-label {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 6px;
+		width: 100%;
+		min-width: 0;
+		margin: 0;
+	}
+
+	.fd-map-marker-label-input {
+		width: 100%;
+		box-sizing: border-box;
+		font: inherit;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.35;
+		padding: 10px 12px;
+		min-height: 44px;
+		border-radius: var(--radius-inner);
+		border: 1px solid var(--input-border);
+		background: var(--input-bg);
+		color: var(--input-text);
+	}
+
+	@media (min-width: 640px) {
+		.fd-map-marker-label-input {
+			min-height: 40px;
+			padding: 8px 12px;
+		}
+	}
+
+	.fd-map-marker-label-input::placeholder {
+		color: var(--text-secondary);
+		opacity: 0.85;
+	}
+
+	.fd-map-marker-label-input:focus {
+		outline: 2px solid var(--focus-ring-color);
+		outline-offset: 1px;
+	}
+
+	.fd-map-marker-remove {
+		color: var(--enterprise-primary-fg);
+		background: color-mix(in srgb, var(--danger-red) 78%, transparent);
+		border: 1px solid color-mix(in srgb, var(--danger-red) 42%, transparent);
+	}
+
+	.fd-map-marker-remove:hover {
+		filter: brightness(1.06);
+	}
+
+	.fd-map-marker-style__tip {
+		width: 100%;
+		flex-basis: 100%;
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--text-secondary);
+		line-height: 1.35;
+	}
+
+	.fd-map-field-style__tip {
+		width: 100%;
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--text-secondary);
+		line-height: 1.35;
+	}
+
+	.fd-map-draft-hint {
+		width: 100%;
+		flex-basis: 100%;
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--ec-ops-accent, #22d3ee);
+		line-height: 1.35;
+		opacity: 0.95;
 	}
 
 	.fd-map-draw-group {
@@ -572,47 +1138,113 @@
 		font-size: 11px;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.06em;
 		padding: 6px 10px;
-		border-radius: 8px;
+		border-radius: var(--radius-inner);
 		cursor: pointer;
-		color: #e2e8f0;
-		background: rgba(30, 41, 59, 0.85);
-		border: 1px solid rgba(71, 85, 105, 0.65);
+		color: var(--text-primary);
+		background: var(--glass-bg);
+		border: 1px solid var(--border-subtle);
+		box-shadow: var(--shadow-premium);
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 
 	.fd-map-draw-btn:hover {
-		filter: brightness(1.08);
+		background: var(--surface-row-hover);
+		border-color: var(--border-strong);
 	}
 
 	.fd-map-draw-btn--active {
-		border-color: rgba(34, 197, 94, 0.65);
-		box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
+		border-color: var(--ec-ops-accent, #22d3ee);
+		box-shadow:
+			var(--shadow-premium),
+			var(--ec-ops-glow, 0 0 24px rgba(34, 211, 238, 0.08));
 	}
 
 	.fd-map-draw-btn--primary {
-		color: #ecfdf5;
-		background: rgba(22, 101, 52, 0.65);
-		border-color: rgba(34, 197, 94, 0.55);
+		color: var(--enterprise-primary-fg);
+		background: var(--brand-primary);
+		border: 1px solid color-mix(in srgb, var(--brand-primary) 72%, #000);
+	}
+
+	.fd-map-draw-btn--primary:hover {
+		filter: brightness(1.05);
+		border-color: color-mix(in srgb, var(--brand-primary) 55%, #000);
 	}
 
 	.fd-map-clear {
-		font: inherit;
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		padding: 6px 12px;
-		border-radius: 8px;
-		cursor: pointer;
-		color: #fecaca;
-		background: rgba(127, 29, 29, 0.55);
-		border: 1px solid rgba(248, 113, 113, 0.45);
 		margin-left: auto;
+		flex-shrink: 0;
+		align-self: flex-start;
 	}
 
-	.fd-map-clear:hover {
-		filter: brightness(1.06);
+	/* Matches FacilityMapVault `.fm-btn--primary` / Save map & pin — rose/red accent instead of cyan */
+	.fd-map-clear--cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font: inherit;
+		font-size: 0.6875rem;
+		font-weight: 800;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		padding: 9px 14px;
+		border-radius: 10px;
+		border: 1px solid rgba(248, 113, 113, 0.32);
+		background: linear-gradient(
+			155deg,
+			rgba(239, 68, 68, 0.2) 0%,
+			rgba(15, 23, 42, 0.94) 48%,
+			rgba(9, 9, 11, 0.98) 100%
+		);
+		color: #fecaca;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 10px 22px rgba(0, 0, 0, 0.28);
+		cursor: pointer;
+		touch-action: manipulation;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.fd-map-clear--cta:hover {
+		border-color: rgba(248, 113, 113, 0.52);
+		background: linear-gradient(
+			155deg,
+			rgba(239, 68, 68, 0.32) 0%,
+			rgba(15, 23, 42, 0.9) 48%,
+			rgba(9, 9, 11, 0.96) 100%
+		);
+		color: #ffffff;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
+			0 12px 26px rgba(0, 0, 0, 0.32);
+	}
+
+	:global(html.dark) .fd-map-clear--cta {
+		border-color: rgba(248, 113, 113, 0.4);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+			0 12px 28px rgba(0, 0, 0, 0.38);
+	}
+
+	@media (max-width: 639px) {
+		.fd-map-clear {
+			margin-left: 0;
+			align-self: stretch;
+		}
+
+		.fd-map-clear--cta {
+			width: 100%;
+			justify-content: center;
+			text-align: center;
+		}
 	}
 
 	.fd-map-empty {
@@ -627,31 +1259,37 @@
 		gap: 0.75rem;
 		padding: 1rem 1.25rem;
 		text-align: center;
-		border-radius: 12px;
+		border-radius: var(--radius-premium);
 		overflow: hidden;
-		border: 1px solid rgb(51 65 85 / 0.65);
+		border: 1px solid var(--glass-border);
+		background: var(--glass-bg);
+		box-shadow: var(--shadow-premium);
 	}
 
 	.fd-map-empty--no-key {
-		background-color: #18181b;
+		background-color: var(--surface-subtle);
 		background-image: repeating-linear-gradient(
 			135deg,
 			transparent,
 			transparent 10px,
-			rgba(113, 113, 122, 0.09) 10px,
-			rgba(113, 113, 122, 0.09) 11px
+			color-mix(in srgb, var(--muted-slate) 14%, transparent) 10px,
+			color-mix(in srgb, var(--muted-slate) 14%, transparent) 11px
 		);
 	}
 
+	:global(html.dark) .fd-map-empty--no-key {
+		background-color: var(--glass-bg);
+	}
+
 	.fd-map-empty--error {
-		background-color: #18181b;
-		border-color: rgba(248, 113, 113, 0.35);
+		background-color: var(--glass-bg);
+		border-color: color-mix(in srgb, var(--danger-red) 35%, transparent);
 	}
 
 	.fd-map-empty__icon {
 		font-size: 2.25rem;
 		line-height: 1;
-		color: #fbbf24;
+		color: var(--brand-primary);
 	}
 
 	.fd-map-empty__text {
@@ -660,16 +1298,17 @@
 		font-size: 0.875rem;
 		font-weight: 600;
 		line-height: 1.45;
-		color: #d4d4d8;
+		color: var(--text-secondary);
 	}
 
 	.fd-map-code {
 		font-family: ui-monospace, monospace;
 		font-size: 0.8rem;
 		font-weight: 700;
-		color: #fde047;
-		background: rgba(15, 23, 42, 0.75);
+		color: var(--accent-orange-soft);
+		background: var(--surface-subtle);
 		padding: 1px 6px;
 		border-radius: 4px;
+		border: 1px solid var(--border-subtle);
 	}
 </style>
