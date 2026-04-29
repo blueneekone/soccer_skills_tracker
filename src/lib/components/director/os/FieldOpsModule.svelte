@@ -1,6 +1,5 @@
 <script>
-	import { browser } from '$app/environment';
-	import { getContext, tick } from 'svelte';
+	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
@@ -391,38 +390,6 @@
 		if (h < 12) return `${h}a`;
 		return `${h - 12}p`;
 	}
-
-	/** Debug dd2828 — probe primary CTA contrast on Field Ops (hypothesis A/B). */
-	$effect(() => {
-		if (!browser) return;
-		void resolvedClubId;
-		void tick().then(() => {
-			const btn =
-				document.querySelector('.field-ops-root .dir-os-btn-primary') ??
-				document.querySelector('.dir-os-btn-primary');
-			const cs = btn ? getComputedStyle(btn) : null;
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					location: 'FieldOpsModule.svelte:cta-probe',
-					message: 'dir-os-btn-primary computed styles',
-					data: {
-						hypothesisId: 'A',
-						resolvedClubShort: (resolvedClubId || '').slice(0, 8),
-						btnFound: !!btn,
-						bg: cs?.backgroundColor ?? '',
-						color: cs?.color ?? '',
-						opacity: cs?.opacity ?? '',
-					},
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
-		});
-	});
 </script>
 
 <div class="field-ops-root tw-flex tw-flex-col tw-gap-4">

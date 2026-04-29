@@ -240,13 +240,9 @@
 						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<div
-							class="tw-w-24 tw-h-24 tw-mx-auto tw-mb-4 tw-rounded-full tw-bg-slate-700 tw-border-2 tw-border-cyan-500 tw-flex tw-items-center tw-justify-center tw-overflow-hidden"
+							class="tw-mx-auto tw-mb-4 tw-flex tw-h-24 tw-w-24 tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
 						>
-							{#if avatarDesign}
-								<OperativeAvatarPreview seed={avatarDesign.seed} size={96} class="tw-rounded-full" />
-							{:else}
-								<i class="ph ph-user tw-text-[48px] tw-text-cyan-500/80" aria-hidden="true"></i>
-							{/if}
+							<OperativeAvatarPreview config={avatarDesign} size={96} class="tw-rounded-full" />
 						</div>
 						<h2
 							class="tw-m-0 tw-mb-2 tw-w-full tw-text-center tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere] tw-break-words"

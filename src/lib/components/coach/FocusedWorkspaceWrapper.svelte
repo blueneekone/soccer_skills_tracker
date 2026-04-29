@@ -15,9 +15,9 @@
 	 *     <!-- children = main canvas / pitch content -->
 	 *   </FocusedWorkspaceWrapper>
 	 *
-	 * @type {{ children: import('svelte').Snippet, toolbar: import('svelte').Snippet }}
+	 * @type {{ children: import('svelte').Snippet, toolbar: import('svelte').Snippet, arena?: boolean }}
 	 */
-	let { children, toolbar } = $props();
+	let { children, toolbar, arena = false } = $props();
 
 	let isFullscreen = $state(false);
 
@@ -53,11 +53,13 @@
 <div
 	class="fw-workspace"
 	class:fw-workspace--fullscreen={isFullscreen}
+	class:fw-workspace--arena={arena}
 >
 	<!-- Full-screen toggle: top-right glassmorphic button -->
 	<button
 		type="button"
 		class="fw-fs-btn"
+		class:fw-fs-btn--arena={arena}
 		onclick={toggleFullscreen}
 		aria-pressed={isFullscreen}
 		aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
@@ -72,7 +74,7 @@
 	</div>
 
 	<!-- Floating island toolbar — bottom-center pill, content from parent -->
-	<div class="fw-island" role="toolbar" aria-label="Workspace tools">
+	<div class="fw-island" class:fw-island--arena={arena} role="toolbar" aria-label="Workspace tools">
 		{@render toolbar()}
 	</div>
 </div>
@@ -100,6 +102,20 @@
 		border-radius: 0;
 		min-height: unset;
 		padding: 1.5rem 1.5rem calc(1.5rem + 80px);
+	}
+
+	/* Figma-grade tactical arena — edge-to-edge pitch shell */
+	.fw-workspace--arena {
+		border-radius: 0;
+		min-height: min(100dvh, 100vh);
+		padding: 0.25rem 0.25rem 5.75rem;
+		background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%);
+		overflow: hidden;
+	}
+
+	.fw-workspace--arena.fw-workspace--fullscreen {
+		min-height: 100dvh;
+		padding: 0.35rem 0.35rem 5.75rem;
 	}
 
 	.fw-content {
@@ -144,6 +160,13 @@
 		pointer-events: none;
 	}
 
+	.fw-fs-btn--arena {
+		position: fixed;
+		top: max(0.75rem, env(safe-area-inset-top, 0px));
+		right: max(0.75rem, env(safe-area-inset-right, 0px));
+		z-index: 120;
+	}
+
 	/* ─── Floating island toolbar ─────────────────────────────── */
 	.fw-island {
 		position: absolute;
@@ -173,5 +196,30 @@
 		box-shadow:
 			0 10px 25px -5px rgba(0, 0, 0, 0.6),
 			0 4px 6px -2px rgba(0, 0, 0, 0.25);
+	}
+
+	.fw-island.fw-island--arena {
+		position: fixed;
+		bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+		left: 50%;
+		right: auto;
+		top: auto;
+		transform: translateX(-50%);
+		z-index: 110;
+		padding: 0.65rem 1.5rem;
+		max-width: calc(100vw - 1.5rem);
+		background: rgba(15, 23, 42, 0.82);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 9999px;
+		-webkit-backdrop-filter: blur(20px) saturate(160%);
+		backdrop-filter: blur(20px) saturate(160%);
+		box-shadow:
+			0 25px 50px -12px rgba(0, 0, 0, 0.55),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	}
+
+	:global(html.dark) .fw-island--arena {
+		background: rgba(15, 23, 42, 0.85);
+		border-color: rgba(255, 255, 255, 0.1);
 	}
 </style>

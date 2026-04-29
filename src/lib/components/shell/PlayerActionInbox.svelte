@@ -1,5 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -90,18 +91,35 @@
 						<summary class="pai__summary">Assignment details</summary>
 						<ul class="pai__list">
 							{#each assignmentRows as row (row.id)}
-								<li class="pai__li">{row.title}</li>
+								<li class="pai__li">
+									<a
+										class="pai__li-link"
+										href={resolve('/player/workout')}
+										data-sveltekit-preload-data="hover"
+									>
+										{row.title}
+									</a>
+								</li>
 							{/each}
 						</ul>
 					</details>
 				{/if}
-				<a
-					href="/player/armory"
-					class="pai__btn pai__btn--primary"
-					data-sveltekit-preload-data="hover"
-				>
-					Open Armory
-				</a>
+				<div class="pai__actions">
+					<a
+						href={resolve('/player/armory')}
+						class="pai__btn pai__btn--primary"
+						data-sveltekit-preload-data="hover"
+					>
+						Open Armory
+					</a>
+					<a
+						href={resolve('/player/workout')}
+						class="pai__btn pai__btn--ghost"
+						data-sveltekit-preload-data="hover"
+					>
+						Log workout
+					</a>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -109,6 +127,8 @@
 
 <style>
 	.pai {
+		position: relative;
+		z-index: 1;
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
 		background: #ffffff;
@@ -151,6 +171,8 @@
 	}
 
 	.pai__card {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -186,6 +208,15 @@
 		color: var(--text-primary);
 	}
 
+	.pai__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		align-items: center;
+		position: relative;
+		z-index: 2;
+	}
+
 	.pai__btn {
 		align-self: flex-start;
 		font: inherit;
@@ -195,6 +226,11 @@
 		border-radius: 10px;
 		border: 1px solid transparent;
 		cursor: pointer;
+		transition:
+			transform 0.18s ease,
+			filter 0.18s ease,
+			border-color 0.18s ease,
+			background 0.18s ease;
 	}
 
 	.pai__btn--primary {
@@ -203,8 +239,20 @@
 		border-color: color-mix(in srgb, var(--brand-primary, #6366f1) 55%, #0f172a);
 	}
 
+	.pai__btn--ghost {
+		background: transparent;
+		color: var(--text-primary, #0f172a);
+		border-color: rgba(100, 116, 139, 0.45);
+	}
+
+	:global(html.dark) .pai__btn--ghost {
+		color: #e2e8f0;
+		border-color: rgba(148, 163, 184, 0.35);
+	}
+
 	.pai__btn:hover {
-		filter: brightness(1.03);
+		filter: brightness(1.05);
+		transform: scale(1.02);
 	}
 
 	a.pai__btn {
@@ -235,6 +283,16 @@
 		font-weight: 800;
 		color: var(--text-secondary);
 		list-style-position: outside;
+		transition: color 0.15s ease, transform 0.15s ease;
+	}
+
+	.pai__summary:hover {
+		color: var(--text-primary, #0f172a);
+		transform: translateX(2px);
+	}
+
+	:global(html.dark) .pai__summary:hover {
+		color: #f1f5f9;
 	}
 
 	.pai__list {
@@ -247,5 +305,31 @@
 
 	.pai__li {
 		margin-bottom: 4px;
+	}
+
+	.pai__li-link {
+		display: inline;
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: rgba(99, 102, 241, 0.45);
+		text-underline-offset: 3px;
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			text-decoration-color 0.15s ease;
+	}
+
+	.pai__li-link:hover {
+		color: var(--brand-primary, #6366f1);
+		text-decoration-color: rgba(99, 102, 241, 0.85);
+	}
+
+	:global(html.dark) .pai__li-link {
+		color: #e2e8f0;
+	}
+
+	:global(html.dark) .pai__li-link:hover {
+		color: #67e8f9;
+		text-decoration-color: rgba(34, 211, 238, 0.7);
 	}
 </style>

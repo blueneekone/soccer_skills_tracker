@@ -55,6 +55,8 @@
 	let aiAnalysis = $state('');
 	let aiInsightsOpen = $state(false);
 	let aiModelLabel = $state('');
+	/** Tactics library / save-load — floating overlay (no sidebar). */
+	let libraryOpen = $state(false);
 	/** @type {Array<{ id: string, name: string, updatedAt: import('firebase/firestore').Timestamp | null }>} */
 	let tacticsList = $state([]);
 	let libraryLoading = $state(false);
@@ -80,7 +82,8 @@
 		if (boardSport === 'basketball') {
 			return 'background: linear-gradient(165deg, #9a3412 0%, #7c2d12 48%, #713f12 100%);';
 		}
-		return 'background: #4ade80;';
+		/* emerald-900 → green-950 */
+		return 'background: linear-gradient(to bottom, rgb(6 78 59) 0%, rgb(5 46 22) 100%);';
 	});
 
 	/**
@@ -498,6 +501,15 @@
 		}
 	}
 
+	$effect(() => {
+		if (!browser || !libraryOpen) return;
+		/** @param {KeyboardEvent} e */
+		function onKey(e) {
+			if (e.key === 'Escape') libraryOpen = false;
+		}
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	});
 </script>
 
 <svelte:window
@@ -507,87 +519,21 @@
 />
 
 <div class="strategy-tab">
-	<div class="bento-section strategy-bento">
-		<div class="card strategy-library">
-			<div class="card-header strategy-card-head">Tactics library</div>
-			<div class="card-body strategy-library-body">
-				{#if !teamId}
-					<p class="strategy-hint">Select a team from the coach header to use tactics.</p>
-				{:else}
-					<label class="strategy-label" for="strategy-tactic-name">Tactic name</label>
-					<input
-						id="strategy-tactic-name"
-						class="strategy-input"
-						type="text"
-						bind:value={tacticName}
-						placeholder='e.g. "High press 4-3-3"'
-						maxlength="200"
-					/>
-
-					<div class="strategy-actions">
-						<button
-							type="button"
-							class="secondary-btn strategy-btn"
-							disabled={saveBusy}
-							onclick={saveTactic}
-						>
-							{saveBusy ? 'Saving…' : 'Save tactic'}
-						</button>
-					</div>
-
-					<label class="strategy-label" for="strategy-tactic-select">Load tactic</label>
-					<div class="strategy-load-row">
-						<select
-							id="strategy-tactic-select"
-							class="strategy-select"
-							bind:value={selectedTacticId}
-						>
-							<option value="">— Choose —</option>
-							{#each tacticsList as t (t.id)}
-								<option value={t.id}>
-									{t.name}{formatUpdated(t.updatedAt) ? ` · ${formatUpdated(t.updatedAt)}` : ''}
-								</option>
-							{/each}
-						</select>
-						<button type="button" class="secondary-btn strategy-btn" onclick={loadTactic}>
-							Load
-						</button>
-					</div>
-
-					<div class="strategy-ai-trigger">
-						<button
-							type="button"
-							class="primary-btn strategy-ai-analyze-btn"
-							disabled={!canAnalyzeTactic}
-							onclick={runAiAnalysis}
-							aria-busy={aiBusy}
-						>
-							Analyze tactic
-						</button>
-						<p class="strategy-ai-trigger-hint">
-							{#if !loadedTacticId}
-								Load a saved tactic to analyze the board stored in your library (the AI
-								reads the saved version).
-							{:else}
-								Analyzes the saved tactic linked to this canvas. Save again if you changed
-								the board.
-							{/if}
-						</p>
-					</div>
-
-					{#if libraryLoading}
-						<p class="strategy-hint">Loading library…</p>
-					{/if}
-					{#if libraryError}
-						<p class="strategy-error" role="alert">{libraryError}</p>
-					{/if}
-				{/if}
-			</div>
-		</div>
-
-		<!-- Dark workspace — managed by FocusedWorkspaceWrapper (fullscreen, escape, island) -->
-		<FocusedWorkspaceWrapper>
-			{#snippet toolbar()}
+	<FocusedWorkspaceWrapper arena={true}>
+		{#snippet toolbar()}
+			<button
+				type="button"
+				class="strategy-dock-library"
+				class:strategy-dock-library--open={libraryOpen}
+				onclick={() => (libraryOpen = !libraryOpen)}
+				aria-pressed={libraryOpen}
+				title="Tactics library"
+				aria-label="Toggle tactics library"
+			>
+				<i class="ph ph-books" aria-hidden="true"></i>
+				<span class="strategy-dock-txt">Library</span>
+			</button>
+			<div class="strategy-island-sep" aria-hidden="true"></div>
 				<span class="strategy-island-intel">
 					<IntelModal title={TACTICAL_INTEL.title} instructions={TACTICAL_INTEL.instructions} />
 				</span>
@@ -771,8 +717,108 @@
 					{/if}
 				</div>
 			</div>
-		</FocusedWorkspaceWrapper>
-	</div>
+	</FocusedWorkspaceWrapper>
+
+	{#if libraryOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="tcb-lib-scrim"
+			role="presentation"
+			tabindex="-1"
+			onclick={() => (libraryOpen = false)}
+		></div>
+		<div
+			class="tcb-lib-panel card strategy-library"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="tcb-lib-title"
+			tabindex="-1"
+		>
+			<div class="card-header strategy-card-head" id="tcb-lib-title">Tactics library</div>
+			<div class="card-body strategy-library-body">
+				<button
+					type="button"
+					class="tcb-lib-close"
+					onclick={() => (libraryOpen = false)}
+					aria-label="Close library"
+				>
+					<i class="ph ph-x" aria-hidden="true"></i>
+				</button>
+				{#if !teamId}
+					<p class="strategy-hint">Select a team from the coach header to use tactics.</p>
+				{:else}
+					<label class="strategy-label" for="strategy-tactic-name">Tactic name</label>
+					<input
+						id="strategy-tactic-name"
+						class="strategy-input"
+						type="text"
+						bind:value={tacticName}
+						placeholder='e.g. "High press 4-3-3"'
+						maxlength="200"
+					/>
+
+					<div class="strategy-actions">
+						<button
+							type="button"
+							class="secondary-btn strategy-btn"
+							disabled={saveBusy}
+							onclick={saveTactic}
+						>
+							{saveBusy ? 'Saving…' : 'Save tactic'}
+						</button>
+					</div>
+
+					<label class="strategy-label" for="strategy-tactic-select">Load tactic</label>
+					<div class="strategy-load-row">
+						<select
+							id="strategy-tactic-select"
+							class="strategy-select"
+							bind:value={selectedTacticId}
+						>
+							<option value="">— Choose —</option>
+							{#each tacticsList as t (t.id)}
+								<option value={t.id}>
+									{t.name}{formatUpdated(t.updatedAt) ? ` · ${formatUpdated(t.updatedAt)}` : ''}
+								</option>
+							{/each}
+						</select>
+						<button type="button" class="secondary-btn strategy-btn" onclick={loadTactic}>
+							Load
+						</button>
+					</div>
+
+					<div class="strategy-ai-trigger">
+						<button
+							type="button"
+							class="primary-btn strategy-ai-analyze-btn"
+							disabled={!canAnalyzeTactic}
+							onclick={runAiAnalysis}
+							aria-busy={aiBusy}
+						>
+							Analyze tactic
+						</button>
+						<p class="strategy-ai-trigger-hint">
+							{#if !loadedTacticId}
+								Load a saved tactic to analyze the board stored in your library (the AI
+								reads the saved version).
+							{:else}
+								Analyzes the saved tactic linked to this canvas. Save again if you changed
+								the board.
+							{/if}
+						</p>
+					</div>
+
+					{#if libraryLoading}
+						<p class="strategy-hint">Loading library…</p>
+					{/if}
+					{#if libraryError}
+						<p class="strategy-error" role="alert">{libraryError}</p>
+					{/if}
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	{#if aiInsightsOpen && (aiAnalysis || aiError)}
 		<div class="bento-section strategy-ai-bento">
@@ -806,26 +852,132 @@
 
 <style>
 	.strategy-tab {
-		padding: clamp(8px, 2vw, 16px) 0;
+		padding: 0;
 		width: 100%;
 		box-sizing: border-box;
-	}
-
-	.strategy-bento {
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-		gap: clamp(16px, 3vw, 24px);
-		margin-bottom: clamp(16px, 3vw, 24px);
+		min-height: 0;
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.strategy-library {
+		position: relative;
 		margin-bottom: 0;
 		padding: var(--spacing-fluid);
 		border-radius: var(--radius-premium);
 	}
 
+	.tcb-lib-scrim {
+		position: fixed;
+		inset: 0;
+		z-index: 130;
+		background: rgba(2, 6, 23, 0.55);
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+	}
+
+	.tcb-lib-panel {
+		position: fixed;
+		z-index: 140;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: min(100vw - 1.5rem, 24rem);
+		max-height: min(88dvh, 720px);
+		overflow: auto;
+		box-shadow:
+			0 25px 50px -12px rgba(0, 0, 0, 0.65),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		-webkit-backdrop-filter: blur(18px) saturate(150%);
+		backdrop-filter: blur(18px) saturate(150%);
+	}
+
+	.tcb-lib-close {
+		position: absolute;
+		top: 0.65rem;
+		right: 0.65rem;
+		z-index: 2;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		padding: 0;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.65);
+		color: #e2e8f0;
+		cursor: pointer;
+		transition:
+			transform 0.15s ease,
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.tcb-lib-close:hover {
+		transform: scale(1.06);
+		background: rgba(30, 41, 59, 0.85);
+		border-color: rgba(34, 211, 238, 0.35);
+	}
+
+	.tcb-lib-close i {
+		font-size: 1.1rem;
+		pointer-events: none;
+	}
+
+	.strategy-dock-library {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+		height: 36px;
+		padding: 0 10px 0 8px;
+		margin: 0;
+		border-radius: 999px;
+		border: 1px solid transparent;
+		background: rgba(34, 211, 238, 0.1);
+		color: #a5f3fc;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.strategy-dock-library:hover {
+		background: rgba(34, 211, 238, 0.18);
+		border-color: rgba(34, 211, 238, 0.35);
+		transform: scale(1.03);
+	}
+
+	.strategy-dock-library--open {
+		background: rgba(34, 211, 238, 0.22);
+		border-color: rgba(34, 211, 238, 0.45);
+	}
+
+	.strategy-dock-txt {
+		font-size: 0.58rem;
+		font-weight: 900;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: #ecfeff;
+	}
+
+	.strategy-dock-library i {
+		font-size: 1rem;
+		pointer-events: none;
+	}
+
 	.strategy-card-head {
 		padding-bottom: clamp(12px, 2vw, 16px);
 		margin-bottom: clamp(12px, 2vw, 16px);
+		font-size: 0.68rem;
+		font-weight: 900;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--text-secondary, #94a3b8);
 	}
 
 	.strategy-library-body {
@@ -838,10 +990,10 @@
 
 	.strategy-label {
 		display: block;
-		font-size: 0.78rem;
-		font-weight: 800;
+		font-size: 0.68rem;
+		font-weight: 900;
 		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		letter-spacing: 0.2em;
 		color: var(--text-secondary);
 	}
 
@@ -874,7 +1026,16 @@
 		margin: 0;
 		padding: clamp(8px, 2vw, 10px) clamp(14px, 3vw, 18px);
 		border-radius: var(--radius-premium);
-		font-size: 0.85rem;
+		font-size: 0.65rem;
+		font-weight: 900;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: transform 0.15s ease, filter 0.15s ease;
+	}
+
+	.strategy-btn:hover:not(:disabled) {
+		transform: scale(1.02);
 	}
 
 	.strategy-hint {
@@ -892,27 +1053,34 @@
 	}
 
 
-	/* ─── Pitch centering ─────────────────────────────────────── */
+	/* ─── Pitch — maximum viewport footprint ─────────────────── */
 	.strategy-pitch-area {
 		position: relative;
+		flex: 1 1 auto;
+		min-height: 0;
 		width: 100%;
+		height: 100%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		padding: 0.15rem;
 	}
 
 	.strategy-canvas-wrap {
 		position: relative;
-		border-radius: var(--radius-premium);
 		overflow: hidden;
-		background: #4ade80;
+		border-radius: 0.65rem;
+		background: #064e3b;
 		aspect-ratio: 4 / 3;
-		width: 100%;
+		width: min(100%, calc((min(100dvh, 100vh) - 9.25rem) * 4 / 3));
+		max-width: 100%;
+		max-height: calc(min(100dvh, 100vh) - 9.25rem);
+		height: auto;
 		touch-action: none;
-		/* shadow-2xl equivalent on dark background */
 		box-shadow:
 			0 25px 50px -12px rgba(0, 0, 0, 0.65),
-			0 0 0 1px rgba(255, 255, 255, 0.06);
+			0 0 0 1px rgba(255, 255, 255, 0.08),
+			inset 0 0 80px rgba(0, 0, 0, 0.12);
 	}
 
 	.strategy-canvas-wrap--token-drag {
@@ -994,12 +1162,17 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		width: 2.65rem;
+		height: 2.65rem;
 		margin: 0;
 		padding: 0;
 		border: none;
-		background: transparent;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.94);
+		box-shadow:
+			0 10px 22px rgba(0, 0, 0, 0.35),
+			0 0 0 2px rgba(255, 255, 255, 0.35),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
 		transform: translate(-50%, -50%);
 		cursor: grab;
 		touch-action: none;
@@ -1007,6 +1180,17 @@
 		z-index: 25;
 		-webkit-user-select: none;
 		user-select: none;
+		transition:
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.2s ease;
+	}
+
+	.strategy-token--x {
+		background: linear-gradient(160deg, #f8fafc 0%, #e2e8f0 100%);
+	}
+
+	.strategy-token--o {
+		background: linear-gradient(160deg, #ecfdf5 0%, #d1fae5 100%);
 	}
 
 	.strategy-token:active {
@@ -1015,25 +1199,59 @@
 
 	.strategy-token--dragging {
 		z-index: 90;
+		transform: translate(-50%, -50%) scale(1.14);
+		box-shadow:
+			0 18px 36px rgba(0, 0, 0, 0.45),
+			0 0 0 3px rgba(34, 211, 238, 0.45),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.strategy-token-glyph {
-		font: 800 1.1rem/1 'Inter', system-ui, sans-serif;
+		font: 900 1.05rem/1 ui-sans-serif, system-ui, sans-serif;
 		color: var(--strategy-token-color, #0f172a);
-		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 	}
 
 	.strategy-token-glyph--o {
 		display: block;
-		width: 1.1rem;
-		height: 1.1rem;
+		width: 1.15rem;
+		height: 1.15rem;
 		border: 2.5px solid var(--strategy-token-color, #0f172a);
 		border-radius: 50%;
 		box-sizing: border-box;
-		background: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.35);
 	}
 
 	/* ─── Island toolbar items (rendered inside fw-island pill) ── */
+	/* Arena glass dock: light chrome (parent `.fw-island--arena` is unscoped) */
+	:global(.fw-island--arena) .strategy-island-btn {
+		color: #cbd5e1;
+	}
+
+	:global(.fw-island--arena) .strategy-island-btn--active {
+		background: rgba(255, 255, 255, 0.12);
+		color: #f8fafc;
+	}
+
+	:global(.fw-island--arena) .strategy-island-btn--active:hover {
+		background: rgba(255, 255, 255, 0.18);
+		color: #ffffff;
+	}
+
+	:global(.fw-island--arena) .strategy-island-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: #f1f5f9;
+	}
+
+	:global(.fw-island--arena) .strategy-island-sep {
+		background: rgba(255, 255, 255, 0.12);
+	}
+
+	:global(.fw-island--arena) .strategy-island-color-swatch {
+		border-color: rgba(255, 255, 255, 0.35);
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+	}
+
 	.strategy-island-intel {
 		display: inline-flex;
 		align-items: center;
@@ -1056,7 +1274,10 @@
 		background: transparent;
 		color: #3f3f46;
 		cursor: pointer;
-		transition: background 0.12s ease, color 0.12s ease;
+		transition:
+			background 0.12s ease,
+			color 0.12s ease,
+			transform 0.15s ease;
 		flex-shrink: 0;
 	}
 
@@ -1079,9 +1300,9 @@
 		padding: 0 8px;
 		margin: 0;
 		border-radius: 6px;
-		font-size: 0.625rem;
+		font-size: 0.58rem;
 		font-weight: 900;
-		letter-spacing: 0.1em;
+		letter-spacing: 0.18em;
 		font-variant-numeric: tabular-nums;
 		text-transform: uppercase;
 		color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 88%, #ffffff);
@@ -1090,12 +1311,17 @@
 		box-shadow: none;
 		cursor: pointer;
 		flex-shrink: 0;
-		transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+		transition:
+			background 0.12s ease,
+			border-color 0.12s ease,
+			color 0.12s ease,
+			transform 0.15s ease;
 	}
 
 	.strategy-island-clear-siem:hover {
 		background: rgba(15, 23, 42, 0.72);
 		border-color: color-mix(in srgb, var(--ec-ops-accent, #22d3ee) 60%, #ffffff);
+		transform: scale(1.04);
 	}
 
 	:global(html.dark) .strategy-island-clear-siem {
@@ -1111,6 +1337,7 @@
 	.strategy-island-btn:hover {
 		background: #f4f4f5;
 		color: #18181b;
+		transform: scale(1.06);
 	}
 
 	:global(html.dark) .strategy-island-btn:hover {
@@ -1201,8 +1428,15 @@
 		padding: clamp(12px, 2.5vw, 14px) clamp(16px, 3vw, 20px);
 		border-radius: var(--radius-premium);
 		font-weight: 900;
-		font-size: clamp(0.92rem, 2.4vw, 1rem);
-		letter-spacing: -0.01em;
+		font-size: 0.68rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: transform 0.15s ease;
+	}
+
+	.strategy-ai-analyze-btn:hover:not(:disabled) {
+		transform: scale(1.02);
 	}
 
 	.strategy-ai-trigger-hint {

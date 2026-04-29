@@ -115,6 +115,47 @@ export function deriveSkillValuesForSchema(d, schema, totalXp, streakDays) {
 }
 
 /**
+ * True when every attribute in the sport schema has a stored 0–99 rating on the
+ * `player_stats` document (top-level) or under `skills` — i.e. not XP-derived filler.
+ *
+ * @param {Record<string, unknown> | null} d
+ * @param {SportAttributeSchema} schema
+ * @returns {boolean}
+ */
+export function hasDocumentedSkillRatings(d, schema) {
+	if (!d || typeof d !== 'object') return false;
+	const keys = schema.keys;
+	const fromFlat = keys.map((k) => pickNum(d, k));
+	if (fromFlat.every((x) => x !== null)) return true;
+	const sk =
+		'skills' in d && d.skills && typeof d.skills === 'object' && !Array.isArray(d.skills) ?
+			/** @type {Record<string, unknown>} */ (d.skills)
+		:	null;
+	if (!sk) return false;
+	const fromSkills = keys.map((k) => pickNum(sk, k));
+	return fromSkills.every((x) => x !== null);
+}
+
+/**
+ * Single-attribute rating from flat `player_stats` or nested `skills`.
+ *
+ * @param {Record<string, unknown> | null} d
+ * @param {string} k
+ * @returns {number | null}
+ */
+export function pickSkillRatingForKey(d, k) {
+	if (!d) return null;
+	const flat = pickNum(d, k);
+	if (flat !== null) return flat;
+	const sk =
+		'skills' in d && d.skills && typeof d.skills === 'object' && !Array.isArray(d.skills) ?
+			/** @type {Record<string, unknown>} */ (d.skills)
+		:	null;
+	if (!sk) return null;
+	return pickNum(sk, k);
+}
+
+/**
  * Parse coach-entered trial result strings into a 0–100 dossier score.
  * Mirrors analytics normalization used on `/stats`.
  *

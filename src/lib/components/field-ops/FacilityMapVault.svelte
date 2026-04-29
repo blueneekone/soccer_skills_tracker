@@ -7,6 +7,7 @@
 		deleteDoc,
 		deleteField,
 		doc,
+		GeoPoint,
 		onSnapshot,
 		serverTimestamp,
 		setDoc,
@@ -78,6 +79,8 @@
 	 * Prevents `applyHeroFromRow` on every `onSnapshot` — that overwrote unsaved pin moves (logs §77–85 vs §84–85).
 	 */
 	let lastHeroHydrateKey = $state('');
+	/** Last hero-row snapshot fingerprint (`hydrateSig`) we applied — skips redundant applies while still catching cache→server corrections. */
+	let lastAppliedHydrateSig = $state('');
 	/** Bump when Firestore hydrates hero row so map effect remounts with correct initial center (refresh). */
 	let heroCoordRevision = $state(0);
 
@@ -118,7 +121,21 @@
 			const n = Number(v);
 			return Number.isFinite(n) ? n : undefined;
 		}
+		if (v instanceof GeoPoint) {
+			const n = v.latitude;
+			return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
+		}
+		if (v && typeof v === 'object' && 'latitude' in v) {
+			const n = /** @type {{ latitude: unknown }} */ (v).latitude;
+			return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
+		}
 		return undefined;
+	}
+
+	/** Firestore snapshot fingerprint for the hero row (coords + raw map JSON). */
+	function hydrateSig(row) {
+		if (!row) return '';
+		return `${row.latitude ?? ''},${row.longitude ?? ''}|${row.mapData ?? ''}`;
 	}
 
 	$effect(() => {
@@ -188,11 +205,31 @@
 	 * @param {FacilityMapRow} row
 	 */
 	function applyHeroFromRow(row) {
+		// #region agent log
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+			body: JSON.stringify({
+				sessionId: 'dd2828',
+				runId: 'verify-rehydrate',
+				hypothesisId: 'H2',
+				location: 'FacilityMapVault.svelte:applyHeroFromRow',
+				message: 'apply_hero_from_row',
+				data: {
+					facilityId: row.id,
+					rowLat: row.latitude,
+					rowLng: row.longitude,
+				},
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+		// #endregion
 		heroFacilityId = row.id;
 		heroLat = typeof row.latitude === 'number' ? row.latitude : null;
 		heroLng = typeof row.longitude === 'number' ? row.longitude : null;
 		heroMapData = parseFacilityMapData(row.mapData);
 		if (clubId) lastHeroHydrateKey = `${clubId}:${row.id}`;
+		lastAppliedHydrateSig = hydrateSig(row);
 		heroCoordRevision += 1;
 	}
 
@@ -230,13 +267,28 @@
 		}
 	});
 
-	/** Hydrate hero from Firestore when club/facility selection changes — not on every snapshot (`rows` churn). */
+	/**
+	 * Hydrate hero from Firestore when club/facility changes or when the **same** facility's Firestore row changes
+	 * (coords/mapData) on a later snapshot (multi-tab / cache-then-server). `rows.length` alone misses those updates.
+	 */
 	$effect(() => {
-		void rows.length;
 		if (!clubId) {
 			lastHeroHydrateKey = '';
+			lastAppliedHydrateSig = '';
 			return;
 		}
+		if (!heroFacilityId) {
+			lastHeroHydrateKey = '';
+			lastAppliedHydrateSig = '';
+			return;
+		}
+		const row = rows.find((r) => r.id === heroFacilityId);
+		void row?.latitude;
+		void row?.longitude;
+		void row?.mapData;
+
+		const snapSig = hydrateSig(row);
+
 		/**
 		 * Snapshot-driven hydrate must pause during any facility write: hero save blocks stale overwrite of the pin,
 		 * and logistics save blocks hydrate too — `rows.find` runs every snapshot and `lastHeroHydrateKey` can miss
@@ -249,35 +301,29 @@
 		) {
 			return;
 		}
-		if (!heroFacilityId) {
-			lastHeroHydrateKey = '';
-			return;
-		}
+
 		const key = `${clubId}:${heroFacilityId}`;
-		if (key === lastHeroHydrateKey) return;
-		const row = rows.find((r) => r.id === heroFacilityId);
+		if (key === lastHeroHydrateKey && snapSig === lastAppliedHydrateSig) return;
 		if (!row) return;
+
 		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				runId: 'hydrate-trace',
-				hypothesisId: 'H_HYDRATE_APPLY',
-				location: 'FacilityMapVault.svelte:heroHydrateEffect',
-				message: 'applyHeroFromRow from snapshot',
-				data: {
-					rowLat: row.latitude,
-					rowLng: row.longitude,
-					prevHeroLat: heroLat,
-					prevHeroLng: heroLng,
-					lastKeyTail: String(lastHeroHydrateKey).slice(-24),
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
+		if (key === lastHeroHydrateKey && snapSig !== lastAppliedHydrateSig) {
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
+				body: JSON.stringify({
+					sessionId: 'dd2828',
+					runId: 'verify-rehydrate',
+					hypothesisId: 'H1',
+					location: 'FacilityMapVault.svelte:heroHydrate',
+					message: 'rehydrate_same_facility_snapshot_changed',
+					data: { key, snapSig, prevSig: lastAppliedHydrateSig },
+					timestamp: Date.now(),
+				}),
+			}).catch(() => {});
+		}
 		// #endregion
+
 		applyHeroFromRow(row);
 	});
 
@@ -355,21 +401,6 @@
 		 * draftLat/draftLng/draftMapData and snap the routing marker back until the write settles.
 		 */
 		if (logisticsSaving && previewOpen && previewId === row.id) {
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'hydrate-trace',
-					hypothesisId: 'H_OPEN_PREVIEW_BLOCK',
-					location: 'FacilityMapVault.svelte:openPreview',
-					message: 'skipped openPreview during logistics save (same row)',
-					data: { rowIdShort: String(row.id || '').slice(0, 12) },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 			return;
 		}
 		previewId = row.id;
@@ -542,27 +573,6 @@
 			return;
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${heroLat},${heroLng}`;
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				runId: 'post-name-fix',
-				hypothesisId: 'H_SAVE_NAME',
-				location: 'FacilityMapVault.svelte:saveHeroFacility',
-				message: 'persist hero coords',
-				data: {
-					heroFacilityShort: (heroFacilityId || '').slice(0, 10),
-					nameLen: nameTrim.length,
-					nameFromRow: Boolean(rawName),
-					heroLat,
-					heroLng,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
 		heroSaving = true;
 		try {
 			const st = row?.status || '';
@@ -615,25 +625,6 @@
 		}
 		const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${draftLat},${draftLng}`;
 		logisticsSaving = true;
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				runId: 'hydrate-trace',
-				hypothesisId: 'H_LOGISTICS_SAVE_START',
-				location: 'FacilityMapVault.svelte:saveLogistics',
-				message: 'saveLogistics start',
-				data: {
-					previewIdShort: String(previewId || '').slice(0, 12),
-					draftLat,
-					draftLng,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
 		try {
 			/** @type {Record<string, unknown>} */
 			const patch = {

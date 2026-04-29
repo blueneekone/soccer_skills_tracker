@@ -85,7 +85,7 @@
 <div class="oad-wrap tw-rounded-2xl tw-border tw-border-slate-700 tw-bg-slate-900/60 tw-p-5">
 	<div class="tw-flex tw-flex-col tw-gap-6 md:tw-flex-row md:tw-items-start">
 		<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
-			<OperativeAvatarPreview seed={operativeAvatar.seed} size={120} />
+			<OperativeAvatarPreview config={parseOperativeAvatar(operativeAvatar)} size={120} />
 			<p class="tw-m-0 tw-text-center tw-text-[10px] tw-font-mono tw-uppercase tw-tracking-widest tw-text-slate-500">
 				Vector preview · no photo upload
 			</p>

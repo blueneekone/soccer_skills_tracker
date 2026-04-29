@@ -242,21 +242,6 @@
 			if (!plain) return;
 			latitude = plain.lat;
 			longitude = plain.lng;
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'post-fix',
-					hypothesisId: 'H2',
-					location: 'FacilityDrawingMap.svelte:routingPin:gmp-dragend',
-					message: 'routing pin drag persisted',
-					data: { lat: plain.lat, lng: plain.lng },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 		});
 	}
 
@@ -790,21 +775,6 @@
 							wireRoutingPinDrag(g, nm);
 							latitude = plat;
 							longitude = plng;
-							// #region agent log
-							fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-								body: JSON.stringify({
-									sessionId: 'dd2828',
-									runId: 'pre-fix',
-									hypothesisId: 'H2',
-									location: 'FacilityDrawingMap.svelte:mapClick:routingPin',
-									message: 'routing pin placed via map click',
-									data: { plat, plng },
-									timestamp: Date.now(),
-								}),
-							}).catch(() => {});
-							// #endregion
 						})();
 					});
 				}

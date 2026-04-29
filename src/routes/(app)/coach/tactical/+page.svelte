@@ -39,7 +39,7 @@
 	});
 </script>
 
-<div class="tactical-route tw-min-h-0 tw-flex-1 tw-flex tw-flex-col">
+<div class="tactical-route tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden">
 	<TacticalCommandBoard teamId={selectedTeamId} />
 </div>
 
@@ -48,5 +48,6 @@
 		margin: 0;
 		padding: 0;
 		width: 100%;
+		min-height: 0;
 	}
 </style>

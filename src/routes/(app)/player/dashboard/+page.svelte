@@ -1,6 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
@@ -13,6 +13,8 @@
 	import {
 		getAttributeSchemaForSport,
 		deriveSkillValuesForSchema,
+		hasDocumentedSkillRatings,
+		pickSkillRatingForKey,
 	} from '$lib/utils/sport-attributes.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
@@ -57,9 +59,35 @@
 			'—',
 	);
 
-	const avatarSeed = $derived(
-		parseOperativeAvatar(profile?.operativeAvatar)?.seed ?? callsign ?? email,
+	const operativeAvatarConfig = $derived(parseOperativeAvatar(profile?.operativeAvatar));
+
+	const combatTelemetryReady = $derived(
+		hasDocumentedSkillRatings(
+			statsRaw && typeof statsRaw === 'object' ?
+				/** @type {Record<string, unknown>} */ (statsRaw)
+			:	null,
+			attributeSchema,
+		),
 	);
+
+	const combatHudRows = $derived.by(() => {
+		const schema = attributeSchema;
+		const keys = schema.keys.slice(0, 3);
+		const labels = schema.labels.slice(0, 3);
+		if (!combatTelemetryReady) {
+			return labels.map((label) => ({ label, pct: 0, display: '00' }));
+		}
+		const raw = /** @type {Record<string, unknown>} */ (statsRaw);
+		return keys.map((key, i) => {
+			const v = pickSkillRatingForKey(raw, key) ?? 0;
+			const clamped = Math.min(99, Math.max(0, v));
+			return {
+				label: labels[i] ?? key,
+				pct: Math.round((clamped / 99) * 1000) / 10,
+				display: String(clamped).padStart(2, '0'),
+			};
+		});
+	});
 
 	const levelBarPct = $derived(
 		levelProg.xpToNext > 0 ?
@@ -141,13 +169,6 @@
 		};
 	});
 
-	function goToQuests() {
-		goto('/player/workout');
-	}
-
-	function goToStats() {
-		goto('/stats');
-	}
 </script>
 
 <svelte:head>
@@ -159,17 +180,24 @@
 	data-region="player-lobby"
 >
 	<div
-		class="lobby-hero lobby-glass tw-mb-8 tw-grid tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-p-6 md:tw-grid-cols-2 md:tw-items-center md:tw-gap-10 md:tw-p-8"
+		class="lobby-hero lobby-glass tw-isolate tw-mb-8 tw-grid tw-min-h-[300px] tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-p-6 md:tw-grid-cols-2 md:tw-items-stretch md:tw-gap-10 md:tw-p-8"
 		aria-label="Operative profile"
 	>
-		<div class="tw-flex tw-flex-col tw-items-center tw-justify-center md:tw-items-start">
+		<div
+			class="tw-relative tw-z-10 tw-flex tw-min-h-[300px] tw-flex-col tw-items-center tw-justify-center md:tw-items-start"
+		>
 			<p class="lobby-eyebrow tw-mb-4 tw-w-full tw-text-center md:tw-text-left">The operative</p>
 			<div class="holo-stage tw-mx-auto md:tw-mx-0">
-				<div class="holo-glow" aria-hidden="true"></div>
+				<div class="holo-glow tw-pointer-events-none" aria-hidden="true"></div>
 				<div class="holo-plate">
-					<OperativeAvatarPreview seed={avatarSeed} size={176} class="tw-rounded-full" />
+					<OperativeAvatarPreview
+						config={operativeAvatarConfig}
+						size={176}
+						showInitializeCta={true}
+						class="tw-rounded-full"
+					/>
 				</div>
-				<div class="holo-base" aria-hidden="true"></div>
+				<div class="holo-base tw-pointer-events-none" aria-hidden="true"></div>
 			</div>
 			<p class="tw-mt-5 tw-mb-0 tw-text-center tw-font-mono tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left">
 				{callsign}
@@ -181,78 +209,134 @@
 			{/if}
 		</div>
 
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-items-center tw-gap-5 md:tw-items-stretch">
-			<div>
-				<p class="lobby-eyebrow tw-mb-3 tw-text-center md:tw-text-left">Combat level</p>
-				<div class="ring-mega tw-mx-auto tw-flex tw-w-full tw-max-w-[min(100%,22rem)] tw-flex-col tw-items-center md:tw-mx-0 md:tw-max-w-none">
-					<div class="ring-mega__inner">
-						<LevelProgressRing
-							currentXp={rankProgress.xpInCurrentTier}
-							nextRankXp={rankProgress.xpToNextRank}
-							rankName={rankProgress.rank}
-							totalXp={totalXpHud}
-							level={osLevel}
-							size="lg"
-							variant="dark"
-							showLevelSegment={true}
-						/>
+		<div
+			class="tw-relative tw-z-10 tw-flex tw-min-h-[300px] tw-min-w-0 tw-flex-1 tw-flex-col tw-items-center tw-gap-5 md:tw-items-stretch"
+		>
+			<div
+				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-backdrop-blur-md md:tw-gap-6 md:tw-p-5"
+				aria-label="Combat telemetry HUD"
+			>
+				<div>
+					<p class="lobby-eyebrow tw-mb-3 tw-text-center md:tw-text-left">Combat level</p>
+					<div
+						class="ring-mega tw-mx-auto tw-flex tw-w-full tw-max-w-[min(100%,22rem)] tw-flex-col tw-items-center md:tw-mx-0 md:tw-max-w-none"
+					>
+						<div class="ring-mega__inner">
+							<LevelProgressRing
+								currentXp={rankProgress.xpInCurrentTier}
+								nextRankXp={rankProgress.xpToNextRank}
+								rankName={rankProgress.rank}
+								totalXp={totalXpHud}
+								level={osLevel}
+								size="lg"
+								variant="dark"
+								showLevelSegment={true}
+							/>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="tw-w-full tw-min-w-0 tw-rounded-xl tw-border tw-border-cyan-500/20 tw-bg-black/40 tw-p-4">
-				<div class="tw-mb-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
-					<span class="tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-400"
-						>Level {osLevel}</span
-					>
-					<span class="tw-font-mono tw-text-sm tw-font-bold tw-tabular-nums tw-text-cyan-200">
-						{totalXpHud.toLocaleString()}
-						<span class="tw-text-[0.65rem] tw-font-semibold tw-text-slate-500"> total XP</span>
-					</span>
-				</div>
 				<div
-					class="tw-relative tw-h-3 tw-overflow-hidden tw-rounded-full tw-border tw-border-white/10 tw-bg-slate-950"
-					role="progressbar"
-					aria-valuemin="0"
-					aria-valuemax="100"
-					aria-valuenow={Math.round(levelBarPct)}
-					aria-label="Progress toward next level"
+					class="tw-w-full tw-min-w-0 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-950/40 tw-p-4 tw-backdrop-blur-sm"
 				>
-					<div
-						class="xp-bar-fill tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-cyan-400 tw-via-fuchsia-500 tw-to-emerald-400 tw-shadow-[0_0_24px_rgba(34,211,238,0.45)]"
-						style={`width: ${levelBarPct}%;`}
-					></div>
-				</div>
-				<p class="tw-mb-0 tw-mt-2 tw-text-center tw-font-mono tw-text-[0.7rem] tw-text-slate-400 md:tw-text-left">
-					{#if levelProg.xpToNext > 0}
-						<span class="tw-text-cyan-300/90"
-							>{levelProg.xpIntoLevel.toLocaleString()}</span
+					<div class="tw-mb-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
+						<span
+							class="tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-400"
+							>Level {osLevel}</span
 						>
-						/{levelProg.xpToNext.toLocaleString()} XP to level {osLevel + 1}
-					{:else}
-						<span class="tw-text-emerald-400/90">Max level bracket</span>
+						<span class="tw-font-mono tw-text-sm tw-font-bold tw-tabular-nums tw-text-cyan-200">
+							{totalXpHud.toLocaleString()}
+							<span class="tw-text-[0.65rem] tw-font-semibold tw-text-slate-500"> total XP</span>
+						</span>
+					</div>
+					<div
+						class="tw-relative tw-h-3 tw-overflow-hidden tw-rounded-full tw-border tw-border-white/10 tw-bg-slate-950"
+						role="progressbar"
+						aria-valuemin="0"
+						aria-valuemax="100"
+						aria-valuenow={Math.round(levelBarPct)}
+						aria-label="Progress toward next level"
+					>
+						<div
+							class="xp-bar-fill tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-cyan-400 tw-via-fuchsia-500 tw-to-emerald-400 tw-shadow-[0_0_24px_rgba(34,211,238,0.45)]"
+							style={`width: ${levelBarPct}%;`}
+						></div>
+					</div>
+					<p
+						class="tw-mb-0 tw-mt-2 tw-text-center tw-font-mono tw-text-[0.7rem] tw-text-slate-400 md:tw-text-left"
+					>
+						{#if levelProg.xpToNext > 0}
+							<span class="tw-text-cyan-300/90">{levelProg.xpIntoLevel.toLocaleString()}</span>
+							/{levelProg.xpToNext.toLocaleString()} XP to level {osLevel + 1}
+						{:else}
+							<span class="tw-text-emerald-400/90">Max level bracket</span>
+						{/if}
+					</p>
+				</div>
+
+				<div
+					class="tw-w-full tw-min-w-0 tw-flex-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-950/50 tw-p-4 tw-backdrop-blur-sm"
+				>
+					<p class="lobby-eyebrow tw-mb-4 tw-text-center tw-text-cyan-400/90 md:tw-text-left">
+						Core attributes
+					</p>
+					<ul class="tw-m-0 tw-list-none tw-space-y-3.5 tw-p-0" aria-label="Combat attribute bars">
+						{#each combatHudRows as row (row.label)}
+							<li class="tw-min-w-0">
+								<div
+									class="tw-mb-1 tw-flex tw-items-center tw-justify-between tw-gap-2 tw-text-[0.7rem]"
+								>
+									<span
+										class="tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-slate-400"
+										>{row.label}</span
+									>
+									<span
+										class="tw-font-mono tw-text-sm tw-font-black tw-tabular-nums tw-tracking-wide tw-text-slate-100"
+										>{row.display}</span
+									>
+								</div>
+								<div
+									class="tw-h-2 tw-overflow-hidden tw-rounded-full tw-border tw-border-white/5 tw-bg-slate-900/80"
+									role="presentation"
+								>
+									<div
+										class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-emerald-500/90 tw-via-cyan-400/85 tw-to-fuchsia-500/80 tw-shadow-[0_0_12px_rgba(52,211,153,0.35)] tw-transition-[width] tw-duration-500"
+										style={`width: ${row.pct}%;`}
+									></div>
+								</div>
+							</li>
+						{/each}
+					</ul>
+					{#if !combatTelemetryReady}
+						<p
+							class="tw-mb-0 tw-mt-4 tw-text-center tw-text-[0.68rem] tw-font-semibold tw-uppercase tw-tracking-[0.14em] tw-text-slate-500 md:tw-text-left"
+						>
+							Awaiting Coach Telemetry.
+						</p>
 					{/if}
-				</p>
+				</div>
 			</div>
 		</div>
 	</div>
 
 	<div class="tw-mb-8 tw-grid tw-min-w-0 tw-grid-cols-1 tw-gap-6 lg:tw-grid-cols-2">
 		<section class="lobby-missions lobby-glass tw-min-h-0 tw-p-5 md:tw-p-6" aria-labelledby="lobby-missions-h">
-			<header class="tw-mb-4 tw-border-b tw-border-emerald-500/25 tw-pb-3">
+			<header class="tw-relative tw-z-10 tw-mb-4 tw-border-b tw-border-emerald-500/25 tw-pb-3">
 				<p id="lobby-missions-h" class="lobby-eyebrow tw-mb-1 tw-text-emerald-400/90">Active missions</p>
 				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
 					Assigned workouts · pending trials
 				</h2>
 			</header>
-			<PlayerActionInbox />
+			<div class="tw-relative tw-z-10">
+				<PlayerActionInbox />
+			</div>
 		</section>
 
 		<section
 			class="lobby-radar lobby-glass tw-flex tw-min-h-0 tw-flex-col tw-p-5 md:tw-p-6"
 			aria-labelledby="lobby-radar-h"
 		>
-			<header class="tw-mb-3">
+			<header class="tw-relative tw-z-10 tw-mb-3">
 				<p class="lobby-eyebrow tw-mb-1 tw-text-fuchsia-400/90">Combat stats</p>
 				<h2 id="lobby-radar-h" class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
 					Attribute radar
@@ -271,7 +355,7 @@
 					style="background-image: linear-gradient(rgba(148,163,184,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.9) 1px, transparent 1px); background-size: 18px 18px;"
 					aria-hidden="true"
 				></div>
-				<div class="tw-relative tw-z-[1] tw-min-h-[280px]">
+				<div class="tw-relative tw-z-10 tw-min-h-[280px]">
 					<PlayerSkillRadar
 						labels={skillRadar.labels}
 						values={skillRadar.values}
@@ -282,38 +366,53 @@
 		</section>
 	</div>
 
-	<section class="pd-team-lb lobby-glass tw-mb-8 tw-min-w-0 tw-p-4" aria-label="Team leaderboard">
+	<section
+		class="pd-team-lb lobby-glass tw-relative tw-z-10 tw-mb-8 tw-min-w-0 tw-p-4"
+		aria-label="Team leaderboard"
+	>
 		<TeamLeaderboard compact />
 	</section>
 
 	<div
-		class="lobby-glass tw-mb-8 tw-grid tw-w-full tw-grid-cols-2 tw-gap-3 tw-p-4 md:tw-grid-cols-4 md:tw-gap-4 md:tw-p-5"
+		class="lobby-glass tw-relative tw-z-10 tw-mb-8 tw-grid tw-w-full tw-grid-cols-2 tw-gap-3 tw-p-4 md:tw-grid-cols-4 md:tw-gap-4 md:tw-p-5"
 		aria-label="Career telemetry"
 	>
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
+		<a
+			href={resolve('/stats')}
+			class="lobby-stat-tile tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			data-sveltekit-preload-data="hover"
+		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Total XP</span
 			>
 			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
 				{totalXpHud.toLocaleString()}
 			</span>
-		</div>
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
+		</a>
+		<a
+			href={resolve('/stats')}
+			class="lobby-stat-tile tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			data-sveltekit-preload-data="hover"
+		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Level</span
 			>
 			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
 				{osLevel}
 			</span>
-		</div>
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
+		</a>
+		<a
+			href={resolve('/player/workout')}
+			class="lobby-stat-tile tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			data-sveltekit-preload-data="hover"
+		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Streak</span
 			>
 			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-cyan-300 md:tw-text-2xl">
 				{streak}<span class="tw-text-base tw-font-bold tw-text-slate-500">d</span>
 			</span>
-		</div>
+		</a>
 		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Best</span
@@ -324,23 +423,23 @@
 		</div>
 	</div>
 
-	<nav class="lobby-quick tw-grid tw-gap-3" aria-label="Quick actions">
-		<button
-			type="button"
-			class="lobby-glass lobby-quick__btn tw-min-h-[3.25rem] tw-px-4 tw-py-3"
-			onclick={goToQuests}
+	<nav class="lobby-quick tw-relative tw-z-10 tw-grid tw-gap-3" aria-label="Quick actions">
+		<a
+			href={resolve('/player/workout')}
+			class="lobby-glass lobby-quick__btn tw-relative tw-z-10 tw-flex tw-min-h-[3.25rem] tw-cursor-pointer tw-items-center tw-justify-center tw-px-4 tw-py-3 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			data-sveltekit-preload-data="hover"
 		>
 			<i class="ph ph-lightning tw-shrink-0 tw-text-cyan-400" aria-hidden="true"></i>
 			<span class="lobby-quick__label">Today's quests</span>
-		</button>
-		<button
-			type="button"
-			class="lobby-glass lobby-quick__btn tw-min-h-[3.25rem] tw-px-4 tw-py-3"
-			onclick={goToStats}
+		</a>
+		<a
+			href={resolve('/stats')}
+			class="lobby-glass lobby-quick__btn tw-relative tw-z-10 tw-flex tw-min-h-[3.25rem] tw-cursor-pointer tw-items-center tw-justify-center tw-px-4 tw-py-3 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			data-sveltekit-preload-data="hover"
 		>
 			<i class="ph ph-chart-line-up tw-shrink-0 tw-text-fuchsia-400" aria-hidden="true"></i>
 			<span class="lobby-quick__label">Career stats</span>
-		</button>
+		</a>
 	</nav>
 </div>
 
@@ -472,6 +571,17 @@
 		border-color: rgb(16 185 129 / 0.5);
 	}
 
+	.lobby-missions :global(.pai__btn--ghost) {
+		color: rgb(209 250 229);
+		border-color: rgb(52 211 153 / 0.4);
+		background: rgb(2 6 23 / 0.35);
+	}
+
+	.lobby-missions :global(.pai__btn--ghost:hover) {
+		border-color: rgb(52 211 153 / 0.75);
+		background: rgb(6 78 59 / 0.35);
+	}
+
 	.lobby-missions :global(.pai__muted) {
 		color: rgb(148 163 184);
 	}
@@ -528,7 +638,7 @@
 		transition:
 			border-color 0.25s ease,
 			box-shadow 0.25s ease,
-			transform 0.08s ease;
+			transform 0.18s ease;
 	}
 
 	.lobby-quick__btn:hover {
@@ -539,7 +649,21 @@
 	}
 
 	.lobby-quick__btn:active {
-		transform: translateY(1px);
+		transform: translateY(1px) scale(0.99);
+	}
+
+	a.lobby-quick__btn {
+		color: inherit;
+	}
+
+	.lobby-stat-tile {
+		cursor: pointer;
+		color: inherit;
+	}
+
+	.lobby-stat-tile:hover {
+		border-color: rgb(34 211 238 / 0.25);
+		box-shadow: 0 0 0 1px rgb(34 211 238 / 0.08);
 	}
 
 	.lobby-quick__label {
