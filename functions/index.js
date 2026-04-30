@@ -36,7 +36,12 @@ const STRIPE_PRICE_RECRUITER = defineString(
 
 const stripe = require('stripe');
 
-const {calculateTrainingSessionEarnedXp} = require('./gamificationWorkoutXp');
+const {
+  calculateTrainingSessionEarnedXp,
+  trainingLevelFromTotalXp,
+  computeMatchTelemetryParlayXp,
+  grantTrainingXpAfterRepCreated,
+} = require('./gamificationWorkoutXp');
 
 const REGION = 'us-central1';
 
@@ -2810,6 +2815,15 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
           psSnap.data().playerName.trim() :
           playerKey;
 
+    const matchXp = computeMatchTelemetryParlayXp(d);
+    const prevPsXp =
+        psSnap.exists &&
+        typeof psSnap.data().total_xp === 'number' &&
+        !Number.isNaN(psSnap.data().total_xp) ?
+          Math.floor(psSnap.data().total_xp) :
+          0;
+    const nextPsLevel = trainingLevelFromTotalXp(prevPsXp + matchXp).level;
+
     batch.set(
         psRef,
         {
@@ -2819,6 +2833,8 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
           assists: inc(d.a),
           shots: inc(d.sh),
           saves: inc(d.sv),
+          total_xp: inc(matchXp),
+          current_level: nextPsLevel,
           updatedAt: now,
         },
         {merge: true},
@@ -2830,6 +2846,17 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
       continue;
     }
     const {em, d} = userMirrorOps[i];
+    const matchXpU = computeMatchTelemetryParlayXp(d);
+    const ud = uSnaps[i].data() || {};
+    const rawUx =
+        typeof ud.totalXp === 'number' && !Number.isNaN(ud.totalXp) ?
+          ud.totalXp :
+          typeof ud.xp === 'number' && !Number.isNaN(ud.xp) ?
+            ud.xp :
+            0;
+    const prevUx = Math.max(0, Math.floor(Number(rawUx) || 0));
+    const nextUserLevel = trainingLevelFromTotalXp(prevUx + matchXpU).level;
+
     batch.set(
         db.collection('users').doc(em),
         {
@@ -2837,6 +2864,9 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
           'stats.assists': inc(d.a),
           'stats.shots': inc(d.sh),
           'stats.saves': inc(d.sv),
+          totalXp: inc(matchXpU),
+          xp: inc(matchXpU),
+          trainingLevel: nextUserLevel,
           updatedAt: now,
         },
         {merge: true},
@@ -4044,6 +4074,18 @@ exports.submitWorkoutRep = onCall(
         );
       }
 
+      let athleteUid = '';
+      try {
+        const au = await admin.auth().getUserByEmail(playerEmail);
+        athleteUid = au.uid;
+      } catch (e) {
+        logger.error('submitWorkoutRep: getUserByEmail failed', e);
+        throw new HttpsError(
+            'failed-precondition',
+            'Could not resolve athlete account.',
+        );
+      }
+
       const repRef = db.collection('reps').doc();
       const repId = repRef.id;
       const tsSeconds = Math.floor(Date.now() / 1000);
@@ -4085,7 +4127,7 @@ exports.submitWorkoutRep = onCall(
         repDoc.verifiedAt = now;
       }
 
-      const statsRef = db.collection('player_stats').doc(playerName);
+      const statsRef = db.collection('player_stats').doc(athleteUid);
       const batch = db.batch();
       batch.set(repRef, repDoc);
       batch.set(
@@ -4114,43 +4156,6 @@ exports.submitWorkoutRep = onCall(
       return {ok: true, repId, verificationMethod};
     },
 );
-
-/** Keep in sync with `src/lib/gamification/level.js` (polynomial curve + max 99). */
-const MAX_TRAINING_LEVEL = 99;
-
-/**
- * XP band: level L → L+1 requires floor(100 × L^1.5). At level 99+, 0 (capped).
- * @param {number} level
- * @return {number}
- */
-function xpToAdvanceFromTrainingLevel(level) {
-  const L = Math.floor(level);
-  if (L >= MAX_TRAINING_LEVEL) return 0;
-  if (L < 1) return 100;
-  return Math.floor(100 * Math.pow(L, 1.5));
-}
-
-/**
- * @param {number} totalXp
- * @return {{ level: number }}
- */
-function trainingLevelFromTotalXp(totalXp) {
-  const xp = Math.max(0, Math.floor(totalXp));
-  let level = 1;
-  let at = 0;
-  for (let guard = 0; guard < 10000; guard++) {
-    if (level >= MAX_TRAINING_LEVEL) {
-      return {level: MAX_TRAINING_LEVEL};
-    }
-    const need = xpToAdvanceFromTrainingLevel(level);
-    if (xp < at + need) {
-      return {level};
-    }
-    at += need;
-    level++;
-  }
-  return {level: MAX_TRAINING_LEVEL};
-}
 
 /**
  * Monday UTC date key for weekly counters.
@@ -4490,10 +4495,19 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
         {merge: true},
     );
 
+    const uTxData = uSnapTx.data() || {};
+    const prevLong =
+        typeof uTxData.longestStreak === 'number' && !Number.isNaN(uTxData.longestStreak) ?
+          Math.floor(uTxData.longestStreak) :
+          0;
     const xpInc = admin.firestore.FieldValue.increment(earned);
     tx.update(uRef, {
       xp: xpInc,
       totalXp: xpInc,
+      trainingLevel: lv.level,
+      currentStreak: streakDays,
+      longestStreak: Math.max(prevLong, streakDays),
+      updatedAt: now,
     });
 
     const clubId =
@@ -9191,6 +9205,29 @@ exports.onWorkoutLogCreated = onDocumentCreated(
         await syncPublicPlayerProfile(data.playerId);
       } catch (e) {
         logger.error('onWorkoutLogCreated rebuild failed', e);
+      }
+    },
+);
+
+/** Server XP grant when a `reps` doc is created (parent/player submitWorkoutRep). */
+exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
+    {
+      document: 'reps/{repId}',
+      region: REGION,
+    },
+    async (event) => {
+      try {
+        const snap = event.data;
+        if (!snap) {
+          return;
+        }
+        const repId = event.params && event.params.repId ? String(event.params.repId) : '';
+        if (!repId) {
+          return;
+        }
+        await grantTrainingXpAfterRepCreated(db, snap, repId);
+      } catch (e) {
+        logger.error('onRepCreatedApplyGamificationXp failed', e);
       }
     },
 );
