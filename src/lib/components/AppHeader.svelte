@@ -8,6 +8,8 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import { clubSportIconSuffix } from '$lib/utils/sport-icon.js';
 
+	let { title = '' } = $props();
+
 	const goHome = () =>
 		goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 
@@ -28,7 +30,7 @@
 				<i class="ph {sportIcon} header-sport-icon" aria-hidden="true"></i>
 			{/if}
 			<div class="header-titles">
-				<h3 class="app-title">{brandingStore.appName || 'SSTRACKER'}</h3>
+				<h3 class="app-title">{title.trim() || brandingStore.appName || 'SSTRACKER'}</h3>
 				<div class="player-info">Player: <span class="font-bold">{displayName}</span></div>
 			</div>
 		</div>
