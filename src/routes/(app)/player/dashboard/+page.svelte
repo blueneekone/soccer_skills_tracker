@@ -18,10 +18,19 @@
 		pickSkillRatingForKey,
 	} from '$lib/utils/sport-attributes.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 
-	const profile = $derived(authStore.userProfile);
-	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
+	/**
+	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
+	 * Under impersonation the JWT session is already the target athlete, so this is their
+	 * `users/{email}` doc — no separate `impersonationStore.activePlayer` object exists; the
+	 * store only carries session metadata (never null; avoid throwing if claims are mid-resolve).
+	 */
+	const activePlayer = $derived(
+		/** @type {Record<string, unknown> | null} */ (authStore.userProfile ?? null),
+	);
+	const profileXp = $derived(Math.max(0, Math.floor(Number(activePlayer?.totalXp ?? activePlayer?.xp) || 0)));
 	const totalXpHud = $derived(
 		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
 	);
@@ -41,25 +50,25 @@
 		:	'soccer',
 	);
 	const attributeSchema = $derived(getAttributeSchemaForSport(resolvedSportRaw));
-	const streakDays = $derived(Math.max(0, Math.floor(Number(profile?.currentStreak) || 0)));
+	const streakDays = $derived(Math.max(0, Math.floor(Number(activePlayer?.currentStreak) || 0)));
 
 	const skillRadar = $derived(
 		deriveSkillValuesForSchema(statsRaw, attributeSchema, totalXpHud, streakDays),
 	);
 
-	const streak = $derived(Number(profile?.currentStreak) || 0);
-	const longestStreak = $derived(Number(profile?.longestStreak) || streak);
+	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
+	const longestStreak = $derived(Number(activePlayer?.longestStreak) || streak);
 
 	/** @type {string} */
 	let teamAssignmentLabel = $state('');
 
 	const callsign = $derived(
-		(profile?.playerName && String(profile.playerName).trim()) ||
+		(activePlayer?.playerName && String(activePlayer.playerName).trim()) ||
 			email.split('@')[0] ||
 			'—',
 	);
 
-	const operativeAvatarConfig = $derived(parseOperativeAvatar(profile?.operativeAvatar));
+	const operativeAvatarConfig = $derived(parseOperativeAvatar(activePlayer?.operativeAvatar));
 
 	const combatTelemetryReady = $derived(
 		hasDocumentedSkillRatings(
@@ -124,7 +133,7 @@
 
 	$effect(() => {
 		if (!browser) return;
-		const tid = /** @type {string | undefined} */ (profile?.teamId);
+		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
 		if (!tid || tid === 'admin') {
 			teamAssignmentLabel = '';
 			teamSportFromDoc = null;
@@ -169,6 +178,35 @@
 	<title>Player Dashboard · SSTRACKER</title>
 </svelte:head>
 
+{#if authStore.isLoading}
+	<div
+		class="tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-bg-black tw-py-16 tw-text-slate-400"
+		role="status"
+		aria-live="polite"
+		aria-busy="true"
+	>
+		<i class="ph ph-spinner-gap tw-animate-spin tw-text-4xl tw-text-cyan-400/90" aria-hidden="true"></i>
+		<span class="tw-sr-only">Loading player dashboard</span>
+	</div>
+{:else if !activePlayer}
+	<div
+		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
+		role="alert"
+	>
+		<i class="ph ph-warning-circle tw-text-4xl tw-text-amber-400" aria-hidden="true"></i>
+		<p class="tw-m-0 tw-text-base tw-font-semibold tw-text-slate-100">
+			Unable to load this operative profile. Try refreshing the page.
+		</p>
+		{#if impersonationStore.active}
+			<p class="tw-m-0 tw-text-xs tw-leading-relaxed tw-text-slate-500">
+				Impersonation is active for
+				<span class="tw-font-mono tw-text-slate-400"
+					>{impersonationStore.targetEmail || impersonationStore.targetUid}</span
+				>. If this keeps happening, exit impersonation from the banner and try again.
+			</p>
+		{/if}
+	</div>
+{:else}
 <div
 	class="lobby-page tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-bg-black tw-text-slate-50"
 	data-region="player-lobby"
@@ -425,6 +463,8 @@
 	</div>
 </div>
 </div>
+
+{/if}
 
 <style>
 	.lobby-hud-ring__inner {
