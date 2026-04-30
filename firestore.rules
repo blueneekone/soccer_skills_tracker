@@ -1337,6 +1337,30 @@ service cloud.firestore {
       );
     }
 
+    // Forge — coach mission payloads (vertical slice; audit / future orchestration)
+    match /missions/{missionId} {
+      allow create: if authed()
+        && playerVpcAllowed()
+        && request.resource.data.keys().hasAll(['coachId', 'totalXpBounty', 'drills', 'status', 'createdAt'])
+        && request.resource.data.keys().size() <= 16
+        && request.resource.data.coachId == request.auth.uid
+        && request.resource.data.status == 'deployed'
+        && request.resource.data.totalXpBounty is int
+        && request.resource.data.totalXpBounty >= 0
+        && request.resource.data.totalXpBounty <= 2000000
+        && request.resource.data.drills is list
+        && request.resource.data.drills.size() >= 1
+        && request.resource.data.drills.size() <= 64
+        && request.resource.data.createdAt == request.time;
+      allow read: if authed()
+        && playerVpcAllowed()
+        && (
+          isSuper()
+          || resource.data.coachId == request.auth.uid
+        );
+      allow update, delete: if false;
+    }
+
     // Project Phoenix — Coach OS → Player OS: Mission Deployment (per-athlete fan-out)
     match /assigned_missions/{missionId} {
       allow read: if authed() && playerVpcAllowed() && (
