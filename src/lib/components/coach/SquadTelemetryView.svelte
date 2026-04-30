@@ -38,10 +38,10 @@
 	let activeMatchId = $state('');
 	let matchSessionTeamId = $state('');
 
-	/** Live rows from `teams/{teamId}/telemetry_events` for {@link activeMatchId}. */
+	/** Real-time rows from `teams/{teamId}/telemetry_events` (Firestore snapshot stream). */
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
-	let liveTelemetryEvents = $state([]);
-	let liveTelemetryErr = $state('');
+	let liveEvents = $state([]);
+	let liveEventsError = $state('');
 
 	$effect(() => {
 		if (!browser) return;
@@ -67,11 +67,11 @@
 		let unsub;
 		untrack(() => {
 			if (!browser || !tid || !mid) {
-				liveTelemetryEvents = [];
-				liveTelemetryErr = '';
+				liveEvents = [];
+				liveEventsError = '';
 				return;
 			}
-			liveTelemetryErr = '';
+			liveEventsError = '';
 			const q = query(
 				collection(db, 'teams', tid, 'telemetry_events'),
 				where('matchId', '==', mid),
@@ -81,12 +81,12 @@
 			unsub = onSnapshot(
 				q,
 				(snap) => {
-					liveTelemetryEvents = [];
-					snap.forEach((d) => liveTelemetryEvents.push({ id: d.id, ...d.data() }));
+					liveEvents = [];
+					snap.forEach((d) => liveEvents.push({ id: d.id, ...d.data() }));
 				},
 				(e) => {
 					console.error('[SquadTelemetry] telemetry_events', e);
-					liveTelemetryErr =
+					liveEventsError =
 						'Live feed unavailable — deploy Firestore index for telemetry_events (matchId + timestamp).';
 				},
 			);
@@ -784,12 +784,12 @@
 					</p>
 				</div>
 				<div class="stw__tel-body" role="log" aria-live="polite" aria-relevant="additions">
-					{#if liveTelemetryErr}
-						<p class="stw__tel-err">{liveTelemetryErr}</p>
-					{:else if liveTelemetryEvents.length === 0}
+					{#if liveEventsError}
+						<p class="stw__tel-err">{liveEventsError}</p>
+					{:else if liveEvents.length === 0}
 						<p class="stw__tel-empty">Awaiting pitch taps…</p>
 					{:else}
-						{#each liveTelemetryEvents as ev (ev.id)}
+						{#each liveEvents as ev (ev.id)}
 							<div class="stw__tel-line {telemetryRowTone(ev)}">
 								<span class="stw__tel-ts">{fmtTime(ev.timestamp)}</span>
 								<span class="stw__tel-act">{String(ev.action ?? '—').toUpperCase()}</span>

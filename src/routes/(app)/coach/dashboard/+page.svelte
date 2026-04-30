@@ -1,71 +1,48 @@
 <script>
-	import { resolve } from '$app/paths';
-	import AppHeader from '$lib/components/AppHeader.svelte';
-	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
-	import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
-	import CoachSquadReadinessCard from '$lib/components/coach/CoachSquadReadinessCard.svelte';
+    import AppHeader from '$lib/components/AppHeader.svelte';
+    import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+    import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
+    import CoachSquadReadinessCard from '$lib/components/coach/CoachSquadReadinessCard.svelte';
 </script>
 
-<div
-	class="tw-flex tw-min-h-screen tw-flex-col tw-bg-slate-950 tw-font-sans tw-text-slate-100 tw-selection:bg-cyan-500/30"
->
-	<AppHeader title="Coach Command Center" />
+<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30">
+    <AppHeader title="Coach Command Center" />
 
-	<main class="tw-mx-auto tw-w-full tw-max-w-7xl tw-flex-1 tw-px-4 tw-py-8 sm:tw-px-6 lg:tw-px-8">
-		<div
-			class="tw-mb-8 tw-flex tw-flex-col tw-items-start tw-justify-between tw-gap-4 md:tw-flex-row md:tw-items-center"
-		>
-			<div>
-				<h1 class="tw-text-3xl tw-font-bold tw-tracking-tight tw-text-white">Daily Intelligence</h1>
-				<p class="tw-mt-1 tw-text-slate-400">
-					Review player telemetry and prepare for upcoming missions.
-				</p>
-			</div>
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">Daily Intelligence</h1>
+                <p class="text-slate-400 mt-1">Review player telemetry and prepare for upcoming missions.</p>
+            </div>
+            
+            <a href="/coach/tactical" class="relative group inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 bg-red-600 rounded-xl hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] hover:-translate-y-1 z-10 cursor-pointer">
+                INITIATE MATCH DAY MODE
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        </div>
 
-			<a
-				href={resolve('/coach/tactical')}
-				class="tw-group tw-relative tw-z-10 tw-inline-flex tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-xl tw-bg-red-600 tw-px-8 tw-py-4 tw-font-bold tw-text-white tw-shadow-[0_0_20px_rgba(220,38,38,0.4)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-bg-red-500 hover:tw-shadow-[0_0_30px_rgba(220,38,38,0.6)]"
-			>
-				INITIATE MATCH DAY MODE
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="tw-ml-2 tw-h-5 tw-w-5 tw-transition-transform tw-group-hover:tw-translate-x-1"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-					aria-hidden="true"
-				>
-					<path
-						fill-rule="evenodd"
-						d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			</a>
-		</div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <ActionInbox />
+            </div>
 
-		<div class="tw-grid tw-grid-cols-1 tw-gap-6 lg:tw-grid-cols-3">
-			<div class="tw-flex tw-flex-col tw-gap-6 lg:tw-col-span-1">
-				<ActionInbox />
-			</div>
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                
+                <div class="bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl relative z-10">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Squad XP Velocity</h2>
+                    <CoachTeamXpVelocityChart />
+                </div>
 
-			<div class="tw-flex tw-flex-col tw-gap-6 lg:tw-col-span-2">
-				<div
-					class="tw-relative tw-z-10 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-6 tw-shadow-2xl tw-backdrop-blur-md"
-				>
-					<h2
-						class="tw-mb-4 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-400"
-					>
-						Squad XP Velocity
-					</h2>
-					<CoachTeamXpVelocityChart />
-				</div>
+                <div class="bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 shadow-2xl relative z-10">
+                    <CoachSquadReadinessCard />
+                </div>
 
-				<div
-					class="tw-relative tw-z-10 tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-6 tw-shadow-2xl tw-backdrop-blur-md"
-				>
-					<CoachSquadReadinessCard />
-				</div>
-			</div>
-		</div>
-	</main>
+            </div>
+        </div>
+
+    </main>
 </div>

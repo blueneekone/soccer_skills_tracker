@@ -49,12 +49,13 @@
 	});
 
 	/**
-	 * @param {string} playerStatsDocId
+	 * Streams one tap to `teams/{teamId}/telemetry_events` (same shape as `$userStore?.uid` → {@link authStore}.user?.uid).
 	 * @param {string} actionType
 	 * @param {number} points
+	 * @param {string} playerId `player_stats` doc id for this athlete
 	 */
-	async function logMatchEvent(playerStatsDocId, actionType, points) {
-		if (!teamId || !matchId || !playerStatsDocId) return;
+	async function logMatchEvent(actionType, points, playerId) {
+		if (!teamId || !matchId || !playerId) return;
 		const uid = authStore.user?.uid;
 		if (!uid) {
 			feedback = { type: 'error', text: 'Sign in required to log live taps.' };
@@ -64,7 +65,7 @@
 			await addDoc(collection(db, 'teams', teamId, 'telemetry_events'), {
 				teamId,
 				matchId,
-				playerId: playerStatsDocId,
+				playerId,
 				action: actionType,
 				points,
 				timestamp: serverTimestamp(),
@@ -111,7 +112,7 @@
 		setTimeout(() => {
 			if (pulseToken === tok) pulseToken = null;
 		}, 520);
-		void logMatchEvent(id, spec.action, spec.points);
+		void logMatchEvent(spec.action, spec.points, id);
 	}
 
 	/**
