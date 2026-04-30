@@ -206,24 +206,16 @@ export function isShellNavActive(pathname, searchParams, item) {
 			return pathname === u.pathname || pathname.startsWith(u.pathname + '/');
 		}
 
-		// Coach OS: three path pillars (Squad Telemetry, Tactical, Mission) — not ?tab=.
-		if (pathname.startsWith('/coach') && (item.href === '/coach' || item.href === '/coach/tactical' || item.href === '/coach/drills')) {
+		// Coach OS: Clean path-based routing
+		if (pathname.startsWith('/coach') && u.pathname.startsWith('/coach')) {
 			if (item.href === '/coach') {
-				return (
-					pathname === '/coach' ||
-					pathname === '/coach/' ||
-					pathname === '/coach/dashboard' ||
-					pathname === '/coach/dashboard/'
-				);
+				// Only highlight the main dashboard button if we are exactly on the root /coach
+				return pathname === '/coach' || pathname === '/coach/' || pathname === '/coach/dashboard';
 			}
-			if (item.href === '/coach/tactical') {
-				return pathname === '/coach/tactical' || pathname.startsWith('/coach/tactical/');
-			}
-			if (item.href === '/coach/drills') {
-				return pathname === '/coach/drills' || pathname.startsWith('/coach/drills/');
-			}
+			// For sub-pages (trial-builder, drills, tactical), highlight if the URL starts with that path
+			return pathname.startsWith(item.href);
 		}
-
+		
 		if (u.pathname !== pathname) return false;
 		const curTab = searchParams.get('tab') || '';
 		const wantTab = u.searchParams.get('tab');
