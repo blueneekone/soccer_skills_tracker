@@ -13,7 +13,40 @@
 	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
 	import OperativePathway from '$lib/components/player/OperativePathway.svelte';
+	import OperativeAvatar3D from '$lib/components/player/OperativeAvatar3D.svelte';
 	import Swal from 'sweetalert2';
+
+	/** Preset hex chips for the loadout glass studio (sync with OperativeAvatar3D defaults). */
+	const AVATAR_SKIN_SWATCHES = /** @type {const} */ ([
+		'#d2996c',
+		'#f5cba7',
+		'#c68642',
+		'#8d5524',
+		'#5c3d2e',
+	]);
+	const AVATAR_JERSEY_SWATCHES = /** @type {const} */ ([
+		'#dc2626',
+		'#2563eb',
+		'#16a34a',
+		'#ca8a04',
+		'#9333ea',
+		'#e5e7eb',
+	]);
+	const AVATAR_CLEAT_SWATCHES = /** @type {const} */ ([
+		'#bef264',
+		'#fbbf24',
+		'#38bdf8',
+		'#f472b6',
+		'#a8a29e',
+		'#1e293b',
+	]);
+
+	/** Reactive tint bundle for Three.js traversal (`OperativeAvatar3D`). */
+	let avatar3dConfig = $state({
+		skinTone: '#d2996c',
+		jerseyColor: '#dc2626',
+		cleatColor: '#bef264',
+	});
 
 	/** @type {'quartermaster' | 'album'} */
 	let armoryWorkspace = $state('quartermaster');
@@ -281,6 +314,100 @@
 						</div>
 						<p class="qa-mono tw-mt-2 tw-text-right tw-text-[0.65rem] tw-text-slate-500">
 							{Math.round(Math.min(100, (seasonOneOwnedCount / SEASON_ONE_ALBUM_CAP) * 100))}% vault sync
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Three.js operative preview + liquid glass swatches -->
+			<div
+				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden tw-shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
+			>
+				<p
+					class="qa-mono tw-m-0 tw-border-b tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-[0.65rem] tw-font-black tw-tracking-[0.2em] tw-text-cyan-200/90"
+				>
+					OPERATIVE LOADOUT · 3D PREVIEW
+				</p>
+				<div
+					class="tw-grid tw-items-stretch tw-gap-6 tw-p-4 sm:tw-p-5 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)]"
+				>
+					<div class="tw-relative tw-min-h-[240px] tw-h-[min(48vw,320px)] lg:tw-min-h-[280px] lg:tw-h-[320px]">
+						{#if browser}
+							<OperativeAvatar3D
+								config={avatar3dConfig}
+								class="tw-h-full tw-border tw-border-white/10 tw-ring-1 tw-ring-cyan-500/10"
+							/>
+						{:else}
+							<div
+								class="tw-flex tw-h-full tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-dashed tw-border-white/12 tw-bg-slate-950/50 tw-text-center tw-text-sm tw-text-slate-500"
+							>
+								3D preview initializes on device…
+							</div>
+						{/if}
+					</div>
+					<div class="tw-flex tw-flex-col tw-justify-center tw-gap-6">
+						<div>
+							<p class="qa-eyebrow tw-mb-2">Skin tone</p>
+							<div class="tw-flex tw-flex-wrap tw-gap-2">
+								{#each AVATAR_SKIN_SWATCHES as hex (hex)}
+									<button
+										type="button"
+										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.skinTone ===
+										hex ?
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(34,211,238,0.45)]'
+										:	'tw-border-white/15 hover:tw-border-white/35'}"
+										style={`background-color:${hex}`}
+										aria-label={`Skin tone ${hex}`}
+										aria-pressed={avatar3dConfig.skinTone === hex}
+										onclick={() => {
+											avatar3dConfig.skinTone = hex;
+										}}
+									></button>
+								{/each}
+							</div>
+						</div>
+						<div>
+							<p class="qa-eyebrow tw-mb-2">Jersey</p>
+							<div class="tw-flex tw-flex-wrap tw-gap-2">
+								{#each AVATAR_JERSEY_SWATCHES as hex (hex)}
+									<button
+										type="button"
+										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.jerseyColor ===
+										hex ?
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(34,211,238,0.45)]'
+										:	'tw-border-white/15 hover:tw-border-white/35'}"
+										style={`background-color:${hex}`}
+										aria-label={`Jersey color ${hex}`}
+										aria-pressed={avatar3dConfig.jerseyColor === hex}
+										onclick={() => {
+											avatar3dConfig.jerseyColor = hex;
+										}}
+									></button>
+								{/each}
+							</div>
+						</div>
+						<div>
+							<p class="qa-eyebrow tw-mb-2">Cleats</p>
+							<div class="tw-flex tw-flex-wrap tw-gap-2">
+								{#each AVATAR_CLEAT_SWATCHES as hex (hex)}
+									<button
+										type="button"
+										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.cleatColor ===
+										hex ?
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(34,211,238,0.45)]'
+										:	'tw-border-white/15 hover:tw-border-white/35'}"
+										style={`background-color:${hex}`}
+										aria-label={`Cleat color ${hex}`}
+										aria-pressed={avatar3dConfig.cleatColor === hex}
+										onclick={() => {
+											avatar3dConfig.cleatColor = hex;
+										}}
+									></button>
+								{/each}
+							</div>
+						</div>
+						<p class="qa-mono tw-m-0 tw-text-[0.58rem] tw-leading-relaxed tw-text-slate-500">
+							Drag the figure to orbit. Drop <span class="tw-text-slate-400">static/models/operative.glb</span> to replace the placeholder rig.
 						</p>
 					</div>
 				</div>
