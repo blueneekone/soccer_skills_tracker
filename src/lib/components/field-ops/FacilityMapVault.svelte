@@ -209,25 +209,6 @@
 	 * @param {FacilityMapRow} row
 	 */
 	function applyHeroFromRow(row) {
-		// #region agent log
-		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-			body: JSON.stringify({
-				sessionId: 'dd2828',
-				runId: 'verify-rehydrate',
-				hypothesisId: 'H2',
-				location: 'FacilityMapVault.svelte:applyHeroFromRow',
-				message: 'apply_hero_from_row',
-				data: {
-					facilityId: row.id,
-					rowLat: row.latitude,
-					rowLng: row.longitude,
-				},
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-		// #endregion
 		heroFacilityId = row.id;
 		heroLat = typeof row.latitude === 'number' ? row.latitude : null;
 		heroLng = typeof row.longitude === 'number' ? row.longitude : null;
@@ -317,24 +298,6 @@
 		const key = `${clubId}:${heroFacilityId}`;
 		if (key === lastHeroHydrateKey && snapSig === lastAppliedHydrateSig) return;
 		if (!row) return;
-
-		// #region agent log
-		if (key === lastHeroHydrateKey && snapSig !== lastAppliedHydrateSig) {
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'verify-rehydrate',
-					hypothesisId: 'H1',
-					location: 'FacilityMapVault.svelte:heroHydrate',
-					message: 'rehydrate_same_facility_snapshot_changed',
-					data: { key, snapSig, prevSig: lastAppliedHydrateSig },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-		}
-		// #endregion
 
 		applyHeroFromRow(row);
 	});

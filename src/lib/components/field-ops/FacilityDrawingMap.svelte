@@ -548,35 +548,6 @@
 				return;
 			}
 			cur.routingMarker.position = { lat: latN, lng: lngN };
-			// #region agent log
-			queueMicrotask(() => {
-				const mk = mapHandles?.routingMarker;
-				if (!mk) return;
-				const plain = markerPositionToPlain(mk.position);
-				if (!plain) return;
-				const drift =
-					Math.abs(plain.lat - latN) > 1e-6 || Math.abs(plain.lng - lngN) > 1e-6;
-				if (!drift) return;
-				fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'dd2828' },
-					body: JSON.stringify({
-						sessionId: 'dd2828',
-						runId: 'post-map-await-fix',
-						hypothesisId: 'H_MAP_DRIFT',
-						location: 'FacilityDrawingMap.svelte:routingPinSync',
-						message: 'routing_marker_position_mismatch',
-						data: {
-							bindLat: latN,
-							bindLng: lngN,
-							markerLat: plain.lat,
-							markerLng: plain.lng,
-						},
-						timestamp: Date.now(),
-					}),
-				}).catch(() => {});
-			});
-			// #endregion
 		}, ROUTING_PIN_PROP_SYNC_MS);
 
 		return () => {

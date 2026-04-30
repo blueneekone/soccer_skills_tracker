@@ -110,24 +110,6 @@
 				...(isPlayer && !isOperativeProxy ? { operativeAvatar } : {}),
 			};
 			await updateDoc(userRef, payload);
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-Debug-Session-Id': 'dd2828',
-				},
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'avatar-save',
-					hypothesisId: 'H2',
-					location: 'settings/+page.svelte:saveProfile',
-					message: 'operative_avatar_saved',
-					data: { hasAvatar: Boolean(isPlayer && !isOperativeProxy) },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 			await authStore.refresh({ silent: true });
 			saveMsg = 'Profile saved.';
 		} catch (err) {

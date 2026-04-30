@@ -90,24 +90,6 @@
 		saving = true;
 		err = '';
 		try {
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-Debug-Session-Id': 'dd2828',
-				},
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'coach-trial',
-					hypothesisId: 'H1',
-					location: 'CoachTrialBuilderPanel.svelte:submit',
-					message: 'coach_trial_submit_start',
-					data: { teamId: tid, skill, hasResult: result.length > 0 },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 			await addDoc(collection(db, 'trials'), {
 				player,
 				teamId: tid,
@@ -120,24 +102,6 @@
 			});
 			okMsg = 'Trial logged. Player stats sync on the next dossier refresh.';
 			resultText = '';
-			// #region agent log
-			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-Debug-Session-Id': 'dd2828',
-				},
-				body: JSON.stringify({
-					sessionId: 'dd2828',
-					runId: 'coach-trial',
-					hypothesisId: 'H1',
-					location: 'CoachTrialBuilderPanel.svelte:submit',
-					message: 'coach_trial_submit_ok',
-					data: { teamId: tid, skill },
-					timestamp: Date.now(),
-				}),
-			}).catch(() => {});
-			// #endregion
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not save trial.';
 		} finally {
