@@ -32,10 +32,12 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ label: 'Squad Telemetry', href: '/coach', icon: 'ph-users' },
-	{ label: 'Trial Builder', href: '/coach/trial-builder', icon: 'ph-target' },
-	{ label: 'Tactical Command', href: '/coach/tactical', icon: 'ph-strategy' },
-	{ label: 'Mission Dispatch', href: '/coach/drills', icon: 'ph-rocket-launch' },
+	{ label: 'Daily Intel', href: '/coach', icon: 'ph-squares-four' },
+	{ label: 'The Forge', href: '/coach/forge', icon: 'ph-barbell' },
+	{ label: 'Match Day', href: '/coach/match-day', icon: 'ph-activity' },
+	{ label: 'Proving Grounds', href: '/coach/scouting', icon: 'ph-target' },
+	{ label: 'Tactical Board', href: '/coach/tactical', icon: 'ph-map-trifold' },
+	{ label: 'Logistics & Comms', href: '/coach/logistics', icon: 'ph-calendar-blank' },
 ];
 
 /**
@@ -206,14 +208,19 @@ export function isShellNavActive(pathname, searchParams, item) {
 			return pathname === u.pathname || pathname.startsWith(u.pathname + '/');
 		}
 
-		// Coach OS: Clean path-based routing
+		// Coach OS: path prefix matching — hub `/coach` only when not inside a deeper pillar.
 		if (pathname.startsWith('/coach') && u.pathname.startsWith('/coach')) {
-			if (item.href === '/coach') {
-				// Only highlight the main dashboard button if we are exactly on the root /coach
-				return pathname === '/coach' || pathname === '/coach/' || pathname === '/coach/dashboard';
+			const norm = (/** @type {string} */ s) => s.replace(/\/$/, '') || '/';
+			const pathNorm = norm(pathname.split('?')[0] || '');
+			const hrefNorm = norm(u.pathname);
+
+			if (hrefNorm === '/coach') {
+				return (
+					pathNorm === '/coach' ||
+					pathNorm === '/coach/dashboard'
+				);
 			}
-			// For sub-pages (trial-builder, drills, tactical), highlight if the URL starts with that path
-			return pathname.startsWith(item.href);
+			return pathNorm === hrefNorm || pathNorm.startsWith(`${hrefNorm}/`);
 		}
 		
 		if (u.pathname !== pathname) return false;
