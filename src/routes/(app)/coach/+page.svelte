@@ -1,39 +1,95 @@
 <script>
-    import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
-    import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
-    import CoachSquadReadinessCard from '$lib/components/coach/CoachSquadReadinessCard.svelte';
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import CoachTeamXpVelocityChart from '$lib/components/shell/CoachTeamXpVelocityChart.svelte';
+	import CoachSquadReadinessCard from '$lib/components/coach/CoachSquadReadinessCard.svelte';
 </script>
 
-<div class="tw-flex tw-flex-col md:tw-flex-row tw-justify-between tw-items-start md:tw-items-center tw-mb-8 tw-gap-4 tw-mt-2">
-    <div>
-        <h1 class="tw-text-3xl tw-font-bold tw-tracking-tight tw-text-white">Daily Intelligence</h1>
-        <p class="tw-text-slate-400 tw-mt-1">Review player telemetry and prepare for upcoming missions.</p>
-    </div>
-    
-    <a href="/coach/tactical" class="tw-relative tw-group tw-inline-flex tw-items-center tw-justify-center tw-px-8 tw-py-4 tw-font-bold tw-text-white tw-transition-all tw-duration-300 tw-bg-red-600 tw-rounded-xl hover:tw-bg-red-500 tw-shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:tw-shadow-[0_0_30px_rgba(220,38,38,0.6)] hover:tw--translate-y-1 tw-z-10 tw-cursor-pointer">
-        INITIATE MATCH DAY MODE
-        <svg xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-ml-2 group-hover:tw-translate-x-1 tw-transition-transform" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-    </a>
+<div class="view-section coach-dashboard">
+	<div class="card-header coach-dashboard__page-head">
+		<div class="min-w-0">
+			<h1 class="view-title flush-top">Daily Intelligence</h1>
+			<p class="text-sm-sub mt-10">
+				Review player telemetry and prepare for upcoming missions.
+			</p>
+		</div>
+
+		<a href="/coach/tactical" class="primary-btn coach-dashboard__cta-match no-underline shrink-0">
+			INITIATE MATCH DAY MODE
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="coach-dashboard__cta-icon"
+				viewBox="0 0 20 20"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<path
+					fill-rule="evenodd"
+					d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+					clip-rule="evenodd"
+				/>
+			</svg>
+		</a>
+	</div>
+
+	<div class="bento-grid bento-grid--3">
+		<div class="bento-card bento-card--glass">
+			<h2 class="bg-blue-header">Priority Actions</h2>
+			<ActionInbox />
+		</div>
+
+		<div class="bento-card bento-card--glass coach-dashboard__bento-main">
+			<div class="coach-dashboard__stack-block">
+				<h2 class="bg-orange-header">Squad XP Velocity</h2>
+				<CoachTeamXpVelocityChart />
+			</div>
+
+			<div class="coach-dashboard__stack-block coach-dashboard__stack-block--tight">
+				<h2 class="bg-green-header">Squad Readiness</h2>
+				<CoachSquadReadinessCard />
+			</div>
+		</div>
+	</div>
 </div>
 
-<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-6">
-    
-    <div class="lg:tw-col-span-1 tw-flex tw-flex-col tw-gap-6">
-        <ActionInbox />
-    </div>
+<style>
+	.coach-dashboard__page-head {
+		border-bottom: none;
+		margin-bottom: 2rem;
+		padding-bottom: 0;
+	}
 
-    <div class="lg:tw-col-span-2 tw-flex tw-flex-col tw-gap-6">
-        
-        <div class="tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-rounded-2xl tw-p-6 tw-shadow-2xl tw-relative tw-z-10">
-            <h2 class="tw-text-xs tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest tw-mb-4">Squad XP Velocity</h2>
-            <CoachTeamXpVelocityChart />
-        </div>
+	@media (min-width: 64rem) {
+		.coach-dashboard__bento-main {
+			grid-column: span 2;
+		}
+	}
 
-        <div class="tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-rounded-2xl tw-p-6 tw-shadow-2xl tw-relative tw-z-10">
-            <CoachSquadReadinessCard />
-        </div>
+	.coach-dashboard__cta-match {
+		background: #dc2626;
+		color: #fff;
+		border-color: transparent;
+		font-weight: 800;
+		box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+	}
 
-    </div>
-</div>
+	.coach-dashboard__cta-match:hover {
+		opacity: 1;
+		background: #ef4444;
+		box-shadow: 0 0 30px rgba(220, 38, 38, 0.55);
+		transform: translateY(-1px);
+	}
+
+	.coach-dashboard__cta-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		flex-shrink: 0;
+	}
+
+	.coach-dashboard__stack-block :global(.ec-coach-xp) {
+		margin-bottom: 0;
+	}
+
+	.coach-dashboard__stack-block--tight {
+		margin-top: 1.5rem;
+	}
+</style>
