@@ -228,6 +228,14 @@
         { "fieldPath": "role", "order": "ASCENDING" },
         { "fieldPath": "email", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "telemetry_events",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "matchId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

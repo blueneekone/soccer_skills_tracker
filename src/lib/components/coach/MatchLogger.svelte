@@ -1,9 +1,14 @@
 <script>
 	import { httpsCallable } from 'firebase/functions';
-	import { functions } from '$lib/firebase.js';
+	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+	import { functions, db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Swal from 'sweetalert2';
 
 	let {
 		teamId = '',
+		/** Session id — correlates docs under `teams/{teamId}/telemetry_events` with the live terminal query. */
+		matchId = '',
 		/** @type {string[]} */
 		players = [],
 		/**
@@ -17,6 +22,14 @@
 
 	const commitMatchTelemetry = httpsCallable(functions, 'commitMatchTelemetry');
 
+	/** Maps UI metric keys → Firestore action label + points for live feed. */
+	const LIVE_ACTION = /** @type {const} */ ({
+		goals: /** @type {const} */ ({ action: 'goal', points: 10 }),
+		assists: /** @type {const} */ ({ action: 'assist', points: 6 }),
+		shots: /** @type {const} */ ({ action: 'shot', points: 1 }),
+		saves: /** @type {const} */ ({ action: 'save', points: 3 }),
+	});
+
 	/** @type {Record<string, { goals: number, assists: number, shots: number, saves: number }>} */
 	let pending = $state({});
 
@@ -25,6 +38,8 @@
 	let feedback = $state(null);
 
 	let lastTeamId = $state('');
+	/** `@statsDoc-metricKey` for CSS pulse on successful tap */
+	let pulseToken = $state(/** @type {string | null} */ (null));
 
 	$effect(() => {
 		if (teamId !== lastTeamId) {
@@ -32,6 +47,50 @@
 			pending = {};
 		}
 	});
+
+	/**
+	 * @param {string} playerStatsDocId
+	 * @param {string} actionType
+	 * @param {number} points
+	 */
+	async function logMatchEvent(playerStatsDocId, actionType, points) {
+		if (!teamId || !matchId || !playerStatsDocId) return;
+		const uid = authStore.user?.uid;
+		if (!uid) {
+			feedback = { type: 'error', text: 'Sign in required to log live taps.' };
+			return;
+		}
+		try {
+			await addDoc(collection(db, 'teams', teamId, 'telemetry_events'), {
+				teamId,
+				matchId,
+				playerId: playerStatsDocId,
+				action: actionType,
+				points,
+				timestamp: serverTimestamp(),
+				loggedBy: uid,
+			});
+			void Swal.fire({
+				icon: 'success',
+				title: actionType.toUpperCase(),
+				text: 'Synced',
+				toast: true,
+				position: 'bottom-end',
+				showConfirmButton: false,
+				timer: 1400,
+				timerProgressBar: true,
+				background: 'rgba(5,5,10,0.92)',
+				color: '#e5e7eb',
+				customClass: { popup: 'swal2-glass-toast' },
+			});
+		} catch (e) {
+			console.error('[MatchLogger] telemetry_events', e);
+			feedback = {
+				type: 'error',
+				text: 'Live tap did not reach Firestore (check connection / rules).',
+			};
+		}
+	}
 
 	/**
 	 * @param {string} rosterName
@@ -46,6 +105,13 @@
 			...pending,
 			[id]: { ...cur, [k]: cur[k] + 1 },
 		};
+		const spec = LIVE_ACTION[k];
+		const tok = `${id}-${k}`;
+		pulseToken = tok;
+		setTimeout(() => {
+			if (pulseToken === tok) pulseToken = null;
+		}, 520);
+		void logMatchEvent(id, spec.action, spec.points);
 	}
 
 	/**
@@ -102,7 +168,11 @@
 		<div>
 			<p class="ml-eyebrow">Coach OS · field</p>
 			<h2 id="ml-live-telemetry" class="ml-title">Live telemetry</h2>
-			<p class="ml-sub">Rapid + taps. Commit when the period ends (batched, server write).</p>
+			<p class="ml-sub">
+				Each + tap streams to Firestore ({#if matchId}<span class="ml-mono">{matchId.slice(0, 8)}…</span>{:else}<span
+					class="ml-muted-inline">no session id</span
+				>{/if}). Commit batches XP when the period ends.
+			</p>
 		</div>
 	</header>
 
@@ -137,6 +207,7 @@
 							><button
 								type="button"
 								class="ml-plus"
+								class:ml-plus--pulse={pulseToken === `${sid}-goals`}
 								aria-label="Add goal for {p}"
 								onclick={() => bump(p, 'goals')}>+</button
 							>
@@ -147,6 +218,7 @@
 							><button
 								type="button"
 								class="ml-plus"
+								class:ml-plus--pulse={pulseToken === `${sid}-assists`}
 								aria-label="Add assist for {p}"
 								onclick={() => bump(p, 'assists')}>+</button
 							>
@@ -157,6 +229,7 @@
 							><button
 								type="button"
 								class="ml-plus"
+								class:ml-plus--pulse={pulseToken === `${sid}-shots`}
 								aria-label="Add shot for {p}"
 								onclick={() => bump(p, 'shots')}>+</button
 							>
@@ -167,6 +240,7 @@
 							><button
 								type="button"
 								class="ml-plus"
+								class:ml-plus--pulse={pulseToken === `${sid}-saves`}
 								aria-label="Add save for {p}"
 								onclick={() => bump(p, 'saves')}>+</button
 							>
@@ -190,6 +264,14 @@
 </section>
 
 <style>
+	:global(.swal2-glass-toast) {
+		border: 1px solid rgba(34, 211, 238, 0.35) !important;
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.45),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+		backdrop-filter: blur(12px);
+	}
+
 	.ml-wrap {
 		--ml-line: rgba(0, 212, 255, 0.25);
 		--ml-bg: #05050a;
@@ -229,6 +311,17 @@
 		font-size: 0.65rem;
 		color: rgba(255, 255, 255, 0.45);
 		max-width: 40rem;
+	}
+
+	.ml-mono {
+		font-family: ui-monospace, Menlo, Consolas, monospace;
+		font-size: 0.62rem;
+		color: rgba(34, 211, 238, 0.85);
+	}
+
+	.ml-muted-inline {
+		color: rgba(255, 255, 255, 0.35);
+		font-style: italic;
 	}
 
 	.ml-feedback {
@@ -341,6 +434,9 @@
 		cursor: pointer;
 		touch-action: manipulation;
 		box-shadow: inset 0 0 0 1px var(--ml-glow);
+		transition:
+			box-shadow 0.35s ease,
+			transform 0.12s ease;
 	}
 
 	.ml-plus:hover {
@@ -349,6 +445,26 @@
 
 	.ml-plus:active {
 		transform: scale(0.97);
+	}
+
+	.ml-plus--pulse {
+		animation: ml-tap-pulse 0.52s ease-out;
+		box-shadow:
+			0 0 22px rgba(34, 211, 238, 0.55),
+			inset 0 0 0 1px rgba(34, 211, 238, 0.35);
+	}
+
+	@keyframes ml-tap-pulse {
+		0% {
+			box-shadow:
+				0 0 0 0 rgba(34, 211, 238, 0.65),
+				inset 0 0 0 1px rgba(34, 211, 238, 0.45);
+		}
+		100% {
+			box-shadow:
+				0 0 28px 6px rgba(34, 211, 238, 0),
+				inset 0 0 0 1px var(--ml-glow);
+		}
 	}
 
 	.ml-plus:disabled {

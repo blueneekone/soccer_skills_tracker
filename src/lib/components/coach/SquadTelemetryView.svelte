@@ -9,6 +9,7 @@
 		doc,
 		getDoc,
 		getDocs,
+		limit,
 		onSnapshot,
 		query,
 		where,
@@ -32,6 +33,68 @@
 	};
 
 	let { teamId = '', teams = [], showLiveTelemetry = true } = $props();
+
+	/** Isolates one bench-side logging session (new UUID when `teamId` changes). */
+	let activeMatchId = $state('');
+	let matchSessionTeamId = $state('');
+
+	/** Live rows from `teams/{teamId}/telemetry_events` for {@link activeMatchId}. */
+	/** @type {Array<Record<string, unknown> & { id: string }>} */
+	let liveTelemetryEvents = $state([]);
+	let liveTelemetryErr = $state('');
+
+	$effect(() => {
+		if (!browser) return;
+		const tid = teamId;
+		if (!tid) {
+			activeMatchId = '';
+			matchSessionTeamId = '';
+			return;
+		}
+		if (tid !== matchSessionTeamId) {
+			matchSessionTeamId = tid;
+			activeMatchId =
+				typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ?
+					crypto.randomUUID()
+				:	`m_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+		}
+	});
+
+	$effect(() => {
+		const tid = teamId;
+		const mid = activeMatchId;
+		/** @type {undefined | (() => void)} */
+		let unsub;
+		untrack(() => {
+			if (!browser || !tid || !mid) {
+				liveTelemetryEvents = [];
+				liveTelemetryErr = '';
+				return;
+			}
+			liveTelemetryErr = '';
+			const q = query(
+				collection(db, 'teams', tid, 'telemetry_events'),
+				where('matchId', '==', mid),
+				orderBy('timestamp', 'desc'),
+				limit(100),
+			);
+			unsub = onSnapshot(
+				q,
+				(snap) => {
+					liveTelemetryEvents = [];
+					snap.forEach((d) => liveTelemetryEvents.push({ id: d.id, ...d.data() }));
+				},
+				(e) => {
+					console.error('[SquadTelemetry] telemetry_events', e);
+					liveTelemetryErr =
+						'Live feed unavailable — deploy Firestore index for telemetry_events (matchId + timestamp).';
+				},
+			);
+		});
+		return () => {
+			if (unsub) unsub();
+		};
+	});
 
 	const secureAddPlayer = httpsCallable(functions, 'secureAddPlayer');
 	const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
@@ -447,6 +510,31 @@
 		return id || name;
 	}
 
+	/**
+	 * @param {unknown} pid
+	 */
+	function rosterLabelForTelemetry(pid) {
+		const sid = String(pid ?? '').trim();
+		if (!sid) return '—';
+		for (const name of players) {
+			if (resolveStatsId(name, playerStats) === sid) return name;
+		}
+		return sid.length > 18 ? `${sid.slice(0, 16)}…` : sid;
+	}
+
+	/**
+	 * @param {Record<string, unknown> & { id: string }} ev
+	 */
+	function telemetryRowTone(ev) {
+		const a = String(ev.action || '').toLowerCase();
+		if (a === 'goal') return 'stw__tel-line--goal';
+		if (a === 'tackle' || a === 'deflection') return 'stw__tel-line--tackle';
+		if (a === 'assist') return 'stw__tel-line--assist';
+		if (a === 'shot') return 'stw__tel-line--shot';
+		if (a === 'save') return 'stw__tel-line--save';
+		return 'stw__tel-line--misc';
+	}
+
 	function addPlayer() {
 		feedback = null;
 		const rawName = addName.trim();
@@ -682,10 +770,37 @@
 	{#if showLiveTelemetry}
 		<LiveTelemetrySection
 			teamId={teamId}
+			matchId={activeMatchId}
 			players={players}
 			getStatsId={(p) => resolveStatsId(p, playerStats)}
 			onCommitted={loadRoster}
 		/>
+		{#if teamId && activeMatchId}
+			<section class="stw__tel-shell" aria-labelledby="stw-tel-feed-title">
+				<div class="stw__tel-head">
+					<h2 id="stw-tel-feed-title" class="stw__tel-title">LIVE FEED · SOCKET</h2>
+					<p class="stw__tel-meta">
+						Session <span class="stw__mono">{activeMatchId.slice(0, 10)}…</span>
+					</p>
+				</div>
+				<div class="stw__tel-body" role="log" aria-live="polite" aria-relevant="additions">
+					{#if liveTelemetryErr}
+						<p class="stw__tel-err">{liveTelemetryErr}</p>
+					{:else if liveTelemetryEvents.length === 0}
+						<p class="stw__tel-empty">Awaiting pitch taps…</p>
+					{:else}
+						{#each liveTelemetryEvents as ev (ev.id)}
+							<div class="stw__tel-line {telemetryRowTone(ev)}">
+								<span class="stw__tel-ts">{fmtTime(ev.timestamp)}</span>
+								<span class="stw__tel-act">{String(ev.action ?? '—').toUpperCase()}</span>
+								<span class="stw__tel-pts">+{Math.round(Number(ev.points) || 0)}</span>
+								<span class="stw__tel-player">{rosterLabelForTelemetry(ev.playerId)}</span>
+							</div>
+						{/each}
+					{/if}
+				</div>
+			</section>
+		{/if}
 	{/if}
 
 	<section
@@ -1139,5 +1254,119 @@
 	.stw__err {
 		color: #fca5a5;
 		font-size: 0.75rem;
+	}
+
+	/* Live telemetry terminal (Firestore snapshot stream) */
+	.stw__tel-shell {
+		margin-bottom: 1.25rem;
+		border: 1px solid rgb(30 41 59);
+		background: #000;
+		min-width: 0;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+	}
+
+	.stw__tel-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.55rem 0.75rem;
+		border-bottom: 1px solid rgb(30 41 59);
+		background: rgba(5, 5, 10, 0.95);
+	}
+
+	.stw__tel-title {
+		margin: 0;
+		font-size: 0.62rem;
+		font-weight: 900;
+		letter-spacing: 0.22em;
+		color: rgba(52, 211, 153, 0.95);
+		text-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+	}
+
+	.stw__tel-meta {
+		margin: 0;
+		font-size: 0.55rem;
+		color: rgba(148, 163, 184, 0.95);
+		font-family: ui-monospace, Menlo, Consolas, monospace;
+	}
+
+	.stw__tel-body {
+		max-height: min(240px, 40vh);
+		overflow: auto;
+		padding: 0.45rem 0.55rem 0.65rem;
+		font-family: ui-monospace, Menlo, Consolas, monospace;
+		font-size: 0.72rem;
+		line-height: 1.45;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.stw__tel-empty,
+	.stw__tel-err {
+		margin: 0;
+		padding: 0.35rem 0;
+		color: rgba(148, 163, 184, 0.85);
+	}
+
+	.stw__tel-err {
+		color: #fca5a5;
+	}
+
+	.stw__tel-line {
+		display: grid;
+		grid-template-columns: minmax(0, 7.5rem) minmax(0, 5rem) 2.25rem minmax(0, 1fr);
+		gap: 0.35rem 0.5rem;
+		padding: 0.15rem 0;
+		border-bottom: 1px solid rgba(30, 41, 59, 0.65);
+		color: rgba(226, 232, 240, 0.88);
+	}
+
+	@media (max-width: 520px) {
+		.stw__tel-line {
+			grid-template-columns: 1fr;
+			gap: 0.1rem;
+		}
+	}
+
+	.stw__tel-ts {
+		color: rgba(100, 116, 139, 0.95);
+		font-size: 0.62rem;
+	}
+
+	.stw__tel-line--goal .stw__tel-act {
+		color: #34d399;
+		font-weight: 800;
+	}
+
+	.stw__tel-line--assist .stw__tel-act {
+		color: #22d3ee;
+	}
+
+	.stw__tel-line--shot .stw__tel-act {
+		color: #cbd5e1;
+	}
+
+	.stw__tel-line--save .stw__tel-act {
+		color: #38bdf8;
+	}
+
+	.stw__tel-line--tackle .stw__tel-act {
+		color: #fbbf24;
+		font-weight: 700;
+	}
+
+	.stw__tel-line--misc .stw__tel-act {
+		color: #a78bfa;
+	}
+
+	.stw__tel-pts {
+		color: rgba(226, 232, 240, 0.75);
+		text-align: right;
+	}
+
+	.stw__tel-player {
+		overflow-wrap: anywhere;
+		color: rgba(248, 250, 252, 0.92);
 	}
 </style>

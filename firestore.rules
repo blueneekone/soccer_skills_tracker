@@ -1027,6 +1027,36 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      // Coach OS: per-tap live match events (Squad telemetry terminal feed).
+      match /telemetry_events/{eventId} {
+        allow read: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        );
+        allow create: if coachStaffCanAccessTeam(teamId)
+          && request.resource.data.keys().hasAll([
+            'teamId', 'matchId', 'playerId', 'action', 'points', 'timestamp', 'loggedBy'
+          ])
+          && request.resource.data.teamId == teamId
+          && request.resource.data.matchId is string
+          && request.resource.data.matchId.size() > 0
+          && request.resource.data.matchId.size() <= 128
+          && request.resource.data.playerId is string
+          && request.resource.data.playerId.size() > 0
+          && request.resource.data.playerId.size() <= 256
+          && request.resource.data.action is string
+          && request.resource.data.action.size() > 0
+          && request.resource.data.action.size() <= 64
+          && request.resource.data.points is int
+          && request.resource.data.points >= -50
+          && request.resource.data.points <= 500
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.timestamp == request.time
+          && request.resource.data.keys().size() <= 12;
+        allow update, delete: if false;
+      }
+
       // Epic 2.3: saved tactical boards (coaches / directors / super_admin only).
       match /tactics/{tacticId} {
         allow read: if authed() && (

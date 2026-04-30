@@ -3,6 +3,8 @@
 
 	let {
 		teamId = '',
+		/** Correlates live taps with the squad telemetry terminal (`teams/{teamId}/telemetry_events`). */
+		matchId = '',
 		/** @type {string[]} */
 		players = [],
 		/**
@@ -26,7 +28,7 @@
 	<div
 		class="stw__live-scroll tw-w-full tw-overflow-x-auto tw-pb-4 [&_.ml-row]:tw-flex-nowrap [&_.ml-mets]:tw-min-w-min [&_.ml-name]:tw-whitespace-nowrap [&_.ml-lbl]:tw-whitespace-nowrap [&_.ml-val]:tw-whitespace-nowrap [&_.ml-metric]:tw-whitespace-nowrap"
 	>
-		<MatchLogger {teamId} {players} {getStatsId} {onCommitted} />
+		<MatchLogger {teamId} {matchId} {players} {getStatsId} {onCommitted} />
 	</div>
 </section>
 
