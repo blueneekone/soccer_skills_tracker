@@ -129,6 +129,8 @@
 	.pai {
 		position: relative;
 		z-index: 50;
+		min-width: 0;
+		overflow: hidden;
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
 		background: #ffffff;
@@ -168,12 +170,15 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 10px;
+		min-width: 0;
 	}
 
 	.pai__card {
 		position: relative;
 		z-index: 50;
 		display: flex;
+		min-width: 0;
+		overflow: hidden;
 		flex-direction: column;
 		justify-content: space-between;
 		gap: 12px;
@@ -188,6 +193,10 @@
 	:global(html.dark) .pai__card {
 		background: #0f0f11;
 		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.pai__card-top {
+		min-width: 0;
 	}
 
 	.pai__kicker {
@@ -206,6 +215,11 @@
 		font-weight: 700;
 		line-height: 1.45;
 		color: var(--text-primary);
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		overflow: hidden;
 	}
 
 	.pai__actions {
@@ -269,6 +283,7 @@
 		position: relative;
 		z-index: 50;
 		width: 100%;
+		min-width: 0;
 		border-radius: 10px;
 		border: 1px solid #e5e5e5;
 		padding: 8px 10px;
@@ -311,12 +326,17 @@
 
 	.pai__li {
 		margin-bottom: 4px;
+		min-width: 0;
 	}
 
 	.pai__li-link {
 		position: relative;
 		z-index: 50;
-		display: inline;
+		display: block;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		color: inherit;
 		text-decoration: underline;
 		text-decoration-color: rgba(99, 102, 241, 0.45);

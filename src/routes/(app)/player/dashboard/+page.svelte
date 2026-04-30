@@ -213,14 +213,14 @@
 >
 	<!-- Top HUD: level ring + streak — isolated above main scroll content -->
 	<header
-		class="lobby-hud-bar tw-relative tw-z-40 tw-mb-6 tw-flex tw-w-full tw-items-center tw-justify-center tw-border-b tw-border-white/10 tw-bg-slate-900/80 tw-py-4 tw-backdrop-blur-xl"
+		class="lobby-hud-bar tw-relative tw-z-40 tw-mb-8 tw-flex tw-w-full tw-items-center tw-justify-center tw-border-b tw-border-white/10 tw-bg-slate-900/80 tw-py-4 tw-backdrop-blur-xl"
 		aria-label="Combat HUD"
 	>
 		<div
-			class="tw-relative tw-z-40 tw-flex tw-w-full tw-max-w-6xl tw-flex-col tw-items-stretch tw-gap-5 tw-px-6 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+			class="tw-relative tw-z-40 tw-flex tw-w-full tw-max-w-6xl tw-min-w-0 tw-flex-col tw-items-stretch tw-gap-5 tw-px-6 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
 		>
 			<div
-				class="lobby-hud-ring tw-relative tw-z-50 tw-flex tw-shrink-0 tw-items-center tw-justify-center sm:tw-justify-start"
+				class="lobby-hud-ring tw-relative tw-z-50 tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-justify-center sm:tw-justify-start"
 			>
 				<div class="lobby-hud-ring__inner">
 					<LevelProgressRing
@@ -242,37 +242,43 @@
 	</header>
 
 	<div
-		class="lobby-root tw-relative tw-z-30 tw-mx-auto tw-box-border tw-w-full tw-max-w-6xl tw-min-w-0 tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-0 sm:tw-px-5"
+		class="lobby-root tw-relative tw-z-30 tw-mx-auto tw-box-border tw-flex tw-min-w-0 tw-w-full tw-max-w-6xl tw-flex-col tw-gap-8 tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-0 sm:tw-px-5"
 	>
-		<!-- Primary action row -->
+		<!-- Primary action row — AAA lobby launch tiles -->
 		<nav
-			class="lobby-action-row tw-relative tw-z-50 tw-mb-8 tw-grid tw-grid-cols-2 tw-gap-4"
+			class="lobby-action-row tw-relative tw-z-50 tw-grid tw-min-w-0 tw-grid-cols-2 tw-gap-4 sm:tw-gap-6"
 			aria-label="Primary navigation"
 		>
 			<a
 				href={resolve('/player/tracker')}
-				class="lobby-action-btn tw-relative tw-z-50 tw-flex tw-min-h-[5.5rem] tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-slate-700 tw-bg-gradient-to-r tw-from-slate-800 tw-to-slate-900 tw-p-6 tw-text-center tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-100 tw-no-underline tw-shadow-lg tw-transition tw-duration-200 hover:tw-border-cyan-500/50 hover:tw-shadow-[0_0_24px_rgba(34,211,238,0.25)] active:tw-scale-[0.99] sm:tw-min-h-[6.5rem]"
+				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
-				<i class="ph ph-lightning tw-mb-2 tw-text-2xl tw-text-cyan-400" aria-hidden="true"></i>
-				<span class="tw-text-xs sm:tw-text-sm">Today's quests</span>
+				<i class="ph ph-lightning tw-mb-3 tw-text-3xl tw-text-cyan-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
+				<span
+					class="tw-line-clamp-2 tw-text-xl tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
+					>Today's quests</span
+				>
 			</a>
 			<a
 				href={resolve('/player/armory')}
-				class="lobby-action-btn tw-relative tw-z-50 tw-flex tw-min-h-[5.5rem] tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-slate-700 tw-bg-gradient-to-r tw-from-slate-800 tw-to-slate-900 tw-p-6 tw-text-center tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-100 tw-no-underline tw-shadow-lg tw-transition tw-duration-200 hover:tw-border-cyan-500/50 hover:tw-shadow-[0_0_24px_rgba(34,211,238,0.25)] active:tw-scale-[0.99] sm:tw-min-h-[6.5rem]"
+				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
-				<i class="ph ph-chart-line-up tw-mb-2 tw-text-2xl tw-text-fuchsia-400" aria-hidden="true"></i>
-				<span class="tw-text-xs sm:tw-text-sm">Career stats</span>
+				<i class="ph ph-chart-line-up tw-mb-3 tw-text-3xl tw-text-fuchsia-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
+				<span
+					class="tw-line-clamp-2 tw-text-xl tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
+					>Career stats</span
+				>
 			</a>
 		</nav>
 
 	<div
-		class="lobby-hero lobby-glass tw-relative tw-z-30 tw-mb-8 tw-grid tw-min-h-[300px] tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-p-6 md:tw-grid-cols-2 md:tw-items-stretch md:tw-gap-10 md:tw-p-8"
+		class="lobby-hero lobby-glass tw-relative tw-z-30 tw-grid tw-min-h-[300px] tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-overflow-hidden tw-rounded-3xl tw-p-6 md:tw-grid-cols-2 md:tw-items-stretch md:tw-gap-10 md:tw-p-8"
 		aria-label="Operative profile"
 	>
 		<div
-			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-flex-col tw-items-center tw-justify-center md:tw-items-start"
+			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-flex-col tw-items-center tw-justify-center md:tw-items-start"
 		>
 			<p class="lobby-eyebrow tw-mb-4 tw-w-full tw-text-center md:tw-text-left">The operative</p>
 			<div class="holo-stage tw-relative tw-z-30 tw-mx-auto md:tw-mx-0">
@@ -293,11 +299,17 @@
 					aria-hidden="true"
 				></div>
 			</div>
-			<p class="tw-mt-5 tw-mb-0 tw-text-center tw-font-mono tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left">
+			<p
+				class="tw-mt-5 tw-mb-0 tw-w-full tw-min-w-0 tw-truncate tw-text-center tw-font-mono tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left"
+				title={callsign}
+			>
 				{callsign}
 			</p>
 			{#if teamAssignmentLabel}
-				<p class="tw-mt-1 tw-mb-0 tw-text-center tw-text-xs tw-tracking-widest tw-text-slate-500 md:tw-text-left">
+				<p
+					class="tw-mt-1 tw-mb-0 tw-w-full tw-min-w-0 tw-line-clamp-2 tw-text-center tw-text-xs tw-tracking-widest tw-text-slate-500 md:tw-text-left"
+					title={teamAssignmentLabel}
+				>
 					{teamAssignmentLabel}
 				</p>
 			{/if}
@@ -307,11 +319,11 @@
 			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-flex-1 tw-flex-col tw-items-center tw-gap-5 md:tw-items-stretch"
 		>
 			<div
-				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-backdrop-blur-md md:tw-gap-6 md:tw-p-5"
+				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-backdrop-blur-md md:tw-gap-6 md:tw-p-5"
 				aria-label="Combat stats"
 			>
 				<div
-					class="tw-w-full tw-min-w-0 tw-flex-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-slate-950/50 tw-p-4 tw-backdrop-blur-sm"
+					class="tw-w-full tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-950/50 tw-p-4 tw-backdrop-blur-sm"
 				>
 					<p class="lobby-eyebrow tw-mb-4 tw-text-center tw-text-cyan-400/90 md:tw-text-left">
 						Core attributes
@@ -320,11 +332,11 @@
 						{#each combatHudRows as row (row.label)}
 							<li class="tw-min-w-0">
 								<div
-									class="tw-mb-1 tw-flex tw-items-center tw-justify-between tw-gap-2 tw-text-[0.7rem]"
+									class="tw-mb-1 tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-2 tw-text-[0.7rem]"
 								>
 									<span
-										class="tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-slate-400"
-										>{row.label}</span
+										class="tw-min-w-0 tw-truncate tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-slate-400"
+										title={row.label}>{row.label}</span
 									>
 									<span
 										class="tw-font-mono tw-text-sm tw-font-black tw-tabular-nums tw-tracking-wide tw-text-slate-100"
@@ -355,39 +367,41 @@
 		</div>
 	</div>
 
-	<div class="tw-mb-8 tw-grid tw-min-w-0 tw-grid-cols-1 tw-gap-6 lg:tw-grid-cols-2">
+	<div class="tw-grid tw-min-w-0 tw-grid-cols-1 tw-gap-8 lg:tw-grid-cols-2">
 		<section
-			class="lobby-missions lobby-glass tw-relative tw-z-40 tw-min-h-0 tw-p-5 md:tw-p-6"
+			class="lobby-missions lobby-glass tw-relative tw-z-40 tw-min-h-0 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
 			aria-labelledby="lobby-missions-h"
 		>
-			<header class="tw-relative tw-z-50 tw-mb-4 tw-border-b tw-border-emerald-500/25 tw-pb-3">
+			<header class="tw-relative tw-z-50 tw-mb-4 tw-min-w-0 tw-border-b tw-border-emerald-500/25 tw-pb-3">
 				<p id="lobby-missions-h" class="lobby-eyebrow tw-mb-1 tw-text-emerald-400/90">Active missions</p>
-				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
+				<h2
+					class="tw-m-0 tw-line-clamp-2 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
+				>
 					Assigned workouts · pending trials
 				</h2>
 			</header>
-			<div class="tw-relative tw-z-50">
+			<div class="tw-relative tw-z-50 tw-min-w-0">
 				<PlayerActionInbox />
 			</div>
 		</section>
 
 		<section
-			class="lobby-radar lobby-glass tw-relative tw-z-40 tw-flex tw-min-h-0 tw-flex-col tw-p-5 md:tw-p-6"
+			class="lobby-radar lobby-glass tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
 			aria-labelledby="lobby-radar-h"
 		>
-			<header class="tw-relative tw-z-50 tw-mb-3">
+			<header class="tw-relative tw-z-50 tw-mb-3 tw-min-w-0">
 				<p class="lobby-eyebrow tw-mb-1 tw-text-fuchsia-400/90">Combat stats</p>
 				<h2 id="lobby-radar-h" class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
 					Attribute radar
 				</h2>
-				<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-slate-500">
+				<p class="tw-m-0 tw-mt-1 tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500">
 					Six-axis loadout from your latest <span class="tw-font-semibold tw-text-slate-400"
 						>{attributeSchema.canonicalKey}</span
 					> profile — keep logging to harden the shape.
 				</p>
 			</header>
 			<div
-				class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-flex-1 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-bg-[radial-gradient(ellipse_at_center,_rgba(15,23,42,0.92)_0%,_#020617_72%)] tw-p-3 tw-shadow-[inset_0_0_60px_rgba(0,0,0,0.65)]"
+				class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-bg-[radial-gradient(ellipse_at_center,_rgba(15,23,42,0.92)_0%,_#020617_72%)] tw-p-3 tw-shadow-[inset_0_0_60px_rgba(0,0,0,0.65)]"
 			>
 				<div
 					class="tw-pointer-events-none tw-absolute tw-inset-0 -tw-z-10 tw-opacity-[0.08]"
@@ -406,62 +420,62 @@
 	</div>
 
 	<section
-		class="pd-team-lb lobby-glass tw-relative tw-z-40 tw-mb-8 tw-min-w-0 tw-p-4"
+		class="pd-team-lb lobby-glass tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-4"
 		aria-label="Team leaderboard"
 	>
 		<TeamLeaderboard compact />
 	</section>
 
 	<div
-		class="lobby-glass tw-relative tw-z-40 tw-mb-8 tw-grid tw-w-full tw-grid-cols-2 tw-gap-3 tw-p-4 md:tw-grid-cols-4 md:tw-gap-4 md:tw-p-5"
+		class="lobby-glass tw-relative tw-z-40 tw-grid tw-w-full tw-min-w-0 tw-grid-cols-2 tw-gap-3 tw-overflow-hidden tw-rounded-3xl tw-p-4 md:tw-grid-cols-4 md:tw-gap-4 md:tw-p-5"
 		aria-label="Career telemetry"
 	>
 		<a
 			href={resolve('/stats')}
-			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
 			data-sveltekit-preload-data="hover"
 		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Total XP</span
 			>
-			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
+			<span class="tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
 				{totalXpHud.toLocaleString()}
 			</span>
 		</a>
 		<a
 			href={resolve('/stats')}
-			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
 			data-sveltekit-preload-data="hover"
 		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Level</span
 			>
-			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
+			<span class="tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
 				{osLevel}
 			</span>
 		</a>
 		<a
 			href={resolve('/player/workout')}
-			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
+			class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4 tw-no-underline tw-transition-transform tw-duration-200 hover:tw-scale-[1.02]"
 			data-sveltekit-preload-data="hover"
 		>
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Streak</span
 			>
-			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-cyan-300 md:tw-text-2xl">
+			<span class="tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-cyan-300 md:tw-text-2xl">
 				{streak}<span class="tw-text-base tw-font-bold tw-text-slate-500">d</span>
 			</span>
 		</a>
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
+		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/5 tw-bg-black/35 tw-px-3 tw-py-4">
 			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
 				>Best</span
 			>
-			<span class="tabular-num tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
+			<span class="tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
 				{longestStreak}<span class="tw-text-base tw-font-bold tw-text-slate-500">d</span>
 			</span>
 		</div>
 	</div>
-</div>
+	</div>
 </div>
 
 {/if}
@@ -496,7 +510,8 @@
 	}
 
 	.lobby-glass {
-		border-radius: 1rem;
+		border-radius: 1.5rem;
+		overflow: hidden;
 		border: 1px solid rgb(255 255 255 / 0.05);
 		background: rgb(15 23 42 / 0.6);
 		backdrop-filter: blur(24px);

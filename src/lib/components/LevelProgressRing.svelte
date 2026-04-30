@@ -219,6 +219,9 @@
 		position: absolute;
 		inset: 0;
 		display: flex;
+		min-width: 0;
+		max-width: 100%;
+		box-sizing: border-box;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
@@ -242,6 +245,11 @@
 		font-variant-numeric: tabular-nums;
 		color: #f8fafc;
 		line-height: 1.1;
+		min-width: 0;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.lp-ring__xp-label {
@@ -254,14 +262,19 @@
 	}
 
 	.lp-ring__seg {
-		display: block;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		margin-top: 6px;
 		font-size: 0.65rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
 		color: #22d3ee;
 		line-height: 1.25;
-		max-width: 7.5rem;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.lp-ring--light .lp-ring__level {
