@@ -1,2 +1,9 @@
-Place operative.glb here for the Armory 3D preview (`OperativeAvatar3D`).
-Export mesh or material names containing: jersey, cleat/boot/shoe, skin/face/head for tint routing.
+Place GLB base meshes for the Armory 3D operative preview:
+
+- base_alpha.glb
+- base_bravo.glb
+
+Mesh or material names should include tokens so tint routing applies:
+jersey / shirt / kit, cleat / boot / shoe, skin / face / head / arm / leg / hand.
+
+Legacy operative.glb is no longer used by OperativeAvatar3D.

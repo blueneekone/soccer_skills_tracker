@@ -1,5 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
+	import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 	import { getAvailableItems, processDeploymentRequest } from '$lib/gamification/armory.js';
@@ -41,8 +43,12 @@
 		'#1e293b',
 	]);
 
-	/** Reactive tint bundle for Three.js traversal (`OperativeAvatar3D`). */
+	/**
+	 * Loadout console — drives `OperativeAvatar3D` and persists to Firestore `users/{email}.avatarConfig`.
+	 * @type {{ bodyType: 'alpha' | 'bravo'; skinTone: string; jerseyColor: string; cleatColor: string }}
+	 */
 	let avatar3dConfig = $state({
+		bodyType: /** @type {'alpha' | 'bravo'} */ ('alpha'),
 		skinTone: '#d2996c',
 		jerseyColor: '#dc2626',
 		cleatColor: '#bef264',
@@ -68,6 +74,116 @@
 	);
 
 	const profile = $derived(authStore.userProfile);
+
+	/** Sync local studio state when the signed-in profile document supplies `avatarConfig`. */
+	const profileAvatarHydrateSig = $derived.by(() => {
+		const emailKey = (authStore.user?.email || '').toLowerCase();
+		const ac = profile?.avatarConfig;
+		const normalized =
+			ac && typeof ac === 'object' ?
+				JSON.stringify({
+					bodyType: ac.bodyType === 'bravo' ? 'bravo' : 'alpha',
+					skinTone: typeof ac.skinTone === 'string' ? ac.skinTone : '',
+					jerseyColor: typeof ac.jerseyColor === 'string' ? ac.jerseyColor : '',
+					cleatColor: typeof ac.cleatColor === 'string' ? ac.cleatColor : '',
+				})
+			:	'{}';
+		return `${emailKey}:${normalized}`;
+	});
+
+	let lastAvatarHydrateSig = '';
+
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		void profileAvatarHydrateSig;
+		const emailKey = (authStore.user?.email || '').toLowerCase();
+		if (!emailKey) {
+			lastAvatarHydrateSig = '';
+			return;
+		}
+		if (profileAvatarHydrateSig === lastAvatarHydrateSig) return;
+		lastAvatarHydrateSig = profileAvatarHydrateSig;
+
+		const ac = profile?.avatarConfig;
+		avatar3dConfig = {
+			bodyType: ac && typeof ac === 'object' && ac.bodyType === 'bravo' ? 'bravo' : 'alpha',
+			skinTone:
+				ac && typeof ac === 'object' && typeof ac.skinTone === 'string' ?
+					ac.skinTone
+				:	'#d2996c',
+			jerseyColor:
+				ac && typeof ac === 'object' && typeof ac.jerseyColor === 'string' ?
+					ac.jerseyColor
+				:	'#dc2626',
+			cleatColor:
+				ac && typeof ac === 'object' && typeof ac.cleatColor === 'string' ?
+					ac.cleatColor
+				:	'#bef264',
+		};
+	});
+
+	let operativeAvatarSaveBusy = $state(false);
+
+	/** Persist loadout to Firestore and mirror into {@link authStore}.userProfile.avatarConfig. */
+	async function saveOperativeAvatarConfig() {
+		if (operativeAvatarSaveBusy) return;
+		const u = authStore.user;
+		const prof = profile;
+		const emailKey = (u?.email || '').toLowerCase();
+		if (!u || !emailKey) {
+			void Swal.fire({
+				text: 'Sign in to update your operative.',
+				icon: 'error',
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+			return;
+		}
+
+		operativeAvatarSaveBusy = true;
+		try {
+			const payload = {
+				bodyType: avatar3dConfig.bodyType,
+				skinTone: avatar3dConfig.skinTone,
+				jerseyColor: avatar3dConfig.jerseyColor,
+				cleatColor: avatar3dConfig.cleatColor,
+			};
+			await updateDoc(doc(db, 'users', emailKey), {
+				avatarConfig: { ...payload, updatedAt: serverTimestamp() },
+			});
+
+			const merged = { ...(prof && typeof prof === 'object' ? prof : {}), avatarConfig: payload };
+			authStore.setProfile(/** @type {Record<string, unknown>} */ (merged));
+
+			void Swal.fire({
+				text: 'Operative profile synced to Command.',
+				icon: 'success',
+				toast: true,
+				position: 'top-end',
+				showConfirmButton: false,
+				timer: 4000,
+				timerProgressBar: true,
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : 'Could not save operative configuration.';
+			void Swal.fire({
+				text: msg,
+				icon: 'error',
+				toast: true,
+				position: 'top-end',
+				showConfirmButton: false,
+				timer: 5000,
+				timerProgressBar: true,
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+		} finally {
+			operativeAvatarSaveBusy = false;
+		}
+	}
+
 	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
 	const totalXpHud = $derived(
 		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
@@ -328,9 +444,50 @@
 				>
 					OPERATIVE LOADOUT · 3D PREVIEW
 				</p>
-				<div
-					class="tw-grid tw-items-stretch tw-gap-6 tw-p-4 sm:tw-p-5 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)]"
-				>
+				<div class="tw-space-y-6 tw-p-4 sm:tw-p-5">
+					<div class="operative-console-frame" aria-label="Operative base mesh">
+						<p class="qa-eyebrow tw-mb-3 tw-tracking-[0.28em]">OPERATIVE FRAME</p>
+						<div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2">
+							<button
+								type="button"
+								class="operative-frame-toggle qa-mono tw-relative tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-py-7 tw-px-5 tw-text-center tw-text-[0.72rem] tw-font-black tw-tracking-[0.32em] tw-text-slate-100 tw-transition tw-duration-200 tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.bodyType ===
+								'alpha' ?
+									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(34,211,238,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(34,211,238,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
+								:	'tw-border-white/10 tw-bg-[linear-gradient(165deg,rgba(255,255,255,0.08)_0%,rgba(15,23,42,0.45)_50%,rgba(0,0,0,0.55)_100%)] hover:tw-border-white/25'}"
+								aria-pressed={avatar3dConfig.bodyType === 'alpha'}
+								onclick={() => {
+									avatar3dConfig.bodyType = 'alpha';
+								}}
+							>
+								<span class="tw-relative tw-z-[1]">TYPE ALPHA</span>
+								<span
+									class="tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-40 tw-bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,0.35),transparent_55%)]"
+									aria-hidden="true"
+								></span>
+							</button>
+							<button
+								type="button"
+								class="operative-frame-toggle qa-mono tw-relative tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-py-7 tw-px-5 tw-text-center tw-text-[0.72rem] tw-font-black tw-tracking-[0.32em] tw-text-slate-100 tw-transition tw-duration-200 tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.bodyType ===
+								'bravo' ?
+									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(34,211,238,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(34,211,238,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
+								:	'tw-border-white/10 tw-bg-[linear-gradient(165deg,rgba(255,255,255,0.08)_0%,rgba(15,23,42,0.45)_50%,rgba(0,0,0,0.55)_100%)] hover:tw-border-white/25'}"
+								aria-pressed={avatar3dConfig.bodyType === 'bravo'}
+								onclick={() => {
+									avatar3dConfig.bodyType = 'bravo';
+								}}
+							>
+								<span class="tw-relative tw-z-[1]">TYPE BRAVO</span>
+								<span
+									class="tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-40 tw-bg-[radial-gradient(circle_at_70%_25%,rgba(167,139,250,0.3),transparent_50%)]"
+									aria-hidden="true"
+								></span>
+							</button>
+						</div>
+					</div>
+
+					<div
+						class="tw-grid tw-items-stretch tw-gap-6 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)]"
+					>
 					<div class="tw-relative tw-min-h-[240px] tw-h-[min(48vw,320px)] lg:tw-min-h-[280px] lg:tw-h-[320px]">
 						{#if browser}
 							<OperativeAvatar3D
@@ -406,9 +563,23 @@
 								{/each}
 							</div>
 						</div>
+						<button
+							type="button"
+							class="qa-mono tw-mt-1 tw-w-full tw-rounded-xl tw-border tw-border-emerald-400/45 tw-bg-[linear-gradient(165deg,rgba(52,211,153,0.18)_0%,rgba(6,78,59,0.35)_100%)] tw-py-4 tw-text-[0.68rem] tw-font-black tw-tracking-[0.28em] tw-text-emerald-50 tw-shadow-[0_0_24px_rgba(52,211,153,0.15)] tw-transition hover:tw-border-emerald-300/60 hover:tw-shadow-[0_0_32px_rgba(52,211,153,0.22)] disabled:tw-cursor-not-allowed disabled:tw-opacity-45"
+							disabled={operativeAvatarSaveBusy || !playerEmailKey}
+							onclick={() => void saveOperativeAvatarConfig()}
+						>
+							{operativeAvatarSaveBusy ? 'SYNCING…' : 'UPDATE OPERATIVE'}
+						</button>
 						<p class="qa-mono tw-m-0 tw-text-[0.58rem] tw-leading-relaxed tw-text-slate-500">
-							Drag the figure to orbit. Drop <span class="tw-text-slate-400">static/models/operative.glb</span> to replace the placeholder rig.
+							Drag to orbit. Meshes load from <span class="tw-text-slate-400">/models/base_alpha.glb</span> and
+							<span class="tw-text-slate-400">/models/base_bravo.glb</span>.
+							<span class="tw-block tw-mt-1"
+								>UPDATE OPERATIVE writes <span class="tw-text-slate-400">avatarConfig</span> on your Firestore user
+								doc and updates <span class="tw-text-slate-400">authStore.userProfile</span>.</span
+							>
 						</p>
+					</div>
 					</div>
 				</div>
 			</div>

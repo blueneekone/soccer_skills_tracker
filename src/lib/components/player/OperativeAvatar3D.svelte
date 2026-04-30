@@ -3,20 +3,22 @@
 	import { onMount } from 'svelte';
 
 	/**
+	 * @typedef {'alpha' | 'bravo'} OperativeBodyType
 	 * @typedef {{
 	 *   skinTone?: string;
 	 *   jerseyColor?: string;
 	 *   cleatColor?: string;
+	 *   bodyType?: string;
 	 * }} OperativeAvatar3DConfig
 	 */
-
-	const MODEL_URL = '/models/operative.glb';
 
 	let {
 		/** @type {OperativeAvatar3DConfig} */
 		config = {},
 		class: className = '',
 	} = $props();
+
+	const bodyType = $derived(config.bodyType === 'bravo' ? 'bravo' : 'alpha');
 
 	const colors = $derived({
 		skinTone: config.skinTone ?? '#d2996c',
@@ -34,8 +36,28 @@
 	/** @type {import('three').Group | null} */
 	let modelRoot = $state(null);
 
+	/** Set by Three bootstrap — reactive so `$effect` can swap meshes when `bodyType` changes. */
+	let swapBodyRef = $state(/** @type {null | ((bt: OperativeBodyType) => void)} */ (null));
+
 	/**
-	 * Apply tint rules by mesh / material name (case-insensitive substring match).
+	 * @param {import('three').Object3D} root
+	 */
+	function disposeModelSubtree(root) {
+		const geos = new Set();
+		const mats = new Set();
+		root.traverse((obj) => {
+			const mesh = /** @type {import('three').Mesh} */ (obj);
+			if (mesh.isMesh) {
+				if (mesh.geometry) geos.add(mesh.geometry);
+				const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				for (const m of ms) if (m) mats.add(m);
+			}
+		});
+		for (const g of geos) g.dispose();
+		for (const m of mats) m.dispose();
+	}
+
+	/**
 	 * @param {import('three').Object3D | null} root
 	 * @param {typeof colors} c
 	 */
@@ -82,10 +104,13 @@
 	/**
 	 * @param {typeof import('three')} THREE
 	 * @param {typeof colors} c
+	 * @param {OperativeBodyType} bt
 	 */
-	function buildFallbackOperative(THREE, c) {
+	function buildFallbackOperative(THREE, c, bt) {
 		const group = new THREE.Group();
-		group.name = 'operative_fallback';
+		group.name = `operative_fallback_${bt}`;
+
+		const scale = bt === 'bravo' ? 0.94 : 1;
 
 		const skinMat = new THREE.MeshStandardMaterial({
 			color: c.skinTone,
@@ -106,34 +131,34 @@
 			name: 'cleat_mat',
 		});
 
-		const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 28, 28), skinMat);
+		const head = new THREE.Mesh(new THREE.SphereGeometry(0.22 * scale, 28, 28), skinMat);
 		head.name = 'operative_skin_head';
-		head.position.set(0, 1.05, 0);
+		head.position.set(0, 1.05 * scale, 0);
 
-		const torso = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.52, 0.28), jerseyMat);
+		const torso = new THREE.Mesh(new THREE.BoxGeometry(0.48 * scale, 0.52 * scale, 0.28 * scale), jerseyMat);
 		torso.name = 'operative_jersey_torso';
-		torso.position.set(0, 0.62, 0);
+		torso.position.set(0, 0.62 * scale, 0);
 
-		const hip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.22), skinMat);
+		const hip = new THREE.Mesh(new THREE.BoxGeometry(0.42 * scale, 0.18 * scale, 0.22 * scale), skinMat);
 		hip.name = 'operative_skin_hips';
-		hip.position.set(0, 0.28, 0);
+		hip.position.set(0, 0.28 * scale, 0);
 
-		const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.42, 14), skinMat);
+		const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.09 * scale, 0.08 * scale, 0.42 * scale, 14), skinMat);
 		legL.name = 'operative_skin_leg_l';
-		legL.position.set(-0.14, -0.05, 0);
+		legL.position.set(-0.14 * scale, -0.05 * scale, 0);
 		const legR = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.09, 0.08, 0.42, 14),
+			new THREE.CylinderGeometry(0.09 * scale, 0.08 * scale, 0.42 * scale, 14),
 			skinMat,
 		);
 		legR.name = 'operative_skin_leg_r';
-		legR.position.set(0.14, -0.05, 0);
+		legR.position.set(0.14 * scale, -0.05 * scale, 0);
 
-		const cleatL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.26), cleatMat);
+		const cleatL = new THREE.Mesh(new THREE.BoxGeometry(0.14 * scale, 0.08 * scale, 0.26 * scale), cleatMat);
 		cleatL.name = 'operative_cleat_l';
-		cleatL.position.set(-0.14, -0.32, 0.05);
-		const cleatR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.26), cleatMat);
+		cleatL.position.set(-0.14 * scale, -0.32 * scale, 0.05 * scale);
+		const cleatR = new THREE.Mesh(new THREE.BoxGeometry(0.14 * scale, 0.08 * scale, 0.26 * scale), cleatMat);
 		cleatR.name = 'operative_cleat_r';
-		cleatR.position.set(0.14, -0.32, 0.05);
+		cleatR.position.set(0.14 * scale, -0.32 * scale, 0.05 * scale);
 
 		group.add(head, torso, hip, legL, legR, cleatL, cleatR);
 		return group;
@@ -190,6 +215,9 @@
 			/** @type {number | undefined} */
 			let rafId;
 
+			/** Increment to ignore stale GLTF callbacks when body type changes quickly. */
+			let loadGen = 0;
+
 			function resize() {
 				if (!hostEl || !canvasEl) return;
 				const w = Math.max(1, hostEl.clientWidth);
@@ -221,33 +249,61 @@
 
 			const loader = new GLTFLoader();
 
-			function attachRoot(root) {
-				if (modelRoot) scene.remove(modelRoot);
-				modelRoot = root;
-				scene.add(root);
-				applyMaterials(modelRoot, colors);
-				frameModel(root);
+			function snapshotColors() {
+				return {
+					skinTone: config.skinTone ?? '#d2996c',
+					jerseyColor: config.jerseyColor ?? '#dc2626',
+					cleatColor: config.cleatColor ?? '#bef264',
+				};
 			}
 
-			loader.load(
-				MODEL_URL,
-				(gltf) => {
-					if (disposed) return;
-					loadError = null;
-					const root = gltf.scene;
-					root.updateMatrixWorld(true);
-					attachRoot(root);
-				},
-				undefined,
-				() => {
-					if (disposed) return;
-					loadError = `Missing or invalid ${MODEL_URL} — showing placeholder geometry until asset ships.`;
-					console.warn('[OperativeAvatar3D]', loadError);
-					const fb = buildFallbackOperative(THREE, colors);
-					fb.updateMatrixWorld(true);
-					attachRoot(fb);
-				},
-			);
+			function detachCurrentModel() {
+				const prev = modelRoot;
+				if (!prev) return;
+				scene.remove(prev);
+				disposeModelSubtree(prev);
+				modelRoot = null;
+			}
+
+			/**
+			 * @param {OperativeBodyType} bt
+			 */
+			function swapBody(bt) {
+				if (disposed) return;
+
+				const gen = ++loadGen;
+				detachCurrentModel();
+
+				const url = `/models/base_${bt}.glb`;
+				loadError = null;
+
+				loader.load(
+					url,
+					(gltf) => {
+						if (disposed || gen !== loadGen) return;
+						loadError = null;
+						const root = gltf.scene;
+						root.updateMatrixWorld(true);
+						scene.add(root);
+						modelRoot = root;
+						frameModel(root);
+					},
+					undefined,
+					() => {
+						if (disposed || gen !== loadGen) return;
+						const snap = snapshotColors();
+						loadError = `Missing or invalid ${url} — placeholder geometry (${bt}).`;
+						console.warn('[OperativeAvatar3D]', loadError);
+						const fb = buildFallbackOperative(THREE, snap, bt);
+						fb.updateMatrixWorld(true);
+						scene.add(fb);
+						modelRoot = fb;
+						frameModel(fb);
+					},
+				);
+			}
+
+			swapBodyRef = swapBody;
 
 			const ro = new ResizeObserver(() => resize());
 			ro.observe(hostEl);
@@ -264,9 +320,13 @@
 			engineApi = {
 				dispose() {
 					disposed = true;
+					loadGen++;
+					swapBodyRef = null;
 					if (rafId !== undefined) cancelAnimationFrame(rafId);
 					ro.disconnect();
 					controls.dispose();
+
+					detachCurrentModel();
 
 					const geos = new Set();
 					const mats = new Set();
@@ -293,6 +353,13 @@
 		};
 	});
 
+	/** Reload GLB when operative frame (alpha/bravo) changes. */
+	$effect(() => {
+		if (!browser || !swapBodyRef) return;
+		bodyType;
+		swapBodyRef(bodyType);
+	});
+
 	$effect(() => {
 		if (!browser) return;
 		colors.skinTone;
@@ -307,6 +374,7 @@
 	bind:this={hostEl}
 	class={`operative-avatar-3d-host tw-relative tw-h-full tw-w-full tw-min-h-[220px] tw-overflow-hidden tw-rounded-xl tw-bg-gradient-to-b tw-from-slate-950/20 tw-to-black/40 ${className ?? ''}`}
 	data-region="operative-avatar-3d"
+	data-body-type={bodyType}
 >
 	{#if loadError}
 		<p
