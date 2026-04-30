@@ -5,27 +5,26 @@
 	import { db } from '$lib/firebase.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import {
-		enterpriseChartOptions,
 		enterpriseRadialOptions,
 		EC_ACCENT,
 		EC_INK,
-		EC_INK_LIGHT
+		EC_INK_LIGHT,
 	} from '$lib/charts/enterpriseChartTheme.js';
 	import { getAttributeSchemaForSport } from '$lib/utils/sport-attributes.js';
 
 	let { teamId = '' } = $props();
 
-	let xpCanvasEl = $state(/** @type {HTMLCanvasElement | null} */ (null));
 	let radarCanvasEl = $state(/** @type {HTMLCanvasElement | null} */ (null));
 	let mounted = $state(false);
-	/** @type {any} */
-	let xpChart = null;
 	/** @type {any} */
 	let radarChart = null;
 	let last7DayXpTotal = $state(0);
 
+	/** @type {Array<{ label: string, heightPct: number, xp: number }>} */
+	let velocityBars = $state([]);
+
 	$effect(() => {
-		if (!browser || !mounted || !xpCanvasEl || !radarCanvasEl || !teamId) return;
+		if (!browser || !mounted || !radarCanvasEl || !teamId) return;
 		let cancelled = false;
 
 		void (async () => {
@@ -34,11 +33,10 @@
 					getDocs(query(collection(db, 'reps'), where('teamId', '==', teamId))),
 					getDoc(doc(db, 'teams', teamId)),
 					getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
-					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId)))
+					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
 				]);
 
 				const dayKeys = getLast7DayKeys();
-				const dailyLabels = dayKeys.map((k) => formatDayLabelFromKey(k));
 				/** @type {Record<string, number>} */
 				const xpByDay = Object.fromEntries(dayKeys.map((k) => [k, 0]));
 				repsSnap.forEach((row) => {
@@ -49,6 +47,15 @@
 					xpByDay[key] += Math.floor(mins * 2);
 				});
 				last7DayXpTotal = dayKeys.reduce((sum, k) => sum + xpByDay[k], 0);
+
+				const maxDayXp = Math.max(1, ...dayKeys.map((k) => xpByDay[k]));
+				velocityBars = dayKeys.map((k) => {
+					const xp = xpByDay[k];
+					const heightPct = Math.max(18, Math.round((xp / maxDayXp) * 92));
+					const [y, m, day] = k.split('-').map(Number);
+					const dt = new Date(y, m - 1, day);
+					return { label: shortWeekLabel(dt), heightPct, xp };
+				});
 
 				const teamData = teamSnap.exists() ? teamSnap.data() : {};
 				const sportHint =
@@ -100,7 +107,6 @@
 				const mod = await import('chart.js');
 				const {
 					Chart,
-					LineController,
 					LineElement,
 					PointElement,
 					CategoryScale,
@@ -109,10 +115,9 @@
 					Tooltip,
 					Filler,
 					RadarController,
-					RadialLinearScale
+					RadialLinearScale,
 				} = mod;
 				Chart.register(
-					LineController,
 					LineElement,
 					PointElement,
 					CategoryScale,
@@ -121,44 +126,8 @@
 					Tooltip,
 					Filler,
 					RadarController,
-					RadialLinearScale
+					RadialLinearScale,
 				);
-
-				xpChart?.destroy();
-				const xpOpts = enterpriseChartOptions(false);
-				xpChart = new Chart(xpCanvasEl, {
-					type: 'line',
-					data: {
-						labels: dailyLabels,
-						datasets: [
-							{
-								label: 'Team XP (daily)',
-								data: dayKeys.map((k) => xpByDay[k]),
-								borderColor: EC_ACCENT,
-								backgroundColor: 'rgba(245, 158, 11, 0.14)',
-								fill: true,
-								tension: 0.28,
-								pointRadius: 3,
-								pointBackgroundColor: EC_INK
-							}
-						]
-					},
-					options: {
-						...xpOpts,
-						plugins: { ...xpOpts.plugins, legend: { display: false } },
-						scales: {
-							x: {
-								grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-								ticks: { color: EC_INK_LIGHT, font: { size: 10 } }
-							},
-							y: {
-								beginAtZero: true,
-								grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-								ticks: { color: EC_INK_LIGHT, font: { size: 11 } }
-							}
-						}
-					}
-				});
 
 				radarChart?.destroy();
 				const radarOpts = enterpriseRadialOptions(false);
@@ -174,9 +143,9 @@
 								backgroundColor: 'rgba(63, 63, 70, 0.16)',
 								pointBackgroundColor: EC_ACCENT,
 								pointBorderColor: '#ffffff',
-								pointHoverBackgroundColor: EC_ACCENT
-							}
-						]
+								pointHoverBackgroundColor: EC_ACCENT,
+							},
+						],
 					},
 					options: {
 						...radarOpts,
@@ -187,10 +156,10 @@
 								ticks: { display: false, stepSize: 20, color: EC_INK_LIGHT },
 								angleLines: { color: 'rgba(0,0,0,0.06)' },
 								grid: { color: 'rgba(0,0,0,0.06)' },
-								pointLabels: { color: EC_INK, font: { size: 11, weight: '600' } }
-							}
-						}
-					}
+								pointLabels: { color: EC_INK, font: { size: 11, weight: '600' } },
+							},
+						},
+					},
 				});
 			} catch (e) {
 				console.error('[CoachTeamXpVelocityChart] chart load failed', e);
@@ -199,8 +168,6 @@
 
 		return () => {
 			cancelled = true;
-			xpChart?.destroy();
-			xpChart = null;
 			radarChart?.destroy();
 			radarChart = null;
 		};
@@ -232,12 +199,13 @@
 	}
 
 	/**
-	 * @param {string} dateKey
+	 * Single-letter weekday labels: M T W Th F S Su
+	 * @param {Date} d
 	 */
-	function formatDayLabelFromKey(dateKey) {
-		const [year, month, day] = dateKey.split('-').map(Number);
-		const d = new Date(year, month - 1, day);
-		return d.toLocaleDateString(undefined, { weekday: 'short' });
+	function shortWeekLabel(d) {
+		const dow = d.getDay();
+		const labels = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
+		return labels[dow];
 	}
 
 	onMount(() => {
@@ -247,19 +215,41 @@
 
 {#if teamId}
 	<div class="ec-coach-xp">
-		<div class="ec-coach-xp__card">
-			<h3 class="ec-coach-xp__title">Team XP velocity (last 7 days)</h3>
-			<p class="ec-coach-xp__total">{last7DayXpTotal} XP</p>
-			<p class="ec-coach-xp__sub">Daily team XP total (minutes × 2) across the last 7 days.</p>
-			<div class="ec-coach-xp__chart">
-				<canvas bind:this={xpCanvasEl} aria-label="Team XP velocity last 7 days chart"></canvas>
+		<div
+			class="ec-coach-xp__card flex flex-col rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+		>
+			<h3 class="mb-1 text-sm font-bold text-slate-100">Team XP velocity (last 7 days)</h3>
+			<p class="mb-1 font-mono text-2xl font-black tracking-tight text-cyan-400 tabular-nums">
+				{last7DayXpTotal.toLocaleString()} XP
+			</p>
+			<p class="mb-6 text-xs text-slate-500">Daily team XP (minutes × 2) · pure CSS bars</p>
+
+			<div class="flex min-h-[11rem] flex-1 items-end justify-between gap-1.5 px-0.5 sm:gap-2">
+				{#each velocityBars as bar, i (`${bar.label}-${i}-${bar.xp}`)}
+					<div class="flex min-w-0 flex-1 flex-col items-center gap-2">
+						<div
+							class="flex h-36 w-full items-end justify-center rounded-t-md bg-slate-950/50 ring-1 ring-inset ring-white/[0.06]"
+						>
+							<div
+								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(34,211,238,0.45)] transition-[height] duration-300"
+								style="height: {bar.heightPct}%"
+								title="{bar.xp} XP"
+							></div>
+						</div>
+						<span class="text-xs text-slate-500">{bar.label}</span>
+					</div>
+				{/each}
 			</div>
 		</div>
 
-		<div class="ec-coach-xp__card">
-			<h3 class="ec-coach-xp__title">Team average attributes</h3>
-			<p class="ec-coach-xp__sub">Average ratings from active roster `player_stats` values for this team.</p>
-			<div class="ec-coach-xp__chart ec-coach-xp__chart--radar">
+		<div
+			class="ec-coach-xp__card flex flex-col rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+		>
+			<h3 class="mb-1 text-sm font-bold text-slate-100">Team average attributes</h3>
+			<p class="mb-4 text-xs text-slate-500">
+				Average ratings from active roster `player_stats` for this team.
+			</p>
+			<div class="ec-coach-xp__chart ec-coach-xp__chart--radar flex-1">
 				<canvas bind:this={radarCanvasEl} aria-label="Team average attributes radar chart"></canvas>
 			</div>
 		</div>
@@ -276,40 +266,8 @@
 	}
 
 	.ec-coach-xp__card {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		background: #ffffff;
-		padding: 1.25rem;
 		box-sizing: border-box;
-	}
-
-	:global(html.dark) .ec-coach-xp__card {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #0f172a;
-	}
-
-	.ec-coach-xp__title {
-		margin: 0 0 4px;
-		font-size: 14px;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.ec-coach-xp__total {
-		margin: 0;
-		font-size: clamp(1.3rem, 3.2vw, 1.9rem);
-		font-weight: 900;
-		letter-spacing: -0.02em;
-		color: var(--brand-primary, #f59e0b);
-	}
-
-	.ec-coach-xp__sub {
-		margin: 0.3rem 0 0.8rem;
-		font-size: 12px;
-		color: var(--text-secondary);
+		min-width: 0;
 	}
 
 	.ec-coach-xp__chart {

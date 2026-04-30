@@ -13,6 +13,15 @@
 	let loading = $state(true);
 	let err = $state('');
 
+	const MOCK_PLAYERS = [
+		{ name: 'Jimmy Torres', initials: 'JT', status: 'Cleared', variant: 'ok' },
+		{ name: 'Ava Chen', initials: 'AC', status: 'Cleared', variant: 'ok' },
+		{ name: 'Marcus Reid', initials: 'MR', status: 'Injured', variant: 'bad' },
+		{ name: 'Sofia Okonkwo', initials: 'SO', status: 'Fatigued', variant: 'bad' },
+	];
+
+	const READINESS_PCT = 85;
+
 	const OK_LOOKUP = new Set(['active', 'pending', '']);
 
 	/**
@@ -94,151 +103,102 @@
 	});
 </script>
 
-<div class="readiness" data-region="coach-squad-readiness">
-	<p class="readiness__eyebrow">Squad pulse</p>
-	<h2 class="readiness__title">Readiness</h2>
+<div
+	class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+	data-region="coach-squad-readiness"
+>
+	<h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-slate-400">Squad readiness</h2>
+
+	<div class="mb-6">
+		<div class="mb-2 flex items-center justify-between gap-3">
+			<span class="text-sm font-semibold text-slate-200">Overall readiness</span>
+			<span class="font-mono text-sm tabular-nums text-cyan-400/90">{READINESS_PCT}%</span>
+		</div>
+		<div class="h-2 overflow-hidden rounded-full bg-slate-800/80">
+			<div
+				class="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(34,211,238,0.35)] transition-[width] duration-500"
+				style="width: {READINESS_PCT}%"
+			></div>
+		</div>
+	</div>
+
+	<div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+		{#each MOCK_PLAYERS as p (p.name)}
+			<div
+				class="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-slate-950/40 p-3 backdrop-blur-sm"
+			>
+				<div
+					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-800/80 text-xs font-bold text-slate-200"
+				>
+					{p.initials}
+				</div>
+				<div class="min-w-0 flex-1">
+					<p class="truncate text-sm font-semibold text-slate-100">{p.name}</p>
+					<span
+						class="mt-1 inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide {p.variant ===
+						'ok'
+							? 'bg-emerald-400/10 text-emerald-400'
+							: 'bg-red-400/10 text-red-400'}"
+					>
+						{p.status}
+					</span>
+				</div>
+			</div>
+		{/each}
+	</div>
 
 	{#if loading}
-		<p class="readiness__muted">Loading roster signals…</p>
+		<p class="text-sm text-slate-500">Loading roster signals…</p>
 	{:else if err}
-		<p class="readiness__err" role="alert">{err}</p>
+		<p class="text-sm text-red-400" role="alert">{err}</p>
 	{:else}
-		<div class="readiness__block">
-			<h3 class="readiness__sub">Closest to leveling up</h3>
-			{#if levelingSoon.length === 0}
-				<p class="readiness__muted">No XP progression rows yet, or squad is at cap.</p>
-			{:else}
-				<ol class="readiness__list">
-					{#each levelingSoon as row, i (row.name + i)}
-						<li class="readiness__li">
-							<span class="readiness__name">{row.name}</span>
-							<span class="readiness__meta"
-								>L{row.level} · {row.gap.toLocaleString()} XP to next</span
-							>
-						</li>
-					{/each}
-				</ol>
-			{/if}
-		</div>
+		<div class="border-t border-white/5 pt-5">
+			<h3 class="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+				Live signals
+			</h3>
+			<div class="space-y-4">
+				<div>
+					<h4 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+						Closest to leveling up
+					</h4>
+					{#if levelingSoon.length === 0}
+						<p class="text-xs text-slate-600">No XP progression rows yet, or squad is at cap.</p>
+					{:else}
+						<ol class="list-decimal space-y-2 pl-4 text-sm text-slate-300">
+							{#each levelingSoon as row, i (row.name + i)}
+								<li>
+									<span class="font-medium text-slate-200">{row.name}</span>
+									<span class="ml-1 text-xs text-slate-500">
+										L{row.level} · {row.gap.toLocaleString()} XP to next
+									</span>
+								</li>
+							{/each}
+						</ol>
+					{/if}
+				</div>
 
-		<div class="readiness__block">
-			<h3 class="readiness__sub">Injured / absent / inactive</h3>
-			{#if unavailable.length === 0}
-				<p class="readiness__muted">No non-active availability flags on linked players.</p>
-			{:else}
-				<ul class="readiness__list readiness__list--plain">
-					{#each unavailable as row (row.name)}
-						<li class="readiness__li readiness__li--warn">
-							<span class="readiness__name">{row.name}</span>
-							<span class="readiness__pill">{row.status}</span>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+				<div>
+					<h4 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+						Injured / absent / inactive
+					</h4>
+					{#if unavailable.length === 0}
+						<p class="text-xs text-slate-600">No non-active availability flags on linked players.</p>
+					{:else}
+						<ul class="space-y-2">
+							{#each unavailable as row (row.name)}
+								<li class="flex items-center justify-between gap-2 rounded-lg bg-slate-950/30 px-3 py-2">
+									<span class="truncate font-mono text-xs text-slate-300">{row.name}</span>
+									<span
+										class="shrink-0 rounded-md border border-red-400/35 bg-red-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-300"
+									>
+										{row.status}
+									</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
-
-<style>
-	.readiness {
-		min-width: 0;
-	}
-
-	.readiness__eyebrow {
-		margin: 0 0 0.35rem;
-		font-family: ui-sans-serif, system-ui, Inter, sans-serif;
-		font-size: 0.65rem;
-		font-weight: 700;
-		letter-spacing: 0.28em;
-		text-transform: uppercase;
-		color: rgb(148 163 184);
-	}
-
-	.readiness__title {
-		margin: 0 0 1rem;
-		font-family: ui-sans-serif, system-ui, Inter, sans-serif;
-		font-size: 1.05rem;
-		font-weight: 800;
-		letter-spacing: -0.02em;
-		color: rgb(248 250 252);
-	}
-
-	.readiness__block {
-		margin-bottom: 1.1rem;
-	}
-	.readiness__block:last-child {
-		margin-bottom: 0;
-	}
-
-	.readiness__sub {
-		margin: 0 0 0.5rem;
-		font-family: ui-sans-serif, system-ui, Inter, sans-serif;
-		font-size: 0.6rem;
-		font-weight: 800;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: rgb(148 163 184);
-	}
-
-	.readiness__muted {
-		margin: 0;
-		font-size: 0.78rem;
-		line-height: 1.45;
-		color: rgb(148 163 184 / 0.9);
-	}
-
-	.readiness__err {
-		margin: 0;
-		font-size: 0.8rem;
-		color: rgb(248 113 113);
-	}
-
-	.readiness__list {
-		margin: 0;
-		padding: 0 0 0 1rem;
-		list-style: decimal;
-	}
-
-	.readiness__list--plain {
-		list-style: none;
-		padding-left: 0;
-	}
-
-	.readiness__li {
-		margin-bottom: 0.45rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-	}
-
-	.readiness__li--warn {
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
-
-	.readiness__name {
-		font-family: ui-monospace, Menlo, Consolas, monospace;
-		font-size: 0.8rem;
-		color: rgb(226 232 240);
-	}
-
-	.readiness__meta {
-		font-size: 0.68rem;
-		color: rgb(34 211 238 / 0.85);
-	}
-
-	.readiness__pill {
-		font-size: 0.58rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 0.2rem 0.45rem;
-		border-radius: 0.15rem;
-		border: 1px solid rgb(251 113 133 / 0.45);
-		color: rgb(254 202 202);
-		background: rgb(127 29 29 / 0.25);
-	}
-</style>

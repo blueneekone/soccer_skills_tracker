@@ -16,6 +16,47 @@
 	let items = $state([]);
 	let loading = $state(true);
 
+	/** Coach dashboard mocks when inbox is empty (Liquid Glass bento). */
+	const MOCK_COACH_ACTIONS = [
+		{
+			id: 'mock-trial',
+			label: "Review Jimmy's Video Trial",
+			meta: 'Trials · Verification',
+			href: '/coach',
+			dot: 'cyan',
+		},
+		{
+			id: 'mock-roster',
+			label: 'Approve Roster for Saturday',
+			meta: 'Match day · Roster',
+			href: '/coach',
+			dot: 'amber',
+		},
+		{
+			id: 'mock-waiver',
+			label: 'Message Parent: Missing Waiver',
+			meta: 'Compliance · Waivers',
+			href: '/messages',
+			dot: 'cyan',
+		},
+	];
+
+	/**
+	 * Rows shown in the UI: live Firestore-driven items, or coach mocks when empty.
+	 * @type {Array<{ id: string, label: string, meta?: string, href: string, dot: 'cyan' | 'amber' }>}
+	 */
+	const displayRows = $derived.by(() => {
+		if (loading) return [];
+		if (items.length > 0) {
+			return items.map((row, i) => ({
+				...row,
+				dot: i % 2 === 0 ? 'cyan' : 'amber',
+			}));
+		}
+		if (role === 'coach') return MOCK_COACH_ACTIONS;
+		return [];
+	});
+
 	$effect(() => {
 		// Wait for Firebase Auth to fully initialize before firing any Firestore reads.
 		// Firing before auth settles produces empty reads or permission-denied errors.
@@ -78,50 +119,50 @@
 						});
 					}
 				} else if (role === 'director' && clubId) {
-				const q = query(
-					collection(db, 'coach_invites'),
-					where('clubId', '==', clubId),
-					where('status', '==', 'pending'),
-				);
-				let n = 0;
-				try {
-					const snap = await getCountFromServer(q);
-					n = snap.data().count;
-				} catch {
-					const snap = await getDocs(q);
-					n = snap.size;
-				}
-				if (!cancelled && n > 0) {
-					next.push({
-						id: 'invites',
-						label: `${n} pending coach invite${n === 1 ? '' : 's'}`,
-						meta: 'Roster & teams',
-						href: '/director?tab=teams',
-					});
-				}
+					const q = query(
+						collection(db, 'coach_invites'),
+						where('clubId', '==', clubId),
+						where('status', '==', 'pending'),
+					);
+					let n = 0;
+					try {
+						const snap = await getCountFromServer(q);
+						n = snap.data().count;
+					} catch {
+						const snap = await getDocs(q);
+						n = snap.size;
+					}
+					if (!cancelled && n > 0) {
+						next.push({
+							id: 'invites',
+							label: `${n} pending coach invite${n === 1 ? '' : 's'}`,
+							meta: 'Roster & teams',
+							href: '/director?tab=teams',
+						});
+					}
 
-				const vpcQ = query(
-					collection(db, 'vpc_requests'),
-					where('clubId', '==', clubId),
-					where('status', '==', 'parent_consented'),
-				);
-				let vpcN = 0;
-				try {
-					const vSnap = await getCountFromServer(vpcQ);
-					vpcN = vSnap.data().count;
-				} catch {
-					const vSnap = await getDocs(vpcQ);
-					vpcN = vSnap.size;
-				}
-				if (!cancelled && vpcN > 0) {
-					next.push({
-						id: 'vpc-approvals',
-						label: `${vpcN} VPC approval${vpcN === 1 ? '' : 's'} awaiting director sign-off`,
-						meta: 'Privacy · Consent',
-						href: '/director?tab=household',
-					});
-				}
-			} else if (role === 'registrar' && clubId) {
+					const vpcQ = query(
+						collection(db, 'vpc_requests'),
+						where('clubId', '==', clubId),
+						where('status', '==', 'parent_consented'),
+					);
+					let vpcN = 0;
+					try {
+						const vSnap = await getCountFromServer(vpcQ);
+						vpcN = vSnap.data().count;
+					} catch {
+						const vSnap = await getDocs(vpcQ);
+						vpcN = vSnap.size;
+					}
+					if (!cancelled && vpcN > 0) {
+						next.push({
+							id: 'vpc-approvals',
+							label: `${vpcN} VPC approval${vpcN === 1 ? '' : 's'} awaiting director sign-off`,
+							meta: 'Privacy · Consent',
+							href: '/director?tab=household',
+						});
+					}
+				} else if (role === 'registrar' && clubId) {
 					const tSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
 					);
@@ -195,120 +236,44 @@
 	}
 </script>
 
-<div class="ec-action-inbox" aria-label="Action inbox">
-	<div class="ec-action-inbox__head">
-		<i class="ph ph-tray" aria-hidden="true"></i>
-		<span>Action inbox</span>
-	</div>
+<div
+	class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+	aria-label="Priority actions inbox"
+>
+	<h2 class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Priority actions</h2>
+
 	{#if loading}
-		<p class="ec-action-inbox__muted">Loading…</p>
-	{:else if items.length === 0}
-		<p class="ec-action-inbox__muted">No urgent items. You’re caught up.</p>
+		<p class="text-sm text-slate-500">Loading…</p>
+	{:else if displayRows.length === 0}
+		<p class="text-sm text-slate-500">No urgent items. You’re caught up.</p>
 	{:else}
-		<ul class="ec-action-inbox__list">
-			{#each items as row (row.id)}
+		<ul class="flex flex-col gap-1 p-0">
+			{#each displayRows as row (row.id)}
 				<li>
 					<a
 						href={resolve(row.href)}
-						class="ec-action-inbox__row"
+						class="flex cursor-pointer items-center gap-3 rounded-lg border border-transparent p-3 transition-colors hover:border-white/5 hover:bg-slate-800/50"
 						onclick={(event) => {
 							event.preventDefault();
 							void navigateTo(row.href);
 						}}
 					>
-						<span class="ec-action-inbox__label">{row.label}</span>
-						{#if row.meta}
-							<span class="ec-action-inbox__meta">{row.meta}</span>
-						{/if}
-						<i class="ph ph-caret-right ec-action-inbox__chev" aria-hidden="true"></i>
+						<span
+							class="h-2 w-2 shrink-0 rounded-full shadow-[0_0_10px_currentColor] {row.dot === 'cyan'
+								? 'bg-cyan-400 shadow-cyan-400/80'
+								: 'bg-amber-400 shadow-amber-400/70'}"
+							aria-hidden="true"
+						></span>
+						<span class="min-w-0 flex-1">
+							<span class="block text-sm font-semibold text-slate-100">{row.label}</span>
+							{#if row.meta}
+								<span class="mt-0.5 block text-xs text-slate-500">{row.meta}</span>
+							{/if}
+						</span>
+						<i class="ph ph-caret-right shrink-0 text-slate-500" aria-hidden="true"></i>
 					</a>
 				</li>
 			{/each}
 		</ul>
 	{/if}
 </div>
-
-<style>
-	.ec-action-inbox {
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		background: #fafafa;
-		padding: 10px 12px;
-		margin-bottom: 16px;
-		box-sizing: border-box;
-	}
-
-	:global(html.dark) .ec-action-inbox {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #0f0f11;
-	}
-
-	.ec-action-inbox__head {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-secondary);
-		margin-bottom: 8px;
-	}
-
-	.ec-action-inbox__muted {
-		margin: 0;
-		font-size: 12px;
-		color: var(--text-secondary);
-	}
-
-	.ec-action-inbox__list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.ec-action-inbox__row {
-		width: 100%;
-		display: grid;
-		grid-template-columns: 1fr auto auto;
-		align-items: center;
-		gap: 8px;
-		text-align: left;
-		padding: 8px 10px;
-		border-radius: 10px;
-		border: 1px solid rgba(0, 0, 0, 0.06);
-		background: #ffffff;
-		cursor: pointer;
-		font: inherit;
-		color: var(--text-primary);
-		transition: background 0.12s ease;
-		text-decoration: none;
-	}
-
-	:global(html.dark) .ec-action-inbox__row {
-		background: #09090b;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.ec-action-inbox__row:hover {
-		background: rgba(0, 0, 0, 0.03);
-	}
-
-	.ec-action-inbox__label {
-		font-size: 13px;
-		font-weight: 600;
-	}
-
-	.ec-action-inbox__meta {
-		font-size: 11px;
-		color: var(--text-secondary);
-	}
-
-	.ec-action-inbox__chev {
-		color: var(--text-secondary);
-		font-size: 1rem;
-	}
-</style>
