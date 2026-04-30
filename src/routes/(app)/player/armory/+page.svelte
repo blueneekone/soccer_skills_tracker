@@ -4,16 +4,35 @@
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 	import { getAvailableItems, processDeploymentRequest } from '$lib/gamification/armory.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+	import {
+		SEASON_ONE_ALBUM_CAP,
+		formatVariantLabel,
+		getSeasonOneCardsForSet,
+		seasonOneSets,
+	} from '$lib/gamification/seasonOneData.js';
+	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
+	import OperativePathway from '$lib/components/player/OperativePathway.svelte';
 	import Swal from 'sweetalert2';
 
-	/** @type {'quartermaster' | 'vault'} */
+	/** @type {'quartermaster' | 'album'} */
 	let armoryWorkspace = $state('quartermaster');
 
-	/** Pro card vault slots (foundation for gacha). Index 0 = operative legend. */
-	const VAULT_SLOT_COUNT = 6;
-	/** Required operative level per slot index (progressive unlocks). */
-	const VAULT_UNLOCK_LEVELS = [1, 5, 8, 12, 16, 20];
+	/** Phase 1: replace with Firestore / profile sticker ids when drops ship. */
+	let ownedSeasonOneCardIds = $state(/** @type {Set<string>} */ (new Set()));
+
+	let selectedAlbumSetId = $state(
+		seasonOneSets[0]?.id ?? 'street_kings',
+	);
+
+	const selectedAlbumCards = $derived(getSeasonOneCardsForSet(selectedAlbumSetId));
+	const selectedAlbumSetMeta = $derived(seasonOneSets.find((s) => s.id === selectedAlbumSetId));
+
+	const seasonOneOwnedCount = $derived(ownedSeasonOneCardIds.size);
+
+	const selectedSetOwnedCount = $derived(
+		selectedAlbumCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length,
+	);
 
 	const profile = $derived(authStore.userProfile);
 	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
@@ -133,10 +152,23 @@
 </script>
 
 <svelte:head>
-	<title>Quartermaster · Armory · SSTRACKER</title>
+	<title>Armory · Quartermaster &amp; Sticker Album · SSTRACKER</title>
 </svelte:head>
 
 <div class="qa-root" data-region="quartermaster-armory">
+	<section
+		class="qa-pathway-shell tw-mb-[clamp(1rem,2vw,1.35rem)] tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-[linear-gradient(165deg,rgba(6,182,212,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:tw-p-5"
+		aria-labelledby="operative-pathway-heading"
+	>
+		<p
+			id="operative-pathway-heading"
+			class="qa-mono tw-mb-4 tw-text-center tw-text-[0.68rem] tw-font-black tw-tracking-[0.32em] tw-text-cyan-200/95"
+		>
+			[ MISSION REWARDS PATHWAY ]
+		</p>
+		<OperativePathway level={operativeLevel} />
+	</section>
+
 	<header class="qa-strap" aria-label="Tactical credit balance">
 		<div class="qa-strap__grid">
 			<div class="qa-strap__id">
@@ -169,11 +201,11 @@
 		<button
 			type="button"
 			class="qa-workspace__tab"
-			class:qa-workspace__tab--active={armoryWorkspace === 'vault'}
-			onclick={() => (armoryWorkspace = 'vault')}
-			aria-pressed={armoryWorkspace === 'vault'}
+			class:qa-workspace__tab--active={armoryWorkspace === 'album'}
+			onclick={() => (armoryWorkspace = 'album')}
+			aria-pressed={armoryWorkspace === 'album'}
 		>
-			The Vault
+			Sticker Album
 		</button>
 	</nav>
 
@@ -221,58 +253,189 @@
 			{/each}
 		</section>
 	{:else}
-		<section class="vault" aria-labelledby="vault-legend-heading">
-			<header class="vault__head">
-				<p id="vault-legend-heading" class="vault__mega-title">
-					[ THE VAULT - UNLOCKED LEGENDS ]
-				</p>
-				<p class="vault__sub">
-					Collectible Pro Player Cards will drop from Gacha packs. Slot <span class="qa-mono">01</span> is
-					reserved for your operative dossier; additional legends unlock as you rank up.
-				</p>
-			</header>
+		<section class="album tw-space-y-6" aria-labelledby="album-season-heading">
+			<!-- Liquid glass HUD -->
+			<div
+				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-p-4 tw-shadow-[0_8px_40px_rgba(0,0,0,0.35)] sm:tw-p-5"
+			>
+				<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4">
+					<div>
+						<p id="album-season-heading" class="qa-eyebrow tw-mb-1">Season 1 · Sticker album</p>
+						<p class="tw-m-0 tw-font-black tw-text-xl tw-tracking-wide tw-text-slate-100 sm:tw-text-2xl">
+							Completion:
+							<span class="qa-mono tw-text-cyan-300">{seasonOneOwnedCount}</span>
+							<span class="tw-text-slate-500 tw-font-bold"> / </span>
+							<span class="qa-mono tw-text-slate-400">{SEASON_ONE_ALBUM_CAP}</span>
+						</p>
+						<p class="tw-m-0 tw-mt-2 tw-max-w-xl tw-text-sm tw-leading-relaxed tw-text-slate-400">
+							Collect stickers from packs and events. Album cap grows across Season 1 drops — scaffold shows
+							three founding sets.
+						</p>
+					</div>
+					<div class="tw-min-w-[12rem] tw-flex-1 sm:tw-max-w-sm">
+						<div class="tw-h-2 tw-overflow-hidden tw-rounded-full tw-bg-slate-800/80 tw-ring-1 tw-ring-white/10">
+							<div
+								class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-cyan-400 tw-to-emerald-400 tw-transition-[width] tw-duration-500"
+								style={`width: ${Math.min(100, (seasonOneOwnedCount / SEASON_ONE_ALBUM_CAP) * 100)}%`}
+							></div>
+						</div>
+						<p class="qa-mono tw-mt-2 tw-text-right tw-text-[0.65rem] tw-text-slate-500">
+							{Math.round(Math.min(100, (seasonOneOwnedCount / SEASON_ONE_ALBUM_CAP) * 100))}% vault sync
+						</p>
+					</div>
+				</div>
+			</div>
 
-			<div class="vault__grid">
-				{#each Array.from({ length: VAULT_SLOT_COUNT }, (_, i) => i) as slotIndex (slotIndex)}
-					{@const needLevel = VAULT_UNLOCK_LEVELS[slotIndex] ?? 99}
-					{@const slotUnlocked = operativeLevel >= needLevel}
-					<div class="vault__cell">
-						{#if !slotUnlocked}
-							<div class="vault-slot vault-slot--locked" aria-label="Locked legend slot">
-								<i class="ph ph-lock-key vault-slot__lock" aria-hidden="true"></i>
-								<p class="vault-slot__label">Classified</p>
-								<p class="vault-slot__hint">Unlock at Level {needLevel}</p>
-							</div>
-						{:else if slotIndex === 0 && playerEmailKey}
-							<div class="vault-slot vault-slot--card">
-								<p class="vault-slot__ribbon qa-mono">Operative dossier · Slot 01</p>
-								<ProPlayerCard
-									playerEmailKey={playerEmailKey}
-									playerDisplayName={vaultDisplayName}
-									operativeAvatar={profile?.operativeAvatar}
-									rankLabel={rankLabel}
-									telemetryTotalXp={totalXpHud.toLocaleString()}
-									telemetryWorkouts=""
-									telemetryJoinDate=""
-								/>
-							</div>
-						{:else if slotIndex === 0}
-							<div class="vault-slot vault-slot--locked" aria-label="Sign in required">
-								<i class="ph ph-user-circle vault-slot__lock" aria-hidden="true"></i>
-								<p class="vault-slot__label">No operative key</p>
-								<p class="vault-slot__hint">Sign in to bind your dossier card.</p>
-							</div>
+			<!-- Operative dossier (existing Pro card, glass shell) -->
+			<div
+				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden"
+			>
+				<p class="qa-mono tw-m-0 tw-border-b tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-[0.65rem] tw-font-black tw-tracking-[0.2em] tw-text-cyan-200/90">
+					OPERATIVE DOSSIER · FIELD CARD
+				</p>
+				<div class="tw-p-4">
+					{#if playerEmailKey}
+						<div class="album-dossier-card tw-max-w-md tw-mx-auto">
+							<ProPlayerCard
+								playerEmailKey={playerEmailKey}
+								playerDisplayName={vaultDisplayName}
+								operativeAvatar={profile?.operativeAvatar}
+								rankLabel={rankLabel}
+								telemetryTotalXp={totalXpHud.toLocaleString()}
+								telemetryWorkouts=""
+								telemetryJoinDate=""
+							/>
+						</div>
+					{:else}
+						<div
+							class="tw-flex tw-min-h-[10rem] tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-xl tw-border tw-border-dashed tw-border-white/15 tw-bg-slate-950/50 tw-text-center tw-p-6"
+						>
+							<i class="ph ph-user-circle tw-text-4xl tw-text-slate-500" aria-hidden="true"></i>
+							<p class="tw-m-0 tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-400">
+								Sign in to bind your operative dossier card.
+							</p>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Set folders (Monopoly Go–style stacks) -->
+			<div>
+				<p class="qa-eyebrow tw-mb-3">Sticker sets</p>
+				<div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-3">
+					{#each seasonOneSets as set (set.id)}
+						{@const setCards = getSeasonOneCardsForSet(set.id)}
+						{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}
+						<button
+							type="button"
+							class="album-folder tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-bg-slate-900/60 tw-p-4 tw-text-left tw-backdrop-blur-md tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {selectedAlbumSetId ===
+							set.id ?
+								'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(34,211,238,0.12)]'
+							:	'tw-border-white/5 hover:tw-border-white/15'}"
+							onclick={() => (selectedAlbumSetId = set.id)}
+							aria-pressed={selectedAlbumSetId === set.id}
+						>
+							<span class="album-folder__stack tw-mb-4 tw-self-center" aria-hidden="true">
+								<span class="album-folder__sheet album-folder__sheet--back"></span>
+								<span class="album-folder__sheet album-folder__sheet--mid"></span>
+								<span class="album-folder__sheet album-folder__sheet--front"></span>
+							</span>
+							<span class="tw-font-black tw-text-base tw-tracking-wide tw-text-slate-100">{set.title}</span>
+							<span class="tw-mt-1 tw-text-xs tw-leading-snug tw-text-slate-400">{set.tagline}</span>
+							<span class="qa-mono tw-mt-3 tw-text-[0.7rem] tw-text-cyan-300/90">
+								{ownedHere}
+								<span class="tw-text-slate-600">/</span>
+								{setCards.length}
+								<span class="tw-text-slate-500"> in set</span>
+							</span>
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Active set slots -->
+			<div
+				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-p-4 sm:tw-p-5"
+			>
+				<div class="tw-mb-5 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-3">
+					<div>
+						<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-wide tw-text-white sm:tw-text-xl">
+							{selectedAlbumSetMeta?.title ?? 'Set'}
+						</h2>
+						<p class="tw-m-0 tw-mt-1 tw-max-w-prose tw-text-sm tw-text-slate-400">
+							{selectedAlbumSetMeta?.tagline ?? ''}
+						</p>
+					</div>
+					<p class="qa-mono tw-m-0 tw-text-xs tw-text-slate-500">
+						Set progress:
+						<span class="tw-text-cyan-300">{selectedSetOwnedCount}</span>
+						/{selectedAlbumCards.length}
+					</p>
+				</div>
+
+				<div
+					class="tw-grid tw-grid-cols-2 tw-gap-3 sm:tw-grid-cols-3 md:tw-grid-cols-4 lg:tw-grid-cols-5"
+					aria-label="Sticker slots for selected set"
+				>
+					{#each selectedAlbumCards as card (card.id)}
+						{@const rarityRing =
+							card.rarity === 'Legendary' ?
+								'tw-ring-2 tw-ring-amber-400/50 tw-shadow-[0_0_32px_rgba(251,191,36,0.25)]'
+							: card.rarity === 'Epic' ?
+								'tw-ring-2 tw-ring-fuchsia-500/35 tw-shadow-[0_0_28px_rgba(217,70,239,0.22)]'
+							: card.rarity === 'Rare' ?
+								'tw-ring-2 tw-ring-sky-400/40 tw-shadow-[0_0_24px_rgba(56,189,248,0.2)]'
+							:	'tw-ring-1 tw-ring-slate-500/30'}
+						{#if ownedSeasonOneCardIds.has(card.id)}
+							<StickerVariantShell
+								variant={card.variant}
+								class="album-slot-card tw-rounded-xl tw-overflow-hidden tw-border tw-border-white/10 {rarityRing}"
+							>
+								{#snippet children()}
+									<article
+										class="tw-relative tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-[inherit] tw-bg-slate-950/65"
+									>
+										<div class="tw-aspect-[280/380] tw-w-full tw-shrink-0 tw-overflow-hidden tw-bg-slate-900">
+											<img
+												src={card.imagePath}
+												alt=""
+												class="tw-h-full tw-w-full tw-object-cover"
+												draggable="false"
+											/>
+										</div>
+										<div class="tw-border-t tw-border-white/5 tw-bg-black/40 tw-p-2">
+											<p class="tw-m-0 tw-truncate tw-text-xs tw-font-bold tw-text-slate-100">
+												{card.name}
+											</p>
+											<p
+												class="qa-mono tw-m-0 tw-mt-1 tw-text-[0.6rem] tw-uppercase tw-tracking-wider tw-text-cyan-300/85"
+											>
+												{card.rarity}
+												<span class="tw-text-slate-500"> · </span>
+												<span class="tw-text-emerald-300/90">{formatVariantLabel(card.variant)}</span>
+											</p>
+										</div>
+									</article>
+								{/snippet}
+							</StickerVariantShell>
 						{:else}
-							<div class="vault-slot vault-slot--vacant" aria-label="Empty legend slot">
-								<i class="ph ph-cards-three vault-slot__vacant-icon" aria-hidden="true"></i>
-								<p class="vault-slot__label">Vacant slot</p>
-								<p class="vault-slot__hint">
-									Pro legends you unlock from packs will appear here. Drops incoming.
+							<div
+								class="album-slot-empty tw-flex tw-aspect-[280/380] tw-min-h-[8.5rem] tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-xl tw-border-2 tw-border-dashed tw-border-slate-600/70 tw-bg-slate-950/80 tw-text-center tw-p-2"
+								aria-label={`Locked slot · ${card.name} · ${formatVariantLabel(card.variant)}`}
+							>
+								<i class="ph ph-lock-key tw-text-2xl tw-text-slate-600" aria-hidden="true"></i>
+								<p class="qa-mono tw-m-0 tw-text-[0.55rem] tw-font-bold tw-tracking-wider tw-text-slate-600">
+									LOCKED
+								</p>
+								<p class="qa-mono tw-m-0 tw-max-w-full tw-px-1 tw-text-[0.5rem] tw-leading-tight tw-text-slate-500">
+									{card.name}
+									<span class="tw-text-slate-600"> · </span>
+									{formatVariantLabel(card.variant)}
 								</p>
 							</div>
 						{/if}
-					</div>
-				{/each}
+					{/each}
+				</div>
 			</div>
 		</section>
 	{/if}
@@ -540,145 +703,63 @@
 		border: 1px dashed var(--border);
 	}
 
-	/* ─── The Vault (Gacha foundation) ───────────────────────── */
-	.vault {
-		min-width: 0;
+	/* ─── Sticker album · folder stack chrome ───────────────────────── */
+	.album-folder__stack {
+		position: relative;
+		width: 6.5rem;
+		height: 5rem;
 	}
 
-	.vault__head {
-		margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
-		padding-bottom: clamp(1rem, 2vw, 1.35rem);
-		border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+	.album-folder__sheet {
+		position: absolute;
+		left: 50%;
+		width: 5.25rem;
+		height: 4.25rem;
+		border-radius: 0.55rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		transform: translateX(-50%);
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
 	}
 
-	.vault__mega-title {
-		margin: 0 0 0.75rem;
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
-		font-size: clamp(0.78rem, 2.4vw, 1.15rem);
-		font-weight: 900;
-		letter-spacing: 0.12em;
-		line-height: 1.35;
-		text-transform: uppercase;
-		color: #a5f3fc;
-		text-shadow:
-			0 0 22px rgba(0, 212, 255, 0.35),
-			0 0 48px rgba(57, 255, 20, 0.12);
+	.album-folder__sheet--back {
+		top: 0.35rem;
+		background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
+		transform: translateX(-50%) rotate(-6deg);
+		opacity: 0.65;
 	}
 
-	.vault__sub {
-		margin: 0;
-		max-width: 52rem;
-		font-size: 0.8rem;
-		line-height: 1.55;
-		color: rgba(255, 255, 255, 0.52);
+	.album-folder__sheet--mid {
+		top: 0.2rem;
+		background: linear-gradient(145deg, rgba(51, 65, 85, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+		transform: translateX(-50%) rotate(3deg);
+		opacity: 0.82;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 	}
 
-	.vault__grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: clamp(1rem, 2vw, 1.35rem);
-		align-items: start;
-	}
-
-	@media (max-width: 960px) {
-		.vault__grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 520px) {
-		.vault__grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.vault__cell {
-		min-width: 0;
-	}
-
-	.vault-slot {
-		box-sizing: border-box;
-		min-height: 12rem;
-		border-radius: 0.75rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		text-align: center;
-		padding: 1.25rem 1rem;
-	}
-
-	.vault-slot--locked {
-		border: 2px dashed rgba(255, 255, 255, 0.14);
-		background: linear-gradient(165deg, rgba(8, 8, 12, 0.95) 0%, rgba(0, 0, 0, 0.65) 100%);
-		box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
-	}
-
-	.vault-slot--vacant {
-		border: 2px dashed rgba(0, 212, 255, 0.22);
+	.album-folder__sheet--front {
+		top: 0;
 		background: linear-gradient(
-			165deg,
-			rgba(0, 212, 255, 0.04) 0%,
-			rgba(5, 5, 10, 0.9) 55%,
-			#000 100%
+			155deg,
+			rgba(56, 189, 248, 0.12) 0%,
+			rgba(15, 23, 42, 0.92) 48%,
+			rgba(2, 6, 23, 0.95) 100%
 		);
-		box-shadow: inset 0 0 32px rgba(0, 212, 255, 0.04);
-	}
-
-	.vault-slot--card {
-		align-items: stretch;
-		justify-content: flex-start;
-		padding: 0;
-		border: 1px solid rgba(0, 212, 255, 0.2);
-		background: rgba(5, 5, 12, 0.55);
+		transform: translateX(-50%) rotate(0deg);
 		box-shadow:
-			0 0 28px rgba(0, 212, 255, 0.08),
-			inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+			0 10px 28px rgba(0, 0, 0, 0.45),
+			inset 0 0 0 1px rgba(34, 211, 238, 0.15);
 	}
 
-	.vault-slot__ribbon {
-		margin: 0;
-		padding: 0.45rem 0.65rem;
-		font-size: 0.58rem;
-		font-weight: 800;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: rgba(165, 243, 252, 0.95);
-		background: rgba(0, 0, 0, 0.45);
-		border-bottom: 1px solid rgba(0, 212, 255, 0.18);
+	.album-folder:hover .album-folder__sheet--front {
+		box-shadow:
+			0 12px 32px rgba(0, 0, 0, 0.5),
+			0 0 24px rgba(34, 211, 238, 0.12),
+			inset 0 0 0 1px rgba(34, 211, 238, 0.22);
 	}
 
-	.vault-slot__lock {
-		font-size: 2.25rem;
-		color: rgba(148, 163, 184, 0.55);
-		margin-bottom: 0.5rem;
-		filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.15));
-	}
-
-	.vault-slot__vacant-icon {
-		font-size: 2.1rem;
-		color: rgba(0, 212, 255, 0.45);
-		margin-bottom: 0.5rem;
-	}
-
-	.vault-slot__label {
-		margin: 0 0 0.35rem;
-		font-size: 0.72rem;
-		font-weight: 900;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: rgba(255, 255, 255, 0.72);
-	}
-
-	.vault-slot__hint {
-		margin: 0;
-		max-width: 14rem;
-		font-size: 0.72rem;
-		line-height: 1.45;
-		color: rgba(255, 255, 255, 0.42);
-	}
-
-	.vault-slot--card :global(.pro-card-outer) {
-		margin-bottom: 0;
+	.album-dossier-card :global(.pro-card-outer) {
+		margin: 0 auto;
 	}
 </style>

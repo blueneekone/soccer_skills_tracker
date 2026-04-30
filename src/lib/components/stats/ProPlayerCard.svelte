@@ -5,6 +5,7 @@
 	import { db } from '$lib/firebase.js';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 
 	const PRO_CARD_INTEL = {
@@ -31,6 +32,11 @@
 		telemetryTotalXp = '',
 		telemetryWorkouts = '',
 		telemetryJoinDate = '',
+		/**
+		 * Collectible-style print finish for Field Card chrome (`base` default).
+		 * @type {'base' | 'holo' | 'radiant' | 'alt-art'}
+		 */
+		variant = 'base',
 	} = $props();
 
 	const avatarDesign = $derived(parseOperativeAvatar(operativeAvatar));
@@ -214,6 +220,11 @@
 </script>
 
 {#if playerEmailKey}
+	<StickerVariantShell
+		{variant}
+		class="tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-backdrop-blur-md"
+	>
+		{#snippet children()}
 	<div class="pro-card-outer bento-section">
 		<div class="ppc-id-wrap">
 			<p
@@ -406,6 +417,8 @@
 			{/if}
 		</div>
 	</div>
+		{/snippet}
+	</StickerVariantShell>
 {/if}
 
 <style>
