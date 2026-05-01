@@ -1,3 +1,13 @@
+# 🛑 ZERO TOLERANCE: ENTERPRISE LAYOUT & UI COMPLIANCE 🛑
+You have repeatedly failed to execute strict layout and CSS mandates. You must adhere to the following rules with ZERO deviation:
+
+1.  **NO REDUNDANT NAVIGATION:** If the main dashboard displays content cards (e.g., Mission Control, Facility Ops, Weather Hub), you are strictly forbidden from placing navigation tabs/buttons for those exact same sections above the cards. 
+2.  **CONDITIONAL STYLING IS ABSOLUTE:** If instructed to make a panel conditional (e.g., `.vanguard-panel-breach` only on active threat), you MUST implement the ternary logic (e.g., `class={threat ? 'vanguard-panel-breach' : 'vanguard-panel'}`). Never hardcode an error state as the default.
+3.  **SVG MATH IS NON-NEGOTIABLE:** You must use exact geometric math (`Math.cos`/`Math.sin`) for polygons like the Combat Radar. You must use `preserveAspectRatio="xMidYMid meet"`.
+4.  **TYPOGRAPHY & Z-INDEX:** Text on charts must be `tw-text-[9px]` or smaller. Elements like player circles must have proper `z-index` and padding so they NEVER bleed over text or stats.
+5.  **OVERFLOW & GLOW:** Glowing elements (using `box-shadow`) must sit inside containers with `overflow-visible` and adequate padding. A squared-off glow means you have a clipping issue. Fix it.
+6.  **CONTRAST:** Standard panels must use a deep, translucent blue/cyan (`.vanguard-panel`) against the black void background to ensure maximum readability and contrast.
+
 # 🚨 PRIME DIRECTIVE: THE VANGUARD MASTER CODEX 🚨
 1. **PRESERVATION:** NEVER overwrite, delete, or "refactor" existing Svelte stores, DB calls, or imports unless EXPLICITLY ordered. Act as a surgeon.
 2. **ANTI-AMNESIA:** Before submitting code, internally verify: "Did I accidentally delete any functional logic, buttons, or state variables while updating the UI?" If yes, revert and try again.

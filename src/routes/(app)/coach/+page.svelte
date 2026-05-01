@@ -75,16 +75,12 @@
 	const CMD_BRIDGE_IDLE_SECOND =
 		`btn-director tw-vanguard-btn-matrix-secondary tw-inline-flex tw-items-center tw-justify-center tw-text-center ${CMD_TOOL_HOVER} focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70`;
 
-	/** Dashboard triad — full-width grid cells (Mission · Facility · Weather) */
-	const CMD_NAV_TRIAD =
-		`btn-director tw-flex tw-h-[48px] tw-w-full tw-min-w-0 tw-max-w-full tw-shrink-0 tw-items-center tw-justify-center tw-overflow-visible tw-text-center tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-[0.15em] tw-text-slate-500 tw-uppercase hover:!tw-text-[#00f0ff] ${CMD_TOOL_HOVER} focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70`;
+	/** Equal-height dashboard trio tiles (parent: `lg:grid-cols-3`) */
+	const CMD_MAIN_CARD = `${GLASS_PANEL} tw-h-full tw-flex tw-flex-col tw-min-h-[17rem] tw-min-w-0 tw-w-full tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-min-h-[18rem] md:tw-p-5`;
 
-	/** Equal-height command row tiles (4 + 4 + 4) */
-	const CMD_GRID_PANEL = `${GLASS_PANEL} tw-col-span-12 tw-flex tw-min-h-[17rem] tw-min-w-0 tw-max-h-full tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-min-h-[18rem] md:tw-p-5 lg:tw-col-span-4`;
-
-	/** Showcase carousel arrow lift — kinetic HUD */
+	/** Showcase carousel arrows — exact kinetic lift stack */
 	const SHOWCASE_KINETIC_ARROW =
-		'tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-shadow-[0_5px_15px_var(--legacy-cyan)] hover:tw-bg-[var(--legacy-cyan)]/20 active:tw-translate-y-0';
+		'tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-shadow-[0_5px_15px_var(--legacy-cyan)] hover:tw-bg-[var(--legacy-cyan)]/20 active:tw-translate-y-0 tw-cursor-pointer';
 
 	const WEATHER_HOURLY = /** @type {const} */ ([
 		{ label: 'NOW', tempF: 72, precipPct: 12 },
@@ -142,16 +138,18 @@
 	let directorOverrideUnread = $state(true);
 
 	/** Ares protocol — breach chrome when override unread or modeled precip risk */
-	const weatherAlert = $derived(
-		directorOverrideUnread || WEATHER_HOURLY.some((h) => h.precipPct >= 45),
-	);
+	/**
+	 * Severe weather (mock hourly precip) — Weather Hub breach chrome ONLY when true.
+	 * Defaults false with current demo data (max precip &lt; threshold).
+	 */
+	const isSevereWeatherThreat = $derived(WEATHER_HOURLY.some((h) => h.precipPct >= 65));
 
-	/** Threat matrix SVG accents — keyed to `weatherAlert` for modal + SIEM read */
+	/** Threat matrix SVG accents — keyed to `isSevereWeatherThreat` */
 	const wxThreatMatrixPalette = $derived.by(() => ({
-		ringSoft: weatherAlert ? 'rgba(255,0,51,0.16)' : 'rgba(0,240,255,0.14)',
-		ringSweep: weatherAlert ? 'rgba(255,0,51,0.45)' : 'rgba(0,240,255,0.38)',
-		strikeStroke: weatherAlert ? '#fb7185' : '#38bdf8',
-		strikeFill: weatherAlert ? 'rgba(251,113,133,0.16)' : 'rgba(56,189,248,0.14)',
+		ringSoft: isSevereWeatherThreat ? 'rgba(255,0,51,0.16)' : 'rgba(0,240,255,0.14)',
+		ringSweep: isSevereWeatherThreat ? 'rgba(255,0,51,0.45)' : 'rgba(0,240,255,0.38)',
+		strikeStroke: isSevereWeatherThreat ? '#fb7185' : '#38bdf8',
+		strikeFill: isSevereWeatherThreat ? 'rgba(251,113,133,0.16)' : 'rgba(56,189,248,0.14)',
 	}));
 
 	let activeOperativeIndex = $state(0);
@@ -302,37 +300,15 @@
 	let routeEndpointDrag = $state(null);
 
 	/**
-	 * Fallback when CTM missing (non-DOM / odd embed).
-	 * @param {number} clientX
-	 * @param {number} clientY
-	 * @param {SVGSVGElement} svg
-	 */
-	function clientToSvgNormFallback(clientX, clientY, svg) {
-		const rect = svg.getBoundingClientRect();
-		const w = Math.max(rect.width, 1);
-		const h = Math.max(rect.height, 1);
-		return {
-			x: ((clientX - rect.left) / w) * 100,
-			y: ((clientY - rect.top) / h) * 100,
-		};
-	}
-
-	/**
-	 * Screen → SVG user space (viewBox) via createSVGPoint + inverse screen CTM.
+	 * Screen pixels → SVG viewBox coords (inverse screen CTM only — no client rect math).
 	 * @param {{ clientX: number; clientY: number }} event
-	 * @param {SVGSVGElement} svgNode
+	 * @param {SVGSVGElement} svgElement
 	 */
-	function getSvgPoint(event, svgNode) {
-		try {
-			const pt = svgNode.createSVGPoint();
-			pt.x = event.clientX;
-			pt.y = event.clientY;
-			const ctm = svgNode.getScreenCTM();
-			if (!ctm) throw new Error('no ctm');
-			return pt.matrixTransform(ctm.inverse());
-		} catch {
-			return clientToSvgNormFallback(event.clientX, event.clientY, svgNode);
-		}
+	function getSvgPoint(event, svgElement) {
+		const pt = svgElement.createSVGPoint();
+		pt.x = event.clientX;
+		pt.y = event.clientY;
+		return pt.matrixTransform(svgElement.getScreenCTM().inverse());
 	}
 
 	/** @param {WarRoomRoute} r */
@@ -753,8 +729,9 @@
 	 * @param {number} clientY
 	 */
 	function boardPctFromClient(clientX, clientY) {
-		if (!pitchCoordSvgEl) return null;
-		const { x, y } = getSvgPoint({ clientX, clientY }, pitchCoordSvgEl);
+		const svg = inkSvgEl ?? pitchCoordSvgEl;
+		if (!svg) return null;
+		const { x, y } = getSvgPoint({ clientX, clientY }, svg);
 		return {
 			x: clampPct(x, 0.05, 99.95),
 			y: clampPct(y, 0.05, 99.95),
@@ -942,10 +919,12 @@
 	 * @param {number} mult
 	 */
 	function radarPolarXY(i, mult) {
-		const ang = -Math.PI / 2 + (i * 2 * Math.PI) / RADAR_N;
+		const angleRad = (i * 2 * Math.PI) / RADAR_N - Math.PI / 2;
+		const cos = Math.cos(angleRad);
+		const sin = Math.sin(angleRad);
 		return {
-			x: RADAR_CX + RADAR_R * mult * Math.cos(ang),
-			y: RADAR_CY + RADAR_R * mult * Math.sin(ang),
+			x: RADAR_CX + RADAR_R * mult * cos,
+			y: RADAR_CY + RADAR_R * mult * sin,
 		};
 	}
 
@@ -956,24 +935,41 @@
 		});
 	}
 
-	/**
-	 * SVG path for hexagonal skills radar (viewBox 0 0 100 100).
-	 * @param {{ pace: number; shot: number; pass: number; dribble: number; def: number; phy: number }} attrs
-	 */
-	function radarSkillPath(attrs) {
-		const pts = radarSkillVals(attrs).map((t, i) => {
-			const { x, y } = radarPolarXY(i, t);
-			return `${x.toFixed(3)},${y.toFixed(3)}`;
-		});
-		return `M ${pts.join(' L ')} Z`;
+	/** Skill envelope as six radii 0–100 for hex polygon mapping */
+	function radarSkillPctArray(attrs) {
+		return radarSkillVals(attrs).map((t) => Math.min(100, Math.max(0, t * 100)));
 	}
 
 	/**
-	 * Skill polygon vertices for node markers.
-	 * @param {{ pace: number; shot: number; pass: number; dribble: number; def: number; phy: number }} attrs
+	 * Perfect 6-axis polygon vertex string (viewBox space).
+	 * @param {number} cx
+	 * @param {number} cy
+	 * @param {number} radius
+	 * @param {number[]} dataValues six values 0–100
 	 */
-	function radarSkillVertices(attrs) {
-		return radarSkillVals(attrs).map((t, i) => radarPolarXY(i, t));
+	function getHexagonPoints(cx, cy, radius, dataValues) {
+		return dataValues
+			.map((val, i) => {
+				const angle = (Math.PI / 3) * i - (Math.PI / 2);
+				const r = radius * (val / 100);
+				return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
+			})
+			.join(' ');
+	}
+
+	/**
+	 * Vertex coords for node markers (same geometry as `getHexagonPoints`).
+	 * @param {number} cx
+	 * @param {number} cy
+	 * @param {number} radius
+	 * @param {number[]} dataValues
+	 */
+	function getHexagonVertices(cx, cy, radius, dataValues) {
+		return dataValues.map((val, i) => {
+			const angle = (Math.PI / 3) * i - (Math.PI / 2);
+			const r = radius * (val / 100);
+			return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+		});
 	}
 
 	/**
@@ -1204,13 +1200,6 @@
 		});
 	});
 
-	function scrollCoachPillarIntoView(/** @type {string} */ elId) {
-		if (!browser) return;
-		queueMicrotask(() => {
-			document.getElementById(elId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		});
-	}
-
 	function commandConsoleToggleWarRoom() {
 		if (showTacticalOverlay) closeWarRoom();
 		else openWarRoom();
@@ -1378,27 +1367,10 @@
 		</div>
 	</header>
 
-	<!-- Dashboard nav — locked triad -->
-	<nav
-		class="tw-relative tw-z-50 tw-mb-2 tw-grid tw-min-w-0 tw-w-full tw-grid-cols-3 tw-gap-4 tw-px-2 md:tw-px-4"
-		aria-label="Mission control, facility ops, and weather hub"
-	>
-		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-mission')}>
-			[ MISSION CONTROL ]
-		</button>
-		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-facility')}>
-			[ FACILITY OPS ]
-		</button>
-		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-weather')}>
-			[ WEATHER HUB ]
-		</button>
-	</nav>
-
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-px-2 md:tw-px-4">
-		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide md:tw-gap-4 tw-pb-2">
-	<!-- Command row: 4 + 4 + 4 Mission · Facility & Forge staging · Weather -->
-	<div class="tw-relative tw-z-10 tw-grid tw-min-h-0 tw-w-full tw-min-w-0 tw-grid-cols-12 tw-gap-4 tw-items-stretch">
-		<section id="coach-pillar-mission" class="{CMD_GRID_PANEL}" aria-label="Mission control">
+		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto tw-scrollbar-hide tw-pb-2 md:tw-gap-6">
+		<div class="tw-grid tw-grid-cols-1 tw-gap-6 tw-w-full tw-items-stretch lg:tw-grid-cols-3">
+		<section id="coach-pillar-mission" class="{CMD_MAIN_CARD}" aria-label="Mission control">
 			<div class="tw-min-w-0">
 				<h2 class="tw-vanguard-section-header">
 					Mission Control
@@ -1433,7 +1405,7 @@
 			</div>
 		</section>
 
-		<section id="coach-pillar-facility" class="{CMD_GRID_PANEL}" aria-label="Facility ops and staging">
+		<section id="coach-pillar-facility" class="{CMD_MAIN_CARD}" aria-label="Facility ops and staging">
 			<div class="tw-min-w-0">
 				<h2 class="tw-vanguard-section-header tw-font-mono">Facility Ops & Staging</h2>
 				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-slate-600 tw-uppercase">
@@ -1502,16 +1474,18 @@
 
 		<section
 			id="coach-pillar-weather"
-			class="tw-col-span-12 tw-flex tw-min-h-[17rem] tw-min-w-0 tw-flex-col tw-gap-3 tw-rounded-2xl tw-p-4 md:tw-min-h-[18rem] md:tw-p-5 lg:tw-col-span-4 {weatherAlert ?
-				'vanguard-panel-breach'
-			:	'vanguard-panel'}"
+			class="tw-flex tw-h-full tw-min-h-[17rem] tw-min-w-0 tw-w-full tw-flex-col md:tw-min-h-[18rem]"
 			aria-label="Weather hub"
 		>
+			<div class={isSevereWeatherThreat ? 'vanguard-panel-breach' : 'vanguard-panel'}>
+				<div
+					class="tw-flex tw-min-h-0 tw-h-full tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-p-5"
+				>
 			<div
 				class="tw-flex tw-items-center tw-gap-3 tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/25 tw-px-4 tw-py-2.5 tw-backdrop-blur-md"
 			>
 				<div
-					class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-black/50 tw-ring-1 {weatherAlert ?
+					class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-black/50 tw-ring-1 {isSevereWeatherThreat ?
 						'tw-ring-[#ff0033]/55 tw-shadow-[var(--ares-glow)]'
 					:	'tw-ring-[#00f0ff]/45 tw-shadow-[var(--legacy-glow)]'}"
 					aria-hidden="true"
@@ -1545,6 +1519,22 @@
 				</div>
 			</div>
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500">Storm-low · mock feed · capsule HUD</p>
+			<!-- Weather hub radar rings — SVG circles only (no CSS rectangular faux radar) -->
+			<div class="tw-flex tw-w-full tw-items-center tw-justify-center tw-py-1" aria-hidden="true">
+				<svg class="tw-block tw-h-24 tw-w-full tw-max-w-[11rem]" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+					{#each [46, 36, 26, 16] as ringR (ringR)}
+						<circle
+							cx="50"
+							cy="50"
+							r={ringR}
+							fill="none"
+							stroke={isSevereWeatherThreat ? 'rgba(255,0,51,0.35)' : 'rgba(0,240,255,0.28)'}
+							stroke-width="0.45"
+							vector-effect="non-scaling-stroke"
+						/>
+					{/each}
+				</svg>
+			</div>
 			<div class="tw-vanguard-dock-pill !tw-flex tw-flex-row tw-flex-wrap tw-gap-2 !tw-py-2 md:tw-flex-nowrap">
 				{#each weatherHubHourlyPills as pill, pi (`${pill.clock}-${pi}`)}
 					<span
@@ -1563,11 +1553,14 @@
 					<span class="tw-shrink-0">[ EXPAND ]</span>
 				</button>
 			</div>
+				</div>
+			</div>
 		</section>
+		</div>
 
 		<!-- Operative hero + quick-select roster strip -->
 		<section
-			class="tw-col-span-12 tw-flex tw-min-h-[min(72vh,840px)] tw-min-w-0 tw-flex-col tw-overflow-visible lg:tw-col-span-10 lg:tw-col-start-2"
+			class="tw-relative tw-z-10 tw-flex tw-min-h-[min(72vh,840px)] tw-min-w-0 tw-w-full tw-flex-col tw-overflow-visible"
 			aria-label="Operative focus carousel"
 		>
 			<div
@@ -1596,13 +1589,14 @@
 					{#if heroFocusOperative}
 						{@const op = heroFocusOperative}
 						{@const attrs = operativeCoreAttrs(op)}
+						{@const radarPct = radarSkillPctArray(attrs)}
 						<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 !tw-overflow-visible">
 						<!-- Holographic showcase — hex Combat Stats radar (Player OS parity) -->
 						<div class="tw-flex tw-min-h-0 tw-flex-[7] tw-flex-col !tw-overflow-visible">
 							<div class="tw-relative tw-min-h-0 tw-flex-1 !tw-overflow-visible tw-px-1 md:tw-px-10 lg:tw-px-12">
 								<button
 									type="button"
-									class="tw-absolute tw-left-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
+									class="tw-absolute tw-left-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
 									aria-label="Previous operative"
 									disabled={activeRoster.length <= 1}
 									onclick={heroCarouselPrev}
@@ -1619,7 +1613,7 @@
 								</button>
 								<button
 									type="button"
-									class="tw-absolute tw-right-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
+									class="tw-absolute tw-right-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
 									aria-label="Next operative"
 									disabled={activeRoster.length <= 1}
 									onclick={heroCarouselNext}
@@ -1638,7 +1632,7 @@
 									class="tw-grid tw-min-h-0 tw-flex-1 tw-grid-cols-1 tw-items-center tw-gap-8 !tw-overflow-visible lg:tw-grid-cols-[minmax(0,1.15fr)_minmax(0,20rem)] lg:tw-gap-10 lg:tw-pl-2 lg:tw-pr-2"
 								>
 								<div
-									class="tw-relative tw-flex tw-aspect-square tw-h-full tw-w-full tw-min-h-[250px] tw-max-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-bg-transparent tw-mx-auto"
+									class="tw-relative tw-mx-auto tw-flex tw-aspect-square tw-w-full tw-max-w-[400px] tw-items-center tw-justify-center tw-bg-transparent"
 								>
 									<svg
 										class="coach-showcase-radar-svg tw-block tw-h-full tw-w-full tw-opacity-100 tw-drop-shadow-[0_0_24px_rgba(0,240,255,0.35)]"
@@ -1647,23 +1641,6 @@
 										aria-hidden="true"
 									>
 										<defs>
-											<pattern
-												id="coachRadarBgGrid"
-												width="7.2"
-												height="7.2"
-												patternUnits="userSpaceOnUse"
-											>
-												<path
-													d="M 7.2 0 L 0 0 0 7.2"
-													fill="none"
-													stroke="rgba(148,163,184,0.35)"
-													stroke-width="0.06"
-												/>
-											</pattern>
-											<radialGradient id="coachRadarVignette" cx="50%" cy="50%" r="68%">
-												<stop offset="0%" stop-color="#0f172a" stop-opacity="0.2" />
-												<stop offset="100%" stop-color="#020617" stop-opacity="1" />
-											</radialGradient>
 											<filter id="coachRadarNodeGlow" x="-130%" y="-130%" width="360%" height="360%">
 												<feGaussianBlur in="SourceGraphic" stdDeviation="1.25" result="ngBlur" />
 												<feMerge>
@@ -1672,9 +1649,6 @@
 												</feMerge>
 											</filter>
 										</defs>
-										<rect width="100" height="100" fill="#020617" />
-										<rect width="100" height="100" fill="url(#coachRadarBgGrid)" opacity="0.5" />
-										<rect width="100" height="100" fill="url(#coachRadarVignette)" />
 										{#each RADAR_WEB_SCALES as tier (tier)}
 											<circle
 												cx={RADAR_CX}
@@ -1699,15 +1673,15 @@
 												vector-effect="non-scaling-stroke"
 											/>
 										{/each}
-										<path
-											d={radarSkillPath(attrs)}
+										<polygon
+											points={getHexagonPoints(RADAR_CX, RADAR_CY, RADAR_R, radarPct)}
 											fill="rgba(0,240,255,0.15)"
 											stroke="#a855f7"
 											stroke-width="2"
 											stroke-linejoin="round"
 											vector-effect="non-scaling-stroke"
 										/>
-										{#each radarSkillVertices(attrs) as vtx, vi (`vertex-${vi}`)}
+										{#each getHexagonVertices(RADAR_CX, RADAR_CY, RADAR_R, radarPct) as vtx, vi (`vertex-${vi}`)}
 											<circle
 												cx={vtx.x}
 												cy={vtx.y}
@@ -1842,8 +1816,7 @@
 			</div>
 		</section>
 	</div>
-		</div>
-	</div>
+</div>
 </div>
 
 {#if showCommsOverlay}
@@ -1979,7 +1952,7 @@
 					Geometric overlay · rose hex target locks · concentric sweep (sim)
 				</p>
 				<div
-					class="wx-threat-matrix-host tw-relative tw-aspect-square tw-w-full tw-overflow-hidden tw-rounded-full {weatherAlert ?
+					class="wx-threat-matrix-host tw-relative tw-aspect-square tw-w-full tw-overflow-hidden tw-rounded-full {isSevereWeatherThreat ?
 						'vanguard-panel-breach'
 					:	'vanguard-panel'}"
 					aria-label="Environmental threat matrix"
@@ -2015,7 +1988,7 @@
 							cx="50"
 							cy="50"
 							r="50"
-							fill={weatherAlert ? 'url(#wxThreatBackdropBreach)' : 'url(#wxThreatBackdropCalm)'}
+							fill={isSevereWeatherThreat ? 'url(#wxThreatBackdropBreach)' : 'url(#wxThreatBackdropCalm)'}
 						/>
 						{#each [48, 40, 32, 24] as r (r)}
 							<circle
@@ -2447,12 +2420,11 @@
 							aria-hidden="true"
 						>
 							<defs>
-								<filter id="neonBloom" x="-140%" y="-140%" width="380%" height="380%">
-									<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="trailBlur" />
+								<filter id="neonBloom" x="-20%" y="-20%" width="140%" height="140%">
+									<feGaussianBlur stdDeviation="3" result="blur" />
 									<feMerge>
-										<feMergeNode in="trailBlur" />
-										<feMergeNode in="trailBlur" />
-										<feMergeNode in="trailBlur" />
+										<feMergeNode in="blur" />
+										<feMergeNode in="blur" />
 										<feMergeNode in="SourceGraphic" />
 									</feMerge>
 								</filter>
@@ -2637,6 +2609,7 @@
 
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<svg
+							id="war-room-svg"
 							bind:this={inkSvgEl}
 							class="war-room-ink-layer tw-absolute tw-inset-0 tw-z-[22] tw-h-full tw-w-full tw-touch-none {warRoomTool === 'nodes' ?
 								'tw-pointer-events-none'
@@ -2663,6 +2636,7 @@
 									stroke={trailStroke}
 									stroke-width="11"
 									stroke-linecap="round"
+									stroke-dasharray="2 6"
 									stroke-opacity="0.48"
 									vector-effect="non-scaling-stroke"
 									filter="url(#neonBloom)"
@@ -2715,6 +2689,7 @@
 									stroke={draftGlow}
 									stroke-width="11"
 									stroke-linecap="round"
+									stroke-dasharray="2 6"
 									stroke-opacity="0.48"
 									vector-effect="non-scaling-stroke"
 									filter="url(#neonBloom)"
@@ -2788,7 +2763,7 @@
 								</button>
 								<button
 									type="button"
-									class="btn-ares !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em]"
+									class="btn-director !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em] !tw-border-rose-500/45 !tw-text-rose-200 hover:!tw-border-rose-400 hover:!tw-bg-rose-950/40"
 									onclick={(e) => {
 										e.stopPropagation();
 										clearWarRoomBoard();
