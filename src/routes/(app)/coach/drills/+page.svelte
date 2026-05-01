@@ -1552,7 +1552,7 @@
 		letter-spacing: 0.08em;
 		padding: 0.2rem 0.45rem;
 		border: 1px solid rgba(0, 212, 255, 0.35);
-		color: var(--cdm-cyber, #22d3ee);
+		color: var(--cdm-cyber, #00f0ff);
 	}
 
 	.cdm-sch-time {

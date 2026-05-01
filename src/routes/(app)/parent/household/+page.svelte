@@ -996,7 +996,7 @@
 		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
 		color: #67e8f9;
 		background: rgba(8, 47, 73, 0.55);
-		border: 1px solid rgba(34, 211, 238, 0.45);
+		border: 1px solid rgba(0, 240, 255, 0.45);
 		border-radius: 0.2rem;
 		cursor: pointer;
 		box-shadow: none;
@@ -1007,7 +1007,7 @@
 
 	.phh-dispatch-gen:hover:not(:disabled) {
 		background: rgba(8, 47, 73, 0.75);
-		border-color: rgba(34, 211, 238, 0.65);
+		border-color: rgba(0, 240, 255, 0.65);
 	}
 
 	.phh-dispatch-gen:disabled {
@@ -1068,10 +1068,10 @@
 		width: 100%;
 		max-width: 22rem;
 		padding: 1.25rem 1.25rem 1rem;
-		border: 1px solid rgba(34, 211, 238, 0.5);
+		border: 1px solid rgba(0, 240, 255, 0.5);
 		border-radius: 0.35rem;
 		background: #05050a;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 28px rgba(34, 211, 238, 0.12);
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 28px rgba(0, 240, 255, 0.12);
 	}
 
 	.phh-otp-h3 {

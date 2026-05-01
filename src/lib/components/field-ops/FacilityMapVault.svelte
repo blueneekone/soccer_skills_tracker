@@ -1688,10 +1688,10 @@
 		text-transform: uppercase;
 		padding: 9px 14px;
 		border-radius: 10px;
-		border: 1px solid var(--ec-ops-border-subtle, rgba(34, 211, 238, 0.28));
+		border: 1px solid var(--ec-ops-border-subtle, rgba(0, 240, 255, 0.28));
 		background: linear-gradient(
 			155deg,
-			rgba(34, 211, 238, 0.16) 0%,
+			rgba(0, 240, 255, 0.16) 0%,
 			rgba(15, 23, 42, 0.94) 48%,
 			rgba(9, 9, 11, 0.98) 100%
 		);
@@ -1704,10 +1704,10 @@
 	.fm-btn--primary:hover:not(:disabled) {
 		opacity: 1;
 		filter: none;
-		border-color: rgba(34, 211, 238, 0.52);
+		border-color: rgba(0, 240, 255, 0.52);
 		background: linear-gradient(
 			155deg,
-			rgba(34, 211, 238, 0.26) 0%,
+			rgba(0, 240, 255, 0.26) 0%,
 			rgba(15, 23, 42, 0.9) 48%,
 			rgba(9, 9, 11, 0.96) 100%
 		);
@@ -1715,7 +1715,7 @@
 	}
 
 	:global(html.dark) .fm-btn--primary {
-		border-color: rgba(34, 211, 238, 0.38);
+		border-color: rgba(0, 240, 255, 0.38);
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
 			0 12px 28px rgba(0, 0, 0, 0.38);

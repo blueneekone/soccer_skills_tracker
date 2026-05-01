@@ -5,12 +5,12 @@
 
 /* Operations-console accent (SOC-adjacent) — shared with workspace dashboards */
 :root {
-	--ec-ops-accent: #22d3ee;
-	--ec-ops-accent-dim: rgba(34, 211, 238, 0.5);
-	--ec-ops-sheen: rgba(34, 211, 238, 0.12);
-	--ec-ops-ambient: rgba(34, 211, 238, 0.045);
-	--ec-ops-glow: 0 0 42px rgba(34, 211, 238, 0.05);
-	--ec-ops-border-subtle: rgba(34, 211, 238, 0.22);
+	--ec-ops-accent: #00f0ff;
+	--ec-ops-accent-dim: rgba(0, 240, 255, 0.5);
+	--ec-ops-sheen: rgba(0, 240, 255, 0.12);
+	--ec-ops-ambient: rgba(0, 240, 255, 0.045);
+	--ec-ops-glow: 0 0 42px rgba(0, 240, 255, 0.05);
+	--ec-ops-border-subtle: rgba(0, 240, 255, 0.22);
 }
 
 .ec-root {
@@ -1495,12 +1495,12 @@ html.dark .ec-main {
 }
 
 html.dark .ec-sidebar {
-	border-right-color: rgba(34, 211, 238, 0.11);
+	border-right-color: rgba(0, 240, 255, 0.11);
 }
 
 html.dark .ec-mobile-header {
-	border-bottom-color: rgba(34, 211, 238, 0.12);
-	box-shadow: 0 1px 0 rgba(34, 211, 238, 0.05);
+	border-bottom-color: rgba(0, 240, 255, 0.12);
+	box-shadow: 0 1px 0 rgba(0, 240, 255, 0.05);
 }
 
 .ec-sidebar .ec-nav-link {
@@ -1524,7 +1524,7 @@ html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {
 
 html.dark .ec-topbar {
 	background: linear-gradient(180deg, #0a0a0c 0%, #09090b 100%);
-	border-bottom-color: rgba(34, 211, 238, 0.14);
+	border-bottom-color: rgba(0, 240, 255, 0.14);
 	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
@@ -1538,7 +1538,7 @@ html.dark .ec-cmd-trigger:focus-visible {
 }
 
 html.dark .ec-canvas {
-	scrollbar-color: rgba(34, 211, 238, 0.38) rgba(255, 255, 255, 0.04);
+	scrollbar-color: rgba(0, 240, 255, 0.38) rgba(255, 255, 255, 0.04);
 }
 
 html.dark .ec-canvas::-webkit-scrollbar {
@@ -1547,7 +1547,7 @@ html.dark .ec-canvas::-webkit-scrollbar {
 }
 
 html.dark .ec-canvas::-webkit-scrollbar-thumb {
-	background: linear-gradient(180deg, rgba(34, 211, 238, 0.5), rgba(34, 211, 238, 0.18));
+	background: linear-gradient(180deg, rgba(0, 240, 255, 0.5), rgba(0, 240, 255, 0.18));
 	border-radius: 999px;
 	border: 2px solid transparent;
 	background-clip: padding-box;
@@ -1559,7 +1559,7 @@ html.dark .ec-canvas::-webkit-scrollbar-track {
 }
 
 html.dark .ec-page-subnav {
-	border-bottom-color: rgba(34, 211, 238, 0.1);
+	border-bottom-color: rgba(0, 240, 255, 0.1);
 	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
 }
 
@@ -1572,7 +1572,7 @@ html:not(.dark) .ec-panel {
 
 html.dark .ec-panel {
 	border-color: rgba(255, 255, 255, 0.09);
-	border-top: 1px solid rgba(34, 211, 238, 0.14);
+	border-top: 1px solid rgba(0, 240, 255, 0.14);
 	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
 	box-shadow:
 		0 1px 0 rgba(255, 255, 255, 0.03) inset,
@@ -1583,20 +1583,20 @@ html.dark .ec-panel {
 
 html.dark .ec-table-wrap {
 	border-color: rgba(255, 255, 255, 0.09);
-	border-top: 1px solid rgba(34, 211, 238, 0.1);
+	border-top: 1px solid rgba(0, 240, 255, 0.1);
 	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
 }
 
 html.dark .adm-toolbar {
-	border-bottom-color: rgba(34, 211, 238, 0.12);
+	border-bottom-color: rgba(0, 240, 255, 0.12);
 }
 
 html.dark .ec-drawer {
-	border-left: 1px solid rgba(34, 211, 238, 0.14);
+	border-left: 1px solid rgba(0, 240, 255, 0.14);
 	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
 	box-shadow: -14px 0 52px rgba(0, 0, 0, 0.48);
 }
 
 html.dark .ec-drawer__head {
-	border-bottom-color: rgba(34, 211, 238, 0.1);
+	border-bottom-color: rgba(0, 240, 255, 0.1);
 }

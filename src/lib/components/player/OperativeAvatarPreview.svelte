@@ -51,7 +51,7 @@
 		{/if}
 	{:else}
 		<div
-			class={`oap-ghost tw-relative tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-white/10 tw-bg-slate-900/60 tw-backdrop-blur-md tw-shadow-[inset_0_0_40px_rgba(34,211,238,0.06),0_12px_40px_rgba(0,0,0,0.45)] ${showInitializeCta ? 'tw-pb-11 sm:tw-pb-12' : ''}`}
+			class={`oap-ghost tw-relative tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-white/10 tw-bg-slate-900/60 tw-backdrop-blur-md tw-shadow-[inset_0_0_40px_rgba(0, 240, 255,0.06),0_12px_40px_rgba(0,0,0,0.45)] ${showInitializeCta ? 'tw-pb-11 sm:tw-pb-12' : ''}`}
 			role="img"
 			aria-label="Operative not initialized"
 		>
@@ -75,7 +75,7 @@
 			{#if showInitializeCta}
 				<a
 					href={resolve('/player/armory')}
-					class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-cyan-400/45 tw-bg-gradient-to-b tw-from-cyan-500/30 tw-to-cyan-950/40 tw-px-2.5 tw-py-1.5 tw-text-[0.48rem] tw-font-black tw-uppercase tw-tracking-[0.14em] tw-text-cyan-50 tw-no-underline tw-shadow-[0_0_22px_rgba(34,211,238,0.45)] tw-transition tw-duration-200 hover:tw-border-cyan-300/70 hover:tw-shadow-[0_0_32px_rgba(34,211,238,0.55)] sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem] sm:tw-tracking-[0.16em]"
+					class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-cyan-400/45 tw-bg-gradient-to-b tw-from-cyan-500/30 tw-to-cyan-950/40 tw-px-2.5 tw-py-1.5 tw-text-[0.48rem] tw-font-black tw-uppercase tw-tracking-[0.14em] tw-text-cyan-50 tw-no-underline tw-shadow-[0_0_22px_rgba(0, 240, 255,0.45)] tw-transition tw-duration-200 hover:tw-border-cyan-300/70 hover:tw-shadow-[0_0_32px_rgba(0, 240, 255,0.55)] sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem] sm:tw-tracking-[0.16em]"
 					data-sveltekit-preload-data="hover"
 				>
 					[ INITIALIZE OPERATIVE ]
@@ -96,13 +96,13 @@
 	.oap-ghost-glow {
 		background: radial-gradient(
 			ellipse at 50% 38%,
-			rgba(34, 211, 238, 0.22) 0%,
+			rgba(0, 240, 255, 0.22) 0%,
 			rgba(168, 85, 247, 0.08) 45%,
 			transparent 72%
 		);
 	}
 
 	.oap-silhouette {
-		filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.55));
+		filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.55));
 	}
 </style>

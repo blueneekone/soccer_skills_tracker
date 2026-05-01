@@ -1,5 +1,7 @@
 <script>
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import { fade, fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
 	let {
 		title = '',
@@ -50,7 +52,7 @@
 <div class="tw-inline-flex tw-align-middle">
 	<button
 		type="button"
-		class="im-trigger tw-inline-flex tw-items-center tw-justify-center !tw-min-h-0 !tw-h-5 !tw-w-auto !tw-px-1.5 !tw-py-0 !tw-text-[0.55rem] tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(6,182,212,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(34,211,238,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
+		class="im-trigger tw-inline-flex tw-items-center tw-justify-center !tw-min-h-0 !tw-h-5 !tw-w-auto !tw-px-1.5 !tw-py-0 !tw-text-[0.55rem] tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(0, 240, 255,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(0, 240, 255,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
 		onclick={openModal}
 		aria-haspopup="dialog"
 		aria-expanded={open}
@@ -63,21 +65,25 @@
 {#if open}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
-		class="im-backdrop tw-fixed tw-inset-0 tw-z-[1200] tw-flex tw-items-center tw-justify-center tw-p-4 tw-backdrop-blur-sm tw-bg-black/80"
+		class="im-backdrop tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-black/80 tw-backdrop-blur-sm"
 		role="presentation"
+		transition:fade={{ duration: 150 }}
 		onclick={onBackdrop}
 	>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
-			class="im-panel tw-relative tw-w-full tw-max-w-lg tw-border tw-border-cyan-500/80 tw-bg-[#05050a] tw-px-5 tw-pt-5 tw-pb-4 tw-shadow-[0_0_32px_rgba(6,182,212,0.12)]"
+			class="im-panel tw-vanguard-panel tw-relative tw-w-full tw-max-w-lg tw-rounded-2xl tw-px-5 tw-pt-5 tw-pb-4"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={titleId}
 			aria-describedby={listId}
+			tabindex="-1"
+			transition:fly={{ y: 20, duration: 250, easing: cubicOut }}
 			onclick={(e) => e.stopPropagation()}
 		>
 			<h2
 				id={titleId}
-				class="im-title tw-m-0 tw-mb-4 tw-text-left tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200"
+				class="im-title tw-m-0 tw-mb-4 tw-text-left tw-vanguard-section-header tw-font-mono tw-text-cyan-200"
 			>
 				{title}
 			</h2>
@@ -105,6 +111,6 @@
 <style>
 	/* Extra contrast on body text without fighting Tailwind layer order */
 	.im-list::marker {
-		color: #22d3ee;
+		color: #00f0ff;
 	}
 </style>

@@ -231,7 +231,7 @@
 							class="flex h-36 w-full items-end justify-center rounded-t-md bg-slate-950/50 ring-1 ring-inset ring-white/[0.06]"
 						>
 							<div
-								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(34,211,238,0.45)] transition-[height] duration-300"
+								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(0, 240, 255,0.45)] transition-[height] duration-300"
 								style="height: {bar.heightPct}%"
 								title="{bar.xp} XP"
 							></div>

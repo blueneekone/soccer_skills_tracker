@@ -116,7 +116,7 @@
 		</div>
 		<div class="h-2 overflow-hidden rounded-full bg-slate-800/80">
 			<div
-				class="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(34,211,238,0.35)] transition-[width] duration-500"
+				class="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(0, 240, 255,0.35)] transition-[width] duration-500"
 				style="width: {READINESS_PCT}%"
 			></div>
 		</div>

@@ -318,7 +318,7 @@
 
 						<button
 							type="button"
-							class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(34,211,238,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
+							class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(0, 240, 255,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
 							disabled={adultBusy}
 							onclick={handleEmailLogin}
 						>
@@ -403,9 +403,9 @@
 <style>
 	/* Segmented control: active = cyan; inactive = muted */
 	.login-seg__btn--active {
-		background: rgba(6, 182, 212, 0.22);
+		background: rgba(0, 240, 255, 0.22);
 		color: #ecfeff;
-		box-shadow: inset 0 0 0 1.5px rgba(34, 211, 238, 0.55);
+		box-shadow: inset 0 0 0 1.5px rgba(0, 240, 255, 0.55);
 	}
 	.login-seg__btn--idle {
 		background: transparent;

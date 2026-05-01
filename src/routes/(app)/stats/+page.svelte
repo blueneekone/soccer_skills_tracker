@@ -454,7 +454,7 @@
 						label: dsLabel,
 						data,
 						borderColor: 'rgba(0, 255, 200, 0.92)',
-						backgroundColor: 'rgba(34, 211, 238, 0.14)',
+						backgroundColor: 'rgba(0, 240, 255, 0.14)',
 						fill: true,
 						tension: 0.32,
 						borderWidth: 2,
@@ -664,7 +664,7 @@
 		--d-bg: #000000;
 		--d-panel: #05050a;
 		--d-line: rgba(255, 255, 255, 0.1);
-		--d-cyber: #22d3ee;
+		--d-cyber: #00f0ff;
 		--d-iso: #4ade80;
 		background: var(--d-bg);
 		color: #f4f4f5;
@@ -817,8 +817,8 @@
 	}
 
 	.dossier-badge--unlocked {
-		border-color: rgba(34, 211, 238, 0.28);
-		box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.15);
+		border-color: rgba(0, 240, 255, 0.28);
+		box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.15);
 	}
 
 	.dossier-badge--elite {
@@ -830,7 +830,7 @@
 
 	.dossier-badge--unlocked .dossier-badge__label {
 		color: #e0f2fe;
-		text-shadow: 0 0 8px rgba(34, 211, 238, 0.35);
+		text-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
 	}
 
 	.dossier-badge--elite .dossier-badge__icon {
@@ -840,7 +840,7 @@
 
 	.dossier-badge__icon {
 		font-size: 1.45rem;
-		color: rgba(34, 211, 238, 0.9);
+		color: rgba(0, 240, 255, 0.9);
 		line-height: 1;
 	}
 	.dossier-badge__icon--locked {

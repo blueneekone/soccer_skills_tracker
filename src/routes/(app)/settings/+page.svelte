@@ -292,7 +292,7 @@
 		background: linear-gradient(
 			135deg,
 			rgba(245, 158, 11, 0.12),
-			rgba(34, 211, 238, 0.1)
+			rgba(0, 240, 255, 0.1)
 		);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.9);
@@ -377,8 +377,8 @@
 
 	.pos-settings .settings-input:focus {
 		outline: none;
-		border-color: rgba(34, 211, 238, 0.45);
-		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+		border-color: rgba(0, 240, 255, 0.45);
+		box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.12);
 	}
 
 	.pos-settings .theme-btn {
@@ -388,9 +388,9 @@
 	}
 
 	.pos-settings .theme-btn.active {
-		border-color: var(--pp-accent-cool, #22d3ee);
-		box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
-		background: rgba(34, 211, 238, 0.1);
+		border-color: var(--pp-accent-cool, #00f0ff);
+		box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+		background: rgba(0, 240, 255, 0.1);
 	}
 
 	.pos-settings .minor-privacy-note {

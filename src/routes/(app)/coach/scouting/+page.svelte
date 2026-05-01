@@ -74,7 +74,7 @@
 <div class="tw-mb-10 tw-mt-2 tw-min-w-0 tw-flex-1">
 	<header class="tw-mb-8 tw-text-center md:tw-text-left">
 		<h1
-			class="tw-font-black tw-uppercase tw-tracking-tight tw-text-transparent tw-bg-clip-text tw-bg-gradient-to-r tw-from-cyan-300 tw-via-emerald-300 tw-to-cyan-400 tw-drop-shadow-[0_0_28px_rgba(34,211,238,0.35)] md:tw-text-4xl tw-text-2xl"
+			class="tw-font-black tw-uppercase tw-tracking-tight tw-text-transparent tw-bg-clip-text tw-bg-gradient-to-r tw-from-cyan-300 tw-via-emerald-300 tw-to-cyan-400 tw-drop-shadow-[0_0_28px_rgba(0, 240, 255,0.35)] md:tw-text-4xl tw-text-2xl"
 		>
 			<span class="tw-text-slate-500 tw-bg-none tw-text-transparent">[</span>
 			<span

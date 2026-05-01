@@ -297,15 +297,15 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 1rem;
-		border: 1px solid rgba(34, 211, 238, 0.2);
-		background: linear-gradient(145deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.12));
-		box-shadow: 0 0 2rem -0.5rem rgba(34, 211, 238, 0.35);
+		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: linear-gradient(145deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.12));
+		box-shadow: 0 0 2rem -0.5rem rgba(0, 240, 255, 0.35);
 		animation: authPulse 1.6s ease-in-out infinite;
 	}
 
 	.auth-splash__mark .ph {
 		font-size: 1.6rem;
-		color: #22d3ee;
+		color: #00f0ff;
 	}
 
 	.auth-splash__label {

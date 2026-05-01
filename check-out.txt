@@ -1,0 +1,748 @@
+﻿
+> soccer-skills-tracker@5.0.0 check
+> svelte-check --tsconfig ./jsconfig.json
+
+Loading svelte-check in workspace: c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker
+Getting Svelte diagnostics...
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\Modal.svelte:38:2
+Warn: Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus (svelte)
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="modal"
+		use:portal
+		onclick={handleBackdrop}
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="modal-content" class:cert-content={certStyle} style="--modal-max-width:{maxWidth};">
+			{#if title || titleSlot}
+				<div class="card-header" class:cert-modal-header={certStyle}>
+					{#if titleSlot}
+						{@render titleSlot()}
+					{:else}
+						<span>{title}</span>
+					{/if}
+					<button class="close-btn modal-close-icon" onclick={close} aria-label="Close">&times;</button>
+				</div>
+			{/if}
+			<div class="modal-body">
+				{@render children()}
+			</div>
+		</div>
+	</div>
+{/if}
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\coach\DrillDesignerTab.svelte:103:4
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+			<input type="text" bind:value={workoutName} placeholder="Drill Name (required)" />
+			<label>Required Level (1-5)</label>
+			<input type="number" bind:value={workoutLevel} min="1" max="5" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\coach\DrillDesignerTab.svelte:108:4
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+			<!-- Spatial Canvas ΓÇö dark workspace with floating item toolbar -->
+			<label>Spatial Layout</label>
+			<FocusedWorkspaceWrapper>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\ui\IntelModal.svelte:70:3
+Warn: Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus (svelte)
+	>
+		<div
+			class="im-panel tw-relative tw-w-full tw-max-w-lg tw-border tw-border-cyan-500/80 tw-bg-[#05050a] tw-px-5 tw-pt-5 tw-pb-4 tw-shadow-[0_0_32px_rgba(6,182,212,0.12)]"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby={titleId}
+			aria-describedby={listId}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h2
+				id={titleId}
+				class="im-title tw-m-0 tw-mb-4 tw-text-left tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200"
+			>
+				{title}
+			</h2>
+			<ol
+				id={listId}
+				class="im-list tw-m-0 tw-mb-5 tw-list-decimal tw-pl-5 tw-text-sm tw-leading-relaxed tw-text-zinc-200"
+			>
+				{#each lines as line, idx (idx)}
+					<li class="im-li tw-mb-2 tw-font-mono tw-text-[0.8rem] tw-pl-1 [overflow-wrap:anywhere]">
+						{line}
+					</li>
+				{/each}
+			</ol>
+			<button
+				type="button"
+				class="im-ack tw-w-full tw-min-h-[2.75rem] tw-border tw-border-cyan-500/50 tw-bg-cyan-950/40 tw-font-mono tw-text-[0.7rem] tw-font-black tw-uppercase tw-tracking-[0.25em] tw-text-cyan-200 tw-transition hover:tw-border-cyan-400/80 hover:tw-bg-cyan-900/30 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/80"
+				onclick={close}
+			>
+				Acknowledge
+			</button>
+		</div>
+	</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\ui\IntelModal.svelte:70:3
+Warn: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+	>
+		<div
+			class="im-panel tw-relative tw-w-full tw-max-w-lg tw-border tw-border-cyan-500/80 tw-bg-[#05050a] tw-px-5 tw-pt-5 tw-pb-4 tw-shadow-[0_0_32px_rgba(6,182,212,0.12)]"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby={titleId}
+			aria-describedby={listId}
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h2
+				id={titleId}
+				class="im-title tw-m-0 tw-mb-4 tw-text-left tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200"
+			>
+				{title}
+			</h2>
+			<ol
+				id={listId}
+				class="im-list tw-m-0 tw-mb-5 tw-list-decimal tw-pl-5 tw-text-sm tw-leading-relaxed tw-text-zinc-200"
+			>
+				{#each lines as line, idx (idx)}
+					<li class="im-li tw-mb-2 tw-font-mono tw-text-[0.8rem] tw-pl-1 [overflow-wrap:anywhere]">
+						{line}
+					</li>
+				{/each}
+			</ol>
+			<button
+				type="button"
+				class="im-ack tw-w-full tw-min-h-[2.75rem] tw-border tw-border-cyan-500/50 tw-bg-cyan-950/40 tw-font-mono tw-text-[0.7rem] tw-font-black tw-uppercase tw-tracking-[0.25em] tw-text-cyan-200 tw-transition hover:tw-border-cyan-400/80 hover:tw-bg-cyan-900/30 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/80"
+				onclick={close}
+			>
+				Acknowledge
+			</button>
+		</div>
+	</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\BrandingTab.svelte:52:4
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+		<div class="card-body">
+			<label>Select Team/Club to Edit</label>
+			<select bind:value={selectedTeamId}>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\BrandingTab.svelte:60:4
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+			<label>App Name</label>
+			<input type="text" bind:value={appName} placeholder="e.g. Phoenix Hoops Tracker" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\BrandingTab.svelte:63:4
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+			<label>Logo URL (PNG/JPG)</label>
+			<input type="url" bind:value={logoUrl} placeholder="https://example.com/logo.png" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\BrandingTab.svelte:68:6
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				<div class="flex-1">
+					<label>Primary Color</label>
+					<input type="color" bind:value={primaryColor} class="color-picker" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\BrandingTab.svelte:72:6
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				<div class="flex-1">
+					<label>Secondary Color (Gold)</label>
+					<input type="color" bind:value={secondaryColor} class="color-picker" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:230:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				</p>
+				<label>Parent / guardian emails (comma or space separated)</label>
+				<input type="text" bind:value={parentEmailsInput} placeholder="parent@example.com" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:233:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+				<label>Minor player emails</label>
+				<input type="text" bind:value={playerEmailsInput} placeholder="player@example.com" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:236:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+				<label>Optional existing household ID (merge members)</label>
+				<input type="text" bind:value={existingHouseholdId} placeholder="Leave blank to create new" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:256:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				</p>
+				<label>Player email</label>
+				<input type="email" bind:value={dobPlayerEmail} placeholder="minor@example.com" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:259:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+				<label>Date of birth</label>
+				<input type="date" bind:value={dobValue} />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:279:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				</p>
+				<label>Minor player email</label>
+				<input type="email" bind:value={vpcPlayerEmail} placeholder="minor@example.com" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\HouseholdComplianceTab.svelte:301:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				</p>
+				<label>Minor player email</label>
+				<input type="email" bind:value={retentionPlayerEmail} placeholder="minor@example.com" />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\TeamsTab.svelte:144:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+			<div class="card-body">
+				<label class="tw-block tw-text-xs tw-font-bold tw-mb-1 tt-label-muted"
+					>Team label (e.g. U12 Gold)</label
+				>
+				<input
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\TeamsTab.svelte:153:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				/>
+				<label class="tw-block tw-text-xs tw-font-bold tw-mt-3 tw-mb-1 tt-label-muted"
+					>Optional ΓÇö head coach email</label
+				>
+				<input
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\director\os\DeploymentCalendar.svelte:402:3
+Warn: Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus (svelte)
+	>
+		<div
+			class="tw-w-full tw-max-w-md tw-rounded-xl tw-border tw-border-slate-700 tw-bg-slate-950 tw-p-5 tw-shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="dep-modal-title"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<div class="tw-flex tw-items-start tw-justify-between tw-gap-2 tw-mb-4">
+				<h2 id="dep-modal-title" class="tw-m-0 tw-text-base tw-font-black tw-text-slate-100">
+					New deployment
+				</h2>
+				<button
+					type="button"
+					class="tw-rounded-lg tw-p-1 tw-text-slate-500 hover:tw-bg-slate-900 hover:tw-text-slate-300"
+					onclick={closeModal}
+					aria-label="Close"
+				>
+					<i class="ph ph-x tw-text-lg" aria-hidden="true"></i>
+				</button>
+			</div>
+
+			<div class="tw-flex tw-flex-col tw-gap-3">
+				<label class="tw-flex tw-flex-col tw-gap-1">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500"
+						>Event type</span
+					>
+					<select
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						bind:value={eventKind}
+					>
+						{#each kindLabels as k}
+							<option value={k.value}>{k.label}</option>
+						{/each}
+					</select>
+				</label>
+
+				<label class="tw-flex tw-flex-col tw-gap-1">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500"
+						>Starts</span
+					>
+					<input
+						type="datetime-local"
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						bind:value={startsLocal}
+					/>
+				</label>
+
+				<label class="tw-flex tw-flex-col tw-gap-1">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500"
+						>Ends <span class="tw-font-normal tw-text-slate-600">(optional)</span></span
+					>
+					<input
+						type="datetime-local"
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						bind:value={endsLocal}
+					/>
+				</label>
+
+				<label class="tw-flex tw-flex-col tw-gap-1">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500"
+						>Assigned team</span
+					>
+					<select
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						bind:value={teamId}
+					>
+						<option value="">Select teamΓÇª</option>
+						{#each clubTeams as t}
+							<option value={t.id}>{t.name}</option>
+						{/each}
+					</select>
+				</label>
+
+				<label class="tw-flex tw-flex-col tw-gap-1">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500"
+						>Location (facility)</span
+					>
+					<select
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						bind:value={facilityId}
+					>
+						<option value="">Select facilityΓÇª</option>
+						{#each facilities as f}
+							<option value={f.id}>{f.name}</option>
+						{/each}
+					</select>
+				</label>
+
+				{#if saveErr}
+					<p class="tw-m-0 tw-text-xs tw-font-semibold tw-text-red-400" role="alert">{saveErr}</p>
+				{/if}
+
+				<div class="tw-flex tw-justify-end tw-gap-2 tw-pt-2">
+					<button
+						type="button"
+						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400 hover:tw-bg-slate-900"
+						onclick={closeModal}
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						class="tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
+						disabled={saving}
+						onclick={() => void submitDeployment()}
+					>
+						{saving ? 'SavingΓÇª' : 'Schedule'}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\field-ops\FacilityDrawingMap.svelte:1044:8
+Warn: Unused CSS selector ".fd-map-draw-btn--active"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	.fd-map-shell {
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\field-ops\FacilityMapVault.svelte:1602:2
+Warn: Unused CSS selector ".fm-optional"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.fm-optional {
+		font-weight: 500;
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\field-ops\FacilityMapVault.svelte:1822:2
+Warn: Unused CSS selector ".fm-vault--embedded .fm-logistics-map-slot--drawing > :global(*)"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.fm-vault--embedded .fm-logistics-map-slot--drawing > :global(*) {
+		min-height: min(58vh, 680px);
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\field-ops\FacilityMapVault.svelte:1835:2
+Warn: Unused CSS selector ".fm-logistics__coords"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.fm-logistics__coords {
+		margin: 0 0 10px;
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\pricing\PricingTable.svelte:10:23
+Warn: This reference only captures the initial value of `clubSeatDefault`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+	let clubQty = $state(clubSeatDefault);
+	let busyTier = $state(/** @type {string | null} */ (null));
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\lib\components\recruiter\RecruiterSearchEngine.svelte:382:4
+Warn: `<video>` elements must have a `<track kind="captions">`
+https://svelte.dev/e/a11y_media_has_caption (svelte)
+		<div class="rse-video-shell">
+			<video class="rse-video-el" controls playsinline src={videoUrl} preload="metadata"></video>
+			<p class="rse-video-note">Coach-verified clip. Distribution subject to athlete opt-in.</p>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\admin\overview\+page.svelte:770:4
+Warn: Non-interactive element `<section>` cannot have interactive role 'tabpanel'
+https://svelte.dev/e/a11y_no_noninteractive_element_to_interactive_role (svelte)
+		{#if activeTab === 'executive'}
+			<section
+				class="cc-panel"
+				id="cc-panel-executive"
+				role="tabpanel"
+				aria-labelledby="cc-tab-executive"
+			>
+				<div
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+				>
+					{#each strike13Executive as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
+				</div>
+
+				<article class="cc-chart-card cc-chart-card--soc">
+					<header class="cc-chart-card__head">
+						<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
+							<i class="ph ph-chart-line-up"></i>
+						</div>
+						<div>
+							<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
+							<p class="cc-chart-card__sub">Trailing six months ┬╖ enterprise growth signal</p>
+							<span
+								class="cc-src"
+								class:cc-src--live={mauSource === 'live'}
+								class:cc-src--mock={mauSource === 'mock'}
+							>
+								{mauSource === 'live' ? 'Live' : 'Synthetic'}
+							</span>
+						</div>
+					</header>
+					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
+						<canvas
+							class="cc-canvas-fill"
+							bind:this={mauCanvasEl}
+							aria-label="Master activation line chart"
+						></canvas>
+					</div>
+				</article>
+			</section>
+		{:else if activeTab === 'growth'}
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\admin\overview\+page.svelte:811:4
+Warn: Non-interactive element `<section>` cannot have interactive role 'tabpanel'
+https://svelte.dev/e/a11y_no_noninteractive_element_to_interactive_role (svelte)
+		{:else if activeTab === 'growth'}
+			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+				<div
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+				>
+					{#each GROWTH_TILES as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
+				</div>
+
+				<div class="cc-chart-row tw-min-w-0">
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
+						<header class="cc-chart-card__head">
+							<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
+								<i class="ph ph-chart-pie-slice"></i>
+							</div>
+							<div>
+								<h2 class="cc-chart-card__title">Revenue by tier</h2>
+								<p class="cc-chart-card__sub">MRR composition</p>
+								<span
+									class="cc-src"
+									class:cc-src--live={revenueSource === 'live'}
+									class:cc-src--mock={revenueSource === 'mock'}
+								>
+									{revenueSource === 'live' ? 'Live' : 'Synthetic'}
+								</span>
+							</div>
+						</header>
+						<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
+							<canvas
+								class="cc-canvas-fill"
+								bind:this={revenueCanvasEl}
+								aria-label="Revenue doughnut chart"
+							></canvas>
+						</div>
+					</article>
+
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
+						<header class="cc-chart-card__head">
+							<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
+								<i class="ph ph-soccer-ball"></i>
+							</div>
+							<div>
+								<h2 class="cc-chart-card__title">Players by sport</h2>
+								<p class="cc-chart-card__sub">Headcount distribution</p>
+								<span
+									class="cc-src"
+									class:cc-src--live={sportSource === 'live'}
+									class:cc-src--mock={sportSource === 'mock'}
+								>
+									{sportSource === 'live' ? 'Live' : 'Synthetic'}
+								</span>
+							</div>
+						</header>
+						<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
+							<canvas
+								class="cc-canvas-fill"
+								bind:this={sportCanvasEl}
+								aria-label="Players by sport bar chart"
+							></canvas>
+						</div>
+					</article>
+				</div>
+			</section>
+		{:else if activeTab === 'security'}
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\admin\overview\+page.svelte:875:4
+Warn: Non-interactive element `<section>` cannot have interactive role 'tabpanel'
+https://svelte.dev/e/a11y_no_noninteractive_element_to_interactive_role (svelte)
+		{:else if activeTab === 'security'}
+			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+				<div class="cc-soc-split">
+					<div
+						class="cc-soc-grid tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-3"
+					>
+						{#each strike13Security as kpi (kpi.label)}
+							{@render socMetric(kpi)}
+						{/each}
+					</div>
+					<aside class="cc-soc-aside" aria-label="Automation and orchestration">
+						<div class="cc-soc-aside__head">
+							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
+							<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
+							<p class="cc-soc-aside__sub">Representative automation counters for executive review.</p>
+						</div>
+						<ul class="cc-soc-aside__list">
+							<li>
+								<span class="cc-soc-aside__k">Armed playbooks</span>
+								<span class="cc-soc-aside__v">12</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Open cases</span>
+								<span class="cc-soc-aside__v">7</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Auto-remediated (24h)</span>
+								<span class="cc-soc-aside__v">94%</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">Mean queue depth</span>
+								<span class="cc-soc-aside__v">23</span>
+							</li>
+							<li>
+								<span class="cc-soc-aside__k">False-positive rate</span>
+								<span class="cc-soc-aside__v">4.1%</span>
+							</li>
+						</ul>
+					</aside>
+				</div>
+
+				<article class="cc-feed-shell cc-feed-shell--soc">
+					<header class="cc-feed-shell__head">
+						<h2 class="cc-feed-shell__title">Live event stream</h2>
+						<p class="cc-feed-shell__sub">
+							<code class="cc-code">security_audit</code>
+							┬╖ {liveFeed.length} events ingested
+						</p>
+					</header>
+					{#if feedErr}
+						<p class="cc-err cc-err--inline" role="alert">{feedErr}</p>
+					{/if}
+					{#if feedLoading && liveFeed.length === 0}
+						<div class="cc-feed-empty">
+							<i class="ph ph-spinner cc-spin" aria-hidden="true"></i>
+							Loading audit streamΓÇª
+						</div>
+					{:else if liveFeed.length === 0}
+						<div class="cc-feed-empty">
+							<i class="ph ph-moon-stars" aria-hidden="true"></i>
+							No audit events yet.
+						</div>
+					{:else}
+						<ol class="cc-feed-list">
+							{#each liveFeed as ev (ev.id)}
+								<li class="cc-feed-item cc-feed-item--{actionTone(ev.action)}">
+									<span class="cc-feed-item__icon" aria-hidden="true">
+										<i class="ph {actionIcon(ev.action)}"></i>
+									</span>
+									<div class="cc-feed-item__body">
+										<div class="cc-feed-item__row">
+											<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
+											<span class="cc-feed-item__time">{relativeTime(ev.createdAt)}</span>
+										</div>
+										{#if ev.targetEmail}
+											<span class="cc-feed-item__target">{ev.targetEmail}</span>
+										{/if}
+										{#if ev.details}
+											<span class="cc-feed-item__details">{ev.details}</span>
+										{/if}
+									</div>
+								</li>
+							{/each}
+						</ol>
+					{/if}
+				</article>
+			</section>
+		{:else}
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\admin\overview\+page.svelte:962:4
+Warn: Non-interactive element `<section>` cannot have interactive role 'tabpanel'
+https://svelte.dev/e/a11y_no_noninteractive_element_to_interactive_role (svelte)
+		{:else}
+			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+				<div
+					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
+				>
+					{#each PLATFORM_TILES as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
+				</div>
+
+				<div class="cc-platform-note">
+					<p>
+						<i class="ph ph-info" aria-hidden="true"></i>
+						KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
+						<code class="cc-code">analytics/platform_totals</code> when available.
+					</p>
+				</div>
+			</section>
+		{/if}
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\coach\+page.svelte:1163:6
+Error: Unexpected block closing tag
+https://svelte.dev/e/block_unexpected_close (svelte)
+					</div>
+				{/if}
+			</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\coach\+page.svelte:1163:6
+Error: Unexpected block closing tag
+https://svelte.dev/e/block_unexpected_close (js)
+					</div>
+				{/if}
+			</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\parent\household\+page.svelte:845:3
+Warn: Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus (svelte)
+	>
+		<div
+			class="phh-otp-panel"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="phh-otp-title"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Clearance code</p>
+			<h3 id="phh-otp-title" class="phh-otp-h3 tw-m-0">
+				{otpDialog.displayName}
+			</h3>
+			<p class="phh-mono phh-otp-code tw-my-4 tw-text-center tw-tracking-[0.2em] tw-text-[#7dff9a]">
+				{otpDialog.code}
+			</p>
+			<p class="tw-mb-3 tw-text-center tw-text-xs tw-leading-relaxed tw-text-white/45">
+				This clearance code expires 10 minutes after it is generated.
+			</p>
+			<div
+				class="phh-otp-ttl tw-mb-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"
+			>
+				<span class="phh-eyebrow !tw-m-0 tw-text-[0.6rem]">Expires in</span>
+				<span class="phh-mono tw-text-lg tw-font-black tw-text-cyan-300 tw-tabular-nums"
+					>{otpCountdownLabel}</span
+				>
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
+				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn" onclick={copyOtpToClipboard}>
+					{copyFeedback ? 'Copied' : 'Copy to clipboard'}
+				</button>
+				<button type="button" class="phh-btn phh-otp-btn phh-otp-btn--close" onclick={closeOtpDialog}
+					>Dismiss</button
+				>
+			</div>
+		</div>
+	</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\parent\household\+page.svelte:845:3
+Warn: Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+	>
+		<div
+			class="phh-otp-panel"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="phh-otp-title"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Clearance code</p>
+			<h3 id="phh-otp-title" class="phh-otp-h3 tw-m-0">
+				{otpDialog.displayName}
+			</h3>
+			<p class="phh-mono phh-otp-code tw-my-4 tw-text-center tw-tracking-[0.2em] tw-text-[#7dff9a]">
+				{otpDialog.code}
+			</p>
+			<p class="tw-mb-3 tw-text-center tw-text-xs tw-leading-relaxed tw-text-white/45">
+				This clearance code expires 10 minutes after it is generated.
+			</p>
+			<div
+				class="phh-otp-ttl tw-mb-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"
+			>
+				<span class="phh-eyebrow !tw-m-0 tw-text-[0.6rem]">Expires in</span>
+				<span class="phh-mono tw-text-lg tw-font-black tw-text-cyan-300 tw-tabular-nums"
+					>{otpCountdownLabel}</span
+				>
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
+				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn" onclick={copyOtpToClipboard}>
+					{copyFeedback ? 'Copied' : 'Copy to clipboard'}
+				</button>
+				<button type="button" class="phh-btn phh-otp-btn phh-otp-btn--close" onclick={closeOtpDialog}
+					>Dismiss</button
+				>
+			</div>
+		</div>
+	</div>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\passport\+page.svelte:167:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+			<div class="card-body">
+				<label>Emergency Contact Name</label>
+				<input type="text" placeholder="e.g. Jane Doe" bind:value={emergencyName} />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\passport\+page.svelte:169:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				<input type="text" placeholder="e.g. Jane Doe" bind:value={emergencyName} />
+				<label>Emergency Contact Phone</label>
+				<input type="tel" placeholder="(555) 555-5555" bind:value={emergencyPhone} />
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\passport\+page.svelte:171:5
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+				<input type="tel" placeholder="(555) 555-5555" bind:value={emergencyPhone} />
+				<label>Known Allergies / Medical Conditions</label>
+				<textarea rows="3" placeholder="List any allergies or conditions..." bind:value={medicalNotes}></textarea>
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\tracker\+page.svelte:620:6
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+					<input id="legacy-mins" type="number" placeholder="e.g. 45" bind:value={totalMinutes} />
+					<label>How did you do?</label>
+					<div class="outcome-row">
+
+c:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\src\routes\(app)\tracker\+page.svelte:626:6
+Warn: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+					</div>
+					<label>Intensity (XP multiplier)</label>
+					<div class="outcome-row">
+
+====================================
+svelte-check found 2 errors and 37 warnings in 16 files

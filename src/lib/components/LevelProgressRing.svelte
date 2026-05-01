@@ -91,7 +91,7 @@
 	const ringColor = $derived.by(() => {
 		const p = progressPercentage;
 		/** Cyan: high progress in tier. */
-		if (p >= 67) return '#06b6d4';
+		if (p >= 67) return '#00f0ff';
 		/** Amber: mid. */
 		if (p >= 34) return '#f59e0b';
 		/** Red: early tier progress. */
@@ -203,11 +203,11 @@
 	}
 
 	.lp-ring__track {
-		stroke: rgba(6, 182, 212, 0.18);
+		stroke: rgba(0, 240, 255, 0.18);
 	}
 
 	.lp-ring__fill {
-		stroke: #22d3ee;
+		stroke: #00f0ff;
 		transition: stroke-dashoffset 0.88s cubic-bezier(0.33, 1, 0.68, 1);
 	}
 
@@ -257,7 +257,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: rgba(34, 211, 238, 0.55);
+		color: rgba(0, 240, 255, 0.55);
 		margin-top: 2px;
 	}
 
@@ -270,7 +270,7 @@
 		font-size: 0.65rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
-		color: #22d3ee;
+		color: #00f0ff;
 		line-height: 1.25;
 		max-width: 100%;
 		min-width: 0;
@@ -294,7 +294,7 @@
 	}
 
 	:global(html.dark) .lp-ring--light .lp-ring__track {
-		stroke: rgba(6, 182, 212, 0.22);
+		stroke: rgba(0, 240, 255, 0.22);
 	}
 
 	:global(html.dark) .lp-ring--light .lp-ring__xp {

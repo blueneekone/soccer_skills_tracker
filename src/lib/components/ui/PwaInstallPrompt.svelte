@@ -125,7 +125,7 @@
 	>
 		{#if installVariant === 'ios'}
 			<div
-				class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border-2 tw-border-cyan-400/45 tw-bg-[#05050a] tw-px-4 tw-py-4 tw-text-cyan-100 tw-shadow-[0_0_28px_rgba(34,211,238,0.16)]"
+				class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border-2 tw-border-cyan-400/45 tw-bg-[#05050a] tw-px-4 tw-py-4 tw-text-cyan-100 tw-shadow-[0_0_28px_rgba(0, 240, 255,0.16)]"
 			>
 				<p
 					class="tw-m-0 tw-text-center tw-text-[0.8rem] tw-font-semibold tw-leading-relaxed tw-tracking-wide tw-text-cyan-50/95"
@@ -159,7 +159,7 @@
 			</div>
 		{:else if installVariant === 'native'}
 			<div
-				class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-4 tw-py-3 tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(34,211,238,0.12)]"
+				class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-4 tw-py-3 tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(0, 240, 255,0.12)]"
 			>
 				<p
 					class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-cyan-100/90"
@@ -169,7 +169,7 @@
 				<div class="tw-flex tw-flex-wrap tw-justify-end tw-gap-2">
 					<button
 						type="button"
-						class="tw-min-h-11 tw-rounded tw-border-2 tw-border-cyan-400/60 tw-bg-cyan-500/10 tw-px-5 tw-font-mono tw-text-[0.7rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200 tw-shadow-[0_0_18px_rgba(34,211,238,0.2)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20"
+						class="tw-min-h-11 tw-rounded tw-border-2 tw-border-cyan-400/60 tw-bg-cyan-500/10 tw-px-5 tw-font-mono tw-text-[0.7rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200 tw-shadow-[0_0_18px_rgba(0, 240, 255,0.2)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20"
 						onclick={runNativeInstall}
 					>
 						INSTALL APP

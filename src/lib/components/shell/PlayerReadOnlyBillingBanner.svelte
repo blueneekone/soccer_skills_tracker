@@ -47,7 +47,7 @@
 		gap: 0.75rem 1rem;
 		padding: 0.65rem 1rem;
 		border-radius: 14px;
-		border: 1px solid color-mix(in srgb, #22d3ee 28%, #f97316 22%);
+		border: 1px solid color-mix(in srgb, #00f0ff 28%, #f97316 22%);
 		background: linear-gradient(
 			125deg,
 			color-mix(in srgb, #0ea5e9 10%, transparent),
@@ -126,7 +126,7 @@
 		padding: 0.45rem 1rem;
 		font-weight: 800;
 		font-size: 0.75rem;
-		border: 1px solid color-mix(in srgb, #22d3ee 35%, transparent);
+		border: 1px solid color-mix(in srgb, #00f0ff 35%, transparent);
 	}
 
 	.prob-banner__btn--ghost {

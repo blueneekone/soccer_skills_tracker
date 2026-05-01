@@ -266,7 +266,7 @@
 
 <style>
 	:global(.swal2-glass-toast) {
-		border: 1px solid rgba(34, 211, 238, 0.35) !important;
+		border: 1px solid rgba(0, 240, 255, 0.35) !important;
 		box-shadow:
 			0 8px 32px rgba(0, 0, 0, 0.45),
 			inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
@@ -317,7 +317,7 @@
 	.ml-mono {
 		font-family: ui-monospace, Menlo, Consolas, monospace;
 		font-size: 0.62rem;
-		color: rgba(34, 211, 238, 0.85);
+		color: rgba(0, 240, 255, 0.85);
 	}
 
 	.ml-muted-inline {
@@ -451,19 +451,19 @@
 	.ml-plus--pulse {
 		animation: ml-tap-pulse 0.52s ease-out;
 		box-shadow:
-			0 0 22px rgba(34, 211, 238, 0.55),
-			inset 0 0 0 1px rgba(34, 211, 238, 0.35);
+			0 0 22px rgba(0, 240, 255, 0.55),
+			inset 0 0 0 1px rgba(0, 240, 255, 0.35);
 	}
 
 	@keyframes ml-tap-pulse {
 		0% {
 			box-shadow:
-				0 0 0 0 rgba(34, 211, 238, 0.65),
-				inset 0 0 0 1px rgba(34, 211, 238, 0.45);
+				0 0 0 0 rgba(0, 240, 255, 0.65),
+				inset 0 0 0 1px rgba(0, 240, 255, 0.45);
 		}
 		100% {
 			box-shadow:
-				0 0 28px 6px rgba(34, 211, 238, 0),
+				0 0 28px 6px rgba(0, 240, 255, 0),
 				inset 0 0 0 1px var(--ml-glow);
 		}
 	}
@@ -487,9 +487,9 @@
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: #05050a;
-		background: linear-gradient(180deg, #22d3ee 0%, #06b6d4 100%);
-		border: 1px solid rgba(34, 211, 238, 0.9);
-		box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+		background: linear-gradient(180deg, #00f0ff 0%, #00f0ff 100%);
+		border: 1px solid rgba(0, 240, 255, 0.9);
+		box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
 		cursor: pointer;
 		touch-action: manipulation;
 	}

@@ -285,7 +285,7 @@
 				particleCount: 100,
 				spread: 70,
 				origin: { y: 0.6 },
-				colors: ['#6366f1', '#a855f7', '#22d3ee', '#fbbf24'],
+				colors: ['#6366f1', '#a855f7', '#00f0ff', '#fbbf24'],
 			});
 			await Swal.fire({
 				title: 'Workout Logged!',
@@ -895,8 +895,8 @@
 	}
 
 	.gw-pill--active {
-		border-color: rgba(34, 211, 238, 0.45);
-		background: rgba(34, 211, 238, 0.12);
+		border-color: rgba(0, 240, 255, 0.45);
+		background: rgba(0, 240, 255, 0.12);
 		color: #fafafa;
 	}
 

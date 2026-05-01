@@ -251,7 +251,7 @@
 		>
 			<a
 				href={resolve('/player/tracker')}
-				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] active:tw-scale-[0.99]"
+				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(0, 240, 255,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
 				<i class="ph ph-lightning tw-mb-3 tw-text-3xl tw-text-cyan-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
@@ -262,7 +262,7 @@
 			</a>
 			<a
 				href={resolve('/player/armory')}
-				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] active:tw-scale-[0.99]"
+				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(0, 240, 255,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
 				<i class="ph ph-chart-line-up tw-mb-3 tw-text-3xl tw-text-fuchsia-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
@@ -540,7 +540,7 @@
 		border-radius: 50%;
 		background: radial-gradient(
 			ellipse at 50% 45%,
-			rgba(34, 211, 238, 0.35) 0%,
+			rgba(0, 240, 255, 0.35) 0%,
 			rgba(168, 85, 247, 0.12) 42%,
 			transparent 70%
 		);
@@ -555,7 +555,7 @@
 		transform-style: preserve-3d;
 		animation: holo-float 5.5s ease-in-out infinite;
 		filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55))
-			drop-shadow(0 0 22px rgba(34, 211, 238, 0.28));
+			drop-shadow(0 0 22px rgba(0, 240, 255, 0.28));
 	}
 
 	.holo-base {
@@ -566,7 +566,7 @@
 		height: 14px;
 		transform: translateX(-50%) rotateX(78deg);
 		border-radius: 50%;
-		background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.25), transparent 70%);
+		background: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.25), transparent 70%);
 		opacity: 0.85;
 		pointer-events: none;
 	}

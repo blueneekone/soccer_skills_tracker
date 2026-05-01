@@ -1,6 +1,8 @@
 <script>
 	import { browser } from '$app/environment';
 	import { collection, getDocs, query, where } from 'firebase/firestore';
+	import { cubicOut } from 'svelte/easing';
+	import { fade, fly } from 'svelte/transition';
 	import { db } from '$lib/firebase.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -15,15 +17,25 @@
 	 *   lvl: number;
 	 *   hp: number;
 	 *   status: 'READY' | 'CRITICAL';
+	 *   totalXp: number;
 	 * }} LoadoutOperative
 	 */
 
 	const MOCK_ROSTER = /** @type {LoadoutOperative[]} */ ([
-		{ id: 'OP-01', name: 'Jimmy T.', role: 'MID', lvl: 42, hp: 95, status: 'READY' },
-		{ id: 'OP-02', name: 'Sarah W.', role: 'DEF', lvl: 45, hp: 20, status: 'CRITICAL' },
-		{ id: 'OP-03', name: 'Marcus R.', role: 'FWD', lvl: 39, hp: 88, status: 'READY' },
-		{ id: 'OP-04', name: 'Leo M.', role: 'MID', lvl: 41, hp: 75, status: 'READY' },
-		{ id: 'OP-05', name: 'David K.', role: 'GK', lvl: 48, hp: 100, status: 'READY' },
+		{ id: 'OP-01', name: 'Jimmy T.', role: 'MID', lvl: 42, hp: 95, status: 'READY', totalXp: 8420 },
+		{ id: 'OP-02', name: 'Sarah W.', role: 'DEF', lvl: 45, hp: 20, status: 'CRITICAL', totalXp: 9100 },
+		{ id: 'OP-03', name: 'Marcus R.', role: 'FWD', lvl: 39, hp: 88, status: 'READY', totalXp: 7750 },
+		{ id: 'OP-04', name: 'Leo M.', role: 'MID', lvl: 41, hp: 75, status: 'READY', totalXp: 8010 },
+		{ id: 'OP-05', name: 'David K.', role: 'GK', lvl: 48, hp: 100, status: 'READY', totalXp: 9880 },
+	]);
+
+	/** Scouting deck — opposition tokens for War Room */
+	const MOCK_OPPOSITION = /** @type {Pick<LoadoutOperative, 'id' | 'name' | 'role'>[]} */ ([
+		{ id: 'OPP-A', name: 'Striker 7', role: 'FWD' },
+		{ id: 'OPP-B', name: 'Anchor 6', role: 'DEF' },
+		{ id: 'OPP-C', name: 'Box 8', role: 'MID' },
+		{ id: 'OPP-D', name: 'Winger 11', role: 'FWD' },
+		{ id: 'OPP-E', name: 'Sweeper 4', role: 'DEF' },
 	]);
 
 	const HYRUM_COORDS = 'LAT: 41.633° N // LON: 111.851° W · HYRUM, UT';
@@ -44,37 +56,35 @@
 
 	/** NEXUS VANGUARD — nav & chrome (faded + glow) */
 	const BTN_NAV_AMBER =
-		'tw-relative tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-amber-500/50 tw-bg-amber-950/30 tw-px-4 tw-py-2.5 tw-font-bold tw-text-xs tw-tracking-widest tw-text-amber-300 tw-uppercase tw-transition-all hover:tw-bg-amber-900/50 hover:tw-shadow-[0_0_20px_rgba(245,158,11,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-400';
+		'tw-relative tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-amber-500/50 tw-bg-amber-950/30 tw-px-4 tw-py-2.5 tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-text-amber-300 tw-uppercase tw-transition-all hover:tw-bg-amber-900/50 hover:tw-shadow-[0_0_20px_rgba(245,158,11,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-amber-400';
 
 	const BTN_NAV_CYAN =
-		'tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-py-2.5 tw-font-bold tw-text-xs tw-tracking-widest tw-text-cyan-300 tw-uppercase tw-transition-all hover:tw-bg-cyan-900/50 hover:tw-shadow-[0_0_20px_rgba(6,182,212,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400';
+		'tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-[#00f0ff]/50 tw-bg-[rgba(0,24,32,0.88)] tw-px-4 tw-py-2.5 tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-text-[#00f0ff]/92 tw-uppercase tw-transition-all hover:tw-bg-[rgba(0,40,48,0.92)] hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.55)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70';
 
 	const BTN_NAV_ROSE =
-		'tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-rose-500/50 tw-bg-rose-950/30 tw-px-4 tw-py-2.5 tw-font-bold tw-text-xs tw-tracking-widest tw-text-rose-300 tw-uppercase tw-transition-all hover:tw-bg-rose-900/50 hover:tw-shadow-[0_0_20px_rgba(244,63,94,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-rose-400';
+		'tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-rose-500/50 tw-bg-rose-950/30 tw-px-4 tw-py-2.5 tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-text-rose-300 tw-uppercase tw-transition-all hover:tw-bg-rose-900/50 hover:tw-shadow-[0_0_20px_rgba(244,63,94,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-rose-400';
 
-	/** Compact Forge entry — crafting-station affordance */
-	const BTN_FORGE_CRAFT =
-		'tw-group tw-relative tw-inline-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-cyan-400/55 tw-bg-[#020617]/95 tw-text-cyan-200 tw-shadow-[0_0_20px_rgba(34,211,238,0.38),inset_0_1px_0_rgba(255,255,255,0.06)] tw-transition-all hover:tw-border-cyan-300/85 hover:tw-bg-cyan-950/55 hover:tw-text-cyan-50 hover:tw-shadow-[0_0_32px_rgba(34,211,238,0.72)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 active:tw-scale-[0.96]';
+	/** Global Vanguard glass — src/app.css `.vanguard-panel` */
+	const GLASS_PANEL = 'vanguard-panel tw-rounded-2xl';
 
-	const BTN_SECONDARY_EXPAND =
-		'tw-inline-flex tw-w-full tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-600/85 tw-bg-transparent tw-py-2.5 tw-font-bold tw-text-[10px] tw-tracking-[0.18em] tw-text-slate-400 tw-uppercase tw-transition-colors hover:tw-border-slate-500 hover:tw-bg-white/[0.04] hover:tw-text-slate-200 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-slate-500';
+	/** Cyan hover ribbon — dock chips + compositors */
+	const CMD_TOOL_HOVER =
+		'tw-transition-all tw-duration-300 hover:tw-shadow-[0_0_15px_rgba(0,240,255,0.55)] hover:tw-border-[#00f0ff]/55 hover:tw-bg-[rgba(0,24,32,0.45)]';
 
-	const GLASS_PANEL =
-		'tw-bg-[#020617]/60 tw-backdrop-blur-md tw-border tw-border-slate-800 tw-rounded-2xl';
+	/** Matrix-footprint bridge CTAs — primary Director controls */
+	const CMD_BRIDGE_IDLE_SECOND =
+		`btn-director tw-vanguard-btn-matrix-secondary tw-inline-flex tw-items-center tw-justify-center tw-text-center ${CMD_TOOL_HOVER} focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70`;
 
-	/** .cursorrules PRIMARY (Action) */
-	const BTN_PRIMARY =
-		'tw-group tw-relative tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-overflow-hidden tw-bg-cyan-500 tw-px-6 tw-py-2 tw-font-black tw-text-xs tw-tracking-widest tw-text-black tw-uppercase tw-transition-all tw-[clip-path:polygon(10%_0,100%_0,100%_70%,90%_100%,0_100%,0_30%)] hover:tw-scale-105 hover:tw-shadow-[0_0_30px_rgba(6,182,212,0.6)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-300';
+	/** Dashboard triad — full-width grid cells (Mission · Facility · Weather) */
+	const CMD_NAV_TRIAD =
+		`btn-director tw-flex tw-h-[48px] tw-w-full tw-min-w-0 tw-max-w-full tw-shrink-0 tw-items-center tw-justify-center tw-overflow-visible tw-text-center tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-[0.15em] tw-text-slate-500 tw-uppercase hover:!tw-text-[#00f0ff] ${CMD_TOOL_HOVER} focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70`;
 
-	const BTN_CLOSE_WAR_ROOM =
-		'tw-fixed tw-right-4 tw-top-4 tw-z-[10060] tw-inline-flex tw-items-center tw-gap-3 tw-rounded-2xl tw-border-2 tw-border-rose-400/75 tw-bg-rose-950/45 tw-py-5 tw-px-10 tw-font-black tw-text-sm tw-tracking-[0.22em] tw-text-rose-50 tw-uppercase tw-backdrop-blur-md tw-shadow-[0_0_42px_rgba(244,63,94,0.72),0_0_110px_rgba(244,63,94,0.38),inset_0_1px_0_rgba(255,255,255,0.06)] tw-transition-all hover:tw-bg-rose-900/55 hover:tw-shadow-[0_0_56px_rgba(244,63,94,0.88),0_0_140px_rgba(244,63,94,0.42)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-rose-400 md:tw-right-7 md:tw-top-7 md:tw-py-6 md:tw-px-14 md:tw-text-base';
+	/** Equal-height command row tiles (4 + 4 + 4) */
+	const CMD_GRID_PANEL = `${GLASS_PANEL} tw-col-span-12 tw-flex tw-min-h-[17rem] tw-min-w-0 tw-max-h-full tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-min-h-[18rem] md:tw-p-5 lg:tw-col-span-4`;
 
-	/** War Room magnetic board — toolbar */
-	const BTN_WAR_TOOL_ACTIVE =
-		'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border-2 tw-border-cyan-400/75 tw-bg-cyan-950/40 tw-px-4 tw-py-3 tw-font-black tw-text-[10px] tw-tracking-[0.14em] tw-text-cyan-100 tw-uppercase tw-shadow-[0_0_26px_rgba(34,211,238,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] tw-ring-2 tw-ring-cyan-400/50';
-
-	const BTN_WAR_TOOL_IDLE =
-		'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-cyan-500/45 tw-bg-slate-950/50 tw-px-4 tw-py-3 tw-font-black tw-text-[10px] tw-tracking-[0.14em] tw-text-cyan-300 tw-uppercase tw-shadow-[0_0_14px_rgba(34,211,238,0.18)] tw-transition-all hover:tw-border-cyan-400/65 hover:tw-bg-cyan-950/35 hover:tw-shadow-[0_0_22px_rgba(34,211,238,0.35)]';
+	/** Showcase carousel arrow lift — kinetic HUD */
+	const SHOWCASE_KINETIC_ARROW =
+		'tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-shadow-[0_5px_15px_var(--legacy-cyan)] hover:tw-bg-[var(--legacy-cyan)]/20 active:tw-translate-y-0';
 
 	const WEATHER_HOURLY = /** @type {const} */ ([
 		{ label: 'NOW', tempF: 72, precipPct: 12 },
@@ -82,6 +92,7 @@
 		{ label: '+2H', tempF: 70, precipPct: 35 },
 		{ label: '+3H', tempF: 69, precipPct: 48 },
 		{ label: '+4H', tempF: 68, precipPct: 55 },
+		{ label: '+5H', tempF: 67, precipPct: 58 },
 	]);
 
 	const role = $derived(authStore.role);
@@ -130,17 +141,132 @@
 	/** FACILITY_OPS Director Override — unread drives SIEM-style scan line */
 	let directorOverrideUnread = $state(true);
 
+	/** Ares protocol — breach chrome when override unread or modeled precip risk */
+	const weatherAlert = $derived(
+		directorOverrideUnread || WEATHER_HOURLY.some((h) => h.precipPct >= 45),
+	);
+
+	/** Threat matrix SVG accents — keyed to `weatherAlert` for modal + SIEM read */
+	const wxThreatMatrixPalette = $derived.by(() => ({
+		ringSoft: weatherAlert ? 'rgba(255,0,51,0.16)' : 'rgba(0,240,255,0.14)',
+		ringSweep: weatherAlert ? 'rgba(255,0,51,0.45)' : 'rgba(0,240,255,0.38)',
+		strikeStroke: weatherAlert ? '#fb7185' : '#38bdf8',
+		strikeFill: weatherAlert ? 'rgba(251,113,133,0.16)' : 'rgba(56,189,248,0.14)',
+	}));
+
 	let activeOperativeIndex = $state(0);
 	let showWeatherModal = $state(false);
+	/** Active hourly pill index inside SIEM forecast modal */
+	let weatherModalHourIdx = $state(0);
 
-	/** War Room magnetic board */
-	let warRoomTool = $state(/** @type {'nodes' | 'ink'} */ ('nodes'));
+	/** Mock lightning locks — Player OS radar aesthetic (rose hex targets + coords) */
+	const LIGHTNING_STRIKES = /** @type {const} */ ([
+		{ x: 24, y: 58, lat: '41.628° N', lon: '111.842° W' },
+		{ x: 71, y: 34, lat: '41.641° N', lon: '111.859° W' },
+		{ x: 48, y: 72, lat: '41.617° N', lon: '111.836° W' },
+		{ x: 82, y: 61, lat: '41.633° N', lon: '111.871° W' },
+	]);
 
-	/** @type {{ id: string; name: string; role: string; xPct: number; yPct: number }[]} */
+	/** War Room simulator — drag tokens vs straight vector strokes */
+	let warRoomTool = $state(/** @type {'nodes' | 'vector'} */ ('nodes'));
+
+	/** Vector stroke preset — DRAW_ARROW (tactical movement) vs DASHED_LINE */
+	let warRoomLineStyle = $state(/** @type {'draw_arrow' | 'dashed_line'} */ ('draw_arrow'));
+
+	/** Razor pitch grid — viewBox 0…100 */
+	const WAR_ROOM_GRID_STEPS = Array.from({ length: 21 }, (_, i) => i * 5);
+
+	/**
+	 * Sideline routes + optional kinetic SVG path (`movementVector`) sampled via getPointAtLength on scrub.
+	 * @typedef {{
+	 *   id: string;
+	 *   name: string;
+	 *   role: string;
+	 *   xPct: number;
+	 *   yPct: number;
+	 *   side: 'friendly' | 'opp';
+	 *   routePts: { x: number; y: number }[];
+	 *   movementVector?: string | null;
+	 * }} MagneticPiece
+	 */
+
+	/** @type {MagneticPiece[]} */
 	let magneticPieces = $state([]);
+
+	let warRoomRosterModalOpen = $state(false);
+
+	/** Friendly roster ids — Starting XI (max practical 11) */
+	let wrBucketXi = $state(/** @type {string[]} */ ([]));
+	/** Friendly roster ids — bench */
+	let wrBucketBench = $state(/** @type {string[]} */ ([]));
+	/** Friendly roster ids — tokens allowed on pitch */
+	let wrBucketPitch = $state(/** @type {string[]} */ ([]));
+	/** Opposition scout ids deployed as pitch tokens */
+	let wrOppPitch = $state(/** @type {string[]} */ ([]));
+
+	/** Hidden path for SVGGeometryElement.getPointAtLength (viewBox 0–100) */
+	/** @type {SVGPathElement | undefined} */
+	let warRoomPathMeasureEl = $state();
+
+	/** SIEM telemetry scrub 0–100 */
+	let telemetryProgress = $state(0);
+	let telemetryPlaying = $state(false);
+	let warRoomPlayRaf = 0;
+
+	const warRoomTelemetryU = $derived(telemetryProgress / 100);
+
+	const WR_INK_PALETTE = /** @type {const} */ ([
+		{
+			id: 'cyan',
+			hex: '#00f0ff',
+			label: 'CY',
+			chipBorder:
+				'tw-border-[#00f0ff] tw-shadow-[inset_0_0_10px_rgba(0,240,255,0.45)]',
+			chipRing: 'tw-ring-[#00f0ff]/65',
+		},
+		{
+			id: 'ares',
+			hex: '#ff0033',
+			label: 'TH',
+			chipBorder:
+				'tw-border-[#ff0033] tw-shadow-[inset_0_0_10px_rgba(255,0,51,0.38)]',
+			chipRing: 'tw-ring-[#ff0033]/60',
+		},
+		{
+			id: 'magenta',
+			hex: '#d946ef',
+			label: 'MG',
+			chipBorder:
+				'tw-border-fuchsia-400 tw-shadow-[inset_0_0_10px_rgba(217,70,239,0.38)]',
+			chipRing: 'tw-ring-fuchsia-400/60',
+		},
+		{
+			id: 'amber',
+			hex: '#f59e0b',
+			label: 'AM',
+			chipBorder:
+				'tw-border-amber-400 tw-shadow-[inset_0_0_10px_rgba(245,158,11,0.38)]',
+			chipRing: 'tw-ring-amber-400/60',
+		},
+		{
+			id: 'emerald',
+			hex: '#10b981',
+			label: 'EM',
+			chipBorder:
+				'tw-border-emerald-400 tw-shadow-[inset_0_0_10px_rgba(16,185,129,0.38)]',
+			chipRing: 'tw-ring-emerald-400/60',
+		},
+	]);
+
+	/** Active ink / vector stroke — Tron Legacy cyan default */
+	let warRoomInkColor = $state('#00f0ff');
 
 	/** @type {HTMLElement | undefined} */
 	let pitchBoardEl = $state();
+
+	/** Pitch grid SVG — shared viewBox/CTM with ink layer (fluid token coords). */
+	/** @type {SVGSVGElement | undefined} */
+	let pitchCoordSvgEl = $state();
 
 	/** @type {string | null} */
 	let boardDragId = $state(null);
@@ -149,22 +275,39 @@
 	/** @type {SVGSVGElement | undefined} */
 	let inkSvgEl = $state();
 	let inkDrawing = $state(false);
-	/** @type {{ path: string; stroke: string }[]} */
-	let inkStrokes = $state([]);
-	let inkDraftPath = $state('');
-
-	const INK_STROKE_MAGENTA = '#ff00ff';
-	const INK_STROKE_CYAN = '#22d3ee';
-
-	const HERO_RING_R = 54;
-	const HERO_RING_C = 2 * Math.PI * HERO_RING_R;
 
 	/**
+	 * Tactical routes (SVG viewBox 0–100). Segments are editable via endpoint handles.
+	 * @typedef {{
+	 *   id: number;
+	 *   startX: number;
+	 *   startY: number;
+	 *   endX: number;
+	 *   endY: number;
+	 *   stroke: string;
+	 *   glowColor: string;
+	 *   dashPattern: string;
+	 *   lineStyle: 'draw_arrow' | 'dashed_line';
+	 *   linkedPieceId: string | null;
+	 * }} WarRoomRoute
+	 */
+	/** @type {WarRoomRoute[]} */
+	let warRoomRoutes = $state([]);
+	let warRoomRouteIdSeq = $state(1);
+
+	/** Vector preview segment (SVG user coords, viewBox space) */
+	let inkVectorDraft = $state(/** @type {null | { x1: number; y1: number; x2: number; y2: number }} */ (null));
+
+	/** @type {null | { routeId: number; which: 'start' | 'end' }} */
+	let routeEndpointDrag = $state(null);
+
+	/**
+	 * Fallback when CTM missing (non-DOM / odd embed).
 	 * @param {number} clientX
 	 * @param {number} clientY
 	 * @param {SVGSVGElement} svg
 	 */
-	function clientToSvgNorm(clientX, clientY, svg) {
+	function clientToSvgNormFallback(clientX, clientY, svg) {
 		const rect = svg.getBoundingClientRect();
 		const w = Math.max(rect.width, 1);
 		const h = Math.max(rect.height, 1);
@@ -175,15 +318,308 @@
 	}
 
 	/**
+	 * Screen → SVG user space (viewBox) via createSVGPoint + inverse screen CTM.
+	 * @param {{ clientX: number; clientY: number }} event
+	 * @param {SVGSVGElement} svgNode
+	 */
+	function getSvgPoint(event, svgNode) {
+		try {
+			const pt = svgNode.createSVGPoint();
+			pt.x = event.clientX;
+			pt.y = event.clientY;
+			const ctm = svgNode.getScreenCTM();
+			if (!ctm) throw new Error('no ctm');
+			return pt.matrixTransform(ctm.inverse());
+		} catch {
+			return clientToSvgNormFallback(event.clientX, event.clientY, svgNode);
+		}
+	}
+
+	/** @param {WarRoomRoute} r */
+	function warRoomRoutePathD(r) {
+		return `M ${r.startX.toFixed(2)} ${r.startY.toFixed(2)} L ${r.endX.toFixed(2)} ${r.endY.toFixed(2)}`;
+	}
+
+	/** Neon bloom hue for light-cycle trails (cyan ops vs red threat). */
+	function trailGlowHexFromInk(hex) {
+		const h = typeof hex === 'string' ? hex.trim().toLowerCase() : '';
+		if (
+			h.includes('ff0033') ||
+			h.includes('f43f5e') ||
+			h.includes('fb7185') ||
+			h.includes('e11d48')
+		) {
+			return '#ff0033';
+		}
+		return '#00f0ff';
+	}
+
+	/** Titan tactical ink — single dot raster for every War Room stroke. */
+	const WR_TACTICAL_DOT_ARRAY = /** @type {const} */ ('2 6');
+
+	/**
+	 * @param {'draw_arrow' | 'dashed_line'} ls
+	 */
+	function strokeAttrsFromLineStyle(ls) {
+		if (ls === 'draw_arrow')
+			return {
+				dashed: true,
+				arrow: true,
+				dashPattern: WR_TACTICAL_DOT_ARRAY,
+			};
+		return {
+			dashed: true,
+			arrow: true,
+			dashPattern: WR_TACTICAL_DOT_ARRAY,
+		};
+	}
+
+	/**
+	 * @param {string} pathD
+	 * @returns {{ x: number; y: number } | null}
+	 */
+	function pathDEndpoint(pathD) {
+		const nums = pathD.match(/-?\d+\.?\d*/g);
+		if (!nums || nums.length < 4) return null;
+		return { x: parseFloat(nums[nums.length - 2]), y: parseFloat(nums[nums.length - 1]) };
+	}
+
+	/**
+	 * @param {string} d
+	 * @param {number} u 0–1
+	 */
+	function pointOnMovementPath(d, u) {
+		if (!browser || !d?.trim() || !warRoomPathMeasureEl) return null;
+		warRoomPathMeasureEl.setAttribute('d', d);
+		const len = warRoomPathMeasureEl.getTotalLength();
+		if (len < 1e-6) return null;
+		const pt = warRoomPathMeasureEl.getPointAtLength(len * clampPct(u, 0, 1));
+		return { x: pt.x, y: pt.y };
+	}
+
+	/**
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} thresh viewBox units
+	 */
+	function nearestPieceIdAtBoardXY(x, y, thresh) {
+		let bestId = /** @type {string | null} */ (null);
+		let best = thresh;
+		const u = warRoomTelemetryU;
+		for (const p of magneticPieces) {
+			const pos = pieceXYAtTelemetry(p, u);
+			const d = Math.hypot(pos.x - x, pos.y - y);
+			if (d < best) {
+				best = d;
+				bestId = p.id;
+			}
+		}
+		return bestId;
+	}
+
+	/**
+	 * @param {string} pathD
+	 * @returns {{ x: number; y: number } | null}
+	 */
+	function pathDStart(pathD) {
+		const nums = pathD.match(/-?\d+\.?\d*/g);
+		if (!nums || nums.length < 2) return null;
+		return { x: parseFloat(nums[0]), y: parseFloat(nums[1]) };
+	}
+
+	/**
+	 * @param {string} pathD
+	 * @param {string | null} linkedPieceId
+	 */
+	function assignKineticArrow(pathD, linkedPieceId) {
+		if (!linkedPieceId) return;
+		const start = pathDStart(pathD);
+		const end = pathDEndpoint(pathD);
+		magneticPieces = magneticPieces.map((p) => {
+			if (p.id !== linkedPieceId) return p;
+			const pts =
+				start && end ?
+					[{ x: start.x, y: start.y }, { x: end.x, y: end.y }]
+				:	p.routePts?.length ?
+					p.routePts
+				:	[{ x: p.xPct, y: p.yPct }];
+			return {
+				...p,
+				movementVector: pathD,
+				routePts: pts,
+				xPct: pts[0]?.x ?? p.xPct,
+				yPct: pts[0]?.y ?? p.yPct,
+			};
+		});
+	}
+
+	function initWarRoomRosterBuckets() {
+		const ids = activeRoster.map((r) => r.id);
+		if (ids.length === 0) {
+			wrBucketXi = [];
+			wrBucketBench = [];
+			wrBucketPitch = [];
+			return;
+		}
+		const xi = ids.slice(0, 11);
+		const bench = ids.slice(11);
+		wrBucketXi = xi;
+		wrBucketBench = bench;
+		wrBucketPitch = [];
+		wrOppPitch = [];
+		syncMagneticPiecesFromBuckets();
+	}
+
+	function syncMagneticPiecesFromBuckets() {
+		const prevById = Object.fromEntries(magneticPieces.map((p) => [p.id, p]));
+		/** @type {MagneticPiece[]} */
+		const next = [];
+		let fi = 0;
+		for (const id of wrBucketPitch) {
+			const op = activeRoster.find((r) => r.id === id);
+			if (!op) continue;
+			const boardId = op.id;
+			const prev = prevById[boardId];
+			if (prev) {
+				next.push(prev);
+				continue;
+			}
+			const xPct = clampPct(28 + (fi % 4) * 10, 0.5, 99.5);
+			const yPct = clampPct(38 + Math.floor(fi / 4) * 8, 0.5, 99.5);
+			fi++;
+			next.push({
+				id: boardId,
+				name: op.name,
+				role: op.role,
+				xPct,
+				yPct,
+				side: 'friendly',
+				routePts: [{ x: xPct, y: yPct }],
+				movementVector: null,
+			});
+		}
+		let oi = 0;
+		for (const oid of wrOppPitch) {
+			const op = MOCK_OPPOSITION.find((r) => r.id === oid);
+			if (!op) continue;
+			const boardId = `opp::${op.id}`;
+			const prev = prevById[boardId];
+			if (prev) {
+				next.push(prev);
+				continue;
+			}
+			const xPct = clampPct(62 + (oi % 3) * 8, 0.5, 99.5);
+			const yPct = clampPct(36 + Math.floor(oi / 3) * 10, 0.5, 99.5);
+			oi++;
+			next.push({
+				id: boardId,
+				name: op.name,
+				role: op.role,
+				xPct,
+				yPct,
+				side: 'opp',
+				routePts: [{ x: xPct, y: yPct }],
+				movementVector: null,
+			});
+		}
+		magneticPieces = next;
+	}
+
+	/**
+	 * @param {DragEvent} e
+	 * @param {'xi' | 'bench' | 'pitch'} zone
+	 */
+	function rosterZoneDragOver(e, zone) {
+		e.preventDefault();
+		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+	}
+
+	/**
+	 * @param {DragEvent} e
+	 * @param {'xi' | 'bench' | 'pitch'} zone
+	 */
+	function rosterZoneDrop(e, zone) {
+		e.preventDefault();
+		let raw;
+		try {
+			raw = e.dataTransfer?.getData('application/json');
+			if (!raw) return;
+		} catch {
+			return;
+		}
+		/** @type {{ scope?: string; id?: string }} */
+		let data;
+		try {
+			data = JSON.parse(raw);
+		} catch {
+			return;
+		}
+		const id = typeof data.id === 'string' ? data.id : '';
+		if (!id) return;
+		const scope = data.scope === 'opp' ? 'opp' : 'friendly';
+
+		if (scope === 'opp') {
+			if (zone !== 'pitch') return;
+			if (!wrOppPitch.includes(id)) wrOppPitch = [...wrOppPitch, id];
+			syncMagneticPiecesFromBuckets();
+			return;
+		}
+
+		wrBucketXi = wrBucketXi.filter((x) => x !== id);
+		wrBucketBench = wrBucketBench.filter((x) => x !== id);
+		wrBucketPitch = wrBucketPitch.filter((x) => x !== id);
+
+		if (zone === 'xi') {
+			const next = [...wrBucketXi, id];
+			wrBucketXi = next.length > 11 ? next.slice(0, 11) : next;
+			wrBucketBench = [...wrBucketBench];
+			wrBucketPitch = [...wrBucketPitch];
+		} else if (zone === 'bench') {
+			wrBucketBench = [...wrBucketBench, id];
+			wrBucketXi = [...wrBucketXi];
+			wrBucketPitch = [...wrBucketPitch];
+		} else {
+			wrBucketPitch = [...wrBucketPitch, id];
+			wrBucketXi = [...wrBucketXi];
+			wrBucketBench = [...wrBucketBench];
+		}
+		syncMagneticPiecesFromBuckets();
+	}
+
+	/**
+	 * @param {DragEvent} e
+	 * @param {'friendly' | 'opp'} scope
+	 * @param {{ id: string; name: string; role: string }} payload
+	 */
+	function rosterModalChipDragStart(e, scope, payload) {
+		try {
+			e.dataTransfer?.setData(
+				'application/json',
+				JSON.stringify({ scope, id: payload.id, name: payload.name, role: payload.role }),
+			);
+			if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+		} catch {
+			/* ignore */
+		}
+	}
+
+	function removeOppFromPitch(oppId) {
+		wrOppPitch = wrOppPitch.filter((x) => x !== oppId);
+		syncMagneticPiecesFromBuckets();
+	}
+
+	const warRoomDraftStrokeAttrs = $derived(strokeAttrsFromLineStyle(warRoomLineStyle));
+
+	/**
 	 * @param {PointerEvent} e
 	 */
 	function inkPointerDown(e) {
-		if (!inkSvgEl || warRoomTool !== 'ink' || e.button !== 0) return;
+		if (!inkSvgEl || e.button !== 0 || warRoomTool !== 'vector') return;
 		e.preventDefault();
 		e.stopPropagation();
 		inkDrawing = true;
-		const { x, y } = clientToSvgNorm(e.clientX, e.clientY, inkSvgEl);
-		inkDraftPath = `M ${x.toFixed(2)} ${y.toFixed(2)}`;
+		const { x, y } = getSvgPoint(e, inkSvgEl);
+		inkVectorDraft = { x1: x, y1: y, x2: x, y2: y };
 		try {
 			inkSvgEl.setPointerCapture(e.pointerId);
 		} catch {
@@ -195,11 +631,11 @@
 	 * @param {PointerEvent} e
 	 */
 	function inkPointerMove(e) {
-		if (!inkDrawing || !inkSvgEl) return;
+		if (!inkDrawing || !inkSvgEl || warRoomTool !== 'vector') return;
 		e.preventDefault();
 		e.stopPropagation();
-		const { x, y } = clientToSvgNorm(e.clientX, e.clientY, inkSvgEl);
-		inkDraftPath += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+		const { x, y } = getSvgPoint(e, inkSvgEl);
+		if (inkVectorDraft) inkVectorDraft = { ...inkVectorDraft, x2: x, y2: y };
 	}
 
 	/**
@@ -214,17 +650,90 @@
 		} catch {
 			/* ignore */
 		}
-		if (inkDraftPath.length > 12) {
-			const inkStroke =
-				inkStrokes.length % 2 === 0 ? INK_STROKE_MAGENTA : INK_STROKE_CYAN;
-			inkStrokes = [...inkStrokes, { path: inkDraftPath, stroke: inkStroke }];
+		if (warRoomTool === 'vector' && inkVectorDraft) {
+			const { x1, y1, x2, y2 } = inkVectorDraft;
+			const dx = x2 - x1;
+			const dy = y2 - y1;
+			if (Math.hypot(dx, dy) > 0.35) {
+				const attrs = strokeAttrsFromLineStyle(warRoomLineStyle);
+				const linkId =
+					warRoomLineStyle === 'draw_arrow' ? nearestPieceIdAtBoardXY(x1, y1, 12) : null;
+				const path = `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+				const id = warRoomRouteIdSeq;
+				warRoomRouteIdSeq = warRoomRouteIdSeq + 1;
+				warRoomRoutes = [
+					...warRoomRoutes,
+					{
+						id,
+						startX: x1,
+						startY: y1,
+						endX: x2,
+						endY: y2,
+						stroke: warRoomInkColor,
+						glowColor: trailGlowHexFromInk(warRoomInkColor),
+						dashPattern: attrs.dashPattern ?? WR_TACTICAL_DOT_ARRAY,
+						lineStyle: warRoomLineStyle,
+						linkedPieceId: linkId,
+					},
+				];
+				if (warRoomLineStyle === 'draw_arrow' && linkId) {
+					assignKineticArrow(path, linkId);
+				} else if (warRoomLineStyle === 'dashed_line') {
+					attachTelemetryRoute(x1, y1, x2, y2);
+				}
+			}
+			inkVectorDraft = null;
 		}
-		inkDraftPath = '';
+	}
+
+	/**
+	 * @param {PointerEvent} e
+	 * @param {number} routeId
+	 * @param {'start' | 'end'} which
+	 */
+	function routeHandlePointerDown(e, routeId, which) {
+		if (!inkSvgEl || e.button !== 0) return;
+		e.preventDefault();
+		e.stopPropagation();
+		if (routeEndpointDrag) routeHandlePointerUp();
+		routeEndpointDrag = { routeId, which };
+		window.addEventListener('pointermove', routeHandlePointerMove);
+		window.addEventListener('pointerup', routeHandlePointerUp);
+		window.addEventListener('pointercancel', routeHandlePointerUp);
+		try {
+			e.currentTarget?.setPointerCapture?.(e.pointerId);
+		} catch {
+			/* ignore */
+		}
+	}
+
+	function routeHandlePointerMove(e) {
+		const drag = routeEndpointDrag;
+		if (!drag || !inkSvgEl) return;
+		const { x, y } = getSvgPoint(e, inkSvgEl);
+		warRoomRoutes = warRoomRoutes.map((r) => {
+			if (r.id !== drag.routeId) return r;
+			return drag.which === 'start' ?
+					{ ...r, startX: x, startY: y }
+				:	{ ...r, endX: x, endY: y };
+		});
+		const r = warRoomRoutes.find((rr) => rr.id === drag.routeId);
+		if (r?.lineStyle === 'draw_arrow' && r.linkedPieceId) {
+			assignKineticArrow(warRoomRoutePathD(r), r.linkedPieceId);
+		}
+	}
+
+	function routeHandlePointerUp() {
+		routeEndpointDrag = null;
+		window.removeEventListener('pointermove', routeHandlePointerMove);
+		window.removeEventListener('pointerup', routeHandlePointerUp);
+		window.removeEventListener('pointercancel', routeHandlePointerUp);
 	}
 
 	function clearInk() {
-		inkStrokes = [];
-		inkDraftPath = '';
+		warRoomRoutes = [];
+		inkVectorDraft = null;
+		routeEndpointDrag = null;
 	}
 
 	/**
@@ -236,64 +745,126 @@
 		return Math.min(hi, Math.max(lo, v));
 	}
 
-	function clearWarRoomBoard() {
-		clearInk();
-		magneticPieces = [];
-		boardDragId = null;
+	const TELEMETRY_ATTACH_THRESH = 11;
+
+	/**
+	 * Pitch-normalized coords from pointer — fluid sub-pixel mapping via layout bounds.
+	 * @param {number} clientX
+	 * @param {number} clientY
+	 */
+	function boardPctFromClient(clientX, clientY) {
+		if (!pitchCoordSvgEl) return null;
+		const { x, y } = getSvgPoint({ clientX, clientY }, pitchCoordSvgEl);
+		return {
+			x: clampPct(x, 0.05, 99.95),
+			y: clampPct(y, 0.05, 99.95),
+		};
 	}
 
 	/**
-	 * @param {DragEvent} e
-	 * @param {LoadoutOperative} op
+	 * @param {{ x: number; y: number }[]} pts
+	 * @param {number} u 0–1 along cumulative polyline length
 	 */
-	function rosterChipDragStart(e, op) {
-		try {
-			e.dataTransfer?.setData(
-				'application/json',
-				JSON.stringify({ id: op.id, name: op.name, role: op.role }),
-			);
-			if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy';
-		} catch {
-			/* ignore */
+	function interpolateAlongPolyline(pts, u) {
+		if (!pts.length) return null;
+		const clamped = clampPct(u, 0, 1);
+		if (pts.length === 1) return { ...pts[0] };
+		let total = 0;
+		const segLens = /** @type {number[]} */ ([]);
+		for (let i = 1; i < pts.length; i++) {
+			const sl = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+			segLens.push(sl);
+			total += sl;
+		}
+		if (total < 1e-4) return { ...pts[pts.length - 1] };
+		let d = clamped * total;
+		for (let i = 1; i < pts.length; i++) {
+			const sl = segLens[i - 1];
+			if (d <= sl) {
+				const t = sl > 0 ? d / sl : 0;
+				return {
+					x: pts[i - 1].x + t * (pts[i].x - pts[i - 1].x),
+					y: pts[i - 1].y + t * (pts[i].y - pts[i - 1].y),
+				};
+			}
+			d -= sl;
+		}
+		return { ...pts[pts.length - 1] };
+	}
+
+	/**
+	 * @param {MagneticPiece} piece
+	 * @param {number} u 0–1 timeline playhead
+	 */
+	function pieceXYAtTelemetry(piece, u) {
+		const mv = piece.movementVector?.trim();
+		if (mv) {
+			const kin = pointOnMovementPath(mv, u);
+			if (kin) return kin;
+		}
+		const pts = piece.routePts?.length ? piece.routePts : [{ x: piece.xPct, y: piece.yPct }];
+		const pt = interpolateAlongPolyline(pts, u);
+		return pt ?? { x: piece.xPct, y: piece.yPct };
+	}
+
+	/**
+	 * Extend nearest token route toward vector / scribble endpoint (SIM playback path).
+	 */
+	function attachTelemetryRoute(x1, y1, x2, y2) {
+		magneticPieces = magneticPieces.map((p) => {
+			const pts = p.routePts?.length ? p.routePts : [{ x: p.xPct, y: p.yPct }];
+			const tail = pts[pts.length - 1];
+			const d = Math.hypot(tail.x - x1, tail.y - y1);
+			if (d <= TELEMETRY_ATTACH_THRESH) {
+				const du = Math.hypot(x2 - x1, y2 - y1);
+				if (du < 0.25) return p;
+				const routePts = [...pts, { x: x2, y: y2 }];
+				return { ...p, routePts, xPct: routePts[0].x, yPct: routePts[0].y };
+			}
+			return p;
+		});
+	}
+
+	function stopWarRoomTelemetryPlayback() {
+		telemetryPlaying = false;
+		if (browser && warRoomPlayRaf) {
+			cancelAnimationFrame(warRoomPlayRaf);
+			warRoomPlayRaf = 0;
 		}
 	}
 
-	/**
-	 * @param {DragEvent} e
-	 */
-	function pitchDragOver(e) {
-		e.preventDefault();
-		if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-	}
-
-	/**
-	 * @param {DragEvent} e
-	 */
-	function pitchDrop(e) {
-		e.preventDefault();
-		if (!pitchBoardEl) return;
-		let data;
-		try {
-			const raw = e.dataTransfer?.getData('application/json');
-			if (!raw) return;
-			data = JSON.parse(raw);
-		} catch {
+	function toggleWarRoomTelemetryPlay() {
+		if (telemetryPlaying) {
+			stopWarRoomTelemetryPlayback();
 			return;
 		}
-		if (!data || typeof data.id !== 'string' || typeof data.name !== 'string') return;
-		const roleAbbr = typeof data.role === 'string' ? data.role : 'MID';
-		const rect = pitchBoardEl.getBoundingClientRect();
-		const w = Math.max(rect.width, 1);
-		const h = Math.max(rect.height, 1);
-		const xPct = clampPct(((e.clientX - rect.left) / w) * 100, 4, 96);
-		const yPct = clampPct(((e.clientY - rect.top) / h) * 100, 4, 96);
-		const next = { id: data.id, name: data.name, role: roleAbbr, xPct, yPct };
-		const idx = magneticPieces.findIndex((p) => p.id === data.id);
-		if (idx >= 0) {
-			magneticPieces = magneticPieces.map((p, i) => (i === idx ? next : p));
-		} else {
-			magneticPieces = [...magneticPieces, next];
+		stopWarRoomTelemetryPlayback();
+		if (telemetryProgress >= 99.5) telemetryProgress = 0;
+		telemetryPlaying = true;
+		const startProg = telemetryProgress;
+		const t0 = performance.now();
+		const dur = 6500;
+		function frame(now) {
+			if (!telemetryPlaying) return;
+			const next = startProg + ((now - t0) / dur) * (100 - startProg);
+			telemetryProgress = Math.min(100, next);
+			if (telemetryProgress >= 99.99) {
+				stopWarRoomTelemetryPlayback();
+				return;
+			}
+			warRoomPlayRaf = requestAnimationFrame(frame);
 		}
+		warRoomPlayRaf = requestAnimationFrame(frame);
+	}
+
+	function clearWarRoomBoard() {
+		stopWarRoomTelemetryPlayback();
+		telemetryProgress = 0;
+		clearInk();
+		wrBucketPitch = [];
+		wrOppPitch = [];
+		boardDragId = null;
+		syncMagneticPiecesFromBuckets();
 	}
 
 	/**
@@ -310,16 +881,25 @@
 	}
 
 	function boardChipPointerMove(e) {
-		if (!boardDragId || !pitchBoardEl) return;
-		const rect = pitchBoardEl.getBoundingClientRect();
-		const w = Math.max(rect.width, 1);
-		const h = Math.max(rect.height, 1);
-		const xPct = clampPct(((e.clientX - rect.left) / w) * 100, 4, 96);
-		const yPct = clampPct(((e.clientY - rect.top) / h) * 100, 4, 96);
+		if (!boardDragId) return;
+		const pos = boardPctFromClient(e.clientX, e.clientY);
+		if (!pos) return;
+		const { x: xPct, y: yPct } = pos;
 		const id = boardDragId;
-		magneticPieces = magneticPieces.map((p) =>
-			p.id === id ? { ...p, xPct, yPct } : p,
-		);
+		magneticPieces = magneticPieces.map((p) => {
+			if (p.id !== id) return p;
+			const pts = p.routePts?.length ? p.routePts : [{ x: p.xPct, y: p.yPct }];
+			const dx = xPct - pts[0].x;
+			const dy = yPct - pts[0].y;
+			const routePts = pts.map((pt) => ({ x: pt.x + dx, y: pt.y + dy }));
+			return {
+				...p,
+				xPct: routePts[0].x,
+				yPct: routePts[0].y,
+				routePts,
+				movementVector: null,
+			};
+		});
 	}
 
 	function boardChipPointerUp() {
@@ -342,10 +922,59 @@
 		return t.slice(0, 2).toUpperCase();
 	}
 
-	/** Draft ink preview alternates stroke color like committed strokes */
-	const inkDraftStroke = $derived(
-		inkStrokes.length % 2 === 0 ? INK_STROKE_MAGENTA : INK_STROKE_CYAN,
-	);
+	const RADAR_N = 6;
+	const RADAR_CX = 50;
+	const RADAR_CY = 50;
+	const RADAR_R = 36;
+	const RADAR_WEB_SCALES = /** @type {const} */ ([0.22, 0.42, 0.62, 0.82, 1]);
+	const RADAR_AXIS_LABELS = /** @type {const} */ ([
+		'Pace',
+		'Shooting',
+		'Passing',
+		'Dribbling',
+		'Defending',
+		'Physical',
+	]);
+
+	/**
+	 * Regular hexagon radar geometry — `mult` scales spoke length from center (1 = skill envelope).
+	 * @param {number} i
+	 * @param {number} mult
+	 */
+	function radarPolarXY(i, mult) {
+		const ang = -Math.PI / 2 + (i * 2 * Math.PI) / RADAR_N;
+		return {
+			x: RADAR_CX + RADAR_R * mult * Math.cos(ang),
+			y: RADAR_CY + RADAR_R * mult * Math.sin(ang),
+		};
+	}
+
+	function radarSkillVals(attrs) {
+		return [attrs.pace, attrs.shot, attrs.pass, attrs.dribble, attrs.def, attrs.phy].map((v) => {
+			const t = (v - 42) / 49;
+			return Math.min(1, Math.max(0.08, t));
+		});
+	}
+
+	/**
+	 * SVG path for hexagonal skills radar (viewBox 0 0 100 100).
+	 * @param {{ pace: number; shot: number; pass: number; dribble: number; def: number; phy: number }} attrs
+	 */
+	function radarSkillPath(attrs) {
+		const pts = radarSkillVals(attrs).map((t, i) => {
+			const { x, y } = radarPolarXY(i, t);
+			return `${x.toFixed(3)},${y.toFixed(3)}`;
+		});
+		return `M ${pts.join(' L ')} Z`;
+	}
+
+	/**
+	 * Skill polygon vertices for node markers.
+	 * @param {{ pace: number; shot: number; pass: number; dribble: number; def: number; phy: number }} attrs
+	 */
+	function radarSkillVertices(attrs) {
+		return radarSkillVals(attrs).map((t, i) => radarPolarXY(i, t));
+	}
 
 	/**
 	 * @param {LoadoutOperative} op
@@ -360,6 +989,7 @@
 			pace: pick(1),
 			shot: pick(2),
 			pass: pick(3),
+			dribble: pick(6),
 			def: pick(4),
 			phy: pick(5),
 		};
@@ -427,6 +1057,7 @@
 			lvl,
 			hp,
 			status,
+			totalXp: xp,
 		};
 	}
 
@@ -510,6 +1141,14 @@
 
 	const heroFocusOperative = $derived(activeRoster[activeOperativeIndex] ?? null);
 
+	$effect(() => {
+		if (!showTacticalOverlay || !browser) return;
+		const ar = activeRoster;
+		if (wrBucketXi.length === 0 && wrBucketBench.length === 0 && ar.length > 0) {
+			initWarRoomRosterBuckets();
+		}
+	});
+
 	const hourlyBars = $derived.by(() => {
 		const rows = WEATHER_HOURLY.map((r) => ({ ...r }));
 		let tMin = rows[0].tempF;
@@ -529,7 +1168,70 @@
 		}));
 	});
 
+	/** Cumulative precip spark paths per hour slot (viewBox 0 0 100 100) for SIEM pills */
+	const hourlyPrecipMiniPaths = $derived.by(() => {
+		const rows = WEATHER_HOURLY;
+		let pMax = 1;
+		for (const r of rows) pMax = Math.max(pMax, r.precipPct);
+		return rows.map((_, i) => {
+			const slice = rows.slice(0, i + 1);
+			const m = slice.length;
+			return slice
+				.map((cell, j) => {
+					const x = (j / Math.max(m - 1, 1)) * 100;
+					const y = 100 - (cell.precipPct / pMax) * 72 - 14;
+					return `${j === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+				})
+				.join(' ');
+		});
+	});
+
 	const weatherHubTempF = $derived(WEATHER_HOURLY[0]?.tempF ?? 72);
+
+	/** Next three hourly slots for hub pills (wall-clock + °F). */
+	const weatherHubHourlyPills = $derived.by(() => {
+		const slice = WEATHER_HOURLY.slice(0, 3);
+		const aligned = new Date();
+		if (browser) {
+			aligned.setMinutes(0, 0, 0);
+		} else {
+			aligned.setUTCHours(14, 0, 0, 0);
+		}
+		return slice.map((row, i) => {
+			const d = new Date(aligned.getTime() + i * 3600000);
+			const clock = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+			return { clock, tempF: row.tempF };
+		});
+	});
+
+	function scrollCoachPillarIntoView(/** @type {string} */ elId) {
+		if (!browser) return;
+		queueMicrotask(() => {
+			document.getElementById(elId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+	}
+
+	function commandConsoleToggleWarRoom() {
+		if (showTacticalOverlay) closeWarRoom();
+		else openWarRoom();
+	}
+
+	function commandConsoleToggleComms() {
+		if (showCommsOverlay) closeComms();
+		else openComms();
+	}
+
+	function heroCarouselPrev() {
+		const n = activeRoster.length;
+		if (n <= 0) return;
+		activeOperativeIndex = (activeOperativeIndex - 1 + n) % n;
+	}
+
+	function heroCarouselNext() {
+		const n = activeRoster.length;
+		if (n <= 0) return;
+		activeOperativeIndex = (activeOperativeIndex + 1) % n;
+	}
 
 	$effect(() => {
 		const n = activeRoster.length;
@@ -548,66 +1250,55 @@
 	 * @param {LoadoutOperative} op
 	 */
 	function operativeStripAbbr(op) {
-		const parts = op.name.trim().split(/\s+/).filter(Boolean);
-		if (parts.length >= 2) {
-			const a = parts[0]?.[0] ?? '?';
-			const b = parts[parts.length - 1]?.[0] ?? '?';
-			return `${a}.${b}`;
-		}
-		return op.role.length ? op.role.slice(0, 4).toUpperCase() : '—';
+		const first = op.name.trim().split(/\s+/)[0] ?? '';
+		const letters = first.replace(/[^a-zA-Z]/g, '').toUpperCase();
+		const pad = letters.slice(-1) || '-';
+		return letters.slice(0, 3).padEnd(3, pad);
 	}
 
-	/**
-	 * 2px bottom status bar for mini-portraits (matches HP tiers).
-	 * @param {number} hp
-	 */
-	function hpStripBarGlow(hp) {
-		if (hp >= 70) {
-			return 'tw-bg-emerald-400 tw-shadow-[0_0_14px_rgba(52,211,153,0.8)]';
-		}
-		if (hp >= 40) {
-			return 'tw-bg-amber-400 tw-shadow-[0_0_14px_rgba(251,191,36,0.7)]';
-		}
-		return 'tw-bg-rose-400 tw-shadow-[0_0_14px_rgba(251,113,133,0.75)]';
-	}
-
-
-	/**
-	 * @param {number} hp
-	 */
-	function hpRingAccent(hp) {
-		if (hp >= 70)
-			return {
-				stroke: '#34d399',
-				glow: 'tw-shadow-[0_0_28px_rgba(16,185,129,0.55)]',
-				filter: 'url(#heroRingGlowEmerald)',
-			};
-		if (hp >= 40)
-			return {
-				stroke: '#fbbf24',
-				glow: 'tw-shadow-[0_0_28px_rgba(245,158,11,0.5)]',
-				filter: 'url(#heroRingGlowAmber)',
-			};
-		return {
-			stroke: '#fb7185',
-			glow: 'tw-shadow-[0_0_28px_rgba(244,63,94,0.55)]',
-			filter: 'url(#heroRingGlowRose)',
-		};
-	}
-
-	const teamHpPct = $derived.by(() => {
+	const missionSquadXpSum = $derived.by(() => {
 		const r = activeRoster;
-		if (r.length === 0) return 84;
-		return Math.round(r.reduce((s, o) => s + o.hp, 0) / r.length);
+		if (!r.length) return 0;
+		return r.reduce((s, o) => s + (o.totalXp ?? 0), 0);
 	});
 
+	const missionXpVelocity = $derived.by(() => {
+		const r = activeRoster;
+		if (r.length === 0) return null;
+		return Math.max(8, Math.round(Math.sqrt(missionSquadXpSum / Math.max(r.length, 1)) * 4.2));
+	});
+
+	const weatherSparklinePath = $derived.by(() => {
+		const pts = WEATHER_HOURLY;
+		if (!pts.length) return '';
+		let tMin = pts[0].tempF;
+		let tMax = pts[0].tempF;
+		for (const p of pts) {
+			tMin = Math.min(tMin, p.tempF);
+			tMax = Math.max(tMax, p.tempF);
+		}
+		const span = Math.max(tMax - tMin, 1);
+		const n = pts.length;
+		return pts
+			.map((p, i) => {
+				const x = (i / Math.max(n - 1, 1)) * 100;
+				const y = 100 - ((p.tempF - tMin) / span) * 72 - 14;
+				return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+			})
+			.join(' ');
+	});
 	function openWarRoom() {
 		showTacticalOverlay = true;
 	}
 
 	function closeWarRoom() {
+		stopWarRoomTelemetryPlayback();
+		telemetryProgress = 0;
 		showTacticalOverlay = false;
+		warRoomRosterModalOpen = false;
 		warRoomTool = 'nodes';
+		wrBucketPitch = [];
+		wrOppPitch = [];
 		magneticPieces = [];
 		boardDragId = null;
 		clearInk();
@@ -623,6 +1314,7 @@
 
 	function closeWeatherModal() {
 		showWeatherModal = false;
+		weatherModalHourIdx = 0;
 	}
 
 	$effect(() => {
@@ -654,7 +1346,7 @@
 </script>
 
 <div
-	class="tw-relative tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-gap-3 tw-overflow-hidden tw-bg-black tw-p-2 tw-font-sans tw-text-slate-300 tw-selection:bg-cyan-500/30 md:tw-gap-4 md:tw-p-4"
+	class="tw-relative tw-isolate tw-z-0 tw-flex tw-h-[calc(100vh-theme(spacing.header))] tw-w-full tw-flex-col tw-overflow-hidden tw-bg-[var(--void-black)] tw-font-sans tw-text-slate-300 tw-selection:bg-[#00f0ff]/30"
 >
 	<div
 		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.12]"
@@ -662,212 +1354,228 @@
 		aria-hidden="true"
 	></div>
 
-	<!-- Command bridge nav -->
+	<!-- Command bridge — crest + title only -->
 	<header
-		class="tw-relative tw-z-20 tw-flex tw-w-full tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-rounded-b-2xl tw-border-b tw-border-slate-800 tw-bg-[#020617]/50 tw-p-3 tw-shadow-[0_0_24px_rgba(6,182,212,0.06)] tw-backdrop-blur-md md:tw-flex-nowrap md:tw-px-4"
+		class="vanguard-panel tw-relative tw-z-10 tw-flex tw-shrink-0 tw-w-full tw-flex-wrap tw-items-center tw-gap-4 tw-rounded-b-2xl tw-p-3 md:tw-flex-nowrap md:tw-gap-4 md:tw-px-4"
 	>
-		<div class="tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-3 md:tw-gap-4">
+		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-3 md:tw-gap-4">
 			<div
-				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-cyan-500/40 tw-bg-cyan-950/20 tw-shadow-[0_0_18px_rgba(6,182,212,0.25)] md:tw-h-14 md:tw-w-14"
+				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/40 tw-bg-[rgba(0,24,32,0.55)] tw-shadow-[0_0_18px_rgba(0,240,255,0.25)] md:tw-h-14 md:tw-w-14"
 				aria-hidden="true"
 			>
-				<span class="tw-text-xl tw-font-black tw-tracking-widest tw-text-cyan-300 md:tw-text-2xl">{nexusBadgeLetter}</span>
+				<span class="tw-text-xl tw-font-black tw-tracking-widest tw-text-[#00f0ff]/90 md:tw-text-2xl">{nexusBadgeLetter}</span>
 			</div>
 			<div class="tw-min-w-0">
-				<h1 class="tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-text-base md:tw-text-lg">
-					Nexus Vanguard
+				<h1 class="tw-font-black tw-tracking-[0.12em] tw-text-white tw-uppercase tw-text-base md:tw-text-lg">
+					Nexus Command
 				</h1>
-				<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-cyan-400/90 tw-uppercase">
+				<p class="tw-mt-0.5 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/90 tw-uppercase">
 					{clubNameDisplay}
 					<span class="tw-text-slate-600"> // </span>
 					{teamNameDisplay}
 				</p>
 			</div>
 		</div>
-
-		<div class="tw-flex tw-w-full tw-flex-wrap tw-items-center tw-justify-end tw-gap-2 md:tw-w-auto md:tw-gap-3">
-			<button type="button" class="{BTN_NAV_AMBER} tw-relative" onclick={openComms} aria-label="Secure comms">
-				<span
-					class="tw-absolute tw--right-1 tw--top-1 tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-amber-400 tw-shadow-[0_0_10px_rgba(245,158,11,0.9)]"
-					aria-hidden="true"
-				></span>
-				<svg class="tw-h-4 tw-w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-					/>
-				</svg>
-				SECURE COMMS
-			</button>
-
-			<button type="button" class={BTN_NAV_CYAN} onclick={openWarRoom}>
-				<svg class="tw-h-4 tw-w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-					/>
-				</svg>
-				WAR ROOM
-			</button>
-
-			<a href="/coach/match-day" class={`${BTN_NAV_ROSE} tw-relative tw-z-20 tw-inline-flex tw-items-center tw-gap-2`}>
-				<div
-					class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-white tw-animate-pulse tw-shadow-[0_0_8px_white]"
-					aria-hidden="true"
-				></div>
-				LOG MATCH
-			</a>
-		</div>
 	</header>
 
-	<!-- Command bridge: Mission + Weather (top), Facility, holographic carousel -->
-	<div
-		class="tw-relative tw-z-10 tw-grid tw-min-h-0 tw-flex-1 tw-grid-cols-1 tw-gap-4 tw-pb-2 xl:tw-grid-cols-12 xl:tw-items-start xl:tw-gap-5"
+	<!-- Dashboard nav — locked triad -->
+	<nav
+		class="tw-relative tw-z-50 tw-mb-2 tw-grid tw-min-w-0 tw-w-full tw-grid-cols-3 tw-gap-4 tw-px-2 md:tw-px-4"
+		aria-label="Mission control, facility ops, and weather hub"
 	>
-		<section
-			class="{GLASS_PANEL} tw-flex tw-flex-col tw-gap-4 tw-p-4 tw-shadow-[0_0_20px_rgba(6,182,212,0.06)] md:tw-p-5 xl:tw-col-span-8"
-		>
-			<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
-				<div class="tw-min-w-0">
-					<h2 class="tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-text-lg md:tw-text-xl">
-						Mission Control
-					</h2>
-					<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-cyan-400/80 tw-uppercase">
-						XP · bounty routing
-					</p>
-				</div>
-				<a
-					href="/coach/forge"
-					class={BTN_FORGE_CRAFT}
-					aria-label="Enter Forge — drills and crafting"
-				>
-					<svg
-						class="tw-h-5 tw-w-5"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0-.83-.83-.83-2.17 0-3L12 9" />
-						<path d="M17.64 15 22 10.64" />
-						<path
-							d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.24V7.35c0-.53-.21-1.04-.59-1.41L18 4.5"
-						/>
-					</svg>
-				</a>
+		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-mission')}>
+			[ MISSION CONTROL ]
+		</button>
+		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-facility')}>
+			[ FACILITY OPS ]
+		</button>
+		<button type="button" class={CMD_NAV_TRIAD} onclick={() => scrollCoachPillarIntoView('coach-pillar-weather')}>
+			[ WEATHER HUB ]
+		</button>
+	</nav>
+
+	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-px-2 md:tw-px-4">
+		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide md:tw-gap-4 tw-pb-2">
+	<!-- Command row: 4 + 4 + 4 Mission · Facility & Forge staging · Weather -->
+	<div class="tw-relative tw-z-10 tw-grid tw-min-h-0 tw-w-full tw-min-w-0 tw-grid-cols-12 tw-gap-4 tw-items-stretch">
+		<section id="coach-pillar-mission" class="{CMD_GRID_PANEL}" aria-label="Mission control">
+			<div class="tw-min-w-0">
+				<h2 class="tw-vanguard-section-header">
+					Mission Control
+				</h2>
+				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/80 tw-uppercase">
+					Squad XP velocity · bounty rail
+				</p>
 			</div>
-			<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-3">
-				<div
-					class="tw-rounded-xl tw-border tw-border-cyan-500/25 tw-bg-black/40 tw-px-4 tw-py-3 tw-font-mono tw-shadow-[inset_0_0_12px_rgba(6,182,212,0.06)]"
-				>
+			<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-wrap tw-content-start tw-items-stretch tw-gap-3">
+				<div class="tw-min-w-[12rem] tw-flex-1 tw-rounded-xl tw-px-4 tw-py-3 tw-font-mono vanguard-panel">
 					<p class="tw-text-[9px] tw-tracking-widest tw-text-slate-500 tw-uppercase">XP Velocity</p>
-					<p class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-cyan-300">
-						{teamHpPct}<span class="tw-text-sm tw-text-cyan-500/80">%</span>
+					<p class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-[#00f0ff]/90 tw-vanguard-data">
+						{missionXpVelocity ?? '—'}<span class="tw-text-sm tw-text-[#00f0ff]/55"> U/HR</span>
+					</p>
+					<p class="tw-mt-1 tw-text-[9px] tw-tracking-wide tw-text-slate-600 tw-uppercase">
+						SQD Σ XP · {missionSquadXpSum.toLocaleString()}
 					</p>
 				</div>
 				<span
-					class="tw-rounded-lg tw-border tw-border-amber-500/35 tw-bg-amber-950/15 tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-300 tw-uppercase"
+					class="tw-inline-flex tw-h-fit tw-items-center tw-rounded-lg tw-border tw-border-amber-500/35 tw-bg-amber-950/15 tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-300 tw-uppercase"
 				>
 					2 Active Bounties
 				</span>
 			</div>
+			<div class="tw-mt-auto tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-2 tw-pt-2">
+				<button type="button" class="{CMD_BRIDGE_IDLE_SECOND}" onclick={commandConsoleToggleWarRoom}>
+					[ WAR ROOM ]
+				</button>
+				<a href="/coach/match-day" class="{CMD_BRIDGE_IDLE_SECOND} tw-inline-flex tw-no-underline">
+					[ MATCH LOGGER ]
+				</a>
+			</div>
 		</section>
 
-		<section
-			class="{GLASS_PANEL} tw-flex tw-flex-col tw-gap-4 tw-p-4 tw-shadow-[0_0_22px_rgba(245,158,11,0.06)] xl:tw-col-span-4"
-			aria-label="Compact weather hub"
-		>
-			<div>
-				<h2 class="tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-text-sm">
-					Weather Hub
-				</h2>
-				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-500 tw-uppercase">
-					Live strike proxy
+		<section id="coach-pillar-facility" class="{CMD_GRID_PANEL}" aria-label="Facility ops and staging">
+			<div class="tw-min-w-0">
+				<h2 class="tw-vanguard-section-header tw-font-mono">Facility Ops & Staging</h2>
+				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-slate-600 tw-uppercase">
+					Director overrides · Comm-links · arsenal egress
 				</p>
-			</div>
-			<div class="tw-flex tw-items-center tw-gap-3">
-				<div
-					class="wb-radar-hub tw-relative tw-h-16 tw-w-16 tw-shrink-0 tw-overflow-hidden tw-rounded-full tw-border tw-border-cyan-500/35 tw-bg-black/55 tw-shadow-[0_0_18px_rgba(34,211,238,0.28)]"
-					aria-hidden="true"
-				>
-					<div class="wb-radar-grid tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-[0.35]"></div>
-					<div
-						class="wb-lightning wb-lightning-a tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-amber-100 tw-to-cyan-300 tw-opacity-90 tw-shadow-[0_0_14px_rgba(250,204,21,0.9)]"
-					></div>
-					<div
-						class="wb-lightning wb-lightning-b tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-cyan-100 tw-to-violet-400 tw-opacity-80 tw-shadow-[0_0_12px_rgba(34,211,238,0.85)]"
-					></div>
-					<div
-						class="wb-lightning wb-lightning-c tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-white tw-to-amber-300 tw-opacity-90 tw-shadow-[0_0_16px_rgba(255,255,255,0.55)]"
-					></div>
-				</div>
-				<div class="tw-min-w-0">
-					<p class="tw-font-black tw-tabular-nums tw-text-2xl tw-tracking-tight tw-text-white md:tw-text-3xl">
-						{weatherHubTempF}<span class="tw-text-lg tw-text-cyan-400/90 md:tw-text-xl">°F</span>
-					</p>
-					<p class="tw-mt-0.5 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-400">
-						{HYRUM_LOCATION_SHORT}
-					</p>
-				</div>
 			</div>
 			<button
 				type="button"
-				class={BTN_SECONDARY_EXPAND}
+				class="facility-ops-override-card btn-ares tw-relative tw-w-full tw-overflow-hidden tw-rounded-xl tw-text-left tw-animate-[pulse_4s_ease-in-out_infinite] tw-p-3 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-rose-400"
 				onclick={() => {
-					showWeatherModal = true;
+					directorOverrideUnread = false;
 				}}
+				aria-label="Director override: acknowledge alert"
 			>
-				EXPAND FORECAST
+				{#if directorOverrideUnread}
+					<span
+						class="facility-ops-scan-line tw-pointer-events-none tw-absolute tw-left-0 tw-right-0 tw-z-10 tw-h-px tw-bg-[#00f0ff] tw-shadow-[0_0_10px_rgba(0,240,255,0.95)]"
+						aria-hidden="true"
+					></span>
+				{/if}
+				<p class="tw-relative tw-z-[11] tw-mb-1 tw-font-mono tw-text-[10px] tw-font-black tw-tracking-widest tw-text-rose-400 tw-uppercase">
+					!! DIR_OVERRIDE
+				</p>
+				<p class="tw-relative tw-z-[11] tw-font-mono tw-text-[10px] tw-leading-snug tw-text-slate-400">
+					Match relocated to Turf 2 · ACK REQUIRED
+				</p>
 			</button>
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-600 tw-uppercase">
+				COMM-LINK · Encrypted coaching relay MOCK · ACK persists fleet-wide
+			</p>
+			<div
+				class="tw-mt-auto tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-2"
+				aria-label="Facility command triggers"
+			>
+				<button type="button" class="{CMD_BRIDGE_IDLE_SECOND} tw-whitespace-normal" onclick={commandConsoleToggleComms}>
+					<span class="tw-line-clamp-2 tw-max-h-[2.25rem] tw-leading-tight tw-break-words tw-text-center"
+						>OPEN SECURE COMMS HUD</span
+					>
+				</button>
+				<a
+					href="/coach/forge"
+					class="{CMD_BRIDGE_IDLE_SECOND} tw-inline-flex tw-flex-row tw-items-center tw-justify-center tw-gap-0 tw-no-underline"
+					title="ACCESS_TOOLCHAIN · OPEN_THE_FORGE · /coach/forge"
+				>
+					<svg
+						class="tw-mr-2 tw-h-4 tw-w-4 tw-shrink-0 tw-text-[#00f0ff]"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M5 14 14 5l2 2-9 9-4 1 1-4z" />
+						<path d="m13 7 4-4 3 3-4 4" />
+						<path d="M4 20h16v2H4z" />
+						<path d="M8 20v-3h8v3" />
+					</svg>
+					<span class="tw-line-clamp-2 tw-max-h-[2.25rem] tw-leading-tight tw-break-words tw-text-center"
+						>ACCESS FORGE</span
+					>
+				</a>
+			</div>
 		</section>
 
 		<section
-			class="{GLASS_PANEL} tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-shadow-[0_0_18px_rgba(244,63,94,0.05)] xl:tw-col-span-12"
+			id="coach-pillar-weather"
+			class="tw-col-span-12 tw-flex tw-min-h-[17rem] tw-min-w-0 tw-flex-col tw-gap-3 tw-rounded-2xl tw-p-4 md:tw-min-h-[18rem] md:tw-p-5 lg:tw-col-span-4 {weatherAlert ?
+				'vanguard-panel-breach'
+			:	'vanguard-panel'}"
+			aria-label="Weather hub"
 		>
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-500 tw-uppercase">
-					{'>'}_ Facility Ops
-				</span>
-				<button
-					type="button"
-					class="facility-ops-override-card tw-relative tw-w-full tw-overflow-hidden tw-rounded-xl tw-text-left tw-animate-[pulse_4s_ease-in-out_infinite] tw-border tw-border-rose-500/35 tw-bg-rose-950/15 tw-p-3 tw-transition-colors hover:tw-bg-rose-950/25 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400"
-					onclick={() => {
-						directorOverrideUnread = false;
-					}}
-					aria-label="Director override: acknowledge alert"
+			<div
+				class="tw-flex tw-items-center tw-gap-3 tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/25 tw-px-4 tw-py-2.5 tw-backdrop-blur-md"
+			>
+				<div
+					class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-black/50 tw-ring-1 {weatherAlert ?
+						'tw-ring-[#ff0033]/55 tw-shadow-[var(--ares-glow)]'
+					:	'tw-ring-[#00f0ff]/45 tw-shadow-[var(--legacy-glow)]'}"
+					aria-hidden="true"
 				>
-					{#if directorOverrideUnread}
-						<span
-							class="facility-ops-scan-line tw-pointer-events-none tw-absolute tw-left-0 tw-right-0 tw-z-10 tw-h-px tw-bg-cyan-400 tw-shadow-[0_0_10px_rgba(34,211,238,0.95)]"
-							aria-hidden="true"
-						></span>
-					{/if}
-					<p class="tw-relative tw-z-[11] tw-mb-1 tw-font-mono tw-text-[10px] tw-font-black tw-tracking-widest tw-text-rose-400 tw-uppercase">
-						!! DIR_OVERRIDE
+					<svg class="tw-h-8 tw-w-8" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+						<defs>
+							<filter id="coachWxLightningBloom" x="-100%" y="-100%" width="300%" height="300%">
+								<feGaussianBlur stdDeviation="3.5" result="lb" />
+								<feMerge>
+									<feMergeNode in="lb" />
+									<feMergeNode in="lb" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+						</defs>
+						<path
+							d="M28 4 L18 22h8l-10 26"
+							stroke="#ffffff"
+							stroke-width="2.4"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							filter="url(#coachWxLightningBloom)"
+						/>
+					</svg>
+				</div>
+				<div class="tw-min-w-0 tw-flex-1 tw-font-mono">
+					<p class="tw-vanguard-section-header tw-mb-0.5">{HYRUM_LOCATION_SHORT}</p>
+					<p class="tw-tabular-nums tw-text-3xl tw-font-black tw-tracking-tight tw-text-white tw-vanguard-data md:tw-text-4xl">
+						{weatherHubTempF}<span class="tw-text-xl tw-font-bold tw-text-[#00f0ff]/90 md:tw-text-2xl">°</span>
 					</p>
-					<p class="tw-relative tw-z-[11] tw-font-mono tw-text-[10px] tw-leading-snug tw-text-slate-400">
-						Match relocated to Turf 2 · ACK REQUIRED
-					</p>
+				</div>
+			</div>
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500">Storm-low · mock feed · capsule HUD</p>
+			<div class="tw-vanguard-dock-pill !tw-flex tw-flex-row tw-flex-wrap tw-gap-2 !tw-py-2 md:tw-flex-nowrap">
+				{#each weatherHubHourlyPills as pill, pi (`${pill.clock}-${pi}`)}
+					<span
+						class="tw-inline-flex tw-min-h-[2.25rem] tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-full tw-border tw-px-3 tw-py-1 tw-font-mono tw-text-[10px] tw-tabular-nums tw-tracking-wide tw-text-slate-200 tw-shadow-inner tw-shadow-black/35 {pi ===
+						0 ?
+							'tw-border-[#00f0ff]/55 tw-bg-[#00f0ff]/12 tw-text-[#ecfeff] tw-shadow-[0_0_16px_rgba(0,240,255,0.35)]'
+						:	'tw-border-white/8 tw-bg-slate-950/35 tw-text-slate-300'}"
+					>
+						<span class="tw-text-slate-500">{pill.clock}</span>
+						<span class="tw-text-[#00f0ff]/95">{pill.tempF}°</span>
+					</span>
+				{/each}
+			</div>
+			<div class="tw-mt-auto tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-2">
+				<button type="button" class="{CMD_BRIDGE_IDLE_SECOND}" onclick={() => { showWeatherModal = true; }}>
+					<span class="tw-shrink-0">[ EXPAND ]</span>
 				</button>
-			</section>
+			</div>
+		</section>
 
 		<!-- Operative hero + quick-select roster strip -->
 		<section
-			class="tw-flex tw-min-h-[min(72vh,840px)] tw-flex-col xl:tw-col-span-10 xl:tw-col-start-2"
+			class="tw-col-span-12 tw-flex tw-min-h-[min(72vh,840px)] tw-min-w-0 tw-flex-col tw-overflow-visible lg:tw-col-span-10 lg:tw-col-start-2"
 			aria-label="Operative focus carousel"
 		>
 			<div
 				class="tw-relative tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-visible tw-px-0 tw-py-1 md:tw-px-2 md:tw-py-2"
 			>
 				<div class="tw-mb-2 tw-flex tw-items-baseline tw-justify-between tw-gap-2 tw-border-b tw-border-white/10 tw-pb-1">
-					<h2 class="tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-text-sm md:tw-text-base">
-						Operative Focus
+					<h2 class="tw-vanguard-section-header">
+						Holographic Showcase
 					</h2>
 					<span class="tw-font-mono tw-text-[10px] tw-tabular-nums tw-tracking-widest tw-text-slate-500 tw-uppercase">
 						{activeRoster.length ?
@@ -884,114 +1592,232 @@
 					<p class="tw-flex tw-flex-1 tw-items-center tw-justify-center tw-py-16 tw-text-center tw-font-mono tw-text-sm tw-text-slate-500">
 						NO OPERATIVES IN RANGE · BIND TEAM CONTEXT
 					</p>
-				{:else if heroFocusOperative}
-					{@const op = heroFocusOperative}
-					{@const attrs = operativeCoreAttrs(op)}
-					{@const ring = hpRingAccent(op.hp)}
-					<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2">
-						<!-- Hero card ~70% vertical weight -->
-						<div class="tw-flex tw-min-h-0 tw-flex-[7] tw-flex-col">
-							<div
-								class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-items-stretch tw-gap-5 lg:tw-flex-row lg:tw-items-center lg:tw-justify-between lg:tw-gap-10 lg:tw-pl-1 lg:tw-pr-2"
-							>
-								<div class="tw-relative tw-flex tw-shrink-0 tw-items-center tw-justify-center {ring.glow}">
+				{:else}
+					{#if heroFocusOperative}
+						{@const op = heroFocusOperative}
+						{@const attrs = operativeCoreAttrs(op)}
+						<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 !tw-overflow-visible">
+						<!-- Holographic showcase — hex Combat Stats radar (Player OS parity) -->
+						<div class="tw-flex tw-min-h-0 tw-flex-[7] tw-flex-col !tw-overflow-visible">
+							<div class="tw-relative tw-min-h-0 tw-flex-1 !tw-overflow-visible tw-px-1 md:tw-px-10 lg:tw-px-12">
+								<button
+									type="button"
+									class="tw-absolute tw-left-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
+									aria-label="Previous operative"
+									disabled={activeRoster.length <= 1}
+									onclick={heroCarouselPrev}
+								>
+									<svg class="tw-h-7 tw-w-7 md:tw-h-8 md:tw-w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+										<path
+											d="M15 6l-6 6 6 6"
+											stroke="currentColor"
+											stroke-width="2.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								</button>
+								<button
+									type="button"
+									class="tw-absolute tw-right-0 tw-top-1/2 tw-z-20 tw-flex tw-h-11 tw-w-11 tw--translate-y-1/2 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-[#00f0ff] tw-opacity-90 tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 disabled:tw-pointer-events-none disabled:tw-opacity-20 md:tw-h-12 md:tw-w-12 {SHOWCASE_KINETIC_ARROW}"
+									aria-label="Next operative"
+									disabled={activeRoster.length <= 1}
+									onclick={heroCarouselNext}
+								>
+									<svg class="tw-h-7 tw-w-7 md:tw-h-8 md:tw-w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+										<path
+											d="M9 6l6 6-6 6"
+											stroke="currentColor"
+											stroke-width="2.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</svg>
+								</button>
+								<div
+									class="tw-grid tw-min-h-0 tw-flex-1 tw-grid-cols-1 tw-items-center tw-gap-8 !tw-overflow-visible lg:tw-grid-cols-[minmax(0,1.15fr)_minmax(0,20rem)] lg:tw-gap-10 lg:tw-pl-2 lg:tw-pr-2"
+								>
+								<div
+									class="tw-relative tw-flex tw-aspect-square tw-h-full tw-w-full tw-min-h-[250px] tw-max-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-bg-transparent tw-mx-auto"
+								>
 									<svg
-										class="tw-h-[260px] tw-w-[260px] md:tw-h-[300px] md:tw-w-[300px]"
-										viewBox="0 0 120 120"
+										class="coach-showcase-radar-svg tw-block tw-h-full tw-w-full tw-opacity-100 tw-drop-shadow-[0_0_24px_rgba(0,240,255,0.35)]"
+										viewBox="0 0 100 100"
+										preserveAspectRatio="xMidYMid meet"
 										aria-hidden="true"
 									>
 										<defs>
-											<filter id="heroRingGlowEmerald" x="-40%" y="-40%" width="180%" height="180%">
-												<feGaussianBlur stdDeviation="3.5" result="b" />
-												<feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-											</filter>
-											<filter id="heroRingGlowAmber" x="-40%" y="-40%" width="180%" height="180%">
-												<feGaussianBlur stdDeviation="3.5" result="b" />
-												<feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-											</filter>
-											<filter id="heroRingGlowRose" x="-40%" y="-40%" width="180%" height="180%">
-												<feGaussianBlur stdDeviation="3.5" result="b" />
-												<feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+											<pattern
+												id="coachRadarBgGrid"
+												width="7.2"
+												height="7.2"
+												patternUnits="userSpaceOnUse"
+											>
+												<path
+													d="M 7.2 0 L 0 0 0 7.2"
+													fill="none"
+													stroke="rgba(148,163,184,0.35)"
+													stroke-width="0.06"
+												/>
+											</pattern>
+											<radialGradient id="coachRadarVignette" cx="50%" cy="50%" r="68%">
+												<stop offset="0%" stop-color="#0f172a" stop-opacity="0.2" />
+												<stop offset="100%" stop-color="#020617" stop-opacity="1" />
+											</radialGradient>
+											<filter id="coachRadarNodeGlow" x="-130%" y="-130%" width="360%" height="360%">
+												<feGaussianBlur in="SourceGraphic" stdDeviation="1.25" result="ngBlur" />
+												<feMerge>
+													<feMergeNode in="ngBlur" />
+													<feMergeNode in="SourceGraphic" />
+												</feMerge>
 											</filter>
 										</defs>
-										<circle
-											cx="60"
-											cy="60"
-											r={HERO_RING_R}
-											fill="none"
-											stroke="rgba(51,65,85,0.5)"
-											stroke-width="6"
+										<rect width="100" height="100" fill="#020617" />
+										<rect width="100" height="100" fill="url(#coachRadarBgGrid)" opacity="0.5" />
+										<rect width="100" height="100" fill="url(#coachRadarVignette)" />
+										{#each RADAR_WEB_SCALES as tier (tier)}
+											<circle
+												cx={RADAR_CX}
+												cy={RADAR_CY}
+												r={RADAR_R * tier}
+												fill="none"
+												stroke="rgba(255,255,255,0.1)"
+												stroke-width="0.55"
+												vector-effect="non-scaling-stroke"
+											/>
+										{/each}
+										{#each RADAR_AXIS_LABELS as _, ai (`axis-${ai}`)}
+											{@const hub = radarPolarXY(ai, 0)}
+											{@const spoke = radarPolarXY(ai, 1.06)}
+											<line
+												x1={hub.x}
+												y1={hub.y}
+												x2={spoke.x}
+												y2={spoke.y}
+												stroke="rgba(255,255,255,0.1)"
+												stroke-width="0.45"
+												vector-effect="non-scaling-stroke"
+											/>
+										{/each}
+										<path
+											d={radarSkillPath(attrs)}
+											fill="rgba(0,240,255,0.15)"
+											stroke="#a855f7"
+											stroke-width="2"
+											stroke-linejoin="round"
+											vector-effect="non-scaling-stroke"
 										/>
-										<circle
-											cx="60"
-											cy="60"
-											r={HERO_RING_R}
-											fill="none"
-											stroke={ring.stroke}
-											stroke-width="6"
-											stroke-linecap="round"
-											stroke-dasharray="{`${(HERO_RING_C * op.hp) / 100} ${HERO_RING_C}`}"
-											transform="rotate(-90 60 60)"
-											filter={ring.filter}
-										/>
+										{#each radarSkillVertices(attrs) as vtx, vi (`vertex-${vi}`)}
+											<circle
+												cx={vtx.x}
+												cy={vtx.y}
+												r="2.5"
+												fill="#00f0ff"
+												filter="url(#coachRadarNodeGlow)"
+											/>
+										{/each}
+										{#each RADAR_AXIS_LABELS as lbl, li (`lbl-${lbl}`)}
+											{@const tp = radarPolarXY(li, 1.28)}
+											<text
+												class="tw-pointer-events-none tw-fill-white tw-font-mono tw-text-[9px] tw-tracking-[0.3em] tw-uppercase"
+												x={tp.x}
+												y={tp.y}
+												text-anchor="middle"
+												dominant-baseline="middle"
+											>
+												{lbl}
+											</text>
+										{/each}
 									</svg>
-									<div
-										class="tw-pointer-events-none tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-0 tw-px-8 tw-text-center md:tw-px-10"
-									>
-										<p
-											class="tw-font-mono tw-text-5xl tw-font-black tw-tabular-nums tw-leading-none tw-tracking-tight tw-text-white md:tw-text-6xl"
-										>
-											{operativeDisplayNumber(activeOperativeIndex)}
-										</p>
-										<p
-											class="tw-mt-2 tw-max-w-[11rem] tw-truncate tw-text-sm tw-font-black tw-tracking-wide tw-text-white md:tw-text-base"
-										>
-											{op.name}
-										</p>
-										<p class="tw-mt-1 tw-font-mono tw-text-[11px] tw-tracking-[0.22em] tw-text-cyan-300 tw-uppercase">
-											{op.role}
-										</p>
-									</div>
 								</div>
 
-								<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-2 lg:tw-max-w-md">
-									{#each [['Pace', attrs.pace], ['Shot', attrs.shot], ['Pass', attrs.pass], ['Def', attrs.def], ['Phy', attrs.phy]] as [label, val] (label)}
+								<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 lg:tw-max-w-md">
+									<div class="tw-space-y-3 tw-font-mono">
+										<p class="tw-vanguard-section-header">Operative telemetry</p>
+										<p class="tw-text-[10px] tw-tracking-[0.24em] tw-text-slate-600 tw-uppercase">
+											ID · {operativeDisplayNumber(activeOperativeIndex)}
+										</p>
+										<p class="tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-white md:tw-text-2xl">
+											{op.name}
+										</p>
+										<dl class="tw-grid tw-gap-2 tw-text-[10px] tw-font-bold tw-tracking-wide tw-uppercase">
+											<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/[0.06] tw-pb-1.5">
+												<dt class="tw-text-slate-500">Level</dt>
+												<dd class="tw-vanguard-data tw-tabular-nums tw-text-lg tw-text-[#00f0ff]/88">{op.lvl}</dd>
+											</div>
+											<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/[0.06] tw-pb-1.5">
+												<dt class="tw-text-slate-500">Role</dt>
+												<dd class="tw-text-[#00f0ff]/90">{op.role}</dd>
+											</div>
+											<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/[0.06] tw-pb-1.5">
+												<dt class="tw-text-slate-500">Status</dt>
+												<dd
+													class={op.status === 'CRITICAL' ?
+														'tw-text-rose-400 tw-drop-shadow-[0_0_12px_rgba(251,113,133,0.55)]'
+													:	'tw-text-emerald-400'}
+												>
+													{op.status}
+												</dd>
+											</div>
+											<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
+												<dt class="tw-text-slate-500">HP band</dt>
+												<dd class="tw-vanguard-data tw-tabular-nums tw-text-slate-300">{op.hp}%</dd>
+											</div>
+										</dl>
+									</div>
+									<div class="tw-flex tw-flex-col tw-gap-2">
+										<p class="tw-vanguard-section-header">Core vectors</p>
+									{#each [
+										['Pace', attrs.pace],
+										['Shooting', attrs.shot],
+										['Passing', attrs.pass],
+										['Dribbling', attrs.dribble],
+										['Defending', attrs.def],
+										['Physical', attrs.phy],
+									] as [label, val] (label)}
 										<div class="tw-border-b tw-border-white/10 tw-pb-1">
 											<div
 												class="tw-mb-1 tw-flex tw-items-baseline tw-justify-between tw-gap-2 tw-font-mono tw-text-[9px] tw-tracking-[0.18em] tw-uppercase"
 											>
 												<span class="tw-text-slate-400">{label}</span>
-												<span class="tw-tabular-nums tw-text-cyan-200">{val}</span>
+												<span class="tw-tabular-nums tw-text-[#00f0ff]/88">{val}</span>
 											</div>
 											<div
 												class="tw-h-[3px] tw-w-full tw-overflow-hidden tw-bg-black/70 tw-[clip-path:polygon(0_0,100%_0,100%_100%,2px_100%,0_calc(100%-2px))]"
 											>
 												<div
-													class="tw-h-full tw-bg-cyan-400/80 tw-[clip-path:polygon(0_0,100%_0,calc(100%-2px)_100%,0_100%)] tw-shadow-[0_0_12px_rgba(34,211,238,0.55)] tw-transition-[width] tw-duration-300"
+													class="tw-h-full tw-bg-[#00f0ff]/80 tw-[clip-path:polygon(0_0,100%_0,calc(100%-2px)_100%,0_100%)] tw-shadow-[0_0_12px_rgba(0,240,255,0.55)] tw-transition-[width] tw-duration-300"
 													style="width: {val}%"
 												></div>
 											</div>
 										</div>
 									{/each}
+									</div>
 								</div>
 							</div>
 						</div>
+						</div>
 
-						<!-- Quick-select roster strip -->
-						<div class="tw-flex tw-min-h-0 tw-flex-[3] tw-flex-col tw-justify-end tw-border-t tw-border-white/10 tw-pt-1">
+						<!-- Vanguard quick-select -->
+						<div
+							class="vanguard-quick-select !tw-overflow-visible !tw-pb-8 tw-flex tw-min-h-0 tw-flex-[3] tw-flex-col tw-justify-end tw-border-t tw-border-white/10 tw-px-6 tw-pt-4"
+						>
+							<p class="tw-mb-2 tw-font-mono tw-text-[9px] tw-tracking-[0.2em] tw-text-slate-500 tw-uppercase">
+								Vanguard quick-select
+							</p>
 							<div
-								class="coach-roster-strip tw-flex tw-gap-3 tw-overflow-x-auto tw-pb-2"
+								class="coach-quick-strip tw-scrollbar-hide tw-flex tw-min-h-0 tw-flex-row tw-flex-wrap tw-items-center tw-gap-3 !tw-overflow-visible !tw-pb-8 tw-px-1 tw-py-3"
 								role="tablist"
-								aria-label="Quick-select roster"
+								aria-label="Quick-select roster strip"
 							>
 								{#each activeRoster as player, rosterIdx (`${rosterIdx}-${player.id}`)}
 									<button
 										type="button"
 										role="tab"
-										class="tw-relative tw-flex tw-min-h-[3.5rem] tw-min-w-[3.75rem] tw-shrink-0 tw-flex-col tw-items-center tw-justify-center tw-gap-0 tw-overflow-hidden tw-px-1 tw-py-1 tw-[clip-path:polygon(14%_0,100%_0,100%_74%,86%_100%,0_100%,0_14%)] tw-transition-[box-shadow,background-color,border-color] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-1 focus-visible:tw-outline-cyan-400 {activeOperativeIndex ===
+										class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-bg-black/50 tw-backdrop-blur-md tw-transition-[box-shadow,border-color] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 {activeOperativeIndex ===
 										rosterIdx ?
-											'tw-border tw-border-cyan-400/90 tw-bg-cyan-500/[0.14] tw-shadow-[0_0_22px_rgba(34,211,238,0.42)]'
-										:	'tw-border tw-border-slate-700/95 tw-bg-black/55'}"
+											'tw-border-[#00f0ff] tw-shadow-[var(--legacy-glow)]'
+										:	'tw-border-white/15 tw-shadow-none hover:tw-border-[#00f0ff]/40'}"
 										aria-selected={activeOperativeIndex === rosterIdx}
 										aria-label="Select {player.name}"
 										onclick={() => {
@@ -999,27 +1825,24 @@
 										}}
 									>
 										<span
-											class="tw-font-mono tw-text-xl tw-font-black tw-tabular-nums tw-leading-none tw-text-white md:tw-text-2xl"
+											class="tw-font-mono tw-text-sm tw-font-black tw-tabular-nums tw-leading-none tw-text-white"
 										>
 											{operativeDisplayNumber(rosterIdx)}
 										</span>
-										<span class="tw-mt-0.5 tw-font-mono tw-text-[9px] tw-tabular-nums tw-tracking-wide tw-text-slate-400">
+										<span class="tw-mt-px tw-font-mono tw-text-[8px] tw-tabular-nums tw-tracking-wide tw-text-slate-400 tw-leading-none">
 											{operativeStripAbbr(player)}
 										</span>
-										<span
-											class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-z-[1] tw-h-[2px] {hpStripBarGlow(
-												player.hp,
-											)}"
-											aria-hidden="true"
-										></span>
 									</button>
 								{/each}
 							</div>
 						</div>
 					</div>
+					{/if}
 				{/if}
 			</div>
 		</section>
+	</div>
+		</div>
 	</div>
 </div>
 
@@ -1027,22 +1850,25 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9998] tw-flex tw-animate-[coachHudFade_0.18s_ease-out_forwards] tw-items-start tw-justify-end tw-bg-black/80 tw-p-3 tw-backdrop-blur-md sm:tw-items-center sm:tw-justify-center sm:tw-p-6"
+		transition:fade={{ duration: 150 }}
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-start tw-justify-end tw-bg-black/80 tw-p-3 tw-backdrop-blur-md sm:tw-items-center sm:tw-justify-center sm:tw-p-6"
 		role="presentation"
 		onclick={closeComms}
 	>
 		<div
-			class="tw-mt-14 tw-w-full tw-max-w-md tw-border tw-border-cyan-500/40 tw-bg-black/90 tw-p-5 tw-shadow-[0_0_40px_rgba(6,182,212,0.18)] tw-backdrop-blur-xl sm:tw-mt-0 tw-[clip-path:polygon(3%_0,100%_0,100%_96%,97%_100%,0_100%,0_8%)]"
+			transition:fly={{ y: 20, duration: 250, easing: cubicOut }}
+			class="vanguard-panel tw-mt-14 tw-w-full tw-max-w-md tw-rounded-2xl tw-p-5 sm:tw-mt-0 tw-[clip-path:polygon(3%_0,100%_0,100%_96%,97%_100%,0_100%,0_8%)]"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="comms-hud-title"
+			tabindex="-1"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="tw-mb-4 tw-flex tw-items-start tw-justify-between tw-gap-3">
-				<h2 id="comms-hud-title" class="tw-text-lg tw-font-black tw-tracking-widest tw-text-white tw-uppercase">
+				<h2 id="comms-hud-title" class="tw-vanguard-section-header tw-font-mono tw-text-[#00f0ff]/88">
 					Secure Comms
 				</h2>
-				<button type="button" class="{BTN_NAV_CYAN}" onclick={closeComms} aria-label="Close secure comms">
+				<button type="button" class="btn-director" onclick={closeComms} aria-label="Close secure comms">
 					CLOSE
 				</button>
 			</div>
@@ -1057,12 +1883,14 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9990] tw-flex tw-animate-[coachHudFade_0.18s_ease-out_forwards] tw-items-center tw-justify-center tw-bg-black/85 tw-p-4 tw-backdrop-blur-2xl"
+		transition:fade={{ duration: 150 }}
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-bg-black/85 tw-p-4 tw-backdrop-blur-2xl"
 		role="presentation"
 		onclick={closeWeatherModal}
 	>
 		<div
-			class="tw-relative tw-max-h-[min(90vh,880px)] tw-w-full tw-max-w-3xl tw-overflow-y-auto tw-rounded-2xl tw-border tw-border-cyan-500/35 tw-bg-[#020617]/88 tw-p-5 tw-shadow-[0_0_56px_rgba(6,182,212,0.18)] tw-backdrop-blur-xl md:tw-p-7"
+			transition:fly={{ y: 20, duration: 250, easing: cubicOut }}
+			class="vanguard-panel tw-relative tw-max-h-[min(90vh,880px)] tw-w-full tw-max-w-3xl tw-overflow-y-auto tw-rounded-2xl tw-p-5 tw-font-mono md:tw-p-7"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="weather-modal-title"
@@ -1071,10 +1899,7 @@
 		>
 			<div class="tw-mb-6 tw-flex tw-items-start tw-justify-between tw-gap-3">
 				<div class="tw-min-w-0">
-					<h2
-						id="weather-modal-title"
-						class="tw-text-lg tw-font-black tw-tracking-widest tw-text-white tw-uppercase md:tw-text-xl"
-					>
+					<h2 id="weather-modal-title" class="tw-vanguard-section-header tw-font-mono">
 						Environmental Forecast
 					</h2>
 					<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-500 tw-uppercase">
@@ -1083,94 +1908,252 @@
 						{HYRUM_COORDS}
 					</p>
 				</div>
-				<button type="button" class={BTN_NAV_ROSE} onclick={closeWeatherModal} aria-label="Close forecast">
+				<button type="button" class="btn-ares" onclick={closeWeatherModal} aria-label="Close forecast">
 					CLOSE
 				</button>
 			</div>
 
-			<section class="tw-mb-8" aria-labelledby="weather-modal-lightning">
+			<section
+				class="weather-siem-stack tw-relative tw-mb-8 tw-overflow-hidden tw-rounded-xl tw-p-4 vanguard-panel"
+				aria-labelledby="weather-modal-spark"
+			>
+				<div class="weather-siem-scan tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-[0.08]" aria-hidden="true"></div>
 				<h3
-					id="weather-modal-lightning"
-					class="tw-mb-3 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-cyan-400 tw-uppercase"
+					id="weather-modal-spark"
+					class="tw-relative tw-mb-3 tw-vanguard-section-header tw-font-mono tw-text-emerald-400/90"
 				>
-					Lightning strike map
+					6-Hour trajectory · Temp °F
 				</h3>
-				<div
-					class="wb-radar-host tw-relative tw-aspect-square tw-w-full tw-max-w-md tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-500/25 tw-bg-black/50 tw-shadow-[0_0_28px_rgba(34,211,238,0.12)]"
-					aria-label="Lightning proximity radar"
+				<svg
+					class="tw-relative tw-block tw-h-28 tw-w-full"
+					viewBox="0 0 100 100"
+					preserveAspectRatio="none"
+					aria-hidden="true"
 				>
-					<div class="wb-radar-grid tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-[0.35]" aria-hidden="true"></div>
+					<defs>
+						<linearGradient id="wxSparkFill" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.38" />
+							<stop offset="100%" stop-color="rgb(2, 6, 23)" stop-opacity="0" />
+						</linearGradient>
+					</defs>
+					{#if weatherSparklinePath}
+						<path
+							d="{weatherSparklinePath} L 100 100 L 0 100 Z"
+							fill="url(#wxSparkFill)"
+							opacity="0.95"
+						/>
+						<path
+							d={weatherSparklinePath}
+							fill="none"
+							stroke="#00f0ff"
+							stroke-width="1.35"
+							vector-effect="non-scaling-stroke"
+							stroke-linejoin="round"
+							stroke-linecap="round"
+						/>
+					{/if}
+					<line
+						x1="0"
+						y1="86"
+						x2="100"
+						y2="86"
+						stroke="rgba(148, 163, 184, 0.28)"
+						stroke-width="0.5"
+						vector-effect="non-scaling-stroke"
+					/>
+				</svg>
+				<div
+					class="tw-relative tw-mt-2 tw-flex tw-justify-between tw-gap-1 tw-overflow-x-auto tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-slate-500 tw-uppercase"
+				>
+					{#each WEATHER_HOURLY as h (h.label)}
+						<span class="tw-shrink-0">{h.label}</span>
+					{/each}
+				</div>
+			</section>
+
+			<section class="tw-mb-8" aria-labelledby="weather-modal-threat-matrix">
+				<h3 id="weather-modal-threat-matrix" class="tw-mb-3 tw-vanguard-section-header tw-font-mono tw-text-fuchsia-400/90">
+					Threat Matrix · strike locks &amp; precip zones
+				</h3>
+				<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-600 tw-uppercase">
+					Geometric overlay · rose hex target locks · concentric sweep (sim)
+				</p>
+				<div
+					class="wx-threat-matrix-host tw-relative tw-aspect-square tw-w-full tw-overflow-hidden tw-rounded-full {weatherAlert ?
+						'vanguard-panel-breach'
+					:	'vanguard-panel'}"
+					aria-label="Environmental threat matrix"
+				>
+					<svg class="wx-threat-matrix-svg tw-block tw-h-full tw-w-full" viewBox="0 0 100 100" aria-hidden="true">
+						<defs>
+							<radialGradient id="wxThreatBackdropCalm" cx="50%" cy="48%" r="68%">
+								<stop offset="0%" stop-color="rgba(0,240,255,0.09)" />
+								<stop offset="55%" stop-color="rgba(2,6,23,0)" />
+								<stop offset="100%" stop-color="rgba(2,12,18,0.62)" />
+							</radialGradient>
+							<radialGradient id="wxThreatBackdropBreach" cx="50%" cy="48%" r="68%">
+								<stop offset="0%" stop-color="rgba(255,0,51,0.09)" />
+								<stop offset="55%" stop-color="rgba(2,6,23,0)" />
+								<stop offset="100%" stop-color="rgba(12,2,6,0.62)" />
+							</radialGradient>
+							<filter id="wxThreatRingGlow" x="-80%" y="-80%" width="260%" height="260%">
+								<feGaussianBlur stdDeviation="0.85" result="b" />
+								<feMerge>
+									<feMergeNode in="b" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+							<filter id="wxThreatHexGlow" x="-120%" y="-120%" width="340%" height="340%">
+								<feGaussianBlur stdDeviation="1.1" result="g" />
+								<feMerge>
+									<feMergeNode in="g" />
+									<feMergeNode in="SourceGraphic" />
+								</feMerge>
+							</filter>
+						</defs>
+						<circle
+							cx="50"
+							cy="50"
+							r="50"
+							fill={weatherAlert ? 'url(#wxThreatBackdropBreach)' : 'url(#wxThreatBackdropCalm)'}
+						/>
+						{#each [48, 40, 32, 24] as r (r)}
+							<circle
+								cx="50"
+								cy="50"
+								{r}
+								fill="none"
+								stroke={wxThreatMatrixPalette.ringSoft}
+								stroke-width="0.28"
+								opacity="0.95"
+								filter="url(#wxThreatRingGlow)"
+							/>
+						{/each}
+						{#each [46, 38] as echo (echo)}
+							<circle
+								cx="50"
+								cy="50"
+								r={echo}
+								fill="none"
+								stroke={wxThreatMatrixPalette.ringSoft}
+								stroke-width="0.2"
+								stroke-dasharray="2 8"
+								stroke-opacity="0.35"
+								vector-effect="non-scaling-stroke"
+								filter="url(#wxThreatRingGlow)"
+							/>
+						{/each}
+						<circle
+							class="wx-threat-sonar-sweep"
+							cx="50"
+							cy="50"
+							r="49"
+							fill="none"
+							stroke={wxThreatMatrixPalette.ringSweep}
+							stroke-width="0.55"
+							stroke-dasharray="6 18"
+							stroke-linecap="round"
+							filter="url(#wxThreatRingGlow)"
+						/>
+						{#each LIGHTNING_STRIKES as strike, si (`lock-${si}`)}
+							<g transform="translate({strike.x} {strike.y})" class="wx-threat-lock" style="--wx-lock-i: {si}">
+								<polygon
+									points="2.85,0 1.42,-2.47 -1.42,-2.47 -2.85,0 -1.42,2.47 1.42,2.47"
+									fill={wxThreatMatrixPalette.strikeFill}
+									stroke={wxThreatMatrixPalette.strikeStroke}
+									stroke-width="0.55"
+									stroke-linejoin="round"
+									filter="url(#wxThreatHexGlow)"
+									class="wx-threat-hex"
+								/>
+								<text
+									class="wx-threat-coords"
+									x="5.5"
+									y="-4"
+									fill="rgba(226,232,240,0.92)"
+									font-size="2.65"
+									font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+								>
+									{strike.lat}
+								</text>
+								<text
+									class="wx-threat-coords"
+									x="5.5"
+									y="-0.5"
+									fill="rgba(148,163,184,0.95)"
+									font-size="2.65"
+									font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+								>
+									{strike.lon}
+								</text>
+							</g>
+						{/each}
+					</svg>
 					<div
-						class="wb-lightning wb-lightning-a tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-amber-100 tw-to-cyan-300 tw-opacity-90 tw-shadow-[0_0_14px_rgba(250,204,21,0.9)]"
-						aria-hidden="true"
-					></div>
-					<div
-						class="wb-lightning wb-lightning-b tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-cyan-100 tw-to-violet-400 tw-opacity-80 tw-shadow-[0_0_12px_rgba(34,211,238,0.85)]"
-						aria-hidden="true"
-					></div>
-					<div
-						class="wb-lightning wb-lightning-c tw-pointer-events-none tw-absolute tw-w-[2px] tw-rounded-full tw-bg-gradient-to-b tw-from-transparent tw-via-white tw-to-amber-300 tw-opacity-90 tw-shadow-[0_0_16px_rgba(255,255,255,0.55)]"
-						aria-hidden="true"
-					></div>
-					<div
-						class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-border-t tw-border-white/10 tw-bg-black/55 tw-px-3 tw-py-2"
+						class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-z-[2] tw-border-t tw-border-white/10 tw-bg-[#020617]/78 tw-px-3 tw-py-2 tw-backdrop-blur-md"
 					>
 						<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">
-							Lightning prox · 14.2 MI
+							Target locks (sim) · <span class="tw-tabular-nums tw-text-fuchsia-300">{LIGHTNING_STRIKES.length}</span> origins · concentric bands =
+							precip echo
 						</p>
-						<div class="tw-mt-2 tw-flex tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-black/80">
-							<div class="tw-h-full tw-bg-rose-500/80" style="width: 18%"></div>
-							<div class="tw-h-full tw-bg-amber-500/80" style="width: 12%"></div>
-							<div class="tw-relative tw-h-full tw-bg-emerald-500/70" style="width: 70%"></div>
-						</div>
 					</div>
 				</div>
 			</section>
 
 			<section class="tw-mb-8" aria-labelledby="weather-modal-hourly">
-				<h3
-					id="weather-modal-hourly"
-					class="tw-mb-3 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-cyan-400 tw-uppercase"
-				>
-					Hourly forecast
+				<h3 id="weather-modal-hourly" class="tw-mb-3 tw-vanguard-section-header tw-font-mono tw-text-[#00f0ff]/92">
+					Hourly · Google-density capsules
 				</h3>
-				<div class="tw-flex tw-flex-col tw-gap-3" aria-label="Five hour temperature and precipitation outlook">
-					<div
-						class="tw-flex tw-items-end tw-justify-between tw-gap-1 tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-slate-500 tw-uppercase"
-					>
-						<span>Temp °F</span>
-						<span>Precip %</span>
-					</div>
-					<div
-						class="tw-flex tw-h-36 tw-items-end tw-gap-2 tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/40 tw-p-3"
-					>
-						{#each hourlyBars as cell (cell.label)}
-							<div class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-justify-end tw-gap-1.5">
-								<div class="tw-flex tw-h-28 tw-w-full tw-items-end tw-justify-center tw-gap-0.5">
-									<div
-										class="tw-w-[42%] tw-rounded-sm tw-bg-cyan-500/50 tw-shadow-[0_0_10px_rgba(34,211,238,0.35)]"
-										style="height: {Math.max(8, cell.tempH)}%"
-										title="{cell.tempF}°F"
-									></div>
-									<div
-										class="tw-w-[42%] tw-rounded-sm tw-bg-sky-600/45 tw-shadow-[0_0_8px_rgba(56,189,248,0.3)]"
-										style="height: {Math.max(6, cell.precipH)}%"
-										title="{cell.precipPct}% precip"
-									></div>
-								</div>
-								<span class="tw-font-mono tw-text-[9px] tw-tabular-nums tw-tracking-wide tw-text-slate-400"
-									>{cell.label}</span
-								>
+				<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-600 tw-uppercase">
+					Tap slot · cyan = active · spark = precip trend
+				</p>
+				<div class="tw-flex tw-w-full tw-gap-2 tw-overflow-x-auto tw-pb-1 tw-font-mono" aria-label="Hourly forecast pills">
+					{#each hourlyBars as cell, hi (`${cell.label}-${hi}`)}
+						<button
+							type="button"
+							class="tw-flex tw-min-w-[6.25rem] tw-max-w-[8rem] tw-flex-[1_0_auto] tw-flex-col tw-gap-2 tw-rounded-2xl tw-border tw-px-3 tw-py-2.5 tw-text-left tw-transition-all focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-[#00f0ff]/70 {weatherModalHourIdx ===
+							hi ?
+								'tw-border-[#00f0ff]/85 tw-bg-[#00f0ff]/12 tw-shadow-[0_0_22px_rgba(0,240,255,0.42)]'
+							:	'tw-border-white/10 tw-bg-slate-950/35 hover:tw-border-white/25'}"
+							aria-pressed={weatherModalHourIdx === hi}
+							onclick={() => {
+								weatherModalHourIdx = hi;
+							}}
+						>
+							<span class="tw-text-[10px] tw-tracking-[0.14em] tw-text-slate-500 tw-uppercase">{cell.label}</span>
+							<span class="tw-text-lg tw-font-black tw-tabular-nums tw-text-white tw-vanguard-data">{cell.tempF}°</span>
+							<svg class="tw-h-10 tw-w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+								<line x1="0" y1="88" x2="100" y2="88" stroke="rgba(148,163,184,0.2)" stroke-width="1" />
+								{#if hourlyPrecipMiniPaths[hi]}
+									<path
+										d={hourlyPrecipMiniPaths[hi]}
+										fill="none"
+										stroke={weatherModalHourIdx === hi ? '#00f0ff' : 'rgba(148,163,184,0.55)'}
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										vector-effect="non-scaling-stroke"
+									/>
+								{/if}
+							</svg>
+							<span class="tw-text-[9px] tw-tabular-nums tw-text-slate-500">{cell.precipPct}% precip</span>
+							<div class="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-black/70">
+								<div
+									class="tw-h-full tw-rounded-full tw-transition-all {weatherModalHourIdx === hi ?
+										'tw-bg-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.65)]'
+									:	'tw-bg-[#00f0ff]/35'}"
+									style="width: {cell.precipH}%"
+								></div>
 							</div>
-						{/each}
-					</div>
+						</button>
+					{/each}
 				</div>
 			</section>
 
 			<section aria-labelledby="weather-modal-tenday">
 				<h3
 					id="weather-modal-tenday"
-					class="tw-mb-3 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-cyan-400 tw-uppercase"
+					class="tw-mb-3 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-[#00f0ff] tw-uppercase"
 				>
 					10-day outlook
 				</h3>
@@ -1178,7 +2161,7 @@
 					{#each TEN_DAY_FORECAST as row, ri (`${ri}-${row.day}`)}
 						<li class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-px-4 tw-py-2.5 tw-font-mono tw-text-[11px]">
 							<span class="tw-tracking-wide tw-text-slate-300">{row.day}</span>
-							<span class="tw-tabular-nums tw-text-cyan-200/90">
+							<span class="tw-tabular-nums tw-text-[#00f0ff]/90">
 								{row.hi}° / {row.lo}°
 							</span>
 							<span class="tw-tabular-nums tw-text-slate-500">{row.precipPct}% precip</span>
@@ -1197,241 +2180,677 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-min-h-0 tw-flex-col tw-animate-[coachHudFade_0.2s_ease-out_forwards] tw-bg-black/88 tw-backdrop-blur-2xl tw-backdrop-saturate-150"
+		transition:fade={{ duration: 150 }}
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-h-screen tw-w-screen tw-bg-black/90 tw-backdrop-blur-3xl tw-backdrop-saturate-[1.45]"
 		role="presentation"
 		onclick={closeWarRoom}
 	>
 		<button
 			type="button"
-			class={BTN_CLOSE_WAR_ROOM}
+			class="btn-ares tw-fixed tw-right-[max(1rem,calc((100vw-98vw)/2))] tw-top-[max(1rem,5vh)] tw-z-[10060] tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-full tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-rose-400"
 			onclick={(e) => {
 				e.stopPropagation();
 				closeWarRoom();
 			}}
 			aria-label="Close tactical war room"
 		>
-			CLOSE WAR ROOM
+			<svg class="tw-h-5 tw-w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+				<path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+			</svg>
 		</button>
 
 		<div
-			class="tw-relative tw-z-[10000] tw-flex tw-min-h-0 tw-w-full tw-flex-1 tw-flex-row tw-gap-3 tw-overflow-hidden tw-px-2 tw-pb-3 tw-pt-[5.25rem] md:tw-gap-4 md:tw-px-4 md:tw-pt-[5.75rem]"
+			transition:fly={{ y: 18, duration: 280, easing: cubicOut }}
+			class="vanguard-panel tw-relative tw-z-[10000] tw-mx-auto tw-mt-[2.5vh] tw-flex tw-h-[95vh] tw-w-[98vw] tw-flex-col tw-overflow-hidden tw-rounded-3xl tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_32px_120px_rgba(0,0,0,0.78)]"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="war-room-title"
 			tabindex="-1"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<!-- Game day roster — magnetic chips (drag onto pitch) -->
-			<aside
-				class="tw-flex tw-h-full tw-min-h-0 tw-w-[min(100%,15rem)] tw-shrink-0 tw-flex-col tw-gap-3 tw-overflow-hidden tw-rounded-xl tw-border tw-border-cyan-500/35 tw-bg-[#020617]/72 tw-p-3 tw-shadow-[inset_0_0_48px_rgba(6,182,212,0.08),0_0_40px_rgba(34,211,238,0.06)] tw-backdrop-blur-xl md:tw-w-60 md:tw-p-4"
-				aria-label="Game day roster"
-			>
-				<div class="tw-shrink-0">
-					<p class="tw-font-mono tw-text-[9px] tw-tracking-[0.22em] tw-text-cyan-400 tw-uppercase">
-						{'>'}_ roster
-					</p>
-					<h2 id="war-room-title" class="tw-mt-1 tw-text-sm tw-font-black tw-tracking-widest tw-text-white tw-uppercase md:tw-text-base">
-						Game day · XI
-					</h2>
-					<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-leading-snug tw-text-slate-500">
-						Drag chips onto the pitch · {gameDayRoster.length} active
-					</p>
-				</div>
+			<div
+				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-rounded-3xl tw-bg-[radial-gradient(ellipse_at_50%_-14%,rgba(0,240,255,0.18)_0%,transparent_54%),linear-gradient(122deg,rgba(255,255,255,0.062)_0%,transparent_40%),linear-gradient(208deg,transparent_54%,rgba(0,240,255,0.09)_100%)]"
+				aria-hidden="true"
+			></div>
 
-				{#if gameDayRoster.length === 0}
-					<p class="tw-mt-4 tw-font-mono tw-text-[10px] tw-leading-relaxed tw-text-slate-500">
-						No roster in context — bind a team or open War Room with mock data.
-					</p>
-				{:else}
-					<ul
-						class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-pr-1 tw-pb-2"
-						role="list"
+			<div class="tw-relative tw-z-[2] tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden">
+			<svg
+				class="war-room-path-measure tw-pointer-events-none tw-fixed tw-left-0 tw-top-0 tw-h-px tw-w-px tw-overflow-hidden tw-opacity-0"
+				viewBox="0 0 100 100"
+				aria-hidden="true"
+			>
+				<path bind:this={warRoomPathMeasureEl} d="" />
+			</svg>
+
+			{#if warRoomRosterModalOpen}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					class="tw-fixed tw-inset-0 tw-z-[10040] tw-flex tw-items-center tw-justify-center tw-bg-black/75 tw-p-4 tw-backdrop-blur-3xl tw-backdrop-saturate-[1.45]"
+					role="presentation"
+					onclick={(e) => {
+						if (e.target === e.currentTarget) warRoomRosterModalOpen = false;
+					}}
+				>
+					<div
+						class="vanguard-panel tw-scrollbar-hide tw-relative tw-max-h-[88vh] tw-w-full tw-max-w-5xl tw-overflow-y-auto tw-rounded-2xl tw-p-6 tw-shadow-[0_32px_100px_rgba(0,0,0,0.72)]"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="war-room-roster-modal-title"
+						onclick={(e) => e.stopPropagation()}
 					>
-						{#each gameDayRoster as op (op.id)}
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<li>
-								<div
-									draggable="true"
-									class="war-room-roster-chip tw-flex tw-cursor-grab tw-select-none tw-items-center tw-gap-3 tw-rounded-full tw-border-2 tw-border-cyan-400/55 tw-bg-[#020617]/90 tw-py-2 tw-pl-2 tw-pr-4 tw-shadow-[0_0_22px_rgba(34,211,238,0.35)] tw-transition-transform active:tw-scale-[0.98] hover:tw-border-cyan-300/80 hover:tw-shadow-[0_0_32px_rgba(34,211,238,0.5)]"
-									ondragstart={(e) => rosterChipDragStart(e, op)}
-								>
-									<span
-										class="tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-cyan-500/40 tw-bg-black/60 tw-font-black tw-text-[11px] tw-tracking-wide tw-text-cyan-100 tw-shadow-[inset_0_0_12px_rgba(34,211,238,0.15)]"
-										aria-hidden="true"
+						<div class="tw-mb-4 tw-flex tw-items-start tw-justify-between tw-gap-3">
+							<div>
+								<h3 id="war-room-roster-modal-title" class="tw-vanguard-section-header tw-font-mono tw-text-white">
+									Roster & assignments
+								</h3>
+								<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-slate-500 tw-uppercase">
+									Drag athletes into XI · Bench · Pitch deployment
+								</p>
+							</div>
+							<button
+								type="button"
+								class="btn-director tw-shrink-0 tw-rounded-full tw-px-4 tw-py-2 tw-text-[10px]"
+								onclick={() => (warRoomRosterModalOpen = false)}
+							>
+								CLOSE
+							</button>
+						</div>
+
+						<p class="tw-mb-2 tw-font-mono tw-text-[9px] tw-tracking-[0.22em] tw-text-rose-400/90 tw-uppercase">
+							Opposition — drag into Deploy to pitch only
+						</p>
+						<div
+							class="tw-scrollbar-hide tw-mb-6 tw-grid tw-min-h-[5rem] tw-grid-cols-[repeat(auto-fill,minmax(3.75rem,1fr))] tw-gap-3 tw-rounded-xl tw-border tw-border-rose-500/28 tw-bg-slate-950/45 tw-p-4"
+						>
+							{#each MOCK_OPPOSITION as op (op.id)}
+								{#if !wrOppPitch.includes(op.id)}
+									<div
+										draggable="true"
+										class="tw-flex tw-h-14 tw-w-14 tw-cursor-grab tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-rose-400 tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-font-bold tw-text-rose-100 tw-shadow-[inset_0_0_12px_rgba(251,113,133,0.28)]"
+										ondragstart={(e) => rosterModalChipDragStart(e, 'opp', op)}
 									>
 										{warRoomChipInitials(op.name)}
-									</span>
-									<span class="tw-min-w-0 tw-flex-1">
-										<span class="tw-block tw-truncate tw-font-bold tw-text-[11px] tw-tracking-wide tw-text-white md:tw-text-xs">
-											{op.name}
-										</span>
-										<span class="tw-mt-0.5 tw-block tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-cyan-400/90 tw-uppercase">
-											{op.role}
-										</span>
-									</span>
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</aside>
+									</div>
+								{/if}
+							{/each}
+							{#if MOCK_OPPOSITION.every((o) => wrOppPitch.includes(o.id))}
+								<span class="tw-font-mono tw-text-[10px] tw-text-slate-500">All scout tokens on pitch — remove from deploy column to recall.</span>
+							{/if}
+						</div>
 
-			<!-- Pitch dropzone + ink + floating toolbar -->
-			<div class="tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-1 tw-flex-col">
+						<div class="tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-3">
+							<div
+								class="tw-flex tw-min-h-[11rem] tw-flex-col tw-rounded-xl tw-border tw-border-[#00f0ff]/18 tw-bg-slate-950/40 tw-p-3"
+								role="region"
+								aria-label="Starting XI"
+								ondragover={(e) => rosterZoneDragOver(e, 'xi')}
+								ondrop={(e) => rosterZoneDrop(e, 'xi')}
+							>
+								<p class="tw-mb-2 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-[#00f0ff] tw-uppercase">
+									Starting XI
+								</p>
+								<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-[0.18em] tw-text-slate-500 tw-uppercase">
+									Grid of operatives · max 11
+								</p>
+								<div
+									class="tw-scrollbar-hide tw-grid tw-min-h-[10rem] tw-auto-rows-min tw-grid-cols-[repeat(auto-fill,minmax(3.75rem,1fr))] tw-gap-3"
+								>
+									{#each wrBucketXi as pid (pid)}
+										{@const op = activeRoster.find((r) => r.id === pid)}
+										{#if op}
+											<div
+												draggable="true"
+												class="tw-flex tw-h-14 tw-w-14 tw-cursor-grab tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-[#00f0ff] tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#dffcff] tw-shadow-[inset_0_0_12px_rgba(0,240,255,0.35)]"
+												ondragstart={(e) => rosterModalChipDragStart(e, 'friendly', op)}
+											>
+												{warRoomChipInitials(op.name)}
+											</div>
+										{/if}
+									{/each}
+								</div>
+							</div>
+							<div
+								class="tw-flex tw-min-h-[11rem] tw-flex-col tw-rounded-xl tw-border tw-border-[#00f0ff]/18 tw-bg-slate-950/40 tw-p-3"
+								role="region"
+								aria-label="Bench"
+								ondragover={(e) => rosterZoneDragOver(e, 'bench')}
+								ondrop={(e) => rosterZoneDrop(e, 'bench')}
+							>
+								<p class="tw-mb-2 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-[#00f0ff] tw-uppercase">Bench</p>
+								<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-[0.18em] tw-text-slate-500 tw-uppercase">
+									Grid of operatives
+								</p>
+								<div
+									class="tw-scrollbar-hide tw-grid tw-min-h-[10rem] tw-auto-rows-min tw-grid-cols-[repeat(auto-fill,minmax(3.75rem,1fr))] tw-gap-3"
+								>
+									{#each wrBucketBench as pid (pid)}
+										{@const op = activeRoster.find((r) => r.id === pid)}
+										{#if op}
+											<div
+												draggable="true"
+												class="tw-flex tw-h-14 tw-w-14 tw-cursor-grab tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-[#00f0ff] tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#dffcff] tw-shadow-[inset_0_0_12px_rgba(0,240,255,0.35)]"
+												ondragstart={(e) => rosterModalChipDragStart(e, 'friendly', op)}
+											>
+												{warRoomChipInitials(op.name)}
+											</div>
+										{/if}
+									{/each}
+								</div>
+							</div>
+							<div
+								class="tw-flex tw-min-h-[11rem] tw-flex-col tw-rounded-xl tw-border tw-border-[#00f0ff]/18 tw-bg-slate-950/40 tw-p-3"
+								role="region"
+								aria-label="Deploy to pitch"
+								ondragover={(e) => rosterZoneDragOver(e, 'pitch')}
+								ondrop={(e) => rosterZoneDrop(e, 'pitch')}
+							>
+								<p class="tw-mb-2 tw-font-mono tw-text-[10px] tw-tracking-[0.2em] tw-text-[#00f0ff] tw-uppercase">
+									Deploy to pitch
+								</p>
+								<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-[0.18em] tw-text-slate-500 tw-uppercase">
+									Grid of operatives · board tokens
+								</p>
+								<div
+									class="tw-scrollbar-hide tw-grid tw-min-h-[10rem] tw-auto-rows-min tw-grid-cols-[repeat(auto-fill,minmax(3.75rem,1fr))] tw-gap-3"
+								>
+									{#each wrBucketPitch as pid (pid)}
+										{@const op = activeRoster.find((r) => r.id === pid)}
+										{#if op}
+											<div
+												draggable="true"
+												class="tw-flex tw-h-14 tw-w-14 tw-cursor-grab tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-[#00f0ff] tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#dffcff] tw-shadow-[inset_0_0_12px_rgba(0,240,255,0.35)]"
+												ondragstart={(e) => rosterModalChipDragStart(e, 'friendly', op)}
+											>
+												{warRoomChipInitials(op.name)}
+											</div>
+										{/if}
+									{/each}
+									{#each wrOppPitch as oid (oid)}
+										{@const op = MOCK_OPPOSITION.find((r) => r.id === oid)}
+										{#if op}
+											<div class="tw-relative tw-inline-flex">
+												<div
+													draggable="true"
+													class="tw-flex tw-h-14 tw-w-14 tw-cursor-grab tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-rose-400 tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-font-bold tw-text-rose-100 tw-shadow-[inset_0_0_12px_rgba(251,113,133,0.28)]"
+													ondragstart={(e) => rosterModalChipDragStart(e, 'opp', op)}
+												>
+													{warRoomChipInitials(op.name)}
+												</div>
+												<button
+													type="button"
+													class="tw-absolute tw--right-1 tw--top-1 tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-rose-500/40 tw-bg-slate-950 tw-font-mono tw-text-[9px] tw-leading-none tw-text-rose-300 hover:tw-bg-rose-950/80"
+													aria-label="Remove {op.name} from pitch list"
+													onclick={() => removeOppFromPitch(op.id)}
+												>
+													×
+												</button>
+											</div>
+										{/if}
+									{/each}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			<div class="tw-relative tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden">
+				<h2 id="war-room-title" class="tw-sr-only">War Room tactical board</h2>
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					bind:this={pitchBoardEl}
-					class="war-room-canvas-host tw-relative tw-z-[10000] tw-min-h-0 tw-w-full tw-flex-1 tw-overflow-hidden tw-rounded-xl tw-border-2 tw-border-emerald-400/40 tw-bg-[radial-gradient(ellipse_at_50%_40%,rgba(6,182,212,0.18)_0%,transparent_58%),linear-gradient(168deg,#010806_0%,#051812_42%,#020807_100%)] tw-shadow-[0_0_80px_rgba(16,185,129,0.35),0_0_120px_rgba(6,182,212,0.12),inset_0_0_100px_rgba(6,182,212,0.1)]"
+					class="war-room-pitch-host tw-relative tw-z-[10] tw-flex tw-min-h-0 tw-flex-1 tw-h-full tw-w-full tw-overflow-hidden tw-bg-transparent tw-shadow-[inset_0_0_120px_rgba(0,240,255,0.06)]"
 					role="application"
 					aria-label="Tactical pitch magnetic board"
-					ondragover={pitchDragOver}
-					ondrop={pitchDrop}
 				>
-					<div
-						class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[1] tw-opacity-45 tw-[box-shadow:inset_0_0_140px_rgba(6,182,212,0.28)]"
-					></div>
-
-					<!-- Field markings -->
-					<svg
-						class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[2] tw-h-full tw-w-full tw-opacity-95"
-						viewBox="0 0 100 100"
-						preserveAspectRatio="none"
-						aria-hidden="true"
-					>
-						<defs>
-							<linearGradient id="warRoomPitchGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-								<stop offset="0%" style="stop-color: rgb(16 185 129); stop-opacity: 0.42" />
-								<stop offset="50%" style="stop-color: rgb(6 182 212); stop-opacity: 0.18" />
-								<stop offset="100%" style="stop-color: rgb(16 185 129); stop-opacity: 0.42" />
-							</linearGradient>
-						</defs>
-						<rect x="4" y="3" width="92" height="94" fill="none" stroke="url(#warRoomPitchGlow)" stroke-width="0.65" />
-						<line x1="4" y1="50" x2="96" y2="50" stroke="rgba(52,211,153,0.5)" stroke-width="0.4" stroke-dasharray="2 2" />
-						<circle cx="50" cy="50" r="12" fill="none" stroke="rgba(52,211,153,0.45)" stroke-width="0.4" stroke-dasharray="2 2" />
-						<rect x="22" y="3" width="56" height="16" fill="none" stroke="rgba(34,211,238,0.42)" stroke-width="0.4" stroke-dasharray="2 2" />
-						<rect x="30" y="3" width="40" height="7" fill="none" stroke="rgba(34,211,238,0.32)" stroke-width="0.32" stroke-dasharray="2 2" />
-						<rect x="22" y="81" width="56" height="16" fill="none" stroke="rgba(34,211,238,0.42)" stroke-width="0.4" stroke-dasharray="2 2" />
-						<rect x="30" y="90" width="40" height="7" fill="none" stroke="rgba(34,211,238,0.32)" stroke-width="0.32" stroke-dasharray="2 2" />
-					</svg>
-
-					<!-- Placed magnetic chips (under ink for pointer-through when drawing) -->
-					<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[18] tw-touch-none">
-						{#each magneticPieces as piece (piece.id)}
-							<button
-								type="button"
-								class="war-room-board-chip tw-pointer-events-auto tw-absolute tw-z-[19] tw-flex tw-h-14 tw-w-14 tw--translate-x-1/2 tw--translate-y-1/2 tw-cursor-grab tw-touch-none tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-border-cyan-400/65 tw-bg-[#020617]/95 tw-text-center tw-shadow-[0_0_26px_rgba(34,211,238,0.55)] tw-transition-[box-shadow,transform] active:tw-cursor-grabbing md:tw-h-16 md:tw-w-16 {warRoomTool ===
-								'nodes' ?
-									'tw-ring-2 tw-ring-cyan-400/30'
-								:	'tw-opacity-90'}"
-								style:left="{piece.xPct}%"
-								style:top="{piece.yPct}%"
-								aria-label="Move {piece.name} on pitch"
-								disabled={warRoomTool !== 'nodes'}
-								onpointerdown={(e) => boardChipPointerDown(e, piece.id)}
-							>
-								<span class="tw-font-black tw-text-[10px] tw-leading-none tw-tracking-wide tw-text-cyan-50 md:tw-text-[11px]">
-									{warRoomChipInitials(piece.name)}
-								</span>
-								<span class="tw-mt-0.5 tw-max-w-[3.25rem] tw-truncate tw-font-mono tw-text-[7px] tw-tracking-wider tw-text-cyan-400/90 tw-uppercase">
-									{piece.role}
-								</span>
-							</button>
-						{/each}
-					</div>
-
-					<!-- High-visibility ink layer -->
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<svg
-						bind:this={inkSvgEl}
-						class="war-room-ink-layer tw-absolute tw-inset-0 tw-z-[22] tw-h-full tw-w-full tw-touch-none {warRoomTool === 'ink' ?
-							'tw-cursor-crosshair tw-pointer-events-auto'
-						:	'tw-pointer-events-none'}"
-						viewBox="0 0 100 100"
-						preserveAspectRatio="none"
-						aria-label="Tactical ink layer"
-						onpointerdown={inkPointerDown}
-						onpointermove={inkPointerMove}
-						onpointerup={inkPointerUp}
-						onpointerleave={inkPointerUp}
-						onpointercancel={inkPointerUp}
-					>
-						<defs>
-							<filter id="warRoomInkNeon" x="-20%" y="-20%" width="140%" height="140%">
-								<feGaussianBlur stdDeviation="0.8" result="b" />
-								<feMerge>
-									<feMergeNode in="b" />
-									<feMergeNode in="SourceGraphic" />
-								</feMerge>
-							</filter>
-						</defs>
-						{#each inkStrokes as stroke, si (si)}
-							<path
-								d={stroke.path}
-								fill="none"
-								stroke={stroke.stroke}
-								stroke-width="5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								vector-effect="non-scaling-stroke"
-								filter="url(#warRoomInkNeon)"
-							/>
-						{/each}
-						{#if inkDraftPath}
-							<path
-								d={inkDraftPath}
-								fill="none"
-								stroke={inkDraftStroke}
-								stroke-width="5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								vector-effect="non-scaling-stroke"
-								filter="url(#warRoomInkNeon)"
-							/>
-						{/if}
-					</svg>
-
-					<!-- Floating glass toolbar -->
-					<div
-						class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-z-[40] tw-flex tw-justify-center tw-pb-4 tw-pt-12"
-					>
-						<div
-							class="tw-pointer-events-auto tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-2 tw-rounded-2xl tw-border tw-border-cyan-500/35 tw-bg-[#020617]/72 tw-px-4 tw-py-3 tw-shadow-[0_12px_48px_rgba(0,0,0,0.65),0_0_36px_rgba(34,211,238,0.18)] tw-backdrop-blur-xl md:tw-gap-3 md:tw-px-6"
-							role="toolbar"
-							aria-label="War room tools"
+					<div class="tw-pointer-events-none tw-absolute tw-left-0 tw-right-0 tw-top-5 tw-z-[55] tw-flex tw-justify-center md:tw-top-6">
+						<button
+							type="button"
+							class="btn-director tw-pointer-events-auto tw-inline-flex tw-items-center tw-justify-center tw-rounded-full tw-px-8 tw-py-2.5 tw-text-[10px] tw-tracking-[0.28em] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70"
+							onclick={(e) => {
+								e.stopPropagation();
+								warRoomRosterModalOpen = true;
+							}}
 						>
-							<button
-								type="button"
-								class={warRoomTool === 'nodes' ? BTN_WAR_TOOL_ACTIVE : BTN_WAR_TOOL_IDLE}
-								aria-pressed={warRoomTool === 'nodes'}
-								onclick={(e) => {
-									e.stopPropagation();
-									warRoomTool = 'nodes';
-								}}
-							>
-								DRAG NODES
-							</button>
-							<button
-								type="button"
-								class={warRoomTool === 'ink' ? BTN_WAR_TOOL_ACTIVE : BTN_WAR_TOOL_IDLE}
-								aria-pressed={warRoomTool === 'ink'}
-								onclick={(e) => {
-									e.stopPropagation();
-									warRoomTool = 'ink';
-								}}
-							>
-								DRAW INK
-							</button>
-							<button
-								type="button"
-								class={BTN_WAR_TOOL_IDLE}
-								onclick={(e) => {
-									e.stopPropagation();
-									clearWarRoomBoard();
-								}}
-							>
-								CLEAR BOARD
-							</button>
+							[ MANAGE ROSTER ]
+						</button>
+					</div>
+						<div
+							class="tw-pointer-events-none tw-absolute tw-left-3 tw-top-3 tw-z-[60] tw-h-8 tw-w-8 tw-border-t-2 tw-border-l-2 tw-border-[#00f0ff]/40"
+							aria-hidden="true"
+						></div>
+						<div
+							class="tw-pointer-events-none tw-absolute tw-right-3 tw-top-3 tw-z-[60] tw-h-8 tw-w-8 tw-border-t-2 tw-border-r-2 tw-border-[#00f0ff]/40"
+							aria-hidden="true"
+						></div>
+						<div
+							class="tw-pointer-events-none tw-absolute tw-bottom-3 tw-left-3 tw-z-[60] tw-h-8 tw-w-8 tw-border-b-2 tw-border-l-2 tw-border-[#00f0ff]/40"
+							aria-hidden="true"
+						></div>
+						<div
+							class="tw-pointer-events-none tw-absolute tw-bottom-3 tw-right-3 tw-z-[60] tw-h-8 tw-w-8 tw-border-b-2 tw-border-r-2 tw-border-[#00f0ff]/40"
+							aria-hidden="true"
+						></div>
+
+						<div
+							class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[1] tw-bg-[radial-gradient(ellipse_at_50%_42%,rgba(0,240,255,0.06)_0%,transparent_55%),linear-gradient(168deg,#010806_0%,#051812_42%,#020807_100%)] tw-opacity-[0.92]"
+							aria-hidden="true"
+						></div>
+
+						<svg
+							bind:this={pitchCoordSvgEl}
+							class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[2] tw-h-full tw-w-full"
+							width="100%"
+							height="100%"
+							viewBox="0 0 100 100"
+							preserveAspectRatio="xMidYMid slice"
+							aria-hidden="true"
+						>
+							<defs>
+								<filter id="neonBloom" x="-140%" y="-140%" width="380%" height="380%">
+									<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="trailBlur" />
+									<feMerge>
+										<feMergeNode in="trailBlur" />
+										<feMergeNode in="trailBlur" />
+										<feMergeNode in="trailBlur" />
+										<feMergeNode in="SourceGraphic" />
+									</feMerge>
+								</filter>
+								<marker
+									id="arrowheadTrail"
+									markerWidth="7"
+									markerHeight="7"
+									refX="5.5"
+									refY="3.5"
+									orient="auto-start-reverse"
+								>
+									<polygon points="0 0, 7 3.5, 0 7" fill="#ffffff" />
+								</marker>
+							</defs>
+							{#each WAR_ROOM_GRID_STEPS as gx (`wg-v-${gx}`)}
+								<line
+									x1={gx}
+									y1="0"
+									x2={gx}
+									y2="100"
+									stroke="rgba(255,255,255,0.06)"
+									stroke-width="1"
+									stroke-dasharray="2 6"
+									vector-effect="non-scaling-stroke"
+								/>
+							{/each}
+							{#each WAR_ROOM_GRID_STEPS as gy (`wg-h-${gy}`)}
+								<line
+									x1="0"
+									y1={gy}
+									x2="100"
+									y2={gy}
+									stroke="rgba(255,255,255,0.06)"
+									stroke-width="1"
+									stroke-dasharray="2 6"
+									vector-effect="non-scaling-stroke"
+								/>
+							{/each}
+						</svg>
+
+						<svg
+							class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[3] tw-h-full tw-w-full"
+							width="100%"
+							height="100%"
+							viewBox="0 0 100 100"
+							preserveAspectRatio="xMidYMid slice"
+							aria-hidden="true"
+						>
+							<defs>
+								<filter id="neonBloomPitch" x="-50%" y="-50%" width="200%" height="200%">
+									<feGaussianBlur in="SourceGraphic" stdDeviation="5.5" result="blur" />
+									<feMerge>
+										<feMergeNode in="blur" />
+										<feMergeNode in="blur" />
+										<feMergeNode in="blur" />
+										<feMergeNode in="SourceGraphic" />
+									</feMerge>
+								</filter>
+							</defs>
+							<rect
+								x="6"
+								y="30"
+								width="88"
+								height="40"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<line
+								x1="50"
+								y1="30"
+								x2="50"
+								y2="70"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<circle
+								cx="50"
+								cy="50"
+								r="9.5"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<rect
+								x="6"
+								y="38"
+								width="16"
+								height="24"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<rect
+								x="6"
+								y="43"
+								width="6.5"
+								height="14"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<rect
+								x="78"
+								y="38"
+								width="16"
+								height="24"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+							<rect
+								x="87.5"
+								y="43"
+								width="6.5"
+								height="14"
+								fill="none"
+								stroke="#00f0ff"
+								stroke-width="1.35"
+								stroke-dasharray="2 6"
+								filter="url(#neonBloomPitch)"
+								vector-effect="non-scaling-stroke"
+							/>
+						</svg>
+
+						<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[18] tw-touch-none">
+							{#each magneticPieces as piece (piece.id)}
+								{@const xy = pieceXYAtTelemetry(piece, warRoomTelemetryU)}
+								{@const motionRail =
+									boardDragId === piece.id ? 'tw-transition-none' : (
+										'tw-transition-all tw-duration-300 tw-ease-out'
+									)}
+								<button
+									type="button"
+									class="tw-pointer-events-auto tw-absolute tw-z-[19] tw-flex tw-h-11 tw-w-11 tw--translate-x-1/2 tw--translate-y-1/2 tw-cursor-grab tw-touch-none tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-text-center tw-font-mono tw-backdrop-blur-md tw-bg-black/50 {motionRail} active:tw-cursor-grabbing {piece.side ===
+									'opp' ?
+										'tw-border-2 tw-border-[#ff0033] tw-shadow-[var(--ares-glow)]'
+									:	'tw-border-2 tw-border-[#00f0ff] tw-shadow-[var(--legacy-glow)]'} {warRoomTool === 'nodes' ?
+										piece.side === 'opp' ?
+											'tw-ring-2 tw-ring-[#ff0033]/55'
+										:	'tw-ring-2 tw-ring-[#00f0ff]/50'
+									:	'tw-opacity-[0.88]'}"
+									style:left="{xy.x}%"
+									style:top="{xy.y}%"
+									aria-label="Move {piece.name} on pitch"
+									disabled={warRoomTool !== 'nodes'}
+									onpointerdown={(e) => boardChipPointerDown(e, piece.id)}
+								>
+									<span
+										class="tw-text-[10px] tw-font-black tw-leading-none tw-tracking-wide {piece.side === 'opp' ?
+											'tw-text-[#ff0033]'
+										:	'tw-text-[#00f0ff]'}"
+									>
+										{warRoomChipInitials(piece.name)}
+									</span>
+									<span
+										class="tw-mt-0.5 tw-max-w-[2.75rem] tw-truncate tw-text-[6px] tw-tracking-wider tw-uppercase tw-text-slate-500"
+									>
+										{piece.role}
+									</span>
+								</button>
+							{/each}
 						</div>
+
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<svg
+							bind:this={inkSvgEl}
+							class="war-room-ink-layer tw-absolute tw-inset-0 tw-z-[22] tw-h-full tw-w-full tw-touch-none {warRoomTool === 'nodes' ?
+								'tw-pointer-events-none'
+							:	'tw-pointer-events-auto'} {warRoomTool === 'vector' ? 'tw-cursor-crosshair' : ''}"
+							width="100%"
+							height="100%"
+							viewBox="0 0 100 100"
+							preserveAspectRatio="xMidYMid slice"
+							aria-label="Tactical ink layer"
+							onpointerdown={inkPointerDown}
+							onpointermove={inkPointerMove}
+							onpointerup={inkPointerUp}
+							onpointerleave={inkPointerUp}
+							onpointercancel={inkPointerUp}
+						>
+							{#each warRoomRoutes as route (route.id)}
+								{@const trailStroke =
+									trailGlowHexFromInk(route.stroke) === '#ff0033' ?
+										'#ff0033'
+									:	'var(--legacy-cyan, #00f0ff)'}
+								<path
+									d={warRoomRoutePathD(route)}
+									fill="none"
+									stroke={trailStroke}
+									stroke-width="11"
+									stroke-linecap="round"
+									stroke-opacity="0.48"
+									vector-effect="non-scaling-stroke"
+									filter="url(#neonBloom)"
+									pointer-events="none"
+								/>
+								<path
+									d={warRoomRoutePathD(route)}
+									fill="none"
+									stroke="#ffffff"
+									stroke-width="1.35"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-dasharray="2 6"
+									marker-end="url(#arrowheadTrail)"
+									vector-effect="non-scaling-stroke"
+									filter="url(#neonBloom)"
+									pointer-events="none"
+								/>
+								<circle
+									cx={route.startX}
+									cy={route.startY}
+									r={15}
+									fill="transparent"
+									opacity="0"
+									class="tw-pointer-events-auto tw-cursor-move"
+									aria-hidden="true"
+									onpointerdown={(e) => routeHandlePointerDown(e, route.id, 'start')}
+								/>
+								<circle
+									cx={route.endX}
+									cy={route.endY}
+									r={15}
+									fill="transparent"
+									opacity="0"
+									class="tw-pointer-events-auto tw-cursor-move"
+									aria-hidden="true"
+									onpointerdown={(e) => routeHandlePointerDown(e, route.id, 'end')}
+								/>
+							{/each}
+							{#if inkVectorDraft}
+								{@const draftGlow =
+									trailGlowHexFromInk(warRoomInkColor) === '#ff0033' ?
+										'#ff0033'
+									:	'var(--legacy-cyan, #00f0ff)'}
+								<line
+									x1={inkVectorDraft.x1}
+									y1={inkVectorDraft.y1}
+									x2={inkVectorDraft.x2}
+									y2={inkVectorDraft.y2}
+									stroke={draftGlow}
+									stroke-width="11"
+									stroke-linecap="round"
+									stroke-opacity="0.48"
+									vector-effect="non-scaling-stroke"
+									filter="url(#neonBloom)"
+									pointer-events="none"
+								/>
+								<line
+									x1={inkVectorDraft.x1}
+									y1={inkVectorDraft.y1}
+									x2={inkVectorDraft.x2}
+									y2={inkVectorDraft.y2}
+									stroke="#ffffff"
+									stroke-width="1.35"
+									stroke-linecap="round"
+									stroke-dasharray={warRoomDraftStrokeAttrs.dashPattern}
+									marker-end="url(#arrowheadTrail)"
+									vector-effect="non-scaling-stroke"
+									filter="url(#neonBloom)"
+									pointer-events="none"
+								/>
+							{/if}
+						</svg>
+
+						<div
+							class="tw-pointer-events-none tw-absolute tw-right-4 tw-top-16 tw-z-[56] tw-flex tw-max-w-[min(100%-2rem,calc(98vw-3rem))] tw-justify-end md:tw-top-14"
+						>
+							<div
+								class="tw-pointer-events-auto tw-flex tw-max-w-full tw-flex-nowrap tw-items-center tw-justify-end tw-gap-1.5 tw-rounded-full tw-border tw-border-white/12 tw-bg-slate-950/82 tw-py-1.5 tw-pl-2 tw-pr-2 tw-backdrop-blur-3xl tw-shadow-[0_16px_48px_rgba(0,0,0,0.55),0_0_32px_rgba(0,240,255,0.12)]"
+								role="toolbar"
+								aria-label="War room tactical dock"
+							>
+								<button
+									type="button"
+									class="btn-director !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em] {CMD_TOOL_HOVER} {warRoomTool === 'nodes' ?
+										'!tw-border-[#00f0ff] !tw-bg-[#00f0ff]/15 !tw-text-white tw-shadow-[var(--legacy-glow)]'
+									:	''}"
+									aria-pressed={warRoomTool === 'nodes'}
+									onclick={(e) => {
+										e.stopPropagation();
+										warRoomTool = 'nodes';
+									}}
+								>
+									DRAG
+								</button>
+								<button
+									type="button"
+									class="btn-director !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em] {CMD_TOOL_HOVER} {warRoomTool === 'vector' && warRoomLineStyle === 'draw_arrow' ?
+										'!tw-border-[#00f0ff] !tw-bg-[#00f0ff]/15 !tw-text-white tw-shadow-[var(--legacy-glow)]'
+									:	''}"
+									aria-pressed={warRoomTool === 'vector' && warRoomLineStyle === 'draw_arrow'}
+									onclick={(e) => {
+										e.stopPropagation();
+										warRoomTool = 'vector';
+										warRoomLineStyle = 'draw_arrow';
+									}}
+								>
+									DOTTED_ARROW
+								</button>
+								<button
+									type="button"
+									class="btn-director !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em] {CMD_TOOL_HOVER} {warRoomTool === 'vector' && warRoomLineStyle === 'dashed_line' ?
+										'!tw-border-[#00f0ff] !tw-bg-[#00f0ff]/15 !tw-text-white tw-shadow-[var(--legacy-glow)]'
+									:	''}"
+									aria-pressed={warRoomTool === 'vector' && warRoomLineStyle === 'dashed_line'}
+									onclick={(e) => {
+										e.stopPropagation();
+										warRoomTool = 'vector';
+										warRoomLineStyle = 'dashed_line';
+									}}
+								>
+									ROUTE
+								</button>
+								<button
+									type="button"
+									class="btn-ares !tw-h-8 !tw-min-h-8 !tw-rounded-full !tw-px-2 !tw-py-0 !tw-text-[8px] !tw-tracking-[0.12em]"
+									onclick={(e) => {
+										e.stopPropagation();
+										clearWarRoomBoard();
+									}}
+								>
+									CLEAR
+								</button>
+								{#each WR_INK_PALETTE as chip (chip.id)}
+									<button
+										type="button"
+										class="tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-bg-slate-950/80 tw-font-mono tw-text-[7px] tw-font-bold tw-tracking-wide tw-backdrop-blur-md tw-transition-all focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70 {CMD_TOOL_HOVER} {chip.chipBorder} {warRoomInkColor === chip.hex ?
+											chip.chipRing + ' tw-ring-2 tw-ring-offset-0'
+										:	'tw-border-white/10'}"
+										aria-label="Ink color {chip.label}"
+										aria-pressed={warRoomInkColor === chip.hex}
+										onclick={(e) => {
+											e.stopPropagation();
+											warRoomInkColor = chip.hex;
+										}}
+									>
+										{chip.label}
+									</button>
+								{/each}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div
+					class="tw-shrink-0 tw-w-full tw-border-t tw-border-[#00f0ff]/30 tw-bg-[#020617]/94 tw-px-4 tw-py-3 tw-backdrop-blur-3xl tw-backdrop-saturate-[1.35]"
+					aria-label="Telemetry timeline"
+				>
+					<p class="tw-mb-2 tw-font-mono tw-text-[8px] tw-tracking-[0.28em] tw-text-slate-500 tw-uppercase">
+						SIEM playback
+					</p>
+					<div class="tw-flex tw-w-full tw-min-h-0 tw-max-w-none tw-items-center tw-gap-4">
+						<button
+							type="button"
+							class="btn-director tw-shrink-0 tw-rounded-full tw-tracking-widest"
+							onclick={(e) => {
+								e.stopPropagation();
+								toggleWarRoomTelemetryPlay();
+							}}
+						>
+							{telemetryPlaying ? 'PAUSE' : 'PLAY'}
+						</button>
+						<span
+							class="tw-shrink-0 tw-font-mono tw-text-xs tw-tabular-nums tw-tracking-[0.14em] tw-text-[#00f0ff]/90 tw-drop-shadow-[0_0_10px_rgba(0,240,255,0.65)]"
+							aria-live="polite"
+						>
+							[T+ {telemetryProgress.toFixed(1)}%]
+						</span>
+						<input
+							type="range"
+							class="war-room-scrubber-range tw-min-h-[2.75rem] tw-min-w-0 tw-flex-1 tw-cursor-pointer"
+							min="0"
+							max="100"
+							step="0.25"
+							bind:value={telemetryProgress}
+							oninput={() => stopWarRoomTelemetryPlayback()}
+							aria-label="Scrub tactical telemetry timeline"
+						/>
 					</div>
 				</div>
 			</div>
@@ -1449,22 +2868,90 @@
 		}
 	}
 
-	.coach-roster-strip {
-		scrollbar-width: thin;
-		scrollbar-color: rgba(34, 211, 238, 0.42) transparent;
+	.coach-quick-strip {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
 	}
 
-	.coach-roster-strip::-webkit-scrollbar {
-		height: 5px;
+	.coach-quick-strip::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
 	}
 
-	.coach-roster-strip::-webkit-scrollbar-track {
-		background: transparent;
+	.wx-threat-matrix-host {
+		max-height: min(72vw, 28rem);
+		margin-inline: auto;
 	}
 
-	.coach-roster-strip::-webkit-scrollbar-thumb {
-		background: rgba(34, 211, 238, 0.38);
-		border-radius: 0;
+	@media (min-width: 768px) {
+		.wx-threat-matrix-host {
+			max-height: min(52vh, 32rem);
+			max-width: min(52vh, 32rem);
+		}
+	}
+
+	.wx-threat-matrix-svg {
+		filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.18));
+	}
+
+	.wx-threat-matrix-host.vanguard-panel-breach .wx-threat-matrix-svg {
+		filter: drop-shadow(0 0 22px rgba(255, 0, 51, 0.22));
+	}
+
+	@keyframes wxThreatSonar {
+		to {
+			stroke-dashoffset: -48;
+		}
+	}
+
+	.wx-threat-sonar-sweep {
+		animation: wxThreatSonar 5s linear infinite;
+		transform-origin: 50px 50px;
+		transform: rotate(-90deg);
+	}
+
+	@keyframes wxThreatHexPulse {
+		0%,
+		100% {
+			opacity: 0.72;
+			stroke-width: 0.48;
+		}
+		45% {
+			opacity: 1;
+			stroke-width: 0.72;
+		}
+	}
+
+	@keyframes wxThreatCoordPulse {
+		0%,
+		100% {
+			opacity: 0.55;
+			filter: drop-shadow(0 0 2px rgba(251, 113, 133, 0.35));
+		}
+		50% {
+			opacity: 1;
+			filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.85));
+		}
+	}
+
+	.wx-threat-hex {
+		animation: wxThreatHexPulse 2.4s ease-in-out infinite;
+		animation-delay: calc(var(--wx-lock-i, 0) * 0.35s);
+	}
+
+	.wx-threat-coords {
+		animation: wxThreatCoordPulse 2.4s ease-in-out infinite;
+		animation-delay: calc(var(--wx-lock-i, 0) * 0.35s + 0.15s);
+	}
+
+	.coach-console-tab-strip {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.coach-console-tab-strip::-webkit-scrollbar {
+		display: none;
 	}
 
 	@keyframes facilityOpsScan {
@@ -1484,6 +2971,61 @@
 		}
 	}
 
+	.war-room-scrubber-range {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 2.75rem;
+		background: transparent;
+	}
+
+	.war-room-scrubber-range::-webkit-slider-runnable-track {
+		height: 0.25rem;
+		border-radius: 9999px;
+		background: rgb(8 51 68 / 0.35);
+		box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.15);
+		border: 1px solid rgb(8 51 68 / 0.5);
+	}
+
+	.war-room-scrubber-range::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 4px;
+		height: 16px;
+		border-radius: 1px;
+		background: #00f0ff;
+		box-shadow: 0 0 10px #00f0ff;
+		margin-top: -6px;
+		border: none;
+	}
+
+	.war-room-scrubber-range::-moz-range-track {
+		height: 0.25rem;
+		border-radius: 9999px;
+		background: rgb(8 51 68 / 0.35);
+		box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.15);
+		border: 1px solid rgb(8 51 68 / 0.5);
+	}
+
+	.war-room-scrubber-range::-moz-range-thumb {
+		width: 4px;
+		height: 16px;
+		border-radius: 1px;
+		background: #00f0ff;
+		box-shadow: 0 0 10px #00f0ff;
+		border: none;
+	}
+
+	.war-room-asset-palette {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.war-room-asset-palette::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
+	}
+
 	.facility-ops-override-card {
 		min-height: 4.5rem;
 	}
@@ -1493,46 +3035,23 @@
 		animation: facilityOpsScan 2.4s linear infinite;
 	}
 
-	.wb-radar-grid {
-		background-image:
-			linear-gradient(rgba(34, 211, 238, 0.11) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(34, 211, 238, 0.11) 1px, transparent 1px);
-		background-size: 16px 16px;
+	.weather-siem-scan {
+		background-image: repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 10px,
+			rgba(0, 240, 255, 0.06) 10px,
+			rgba(0, 240, 255, 0.06) 11px
+		);
+		animation: weatherSiemDrift 10s linear infinite;
 	}
 
-	@keyframes wbStrike {
-		0%,
-		100% {
-			opacity: 0.2;
-			filter: brightness(0.85);
+	@keyframes weatherSiemDrift {
+		from {
+			background-position: 0 0;
 		}
-		35% {
-			opacity: 1;
-			filter: brightness(1.35);
+		to {
+			background-position: 0 220px;
 		}
-		50% {
-			opacity: 0.65;
-		}
-	}
-
-	.wb-lightning-a {
-		top: 10%;
-		bottom: 42%;
-		left: 26%;
-		animation: wbStrike 2.1s ease-in-out infinite;
-	}
-
-	.wb-lightning-b {
-		top: 22%;
-		bottom: 28%;
-		right: 22%;
-		animation: wbStrike 2.6s ease-in-out infinite 0.4s;
-	}
-
-	.wb-lightning-c {
-		top: 38%;
-		bottom: 18%;
-		left: 52%;
-		animation: wbStrike 1.9s ease-in-out infinite 0.9s;
 	}
 </style>

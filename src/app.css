@@ -1,8 +1,456 @@
+/**
+ * Vanguard OS — VFX / immersion enforcement (scrollbars, native chrome discipline).
+ * No visible OS scrollbars; HUD sliders/checkboxes use intentional styling only.
+ * Tactical SVGs: prefer `<feGaussianBlur>` filter defs for neon bloom on active geometry.
+ * Controls: no flat white/light-grey buttons — translucent slate glass + luminous borders/hover.
+ */
+
 html {
 	overflow-y: scroll !important;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
+html::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+	background: transparent;
+}
+
+/* Kill native scrollbars everywhere WebKit / Blink touched scrollbars */
+::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+	background: transparent;
+}
+
+* {
+	scrollbar-width: none; /* Firefox */
+}
+
+/**
+ * Vanguard OS — global SIEM shell tokens (see --vanguard-z-*).
+ * Tron Legacy / Ares + void palette — tactical HUD chrome.
+ */
+:root {
+	/* THE VOID (Backgrounds) */
+	--void-black: #000000;
+	--obsidian: #050505;
+
+	/* TRON: LEGACY (Standard Ops) */
+	--legacy-cyan: #00f0ff;
+	--legacy-glow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.2);
+	--legacy-glass: rgba(0, 20, 30, 0.6);
+
+	/* TRON: ARES (Threat State & Overrides) */
+	--ares-crimson: #ff0033;
+	--ares-glow: 0 0 25px rgba(255, 0, 51, 0.6), inset 0 0 15px rgba(255, 0, 51, 0.3);
+	--ares-glass: rgba(20, 0, 0, 0.9);
+
+	/* AAA HUD GREEBLING */
+	--ui-border-thin: 1px solid rgba(255, 255, 255, 0.1);
+
+	--vanguard-z-base: 0;
+	--vanguard-z-dock: 50;
+	--vanguard-z-overlay: 9999;
+	/** Coach workspace header subtract height — matches `--spacing-header` / `theme(spacing.header)` */
+	--vanguard-shell-header: 5rem;
+}
+
+/**
+ * The Arena — global grid readout (overrides legacy style.css body tokens).
+ */
+body {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	margin: 0;
+	background-color: var(--void-black);
+	background-image:
+		linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+	background-size: 4rem 4rem;
+	background-attachment: fixed;
+	color: #ffffff;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+@tailwind components;
 @tailwind utilities;
+
+@keyframes glitch-pulse {
+	0%,
+	100% {
+		opacity: 1;
+		box-shadow: var(--ares-glow);
+	}
+	33% {
+		opacity: 0.94;
+		box-shadow:
+			0 0 18px rgba(255, 0, 51, 0.45),
+			inset 0 0 12px rgba(255, 0, 51, 0.22);
+	}
+	66% {
+		opacity: 0.98;
+		box-shadow:
+			0 0 32px rgba(255, 0, 51, 0.55),
+			inset 0 0 18px rgba(255, 0, 51, 0.28);
+	}
+}
+
+@layer components {
+	/* SIEM/SOAR Panels — Tron Legacy standard ops */
+	.vanguard-panel {
+		@apply tw-rounded-xl tw-backdrop-blur-2xl;
+		background-color: var(--legacy-glass);
+		box-shadow: var(--legacy-glow);
+		border: var(--ui-border-thin);
+	}
+
+	/* Ares breach — critical threat chrome */
+	.vanguard-panel-breach {
+		@apply tw-rounded-xl tw-border-2 tw-border-[#ff0033] tw-backdrop-blur-none;
+		background-color: var(--ares-glass);
+		box-shadow: var(--ares-glow);
+		animation: glitch-pulse 2s infinite;
+	}
+
+	.btn-director {
+		@apply tw-border tw-bg-transparent tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-300;
+		border-color: rgb(0 240 255 / 0.5);
+		color: var(--legacy-cyan);
+		letter-spacing: 0.15em;
+	}
+
+	.btn-director:hover {
+		@apply tw-border-[#00f0ff] tw-bg-[#00f0ff]/20 tw-text-white;
+		box-shadow: var(--legacy-glow);
+	}
+
+	.btn-ares {
+		@apply tw-border tw-bg-[#ff0033]/10 tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-300;
+		border-color: rgb(255 0 51 / 0.8);
+		color: var(--ares-crimson);
+		letter-spacing: 0.15em;
+	}
+
+	.btn-ares:hover {
+		@apply tw-border-[#ff0033] tw-bg-[#ff0033]/30 tw-text-white;
+		box-shadow: var(--ares-glow);
+	}
+}
+
+/**
+ * Unified glass panel — ALL major HUD surfaces (Weather, Mission, Player OS, War Room palettes).
+ * Exact combo mandated for visual parity (slate-950/60, blur-2xl, cyan-900/30 rim, inset cyan wash).
+ */
+@layer utilities {
+	.tw-vanguard-panel {
+		background-color: rgb(2 6 23 / 0.6);
+		backdrop-filter: blur(40px);
+		-webkit-backdrop-filter: blur(40px);
+		border: 1px solid rgb(22 78 99 / 0.3);
+		box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.05);
+	}
+
+	/**
+	 * Floating dock chrome — Command tab strip + War Room tool dock (same OS module).
+	 */
+	.tw-vanguard-dock-pill {
+		border-radius: 9999px;
+		background-color: rgb(2 6 23 / 0.8);
+		backdrop-filter: blur(24px);
+		-webkit-backdrop-filter: blur(24px);
+		border: 1px solid rgb(255 255 255 / 0.1);
+		padding: 0.5rem;
+	}
+
+	/** Section chrome labels — uppercase telemetry headers */
+	.tw-vanguard-section-header {
+		font-size: 0.75rem;
+		line-height: 1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: rgb(148 163 184);
+	}
+
+	/** Numeric / coordinate / clock emphasis */
+	.tw-vanguard-data {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+			monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/**
+	 * Coach command matrix — locked footprint + typography (compose with glass Tailwind).
+	 * Primary nav row; secondary cards use matrix-secondary (strict geometric uniformity).
+	 */
+	.tw-vanguard-btn-matrix-nav {
+		box-sizing: border-box;
+		display: inline-flex;
+		width: 11rem;
+		min-width: 11rem;
+		height: 3rem;
+		min-height: 3rem;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		text-align: center;
+		font-weight: 700;
+		font-size: 11px;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+
+	.tw-vanguard-btn-matrix-secondary {
+		box-sizing: border-box;
+		display: inline-flex;
+		width: 8rem;
+		min-width: 8rem;
+		height: 2.25rem;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		text-align: center;
+		font-weight: 700;
+		font-size: 10px;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+
+	/** Hide scrollbars while keeping overflow scroll (War Room tray, horizontal strips). */
+	.tw-scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.tw-scrollbar-hide::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
+	}
+
+	/**
+	 * Timeline / scrubber — zero default browser slider chrome (HUD laser styling).
+	 */
+	.tw-vanguard-range {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 1.35rem;
+		background: transparent;
+	}
+
+	.tw-vanguard-range::-webkit-slider-runnable-track {
+		height: 0.55rem;
+		border-radius: 9999px;
+		background: linear-gradient(
+			90deg,
+			rgba(0, 240, 255, 0.35),
+			rgba(0, 240, 255, 0.95),
+			rgba(0, 240, 255, 0.35)
+		);
+		box-shadow:
+			inset 0 0 14px rgba(0, 240, 255, 0.55),
+			0 0 15px #00f0ff,
+			0 0 28px rgba(0, 240, 255, 0.55);
+		border: 1px solid rgba(0, 240, 255, 0.85);
+	}
+
+	.tw-vanguard-range::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 1.35rem;
+		height: 1.35rem;
+		border-radius: 9999px;
+		background: radial-gradient(circle at 35% 28%, #ecfeff, #00f0ff);
+		border: 2px solid rgba(236, 254, 255, 0.65);
+		margin-top: -0.42rem;
+		box-shadow:
+			0 0 15px #00f0ff,
+			0 0 28px rgba(0, 240, 255, 0.95),
+			0 0 44px rgba(0, 240, 255, 0.55);
+	}
+
+	.tw-vanguard-range::-moz-range-track {
+		height: 0.55rem;
+		border-radius: 9999px;
+		background: linear-gradient(
+			90deg,
+			rgba(0, 240, 255, 0.35),
+			rgba(0, 240, 255, 0.95),
+			rgba(0, 240, 255, 0.35)
+		);
+		box-shadow:
+			inset 0 0 14px rgba(0, 240, 255, 0.55),
+			0 0 15px #00f0ff,
+			0 0 28px rgba(0, 240, 255, 0.55);
+		border: 1px solid rgba(0, 240, 255, 0.85);
+	}
+
+	.tw-vanguard-range::-moz-range-thumb {
+		width: 1.35rem;
+		height: 1.35rem;
+		border-radius: 9999px;
+		border: 2px solid rgba(236, 254, 255, 0.65);
+		background: radial-gradient(circle at 35% 28%, #ecfeff, #00f0ff);
+		box-shadow:
+			0 0 15px #00f0ff,
+			0 0 28px rgba(0, 240, 255, 0.95),
+			0 0 44px rgba(0, 240, 255, 0.55);
+	}
+
+	/**
+	 * Native checkbox — minimal HUD tint (full custom checkbox UI preferred for AAA parity).
+	 */
+	.tw-vanguard-checkbox {
+		accent-color: rgb(0 240 255);
+		width: 1rem;
+		height: 1rem;
+		border-radius: 0.25rem;
+		cursor: pointer;
+	}
+
+	/**
+	 * Director-standard control — translucent contextual glass; glow on hover/active.
+	 * No flat opaque slabs; use for forge CTAs and primary HUD actions outside dock pills.
+	 */
+	.tw-vanguard-btn-director {
+		display: inline-flex;
+		max-width: 100%;
+		box-sizing: border-box;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		border-radius: 0.75rem;
+		border: 1px solid rgb(0 240 255 / 0.42);
+		/* Slate glass — never flat white / grey slabs */
+		background-color: rgb(2 6 23 / 0.4);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		padding: 0.5rem 1rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+			monospace;
+		font-size: 0.625rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		text-decoration: none !important;
+		color: rgb(207 250 254);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.06),
+			0 0 0 1px rgb(0 240 255 / 0.06);
+		transition:
+			border-color 160ms ease,
+			background-color 160ms ease,
+			box-shadow 180ms ease,
+			transform 120ms ease;
+	}
+
+	.tw-vanguard-btn-director:hover {
+		border-color: rgb(0 240 255 / 0.72);
+		background-color: rgb(2 6 23 / 0.55);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.09),
+			0 0 28px rgb(0 240 255 / 0.48),
+			0 0 52px rgb(0 240 255 / 0.22);
+	}
+
+	.tw-vanguard-btn-director:active {
+		transform: scale(0.98);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.05),
+			0 0 36px rgb(0 240 255 / 0.62);
+	}
+
+	.tw-vanguard-btn-director:focus-visible {
+		outline: 2px solid rgb(0 240 255 / 0.65);
+		outline-offset: 2px;
+	}
+
+	/** Top-console tabs: same Director DNA as Forge — glass hover, no metallic tray; active = bottom rail */
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab {
+		background-color: transparent !important;
+		border-color: transparent !important;
+		box-shadow: none !important;
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab:hover {
+		background-color: rgb(8 51 68 / 0.32) !important;
+		border-color: rgb(0 240 255 / 0.38) !important;
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.05),
+			0 0 28px rgb(0 240 255 / 0.38) !important;
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-active-cyan {
+		border-bottom: 2px solid rgb(0 240 255) !important;
+		border-radius: 0.75rem 0.75rem 0 0;
+		color: rgb(236 254 255);
+		text-shadow: 0 0 14px rgba(0, 240, 255, 0.55);
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-active-amber {
+		border-bottom: 2px solid rgb(245 158 11) !important;
+		border-radius: 0.75rem 0.75rem 0 0;
+		color: rgb(254 243 199);
+		text-shadow: 0 0 14px rgba(245, 158, 11, 0.48);
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-match {
+		color: rgb(253 164 175 / 0.92);
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-match:hover {
+		border-color: rgb(244 63 94 / 0.42) !important;
+		color: rgb(255 228 230);
+	}
+
+	/**
+	 * War Room integrated tactical dock — low-profile Director DNA (h-8 pill rail).
+	 */
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--dock-sm {
+		box-sizing: border-box;
+		min-height: 2rem;
+		height: 2rem;
+		padding: 0 0.45rem;
+		border-radius: 9999px;
+		font-size: 0.4375rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	.tw-vanguard-btn-director.tw-vanguard-btn-director--dock-sm.tw-vanguard-btn-director--dock-active {
+		border-color: rgb(0 240 255 / 0.78) !important;
+		background-color: rgb(8 51 68 / 0.48) !important;
+		color: rgb(236 254 255);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.08),
+			0 0 22px rgb(0 240 255 / 0.42),
+			0 0 40px rgb(0 240 255 / 0.18) !important;
+	}
+}
+
+/* Vanguard OS shell: strip default link underlines; keep buttons clean inside dark HUD routes */
+.vanguard-os-shell a {
+	text-decoration: none;
+}
+
+.vanguard-os-shell a:hover {
+	text-decoration: none;
+}
+
+.vanguard-os-shell button {
+	text-decoration: none;
+}
 
 /**
  * Login gateway: stretch column; control sizing comes from Tailwind on inputs/buttons.

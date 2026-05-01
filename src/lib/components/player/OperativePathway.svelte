@@ -66,7 +66,7 @@
 				'unlocked' ?
 					'tw-bg-slate-800 tw-border-emerald-500/30 tw-opacity-50'
 				: state === 'current' ?
-					'tw-relative tw-z-[2] tw-scale-110 tw-bg-slate-900 tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+					'tw-relative tw-z-[2] tw-scale-110 tw-bg-slate-900 tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(0, 240, 255,0.4)]'
 				:	'tw-bg-slate-900/40 tw-border-white/5 tw-opacity-80'}"
 				aria-label={tierLabel(tier)}
 			>
@@ -109,7 +109,7 @@
 	/* Thin scrollbar — Chromium / Firefox */
 	.opp-track {
 		scrollbar-width: thin;
-		scrollbar-color: rgba(34, 211, 238, 0.35) rgba(15, 23, 42, 0.6);
+		scrollbar-color: rgba(0, 240, 255, 0.35) rgba(15, 23, 42, 0.6);
 	}
 
 	.opp-track::-webkit-scrollbar {
@@ -122,7 +122,7 @@
 	}
 
 	.opp-track::-webkit-scrollbar-thumb {
-		background: rgba(34, 211, 238, 0.35);
+		background: rgba(0, 240, 255, 0.35);
 		border-radius: 999px;
 	}
 </style>

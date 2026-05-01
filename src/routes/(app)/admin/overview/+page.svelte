@@ -421,14 +421,14 @@
 							{
 								label: 'Monthly active users',
 								data: series.map((p) => p.value),
-								borderColor: '#22d3ee',
-								backgroundColor: 'rgba(34,211,238,0.14)',
+								borderColor: '#00f0ff',
+								backgroundColor: 'rgba(0, 240, 255,0.14)',
 								borderWidth: 2.5,
 								tension: 0.35,
 								fill: true,
 								pointRadius: 3,
 								pointHoverRadius: 5,
-								pointBackgroundColor: '#22d3ee',
+								pointBackgroundColor: '#00f0ff',
 								pointBorderColor: '#ffffff',
 								pointBorderWidth: 1.5,
 							},
@@ -489,7 +489,7 @@
 				if (destroyed || !target.isConnected) return;
 				mod.Chart.register(...mod.registerables);
 				const muted = cssVar('--text-secondary', '#475569');
-				const palette = ['#22d3ee', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
+				const palette = ['#00f0ff', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
 				chart = new mod.Chart(target, {
 					type: 'doughnut',
 					data: {
@@ -577,8 +577,8 @@
 							{
 								label: 'Players',
 								data: series.map((p) => p.value),
-								backgroundColor: 'rgba(34, 211, 238, 0.45)',
-								borderColor: 'rgba(34, 211, 238, 0.9)',
+								backgroundColor: 'rgba(0, 240, 255, 0.45)',
+								borderColor: 'rgba(0, 240, 255, 0.9)',
 								borderWidth: 1,
 								borderRadius: 4,
 								maxBarThickness: 28,
@@ -1086,7 +1086,7 @@
 		padding: 12px 14px;
 		border-radius: 12px;
 		background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
-		border: 1px solid rgba(34, 211, 238, 0.22);
+		border: 1px solid rgba(0, 240, 255, 0.22);
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
 			0 12px 28px rgba(0, 0, 0, 0.35);
@@ -1181,7 +1181,7 @@
 		background: #34d399;
 	}
 	.cc-soc-dot--info {
-		background: #22d3ee;
+		background: #00f0ff;
 	}
 
 	/* Severity-banded metric tiles */
@@ -1220,7 +1220,7 @@
 		border-left-color: #22c55e;
 	}
 	.cc-soc-card--info {
-		border-left-color: #06b6d4;
+		border-left-color: #00f0ff;
 	}
 
 	.cc-soc-card__top {
@@ -1299,7 +1299,7 @@
 		padding: 16px 18px;
 		border-radius: 14px;
 		background: rgba(9, 9, 11, 0.75);
-		border: 1px solid rgba(34, 211, 238, 0.18);
+		border: 1px solid rgba(0, 240, 255, 0.18);
 		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 	}
 
@@ -1313,7 +1313,7 @@
 		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: rgba(34, 211, 238, 0.85);
+		color: rgba(0, 240, 255, 0.85);
 		margin-bottom: 4px;
 	}
 
@@ -1369,7 +1369,7 @@
 	}
 
 	.cc-chart-card--soc {
-		border-top: 2px solid rgba(34, 211, 238, 0.35);
+		border-top: 2px solid rgba(0, 240, 255, 0.35);
 		box-shadow:
 			0 1px 0 rgba(255, 255, 255, 0.06) inset,
 			0 18px 40px rgba(0, 0, 0, 0.18);
@@ -1382,12 +1382,12 @@
 	}
 
 	.cc-chart-card__icon--cyan {
-		background: rgba(34, 211, 238, 0.2);
-		color: #22d3ee;
+		background: rgba(0, 240, 255, 0.2);
+		color: #00f0ff;
 	}
 
 	:global(html.dark) .cc-chart-card__icon--cyan {
-		background: rgba(34, 211, 238, 0.22);
+		background: rgba(0, 240, 255, 0.22);
 		color: #a5f3fc;
 	}
 

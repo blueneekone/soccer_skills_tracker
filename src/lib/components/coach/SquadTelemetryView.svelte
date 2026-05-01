@@ -832,7 +832,7 @@
 					{:else}
 						<button
 							type="button"
-							class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(34,211,238,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
+							class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(0, 240, 255,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
 							disabled={!teamId || inviteBusy}
 							onclick={generateTeamDispatchCode}
 						>
@@ -1340,7 +1340,7 @@
 	}
 
 	.stw__tel-line--assist .stw__tel-act {
-		color: #22d3ee;
+		color: #00f0ff;
 	}
 
 	.stw__tel-line--shot .stw__tel-act {
