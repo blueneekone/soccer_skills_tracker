@@ -67,6 +67,13 @@
 	/** Global Vanguard glass — src/app.css `.vanguard-panel` */
 	const GLASS_PANEL = 'vanguard-panel tw-rounded-2xl';
 
+	/** Glow gutter + scroll split — outer overflow-visible so panel box-shadow is not squared off */
+	const CMD_CARD_GLOW_GUTTER =
+		'tw-group tw-flex tw-h-full tw-min-h-[17rem] tw-min-w-0 tw-w-full tw-flex-col tw-overflow-visible tw-p-3 md:tw-min-h-[18rem]';
+	const CMD_CARD_PANEL = `${GLASS_PANEL} tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-visible`;
+	const CMD_CARD_SCROLL =
+		'tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-p-5';
+
 	/** Cyan hover ribbon — dock chips + compositors */
 	const CMD_TOOL_HOVER =
 		'tw-transition-all tw-duration-300 hover:tw-shadow-[0_0_15px_rgba(0,240,255,0.55)] hover:tw-border-[#00f0ff]/55 hover:tw-bg-[rgba(0,24,32,0.45)]';
@@ -74,9 +81,6 @@
 	/** Matrix-footprint bridge CTAs — primary Director controls */
 	const CMD_BRIDGE_IDLE_SECOND =
 		`btn-director tw-vanguard-btn-matrix-secondary tw-inline-flex tw-items-center tw-justify-center tw-text-center ${CMD_TOOL_HOVER} focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]/70`;
-
-	/** Equal-height dashboard trio tiles (parent: `lg:grid-cols-3`) */
-	const CMD_MAIN_CARD = `${GLASS_PANEL} tw-h-full tw-flex tw-flex-col tw-min-h-[17rem] tw-min-w-0 tw-w-full tw-gap-3 tw-overflow-y-auto tw-scrollbar-hide tw-p-4 md:tw-min-h-[18rem] md:tw-p-5`;
 
 	/** Showcase carousel arrows — exact kinetic lift stack */
 	const SHOWCASE_KINETIC_ARROW =
@@ -1345,7 +1349,7 @@
 
 	<!-- Command bridge — crest + title only -->
 	<header
-		class="vanguard-panel tw-relative tw-z-10 tw-flex tw-shrink-0 tw-w-full tw-flex-wrap tw-items-center tw-gap-4 tw-rounded-b-2xl tw-p-3 md:tw-flex-nowrap md:tw-gap-4 md:tw-px-4"
+		class="vanguard-panel tw-relative tw-z-10 tw-flex tw-shrink-0 tw-w-full tw-flex-wrap tw-items-center tw-gap-4 tw-overflow-visible tw-rounded-b-2xl tw-p-3 md:tw-flex-nowrap md:tw-gap-4 md:tw-px-4"
 	>
 		<div class="tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-gap-3 md:tw-gap-4">
 			<div
@@ -1368,9 +1372,11 @@
 	</header>
 
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-px-2 md:tw-px-4">
-		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto tw-scrollbar-hide tw-pb-2 md:tw-gap-6">
-		<div class="tw-grid tw-grid-cols-1 tw-gap-6 tw-w-full tw-items-stretch lg:tw-grid-cols-3">
-		<section id="coach-pillar-mission" class="{CMD_MAIN_CARD}" aria-label="Mission control">
+		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto tw-scrollbar-hide tw-py-3 tw-pb-4 md:tw-gap-6">
+		<div class="tw-grid tw-grid-cols-1 tw-gap-6 tw-w-full tw-items-stretch tw-overflow-visible tw-p-2 lg:tw-grid-cols-3">
+		<section id="coach-pillar-mission" class="{CMD_CARD_GLOW_GUTTER}" aria-label="Mission control">
+			<div class="{CMD_CARD_PANEL}">
+				<div class="{CMD_CARD_SCROLL}">
 			<div class="tw-min-w-0">
 				<h2 class="tw-vanguard-section-header">
 					Mission Control
@@ -1403,9 +1409,13 @@
 					[ MATCH LOGGER ]
 				</a>
 			</div>
+				</div>
+			</div>
 		</section>
 
-		<section id="coach-pillar-facility" class="{CMD_MAIN_CARD}" aria-label="Facility ops and staging">
+		<section id="coach-pillar-facility" class="{CMD_CARD_GLOW_GUTTER}" aria-label="Facility ops and staging">
+			<div class="{CMD_CARD_PANEL}">
+				<div class="{CMD_CARD_SCROLL}">
 			<div class="tw-min-w-0">
 				<h2 class="tw-vanguard-section-header tw-font-mono">Facility Ops & Staging</h2>
 				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-slate-600 tw-uppercase">
@@ -1470,11 +1480,13 @@
 					>
 				</a>
 			</div>
+				</div>
+			</div>
 		</section>
 
 		<section
 			id="coach-pillar-weather"
-			class="tw-flex tw-h-full tw-min-h-[17rem] tw-min-w-0 tw-w-full tw-flex-col md:tw-min-h-[18rem]"
+			class="{CMD_CARD_GLOW_GUTTER}"
 			aria-label="Weather hub"
 		>
 			<div class={isSevereWeatherThreat ? 'vanguard-panel-breach' : 'vanguard-panel'}>
@@ -1629,7 +1641,7 @@
 									</svg>
 								</button>
 								<div
-									class="tw-grid tw-min-h-0 tw-flex-1 tw-grid-cols-1 tw-items-center tw-gap-8 !tw-overflow-visible lg:tw-grid-cols-[minmax(0,1.15fr)_minmax(0,20rem)] lg:tw-gap-10 lg:tw-pl-2 lg:tw-pr-2"
+									class="tw-grid tw-min-h-0 tw-flex-1 tw-grid-cols-1 tw-items-start tw-gap-12 !tw-overflow-visible lg:tw-grid-cols-[minmax(0,1.15fr)_minmax(0,20rem)] lg:tw-gap-14 lg:tw-pl-2 lg:tw-pr-2"
 								>
 								<div
 									class="tw-relative tw-mx-auto tw-flex tw-aspect-square tw-w-full tw-max-w-[400px] tw-items-center tw-justify-center tw-bg-transparent"
@@ -1685,15 +1697,15 @@
 											<circle
 												cx={vtx.x}
 												cy={vtx.y}
-												r="2.5"
+												r="2"
 												fill="#00f0ff"
 												filter="url(#coachRadarNodeGlow)"
 											/>
 										{/each}
 										{#each RADAR_AXIS_LABELS as lbl, li (`lbl-${lbl}`)}
-											{@const tp = radarPolarXY(li, 1.28)}
+											{@const tp = radarPolarXY(li, 1.42)}
 											<text
-												class="tw-pointer-events-none tw-fill-white tw-font-mono tw-text-[9px] tw-tracking-[0.3em] tw-uppercase"
+												class="tw-pointer-events-none tw-text-[9px] tw-font-mono tw-tracking-[0.3em] tw-fill-white"
 												x={tp.x}
 												y={tp.y}
 												text-anchor="middle"
@@ -1705,7 +1717,7 @@
 									</svg>
 								</div>
 
-								<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 lg:tw-max-w-md">
+								<div class="tw-relative tw-z-10 tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 lg:tw-max-w-md">
 									<div class="tw-space-y-3 tw-font-mono">
 										<p class="tw-vanguard-section-header">Operative telemetry</p>
 										<p class="tw-text-[10px] tw-tracking-[0.24em] tw-text-slate-600 tw-uppercase">
@@ -1774,13 +1786,13 @@
 
 						<!-- Vanguard quick-select -->
 						<div
-							class="vanguard-quick-select !tw-overflow-visible !tw-pb-8 tw-flex tw-min-h-0 tw-flex-[3] tw-flex-col tw-justify-end tw-border-t tw-border-white/10 tw-px-6 tw-pt-4"
+							class="vanguard-quick-select tw-relative tw-z-30 tw-isolate !tw-overflow-visible tw-mt-8 tw-flex tw-min-h-0 tw-flex-[3] tw-flex-col tw-justify-end tw-border-t tw-border-white/10 tw-px-6 tw-pt-10 tw-pb-14"
 						>
-							<p class="tw-mb-2 tw-font-mono tw-text-[9px] tw-tracking-[0.2em] tw-text-slate-500 tw-uppercase">
+							<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-[0.2em] tw-text-slate-500 tw-uppercase">
 								Vanguard quick-select
 							</p>
 							<div
-								class="coach-quick-strip tw-scrollbar-hide tw-flex tw-min-h-0 tw-flex-row tw-flex-wrap tw-items-center tw-gap-3 !tw-overflow-visible !tw-pb-8 tw-px-1 tw-py-3"
+								class="coach-quick-strip tw-scrollbar-hide tw-relative tw-z-30 tw-flex tw-min-h-0 tw-flex-row tw-flex-wrap tw-items-center tw-gap-4 !tw-overflow-visible tw-py-4 tw-pl-2 tw-pr-2 tw-pb-10"
 								role="tablist"
 								aria-label="Quick-select roster strip"
 							>
@@ -1863,13 +1875,14 @@
 	>
 		<div
 			transition:fly={{ y: 20, duration: 250, easing: cubicOut }}
-			class="vanguard-panel tw-relative tw-max-h-[min(90vh,880px)] tw-w-full tw-max-w-3xl tw-overflow-y-auto tw-rounded-2xl tw-p-5 tw-font-mono md:tw-p-7"
+			class="vanguard-panel tw-relative tw-max-h-[min(92vh,900px)] tw-w-full tw-max-w-3xl tw-overflow-visible tw-rounded-2xl tw-p-6 tw-font-mono md:tw-p-8"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="weather-modal-title"
 			tabindex="-1"
 			onclick={(e) => e.stopPropagation()}
 		>
+			<div class="tw-max-h-[min(calc(92vh-4rem),840px)] tw-overflow-y-auto tw-overflow-x-visible tw-scrollbar-hide tw-pr-1">
 			<div class="tw-mb-6 tw-flex tw-items-start tw-justify-between tw-gap-3">
 				<div class="tw-min-w-0">
 					<h2 id="weather-modal-title" class="tw-vanguard-section-header tw-font-mono">
@@ -1887,7 +1900,7 @@
 			</div>
 
 			<section
-				class="weather-siem-stack tw-relative tw-mb-8 tw-overflow-hidden tw-rounded-xl tw-p-4 vanguard-panel"
+				class="weather-siem-stack tw-relative tw-mb-8 tw-overflow-visible tw-rounded-xl tw-p-4 vanguard-panel"
 				aria-labelledby="weather-modal-spark"
 			>
 				<div class="weather-siem-scan tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-[0.08]" aria-hidden="true"></div>
@@ -1945,18 +1958,15 @@
 			</section>
 
 			<section class="tw-mb-8" aria-labelledby="weather-modal-threat-matrix">
-				<h3 id="weather-modal-threat-matrix" class="tw-mb-3 tw-vanguard-section-header tw-font-mono tw-text-fuchsia-400/90">
+				<h3 id="weather-modal-threat-matrix" class="tw-mb-3 tw-vanguard-section-header tw-font-mono {isSevereWeatherThreat ? 'tw-text-fuchsia-400/90' : 'tw-text-[#00f0ff]/92'}">
 					Threat Matrix · strike locks &amp; precip zones
 				</h3>
 				<p class="tw-mb-3 tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-600 tw-uppercase">
 					Geometric overlay · rose hex target locks · concentric sweep (sim)
 				</p>
-				<div
-					class="wx-threat-matrix-host tw-relative tw-aspect-square tw-w-full tw-overflow-hidden tw-rounded-full {isSevereWeatherThreat ?
-						'vanguard-panel-breach'
-					:	'vanguard-panel'}"
-					aria-label="Environmental threat matrix"
-				>
+				<div class="wx-threat-matrix-host tw-relative tw-aspect-square tw-w-full tw-overflow-visible tw-p-4" aria-label="Environmental threat matrix">
+					<div class={isSevereWeatherThreat ? 'vanguard-panel-breach' : 'vanguard-panel'}>
+						<div class="tw-relative tw-h-full tw-w-full tw-min-h-0 tw-overflow-hidden tw-rounded-full">
 					<svg class="wx-threat-matrix-svg tw-block tw-h-full tw-w-full" viewBox="0 0 100 100" aria-hidden="true">
 						<defs>
 							<radialGradient id="wxThreatBackdropCalm" cx="50%" cy="48%" r="68%">
@@ -2040,22 +2050,16 @@
 									class="wx-threat-hex"
 								/>
 								<text
-									class="wx-threat-coords"
+									class="wx-threat-coords tw-pointer-events-none tw-text-[9px] tw-font-mono tw-tracking-[0.3em] tw-fill-white"
 									x="5.5"
 									y="-4"
-									fill="rgba(226,232,240,0.92)"
-									font-size="2.65"
-									font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
 								>
 									{strike.lat}
 								</text>
 								<text
-									class="wx-threat-coords"
+									class="wx-threat-coords tw-pointer-events-none tw-text-[9px] tw-font-mono tw-tracking-[0.3em] tw-fill-white"
 									x="5.5"
 									y="-0.5"
-									fill="rgba(148,163,184,0.95)"
-									font-size="2.65"
-									font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
 								>
 									{strike.lon}
 								</text>
@@ -2066,9 +2070,11 @@
 						class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-z-[2] tw-border-t tw-border-white/10 tw-bg-[#020617]/78 tw-px-3 tw-py-2 tw-backdrop-blur-md"
 					>
 						<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">
-							Target locks (sim) · <span class="tw-tabular-nums tw-text-fuchsia-300">{LIGHTNING_STRIKES.length}</span> origins · concentric bands =
+							Target locks (sim) · <span class="tw-tabular-nums {isSevereWeatherThreat ? 'tw-text-fuchsia-300' : 'tw-text-[#00f0ff]/90'}">{LIGHTNING_STRIKES.length}</span> origins · concentric bands =
 							precip echo
 						</p>
+					</div>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -2145,6 +2151,7 @@
 					Calibration deck · mock trajectory
 				</p>
 			</section>
+			</div>
 		</div>
 	</div>
 {/if}
@@ -2854,6 +2861,17 @@
 		height: 0;
 	}
 
+	/* Equal-height weather pillar: panel chrome fills CMD_CARD_GLOW_GUTTER */
+	#coach-pillar-weather > .vanguard-panel,
+	#coach-pillar-weather > .vanguard-panel-breach {
+		display: flex;
+		flex: 1 1 0%;
+		flex-direction: column;
+		min-height: 0;
+		width: 100%;
+		overflow: visible;
+	}
+
 	.wx-threat-matrix-host {
 		max-height: min(72vw, 28rem);
 		margin-inline: auto;
@@ -2870,7 +2888,7 @@
 		filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.18));
 	}
 
-	.wx-threat-matrix-host.vanguard-panel-breach .wx-threat-matrix-svg {
+	.wx-threat-matrix-host:has(.vanguard-panel-breach) .wx-threat-matrix-svg {
 		filter: drop-shadow(0 0 22px rgba(255, 0, 51, 0.22));
 	}
 
@@ -2916,17 +2934,12 @@
 	}
 
 	.wx-threat-coords {
+		animation: none;
+	}
+
+	.wx-threat-matrix-host:has(.vanguard-panel-breach) .wx-threat-coords {
 		animation: wxThreatCoordPulse 2.4s ease-in-out infinite;
 		animation-delay: calc(var(--wx-lock-i, 0) * 0.35s + 0.15s);
-	}
-
-	.coach-console-tab-strip {
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
-
-	.coach-console-tab-strip::-webkit-scrollbar {
-		display: none;
 	}
 
 	@keyframes facilityOpsScan {

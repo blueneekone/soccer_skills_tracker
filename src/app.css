@@ -102,15 +102,16 @@ body {
 @layer components {
 	/* SIEM/SOAR Panels — Tron Legacy standard ops */
 	.vanguard-panel {
-		@apply tw-rounded-xl tw-backdrop-blur-2xl;
-		background-color: var(--legacy-glass);
+		@apply tw-overflow-visible tw-rounded-xl tw-backdrop-blur-2xl;
+		/* Deep translucent cyan field — strong separation from void-black shell */
+		background-color: rgba(0, 20, 30, 0.6);
 		box-shadow: var(--legacy-glow);
 		border: var(--ui-border-thin);
 	}
 
 	/* Ares breach — critical threat chrome */
 	.vanguard-panel-breach {
-		@apply tw-rounded-xl tw-border-2 tw-border-[#ff0033] tw-backdrop-blur-none;
+		@apply tw-overflow-visible tw-rounded-xl tw-border-2 tw-border-[#ff0033] tw-backdrop-blur-none;
 		background-color: var(--ares-glass);
 		box-shadow: var(--ares-glow);
 		animation: glitch-pulse 2s infinite;
