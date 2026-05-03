@@ -216,7 +216,7 @@
 <!-- Global Command Palette (Cmd+K) -->
 <CommandPalette bind:open={cmdPaletteOpen} />
 
-,PlayerDetailDrawer />
+<PlayerDetailDrawer />
 
 <style>
 	.ecs-icon-lg   { font-size: 1.5rem; }

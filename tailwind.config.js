@@ -43,6 +43,9 @@ export default {
 			perspective: {
 				1000: '1000px',
 			},
+			zIndex: {
+				15: '15',
+			},
 			rotate: {
 				'y-180': 'rotateY(180deg)',
 			},
