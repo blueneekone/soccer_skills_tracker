@@ -39,6 +39,8 @@
 		onPitchPointerUpClearLongPress,
 		onPitchMouseLeave,
 		onPitchContextMenu,
+		/** @type {(ev: MouseEvent, player: TacticalToken) => void} */
+		onTokenContextMenu = undefined,
 		handleSvgClick,
 		setHoveredRouteId,
 		setHoveredDiscId,
@@ -187,6 +189,7 @@
 						e.stopPropagation();
 						startDrag(e, player);
 					}}
+					onRightClick={onTokenContextMenu ? (e) => onTokenContextMenu(e, player) : undefined}
 					onMouseEnter={() => setHoveredDiscId(player.id)}
 					onMouseLeave={() => setHoveredDiscId(null)}
 				/>

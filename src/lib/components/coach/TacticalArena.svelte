@@ -50,6 +50,7 @@
 			onPitchPointerUpClearLongPress={model.onPitchPointerUpClearLongPress}
 			onPitchMouseLeave={model.input.onPitchMouseLeave}
 			onPitchContextMenu={model.onPitchContextMenu}
+			onTokenContextMenu={model.onTokenContextMenu}
 			handleSvgClick={model.handleSvgClick}
 			setHoveredRouteId={model.setHoveredRouteId}
 			setHoveredDiscId={model.setHoveredDiscId}

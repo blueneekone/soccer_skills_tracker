@@ -10,7 +10,7 @@
 		'tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-backdrop-blur-2xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)]';
 
 	const segBtn =
-		'tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
+		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
 
 	const segBtnOn =
 		'tw-border-[#00f0ff]/50 tw-bg-[#00f0ff]/10 tw-text-[#00f0ff] tw-shadow-[inset_0_0_10px_rgba(0,240,255,0.12)]';
@@ -36,7 +36,7 @@
 </script>
 
 <div
-	class="tw-box-border tw-grid tw-h-full tw-w-full tw-grid-cols-[300px_1fr_300px] tw-gap-2 tw-bg-transparent tw-p-2 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest"
+	class="tw-pointer-events-auto tw-box-border tw-grid tw-h-full tw-w-full tw-grid-cols-[300px_1fr_300px] tw-gap-2 tw-bg-transparent tw-p-2 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest"
 	aria-label="War room instrument cluster"
 >
 	<!-- Left console -->
@@ -104,7 +104,7 @@
 						style="background-color: {color}; box-shadow: {activeRouteColor === color ?
 							`0 0 12px ${color}`
 						:	'none'};"
-						class="tw-h-3 tw-w-7 tw-shrink-0 tw-skew-x-[-14deg] tw-border tw-transition-all {activeRouteColor === color ?
+						class="tw-pointer-events-auto tw-h-3 tw-w-7 tw-shrink-0 tw-skew-x-[-14deg] tw-border tw-transition-all {activeRouteColor === color ?
 							'tw-scale-105 tw-border-white'
 						:	'tw-border-white/30 hover:tw-border-[#00f0ff]/45'}"
 						onclick={() => (activeRouteColor = color)}

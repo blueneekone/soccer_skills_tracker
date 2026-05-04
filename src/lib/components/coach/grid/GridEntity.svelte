@@ -33,6 +33,7 @@
 
 	function handleEntityPointerDown(/** @type {PointerEvent} */ e) {
 		if (e.button !== 0) return;
+		e.stopPropagation();
 		onSelect();
 		onPointerDown(e);
 	}
@@ -151,7 +152,6 @@
 			pointer-events="all"
 			class={warRoomTool === 'DRAG' ? 'tw-cursor-move' : warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : ''}
 			onpointerdown={handleEntityPointerDown}
-			oncontextmenu={onRightClick ? handleEntityContextMenu : undefined}
 		/>
 	</g>
 {/if}

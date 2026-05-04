@@ -55,7 +55,7 @@
 		</div>
 		<button
 			type="button"
-			class="tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-border-white/10 tw-bg-[#020202]/80 tw-font-mono tw-text-xl tw-text-white tw-backdrop-blur-2xl tw-transition-colors hover:tw-border-[#ff0033]/70 hover:tw-text-[#ff0033]"
+			class="tw-pointer-events-auto tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-border-white/10 tw-bg-[#020202]/80 tw-font-mono tw-text-xl tw-text-white tw-backdrop-blur-2xl tw-transition-colors hover:tw-border-[#ff0033]/70 hover:tw-text-[#ff0033]"
 			onclick={model.closeOverlay}
 			aria-label="Close tactical board"
 		>

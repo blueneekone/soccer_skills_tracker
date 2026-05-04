@@ -54,7 +54,7 @@
 </script>
 
 <div
-	class="tw-relative tw-z-50 tw-min-h-28 tw-shrink-0 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-2xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId ?
+	class="tw-pointer-events-auto tw-relative tw-z-50 tw-min-h-28 tw-shrink-0 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-2xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId ?
 		'tw-shadow-[inset_0_1px_0_rgba(255,0,60,0.35)]'
 	:	''}"
 >
@@ -79,7 +79,7 @@
 	>
 		<div class="tw-pointer-events-auto tw-flex tw-flex-col tw-items-center tw-gap-2">
 			<div
-				class="tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-border tw-border-white/10 tw-rounded-full tw-px-6 tw-py-2 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+				class="tw-pointer-events-auto tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-border tw-border-white/10 tw-rounded-full tw-px-6 tw-py-2 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
 			>
 				<span
 					class="tw-font-mono tw-text-lg tw-font-bold tw-text-[#00f0ff] tw-tracking-widest tw-tabular-nums"
@@ -109,7 +109,7 @@
 
 			<button
 				type="button"
-				class="tw-mt-1 tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/50 tw-bg-[#020202]/80 tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-transform hover:tw-scale-110 hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)]"
+				class="tw-pointer-events-auto tw-mt-1 tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/50 tw-bg-[#020202]/80 tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-transform hover:tw-scale-110 hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)]"
 				aria-pressed={model.simulator.isPlaying}
 				aria-label={model.simulator.isPlaying ? 'Pause simulation' : 'Play simulation'}
 				onclick={() => model.toggleTimelinePlayback()}
