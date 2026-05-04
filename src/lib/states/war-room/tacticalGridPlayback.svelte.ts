@@ -35,8 +35,12 @@ export function orchestrationCycleMs(drawnRoutesRaw: unknown[]) {
 export function applyStaggeredPlayback(
 	host: TacticalPlaybackHost,
 	elapsedLoop: number,
-	opts: { playing: boolean },
+	opts: { playing: boolean; applyPositionKinetics?: boolean },
 ) {
+	if (opts.applyPositionKinetics === false) {
+		host.setSimChargePlayerIds([]);
+		return;
+	}
 	const charge = new Set<string>();
 	let pitchChanged = false;
 	let oppChanged = false;
@@ -119,6 +123,9 @@ export function wireTacticalPlayback(simulator: SimulatorEngine, host: TacticalP
 		host.drawnRoutesRaw();
 		simulator.currentTime;
 		simulator.isPlaying;
-		applyStaggeredPlayback(host, simulator.currentTime, { playing: simulator.isPlaying });
+		applyStaggeredPlayback(host, simulator.currentTime, {
+			playing: simulator.isPlaying,
+			applyPositionKinetics: false,
+		});
 	});
 }

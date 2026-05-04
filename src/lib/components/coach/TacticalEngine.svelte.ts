@@ -1,6 +1,6 @@
 import { setContext } from 'svelte';
 import { SimulatorEngine } from '$lib/states/SimulatorEngine.svelte';
-import { normalizeRoute, routePathD, DELAY_MAX_MS } from '$lib/states/war-room/routeModel';
+import { normalizeRoute, routePathD, sampleRoutePointAt, DELAY_MAX_MS } from '$lib/states/war-room/routeModel';
 import {
 	VIEW_W,
 	VIEW_H,
@@ -92,6 +92,25 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	};
 
 	const routesLive = $derived(host.drawnRoutes.get().map(normalizeRoute));
+
+	/** Global timeline → bound discs ride their fiber routes (u = currentTime / maxDuration). */
+	const kineticPitchTokens = $derived.by(() => {
+		const maxT = Math.max(1, simulator.maxDuration);
+		const u = Math.max(0, Math.min(1, simulator.currentTime / maxT));
+		const dragId = draggingPlayer?.id ?? null;
+		const routes = routesLive;
+		return allPitchTokens.map((tok) => {
+			if (dragId && tok.id === dragId) return tok;
+			const r = routes.find((x) => x.bindPlayerId === tok.id);
+			if (!r || typeof tok.x !== 'number' || typeof tok.y !== 'number') return tok;
+			const p = sampleRoutePointAt(r, u);
+			return { ...tok, x: p.x, y: p.y };
+		});
+	});
+
+	const timelineNorm = $derived(
+		simulator.maxDuration > 0 ? Math.max(0, Math.min(1, simulator.currentTime / simulator.maxDuration)) : 0,
+	);
 
 	const allRouteMarkerColors = $derived.by(() => {
 		const s = new Set<string>([...INK_PALETTE]);
@@ -368,6 +387,24 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		return selectedRouteId === routeId || hoveredRouteId === routeId;
 	}
 
+	/** Monospace-friendly scrub clock (ms). */
+	function formatTimelineMs(ms: number) {
+		const s = Math.max(0, ms / 1000);
+		const m = Math.floor(s / 60);
+		const r = s % 60;
+		if (m > 0) return `${m}:${r.toFixed(2).padStart(5, '0')}`;
+		return `${r.toFixed(2)}s`;
+	}
+
+	function toggleTimelinePlayback() {
+		simulator.togglePlay();
+	}
+
+	function scrubTimelineNorm(norm: number) {
+		const n = Math.max(0, Math.min(1, norm));
+		simulator.scrub(n * simulator.maxDuration);
+	}
+
 	return {
 		pitchSvgEl,
 		activeRouteColor,
@@ -376,6 +413,11 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		focusedPlayerId,
 		isHolotableMode,
 		allPitchTokens,
+		kineticPitchTokens,
+		timelineNorm,
+		formatTimelineMs,
+		toggleTimelinePlayback,
+		scrubTimelineNorm,
 		draggingPlayer,
 		activeDragTrail,
 		trailString,

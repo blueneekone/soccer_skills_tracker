@@ -31,7 +31,7 @@
 			onAnchorDown={model.input.onAnchorDown}
 			routingActive={model.routingActive}
 			routeDraft={model.routeDraft}
-			allPitchTokens={model.allPitchTokens}
+			allPitchTokens={model.kineticPitchTokens}
 			hoveredDiscId={model.hoveredDiscId}
 			focusedPlayerId={model.focusedPlayerId}
 			ringColor={model.ringColor}

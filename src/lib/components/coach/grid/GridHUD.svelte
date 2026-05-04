@@ -28,15 +28,6 @@
 		clearRoutesOnly,
 	} = $props();
 
-	const scrubNorm = $derived(
-		simulator.maxDuration > 0 ? simulator.currentTime / simulator.maxDuration : 0,
-	);
-
-	function onScrubInput(/** @type {Event & { currentTarget: HTMLInputElement }} */ e) {
-		const v = Number(e.currentTarget.value);
-		simulator.scrub(v * simulator.maxDuration);
-	}
-
 	const lockAccent = $derived(focusedPlayerId ? ARES : CYAN);
 
 	const hudShowsBillboardTelemetry = $derived(!!focusedPlayerId && isHolotableMode);
@@ -102,15 +93,7 @@
 		class="tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-overflow-visible tw-rounded-2xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/75 tw-bg-gradient-to-b tw-from-[#00f0ff]/12 tw-to-transparent tw-px-4 tw-py-3 tw-backdrop-blur-2xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_16px_36px_rgba(0,0,0,0.45)]"
 		aria-label="Simulator playback"
 	>
-		<div class="tw-mb-2 tw-flex tw-w-full tw-flex-wrap tw-items-center tw-justify-center tw-gap-2">
-			<button
-				type="button"
-				class="{segBtn} {simulator.isPlaying ? segBtnOn : ''} tw-px-3"
-				onclick={() => simulator.togglePlay()}
-				aria-pressed={simulator.isPlaying}
-			>
-				{simulator.isPlaying ? '||' : '▶'}
-			</button>
+		<div class="tw-mb-1 tw-flex tw-w-full tw-flex-wrap tw-items-center tw-justify-center tw-gap-2">
 			<button type="button" class="{segBtn} tw-px-3" onclick={() => simulator.reset()}>|&lt; RST</button>
 			<div class="tw-flex tw-items-center tw-gap-1.5 tw-border-l tw-border-[#00f0ff]/25 tw-pl-3" aria-label="Ink">
 				{#each INK_PALETTE as color (color)}
@@ -128,16 +111,9 @@
 				{/each}
 			</div>
 		</div>
-		<input
-			type="range"
-			min="0"
-			max="1"
-			step="0.001"
-			value={scrubNorm}
-			class="tg-hud-scrub tw-h-2 tw-w-full tw-min-w-0 tw-max-w-full tw-cursor-pointer"
-			aria-valuetext={`Timeline ${Math.round(scrubNorm * 100)} percent`}
-			oninput={onScrubInput}
-		/>
+		<p class="tw-m-0 tw-text-center tw-text-[8px] tw-font-mono tw-tracking-widest tw-text-white/35">
+			TIMELINE · DECK REACTOR
+		</p>
 	</div>
 
 	<!-- Right telemetry bay -->

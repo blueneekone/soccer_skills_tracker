@@ -8,6 +8,8 @@ export class SimulatorEngine {
 	isPlaying = $state(false);
 	currentTime = $state(0);
 	maxDuration = $state(5000);
+	/** Wall-clock multiplier for timeline advance (1 = real-time). */
+	playbackSpeed = $state(1);
 	/** From last `loadCartridge` metadata.duration — combined with route orchestration in playback wiring. */
 	timelineAuthorCapMs = $state(0);
 	/** Cinematic sweep-reveal while hydrating a persisted cartridge (SVG mask + laser). */
@@ -56,7 +58,8 @@ export class SimulatorEngine {
 			cancelAnimationFrame(this.animationFrameId);
 			this.animationFrameId = null;
 		}
-		this.startTime = performance.now() - this.currentTime;
+		const spd = Math.max(0.05, this.playbackSpeed);
+		this.startTime = performance.now() - this.currentTime / spd;
 		this.animationFrameId = requestAnimationFrame(this.tick);
 	}
 
@@ -70,7 +73,8 @@ export class SimulatorEngine {
 			cancelAnimationFrame(this.animationFrameId);
 			this.animationFrameId = null;
 		}
-		this.startTime = performance.now() - this.currentTime;
+		const spd = Math.max(0.05, this.playbackSpeed);
+		this.startTime = performance.now() - this.currentTime / spd;
 		this.animationFrameId = requestAnimationFrame(this.tick);
 	}
 
@@ -97,7 +101,8 @@ export class SimulatorEngine {
 	private tick = () => {
 		if (!this.isPlaying) return;
 		const now = performance.now();
-		this.currentTime = now - this.startTime;
+		const spd = Math.max(0.05, this.playbackSpeed);
+		this.currentTime = (now - this.startTime) * spd;
 
 		if (this.currentTime >= this.maxDuration) {
 			this.currentTime = this.maxDuration;
