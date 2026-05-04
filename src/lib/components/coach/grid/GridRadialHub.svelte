@@ -118,7 +118,7 @@
 					fill="url(#magnet-core-radial)"
 					stroke={slot.ring}
 					stroke-width={hi ? 4 : 2}
-					filter={hi ? 'url(#neon-glow)' : 'url(#identity-disc-glow)'}
+					filter={hi ? 'url(#heavy-bloom)' : 'url(#identity-disc-glow)'}
 					opacity={hi ? 1 : 0.9}
 				/>
 				<text

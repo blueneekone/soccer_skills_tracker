@@ -7,10 +7,13 @@
 	import GridPitch from './grid/GridPitch.svelte';
 	import GridEntity from './grid/GridEntity.svelte';
 	import GridRoute from './grid/GridRoute.svelte';
+	import { SimulatorEngine } from '$lib/states/SimulatorEngine.svelte';
+
+	const simulator = new SimulatorEngine();
 
 	/**
 	 * Pitch / roster token (parent-controlled via bind).
-	 * @typedef {{ id: string; name?: string; number?: string; color?: string; x?: number; y?: number; side?: 'friendly' | 'opponent' }} TacticalToken
+	 * @typedef {{ id: string; name?: string; number?: string; position?: string; color?: string; x?: number; y?: number; side?: 'friendly' | 'opponent' }} TacticalToken
 	 */
 
 	/**
@@ -43,9 +46,10 @@
 	let routeDrawKind = $state(/** @type {'curve' | 'cut'} */ ('curve'));
 	/** Pitch zone callouts (SVG labels). */
 	let showLabels = $state(false);
-	/** Simulated playback (HUD); 0–1 timeline scrubber. */
-	let simScrub = $state(0.35);
-	let simPlaying = $state(false);
+	/** Manual Target Lock — orbital HUD follows this token id. */
+	let focusedPlayerId = $state(/** @type {string | null} */ (null));
+	/** 3D holotable tilt + perspective (Protocol Olympus). */
+	let isHolotableMode = $state(false);
 	const SIM_ROUTE_DURATION_MS = 2000;
 
 	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff00ff', '#ffff00', '#ffffff']);
@@ -53,11 +57,26 @@
 	const FRIENDLY_RING = '#00f0ff';
 	const OPP_RING = '#fb7185';
 
+	const OPP_FORMATION_LABELS = /** @type {const} */ ([
+		'GK',
+		'CB',
+		'CB',
+		'LB',
+		'RB',
+		'CM',
+		'CM',
+		'LW',
+		'RW',
+		'ST',
+		'CF',
+	]);
+
 	/** Synthetic opposition roster for the command modal (deploy onto `wrOppPitch`). */
 	const MOCK_OPPOSITION = Array.from({ length: 11 }, (_, i) => ({
 		id: `OPP-${String(i + 1).padStart(2, '0')}`,
 		name: `HOSTILE ${String(i + 1).padStart(2, '0')}`,
 		number: String(i + 1).padStart(2, '0'),
+		position: OPP_FORMATION_LABELS[i] ?? 'X',
 		color: OPP_RING,
 		side: /** @type {const} */ ('opponent'),
 	}));
@@ -121,7 +140,6 @@
 	/** @type {number | null} */
 	let routeBodyCaptureId = null;
 
-	let simPlaybackRaf = 0;
 	/** Player ids in Hold phase during live playback (for charge animation). */
 	let simChargePlayerIds = $state(/** @type {string[]} */ ([]));
 	/** Per-route hold phase last frame (playback ribbon edge detect). */
@@ -412,7 +430,7 @@
 	}
 
 	onDestroy(() => {
-		cancelAnimationFrame(simPlaybackRaf);
+		simulator.pause();
 	});
 
 	/**
@@ -523,28 +541,20 @@
 	}
 
 	$effect(() => {
-		if (!simPlaying) return;
-		simRouteHoldPrev.clear();
-		const startTime = performance.now();
-		const tick = (now) => {
-			const cycle = orchestrationCycleMs();
-			const elapsed = cycle > 0 ? (now - startTime) % cycle : 0;
-			simScrub = elapsed / cycle;
-			applyStaggeredPlayback(elapsed, { playing: true });
-			simPlaybackRaf = requestAnimationFrame(tick);
-		};
-		simPlaybackRaf = requestAnimationFrame(tick);
-		return () => {
-			cancelAnimationFrame(simPlaybackRaf);
-			simRouteHoldPrev.clear();
-			simChargePlayerIds = [];
-		};
+		const md = Math.max(1, orchestrationCycleMs());
+		simulator.maxDuration = md;
+		if (simulator.currentTime > md) simulator.scrub(md);
 	});
 
 	$effect(() => {
-		if (simPlaying) return;
-		const cycle = orchestrationCycleMs();
-		applyStaggeredPlayback(simScrub * cycle, { playing: false });
+		if (simulator.isPlaying) simRouteHoldPrev.clear();
+	});
+
+	$effect(() => {
+		drawnRoutes;
+		simulator.currentTime;
+		simulator.isPlaying;
+		applyStaggeredPlayback(simulator.currentTime, { playing: simulator.isPlaying });
 	});
 
 	/** @param {TacticalRoute} r */
@@ -575,9 +585,22 @@
 		draggingPlayer = null;
 		activeDragTrail = [];
 		selectedRouteId = null;
+		focusedPlayerId = null;
 		releasePitchDragCapture();
-		simPlaying = false;
+		simulator.pause();
 		closeRadialHub();
+	}
+
+	/**
+	 * Clear Target Lock on bare pitch chrome (not tokens / routes).
+	 * @param {MouseEvent & { currentTarget: SVGSVGElement }} e
+	 */
+	function handleSvgClick(e) {
+		const el = e.target;
+		const tag = el instanceof Element ? el.tagName.toLowerCase() : '';
+		if (tag === 'svg' || tag === 'rect') {
+			focusedPlayerId = null;
+		}
 	}
 
 	function teardownAnchorDrag() {
@@ -991,62 +1014,50 @@
 	</header>
 
 	<div
-		class="tw-relative tw-flex tw-flex-1 tw-h-full tw-min-h-0 tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#030303] tw-p-4 tw-shadow-[inset_0_0_120px_rgba(0,0,0,0.85)]"
+		class="tw-grid tw-min-h-0 tw-flex-1 tw-w-full tw-grid-rows-[1fr_100px] tw-overflow-hidden tw-bg-[#020202]"
 	>
 		<div
-			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[linear-gradient(to_right,rgba(0,240,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,240,255,0.05)_1px,transparent_1px)] tw-bg-[length:2.5rem_2.5rem]"
-			aria-hidden="true"
-		></div>
-
-		<div
-			class="tw-relative tw-w-full tw-max-w-[1600px] tw-aspect-video tw-shrink tw-overflow-hidden tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-black/50 tw-shadow-[0_0_60px_rgba(0,240,255,0.08)]"
+			class="tw-relative tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-p-4 md:tw-p-8"
+			style="perspective: 1500px;"
 		>
 			<div
-				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[18] tw-bg-[radial-gradient(ellipse_at_50%_45%,rgba(0,240,255,0.05)_0%,transparent_50%,rgba(0,0,0,0.72)_100%)]"
-				aria-hidden="true"
-			></div>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[18] tw-bg-[linear-gradient(rgba(0,240,255,0.03)_1px,transparent_1px)] tw-bg-[length:100%_4px]"
-				aria-hidden="true"
-			></div>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-left-4 tw-top-4 tw-z-[18] tw-h-16 tw-w-16 tw-border-l-4 tw-border-t-4 tw-border-[#00f0ff]/40"
-				aria-hidden="true"
-			></div>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-right-4 tw-top-4 tw-z-[18] tw-h-16 tw-w-16 tw-border-r-4 tw-border-t-4 tw-border-[#00f0ff]/40"
-				aria-hidden="true"
-			></div>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-bottom-4 tw-left-4 tw-z-[18] tw-h-16 tw-w-16 tw-border-b-4 tw-border-l-4 tw-border-[#00f0ff]/40"
-				aria-hidden="true"
-			></div>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-bottom-4 tw-right-4 tw-z-[18] tw-h-16 tw-w-16 tw-border-b-4 tw-border-r-4 tw-border-[#00f0ff]/40"
-				aria-hidden="true"
-			></div>
-			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-			<svg
-				bind:this={pitchSvgEl}
-				id="tactical-pitch"
-				class="tw-absolute tw-inset-0 tw-z-20 tw-h-full tw-w-full tw-touch-none tw-select-none {warRoomTool === 'ROUTE' ?
-					'tw-cursor-crosshair'
-				:	'tw-cursor-default'}"
-				viewBox="0 0 1600 900"
-				preserveAspectRatio="xMidYMid meet"
-				role="img"
-				aria-label="Tactical pitch"
-				onpointerdown={onPitchPointerDown}
-				onpointerup={onPitchPointerUpClearLongPress}
-				onpointerleave={onPitchMouseLeave}
-				oncontextmenu={onPitchContextMenu}
+				class="tw-relative tw-h-full tw-w-full tw-transition-transform tw-duration-700 tw-ease-in-out tw-[transform-style:preserve-3d] {isHolotableMode ?
+					'tw-rotate-x-[45deg] tw-scale-90 tw-translate-y-12 tw-shadow-[0_100px_100px_rgba(0,240,255,0.1)]'
+				:	''}"
 			>
+				<div
+					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[linear-gradient(rgba(0,240,255,0.03)_50%,transparent_50%)] tw-bg-[length:100%_4px] tw-animate-[scanlines_10s_linear_infinite]"
+				></div>
+				<div
+					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[radial-gradient(circle_at_center,transparent_40%,#020202_100%)]"
+				></div>
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<svg
+					bind:this={pitchSvgEl}
+					id="tactical-pitch"
+					class="tw-relative tw-z-10 tw-h-full tw-w-full tw-max-h-full tw-max-w-full tw-touch-none tw-select-none tw-drop-shadow-[0_0_30px_rgba(0,240,255,0.05)] {warRoomTool === 'ROUTE' ?
+						'tw-cursor-crosshair'
+					:	'tw-cursor-default'}"
+					viewBox="0 0 1600 900"
+					preserveAspectRatio="xMidYMid meet"
+					role="img"
+					aria-label="Tactical pitch"
+					onpointerdown={onPitchPointerDown}
+					onpointerup={onPitchPointerUpClearLongPress}
+					onpointerleave={onPitchMouseLeave}
+					oncontextmenu={onPitchContextMenu}
+					onclick={handleSvgClick}
+				>
 				<defs>
-					<filter id="neon-glow" x="-200%" y="-200%" width="500%" height="500%">
-						<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+					<filter id="heavy-bloom" x="-50%" y="-50%" width="200%" height="200%">
+						<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1" />
+						<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
+						<feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur3" />
 						<feMerge>
-							<feMergeNode in="blur" />
-							<feMergeNode in="blur" />
+							<feMergeNode in="blur3" />
+							<feMergeNode in="blur2" />
+							<feMergeNode in="blur1" />
 							<feMergeNode in="SourceGraphic" />
 						</feMerge>
 					</filter>
@@ -1058,6 +1069,22 @@
 							<feMergeNode in="SourceGraphic" />
 						</feMerge>
 					</filter>
+					<pattern id="cyber-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+						<rect width="40" height="40" fill="none" />
+						<path
+							d="M 40 0 L 0 0 0 40"
+							fill="none"
+							stroke="rgba(0,240,255,0.07)"
+							stroke-width="1"
+						/>
+					</pattern>
+					<radialGradient id="grid-fade" cx="50%" cy="50%" r="50%">
+						<stop offset="40%" stop-color="white" stop-opacity="1" />
+						<stop offset="100%" stop-color="white" stop-opacity="0" />
+					</radialGradient>
+					<mask id="grid-mask">
+						<rect width="100%" height="100%" fill="url(#grid-fade)" />
+					</mask>
 					<radialGradient id="magnet-core-radial" cx="32%" cy="28%" r="72%">
 						<stop offset="0%" stop-color="#2a2a32" />
 						<stop offset="42%" stop-color="#0c0c10" />
@@ -1081,7 +1108,7 @@
 								fill="transparent"
 								stroke={c}
 								stroke-width="3"
-								filter="url(#neon-glow)"
+								filter="url(#heavy-bloom)"
 							/>
 							<circle cx="12" cy="12" r="5" fill="#050505" stroke="#ffffff" stroke-width="1.5" />
 						</marker>
@@ -1094,19 +1121,32 @@
 					<polyline
 						points={trailString}
 						fill="none"
-						stroke={draggingPlayer.color || '#00f0ff'}
-						stroke-width="12"
+						stroke={dragTrailBloomColor}
+						stroke-width="18"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						opacity="0.6"
-						filter="url(#neon-glow)"
+						opacity="0.15"
+						filter="url(#heavy-bloom)"
+						pointer-events="none"
+					/>
+					<polyline
+						points={trailString}
+						fill="none"
+						stroke={dragTrailBloomColor}
+						stroke-width="6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-dasharray="14 22"
+						opacity="0.82"
+						filter="url(#heavy-bloom)"
+						class="tw-animate-[plasma-flow_1.5s_linear_infinite]"
 						pointer-events="none"
 					/>
 					<polyline
 						points={trailString}
 						fill="none"
 						stroke="#ffffff"
-						stroke-width="3"
+						stroke-width="1.5"
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						pointer-events="none"
@@ -1119,6 +1159,7 @@
 						pathD={routePathD(route)}
 						renderLayer="stroke"
 						isSelected={selectedRouteId === route.id}
+						timelineMs={simulator.currentTime}
 					/>
 				{/each}
 				{#each routesLive as route (route.id)}
@@ -1126,6 +1167,7 @@
 						{route}
 						pathD={routePathD(route)}
 						renderLayer="hit"
+						timelineMs={simulator.currentTime}
 						{warRoomTool}
 						onPathClick={(e) => onRouteStrokePointerDown(e, route)}
 						onRouteHoverEnter={() => (hoveredRouteId = route.id)}
@@ -1138,7 +1180,18 @@
 							{route}
 							renderLayer="anchors"
 							isSelected={selectedRouteId === route.id}
+							timelineMs={simulator.currentTime}
 							onControlPointDrag={(e, kind) => onAnchorDown(e, route.id, kind)}
+						/>
+					{/if}
+				{/each}
+
+				{#each routesLive as route (route.id)}
+					{#if route.bindPlayerId}
+						<GridRoute
+							{route}
+							renderLayer="ghost"
+							timelineMs={simulator.currentTime}
 						/>
 					{/if}
 				{/each}
@@ -1149,22 +1202,33 @@
 						d={routePathD(routeDraft)}
 						fill="none"
 						stroke={routeDraft.color}
+						stroke-width="18"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						opacity="0.15"
+						filter="url(#heavy-bloom)"
+						pointer-events="none"
+					/>
+					<path
+						d={routePathD(routeDraft)}
+						fill="none"
+						stroke={routeDraft.color}
 						stroke-width="6"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						opacity="0.55"
-						stroke-dasharray="10 10"
-						filter="url(#neon-glow)"
+						stroke-dasharray="14 22"
+						opacity="0.82"
+						filter="url(#heavy-bloom)"
+						class="tw-animate-[plasma-flow_1.5s_linear_infinite]"
 						pointer-events="none"
 					/>
 					<path
 						d={routePathD(routeDraft)}
 						fill="none"
 						stroke="#ffffff"
-						stroke-width="3"
+						stroke-width="1.5"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						stroke-dasharray="10 10"
 						pointer-events="none"
 						marker-end={`url(#ares-disc-${draftAresKey})`}
 					/>
@@ -1175,18 +1239,31 @@
 						points={trailString}
 						fill="none"
 						stroke={dragTrailBloomColor}
-						stroke-width="12"
+						stroke-width="18"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						opacity="0.6"
-						filter="url(#neon-glow)"
+						opacity="0.15"
+						filter="url(#heavy-bloom)"
+						pointer-events="none"
+					/>
+					<polyline
+						points={trailString}
+						fill="none"
+						stroke={dragTrailBloomColor}
+						stroke-width="6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-dasharray="14 22"
+						opacity="0.82"
+						filter="url(#heavy-bloom)"
+						class="tw-animate-[plasma-flow_1.5s_linear_infinite]"
 						pointer-events="none"
 					/>
 					<polyline
 						points={trailString}
 						fill="none"
 						stroke="#ffffff"
-						stroke-width="3"
+						stroke-width="1.5"
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						pointer-events="none"
@@ -1197,10 +1274,12 @@
 					<GridEntity
 						{player}
 						isHovered={hoveredDiscId === player.id}
-						isSelected={false}
+						isSelected={focusedPlayerId === player.id}
 						ringStroke={ringColor(player)}
-						charging={simPlaying && simChargePlayerIds.includes(player.id)}
+						charging={simulator.isPlaying && simChargePlayerIds.includes(player.id)}
+						timelineMs={simulator.currentTime}
 						{warRoomTool}
+						onSelect={() => (focusedPlayerId = player.id)}
 						onPointerDown={(e) => startDrag(e, player)}
 						onMouseEnter={() => (hoveredDiscId = player.id)}
 						onMouseLeave={() => (hoveredDiscId = null)}
@@ -1261,18 +1340,24 @@
 					{hubCenterLabel}
 				/>
 			</svg>
+			</div>
+		</div>
 
+		<div
+			class="tw-relative tw-z-50 tw-h-full tw-w-full tw-border-t-2 tw-border-[#00f0ff]/20 tw-bg-black/90 tw-backdrop-blur-xl"
+		>
 			<GridHUD
 				bind:warRoomTool
-				bind:simPlaying
-				bind:simScrub
+				bind:isHolotableMode
+				{simulator}
 				bind:showLabels
 				bind:activeRouteColor
 				bind:routeDrawKind
+				{focusedPlayerId}
+				allTokens={allPitchTokens}
 				{recallBench}
 				{clearRoutesOnly}
 			/>
-
 		</div>
 	</div>
 </div>
@@ -1282,30 +1367,24 @@
 		transform-box: fill-box;
 	}
 
-	:global(.tg-disc-charge .tg-disc-ring-core) {
-		animation: tg-sim-charge-core 0.42s ease-in-out infinite alternate;
+	/* Target Lock: extra chromatic lift on the locked token (holotable cinematic read). */
+	:global(.grid-entity--selected .tg-target-lock-orbit) {
+		filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.45))
+			drop-shadow(0 0 22px rgba(0, 240, 255, 0.18));
 	}
-	:global(.tg-disc-charge .tg-disc-ring-glow) {
-		animation: tg-sim-charge-glow 0.38s ease-in-out infinite alternate;
+
+	:global(.tg-disc-charge .tg-reactor-halo) {
+		animation: tg-reactor-charge 0.45s ease-in-out infinite alternate;
 	}
-	@keyframes tg-sim-charge-core {
+
+	@keyframes tg-reactor-charge {
 		from {
-			stroke-width: 3.5;
-			opacity: 0.7;
+			opacity: 0.45;
+			stroke-width: 3;
 		}
 		to {
-			stroke-width: 11;
 			opacity: 1;
-		}
-	}
-	@keyframes tg-sim-charge-glow {
-		from {
-			stroke-width: 11;
-			opacity: 0.72;
-		}
-		to {
-			stroke-width: 20;
-			opacity: 1;
+			stroke-width: 6;
 		}
 	}
 </style>
