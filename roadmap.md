@@ -2,9 +2,10 @@
 
 ## PHASE 1: THE WAR ROOM (COACH PERSONA) [ ACTIVE ]
 - [x] Unbreakable Svelte 5 layout chassis & Decoupled `SimulatorEngine.svelte.ts`.
-- [ ] Implement V21 Cinematic Graphics Pipeline (Heavy Bloom, Plasma Paths, Hardware Discs).
-- [ ] Activate Target Lock Protocol (Live HUD biometrics) and 3D Holotable mode.
+- [x] Implement V21 Cinematic Graphics Pipeline (Heavy Bloom, Plasma Paths, Hardware Discs).
+- [x] Activate Target Lock Protocol (Live HUD biometrics) and 3D Holotable mode.
 - [ ] Weather & Environment API mockups (rain/wind impact on pitch visuals).
+- [ ] Modularize `TacticalGrid.svelte` to satisfy `.cursorrules` 300-line kill switch (`war-room/` session split).
 
 ## PHASE 2: THE RPG ENGINE (PLAYER PERSONA)
 - [ ] Finalize abstracted `SPORT_ATTRIBUTE_SCHEMAS` for immediate multi-sport scaling.
