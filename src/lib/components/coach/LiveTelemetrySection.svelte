@@ -26,7 +26,7 @@
 		<p class="stw__live-sub">Ingest match events with rapid + taps, then commit to Firestore.</p>
 	</div>
 	<div
-		class="stw__live-scroll tw-w-full tw-overflow-x-auto tw-pb-4 [&_.ml-row]:tw-flex-nowrap [&_.ml-mets]:tw-min-w-min [&_.ml-name]:tw-whitespace-nowrap [&_.ml-lbl]:tw-whitespace-nowrap [&_.ml-val]:tw-whitespace-nowrap [&_.ml-metric]:tw-whitespace-nowrap"
+		class="stw__live-scroll tw-flex tw-w-full tw-flex-wrap tw-gap-3 tw-overflow-visible tw-pb-4"
 	>
 		<MatchLogger {teamId} {matchId} {players} {getStatsId} {onCommitted} />
 	</div>

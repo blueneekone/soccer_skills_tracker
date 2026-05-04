@@ -1142,14 +1142,15 @@
 		letter-spacing: 0.1em;
 		background: #000;
 		border: 1px solid rgba(0, 212, 255, 0.45);
+		border-radius: 9999px;
 		color: #fff;
 		cursor: pointer;
 	}
 
 	.stw__tablewrap {
-		overflow: auto;
-		max-height: min(60vh, 480px);
+		overflow: visible;
 		border: 1px solid var(--st-line);
+		border-radius: 1rem;
 	}
 
 	.stw__table {
@@ -1293,13 +1294,11 @@
 	}
 
 	.stw__tel-body {
-		max-height: min(240px, 40vh);
-		overflow: auto;
+		overflow: visible;
 		padding: 0.45rem 0.55rem 0.65rem;
 		font-family: ui-monospace, Menlo, Consolas, monospace;
 		font-size: 0.72rem;
 		line-height: 1.45;
-		-webkit-overflow-scrolling: touch;
 	}
 
 	.stw__tel-empty,

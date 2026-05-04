@@ -1,5 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
+	import { fade, fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import {
 		collection,
 		query,
@@ -364,6 +366,7 @@
 	<div
 		class="nm-backdrop"
 		role="presentation"
+		transition:fade={{ duration: 180 }}
 		onclick={(e) => {
 			if (e.target === e.currentTarget) onClose();
 		}}
@@ -375,6 +378,7 @@
 			aria-modal="true"
 			aria-labelledby="nm-title"
 			tabindex="-1"
+			transition:fly={{ y: 20, duration: 400, easing: cubicOut }}
 		>
 			<div class="nm-head">
 				<h2 id="nm-title" class="nm-title">New chat</h2>
@@ -507,22 +511,27 @@
 
 	.nm-modal {
 		width: min(100%, 440px);
-		max-height: min(90vh, 640px);
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 18px 18px 16px;
-		background: #ffffff;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
-		overflow: hidden;
+		padding: 20px 20px 18px;
+		background: rgba(2, 2, 2, 0.82);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 1.5rem;
+		box-shadow:
+			inset 0 1px 1px rgba(255, 255, 255, 0.1),
+			0 20px 40px rgba(0, 0, 0, 0.5);
+		overflow: visible;
+		backdrop-filter: blur(24px);
+		-webkit-backdrop-filter: blur(24px);
 	}
 
 	:global(html.dark) .nm-modal {
-		background: #0f0f11;
-		border-color: rgba(255, 255, 255, 0.12);
-		box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+		background: rgba(2, 2, 2, 0.82);
+		border-color: rgba(255, 255, 255, 0.1);
+		box-shadow:
+			inset 0 1px 1px rgba(255, 255, 255, 0.08),
+			0 24px 48px rgba(0, 0, 0, 0.55);
 	}
 
 	.nm-head {
@@ -534,8 +543,10 @@
 
 	.nm-title {
 		margin: 0;
-		font-size: 16px;
-		font-weight: 700;
+		font-size: 15px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
 		color: var(--text-primary);
 	}
 
@@ -543,8 +554,8 @@
 		border: none;
 		background: transparent;
 		cursor: pointer;
-		padding: 6px;
-		border-radius: 8px;
+		padding: 8px;
+		border-radius: 9999px;
 		color: var(--text-secondary);
 		font-size: 18px;
 		line-height: 1;
@@ -590,8 +601,8 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 9999px;
 		padding: 8px 12px;
 		background: #fafafa;
 	}
@@ -708,11 +719,10 @@
 
 	.nm-list {
 		flex: 1;
-		min-height: 160px;
-		max-height: 220px;
-		overflow-y: auto;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
+		min-height: 120px;
+		overflow-y: visible;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 1.25rem;
 		background: #fafafa;
 	}
 

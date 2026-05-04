@@ -432,7 +432,7 @@
 
 <style>
 	.matrix {
-		--mx-radius: 18px;
+		--mx-radius: 24px;
 		--mx-surface: #f4f6fa;
 		--mx-elev: #ffffff;
 		--mx-border: #e2e8f0;
@@ -442,7 +442,7 @@
 		border: 1px solid var(--mx-border);
 		border-radius: var(--mx-radius);
 		background: var(--mx-surface);
-		overflow: hidden;
+		overflow: visible;
 		box-sizing: border-box;
 		box-shadow:
 			0 1px 0 rgba(15, 23, 42, 0.04),
@@ -473,10 +473,10 @@
 	/* Mobile top strip */
 	.matrix__strip {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 8px;
 		padding: 10px 12px;
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
+		overflow-x: visible;
 		border-bottom: 1px solid #e2e8f0;
 		background: #fff;
 		flex-shrink: 0;
@@ -572,7 +572,7 @@
 		flex-direction: column;
 		padding: 8px 0 12px;
 		gap: 2px;
-		overflow-y: auto;
+		overflow-y: visible;
 	}
 	.matrix__ch {
 		display: flex;
@@ -640,6 +640,9 @@
 		padding: 16px 20px 14px;
 		border-bottom: 1px solid var(--mx-border, #e2e8f0);
 		background: var(--mx-elev, #fff);
+		position: sticky;
+		top: 0;
+		z-index: 5;
 	}
 	:global(html.dark) .matrix__head {
 		background: var(--mx-elev, #111113);
@@ -707,13 +710,12 @@
 
 	.matrix__scroll {
 		flex: 1 1 auto;
-		overflow-y: auto;
+		overflow-y: visible;
 		padding: 20px 18px 16px;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
 		min-height: 180px;
-		max-height: min(52vh, 520px);
 		scroll-behavior: smooth;
 	}
 

@@ -21,7 +21,7 @@
 	stroke="rgba(0,240,255,0.35)"
 	stroke-width="3"
 />
-<circle cx="800" cy="450" r="7" fill="#00f0ff" opacity="1" filter="url(#heavy-bloom)" />
+<circle cx="800" cy="450" r="7" fill="#00f0ff" opacity="1" filter="url(#neon-glow)" />
 
 <!-- Penalty / six-yard boxes, spots, arcs (scaled to pitch) -->
 <rect

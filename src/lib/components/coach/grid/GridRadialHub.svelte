@@ -34,11 +34,12 @@
 
 {#if radialOpen || hubPop.current > 0.03}
 	<g
-		pointer-events="none"
-		opacity={Math.min(1, hubPop.current * 1.08)}
+		class="tw-isolate"
+		opacity={Math.min(1, hubPop.current)}
 		transform="translate({radialCx},{radialCy}) scale({hubPop.current})"
 	>
 		<path
+			pointer-events="none"
 			d={hubArcPath(178, 104, Math.PI * 0.48, Math.PI * 1.04)}
 			fill="rgba(0,240,255,0.09)"
 			stroke="#00f0ff"
@@ -52,6 +53,7 @@
 			/>
 		</path>
 		<path
+			pointer-events="none"
 			d={hubArcPath(178, 104, -1.08, 1.08)}
 			fill="rgba(251,113,133,0.08)"
 			stroke="#fb7185"
@@ -66,6 +68,7 @@
 		</path>
 
 		<rect
+			pointer-events="none"
 			x="-112"
 			y="-76"
 			width="224"
@@ -98,6 +101,7 @@
 		</g>
 
 		<text
+			pointer-events="none"
 			y="8"
 			text-anchor="middle"
 			fill="#00f0ff"
@@ -112,16 +116,22 @@
 			{@const ny = Math.sin(slot.angle) * HUB_ORBIT}
 			{@const hi = hubHoveredKey === slot.key}
 			{@const ns = hi ? 1.5 : 1}
-			<g transform="translate({nx},{ny}) scale({ns})">
+			<g
+				transform="translate({nx},{ny}) scale({ns})"
+				class="tw-relative tw-z-[9999] tw-opacity-100"
+				pointer-events="all"
+			>
 				<circle
 					r={HUB_NODE_R}
 					fill="url(#magnet-core-radial)"
 					stroke={slot.ring}
 					stroke-width={hi ? 4 : 2}
 					filter={hi ? 'url(#heavy-bloom)' : 'url(#identity-disc-glow)'}
-					opacity={hi ? 1 : 0.9}
+					class="tw-opacity-100"
+					opacity="1"
 				/>
 				<text
+					pointer-events="none"
 					y="5"
 					text-anchor="middle"
 					fill="#ffffff"

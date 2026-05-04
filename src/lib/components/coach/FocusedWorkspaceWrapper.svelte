@@ -7,7 +7,7 @@
 	 *  - Dark #18181b wrapper (normal) / fixed inset-0 overlay (fullscreen)
 	 *  - Floating pill toolbar anchored bottom-center
 	 *  - Full-screen toggle button (top-right, glassmorphic)
-	 *  - Body overflow lock + Escape key listener while in fullscreen
+	 *  - Escape key exits fullscreen (native document scroll preserved)
 	 *
 	 * Usage:
 	 *   <FocusedWorkspaceWrapper>
@@ -24,17 +24,6 @@
 	function toggleFullscreen() {
 		isFullscreen = !isFullscreen;
 	}
-
-	$effect(() => {
-		if (!browser) return;
-		if (isFullscreen) {
-			const prev = document.body.style.overflow;
-			document.body.style.overflow = 'hidden';
-			return () => {
-				document.body.style.overflow = prev;
-			};
-		}
-	});
 
 	$effect(() => {
 		if (!browser) return;
@@ -89,8 +78,8 @@
 		width: 100%;
 		min-height: clamp(360px, 52vh, 580px);
 		background: #18181b;
-		border-radius: var(--radius-premium);
-		overflow: hidden;
+		border-radius: 1.25rem;
+		overflow: visible;
 		padding: 1.25rem 1.25rem calc(1.25rem + 72px);
 		box-sizing: border-box;
 	}
@@ -99,18 +88,18 @@
 		position: fixed;
 		inset: 0;
 		z-index: 100;
-		border-radius: 0;
+		border-radius: 1rem;
 		min-height: unset;
 		padding: 1.5rem 1.5rem calc(1.5rem + 80px);
 	}
 
 	/* Figma-grade tactical arena — edge-to-edge pitch shell */
 	.fw-workspace--arena {
-		border-radius: 0;
+		border-radius: 1.5rem;
 		min-height: min(100dvh, 100vh);
 		padding: 0.25rem 0.25rem 5.75rem;
 		background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%);
-		overflow: hidden;
+		overflow: visible;
 	}
 
 	.fw-workspace--arena.fw-workspace--fullscreen {
@@ -141,7 +130,7 @@
 		height: 40px;
 		padding: 0;
 		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 10px;
+		border-radius: 9999px;
 		background: rgba(255, 255, 255, 0.1);
 		color: #fafafa;
 		cursor: pointer;

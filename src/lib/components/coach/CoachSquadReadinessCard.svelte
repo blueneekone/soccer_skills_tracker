@@ -104,14 +104,14 @@
 </script>
 
 <div
-	class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+	class="rounded-3xl border border-white/10 bg-[#020202]/80 p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
 	data-region="coach-squad-readiness"
 >
 	<h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-slate-400">Squad readiness</h2>
 
 	<div class="mb-6">
 		<div class="mb-2 flex items-center justify-between gap-3">
-			<span class="text-sm font-semibold text-slate-200">Overall readiness</span>
+			<span class="text-sm font-semibold uppercase tracking-wider text-slate-200">Overall readiness</span>
 			<span class="font-mono text-sm tabular-nums text-cyan-400/90">{READINESS_PCT}%</span>
 		</div>
 		<div class="h-2 overflow-hidden rounded-full bg-slate-800/80">
@@ -135,7 +135,7 @@
 				<div class="min-w-0 flex-1">
 					<p class="truncate text-sm font-semibold text-slate-100">{p.name}</p>
 					<span
-						class="mt-1 inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide {p.variant ===
+						class="mt-1 inline-block rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide {p.variant ===
 						'ok'
 							? 'bg-emerald-400/10 text-emerald-400'
 							: 'bg-red-400/10 text-red-400'}"
@@ -168,7 +168,7 @@
 							{#each levelingSoon as row, i (row.name + i)}
 								<li>
 									<span class="font-medium text-slate-200">{row.name}</span>
-									<span class="ml-1 text-xs text-slate-500">
+									<span class="ml-1 font-mono text-xs tabular-nums text-slate-500">
 										L{row.level} · {row.gap.toLocaleString()} XP to next
 									</span>
 								</li>
@@ -186,10 +186,10 @@
 					{:else}
 						<ul class="space-y-2">
 							{#each unavailable as row (row.name)}
-								<li class="flex items-center justify-between gap-2 rounded-lg bg-slate-950/30 px-3 py-2">
+								<li class="flex items-center justify-between gap-2 rounded-2xl bg-slate-950/30 px-3 py-2">
 									<span class="truncate font-mono text-xs text-slate-300">{row.name}</span>
 									<span
-										class="shrink-0 rounded-md border border-red-400/35 bg-red-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-300"
+										class="shrink-0 rounded-full border border-red-400/35 bg-red-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-red-300"
 									>
 										{row.status}
 									</span>
