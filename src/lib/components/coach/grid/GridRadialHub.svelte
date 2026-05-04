@@ -30,13 +30,19 @@
 		hubHoveredKey = null,
 		hubCenterLabel = 'DEPLOY',
 	} = $props();
+
+	/** Safe spring scalar: avoid `scale(undefined)` when `current` is briefly unset. */
+	const hubPopScalar = $derived.by(() => {
+		const raw = typeof hubPop === 'number' ? hubPop : hubPop?.current;
+		return typeof raw === 'number' && Number.isFinite(raw) ? raw : radialOpen ? 1 : 0;
+	});
 </script>
 
-{#if radialOpen || hubPop.current > 0.03}
+{#if radialOpen || hubPopScalar > 0.03}
 	<g
 		class="tw-isolate"
-		opacity={Math.min(1, hubPop.current)}
-		transform="translate({radialCx},{radialCy}) scale({hubPop.current})"
+		opacity={Math.min(1, hubPopScalar)}
+		transform="translate({radialCx},{radialCy}) scale({hubPopScalar})"
 	>
 		<path
 			pointer-events="none"

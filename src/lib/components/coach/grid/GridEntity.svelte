@@ -24,14 +24,23 @@
 		warRoomTool = /** @type {'DRAG' | 'ROUTE'} */ ('DRAG'),
 		timelineMs = 0,
 		onPointerDown,
+		/** @type {(e: MouseEvent) => void} */
+		onRightClick = undefined,
 		onSelect = () => {},
 		onMouseEnter,
 		onMouseLeave,
 	} = $props();
 
 	function handleEntityPointerDown(/** @type {PointerEvent} */ e) {
+		if (e.button !== 0) return;
 		onSelect();
 		onPointerDown(e);
+	}
+
+	function handleEntityContextMenu(/** @type {MouseEvent} */ e) {
+		e.preventDefault();
+		e.stopPropagation();
+		onRightClick?.(e);
 	}
 
 	const visScale = $derived(isHovered && warRoomTool === 'DRAG' ? 1.06 : 1);
@@ -142,6 +151,7 @@
 			pointer-events="all"
 			class={warRoomTool === 'DRAG' ? 'tw-cursor-move' : warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : ''}
 			onpointerdown={handleEntityPointerDown}
+			oncontextmenu={onRightClick ? handleEntityContextMenu : undefined}
 		/>
 	</g>
 {/if}

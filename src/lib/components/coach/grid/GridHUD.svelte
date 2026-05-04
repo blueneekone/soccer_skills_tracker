@@ -17,6 +17,8 @@
 
 	let {
 		warRoomTool = $bindable(),
+		/** @type {(t: 'DRAG' | 'ROUTE') => void} */
+		pickTool = undefined,
 		isHolotableMode = $bindable(false),
 		simulator,
 		showLabels = $bindable(),
@@ -46,7 +48,7 @@
 			<button
 				type="button"
 				class="{segBtn} {warRoomTool === 'DRAG' ? segBtnOn : ''}"
-				onclick={() => (warRoomTool = 'DRAG')}
+				onclick={() => (pickTool ? pickTool('DRAG') : (warRoomTool = 'DRAG'))}
 				aria-pressed={warRoomTool === 'DRAG'}
 			>
 				DRAG
@@ -54,7 +56,7 @@
 			<button
 				type="button"
 				class="{segBtn} {warRoomTool === 'ROUTE' ? segBtnOn : ''}"
-				onclick={() => (warRoomTool = 'ROUTE')}
+				onclick={() => (pickTool ? pickTool('ROUTE') : (warRoomTool = 'ROUTE'))}
 				aria-pressed={warRoomTool === 'ROUTE'}
 			>
 				ROUTE

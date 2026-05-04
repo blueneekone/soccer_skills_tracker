@@ -75,7 +75,7 @@
 		class="tw-relative tw-flex tw-h-full tw-min-h-0 tw-w-full tw-flex-1 tw-items-center tw-justify-center"
 	>
 		<div
-			class="tg-holotable-stage tw-relative tw-mx-auto tw-aspect-[1600/900] tw-w-full tw-max-w-full tw-min-h-0 tw-overflow-visible"
+			class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-mx-auto tw-aspect-[1600/900] tw-w-full tw-max-w-full tw-min-h-0 tw-overflow-visible"
 			style="max-height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.8s ease; transform-origin: center center; transform-style: preserve-3d; transform: {isHolotableMode
 				? 'rotateX(55deg) scale(0.9) translateY(10%)'
 				: 'rotateX(0deg) scale(1) translateY(0)'};{isHolotableMode
@@ -107,21 +107,22 @@
 				<polyline
 					points={trailString}
 					fill="none"
-					stroke="#00f0ff"
-					stroke-width="12"
+					stroke={dragTrailBloomColor}
+					stroke-width="6"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					opacity="0.25"
+					opacity="0.9"
+					filter="url(#premium-neon)"
 					pointer-events="none"
 				/>
 				<polyline
 					points={trailString}
 					fill="none"
-					stroke="#00f0ff"
-					stroke-width="2.5"
+					stroke="#ffffff"
+					stroke-width="1.5"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					opacity="0.9"
+					opacity="1"
 					pointer-events="none"
 				/>
 			{/if}
@@ -143,7 +144,10 @@
 					renderLayer="hit"
 					timelineMs={simulatorTime}
 					{warRoomTool}
-					onPathClick={(e) => onRouteStrokePointerDown(e, route)}
+					onPathClick={(e) => {
+						e.stopPropagation();
+						onRouteStrokePointerDown(e, route);
+					}}
 					onRouteHoverEnter={() => setHoveredRouteId(route.id)}
 					onRouteHoverLeave={() => setHoveredRouteId(null)}
 				/>
@@ -155,7 +159,10 @@
 						renderLayer="anchors"
 						isSelected={selectedRouteId === route.id}
 						timelineMs={simulatorTime}
-						onControlPointDrag={(e, kind) => onAnchorDown(e, route.id, kind)}
+						onControlPointDrag={(e, kind) => {
+							e.stopPropagation();
+							onAnchorDown(e, route.id, kind);
+						}}
 					/>
 				{/if}
 			{/each}
@@ -176,7 +183,10 @@
 					timelineMs={simulatorTime}
 					{warRoomTool}
 					onSelect={() => setFocusedPlayerId(player.id)}
-					onPointerDown={(e) => startDrag(e, player)}
+					onPointerDown={(e) => {
+						e.stopPropagation();
+						startDrag(e, player);
+					}}
 					onMouseEnter={() => setHoveredDiscId(player.id)}
 					onMouseLeave={() => setHoveredDiscId(null)}
 				/>
@@ -209,6 +219,7 @@
 					stroke-linecap="round"
 					stroke-linejoin="round"
 					opacity="0.4"
+					filter="url(#premium-neon)"
 					pointer-events="none"
 				/>
 				<path
@@ -228,20 +239,21 @@
 					points={trailString}
 					fill="none"
 					stroke={dragTrailBloomColor}
-					stroke-width="12"
+					stroke-width="6"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					opacity="0.25"
+					opacity="0.9"
+					filter="url(#premium-neon)"
 					pointer-events="none"
 				/>
 				<polyline
 					points={trailString}
 					fill="none"
-					stroke={dragTrailBloomColor}
-					stroke-width="2.5"
+					stroke="#ffffff"
+					stroke-width="1.5"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					opacity="0.9"
+					opacity="1"
 					pointer-events="none"
 				/>
 			{/if}
@@ -330,21 +342,26 @@
 					{@const pctX = (holotableStatsTarget.x / 1600) * 100}
 					{@const pctY = (holotableStatsTarget.y / 900) * 100}
 					<div
-						class="tw-absolute tw-flex tw-flex-col tw-items-center"
-						style="left: {pctX}%; top: {pctY}%; transform: translate3d(-50%, -100%, 0) rotateX(-55deg); transform-origin: bottom center; will-change: transform;"
+						class="tw-absolute"
+						style="left: {pctX}%; top: {pctY}%; transform-style: preserve-3d;"
 					>
 						<div
-							class="tw-mb-2 tw-flex tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/85 tw-p-3 tw-backdrop-blur-xl tw-shadow-[0_8px_32px_rgba(0,240,255,0.2)]"
+							class="tw-flex tw-flex-col tw-items-center"
+							style="transform: translate3d(-50%, -100%, 0) rotateX(-55deg); transform-origin: bottom center; will-change: transform;"
 						>
-							<span
-								class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]"
-								>{holotableStatsTarget.name || 'UNIT_ID'}</span
+							<div
+								class="tw-mb-2 tw-flex tw-flex-col tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/85 tw-p-3 tw-backdrop-blur-xl tw-shadow-[0_8px_32px_rgba(0,240,255,0.2)]"
 							>
-						</div>
+								<span
+									class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]"
+									>{holotableStatsTarget.name || 'UNIT_ID'}</span
+								>
+							</div>
 
-						<div
-							class="tw-h-16 tw-w-[2px] tw-bg-gradient-to-t tw-from-[#00f0ff] tw-to-transparent tw-opacity-60"
-						></div>
+							<div
+								class="tw-h-16 tw-w-[2px] tw-bg-gradient-to-t tw-from-[#00f0ff] tw-to-transparent tw-opacity-60"
+							></div>
+						</div>
 					</div>
 				{/if}
 			</div>

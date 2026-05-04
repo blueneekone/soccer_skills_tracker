@@ -122,14 +122,28 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	function clientToSvg(ev: MouseEvent | TouchEvent | PointerEvent) {
 		if (!pitchSvgEl) return { x: 0, y: 0 };
-		const pt = pitchSvgEl.createSVGPoint();
 		const x = 'touches' in ev ? (ev.touches[0]?.clientX ?? 0) : ev.clientX;
 		const y = 'touches' in ev ? (ev.touches[0]?.clientY ?? 0) : ev.clientY;
-		pt.x = x;
-		pt.y = y;
-		const ctm = pitchSvgEl.getScreenCTM();
-		if (!ctm) return { x: 0, y: 0 };
-		return pt.matrixTransform(ctm.inverse());
+		try {
+			const pt = pitchSvgEl.createSVGPoint();
+			pt.x = x;
+			pt.y = y;
+			const ctm = pitchSvgEl.getScreenCTM();
+			if (ctm && Math.abs(ctm.a * ctm.d - ctm.b * ctm.c) > 0.00001) {
+				return pt.matrixTransform(ctm.inverse());
+			}
+		} catch {
+			// DOMException: non-invertible CTM under 3D CSS projection — use bbox fallback.
+		}
+		const rect = pitchSvgEl.getBoundingClientRect();
+		const rw = rect.width || 1;
+		const rh = rect.height || 1;
+		const scaleX = 1600 / rw;
+		const scaleY = 900 / rh;
+		return {
+			x: (x - rect.left) * scaleX,
+			y: (y - rect.top) * scaleY,
+		};
 	}
 
 	function clampToPitch(x: number, y: number) {
@@ -360,6 +374,15 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		radial.openRadialHub(ev as PointerEvent, null, true);
 	}
 
+	/** Token right-click: suppress native menu and open deploy radial (same rules as pitch context menu). */
+	function onTokenContextMenu(ev: MouseEvent, player: TacticalToken) {
+		ev.preventDefault();
+		ev.stopPropagation();
+		if (host.warRoomTool.get() !== 'DRAG' || anchorDrag) return;
+		focusedPlayerId = player.id;
+		radial.openRadialHub(ev, null, true);
+	}
+
 	function onPitchPointerUpClearLongPress() {
 		radial.cancelRadialLongPress();
 	}
@@ -405,6 +428,30 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		simulator.scrub(n * simulator.maxDuration);
 	}
 
+	/** Active war-room tool — single source via host bindable. */
+	const activeTool = $derived(host.warRoomTool.get());
+
+	function setActiveTool(t: 'DRAG' | 'ROUTE') {
+		host.warRoomTool.set(t);
+	}
+
+	/** Public pointer façade (Arena + window forward here). */
+	function handlePointerMove(e: PointerEvent) {
+		input.handlePointerMove(e);
+	}
+
+	function handlePointerUp(e: PointerEvent) {
+		input.handlePointerUp(e);
+	}
+
+	function handlePointerCancel(e: PointerEvent) {
+		input.handlePointerUp(e);
+	}
+
+	function handlePointerDown(e: PointerEvent, _context?: unknown) {
+		input.onPitchPointerDown(e);
+	}
+
 	return {
 		pitchSvgEl,
 		activeRouteColor,
@@ -418,6 +465,12 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		formatTimelineMs,
 		toggleTimelinePlayback,
 		scrubTimelineNorm,
+		activeTool,
+		setActiveTool,
+		handlePointerMove,
+		handlePointerUp,
+		handlePointerCancel,
+		handlePointerDown,
 		draggingPlayer,
 		activeDragTrail,
 		trailString,
@@ -437,6 +490,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		handleSvgClick,
 		handleKeyDown,
 		onPitchContextMenu,
+		onTokenContextMenu,
 		onPitchPointerUpClearLongPress,
 		recallBench,
 		clearRoutesOnly,

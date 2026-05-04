@@ -33,11 +33,7 @@
 	});
 </script>
 
-<svelte:window
-	onpointermove={model.input.handlePointerMove}
-	onpointerup={model.input.handlePointerUp}
-	onkeydown={model.handleKeyDown}
-/>
+<svelte:window onkeydown={model.handleKeyDown} />
 
 <div
 	class="tw-fixed tw-inset-0 tw-z-[100] tw-flex tw-h-screen tw-w-full tw-flex-col tw-overflow-visible tw-bg-[#020202] tw-font-sans"
@@ -68,7 +64,9 @@
 	</header>
 
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-visible tw-bg-[#020202]">
-		<div class="tw-relative tw-min-h-0 tw-w-full tw-flex-1 tw-overflow-visible">
+		<div
+			class="tw-pointer-events-auto tw-relative tw-z-0 tw-min-h-0 tw-w-full tw-flex-1 tw-overflow-visible"
+		>
 			<TacticalArena {model} {warRoomTool} />
 			<div
 				class="tw-pointer-events-none tw-absolute tw-inset-4 tw-z-0 tw-overflow-visible md:tw-inset-8"

@@ -37,20 +37,20 @@
 			d={pathD}
 			fill="none"
 			stroke={route.color}
-			stroke-width="12"
+			stroke-width="6"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			opacity="0.25"
+			opacity="0.9"
+			filter="url(#premium-neon)"
 			pointer-events="none"
 		/>
 		<path
 			d={pathD}
 			fill="none"
-			stroke={route.color}
-			stroke-width="2.5"
+			stroke="#ffffff"
+			stroke-width="1.5"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			opacity="0.9"
 			marker-end="url(#tech-chevron)"
 			pointer-events="none"
 		/>

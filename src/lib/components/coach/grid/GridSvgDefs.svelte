@@ -26,7 +26,7 @@
 	</filter>
 	<marker
 		id="tech-chevron"
-		refX="10"
+		refX="28"
 		refY="5"
 		markerWidth="14"
 		markerHeight="10"
@@ -35,6 +35,15 @@
 	>
 		<path d="M 0 1 L 10 5 L 0 9 L 3 5 Z" fill="#ffffff" />
 	</marker>
+	<filter id="premium-neon" x="-50%" y="-50%" width="200%" height="200%">
+		<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1" />
+		<feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2" />
+		<feMerge>
+			<feMergeNode in="blur2" />
+			<feMergeNode in="blur1" />
+			<feMergeNode in="SourceGraphic" />
+		</feMerge>
+	</filter>
 	<filter id="identity-disc-glow" x="-100%" y="-100%" width="300%" height="300%">
 		<feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="dg" />
 		<feMerge>

@@ -1,10 +1,17 @@
 <script>
 	import TacticalPitchBoard from './grid/TacticalPitchBoard.svelte';
-	/** @typedef {import('./TacticalEngine.svelte').TacticalWarRoomModel} TacticalWarRoomModel */
+	/** @typedef {import('./TacticalEngine.svelte.ts').TacticalWarRoomModel} TacticalWarRoomModel */
 
 	/** @type {{ model: TacticalWarRoomModel; warRoomTool: 'DRAG' | 'ROUTE' }} */
 	let { model, warRoomTool } = $props();
 </script>
+
+<!-- Window-level pointer stream: drag/route gestures survive leaving the SVG viewport. -->
+<svelte:window
+	onpointermove={model.handlePointerMove}
+	onpointerup={model.handlePointerUp}
+	onpointercancel={model.handlePointerCancel}
+/>
 
 <div
 	class="tw-absolute tw-inset-4 tw-flex tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-overflow-visible md:tw-inset-8"
@@ -39,7 +46,7 @@
 			startDrag={model.input.startDrag}
 			bumpRouteDelay={model.bumpRouteDelay}
 			allRouteMarkerColors={model.allRouteMarkerColors}
-			onPitchPointerDown={model.input.onPitchPointerDown}
+			onPitchPointerDown={model.handlePointerDown}
 			onPitchPointerUpClearLongPress={model.onPitchPointerUpClearLongPress}
 			onPitchMouseLeave={model.input.onPitchMouseLeave}
 			onPitchContextMenu={model.onPitchContextMenu}

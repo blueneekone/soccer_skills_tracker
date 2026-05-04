@@ -1,7 +1,7 @@
 <script>
 	import GridHUD from './grid/GridHUD.svelte';
 
-	/** @type {{ model: import('./TacticalEngine.svelte').TacticalWarRoomModel }} */
+	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel }} */
 	let { model, warRoomTool = $bindable('DRAG') } = $props();
 
 	/**
@@ -60,6 +60,7 @@
 >
 	<GridHUD
 		bind:warRoomTool
+		pickTool={(t) => model.setActiveTool(t)}
 		bind:isHolotableMode={model.isHolotableMode}
 		simulator={model.simulator}
 		bind:showLabels={model.showLabels}
