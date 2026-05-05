@@ -92,110 +92,113 @@
 </script>
 
 <!--
-  HUD root: absolute overlay pinned to the bottom of the fixed viewport.
-  pointer-events-none so the board underneath stays fully interactive;
-  every interactive child re-enables pointer-events-auto individually.
+  HUD root: full-panel overlay at z-10, pointer-events-none so the SVG pitch
+  beneath (z-0) stays fully interactive. Individual controls opt back in with
+  pointer-events-auto.
 -->
-<div
-	class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-z-50 tw-min-h-28 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-3xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId
-		? 'tw-shadow-[inset_0_1px_0_rgba(255,0,60,0.35)]'
-		: ''}"
->
-	<!-- GridHUD: reclaims pointer-events-auto inside the pointer-events-none bar -->
-	<div class="tw-pointer-events-auto">
-		<GridHUD
-			bind:warRoomTool
-			pickTool={(t) => model.setActiveTool(t)}
-			bind:isHolotableMode={model.isHolotableMode}
-			simulator={model.simulator}
-			bind:showLabels={model.showLabels}
-			bind:activeRouteColor={model.activeRouteColor}
-			bind:routeDrawKind={model.routeDrawKind}
-			focusedPlayerId={model.focusedPlayerId}
-			allTokens={model.allPitchTokens}
-			recallBench={model.recallBench}
-			clearRoutesOnly={model.clearRoutesOnly}
-		/>
-	</div>
+<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-visible">
 
-	<!-- DEPLOY TO SQUAD ──────────────────────────────────────────────────────── -->
-	<div class="tw-pointer-events-auto tw-absolute tw-bottom-2 tw-right-4 tw-z-20">
-		<button
-			type="button"
-			class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
-			onclick={handleDeploy}
-			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
-		>
-			<span
-				class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.9)]"
-			></span>
-			DEPLOY TO SQUAD
-		</button>
-	</div>
-
-	<!--
-	  Playback reactor: floats ABOVE the HUD bar (bottom-full = bottom edge at bar top edge).
-	  pointer-events-none on the positioner, auto on each interactive control.
-	-->
+	<!-- Glassmorphic bottom bar — the only region that absorbs pointer events -->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-bottom-full tw-left-1/2 tw-z-[60] tw-flex tw--translate-x-1/2 tw-justify-center tw-pb-3"
-		aria-hidden="false"
+		class="tw-pointer-events-auto tw-absolute tw-inset-x-0 tw-bottom-0 tw-min-h-28 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-3xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId
+			? 'tw-shadow-[inset_0_1px_0_rgba(255,0,60,0.35)]'
+			: ''}"
 	>
-		<div class="tw-pointer-events-auto tw-flex tw-flex-col tw-items-center tw-gap-2">
-			<!-- Monospace scrub clock -->
-			<div
-				class="tw-rounded-full tw-border tw-border-white/10 tw-bg-[#020202]/90 tw-px-6 tw-py-2 tw-backdrop-blur-xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
-			>
-				<span
-					class="tw-font-mono tw-text-lg tw-font-bold tw-tracking-widest tw-tabular-nums tw-text-[#00f0ff]"
-				>
-					{model.formatTimelineMs(model.simulator.currentTime)}
-				</span>
-			</div>
+		<!-- Tool picker -->
+		<div class="tw-pointer-events-auto">
+			<GridHUD
+				bind:warRoomTool
+				pickTool={(t) => model.setActiveTool(t)}
+				bind:isHolotableMode={model.isHolotableMode}
+				simulator={model.simulator}
+				bind:showLabels={model.showLabels}
+				bind:activeRouteColor={model.activeRouteColor}
+				bind:routeDrawKind={model.routeDrawKind}
+				focusedPlayerId={model.focusedPlayerId}
+				allTokens={model.allPitchTokens}
+				recallBench={model.recallBench}
+				clearRoutesOnly={model.clearRoutesOnly}
+			/>
+		</div>
 
-			<!-- Physical scrub rail (no native range) -->
-			<div
-				class="tw-relative tw-h-2 tw-w-[min(24rem,92vw)] tw-cursor-pointer tw-overflow-hidden tw-rounded-full tw-bg-white/10 tw-shadow-[inset_0_1px_2px_rgba(0,0,0,0.45)]"
-				role="slider"
-				tabindex="0"
-				aria-valuemin="0"
-				aria-valuemax="100"
-				aria-valuenow={Math.round(model.timelineNorm * 100)}
-				aria-label="Simulation timeline"
-				onpointerdown={onRailPointerDown}
-				onpointermove={onRailPointerMove}
-				onpointerup={onRailPointerUp}
-				onpointercancel={onRailPointerUp}
-			>
-				<div
-					class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-0 tw-h-full tw-bg-gradient-to-r tw-from-[#00f0ff]/25 tw-to-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.45)]"
-					style="width: {model.timelineNorm * 100}%;"
-				></div>
-			</div>
-
-			<!-- Play / Pause -->
+		<!-- DEPLOY TO SQUAD -->
+		<div class="tw-pointer-events-auto tw-absolute tw-bottom-2 tw-right-4 tw-z-20">
 			<button
 				type="button"
-				class="tw-mt-1 tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/50 tw-bg-[#020202]/80 tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-transform hover:tw-scale-110 hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)]"
-				aria-pressed={model.simulator.isPlaying}
-				aria-label={model.simulator.isPlaying ? 'Pause simulation' : 'Play simulation'}
-				onclick={() => model.toggleTimelinePlayback()}
+				class="tw-pointer-events-auto tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
+				onclick={handleDeploy}
+				disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
 			>
-				{#if model.simulator.isPlaying}
-					<span class="tw-flex tw-items-center tw-gap-1 tw-text-current" aria-hidden="true">
-						<span class="tw-block tw-h-3 tw-w-1 tw-rounded-sm tw-bg-current"></span>
-						<span class="tw-block tw-h-3 tw-w-1 tw-rounded-sm tw-bg-current"></span>
-					</span>
-				{:else}
-					<span
-						class="tw-ml-0.5 tw-block tw-h-0 tw-w-0 tw-border-y-[6px] tw-border-y-transparent tw-border-l-[10px] tw-border-l-current"
-						aria-hidden="true"
-					></span>
-				{/if}
+				<span
+					class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.9)]"
+				></span>
+				DEPLOY TO SQUAD
 			</button>
 		</div>
-	</div>
-</div>
+
+		<!--
+		  Playback reactor: bottom-full floats it above the bar.
+		  Positioner is pointer-events-none; each control is pointer-events-auto.
+		-->
+		<div
+			class="tw-pointer-events-none tw-absolute tw-bottom-full tw-left-1/2 tw-z-[60] tw-flex tw--translate-x-1/2 tw-justify-center tw-pb-3"
+			aria-hidden="false"
+		>
+			<div class="tw-pointer-events-auto tw-flex tw-flex-col tw-items-center tw-gap-2">
+				<!-- Monospace scrub clock -->
+				<div
+					class="tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/10 tw-bg-[#020202]/90 tw-px-6 tw-py-2 tw-backdrop-blur-xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+				>
+					<span class="tw-font-mono tw-text-lg tw-font-bold tw-tracking-widest tw-tabular-nums tw-text-[#00f0ff]">
+						{model.formatTimelineMs(model.simulator.currentTime)}
+					</span>
+				</div>
+
+				<!-- Physical scrub rail (no native range input) -->
+				<div
+					class="tw-pointer-events-auto tw-relative tw-h-2 tw-w-[min(24rem,80vw)] tw-cursor-pointer tw-overflow-hidden tw-rounded-full tw-bg-white/10 tw-shadow-[inset_0_1px_2px_rgba(0,0,0,0.45)]"
+					role="slider"
+					tabindex="0"
+					aria-valuemin="0"
+					aria-valuemax="100"
+					aria-valuenow={Math.round(model.timelineNorm * 100)}
+					aria-label="Simulation timeline"
+					onpointerdown={onRailPointerDown}
+					onpointermove={onRailPointerMove}
+					onpointerup={onRailPointerUp}
+					onpointercancel={onRailPointerUp}
+				>
+					<div
+						class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-0 tw-h-full tw-bg-gradient-to-r tw-from-[#00f0ff]/25 tw-to-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.45)]"
+						style="width: {model.timelineNorm * 100}%;"
+					></div>
+				</div>
+
+				<!-- Play / Pause -->
+				<button
+					type="button"
+					class="tw-pointer-events-auto tw-mt-1 tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/50 tw-bg-[#020202]/80 tw-text-[#00f0ff] tw-backdrop-blur-xl tw-transition-transform hover:tw-scale-110 hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)]"
+					aria-pressed={model.simulator.isPlaying}
+					aria-label={model.simulator.isPlaying ? 'Pause simulation' : 'Play simulation'}
+					onclick={() => model.toggleTimelinePlayback()}
+				>
+					{#if model.simulator.isPlaying}
+						<span class="tw-flex tw-items-center tw-gap-1 tw-text-current" aria-hidden="true">
+							<span class="tw-block tw-h-3 tw-w-1 tw-rounded-sm tw-bg-current"></span>
+							<span class="tw-block tw-h-3 tw-w-1 tw-rounded-sm tw-bg-current"></span>
+						</span>
+					{:else}
+						<span
+							class="tw-ml-0.5 tw-block tw-h-0 tw-w-0 tw-border-y-[6px] tw-border-y-transparent tw-border-l-[10px] tw-border-l-current"
+							aria-hidden="true"
+						></span>
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div><!-- /bottom bar -->
+
+</div><!-- /HUD root -->
 
 <!-- ── Deploy Modal ─────────────────────────────────────────────────────────── -->
 {#if deployPhase !== 'idle'}

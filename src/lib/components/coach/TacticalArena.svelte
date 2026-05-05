@@ -14,11 +14,11 @@
 />
 
 <!--
-  Pure SVG presentation layer — fills the fixed viewport.
-  overflow-visible on the inner wrappers so the radial hub and route anchors
+  Pure SVG presentation layer — z-0, fills the relative Mounting Shell.
+  overflow-visible on inner wrappers so the radial hub and route anchors
   can paint outside the board boundary without being clipped.
 -->
-<div class="tw-absolute tw-inset-0 tw-overflow-hidden">
+<div class="tw-absolute tw-inset-0 tw-z-0 tw-overflow-hidden">
 	<div
 		class="tw-absolute tw-inset-4 tw-flex tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-overflow-visible md:tw-inset-8"
 	>
