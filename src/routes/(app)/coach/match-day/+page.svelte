@@ -316,8 +316,9 @@
 	}
 </script>
 
+<!-- Vanguard Match-Day — bg-[#020202] void root, mono telemetry, blur-3xl cards. -->
 <div
-	class="tw-relative tw-mx-auto tw-flex tw-h-screen tw-max-w-md tw-flex-col tw-overflow-hidden tw-bg-[#020617] tw-font-sans tw-text-slate-300 tw-selection:bg-cyan-500/30"
+	class="tw-relative tw-mx-auto tw-flex tw-h-screen tw-max-w-md tw-flex-col tw-overflow-hidden tw-bg-[#020202] tw-font-mono tw-text-slate-300 tw-selection:bg-[#00f0ff]/30"
 	class:matchLoggerPulse={ingestPulse}
 >
 	<!-- Deep space grid -->
@@ -333,7 +334,7 @@
 
 	<a
 		href="/coach"
-		class="tw-absolute tw-right-3 tw-top-3 tw-z-[50] tw-rounded-md tw-border tw-border-cyan-500/40 tw-bg-black/50 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-black tw-tracking-widest tw-text-cyan-400 tw-backdrop-blur-sm tw-transition-colors hover:tw-border-cyan-400 hover:tw-bg-cyan-950/40 hover:tw-text-cyan-200"
+		class="tw-absolute tw-right-3 tw-top-3 tw-z-[50] tw-rounded-md tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-black tw-tracking-widest tw-text-cyan-400 tw-backdrop-blur-sm tw-transition-colors hover:tw-border-cyan-400 hover:tw-bg-cyan-950/40 hover:tw-text-cyan-200"
 	>
 		HUB
 	</a>
@@ -371,7 +372,7 @@
 			Event stream
 		</p>
 		<div
-			class="tw-relative tw-min-h-0 tw-flex-1 tw-overflow-hidden tw-rounded-lg tw-border tw-border-white/[0.06] tw-bg-black/40"
+			class="tw-relative tw-min-h-0 tw-flex-1 tw-overflow-hidden tw-rounded-lg tw-border tw-border-white/10 tw-bg-[#020202]/80"
 		>
 			<div
 				bind:this={feedScrollRoot}

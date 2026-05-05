@@ -640,6 +640,8 @@
 	<title>Coach · Field Station · SSTRACKER</title>
 </svelte:head>
 
+<!-- Vanguard Drills — bg-[#020202] void root with native page scroll, no overflow traps. -->
+<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-px-3 tw-py-6 tw-font-mono tw-text-slate-200 sm:tw-px-5">
 <section class="drill-lib cdm-page">
 	<header class="drill-lib__head">
 		<div>
@@ -1085,6 +1087,7 @@
 	</div>
 	{/if}
 </section>
+</div>
 
 <Modal bind:open={addOpen} title="Add Custom Drill" maxWidth="520px">
 	<form class="dl-form" onsubmit={(e) => { e.preventDefault(); void submitAddDrill(); }}>

@@ -1,10 +1,10 @@
 <script>
-	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
-
 	/**
-	 * `lobby` — dark tactical grid + neon polygon (player dashboard AAA style).
-	 * @type {{ labels?: string[], values?: number[], variant?: 'default' | 'lobby' }}
+	 * Pure-SVG Vanguard radar — cyan-to-transparent gradient fill, neon stroke,
+	 * no Chart.js, no blocky CSS borders. Hex polygon (6 axes) to match the
+	 * Vanguard Manifesto attribute schema.
+	 *
+	 * @type {{ labels?: string[]; values?: number[]; variant?: 'default' | 'lobby' }}
 	 */
 	let {
 		labels = [],
@@ -12,149 +12,135 @@
 		variant = /** @type {'default' | 'lobby'} */ ('default'),
 	} = $props();
 
-	/** @type {null | typeof import('chart.js').Chart} */
-	let ChartCtor = null;
-	let chartJsReady = $state(false);
-	let radarEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
-	/** @type {import('chart.js').Chart | null} */
-	let radarInstance = null;
+	const N = 6;
+	const CX = 50;
+	const CY = 50;
+	const R = 36;
+	const TIERS = [0.22, 0.42, 0.62, 0.82, 1];
 
-	onMount(() => {
-		if (!browser) return;
-		(async () => {
-			const mod = await import('chart.js');
-			ChartCtor = mod.Chart;
-			mod.Chart.register(...mod.registerables);
-			chartJsReady = true;
-		})();
-	});
+	const lobbyMode = $derived(variant === 'lobby');
+	const strokeColor = $derived(lobbyMode ? '#00f0ff' : '#a855f7');
 
-	function hexToRgba(hex, alpha) {
-		const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-		if (!m) return `rgba(245, 158, 11, ${alpha})`;
-		const n = parseInt(m[1], 16);
-		const r = (n >> 16) & 255;
-		const g = (n >> 8) & 255;
-		const b = n & 255;
-		return `rgba(${r},${g},${b},${alpha})`;
-	}
+	const safeLabels = $derived(
+		labels.length >= N ? labels.slice(0, N) : ['—', '—', '—', '—', '—', '—'],
+	);
+	const safeValues = $derived(
+		values.length >= N
+			? values.slice(0, N).map((v) => Math.min(99, Math.max(0, Number(v) || 0)))
+			: [55, 55, 55, 55, 55, 55],
+	);
 
 	/**
-	 * @param {string} color
-	 * @param {number} alpha
+	 * @param {number} i
+	 * @param {number} mult
 	 */
-	function withAlpha(color, alpha) {
-		const c = color.trim();
-		if (c.startsWith('#')) return hexToRgba(c, alpha);
-		const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(c);
-		if (rgb) return `rgba(${rgb[1]},${rgb[2]},${rgb[3]},${alpha})`;
-		return `rgba(245, 158, 11, ${alpha})`;
+	function polar(i, mult) {
+		const a = (i * 2 * Math.PI) / N - Math.PI / 2;
+		return { x: CX + R * mult * Math.cos(a), y: CY + R * mult * Math.sin(a) };
 	}
 
-	$effect(() => {
-		if (!browser || !chartJsReady || !ChartCtor || !radarEl) return;
+	const skillVertices = $derived(
+		safeValues.map((v, i) => {
+			const p = polar(i, Math.max(0.05, v / 99));
+			return { x: p.x, y: p.y, raw: v };
+		}),
+	);
 
-		const lab = labels.length >= 6 ? labels.slice(0, 6) : ['—', '—', '—', '—', '—', '—'];
-		const data =
-			values.length >= 6 ?
-				values.slice(0, 6).map((v) => Math.min(99, Math.max(0, Number(v) || 0)))
-			:	[55, 55, 55, 55, 55, 55];
+	const skillPolygonPoints = $derived(
+		skillVertices.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' '),
+	);
 
-		if (radarInstance) {
-			radarInstance.destroy();
-			radarInstance = null;
-		}
-
-		const cs = getComputedStyle(document.documentElement);
-		const brandDefault = cs.getPropertyValue('--brand-primary').trim() || '#f59e0b';
-		const gridDefault = cs.getPropertyValue('--chart-grid').trim() || 'rgba(15,23,42,0.12)';
-		const tickDefault = cs.getPropertyValue('--chart-tick').trim() || '#334155';
-
-		const lobby = variant === 'lobby';
-		const brand = lobby ? '#00f0ff' : brandDefault;
-		const grid = lobby ? 'rgba(51, 65, 85, 0.55)' : gridDefault;
-		const tick = lobby ? 'rgba(148, 163, 184, 0.55)' : tickDefault;
-		const angle = lobby ? 'rgba(0, 240, 255, 0.22)' : grid;
-		const fill = lobby ? 'rgba(0, 240, 255, 0.22)' : withAlpha(brand, 0.2);
-		const borderW = lobby ? 2.5 : 2;
-
-		radarInstance = new ChartCtor(radarEl, {
-			type: 'radar',
-			data: {
-				labels: lab,
-				datasets: [
-					{
-						label: 'Skills',
-						data,
-						backgroundColor: fill,
-						borderColor: lobby ? '#a855f7' : brand,
-						borderWidth: borderW,
-						pointBackgroundColor: lobby ? '#00f0ff' : brand,
-						pointBorderColor: lobby ? '#020617' : '#fff',
-						pointBorderWidth: lobby ? 2 : 1,
-						pointHoverBackgroundColor: lobby ? '#f472b6' : '#fff',
-					},
-				],
-			},
-			options: {
-				scales: {
-					r: {
-						min: 0,
-						max: 99,
-						ticks: {
-							stepSize: 25,
-							color: tick,
-							backdropColor: 'transparent',
-						},
-						grid: { color: grid },
-						angleLines: { color: angle },
-						pointLabels: {
-							color: lobby ? '#e2e8f0' : tick,
-							font: { size: lobby ? 11 : 11, weight: '700' },
-						},
-					},
-				},
-				plugins: {
-					legend: { display: false },
-				},
-				responsive: true,
-				maintainAspectRatio: false,
-			},
-		});
-
-		return () => {
-			if (radarInstance) {
-				radarInstance.destroy();
-				radarInstance = null;
-			}
-		};
-	});
+	// Per-instance filter id so multiple radars don't collide.
+	const uid = `psr-${Math.random().toString(36).slice(2, 9)}`;
 </script>
 
-<div class="psr" class:psr--lobby={variant === 'lobby'}>
-	<div class="psr__canvas-wrap">
-		<canvas bind:this={radarEl} class="psr__canvas"></canvas>
-	</div>
+<div class="tw-relative tw-w-full {lobbyMode ? 'tw-aspect-square' : 'tw-aspect-[4/3]'}">
+	<svg
+		class="tw-block tw-h-full tw-w-full"
+		viewBox="0 0 100 100"
+		preserveAspectRatio="xMidYMid meet"
+		role="img"
+		aria-label="Player skill radar"
+	>
+		<defs>
+			<radialGradient id="{uid}-fill" cx="50%" cy="50%" r="50%">
+				<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.55" />
+				<stop offset="60%" stop-color="#00f0ff" stop-opacity="0.18" />
+				<stop offset="100%" stop-color="#00f0ff" stop-opacity="0" />
+			</radialGradient>
+			<filter id="{uid}-bloom" x="-30%" y="-30%" width="160%" height="160%">
+				<feGaussianBlur in="SourceGraphic" stdDeviation="0.9" result="blur" />
+				<feMerge>
+					<feMergeNode in="blur" />
+					<feMergeNode in="blur" />
+					<feMergeNode in="SourceGraphic" />
+				</feMerge>
+			</filter>
+		</defs>
+
+		<!-- Concentric web tiers -->
+		{#each TIERS as t (t)}
+			<circle
+				cx={CX}
+				cy={CY}
+				r={R * t}
+				fill="none"
+				stroke="rgba(0, 240, 255, 0.12)"
+				stroke-width="0.35"
+				vector-effect="non-scaling-stroke"
+			/>
+		{/each}
+
+		<!-- Axis spokes -->
+		{#each safeLabels as _, i (`spoke-${i}`)}
+			{@const hub = polar(i, 0)}
+			{@const tip = polar(i, 1.06)}
+			<line
+				x1={hub.x}
+				y1={hub.y}
+				x2={tip.x}
+				y2={tip.y}
+				stroke="rgba(0, 240, 255, 0.18)"
+				stroke-width="0.4"
+				vector-effect="non-scaling-stroke"
+			/>
+		{/each}
+
+		<!-- Skill envelope: cyan radial gradient fill + neon stroke -->
+		<polygon
+			points={skillPolygonPoints}
+			fill="url(#{uid}-fill)"
+			stroke={strokeColor}
+			stroke-width="1.4"
+			stroke-linejoin="round"
+			vector-effect="non-scaling-stroke"
+			filter="url(#{uid}-bloom)"
+		/>
+
+		<!-- Vertex markers -->
+		{#each skillVertices as v, vi (`vtx-${vi}`)}
+			<circle
+				cx={v.x}
+				cy={v.y}
+				r="1.6"
+				fill="#00f0ff"
+				filter="url(#{uid}-bloom)"
+			/>
+		{/each}
+
+		<!-- Axis labels -->
+		{#each safeLabels as lbl, li (`lbl-${lbl}-${li}`)}
+			{@const lp = polar(li, 1.32)}
+			<text
+				class="tw-pointer-events-none tw-font-mono tw-fill-slate-200"
+				x={lp.x}
+				y={lp.y}
+				font-size="6"
+				font-weight="700"
+				letter-spacing="0.6"
+				text-anchor="middle"
+				dominant-baseline="middle"
+			>{lbl}</text>
+		{/each}
+	</svg>
 </div>
-
-<style>
-	.psr {
-		width: 100%;
-	}
-
-	.psr__canvas-wrap {
-		position: relative;
-		height: min(300px, 58vw);
-		width: 100%;
-	}
-
-	.psr--lobby .psr__canvas-wrap {
-		height: min(360px, 64vw);
-	}
-
-	.psr__canvas {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-</style>

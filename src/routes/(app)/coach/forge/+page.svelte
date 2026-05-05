@@ -152,10 +152,10 @@
 	}
 </script>
 
-<!-- Shell chrome comes from (app) layout; this is the Forge workspace. -->
-<div class="forge-route tw-mb-10 tw-mt-2 tw-min-h-0 tw-flex-1">
+<!-- Vanguard Forge — bg-[#020202] root, glassmorphic cards, mono telemetry. -->
+<div class="forge-route tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-px-3 tw-py-6 sm:tw-px-5">
 	<div
-		class="tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-6 tw-shadow-2xl tw-backdrop-blur-md md:tw-p-8"
+		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-6 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_20px_40px_rgba(0,0,0,0.5)] tw-backdrop-blur-3xl md:tw-p-8"
 	>
 		<header class="tw-mb-10 tw-text-center md:tw-text-left">
 			<p class="tw-mb-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/80">
@@ -192,7 +192,7 @@
 			>
 				{#each ARMORY_DRILLS as drill (drill.id)}
 					<article
-						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/[0.07] tw-bg-slate-950/45 tw-p-4 tw-backdrop-blur-sm tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(0, 240, 255,0.12)]"
+						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-3xl tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(0, 240, 255,0.12)]"
 					>
 						<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-3">
 							<div class="tw-min-w-0">
@@ -228,7 +228,7 @@
 		<!-- Payload -->
 		<section aria-labelledby="forge-payload-heading">
 			<div
-				class="tw-rounded-2xl tw-border-2 tw-border-dashed tw-border-cyan-500/20 tw-bg-slate-950 tw-p-5 tw-shadow-inner md:tw-p-8"
+				class="tw-rounded-2xl tw-border-2 tw-border-dashed tw-border-cyan-500/20 tw-bg-[#020202]/80 tw-p-5 tw-shadow-inner md:tw-p-8"
 			>
 				<div class="tw-mb-8 tw-text-center">
 					<h2 id="forge-payload-heading" class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-slate-500">
