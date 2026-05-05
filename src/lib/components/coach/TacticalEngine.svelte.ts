@@ -120,29 +120,36 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		return [...s];
 	});
 
+	// Zero-Gravity coordinate math — viewBox dimensions sourced from constants so the
+	// fallback is a pure ratio interpolation regardless of CSS 3D transforms.
+	const viewBoxWidth = VIEW_W;
+	const viewBoxHeight = VIEW_H;
+
 	function clientToSvg(ev: MouseEvent | TouchEvent | PointerEvent) {
 		if (!pitchSvgEl) return { x: 0, y: 0 };
-		const x = 'touches' in ev ? (ev.touches[0]?.clientX ?? 0) : ev.clientX;
-		const y = 'touches' in ev ? (ev.touches[0]?.clientY ?? 0) : ev.clientY;
+		const clientX = 'touches' in ev ? (ev.touches[0]?.clientX ?? 0) : ev.clientX;
+		const clientY = 'touches' in ev ? (ev.touches[0]?.clientY ?? 0) : ev.clientY;
+
+		// Fast path: invertible CTM (no 3D projection on ancestors).
 		try {
 			const pt = pitchSvgEl.createSVGPoint();
-			pt.x = x;
-			pt.y = y;
+			pt.x = clientX;
+			pt.y = clientY;
 			const ctm = pitchSvgEl.getScreenCTM();
 			if (ctm && Math.abs(ctm.a * ctm.d - ctm.b * ctm.c) > 0.00001) {
 				return pt.matrixTransform(ctm.inverse());
 			}
 		} catch {
-			// DOMException: non-invertible CTM under 3D CSS projection — use bbox fallback.
+			/* DOMException — fall through to hard-coded fallback. */
 		}
+
+		// Hard-coded Zero-Gravity fallback: linear ratio interpolation off bbox.
 		const rect = pitchSvgEl.getBoundingClientRect();
 		const rw = rect.width || 1;
 		const rh = rect.height || 1;
-		const scaleX = 1600 / rw;
-		const scaleY = 900 / rh;
 		return {
-			x: (x - rect.left) * scaleX,
-			y: (y - rect.top) * scaleY,
+			x: (clientX - rect.left) * (viewBoxWidth / rw),
+			y: (clientY - rect.top) * (viewBoxHeight / rh),
 		};
 	}
 
@@ -450,8 +457,33 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		host.warRoomTool.set(t);
 	}
 
+	// ── Tactical Readout cursor tracking ────────────────────────────────────
+	let cursorSvgX = $state(0);
+	let cursorSvgY = $state(0);
+
+	// ── Radial Context Menu (right-click summon) ────────────────────────────
+	let contextMenuOpen = $state(false);
+	let contextMenuClientX = $state(0);
+	let contextMenuClientY = $state(0);
+	let contextMenuTargetId = $state<string | null>(null);
+
+	function openMenu(clientX: number, clientY: number, targetId: string | null = null) {
+		contextMenuClientX = clientX;
+		contextMenuClientY = clientY;
+		contextMenuTargetId = targetId;
+		contextMenuOpen = true;
+	}
+
+	function closeMenu() {
+		contextMenuOpen = false;
+		contextMenuTargetId = null;
+	}
+
 	/** Public pointer façade (Arena + window forward here). */
 	function handlePointerMove(e: PointerEvent) {
+		const p = clientToSvg(e);
+		cursorSvgX = p.x;
+		cursorSvgY = p.y;
 		input.handlePointerMove(e);
 	}
 
@@ -517,5 +549,18 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		setHoveredRouteId: (id: string | null) => (hoveredRouteId = id),
 		setHoveredDiscId: (id: string | null) => (hoveredDiscId = id),
 		setFocusedPlayerId: (id: string | null) => (focusedPlayerId = id),
+		// Tactical Readout — live cursor coords in SVG/viewBox space.
+		get cursorSvgX() { return cursorSvgX; },
+		get cursorSvgY() { return cursorSvgY; },
+		get viewBoxWidth() { return viewBoxWidth; },
+		get viewBoxHeight() { return viewBoxHeight; },
+		clientToSvg,
+		// Radial context menu state + API (right-click summon).
+		get contextMenuOpen() { return contextMenuOpen; },
+		get contextMenuClientX() { return contextMenuClientX; },
+		get contextMenuClientY() { return contextMenuClientY; },
+		get contextMenuTargetId() { return contextMenuTargetId; },
+		openMenu,
+		closeMenu,
 	};
 }
