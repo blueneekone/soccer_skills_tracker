@@ -6,6 +6,8 @@
 	import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.ts';
 	import TacticalArena from '$lib/components/coach/TacticalArena.svelte';
 	import TacticalHUD from '$lib/components/coach/TacticalHUD.svelte';
+	import { scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
 	/** @typedef {import('$lib/states/war-room/types').TacticalToken} TacticalToken */
 
@@ -85,7 +87,19 @@
 	});
 </script>
 
-<div class="tw-relative tw-w-full tw-h-screen tw-overflow-hidden">
-	<TacticalArena model={engine} {warRoomTool} />
-	<TacticalHUD model={engine} bind:warRoomTool />
+<!-- Escape key handled here so it fires regardless of which child has focus -->
+<svelte:window onkeydown={engine.handleKeyDown} />
+
+<!--
+  tw-fixed tw-inset-0: breaks out of .ec-canvas scroll container, fills 100vw × 100dvh.
+  The scale transition makes the arena "pop out" like a hardware panel extruding from the surface.
+-->
+<div class="tw-fixed tw-inset-0 tw-overflow-hidden tw-bg-[#020202]" style="z-index: 40;">
+	<div
+		class="tw-absolute tw-inset-0"
+		in:scale={{ duration: 400, start: 0.97, easing: quintOut }}
+	>
+		<TacticalArena model={engine} {warRoomTool} />
+		<TacticalHUD model={engine} bind:warRoomTool />
+	</div>
 </div>
