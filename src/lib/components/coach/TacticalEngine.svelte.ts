@@ -14,7 +14,7 @@ import {
 import { createTacticalInputEngine } from '$lib/states/war-room/TacticalInputEngine.svelte';
 import { createTacticalRadialHub, type RadialSlotSource } from '$lib/states/war-room/tacticalGridRadial.svelte';
 import { wireTacticalPlayback, type TacticalPlaybackHost } from '$lib/states/war-room/tacticalGridPlayback.svelte';
-import { WAR_ROOM_CARTRIDGE_CONTEXT } from '$lib/states/war-room/types';
+import { WAR_ROOM_CARTRIDGE_CONTEXT, TACTICAL_CARTRIDGE_SCHEMA_VERSION } from '$lib/states/war-room/types';
 import type { TacticalCartridge, TacticalRoute, TacticalToken } from '$lib/states/war-room/types';
 import type { AnchorDrag, RouteBodyDrag, TrailPt } from '$lib/states/war-room/TacticalInputEngine.svelte';
 
@@ -366,6 +366,21 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		simulator.loadCartridge(payload);
 	}
 
+	function serializeToCartridge(): TacticalCartridge {
+		const entities: TacticalToken[] = [
+			...host.wrBucketPitch.get().map((t) => ({ ...t, side: 'friendly' as const })),
+			...host.wrOppPitch.get().map((t) => ({ ...t, side: 'opponent' as const })),
+		];
+		return {
+			id: crypto.randomUUID(),
+			title: `Play ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+			schemaVersion: TACTICAL_CARTRIDGE_SCHEMA_VERSION,
+			metadata: { sport: 'soccer', duration: simulator.maxDuration, tags: [] },
+			entities,
+			routes: routesLive,
+		};
+	}
+
 	setContext(WAR_ROOM_CARTRIDGE_CONTEXT, { loadCartridge });
 
 	function onPitchContextMenu(ev: Event) {
@@ -494,6 +509,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		onPitchPointerUpClearLongPress,
 		recallBench,
 		clearRoutesOnly,
+		serializeToCartridge,
 		ringColor,
 		resolvePitchToken,
 		showAnchorsFor,

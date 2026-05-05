@@ -1,9 +1,15 @@
-# FRONTEND PHYSICS & UI LAWS
-- **Svelte 5 Only:** Use strict Runes (`$state`, `$derived`, `$props`). No Svelte 4 stores.
-- **Strict Decoupling:** `*Engine.svelte.ts` (Pure logic/math), `*Arena.svelte` (Dumb SVG vectors), `*HUD.svelte` (HTML/DOM overlays).
-- **No Scroll Traps:** Never use `overflow-y-auto` on internal UI panels. Rely strictly on native, window-level page scrolling.
-- **Glass & Geometry:** Standard `rounded` borders are banned. Use `rounded-2xl` or `rounded-full`. UI must use deep blurs (`backdrop-blur-2xl`), sub-pixel neon borders (`border-white/10`), and inset shadows.
-- **Matrix Fail-Safes:** Any `getScreenCTM().inverse()` matrix math MUST be wrapped in a `try/catch` block to prevent 3D CSS `DOMException` crashes, falling back to a bounding box raycast.
-- **Glass Penetration:** All interactive HTML elements (`<button>`, `<input>`) inside a `pointer-events-none` 3D wrapper MUST explicitly declare `pointer-events-auto` or they will be unclickable ghosts.
-- **Context Overrides:** Intercept `oncontextmenu` on SVG entities, use `e.preventDefault()` to kill native right-clicks, and trigger custom Svelte UI radials.
-- **Pure Optics:** Arrow markers MUST use `markerUnits="userSpaceOnUse"`. Trails must be geometric tracks or Lockheed-style Neon (`feGaussianBlur` multi-layer stacks), no cheap noise/turbulence.
+# FRONTEND PHYSICS & STRICT MODULARIZATION
+This app handles complex 3D math, SVG manipulation, and real-time physics. You MUST enforce the "Trinity Pattern" for all complex features to prevent DOM/Context collapse.
+
+## 1. THE TRINITY PATTERN (SVELTE 5)
+Complex UI (like the Tactical Board) must be ripped into three isolated layers:
+1. `*Engine.svelte.ts`: The Brain. Pure Svelte 5 class holding ONLY `$state`, timeline loops, and math (e.g., matrix fallbacks). NO DOM manipulation here.
+2. `*Arena.svelte`: The Glass. Dumb SVG/Canvas presentation layer. It takes state from the Engine and renders vectors.
+3. `*HUD.svelte`: The HTML UI. Overlays mapping to 3D space.
+
+## 2. UI PHYSICS LAWS
+- **Svelte 5 Only:** Strict Runes (`$state`, `$derived`, `$props`, `$effect`). No Svelte 4 stores.
+- **No Scroll Traps:** Never use `overflow-y-auto` on internal UI panels. Rely strictly on native page scrolling.
+- **Glass & Geometry:** Use `rounded-2xl` or `rounded-full`. UI utilizes deep blurs (`backdrop-blur-2xl`), sub-pixel neon borders (`border-white/10`), and inset shadows.
+- **Z-Axis Mounts:** Modals and menus extrude using Svelte transitions (`fly`, `scale`).
+- **Matrix Fail-Safes:** Any `getScreenCTM().inverse()` math MUST be wrapped in a `try/catch` block.

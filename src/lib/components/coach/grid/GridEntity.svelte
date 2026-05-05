@@ -152,6 +152,7 @@
 			pointer-events="all"
 			class={warRoomTool === 'DRAG' ? 'tw-cursor-move' : warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : ''}
 			onpointerdown={handleEntityPointerDown}
+		oncontextmenu={handleEntityContextMenu}
 		/>
 	</g>
 {/if}

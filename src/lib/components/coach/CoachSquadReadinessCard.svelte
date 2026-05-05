@@ -3,8 +3,42 @@
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { getLevelProgressFromTotalXp, MAX_PLAYER_LEVEL } from '$lib/gamification/level.js';
+	import EligibilityBadge from './EligibilityBadge.svelte';
 
-	let { teamId = '' } = $props();
+	/**
+	 * @typedef {{
+	 *   id: string; name: string; number: string; position: string;
+	 *   level: number; xp: number; xpMax: number;
+	 *   stamina: number; hr: number;
+	 *   vpc_approved: boolean;
+	 *   status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED';
+	 * }} ReadinessPlayer
+	 */
+
+	/** @type {{ teamId?: string; player?: ReadinessPlayer | null }} */
+	let { teamId = '', player = null } = $props();
+
+	// ── Individual card derived state ─────────────────────────────────────────
+	const initials = $derived(
+		player
+			? player.name
+					.split(/[\s.]/)
+					.filter(Boolean)
+					.map((p) => p[0])
+					.join('')
+					.slice(0, 2)
+					.toUpperCase()
+			: '',
+	);
+	const xpPct = $derived(player ? Math.min(100, Math.round((player.xp / player.xpMax) * 100)) : 0);
+	const STATUS_COLORS = { READY: '#00f0ff', FATIGUED: '#ffff00', INJURED: '#ff003c', SUSPENDED: '#ff6600' };
+	const statusColor = $derived(player ? (STATUS_COLORS[player.status] ?? '#ffffff') : '#ffffff');
+	const staminaColor = $derived(
+		player ? (player.stamina >= 70 ? '#00f0ff' : player.stamina >= 40 ? '#ffff00' : '#ff003c') : '#00f0ff',
+	);
+	const hrColor = $derived(
+		player ? (player.hr <= 80 ? '#00f0ff' : player.hr <= 100 ? '#ffff00' : '#ff003c') : '#00f0ff',
+	);
 
 	/** @type {Array<{ name: string, level: number, xpToNext: number, gap: number }>} */
 	let levelingSoon = $state([]);
@@ -102,6 +136,105 @@
 		};
 	});
 </script>
+
+{#if player}
+	<!-- ── Individual Readiness Card ──────────────────────────────────────────── -->
+	<article
+		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-2xl tw-transition-all tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:tw-border-white/20 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(0,240,255,0.06)]"
+		data-player-id={player.id}
+	>
+		<!-- Header: avatar + identity + status -->
+		<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-2">
+			<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
+				<div
+					class="tw-relative tw-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-white/15 tw-bg-[#0a0a14] tw-font-mono tw-text-sm tw-font-bold tw-text-white/80"
+					style="box-shadow: 0 0 0 2px {statusColor}33;"
+				>
+					{initials}
+					<span
+						class="tw-absolute tw-bottom-0 tw-right-0 tw-h-2.5 tw-w-2.5 tw-rounded-full tw-border-2 tw-border-[#020202]"
+						style="background: {statusColor};"
+					></span>
+				</div>
+				<div class="tw-min-w-0">
+					<p class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-white/90">{player.name}</p>
+					<p class="tw-font-mono tw-text-[10px] tw-text-white/40">{player.position} · #{player.number}</p>
+				</div>
+			</div>
+			<span
+				class="tw-shrink-0 tw-rounded-full tw-px-2 tw-py-0.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-widest"
+				style="color: {statusColor}; background: {statusColor}18; border: 1px solid {statusColor}40;"
+			>
+				{player.status}
+			</span>
+		</div>
+
+		<!-- RPG Level + XP bar -->
+		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-white/[0.02] tw-px-3 tw-py-2.5">
+			<div class="tw-mb-1.5 tw-flex tw-items-center tw-justify-between tw-gap-2">
+				<span
+					class="tw-rounded-md tw-border tw-border-[#00f0ff]/25 tw-bg-[#00f0ff]/10 tw-px-1.5 tw-py-0.5 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#00f0ff]"
+				>
+					LVL {player.level}
+				</span>
+				<span class="tw-font-mono tw-text-[9px] tw-tabular-nums tw-text-white/40">
+					{player.xp.toLocaleString()} / {player.xpMax.toLocaleString()} XP
+				</span>
+			</div>
+			<div class="tw-h-1 tw-overflow-hidden tw-rounded-full tw-bg-white/10">
+				<div
+					class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#00f0ff]/50 tw-to-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.45)]"
+					style="width: {xpPct}%;"
+				></div>
+			</div>
+		</div>
+
+		<!-- Biometrics + VPC consent gate -->
+		<div class="tw-relative tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-white/[0.02] tw-p-3">
+			<div class="tw-grid tw-grid-cols-2 tw-gap-3" class:tw-opacity-0={!player.vpc_approved}>
+				<div>
+					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-white/30">
+						STAMINA
+					</p>
+					<p class="tw-font-mono tw-text-lg tw-font-bold tw-tabular-nums" style="color: {staminaColor};">
+						{player.stamina}<span class="tw-text-[10px] tw-opacity-60">%</span>
+					</p>
+					<div class="tw-mt-1 tw-h-0.5 tw-overflow-hidden tw-rounded-full tw-bg-white/10">
+						<div
+							class="tw-h-full tw-rounded-full"
+							style="width: {player.stamina}%; background: {staminaColor};"
+						></div>
+					</div>
+				</div>
+				<div>
+					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-white/30">
+						HEART RATE
+					</p>
+					<p class="tw-font-mono tw-text-lg tw-font-bold tw-tabular-nums" style="color: {hrColor};">
+						{player.hr}<span class="tw-text-[10px] tw-opacity-60"> bpm</span>
+					</p>
+				</div>
+			</div>
+			{#if !player.vpc_approved}
+				<div
+					class="tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-xl tw-bg-[#020202]/80 tw-backdrop-blur-sm"
+				>
+					<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+						<rect x="1" y="6" width="12" height="7" rx="1.5" fill="none" stroke="#ff003c" stroke-width="1.25" />
+						<path d="M4 6V4.5a3 3 0 0 1 6 0V6" stroke="#ff003c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+					</svg>
+					<span
+						class="tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.15em] tw-text-[#ff003c]"
+						>CONSENT REQUIRED</span
+					>
+				</div>
+			{/if}
+		</div>
+
+		<!-- VPC eligibility pill -->
+		<EligibilityBadge vpc_approved={player.vpc_approved} />
+	</article>
+{:else}
 
 <div
 	class="rounded-3xl border border-white/10 bg-[#020202]/80 p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
@@ -202,3 +335,5 @@
 		</div>
 	{/if}
 </div>
+
+{/if}

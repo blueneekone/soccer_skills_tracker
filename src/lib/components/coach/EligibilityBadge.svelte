@@ -9,8 +9,8 @@
 	 * @property {string} [governingBodyStatus]
 	 */
 
-	/** @type {{ eligibility: EligLike | null }} */
-	let { eligibility = null } = $props();
+	/** @type {{ eligibility: EligLike | null; vpc_approved?: boolean | null }} */
+	let { eligibility = null, vpc_approved = null } = $props();
 
 	const gbLabel = $derived.by(() => {
 		const s = eligibility?.governingBodyStatus;
@@ -27,6 +27,22 @@
 		!eligibility || eligibility.identityVerified !== true,
 	);
 </script>
+
+{#if vpc_approved !== null && vpc_approved !== undefined}
+	<!-- Standalone VPC pill — used by CoachSquadReadinessCard -->
+	<span
+		class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-px-2.5 tw-py-0.5 tw-font-mono tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-[0.15em] {vpc_approved
+			? 'tw-border tw-border-[#00f0ff]/30 tw-bg-[#00f0ff]/10 tw-text-[#00f0ff]'
+			: 'tw-animate-pulse tw-border tw-border-[#ff003c]/50 tw-bg-[#ff003c]/10 tw-text-[#ff003c] tw-shadow-[0_0_14px_rgba(255,0,60,0.35)]'}"
+	>
+		<span
+			class="tw-block tw-h-1.5 tw-w-1.5 tw-rounded-full {vpc_approved
+				? 'tw-bg-[#00f0ff] tw-shadow-[0_0_4px_rgba(0,240,255,0.7)]'
+				: 'tw-bg-[#ff003c] tw-shadow-[0_0_6px_rgba(255,0,60,0.9)]'}"
+		></span>
+		{vpc_approved ? 'VPC · VERIFIED' : 'VPC · REQUIRED'}
+	</span>
+{:else}
 
 <div class="elig-badge-row">
 	{#if showIdentityWarning}
@@ -68,6 +84,8 @@
 		<span class="elig-chip elig-chip--muted">No eligibility record</span>
 	{/if}
 </div>
+
+{/if}
 
 <style>
 	.elig-badge-row {

@@ -24,11 +24,16 @@
 		warRoomTool = /** @type {'DRAG' | 'ROUTE'} */ ('DRAG'),
 		isSelected = false,
 		showAnchors = true,
+		playerStamina = 80,
 		onPathClick,
 		onControlPointDrag,
 		onRouteHoverEnter,
 		onRouteHoverLeave,
 	} = $props();
+
+	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
+	const successProb = $derived(Math.round(Math.max(0, Math.min(100, playerStamina * (1 - routeDistance / 2000)))));
+	const probColor = $derived(successProb >= 70 ? '#00f0ff' : successProb >= 40 ? '#ffff00' : '#ff003c');
 </script>
 
 {#if renderLayer === 'stroke'}
@@ -84,17 +89,22 @@
 		pointer-events="none"
 		data-timeline-ms={timelineMs}
 	>
-		<animate attributeName="opacity" values="0.22;0.42;0.22" dur="1.5s" repeatCount="indefinite" />
-		<circle
-			cx="0"
-			cy="0"
-			r="14"
-			fill="none"
-			stroke={route.color}
-			stroke-width="2"
-		/>
-		<line x1="-10" y1="-5" x2="10" y2="-5" stroke="#ffffff" stroke-width="1" opacity="0.5" />
-		<line x1="-10" y1="5" x2="10" y2="5" stroke="#ffffff" stroke-width="1" opacity="0.5" />
+		<animate attributeName="opacity" values="0.25;0.55;0.25" dur="1.5s" repeatCount="indefinite" />
+		<circle cx="0" cy="0" r="18" fill="none" stroke={probColor} stroke-width="2" filter="url(#premium-neon)" />
+		<circle cx="0" cy="0" r="5" fill={probColor} opacity="0.25" />
+		<line x1="-13" y1="0" x2="13" y2="0" stroke="#ffffff" stroke-width="1" opacity="0.45" />
+		<line x1="0" y1="-13" x2="0" y2="13" stroke="#ffffff" stroke-width="1" opacity="0.45" />
+		<text
+			x="0"
+			y="28"
+			font-family="monospace"
+			font-size="10"
+			fill={probColor}
+			text-anchor="middle"
+			dominant-baseline="hanging"
+			font-weight="bold"
+			filter="url(#premium-neon)"
+		>{successProb}%</text>
 	</g>
 {/if}
 

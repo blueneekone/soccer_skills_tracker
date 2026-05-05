@@ -171,7 +171,13 @@
 
 			{#each routesLive as route (route.id)}
 				{#if route.bindPlayerId}
-					<GridRoute {route} renderLayer="ghost" timelineMs={simulatorTime} />
+					{@const boundToken = allPitchTokens.find((t) => t.id === route.bindPlayerId)}
+					<GridRoute
+						{route}
+						renderLayer="ghost"
+						timelineMs={simulatorTime}
+						playerStamina={boundToken ? Math.max(40, 95 - (Number(boundToken.number) || 5) * 4) : 80}
+					/>
 				{/if}
 			{/each}
 

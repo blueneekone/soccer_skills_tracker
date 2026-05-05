@@ -1,6 +1,7 @@
 <script>
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
+	import CoachSquadReadinessCard from './CoachSquadReadinessCard.svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
@@ -742,7 +743,65 @@
 	}
 
 	const signalCount = $derived(vpcItems.length + trialRows.length);
+
+	// ── Readiness Matrix mock data ─────────────────────────────────────────────
+	/**
+	 * @type {Array<{ id: string; name: string; number: string; position: string; level: number; xp: number; xpMax: number; stamina: number; hr: number; vpc_approved: boolean; status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED' }>}
+	 */
+	const READINESS_ROSTER = [
+		{ id: 'PLR-01', name: 'J. MARTINEZ', number: '1',  position: 'GK', level: 12, xp: 2450, xpMax: 3000, stamina: 88, hr: 72,  vpc_approved: true,  status: 'READY'    },
+		{ id: 'PLR-02', name: 'A. SILVA',    number: '4',  position: 'CB', level: 8,  xp: 1200, xpMax: 2000, stamina: 65, hr: 85,  vpc_approved: true,  status: 'FATIGUED' },
+		{ id: 'PLR-03', name: 'K. CHEN',     number: '7',  position: 'LW', level: 15, xp: 4800, xpMax: 5000, stamina: 92, hr: 68,  vpc_approved: false, status: 'READY'    },
+		{ id: 'PLR-04', name: 'M. OKONKWO',  number: '9',  position: 'ST', level: 11, xp: 2100, xpMax: 2500, stamina: 78, hr: 78,  vpc_approved: true,  status: 'READY'    },
+		{ id: 'PLR-05', name: 'R. POPESCU',  number: '10', position: 'CM', level: 9,  xp: 1750, xpMax: 2000, stamina: 45, hr: 95,  vpc_approved: true,  status: 'FATIGUED' },
+		{ id: 'PLR-06', name: 'T. NAKAMURA', number: '11', position: 'RW', level: 7,  xp: 900,  xpMax: 1500, stamina: 82, hr: 74,  vpc_approved: false, status: 'READY'    },
+		{ id: 'PLR-07', name: 'D. MENSAH',   number: '3',  position: 'LB', level: 10, xp: 2000, xpMax: 2500, stamina: 90, hr: 70,  vpc_approved: true,  status: 'READY'    },
+		{ id: 'PLR-08', name: 'C. DUBOIS',   number: '5',  position: 'CB', level: 6,  xp: 800,  xpMax: 1500, stamina: 30, hr: 102, vpc_approved: true,  status: 'INJURED'  },
+	];
+	const rmReady   = READINESS_ROSTER.filter((p) => p.status === 'READY').length;
+	const rmConsent = READINESS_ROSTER.filter((p) => !p.vpc_approved).length;
+	const rmFault   = READINESS_ROSTER.filter((p) => p.status === 'INJURED' || p.status === 'SUSPENDED').length;
 </script>
+
+<!-- ── Readiness Matrix (glassmorphic SIEM grid) ──────────────────────────── -->
+<section
+	class="tw-mb-6 tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/60 tw-p-5 tw-backdrop-blur-xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+	aria-labelledby="readiness-matrix-title"
+>
+	<!-- Matrix header -->
+	<div class="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-white/10 tw-pb-4">
+		<div class="tw-flex tw-items-center tw-gap-3">
+			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
+			<h2
+				id="readiness-matrix-title"
+				class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#00f0ff]"
+			>
+				READINESS MATRIX · ALPHA UNIT
+			</h2>
+		</div>
+		<div class="tw-flex tw-flex-wrap tw-gap-4">
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+				COMBAT READY
+				<span class="tw-ml-1 tw-tabular-nums tw-text-[#00f0ff]">{rmReady}</span>
+			</span>
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+				CONSENT PENDING
+				<span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{rmConsent}</span>
+			</span>
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+				OFFLINE
+				<span class="tw-ml-1 tw-tabular-nums tw-text-[#ffff00]">{rmFault}</span>
+			</span>
+		</div>
+	</div>
+
+	<!-- Card grid — native page scroll, no overflow traps -->
+	<div class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-2 lg:tw-grid-cols-3 xl:tw-grid-cols-4">
+		{#each READINESS_ROSTER as p (p.id)}
+			<CoachSquadReadinessCard player={p} />
+		{/each}
+	</div>
+</section>
 
 <div class="stw" data-region="squad-telemetry">
 	<header class="stw__hud">
