@@ -10,6 +10,8 @@
 	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
 	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
+	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import { getLevelProgressFromTotalXp, getCurrentRank } from '$lib/gamification/level.js';
 	import '$lib/styles/player-shell.css';
 
 	let disconnectBusy = $state(false);
@@ -30,6 +32,10 @@
 
 	/** @type {{ children?: import('svelte').Snippet }} */
 	let { children } = $props();
+
+	const shellTotalXp = $derived(Math.max(0, Math.floor(Number(authStore.userProfile?.totalXp ?? authStore.userProfile?.xp) || 0)));
+	const shellRank = $derived(getCurrentRank(shellTotalXp));
+	const shellLevel = $derived(getLevelProgressFromTotalXp(shellTotalXp).level);
 
 	const playerName = $derived(
 		authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Athlete',
@@ -156,6 +162,20 @@
 				<div class="ps-topbar__hello">
 					<span class="ps-topbar__greet">Player OS</span>
 					<span class="ps-topbar__name">{firstName}</span>
+				</div>
+			</div>
+			<!-- Compact RPG ring: 128px md ring scaled to 48px visual via CSS clip+scale -->
+			<div class="tw-relative tw-h-12 tw-w-12 tw-shrink-0 tw-overflow-hidden tw-rounded-full">
+				<div style="transform: scale(0.375); transform-origin: top left; width: 128px; height: 128px;">
+					<LevelProgressRing
+						currentXp={shellRank.xpInCurrentTier}
+						nextRankXp={shellRank.xpToNextRank}
+						rankName={shellRank.rank}
+						totalXp={shellTotalXp}
+						level={shellLevel}
+						size="md"
+						variant="dark"
+					/>
 				</div>
 			</div>
 			<div class="ps-topbar__actions tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2">

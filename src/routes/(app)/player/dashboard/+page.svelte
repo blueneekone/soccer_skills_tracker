@@ -1,7 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
-	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+	import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
@@ -59,6 +59,10 @@
 	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
 	const longestStreak = $derived(Number(activePlayer?.longestStreak) || streak);
 
+	/** @type {Array<{ id: string; title: string; routeCount: number; xpBounty: number }>} */
+	let tacticalDeployments = $state([]);
+	let deploymentsLoading = $state(true);
+
 	/** @type {string} */
 	let teamAssignmentLabel = $state('');
 
@@ -106,6 +110,47 @@
 			return () => playerEngine.detach();
 		}
 		playerEngine.detach();
+	});
+
+	$effect(() => {
+		if (!browser || !uid) {
+			tacticalDeployments = [];
+			deploymentsLoading = false;
+			return;
+		}
+		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
+		if (!tid || tid === 'admin') {
+			tacticalDeployments = [];
+			deploymentsLoading = false;
+			return;
+		}
+		const q = query(
+			collection(db, 'tactical_deployments'),
+			where('teamId', '==', tid),
+			orderBy('createdAt', 'desc'),
+			limit(5),
+		);
+		const unsub = onSnapshot(
+			q,
+			(snap) => {
+				tacticalDeployments = snap.docs.map((d) => {
+					const data = d.data();
+					return {
+						id: d.id,
+						title: typeof data.title === 'string' && data.title.trim() ? data.title.trim() : 'Untitled Play',
+						routeCount: Math.max(0, Number(data.routeCount) || (Array.isArray(data.routes) ? data.routes.length : 0)),
+						xpBounty: Math.max(0, Number(data.xpBounty) || 0),
+					};
+				});
+				deploymentsLoading = false;
+			},
+			(e) => {
+				console.error('[player dashboard] tactical_deployments', e);
+				tacticalDeployments = [];
+				deploymentsLoading = false;
+			},
+		);
+		return () => unsub();
 	});
 
 	$effect(() => {
@@ -424,6 +469,44 @@
 		aria-label="Team leaderboard"
 	>
 		<TeamLeaderboard compact />
+	</section>
+
+	<section
+		class="lobby-glass tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
+		aria-labelledby="lobby-deployments-h"
+	>
+		<header class="tw-relative tw-z-50 tw-mb-4 tw-min-w-0 tw-border-b tw-border-[#00f0ff]/20 tw-pb-3">
+			<p class="lobby-eyebrow tw-mb-1 tw-text-[#00f0ff]/90">Tactical ops</p>
+			<h2 id="lobby-deployments-h" class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
+				Active Deployments
+			</h2>
+		</header>
+		<div class="tw-relative tw-z-50 tw-min-w-0">
+			{#if deploymentsLoading}
+				<p class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-font-mono tw-text-xs tw-text-slate-500">
+					<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i>
+					SYNCING CARTRIDGES…
+				</p>
+			{:else if tacticalDeployments.length === 0}
+				<p class="tw-py-4 tw-font-mono tw-text-xs tw-leading-relaxed tw-text-slate-600">
+					No plays deployed yet. Your coach will push cartridges here.
+				</p>
+			{:else}
+				<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0">
+					{#each tacticalDeployments as dep (dep.id)}
+						<li class="tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3">
+							<div class="tw-min-w-0 tw-flex-1">
+								<p class="tw-m-0 tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-200">{dep.title}</p>
+								<p class="tw-m-0 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-500">
+									{dep.routeCount} route{dep.routeCount !== 1 ? 's' : ''}
+								</p>
+							</div>
+							<span class="tw-shrink-0 tw-font-mono tw-text-sm tw-font-black tw-text-[#00f0ff]">+{dep.xpBounty} XP</span>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
 	</section>
 
 	<div

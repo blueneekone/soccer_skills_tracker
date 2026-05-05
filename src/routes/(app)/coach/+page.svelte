@@ -10,6 +10,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
 
 	/**
 	 * @typedef {{
@@ -703,6 +704,7 @@
 
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-px-2 md:tw-px-4">
 		<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto tw-scrollbar-hide tw-py-3 tw-pb-4 md:tw-gap-6">
+		<SquadTelemetryView />
 		<div class="tw-grid tw-grid-cols-1 tw-gap-6 tw-w-full tw-items-stretch tw-overflow-visible tw-p-2 lg:tw-grid-cols-3">
 		<section id="coach-pillar-mission" class="{CMD_CARD_GLOW_GUTTER}" aria-label="Mission control">
 			<div class="{CMD_CARD_PANEL}">
