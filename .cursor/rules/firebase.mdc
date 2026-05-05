@@ -1,7 +1,0 @@
----
-alwaysApply: true
----
-description: Rules for Firebase backend and database logic
-globs: *.ts, *.js
----
-You are writing Firebase/Firestore logic. You MUST use the v10+ Modular SDK (e.g., `import { doc, setDoc } from 'firebase/firestore'`). NEVER use the compat SDK. If updating multiple documents, you MUST use `writeBatch`. If incrementing a counter, you MUST use `increment()`.

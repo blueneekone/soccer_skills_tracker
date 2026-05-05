@@ -1,5 +1,0 @@
----
-description: Rules for Svelte and SvelteKit frontend components
-globs: *.svelte
----
-You are writing Svelte 5. You MUST use Runes (`$state`, `$derived`, `$effect`). NEVER use Svelte 4 `export let` syntax. All CSS MUST be placed inside a `<style>` tag at the bottom of this file. Do not use inline styles. Apply the "Liquid Glass" clamp() padding rules.
