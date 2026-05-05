@@ -41,7 +41,7 @@
 	out:fade={{ duration: 200 }}
 >
 	<header
-		class="tw-z-20 tw-flex tw-h-14 tw-shrink-0 tw-items-center tw-justify-between tw-border-b tw-border-[#ff003c]/35 tw-bg-[#020202]/80 tw-px-6 tw-backdrop-blur-2xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)]"
+		class="tw-z-20 tw-flex tw-h-14 tw-shrink-0 tw-items-center tw-justify-between tw-border-b tw-border-[#ff003c]/35 tw-bg-[#020202]/80 tw-px-6 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)]"
 	>
 		<div class="tw-flex tw-items-center tw-gap-4">
 			<div
@@ -55,7 +55,7 @@
 		</div>
 		<button
 			type="button"
-			class="tw-pointer-events-auto tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-border-white/10 tw-bg-[#020202]/80 tw-font-mono tw-text-xl tw-text-white tw-backdrop-blur-2xl tw-transition-colors hover:tw-border-[#ff0033]/70 hover:tw-text-[#ff0033]"
+			class="tw-pointer-events-auto tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-border-white/10 tw-bg-[#020202]/80 tw-font-mono tw-text-xl tw-text-white tw-backdrop-blur-3xl tw-transition-colors hover:tw-border-[#ff0033]/70 hover:tw-text-[#ff0033]"
 			onclick={model.closeOverlay}
 			aria-label="Close tactical board"
 		>

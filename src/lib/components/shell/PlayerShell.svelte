@@ -211,7 +211,7 @@
 		{#if isInboxOpen}
 			<div
 				id="ps-action-inbox-panel"
-				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-cyan-500/20 tw-bg-zinc-950/85 tw-px-3 tw-py-3 tw-shadow-[0_20px_50px_rgba(0,0,0,0.65)] [backdrop-filter:blur(18px) saturate(1.2)] [webkit-backdrop-filter:blur(18px) saturate(1.2)]"
+				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/85 tw-px-3 tw-py-3 tw-backdrop-blur-3xl tw-shadow-[0_20px_50px_rgba(0,0,0,0.65),_0_0_30px_rgba(0,240,255,0.08)]"
 				style="top: var(--pp-topbar-height);"
 				role="region"
 				aria-label="Alerts"

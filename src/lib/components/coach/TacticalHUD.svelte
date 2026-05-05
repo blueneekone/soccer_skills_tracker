@@ -92,10 +92,12 @@
 </script>
 
 <div
-	class="tw-pointer-events-auto tw-relative tw-z-50 tw-min-h-28 tw-shrink-0 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-2xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId
+	class="tw-pointer-events-none tw-relative tw-z-50 tw-min-h-28 tw-shrink-0 tw-overflow-visible tw-border-t tw-border-white/10 tw-bg-[#020202]/85 tw-py-2 tw-pb-20 tw-backdrop-blur-3xl tw-transition-[box-shadow] tw-duration-300 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_-12px_40px_rgba(0,0,0,0.45)] {model.focusedPlayerId
 		? 'tw-shadow-[inset_0_1px_0_rgba(255,0,60,0.35)]'
 		: ''}"
 >
+	<!-- Wrap GridHUD: HUD root is pointer-events-none, GridHUD reclaims interactivity -->
+	<div class="tw-pointer-events-auto">
 	<GridHUD
 		bind:warRoomTool
 		pickTool={(t) => model.setActiveTool(t)}
@@ -109,6 +111,7 @@
 		recallBench={model.recallBench}
 		clearRoutesOnly={model.clearRoutesOnly}
 	/>
+	</div>
 
 	<!-- DEPLOY TO SQUAD ─────────────────────────────────────────────────────── -->
 	<div class="tw-pointer-events-auto tw-absolute tw-bottom-2 tw-right-4 tw-z-20">
@@ -200,7 +203,7 @@
 
 		<!-- Panel -->
 		<div
-			class="tw-relative tw-w-[min(400px,90vw)] tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/96 tw-p-8 tw-text-center tw-backdrop-blur-2xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_80px_rgba(0,240,255,0.12),_0_40px_80px_rgba(0,0,0,0.8)]"
+			class="tw-relative tw-w-[min(400px,90vw)] tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/96 tw-p-8 tw-text-center tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_80px_rgba(0,240,255,0.12),_0_40px_80px_rgba(0,0,0,0.8)]"
 			in:scale={{ duration: 350, start: 0.85 }}
 			out:scale={{ duration: 200, start: 0.92 }}
 		>

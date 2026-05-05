@@ -22,6 +22,7 @@
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
 	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
+	import VanguardVFX from '../../components/VanguardVFX.svelte';
 
 	let { children } = $props();
 
@@ -228,6 +229,9 @@
 			authStore.role !== 'global_admin',
 	);
 </script>
+
+<!-- Global Vanguard SVG filter defs — referenced by url(#neonBloom) / url(#aresBloom) across every portal. -->
+<VanguardVFX />
 
 {#if authStore.isLoading}
 	<div

@@ -11,7 +11,8 @@
 	 *   level: number; xp: number; xpMax: number;
 	 *   stamina: number; hr: number;
 	 *   vpc_approved: boolean;
-	 *   status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED';
+	 *   status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED' | 'OFFLINE' | 'INJURY RISK';
+	 *   skills?: number[];
 	 * }} ReadinessPlayer
 	 */
 
@@ -31,8 +32,25 @@
 			: '',
 	);
 	const xpPct = $derived(player ? Math.min(100, Math.round((player.xp / player.xpMax) * 100)) : 0);
-	const STATUS_COLORS = { READY: '#00f0ff', FATIGUED: '#ffff00', INJURED: '#ff003c', SUSPENDED: '#ff6600' };
+	/** @type {Record<string, string>} */
+	const STATUS_COLORS = {
+		READY: '#00f0ff',
+		FATIGUED: '#ffff00',
+		INJURED: '#ff003c',
+		SUSPENDED: '#ff6600',
+		OFFLINE: '#666666',
+		'INJURY RISK': '#ff003c',
+	};
 	const statusColor = $derived(player ? (STATUS_COLORS[player.status] ?? '#ffffff') : '#ffffff');
+	const isAtRisk = $derived(player?.status === 'INJURY RISK');
+	const isOffline = $derived(player?.status === 'OFFLINE');
+	/** Deterministic skill bar values — fall back if roster row omits skills. */
+	const skillBars = $derived(
+		player?.skills && player.skills.length > 0
+			? player.skills
+			: [70, 65, 72, 68, 75, 70],
+	);
+	const SKILL_LABELS = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'];
 	const staminaColor = $derived(
 		player ? (player.stamina >= 70 ? '#00f0ff' : player.stamina >= 40 ? '#ffff00' : '#ff003c') : '#00f0ff',
 	);
@@ -137,11 +155,25 @@
 	});
 </script>
 
+<svelte:head>
+	<style>
+		@keyframes atRiskPulse {
+			0%, 100% { box-shadow: inset 0 1px 1px rgba(255, 0, 60, 0.1), 0 0 24px rgba(255, 0, 60, 0.35); }
+			50% { box-shadow: inset 0 1px 1px rgba(255, 0, 60, 0.18), 0 0 36px rgba(255, 0, 60, 0.6); }
+		}
+	</style>
+</svelte:head>
+
 {#if player}
 	<!-- ── Individual Readiness Card ──────────────────────────────────────────── -->
 	<article
-		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-2xl tw-transition-all tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:tw-border-white/20 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(0,240,255,0.06)]"
+		class="tw-relative tw-rounded-2xl tw-border tw-p-4 tw-backdrop-blur-3xl tw-transition-all {isAtRisk
+			? 'tw-border-[#ff003c]/55 tw-bg-[#1a0008]/80 tw-shadow-[inset_0_1px_1px_rgba(255,0,60,0.1),_0_0_24px_rgba(255,0,60,0.35)] tw-animate-[atRiskPulse_2.4s_ease-in-out_infinite]'
+			: isOffline
+				? 'tw-border-white/8 tw-bg-[#020202]/60 tw-opacity-60 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]'
+				: 'tw-border-white/10 tw-bg-[#020202]/80 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:tw-border-white/20 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(0,240,255,0.06)]'}"
 		data-player-id={player.id}
+		data-status={player.status}
 	>
 		<!-- Header: avatar + identity + status -->
 		<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-2">
@@ -231,13 +263,56 @@
 			{/if}
 		</div>
 
+		<!-- Skill Radar sparkline — cyan-bloomed bars -->
+		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-[#00f0ff]/[0.03] tw-p-2.5">
+			<p class="tw-mb-1.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#00f0ff]/70">
+				SKILL RADAR
+			</p>
+			<svg class="tw-block tw-h-10 tw-w-full" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
+				<defs>
+					<filter id="csrcSparkBloom-{player.id}" x="-20%" y="-50%" width="140%" height="200%">
+						<feGaussianBlur in="SourceGraphic" stdDeviation="0.85" result="blur" />
+						<feMerge>
+							<feMergeNode in="blur" />
+							<feMergeNode in="blur" />
+							<feMergeNode in="SourceGraphic" />
+						</feMerge>
+					</filter>
+					<linearGradient id="csrcSparkGrad-{player.id}" x1="0" y1="1" x2="0" y2="0">
+						<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.25" />
+						<stop offset="100%" stop-color="#00f0ff" stop-opacity="1" />
+					</linearGradient>
+				</defs>
+				{#each skillBars as v, i (i)}
+					{@const barX = i * 20 + 4}
+					{@const barH = Math.max(2, (Math.min(99, Math.max(0, v)) / 99) * 28)}
+					{@const barY = 30 - barH}
+					<rect
+						x={barX}
+						y={barY}
+						width="12"
+						height={barH}
+						rx="1.5"
+						fill="url(#csrcSparkGrad-{player.id})"
+						filter="url(#csrcSparkBloom-{player.id})"
+						opacity={isOffline ? 0.4 : 1}
+					/>
+				{/each}
+			</svg>
+			<div class="tw-mt-1 tw-flex tw-justify-between tw-px-1 tw-font-mono tw-text-[7px] tw-font-bold tw-tracking-widest tw-text-white/35">
+				{#each SKILL_LABELS as lbl, i (lbl + i)}
+					<span>{lbl}</span>
+				{/each}
+			</div>
+		</div>
+
 		<!-- VPC eligibility pill -->
 		<EligibilityBadge vpc_approved={player.vpc_approved} />
 	</article>
 {:else}
 
 <div
-	class="rounded-3xl border border-white/10 bg-[#020202]/80 p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+	class="rounded-3xl border border-white/10 bg-[#020202]/80 p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl"
 	data-region="coach-squad-readiness"
 >
 	<h2 class="mb-5 text-xs font-bold uppercase tracking-widest text-slate-400">Squad readiness</h2>

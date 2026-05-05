@@ -8,8 +8,6 @@
 		orderBy,
 		limit,
 		getDocs,
-		getDoc,
-		doc
 	} from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
 
@@ -18,13 +16,7 @@
 
 	const directorApproveVpcFn = httpsCallable(functions, 'directorApproveVpc');
 
-	/** @type {Array<{
-	 *   id: string,
-	 *   playerEmail: string,
-	 *   parentEmail: string,
-	 *   consentedAt: unknown,
-	 *   clubId: string
-	 * }>} */
+	/** @type {Array<{ id: string; playerEmail: string; parentEmail: string; consentedAt: unknown; clubId: string }>} */
 	let requests = $state([]);
 	let loading = $state(true);
 	let loadError = $state('');
@@ -48,7 +40,7 @@
 					where('clubId', '==', clubId),
 					where('status', '==', 'parent_consented'),
 					orderBy('consentedAt', 'desc'),
-					limit(25)
+					limit(25),
 				);
 				const snap = await getDocs(q);
 				if (cancelled) return;
@@ -57,7 +49,7 @@
 					playerEmail: String(d.data().playerEmail || ''),
 					parentEmail: String(d.data().parentEmail || ''),
 					consentedAt: d.data().consentedAt || null,
-					clubId: String(d.data().clubId || '')
+					clubId: String(d.data().clubId || ''),
 				}));
 			} catch (e) {
 				if (!cancelled) {
@@ -89,10 +81,13 @@
 		}
 	}
 
+	/** @param {unknown} ts */
 	function formatDate(ts) {
 		if (!ts) return '';
 		try {
-			const d = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
+			const d = typeof (/** @type {{ toDate?: () => Date }} */ (ts).toDate) === 'function'
+				? /** @type {{ toDate: () => Date }} */ (ts).toDate()
+				: new Date(/** @type {string | number | Date} */ (ts));
 			return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 		} catch {
 			return '';
@@ -100,190 +95,85 @@
 	}
 </script>
 
-{#if loading}
-	<p class="vaq-muted">Loading consent requests…</p>
-{:else if loadError}
-	<p class="vaq-error" role="alert">{loadError}</p>
-{:else if requests.length === 0}
-	<p class="vaq-muted">No consent requests awaiting approval.</p>
-{:else}
-	<ul class="vaq-list" role="list">
-		{#each requests as req (req.id)}
-			<li class="vaq-row">
-				<div class="vaq-row__info">
-					<div class="vaq-row__athlete">
-						<i class="ph ph-user-circle vaq-row__icon" aria-hidden="true"></i>
-						<span class="vaq-row__email">{req.playerEmail}</span>
+<section
+	class="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-border-[#00f0ff]/20 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_20px_50px_rgba(0,0,0,0.5)]"
+	aria-labelledby="vaq-h"
+>
+	<header class="tw-mb-4 tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-[#00f0ff]/15 tw-pb-3">
+		<div class="tw-min-w-0">
+			<p class="tw-mb-1 tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-[#00f0ff]/85">
+				COPPA · CONSENT QUEUE
+			</p>
+			<h3 id="vaq-h" class="tw-m-0 tw-font-mono tw-text-base tw-font-black tw-tracking-tight tw-text-slate-100">
+				Pending Director Approvals
+			</h3>
+		</div>
+		<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/30 tw-bg-[#00f0ff]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#00f0ff]">
+			<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.7)]"></span>
+			{requests.length} OPEN
+		</span>
+	</header>
+
+	{#if loading}
+		<p class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-font-mono tw-text-xs tw-tracking-wider tw-text-slate-500">
+			<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i>
+			SYNCING CONSENT MANIFEST…
+		</p>
+	{:else if loadError}
+		<p
+			class="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-[#ff003c]/40 tw-bg-[#ff003c]/10 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ff003c]"
+			role="alert"
+		>
+			<i class="ph ph-warning-circle" aria-hidden="true"></i> {loadError}
+		</p>
+	{:else if requests.length === 0}
+		<p class="tw-py-4 tw-font-mono tw-text-xs tw-leading-relaxed tw-text-slate-600">
+			No consent requests awaiting approval. Channel quiet.
+		</p>
+	{:else}
+		<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0" role="list">
+			{#each requests as req (req.id)}
+				<li
+					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] tw-transition-colors hover:tw-border-[#00f0ff]/35"
+				>
+					<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
+						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+							<i class="ph ph-user-circle tw-shrink-0 tw-text-base tw-text-[#00f0ff]/80" aria-hidden="true"></i>
+							<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-100">{req.playerEmail}</span>
+						</div>
+						<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-3 tw-pl-6 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-500">
+							<span>PARENT · <span class="tw-text-slate-300">{req.parentEmail || '—'}</span></span>
+							{#if req.consentedAt}
+								<span class="tw-text-slate-600">CONSENTED · <span class="tw-text-slate-400 tw-tabular-nums">{formatDate(req.consentedAt)}</span></span>
+							{/if}
+						</div>
 					</div>
-					<div class="vaq-row__meta">
-						<span>Parent: <strong>{req.parentEmail || '—'}</strong></span>
-						{#if req.consentedAt}
-							<span>Consented: {formatDate(req.consentedAt)}</span>
+					<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
+						{#if itemState[req.id] === 'done'}
+							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]">
+								<i class="ph ph-check-circle" aria-hidden="true"></i> Approved
+							</span>
+						{:else if itemState[req.id] === 'error'}
+							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#ff003c]">
+								<i class="ph ph-warning" aria-hidden="true"></i> Retry
+							</span>
 						{/if}
+						<button
+							type="button"
+							class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
+							disabled={itemState[req.id] === 'approving' || itemState[req.id] === 'done'}
+							onclick={() => approveVpc(req.id, req.playerEmail)}
+							aria-label="Approve VPC for {req.playerEmail}"
+						>
+							{#if itemState[req.id] === 'approving'}
+								<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i> Approving…
+							{:else}
+								<i class="ph ph-seal-check" aria-hidden="true"></i> Approve VPC
+							{/if}
+						</button>
 					</div>
-				</div>
-				<div class="vaq-row__actions">
-					{#if itemState[req.id] === 'done'}
-						<span class="vaq-row__done">
-							<i class="ph ph-check-circle" aria-hidden="true"></i> Approved
-						</span>
-					{:else if itemState[req.id] === 'error'}
-						<span class="vaq-row__err">
-							<i class="ph ph-warning" aria-hidden="true"></i> Error — retry
-						</span>
-					{/if}
-					<button
-						type="button"
-						class="vaq-approve-btn"
-						class:vaq-approve-btn--loading={itemState[req.id] === 'approving'}
-						disabled={itemState[req.id] === 'approving' || itemState[req.id] === 'done'}
-						onclick={() => approveVpc(req.id, req.playerEmail)}
-						aria-label="Approve VPC for {req.playerEmail}"
-					>
-						{#if itemState[req.id] === 'approving'}
-							<i class="ph ph-spinner" aria-hidden="true"></i> Approving…
-						{:else}
-							<i class="ph ph-seal-check" aria-hidden="true"></i> Approve VPC
-						{/if}
-					</button>
-				</div>
-			</li>
-		{/each}
-	</ul>
-{/if}
-
-<style>
-	.vaq-muted {
-		margin: 0;
-		font-size: 0.82rem;
-		color: var(--text-secondary);
-	}
-
-	.vaq-error {
-		margin: 0;
-		font-size: 0.82rem;
-		color: #b91c1c;
-		font-weight: 600;
-	}
-	:global(html.dark) .vaq-error { color: #fca5a5; }
-
-	.vaq-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.vaq-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 10px;
-		padding: 10px 12px;
-		border: 1px solid rgba(15, 23, 42, 0.07);
-		border-radius: 10px;
-		background: rgba(245, 158, 11, 0.04);
-	}
-
-	:global(html.dark) .vaq-row {
-		background: rgba(245, 158, 11, 0.06);
-		border-color: rgba(245, 158, 11, 0.18);
-	}
-
-	.vaq-row__info {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-		min-width: 0;
-	}
-
-	.vaq-row__athlete {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-	}
-
-	.vaq-row__icon {
-		font-size: 1.1rem;
-		color: var(--aggie-gold, #f59e0b);
-		flex-shrink: 0;
-	}
-
-	.vaq-row__email {
-		font-size: 0.875rem;
-		font-weight: 700;
-		color: var(--text-primary);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.vaq-row__meta {
-		display: flex;
-		gap: 12px;
-		flex-wrap: wrap;
-		font-size: 0.75rem;
-		color: var(--text-secondary);
-		padding-left: 1.8rem;
-	}
-
-	.vaq-row__actions {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-
-	.vaq-row__done {
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: #16a34a;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	:global(html.dark) .vaq-row__done { color: #4ade80; }
-
-	.vaq-row__err {
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: #b91c1c;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	:global(html.dark) .vaq-row__err { color: #fca5a5; }
-
-	.vaq-approve-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		padding: 6px 12px;
-		border: none;
-		border-radius: 8px;
-		font-size: 0.78rem;
-		font-weight: 700;
-		cursor: pointer;
-		font-family: inherit;
-		background: var(--aggie-gold, #f59e0b);
-		color: #000;
-		transition: background 0.12s, opacity 0.12s;
-		white-space: nowrap;
-	}
-
-	.vaq-approve-btn:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-
-	.vaq-approve-btn:not(:disabled):hover {
-		background: #d97706;
-	}
-
-	.vaq-approve-btn--loading {
-		opacity: 0.7;
-	}
-</style>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>

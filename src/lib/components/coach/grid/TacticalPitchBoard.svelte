@@ -88,7 +88,7 @@
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<svg
 				bind:this={pitchSvgEl}
-				id="tactical-pitch"
+				id="tactical-pitch-svg"
 				class="tw-absolute tw-inset-0 tw-z-[100] tw-h-full tw-w-full tw-touch-none tw-select-none tw-isolate {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
 				viewBox="0 0 1600 900"
 				preserveAspectRatio="xMidYMid meet"

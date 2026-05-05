@@ -59,9 +59,58 @@
 	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
 	const longestStreak = $derived(Number(activePlayer?.longestStreak) || streak);
 
-	/** @type {Array<{ id: string; title: string; routeCount: number; xpBounty: number }>} */
+	/** @type {Array<{ id: string; title: string; routeCount: number; xpBounty: number; thumbRoutes: Array<{ x1: number; y1: number; cx: number; cy: number; x2: number; y2: number; color: string }> }>} */
 	let tacticalDeployments = $state([]);
 	let deploymentsLoading = $state(true);
+
+	// Mock TacticalCartridge fallback — used when no live deployments in Firestore.
+	const MOCK_CARTRIDGES = [
+		{
+			id: 'cart-mock-alpha',
+			title: 'Phoenix · 4-3-3 Press',
+			routeCount: 3,
+			xpBounty: 240,
+			thumbRoutes: [
+				{ x1: 30, y1: 70, cx: 60, cy: 25, x2: 92, y2: 35, color: '#00f0ff' },
+				{ x1: 50, y1: 78, cx: 70, cy: 50, x2: 88, y2: 60, color: '#a855f7' },
+				{ x1: 18, y1: 55, cx: 40, cy: 40, x2: 75, y2: 25, color: '#ffff00' },
+			],
+		},
+		{
+			id: 'cart-mock-bravo',
+			title: 'Vanguard · Counter Strike',
+			routeCount: 2,
+			xpBounty: 180,
+			thumbRoutes: [
+				{ x1: 22, y1: 80, cx: 55, cy: 40, x2: 90, y2: 22, color: '#00f0ff' },
+				{ x1: 38, y1: 72, cx: 62, cy: 55, x2: 85, y2: 50, color: '#ff003c' },
+			],
+		},
+		{
+			id: 'cart-mock-charlie',
+			title: 'Aegis · Set Piece Spin',
+			routeCount: 4,
+			xpBounty: 320,
+			thumbRoutes: [
+				{ x1: 42, y1: 18, cx: 55, cy: 45, x2: 70, y2: 70, color: '#00f0ff' },
+				{ x1: 28, y1: 28, cx: 50, cy: 55, x2: 78, y2: 38, color: '#a855f7' },
+				{ x1: 60, y1: 25, cx: 70, cy: 50, x2: 92, y2: 55, color: '#ffff00' },
+				{ x1: 18, y1: 62, cx: 38, cy: 70, x2: 65, y2: 80, color: '#ff003c' },
+			],
+		},
+	];
+
+	const missionLogEntries = $derived.by(() => {
+		if (tacticalDeployments.length > 0) {
+			return tacticalDeployments.map((d) => ({
+				...d,
+				thumbRoutes: d.thumbRoutes && d.thumbRoutes.length > 0
+					? d.thumbRoutes
+					: MOCK_CARTRIDGES[0].thumbRoutes,
+			}));
+		}
+		return MOCK_CARTRIDGES;
+	});
 
 	/** @type {string} */
 	let teamAssignmentLabel = $state('');
@@ -135,11 +184,24 @@
 			(snap) => {
 				tacticalDeployments = snap.docs.map((d) => {
 					const data = d.data();
+					/** @type {Array<{ x1: number; y1: number; cx: number; cy: number; x2: number; y2: number; color: string }>} */
+					const thumbRoutes = Array.isArray(data.routes)
+						? data.routes.slice(0, 4).map((r) => ({
+							x1: Number(r?.x1) / 16 || 30,
+							y1: Number(r?.y1) / 9 || 50,
+							cx: Number(r?.cx) / 16 || 55,
+							cy: Number(r?.cy) / 9 || 40,
+							x2: Number(r?.x2) / 16 || 80,
+							y2: Number(r?.y2) / 9 || 30,
+							color: typeof r?.color === 'string' ? r.color : '#00f0ff',
+						}))
+						: [];
 					return {
 						id: d.id,
 						title: typeof data.title === 'string' && data.title.trim() ? data.title.trim() : 'Untitled Play',
 						routeCount: Math.max(0, Number(data.routeCount) || (Array.isArray(data.routes) ? data.routes.length : 0)),
 						xpBounty: Math.max(0, Number(data.xpBounty) || 0),
+						thumbRoutes,
 					};
 				});
 				deploymentsLoading = false;
@@ -473,13 +535,19 @@
 
 	<section
 		class="lobby-glass tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
-		aria-labelledby="lobby-deployments-h"
+		aria-labelledby="lobby-mission-log-h"
 	>
-		<header class="tw-relative tw-z-50 tw-mb-4 tw-min-w-0 tw-border-b tw-border-[#00f0ff]/20 tw-pb-3">
-			<p class="lobby-eyebrow tw-mb-1 tw-text-[#00f0ff]/90">Tactical ops</p>
-			<h2 id="lobby-deployments-h" class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
-				Active Deployments
-			</h2>
+		<header class="tw-relative tw-z-50 tw-mb-4 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-[#00f0ff]/20 tw-pb-3">
+			<div class="tw-min-w-0">
+				<p class="lobby-eyebrow tw-mb-1 tw-text-[#00f0ff]/90">Tactical ops</p>
+				<h2 id="lobby-mission-log-h" class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
+					MISSION LOG
+				</h2>
+			</div>
+			<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/30 tw-bg-[#00f0ff]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#00f0ff]">
+				<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.7)]"></span>
+				{missionLogEntries.length} CARTRIDGES
+			</span>
 		</header>
 		<div class="tw-relative tw-z-50 tw-min-w-0">
 			{#if deploymentsLoading}
@@ -487,21 +555,68 @@
 					<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i>
 					SYNCING CARTRIDGES…
 				</p>
-			{:else if tacticalDeployments.length === 0}
-				<p class="tw-py-4 tw-font-mono tw-text-xs tw-leading-relaxed tw-text-slate-600">
-					No plays deployed yet. Your coach will push cartridges here.
-				</p>
 			{:else}
-				<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0">
-					{#each tacticalDeployments as dep (dep.id)}
-						<li class="tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3">
-							<div class="tw-min-w-0 tw-flex-1">
-								<p class="tw-m-0 tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-200">{dep.title}</p>
-								<p class="tw-m-0 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-500">
-									{dep.routeCount} route{dep.routeCount !== 1 ? 's' : ''}
-								</p>
+				<ul class="tw-m-0 tw-grid tw-list-none tw-grid-cols-1 tw-gap-3 tw-p-0 sm:tw-grid-cols-2">
+					{#each missionLogEntries as dep (dep.id)}
+						<li class="tw-group tw-flex tw-min-w-0 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/8 tw-bg-[#020202]/80 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] tw-transition-all hover:tw-border-[#00f0ff]/35 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(0,240,255,0.18)]">
+							<!-- Pitch thumbnail -->
+							<div class="tw-relative tw-overflow-hidden tw-border-b tw-border-white/5 tw-bg-[#011018]">
+								<svg class="tw-block tw-h-24 tw-w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+									<defs>
+										<linearGradient id="missionPitch-{dep.id}" x1="0" y1="0" x2="0" y2="1">
+											<stop offset="0%" stop-color="#013b4d" stop-opacity="0.85" />
+											<stop offset="100%" stop-color="#001218" stop-opacity="1" />
+										</linearGradient>
+									</defs>
+									<rect x="0" y="0" width="100" height="56" fill="url(#missionPitch-{dep.id})" />
+									<!-- Pitch markings -->
+									<rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(0,240,255,0.18)" stroke-width="0.4" />
+									<line x1="50" y1="2" x2="50" y2="54" stroke="rgba(0,240,255,0.16)" stroke-width="0.4" />
+									<circle cx="50" cy="28" r="6" fill="none" stroke="rgba(0,240,255,0.16)" stroke-width="0.4" />
+									<rect x="2" y="18" width="10" height="20" fill="none" stroke="rgba(0,240,255,0.16)" stroke-width="0.4" />
+									<rect x="88" y="18" width="10" height="20" fill="none" stroke="rgba(0,240,255,0.16)" stroke-width="0.4" />
+									<!-- Routes -->
+									{#each dep.thumbRoutes as r, ri (ri)}
+										<path
+											d={`M ${r.x1} ${r.y1} Q ${r.cx} ${r.cy} ${r.x2} ${r.y2}`}
+											fill="none"
+											stroke={r.color}
+											stroke-width="1.2"
+											stroke-linecap="round"
+											filter="url(#neonBloom)"
+											opacity="0.9"
+										/>
+										<circle cx={r.x2} cy={r.y2} r="1.4" fill={r.color} filter="url(#neonBloom)" />
+									{/each}
+								</svg>
 							</div>
-							<span class="tw-shrink-0 tw-font-mono tw-text-sm tw-font-black tw-text-[#00f0ff]">+{dep.xpBounty} XP</span>
+							<!-- Card body -->
+							<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-p-3">
+								<div class="tw-flex tw-min-w-0 tw-items-baseline tw-justify-between tw-gap-2">
+									<p class="tw-m-0 tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-100">{dep.title}</p>
+									<span class="tw-shrink-0 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500">
+										{dep.routeCount} RT
+									</span>
+								</div>
+								<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
+									<div class="tw-flex tw-flex-col">
+										<span class="tw-font-mono tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-white/40">
+											XP BOUNTY
+										</span>
+										<span class="tw-font-mono tw-text-base tw-font-black tw-tabular-nums tw-text-[#00f0ff] tw-drop-shadow-[0_0_8px_rgba(0,240,255,0.45)]">
+											+{dep.xpBounty}
+										</span>
+									</div>
+									<button
+										type="button"
+										class="tw-pointer-events-auto tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.4)] active:tw-scale-95"
+										aria-label="Start session for {dep.title}"
+									>
+										<i class="ph ph-play tw-text-xs" aria-hidden="true"></i>
+										START SESSION
+									</button>
+								</div>
+							</div>
 						</li>
 					{/each}
 				</ul>

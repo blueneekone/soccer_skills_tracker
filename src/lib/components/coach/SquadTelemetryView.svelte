@@ -746,26 +746,53 @@
 
 	// ── Readiness Matrix mock data ─────────────────────────────────────────────
 	/**
-	 * @type {Array<{ id: string; name: string; number: string; position: string; level: number; xp: number; xpMax: number; stamina: number; hr: number; vpc_approved: boolean; status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED' }>}
+	 * @type {Array<{ id: string; name: string; number: string; position: string; level: number; xp: number; xpMax: number; stamina: number; hr: number; vpc_approved: boolean; status: 'READY' | 'OFFLINE' | 'INJURY RISK'; skills: number[] }>}
 	 */
 	const READINESS_ROSTER = [
-		{ id: 'PLR-01', name: 'J. MARTINEZ', number: '1',  position: 'GK', level: 12, xp: 2450, xpMax: 3000, stamina: 88, hr: 72,  vpc_approved: true,  status: 'READY'    },
-		{ id: 'PLR-02', name: 'A. SILVA',    number: '4',  position: 'CB', level: 8,  xp: 1200, xpMax: 2000, stamina: 65, hr: 85,  vpc_approved: true,  status: 'FATIGUED' },
-		{ id: 'PLR-03', name: 'K. CHEN',     number: '7',  position: 'LW', level: 15, xp: 4800, xpMax: 5000, stamina: 92, hr: 68,  vpc_approved: false, status: 'READY'    },
-		{ id: 'PLR-04', name: 'M. OKONKWO',  number: '9',  position: 'ST', level: 11, xp: 2100, xpMax: 2500, stamina: 78, hr: 78,  vpc_approved: true,  status: 'READY'    },
-		{ id: 'PLR-05', name: 'R. POPESCU',  number: '10', position: 'CM', level: 9,  xp: 1750, xpMax: 2000, stamina: 45, hr: 95,  vpc_approved: true,  status: 'FATIGUED' },
-		{ id: 'PLR-06', name: 'T. NAKAMURA', number: '11', position: 'RW', level: 7,  xp: 900,  xpMax: 1500, stamina: 82, hr: 74,  vpc_approved: false, status: 'READY'    },
-		{ id: 'PLR-07', name: 'D. MENSAH',   number: '3',  position: 'LB', level: 10, xp: 2000, xpMax: 2500, stamina: 90, hr: 70,  vpc_approved: true,  status: 'READY'    },
-		{ id: 'PLR-08', name: 'C. DUBOIS',   number: '5',  position: 'CB', level: 6,  xp: 800,  xpMax: 1500, stamina: 30, hr: 102, vpc_approved: true,  status: 'INJURED'  },
+		{ id: 'PLR-01', name: 'J. MARTINEZ', number: '1',  position: 'GK', level: 12, xp: 2450, xpMax: 3000, stamina: 88, hr: 72,  vpc_approved: true,  status: 'READY',       skills: [82, 68, 71, 64, 88, 79] },
+		{ id: 'PLR-02', name: 'A. SILVA',    number: '4',  position: 'CB', level: 8,  xp: 1200, xpMax: 2000, stamina: 0,  hr: 0,   vpc_approved: true,  status: 'OFFLINE',     skills: [60, 55, 70, 58, 84, 72] },
+		{ id: 'PLR-03', name: 'K. CHEN',     number: '7',  position: 'LW', level: 15, xp: 4800, xpMax: 5000, stamina: 92, hr: 68,  vpc_approved: false, status: 'READY',       skills: [91, 86, 82, 90, 54, 76] },
+		{ id: 'PLR-04', name: 'M. OKONKWO',  number: '9',  position: 'ST', level: 11, xp: 2100, xpMax: 2500, stamina: 78, hr: 78,  vpc_approved: true,  status: 'READY',       skills: [85, 92, 70, 81, 48, 84] },
+		{ id: 'PLR-05', name: 'R. POPESCU',  number: '10', position: 'CM', level: 9,  xp: 1750, xpMax: 2000, stamina: 0,  hr: 0,   vpc_approved: true,  status: 'OFFLINE',     skills: [74, 70, 88, 82, 66, 71] },
+		{ id: 'PLR-06', name: 'T. NAKAMURA', number: '11', position: 'RW', level: 7,  xp: 900,  xpMax: 1500, stamina: 82, hr: 74,  vpc_approved: false, status: 'READY',       skills: [88, 78, 74, 86, 52, 70] },
+		{ id: 'PLR-07', name: 'D. MENSAH',   number: '3',  position: 'LB', level: 10, xp: 2000, xpMax: 2500, stamina: 90, hr: 70,  vpc_approved: true,  status: 'READY',       skills: [78, 62, 76, 70, 86, 81] },
+		{ id: 'PLR-08', name: 'C. DUBOIS',   number: '5',  position: 'CB', level: 6,  xp: 800,  xpMax: 1500, stamina: 30, hr: 112, vpc_approved: true,  status: 'INJURY RISK', skills: [62, 50, 64, 58, 80, 68] },
 	];
-	const rmReady   = READINESS_ROSTER.filter((p) => p.status === 'READY').length;
-	const rmConsent = READINESS_ROSTER.filter((p) => !p.vpc_approved).length;
-	const rmFault   = READINESS_ROSTER.filter((p) => p.status === 'INJURED' || p.status === 'SUSPENDED').length;
+	const rmReady    = READINESS_ROSTER.filter((p) => p.status === 'READY').length;
+	const rmConsent  = READINESS_ROSTER.filter((p) => !p.vpc_approved).length;
+	const rmOffline  = READINESS_ROSTER.filter((p) => p.status === 'OFFLINE').length;
+	const rmAtRisk   = READINESS_ROSTER.filter((p) => p.status === 'INJURY RISK').length;
+	const SQUAD_UPTIME_PCT = 88;
 </script>
+
+<!-- ── SQUAD UPTIME — aggregate readiness ticker ─────────────────────────── -->
+<section
+	class="tw-mb-4 tw-rounded-2xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(0,240,255,0.08)]"
+	aria-label="Squad uptime"
+>
+	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-flex tw-items-center tw-gap-3">
+			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.95)]"></span>
+			<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#00f0ff]/85">
+				SQUAD UPTIME · LIVE TICKER
+			</p>
+		</div>
+		<div class="tw-flex tw-items-baseline tw-gap-2 tw-font-mono">
+			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">READINESS SCORE</span>
+			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#00f0ff] tw-drop-shadow-[0_0_12px_rgba(0,240,255,0.55)]" filter="url(#neonBloom)">{SQUAD_UPTIME_PCT}%</span>
+		</div>
+	</div>
+	<div class="tw-mt-3 tw-h-1.5 tw-overflow-hidden tw-rounded-full tw-bg-white/10 tw-shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
+		<div
+			class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#00f0ff]/50 tw-to-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.65)]"
+			style="width: {SQUAD_UPTIME_PCT}%;"
+		></div>
+	</div>
+</section>
 
 <!-- ── Readiness Matrix (glassmorphic SIEM grid) ──────────────────────────── -->
 <section
-	class="tw-mb-6 tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/60 tw-p-5 tw-backdrop-blur-xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+	class="tw-mb-6 tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
 	aria-labelledby="readiness-matrix-title"
 >
 	<!-- Matrix header -->
@@ -790,7 +817,11 @@
 			</span>
 			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
 				OFFLINE
-				<span class="tw-ml-1 tw-tabular-nums tw-text-[#ffff00]">{rmFault}</span>
+				<span class="tw-ml-1 tw-tabular-nums tw-text-white/50">{rmOffline}</span>
+			</span>
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+				INJURY RISK
+				<span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{rmAtRisk}</span>
 			</span>
 		</div>
 	</div>
