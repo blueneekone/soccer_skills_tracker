@@ -90,17 +90,17 @@
 <svelte:window onkeydown={engine.handleKeyDown} />
 
 <!--
-  Mounting Shell — contained within the .ec-canvas dashboard workspace.
-  tw-relative creates the stacking context for the two absolute Trinity layers.
-  NO fixed/h-screen; the panel stays inside the app routing shell.
+  War Room Mounting Shell — immersive fullscreen console overlay.
+  position:fixed + inset:0 gives the SVG a guaranteed viewport-sized box so
+  coordinate math, radial hub, and route drawing all work correctly.
+  z-index 1050: above sidebar(50), topbar(60), context-switcher(1000);
+  below command palette(9999) so Cmd+K remains accessible.
 -->
 <div
-	class="tw-relative tw-w-full tw-h-full tw-min-h-[800px] tw-overflow-hidden tw-rounded-2xl tw-bg-[#020202] tw-border tw-border-white/10"
-	in:scale={{ duration: 350, start: 0.98, easing: quintOut }}
+	class="tw-fixed tw-inset-0 tw-overflow-hidden tw-bg-[#020202]"
+	style="z-index: 1050;"
+	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
-	<!-- z-0: SVG pitch layer -->
 	<TacticalArena model={engine} {warRoomTool} />
-
-	<!-- z-10: Glass HUD overlay -->
 	<TacticalHUD model={engine} bind:warRoomTool />
 </div>

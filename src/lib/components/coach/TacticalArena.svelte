@@ -14,7 +14,7 @@
 />
 
 <!--
-  Pure SVG presentation layer — z-0, fills the relative Mounting Shell.
+  Pure SVG presentation layer — z-0, fills the fixed viewport.
   overflow-visible on inner wrappers so the radial hub and route anchors
   can paint outside the board boundary without being clipped.
 -->
