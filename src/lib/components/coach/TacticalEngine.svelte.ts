@@ -75,6 +75,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	let anchorDrag = $state<AnchorDrag | null>(null);
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
+	let isDrawerOpen = $state(false);
 
 	let simChargePlayerIds = $state<string[]>([]);
 	const simRouteHoldPrev = new Map<string, boolean>();
@@ -433,6 +434,16 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		return selectedRouteId === routeId || hoveredRouteId === routeId;
 	}
 
+	function deleteRoute(routeId: string) {
+		host.drawnRoutes.set(
+			host.drawnRoutes.get().filter((raw) => {
+				const r = normalizeRoute(raw);
+				return r.id !== routeId;
+			}),
+		);
+		if (selectedRouteId === routeId) selectedRouteId = null;
+	}
+
 	/** Monospace-friendly scrub clock (ms). */
 	function formatTimelineMs(ms: number) {
 		const s = Math.max(0, ms / 1000);
@@ -517,6 +528,8 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		set focusedPlayerId(v: string | null) { focusedPlayerId = v; },
 		get isHolotableMode() { return isHolotableMode; },
 		set isHolotableMode(v: boolean) { isHolotableMode = v; },
+		get isDrawerOpen() { return isDrawerOpen; },
+		set isDrawerOpen(v: boolean) { isDrawerOpen = v; },
 		// ── Reactive getters — $state/$derived must be exposed via get so that
 		// Svelte 5 component templates can track the underlying signal.
 		// Plain shorthand `{ routingActive }` copies the initial value and breaks reactivity.
@@ -561,6 +574,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		ringColor,
 		resolvePitchToken,
 		showAnchorsFor,
+		deleteRoute,
 		setHoveredRouteId: (id: string | null) => (hoveredRouteId = id),
 		setHoveredDiscId: (id: string | null) => (hoveredDiscId = id),
 		setFocusedPlayerId: (id: string | null) => (focusedPlayerId = id),

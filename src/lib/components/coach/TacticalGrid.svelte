@@ -64,16 +64,16 @@
 	</header>
 
 	<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-visible tw-bg-[#020202]">
+		<!--
+			Arena container is the positioning parent for TacticalHUD.
+			tw-relative makes it the containing block for the HUD's tw-absolute tw-inset-0.
+		-->
 		<div
 			class="tw-pointer-events-auto tw-relative tw-z-0 tw-min-h-0 tw-w-full tw-flex-1 tw-overflow-visible"
 		>
 			<TacticalArena {model} {warRoomTool} />
-			<div
-				class="tw-pointer-events-none tw-absolute tw-inset-4 tw-z-0 tw-overflow-visible md:tw-inset-8"
-				aria-hidden="true"
-			></div>
+			<TacticalHUD {model} />
 		</div>
-		<TacticalHUD {model} bind:warRoomTool />
 	</div>
 </div>
 
