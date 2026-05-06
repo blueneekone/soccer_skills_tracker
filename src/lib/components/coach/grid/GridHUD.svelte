@@ -53,14 +53,14 @@
 			>
 				DRAG
 			</button>
-			<button
-				type="button"
-				class="{segBtn} {warRoomTool === 'ROUTE' ? segBtnOn : ''}"
-				onclick={() => (pickTool ? pickTool('ROUTE') : (warRoomTool = 'ROUTE'))}
-				aria-pressed={warRoomTool === 'ROUTE'}
-			>
-				ROUTE
-			</button>
+		<button
+			type="button"
+			class="{segBtn} {warRoomTool === 'ROUTE' ? segBtnOn : ''}"
+			onclick={() => (pickTool ? pickTool('ROUTE') : (warRoomTool = 'ROUTE'))}
+			aria-pressed={warRoomTool === 'ROUTE'}
+		>
+			ROUTE
+		</button>
 			{#if warRoomTool === 'ROUTE'}
 				<button
 					type="button"

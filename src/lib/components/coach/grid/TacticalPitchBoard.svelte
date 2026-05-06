@@ -61,6 +61,8 @@
 		if (!isHolotableMode || !focusedPlayerId) return null;
 		return allPitchTokens.find((t) => t.id === focusedPlayerId) ?? null;
 	});
+
+
 </script>
 
 <div
@@ -78,11 +80,11 @@
 	>
 		<div
 			class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-mx-auto tw-aspect-[1600/900] tw-w-full tw-max-w-full tw-min-h-0 tw-overflow-visible"
-			style="max-height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.8s ease; transform-origin: center center; transform-style: preserve-3d; transform: {isHolotableMode
-				? 'rotateX(55deg) scale(0.9) translateY(10%)'
-				: 'rotateX(0deg) scale(1) translateY(0)'};{isHolotableMode
-				? ' box-shadow: 0 100px 200px -50px rgba(0,240,255,0.15);'
-				: ''}"
+		style="max-height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.8s ease; transform-origin: center; transform-style: preserve-3d; transform: {isHolotableMode
+			? 'rotateX(32deg) scale(0.9) translateY(8%)'
+			: 'rotateX(0deg) scale(1) translateY(0)'};{isHolotableMode
+			? ' box-shadow: 0 100px 200px -50px rgba(0,240,255,0.15);'
+			: ''}"
 		>
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -154,54 +156,55 @@
 					onRouteHoverLeave={() => setHoveredRouteId(null)}
 				/>
 			{/each}
-			{#each routesLive as route (route.id)}
-				{#if warRoomTool === 'ROUTE' && showAnchorsFor(route.id)}
-					<GridRoute
-						{route}
-						renderLayer="anchors"
-						isSelected={selectedRouteId === route.id}
-						timelineMs={simulatorTime}
-						onControlPointDrag={(e, kind) => {
-							e.stopPropagation();
-							onAnchorDown(e, route.id, kind);
-						}}
-					/>
-				{/if}
-			{/each}
-
-			{#each routesLive as route (route.id)}
-				{#if route.bindPlayerId}
-					{@const boundToken = allPitchTokens.find((t) => t.id === route.bindPlayerId)}
-					<GridRoute
-						{route}
-						renderLayer="ghost"
-						timelineMs={simulatorTime}
-						playerStamina={boundToken ? Math.max(40, 95 - (Number(boundToken.number) || 5) * 4) : 80}
-					/>
-				{/if}
-			{/each}
-
-			{#each allPitchTokens as player (player.id)}
-				<GridEntity
-					{player}
-					isHovered={hoveredDiscId === player.id}
-					isSelected={focusedPlayerId === player.id}
-					ringStroke={ringColor(player)}
-					charging={simulatorIsPlaying && simChargePlayerIds.includes(player.id)}
+		{#each routesLive as route (route.id)}
+			{#if route.bindPlayerId}
+				{@const boundToken = allPitchTokens.find((t) => t.id === route.bindPlayerId)}
+				<GridRoute
+					{route}
+					renderLayer="ghost"
 					timelineMs={simulatorTime}
-					{warRoomTool}
-					onSelect={() => setFocusedPlayerId(player.id)}
-					onPointerDown={(e) => {
-						e.stopPropagation();
-						startDrag(e, player);
-					}}
-					onRightClick={onTokenContextMenu ? (e) => onTokenContextMenu(e, player) : undefined}
-					onMouseEnter={() => setHoveredDiscId(player.id)}
-					onMouseLeave={() => setHoveredDiscId(null)}
+					playerStamina={boundToken ? Math.max(40, 95 - (Number(boundToken.number) || 5) * 4) : 80}
 				/>
-			{/each}
+			{/if}
+		{/each}
 
-			{#if warRoomTool === 'ROUTE' && selectedRouteId}
+		{#each allPitchTokens as player (player.id)}
+			<GridEntity
+				{player}
+				isHovered={hoveredDiscId === player.id}
+				isSelected={focusedPlayerId === player.id}
+				ringStroke={ringColor(player)}
+				charging={simulatorIsPlaying && simChargePlayerIds.includes(player.id)}
+				timelineMs={simulatorTime}
+				{warRoomTool}
+				onSelect={() => setFocusedPlayerId(player.id)}
+				onPointerDown={(e) => {
+					e.stopPropagation();
+					startDrag(e, player);
+				}}
+				onRightClick={onTokenContextMenu ? (e) => onTokenContextMenu(e, player) : undefined}
+				onMouseEnter={() => setHoveredDiscId(player.id)}
+				onMouseLeave={() => setHoveredDiscId(null)}
+			/>
+		{/each}
+
+		<!-- Anchor control points rendered LAST — on top of player tokens in SVG z-order so they capture pointer events first -->
+		{#each routesLive as route (route.id)}
+			{#if warRoomTool === 'ROUTE' && showAnchorsFor(route.id)}
+				<GridRoute
+					{route}
+					renderLayer="anchors"
+					isSelected={selectedRouteId === route.id}
+					timelineMs={simulatorTime}
+					onControlPointDrag={(e, kind) => {
+						e.stopPropagation();
+						onAnchorDown(e, route.id, kind);
+					}}
+				/>
+			{/if}
+		{/each}
+
+		{#if warRoomTool === 'ROUTE' && selectedRouteId}
 				{@const hudRoute = routesLive.find((x) => x.id === selectedRouteId)}
 				{#if hudRoute}
 					<TacticalRouteDelayHud {hudRoute} bumpDelay={bumpRouteDelay} />

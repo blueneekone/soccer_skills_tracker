@@ -34,29 +34,45 @@
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
 	const successProb = $derived(Math.round(Math.max(0, Math.min(100, playerStamina * (1 - routeDistance / 2000)))));
 	const probColor = $derived(successProb >= 70 ? '#00f0ff' : successProb >= 40 ? '#ffff00' : '#ff003c');
+
+
 </script>
 
 {#if renderLayer === 'stroke'}
 	<g aria-current={isSelected ? 'true' : undefined} data-timeline-ms={timelineMs}>
+		<!-- Bloom glow layer — wide soft halo + glowing arrowhead. -->
 		<path
 			d={pathD}
 			fill="none"
 			stroke={route.color}
-			stroke-width="6"
+			stroke-width="8"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			opacity="0.9"
+			opacity="0.55"
 			filter="url(#premium-neon)"
+			marker-end="url(#arrowhead-glow)"
 			pointer-events="none"
 		/>
+		<!-- Core colored line with neon cyan arrowhead. -->
 		<path
 			d={pathD}
 			fill="none"
-			stroke="#ffffff"
-			stroke-width="1.5"
+			stroke={route.color}
+			stroke-width="3"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			marker-end="url(#tech-chevron)"
+			opacity="1"
+			marker-end="url(#arrowhead)"
+			pointer-events="none"
+		/>
+		<!-- White core spine for maximum contrast. -->
+		<path
+			d={pathD}
+			fill="none"
+			stroke="rgba(255,255,255,0.35)"
+			stroke-width="1"
+			stroke-linecap="round"
+			stroke-linejoin="round"
 			pointer-events="none"
 		/>
 	</g>
@@ -111,52 +127,62 @@
 {#if renderLayer === 'anchors' && showAnchors}
 	<g data-timeline-ms={timelineMs} data-route-anchor-layer={isSelected ? 'selected' : undefined}>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- START anchor — oversized hit disc (r=36) shadows player hit circle (r=32) so anchor wins on overlap -->
 		<g
+			data-anchor-hit
 			transform="translate({route.x1},{route.y1}) rotate(45)"
-			class="tw-cursor-pointer tw-origin-center tw-transition-transform hover:tw-scale-125"
+			class="tw-cursor-pointer"
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'start')}
 		>
+			<!-- Transparent large hit zone — must be first child so it underlays visual elements -->
+			<circle cx="0" cy="0" r="36" fill="transparent" pointer-events="all" />
 			<rect
-				x="-6"
-				y="-6"
-				width="12"
-				height="12"
+				x="-7"
+				y="-7"
+				width="14"
+				height="14"
 				fill="#050505"
 				stroke={route.color}
 				stroke-width="2"
 			/>
-			<circle cx="0" cy="0" r="2" fill="#ffffff" />
+			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- CTRL anchor — mid-point handle, generous hit area -->
 		<g
+			data-anchor-hit
 			transform="translate({route.cx},{route.cy}) rotate(45)"
-			class="tw-cursor-pointer tw-origin-center tw-transition-transform hover:tw-scale-125"
+			class="tw-cursor-pointer"
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'ctrl')}
 		>
+			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
 			<rect
-				x="-6"
-				y="-6"
-				width="12"
-				height="12"
+				x="-7"
+				y="-7"
+				width="14"
+				height="14"
 				fill="#050505"
 				stroke={route.color}
 				stroke-width="2"
 			/>
-			<circle cx="0" cy="0" r="2" fill="#ffffff" />
+			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- END anchor — destination diamond, generous hit area -->
 		<g
+			data-anchor-hit
 			transform="translate({route.x2},{route.y2})"
-			class="tw-cursor-pointer tw-origin-center tw-transition-transform hover:tw-scale-110"
+			class="tw-cursor-pointer"
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'end')}
 		>
-			<circle cx="0" cy="0" r="10" fill="#050505" stroke={route.color} stroke-width="2" opacity="0.8" />
-			<circle cx="0" cy="0" r="4" fill="#ffffff" />
-			<line x1="-14" y1="0" x2="14" y2="0" stroke={route.color} stroke-width="1.5" opacity="0.5" />
-			<line x1="0" y1="-14" x2="0" y2="14" stroke={route.color} stroke-width="1.5" opacity="0.5" />
+			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
+			<circle cx="0" cy="0" r="11" fill="#050505" stroke={route.color} stroke-width="2" opacity="0.85" />
+			<circle cx="0" cy="0" r="4.5" fill="#ffffff" />
+			<line x1="-16" y1="0" x2="16" y2="0" stroke={route.color} stroke-width="1.5" opacity="0.5" />
+			<line x1="0" y1="-16" x2="0" y2="16" stroke={route.color} stroke-width="1.5" opacity="0.5" />
 		</g>
 	</g>
 {/if}

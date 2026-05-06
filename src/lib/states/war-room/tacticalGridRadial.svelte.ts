@@ -192,8 +192,8 @@ export function createTacticalRadialHub(deps: TacticalRadialDeps) {
 			return radialViaContext;
 		},
 		hubPop,
-		radialAllSlots,
-		hubCenterLabel,
+		get radialAllSlots() { return radialAllSlots; },
+		get hubCenterLabel() { return hubCenterLabel; },
 		openRadialHub,
 		closeRadialHub,
 		updateRadialHover,

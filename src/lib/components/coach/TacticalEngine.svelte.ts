@@ -143,11 +143,11 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 			/* DOMException — fall through to hard-coded fallback. */
 		}
 
-		// Hard-coded Zero-Gravity fallback: linear ratio interpolation off bbox.
-		const rect = pitchSvgEl.getBoundingClientRect();
-		const rw = rect.width || 1;
-		const rh = rect.height || 1;
-		return {
+	// Hard-coded Zero-Gravity fallback: linear ratio interpolation off bbox.
+	const rect = pitchSvgEl.getBoundingClientRect();
+	const rw = rect.width || 1;
+	const rh = rect.height || 1;
+	return {
 			x: (clientX - rect.left) * (viewBoxWidth / rw),
 			y: (clientY - rect.top) * (viewBoxHeight / rh),
 		};
@@ -333,6 +333,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		teardownAnchorDrag,
 		routeBodyCapture,
 		pitchDragCapture,
+		get pitchSvgEl() { return pitchSvgEl; },
 	};
 
 	const input = createTacticalInputEngine(pointerHost);
@@ -500,34 +501,49 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	return {
-		pitchSvgEl,
-		activeRouteColor,
-		routeDrawKind,
-		showLabels,
-		focusedPlayerId,
-		isHolotableMode,
-		allPitchTokens,
-		kineticPitchTokens,
-		timelineNorm,
+		// ── bind:-compatible reactive properties ─────────────────────────────
+		// Plain shorthand `{ pitchSvgEl }` copies the value at call time; child
+		// writes via bind: would update the model object but never reach the
+		// $state signal.  Explicit get/set pairs close that loop.
+		get pitchSvgEl() { return pitchSvgEl; },
+		set pitchSvgEl(v: SVGSVGElement | undefined) { pitchSvgEl = v; },
+		get activeRouteColor() { return activeRouteColor; },
+		set activeRouteColor(v: string) { activeRouteColor = v; },
+		get routeDrawKind() { return routeDrawKind; },
+		set routeDrawKind(v: 'curve' | 'cut') { routeDrawKind = v; },
+		get showLabels() { return showLabels; },
+		set showLabels(v: boolean) { showLabels = v; },
+		get focusedPlayerId() { return focusedPlayerId; },
+		set focusedPlayerId(v: string | null) { focusedPlayerId = v; },
+		get isHolotableMode() { return isHolotableMode; },
+		set isHolotableMode(v: boolean) { isHolotableMode = v; },
+		// ── Reactive getters — $state/$derived must be exposed via get so that
+		// Svelte 5 component templates can track the underlying signal.
+		// Plain shorthand `{ routingActive }` copies the initial value and breaks reactivity.
+		get allPitchTokens() { return allPitchTokens; },
+		get kineticPitchTokens() { return kineticPitchTokens; },
+		get timelineNorm() { return timelineNorm; },
+		get activeTool() { return activeTool; },
+		get draggingPlayer() { return draggingPlayer; },
+		get activeDragTrail() { return activeDragTrail; },
+		get trailString() { return trailString; },
+		get dragTrailBloomColor() { return dragTrailBloomColor; },
+		get routingActive() { return routingActive; },
+		get routeDraft() { return routeDraft; },
+		get hoveredDiscId() { return hoveredDiscId; },
+		get selectedRouteId() { return selectedRouteId; },
+		get routesLive() { return routesLive; },
+		get allRouteMarkerColors() { return allRouteMarkerColors; },
+		get simChargePlayerIds() { return simChargePlayerIds; },
+		// ── Stable function references (no getter needed) ────────────────────
 		formatTimelineMs,
 		toggleTimelinePlayback,
 		scrubTimelineNorm,
-		activeTool,
 		setActiveTool,
 		handlePointerMove,
 		handlePointerUp,
 		handlePointerCancel,
 		handlePointerDown,
-		draggingPlayer,
-		activeDragTrail,
-		trailString,
-		dragTrailBloomColor,
-		routingActive,
-		routeDraft,
-		hoveredDiscId,
-		selectedRouteId,
-		routesLive,
-		allRouteMarkerColors,
 		simulator,
 		input,
 		radial,
@@ -545,7 +561,6 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		ringColor,
 		resolvePitchToken,
 		showAnchorsFor,
-		simChargePlayerIds,
 		setHoveredRouteId: (id: string | null) => (hoveredRouteId = id),
 		setHoveredDiscId: (id: string | null) => (hoveredDiscId = id),
 		setFocusedPlayerId: (id: string | null) => (focusedPlayerId = id),

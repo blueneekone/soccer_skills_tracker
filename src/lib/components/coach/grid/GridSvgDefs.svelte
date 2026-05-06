@@ -24,16 +24,41 @@
 			<feMergeNode in="SourceGraphic" />
 		</feMerge>
 	</filter>
+	<!-- Draft-route chevron — white arrow tip tracks the cursor endpoint. -->
 	<marker
 		id="tech-chevron"
-		refX="28"
-		refY="5"
-		markerWidth="14"
-		markerHeight="10"
+		refX="22"
+		refY="10"
+		markerWidth="28"
+		markerHeight="20"
 		orient="auto"
 		markerUnits="userSpaceOnUse"
 	>
-		<path d="M 0 1 L 10 5 L 0 9 L 3 5 Z" fill="#ffffff" />
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#ffffff" />
+	</marker>
+	<!-- Neon cyan arrowhead — primary tactical vector marker. -->
+	<marker
+		id="arrowhead"
+		refX="22"
+		refY="10"
+		markerWidth="28"
+		markerHeight="20"
+		orient="auto"
+		markerUnits="userSpaceOnUse"
+	>
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#00f0ff" />
+	</marker>
+	<!-- Glowing cyan arrowhead for bloom-filtered paths. -->
+	<marker
+		id="arrowhead-glow"
+		refX="22"
+		refY="10"
+		markerWidth="28"
+		markerHeight="20"
+		orient="auto"
+		markerUnits="userSpaceOnUse"
+	>
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#00f0ff" filter="url(#neon-glow)" />
 	</marker>
 	<filter id="premium-neon" x="-50%" y="-50%" width="200%" height="200%">
 		<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1" />

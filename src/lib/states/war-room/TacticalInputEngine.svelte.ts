@@ -5,7 +5,16 @@ import { VIEW_W, VIEW_H, FRIENDLY_RING, OPP_RING } from './constants';
 /** Dock snap radius (px, SVG user space) — matches docking core hit tolerance. */
 const ROUTE_DOCK_SNAP_RADIUS = 25;
 
-export type AnchorDrag = { routeId: string; kind: 'start' | 'ctrl' | 'end' };
+export type AnchorDrag = {
+	routeId: string;
+	kind: 'start' | 'ctrl' | 'end';
+	/** Route anchor's SVG position at drag start — never mutated; absolute delta applied each frame */
+	anchorX: number;
+	anchorY: number;
+	/** Client (screen) coordinates recorded at pointerdown — delta base for absolute tracking */
+	startClientX: number;
+	startClientY: number;
+};
 export type RouteBodyDrag = { routeId: string; ox: number; oy: number; snap: TacticalRoute };
 
 export type TrailPt = { x: number; y: number; t: number; c?: string };
@@ -64,9 +73,12 @@ export interface TacticalPointerHost {
 	teardownAnchorDrag(): void;
 	routeBodyCapture: CapturePair;
 	pitchDragCapture: CapturePair;
+	pitchSvgEl: SVGSVGElement | undefined;
 }
 
 export function createTacticalInputEngine(host: TacticalPointerHost) {
+	let _anchorSvgCapturePid: number | null = null;
+
 	function releasePitchDragCapture() {
 		const { el, id } = host.pitchDragCapture;
 		if (el && id != null) {
@@ -138,6 +150,11 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 		const tgt = ev.target as EventTarget | null;
 		const hitRoute = tgt && (tgt as Element).closest?.('[data-route-hit]');
 		if (hitRoute) return;
+		// Belt-and-suspenders: if click landed inside an anchor hit group (data-anchor-hit),
+		// stopPropagation from the anchor handler already prevents us getting here in normal flow.
+		// This guard catches any edge case where propagation wasn't stopped.
+		const hitAnchor = tgt && (tgt as Element).closest?.('[data-anchor-hit]');
+		if (hitAnchor) return;
 
 		const onDisc = tgt && (tgt as Element).closest?.('[data-light-disc]');
 
@@ -165,6 +182,14 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 		if (host.warRoomTool() !== 'ROUTE') return;
 
 		if (onDisc) return;
+
+		// When a route is selected (anchors are visible), a background click should deselect it
+		// rather than start a new route. This prevents accidentally drawing routes when the user
+		// misses an anchor by a few pixels. A second click on open pitch will then draw normally.
+		if (host.selectedRouteId() !== null) {
+			host.setSelectedRouteId(null);
+			return;
+		}
 
 		const raw = host.clientToSvg(ev);
 		const p = host.clampToPitch(raw.x, raw.y);
@@ -197,20 +222,41 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 		}
 		const ad = host.anchorDrag();
 		if (ad && host.warRoomTool() === 'ROUTE') {
-			const raw = host.clientToSvg(ev);
-			const p = host.clampToPitch(raw.x, raw.y);
-			const { routeId, kind } = ad;
+			// Absolute clientX/Y delta from pointerdown — immune to movementX/Y snap-jump.
+			//
+			// movementX/Y is relative to the PREVIOUS pointermove, not the pointerdown.
+			// If the user hovered at position A, then moved quickly to click anchor at B, the
+			// first pointermove has movementX = C.x - A.x (huge jump), not C.x - B.x (tiny).
+			// Using startClientX/Y recorded at pointerdown gives a true delta from click origin.
+			//
+			// The SVG uses preserveAspectRatio="xMidYMid meet": uniform scale =
+			// min(containerW/viewboxW, containerH/viewboxH). Inverse = max(VIEW_W/rect.w, VIEW_H/rect.h).
+			const svgEl = host.pitchSvgEl;
+			const rect = svgEl?.getBoundingClientRect();
+			const uniformScale = rect ? Math.max(VIEW_W / rect.width, VIEW_H / rect.height) : 1;
+			const dxScreen = ev.clientX - ad.startClientX;
+			const dyScreen = ev.clientY - ad.startClientY;
+			const p = host.clampToPitch(
+				ad.anchorX + dxScreen * uniformScale,
+				ad.anchorY + dyScreen * uniformScale,
+			);
+		// anchorX/Y stay fixed (pointerdown origin) — no setAnchorDrag needed each frame
+		const { routeId, kind } = ad;
 			host.setDrawnRoutes(
 				host.drawnRoutes().map((rawR) => {
 					const r = normalizeRoute(rawR);
 					if (r.id !== routeId) return rawR;
 					if (kind === 'start') {
 						const dock = snapPointToDockingCore(p.x, p.y);
-						return { ...r, x1: dock.x, y1: dock.y, bindPlayerId: dock.bindPlayerId };
+						// Preserve existing bindPlayerId unless a DIFFERENT player is snapped-to.
+						// Without this, moving the start anchor ~8px detaches the player immediately.
+						const nextBindId = dock.bindPlayerId !== null ? dock.bindPlayerId : r.bindPlayerId;
+						return { ...r, x1: dock.x, y1: dock.y, bindPlayerId: nextBindId };
 					}
-					if (kind === 'ctrl') return { ...r, cx: p.x, cy: p.y };
-					const dock = snapPointToDockingCore(p.x, p.y);
-					return { ...r, x2: dock.x, y2: dock.y, bindPlayerId: dock.bindPlayerId };
+				if (kind === 'ctrl') return { ...r, cx: p.x, cy: p.y };
+				// End anchor: only update x2/y2. bindPlayerId belongs to start-anchor only.
+				const dock = snapPointToDockingCore(p.x, p.y);
+				return { ...r, x2: dock.x, y2: dock.y };
 				}),
 			);
 			return;
@@ -287,6 +333,11 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 			return;
 		}
 		if (host.anchorDrag()) {
+			const svgEl = host.pitchSvgEl;
+			if (svgEl && _anchorSvgCapturePid != null) {
+				try { svgEl.releasePointerCapture(_anchorSvgCapturePid); } catch { /* ignore */ }
+				_anchorSvgCapturePid = null;
+			}
 			host.teardownAnchorDrag();
 			return;
 		}
@@ -313,22 +364,11 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 				let bindId = draft.bindPlayerId ?? null;
 				if (dock.bindPlayerId !== null) bindId = dock.bindPlayerId;
 				else if (!bindId) bindId = host.bindPlayerIdAtRouteStart(draft.x1, draft.y1);
-				host.setDrawnRoutes([
-					...host.drawnRoutes(),
-					{
-						id,
-						x1: draft.x1,
-						y1: draft.y1,
-						cx: mc.cx,
-						cy: mc.cy,
-						x2: dock.x,
-						y2: dock.y,
-						color: host.activeRouteColor(),
-						bindPlayerId: bindId,
-						pathKind: draft.pathKind ?? host.routeDrawKind(),
-						delay: draft.delay ?? 0,
-					},
-				]);
+			const _newRoute={id,x1:draft.x1,y1:draft.y1,cx:mc.cx,cy:mc.cy,x2:dock.x,y2:dock.y,color:host.activeRouteColor(),bindPlayerId:bindId,pathKind:draft.pathKind??host.routeDrawKind(),delay:draft.delay??0};
+			host.setDrawnRoutes([...host.drawnRoutes(),_newRoute]);
+			// Auto-select the new route so the very next background click deselects it
+			// instead of starting another route draft (v10 guard in onPitchPointerDown).
+			host.setSelectedRouteId(id);
 			}
 		}
 		host.setRoutingActive(false);
@@ -391,15 +431,34 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 	function onAnchorDown(ev: MouseEvent | PointerEvent, routeId: string, kind: AnchorDrag['kind']) {
 		ev.stopPropagation();
 		if (host.warRoomTool() !== 'ROUTE') return;
-		host.setAnchorDrag({ routeId, kind });
-		if (kind === 'start') {
-			host.setDrawnRoutes(
-				host.drawnRoutes().map((rawR) => {
-					const r = normalizeRoute(rawR);
-					if (r.id !== routeId) return rawR;
-					return { ...r, bindPlayerId: null };
-				}),
-			);
+		// Mark this route as selected so that the next background click deselects it
+		// (v10 guard in onPitchPointerDown) rather than starting an accidental new route.
+		host.setSelectedRouteId(routeId);
+
+		const route = (host.drawnRoutes() as TacticalRoute[]).map(normalizeRoute).find((r) => r.id === routeId);
+		const pe = ev as PointerEvent;
+		const startClientX = pe.clientX ?? 0;
+		const startClientY = pe.clientY ?? 0;
+
+		// Anchor's SVG position comes from route data (ground truth), not from the potentially
+		// CTM-distorted clientToSvg. anchorX/Y are fixed throughout the drag; new position
+		// is always startAnchor + (currentClient - startClient) * uniformScale.
+		let anchorX = 0;
+		let anchorY = 0;
+		if (route) {
+			if (kind === 'start') { anchorX = route.x1; anchorY = route.y1; }
+			else if (kind === 'ctrl') { anchorX = route.cx; anchorY = route.cy; }
+			else { anchorX = route.x2; anchorY = route.y2; }
+		}
+
+		host.setAnchorDrag({ routeId, kind, anchorX, anchorY, startClientX, startClientY });
+		// Acquire SVG pointer capture so pointermove fires even if cursor briefly leaves the SVG
+		const svgEl = host.pitchSvgEl;
+		if (svgEl && pe.pointerId != null && typeof svgEl.setPointerCapture === 'function') {
+			try {
+				svgEl.setPointerCapture(pe.pointerId);
+				_anchorSvgCapturePid = pe.pointerId;
+			} catch { _anchorSvgCapturePid = null; }
 		}
 	}
 

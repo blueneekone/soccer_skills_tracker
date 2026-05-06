@@ -120,25 +120,48 @@
 				filter="url(#heavy-bloom)"
 				class="tw-pointer-events-none"
 			/>
-			<circle
-				cx="0"
-				cy="0"
-				r="6"
-				fill="none"
-				stroke={ringStroke}
-				stroke-width="1"
-				opacity="0.5"
-				class="tw-pointer-events-none"
+			<!-- Route-mode anchor ring: pulses to show players are snap targets -->
+			{#if warRoomTool === 'ROUTE'}
+				<circle
+					cx="0"
+					cy="0"
+					r="8"
+					fill="none"
+					stroke="#00f0ff"
+					stroke-width="1.5"
+					opacity="0.85"
+					filter="url(#heavy-bloom)"
+					pointer-events="none"
+				>
+					<animate attributeName="r" values="6;11;6" dur="1.4s" repeatCount="indefinite" />
+					<animate attributeName="opacity" values="0.9;0.35;0.9" dur="1.4s" repeatCount="indefinite" />
+				</circle>
+			{/if}
+			<!-- Text background for maximum legibility -->
+			<rect
+				x="-14"
+				y="-10"
+				width="28"
+				height="20"
+				rx="3"
+				fill="#020202"
+				opacity="0.72"
+				pointer-events="none"
 			/>
 			<text
 				x="0"
 				y="0"
 				font-family="monospace"
-				font-size="12"
-				fill="#e8f4ff"
+				font-size="14"
+				fill="#ffffff"
 				font-weight="bold"
 				text-anchor="middle"
 				dominant-baseline="central"
+				paint-order="stroke"
+				stroke="#020202"
+				stroke-width="3"
+				stroke-linejoin="round"
+				pointer-events="none"
 			>
 				{discLabel}
 			</text>

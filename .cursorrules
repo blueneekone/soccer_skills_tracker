@@ -1,0 +1,45 @@
+# NEXUS COMMAND: VANGUARD PROTOCOL
+# MASTER ARCHITECTURE & EXECUTION RULES
+
+## 1. PROJECT IDENTITY & AESTHETIC
+You are developing "Nexus Command," a professional-grade, gamified SaaS platform for youth soccer player development and club management.
+- **The UI Aesthetic:** "SIEM / Tron / Cyberpunk." It must feel like a high-end cybersecurity Mission Control dashboard. 
+- **Colors:** Deep dark mode (`bg-[#020202]`), neon cyan accents (`text-[#00f0ff]`, `border-[#00f0ff]`), and stark whites.
+- **Typography:** Monospace fonts (`font-mono`) for data, metrics, and technical readouts.
+- **Textures:** Glassmorphism (`backdrop-blur-3xl`, `bg-[#020202]/85`). No flat, boring white dashboards.
+
+## 2. TECH STACK & STRICT SVELTE 5 MANDATES
+- Framework: Svelte 5 (Strict), SvelteKit, TypeScript, Tailwind CSS.
+- **NO LEGACY CODE:** Absolutely no Svelte 4 syntax. 
+  - Use Svelte 5 Runes (`$state`, `$derived`, `$effect`, `$props`).
+  - Do NOT use `export let` for props.
+  - Do NOT use `on:click`. Use modern event handlers (`onclick`, `onpointerdown`, `oncontextmenu`).
+- **Tailwind:** You MUST use the `tw-` prefix for all utility classes (e.g., `tw-flex`, `tw-h-screen`, `tw-bg-[#020202]`).
+
+## 3. THE VANGUARD TRINITY PATTERN (UI ARCHITECTURE)
+Complex interactive modules (like the Tactical War Room or Player Dashboards) must strictly adhere to the Trinity Pattern. Never merge these into a single monolithic file.
+- **The Shell (`+page.svelte`):** The mounting layer. Handles fixed layout containers (`tw-relative tw-w-full tw-h-full tw-overflow-hidden`) and initializes the state engine. No logic.
+- **The Brain (`[Name]Engine.svelte.ts`):** The pure TypeScript Svelte 5 state machine. Holds all `$state` arrays, complex math, and event coordination.
+- **The Glass (`[Name]Arena.svelte`):** The pure SVG or Canvas presentation layer. Binds to the Engine. No local logic.
+- **The HUD (`[Name]HUD.svelte`):** The HTML/Tailwind control overlay. 
+  - *CRITICAL UX RULE:* The root container of the HUD must be `tw-pointer-events-none` so it does not block interactions with the board underneath. Interactive buttons inside the HUD must have `tw-pointer-events-auto`.
+
+## 4. MATHEMATICS & INTERACTION PHYSICS
+- **Zero-Gravity SVG Coordinate Math:** When mapping DOM mouse events to SVG coordinate space, always wrap `getScreenCTM().inverse()` in a `try/catch` block. Provide a manual bounding-box scaling calculation in the `catch` block to ensure the UI never freezes during hardware-acceleration drops.
+- **Context Menus:** Intercept default browser right-clicks using `oncontextmenu={(e) => { e.preventDefault(); ... }}` to deploy custom tactical radials.
+
+## 5. DATABASE, SECURITY, & INFRASTRUCTURE
+- **Backend:** Firebase (Firestore, Auth).
+- **Data Privacy (COPPA):** This app tracks youth sports data. Treat data isolation and security with military-grade strictness. Do not expose PII across tenant (club) boundaries.
+- **Deployment:** When modifying database structures, remember that indexes and rules are deployed via `firebase deploy --only "firestore:indexes,firestore:rules"`.
+
+## 6. EXECUTION DIRECTIVES (HOW YOU WRITE CODE)
+- **Do Not Append:** When asked to refactor or fix a file, rewrite the necessary logic cleanly. Do not append alternative solutions to the bottom of the file.
+- **Do Not Break Containment:** UI components must respect their parent layouts. Do not use global `tw-fixed tw-inset-0` unless explicitly building a modal. Do not hijack the main application background.
+- **Diagnose Before Typing:** If a layout collapses or a button fails, analyze the DOM hierarchy, pointer-events, and Svelte scope before hallucinating new CSS.
+
+## 7. COMPONENT FRACTURING (ANTI-MONOLITH PROTOCOL)
+Never build a 500+ line Svelte component. If a UI layer (like the HUD) contains multiple distinct contextual zones, you must shatter it into micro-modules.
+- **The Wrapper:** The parent file (e.g., `TacticalHUD.svelte`) should strictly be a layout wrapper and state distributor. It should be less than 150 lines.
+- **The Fragments:** Extract distinct UI blocks into sub-directories (e.g., `src/lib/components/coach/tactical/hud/TacticalDock.svelte`, `CommandDrawer.svelte`, `RadialMenu.svelte`).
+- **State Passing:** Do not create local state inside these fragments if it affects the global board. Pass the `$state` Engine down from the parent or use Svelte 5 Snippets / Context.

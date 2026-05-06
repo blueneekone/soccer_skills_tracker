@@ -8,6 +8,8 @@
 	import TacticalHUD from '$lib/components/coach/TacticalHUD.svelte';
 	import { scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { db } from '$lib/firebase.js';
+	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 
 	/** @typedef {import('$lib/states/war-room/types').TacticalToken} TacticalToken */
 
@@ -84,6 +86,89 @@
 		if (!selectedTeamId) {
 			selectedTeamId = teams[0].id;
 		}
+	});
+
+	// Load team roster into wrBucketXi whenever the selected team changes.
+	// Strategy: rosters/{tid} → player_lookup collection → numbered placeholders.
+	$effect(() => {
+		const tid = selectedTeamId;
+		if (!tid) return;
+
+		void (async () => {
+			try {
+				// ── Source 1: rosters/{teamId} doc with players:string[] ────────
+			const snap = await getDoc(doc(db, 'rosters', tid));
+			const rostersNames = /** @type {string[]} */ (
+					snap.exists() && Array.isArray(snap.data()?.players)
+						? snap.data().players
+						: []
+				)
+					.map((x) => String(x).trim())
+					.filter(Boolean);
+
+				if (rostersNames.length) {
+				wrBucketXi = rostersNames.map((name, i) => ({
+					id: `${tid}_p${i}`,
+					name,
+					number: String(i + 1).padStart(2, '0'),
+					position: '',
+					side: /** @type {'friendly'} */ ('friendly'),
+					color: '#00f0ff',
+				}));
+				return;
+				}
+
+				// ── Source 2: player_lookup collection keyed by teamId ───────────
+			const lookupSnap = await getDocs(
+				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
+			);
+
+			if (lookupSnap.size > 0) {
+					/** @type {TacticalToken[]} */
+					const tokens = [];
+					let idx = 0;
+					lookupSnap.forEach((d) => {
+						const data = d.data();
+						const name =
+							typeof data.playerName === 'string' && data.playerName.trim()
+								? data.playerName.trim()
+								: d.id;
+						tokens.push({
+							id: `${tid}_${d.id}`,
+							name,
+							number: String(++idx).padStart(2, '0'),
+							position: typeof data.position === 'string' ? data.position : '',
+							side: /** @type {'friendly'} */ ('friendly'),
+							color: '#00f0ff',
+						});
+					});
+				tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+				wrBucketXi = tokens;
+				return;
+				}
+
+			// ── Source 3: placeholder tokens so the board is usable ─────────
+			wrBucketXi = Array.from({ length: 11 }, (_, i) => ({
+					id: `${tid}_slot${i}`,
+					name: `PLAYER ${String(i + 1).padStart(2, '0')}`,
+					number: String(i + 1).padStart(2, '0'),
+					position: '',
+					side: /** @type {'friendly'} */ ('friendly'),
+					color: '#00f0ff',
+				}));
+			} catch (e) {
+				console.error('[War Room] roster load error:', e);
+				// Placeholders on error so the board stays usable
+				wrBucketXi = Array.from({ length: 11 }, (_, i) => ({
+					id: `${tid}_fallback${i}`,
+					name: `SLOT ${String(i + 1).padStart(2, '0')}`,
+					number: String(i + 1).padStart(2, '0'),
+					position: '',
+					side: /** @type {'friendly'} */ ('friendly'),
+					color: '#00f0ff',
+				}));
+			}
+		})();
 	});
 </script>
 

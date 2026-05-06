@@ -69,9 +69,9 @@
 				radialAllSlots={model.radial.radialAllSlots}
 				hubHoveredKey={model.radial.hubHoveredKey}
 				hubCenterLabel={model.radial.hubCenterLabel}
-				isLoadingCartridge={model.simulator.isLoadingCartridge}
-				cartridgeSweepEpoch={model.simulator.cartridgeSweepEpoch}
-			/>
+			isLoadingCartridge={model.simulator.isLoadingCartridge}
+			cartridgeSweepEpoch={model.simulator.cartridgeSweepEpoch}
+		/>
 		</div>
 	</div>
 </div>
