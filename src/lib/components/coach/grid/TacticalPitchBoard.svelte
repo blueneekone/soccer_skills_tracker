@@ -127,7 +127,7 @@
 	    backward tilt; off = flat traditional view. Routing math untouched.
 	-->
 	<div
-		class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-w-full tw-max-w-4xl tw-aspect-[2/3] tw-rounded-xl tw-border tw-border-[#00f0ff]/30 tw-bg-[#020a14]/60 tw-backdrop-blur-md tw-shadow-[0_0_50px_rgba(0,240,255,0.1),inset_0_0_30px_rgba(0,240,255,0.2)]"
+		class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-w-[90vw] tw-h-[70vh] tw-max-w-[1200px] tw-rounded-xl tw-border tw-border-[#00f0ff]/30 tw-bg-[#020a14]/60 tw-backdrop-blur-md tw-shadow-[0_0_50px_rgba(0,240,255,0.1),inset_0_0_30px_rgba(0,240,255,0.2)]"
 		style="transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); transform: {isHolotableMode
 			? 'rotateX(55deg) translateY(-50px)'
 			: 'rotateX(0deg) translateY(0)'};"
@@ -165,10 +165,16 @@
 		  surface. All routes, entities, and anchors are SVG children and therefore
 		  inherit the base's rotateX tilt as one flat 3D plane — no floating.
 		-->
+		<!--
+		  tw-isolate removed: isolation:isolate creates a stacking context that
+		  flattens CSS preserve-3d on the projector base in some browsers.
+		  All routes, entities, and anchors remain SVG children of this element
+		  and therefore inherit the base's rotateX tilt as a single flat 3D plane.
+		-->
 		<svg
 			bind:this={pitchSvgEl}
 			id="tactical-pitch-svg"
-			class="tw-absolute tw-inset-0 tw-z-10 tw-w-full tw-h-full tw-opacity-80 tw-touch-none tw-select-none tw-isolate {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
+			class="tw-absolute tw-inset-0 tw-z-10 tw-w-full tw-h-full tw-opacity-80 tw-touch-none tw-select-none {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
 			viewBox="0 0 1600 900"
 			preserveAspectRatio="xMidYMid meet"
 			role="img"

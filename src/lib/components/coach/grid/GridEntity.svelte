@@ -52,9 +52,14 @@
 		player.side === 'opponent' ? (player.position || 'X') : player.number || '',
 	);
 
-	/** SIEM tri-color: opponent=magenta, friendly=cyan. Drag uses magenta override + amber lock ring. */
-	const siemColor = $derived(
-		player.side === 'opponent' ? '#ff00ff' : '#00f0ff'
+	/** Base SIEM color: opponent = Ares Red (#ff2a2a), friendly = Cyan. */
+	const siemColor = $derived(player.side === 'opponent' ? '#ff2a2a' : '#00f0ff');
+	/**
+	 * Contrast highlight: when an opponent token is selected or hovered the ring
+	 * flips to Cyan so it reads cleanly against the Ares Red disc body.
+	 */
+	const highlightColor = $derived(
+		player.side === 'opponent' && (isSelected || isHovered) ? '#00f0ff' : siemColor
 	);
 </script>
 
@@ -78,7 +83,7 @@
 					cy="0"
 					r={DISC_R + 20}
 					fill="none"
-					stroke={siemColor}
+					stroke={highlightColor}
 					stroke-width="1.25"
 					opacity="0.9"
 					filter="url(#heavy-bloom)"
@@ -127,7 +132,7 @@
 				cy="0"
 				r={DISC_R}
 				fill="#050505"
-				stroke={isDragging ? '#ff00ff' : siemColor}
+				stroke={isDragging ? '#ff2a2a' : siemColor}
 				stroke-width="2"
 				filter="url(#heavy-bloom)"
 			/>

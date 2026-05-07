@@ -3,7 +3,7 @@
 	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel }} */
 	let { model: engine } = $props();
 
-	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff00ff', '#ffff00', '#ffffff']);
+	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff2a2a', '#ffff00', '#ffffff']);
 
 	const segBtn =
 		'tw-w-full tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/20 tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/60 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
@@ -12,7 +12,7 @@
 	const curveBtnOn =
 		'tw-text-[#ffaa00] tw-bg-[#ffaa00]/15 tw-border-[#ffaa00]/60 tw-shadow-[0_0_15px_rgba(255,170,0,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
 	const cutBtnOn =
-		'tw-text-[#ff00ff] tw-bg-[#ff00ff]/15 tw-border-[#ff00ff]/60 tw-shadow-[0_0_15px_rgba(255,0,255,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
+		'tw-text-[#ff2a2a] tw-bg-[#ff2a2a]/15 tw-border-[#ff2a2a]/60 tw-shadow-[0_0_15px_rgba(255,42,42,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
 </script>
 
 <!--
@@ -53,7 +53,7 @@
 		<div
 			class="tw-sticky tw-top-0 tw-z-10 tw-flex tw-items-center tw-border-b tw-border-[#00f0ff]/20 tw-bg-[#040f16]/70 tw-px-5 tw-py-4 tw-backdrop-blur-xl"
 		>
-			<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#ffaa00]">
+			<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00ff00] tw-drop-shadow-[0_0_6px_#00ff00]">
 				[ COMMAND_CONSOLE ]
 			</h2>
 		</div>
@@ -93,22 +93,35 @@
 			<p class="tw-mb-2.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white/35">
 				INK_COLOR
 			</p>
-			<div class="tw-flex tw-gap-2">
+			<!--
+			  Stark-Tech instrument switches: angled glass squares with a 1px
+			  border in the ink color, semi-transparent fill, white-to-transparent
+			  glass sheen, and a neon glow that intensifies on the active swatch.
+			  Background uses 8-digit hex (color + "22" ≈ 13% opacity) so the
+			  glass effect reads through without the button looking painted.
+			-->
+			<div class="tw-flex tw-gap-2.5">
 				{#each INK_PALETTE as color (color)}
 					<button
 						type="button"
-						class="tw-h-7 tw-flex-1 tw-skew-x-[-12deg] tw-border tw-transition-all
+						class="tw-relative tw-h-8 tw-w-8 tw-shrink-0 tw-skew-x-[-8deg] tw-rounded-sm tw-border tw-overflow-hidden tw-transition-all tw-duration-200 tw-cursor-pointer
 							{engine.activeRouteColor === color
-								? 'tw-scale-105 tw-border-white tw-shadow-[0_0_10px_var(--ink)]'
-								: 'tw-border-white/25 hover:tw-border-[#00f0ff]/55'}"
-						style="background:{color}; --ink:{color};"
+								? 'tw-scale-110 tw-shadow-[0_0_14px_var(--ink),inset_0_0_6px_rgba(255,255,255,0.06)]'
+								: 'hover:tw-scale-105 hover:tw-shadow-[0_0_8px_var(--ink)]'}"
+						style="border-color:{engine.activeRouteColor === color ? color : color + '60'}; background:{color}22; --ink:{color};"
 						onclick={(e) => {
 							e.stopPropagation();
 							engine.activeRouteColor = color;
 						}}
 						aria-label="Route color {color}"
 						aria-pressed={engine.activeRouteColor === color}
-					></button>
+					>
+						<!-- Glass sheen: top-left to transparent diagonal highlight -->
+						<div
+							class="tw-absolute tw-inset-0 tw-bg-gradient-to-br tw-from-white/25 tw-to-transparent tw-pointer-events-none"
+							aria-hidden="true"
+						></div>
+					</button>
 				{/each}
 			</div>
 		</section>

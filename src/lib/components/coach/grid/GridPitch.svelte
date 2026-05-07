@@ -49,3 +49,58 @@
 <!-- Penalty arcs. -->
 <path d="M 252 336 A 139 139 0 0 1 252 564" fill="none" stroke={NEON} stroke-width="1.5" style={NEON_GLOW} />
 <path d="M 1348 336 A 139 139 0 0 0 1348 564" fill="none" stroke={NEON} stroke-width="1.5" style={NEON_GLOW} />
+
+<!--
+  HOLO-GOAL CAGES — 3D cage illusion in 2D SVG.
+
+  Goal dimensions (proportional to 1600×900 viewBox representing 105m×68m pitch):
+    · Goal width ≈ 96px  (7.32m / 68m × 896px), centered at y=450 → y=402–y=498
+    · Cage depth ≈ 42px  (≈3.2m, drawn INTO the pitch from the goal line so the
+      geometry stays inside the viewBox; with the pitch tilted rotateX(55deg) on
+      the projector base, this top-down box reads as a 3D cage rising from the
+      table surface toward the viewer)
+
+  The fill gives the cage a translucent "digital net" volume.
+  stroke-dasharray="2 3" on the side rails / back wall / net lines simulates mesh.
+  Solid "posts" at the front corners are the glowing goal-post markers.
+  CSS 3D transforms (transform-style, rotateX) are not supported inside SVG;
+  the 3D effect is achieved entirely through manual 2D coordinate layout.
+-->
+
+<!-- LEFT HOLO-GOAL (goal line at x=2, cage depth goes right to x=44) -->
+<g aria-label="Left goal cage">
+	<!-- Translucent cage volume fill. -->
+	<rect x="2" y="402" width="42" height="96" fill="rgba(0,240,255,0.08)" stroke="none" />
+	<!-- Goal-line face (solid — this IS the goal opening, facing the center of the pitch). -->
+	<line x1="2" y1="402" x2="2" y2="498" stroke={NEON} stroke-width="2" style={NEON_GLOW} />
+	<!-- Top + bottom rails (dashed — sides of the cage going into the pitch). -->
+	<line x1="2" y1="402" x2="44" y2="402" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<line x1="2" y1="498" x2="44" y2="498" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<!-- Back wall (dashed). -->
+	<line x1="44" y1="402" x2="44" y2="498" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<!-- Net verticals (very faint mesh lines inside the cage). -->
+	<line x1="17" y1="402" x2="17" y2="498" stroke={NEON} stroke-width="0.5" stroke-dasharray="2 6" opacity="0.35" />
+	<line x1="31" y1="402" x2="31" y2="498" stroke={NEON} stroke-width="0.5" stroke-dasharray="2 6" opacity="0.35" />
+	<!-- Goal post markers (bright neon circles at the two front corners). -->
+	<circle cx="2" cy="402" r="4" fill={NEON} style={NEON_GLOW} />
+	<circle cx="2" cy="498" r="4" fill={NEON} style={NEON_GLOW} />
+</g>
+
+<!-- RIGHT HOLO-GOAL (goal line at x=1598, cage depth goes left to x=1556) -->
+<g aria-label="Right goal cage">
+	<!-- Translucent cage volume fill. -->
+	<rect x="1556" y="402" width="42" height="96" fill="rgba(0,240,255,0.08)" stroke="none" />
+	<!-- Goal-line face (solid). -->
+	<line x1="1598" y1="402" x2="1598" y2="498" stroke={NEON} stroke-width="2" style={NEON_GLOW} />
+	<!-- Top + bottom rails (dashed). -->
+	<line x1="1556" y1="402" x2="1598" y2="402" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<line x1="1556" y1="498" x2="1598" y2="498" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<!-- Back wall (dashed). -->
+	<line x1="1556" y1="402" x2="1556" y2="498" stroke={NEON} stroke-width="1" stroke-dasharray="2 3" />
+	<!-- Net verticals. -->
+	<line x1="1569" y1="402" x2="1569" y2="498" stroke={NEON} stroke-width="0.5" stroke-dasharray="2 6" opacity="0.35" />
+	<line x1="1583" y1="402" x2="1583" y2="498" stroke={NEON} stroke-width="0.5" stroke-dasharray="2 6" opacity="0.35" />
+	<!-- Goal post markers. -->
+	<circle cx="1598" cy="402" r="4" fill={NEON} style={NEON_GLOW} />
+	<circle cx="1598" cy="498" r="4" fill={NEON} style={NEON_GLOW} />
+</g>
