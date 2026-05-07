@@ -91,7 +91,7 @@
 			<svg
 				bind:this={pitchSvgEl}
 				id="tactical-pitch-svg"
-				class="tw-absolute tw-inset-0 tw-z-[100] tw-h-full tw-w-full tw-touch-none tw-select-none tw-isolate {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
+				class="tw-absolute tw-inset-0 tw-z-[100] tw-h-full tw-w-full tw-touch-none tw-select-none tw-isolate tw-drop-shadow-[0_0_30px_rgba(0,240,255,0.2)] {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
 				viewBox="0 0 1600 900"
 				preserveAspectRatio="xMidYMid meet"
 				role="img"

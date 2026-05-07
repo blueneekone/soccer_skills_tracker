@@ -28,11 +28,6 @@
 			<feMergeNode in="SourceGraphic" />
 		</feMerge>
 	</filter>
-	<!-- Comet wake: bright head → translucent tail (stroke url(#plasma-trail) + dash animation on routes). -->
-	<linearGradient id="plasma-trail" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="0">
-		<stop offset="0%" stop-color="#00f0ff" stop-opacity="1" />
-		<stop offset="100%" stop-color="#00f0ff" stop-opacity="0" />
-	</linearGradient>
 	<!-- Draft-route chevron — fill tracks the referencing path stroke (SVG2 context-stroke). -->
 	<marker
 		id="tech-chevron"

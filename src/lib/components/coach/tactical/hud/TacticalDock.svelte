@@ -70,15 +70,14 @@
 		{#each TOOLS as tool (tool.id)}
 			<button
 				type="button"
-				class="tw-flex tw-flex-col tw-items-center tw-gap-0.5 tw-rounded-full tw-border tw-px-3 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-transition-all tw-duration-150 tw-select-none
+				class="tw-font-mono tw-text-sm tw-uppercase tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-300 tw-select-none
 				{dockMode === tool.id
-					? 'tw-border-[#00f0ff]/55 tw-bg-[#00f0ff]/12 tw-text-[#00f0ff] tw-shadow-[0_0_10px_rgba(0,240,255,0.25),inset_0_0_6px_rgba(0,240,255,0.07)]'
-					: 'tw-border-white/10 tw-bg-transparent tw-text-white/35 hover:tw-border-[#00f0ff]/30 hover:tw-text-[#00f0ff]/70 active:tw-scale-95'}"
+					? 'tw-text-[#ffffff] tw-border tw-border-[#00f0ff] tw-bg-[#00f0ff]/20 tw-shadow-[0_0_20px_rgba(0,240,255,0.6),inset_0_0_10px_rgba(0,240,255,0.4)] tw-scale-110'
+					: 'tw-text-[#00f0ff]/50 tw-bg-transparent tw-border tw-border-transparent hover:tw-border-[#00f0ff]/40 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_15px_rgba(0,240,255,0.2)]'}"
 				onclick={() => pickMode(tool.id)}
 				aria-pressed={dockMode === tool.id}
 			>
-				<span class="tw-text-[13px] tw-leading-none" aria-hidden="true">{tool.glyph}</span>
-				{tool.label}
+				[ {tool.label} ]
 			</button>
 		{/each}
 

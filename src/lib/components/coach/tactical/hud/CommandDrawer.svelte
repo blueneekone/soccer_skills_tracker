@@ -24,7 +24,7 @@
 	aria-expanded={engine.isDrawerOpen}
 >
 	<span class="tw-font-mono tw-text-[8px] tw-font-bold tw-tracking-widest [writing-mode:vertical-rl] tw-select-none">
-		{engine.isDrawerOpen ? '▶' : '◀'}
+		{engine.isDrawerOpen ? '>' : '<'}
 	</span>
 </button>
 
@@ -32,13 +32,14 @@
   Slide panel — translucent blue glass; transform on one line (avoids broken class string).
 -->
 <div
-	class="tw-pointer-events-auto tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-80 tw-overflow-y-auto tw-overflow-x-hidden tw-border-l tw-border-[#00f0ff]/40 tw-bg-[#041d2c]/60 tw-shadow-[-10px_0_30px_rgba(0,240,255,0.1)] tw-backdrop-blur-2xl tw-will-change-transform tw-transition-transform tw-duration-300 tw-ease-[cubic-bezier(0.23,1,0.32,1)] {engine.isDrawerOpen
+	class="tw-pointer-events-auto tw-absolute tw-top-0 tw-right-0 tw-h-full tw-w-80 tw-transition-transform tw-duration-500 tw-ease-[cubic-bezier(0.16,1,0.3,1)] tw-overflow-y-auto tw-overflow-x-hidden tw-bg-[#040f16]/80 tw-backdrop-blur-3xl tw-border-l tw-border-y tw-border-[#00f0ff]/30 tw-rounded-l-3xl tw-shadow-[-20px_0_40px_-10px_rgba(0,240,255,0.15)] {engine.isDrawerOpen
 		? 'tw-translate-x-0'
 		: 'tw-translate-x-full'}"
 	aria-hidden={!engine.isDrawerOpen}
 	role="complementary"
 	aria-label="Command drawer"
 >
+	<div class="tw-h-1 tw-bg-gradient-to-r tw-from-transparent tw-via-[#00f0ff] tw-to-transparent"></div>
 	<div
 		class="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-px tw-bg-gradient-to-b tw-from-transparent tw-via-[#00f0ff]/45 tw-to-transparent"
 		aria-hidden="true"

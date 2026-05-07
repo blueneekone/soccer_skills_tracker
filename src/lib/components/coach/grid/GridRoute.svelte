@@ -38,64 +38,28 @@
 
 {#if renderLayer === 'stroke'}
 	<g aria-current={isSelected ? 'true' : undefined} data-timeline-ms={timelineMs}>
-		<!-- Wide ink bloom (unchanged role; no arrow — tips live on marker paths below). -->
-		<path
-			d={pathD}
-			fill="none"
-			stroke={route.color}
-			stroke-width="8"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			opacity="0.35"
-			filter="url(#premium-neon)"
-			pointer-events="none"
-		/>
-		<!-- Plasma / comet wake: animated dash + cyan head→tail gradient + neon-glow (arrowheads untouched in defs). -->
-		<path
-			class="route-plasma-dash"
-			d={pathD}
-			fill="none"
-			stroke="url(#plasma-trail)"
-			stroke-width="7"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			opacity="0.95"
-			filter="url(#neon-glow)"
-			pointer-events="none"
-		/>
-		<!-- Glowing arrow tip layer — marker defs unchanged. -->
-		<path
-			d={pathD}
-			fill="none"
-			stroke={route.color}
-			stroke-width="5"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			opacity="0.55"
-			filter="url(#premium-neon)"
-			marker-end="url(#arrowhead-glow)"
-			pointer-events="none"
-		/>
-		<!-- Crisp vector + primary arrowhead. -->
+		<!-- Layer 1: conduit (solid, faint) + protected arrowhead. -->
 		<path
 			d={pathD}
 			fill="none"
 			stroke={route.color}
 			stroke-width="3"
+			stroke-opacity="0.2"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			opacity="1"
 			marker-end="url(#arrowhead)"
 			pointer-events="none"
 		/>
-		<!-- White core spine. -->
+		<!-- Layer 2: plasma pulse (short bright comet, long dark gap), no marker-end. -->
 		<path
 			d={pathD}
 			fill="none"
-			stroke="rgba(255,255,255,0.35)"
-			stroke-width="1"
+			stroke={route.color}
+			stroke-width="4"
+			stroke-dasharray="15 85"
 			stroke-linecap="round"
-			stroke-linejoin="round"
+			class="animate-plasma"
+			style="filter: drop-shadow(0px 0px 8px {route.color});"
 			pointer-events="none"
 		/>
 	</g>
@@ -207,14 +171,16 @@
 {/if}
 
 <style>
-	@keyframes dash-flow-plasma {
+	@keyframes plasma-flow {
+		from {
+			stroke-dashoffset: 1000;
+		}
 		to {
-			stroke-dashoffset: -56;
+			stroke-dashoffset: 0;
 		}
 	}
 
-	.route-plasma-dash {
-		stroke-dasharray: 8 6;
-		animation: dash-flow-plasma 1.5s linear infinite;
+	.animate-plasma {
+		animation: plasma-flow 15s linear infinite;
 	}
 </style>
