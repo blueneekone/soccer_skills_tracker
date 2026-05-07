@@ -83,7 +83,7 @@
 		style="max-height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.8s ease; transform-origin: center; transform-style: preserve-3d; transform: {isHolotableMode
 			? 'rotateX(32deg) scale(0.9) translateY(8%)'
 			: 'rotateX(0deg) scale(1) translateY(0)'};{isHolotableMode
-			? ' box-shadow: 0 100px 200px -50px rgba(0,240,255,0.15);'
+			? ' box-shadow: 0 120px 220px -36px rgba(0,240,255,0.45), 0 0 80px rgba(0,240,255,0.35), 0 0 140px rgba(0,240,255,0.2), inset 0 0 72px rgba(0,240,255,0.14), inset 0 0 0 1px rgba(0,240,255,0.22);'
 			: ''}"
 		>
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -214,6 +214,7 @@
 
 			{#if routingActive && routeDraft}
 				<path
+					class="route-draft-pulse"
 					d={routePathD(routeDraft)}
 					fill="none"
 					stroke={routeDraft.color}
@@ -224,6 +225,7 @@
 					pointer-events="none"
 				/>
 				<path
+					class="route-draft-pulse route-draft-pulse--slow"
 					d={routePathD(routeDraft)}
 					fill="none"
 					stroke={routeDraft.color}
@@ -235,6 +237,7 @@
 					pointer-events="none"
 				/>
 				<path
+					class="route-draft-pulse route-draft-pulse--slow"
 					d={routePathD(routeDraft)}
 					fill="none"
 					stroke="#ffffff"
@@ -380,3 +383,20 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	@keyframes dash-flow-draft {
+		to {
+			stroke-dashoffset: -56;
+		}
+	}
+
+	.route-draft-pulse {
+		stroke-dasharray: 8 6;
+		animation: dash-flow-draft 1.6s linear infinite;
+	}
+
+	.route-draft-pulse--slow {
+		animation-duration: 2.2s;
+	}
+</style>

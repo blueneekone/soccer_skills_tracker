@@ -2,6 +2,10 @@
 	/** Distinct ink colors for arrow marker defs (palette ∪ live routes). */
 	/** Increment to restart sweep-reveal SMIL (pairs with SimulatorEngine.cartridgeSweepEpoch). */
 	let { markerColors, cartridgeSweepEpoch = 0 } = $props();
+
+	/** Tip at x≈22; refX pulled back so the chevron overlaps the path end and hides round-cap bleed. */
+	const ARROW_REF_X = 17;
+	const ARROW_REF_Y = 10;
 </script>
 
 <defs>
@@ -24,41 +28,46 @@
 			<feMergeNode in="SourceGraphic" />
 		</feMerge>
 	</filter>
-	<!-- Draft-route chevron — white arrow tip tracks the cursor endpoint. -->
+	<!-- Comet wake: bright head → translucent tail (stroke url(#plasma-trail) + dash animation on routes). -->
+	<linearGradient id="plasma-trail" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="0">
+		<stop offset="0%" stop-color="#00f0ff" stop-opacity="1" />
+		<stop offset="100%" stop-color="#00f0ff" stop-opacity="0" />
+	</linearGradient>
+	<!-- Draft-route chevron — fill tracks the referencing path stroke (SVG2 context-stroke). -->
 	<marker
 		id="tech-chevron"
-		refX="22"
-		refY="10"
+		refX={ARROW_REF_X}
+		refY={ARROW_REF_Y}
 		markerWidth="28"
 		markerHeight="20"
 		orient="auto"
 		markerUnits="userSpaceOnUse"
 	>
-		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#ffffff" />
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="context-stroke" />
 	</marker>
-	<!-- Neon cyan arrowhead — primary tactical vector marker. -->
+	<!-- Tactical arrowhead — inherits route ink from parent <path> stroke. -->
 	<marker
 		id="arrowhead"
-		refX="22"
-		refY="10"
+		refX={ARROW_REF_X}
+		refY={ARROW_REF_Y}
 		markerWidth="28"
 		markerHeight="20"
 		orient="auto"
 		markerUnits="userSpaceOnUse"
 	>
-		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#00f0ff" />
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="context-stroke" />
 	</marker>
-	<!-- Glowing cyan arrowhead for bloom-filtered paths. -->
+	<!-- Bloom-filtered arrowhead — same geometry + context fill. -->
 	<marker
 		id="arrowhead-glow"
-		refX="22"
-		refY="10"
+		refX={ARROW_REF_X}
+		refY={ARROW_REF_Y}
 		markerWidth="28"
 		markerHeight="20"
 		orient="auto"
 		markerUnits="userSpaceOnUse"
 	>
-		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="#00f0ff" filter="url(#neon-glow)" />
+		<path d="M 0 2 L 22 10 L 0 18 L 5 10 Z" fill="context-stroke" filter="url(#neon-glow)" />
 	</marker>
 	<filter id="premium-neon" x="-50%" y="-50%" width="200%" height="200%">
 		<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1" />

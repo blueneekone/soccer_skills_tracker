@@ -34,13 +34,11 @@
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
 	const successProb = $derived(Math.round(Math.max(0, Math.min(100, playerStamina * (1 - routeDistance / 2000)))));
 	const probColor = $derived(successProb >= 70 ? '#00f0ff' : successProb >= 40 ? '#ffff00' : '#ff003c');
-
-
 </script>
 
 {#if renderLayer === 'stroke'}
 	<g aria-current={isSelected ? 'true' : undefined} data-timeline-ms={timelineMs}>
-		<!-- Bloom glow layer — wide soft halo + glowing arrowhead. -->
+		<!-- Wide ink bloom (unchanged role; no arrow — tips live on marker paths below). -->
 		<path
 			d={pathD}
 			fill="none"
@@ -48,12 +46,37 @@
 			stroke-width="8"
 			stroke-linecap="round"
 			stroke-linejoin="round"
+			opacity="0.35"
+			filter="url(#premium-neon)"
+			pointer-events="none"
+		/>
+		<!-- Plasma / comet wake: animated dash + cyan head→tail gradient + neon-glow (arrowheads untouched in defs). -->
+		<path
+			class="route-plasma-dash"
+			d={pathD}
+			fill="none"
+			stroke="url(#plasma-trail)"
+			stroke-width="7"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			opacity="0.95"
+			filter="url(#neon-glow)"
+			pointer-events="none"
+		/>
+		<!-- Glowing arrow tip layer — marker defs unchanged. -->
+		<path
+			d={pathD}
+			fill="none"
+			stroke={route.color}
+			stroke-width="5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
 			opacity="0.55"
 			filter="url(#premium-neon)"
 			marker-end="url(#arrowhead-glow)"
 			pointer-events="none"
 		/>
-		<!-- Core colored line with neon cyan arrowhead. -->
+		<!-- Crisp vector + primary arrowhead. -->
 		<path
 			d={pathD}
 			fill="none"
@@ -65,7 +88,7 @@
 			marker-end="url(#arrowhead)"
 			pointer-events="none"
 		/>
-		<!-- White core spine for maximum contrast. -->
+		<!-- White core spine. -->
 		<path
 			d={pathD}
 			fill="none"
@@ -127,7 +150,6 @@
 {#if renderLayer === 'anchors' && showAnchors}
 	<g data-timeline-ms={timelineMs} data-route-anchor-layer={isSelected ? 'selected' : undefined}>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<!-- START anchor — oversized hit disc (r=36) shadows player hit circle (r=32) so anchor wins on overlap -->
 		<g
 			data-anchor-hit
 			transform="translate({route.x1},{route.y1}) rotate(45)"
@@ -135,7 +157,6 @@
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'start')}
 		>
-			<!-- Transparent large hit zone — must be first child so it underlays visual elements -->
 			<circle cx="0" cy="0" r="36" fill="transparent" pointer-events="all" />
 			<rect
 				x="-7"
@@ -149,7 +170,6 @@
 			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<!-- CTRL anchor — mid-point handle, generous hit area -->
 		<g
 			data-anchor-hit
 			transform="translate({route.cx},{route.cy}) rotate(45)"
@@ -170,7 +190,6 @@
 			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<!-- END anchor — destination diamond, generous hit area -->
 		<g
 			data-anchor-hit
 			transform="translate({route.x2},{route.y2})"
@@ -186,3 +205,16 @@
 		</g>
 	</g>
 {/if}
+
+<style>
+	@keyframes dash-flow-plasma {
+		to {
+			stroke-dashoffset: -56;
+		}
+	}
+
+	.route-plasma-dash {
+		stroke-dasharray: 8 6;
+		animation: dash-flow-plasma 1.5s linear infinite;
+	}
+</style>

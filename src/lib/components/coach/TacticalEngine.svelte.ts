@@ -77,6 +77,15 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
 	let isDrawerOpen = $state(false);
 
+	/** Snapshots for rewind — restored by `resetPositions()` (timeline + x/y). */
+	let playbackBaselinePitch = $state<TacticalToken[]>([]);
+	let playbackBaselineOpp = $state<TacticalToken[]>([]);
+
+	function capturePlaybackBaseline() {
+		playbackBaselinePitch = host.wrBucketPitch.get().map((t) => ({ ...t }));
+		playbackBaselineOpp = host.wrOppPitch.get().map((t) => ({ ...t }));
+	}
+
 	let simChargePlayerIds = $state<string[]>([]);
 	const simRouteHoldPrev = new Map<string, boolean>();
 
@@ -201,6 +210,15 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	};
 	wireTacticalPlayback(simulator, playbackHost);
 
+	// First roster hydration (no cartridge): capture once so Rewind can restore layout.
+	$effect(() => {
+		const f = host.wrBucketPitch.get();
+		const o = host.wrOppPitch.get();
+		if (playbackBaselinePitch.length > 0 || playbackBaselineOpp.length > 0) return;
+		if (f.length === 0 && o.length === 0) return;
+		capturePlaybackBaseline();
+	});
+
 	function bumpRouteDelay(routeId: string, deltaMs: number) {
 		host.drawnRoutes.set(
 			host.drawnRoutes.get().map((raw) => {
@@ -251,6 +269,8 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		host.wrOppPitch.set([]);
 		activeDragTrail = [];
 		selectedRouteId = null;
+		playbackBaselinePitch = [];
+		playbackBaselineOpp = [];
 	}
 
 	function clearRoutesOnly() {
@@ -373,6 +393,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		host.wrBucketBench.set([]);
 
 		simulator.loadCartridge(payload);
+		capturePlaybackBaseline();
 	}
 
 	function serializeToCartridge(): TacticalCartridge {
@@ -442,6 +463,34 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 			}),
 		);
 		if (selectedRouteId === routeId) selectedRouteId = null;
+	}
+
+	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
+	function resetPositions() {
+		simulator.pause();
+		simulator.scrub(0);
+		simRouteHoldPrev.clear();
+		activeDragTrail = [];
+		draggingPlayer = null;
+		teardownAnchorDrag();
+		routeBodyDrag = null;
+		input.releaseRouteBodyCapture();
+		input.releasePitchDragCapture();
+		if (playbackBaselinePitch.length === 0 && playbackBaselineOpp.length === 0) return;
+		const byIdPitch = new Map(playbackBaselinePitch.map((t) => [t.id, t]));
+		const byIdOpp = new Map(playbackBaselineOpp.map((t) => [t.id, t]));
+		host.wrBucketPitch.set(
+			host.wrBucketPitch.get().map((t) => {
+				const b = byIdPitch.get(t.id);
+				return b ? { ...t, x: b.x, y: b.y } : t;
+			}),
+		);
+		host.wrOppPitch.set(
+			host.wrOppPitch.get().map((t) => {
+				const b = byIdOpp.get(t.id);
+				return b ? { ...t, x: b.x, y: b.y } : t;
+			}),
+		);
 	}
 
 	/** Monospace-friendly scrub clock (ms). */
@@ -575,6 +624,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		resolvePitchToken,
 		showAnchorsFor,
 		deleteRoute,
+		resetPositions,
 		setHoveredRouteId: (id: string | null) => (hoveredRouteId = id),
 		setHoveredDiscId: (id: string | null) => (hoveredDiscId = id),
 		setFocusedPlayerId: (id: string | null) => (focusedPlayerId = id),
