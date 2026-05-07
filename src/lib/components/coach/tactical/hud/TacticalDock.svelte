@@ -11,6 +11,18 @@
 		{ id: 'erase', label: 'ERASE', glyph: '⊗' },
 	]);
 
+	/**
+	 * Tool-specific active palette per CEO directive.
+	 * cursor & draw: Cyan · erase: Ares Red · (curve/cut live in drawer).
+	 * @param {'cursor' | 'draw' | 'erase'} id
+	 */
+	function activePalette(id) {
+		if (id === 'erase') {
+			return 'tw-text-[#ff2a2a] tw-bg-[#ff2a2a]/15 tw-border-[#ff2a2a]/60 tw-shadow-[0_0_15px_rgba(255,42,42,0.4)]';
+		}
+		return 'tw-text-[#00f0ff] tw-bg-[#00f0ff]/15 tw-border-[#00f0ff]/60 tw-shadow-[0_0_15px_rgba(0,240,255,0.4)]';
+	}
+
 	function pickMode(/** @type {'cursor' | 'draw' | 'erase'} */ mode) {
 		dockMode = mode;
 		model.setActiveTool(mode === 'draw' || mode === 'erase' ? 'ROUTE' : 'DRAG');
@@ -55,25 +67,33 @@
 </script>
 
 <!--
-  Outer strip: full width, flex-centered, pointer-events-none so the pitch
-  stays clickable outside the pill. Inner pill re-enables events.
+  Outer strip — full width, flex-centered, pointer-events-none so the pitch
+  stays clickable outside the pill. Inner pill re-enables events at z-9000.
 -->
 <div
-	class="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-6 tw-z-20 tw-flex tw-justify-center"
+	class="tw-absolute tw-bottom-8 tw-inset-x-0 tw-flex tw-justify-center tw-pointer-events-none tw-z-[10000]"
 	aria-hidden="false"
 >
+	<!-- Floating glass pill: heavy backdrop-blur, hairline cyan border, rounded-xl. -->
 	<div
-		class="tw-pointer-events-auto tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#00f0ff]/30 tw-bg-[#020202]/88 tw-px-5 tw-py-2.5 tw-shadow-[0_0_20px_rgba(0,240,255,0.18),inset_0_1px_1px_rgba(255,255,255,0.06)] tw-backdrop-blur-3xl"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-bg-black/40 tw-backdrop-blur-3xl tw-border tw-border-[#00f0ff]/20 tw-rounded-xl tw-pointer-events-auto"
 		role="toolbar"
 		aria-label="Tactical dock"
 	>
 		{#each TOOLS as tool (tool.id)}
+			<!--
+			  Micro-typography weapon button. Active palette is tool-specific:
+			  cursor/draw=cyan, erase=Ares red. Erase also gets a red hover even
+			  while inactive, telegraphing destructive intent.
+			-->
 			<button
 				type="button"
-				class="tw-font-mono tw-text-sm tw-uppercase tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-300 tw-select-none
+				class="tw-relative tw-px-4 tw-py-2 tw-text-[10px] tw-font-mono tw-tracking-[0.25em] tw-uppercase tw-transition-all tw-duration-300 tw-select-none tw-rounded-md tw-border tw-drop-shadow-[0_0_4px_currentColor]
 				{dockMode === tool.id
-					? 'tw-text-[#ffffff] tw-border tw-border-[#00f0ff] tw-bg-[#00f0ff]/20 tw-shadow-[0_0_20px_rgba(0,240,255,0.6),inset_0_0_10px_rgba(0,240,255,0.4)] tw-scale-110'
-					: 'tw-text-[#00f0ff]/50 tw-bg-transparent tw-border tw-border-transparent hover:tw-border-[#00f0ff]/40 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_15px_rgba(0,240,255,0.2)]'}"
+					? activePalette(tool.id)
+					: tool.id === 'erase'
+						? 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#ff2a2a]'
+						: 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#00f0ff]'}"
 				onclick={() => pickMode(tool.id)}
 				aria-pressed={dockMode === tool.id}
 			>
@@ -93,23 +113,40 @@
 			<span aria-hidden="true">|&lt;</span>
 		</button>
 
+		<!-- ARES LIGHT DISC — circular play/pause weapon button. -->
 		<button
 			type="button"
-			class="tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/60 tw-text-[#00f0ff] tw-transition-all hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_14px_rgba(0,240,255,0.28)] active:tw-scale-95"
+			class="tw-relative tw-flex tw-items-center tw-justify-center tw-w-12 tw-h-12 tw-rounded-full tw-bg-[#0a0202]/80 tw-backdrop-blur-md tw-border-2 tw-border-[#ff2a2a]/40 tw-transition-all tw-duration-300 hover:tw-border-[#ff2a2a] hover:tw-shadow-[0_0_20px_rgba(255,42,42,0.6),inset_0_0_10px_rgba(255,42,42,0.4)] tw-group disabled:tw-opacity-30 disabled:tw-cursor-not-allowed"
 			onclick={() => model.toggleTimelinePlayback()}
+			disabled={!model.canPlay}
 			aria-pressed={model.simulator.isPlaying}
 			aria-label={model.simulator.isPlaying ? 'Pause simulation' : 'Play simulation'}
 		>
+			<!-- Concentric inner ring — spins slowly while the simulation is playing. -->
+			<div
+				class="tw-absolute tw-inset-1 tw-rounded-full tw-border tw-border-[#ff2a2a]/20 group-hover:tw-border-[#ff2a2a]/60 tw-transition-all"
+				class:tw-animate-[spin_3s_linear_infinite]={model.simulator.isPlaying}
+				aria-hidden="true"
+			></div>
+			<!-- Minimal SVG play/pause icon centered in the disc. -->
 			{#if model.simulator.isPlaying}
-				<span class="tw-flex tw-items-center tw-gap-0.5" aria-hidden="true">
-					<span class="tw-block tw-h-2.5 tw-w-0.5 tw-rounded-sm tw-bg-current"></span>
-					<span class="tw-block tw-h-2.5 tw-w-0.5 tw-rounded-sm tw-bg-current"></span>
-				</span>
-			{:else}
-				<span
-					class="tw-ml-0.5 tw-block tw-h-0 tw-w-0 tw-border-y-[5px] tw-border-y-transparent tw-border-l-[8px] tw-border-l-current"
+				<svg
+					class="tw-w-4 tw-h-4 tw-text-[#ff2a2a] group-hover:tw-drop-shadow-[0_0_5px_rgba(255,42,42,1)]"
+					viewBox="0 0 24 24"
+					fill="currentColor"
 					aria-hidden="true"
-				></span>
+				>
+					<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+				</svg>
+			{:else}
+				<svg
+					class="tw-w-4 tw-h-4 tw-text-[#ff2a2a] tw-translate-x-[2px] group-hover:tw-drop-shadow-[0_0_5px_rgba(255,42,42,1)]"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					aria-hidden="true"
+				>
+					<path d="M8 5v14l11-7z" />
+				</svg>
 			{/if}
 		</button>
 
@@ -138,17 +175,40 @@
 
 		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#00f0ff]/20" aria-hidden="true"></span>
 
+		<!--
+		  [ SYS.MENU ] — hardwired through the DOM:
+		    · z-[10000] sits above every layer including the drawer (9999).
+		    · pointer-events-auto guarantees clicks land on this button even if
+		      a parent wrapper is pointer-events-none.
+		    · preventDefault + stopPropagation stops any background steal.
+		-->
 		<button
 			type="button"
-			class="tw-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#00f0ff]/8 tw-px-4 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-[#00f0ff] tw-transition-all hover:tw-border-[#00f0ff]/70 hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_14px_rgba(0,240,255,0.28)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
+			class="tw-relative tw-z-[10000] tw-pointer-events-auto tw-cursor-pointer tw-px-4 tw-py-2 tw-text-[10px] tw-font-mono tw-tracking-[0.25em] tw-uppercase tw-transition-all tw-duration-300 tw-select-none tw-rounded-md tw-border tw-drop-shadow-[0_0_4px_currentColor]
+			{model.isDrawerOpen
+				? 'tw-text-[#ffaa00] tw-bg-[#ffaa00]/15 tw-border-[#ffaa00]/60 tw-shadow-[0_0_15px_rgba(255,170,0,0.4)]'
+				: 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#ffaa00]'}"
+			onclick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				model.isDrawerOpen = !model.isDrawerOpen;
+			}}
+			aria-pressed={model.isDrawerOpen}
+			aria-label="Toggle command drawer"
+		>
+			[ SYS.MENU ]
+		</button>
+
+		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#00f0ff]/20" aria-hidden="true"></span>
+
+		<!-- [ ↑ DEPLOY ] — green confirmation button. -->
+		<button
+			type="button"
+			class="tw-relative tw-px-4 tw-py-2 tw-text-[10px] tw-font-mono tw-tracking-[0.25em] tw-uppercase tw-transition-all tw-duration-300 tw-rounded-md tw-border tw-border-[#00ff00]/50 tw-bg-[#00ff00]/10 tw-text-[#00ff00] tw-drop-shadow-[0_0_4px_currentColor] hover:tw-border-[#00ff00]/80 hover:tw-bg-[#00ff00]/20 hover:tw-shadow-[0_0_18px_rgba(0,255,0,0.45)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
 			onclick={onDeploy}
 			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
 		>
-			<span
-				class="tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.9)]"
-				aria-hidden="true"
-			></span>
-			{deployPhase !== 'idle' ? 'DEPLOYING…' : 'DEPLOY'}
+			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ ↑ DEPLOY ]'}
 		</button>
 	</div>
 </div>

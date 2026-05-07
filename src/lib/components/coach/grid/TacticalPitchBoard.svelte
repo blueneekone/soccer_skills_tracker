@@ -65,71 +65,125 @@
 
 </script>
 
+<!--
+  STARK / FLYNN HOLOTABLE ENVIRONMENT
+    · Outer container = 3D camera (perspective 1200px, origin at 50% / 120% so
+      we look slightly upward across the table from below the front edge).
+    · Tron grid floor = independent rotated plane behind everything else.
+    · Greebles, scanlines, vignette = ambient flavor pinned to viewport.
+    · The Projector Base is a flex-centered card; its tilt + glass material
+      give the field a physical "console" frame instead of a square in a void.
+-->
 <div
-	class="tw-relative tw-flex tw-h-full tw-w-full tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-overflow-visible"
+	class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#010308]"
+	style="perspective: 1200px; perspective-origin: 50% 120%;"
 >
+	<!--
+	  Infinite Tron grid floor — sits behind the projector base, deeply rotated
+	  (rotateX 70deg) so it reads as a true ground plane stretching to the
+	  horizon. translateZ pushes it back into space below the table.
+	-->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[linear-gradient(rgba(255,0,60,0.02)_50%,transparent_50%)] tw-bg-[length:100%_4px] tw-animate-[scanlines_10s_linear_infinite]"
-	></div>
-	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[radial-gradient(circle_at_center,transparent_40%,#020202_100%)]"
+		class="tw-absolute tw-inset-0 tw-pointer-events-none tw-opacity-30"
+		style="background-image: linear-gradient(to right, rgba(0,240,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,240,255,0.05) 1px, transparent 1px); background-size: 60px 60px; transform: rotateX(70deg) translateZ(-200px); transform-origin: center; mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 85%); -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 85%);"
+		aria-hidden="true"
 	></div>
 
+	<!-- ARCADE GREEBLE: SIEM terminal status bar — amber accent anchors the HUD. -->
 	<div
-		class="tw-relative tw-flex tw-h-full tw-min-h-0 tw-w-full tw-flex-1 tw-items-center tw-justify-center"
+		class="tw-absolute tw-top-4 tw-left-8 tw-z-50 tw-font-mono tw-text-[9px] tw-tracking-[0.3em] tw-text-[#ffaa00] tw-animate-pulse tw-pointer-events-none"
+		aria-hidden="true"
 	>
+		[ UPLINK SECURE // LATENCY 12ms ]
+	</div>
+
+	<!-- CRT scanlines — top-layer ambient flavor. -->
+	<div
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[linear-gradient(rgba(255,0,60,0.02)_50%,transparent_50%)] tw-bg-[length:100%_4px] tw-animate-[scanlines_10s_linear_infinite]"
+		aria-hidden="true"
+	></div>
+	<!-- Vignette — fade viewport edges into the void. -->
+	<div
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-40 tw-bg-[radial-gradient(circle_at_center,transparent_40%,#010308_100%)]"
+		aria-hidden="true"
+	></div>
+
+	<!--
+	  HOLOTABLE GRID BASE — physical table surface beneath the projection.
+	  Rotated steeply (80deg) so it reads as a flat floor receding to the
+	  horizon rather than a back-wall. z-0 keeps it behind the projector base.
+	  Negative inset ensures the rotated plane fills the viewport at the edges.
+	-->
+	<div
+		class="tw-absolute tw-inset-[-50%] tw-pointer-events-none tw-z-0"
+		style="background-image: linear-gradient(to right, rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,240,255,0.03) 1px, transparent 1px); background-size: 100px 100px; transform: rotateX(80deg) translateZ(-150px); mask-image: radial-gradient(circle at center, black 10%, transparent 60%); -webkit-mask-image: radial-gradient(circle at center, black 10%, transparent 60%);"
+		aria-hidden="true"
+	></div>
+
+	<!--
+	  THE STARK PROJECTOR BASE
+	    Physical-feeling holotable: glass panel + cyan trim + projection-light
+	    haze rising from the back. Holotable mode toggles the dramatic 55deg
+	    backward tilt; off = flat traditional view. Routing math untouched.
+	-->
+	<div
+		class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-w-full tw-max-w-4xl tw-aspect-[2/3] tw-rounded-xl tw-border tw-border-[#00f0ff]/30 tw-bg-[#020a14]/60 tw-backdrop-blur-md tw-shadow-[0_0_50px_rgba(0,240,255,0.1),inset_0_0_30px_rgba(0,240,255,0.2)]"
+		style="transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1); transform: {isHolotableMode
+			? 'rotateX(55deg) translateY(-50px)'
+			: 'rotateX(0deg) translateY(0)'};"
+	>
+		<!-- Volumetric projection light — vertical cyan haze rising off the base. -->
 		<div
-			class="tg-holotable-stage tw-pointer-events-auto tw-relative tw-z-10 tw-mx-auto tw-aspect-[1600/900] tw-w-full tw-max-w-full tw-min-h-0 tw-overflow-visible"
-		style="max-height: 100%; transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.8s ease; transform-origin: center; transform-style: preserve-3d; transform: {isHolotableMode
-			? 'rotateX(32deg) scale(0.9) translateY(8%)'
-			: 'rotateX(0deg) scale(1) translateY(0)'};{isHolotableMode
-			? ' box-shadow: 0 120px 220px -36px rgba(0,240,255,0.45), 0 0 80px rgba(0,240,255,0.35), 0 0 140px rgba(0,240,255,0.2), inset 0 0 72px rgba(0,240,255,0.14), inset 0 0 0 1px rgba(0,240,255,0.22);'
-			: ''}"
+			class="tw-absolute tw-inset-0 tw-rounded-xl tw-bg-gradient-to-t tw-from-[#00f0ff]/20 tw-via-transparent tw-to-transparent tw-pointer-events-none"
+			aria-hidden="true"
+		></div>
+
+		<!--
+		  HOLOGRAPHIC DUST — digital light-beam scatter across the projection surface.
+		  mix-blend-screen lets the gradient add luminosity to the cyan pitch lines
+		  without darkening anything. The bottom-biased radial origin places the
+		  brightest beam core at the "near" edge of the tilted table, exactly where
+		  a real projector cone would bloom.
+		-->
+		<div
+			class="tw-absolute tw-inset-0 tw-pointer-events-none tw-mix-blend-screen tw-opacity-30"
+			style="background-image: radial-gradient(circle at 50% 120%, rgba(0,240,255,0.1) 0%, transparent 70%); filter: contrast(120%) brightness(120%);"
+			aria-hidden="true"
+		></div>
+
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!--
+		  Pitch SVG fills the base; preserveAspectRatio="xMidYMid meet" letter-
+		  boxes the 16:9 field in the central band of the 2:3 base, so the trim
+		  above and below reads as the projector body. No mask-image — the
+		  physical base now frames the field on its own.
+		-->
+		<!--
+		  SVG is absolutely positioned to lock corner-to-corner with the projector
+		  base so that its 0,0 origin aligns with the top-left of the physical
+		  surface. All routes, entities, and anchors are SVG children and therefore
+		  inherit the base's rotateX tilt as one flat 3D plane — no floating.
+		-->
+		<svg
+			bind:this={pitchSvgEl}
+			id="tactical-pitch-svg"
+			class="tw-absolute tw-inset-0 tw-z-10 tw-w-full tw-h-full tw-opacity-80 tw-touch-none tw-select-none tw-isolate {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
+			viewBox="0 0 1600 900"
+			preserveAspectRatio="xMidYMid meet"
+			role="img"
+			aria-label="Tactical pitch"
+			onpointerdown={onPitchPointerDown}
+			onpointerup={onPitchPointerUpClearLongPress}
+			onpointerleave={onPitchMouseLeave}
+			oncontextmenu={onPitchContextMenu}
+			onclick={handleSvgClick}
 		>
-			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<svg
-				bind:this={pitchSvgEl}
-				id="tactical-pitch-svg"
-				class="tw-absolute tw-inset-0 tw-z-[100] tw-h-full tw-w-full tw-touch-none tw-select-none tw-isolate tw-drop-shadow-[0_0_30px_rgba(0,240,255,0.2)] {warRoomTool === 'ROUTE' ? 'tw-cursor-crosshair' : 'tw-cursor-default'}"
-				viewBox="0 0 1600 900"
-				preserveAspectRatio="xMidYMid meet"
-				role="img"
-				aria-label="Tactical pitch"
-				onpointerdown={onPitchPointerDown}
-				onpointerup={onPitchPointerUpClearLongPress}
-				onpointerleave={onPitchMouseLeave}
-				oncontextmenu={onPitchContextMenu}
-				onclick={handleSvgClick}
-			>
 			<GridSvgDefs markerColors={allRouteMarkerColors} {cartridgeSweepEpoch} />
 
 			<g class="tg-holotable-plane">
 				<GridPitch {showLabels} />
 
-			{#if draggingPlayer && activeDragTrail.length >= 2 && trailString}
-				<polyline
-					points={trailString}
-					fill="none"
-					stroke={dragTrailBloomColor}
-					stroke-width="6"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					opacity="0.9"
-					filter="url(#premium-neon)"
-					pointer-events="none"
-				/>
-				<polyline
-					points={trailString}
-					fill="none"
-					stroke="#ffffff"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					opacity="1"
-					pointer-events="none"
-				/>
-			{/if}
 
 			<g>
 			{#each routesLive as route (route.id)}
@@ -173,6 +227,7 @@
 				{player}
 				isHovered={hoveredDiscId === player.id}
 				isSelected={focusedPlayerId === player.id}
+				isDragging={draggingPlayer?.id === player.id}
 				ringStroke={ringColor(player)}
 				charging={simulatorIsPlaying && simChargePlayerIds.includes(player.id)}
 				timelineMs={simulatorTime}
@@ -249,29 +304,6 @@
 				/>
 			{/if}
 
-			{#if !draggingPlayer && activeDragTrail.length >= 2 && trailString}
-				<polyline
-					points={trailString}
-					fill="none"
-					stroke={dragTrailBloomColor}
-					stroke-width="6"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					opacity="0.9"
-					filter="url(#premium-neon)"
-					pointer-events="none"
-				/>
-				<polyline
-					points={trailString}
-					fill="none"
-					stroke="#ffffff"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					opacity="1"
-					pointer-events="none"
-				/>
-			{/if}
 
 			{#if isLoadingCartridge}
 				{#key cartridgeSweepEpoch}
@@ -352,7 +384,7 @@
 			/>
 			</svg>
 
-			<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-50">
+			<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-20">
 				{#if isHolotableMode && holotableStatsTarget && typeof holotableStatsTarget.x === 'number' && typeof holotableStatsTarget.y === 'number'}
 					{@const pctX = (holotableStatsTarget.x / 1600) * 100}
 					{@const pctY = (holotableStatsTarget.y / 900) * 100}
@@ -381,7 +413,6 @@
 				{/if}
 			</div>
 		</div>
-	</div>
 </div>
 
 <style>

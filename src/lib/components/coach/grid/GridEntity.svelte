@@ -19,6 +19,7 @@
 		player,
 		isHovered = false,
 		isSelected = false,
+		isDragging = false,
 		ringStroke,
 		charging = false,
 		warRoomTool = /** @type {'DRAG' | 'ROUTE'} */ ('DRAG'),
@@ -50,6 +51,11 @@
 	const discLabel = $derived(
 		player.side === 'opponent' ? (player.position || 'X') : player.number || '',
 	);
+
+	/** SIEM tri-color: opponent=magenta, friendly=cyan. Drag uses magenta override + amber lock ring. */
+	const siemColor = $derived(
+		player.side === 'opponent' ? '#ff00ff' : '#00f0ff'
+	);
 </script>
 
 {#if typeof player.x === 'number' && typeof player.y === 'number'}
@@ -58,6 +64,7 @@
 		data-light-disc
 		data-timeline-ms={timelineMs}
 		transform="translate({player.x}, {player.y})"
+		class="tw-group"
 		class:tg-disc-charge={charging}
 		class:grid-entity--selected={isSelected}
 		pointer-events={pointerOn ? 'auto' : 'none'}
@@ -71,24 +78,56 @@
 					cy="0"
 					r={DISC_R + 20}
 					fill="none"
-					stroke="#00f0ff"
+					stroke={siemColor}
 					stroke-width="1.25"
 					opacity="0.9"
 					filter="url(#heavy-bloom)"
 				/>
 			</g>
 		{/if}
+		<!--
+		  disc-visual: no scale pop on drag. Stays exactly the same size.
+		  SIEM team color on all strokes; amber radar-lock ring appears while dragging.
+		-->
 		<g
 			class="disc-visual"
 			pointer-events="none"
 			style="transform: scale({visScale}); transform-origin: 0px 0px; transition: transform 180ms ease-out;"
 		>
+			<!-- Ambient radar reticle — always visible, spins 10s, team color. -->
+			<circle
+				cx="0"
+				cy="0"
+				r={DISC_R + 4}
+				fill="none"
+				stroke={siemColor}
+				stroke-width="1"
+				stroke-dasharray="4 4"
+				opacity="0.7"
+				class="tw-animate-[spin_10s_linear_infinite]"
+				style="transform-box: fill-box; transform-origin: center;"
+			/>
+			<!-- Amber precision lock ring — only while dragging. -->
+			{#if isDragging}
+				<circle
+					cx="0"
+					cy="0"
+					r={DISC_R + 10}
+					fill="none"
+					stroke="#ffaa00"
+					stroke-width="1.5"
+					stroke-dasharray="2 4"
+					opacity="0.9"
+					class="tw-animate-[spin_4s_linear_infinite]"
+					style="transform-box: fill-box; transform-origin: center; animation-direction: reverse;"
+				/>
+			{/if}
 			<circle
 				cx="0"
 				cy="0"
 				r={DISC_R}
 				fill="#050505"
-				stroke={ringStroke}
+				stroke={isDragging ? '#ff00ff' : siemColor}
 				stroke-width="2"
 				filter="url(#heavy-bloom)"
 			/>
@@ -127,7 +166,7 @@
 					cy="0"
 					r="8"
 					fill="none"
-					stroke="#00f0ff"
+					stroke={siemColor}
 					stroke-width="1.5"
 					opacity="0.85"
 					filter="url(#heavy-bloom)"
@@ -166,6 +205,35 @@
 				{discLabel}
 			</text>
 		</g>
+		<!--
+		  Holographic stat billboard — opacity-0 by default, fades in on group hover.
+		  Positioned above the token in SVG space; 3D counter-rotation lifts it
+		  out of the pitch plane (best-effort in SVG's flattened 3D context).
+		-->
+		<g
+			class="tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300"
+			transform="translate(-56, -{DISC_R + 14})"
+			style="transform: translate(-56px, -{DISC_R + 14}px) rotateX(-50deg) translateZ(30px); transform-origin: bottom center; transform-box: fill-box;"
+			pointer-events="none"
+		>
+			<rect x="0" y="-58" width="112" height="58" rx="4"
+				fill="#040f16" fill-opacity="0.92"
+				stroke="#00f0ff" stroke-width="0.5" stroke-opacity="0.4"
+			/>
+			<line x1="0" y1="-48" x2="112" y2="-48" stroke="#00f0ff" stroke-width="0.5" stroke-opacity="0.25" />
+			<text x="56" y="-50" font-family="monospace" font-size="6" fill="#00f0ff" fill-opacity="0.5"
+				text-anchor="middle" letter-spacing="2">OPERATOR_STATS</text>
+			<text x="8" y="-37" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+				ID: {player.number || 'XX'}
+			</text>
+			<text x="8" y="-25" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+				SPD: 94  STM: 88
+			</text>
+			<text x="8" y="-13" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+				POS: {player.position || 'FWD'}
+			</text>
+		</g>
+
 		<circle
 			cx="0"
 			cy="0"

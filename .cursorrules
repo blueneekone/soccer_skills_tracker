@@ -43,3 +43,17 @@ Never build a 500+ line Svelte component. If a UI layer (like the HUD) contains 
 - **The Wrapper:** The parent file (e.g., `TacticalHUD.svelte`) should strictly be a layout wrapper and state distributor. It should be less than 150 lines.
 - **The Fragments:** Extract distinct UI blocks into sub-directories (e.g., `src/lib/components/coach/tactical/hud/TacticalDock.svelte`, `CommandDrawer.svelte`, `RadialMenu.svelte`).
 - **State Passing:** Do not create local state inside these fragments if it affects the global board. Pass the `$state` Engine down from the parent or use Svelte 5 Snippets / Context.
+
+## 8. VANGUARD STARK-TECH UI AESTHETIC (THE GOD-MODE DESIGN SYSTEM)
+This application is not a standard website; it is an ultra-premium, cinematic Heads-Up Display (HUD). You must strictly adhere to the following design laws for all UI components:
+- **True Glassmorphism:** Never use solid backgrounds for UI panels. Containers must use extreme backdrop-blur (e.g., `tw-backdrop-blur-3xl` or `40px`) paired with barely visible background colors (e.g., `tw-bg-[#040f16]/85` or `tw-bg-[#00f0ff]/[0.02]`).
+- **Micro-Typography:** Interface text (buttons, labels, readouts) must be ultra-small (`tw-text-[10px]` or `tw-text-xs`), use monospace fonts (`tw-font-mono`), and employ aggressive letter spacing (`tw-tracking-widest` or `tw-tracking-[0.2em]`).
+- **Active State Glows:** Selected states and active buttons must physically light up using inner and outer neon shadows (e.g., `tw-shadow-[0_0_15px_rgba(0,240,255,0.4),inset_0_0_8px_rgba(0,240,255,0.2)]`).
+- **HUD Greebles:** Incorporate decorative tech brackets `[ ]`, slashes `//`, and 1px scanning lines (`bg-gradient-to-r`) to reinforce the tactical system aesthetic.
+- **Native Scrolling Only:** Never implement custom scrollbar plugins or logic. If a panel overflows, rely strictly on native browser scrolling.
+
+## 9. VANGUARD HYBRID ARCHITECTURE (DOM SHELL WITH 3D ISLANDS)
+Do not build the entire application in WebGL or Three.js. You must strictly adhere to the "DOM Shell with 3D Islands" architecture:
+- **The OS Shell (Svelte 5):** All dashboards, tactical boards, routing math, menus, and typography must be built using Svelte 5 and hardware-accelerated CSS (3D transforms, `perspective`, `backdrop-blur`). This ensures razor-sharp text and native browser accessibility.
+- **The 3D Islands (Three.js):** Reserve heavy WebGL/Three.js `<canvas>` implementations strictly for isolated, high-end hero assets (e.g., 3D rotating player avatars in the Armory, or 3D trophy models). These canvases must be embedded *inside* the Svelte UI components.
+- **View Transitions:** Utilize the native View Transitions API for navigating between major platform sections to create a seamless, app-like OS experience without hard reloads.

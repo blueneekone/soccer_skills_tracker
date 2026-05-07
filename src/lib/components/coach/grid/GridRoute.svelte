@@ -38,29 +38,29 @@
 
 {#if renderLayer === 'stroke'}
 	<g aria-current={isSelected ? 'true' : undefined} data-timeline-ms={timelineMs}>
-		<!-- Layer 1: conduit (solid, faint) + protected arrowhead. -->
+		<!-- Outer glow bloom -->
+		<path
+			d={pathD}
+			fill="none"
+			stroke={route.color}
+			stroke-width="8"
+			stroke-opacity="0.12"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			pointer-events="none"
+			style="filter: blur(3px);"
+		/>
+		<!-- Core line + arrowhead -->
 		<path
 			d={pathD}
 			fill="none"
 			stroke={route.color}
 			stroke-width="3"
-			stroke-opacity="0.2"
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			marker-end="url(#arrowhead)"
 			pointer-events="none"
-		/>
-		<!-- Layer 2: plasma pulse (short bright comet, long dark gap), no marker-end. -->
-		<path
-			d={pathD}
-			fill="none"
-			stroke={route.color}
-			stroke-width="4"
-			stroke-dasharray="15 85"
-			stroke-linecap="round"
-			class="animate-plasma"
-			style="filter: drop-shadow(0px 0px 8px {route.color});"
-			pointer-events="none"
+			style="filter: drop-shadow(0 0 8px {route.color});"
 		/>
 	</g>
 {/if}
@@ -171,16 +171,7 @@
 {/if}
 
 <style>
-	@keyframes plasma-flow {
-		from {
-			stroke-dashoffset: 1000;
-		}
-		to {
-			stroke-dashoffset: 0;
-		}
-	}
-
-	.animate-plasma {
-		animation: plasma-flow 15s linear infinite;
+	:global(.disc-visual) {
+		transform-box: fill-box;
 	}
 </style>

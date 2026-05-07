@@ -103,17 +103,31 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	const routesLive = $derived(host.drawnRoutes.get().map(normalizeRoute));
 
-	/** Global timeline → bound discs ride their fiber routes (u = currentTime / maxDuration). */
+	/**
+	 * Play validation — at least one route must be bound to a player. An empty
+	 * board or routes without `bindPlayerId` cannot run a meaningful simulation.
+	 */
+	const canPlay = $derived(routesLive.some((r) => r.bindPlayerId != null));
+
+	/**
+	 * Global timeline → bound discs ride their fiber routes.
+	 * Per-route delay: while simulator.currentTime < r.delay, the player holds
+	 * at the route start (u = 0); after that, u maps from r.delay → maxDuration.
+	 * Coordinate math (sampleRoutePointAt / routePathD) untouched.
+	 */
 	const kineticPitchTokens = $derived.by(() => {
 		const maxT = Math.max(1, simulator.maxDuration);
-		const u = Math.max(0, Math.min(1, simulator.currentTime / maxT));
+		const tNow = simulator.currentTime;
 		const dragId = draggingPlayer?.id ?? null;
 		const routes = routesLive;
 		return allPitchTokens.map((tok) => {
 			if (dragId && tok.id === dragId) return tok;
 			const r = routes.find((x) => x.bindPlayerId === tok.id);
 			if (!r || typeof tok.x !== 'number' || typeof tok.y !== 'number') return tok;
-			const p = sampleRoutePointAt(r, u);
+			const delay = Math.max(0, r.delay ?? 0);
+			const span = Math.max(1, maxT - delay);
+			const uRoute = tNow < delay ? 0 : Math.max(0, Math.min(1, (tNow - delay) / span));
+			const p = sampleRoutePointAt(r, uRoute);
 			return { ...tok, x: p.x, y: p.y };
 		});
 	});
@@ -595,6 +609,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get hoveredDiscId() { return hoveredDiscId; },
 		get selectedRouteId() { return selectedRouteId; },
 		get routesLive() { return routesLive; },
+		get canPlay() { return canPlay; },
 		get allRouteMarkerColors() { return allRouteMarkerColors; },
 		get simChargePlayerIds() { return simChargePlayerIds; },
 		// ── Stable function references (no getter needed) ────────────────────

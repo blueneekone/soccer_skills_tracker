@@ -8,65 +8,57 @@
 	const segBtn =
 		'tw-w-full tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/20 tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/60 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
 	const segBtnOn = 'tw-border-[#00f0ff]/55 !tw-bg-[#00f0ff]/12 !tw-text-[#00f0ff]';
+	/** Route-shape palette: curve = Amber, cut = Deep Purple. */
+	const curveBtnOn =
+		'tw-text-[#ffaa00] tw-bg-[#ffaa00]/15 tw-border-[#ffaa00]/60 tw-shadow-[0_0_15px_rgba(255,170,0,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
+	const cutBtnOn =
+		'tw-text-[#ff00ff] tw-bg-[#ff00ff]/15 tw-border-[#ff00ff]/60 tw-shadow-[0_0_15px_rgba(255,0,255,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
 </script>
 
 <!--
-  Edge toggle — stopPropagation so HUD / pitch parents never swallow the click.
--->
-<button
-	type="button"
-	class="tw-pointer-events-auto tw-absolute tw-right-0 tw-top-[42%] -tw-translate-y-1/2 tw-z-30 tw-flex tw-h-16 tw-w-6 tw-items-center tw-justify-center tw-rounded-l-lg tw-border tw-border-r-0 tw-border-[#00f0ff]/35 tw-bg-[#041d2c]/75 tw-backdrop-blur-xl tw-text-[#00f0ff]/60 tw-transition-all hover:tw-border-[#00f0ff]/60 hover:tw-text-[#00f0ff] hover:tw-shadow-[-4px_0_20px_rgba(0,240,255,0.2)]"
-	onclick={(e) => {
-		e.stopPropagation();
-		engine.isDrawerOpen = !engine.isDrawerOpen;
-	}}
-	aria-label={engine.isDrawerOpen ? 'Close command drawer' : 'Open command drawer'}
-	aria-expanded={engine.isDrawerOpen}
->
-	<span class="tw-font-mono tw-text-[8px] tw-font-bold tw-tracking-widest [writing-mode:vertical-rl] tw-select-none">
-		{engine.isDrawerOpen ? '>' : '<'}
-	</span>
-</button>
-
-<!--
-  Slide panel — translucent blue glass; transform on one line (avoids broken class string).
+  STARK-TECH DRAWER:
+    Outer wrapper: fixed-position, pointer-events-none so the Tron pitch stays
+    click-through outside the pane. tw-overflow-hidden clips the slide-out pane.
+    Inner glass pane: absolute, pointer-events-auto, slides on the X axis via a
+    direct ternary on `engine.isDrawerOpen`. Class binding is on a single line
+    so Svelte parses the ternary cleanly.
 -->
 <div
-	class="tw-pointer-events-auto tw-absolute tw-top-0 tw-right-0 tw-h-full tw-w-80 tw-transition-transform tw-duration-500 tw-ease-[cubic-bezier(0.16,1,0.3,1)] tw-overflow-y-auto tw-overflow-x-hidden tw-bg-[#040f16]/80 tw-backdrop-blur-3xl tw-border-l tw-border-y tw-border-[#00f0ff]/30 tw-rounded-l-3xl tw-shadow-[-20px_0_40px_-10px_rgba(0,240,255,0.15)] {engine.isDrawerOpen
-		? 'tw-translate-x-0'
-		: 'tw-translate-x-full'}"
-	aria-hidden={!engine.isDrawerOpen}
+	class="tw-fixed tw-top-0 tw-right-0 tw-h-full tw-w-[350px] tw-z-[9999] tw-pointer-events-none tw-overflow-hidden"
 	role="complementary"
 	aria-label="Command drawer"
 >
-	<div class="tw-h-1 tw-bg-gradient-to-r tw-from-transparent tw-via-[#00f0ff] tw-to-transparent"></div>
+	<!--
+	  Inline transform is intentional: Tailwind's tw-translate-x-{0|full} rules
+	  exist in the cascade (verified via runtime instrumentation) but resolve to
+	  computed transform "none" because the project's Tailwind config doesn't
+	  emit the transform shorthand alongside the --tw-translate-x variable.
+	  An inline style bypasses the cascade entirely and guarantees the slide.
+	-->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-px tw-bg-gradient-to-b tw-from-transparent tw-via-[#00f0ff]/45 tw-to-transparent"
-		aria-hidden="true"
-	></div>
-
-	<!-- Hard-wired close — top-left inside panel, always hits engine state. -->
-	<button
-		type="button"
-		class="tw-pointer-events-auto tw-absolute tw-left-3 tw-top-3 tw-z-50 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-lg tw-border-2 tw-border-[#00f0ff]/50 tw-bg-[#020202]/70 tw-font-mono tw-text-sm tw-font-bold tw-text-[#00f0ff] tw-shadow-[0_0_18px_rgba(0,240,255,0.35)] tw-backdrop-blur-md tw-transition-all hover:tw-border-[#00f0ff] hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_28px_rgba(0,240,255,0.45)]"
-		onclick={(e) => {
-			e.stopPropagation();
-			engine.isDrawerOpen = false;
-		}}
-		aria-label="Close drawer"
+		class="tw-absolute tw-inset-0 tw-bg-[#02060d]/85 tw-backdrop-blur-[50px] tw-border-l tw-border-[#00f0ff]/20 tw-shadow-[-20px_0_50px_-10px_rgba(0,240,255,0.15)] tw-pointer-events-auto tw-overflow-y-auto tw-overflow-x-hidden tw-transition-transform tw-duration-500 tw-ease-[cubic-bezier(0.16,1,0.3,1)]"
+		style="transform: translateX({engine.isDrawerOpen ? '0%' : '100%'});"
+		aria-hidden={!engine.isDrawerOpen}
 	>
-		<span aria-hidden="true">✕</span>
-	</button>
+		<!-- HUD greeble — top-edge laser scanner. -->
+		<div
+			class="tw-h-[1px] tw-w-full tw-bg-gradient-to-r tw-from-transparent tw-via-[#00f0ff]/50 tw-to-transparent tw-shadow-[0_0_10px_rgba(0,240,255,1)]"
+			aria-hidden="true"
+		></div>
+		<div
+			class="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-px tw-bg-gradient-to-b tw-from-transparent tw-via-[#00f0ff]/45 tw-to-transparent"
+			aria-hidden="true"
+		></div>
 
-	<div
-		class="tw-sticky tw-top-0 tw-z-10 tw-flex tw-items-center tw-justify-end tw-border-b tw-border-[#00f0ff]/25 tw-bg-[#041d2c]/55 tw-px-5 tw-py-4 tw-pl-16 tw-backdrop-blur-xl"
-	>
-		<span class="tw-font-mono tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-[#00f0ff]/80">
-			COMMAND_CONSOLE
-		</span>
-	</div>
+		<div
+			class="tw-sticky tw-top-0 tw-z-10 tw-flex tw-items-center tw-border-b tw-border-[#00f0ff]/20 tw-bg-[#040f16]/70 tw-px-5 tw-py-4 tw-backdrop-blur-xl"
+		>
+			<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#ffaa00]">
+				[ COMMAND_CONSOLE ]
+			</h2>
+		</div>
 
-	<div class="tw-space-y-6 tw-p-5 tw-pt-2">
+		<div class="tw-space-y-6 tw-p-5 tw-pt-2">
 		<section>
 			<p class="tw-mb-2.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white/35">
 				ROUTE_SHAPE
@@ -74,25 +66,25 @@
 			<div class="tw-flex tw-gap-2">
 				<button
 					type="button"
-					class="{segBtn} {engine.routeDrawKind === 'curve' ? segBtnOn : ''}"
+					class="{segBtn} {engine.routeDrawKind === 'curve' ? curveBtnOn : ''}"
 					onclick={(e) => {
 						e.stopPropagation();
 						engine.routeDrawKind = 'curve';
 					}}
 					aria-pressed={engine.routeDrawKind === 'curve'}
 				>
-					CURVE
+					[ CURVE ]
 				</button>
 				<button
 					type="button"
-					class="{segBtn} {engine.routeDrawKind === 'cut' ? segBtnOn : ''}"
+					class="{segBtn} {engine.routeDrawKind === 'cut' ? cutBtnOn : ''}"
 					onclick={(e) => {
 						e.stopPropagation();
 						engine.routeDrawKind = 'cut';
 					}}
 					aria-pressed={engine.routeDrawKind === 'cut'}
 				>
-					CUT
+					[ CUT ]
 				</button>
 			</div>
 		</section>
@@ -125,33 +117,20 @@
 			<p class="tw-mb-2.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white/35">
 				VIEW
 			</p>
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<button
-					type="button"
-					class="{segBtn} {engine.showLabels ? segBtnOn : ''}"
-					onclick={(e) => {
-						e.stopPropagation();
-						engine.showLabels = !engine.showLabels;
-					}}
-					aria-pressed={engine.showLabels}
-				>
-					SHOW_LABELS
-				</button>
-				<button
-					type="button"
-					class="tw-w-full tw-rounded-lg tw-border tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-transition-colors
-						{engine.isHolotableMode
-							? 'tw-border-[#ff003c]/50 tw-bg-[#ff003c]/10 tw-text-[#ff003c]'
-							: 'tw-border-white/10 tw-bg-black/20 tw-text-white/60 hover:tw-border-[#ff003c]/40 hover:tw-text-[#ff003c]'}"
-					onclick={(e) => {
-						e.stopPropagation();
-						engine.isHolotableMode = !engine.isHolotableMode;
-					}}
-					aria-pressed={engine.isHolotableMode}
-				>
-					3D_HOLOTABLE
-				</button>
-			</div>
+			<button
+				type="button"
+				class="tw-w-full tw-rounded-lg tw-border tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-transition-colors
+					{engine.isHolotableMode
+						? 'tw-border-[#ff003c]/50 tw-bg-[#ff003c]/10 tw-text-[#ff003c]'
+						: 'tw-border-white/10 tw-bg-black/20 tw-text-white/60 hover:tw-border-[#ff003c]/40 hover:tw-text-[#ff003c]'}"
+				onclick={(e) => {
+					e.stopPropagation();
+					engine.isHolotableMode = !engine.isHolotableMode;
+				}}
+				aria-pressed={engine.isHolotableMode}
+			>
+				3D_HOLOTABLE
+			</button>
 		</section>
 
 		<section>
@@ -203,5 +182,6 @@
 				<span class="tw-font-mono tw-text-[8px] tw-text-white/30">LOAD · SAVE · NEXT_EPOCH</span>
 			</div>
 		</section>
+		</div>
 	</div>
 </div>
