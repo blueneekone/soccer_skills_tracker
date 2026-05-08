@@ -9176,6 +9176,31 @@ exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_A
 });
 
 // ─────────────────────────────────────────────────────────────────────────
+// Epic 4 — Multi-Tenant SaaS: invite system + automatic claims sync.
+//
+// `syncUserClaims`:    Firestore trigger on users/{emailKey} — keeps JWT
+//                      custom claims in sync with Firestore role/clubId.
+// `consumeInviteCode`: onCall — atomic invite validation + user provisioning.
+//
+// The separate `assignTenantClaims` export (below) is kept for backward
+// compatibility with any already-deployed client builds; new client code
+// should call `consumeInviteCode` instead.
+// ─────────────────────────────────────────────────────────────────────────
+const inviteHandlers = require('./invites');
+exports.syncUserClaims = inviteHandlers.syncUserClaims;
+exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Zero-Trust tenant utilities — available to ALL Cloud Functions in this file.
+// Usage: const { getCallerTenantId, assertSameTenant } = require('./tenantUtils');
+//
+// These are NOT exported as Cloud Function endpoints; they are internal helpers.
+// They are require()'d here once so other CF implementations can import them
+// with confidence that the module is cached and initialised.
+// ─────────────────────────────────────────────────────────────────────────────
+require('./tenantUtils'); // pre-load module; individual functions require it directly
+
+// ─────────────────────────────────────────────────────────────────────────
 // Strike 1 (Agent 3) — Analytics aggregation triggers.
 //
 // The Global Admin "Command Center" reads from `analytics/platform_totals`,
@@ -9206,6 +9231,134 @@ exports.onWorkoutLogCreated = onDocumentCreated(
       } catch (e) {
         logger.error('onWorkoutLogCreated rebuild failed', e);
       }
+    },
+);
+
+// ─────────────────────────────────────────────────────────────────────────
+// Epic 4 — Multi-Tenant SaaS: assignTenantClaims
+//
+// Callable triggered by inviteService.ts › consumeInviteCode() after the
+// client marks an invite as 'consumed' in Firestore.
+//
+// This is the ONLY path that may set JWT custom claims — never from the
+// client.  The function re-validates the invite before writing claims so
+// that a race-condition or a tampered client cannot elevate privileges.
+//
+// Claims written:
+//   { clubId: string, role: string, teamId?: string }
+//
+// After this function returns, the client calls
+//   auth.currentUser.getIdToken(true)
+// to force-refresh the JWT so new claims are active in this session.
+// ─────────────────────────────────────────────────────────────────────────
+
+exports.assignTenantClaims = onCall(
+    {
+      region: REGION,
+      // Require Firebase App Check in production (comment out for emulator dev).
+      // enforceAppCheck: true,
+    },
+    async (request) => {
+      // ── Auth guard ────────────────────────────────────────────────────
+      if (!request.auth) {
+        throw new HttpsError(
+            'unauthenticated',
+            'You must be signed in to redeem an invite code.',
+        );
+      }
+
+      const uid = request.auth.uid;
+      const {inviteId} = request.data;
+
+      if (!inviteId || typeof inviteId !== 'string') {
+        throw new HttpsError('invalid-argument', '`inviteId` is required.');
+      }
+
+      // ── Load invite ───────────────────────────────────────────────────
+      const inviteRef = db.collection('invites').doc(inviteId);
+      const inviteSnap = await inviteRef.get();
+
+      if (!inviteSnap.exists) {
+        throw new HttpsError('not-found', 'Invite not found.');
+      }
+
+      const invite = inviteSnap.data();
+
+      // ── Re-validate status and expiry ─────────────────────────────────
+      if (invite.status !== 'consumed' || invite.consumedBy !== uid) {
+        // Guard against replay / race: only the user who optimistically
+        // marked 'consumed' (same UID) may trigger claim assignment.
+        logger.warn('[assignTenantClaims] status/owner mismatch', {
+          inviteId,
+          status: invite.status,
+          consumedBy: invite.consumedBy,
+          callerUid: uid,
+        });
+        throw new HttpsError(
+            'permission-denied',
+            'Invite code is not in a redeemable state.',
+        );
+      }
+
+      const expiresAt = invite.expiresAt.toDate
+        ? invite.expiresAt.toDate()
+        : new Date(invite.expiresAt);
+      if (expiresAt < new Date()) {
+        await inviteRef.update({status: 'expired'}).catch(() => {});
+        throw new HttpsError('deadline-exceeded', 'Invite code has expired.');
+      }
+
+      const tenantId = String(invite.tenantId || invite.clubId || '');
+      const targetRole = String(invite.targetRole || '');
+      const teamId = invite.teamId ? String(invite.teamId) : null;
+
+      if (!tenantId || !targetRole) {
+        throw new HttpsError(
+            'internal',
+            'Invite is missing tenantId or targetRole.',
+        );
+      }
+
+      // ── Set custom claims on the Auth token ───────────────────────────
+      const existingClaims = (await admin.auth().getUser(uid)).customClaims || {};
+      const newClaims = {
+        ...existingClaims,
+        clubId: tenantId,   // canonical claim name used by all Firestore rules
+        role: targetRole,
+        ...(teamId ? {teamId} : {}),
+      };
+
+      await admin.auth().setCustomUserClaims(uid, newClaims);
+
+      // ── Sync role into Firestore user doc ─────────────────────────────
+      // Best-effort: update the user's Firestore profile so Firestore
+      // queries based on role/clubId are immediately consistent.
+      try {
+        const userEmail = (await admin.auth().getUser(uid)).email;
+        if (userEmail) {
+          const userRef = db.collection('users').doc(userEmail.toLowerCase());
+          await userRef.set(
+              {
+                role: targetRole,
+                clubId: tenantId,
+                ...(teamId ? {teamId} : {}),
+              },
+              {merge: true},
+          );
+        }
+      } catch (syncErr) {
+        // Non-critical — JWT claims are the authoritative source.
+        logger.warn('[assignTenantClaims] Firestore user sync failed:', syncErr);
+      }
+
+      logger.info('[assignTenantClaims] claims assigned', {
+        uid,
+        tenantId,
+        targetRole,
+        teamId,
+      });
+
+      return {success: true};
     },
 );
 

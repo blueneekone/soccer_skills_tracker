@@ -128,26 +128,6 @@
 
 		<section>
 			<p class="tw-mb-2.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white/35">
-				VIEW
-			</p>
-			<button
-				type="button"
-				class="tw-w-full tw-rounded-lg tw-border tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-transition-colors
-					{engine.isHolotableMode
-						? 'tw-border-[#ff003c]/50 tw-bg-[#ff003c]/10 tw-text-[#ff003c]'
-						: 'tw-border-white/10 tw-bg-black/20 tw-text-white/60 hover:tw-border-[#ff003c]/40 hover:tw-text-[#ff003c]'}"
-				onclick={(e) => {
-					e.stopPropagation();
-					engine.isHolotableMode = !engine.isHolotableMode;
-				}}
-				aria-pressed={engine.isHolotableMode}
-			>
-				3D_HOLOTABLE
-			</button>
-		</section>
-
-		<section>
-			<p class="tw-mb-2.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white/35">
 				BOARD_OPS
 			</p>
 			<div class="tw-flex tw-flex-col tw-gap-2">

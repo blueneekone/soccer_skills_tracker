@@ -37,7 +37,11 @@
 </script>
 
 {#if renderLayer === 'stroke'}
-	<g aria-current={isSelected ? 'true' : undefined} data-timeline-ms={timelineMs}>
+	<!-- Stroke layer: triple-pass route paint (bloom + neon + crisp inner). -->
+	<g
+		aria-current={isSelected ? 'true' : undefined}
+		data-timeline-ms={timelineMs}
+	>
 		<!-- Outer glow bloom -->
 		<path
 			d={pathD}

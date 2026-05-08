@@ -54,6 +54,15 @@ export function isProfileComplete(profile) {
 export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = true) {
 	const tokenResult = await getIdTokenResult(firebaseUser, forceTokenRefresh);
 	let role = tokenResult.claims.role || 'player';
+	/**
+	 * Tenant ID sourced from JWT custom claims — set by `syncUserClaims`
+	 * Cloud Function trigger.  `clubId` is the legacy claim name (backward compat);
+	 * `tenantId` is the canonical name going forward.  Both are accepted.
+	 * Empty string '' means the user has no club scope yet.
+	 */
+	const claimedTenantId = String(
+		tokenResult.claims.clubId || tokenResult.claims.tenantId || '',
+	);
 	/** @see Firebase custom claims — global admin must bypass setup even if users/{email} is missing */
 	if (tokenResult.claims.isGlobalAdmin === true || tokenResult.claims.isSuperAdmin === true) {
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
@@ -64,6 +73,10 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	const userSnap = await getDoc(userRef);
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
 	const fbName = fallbackPlayerName(baseProfile, firebaseUser.email);
+	// Claims are authoritative; fall back to Firestore `clubId` for users
+	// who existed before the syncUserClaims trigger was deployed.
+	const resolvedTenantId =
+		claimedTenantId || String((baseProfile && baseProfile.clubId) ? baseProfile.clubId : '');
 
 	const isJwtPlatformAdmin =
 		tokenResult.claims.isGlobalAdmin === true ||
@@ -76,6 +89,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	if (baseProfile && isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (baseProfile)) && !isJwtPlatformAdmin) {
 		return {
 			role: SYNTHETIC_SUSPENDED_ROLE,
+			tenantId: resolvedTenantId,
 			profile: {
 				...(baseProfile || {}),
 				status: 'suspended',
@@ -88,6 +102,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	if (role === 'super_admin' || role === 'global_admin' || role === 'director') {
 		return {
 			role,
+			tenantId: resolvedTenantId,
 			profile: {
 				...(baseProfile || {}),
 				playerName: fbName,
@@ -101,12 +116,13 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	if (role === 'registrar' && userSnap.exists()) {
 		const merged = { ...baseProfile, role, playerName: fbName };
 		delete merged.teamId;
-		return { role, profile: merged };
+		return { role, tenantId: resolvedTenantId, profile: merged };
 	}
 
 	if (userSnap.exists()) {
 		return {
 			role,
+			tenantId: resolvedTenantId,
 			profile: { ...baseProfile, role, playerName: fbName }
 		};
 	}
@@ -126,7 +142,10 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		await setDoc(userRef, newProfile);
 		const refreshed = await getIdTokenResult(firebaseUser, true);
 		role = refreshed.claims.role || coachRole;
-		return { role, profile: { ...newProfile, role } };
+		const coachTenantId =
+			String(refreshed.claims.clubId || refreshed.claims.tenantId || '') ||
+			String(data.clubId ?? '');
+		return { role, tenantId: coachTenantId, profile: { ...newProfile, role } };
 	}
 
 	const registrarRef = doc(db, 'registrar_lookup', emailKey);
@@ -142,7 +161,10 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		await setDoc(userRef, newProfile);
 		const refreshed = await getIdTokenResult(firebaseUser, true);
 		role = refreshed.claims.role || 'registrar';
-		return { role, profile: { ...newProfile, role } };
+		const registrarTenantId =
+			String(refreshed.claims.clubId || refreshed.claims.tenantId || '') ||
+			String(data.clubId ?? '');
+		return { role, tenantId: registrarTenantId, profile: { ...newProfile, role } };
 	}
 
 	const inviteRef = doc(db, 'player_lookup', emailKey);
@@ -156,11 +178,16 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 			...(data.clubId != null ? { clubId: data.clubId } : {})
 		};
 		await setDoc(userRef, newProfile);
-		return { role, profile: { ...newProfile, role } };
+		return {
+			role,
+			tenantId: claimedTenantId || String(data.clubId != null ? data.clubId : ''),
+			profile: { ...newProfile, role },
+		};
 	}
 
 	return {
 		role,
+		tenantId: claimedTenantId,
 		profile: { role, playerName: fbName }
 	};
 }

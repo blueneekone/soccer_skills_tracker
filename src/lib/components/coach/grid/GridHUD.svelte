@@ -19,7 +19,6 @@
 		warRoomTool = $bindable(),
 		/** @type {(t: 'DRAG' | 'ROUTE') => void} */
 		pickTool = undefined,
-		isHolotableMode = $bindable(false),
 		simulator,
 		showLabels = $bindable(),
 		activeRouteColor = $bindable(),
@@ -31,8 +30,6 @@
 	} = $props();
 
 	const lockAccent = $derived(focusedPlayerId ? ARES : CYAN);
-
-	const hudShowsBillboardTelemetry = $derived(!!focusedPlayerId && isHolotableMode);
 </script>
 
 <div
@@ -121,9 +118,9 @@
 	<!-- Right telemetry bay -->
 	<div class="tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-visible tw-p-3 {glassPanel}">
 		<span class="tw-mb-2 tw-text-[9px] tw-font-mono tw-font-bold tw-tracking-widest tw-text-[#ff003c]/90">
-			{focusedPlayerId && !isHolotableMode ? 'UNIT_TELEMETRY' : 'SYS_CONSOLE'}
+			{focusedPlayerId ? 'UNIT_TELEMETRY' : 'SYS_CONSOLE'}
 		</span>
-		{#if focusedPlayerId && !isHolotableMode}
+		{#if focusedPlayerId}
 			{@const target = allTokens.find((t) => t.id === focusedPlayerId)}
 			<div
 				class="tw-flex tw-min-h-0 tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-2"
@@ -166,7 +163,6 @@
 		{:else}
 			<div
 				class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-wrap tw-content-center tw-items-center tw-justify-end tw-gap-1.5"
-				aria-label={hudShowsBillboardTelemetry ? 'Auxiliary controls — biometric HUD projected on holotable' : undefined}
 			>
 				<button type="button" class="{segBtn}" onclick={recallBench}>RECALL</button>
 				<button
@@ -175,14 +171,6 @@
 					onclick={clearRoutesOnly}
 				>
 					CLR_RT
-				</button>
-				<button
-					type="button"
-					class="{segBtn} {isHolotableMode ? segBtnOn : ''} tw-text-[#ff003c]"
-					onclick={() => (isHolotableMode = !isHolotableMode)}
-					aria-pressed={isHolotableMode}
-				>
-					3D_HOLO
 				</button>
 			</div>
 		{/if}

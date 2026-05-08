@@ -52,8 +52,11 @@ This application is not a standard website; it is an ultra-premium, cinematic He
 - **HUD Greebles:** Incorporate decorative tech brackets `[ ]`, slashes `//`, and 1px scanning lines (`bg-gradient-to-r`) to reinforce the tactical system aesthetic.
 - **Native Scrolling Only:** Never implement custom scrollbar plugins or logic. If a panel overflows, rely strictly on native browser scrolling.
 
-## 9. VANGUARD HYBRID ARCHITECTURE (DOM SHELL WITH 3D ISLANDS)
-Do not build the entire application in WebGL or Three.js. You must strictly adhere to the "DOM Shell with 3D Islands" architecture:
-- **The OS Shell (Svelte 5):** All dashboards, tactical boards, routing math, menus, and typography must be built using Svelte 5 and hardware-accelerated CSS (3D transforms, `perspective`, `backdrop-blur`). This ensures razor-sharp text and native browser accessibility.
-- **The 3D Islands (Three.js):** Reserve heavy WebGL/Three.js `<canvas>` implementations strictly for isolated, high-end hero assets (e.g., 3D rotating player avatars in the Armory, or 3D trophy models). These canvases must be embedded *inside* the Svelte UI components.
+## 9. VANGUARD ARCHITECTURE (SVELTE 5 / DOM-FIRST)
+The application is Svelte 5 + hardware-accelerated CSS first. Three.js and Threlte are NOT permitted in tactical / command surfaces; the only sanctioned exception is the Player Armory's rotating operative avatar (`OperativeAvatar3D.svelte`) which dynamically imports `three` for an isolated hero asset.
+- **The OS Shell (Svelte 5):** All dashboards, tactical boards, routing math, menus, and typography must be built using Svelte 5 and hardware-accelerated CSS (`backdrop-blur`, neon shadows, gradients). This ensures razor-sharp text and native browser accessibility.
+- **No Threlte:** Do not introduce `@threlte/core` or `@threlte/extras`. The CEO retired the 3D Holotable. Do not use `<Canvas>`, `<T.*>`, `<OrbitControls>`, `<HTML>` from Threlte, or any of its primitives.
+- **No CSS 3D:** Do not use `rotateX`, `preserve-3d`, or `translateZ` to fake depth in tactical surfaces. Spatial / holographic looks come from 2D SVG illustration, neon glows, and HUD greebles.
+- **Tactical Surfaces:** All "command consoles" (War Room, Match Day, Tactical board) must render as flat top-down SVG `viewBox` scenes scaled to a 16:9 wrapper (`aspect-ratio: 16/9; max-width:100%; max-height:100%`). Player tokens and routes are SVG primitives.
+- **Three.js (sanctioned scope only):** Direct use of `three` is permitted only inside `OperativeAvatar3D.svelte` and similar isolated hero-asset components, lazy-loaded via dynamic `await import('three')` so it never enters the main bundle. Do not propagate Three.js into tactical, dashboard, or shell code.
 - **View Transitions:** Utilize the native View Transitions API for navigating between major platform sections to create a seamless, app-like OS experience without hard reloads.

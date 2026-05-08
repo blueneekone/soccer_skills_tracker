@@ -61,18 +61,24 @@
 	const highlightColor = $derived(
 		player.side === 'opponent' && (isSelected || isHovered) ? '#00f0ff' : siemColor
 	);
+
 </script>
 
 {#if typeof player.x === 'number' && typeof player.y === 'number'}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<!--
+	  CSS transform places the disc at SVG coords. In SVG context 1 px = 1 SVG
+	  user unit so translate({x}px, {y}px) positions correctly inside the
+	  1600×900 viewBox.
+	-->
 	<g
 		data-light-disc
 		data-timeline-ms={timelineMs}
-		transform="translate({player.x}, {player.y})"
 		class="tw-group"
 		class:tg-disc-charge={charging}
 		class:grid-entity--selected={isSelected}
 		pointer-events={pointerOn ? 'auto' : 'none'}
+		style="transform: translate({player.x}px, {player.y}px);"
 		onmouseenter={onMouseEnter}
 		onmouseleave={onMouseLeave}
 	>

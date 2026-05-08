@@ -40,8 +40,6 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let routeDrawKind = $state<'curve' | 'cut'>('curve');
 	let showLabels = $state(false);
 	let focusedPlayerId = $state<string | null>(null);
-	let isHolotableMode = $state(false);
-
 	function ringColor(player: TacticalToken) {
 		return player.side === 'opponent' ? OPP_RING : player.color || FRIENDLY_RING;
 	}
@@ -184,6 +182,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 			y: Math.min(VIEW_H - pad, Math.max(pad, y)),
 		};
 	}
+
 
 	function bindPlayerIdAtRouteStart(x1: number, y1: number) {
 		const rHit = DISC_HIT_R + 2;
@@ -589,8 +588,6 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		set showLabels(v: boolean) { showLabels = v; },
 		get focusedPlayerId() { return focusedPlayerId; },
 		set focusedPlayerId(v: string | null) { focusedPlayerId = v; },
-		get isHolotableMode() { return isHolotableMode; },
-		set isHolotableMode(v: boolean) { isHolotableMode = v; },
 		get isDrawerOpen() { return isDrawerOpen; },
 		set isDrawerOpen(v: boolean) { isDrawerOpen = v; },
 		// ── Reactive getters — $state/$derived must be exposed via get so that
