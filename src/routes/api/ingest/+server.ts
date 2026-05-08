@@ -20,20 +20,40 @@
 
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getIdToken, verifyIdToken } from 'firebase-admin/auth';
+import { verifyIdToken } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { FIREBASE_SERVICE_ACCOUNT_JSON } from '$env/static/private';
+import { initializeApp, getApps, cert, applicationDefault } from 'firebase-admin/app';
+import { env } from '$env/dynamic/private';
 import crypto from 'crypto';
 
-// ── Firebase Admin init (server-only) ─────────────────────────────────────────
+// ── Firebase Admin init — lazy, runtime-only ──────────────────────────────────
+//
+// WHY $env/dynamic/private:
+//   $env/static/private is inlined at build time — the build crashes if the
+//   variable is absent from the CI environment. $env/dynamic/private is read
+//   at the first incoming request, so the build always succeeds regardless of
+//   whether secrets are present in the build container.
+//
+// CREDENTIAL STRATEGY:
+//   1. GCP / Firebase App Hosting: FIREBASE_SERVICE_ACCOUNT_JSON is absent →
+//      falls back to applicationDefault() which uses the runtime service-account
+//      identity automatically attached to every App Hosting instance.
+//   2. Local dev / other hosts: set FIREBASE_SERVICE_ACCOUNT_JSON to the JSON
+//      string and the cert() path is used instead.
 
-if (!getApps().length) {
-	const svc = JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON);
-	initializeApp({ credential: cert(svc) });
+function getAdminDb() {
+	if (!getApps().length) {
+		const saJson = env.FIREBASE_SERVICE_ACCOUNT_JSON;
+		if (saJson) {
+			const svc = JSON.parse(saJson);
+			initializeApp({ credential: cert(svc) });
+		} else {
+			// Application Default Credentials — works automatically on GCP
+			initializeApp({ credential: applicationDefault() });
+		}
+	}
+	return getFirestore();
 }
-
-const db = getFirestore();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -112,6 +132,9 @@ function mapRow(row: Record<string, string>): ParsedPlayer | null {
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export const POST: RequestHandler = async ({ request }) => {
+	// Lazy-init Admin SDK — safe to call on every request (idempotent after first call)
+	const db = getAdminDb();
+
 	// Verify Firebase ID token from Authorization header
 	const authHeader = request.headers.get('authorization') ?? '';
 	if (!authHeader.startsWith('Bearer ')) {
