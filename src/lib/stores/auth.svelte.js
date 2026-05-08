@@ -99,6 +99,21 @@ function createAuthStore() {
 			!isDirector, // directors always have a tenantId; guard against edge cases
 	);
 
+	/**
+	 * COPPA 2026 consent gate.
+	 * Profile-based (not JWT): reads isMinor and coppaStatus from the Firestore
+	 * user document hydrated into userProfile by resolveUserProfile().
+	 * coppaStatus is ONLY written by the verifyParentalConsent Cloud Function.
+	 */
+	const requiresConsent = $derived(
+		isAuthenticated &&
+			!isLoading &&
+			role === 'player' &&
+			userProfile !== null &&
+			/** @type {Record<string, unknown>} */ (userProfile)?.isMinor === true &&
+			/** @type {Record<string, unknown>} */ (userProfile)?.coppaStatus !== 'granted',
+	);
+
 	function setProfile(profile) {
 		userProfile = profile;
 		isProfileComplete = computeIsProfileComplete(profile);
@@ -245,13 +260,37 @@ function createAuthStore() {
 		get isParent() {
 			return isParent;
 		},
-		/**
-		 * True when authenticated + loading complete + no tenantId claim.
-		 * Redirect to invite-code entry screen when this is true.
-		 */
-		get needsOnboarding() {
-			return needsOnboarding;
-		},
+	/**
+	 * True when authenticated + loading complete + no tenantId claim.
+	 * Redirect to invite-code entry screen when this is true.
+	 */
+	get needsOnboarding() {
+		return needsOnboarding;
+	},
+	/**
+	 * COPPA 2026 consent gate.
+	 *
+	 * True when the authenticated player is a minor and has NOT yet had a
+	 * parent/guardian grant consent via the `verifyParentalConsent` Cloud
+	 * Function.  When this is true, `ConsentOverlay.svelte` covers the entire
+	 * PlayerShell, blocking all interaction until consent is obtained.
+	 *
+	 * ZERO-TRUST note: coppaStatus is read from the Firestore user profile
+	 * (server-written by verifyParentalConsent).  The client can never flip
+	 * this field — Firestore Rules enforce it as server-only.
+	 *
+	 * Checks:
+	 *   1. User is authenticated and fully loaded.
+	 *   2. Role is 'player' (coaches/directors/parents are exempt).
+	 *   3. userProfile.isMinor === true (set by syncUserClaims from DOB).
+	 *   4. userProfile.coppaStatus is absent or not 'granted'.
+	 *
+	 * Exempt roles (never shown the overlay):
+	 *   coach, director, admin, parent, registrar, global_admin, super_admin
+	 */
+	get requiresConsent() {
+		return requiresConsent;
+	},
 		get isAuthenticated() {
 			return isAuthenticated;
 		},

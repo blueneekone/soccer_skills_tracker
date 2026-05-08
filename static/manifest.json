@@ -1,10 +1,18 @@
 {
-	"name": "SSTRACKER",
-	"short_name": "SSTRACKER",
+	"id": "vanguard-sstracker",
+	"name": "VANGUARD — Soccer Skills Tracker",
+	"short_name": "VANGUARD",
+	"description": "Elite youth soccer performance tracking, gamification, and scouting command center.",
 	"start_url": "/",
+	"scope": "/",
 	"display": "standalone",
-	"background_color": "#05050A",
-	"theme_color": "#05050A",
+	"display_override": ["standalone", "minimal-ui"],
+	"orientation": "portrait-primary",
+	"background_color": "#010409",
+	"theme_color": "#010409",
+	"categories": ["sports", "health", "productivity"],
+	"lang": "en-US",
+	"dir": "ltr",
 	"icons": [
 		{
 			"src": "icons/icon-192.png",
@@ -13,10 +21,39 @@
 			"purpose": "any"
 		},
 		{
+			"src": "icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
 			"src": "icons/icon-512.png",
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "any"
+		},
+		{
+			"src": "icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
 		}
-	]
+	],
+	"shortcuts": [
+		{
+			"name": "Dashboard",
+			"short_name": "Dash",
+			"description": "Player performance dashboard",
+			"url": "/player/dashboard",
+			"icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+		},
+		{
+			"name": "Training Log",
+			"short_name": "Train",
+			"description": "Log today's workout",
+			"url": "/player/workout",
+			"icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+		}
+	],
+	"screenshots": []
 }

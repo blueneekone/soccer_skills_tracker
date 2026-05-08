@@ -47,6 +47,9 @@ import {
 	updateDoc,
 	where,
 	writeBatch,
+	limit,
+	startAfter,
+	type DocumentSnapshot,
 	type QueryConstraint,
 } from 'firebase/firestore';
 import {
@@ -86,6 +89,10 @@ export class LeagueManager {
 
 	/** All fixtures for this tenant/team scope, sorted by kick-off ascending. */
 	fixtures = $state<LeagueSchema.Fixture[]>([]);
+
+	/** Whether more historical (completed) fixtures exist beyond the current page. */
+	fixturesHasMore = $state(false);
+	fixturesLoadingMore = $state(false);
 
 	/** Club-wide scouting directory, sorted A-Z. */
 	opponents = $state<LeagueSchema.Opponent[]>([]);
@@ -157,6 +164,9 @@ export class LeagueManager {
 	private _teamId: string | undefined;
 	private _unsubs: UnsubFn[] = [];
 	private _effectCleanup: (() => void) | null = null;
+	private _fixtureLastDoc: DocumentSnapshot | null = null;
+
+	static readonly FIXTURE_PAGE_SIZE = 20;
 
 	// ── Constructor ───────────────────────────────────────────────────────────
 
@@ -227,21 +237,32 @@ export class LeagueManager {
 			),
 		);
 
-		// ── Fixtures ──────────────────────────────────────────────────────────
+		// ── Fixtures (paginated onSnapshot — first page only) ─────────────────
+		//
+		// We subscribe to the most-recent FIXTURE_PAGE_SIZE fixtures in real-time
+		// so the UI always reflects adds/updates without polling.  Older (completed)
+		// fixtures can be loaded on demand via loadMoreFixtures().
 		const fixtureConstraints: QueryConstraint[] = [
 			where('tenantId', '==', tenantId),
-			orderBy('dateTime', 'asc'),
+			orderBy('dateTime', 'desc'), // newest first → slice gives most-recent N
+			limit(LeagueManager.FIXTURE_PAGE_SIZE + 1), // +1 to detect hasMore
 		];
 		if (this._teamId) fixtureConstraints.push(where('teamId', '==', this._teamId));
+
+		this._fixtureLastDoc = null;
+		this.fixturesHasMore = false;
 
 		this._unsubs.push(
 			onSnapshot(
 				query(collection(db, 'fixtures'), ...fixtureConstraints),
 				(snap) => {
-					this.fixtures = snap.docs.map((d) => ({
-						id: d.id,
-						...d.data(),
-					})) as LeagueSchema.Fixture[];
+					this.fixturesHasMore = snap.docs.length > LeagueManager.FIXTURE_PAGE_SIZE;
+					const pageDocs = snap.docs.slice(0, LeagueManager.FIXTURE_PAGE_SIZE);
+					this._fixtureLastDoc = pageDocs.at(-1) ?? null;
+					// Re-sort ascending for display (earliest first)
+					this.fixtures = pageDocs
+						.map((d) => ({ id: d.id, ...d.data() }) as LeagueSchema.Fixture)
+						.sort((a, b) => toTimestampMs(a.dateTime) - toTimestampMs(b.dateTime));
 				},
 				(err) => console.warn('[LeagueManager] fixtures error:', err),
 			),
@@ -264,6 +285,50 @@ export class LeagueManager {
 				(err) => console.warn('[LeagueManager] opponents error:', err),
 			),
 		);
+	}
+
+	// ── loadMoreFixtures ──────────────────────────────────────────────────────
+
+	/**
+	 * Append the next page of fixtures to `this.fixtures`.
+	 *
+	 * Uses `getDocs` (one-shot) rather than `onSnapshot` to avoid creating a
+	 * second live listener.  The loaded items are merged into the reactive
+	 * `fixtures` array so all derived views (enrichedUpcoming, etc.) update.
+	 *
+	 * Call this when the user scrolls past the "Load More" sentinel or clicks
+	 * the load-more button in `FixtureList`.
+	 */
+	async loadMoreFixtures(): Promise<void> {
+		if (!this.fixturesHasMore || this.fixturesLoadingMore || !this._fixtureLastDoc || !this._tenantId) return;
+
+		this.fixturesLoadingMore = true;
+		try {
+			const constraints: QueryConstraint[] = [
+				where('tenantId', '==', this._tenantId),
+				orderBy('dateTime', 'desc'),
+				startAfter(this._fixtureLastDoc),
+				limit(LeagueManager.FIXTURE_PAGE_SIZE + 1),
+			];
+			if (this._teamId) constraints.push(where('teamId', '==', this._teamId));
+
+			const snap = await getDocs(query(collection(db, 'fixtures'), ...constraints));
+			this.fixturesHasMore = snap.docs.length > LeagueManager.FIXTURE_PAGE_SIZE;
+			const pageDocs = snap.docs.slice(0, LeagueManager.FIXTURE_PAGE_SIZE);
+			this._fixtureLastDoc = pageDocs.at(-1) ?? this._fixtureLastDoc;
+
+			const newItems = pageDocs.map((d) => ({ id: d.id, ...d.data() }) as LeagueSchema.Fixture);
+			// Merge + de-dupe by id, then sort ascending
+			const merged = [...this.fixtures, ...newItems];
+			const seen = new Set<string>();
+			this.fixtures = merged
+				.filter((f) => { if (seen.has(f.id)) return false; seen.add(f.id); return true; })
+				.sort((a, b) => toTimestampMs(a.dateTime) - toTimestampMs(b.dateTime));
+		} catch (err) {
+			console.warn('[LeagueManager] loadMoreFixtures error:', err);
+		} finally {
+			this.fixturesLoadingMore = false;
+		}
 	}
 
 	// ── createFixture ─────────────────────────────────────────────────────────

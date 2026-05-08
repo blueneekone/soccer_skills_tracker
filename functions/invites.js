@@ -8,6 +8,12 @@
  * point).  This module require()s 'firebase-admin' and reuses the already-
  * initialised singleton app — never calls initializeApp() again.
  *
+ * Audit logging:
+ *   logAuditEvent() delegates to logActivity() from auditLogger.js, which
+ *   writes to the unified `audit_logs` collection.  The per-invite AUDIT_EVENT
+ *   constants are mapped to ACTIVITY_TYPE constants for consistent naming
+ *   across the entire platform audit trail.
+ *
  * Exports
  * ───────
  *   syncUserClaims     onDocumentWritten — Firestore trigger on users/{emailKey}
@@ -64,6 +70,7 @@ const {onDocumentWritten} = require('firebase-functions/v2/firestore');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
+const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
 const REGION = 'us-central1';
 
@@ -105,26 +112,37 @@ const AUDIT_EVENT = Object.freeze({
  * Write a structured audit event to `audit_logs/{autoId}`.
  * Fire-and-forget — errors are logged but never throw.
  *
+ * Delegates to the unified logActivity() helper from auditLogger.js so that
+ * all invite-lifecycle events appear in the same audit_logs collection as
+ * PII access events, consent events, and stat overrides.
+ *
  * @param {string} type                  — one of AUDIT_EVENT values
  * @param {{ uid: string, email?: string | null, tenantId: string, role: string, metadata?: Record<string, unknown> }} data
  */
 function logAuditEvent(type, data) {
-  const firestore = fs();
-  firestore
-      .collection('audit_logs')
-      .add({
-        type,
-        uid: data.uid || '',
-        email: data.email || null,
-        tenantId: data.tenantId || '',
-        role: data.role || '',
-        metadata: data.metadata || {},
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      })
-      .catch((err) => {
-        // Audit write failure must never surface to the caller.
-        logger.warn('[auditLog] write failed for event type', type, err.message);
-      });
+  // Map legacy AUDIT_EVENT keys to canonical ACTIVITY_TYPE constants where
+  // possible.  Unknown events are passed through as-is — logActivity accepts
+  // any string action value.
+  const typeMap = {
+    [AUDIT_EVENT.CLAIMS_SYNCED]:     ACTIVITY_TYPE.CLAIMS_SYNCED,
+    [AUDIT_EVENT.TENANT_REVOKED]:    ACTIVITY_TYPE.TENANT_REVOKED,
+    [AUDIT_EVENT.INVITE_CONSUMED]:   ACTIVITY_TYPE.INVITE_CONSUMED,
+    [AUDIT_EVENT.INVITE_EXPIRED]:    ACTIVITY_TYPE.INVITE_EXPIRED,
+    [AUDIT_EVENT.INVITE_EXHAUSTED]:  ACTIVITY_TYPE.INVITE_EXHAUSTED,
+    [AUDIT_EVENT.INVITE_IDEMPOTENT]: ACTIVITY_TYPE.INVITE_IDEMPOTENT,
+    // Ad-hoc types not in AUDIT_EVENT enum
+    'admin_claim_blocked':           ACTIVITY_TYPE.ADMIN_CLAIM_BLOCKED,
+    'claims_revoked':                ACTIVITY_TYPE.CLAIMS_REVOKED,
+  };
+  const mappedAction = typeMap[type] || type;
+
+  logActivity(mappedAction, {
+    actorUid:   data.uid || '',
+    actorEmail: data.email || null,
+    tenantId:   data.tenantId || '',
+    notes:      data.role ? `role: ${data.role}` : null,
+    extra:      data.metadata || null,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

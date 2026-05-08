@@ -38,6 +38,7 @@
 -->
 <script>
 	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte';
+	import VanguardPrism from './VanguardPrism.svelte';
 
 	// ── External API ──────────────────────────────────────────────────────
 	// Identity fields (name, jersey, position) are props because they come
@@ -255,8 +256,25 @@
 				</div>
 			</header>
 
-			<!--
-			  SCOUT'S SIX — 3-column grid of Scout's Six metrics.
+		<!--
+		  VANGUARD PRISM — dynamic hexagonal stat radar.
+		  Centred between the header and the Scout's Six grid.
+		  Size 96px keeps it compact inside the 5:7 card footprint.
+		  accent is driven by the tier / side so the prism colour evolves
+		  as the player progresses (ROOKIE gray → VANGUARD cyan).
+		-->
+		<div class="tw-flex tw-justify-center tw-mt-3">
+			<VanguardPrism
+				stats={armory.playerStats}
+				accent={accent}
+				size={96}
+				showLabels={false}
+				animated={true}
+			/>
+		</div>
+
+		<!--
+		  SCOUT'S SIX — 3-column grid of Scout's Six metrics.
 
 			  `tw-divide-x tw-divide-white/10` draws a 1px hairline between
 			  every pair of adjacent columns. We zero out horizontal gap so

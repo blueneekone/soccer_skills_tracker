@@ -56,6 +56,111 @@ service firebase.storage {
         && request.resource.contentType.matches('video/.*');
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // EPIC 5 — TASK 5.4: PLAYER DOCUMENT VAULT (Principle of Least Privilege)
+    //
+    // Path layout:
+    //   /tenants/{tenantId}/players/{uid}/public/{fileName}
+    //   /tenants/{tenantId}/players/{uid}/private/{fileName}
+    //
+    // tenantId check: validates BOTH tenantId and clubId JWT claims so that
+    // legacy JWTs (only clubId set) and new JWTs (both set) are accepted.
+    //
+    // Platform admins (super_admin / global_admin) bypass tenant checks.
+    // ─────────────────────────────────────────────────────────────────────
+
+    // Helper functions — Firebase Storage rules do not share helpers across
+    // match blocks, so they are inlined as one-liners here.
+
+    match /tenants/{tenantId}/players/{uid}/public/{fileName} {
+      // Public: profile photos, headshots — readable by any authenticated
+      // member of the same tenant. No cross-tenant read possible.
+      allow read: if request.auth != null
+        && (
+          request.auth.token.role in ['super_admin', 'global_admin']
+          || request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+        );
+
+      // Write: only the player themselves (uid match) within their tenant.
+      // Content-type and size gated: profile photos only (no PDFs in public).
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (
+          request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+          || request.auth.token.role in ['super_admin', 'global_admin']
+        )
+        && request.resource != null
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp'];
+
+      allow delete: if request.auth != null
+        && request.auth.uid == uid
+        && (
+          request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+          || request.auth.token.role in ['super_admin', 'global_admin']
+        );
+    }
+
+    match /tenants/{tenantId}/players/{uid}/private/{fileName} {
+      // Private: birth certificates, photo IDs, medical forms.
+      //
+      // CLIENT READS ARE BLOCKED (allow read: if false).
+      // Access is only via the getSensitiveDocumentUrl Cloud Function, which:
+      //   1. Validates the requester is a director for the correct tenant
+      //   2. Writes an immutable audit_log entry with actorUid, targetUid,
+      //      action='VIEW_PII', documentType, timestamp, ipAddress
+      //   3. Returns a 5-minute signed URL (Admin SDK, bypasses these rules)
+      //
+      // This ensures every single private document access is audit-logged.
+      allow read: if false;
+
+      // Write: player uploads their own documents, OR a director uploads
+      // on their behalf (e.g., during club registration intake).
+      allow write: if request.auth != null
+        && (
+          // Player self-upload
+          (
+            request.auth.uid == uid
+            && (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+          )
+          ||
+          // Director upload on behalf of player
+          (
+            request.auth.token.role == 'director'
+            && (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+          )
+          ||
+          // Platform admin
+          request.auth.token.role in ['super_admin', 'global_admin']
+        )
+        && request.resource != null
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp|gif)|application/pdf');
+
+      // Delete: director for their tenant, or platform admin.
+      // Players may NOT delete their own sensitive docs (prevents evidence destruction).
+      allow delete: if request.auth != null
+        && (
+          (
+            request.auth.token.role == 'director'
+            && (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+          )
+          || request.auth.token.role in ['super_admin', 'global_admin']
+        );
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

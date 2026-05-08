@@ -13,12 +13,14 @@
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
+	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	const VALID_DIR_TABS = new Set([
 		'home', 'teams', 'field', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
 		'vanguard', // EPIC 4 — Director Mission Control
+		'retention', // EPIC 6 — PII Burn Protocol compliance dashboard
 	]);
 
 /** Effective tenant for Firestore; dynamically syncs with Context Switcher */
@@ -99,6 +101,8 @@
 			<HouseholdComplianceTab {clubId} />
 		{:else if activeTab === 'vanguard'}
 			<MissionControl />
+		{:else if activeTab === 'retention'}
+			<DirectorRetentionReport />
 		{:else}
 			<p class="director-console-fallback">Unknown section. Use the sidebar to navigate.</p>
 		{/if}

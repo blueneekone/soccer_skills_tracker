@@ -34,6 +34,10 @@
 		title?: string;
 		showFilter?: boolean;
 		onFixtureClick?: (fixture: EnrichedFixture) => void;
+		/** Whether more fixtures can be fetched from the server (drives Load More button). */
+		hasMore?: boolean;
+		loadingMore?: boolean;
+		onLoadMore?: () => void;
 		class?: string;
 	}
 
@@ -43,6 +47,9 @@
 		title = 'FIXTURES',
 		showFilter = true,
 		onFixtureClick,
+		hasMore = false,
+		loadingMore = false,
+		onLoadMore,
 		class: className = '',
 	}: Props = $props();
 
@@ -254,6 +261,24 @@
 					{/if}
 				</div>
 			{/each}
+		</div>
+	{/if}
+
+	<!-- ── Pagination: Load More ─────────────────────────────────────────────── -->
+	{#if hasMore || loadingMore}
+		<div class="fl-load-more">
+			<button
+				class="fl-load-more__btn"
+				onclick={onLoadMore}
+				disabled={loadingMore || !onLoadMore}
+			>
+				{#if loadingMore}
+					<span class="fl-load-more__spin" aria-hidden="true"></span>
+					LOADING FIXTURES…
+				{:else}
+					▼ LOAD OLDER FIXTURES
+				{/if}
+			</button>
 		</div>
 	{/if}
 </div>
@@ -560,4 +585,48 @@
 			display: none;
 		}
 	}
+
+	/* ── Load More ──────────────────────────────────────────────────────── */
+	.fl-load-more {
+		display: flex;
+		justify-content: center;
+		padding: 0.875rem 1.5rem;
+		border-top: 1px solid rgba(0, 240, 255, 0.06);
+	}
+
+	.fl-load-more__btn {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.45rem 1.1rem;
+		background: transparent;
+		border: 1px solid rgba(0, 240, 255, 0.18);
+		border-radius: 6px;
+		color: rgba(0, 240, 255, 0.55);
+		font-family: inherit;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.fl-load-more__btn:hover:not(:disabled) {
+		background: rgba(0, 240, 255, 0.06);
+		border-color: rgba(0, 240, 255, 0.35);
+		color: #00f0ff;
+	}
+
+	.fl-load-more__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+	.fl-load-more__spin {
+		width: 10px;
+		height: 10px;
+		border: 1.5px solid rgba(0, 240, 255, 0.25);
+		border-top-color: rgba(0, 240, 255, 0.8);
+		border-radius: 50%;
+		animation: fl-spin 0.7s linear infinite;
+	}
+
+	@keyframes fl-spin { to { transform: rotate(360deg); } }
 </style>

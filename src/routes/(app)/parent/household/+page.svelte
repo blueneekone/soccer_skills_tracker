@@ -18,6 +18,7 @@
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
 
 	const DISPATCH_CODE_INTEL = {
 		title: 'DISPATCH CODES',
@@ -1105,4 +1106,52 @@
 	.phh-otp-btn--close:hover {
 		border-color: rgba(255, 255, 255, 0.4);
 	}
+
+	/* ── Privacy Dashboard accordion ─────────────────────────────────────── */
+	.phh-privacy-details {
+		border: 1px solid rgba(255, 50, 80, 0.15);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	.phh-privacy-summary {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.65rem 1rem;
+		background: rgba(255, 50, 80, 0.04);
+		cursor: pointer;
+		list-style: none;
+		font-family: 'JetBrains Mono', monospace;
+	}
+	.phh-privacy-summary::-webkit-details-marker { display: none; }
+	.phh-privacy-label {
+		font-size: 0.55rem; font-weight: 700; letter-spacing: 0.2em;
+		color: rgba(255, 50, 80, 0.6);
+	}
+	.phh-privacy-name {
+		font-size: 0.72rem; font-weight: 600; color: rgba(255, 255, 255, 0.65);
+	}
+	.phh-privacy-chevron {
+		margin-left: auto; font-size: 0.65rem; color: rgba(255, 255, 255, 0.25);
+		transition: transform 0.2s;
+	}
+	.phh-privacy-details[open] .phh-privacy-chevron { transform: rotate(90deg); }
 </style>
+
+{#if operativeRows.length > 0}
+	<!-- Privacy Dashboard — shows PII access log for each linked operative. -->
+	<div class="tw-mx-auto tw-w-full tw-max-w-3xl tw-px-3 tw-pb-6 md:tw-px-6">
+		{#each operativeRows as row (row.email)}
+			<details class="phh-privacy-details tw-mt-4">
+				<summary class="phh-privacy-summary">
+					<span class="phh-privacy-label">PRIVACY LOG</span>
+					<span class="phh-privacy-name">{row.name || row.email}</span>
+					<span class="phh-privacy-chevron" aria-hidden="true">▸</span>
+				</summary>
+				<div class="tw-mt-2">
+					<ParentPrivacyDashboard childEmail={row.email} />
+				</div>
+			</details>
+		{/each}
+	</div>
+{/if}

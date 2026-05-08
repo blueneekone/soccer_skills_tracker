@@ -43,6 +43,28 @@ const {
   grantTrainingXpAfterRepCreated,
 } = require('./gamificationWorkoutXp');
 
+// ── Epic 6+: Compliance & Communications ─────────────────────────────────────
+const commsHandlers = require('./comms');
+exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
+
+const verifyDocHandlers = require('./verifyDocument');
+exports.verifyDocument = verifyDocHandlers.verifyDocument;
+exports.processPendingDocDeletions = verifyDocHandlers.processPendingDocDeletions;
+exports.getRetentionReport = verifyDocHandlers.getRetentionReport;
+
+// ── Epic 5 ────────────────────────────────────────────────────────────────────
+const inviteHandlers = require('./invites');
+exports.syncUserClaims = inviteHandlers.syncUserClaims;
+exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
+
+const coppaHandlers = require('./coppa');
+exports.sendParentalConsentEmail = coppaHandlers.sendParentalConsentEmail;
+exports.verifyParentalConsent = coppaHandlers.verifyParentalConsent;
+
+const auditHandlers = require('./audit');
+// IAM prerequisite: grant "Service Account Token Creator" to the Functions service account.
+exports.getSensitiveDocumentUrl = auditHandlers.getSensitiveDocumentUrl;
+
 const REGION = 'us-central1';
 
 const {GoogleGenAI} = require('@google/genai');
@@ -9189,6 +9211,39 @@ exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_A
 const inviteHandlers = require('./invites');
 exports.syncUserClaims = inviteHandlers.syncUserClaims;
 exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COPPA 2026 / Privacy Shield — Parental Consent Functions (Epic 5 Task 5.3)
+//
+//   sendParentalConsentEmail  — child requests email → parent receives link
+//   verifyParentalConsent     — parent grants/denies via /consent/[token] page
+//
+// These functions are the ONLY write path for coppaStatus on users/{email}.
+// The Firestore Security Rules block all client-side writes to coppaStatus.
+// ─────────────────────────────────────────────────────────────────────────────
+const coppaHandlers = require('./coppa');
+exports.sendParentalConsentEmail = coppaHandlers.sendParentalConsentEmail;
+exports.verifyParentalConsent = coppaHandlers.verifyParentalConsent;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIC 5 — TASK 5.4: Sensitive Document Safeguards
+//
+//   getSensitiveDocumentUrl  — Director-only signed URL generator.
+//     1. Validates director tenantId matches the player's tenant.
+//     2. Writes an IMMUTABLE audit_logs entry BEFORE generating the URL.
+//     3. Returns a 5-minute signed URL via Admin SDK.
+//     Storage rules set `allow read: if false` on /private/* — this is the
+//     only authorized read path for birth certificates and photo IDs.
+//
+// PREREQUISITE: The Functions service account needs IAM role
+//   "Service Account Token Creator" (roles/iam.serviceAccountTokenCreator)
+//   to generate signed URLs. Grant via:
+//   gcloud projects add-iam-policy-binding PROJECT_ID \
+//     --member="serviceAccount:PROJECT_ID@appspot.gserviceaccount.com" \
+//     --role="roles/iam.serviceAccountTokenCreator"
+// ─────────────────────────────────────────────────────────────────────────────
+const auditHandlers = require('./audit');
+exports.getSensitiveDocumentUrl = auditHandlers.getSensitiveDocumentUrl;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Zero-Trust tenant utilities — available to ALL Cloud Functions in this file.

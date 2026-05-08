@@ -1,0 +1,167 @@
+name: 🚀 VANGUARD — Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target Firebase project'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+          - dev
+
+# Cancel any in-progress run for the same branch so stale builds never
+# deploy over a newer commit.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Set VITE_USE_PROD=true so the SvelteKit build uses the production
+  # Firebase config (soccer-skills-tracker), not the dev project.
+  VITE_USE_PROD: ${{ github.event.inputs.environment != 'dev' && 'true' || 'false' }}
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Validate (type-check, lint, security rules)
+  # ─────────────────────────────────────────────────────────────────────────
+  validate:
+    name: ✅ Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Type-check (svelte-check)
+        # Fail the pipeline on errors; allow existing pre-existing warnings.
+        run: npx svelte-check --output human --threshold error
+        env:
+          VITE_USE_PROD: ${{ env.VITE_USE_PROD }}
+
+      - name: Validate Firestore security rules
+        run: npx firebase-tools deploy --only firestore:rules --dry-run --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+      - name: Validate Storage security rules
+        run: npx firebase-tools deploy --only storage --dry-run --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Build frontend
+  # ─────────────────────────────────────────────────────────────────────────
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build SvelteKit
+        run: npm run build
+        env:
+          VITE_USE_PROD: ${{ env.VITE_USE_PROD }}
+          # Inject any additional VITE_* secrets from GitHub Actions secrets
+          VITE_FCM_VAPID_KEY: ${{ secrets.VITE_FCM_VAPID_KEY }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sveltekit-build
+          # @sveltejs/adapter-static outputs to `build/`
+          path: build/
+          retention-days: 1
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 3 — Deploy (sequential: Rules → Functions → Hosting)
+  # ─────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: 🔥 Deploy to Firebase
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: build
+    environment:
+      name: ${{ github.event.inputs.environment == 'dev' && 'development' || 'production' }}
+      url: https://soccer.sstracker.app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies (for firebase-tools)
+        run: npm ci
+
+      - name: Install Cloud Functions dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sveltekit-build
+          path: build/
+
+      # Step 1: Security rules first — if rules are broken, abort before
+      # touching Hosting or Functions.
+      - name: Deploy Firestore security rules
+        run: npx firebase-tools deploy --only firestore:rules --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+      - name: Deploy Storage security rules
+        run: npx firebase-tools deploy --only storage --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+      # Step 2: Cloud Functions
+      - name: Deploy Cloud Functions
+        run: npx firebase-tools deploy --only functions --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+      # Step 3: Hosting (only after Functions are live to avoid 404 on new CF routes)
+      - name: Deploy to Firebase Hosting
+        run: npx firebase-tools deploy --only hosting --project soccer-skills-tracker
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+
+      - name: 🎉 Deployment complete
+        run: |
+          echo "VANGUARD deployed to production"
+          echo "Hosting: https://soccer.sstracker.app"
+          echo "Commit: ${{ github.sha }}"

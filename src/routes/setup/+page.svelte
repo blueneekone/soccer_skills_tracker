@@ -63,6 +63,7 @@
 	let selectedTeamId = $state('');
 	let errorMsg = $state('');
 	let saving = $state(false);
+	let termsAccepted = $state(false);
 	let clubTeams = $state([]);
 	let clubTeamsLoading = $state(false);
 
@@ -122,6 +123,9 @@
 
 	async function completeSetup() {
 		const name = displayName.trim();
+		if (!termsAccepted) {
+			return (errorMsg = 'You must acknowledge the Vanguard Protocol Terms before continuing.');
+		}
 		if (!selectedClubId) {
 			return (errorMsg = 'Please select your club / organization.');
 		}
@@ -312,13 +316,33 @@
 			<p class="setup-helper-text">Pick the team you lead. Claims sync after you save (via the clearance server).</p>
 		{/if}
 
-		{#if errorMsg}
-			<div class="auth-error-msg" role="alert">{errorMsg}</div>
-		{/if}
+	<!-- Terms acknowledgement — required before submission -->
+	<label class="setup-terms-label">
+		<input
+			type="checkbox"
+			class="setup-terms-checkbox"
+			bind:checked={termsAccepted}
+			disabled={saving}
+		/>
+		<span>
+			I acknowledge the
+			<a href="/terms" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
+				Vanguard Protocol Terms
+			</a>
+			and
+			<a href="/privacy" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
+				Privacy Policy
+			</a>.
+		</span>
+	</label>
 
-		<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving}>
-			{saving ? 'Saving profile…' : 'Complete setup'}
-		</button>
+	{#if errorMsg}
+		<div class="auth-error-msg" role="alert">{errorMsg}</div>
+	{/if}
+
+	<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving || !termsAccepted}>
+		{saving ? 'Saving profile…' : 'Complete setup'}
+	</button>
 		<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Cancel &amp; logout</button>
 	</div>
 </div>
@@ -341,4 +365,33 @@
 		line-height: 1.45;
 		color: var(--text-secondary, #a1a1aa);
 	}
+
+	.setup-terms-label {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		margin-bottom: 14px;
+		cursor: pointer;
+		font-size: 0.78rem;
+		line-height: 1.55;
+		color: var(--text-secondary, #a1a1aa);
+	}
+
+	.setup-terms-checkbox {
+		margin-top: 2px;
+		flex-shrink: 0;
+		accent-color: #00f0ff;
+		width: 15px;
+		height: 15px;
+		cursor: pointer;
+	}
+
+	.setup-terms-link {
+		color: rgba(0, 240, 255, 0.75);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.15s;
+	}
+
+	.setup-terms-link:hover { color: #00f0ff; }
 </style>

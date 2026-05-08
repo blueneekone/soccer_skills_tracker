@@ -703,6 +703,85 @@ service cloud.firestore {
         && request.resource.data.playerName.size() <= 200;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // EPIC 5 — TASK 5.1: ZERO-TRUST TENANT ISOLATION HELPERS
+    //
+    // Architecture invariant (post Epic 4 role alignment):
+    //
+    //   isPlatformAdmin()   global_admin | super_admin  — cross-tenant SaaS ops
+    //   isDirector()        director                    — single-tenant club owner
+    //   isCoach()           coach                       — single-team staff
+    //   isPlayer()          player                      — self-only data access
+    //
+    // isAuthorized(tenantId):
+    //   The primary gate for all tenant-partitioned collections.
+    //   Uses EXACT JWT claim name `tenantId` written by syncUserClaims CF.
+    //   Implicitly guards against empty/null tenantId (tenantId != '').
+    //
+    //   tokenClub() (legacy, uses `clubId` claim) == tokenTenant() because
+    //   syncUserClaims always writes both claims to the same value.
+    //   New collection rules use tokenTenant(); existing rules keep tokenClub()
+    //   to avoid churn on the battle-tested legacy paths.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Canonical tenantId from JWT (uses clubId claim — both are always set to
+    // the same value by syncUserClaims, but we alias here for semantic clarity
+    // on new-style tenant-partitioned collections).
+    function tokenTenant() {
+      return tokenClub();
+    }
+
+    // Primary Zero-Trust gate: is the caller authenticated AND does their
+    // verified JWT tenantId claim match the document's tenant partition?
+    // An empty tenantId (platform admin, unjoined user) never matches.
+    function isAuthorized(tenantId) {
+      return authed()
+        && tenantId != ''
+        && tokenTenant() == tenantId;
+    }
+
+    // Platform Admin (God Mode) alias — strictly separated from isDirector().
+    // Wraps isGlobalAdmin() to satisfy the Epic 5 naming contract.
+    function isPlatformAdmin() {
+      return isGlobalAdmin();
+    }
+
+    // Is the caller a player role?
+    function isPlayer() {
+      return tokenRole() == 'player';
+    }
+
+    // ── PII Segregation helpers (Task 5.2) ─────────────────────────────────
+    //
+    // Firestore Rules cannot return partial documents (field masking is
+    // application-layer), but they CAN gate who may enumerate (list) records
+    // vs. who may only fetch a single known document (get).
+    //
+    // Principle of Least Privilege:
+    //   canEnumeratePII()  — staff roles only; players and parents cannot
+    //                        run collection-wide queries on PII-bearing docs
+    //   canAccessOwnData() — always true for any record keyed by emailKey()
+    //
+    // Pattern for new PII-bearing collections:
+    //   allow get:  if isPlatformAdmin() || canEnumeratePII() || canAccessOwnData(key);
+    //   allow list: if isPlatformAdmin() || canEnumeratePII();
+    function canEnumeratePII() {
+      return isPlatformAdmin()
+        || isDirector()
+        || isCoach()
+        || isRegistrar();
+    }
+
+    function canAccessOwnData(docKey) {
+      return authed() && emailKey() == docKey.lower();
+    }
+
+    // Resolve the canonical tenant of a document, supporting both new-style
+    // 'tenantId' and legacy 'clubId' fields transparently.
+    function docTenantId(docData) {
+      return docData.get('tenantId', docData.get('clubId', ''));
+    }
+
     match /users/{userId} {
       allow read: if authed() && (
         emailKey() == userId.lower()
@@ -1684,17 +1763,35 @@ service cloud.firestore {
       allow update, delete: if isSuper();
     }
 
-    // Epic 2.1: governing-body season metadata (functions/director setup only).
+    // Epic 2.1 / Epic 4.3 (LeagueManager): governing-body season metadata.
+    //
+    // Read:  all club members can see seasons in their tenant.
+    // Write: directors may create/update seasons for their own tenant.
+    //        Platform Admins have God Mode. No client delete.
+    //
+    // docTenantId() supports both 'tenantId' (new LeagueSchema docs) and
+    // legacy 'clubId' (pre-Epic-4.3 docs) transparently.
     match /seasons/{seasonId} {
       allow read: if authed() && (
-        isSuper()
-        || (isDirector() && resource.data.clubId == tokenClub())
-        || (isRegistrar() && resource.data.clubId == tokenClub())
+        isPlatformAdmin()
+        || isAuthorized(docTenantId(resource.data))
+        || (isRegistrar() && docTenantId(resource.data) == tokenClub())
         || (isCoach() && tokenTeam() != null
             && exists(/databases/$(database)/documents/teams/$(tokenTeam()))
-            && resource.data.clubId == teamClubId(tokenTeam()))
+            && docTenantId(resource.data) == teamClubId(tokenTeam()))
       );
-      allow create, update, delete: if false;
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(docTenantId(request.resource.data)))
+        && request.resource.data.keys().hasAll(['tenantId'])
+        && request.resource.data.tenantId is string
+        && request.resource.data.tenantId.size() > 0;
+      allow update: if authed()
+        && (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(docTenantId(resource.data)))
+        // Tenant partition is immutable — may not be moved to another org.
+        && docTenantId(request.resource.data) == docTenantId(resource.data);
+      allow delete: if isPlatformAdmin();
     }
 
     // Epic 2.1–2.2: eligibility (webhook + overrides); coach/registrar read team.
@@ -1900,6 +1997,337 @@ service cloud.firestore {
       allow read: if false;
       allow create, update: if authed() && request.auth.uid == uid;
       allow delete: if authed() && request.auth.uid == uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EPIC 5 — TASK 5.1: NEW TENANT-SCOPED COLLECTIONS
+    // All new collections follow Zero-Trust partitioning:
+    //   • Every document carries a `tenantId` field.
+    //   • isAuthorized(tenantId) is the primary read gate.
+    //   • Platform Admins (isPlatformAdmin) always bypass.
+    //   • Write: director || coach (as appropriate to the domain).
+    //   • Tenant partition field is IMMUTABLE on update.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // organizations/{tenantId}
+    // Conceptual alias for clubs/{clubId} — document ID IS the tenantId.
+    // Directors manage their own org; Platform Admins manage all.
+    // This collection may hold organisation-level metadata distinct from
+    // the clubs/* billing/marketing data.
+    match /organizations/{tenantId} {
+      allow read: if isPlatformAdmin()
+        || isAuthorized(tenantId);
+      allow create: if isPlatformAdmin()
+        || (isDirector() && isAuthorized(tenantId));
+      allow update: if (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(tenantId));
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ── invites/{code} ───────────────────────────────────────────────────────
+    // Document ID == the 6-char invite code itself (no query index needed).
+    // consumeInviteCode CF mutates via Admin SDK (bypasses rules).
+    // Directors create invite codes scoped to their own tenantId.
+    // Invite codes are SECRET: players & coaches cannot enumerate them.
+    match /invites/{code} {
+      allow read: if isPlatformAdmin()
+        || (isDirector() && isAuthorized(docTenantId(resource.data)));
+
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(docTenantId(request.resource.data)))
+        // Shape guard: minimal required fields.
+        && request.resource.data.keys().hasAll([
+             'tenantId', 'clubId', 'code', 'targetRole',
+             'createdBy', 'expiresAt', 'usageLimit', 'usageCount',
+             'consumedByUids', 'status', 'createdAt'
+           ])
+        // Anti-tampering: counter and UID list must be zero/empty on create.
+        && request.resource.data.usageCount == 0
+        && request.resource.data.consumedByUids is list
+        && request.resource.data.consumedByUids.size() == 0
+        && request.resource.data.status == 'pending'
+        // Reasonable cap bounds.
+        && request.resource.data.usageLimit is int
+        && request.resource.data.usageLimit >= 1
+        && request.resource.data.usageLimit <= 100
+        // Only valid org roles can be targeted (not admin/director via invite).
+        && request.resource.data.targetRole in ['coach', 'player', 'parent', 'registrar']
+        && request.resource.data.createdBy is string
+        && request.resource.data.createdBy.size() <= 320
+        && request.resource.data.expiresAt is timestamp
+        // Tenant consistency: both canonical fields must agree.
+        && request.resource.data.clubId == request.resource.data.tenantId;
+
+      // CF updates (usageCount / status / consumedByUids) go via Admin SDK.
+      // No client update path — prevents self-serve code exhaustion attacks.
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ── audit_logs/{docId} ───────────────────────────────────────────────────
+    // Immutable compliance trail. Written exclusively by Cloud Functions
+    // (invites.js: logAuditEvent, syncUserClaims audit writes) via Admin SDK.
+    // Platform Admins read for forensics; Directors see only their tenant.
+    // Task 5.2: Audit logs contain PII — list access is staff-only.
+    match /audit_logs/{docId} {
+      // get: directors may fetch their own audit events; an actor may always
+      // retrieve a log entry about themselves (canAccessOwnData on uid field).
+      allow get: if isPlatformAdmin()
+        || (isDirector() && isAuthorized(resource.data.get('tenantId', '')))
+        || canAccessOwnData(resource.data.get('uid', '__none__'));
+      // list: restricted to platform admins and directors (PII segregation).
+      allow list: if isPlatformAdmin()
+        || (isDirector() && isAuthorized(resource.data.get('tenantId', '')));
+      // All writes go through Admin SDK — no client path.
+      allow create, update, delete: if false;
+    }
+
+    // ── platform_config/{docId} ──────────────────────────────────────────────
+    // Platform-level configuration (e.g., platform_config/admins: {emails: []}).
+    // The 'admins' document is the global_admin email whitelist consumed by
+    // syncUserClaims to gate who may receive the admin claim.
+    // Platform Admins only — no tenant actor may read or write this.
+    match /platform_config/{docId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    // ── opponents/{opponentId} ───────────────────────────────────────────────
+    // Rival team intelligence cards (LeagueManager / OpponentTracker).
+    // Tenant-scoped: a club can only see and edit its own scouting data.
+    // Task 5.2 PII: scoutNotes are staff-only — players see aggregate stats
+    //               only; the app layer handles field filtering.
+    match /opponents/{opponentId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || isAuthorized(resource.data.get('tenantId', ''))
+      );
+      // PII gate: list (query) requires staff-level access.
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (canEnumeratePII() && isAuthorized(resource.data.get('tenantId', '')))
+      );
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(request.resource.data.get('tenantId', '')))
+        && request.resource.data.keys().hasAll(['tenantId', 'name'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 200
+        && (!request.resource.data.keys().hasAny(['clubName'])
+            || (request.resource.data.clubName is string
+                && request.resource.data.clubName.size() <= 200));
+      allow update: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(resource.data.get('tenantId', '')))
+        // Tenant partition is immutable.
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '');
+      allow delete: if authed()
+        && (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(resource.data.get('tenantId', '')));
+    }
+
+    // ── fixtures/{fixtureId} ─────────────────────────────────────────────────
+    // Match schedule entries (LeagueManager / FixtureList).
+    // Fixture schedule is NOT PII — all club members (including players) can
+    // read their tenant's fixtures.  Players use isPlayer() to confirm the
+    // document is in their own tenant before access is granted.
+    match /fixtures/{fixtureId} {
+      allow read: if authed() && (
+        isPlatformAdmin()
+        || isAuthorized(resource.data.get('tenantId', ''))
+        || (isPlayer() && isAuthorized(resource.data.get('tenantId', '')))
+      );
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(request.resource.data.get('tenantId', '')))
+        && request.resource.data.keys().hasAll([
+             'tenantId', 'opponentId', 'scheduledAt', 'type', 'status'
+           ])
+        && request.resource.data.type in ['League', 'Tournament', 'Friendly']
+        && request.resource.data.status in ['Scheduled', 'Completed', 'Cancelled', 'Postponed']
+        && request.resource.data.scheduledAt is timestamp;
+      allow update: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(resource.data.get('tenantId', '')))
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '');
+      allow delete: if authed()
+        && (isPlatformAdmin() || isDirector())
+        && (isPlatformAdmin() || isAuthorized(resource.data.get('tenantId', '')));
+    }
+
+    // ── match_results/{resultId} ─────────────────────────────────────────────
+    // Post-match scorecards & per-player stats (LeagueManager.completeMatch()).
+    // Written by the coach/director via a batch write (client SDK).
+    // playerStats map may contain PII (name-keyed stats) — list requires staff.
+    match /match_results/{resultId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || isAuthorized(resource.data.get('tenantId', ''))
+      );
+      // Task 5.2: playerStats contains per-player data; list requires staff.
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (canEnumeratePII() && isAuthorized(resource.data.get('tenantId', '')))
+      );
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(request.resource.data.get('tenantId', '')))
+        && request.resource.data.keys().hasAll([
+             'tenantId', 'fixtureId', 'scoreHome', 'scoreAway'
+           ])
+        && request.resource.data.scoreHome is int
+        && request.resource.data.scoreHome >= 0
+        && request.resource.data.scoreHome <= 99
+        && request.resource.data.scoreAway is int
+        && request.resource.data.scoreAway >= 0
+        && request.resource.data.scoreAway <= 99
+        && (!request.resource.data.keys().hasAny(['outcome'])
+            || request.resource.data.outcome in ['W', 'L', 'D'])
+        && (!request.resource.data.keys().hasAny(['coachNotes'])
+            || (request.resource.data.coachNotes is string
+                && request.resource.data.coachNotes.size() <= 8000));
+      allow update: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && (isPlatformAdmin() || isAuthorized(resource.data.get('tenantId', '')))
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+        // fixtureId is the logical key — may not change on update.
+        && request.resource.data.get('fixtureId', '') == resource.data.get('fixtureId', '');
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EPIC 5 — TASK 5.3: COPPA 2026 / PRIVACY SHIELD — CONSENT COLLECTIONS
+    //
+    // ZERO-TRUST:
+    //   Both collections are written EXCLUSIVELY by Cloud Functions via the
+    //   Admin SDK, which bypasses these rules entirely.  All client paths are
+    //   explicitly denied or strictly limited.
+    //
+    // COPPA gate on existing collections (workouts, missions, player_stats):
+    //   Already enforced by playerVpcAllowed() which checks tokenVpcOk().
+    //   The verifyParentalConsent CF sets vpcVerified=true in JWT claims when
+    //   a parent grants consent, which satisfies tokenVpcOk() and therefore
+    //   playerVpcAllowed() — the existing gate covers the directive's requirement
+    //   without additional rules on those collections.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // consent_tokens/{token}
+    // ──────────────────────
+    // Ephemeral one-time-use tokens for the email-based parental consent flow.
+    // Token documents are written/read by Cloud Functions only.
+    //
+    // Clients MUST NOT be able to:
+    //   • Read tokens (exposes the consent URL — would allow replay attacks)
+    //   • Write tokens (would allow forging consent requests)
+    //   • Update or delete tokens (would allow token recycling)
+    //
+    // Admin SDK bypass is intentional — sendParentalConsentEmail writes these
+    // and verifyParentalConsent reads + marks them consumed via Admin SDK.
+    match /consent_tokens/{token} {
+      allow read, write: if false;
+    }
+
+    // consent_logs/{logId}
+    // ─────────────────────
+    // Immutable COPPA compliance audit trail.  Every consent flow event
+    // (email_sent, granted, denied, expired) is logged here by Cloud Functions.
+    //
+    // Read access:
+    //   • Platform admins can read all logs (compliance review, legal discovery)
+    //   • Directors can read logs scoped to their tenant
+    //   • The child can read their own logs (by childEmail matching emailKey())
+    //
+    // Write access:
+    //   • No client writes — Admin SDK only.  This ensures tamper-evidence:
+    //     the logs cannot be altered or deleted by any client or even a director.
+    //
+    // NOTE: `list` on this collection is PII-gated (canEnumeratePII).
+    //       A parent's IP address is stored here, so broad enumeration is
+    //       restricted to platform admins and the child themselves.
+    match /consent_logs/{logId} {
+      // Single-document read: platform admin, tenant-scoped director, or the child.
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || (isDirector() && isAuthorized(resource.data.get('tenantId', '')))
+        || (tokenRole() == 'player' && emailKey() == resource.data.get('childEmail', ''))
+      );
+      // List: restricted to platform admins (PII gate — parent IP is in the doc).
+      allow list: if authed() && isPlatformAdmin();
+      // Writes: Admin SDK only (no client path).
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EPIC 5 — TASK 5.1: DENY-BY-DEFAULT CATCH-ALL
+    // This rule must remain the FINAL entry in the rules file.
+    // Any collection not explicitly matched above is denied for all actors,
+    // including platform admins — making data leakage mathematically impossible
+    // for unknown future collections until rules are explicitly written.
+    // ─────────────────────────────────────────────────────────────────────────
+    // alpha_feedback/{docId}
+    // ─────────────────────
+    // Alpha-phase bug reports submitted by operatives via the "Report Anomaly"
+    // floating widget.  Each document is created client-side by the reporter;
+    // the Firestore rule enforces:
+    //   1. The submitter must be authenticated (no anonymous spam).
+    //   2. The `uid` field in the document must equal the caller's UID (prevents
+    //      impersonating another operative in a bug report).
+    //   3. The description must be a non-empty string ≤ 4000 characters.
+    //
+    // Read access: Platform admins only (no director/coach self-review).
+    // Update / delete: never from a client (immutable after submission).
+    //
+    match /alpha_feedback/{docId} {
+      // Any authenticated operative may submit a report.
+      allow create: if authed()
+        && request.resource.data.keys().hasAll(['uid', 'description', 'timestamp'])
+        && request.resource.data.uid is string
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 1
+        && request.resource.data.description.size() <= 4000;
+
+      // Only platform admins may read the collection (compliance + triage).
+      allow get, list: if authed() && isPlatformAdmin();
+
+      // Immutable — no client updates or deletes.
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // pending_deletions/{docId}
+    // ─────────────────────────
+    // PII Burn Protocol queue. Documents are created and updated exclusively by
+    // the `verifyDocument` and `processPendingDocDeletions` Cloud Functions via
+    // the Admin SDK (bypasses these rules).
+    // Client access: directors can read their tenant's queue; no client writes.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /pending_deletions/{docId} {
+      allow get, list: if authed() && (
+        isPlatformAdmin()
+        || (isDirector() && tokenTenant() != '' && resource.data.tenantId == tokenTenant())
+      );
+      // All writes are performed by Cloud Functions (Admin SDK) — never by clients.
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // team_broadcasts/{msgId}
+    // ────────────────────────
+    // SafeSport-compliant team/group message records. Created exclusively by
+    // the `safeSportBroadcast` Cloud Function. Readable by the sender's team
+    // members and their parent CCs. Immutable after creation.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /team_broadcasts/{msgId} {
+      // Team members (player, coach, director) within the same club may read.
+      allow get, list: if authed() && (
+        isPlatformAdmin()
+        || (tokenTenant() != '' && resource.data.teamClubId == tokenTenant()
+            && (isCoach() || isDirector() || isPlayer()))
+      );
+      // Created only by Cloud Function (Admin SDK).
+      allow create, update, delete: if false;
     }
 
     match /{document=**} {

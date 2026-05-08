@@ -22,6 +22,9 @@
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
 	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
+	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
+	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
+	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
 
 	let { children } = $props();
@@ -254,11 +257,27 @@
 		<ImpersonationBanner />
 	{/if}
 	<ParentFcmPrompt />
+	<!-- Alpha-phase feedback receptacle — visible to all authenticated users. -->
+	<ReportAnomaly />
+	<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
+	     or when iOS Safari is detected and app is not in standalone mode. -->
+	<InstallPrompt />
 	{#if authStore.role === 'player'}
 		<!-- Player OS: dark-mode, gamified, mobile-first shell -->
 		<PlayerShell>
 			{@render children()}
 		</PlayerShell>
+		<!--
+			COPPA 2026 / Privacy Shield — Parental Consent Gate.
+			Rendered on top of PlayerShell (z-index: 9999) when:
+			  • Player is a minor (isMinor === true from server-side profile)
+			  • coppaStatus is not 'granted' (server-written by verifyParentalConsent CF)
+			The overlay renders INSIDE the player block so VanguardVFX/scanlines are
+			still active beneath it, maintaining the Stark aesthetic.
+		-->
+		{#if authStore.requiresConsent}
+			<ConsentOverlay />
+		{/if}
 	{:else}
 		<!-- Enterprise shell: admin, director, coach, registrar, recruiter, parent -->
 		<EnterpriseConsoleShell>

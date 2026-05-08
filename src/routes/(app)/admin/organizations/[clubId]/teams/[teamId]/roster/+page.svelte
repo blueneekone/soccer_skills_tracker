@@ -9,6 +9,9 @@
 		getDocs,
 		query,
 		where,
+		orderBy,
+		limit,
+		startAfter,
 	} from 'firebase/firestore';
 	import { getContext } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -45,10 +48,16 @@
 	 * }} RosterRow
 	 */
 
+	const ROSTER_PAGE_SIZE = 20;
+
 	/** @type {RosterRow[]} */
 	let roster = $state([]);
 	let rosterLoading = $state(false);
 	let rosterErr = $state('');
+	/** @type {import('firebase/firestore').DocumentSnapshot | null} */
+	let rosterLastDoc = $state(null);
+	let rosterHasMore = $state(false);
+	let rosterLoadingMore = $state(false);
 
 	// ── Search ───────────────────────────────────────────────────────────────────
 	let rosterSearch = $state('');
@@ -97,12 +106,34 @@
 
 		void (async () => {
 			try {
+				const rosterFirstPageQ = query(
+					collection(db, 'player_lookup'),
+					where('teamId', '==', tid),
+					orderBy('playerName'),
+					limit(ROSTER_PAGE_SIZE + 1),
+				);
 				const [teamSnap, rosterSnap] = await Promise.all([
 					getDoc(doc(db, 'teams', tid)),
-					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', tid))),
+					getDocs(rosterFirstPageQ),
 				]);
 
 				if (cancelled || gen !== rosterFetchGen) return;
+
+				untrack(() => {
+					const rawDocs = rosterSnap.docs;
+					rosterHasMore = rawDocs.length > ROSTER_PAGE_SIZE;
+					const pageDocs = rawDocs.slice(0, ROSTER_PAGE_SIZE);
+					rosterLastDoc = pageDocs.at(-1) ?? null;
+					roster = pageDocs.map((d) => {
+						const data = d.data();
+						return {
+							email: String(data.email ?? d.id),
+							playerName: String(data.playerName ?? data.displayName ?? ''),
+							ageGroup: data.ageGroup ? String(data.ageGroup) : parseAgeGroup(String(data.teamName ?? '')),
+							teamId: String(data.teamId ?? ''),
+						};
+					});
+				});
 
 				if (teamSnap.exists()) {
 					const d = teamSnap.data();
@@ -115,26 +146,7 @@
 					teamErr = `Team "${tid}" not found.`;
 				}
 				teamLoading = false;
-
-				/** @type {RosterRow[]} */
-				const rows = [];
-				rosterSnap.forEach((d) => {
-					const data = d.data();
-					const playerName = typeof data.playerName === 'string' && data.playerName.trim()
-						? data.playerName.trim()
-						: '';
-					if (!playerName) return; // skip incomplete lookup records
-					rows.push({
-						email:      d.id,
-						playerName,
-						ageGroup:   parseAgeGroup(
-							typeof data.teamName === 'string' ? data.teamName : (teamDoc?.name ?? ''),
-						),
-						teamId:     typeof data.teamId === 'string' ? data.teamId : tid,
-					});
-				});
-				if (gen !== rosterFetchGen) return;
-				roster = rows.sort((a, b) => a.playerName.localeCompare(b.playerName));
+				// roster was already set in the untrack block above; just clear loading.
 				rosterLoading = false;
 			} catch (e) {
 				if (cancelled || gen !== rosterFetchGen) return;
@@ -152,6 +164,40 @@
 	});
 
 	const teamName = $derived(teamDoc?.name || teamId);
+
+	/** Append the next page of roster documents. */
+	async function loadMoreRoster() {
+		if (!rosterHasMore || rosterLoadingMore || !rosterLastDoc) return;
+		rosterLoadingMore = true;
+		try {
+			const nextQ = query(
+				collection(db, 'player_lookup'),
+				where('teamId', '==', teamId),
+				orderBy('playerName'),
+				startAfter(rosterLastDoc),
+				limit(ROSTER_PAGE_SIZE + 1),
+			);
+			const snap = await getDocs(nextQ);
+			rosterHasMore = snap.docs.length > ROSTER_PAGE_SIZE;
+			const pageDocs = snap.docs.slice(0, ROSTER_PAGE_SIZE);
+			rosterLastDoc = pageDocs.at(-1) ?? rosterLastDoc;
+			/** @type {RosterRow[]} */
+			const newRows = pageDocs.map((d) => {
+				const data = d.data();
+				return {
+					email: String(data.email ?? d.id),
+					playerName: String(data.playerName ?? data.displayName ?? ''),
+					ageGroup: data.ageGroup ? String(data.ageGroup) : parseAgeGroup(String(data.teamName ?? '')),
+					teamId: String(data.teamId ?? ''),
+				};
+			});
+			roster = [...roster, ...newRows];
+		} catch (e) {
+			rosterErr = e instanceof Error ? e.message : 'Failed to load more roster entries.';
+		} finally {
+			rosterLoadingMore = false;
+		}
+	}
 </script>
 
 <div class="roster-page">
@@ -254,6 +300,24 @@
 				{/if}
 			</tbody>
 		</table>
+
+	<!-- Pagination: Load More -->
+	{#if rosterHasMore}
+		<div class="roster-load-more">
+			<button
+				class="roster-load-more__btn"
+				onclick={loadMoreRoster}
+				disabled={rosterLoadingMore}
+			>
+				{#if rosterLoadingMore}
+					<span class="roster-load-more__spin" aria-hidden="true"></span>
+					LOADING…
+				{:else}
+					▼ LOAD MORE OPERATIVES ({roster.length} loaded)
+				{/if}
+			</button>
+		</div>
+	{/if}
 	</div>
 
 </div>
@@ -527,4 +591,51 @@
 		font-weight: 600;
 		color: var(--text-primary);
 	}
+
+	/* ── Pagination — Load More ─────────────────────────────────────── */
+	.roster-load-more {
+		display: flex;
+		justify-content: center;
+		padding: 1rem 1.5rem;
+		border-top: 1px solid rgba(0, 240, 255, 0.06);
+	}
+
+	.roster-load-more__btn {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.55rem 1.25rem;
+		background: transparent;
+		border: 1px solid rgba(0, 240, 255, 0.2);
+		border-radius: 7px;
+		color: rgba(0, 240, 255, 0.6);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.roster-load-more__btn:hover:not(:disabled) {
+		background: rgba(0, 240, 255, 0.06);
+		border-color: rgba(0, 240, 255, 0.4);
+		color: #00f0ff;
+	}
+
+	.roster-load-more__btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.roster-load-more__spin {
+		width: 12px;
+		height: 12px;
+		border: 1.5px solid rgba(0, 240, 255, 0.25);
+		border-top-color: rgba(0, 240, 255, 0.8);
+		border-radius: 50%;
+		animation: spin 0.7s linear infinite;
+	}
+
+	@keyframes spin { to { transform: rotate(360deg); } }
 </style>

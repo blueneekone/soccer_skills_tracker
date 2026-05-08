@@ -19,8 +19,45 @@
         "source": "**",
         "headers": [
           {
-            "key": "Content-Security-Policy-Report-Only",
-            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://static.cloudflareinsights.com https://maps.googleapis.com https://maps.gstatic.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; font-src 'self' data: https:; worker-src 'self' blob: https://maps.googleapis.com https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://sstracker.app https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.cloudfunctions.net; frame-src 'self' https://accounts.google.com https://www.gstatic.com https://*.google.com; frame-ancestors 'self'; upgrade-insecure-requests"
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://unpkg.com https://static.cloudflareinsights.com https://maps.googleapis.com https://maps.gstatic.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://unpkg.com; worker-src 'self' blob:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://sstracker.app https://soccer.sstracker.app https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.cloudfunctions.net https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'self' https://accounts.google.com https://www.gstatic.com https://*.google.com; frame-ancestors 'none'; upgrade-insecure-requests"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()"
+          },
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=63072000; includeSubDomains; preload"
+          }
+        ]
+      },
+      {
+        "source": "/sw.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          },
+          {
+            "key": "Service-Worker-Allowed",
+            "value": "/"
           }
         ]
       }

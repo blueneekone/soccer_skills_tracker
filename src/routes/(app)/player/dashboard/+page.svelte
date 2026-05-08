@@ -6,6 +6,7 @@
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
+	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
@@ -122,6 +123,27 @@
 	);
 
 	const operativeAvatarConfig = $derived(parseOperativeAvatar(activePlayer?.operativeAvatar));
+
+	/**
+	 * VanguardPrism stats — derived from the player's armory (ScoutsSix map
+	 * stored in users/{email}.armory.stats).  Falls back to zero-values so the
+	 * prism renders a minimal shape instead of nothing while data loads.
+	 * @type {import('$lib/states/ArmoryEngine.svelte.js').ScoutsSix}
+	 */
+	const prismStats = $derived.by(() => {
+		/** @type {Record<string, unknown>} */
+		const s = /** @type {Record<string, unknown>} */ (
+			/** @type {Record<string, unknown> | null} */ (activePlayer)?.armory?.stats ?? {}
+		);
+		return {
+			PAC: String(s.PAC ?? '0 MPH'),
+			ACC: String(s.ACC ?? '3.5s'),
+			AGI: String(s.AGI ?? '5.0s'),
+			STM: String(s.STM ?? 'Lvl 0'),
+			POW: String(s.POW ?? '0 in'),
+			VAN: String(s.VAN ?? '0'),
+		};
+	});
 
 	const combatTelemetryReady = $derived(
 		hasDocumentedSkillRatings(
@@ -393,6 +415,23 @@
 					class="holo-glow tw-pointer-events-none -tw-z-10"
 					aria-hidden="true"
 				></div>
+				<!--
+					VanguardPrism — atmospheric stat hexagon rendered behind the operative
+					avatar.  z-10 keeps it above the holo-glow but below the avatar (z-50).
+					pointer-events: none ensures it doesn't intercept any clicks on the avatar.
+				-->
+				<div
+					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10"
+					aria-hidden="true"
+				>
+					<VanguardPrism
+						stats={prismStats}
+						size={220}
+						accent="#00f0ff"
+						showLabels={false}
+						animated={true}
+					/>
+				</div>
 				<div class="holo-plate tw-relative tw-z-50">
 					<OperativeAvatarPreview
 						config={operativeAvatarConfig}
