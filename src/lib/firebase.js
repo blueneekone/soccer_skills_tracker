@@ -107,8 +107,8 @@ export const db = (() => {
 	}
 })();
 
-/** Matches Cloud Functions region in functions/index.js */
-export const functions = getFunctions(app, 'us-central1');
+/** Matches Cloud Functions region in functions/index.js — us-east1 (HOTFIX ALPHA-4) */
+export const functions = getFunctions(app, 'us-east1');
 
 export const storage = getStorage(app);
 

@@ -68,17 +68,17 @@
 					)]
 					: [];
 
-				if (emails.length > 0) {
-					const statusMap = {};
-					const userSnaps = await Promise.all(
-						emails.map((em) => getDoc(doc(db, 'users', em)))
-					);
-					for (let i = 0; i < emails.length; i++) {
-						const ud = userSnaps[i].exists() ? userSnaps[i].data() : {};
-						statusMap[emails[i]] = ud?.vpcStatus || 'unknown';
-					}
-					if (!cancelled) playerStatuses = statusMap;
+			if (emails.length > 0) {
+				const statusMap = {};
+				const userSnaps = await Promise.all(
+					emails.map((em) => getDoc(doc(db, 'users', em)))
+				);
+				for (let i = 0; i < emails.length; i++) {
+					const ud = userSnaps[i].exists() ? userSnaps[i].data() : {};
+					statusMap[emails[i]] = ud?.vpcStatus || 'unknown';
 				}
+				if (!cancelled) playerStatuses = statusMap;
+			}
 			} catch (e) {
 				if (!cancelled) {
 					loadErr = e instanceof Error ? e.message : String(e);
@@ -164,6 +164,7 @@
 		}
 		submitting = true;
 		submitError = '';
+
 		try {
 			await parentGrantVpcConsentFn({
 				playerEmail: activePlayerEmail,

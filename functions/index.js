@@ -3617,7 +3617,12 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
     throw new HttpsError('not-found', 'Player profile not found.');
   }
   const u = uSnap.data();
-  if (u.isMinor !== true) {
+  // Guard: only block when isMinor is EXPLICITLY false.
+  // isMinor === undefined / null means the onboarding pipeline didn't write the
+  // field yet; players in a household with vpcStatus 'pending' are by definition
+  // the minors VPC is built for, so we allow them through rather than dead-locking
+  // parents whose children were invited before the isMinor field was introduced.
+  if (u.isMinor === false) {
     throw new HttpsError(
         'failed-precondition',
         'VPC consent applies to minors only.',
