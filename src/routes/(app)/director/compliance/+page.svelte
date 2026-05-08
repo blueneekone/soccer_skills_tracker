@@ -20,7 +20,7 @@
 	});
 
 	// ── State ────────────────────────────────────────────────────────────────
-	/** @typedef {{ email: string, displayName?: string, clubId?: string, clearance?: Record<string,unknown>, clearanceDocs?: Record<string,unknown>, documentsUploaded?: boolean }} CoachRow */
+	/** @typedef {{ email: string, displayName?: string, role?: string, clubId?: string, clearance?: Record<string,unknown> }} CoachRow */
 
 	/** @type {CoachRow[]} */
 	let coaches = $state([]);
@@ -78,7 +78,27 @@
 	/** @param {CoachRow} coach */
 	function getStatus(coach) {
 		const status = /** @type {string|undefined} */ (coach.clearance?.status);
-		return status ?? (coach.documentsUploaded ? 'pending' : 'unsubmitted');
+		return status ?? 'pending';
+	}
+
+	/**
+	 * Format a Firestore Timestamp-like object or null as a readable string.
+	 * @param {unknown} ts
+	 */
+	function fmtTimestamp(ts) {
+		if (!ts || typeof ts !== 'object') return '—';
+		try {
+			const t = /** @type {Record<string,unknown>} */ (ts);
+			const ms = typeof t.toMillis === 'function' ? t.toMillis() :
+				typeof t.seconds === 'number' ? t.seconds * 1000 : null;
+			if (!ms) return '—';
+			return new Intl.DateTimeFormat('en-US', {
+				month: 'short', day: 'numeric', year: 'numeric',
+				hour: '2-digit', minute: '2-digit',
+			}).format(new Date(ms));
+		} catch {
+			return '—';
+		}
 	}
 
 	/** @param {string} email */
@@ -87,24 +107,6 @@
 			rowActions[email] = { verifying: false, simulating: false, error: '' };
 		}
 		return rowActions[email];
-	}
-
-	/** @param {CoachRow} coach @param {'safesport'|'concussion'} docType */
-	async function verifyDoc(coach, docType) {
-		const rs = rowState(coach.email);
-		rs.verifying = true;
-		rs.error = '';
-		try {
-			const fns = getFunctions(getApp(), 'us-east1');
-			const override = httpsCallable(fns, 'requestManualOverride');
-			await override({ email: coach.email, documentRef: `${docType}_verified` });
-			// Refresh local row
-			coach.clearance = { .../** @type {object} */ (coach.clearance ?? {}), status: 'cleared' };
-		} catch (err) {
-			rs.error = /** @type {Error} */ (err).message ?? 'Error verifying.';
-		} finally {
-			rs.verifying = false;
-		}
 	}
 
 	/** @param {CoachRow} coach */
@@ -116,7 +118,12 @@
 			const fns = getFunctions(getApp(), 'us-east1');
 			const simulate = httpsCallable(fns, 'simulateClearance');
 			await simulate({ email: coach.email });
-			coach.clearance = { .../** @type {object} */ (coach.clearance ?? {}), status: 'cleared', source: 'yardstik_simulated' };
+			coach.clearance = {
+				.../** @type {object} */ (coach.clearance ?? {}),
+				status: 'cleared',
+				ankoredId: 'ANKORED-SIM',
+				lastVerified: { seconds: Math.floor(Date.now() / 1000) },
+			};
 		} catch (err) {
 			rs.error = /** @type {Error} */ (err).message ?? 'Simulation failed.';
 		} finally {
@@ -195,7 +202,7 @@
 		</div>
 		<div class="dp-alpha-badge">
 			<span class="dp-pulse-dot"></span>
-			ALPHA — YARDSTIK INTEGRATION SIMULATED
+			ALPHA — ANKORED INTEGRATION SIMULATED
 		</div>
 	</div>
 
@@ -218,10 +225,9 @@
 				<thead>
 					<tr>
 						<th>COACH / ROLE</th>
-						<th>STATUS</th>
-						<th>SAFESPORT CERT</th>
-						<th>CONCUSSION CERT</th>
-						<th>BACKGROUND CHECK</th>
+						<th>ANKORED STATUS</th>
+						<th>LAST SYNCED</th>
+						<th>ANKORED DASHBOARD</th>
 						<th>ACTIONS</th>
 					</tr>
 				</thead>
@@ -229,9 +235,10 @@
 					{#each filtered as coach (coach.email)}
 						{@const status = getStatus(coach)}
 						{@const rs = rowState(coach.email)}
-						{@const safesportDoc = /** @type {any} */ (coach.clearanceDocs?.safesport)}
-						{@const concussionDoc = /** @type {any} */ (coach.clearanceDocs?.concussion)}
+						{@const ankoredId = /** @type {string|undefined} */ (coach.clearance?.ankoredId)}
+						{@const lastVerified = coach.clearance?.lastVerified}
 						<tr class="dp-row dp-row--{status}">
+							<!-- Coach identity -->
 							<td class="dp-cell dp-cell--identity">
 								<div class="dp-identity__name">
 									{coach.displayName ?? coach.email.split('@')[0]}
@@ -240,6 +247,7 @@
 								<div class="dp-identity__role">{coach.role ?? 'coach'}</div>
 							</td>
 
+							<!-- Ankored status -->
 							<td class="dp-cell dp-cell--status">
 								<div class="dp-status dp-status--{status}">
 									{#if status === 'cleared'}
@@ -251,83 +259,46 @@
 									{/if}
 									{status.toUpperCase()}
 								</div>
-							</td>
-
-							<td class="dp-cell dp-cell--doc">
-								{#if safesportDoc?.url}
-									<a
-										href={safesportDoc.url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="dp-doc-link"
-										aria-label="View SafeSport certificate"
-									>
-										<i class="ph ph-file-pdf" aria-hidden="true"></i> VIEW
-									</a>
-									<button
-										class="dp-btn dp-btn--verify"
-										disabled={rs.verifying || status === 'cleared'}
-										onclick={() => verifyDoc(coach, 'safesport')}
-										aria-label="Verify SafeSport document"
-									>
-										{rs.verifying ? '…' : 'VERIFY'}
-									</button>
-								{:else}
-									<span class="dp-no-doc">NOT UPLOADED</span>
+								{#if ankoredId}
+									<div class="dp-ankored-id" title="Ankored record ID">{ankoredId}</div>
 								{/if}
 							</td>
 
-							<td class="dp-cell dp-cell--doc">
-								{#if concussionDoc?.url}
-									<a
-										href={concussionDoc.url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="dp-doc-link"
-										aria-label="View Concussion Protocol certificate"
-									>
-										<i class="ph ph-file-pdf" aria-hidden="true"></i> VIEW
-									</a>
-									<button
-										class="dp-btn dp-btn--verify"
-										disabled={rs.verifying || status === 'cleared'}
-										onclick={() => verifyDoc(coach, 'concussion')}
-										aria-label="Verify Concussion document"
-									>
-										{rs.verifying ? '…' : 'VERIFY'}
-									</button>
-								{:else}
-									<span class="dp-no-doc">NOT UPLOADED</span>
-								{/if}
+							<!-- Last synced -->
+							<td class="dp-cell dp-cell--synced">
+								<span class="dp-synced-ts">{fmtTimestamp(lastVerified)}</span>
 							</td>
 
-							<td class="dp-cell dp-cell--bgc">
-								{#if status === 'cleared' && coach.clearance?.source === 'yardstik_simulated'}
-									<span class="dp-bgc-ok">
-										<i class="ph ph-check-circle" aria-hidden="true"></i>
-										SIMULATED CLEAR
-									</span>
-								{:else if status === 'cleared'}
-									<span class="dp-bgc-ok">
-										<i class="ph ph-check-circle" aria-hidden="true"></i>
-										CLEARED
-									</span>
-								{:else}
+							<!-- Open Ankored Dashboard -->
+							<td class="dp-cell dp-cell--dashboard">
+								{#if status !== 'cleared'}
 									<button
 										class="dp-btn dp-btn--simulate"
 										disabled={rs.simulating}
 										onclick={() => simulateClearance(coach)}
+										aria-label="Simulate Ankored clearance for {coach.email}"
 									>
 										{#if rs.simulating}
-											<span class="dp-btn-spin">↻</span> SIMULATING…
+											<span class="dp-btn-spin">↻</span> SYNCING…
 										{:else}
 											<i class="ph ph-lightning" aria-hidden="true"></i>
-											SIMULATE YARDSTIK CLEARANCE
+											SIMULATE ANKORED CLEARANCE
 										{/if}
 									</button>
 								{/if}
+								<a
+									href="https://app.ankored.com"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="dp-btn dp-btn--ankored"
+									aria-label="Open Ankored Dashboard (external)"
+								>
+									<i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+									OPEN DASHBOARD
+								</a>
 							</td>
 
+							<!-- Actions -->
 							<td class="dp-cell dp-cell--actions">
 								{#if rs.error}
 									<span class="dp-row-error">{rs.error}</span>
@@ -337,6 +308,7 @@
 										class="dp-btn dp-btn--revoke"
 										disabled={rs.verifying}
 										onclick={() => revokeCoach(coach)}
+										aria-label="Revoke clearance for {coach.email}"
 									>
 										<i class="ph ph-prohibit" aria-hidden="true"></i>
 										REVOKE
@@ -651,40 +623,42 @@
 		50%       { box-shadow: 0 0 8px rgba(255, 0, 60, 0.25); }
 	}
 
-	/* Doc cell */
-	.dp-cell--doc {
+	/* Ankored ID sub-label */
+	.dp-ankored-id {
+		font-size: 0.55rem;
+		color: rgba(0, 240, 255, 0.35);
+		margin-top: 0.2rem;
+		letter-spacing: 0.06em;
+	}
+
+	/* Last-synced cell */
+	.dp-cell--synced { white-space: nowrap; }
+
+	.dp-synced-ts {
+		font-size: 0.65rem;
+		color: rgba(229, 231, 235, 0.45);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Dashboard cell */
+	.dp-cell--dashboard {
 		white-space: nowrap;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		align-items: flex-start;
 	}
 
-	.dp-doc-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
+	.dp-btn--ankored {
 		color: var(--vanguard-cyan, #00f0ff);
+		border: 1px solid rgba(0, 240, 255, 0.25);
+		background: rgba(0, 240, 255, 0.04);
 		text-decoration: none;
-		font-size: 0.65rem;
-		font-weight: 600;
-		margin-right: 0.5rem;
 	}
 
-	.dp-doc-link:hover { text-decoration: underline; }
-
-	.dp-no-doc {
-		font-size: 0.62rem;
-		color: rgba(229, 231, 235, 0.25);
-		font-style: italic;
-	}
-
-	/* BGC cell */
-	.dp-cell--bgc { white-space: nowrap; }
-
-	.dp-bgc-ok {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		font-size: 0.65rem;
-		font-weight: 700;
-		color: var(--vanguard-cyan, #00f0ff);
+	.dp-btn--ankored:hover {
+		background: rgba(0, 240, 255, 0.1);
+		box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
 	}
 
 	/* Buttons */

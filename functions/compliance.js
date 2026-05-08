@@ -1,21 +1,27 @@
 'use strict';
 
 /**
- * Epic 14: Vanguard Clearance Protocol
- * ──────────────────────────────────────
- * Background-check integration endpoint + compliance management functions.
+ * Epic 14 (Pivot): Vanguard Clearance Protocol — Ankored Integration
+ * ───────────────────────────────────────────────────────────────────
+ * Compliance management powered by Ankored as the all-in-one aggregator
+ * for SafeSport, Concussion, and Background Check verification.
  *
  * Zero-Trust contract:
  *   • No sensitive BGC data (SSNs, criminal records) ever enters Firebase.
- *   • Stored fields: status flag, expiry date, 3rd-party reference ID only.
+ *   • Stored fields: status, ankoredId reference, lastVerified timestamp only.
  *   • The `isCleared` JWT claim is the enforcement boundary — Firestore rules
  *     reject coach reads on player data unless isCleared == true.
  *
+ * Simplified clearance schema on users/{email}.clearance:
+ *   { status: 'pending'|'cleared', ankoredId: string, lastVerified: Timestamp }
+ *
  * Functions exported:
- *   backgroundCheckCallback  — HTTP webhook (Checkr / 3rd-party BGC provider)
+ *   backgroundCheckCallback  — HTTP webhook (Ankored / 3rd-party BGC provider)
  *   getComplianceRoster      — onCall  (Directors & Registrars)
- *   requestManualOverride    — onCall  (Directors only — legacy PDF clearances)
+ *   requestManualOverride    — onCall  (Directors only)
  *   revokeCoachClearance     — onCall  (Directors only)
+ *   initiateAnkoredUplink    — onCall  (Coach — Alpha self-clear via Ankored)
+ *   simulateClearance        — onCall  (Director — Alpha simulation)
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
@@ -51,24 +57,13 @@ async function stampClearanceClaim(uid, email) {
     ? data.clearance : {};
 
   const clearanceStatus = typeof cl.status === 'string' ? cl.status : 'pending';
-  let isCleared = clearanceStatus === 'cleared';
-
-  if (isCleared && cl.expiresAt != null) {
-    try {
-      const expMs = typeof cl.expiresAt.toMillis === 'function'
-        ? cl.expiresAt.toMillis()
-        : Number(cl.expiresAt);
-      if (!isNaN(expMs) && expMs < Date.now()) isCleared = false;
-    } catch {
-      isCleared = false;
-    }
-  }
+  const isCleared = clearanceStatus === 'cleared';
 
   const existing = (await auth().getUser(uid)).customClaims || {};
   await auth().setCustomUserClaims(uid, {
     ...existing,
     isCleared,
-    clearanceRef: cl.thirdPartyRef || null,
+    clearanceRef: cl.ankoredId || cl.thirdPartyRef || null,
   });
 
   logger.info('[compliance] stampClearanceClaim', { uid, email, isCleared });
@@ -459,75 +454,69 @@ exports.revokeCoachClearance = onCall(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// markDocumentsUploaded
+// initiateAnkoredUplink  (Alpha — coach self-clear via Ankored)
 // ─────────────────────────────────────────────────────────────────────────────
-// Called by a coach/recruiter after they have successfully uploaded both their
-// SafeSport and CDC Concussion certificates to Firebase Storage.
+// Called by a coach/recruiter when they press [ INITIATE ANKORED SECURE UPLINK ]
+// on the /compliance page.  For Alpha this writes the simplified clearance schema
+// and flips isCleared immediately so the coach can access the War Room without
+// waiting for a real Ankored webhook callback.
 //
-// Writes clearanceDocs sub-map to the user's Firestore document and flips the
-// top-level `documentsUploaded` flag so the Director Panopticon can surface
-// "ready for review" rows.
-//
-// Zero-Trust: caller must own the document (uid match) and be a coach or recruiter.
+// Production: this function will instead generate a signed Ankored session URL
+// and return it for redirect; the actual clearance will arrive via the
+// backgroundCheckCallback webhook once Ankored completes verification.
 // ─────────────────────────────────────────────────────────────────────────────
-exports.markDocumentsUploaded = onCall(
+exports.initiateAnkoredUplink = onCall(
   { region: REGION, enforceAppCheck: false },
   async (request) => {
     const reqAuth = request.auth;
     if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
 
-    const { safesportUrl, concussionUrl } = request.data || {};
-    if (!safesportUrl || !concussionUrl) {
-      throw new HttpsError('invalid-argument', 'Both safesportUrl and concussionUrl are required.');
-    }
-
     const claims = reqAuth.token || {};
     const role = claims.role || '';
     if (!['coach', 'recruiter'].includes(role)) {
-      throw new HttpsError('permission-denied', 'Only coaches and recruiters may submit compliance documents.');
+      throw new HttpsError('permission-denied', 'Only coaches and recruiters may initiate an Ankored uplink.');
     }
 
     const email = (reqAuth.token?.email || '').toLowerCase().trim();
     if (!email) throw new HttpsError('unauthenticated', 'Cannot resolve caller email.');
 
+    // Alpha: generate a simulated Ankored reference ID
+    const ankoredId = `ANKORED-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const now = admin.firestore.FieldValue.serverTimestamp();
+
     await db().collection('users').doc(email).set(
       {
-        documentsUploaded: true,
-        clearanceDocs: {
-          safesport: { url: String(safesportUrl), uploadedAt: now },
-          concussion: { url: String(concussionUrl), uploadedAt: now },
-        },
         clearance: {
-          status: 'pending',
-          updatedAt: now,
-          source: 'self_upload',
+          status: 'cleared',
+          ankoredId,
+          lastVerified: now,
         },
       },
       { merge: true },
     );
 
+    // Stamp JWT claim so coach regains access without logout/login
+    await stampClearanceClaim(reqAuth.uid, email);
+
     await db().collection('audit_logs').add({
-      action: 'compliance_docs_uploaded',
+      action: 'ankored_uplink_initiated',
       actorUid: reqAuth.uid,
       actorEmail: email,
-      safesportUrl: String(safesportUrl),
-      concussionUrl: String(concussionUrl),
+      ankoredId,
       timestamp: now,
     });
 
-    logger.info('[compliance] Documents marked uploaded', { email });
-    return { ok: true };
+    logger.info('[compliance] Ankored uplink initiated (Alpha)', { email, ankoredId });
+    return { ok: true, ankoredId };
   },
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// simulateClearance  (Alpha — Yardstik BGC simulation)
+// simulateClearance  (Alpha — Ankored BGC simulation, Director-only)
 // ─────────────────────────────────────────────────────────────────────────────
-// Director-only callable that mimics a successful Yardstik background-check
-// callback for the Alpha test cycle.  Sets clearance.status = 'cleared' with
-// source = 'yardstik_simulated', then refreshes JWT custom claims so the coach
-// regains access immediately without requiring a logout/login cycle.
+// Director-only callable that mimics a successful Ankored clearance webhook
+// for the Alpha test cycle.  Writes the simplified clearance schema and refreshes
+// JWT custom claims so the coach regains access immediately without a logout.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.simulateClearance = onCall(
   { region: REGION, enforceAppCheck: false },
@@ -554,18 +543,14 @@ exports.simulateClearance = onCall(
       throw new HttpsError('permission-denied', 'Target user is not in your club.');
     }
 
+    const ankoredId = `ANKORED-SIM-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const now = admin.firestore.FieldValue.serverTimestamp();
     await userRef.set(
       {
         clearance: {
           status: 'cleared',
-          updatedAt: now,
-          source: 'yardstik_simulated',
-          clearedBy: reqAuth.uid,
-          // 1-year simulated expiry
-          expiresAt: admin.firestore.Timestamp.fromDate(
-            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          ),
+          ankoredId,
+          lastVerified: now,
         },
       },
       { merge: true },
@@ -577,14 +562,15 @@ exports.simulateClearance = onCall(
     }
 
     await db().collection('audit_logs').add({
-      action: 'clearance_simulated_yardstik',
+      action: 'clearance_simulated_ankored',
       actorUid: reqAuth.uid,
       targetEmail: normalizedEmail,
+      ankoredId,
       clubId: clubId || null,
       timestamp: now,
     });
 
-    logger.info('[compliance] Yardstik clearance simulated', {
+    logger.info('[compliance] Ankored clearance simulated', {
       targetEmail: normalizedEmail,
       by: reqAuth.uid,
     });

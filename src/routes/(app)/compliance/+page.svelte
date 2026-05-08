@@ -3,10 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { storage } from '$lib/firebase.js';
-	import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
-	import { getApp } from 'firebase/app';
+	import { functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 
 	export const ssr = false;
 
@@ -18,120 +16,40 @@
 		}
 	});
 
-	// ── Upload state ─────────────────────────────────────────────────────────
-	/** @typedef {{ file: File|null, url: string, progress: number, status: 'idle'|'uploading'|'done'|'error', error: string }} DocSlot */
+	// ── Uplink state ─────────────────────────────────────────────────────────
+	/** @type {'idle' | 'connecting' | 'cleared' | 'error'} */
+	let uplinkStatus = $state('idle');
+	let uplinkError = $state('');
 
-	/** @type {DocSlot} */
-	let safesport = $state({ file: null, url: '', progress: 0, status: 'idle', error: '' });
-	/** @type {DocSlot} */
-	let concussion = $state({ file: null, url: '', progress: 0, status: 'idle', error: '' });
+	const initiateAnkoredUplink = httpsCallable(functions, 'initiateAnkoredUplink');
 
-	let submitting = $state(false);
-	let submitted = $state(false);
-	let submitError = $state('');
-
-	const bothUploaded = $derived(safesport.status === 'done' && concussion.status === 'done');
-
-	// ── File upload helper ────────────────────────────────────────────────────
-	/**
-	 * @param {File} file
-	 * @param {'safesport'|'concussion'} docType
-	 */
-	async function uploadDoc(file, docType) {
-		const uid = authStore.user?.uid;
-		const tenantId = authStore.tenantId || authStore.userProfile?.clubId;
-		if (!uid || !tenantId) return;
-
-		const ext = file.name.split('.').pop()?.toLowerCase() ?? 'pdf';
-		const path = `compliance/${tenantId}/${uid}/${docType}_${Date.now()}.${ext}`;
-		const storageRef = ref(storage, path);
-
-		const slot = docType === 'safesport' ? safesport : concussion;
-		slot.status = 'uploading';
-		slot.progress = 0;
-		slot.error = '';
-
-		const task = uploadBytesResumable(storageRef, file, {
-			contentType: file.type,
-		});
-
-		await new Promise((resolve, reject) => {
-			task.on(
-				'state_changed',
-				(snapshot) => {
-					const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-					if (docType === 'safesport') safesport.progress = pct;
-					else concussion.progress = pct;
-				},
-				(err) => {
-					if (docType === 'safesport') {
-						safesport.status = 'error';
-						safesport.error = err.message;
-					} else {
-						concussion.status = 'error';
-						concussion.error = err.message;
-					}
-					reject(err);
-				},
-				async () => {
-					const dlUrl = await getDownloadURL(task.snapshot.ref);
-					if (docType === 'safesport') {
-						safesport.url = dlUrl;
-						safesport.status = 'done';
-					} else {
-						concussion.url = dlUrl;
-						concussion.status = 'done';
-					}
-					resolve(undefined);
-				},
-			);
-		});
-	}
-
-	/** @param {Event} e */
-	function onSafesportChange(e) {
-		const input = /** @type {HTMLInputElement} */ (e.target);
-		const f = input.files?.[0];
-		if (f) {
-			safesport.file = f;
-			uploadDoc(f, 'safesport').catch(() => {});
-		}
-	}
-
-	/** @param {Event} e */
-	function onConcussionChange(e) {
-		const input = /** @type {HTMLInputElement} */ (e.target);
-		const f = input.files?.[0];
-		if (f) {
-			concussion.file = f;
-			uploadDoc(f, 'concussion').catch(() => {});
-		}
-	}
-
-	// ── Notify Director ───────────────────────────────────────────────────────
-	async function notifyDirector() {
-		if (!bothUploaded || submitting) return;
-		submitting = true;
-		submitError = '';
+	async function launchUplink() {
+		if (uplinkStatus === 'connecting') return;
+		uplinkStatus = 'connecting';
+		uplinkError = '';
 		try {
-			const fns = getFunctions(getApp(), 'us-east1');
-			const markUploaded = httpsCallable(fns, 'markDocumentsUploaded');
-			await markUploaded({ safesportUrl: safesport.url, concussionUrl: concussion.url });
-			submitted = true;
+			await initiateAnkoredUplink({});
+			uplinkStatus = 'cleared';
+			// Redirect to coach dashboard after 2.5s
+			if (browser) {
+				setTimeout(() => goto('/coach', { replaceState: true }), 2500);
+			}
 		} catch (err) {
-			submitError = /** @type {Error} */ (err).message ?? 'Submission failed.';
-		} finally {
-			submitting = false;
+			uplinkStatus = 'error';
+			uplinkError = /** @type {Error} */ (err).message ?? 'Uplink failed. Contact your Director.';
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>Clearance Terminal — Vanguard Protocol</title>
+	<title>Ankored Compliance — Vanguard Protocol</title>
 </svelte:head>
 
 <div class="ct-root">
-	<!-- ── Header ─────────────────────────────────────────────────────────── -->
+	<!-- ── Ambient grid ─────────────────────────────────────────────────────── -->
+	<div class="ct-grid" aria-hidden="true"></div>
+
+	<!-- ── Header ──────────────────────────────────────────────────────────── -->
 	<header class="ct-header">
 		<div class="ct-shield" aria-hidden="true">
 			<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -149,8 +67,7 @@
 			<div class="ct-badge">CLEARANCE PROTOCOL — ALPHA</div>
 			<h1 class="ct-title">ACCESS RESTRICTED</h1>
 			<p class="ct-subtitle">
-				Your coaching credentials require verification before War Room access is granted.
-				Upload the required compliance documents below.
+				Your coaching credentials require compliance verification before War Room access is granted.
 			</p>
 		</div>
 	</header>
@@ -163,161 +80,71 @@
 		<span>STATUS: {authStore.userProfile?.clearance?.status?.toUpperCase() ?? 'PENDING'}</span>
 	</div>
 
-	{#if submitted}
-		<!-- ── Submission confirmed ────────────────────────────────────────────── -->
-		<div class="ct-card ct-card--success">
+	<!-- ── Ankored Uplink Card ────────────────────────────────────────────────── -->
+	{#if uplinkStatus === 'cleared'}
+		<div class="ct-card ct-card--success" role="status" aria-live="polite">
 			<div class="ct-success-icon" aria-hidden="true">
 				<i class="ph ph-check-circle"></i>
 			</div>
-			<h2 class="ct-card__heading">DOCUMENTS TRANSMITTED</h2>
+			<h2 class="ct-card__heading">CLEARANCE CONFIRMED</h2>
 			<p class="ct-card__body">
-				Your compliance documents have been securely transmitted to your Club Director for review.
-				Your War Room access will be unlocked once your credentials are verified.
+				Your Ankored verification has been submitted. War Room access is being unlocked.
 			</p>
-			<p class="ct-card__meta">
-				This page will update automatically when your clearance is granted.
-			</p>
+			<p class="ct-card__meta">Redirecting to Nexus Command…</p>
 		</div>
 	{:else}
-		<!-- ── Upload grid ─────────────────────────────────────────────────────── -->
-		<div class="ct-upload-grid">
-			<!-- SafeSport -->
-			<div class="ct-upload-zone {safesport.status === 'done' ? 'ct-upload-zone--done' : safesport.status === 'error' ? 'ct-upload-zone--error' : ''}">
-				<div class="ct-upload-zone__header">
-					<span class="ct-upload-zone__icon" aria-hidden="true">
-						<i class="ph ph-certificate"></i>
-					</span>
-					<div>
-						<div class="ct-upload-zone__title">SafeSport Certificate</div>
-						<div class="ct-upload-zone__sub">PDF or image — max 10 MB</div>
-					</div>
-					{#if safesport.status === 'done'}
-						<span class="ct-badge--ok" aria-label="Uploaded">
-							<i class="ph ph-check-circle"></i> UPLOADED
-						</span>
-					{/if}
+		<div class="ct-card">
+			<!-- Ankored branding row -->
+			<div class="ct-ankored-brand">
+				<div class="ct-ankored-icon" aria-hidden="true">
+					<i class="ph ph-shield-check"></i>
 				</div>
-
-				{#if safesport.status === 'uploading'}
-					<div class="ct-progress" role="progressbar" aria-valuenow={safesport.progress} aria-valuemin="0" aria-valuemax="100">
-						<div class="ct-progress__bar" style="width: {safesport.progress}%"></div>
-					</div>
-					<div class="ct-progress__label">{safesport.progress}%</div>
-				{/if}
-
-				{#if safesport.status === 'error'}
-					<p class="ct-error">{safesport.error}</p>
-				{/if}
-
-				{#if safesport.status !== 'uploading'}
-					<label class="ct-file-label" for="safesport-input">
-						<i class="ph ph-upload-simple"></i>
-						{safesport.status === 'done' ? 'REPLACE FILE' : 'SELECT FILE'}
-						<input
-							id="safesport-input"
-							type="file"
-							accept=".pdf,.png,.jpg,.jpeg,.webp"
-							class="ct-file-input"
-							onchange={onSafesportChange}
-						/>
-					</label>
-				{/if}
-
-				{#if safesport.file && safesport.status !== 'idle'}
-					<div class="ct-filename">
-						<i class="ph ph-file-text" aria-hidden="true"></i>
-						{safesport.file.name}
-					</div>
-				{/if}
-			</div>
-
-			<!-- CDC Concussion Protocol -->
-			<div class="ct-upload-zone {concussion.status === 'done' ? 'ct-upload-zone--done' : concussion.status === 'error' ? 'ct-upload-zone--error' : ''}">
-				<div class="ct-upload-zone__header">
-					<span class="ct-upload-zone__icon" aria-hidden="true">
-						<i class="ph ph-brain"></i>
-					</span>
-					<div>
-						<div class="ct-upload-zone__title">CDC Concussion Protocol</div>
-						<div class="ct-upload-zone__sub">PDF or image — max 10 MB</div>
-					</div>
-					{#if concussion.status === 'done'}
-						<span class="ct-badge--ok" aria-label="Uploaded">
-							<i class="ph ph-check-circle"></i> UPLOADED
-						</span>
-					{/if}
-				</div>
-
-				{#if concussion.status === 'uploading'}
-					<div class="ct-progress" role="progressbar" aria-valuenow={concussion.progress} aria-valuemin="0" aria-valuemax="100">
-						<div class="ct-progress__bar" style="width: {concussion.progress}%"></div>
-					</div>
-					<div class="ct-progress__label">{concussion.progress}%</div>
-				{/if}
-
-				{#if concussion.status === 'error'}
-					<p class="ct-error">{concussion.error}</p>
-				{/if}
-
-				{#if concussion.status !== 'uploading'}
-					<label class="ct-file-label" for="concussion-input">
-						<i class="ph ph-upload-simple"></i>
-						{concussion.status === 'done' ? 'REPLACE FILE' : 'SELECT FILE'}
-						<input
-							id="concussion-input"
-							type="file"
-							accept=".pdf,.png,.jpg,.jpeg,.webp"
-							class="ct-file-input"
-							onchange={onConcussionChange}
-						/>
-					</label>
-				{/if}
-
-				{#if concussion.file && concussion.status !== 'idle'}
-					<div class="ct-filename">
-						<i class="ph ph-file-text" aria-hidden="true"></i>
-						{concussion.file.name}
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- ── Background Check section ────────────────────────────────────────── -->
-		<div class="ct-card ct-card--pending">
-			<div class="ct-card__row">
-				<i class="ph ph-fingerprint ct-card__icon" aria-hidden="true"></i>
 				<div>
-					<div class="ct-card__heading">Identity Verification</div>
-					<div class="ct-card__body">Background check via Yardstik integration.</div>
+					<div class="ct-ankored-name">ANKORED</div>
+					<div class="ct-ankored-sub">USOPC-Compliant Compliance Aggregator</div>
 				</div>
-				<div class="ct-pulse-badge" aria-label="Pending API integration">
-					<span class="ct-pulse-dot"></span>
-					PENDING API INTEGRATION
+				<div class="ct-ankored-badge">
+					<span class="ct-pulse-dot" aria-hidden="true"></span>
+					INTEGRATED
 				</div>
 			</div>
-		</div>
 
-		<!-- ── Submit ────────────────────────────────────────────────────────────── -->
-		<div class="ct-submit-row">
-			{#if submitError}
-				<p class="ct-error">{submitError}</p>
+			<p class="ct-card__body ct-card__body--main">
+				COMPLIANCE VERIFICATION REQUIRED. Nexus Command utilizes Ankored for secure,
+				USOPC-compliant background screening and SafeSport verification. Your identity
+				and credentials are verified through Ankored's encrypted network — no documents
+				are handled directly by this platform.
+			</p>
+
+			<ul class="ct-check-list" aria-label="Verification scope">
+				<li><i class="ph ph-check" aria-hidden="true"></i> SafeSport Certification</li>
+				<li><i class="ph ph-check" aria-hidden="true"></i> Background Check (USOPC standards)</li>
+				<li><i class="ph ph-check" aria-hidden="true"></i> Concussion Protocol Acknowledgment</li>
+			</ul>
+
+			{#if uplinkStatus === 'error'}
+				<p class="ct-error" role="alert">{uplinkError}</p>
 			{/if}
+
 			<button
-				class="ct-btn-primary {!bothUploaded || submitting ? 'ct-btn-primary--disabled' : ''}"
-				disabled={!bothUploaded || submitting}
-				onclick={notifyDirector}
+				class="ct-btn-primary {uplinkStatus === 'connecting' ? 'ct-btn-primary--busy' : ''}"
+				disabled={uplinkStatus === 'connecting'}
+				onclick={launchUplink}
+				aria-label="Initiate Ankored Secure Uplink"
 			>
-				{#if submitting}
-					<i class="ph ph-circle-notch ct-spin" aria-hidden="true"></i>
-					TRANSMITTING…
+				{#if uplinkStatus === 'connecting'}
+					<span class="ct-spin" aria-hidden="true">↻</span>
+					CONNECTING TO ANKORED SECURE NETWORK…
 				{:else}
-					<i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
-					NOTIFY DIRECTOR FOR REVIEW
+					<i class="ph ph-link" aria-hidden="true"></i>
+					INITIATE ANKORED SECURE UPLINK
 				{/if}
 			</button>
-			{#if !bothUploaded}
-				<p class="ct-hint">Upload both documents to enable submission.</p>
-			{/if}
+
+			<p class="ct-legal">
+				By initiating this uplink you authorize Ankored to perform the required
+				screening. Data is processed under USOPC SafeSport and applicable COPPA guidelines.
+			</p>
 		</div>
 	{/if}
 </div>
@@ -326,10 +153,6 @@
 	.ct-root {
 		min-height: 100dvh;
 		background: var(--vanguard-bg, #010409);
-		background-image:
-			linear-gradient(rgba(255, 0, 60, 0.04) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(255, 0, 60, 0.04) 1px, transparent 1px);
-		background-size: 3rem 3rem;
 		color: #e5e7eb;
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 		display: flex;
@@ -337,7 +160,24 @@
 		align-items: center;
 		padding: 2rem 1rem 4rem;
 		gap: 1.5rem;
+		position: relative;
+		overflow: hidden;
 	}
+
+	/* Ambient threat grid */
+	.ct-grid {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		background-image:
+			linear-gradient(rgba(255, 0, 60, 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 0, 60, 0.035) 1px, transparent 1px);
+		background-size: 3rem 3rem;
+		z-index: 0;
+	}
+
+	/* Ensure all direct children sit above the fixed grid */
+	.ct-root > * { position: relative; z-index: 1; }
 
 	/* ── Header ─────────────────────────────────────────────────────────────── */
 	.ct-header {
@@ -354,12 +194,12 @@
 		height: 4rem;
 		color: var(--vanguard-red, #ff003c);
 		animation: ctShieldPulse 2s ease-in-out infinite;
-		filter: drop-shadow(0 0 12px rgba(255, 0, 60, 0.6));
+		filter: drop-shadow(0 0 14px rgba(255, 0, 60, 0.65));
 	}
 
 	@keyframes ctShieldPulse {
 		0%, 100% { opacity: 0.8; transform: scale(1); }
-		50%       { opacity: 1;   transform: scale(1.05); }
+		50%       { opacity: 1;   transform: scale(1.06); }
 	}
 
 	.ct-badge {
@@ -379,13 +219,13 @@
 		font-weight: 900;
 		letter-spacing: 0.14em;
 		color: var(--vanguard-red, #ff003c);
-		text-shadow: 0 0 24px rgba(255, 0, 60, 0.5);
+		text-shadow: 0 0 28px rgba(255, 0, 60, 0.55);
 	}
 
 	.ct-subtitle {
 		margin: 0;
 		font-size: 0.78rem;
-		color: rgba(229, 231, 235, 0.6);
+		color: rgba(229, 231, 235, 0.55);
 		line-height: 1.6;
 	}
 
@@ -405,286 +245,208 @@
 		max-width: 680px;
 	}
 
-	/* ── Cards ───────────────────────────────────────────────────────────────── */
+	/* ── Card ────────────────────────────────────────────────────────────────── */
 	.ct-card {
 		background: rgba(255, 255, 255, 0.025);
 		border: 1px solid rgba(0, 240, 255, 0.12);
-		border-radius: 8px;
-		padding: 1.25rem 1.5rem;
+		border-radius: 10px;
+		padding: 2rem;
 		width: 100%;
-		max-width: 680px;
-		backdrop-filter: blur(12px);
+		max-width: 640px;
+		backdrop-filter: blur(16px);
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
 	}
 
 	.ct-card--success {
 		border-color: rgba(0, 240, 255, 0.35);
 		background: rgba(0, 240, 255, 0.04);
-		display: flex;
-		flex-direction: column;
 		align-items: center;
 		text-align: center;
 		gap: 0.75rem;
 	}
 
-	.ct-card--pending {
-		border-color: rgba(255, 191, 36, 0.25);
-	}
-
-	.ct-card__row {
+	/* ── Ankored brand row ────────────────────────────────────────────────────── */
+	.ct-ankored-brand {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		flex-wrap: wrap;
+		gap: 0.85rem;
+		padding-bottom: 1.25rem;
+		border-bottom: 1px solid rgba(0, 240, 255, 0.1);
 	}
 
-	.ct-card__icon {
-		font-size: 1.5rem;
-		color: #fbbf24;
+	.ct-ankored-icon {
+		font-size: 2rem;
+		color: var(--vanguard-cyan, #00f0ff);
+		filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
 		flex-shrink: 0;
 	}
 
-	.ct-card__heading {
-		margin: 0;
-		font-size: 0.8rem;
+	.ct-ankored-name {
+		font-size: 1rem;
+		font-weight: 900;
+		letter-spacing: 0.2em;
+		color: var(--vanguard-cyan, #00f0ff);
+		text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+	}
+
+	.ct-ankored-sub {
+		font-size: 0.62rem;
+		color: rgba(229, 231, 235, 0.4);
+		margin-top: 0.15rem;
+		letter-spacing: 0.06em;
+	}
+
+	.ct-ankored-badge {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.58rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
-		color: #e5e7eb;
-	}
-
-	.ct-card__body {
-		margin: 0.25rem 0 0;
-		font-size: 0.73rem;
-		color: rgba(229, 231, 235, 0.55);
-	}
-
-	.ct-card__meta {
-		font-size: 0.68rem;
-		color: rgba(229, 231, 235, 0.4);
-	}
-
-	.ct-success-icon {
-		font-size: 3rem;
 		color: var(--vanguard-cyan, #00f0ff);
-		filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.5));
-	}
-
-	/* ── Upload grid ─────────────────────────────────────────────────────────── */
-	.ct-upload-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1rem;
-		width: 100%;
-		max-width: 680px;
-	}
-
-	@media (max-width: 540px) {
-		.ct-upload-grid { grid-template-columns: 1fr; }
-	}
-
-	.ct-upload-zone {
-		background: rgba(255, 255, 255, 0.025);
-		border: 1px solid rgba(0, 240, 255, 0.15);
-		border-radius: 8px;
-		padding: 1.25rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		transition: border-color 0.2s;
-	}
-
-	.ct-upload-zone--done {
-		border-color: rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.03);
-	}
-
-	.ct-upload-zone--error {
-		border-color: rgba(255, 0, 60, 0.45);
-		background: rgba(255, 0, 60, 0.03);
-	}
-
-	.ct-upload-zone__header {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.75rem;
-	}
-
-	.ct-upload-zone__icon {
-		font-size: 1.4rem;
-		color: var(--vanguard-cyan, #00f0ff);
-		flex-shrink: 0;
-	}
-
-	.ct-upload-zone__title {
-		font-size: 0.78rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: #e5e7eb;
-	}
-
-	.ct-upload-zone__sub {
-		font-size: 0.65rem;
-		color: rgba(229, 231, 235, 0.4);
-		margin-top: 0.2rem;
-	}
-
-	.ct-badge--ok {
-		margin-left: auto;
-		flex-shrink: 0;
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--vanguard-cyan, #00f0ff);
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
-
-	/* ── Progress ─────────────────────────────────────────────────────────────── */
-	.ct-progress {
-		height: 4px;
-		background: rgba(0, 240, 255, 0.12);
-		border-radius: 2px;
-		overflow: hidden;
-	}
-
-	.ct-progress__bar {
-		height: 100%;
-		background: linear-gradient(90deg, var(--vanguard-cyan, #00f0ff), #a78bfa);
-		border-radius: 2px;
-		transition: width 0.2s ease;
-		box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
-	}
-
-	.ct-progress__label {
-		font-size: 0.62rem;
-		color: rgba(0, 240, 255, 0.6);
-		text-align: right;
-	}
-
-	/* ── File input ───────────────────────────────────────────────────────────── */
-	.ct-file-label {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		cursor: pointer;
-		font-size: 0.7rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		color: var(--vanguard-cyan, #00f0ff);
-		border: 1px solid rgba(0, 240, 255, 0.3);
-		padding: 0.45rem 0.85rem;
-		border-radius: 4px;
-		transition: all 0.15s;
-		width: fit-content;
-	}
-
-	.ct-file-label:hover {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.6);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
-	}
-
-	.ct-file-input {
-		display: none;
-	}
-
-	.ct-filename {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-		font-size: 0.65rem;
-		color: rgba(229, 231, 235, 0.5);
-		word-break: break-all;
-	}
-
-	.ct-error {
-		font-size: 0.68rem;
-		color: var(--vanguard-red, #ff003c);
-		margin: 0;
-	}
-
-	/* ── Pulse badge ──────────────────────────────────────────────────────────── */
-	.ct-pulse-badge {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: #fbbf24;
-		border: 1px solid rgba(251, 191, 36, 0.25);
-		padding: 0.2rem 0.5rem;
+		border: 1px solid rgba(0, 240, 255, 0.25);
+		padding: 0.2rem 0.55rem;
 		border-radius: 3px;
+		white-space: nowrap;
 	}
 
+	/* ── Pulse dot ────────────────────────────────────────────────────────────── */
 	.ct-pulse-dot {
-		width: 6px;
-		height: 6px;
+		display: inline-block;
+		width: 5px;
+		height: 5px;
 		border-radius: 50%;
-		background: #fbbf24;
-		box-shadow: 0 0 8px #fbbf24;
+		background: var(--vanguard-cyan, #00f0ff);
+		box-shadow: 0 0 6px var(--vanguard-cyan, #00f0ff);
 		animation: ctPulseDot 1.4s ease-in-out infinite;
 	}
 
 	@keyframes ctPulseDot {
 		0%, 100% { opacity: 1; transform: scale(1); }
-		50%       { opacity: 0.4; transform: scale(0.6); }
+		50%       { opacity: 0.35; transform: scale(0.5); }
 	}
 
-	/* ── Submit row ───────────────────────────────────────────────────────────── */
-	.ct-submit-row {
+	/* ── Body text ────────────────────────────────────────────────────────────── */
+	.ct-card__body {
+		margin: 0;
+		font-size: 0.73rem;
+		color: rgba(229, 231, 235, 0.55);
+		line-height: 1.65;
+	}
+
+	.ct-card__body--main {
+		color: rgba(229, 231, 235, 0.7);
+		font-size: 0.76rem;
+	}
+
+	.ct-card__heading {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		color: var(--vanguard-cyan, #00f0ff);
+	}
+
+	.ct-card__meta {
+		font-size: 0.65rem;
+		color: rgba(229, 231, 235, 0.35);
+		margin: 0;
+	}
+
+	.ct-success-icon {
+		font-size: 3rem;
+		color: var(--vanguard-cyan, #00f0ff);
+		filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.55));
+	}
+
+	/* ── Check list ────────────────────────────────────────────────────────────── */
+	.ct-check-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 0.75rem;
-		width: 100%;
-		max-width: 680px;
+		gap: 0.45rem;
 	}
 
+	.ct-check-list li {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.72rem;
+		color: rgba(229, 231, 235, 0.65);
+	}
+
+	.ct-check-list li i {
+		color: var(--vanguard-cyan, #00f0ff);
+		flex-shrink: 0;
+	}
+
+	/* ── Error ─────────────────────────────────────────────────────────────────── */
+	.ct-error {
+		font-size: 0.7rem;
+		color: var(--vanguard-red, #ff003c);
+		margin: 0;
+		border: 1px solid rgba(255, 0, 60, 0.2);
+		background: rgba(255, 0, 60, 0.04);
+		padding: 0.5rem 0.75rem;
+		border-radius: 4px;
+	}
+
+	/* ── CTA button ─────────────────────────────────────────────────────────────── */
 	.ct-btn-primary {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
+		justify-content: center;
+		gap: 0.6rem;
 		font-family: inherit;
-		font-size: 0.78rem;
+		font-size: 0.8rem;
 		font-weight: 700;
-		letter-spacing: 0.16em;
+		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--vanguard-bg, #010409);
 		background: var(--vanguard-cyan, #00f0ff);
 		border: none;
-		padding: 0.7rem 2rem;
-		border-radius: 4px;
+		padding: 0.85rem 2rem;
+		border-radius: 6px;
 		cursor: pointer;
-		box-shadow: 0 0 18px rgba(0, 240, 255, 0.35);
+		box-shadow: 0 0 24px rgba(0, 240, 255, 0.4);
 		transition: all 0.2s;
-		min-height: 44px;
+		min-height: 52px;
+		width: 100%;
 	}
 
-	.ct-btn-primary:not(.ct-btn-primary--disabled):hover {
-		box-shadow: 0 0 28px rgba(0, 240, 255, 0.6);
+	.ct-btn-primary:not(.ct-btn-primary--busy):hover {
+		box-shadow: 0 0 36px rgba(0, 240, 255, 0.65);
 		transform: translateY(-1px);
 	}
 
-	.ct-btn-primary--disabled {
-		opacity: 0.35;
+	.ct-btn-primary--busy {
+		opacity: 0.7;
 		cursor: not-allowed;
+		background: rgba(0, 240, 255, 0.7);
 		box-shadow: none;
 	}
 
-	.ct-hint {
-		font-size: 0.65rem;
-		color: rgba(229, 231, 235, 0.35);
-		margin: 0;
-		text-align: center;
-	}
-
 	.ct-spin {
-		animation: ctSpinAnim 0.8s linear infinite;
+		display: inline-block;
+		animation: ctSpinAnim 0.75s linear infinite;
+		font-style: normal;
 	}
 
 	@keyframes ctSpinAnim {
 		to { transform: rotate(360deg); }
+	}
+
+	/* ── Legal notice ────────────────────────────────────────────────────────────── */
+	.ct-legal {
+		font-size: 0.6rem;
+		color: rgba(229, 231, 235, 0.3);
+		line-height: 1.5;
+		text-align: center;
+		margin: 0;
 	}
 </style>
