@@ -1,12 +1,12 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * verifyDocument.js — PII "Burn" Protocol
- * ─────────────────────────────────────────
+ * verifyDocument.js â€” PII "Burn" Protocol
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Cloud Functions implementing the Vanguard Data Minimization policy for
  * sensitive player documents (birth certificates, photo IDs, medical forms).
  *
  * THE BURN PROTOCOL
- * ─────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * When a director verifies a player's sensitive document:
  *  1. Log the verification event (DOCUMENT_VERIFIED) to audit_logs.
  *  2. Mark the document as verified on the user's Firestore profile.
@@ -20,9 +20,9 @@
  *   No one stores thousands of birth certificates long-term.
  *
  * Exports:
- *   verifyDocument            — onCall: director verifies a doc, queues burn
- *   processPendingDocDeletions — onSchedule: hourly burn executor
- *   getRetentionReport        — onCall: director fetches pending deletions
+ *   verifyDocument            â€” onCall: director verifies a doc, queues burn
+ *   processPendingDocDeletions â€” onSchedule: hourly burn executor
+ *   getRetentionReport        â€” onCall: director fetches pending deletions
  */
 
 'use strict';
@@ -33,25 +33,25 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
 const BURN_DELAY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
 
-// ─────────────────────────────────────────────────────────────────────────────
-// verifyDocument — onCall
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// verifyDocument â€” onCall
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Director-callable function to verify a player document and queue its deletion.
  *
  * Input:
- *   targetEmail   string — player's email key (users/{email} doc)
- *   documentType  string — e.g. 'BIRTH_CERTIFICATE', 'PHOTO_ID', 'MEDICAL_FORM'
- *   storagePath   string — full Cloud Storage path of the private file
- *   notes         string — optional verification notes (e.g. "Reviewed in person")
+ *   targetEmail   string â€” player's email key (users/{email} doc)
+ *   documentType  string â€” e.g. 'BIRTH_CERTIFICATE', 'PHOTO_ID', 'MEDICAL_FORM'
+ *   storagePath   string â€” full Cloud Storage path of the private file
+ *   notes         string â€” optional verification notes (e.g. "Reviewed in person")
  *
  * Returns:
  *   { success, pendingDeletionId, scheduledDeleteAt (ISO string) }
@@ -87,7 +87,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
     );
   }
 
-  // ── Resolve target player profile ────────────────────────────────────────
+  // â”€â”€ Resolve target player profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const playerSnap = await db.collection('users').doc(targetEmail).get();
   if (!playerSnap.exists) {
     throw new HttpsError('not-found', `Player profile not found for "${targetEmail}".`);
@@ -95,7 +95,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
   const playerData = playerSnap.data();
   const playerTenantId = playerData.clubId || playerData.tenantId || '';
 
-  // ── Tenant isolation guard ───────────────────────────────────────────────
+  // â”€â”€ Tenant isolation guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const isPlatformAdmin = ['global_admin', 'super_admin'].includes(actorRole);
   if (!isPlatformAdmin && actorTenantId && playerTenantId && actorTenantId !== playerTenantId) {
     // Log cross-tenant access attempt before rejecting.
@@ -116,7 +116,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
 
   const effectiveTenantId = playerTenantId || actorTenantId;
 
-  // ── AUDIT LOG — write FIRST ──────────────────────────────────────────────
+  // â”€â”€ AUDIT LOG â€” write FIRST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   await logActivity(ACTIVITY_TYPE.DOCUMENT_VERIFIED, {
     actorUid,
     actorEmail,
@@ -129,7 +129,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
     extra: {storagePath, burnScheduled: true},
   });
 
-  // ── Mark document as verified in Firestore ───────────────────────────────
+  // â”€â”€ Mark document as verified in Firestore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const verifiedAt = admin.firestore.FieldValue.serverTimestamp();
   await db.collection('users').doc(targetEmail).set(
       {
@@ -146,7 +146,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
       {merge: true},
   );
 
-  // ── Queue burn deletion ─────────────────────────────────────────────────
+  // â”€â”€ Queue burn deletion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const scheduledDeleteAt = new Date(Date.now() + BURN_DELAY_MS);
 
   const deletionRef = await db.collection('pending_deletions').add({
@@ -177,9 +177,9 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
   };
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// processPendingDocDeletions — scheduled every 6 hours
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// processPendingDocDeletions â€” scheduled every 6 hours
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Scheduled executor: delete Storage files whose 24-hour burn window has elapsed.
@@ -191,7 +191,7 @@ exports.verifyDocument = onCall({region: REGION}, async (request) => {
  * Actions:
  *   1. Delete the file from Firebase Storage.
  *   2. Mark the pending_deletions doc as 'completed' (or 'failed').
- *   3. Update the user's documents map: pendingDeletion → false, storageDeleted → true.
+ *   3. Update the user's documents map: pendingDeletion â†’ false, storageDeleted â†’ true.
  *   4. Log DOCUMENT_BURNED to audit_logs.
  */
 exports.processPendingDocDeletions = onSchedule(
@@ -250,7 +250,7 @@ exports.processPendingDocDeletions = onSchedule(
             completedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
 
-          // Audit log — fire-and-forget.
+          // Audit log â€” fire-and-forget.
           logActivity(ACTIVITY_TYPE.DOCUMENT_BURNED, {
             actorUid: rec.requestedByUid || 'scheduled-function',
             actorEmail: rec.requestedByEmail || null,
@@ -276,9 +276,9 @@ exports.processPendingDocDeletions = onSchedule(
     },
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getRetentionReport — onCall (director only)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// getRetentionReport â€” onCall (director only)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Return the pending_deletions list for the caller's tenant.

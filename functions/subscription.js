@@ -1,7 +1,7 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * subscription.js — Marketing / Stripe Checkout Stub
- * ────────────────────────────────────────────────────
+ * subscription.js â€” Marketing / Stripe Checkout Stub
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * PRODUCTION PATH: When going live, replace the stub block in `createSubscription`
  * with real Stripe Checkout Session creation:
  *
@@ -20,13 +20,13 @@
  * Firestore document so the UI shows a success state without real payment.
  * Also writes an immutable subscription_log entry for billing audit purposes.
  *
- * TIER → Firestore field map:
- *   basecamp   → planTier: 'base_camp',   maxPlayers: 30
- *   pro        → planTier: 'pro',          maxPlayers: null (unlimited)
- *   enterprise → planTier: 'enterprise',   maxPlayers: null
+ * TIER â†’ Firestore field map:
+ *   basecamp   â†’ planTier: 'base_camp',   maxPlayers: 30
+ *   pro        â†’ planTier: 'pro',          maxPlayers: null (unlimited)
+ *   enterprise â†’ planTier: 'enterprise',   maxPlayers: null
  *
  * Exports:
- *   createSubscription — onCall
+ *   createSubscription â€” onCall
  */
 
 'use strict';
@@ -35,7 +35,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
 const TIER_CONFIG = {
@@ -70,7 +70,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
   const config = TIER_CONFIG[tierId];
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  // ── STUB: Directly activate subscription in Firestore ─────────────────────
+  // â”€â”€ STUB: Directly activate subscription in Firestore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // PRODUCTION: Remove this block and return Stripe session URL instead.
   const orgRef = db.doc(`organizations/${tenantId}`);
   await orgRef.set({
@@ -99,6 +99,6 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
     status: 'activated',
     planTier: config.planTier,
     label: config.label,
-    // sessionUrl: null — set when Stripe integration is live
+    // sessionUrl: null â€” set when Stripe integration is live
   };
 });

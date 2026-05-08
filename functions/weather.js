@@ -1,27 +1,27 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * weather.js — AEGIS Weather & Safety Protocol
- * ──────────────────────────────────────────────
+ * weather.js â€” AEGIS Weather & Safety Protocol
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Cloud Function proxy for real-time weather and lightning risk data.
  *
  * Data sources (100% free, no API keys required):
- *   1. Open-Meteo API  — current conditions, WMO weather codes, precipitation
+ *   1. Open-Meteo API  â€” current conditions, WMO weather codes, precipitation
  *      https://api.open-meteo.com/v1/forecast
- *   2. NWS API         — official US weather alerts (severe thunderstorm warnings)
+ *   2. NWS API         â€” official US weather alerts (severe thunderstorm warnings)
  *      https://api.weather.gov/alerts/active?point={lat},{lng}
  *
  * Lightning risk is inferred from:
- *   • NWS active alert event type (WARNING > WATCH > ADVISORY)
- *   • WMO weather code (95/96/99 = thunderstorm at location)
- *   • Precipitation intensity combined with thunderstorm codes
+ *   â€¢ NWS active alert event type (WARNING > WATCH > ADVISORY)
+ *   â€¢ WMO weather code (95/96/99 = thunderstorm at location)
+ *   â€¢ Precipitation intensity combined with thunderstorm codes
  *
  * AlertLevel mapping returned to client:
- *   NORMAL  — no thunder indicators, all clear
- *   CAUTION — thunderstorm watch / distant storm (10-20 mi estimated range)
- *   DANGER  — thunderstorm warning / storm at location (<10 mi estimated range)
+ *   NORMAL  â€” no thunder indicators, all clear
+ *   CAUTION â€” thunderstorm watch / distant storm (10-20 mi estimated range)
+ *   DANGER  â€” thunderstorm warning / storm at location (<10 mi estimated range)
  *
  * Exports:
- *   getWeatherConditions — onCall: fetch conditions for a lat/lng coordinate
+ *   getWeatherConditions â€” onCall: fetch conditions for a lat/lng coordinate
  */
 
 'use strict';
@@ -31,9 +31,9 @@ const logger = require('firebase-functions/logger');
 const https = require('https');
 const http = require('http');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 
-// ── WMO weather code reference ───────────────────────────────────────────────
+// â”€â”€ WMO weather code reference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // https://open-meteo.com/en/docs#weathervariables
 
 const WMO_LABELS = {
@@ -53,7 +53,7 @@ const THUNDER_AT_LOCATION = new Set([95, 96, 99]);
 // WMO codes that indicate possible distant/overhead storm.
 const THUNDER_NEARBY = new Set([17, 29, 91, 92, 93, 94]);
 
-// ── NWS alert severity mapping ───────────────────────────────────────────────
+// â”€â”€ NWS alert severity mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Event names that represent the DANGER threshold.
 const NWS_DANGER_EVENTS = [
   'severe thunderstorm warning',
@@ -70,7 +70,7 @@ const NWS_CAUTION_EVENTS = [
   'lightning safety awareness',
 ];
 
-// ── Utilities ────────────────────────────────────────────────────────────────
+// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
@@ -105,7 +105,7 @@ function fetchJson(url) {
  * @return {string}
  */
 function windDir(deg) {
-  if (!isFinite(deg)) return '—';
+  if (!isFinite(deg)) return 'â€”';
   const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
@@ -162,14 +162,14 @@ function parseNwsAlerts(nwsJson) {
 function estimateLightningMiles(wmoCode, nwsLevel) {
   if (THUNDER_AT_LOCATION.has(wmoCode)) return 2; // at / near location
   if (THUNDER_NEARBY.has(wmoCode)) return 15;      // in vicinity
-  if (nwsLevel === 'DANGER') return 5;             // NWS warning → close
-  if (nwsLevel === 'CAUTION') return 14;           // NWS watch → area threat
+  if (nwsLevel === 'DANGER') return 5;             // NWS warning â†’ close
+  if (nwsLevel === 'CAUTION') return 14;           // NWS watch â†’ area threat
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getWeatherConditions — onCall
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// getWeatherConditions â€” onCall
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Fetch live weather conditions and lightning risk for a coordinate.
@@ -203,7 +203,7 @@ exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
   const latRound = Math.round(lat * 10000) / 10000;
   const lngRound = Math.round(lng * 10000) / 10000;
 
-  // ── Fetch in parallel ───────────────────────────────────────────────────
+  // â”€â”€ Fetch in parallel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openMeteoUrl = [
     `https://api.open-meteo.com/v1/forecast`,
     `?latitude=${latRound}&longitude=${lngRound}`,
@@ -220,7 +220,7 @@ exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
     fetchJson(nwsUrl),
   ]);
 
-  // ── Parse Open-Meteo ────────────────────────────────────────────────────
+  // â”€â”€ Parse Open-Meteo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let current = null;
   let wmoCode = 0;
   if (omResult.status === 'fulfilled') {
@@ -241,7 +241,7 @@ exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
     logger.warn('[getWeatherConditions] Open-Meteo failed', {err: omResult.reason?.message});
   }
 
-  // ── Parse NWS ──────────────────────────────────────────────────────────
+  // â”€â”€ Parse NWS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const nwsAlert = nwsResult.status === 'fulfilled'
       ? parseNwsAlerts(nwsResult.value)
       : {level: null, event: null, description: null, expires: null};
@@ -250,7 +250,7 @@ exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
     logger.warn('[getWeatherConditions] NWS failed', {err: nwsResult.reason?.message});
   }
 
-  // ── Determine alert level ───────────────────────────────────────────────
+  // â”€â”€ Determine alert level â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let alertLevel = 'NORMAL';
   if (THUNDER_AT_LOCATION.has(wmoCode) || nwsAlert.level === 'DANGER') {
     alertLevel = 'DANGER';
@@ -260,7 +260,7 @@ exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
 
   const lightningMiles = estimateLightningMiles(wmoCode, nwsAlert.level);
 
-  // ── Build GO/NO-GO deployment status ────────────────────────────────────
+  // â”€â”€ Build GO/NO-GO deployment status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const tempF = current?.temperatureF ?? 72;
   const windMph = current?.windMph ?? 0;
   const precipProb = current?.precipProbability ?? 0;

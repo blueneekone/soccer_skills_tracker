@@ -1,15 +1,15 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
  * audit.js
- * ────────
- * EPIC 5 — TASK 5.4: Sensitive Document Safeguards
+ * â”€â”€â”€â”€â”€â”€â”€â”€
+ * EPIC 5 â€” TASK 5.4: Sensitive Document Safeguards
  *
  * Exports
- * ───────
- *   getSensitiveDocumentUrl  — Director-only signed URL generator for private
+ * â”€â”€â”€â”€â”€â”€â”€
+ *   getSensitiveDocumentUrl  â€” Director-only signed URL generator for private
  *                              player documents (birth certificates, photo IDs).
  *
- * ─── Zero-Trust Architecture ─────────────────────────────────────────────────
+ * â”€â”€â”€ Zero-Trust Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  *   Firebase Storage rules set `allow read: if false` on the private/ path.
  *   The ONLY way to read private documents is through this Cloud Function, which:
@@ -19,22 +19,22 @@
  *     3. Confirms the document metadata is on the player's profile
  *     4. Writes an IMMUTABLE audit_logs entry BEFORE generating the URL
  *     5. Generates a 5-minute signed URL via Admin SDK (bypasses Storage rules)
- *     6. Returns the signed URL — the client never touches Storage directly
+ *     6. Returns the signed URL â€” the client never touches Storage directly
  *
  *   This design means:
- *     • Every document access is logged, even if the director never opens the URL
- *     • The audit log is written first — impossible to access without a log entry
- *     • The signed URL expires in 5 minutes, limiting the exposure window
- *     • Cross-tenant access is mathematically impossible (tenantId check)
+ *     â€¢ Every document access is logged, even if the director never opens the URL
+ *     â€¢ The audit log is written first â€” impossible to access without a log entry
+ *     â€¢ The signed URL expires in 5 minutes, limiting the exposure window
+ *     â€¢ Cross-tenant access is mathematically impossible (tenantId check)
  *
- * ─── Storage Path Structure ──────────────────────────────────────────────────
+ * â”€â”€â”€ Storage Path Structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  *   Private docs: /tenants/{tenantId}/players/{uid}/private/{fileName}
  *   Public docs:  /tenants/{tenantId}/players/{uid}/public/{fileName}
  *
  *   {uid} = Firebase Auth UID (resolved from users/{email} via profile.uid)
  *
- * ─── Signed URL Prerequisites ────────────────────────────────────────────────
+ * â”€â”€â”€ Signed URL Prerequisites â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  *   The Firebase Functions service account must have the IAM role:
  *     "Service Account Token Creator" (roles/iam.serviceAccountTokenCreator)
@@ -44,17 +44,17 @@
  *     --member="serviceAccount:PROJECT_ID@appspot.gserviceaccount.com" \
  *     --role="roles/iam.serviceAccountTokenCreator"
  *
- * ─── Callable Payload ────────────────────────────────────────────────────────
+ * â”€â”€â”€ Callable Payload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  *   Request:
- *     targetUserKey   string   — lowercase email key of the player (users/ doc ID)
- *     documentType    string   — 'BIRTH_CERTIFICATE' | 'PHOTO_ID' | 'MEDICAL_FORM' | custom
- *     fileName        string   — file name within the private/ folder
+ *     targetUserKey   string   â€” lowercase email key of the player (users/ doc ID)
+ *     documentType    string   â€” 'BIRTH_CERTIFICATE' | 'PHOTO_ID' | 'MEDICAL_FORM' | custom
+ *     fileName        string   â€” file name within the private/ folder
  *
  *   Response:
- *     signedUrl       string   — 5-minute signed read URL
- *     expiresAt       string   — ISO-8601 expiry timestamp
- *     auditLogId      string   — Firestore doc ID of the audit event
+ *     signedUrl       string   â€” 5-minute signed read URL
+ *     expiresAt       string   â€” ISO-8601 expiry timestamp
+ *     auditLogId      string   â€” Firestore doc ID of the audit event
  */
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
@@ -62,7 +62,7 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const SIGNED_URL_TTL_MINUTES = 5;
 
 const ALLOWED_DOCUMENT_TYPES = new Set([
@@ -74,14 +74,14 @@ const ALLOWED_DOCUMENT_TYPES = new Set([
   'CUSTOM',
 ]);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// getSensitiveDocumentUrl — onCall
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// getSensitiveDocumentUrl â€” onCall
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.getSensitiveDocumentUrl = onCall(
     {region: REGION},
     async (request) => {
-      // ── Auth guard ────────────────────────────────────────────────────────
+      // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!request.auth) {
         throw new HttpsError(
             'unauthenticated',
@@ -106,7 +106,7 @@ exports.getSensitiveDocumentUrl = onCall(
         );
       }
 
-      // ── Input validation ──────────────────────────────────────────────────
+      // â”€â”€ Input validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const {targetUserKey: rawTarget, documentType: rawDocType, fileName: rawFileName} =
         request.data || {};
 
@@ -137,7 +137,7 @@ exports.getSensitiveDocumentUrl = onCall(
         );
       }
 
-      // ── Resolve player profile ────────────────────────────────────────────
+      // â”€â”€ Resolve player profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const firestore = admin.firestore();
       const playerSnap = await firestore.collection('users').doc(targetUserKey).get();
 
@@ -152,10 +152,10 @@ exports.getSensitiveDocumentUrl = onCall(
       const playerTenantId = playerData.tenantId || playerData.clubId || '';
       const playerUid = playerData.uid || playerData.firebaseUid || targetUserKey;
 
-      // ── Tenant cross-access guard ─────────────────────────────────────────
+      // â”€â”€ Tenant cross-access guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Platform admins bypass tenant check; directors must match the player's club.
       if (!isPlatformAdmin && actorTenantId !== playerTenantId) {
-        // Log the blocked attempt — always audit, even denials.
+        // Log the blocked attempt â€” always audit, even denials.
         logActivity(ACTIVITY_TYPE.VIEW_PII, {
           actorUid,
           actorEmail,
@@ -164,7 +164,7 @@ exports.getSensitiveDocumentUrl = onCall(
           tenantId: actorTenantId,
           documentType,
           ipAddress: request.rawRequest?.ip || 'unknown',
-          notes: 'ACCESS DENIED — cross-tenant attempt blocked',
+          notes: 'ACCESS DENIED â€” cross-tenant attempt blocked',
           extra: {playerTenantId, actorTenantId, fileName},
         });
         throw new HttpsError(
@@ -176,12 +176,12 @@ exports.getSensitiveDocumentUrl = onCall(
       // Effective tenant for path construction and logging
       const effectiveTenantId = isPlatformAdmin ? playerTenantId : actorTenantId;
 
-      // ── Resolve Storage path ──────────────────────────────────────────────
+      // â”€â”€ Resolve Storage path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Path: /tenants/{tenantId}/players/{uid}/private/{fileName}
       // We use playerUid (Firebase Auth UID) as the directory segment.
       const storagePath = `tenants/${effectiveTenantId}/players/${playerUid}/private/${fileName}`;
 
-      // ── Write audit log FIRST ─────────────────────────────────────────────
+      // â”€â”€ Write audit log FIRST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // The audit entry is committed BEFORE the signed URL is generated.
       // This guarantees an audit trail even if the caller never uses the URL.
       const auditRef = firestore.collection('audit_logs').doc();
@@ -210,7 +210,7 @@ exports.getSensitiveDocumentUrl = onCall(
         auditId, actorUid, targetUserKey, documentType,
       });
 
-      // ── Generate Signed URL ───────────────────────────────────────────────
+      // â”€â”€ Generate Signed URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Requires the Functions service account to have:
       //   IAM role: "Service Account Token Creator"
       const expiresAt = new Date(Date.now() + SIGNED_URL_TTL_MINUTES * 60 * 1000);
@@ -233,7 +233,7 @@ exports.getSensitiveDocumentUrl = onCall(
           action: 'read',
           expires: expiresAt,
           version: 'v4',
-          // Strictly limits what the URL can do — no write/delete access
+          // Strictly limits what the URL can do â€” no write/delete access
           extensionHeaders: {
             'x-goog-custom-audit-actor': actorUid,
             'x-goog-custom-audit-id': auditId,
@@ -243,7 +243,7 @@ exports.getSensitiveDocumentUrl = onCall(
       } catch (storageErr) {
         if (storageErr instanceof HttpsError) throw storageErr;
         // Storage errors (file not found, permission issues) are returned as
-        // internal errors — do not expose raw GCS error messages to the client.
+        // internal errors â€” do not expose raw GCS error messages to the client.
         logger.error('[getSensitiveDocumentUrl] storage error', storageErr.message);
         throw new HttpsError(
             'internal',

@@ -1,39 +1,39 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * dispatcher.js — Vanguard Push Notification Dispatcher
- * ───────────────────────────────────────────────────────
+ * dispatcher.js â€” Vanguard Push Notification Dispatcher
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Central hub for all FCM Web Push sends in the platform.
  *
  * ARCHITECTURE
- * ────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  sendVanguardPush(userEmail, payload, category)
- *    → reads users/{email}.preferences[category]
- *    → if false: silent drop
- *    → calls admin.messaging().sendEachForMulticast(tokens, notification)
- *    → prunes stale / invalid tokens from Firestore (dead token hygiene)
+ *    â†’ reads users/{email}.preferences[category]
+ *    â†’ if false: silent drop
+ *    â†’ calls admin.messaging().sendEachForMulticast(tokens, notification)
+ *    â†’ prunes stale / invalid tokens from Firestore (dead token hygiene)
  *
  * PREFERENCE CATEGORIES (match users/{email}.preferences keys)
- * ────────────────────────────────────────────────────────────
- *   push_weatherAlerts   — AEGIS weather/lightning alerts
- *   push_gameReminders   — fixture reminders 24h + 1h before kickoff
- *   push_messages        — direct messages from coaches
- *   email_weeklyReport   — server-side only, not dispatched here
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *   push_weatherAlerts   â€” AEGIS weather/lightning alerts
+ *   push_gameReminders   â€” fixture reminders 24h + 1h before kickoff
+ *   push_messages        â€” direct messages from coaches
+ *   email_weeklyReport   â€” server-side only, not dispatched here
  *
  * ROLE DEFAULTS (when preferences key is absent)
- * ───────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *   coach / director / registrar:  push_weatherAlerts = true
  *   parent / player / tutor:       push_weatherAlerts = false
  *   All roles:                     push_gameReminders = true, push_messages = true
  *
  * ZERO-TRUST
- * ──────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Only Cloud Functions (Admin SDK) call sendVanguardPush internally.
  * sendWeatherAlertToTenant is an onCall restricted to coach/director/admin.
  * sendGameReminders runs on a Cloud Scheduler trigger (no client call).
  *
  * Exports:
- *   sendWeatherAlertToTenant — onCall: fans out weather alert to tenant users
- *   sendGameRemindersToday   — onSchedule: fires fixture reminders for today's games
+ *   sendWeatherAlertToTenant â€” onCall: fans out weather alert to tenant users
+ *   sendGameRemindersToday   â€” onSchedule: fires fixture reminders for today's games
  */
 
 'use strict';
@@ -43,12 +43,12 @@ const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const APP_ICON = '/Images/Phoenixes_Logo_2026.png';
 
 const db = admin.firestore();
 
-// ── Role default preferences ──────────────────────────────────────────────────
+// â”€â”€ Role default preferences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ROLE_DEFAULTS = {
 	push_weatherAlerts: {
@@ -66,16 +66,16 @@ function getDefaultPreference(role, category) {
 	return map.default !== undefined ? map.default : true;
 }
 
-// ── Core dispatcher ───────────────────────────────────────────────────────────
+// â”€â”€ Core dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Sends a push notification to a single user.
  * Respects user preferences; silently drops if disabled.
  * Automatically prunes stale registration tokens.
  *
- * @param {string} userEmail — Firestore key (lower-cased email)
+ * @param {string} userEmail â€” Firestore key (lower-cased email)
  * @param {{ title: string, body: string, link?: string, imageUrl?: string, data?: Record<string,string> }} payload
- * @param {string} category — preference key (e.g. 'push_weatherAlerts')
+ * @param {string} category â€” preference key (e.g. 'push_weatherAlerts')
  * @returns {Promise<{ sent: number, failed: number, skipped: boolean }>}
  */
 async function sendVanguardPush(userEmail, payload, category) {
@@ -121,7 +121,7 @@ async function sendVanguardPush(userEmail, payload, category) {
 
 	const response = await admin.messaging().sendEachForMulticast(message);
 
-	// ── Dead token hygiene: prune stale/invalid tokens from Firestore ─────────
+	// â”€â”€ Dead token hygiene: prune stale/invalid tokens from Firestore â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	const staleTokens = [];
 	response.responses.forEach((resp, idx) => {
 		if (!resp.success) {
@@ -145,7 +145,7 @@ async function sendVanguardPush(userEmail, payload, category) {
 	return {sent: response.successCount, failed: response.failureCount, skipped: false};
 }
 
-// ── sendWeatherAlertToTenant ──────────────────────────────────────────────────
+// â”€â”€ sendWeatherAlertToTenant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Fans out a weather/safety alert to all users in a tenant whose
@@ -214,10 +214,10 @@ exports.sendWeatherAlertToTenant = onCall({region: REGION}, async (request) => {
 	return {totalSent, totalFailed, totalSkipped, totalUsers: usersSnap.size};
 });
 
-// ── sendGameRemindersToday ────────────────────────────────────────────────────
+// â”€â”€ sendGameRemindersToday â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Scheduled function — fires every day at 08:00 (America/Denver).
+ * Scheduled function â€” fires every day at 08:00 (America/Denver).
  * Queries fixtures scheduled for today, sends reminders to assigned teams.
  */
 exports.sendGameRemindersToday = onSchedule(
@@ -261,7 +261,7 @@ exports.sendGameRemindersToday = onSchedule(
 						const result = await sendVanguardPush(
 							userDoc.id,
 							{
-								title: `MATCH DAY — ${opponent?.name ?? 'Fixture'}`,
+								title: `MATCH DAY â€” ${opponent?.name ?? 'Fixture'}`,
 								body: `Kickoff ${kickoff}. Check the War Room for tactical briefing.`,
 								link: '/coach/match-day',
 								data: {fixtureId: fixtureDoc.id, tenantId},
@@ -278,5 +278,5 @@ exports.sendGameRemindersToday = onSchedule(
 	},
 );
 
-// ── Export sendVanguardPush for internal use by other CFs ────────────────────
+// â”€â”€ Export sendVanguardPush for internal use by other CFs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 module.exports.sendVanguardPush = sendVanguardPush;

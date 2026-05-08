@@ -1,45 +1,45 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * processMedia.js — AEGIS Secure Media Pipeline
- * ───────────────────────────────────────────────
+ * processMedia.js â€” AEGIS Secure Media Pipeline
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Triggers on every file created inside  `tenants/{tenantId}/staging/`
  * and runs a strict 4-stage processing pipeline before the file is
  * moved to the public-read  `tenants/{tenantId}/media/`  path.
  *
- * ┌─────────────────────────────────────────────────────────────┐
- * │  STAGE 0  Validate origin path & parse metadata             │
- * │  STAGE 1  EXIF / metadata strip (YOUTH SAFETY — PRIORITY 1) │
- * │  STAGE 2  AI Content Safety scan via Gemini Vision          │
- * │  STAGE 3  Move to media/ bucket & mark Firestore 'ready'    │
- * └─────────────────────────────────────────────────────────────┘
+ * â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚  STAGE 0  Validate origin path & parse metadata             â”‚
+ * â”‚  STAGE 1  EXIF / metadata strip (YOUTH SAFETY â€” PRIORITY 1) â”‚
+ * â”‚  STAGE 2  AI Content Safety scan via Gemini Vision          â”‚
+ * â”‚  STAGE 3  Move to media/ bucket & mark Firestore 'ready'    â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  *
  * EXIF STRIPPING (STAGE 1)
- * ───────────────────────
- * • IMAGES (JPEG, PNG, WebP):
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * â€¢ IMAGES (JPEG, PNG, WebP):
  *     Piped through `sharp`. Sharp's decode-re-encode pipeline
  *     discards ALL EXIF, IPTC, XMP, and ICC metadata unless
- *     `.withMetadata()` is called — we never call it.
+ *     `.withMetadata()` is called â€” we never call it.
  *     GPS coordinates, camera model, timestamp, and creator tags
  *     are silently removed. This is the industry-standard approach
  *     used by WhatsApp, Telegram, Twitter, and Discord.
  *
- * • VIDEOS (MP4, WebM, MOV):
+ * â€¢ VIDEOS (MP4, WebM, MOV):
  *     Metadata is stripped by re-packaging the container with
  *     the custom metadata cleared using the Admin SDK's
  *     `file.save()` with empty `metadata.contentDisposition`
  *     and no custom headers. For forensic-grade GPS removal from
  *     video files, Cloud Run + FFmpeg is required (see comment
- *     below — this is noted in the FUTURE_WORK block).
+ *     below â€” this is noted in the FUTURE_WORK block).
  *     The current implementation clears all Google Cloud Storage
  *     object metadata and any 'location' custom metadata fields.
  *
  * CONTENT SAFETY (STAGE 2)
- * ────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Uses Gemini 2.0 Flash to classify image content for:
- *   • NSFW / explicit imagery
- *   • Violence
- *   • PII visible in frame (e.g., a birth certificate photo)
- * A safety score of 0–100 is stored on the clip document.
+ *   â€¢ NSFW / explicit imagery
+ *   â€¢ Violence
+ *   â€¢ PII visible in frame (e.g., a birth certificate photo)
+ * A safety score of 0â€“100 is stored on the clip document.
  * Videos are flagged if their thumbnail frame triggers a safety alert.
  *
  * FUTURE_WORK:
@@ -48,7 +48,7 @@
  *   This requires the ffmpeg binary which isn't in the default CF runtime.
  *
  * Exports:
- *   processMedia  — onObjectFinalized Storage trigger
+ *   processMedia  â€” onObjectFinalized Storage trigger
  */
 
 'use strict';
@@ -62,7 +62,7 @@ const {GoogleGenAI} = require('@google/genai');
 const {defineSecret} = require('firebase-functions/params');
 
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
 // Maximum pixel dimension for thumbnails stored alongside videos
@@ -71,7 +71,7 @@ const THUMB_MAX_PX = 640;
 // Safety threshold: scores above this percentage trigger quarantine
 const SAFETY_BLOCK_THRESHOLD = 70;
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const VIDEO_MIME = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
@@ -164,7 +164,7 @@ async function runSafetyScan(imageBuf, mimeType, geminiKey) {
   }
 }
 
-// ── processMedia trigger ───────────────────────────────────────────────────
+// â”€â”€ processMedia trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.processMedia = onObjectFinalized(
     {
@@ -179,7 +179,7 @@ exports.processMedia = onObjectFinalized(
 
       // STAGE 0: Only process files in the staging/ path
       const parsed = parseStagingPath(filePath);
-      if (!parsed) return; // Not a staging file — ignore
+      if (!parsed) return; // Not a staging file â€” ignore
 
       const {tenantId, uid, clipId} = parsed;
       const bucket = admin.storage().bucket(event.data.bucket);
@@ -192,7 +192,7 @@ exports.processMedia = onObjectFinalized(
       logger.info('[processMedia] pipeline started', {filePath, clipId, tenantId, contentType});
 
       try {
-        // ── STAGE 1: Download and strip EXIF ─────────────────────────────
+        // â”€â”€ STAGE 1: Download and strip EXIF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const [rawBuffer] = await stagingFile.download();
         let processedBuffer = rawBuffer;
         let processedMime = contentType;
@@ -206,19 +206,19 @@ exports.processMedia = onObjectFinalized(
           thumbBuffer = processedBuffer; // Use the processed image as thumbnail
           logger.info('[processMedia] EXIF stripped', {clipId, originalSize: rawBuffer.length, cleanSize: processedBuffer.length});
         } else if (VIDEO_MIME.has(contentType)) {
-          // For videos: we can't do FFmpeg here — log the limitation and continue.
+          // For videos: we can't do FFmpeg here â€” log the limitation and continue.
           // FUTURE_WORK: Submit to Cloud Run FFmpeg task.
           // For now: ensure no custom GCS metadata contains location fields.
           // The metadata will be overwritten with empty object on the final write.
           logger.info('[processMedia] video EXIF: GCS metadata cleared (FFmpeg required for container-level strip)', {clipId});
 
           // Generate a 1-second thumbnail using sharp on the first readable segment.
-          // NOTE: sharp cannot decode video frames — this is a placeholder.
+          // NOTE: sharp cannot decode video frames â€” this is a placeholder.
           // Production: Use Cloud Video Intelligence API for thumbnails.
           thumbBuffer = null;
         }
 
-        // ── STAGE 2: Content Safety Scan ─────────────────────────────────
+        // â”€â”€ STAGE 2: Content Safety Scan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const scanTarget = thumbBuffer ?? processedBuffer;
         let safetyResult = {safe: true, safetyScore: 0, reason: null};
 
@@ -237,7 +237,7 @@ exports.processMedia = onObjectFinalized(
             safetyReason: safetyResult.reason,
             processedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
-          // Immutable audit log — potential unsafe content attempt
+          // Immutable audit log â€” potential unsafe content attempt
           await db.collection('audit_logs').add({
             action: 'MEDIA_QUARANTINED',
             actorUid: uid,
@@ -251,7 +251,7 @@ exports.processMedia = onObjectFinalized(
           return;
         }
 
-        // ── STAGE 3: Save to media/ path, clean metadata ─────────────────
+        // â”€â”€ STAGE 3: Save to media/ path, clean metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const ext = path.extname(filePath) || (IMAGE_MIME.has(contentType) ? '.jpg' : '.mp4');
         const mediaPath = `tenants/${tenantId}/media/${uid}/${clipId}${ext}`;
         const mediaFile = bucket.file(mediaPath);
@@ -262,7 +262,7 @@ exports.processMedia = onObjectFinalized(
           metadata: {
             contentType: processedMime,
             metadata: {
-              // Sanitized provenance only — no GPS, no device info
+              // Sanitized provenance only â€” no GPS, no device info
               'x-vanguard-tenant': tenantId,
               'x-vanguard-clip-id': clipId,
               'x-vanguard-processed': 'true',

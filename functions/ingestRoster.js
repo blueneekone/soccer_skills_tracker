@@ -1,7 +1,7 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * ingestRoster.js — Universal Roster Ingestion Engine
- * ────────────────────────────────────────────────────
+ * ingestRoster.js â€” Universal Roster Ingestion Engine
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Parses CSV, JSON, and PDF roster files and batch-writes
  * discovered players into Firestore under the Director's tenantId.
  *
@@ -11,14 +11,14 @@
  *   3. Returns the invite codes so the director can distribute them
  *
  * Security:
- *   • Director role + matching clubId required
- *   • Batch size limited to 200 players per call
- *   • Email is normalised and validated server-side
- *   • PDF parsing uses Gemini 2.0 Flash for unstructured text extraction
+ *   â€¢ Director role + matching clubId required
+ *   â€¢ Batch size limited to 200 players per call
+ *   â€¢ Email is normalised and validated server-side
+ *   â€¢ PDF parsing uses Gemini 2.0 Flash for unstructured text extraction
  *     (handles legacy league rosters with non-uniform column layouts)
  *
  * Exports:
- *   ingestRoster — onCall
+ *   ingestRoster â€” onCall
  */
 
 'use strict';
@@ -32,12 +32,12 @@ const {defineSecret} = require('firebase-functions/params');
 const crypto = require('crypto');
 
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
 const MAX_PLAYERS_PER_BATCH = 200;
 
-// ── Utilities ────────────────────────────────────────────────────────────────
+// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
 
@@ -55,7 +55,7 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-// ── CSV Parser (zero-dependency) ──────────────────────────────────────────────
+// â”€â”€ CSV Parser (zero-dependency) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Lightweight CSV parser supporting quoted fields, embedded commas, and CRLF.
@@ -106,7 +106,7 @@ function parseCsv(text) {
   return rows;
 }
 
-// ── Column aliasing ────────────────────────────────────────────────────────
+// â”€â”€ Column aliasing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Map a raw CSV/JSON row to the Vanguard player schema.
@@ -136,7 +136,7 @@ function mapRowToSchema(row) {
   return {email, displayName: displayName || undefined, position: position || undefined, dateOfBirth: dateOfBirth || undefined, jerseyNumber: jerseyNumber || undefined};
 }
 
-// ── PDF extraction via Gemini ─────────────────────────────────────────────────
+// â”€â”€ PDF extraction via Gemini â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Use Gemini 2.0 Flash to extract a structured player list from raw PDF text.
@@ -183,7 +183,7 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
   }
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
+// â”€â”€ Main handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Ingest a roster from a Base64-encoded file payload.
@@ -191,8 +191,8 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
  * Input:
  *   {
  *     format:   'csv' | 'json' | 'pdf'
- *     content:  string   — UTF-8 text (CSV/JSON) or Base64 (PDF)
- *     teamId?:  string   — assign players to a team on creation
+ *     content:  string   â€” UTF-8 text (CSV/JSON) or Base64 (PDF)
+ *     teamId?:  string   â€” assign players to a team on creation
  *   }
  *
  * Returns:
@@ -222,7 +222,7 @@ exports.ingestRoster = onCall(
         throw new HttpsError('invalid-argument', 'content is required.');
       }
 
-      // ── Parse the input ─────────────────────────────────────────────────
+      // â”€â”€ Parse the input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let rawPlayers = [];
 
       if (format === 'csv') {
@@ -271,7 +271,7 @@ exports.ingestRoster = onCall(
 
       logger.info('[ingestRoster] parsed', {count: rawPlayers.length, format, tenantId});
 
-      // ── Batch write to Firestore ─────────────────────────────────────────
+      // â”€â”€ Batch write to Firestore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const batchResult = {processed: 0, skipped: 0, invites: []};
       const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -302,7 +302,7 @@ exports.ingestRoster = onCall(
         };
 
         if (existingSnap.exists()) {
-          // Patch — do not overwrite role, xp, or stats if they exist
+          // Patch â€” do not overwrite role, xp, or stats if they exist
           const existing = existingSnap.data();
           batch.update(userRef, {
             ...userData,

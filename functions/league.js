@@ -1,9 +1,9 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * league.js — League & Fixture Management Cloud Functions
- * ─────────────────────────────────────────────────────────
+ * league.js â€” League & Fixture Management Cloud Functions
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * TEMPORAL ALIGNMENT GUARANTEE
- * ──────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * `createFixture` is the sole write path for fixture documents.
  * It converts any incoming dateTime representation into a strict UTC
  * Firestore Timestamp before writing. Clients MUST use this function
@@ -11,21 +11,21 @@
  *
  * The conversion chain:
  *   Client input (ISO string | epoch ms | { seconds, nanoseconds })
- *     → admin.firestore.Timestamp.fromMillis(utcMs)
- *       → Firestore Timestamp (UTC, no ambiguity)
+ *     â†’ admin.firestore.Timestamp.fromMillis(utcMs)
+ *       â†’ Firestore Timestamp (UTC, no ambiguity)
  *
  * ZERO-TRUST
- * ──────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * All writes are validated against the caller's JWT claims:
- *   • tenantId claim must match the incoming tenantId field.
- *   • role must be 'coach', 'director', or elevated admin.
- *   • Collision check runs inside a transaction (see facilities.js).
+ *   â€¢ tenantId claim must match the incoming tenantId field.
+ *   â€¢ role must be 'coach', 'director', or elevated admin.
+ *   â€¢ Collision check runs inside a transaction (see facilities.js).
  *
  * Exports:
- *   createFixture     — onCall: create a new fixture (UTC enforcement)
- *   updateFixture     — onCall: update mutable fields (status, score, notes)
- *   cancelFixture     — onCall: soft-delete (sets status = 'Cancelled')
- *   schedulePractice  — onCall: create a non-fixture block on the calendar
+ *   createFixture     â€” onCall: create a new fixture (UTC enforcement)
+ *   updateFixture     â€” onCall: update mutable fields (status, score, notes)
+ *   cancelFixture     â€” onCall: soft-delete (sets status = 'Cancelled')
+ *   schedulePractice  â€” onCall: create a non-fixture block on the calendar
  */
 
 'use strict';
@@ -34,18 +34,18 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore;
 
-// ── UTC Timestamp normalisation ───────────────────────────────────────────────
+// â”€â”€ UTC Timestamp normalisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Convert any client-supplied datetime to a strict UTC admin.firestore.Timestamp.
  *
  * Accepted input shapes:
- *   • ISO 8601 string    — "2026-05-27T17:00:00Z" or "2026-05-27T17:00:00-06:00"
- *   • Epoch milliseconds — 1748372400000
- *   • Firestore Timestamp shape — { seconds: 1748372400, nanoseconds: 0 }
+ *   â€¢ ISO 8601 string    â€” "2026-05-27T17:00:00Z" or "2026-05-27T17:00:00-06:00"
+ *   â€¢ Epoch milliseconds â€” 1748372400000
+ *   â€¢ Firestore Timestamp shape â€” { seconds: 1748372400, nanoseconds: 0 }
  *
  * @param {unknown} raw
  * @returns {admin.firestore.Timestamp}
@@ -77,7 +77,7 @@ function toUtcTimestamp(raw) {
 	return admin.firestore.Timestamp.fromMillis(ms);
 }
 
-// ── createFixture ─────────────────────────────────────────────────────────────
+// â”€â”€ createFixture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Create a new fixture with strict UTC timestamp enforcement.
@@ -127,7 +127,7 @@ exports.createFixture = onCall({region: REGION}, async (request) => {
 		throw new HttpsError('permission-denied', 'Cannot create fixtures for another organisation.');
 	}
 
-	// ── UTC ENFORCEMENT: the only correct path to store a fixture dateTime ──
+	// â”€â”€ UTC ENFORCEMENT: the only correct path to store a fixture dateTime â”€â”€
 	const dateTimeUtc = toUtcTimestamp(dateTime);
 	logger.info('[league] createFixture UTC normalised', {
 		tenantId,
@@ -171,7 +171,7 @@ exports.createFixture = onCall({region: REGION}, async (request) => {
 	return {fixtureId: fixtureRef.id};
 });
 
-// ── updateFixture ─────────────────────────────────────────────────────────────
+// â”€â”€ updateFixture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.updateFixture = onCall({region: REGION}, async (request) => {
 	if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
@@ -188,7 +188,7 @@ exports.updateFixture = onCall({region: REGION}, async (request) => {
 		throw new HttpsError('permission-denied', 'Tenant boundary violation.');
 	}
 
-	// Only allow safe mutable fields — never allow re-writing tenantId/id
+	// Only allow safe mutable fields â€” never allow re-writing tenantId/id
 	const ALLOWED = ['status', 'location', 'notes', 'facilityId', 'facilityTimezone'];
 	const sanitised = {};
 	for (const key of ALLOWED) {
@@ -210,7 +210,7 @@ exports.updateFixture = onCall({region: REGION}, async (request) => {
 	return {fixtureId};
 });
 
-// ── cancelFixture ─────────────────────────────────────────────────────────────
+// â”€â”€ cancelFixture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.cancelFixture = onCall({region: REGION}, async (request) => {
 	if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
@@ -234,7 +234,7 @@ exports.cancelFixture = onCall({region: REGION}, async (request) => {
 	return {fixtureId};
 });
 
-// ── schedulePractice ──────────────────────────────────────────────────────────
+// â”€â”€ schedulePractice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Create a non-fixture calendar block (practice session / team meeting).

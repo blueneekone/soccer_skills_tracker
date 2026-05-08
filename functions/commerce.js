@@ -1,41 +1,41 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * commerce.js — Stripe Connect Commerce Engine
- * ─────────────────────────────────────────────
+ * commerce.js â€” Stripe Connect Commerce Engine
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Routes seasonal registration payments from Parents directly to the Club
  * Director's connected Stripe Express account, with Vanguard taking a 3%
  * platform fee via Stripe Connect Destination Charges.
  *
  * ARCHITECTURE
- * ────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  Parent                Club Director              Vanguard Platform
- *  ──────                ─────────────              ─────────────────
- *  PaymentIntent ──────► stripeAccountId ◄── onboarding via createConnectOnboarding
+ *  â”€â”€â”€â”€â”€â”€                â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€              â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *  PaymentIntent â”€â”€â”€â”€â”€â”€â–º stripeAccountId â—„â”€â”€ onboarding via createConnectOnboarding
  *  (captured client-side with confirmCardPayment)
- *  ↓ payment.succeeded webhook
+ *  â†“ payment.succeeded webhook
  *  season_registrations/{id}.paymentStatus = 'paid'
  *  users/{email}.activeSeasonStatus = 'active'
  *
  * COLLECTIONS
- * ───────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  season_registrations/{registrationId}
  *    playerId, playerEmail, tenantId, seasonId,
  *    feeAmountCents, paymentIntentId, paymentStatus, paidAt
  *
  *  organizations/{tenantId}
- *    stripeAccountId  ← set by createConnectOnboarding
- *    stripeOnboardingComplete ← set by webhook
+ *    stripeAccountId  â† set by createConnectOnboarding
+ *    stripeOnboardingComplete â† set by webhook
  *
  * SECRETS
- * ───────
- *  STRIPE_SECRET_KEY         — firebase functions:secrets:set STRIPE_SECRET_KEY
- *  STRIPE_WEBHOOK_SECRET_REG — firebase functions:secrets:set STRIPE_WEBHOOK_SECRET_REG
+ * â”€â”€â”€â”€â”€â”€â”€
+ *  STRIPE_SECRET_KEY         â€” firebase functions:secrets:set STRIPE_SECRET_KEY
+ *  STRIPE_WEBHOOK_SECRET_REG â€” firebase functions:secrets:set STRIPE_WEBHOOK_SECRET_REG
  *
  * Exports:
- *   createRegistrationIntent    — onCall: create PaymentIntent for season fee
- *   handleRegistrationWebhook   — onRequest: Stripe webhook handler
- *   createConnectOnboarding     — onCall: generate Stripe Express onboarding link
- *   getRegistrationStatus       — onCall: current payment status for player/season
+ *   createRegistrationIntent    â€” onCall: create PaymentIntent for season fee
+ *   handleRegistrationWebhook   â€” onRequest: Stripe webhook handler
+ *   createConnectOnboarding     â€” onCall: generate Stripe Express onboarding link
+ *   getRegistrationStatus       â€” onCall: current payment status for player/season
  */
 
 'use strict';
@@ -49,7 +49,7 @@ const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET_REG = defineSecret('STRIPE_WEBHOOK_SECRET_REG');
 const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://vanguardcommand.app'});
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const PLATFORM_FEE_RATE = 0.03; // 3% platform fee
 
 const db = admin.firestore();
@@ -60,7 +60,7 @@ function getStripe() {
   return stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 
-// ── createRegistrationIntent ──────────────────────────────────────────────────
+// â”€â”€ createRegistrationIntent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Creates a Stripe PaymentIntent routed to the club's Stripe Connect account.
@@ -119,7 +119,7 @@ exports.createRegistrationIntent = onCall(
           seasonId,
           type: 'season_registration',
         },
-        description: `Season registration — ${orgSnap.data()?.name ?? tenantId}`,
+        description: `Season registration â€” ${orgSnap.data()?.name ?? tenantId}`,
       });
 
       // Pre-create the registration document as 'pending'
@@ -154,14 +154,14 @@ exports.createRegistrationIntent = onCall(
     },
 );
 
-// ── handleRegistrationWebhook ─────────────────────────────────────────────────
+// â”€â”€ handleRegistrationWebhook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Stripe webhook handler for the registration payment flow.
  * Listens for `payment_intent.succeeded` and `payment_intent.payment_failed`.
  *
  * Deploy with:  firebase deploy --only functions:handleRegistrationWebhook
- * Configure in Stripe Dashboard → Webhooks → Add endpoint:
+ * Configure in Stripe Dashboard â†’ Webhooks â†’ Add endpoint:
  *   URL: https://{region}-{project}.cloudfunctions.net/handleRegistrationWebhook
  *   Events: payment_intent.succeeded, payment_intent.payment_failed,
  *           account.updated (for Connect onboarding status)
@@ -290,14 +290,14 @@ async function handleConnectAccountUpdated(account) {
   logger.info('[webhook] connect account updated', {tenantId, chargesEnabled: account.charges_enabled});
 }
 
-// ── createConnectOnboarding ───────────────────────────────────────────────────
+// â”€â”€ createConnectOnboarding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Creates or resumes a Stripe Connect Express onboarding session for a Club Director.
  * The director is redirected to Stripe's hosted onboarding UI.
  * On completion, Stripe sends `account.updated` to `handleRegistrationWebhook`.
  *
- * Returns: { url: string }  — redirect this in the browser
+ * Returns: { url: string }  â€” redirect this in the browser
  */
 exports.createConnectOnboarding = onCall(
     {region: REGION, secrets: [STRIPE_SECRET_KEY]},
@@ -351,7 +351,7 @@ exports.createConnectOnboarding = onCall(
     },
 );
 
-// ── getRegistrationStatus ─────────────────────────────────────────────────────
+// â”€â”€ getRegistrationStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Returns the payment status of a player's registration for a given season.

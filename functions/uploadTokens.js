@@ -1,7 +1,7 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * uploadTokens.js — Secure Direct-to-Cloud Upload Tokens
- * ────────────────────────────────────────────────────────
+ * uploadTokens.js â€” Secure Direct-to-Cloud Upload Tokens
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Generates pre-signed GCS upload URLs so media never transits the
  * SvelteKit server. This is the ONLY way players should upload video clips.
  *
@@ -14,15 +14,15 @@
  *   5. processMedia strips EXIF, runs content safety, moves to media/ bucket
  *
  * Zero-Trust notes:
- *   • Only authenticated players can request upload tokens for their own UID.
- *   • Directors may request tokens for players within their tenant.
- *   • The staging path is separated from the final media path so that
+ *   â€¢ Only authenticated players can request upload tokens for their own UID.
+ *   â€¢ Directors may request tokens for players within their tenant.
+ *   â€¢ The staging path is separated from the final media path so that
  *     partially-processed or unsafe files can never be served publicly.
- *   • Each token is single-use and expires in 15 minutes.
+ *   â€¢ Each token is single-use and expires in 15 minutes.
  *
  * Exports:
- *   getUploadToken       — onCall: generate a signed upload URL
- *   getDeleteAllToken    — onCall: director/parent deletes all media for a player
+ *   getUploadToken       â€” onCall: generate a signed upload URL
+ *   getDeleteAllToken    â€” onCall: director/parent deletes all media for a player
  */
 
 'use strict';
@@ -31,7 +31,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const UPLOAD_EXPIRY_MINUTES = 15;
 // Max 100 MB for video clips, 8 MB for images
 const SIZE_LIMIT_VIDEO = 100 * 1024 * 1024;
@@ -61,15 +61,15 @@ function sanitizeFileName(name) {
       .slice(0, 128);
 }
 
-// ── getUploadToken ────────────────────────────────────────────────────────────
+// â”€â”€ getUploadToken â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Generate a signed V4 PUT URL for direct-to-cloud video/image upload.
  *
  * Input: { mimeType: string, fileName: string, targetStat?: string }
- *   mimeType  — MIME type of the file being uploaded
- *   fileName  — Client-supplied file name (will be sanitized)
- *   targetStat — optional Scout's Six stat this clip is training for
+ *   mimeType  â€” MIME type of the file being uploaded
+ *   fileName  â€” Client-supplied file name (will be sanitized)
+ *   targetStat â€” optional Scout's Six stat this clip is training for
  *
  * Returns: { signedUrl, storagePath, clipId, expiresAt }
  */
@@ -150,7 +150,7 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
   return {signedUrl, storagePath, clipId, expiresAt: expiresAt.toISOString()};
 });
 
-// ── getDeleteAllToken ─────────────────────────────────────────────────────────
+// â”€â”€ getDeleteAllToken â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Hard-delete ALL media for a specific player (director or parent only).
@@ -196,7 +196,7 @@ exports.deleteAllPlayerMedia = onCall({region: REGION}, async (request) => {
       try {
         await bucket.file(path).delete();
       } catch {
-        // File may already be gone — continue
+        // File may already be gone â€” continue
       }
     }
 

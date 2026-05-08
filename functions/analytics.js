@@ -1,22 +1,22 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * Strike 1 (Agent 3) — Analytics aggregation triggers.
+ * Strike 1 (Agent 3) â€” Analytics aggregation triggers.
  *
  * These Cloud Functions (v2) maintain a single aggregated document at
  * `analytics/platform_totals`. The `/admin/overview` Global Admin dashboard
- * reads from this one document — it NEVER scans `users`, `clubs`, `licenses`,
+ * reads from this one document â€” it NEVER scans `users`, `clubs`, `licenses`,
  * or any of their joins (see the "Paranoid Patch" sprint). That keeps the
  * read budget flat regardless of tenant size.
  *
  * Counters maintained:
- *   • totalUsers                — every `users/{id}` document that exists
- *   • totalClubs                — every `clubs/{id}` document that exists
- *   • totalLicenses             — every `licenses/{id}` document that exists
- *   • totalRevenue              — sum(license.monthlyRevenue || tier-price)
- *   • bySport[<sport>]          — active players per sport (via users.role === 'player')
- *   • revenueByTier[<tier>]     — revenue per license tier
- *   • mau[<YYYY-MM>]            — count of users whose `lastActiveAt` fell in that month
- *   • updatedAt                 — server timestamp of latest trigger run
+ *   â€¢ totalUsers                â€” every `users/{id}` document that exists
+ *   â€¢ totalClubs                â€” every `clubs/{id}` document that exists
+ *   â€¢ totalLicenses             â€” every `licenses/{id}` document that exists
+ *   â€¢ totalRevenue              â€” sum(license.monthlyRevenue || tier-price)
+ *   â€¢ bySport[<sport>]          â€” active players per sport (via users.role === 'player')
+ *   â€¢ revenueByTier[<tier>]     â€” revenue per license tier
+ *   â€¢ mau[<YYYY-MM>]            â€” count of users whose `lastActiveAt` fell in that month
+ *   â€¢ updatedAt                 â€” server timestamp of latest trigger run
  *
  * Every write uses `set({ ... }, { merge: true })` combined with
  * `FieldValue.increment()` / `FieldValue.serverTimestamp()` so the aggregated
@@ -28,9 +28,9 @@ const {onDocumentWritten} = require('firebase-functions/v2/firestore');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 
-// ── Tier pricing (single source of truth, mirrors the /admin/overview card) ─
+// â”€â”€ Tier pricing (single source of truth, mirrors the /admin/overview card) â”€
 const TIER_PRICES = Object.freeze({
   starter: 19,
   pro: 49,
@@ -102,7 +102,7 @@ function buildDelta(before, after, collection) {
     const roleSource = created ? after : before;
     const role = typeof roleSource.role === 'string' ? roleSource.role : '';
     if (role === 'player') {
-      // Players-by-sport bucket. Best-effort — if the user has no sport we
+      // Players-by-sport bucket. Best-effort â€” if the user has no sport we
       // bucket under "generic" so the total still reconciles.
       const sport = normalizeSport(roleSource.sport || roleSource.clubSport);
       patch[`bySport.${sport}`] = admin.firestore.FieldValue.increment(sign);
@@ -159,7 +159,7 @@ function snapData(snap) {
   return data && typeof data === 'object' ? data : {};
 }
 
-// ── Trigger: users/{id} ────────────────────────────────────────────────────
+// â”€â”€ Trigger: users/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const onUserWritten = onDocumentWritten(
     {region: REGION, document: 'users/{userId}'},
     async (event) => {
@@ -171,7 +171,7 @@ const onUserWritten = onDocumentWritten(
     },
 );
 
-// ── Trigger: clubs/{id} ────────────────────────────────────────────────────
+// â”€â”€ Trigger: clubs/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const onClubWritten = onDocumentWritten(
     {region: REGION, document: 'clubs/{clubId}'},
     async (event) => {
@@ -183,7 +183,7 @@ const onClubWritten = onDocumentWritten(
     },
 );
 
-// ── Trigger: licenses/{id} ────────────────────────────────────────────────
+// â”€â”€ Trigger: licenses/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const onLicenseWritten = onDocumentWritten(
     {region: REGION, document: 'licenses/{licenseId}'},
     async (event) => {

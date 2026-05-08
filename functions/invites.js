@@ -1,12 +1,12 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
  * invites.js
- * ──────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Cloud Functions for the Nexus Command multi-tenant invite & identity system.
  *
  * IMPORTANT: admin.initializeApp() is called in functions/index.js (the entry
  * point).  This module require()s 'firebase-admin' and reuses the already-
- * initialised singleton app — never calls initializeApp() again.
+ * initialised singleton app â€” never calls initializeApp() again.
  *
  * Audit logging:
  *   logAuditEvent() delegates to logActivity() from auditLogger.js, which
@@ -15,11 +15,11 @@
  *   across the entire platform audit trail.
  *
  * Exports
- * ───────
- *   syncUserClaims     onDocumentWritten — Firestore trigger on users/{emailKey}
- *   consumeInviteCode  onCall            — transactional invite redemption
+ * â”€â”€â”€â”€â”€â”€â”€
+ *   syncUserClaims     onDocumentWritten â€” Firestore trigger on users/{emailKey}
+ *   consumeInviteCode  onCall            â€” transactional invite redemption
  *
- * ─── Zero-Trust Architecture ────────────────────────────────────────────────
+ * â”€â”€â”€ Zero-Trust Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  * JWT custom claims are the ENFORCEMENT layer.
  * Firestore documents are the SOURCE OF TRUTH.
@@ -27,41 +27,41 @@
  *   syncUserClaims:
  *     Fires on every write to users/{emailKey}.  If role or clubId changes,
  *     the JWT custom claims are immediately updated.  If clubId is removed,
- *     all tenant-scope claims are REVOKED — preventing "homeless" users
+ *     all tenant-scope claims are REVOKED â€” preventing "homeless" users
  *     from matching any Firestore rule of the form:
  *       allow read: if request.auth.token.tenantId == resource.data.tenantId;
  *
  *   consumeInviteCode:
  *     Self-service onboarding.  The invite document is keyed by the code
  *     itself (invites/{code}), so the Cloud Function can execute a direct
- *     Firestore transaction with NO prior query — eliminating the index
+ *     Firestore transaction with NO prior query â€” eliminating the index
  *     dependency and the race window between query and transaction.
  *
- * ─── Invite Document Schema (Firestore: invites/{code}) ─────────────────────
+ * â”€â”€â”€ Invite Document Schema (Firestore: invites/{code}) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
- *   code          string      — 6-char alphanumeric (= document ID)
- *   tenantId      string      — canonical tenant key
- *   clubId        string      — legacy alias = tenantId
- *   teamId?       string      — optional team scope
- *   targetRole    string      — 'coach' | 'player' | 'parent' …
- *   createdBy     string      — email/uid of generator
- *   expiresAt     Timestamp   — hard TTL (default 48 h)
- *   usageLimit    number      — max redemptions (default 1)
- *   usageCount    number      — counter, starts at 0, incremented per unique user
- *   consumedByUids string[]   — UIDs that have redeemed (idempotency log)
- *   status        string      — 'pending' | 'consumed' | 'expired'
+ *   code          string      â€” 6-char alphanumeric (= document ID)
+ *   tenantId      string      â€” canonical tenant key
+ *   clubId        string      â€” legacy alias = tenantId
+ *   teamId?       string      â€” optional team scope
+ *   targetRole    string      â€” 'coach' | 'player' | 'parent' â€¦
+ *   createdBy     string      â€” email/uid of generator
+ *   expiresAt     Timestamp   â€” hard TTL (default 48 h)
+ *   usageLimit    number      â€” max redemptions (default 1)
+ *   usageCount    number      â€” counter, starts at 0, incremented per unique user
+ *   consumedByUids string[]   â€” UIDs that have redeemed (idempotency log)
+ *   status        string      â€” 'pending' | 'consumed' | 'expired'
  *   createdAt     Timestamp
  *
- * ─── Why code-as-doc-ID? ─────────────────────────────────────────────────────
+ * â”€â”€â”€ Why code-as-doc-ID? â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
  *   Previous approach: invites/{autoId} with a `code` field
- *     → Required a Firestore query (needs an index) then a transaction.
- *     → Small TOCTOU window between the query result and the transaction.
+ *     â†’ Required a Firestore query (needs an index) then a transaction.
+ *     â†’ Small TOCTOU window between the query result and the transaction.
  *
  *   Current approach: invites/{code} (code IS the document ID)
- *     → Direct doc read inside the transaction — fully atomic, no query.
- *     → No composite index required.
- *     → If two processes generate the same code, the second setDoc will
+ *     â†’ Direct doc read inside the transaction â€” fully atomic, no query.
+ *     â†’ No composite index required.
+ *     â†’ If two processes generate the same code, the second setDoc will
  *       encounter the existing doc and the collision-check loop in
  *       generateInviteCode() will retry with a new code.
  */
@@ -72,13 +72,13 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 
-// Lazily access Firestore — safe because admin is initialised in index.js
+// Lazily access Firestore â€” safe because admin is initialised in index.js
 // before this module is ever require()'d.
 const fs = () => admin.firestore();
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Structured Audit Logging  (Task 5.4 prep)
 //
 // Every identity-sensitive event writes a document to `audit_logs/{autoId}`.
@@ -88,16 +88,16 @@ const fs = () => admin.firestore();
 // The write is FIRE-AND-FORGET: a failure must never block the main operation.
 //
 // Audit log document schema:
-//   type        string      — event type (see AUDIT_EVENT below)
-//   uid         string      — Firebase Auth UID of the actor
-//   email?      string      — actor email (if available; may be absent for UID-only tokens)
-//   tenantId    string      — tenant in scope ('(revoked)' when claims stripped)
-//   role        string      — role at time of event
-//   metadata    object      — event-specific structured data
-//   timestamp   Timestamp   — server-side write time (immutable)
+//   type        string      â€” event type (see AUDIT_EVENT below)
+//   uid         string      â€” Firebase Auth UID of the actor
+//   email?      string      â€” actor email (if available; may be absent for UID-only tokens)
+//   tenantId    string      â€” tenant in scope ('(revoked)' when claims stripped)
+//   role        string      â€” role at time of event
+//   metadata    object      â€” event-specific structured data
+//   timestamp   Timestamp   â€” server-side write time (immutable)
 //
-// Do NOT include PII beyond email in `metadata` — store IDs and types only.
-// ─────────────────────────────────────────────────────────────────────────────
+// Do NOT include PII beyond email in `metadata` â€” store IDs and types only.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AUDIT_EVENT = Object.freeze({
   CLAIMS_SYNCED: 'claims_synced',
@@ -110,18 +110,18 @@ const AUDIT_EVENT = Object.freeze({
 
 /**
  * Write a structured audit event to `audit_logs/{autoId}`.
- * Fire-and-forget — errors are logged but never throw.
+ * Fire-and-forget â€” errors are logged but never throw.
  *
  * Delegates to the unified logActivity() helper from auditLogger.js so that
  * all invite-lifecycle events appear in the same audit_logs collection as
  * PII access events, consent events, and stat overrides.
  *
- * @param {string} type                  — one of AUDIT_EVENT values
+ * @param {string} type                  â€” one of AUDIT_EVENT values
  * @param {{ uid: string, email?: string | null, tenantId: string, role: string, metadata?: Record<string, unknown> }} data
  */
 function logAuditEvent(type, data) {
   // Map legacy AUDIT_EVENT keys to canonical ACTIVITY_TYPE constants where
-  // possible.  Unknown events are passed through as-is — logActivity accepts
+  // possible.  Unknown events are passed through as-is â€” logActivity accepts
   // any string action value.
   const typeMap = {
     [AUDIT_EVENT.CLAIMS_SYNCED]:     ACTIVITY_TYPE.CLAIMS_SYNCED,
@@ -145,20 +145,20 @@ function logAuditEvent(type, data) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 1.  syncUserClaims — Firestore trigger
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 1.  syncUserClaims â€” Firestore trigger
 //
 // Fires on create / update of users/{emailKey}.
 //
 // REVOCATION (Zero-Trust requirement)
-//   If clubId is set   → write { clubId, tenantId, role, teamId? } to claims.
-//   If clubId is empty → DELETE clubId, tenantId, teamId from claims so the
+//   If clubId is set   â†’ write { clubId, tenantId, role, teamId? } to claims.
+//   If clubId is empty â†’ DELETE clubId, tenantId, teamId from claims so the
 //                        user cannot match any tenant-scoped Firestore rule.
 //
 // Idempotency guard
 //   Claims are read before writing; if the result would be identical, the
 //   write (and its session-invalidating side effect) is skipped.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.syncUserClaims = onDocumentWritten(
     {document: 'users/{emailKey}', region: REGION},
@@ -167,7 +167,7 @@ exports.syncUserClaims = onDocumentWritten(
       const before = event.data?.before?.data();
       const after = event.data?.after?.data();
 
-      if (!after) return; // document deleted — no forward sync
+      if (!after) return; // document deleted â€” no forward sync
 
       const roleChanged = before?.role !== after.role;
       const clubIdChanged = before?.clubId !== after.clubId;
@@ -193,7 +193,7 @@ exports.syncUserClaims = onDocumentWritten(
       const uid = userRecord.uid;
       const existing = userRecord.customClaims || {};
 
-      // ── Platform-admin whitelist guard ────────────────────────────────────
+      // â”€â”€ Platform-admin whitelist guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Only emails listed in platform_config/admins.emails may receive the
       // global_admin or super_admin claim.  If a Firestore document write
       // attempts to elevate an unlisted email, the role is downgraded to
@@ -208,7 +208,7 @@ exports.syncUserClaims = onDocumentWritten(
             : [];
           allowed = whitelist.includes(emailKey.toLowerCase());
         } catch (cfgErr) {
-          logger.warn('[syncUserClaims] whitelist fetch failed — denying admin claim', cfgErr.message);
+          logger.warn('[syncUserClaims] whitelist fetch failed â€” denying admin claim', cfgErr.message);
         }
 
         if (!allowed) {
@@ -230,7 +230,7 @@ exports.syncUserClaims = onDocumentWritten(
         }
       }
 
-      // Build the new claims — revoke tenant scope if clubId was cleared.
+      // Build the new claims â€” revoke tenant scope if clubId was cleared.
       const updated = {...existing, role: newRole};
 
       if (newClubId) {
@@ -242,7 +242,7 @@ exports.syncUserClaims = onDocumentWritten(
           delete updated.teamId;
         }
       } else {
-        // ── REVOCATION ────────────────────────────────────────────────────────
+        // â”€â”€ REVOCATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // User removed from their organisation.  Strip all tenant-scope claims.
         delete updated.clubId;
         delete updated.tenantId;
@@ -286,22 +286,22 @@ exports.syncUserClaims = onDocumentWritten(
     },
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 2.  consumeInviteCode — onCall
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2.  consumeInviteCode â€” onCall
 //
 // Called by src/lib/services/inviteService.ts after the user enters their code.
 //
 // Document path: invites/{code}  (code is the Firestore document ID)
-//   → The transaction reads the invite by code directly — NO query.
-//   → No composite index required.  Atomic from the first read.
+//   â†’ The transaction reads the invite by code directly â€” NO query.
+//   â†’ No composite index required.  Atomic from the first read.
 //
 // usageCount / usageLimit
 //   Each unique user increments usageCount.  When usageCount >= usageLimit,
-//   status → 'consumed' and the code is permanently closed.
+//   status â†’ 'consumed' and the code is permanently closed.
 //
 // consumedByUids[]
 //   Array of UIDs that have redeemed this code.  Same user retrying (e.g.
-//   network failure) is detected here and handled as a no-op — usageCount
+//   network failure) is detected here and handled as a no-op â€” usageCount
 //   is NOT incremented again.
 //
 // Zero-Trust note
@@ -316,8 +316,8 @@ exports.syncUserClaims = onDocumentWritten(
 // Defence in depth
 //   The txn.set(userRef, ...) inside the transaction triggers syncUserClaims.
 //   The explicit setCustomUserClaims after the transaction is a fast path for
-//   the current session — the trigger is the authoritative backstop.
-// ─────────────────────────────────────────────────────────────────────────────
+//   the current session â€” the trigger is the authoritative backstop.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.consumeInviteCode = onCall(
     {
@@ -325,7 +325,7 @@ exports.consumeInviteCode = onCall(
       // enforceAppCheck: true, // enable when App Check is configured in prod
     },
     async (request) => {
-      // ── Auth guard ────────────────────────────────────────────────────────
+      // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!request.auth) {
         throw new HttpsError(
             'unauthenticated',
@@ -344,11 +344,11 @@ exports.consumeInviteCode = onCall(
       const normalised = code.toUpperCase().trim();
       const firestore = fs();
 
-      // ── Direct document reference — no query, no index ────────────────────
+      // â”€â”€ Direct document reference â€” no query, no index â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // The document ID IS the invite code.
       const inviteRef = firestore.collection('invites').doc(normalised);
 
-      // ── Atomic transaction ────────────────────────────────────────────────
+      // â”€â”€ Atomic transaction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       /** @type {Record<string, unknown>} */
       let inviteData;
 
@@ -375,7 +375,7 @@ exports.consumeInviteCode = onCall(
             ? inviteData.usageCount
             : 0;
 
-          // ── Idempotency: same user retrying ────────────────────────────────
+          // â”€â”€ Idempotency: same user retrying â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (consumedByUids.includes(uid)) {
             logger.info('[consumeInviteCode] idempotent re-try', {uid, code: normalised});
             logAuditEvent(AUDIT_EVENT.INVITE_IDEMPOTENT, {
@@ -385,10 +385,10 @@ exports.consumeInviteCode = onCall(
               role: String(inviteData.targetRole || ''),
               metadata: {code: normalised},
             });
-            return; // safe exit — proceeds to claim assignment below
+            return; // safe exit â€” proceeds to claim assignment below
           }
 
-          // ── Expired by status ──────────────────────────────────────────────
+          // â”€â”€ Expired by status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (inviteData.status === 'expired') {
             logAuditEvent(AUDIT_EVENT.INVITE_EXPIRED, {
               uid,
@@ -403,7 +403,7 @@ exports.consumeInviteCode = onCall(
             );
           }
 
-          // ── Expired by timestamp ───────────────────────────────────────────
+          // â”€â”€ Expired by timestamp â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           const expiresAt = inviteData.expiresAt?.toDate
             ? inviteData.expiresAt.toDate()
             : new Date(inviteData.expiresAt || 0);
@@ -423,7 +423,7 @@ exports.consumeInviteCode = onCall(
             );
           }
 
-          // ── Usage limit exhausted ──────────────────────────────────────────
+          // â”€â”€ Usage limit exhausted â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (usageCount >= usageLimit) {
             logAuditEvent(AUDIT_EVENT.INVITE_EXHAUSTED, {
               uid,
@@ -438,7 +438,7 @@ exports.consumeInviteCode = onCall(
             );
           }
 
-          // ── All checks passed ──────────────────────────────────────────────
+          // â”€â”€ All checks passed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           const newUsageCount = usageCount + 1;
           const nowFull = newUsageCount >= usageLimit;
 
@@ -449,7 +449,7 @@ exports.consumeInviteCode = onCall(
             ...(nowFull ? {status: 'consumed'} : {}),
           });
 
-          // Write user doc — triggers syncUserClaims as defence-in-depth.
+          // Write user doc â€” triggers syncUserClaims as defence-in-depth.
           // Zero-Trust: tenantId is read from the INVITE DOCUMENT, never from
           // the client request payload.
           const tenantId = String(inviteData.tenantId || inviteData.clubId || '');
@@ -478,7 +478,7 @@ exports.consumeInviteCode = onCall(
       const finalRole = String(inviteData.targetRole || 'player');
       const finalTeamId = inviteData.teamId ? String(inviteData.teamId) : null;
 
-      // ── Direct claim assignment (fast path for current session) ────────────
+      // â”€â”€ Direct claim assignment (fast path for current session) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // syncUserClaims trigger handles the async path for all other sessions.
       try {
         const authUser = await admin.auth().getUser(uid);

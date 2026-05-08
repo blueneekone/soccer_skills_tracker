@@ -123,7 +123,7 @@ const auditHandlers = require('./audit');
 // IAM prerequisite: grant "Service Account Token Creator" to the Functions service account.
 exports.getSensitiveDocumentUrl = auditHandlers.getSensitiveDocumentUrl;
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 
 const {GoogleGenAI} = require('@google/genai');
 

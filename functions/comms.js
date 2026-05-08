@@ -1,24 +1,24 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * comms.js — SafeSport Communication Engine
- * ─────────────────────────────────────────
+ * comms.js â€” SafeSport Communication Engine
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Cloud Functions enforcing the Vanguard SafeSport messaging policy:
  *
  * RULE OF THREE (Safe Sport Foundation)
- * ───────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * 1. No 1-on-1 communication between a coach and a minor.
  *    All messages to players under 13 MUST be sent to a team/group,
  *    automatically CC-ing the parent / guardian.
- * 2. Messages are always team-scoped — never player-scoped — when any
+ * 2. Messages are always team-scoped â€” never player-scoped â€” when any
  *    known minor is among the recipients.
  * 3. Every broadcast to a team containing minors writes an immutable
  *    audit log entry with { parentNotified: true } before the message
  *    is persisted in Firestore.
  *
  * Exports:
- *   safeSportBroadcast  — onCall: send a team/group message with automatic
+ *   safeSportBroadcast  â€” onCall: send a team/group message with automatic
  *                         minor detection and parent CC enforcement.
- *   safeSportVerify     — onCall: verify a player profile document is SafeSport
+ *   safeSportVerify     â€” onCall: verify a player profile document is SafeSport
  *                         compliant (used by compliance portal).
  */
 
@@ -30,41 +30,41 @@ const admin = require('firebase-admin');
 const crypto = require('crypto');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
 /** Normalise email to lowercase, trimmed. */
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // safeSportBroadcast
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Send a team / group message with automatic minor detection and CC enforcement.
  *
  * Input (request.data):
- *   teamId      string  — required; recipient team
- *   channelId   string  — optional; specific channel within the team
- *   body        string  — required; message body (max 4000 chars)
- *   subject     string  — optional; message subject line
+ *   teamId      string  â€” required; recipient team
+ *   channelId   string  â€” optional; specific channel within the team
+ *   body        string  â€” required; message body (max 4000 chars)
+ *   subject     string  â€” optional; message subject line
  *
  * Guards:
- *   • Caller must be authenticated as coach, director, or admin.
- *   • Coach callers must own the target teamId.
- *   • Director callers must be in the same club as the team.
- *   • Individual-player targeting is BLOCKED — target must be a team/channel.
+ *   â€¢ Caller must be authenticated as coach, director, or admin.
+ *   â€¢ Coach callers must own the target teamId.
+ *   â€¢ Director callers must be in the same club as the team.
+ *   â€¢ Individual-player targeting is BLOCKED â€” target must be a team/channel.
  *
  * SafeSport enforcement:
- *   • Resolves the full roster for the target team via `player_lookup`.
- *   • For each player with `isMinor: true`, resolves their parentEmail(s) from
+ *   â€¢ Resolves the full roster for the target team via `player_lookup`.
+ *   â€¢ For each player with `isMinor: true`, resolves their parentEmail(s) from
  *     the linked household document.
- *   • parentEmails are stored on the message as `ccParentEmails[]`.
- *   • `parentNotified: true` is set on the message document and in the audit log.
+ *   â€¢ parentEmails are stored on the message as `ccParentEmails[]`.
+ *   â€¢ `parentNotified: true` is set on the message document and in the audit log.
  *
  * Audit:
- *   • Writes ACTIVITY_TYPE.MESSAGE_BROADCAST to audit_logs before message commit.
- *   • messageHash = SHA-256 of body (NOT stored in the message itself — only in
+ *   â€¢ Writes ACTIVITY_TYPE.MESSAGE_BROADCAST to audit_logs before message commit.
+ *   â€¢ messageHash = SHA-256 of body (NOT stored in the message itself â€” only in
  *     the audit log) to enable integrity verification without exposing content.
  */
 exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
@@ -106,7 +106,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
   }
 
-  // ── Resolve team document ────────────────────────────────────────────────
+  // â”€â”€ Resolve team document â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const teamSnap = await db.collection('teams').doc(teamId).get();
   if (!teamSnap.exists) {
     throw new HttpsError('not-found', `Team "${teamId}" not found.`);
@@ -114,7 +114,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
   const teamData = teamSnap.data();
   const teamClubId = teamData.clubId || '';
 
-  // ── Scope enforcement ────────────────────────────────────────────────────
+  // â”€â”€ Scope enforcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (callerRole === 'coach' && callerTeamId !== teamId) {
     throw new HttpsError(
         'permission-denied',
@@ -130,7 +130,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     }
   }
 
-  // ── Resolve roster for minor detection ───────────────────────────────────
+  // â”€â”€ Resolve roster for minor detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const rosterSnap = await db
       .collection('player_lookup')
       .where('teamId', '==', teamId)
@@ -176,16 +176,16 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
 
   const ccParentEmails = [...ccParentEmailSet];
 
-  // ── SAFETY GUARD: block broadcast to minor-containing team without parent CCs ──
+  // â”€â”€ SAFETY GUARD: block broadcast to minor-containing team without parent CCs â”€â”€
   // If the team has minors but we failed to resolve any parent emails, we
-  // still proceed — the message is stored with parentNotified: false so
+  // still proceed â€” the message is stored with parentNotified: false so
   // directors can see the gap in the compliance report.
   const parentNotified = hasMinors ? ccParentEmails.length > 0 : false;
 
-  // ── Compute message hash for audit integrity ────────────────────────────
+  // â”€â”€ Compute message hash for audit integrity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const messageHash = crypto.createHash('sha256').update(bodyRaw).digest('hex');
 
-  // ── AUDIT LOG — written BEFORE message commit ───────────────────────────
+  // â”€â”€ AUDIT LOG â€” written BEFORE message commit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Safe-Sport compliance: we MUST record the communication intent before
   // any data is written, so the log cannot be deleted by rolling back the
   // batch.
@@ -194,7 +194,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     actorUid: callerUid,
     actorEmail: callerEmail,
     tenantId: callerClubId || teamClubId,
-    notes: `Team broadcast to ${teamId} — ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
+    notes: `Team broadcast to ${teamId} â€” ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
     extra: {
       teamId,
       channelId: channelId || null,
@@ -202,14 +202,14 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
       hasMinors,
       ccParentEmails,
       parentNotified,
-      messageHash, // SHA-256 — not the body itself
+      messageHash, // SHA-256 â€” not the body itself
       subject: subject || null,
       auditId,
     },
     ipAddress: request.rawRequest?.ip,
   });
 
-  // ── Write message document ───────────────────────────────────────────────
+  // â”€â”€ Write message document â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const targetPath = channelId
       ? db.collection('clubs').doc(teamClubId).collection('channels').doc(channelId)
       : db.collection('team_broadcasts').doc();

@@ -1,12 +1,12 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * facilities.js — Pitch Collision Avoidance System
- * ──────────────────────────────────────────────────
+ * facilities.js â€” Pitch Collision Avoidance System
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Prevents double-booking of physical facilities (pitches, courts, indoor turf)
  * by running a transactional overlap check before every booking.
  *
  * OVERLAP ALGORITHM (Allen's Interval Intersection)
- * ─────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *   Event A [startA, endA] overlaps Event B [startB, endB] iff:
  *       startA < endB  AND  endA > startB
  *
@@ -18,7 +18,7 @@
  *   The Firestore transaction prevents TOCTOU races between the check and insert.
  *
  * COLLECTIONS
- * ───────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  facilities/{facilityId}
  *    name, tenantId, location, capacity, pitchType, isActive
  *
@@ -28,16 +28,16 @@
  *    bookedByUid, createdAt
  *
  * CONFLICT RESPONSE
- * ─────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  When a time block is already taken, the function throws:
  *    HttpsError('already-exists', ...) with code 409 semantics.
  *  The UI maps this to a glowing "RESOURCE UNAVAILABLE" banner on the scheduling board.
  *
  * Exports:
- *   checkFacilityAvailability — onCall: non-mutating probe (UI pre-validation)
- *   bookFacility              — onCall: transactional booking (with lock)
- *   releaseFacilityBooking    — onCall: cancel a booking
- *   listFacilities            — onCall: return all facilities for a tenant
+ *   checkFacilityAvailability â€” onCall: non-mutating probe (UI pre-validation)
+ *   bookFacility              â€” onCall: transactional booking (with lock)
+ *   releaseFacilityBooking    â€” onCall: cancel a booking
+ *   listFacilities            â€” onCall: return all facilities for a tenant
  */
 
 'use strict';
@@ -46,27 +46,27 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const db = admin.firestore();
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
+// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Detect overlapping bookings for a facility in a given time window.
  * Uses a Firestore query + in-memory filter to handle the two-inequality constraint.
  *
  * @param {string} facilityId
- * @param {string} date       — YYYY-MM-DD (local date for index grouping)
- * @param {number} startMs    — epoch ms
- * @param {number} endMs      — epoch ms
- * @param {string|null} excludeBookingId — exclude this booking ID (for update checks)
+ * @param {string} date       â€” YYYY-MM-DD (local date for index grouping)
+ * @param {number} startMs    â€” epoch ms
+ * @param {number} endMs      â€” epoch ms
+ * @param {string|null} excludeBookingId â€” exclude this booking ID (for update checks)
  * @param {FirebaseFirestore.Transaction=} transaction
  * @return {Promise<FirebaseFirestore.QueryDocumentSnapshot[]>}
  */
 async function findOverlaps(facilityId, date, startMs, endMs, excludeBookingId = null, transaction = null) {
   const colRef = db.collection('facility_bookings');
 
-  // Stage 1: Firestore query — events whose start is BEFORE our end
+  // Stage 1: Firestore query â€” events whose start is BEFORE our end
   const queryRef = colRef
       .where('facilityId', '==', facilityId)
       .where('date', '==', date)
@@ -76,7 +76,7 @@ async function findOverlaps(facilityId, date, startMs, endMs, excludeBookingId =
       ? await transaction.get(queryRef)
       : await queryRef.get();
 
-  // Stage 2: In-memory filter — events whose end is AFTER our start
+  // Stage 2: In-memory filter â€” events whose end is AFTER our start
   return snap.docs.filter(
       (doc) => doc.data().endMs > startMs && doc.id !== excludeBookingId,
   );
@@ -92,10 +92,10 @@ function summariseConflicts(conflicts) {
   return `FACILITY CONFLICT: Time block overlaps ${labels.join(', ')}${conflicts.length > 3 ? ` +${conflicts.length - 3} more` : ''}.`;
 }
 
-// ── checkFacilityAvailability ─────────────────────────────────────────────────
+// â”€â”€ checkFacilityAvailability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Non-mutating availability probe — use for real-time UI feedback before submit.
+ * Non-mutating availability probe â€” use for real-time UI feedback before submit.
  *
  * Input:
  *   { facilityId, date (YYYY-MM-DD), startMs, endMs, excludeBookingId? }
@@ -137,7 +137,7 @@ exports.checkFacilityAvailability = onCall({region: REGION}, async (request) => 
   };
 });
 
-// ── bookFacility ──────────────────────────────────────────────────────────────
+// â”€â”€ bookFacility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Transactionally creates a facility booking with a collision lock.
@@ -194,7 +194,7 @@ exports.bookFacility = onCall({region: REGION}, async (request) => {
     });
   }
 
-  // TRANSACTIONAL BOOKING — prevents race conditions
+  // TRANSACTIONAL BOOKING â€” prevents race conditions
   const newBookingRef = db.collection('facility_bookings').doc();
 
   try {
@@ -238,7 +238,7 @@ exports.bookFacility = onCall({region: REGION}, async (request) => {
   return {bookingId: newBookingRef.id};
 });
 
-// ── releaseFacilityBooking ────────────────────────────────────────────────────
+// â”€â”€ releaseFacilityBooking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Cancels an existing booking. Only the creator, a coach, or a director may cancel.
@@ -284,7 +284,7 @@ exports.releaseFacilityBooking = onCall({region: REGION}, async (request) => {
   return {released: true};
 });
 
-// ── listFacilities ────────────────────────────────────────────────────────────
+// â”€â”€ listFacilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Returns all active facilities for the caller's tenant.

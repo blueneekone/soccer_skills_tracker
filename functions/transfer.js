@@ -1,61 +1,61 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 /**
- * transfer.js — Vanguard Transfer Protocol
- * ──────────────────────────────────────────
+ * transfer.js â€” Vanguard Transfer Protocol
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Enables a player to move between clubs while preserving individual
  * progression (XP, tier, Scout's Six stats, academic record) but leaving
  * team-level data (match results, tactical plans) with the origin club.
  *
  * PROTOCOL (3-PARTY CRYPTOGRAPHIC HANDSHAKE)
- * ───────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *
- *  ┌─────────┐   (1) initiatePlayerTransfer      ┌────────────────┐
- *  │  Parent  │ ──────────────────────────────►  │ transfer_tokens │
- *  └─────────┘   generates token + HMAC digest   └────────────────┘
- *       │                                               │
- *       │         Email with token sent to parent       │
- *       ▼                                               │
- *  Parent stores token securely                         │
- *       │                                               │
- *  ┌──────────────┐  (2) presentTransferToken    ┌──────────────────┐
- *  │ New Director │ ──────────────────────────►  │ token validated  │
- *  └──────────────┘   enters token in UI         │ director_accepted│
- *                                                └──────────────────┘
- *                                                       │
- *       Email fired to COPPA-verified parent email ◄────┘
+ *  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”   (1) initiatePlayerTransfer      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ *  â”‚  Parent  â”‚ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º  â”‚ transfer_tokens â”‚
+ *  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   generates token + HMAC digest   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+ *       â”‚                                               â”‚
+ *       â”‚         Email with token sent to parent       â”‚
+ *       â–¼                                               â”‚
+ *  Parent stores token securely                         â”‚
+ *       â”‚                                               â”‚
+ *  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  (2) presentTransferToken    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ *  â”‚ New Director â”‚ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º  â”‚ token validated  â”‚
+ *  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   enters token in UI         â”‚ director_acceptedâ”‚
+ *                                                â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+ *                                                       â”‚
+ *       Email fired to COPPA-verified parent email â—„â”€â”€â”€â”€â”˜
  *       with confirmation link
  *
- *  ┌─────────┐   (3) confirmPlayerTransfer        ┌──────────────────┐
- *  │  Parent  │ ──────────────────────────────►   │ Firestore atomic │
- *  └─────────┘   clicks link / enters authCode    │ data port        │
- *                                                 └──────────────────┘
+ *  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”   (3) confirmPlayerTransfer        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ *  â”‚  Parent  â”‚ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º   â”‚ Firestore atomic â”‚
+ *  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   clicks link / enters authCode    â”‚ data port        â”‚
+ *                                                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  *
  * WHAT IS PORTED
- * ──────────────
- *  ✓ users/{email}                — tenantId, clubId updated to new club
- *  ✓ xp, tier, stats (Scout's Six)
- *  ✓ academic_records/{email}     — preserved in place (email-keyed, tenant-agnostic)
- *  ✗ fixtures / match_results     — left with origin club
- *  ✗ team assignments (teamId)    — cleared; new director assigns
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *  âœ“ users/{email}                â€” tenantId, clubId updated to new club
+ *  âœ“ xp, tier, stats (Scout's Six)
+ *  âœ“ academic_records/{email}     â€” preserved in place (email-keyed, tenant-agnostic)
+ *  âœ— fixtures / match_results     â€” left with origin club
+ *  âœ— team assignments (teamId)    â€” cleared; new director assigns
  *
  * SECURITY
- * ────────
- *  • Token is 32 bytes of cryptographic randomness (256-bit entropy)
- *  • HMAC-SHA256 binds the token to (playerEmail + parentEmail + issueMs)
- *  • The HMAC digest is stored on the token document; to confirm, the parent
+ * â”€â”€â”€â”€â”€â”€â”€â”€
+ *  â€¢ Token is 32 bytes of cryptographic randomness (256-bit entropy)
+ *  â€¢ HMAC-SHA256 binds the token to (playerEmail + parentEmail + issueMs)
+ *  â€¢ The HMAC digest is stored on the token document; to confirm, the parent
  *    must present a valid authCode derived from the same secret
- *  • Tokens expire after 48 hours
- *  • Each token is single-use (deleted on completion)
- *  • All steps write immutable audit_logs entries
+ *  â€¢ Tokens expire after 48 hours
+ *  â€¢ Each token is single-use (deleted on completion)
+ *  â€¢ All steps write immutable audit_logs entries
  *
  * SECRETS
- * ───────
- *  TRANSFER_HMAC_SECRET — firebase functions:secrets:set TRANSFER_HMAC_SECRET
+ * â”€â”€â”€â”€â”€â”€â”€
+ *  TRANSFER_HMAC_SECRET â€” firebase functions:secrets:set TRANSFER_HMAC_SECRET
  *
  * Exports:
- *   initiatePlayerTransfer  — onCall (parent only)
- *   presentTransferToken    — onCall (new-club director only)
- *   confirmPlayerTransfer   — onCall (parent, with authCode)
+ *   initiatePlayerTransfer  â€” onCall (parent only)
+ *   presentTransferToken    â€” onCall (new-club director only)
+ *   confirmPlayerTransfer   â€” onCall (parent, with authCode)
  */
 
 'use strict';
@@ -67,11 +67,11 @@ const crypto = require('crypto');
 const {defineSecret} = require('firebase-functions/params');
 
 const TRANSFER_HMAC_SECRET = defineSecret('TRANSFER_HMAC_SECRET');
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 const TOKEN_TTL_MS = 48 * 60 * 60 * 1000; // 48 hours
 const db = admin.firestore();
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
+// â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
 
@@ -99,7 +99,7 @@ function deriveAuthCode(token, parentEmail, secret) {
  */
 function buildConfirmationBody(authCode, playerName, newClubName) {
   return [
-    `VANGUARD TRANSFER PROTOCOL — ACTION REQUIRED`,
+    `VANGUARD TRANSFER PROTOCOL â€” ACTION REQUIRED`,
     ``,
     `A Club Director has entered a transfer token for your athlete: ${playerName}.`,
     `The destination club is: ${newClubName}.`,
@@ -115,7 +115,7 @@ function buildConfirmationBody(authCode, playerName, newClubName) {
   ].join('\n');
 }
 
-// ── initiatePlayerTransfer ────────────────────────────────────────────────────
+// â”€â”€ initiatePlayerTransfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Step 1: Parent (or admin) requests a transfer for their child.
@@ -191,7 +191,7 @@ exports.initiatePlayerTransfer = onCall(
         destinationDirectorUid: null,
         destinationClubName: null,
         status: 'pending',
-        authCode, // stored for server-side comparison — never sent in the transfer response
+        authCode, // stored for server-side comparison â€” never sent in the transfer response
         expiresAt: admin.firestore.Timestamp.fromMillis(expiresAt),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         completedAt: null,
@@ -203,7 +203,7 @@ exports.initiatePlayerTransfer = onCall(
       await db.collection('mail').add({
         to: callerEmail,
         message: {
-          subject: `Vanguard Transfer Protocol — Auth Code for ${playerName}`,
+          subject: `Vanguard Transfer Protocol â€” Auth Code for ${playerName}`,
           text: buildConfirmationBody(authCode, playerName, 'Pending Director Confirmation'),
         },
       });
@@ -227,7 +227,7 @@ exports.initiatePlayerTransfer = onCall(
     },
 );
 
-// ── presentTransferToken ──────────────────────────────────────────────────────
+// â”€â”€ presentTransferToken â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Step 2: The new Club Director enters the transfer token provided by the parent.
@@ -321,7 +321,7 @@ exports.presentTransferToken = onCall(
     },
 );
 
-// ── confirmPlayerTransfer ─────────────────────────────────────────────────────
+// â”€â”€ confirmPlayerTransfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Step 3: Parent enters the auth code to cryptographically authorize the transfer.
@@ -373,7 +373,7 @@ exports.confirmPlayerTransfer = onCall(
         throw new HttpsError('deadline-exceeded', 'Transfer token has expired.');
       }
 
-      // CRYPTOGRAPHIC VERIFICATION — HMAC comparison
+      // CRYPTOGRAPHIC VERIFICATION â€” HMAC comparison
       const expectedCode = deriveAuthCode(tokenId, tokenData.parentEmail, TRANSFER_HMAC_SECRET.value());
       if (authCode.toUpperCase().trim() !== expectedCode) {
         // Rate-limit: increment failure counter
@@ -388,7 +388,7 @@ exports.confirmPlayerTransfer = onCall(
         throw new HttpsError('permission-denied', 'Invalid auth code.');
       }
 
-      // ── ATOMIC DATA PORT ──────────────────────────────────────────────────
+      // â”€â”€ ATOMIC DATA PORT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const playerEmail = tokenData.playerEmail;
       const newTenantId = tokenData.destinationTenantId;
       const oldTenantId = tokenData.originTenantId;
@@ -412,7 +412,7 @@ exports.confirmPlayerTransfer = onCall(
           transferredToTenantId: newTenantId,
         });
 
-        // Transfer history — origin club record
+        // Transfer history â€” origin club record
         tx.set(db.collection('transfer_history').doc(), {
           playerEmail,
           playerName: playerData.displayName ?? playerEmail,
@@ -426,7 +426,7 @@ exports.confirmPlayerTransfer = onCall(
           completedAt: now,
         });
 
-        // Transfer history — destination club record
+        // Transfer history â€” destination club record
         tx.set(db.collection('transfer_history').doc(), {
           playerEmail,
           playerName: playerData.displayName ?? playerEmail,
@@ -463,9 +463,9 @@ exports.confirmPlayerTransfer = onCall(
       await db.collection('mail').add({
         to: tokenData.parentEmail,
         message: {
-          subject: `Transfer Complete — ${tokenData.playerName} joined ${tokenData.destinationClubName}`,
+          subject: `Transfer Complete â€” ${tokenData.playerName} joined ${tokenData.destinationClubName}`,
           text: [
-            `VANGUARD TRANSFER PROTOCOL — COMPLETED`,
+            `VANGUARD TRANSFER PROTOCOL â€” COMPLETED`,
             ``,
             `${tokenData.playerName}'s Vanguard profile has been securely transferred to ${tokenData.destinationClubName}.`,
             ``,
