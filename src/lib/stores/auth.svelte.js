@@ -93,6 +93,48 @@ function createAuthStore() {
 	const isRecruiter = $derived(role === 'recruiter');
 
 	/**
+	 * True when the user holds a Registrar role.
+	 * Registrars are club-scoped staff who manage compliance and rosters but
+	 * have no team assignment.
+	 */
+	const isRegistrar = $derived(role === 'registrar');
+
+	/**
+	 * Epic 14: Vanguard Clearance Protocol.
+	 *
+	 * True when the user has passed their background-check vetting
+	 * (clearance.status === 'cleared' in Firestore, mirrored as isCleared JWT claim).
+	 *
+	 * Non-coach / non-recruiter roles are always considered cleared for UI purposes
+	 * — the enforcement boundary is the JWT claim checked by Firestore rules.
+	 *
+	 * Components should use this to:
+	 *   1. Show the locked state overlay for coaches who are not yet cleared.
+	 *   2. Hide sensitive player data panels until clearance is confirmed.
+	 *
+	 * ZERO-TRUST: The value is derived from the Firestore `clearance` sub-object
+	 * on the user profile (hydrated by resolveUserProfile). The JWT `isCleared`
+	 * claim is the ultimate enforcement gate on the server side.
+	 */
+	const isCleared = $derived.by(() => {
+		if (role !== 'coach' && role !== 'recruiter') return true;
+		const cl = /** @type {Record<string, unknown>} */ (userProfile)?.clearance;
+		if (!cl || typeof cl !== 'object') return false;
+		const status = /** @type {Record<string, unknown>} */ (cl).status;
+		if (status !== 'cleared') return false;
+		const exp = /** @type {Record<string, unknown>} */ (cl).expiresAt;
+		if (!exp) return true;
+		try {
+			const expMs = typeof (/** @type {Record<string, unknown>} */ (exp)).seconds === 'number'
+				? Number((/** @type {Record<string, unknown>} */ (exp)).seconds) * 1000
+				: Number(exp);
+			return isNaN(expMs) || expMs > Date.now();
+		} catch {
+			return false;
+		}
+	});
+
+	/**
 	 * Security guard: true when the user is fully authenticated but has no
 	 * tenantId claim — i.e. they have not yet joined an organisation.
 	 *
@@ -277,10 +319,23 @@ function createAuthStore() {
 		get isTutor() {
 			return isTutor;
 		},
-		/** True for recruiter role. Talent-feed access; PII gated behind Digital Handshake. */
-		get isRecruiter() {
-			return isRecruiter;
-		},
+	/** True for recruiter role. Talent-feed access; PII gated behind Digital Handshake. */
+	get isRecruiter() {
+		return isRecruiter;
+	},
+	/** True for registrar role. Club-scoped compliance and roster manager. */
+	get isRegistrar() {
+		return isRegistrar;
+	},
+	/**
+	 * Epic 14: Clearance Protocol gate.
+	 * True when the user has an active cleared background check (or is a role
+	 * that is exempt from the clearance requirement, e.g. director, player).
+	 * Coaches must be cleared before accessing player data.
+	 */
+	get isCleared() {
+		return isCleared;
+	},
 	/**
 	 * True when authenticated + loading complete + no tenantId claim.
 	 * Redirect to invite-code entry screen when this is true.

@@ -93,6 +93,22 @@
 		};
 	});
 
+	// Auto-unlock the disclosure button if the entire disclosure text fits inside
+	// the container without needing to scroll (e.g., very large viewport).
+	// Runs after each render whenever wizardStage reaches 'step1'.
+	$effect(() => {
+		if (wizardStage !== 'step1') return;
+		const el = disclosureEl;
+		if (!el) return;
+		// Use rAF to let the DOM settle after Svelte renders the disclosure block.
+		const id = requestAnimationFrame(() => {
+			if (el.scrollHeight <= el.clientHeight + 10) {
+				disclosureScrolled = true;
+			}
+		});
+		return () => cancelAnimationFrame(id);
+	});
+
 	const playerEmails = $derived.by(() => {
 		const raw = household?.playerEmails;
 		if (!Array.isArray(raw)) return [];
@@ -129,9 +145,12 @@
 	}
 
 	function onDisclosureScroll(event) {
-		const el = event.currentTarget;
-		const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
-		if (atBottom) disclosureScrolled = true;
+		const { scrollTop, scrollHeight, clientHeight } = /** @type {HTMLElement} */ (event.target);
+		// 10 px forgiveness buffer — accounts for floating-point subpixel rounding
+		// and browsers that report scrollHeight as a fractional value.
+		if (scrollHeight - scrollTop <= clientHeight + 10) {
+			disclosureScrolled = true;
+		}
 	}
 
 	async function submitConsent() {
@@ -273,7 +292,7 @@
 					Read the full disclosure below, then scroll to the bottom to continue.
 				</p>
 
-				<div class="vpc-disclosure" role="document" onscroll={onDisclosureScroll}>
+				<div class="vpc-disclosure" role="document" bind:this={disclosureEl} onscroll={onDisclosureScroll}>
 					<h4>What data we collect</h4>
 					<p>We collect the following categories of personal data for athletes registered through
 					SSTRACKER, the Soccer Skills Development platform:</p>
@@ -329,11 +348,18 @@
 
 				<button
 					type="button"
-					class="vpc-btn vpc-btn--primary"
+					class="vpc-btn vpc-btn--primary {disclosureScrolled ? 'vpc-btn--unlocked' : 'vpc-btn--locked'}"
 					disabled={!disclosureScrolled}
+					aria-disabled={!disclosureScrolled}
 					onclick={() => (wizardStage = 'step2')}
 				>
-					{disclosureScrolled ? 'I have read the disclosure — continue' : 'Scroll to continue ↓'}
+					{#if disclosureScrolled}
+						<i class="ph ph-check-circle" aria-hidden="true"></i>
+						I have read the disclosure — continue
+					{:else}
+						<i class="ph ph-arrow-circle-down" aria-hidden="true"></i>
+						Scroll to the bottom to continue ↓
+					{/if}
 				</button>
 
 			{:else if wizardStage === 'step2'}
@@ -719,6 +745,14 @@
 		line-height: 1.65;
 		color: var(--text-secondary);
 		background: rgba(15,23,42,0.02);
+		/* Constrain height so the user must scroll to reach the bottom.
+		   Without max-height + overflow-y the content expands to full height,
+		   the scroll event never fires, and the accept button stays locked. */
+		max-height: min(420px, 55vh);
+		overflow-y: auto;
+		/* Vanguard thin scrollbar — matches global app.css token */
+		scrollbar-width: thin;
+		scrollbar-color: rgba(0, 240, 255, 0.35) rgba(15, 23, 42, 0.1);
 	}
 	:global(html.dark) .vpc-disclosure {
 		background: rgba(255,255,255,0.02);
@@ -885,11 +919,58 @@
 		cursor: pointer;
 		font-family: inherit;
 		border: none;
-		transition: background 0.12s ease, opacity 0.12s ease;
+		/* z-index: ensure button sits above any glassmorphism backdrop overlays */
+		position: relative;
+		z-index: 10;
+		transition:
+			background 0.18s ease,
+			opacity 0.18s ease,
+			box-shadow 0.25s ease,
+			color 0.18s ease,
+			border-color 0.18s ease,
+			transform 0.12s ease;
 		width: 100%;
 	}
-	.vpc-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+	.vpc-btn:disabled { cursor: not-allowed; }
+	.vpc-btn--sm { width: auto; padding: 7px 13px; font-size: 0.8rem; }
+
+	/* Primary ─────────────────────────────────────────────────────────────── */
 	.vpc-btn--primary { background: var(--aggie-gold, #f59e0b); color: #000; }
 	.vpc-btn--primary:not(:disabled):hover { background: #d97706; }
-	.vpc-btn--sm { width: auto; padding: 7px 13px; font-size: 0.8rem; }
+
+	/* Locked state — clearly communicates "not yet" without being invisible */
+	.vpc-btn--primary.vpc-btn--locked {
+		background: rgba(15, 23, 42, 0.08);
+		color: rgba(100, 116, 139, 0.8);
+		border: 1px dashed rgba(100, 116, 139, 0.35);
+		opacity: 0.65;
+		cursor: not-allowed;
+		box-shadow: none;
+	}
+	:global(html.dark) .vpc-btn--primary.vpc-btn--locked {
+		background: rgba(255, 255, 255, 0.04);
+		color: rgba(148, 163, 184, 0.6);
+		border-color: rgba(148, 163, 184, 0.2);
+	}
+
+	/* Unlocked state — snaps to a glowing active appearance */
+	.vpc-btn--primary.vpc-btn--unlocked {
+		background: var(--aggie-gold, #f59e0b);
+		color: #000;
+		border: 1px solid transparent;
+		opacity: 1;
+		box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+		animation: vpc-btn-unlock 0.35s ease-out forwards;
+	}
+	.vpc-btn--primary.vpc-btn--unlocked:hover {
+		background: #d97706;
+		box-shadow: 0 0 26px rgba(245, 158, 11, 0.6);
+		transform: translateY(-1px);
+	}
+
+	@keyframes vpc-btn-unlock {
+		0% { transform: scale(0.98); box-shadow: none; }
+		60% { transform: scale(1.015); }
+		100% { transform: scale(1); box-shadow: 0 0 18px rgba(245, 158, 11, 0.45); }
+	}
 </style>

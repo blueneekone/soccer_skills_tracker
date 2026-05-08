@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -237,43 +237,132 @@
 </script>
 
 <div
-	class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+	class="ai-root vanguard-card"
 	aria-label="Priority actions inbox"
 >
-	<h2 class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Priority actions</h2>
+	<h2 class="ai-heading">Priority actions</h2>
 
 	{#if loading}
-		<p class="text-sm text-slate-500">Loading…</p>
+		<p class="ai-status">Loading…</p>
 	{:else if displayRows.length === 0}
-		<p class="text-sm text-slate-500">No urgent items. You’re caught up.</p>
+		<p class="ai-status">No urgent items. You're caught up.</p>
 	{:else}
-		<ul class="flex flex-col gap-1 p-0">
+		<ul class="ai-list">
 			{#each displayRows as row (row.id)}
 				<li>
 					<a
 						href={resolve(row.href)}
-						class="flex cursor-pointer items-center gap-3 rounded-lg border border-transparent p-3 transition-colors hover:border-white/5 hover:bg-slate-800/50"
+						class="ai-row"
 						onclick={(event) => {
 							event.preventDefault();
 							void navigateTo(row.href);
 						}}
 					>
 						<span
-							class="h-2 w-2 shrink-0 rounded-full shadow-[0_0_10px_currentColor] {row.dot === 'cyan'
-								? 'bg-cyan-400 shadow-cyan-400/80'
-								: 'bg-amber-400 shadow-amber-400/70'}"
+							class="ai-dot {row.dot === 'cyan'
+								? 'ai-dot--cyan'
+								: 'ai-dot--amber'}"
 							aria-hidden="true"
 						></span>
-						<span class="min-w-0 flex-1">
-							<span class="block text-sm font-semibold text-slate-100">{row.label}</span>
+						<span class="ai-text">
+							<span class="ai-label">{row.label}</span>
 							{#if row.meta}
-								<span class="mt-0.5 block text-xs text-slate-500">{row.meta}</span>
+								<span class="ai-meta">{row.meta}</span>
 							{/if}
 						</span>
-						<i class="ph ph-caret-right shrink-0 text-slate-500" aria-hidden="true"></i>
+						<i class="ph ph-caret-right ai-caret" aria-hidden="true"></i>
 					</a>
 				</li>
 			{/each}
 		</ul>
 	{/if}
 </div>
+
+<style>
+	.ai-root {
+		padding: 1.5rem;
+		border-radius: 1rem;
+	}
+
+	.ai-heading {
+		margin: 0 0 1rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #9ca3af;
+	}
+
+	.ai-status {
+		margin: 0;
+		font-size: 0.875rem;
+		color: #6b7280;
+	}
+
+	.ai-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.ai-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem;
+		border-radius: 0.5rem;
+		border: 1px solid transparent;
+		text-decoration: none;
+		transition: border-color 0.15s ease, background 0.15s ease;
+	}
+
+	.ai-row:hover {
+		border-color: var(--vanguard-border);
+		background: rgba(0, 240, 255, 0.04);
+	}
+
+	.ai-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		flex-shrink: 0;
+		border-radius: 50%;
+	}
+
+	.ai-dot--cyan {
+		background: var(--vanguard-cyan);
+		box-shadow: 0 0 10px var(--vanguard-cyan);
+	}
+
+	.ai-dot--amber {
+		background: #fbbf24;
+		box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+	}
+
+	.ai-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.ai-label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #f3f4f6;
+	}
+
+	.ai-meta {
+		display: block;
+		margin-top: 0.125rem;
+		font-size: 0.75rem;
+		color: #6b7280;
+	}
+
+	.ai-caret {
+		flex-shrink: 0;
+		color: #6b7280;
+		font-size: 0.875rem;
+	}
+</style>

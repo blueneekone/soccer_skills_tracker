@@ -97,13 +97,13 @@
 			</p>
 		</div>
 	{:else}
-		<ul class="tw-m-0 tw-list-none tw-divide-y tw-divide-slate-200 tw-rounded-lg tw-border tw-border-slate-200 tw-bg-white">
+		<ul class="tw-m-0 tw-list-none tw-divide-y tw-divide-[rgba(0,240,255,0.1)] tw-rounded-lg tw-border tw-border-[rgba(0,240,255,0.2)] tw-bg-vanguard-bg/80">
 			{#each rows as row (row.id)}
 				<li class="tw-px-3 tw-py-2">
-					<p class="tw-m-0 tw-text-sm tw-font-bold" style="color: var(--text-primary);">
+					<p class="tw-m-0 tw-text-sm tw-font-bold tw-text-gray-200">
 						{typeof row.title === 'string' ? row.title : 'Event'}
 					</p>
-					<p class="tw-m-0 tw-text-xs" style="color: var(--text-secondary);">
+					<p class="tw-m-0 tw-text-xs tw-text-gray-500">
 						{formatStart(row.startsAt)}
 						{#if row.kind}
 							· {row.kind}

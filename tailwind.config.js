@@ -8,6 +8,21 @@ export default {
 	theme: {
 		extend: {
 			colors: {
+				/**
+				 * Vanguard Protocol Design Token Dictionary
+				 * ──────────────────────────────────────────
+				 * Canonical brand palette. Use these semantic tokens in all new
+				 * components instead of raw Tailwind color scales.
+				 *
+				 * CSS variable counterparts live in :root in app.css.
+				 */
+				vanguard: {
+					bg:     '#010409',              // Deep Obsidian — global background
+					cyan:   '#00f0ff',              // Primary Glow / Success / XP
+					red:    '#ff003c',              // Ares Red / Danger / Errors
+					glass:  'var(--vanguard-glass)',  // rgba(255,255,255,0.03) — glassmorphism base
+					border: 'var(--vanguard-border)', // rgba(0,240,255,0.2) — subtle cyan border
+				},
 				void: {
 					black: 'var(--void-black)',
 					obsidian: 'var(--obsidian)',
@@ -32,8 +47,11 @@ export default {
 				},
 			},
 			boxShadow: {
-				'tron-legacy': 'var(--legacy-glow)',
-				'tron-ares': 'var(--ares-glow)',
+				'tron-legacy':    'var(--legacy-glow)',
+				'tron-ares':      'var(--ares-glow)',
+				'vanguard-card':  '0 0 15px rgba(0, 240, 255, 0.05)',
+				'vanguard-glow':  '0 0 15px rgba(0, 240, 255, 0.4)',
+				'vanguard-red':   '0 0 15px rgba(255, 0, 60, 0.4)',
 			},
 			// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
 			spacing: {

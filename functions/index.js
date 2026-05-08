@@ -102,6 +102,12 @@ exports.cancelFixture    = leagueHandlers.cancelFixture;
 exports.schedulePractice = leagueHandlers.schedulePractice;
 
 // â”€â”€ Epic 6+: Compliance & Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Epic 14: Vanguard Clearance Protocol ------------------------------------
+const complianceHandlers = require('./compliance');
+exports.backgroundCheckCallback = complianceHandlers.backgroundCheckCallback;
+exports.getComplianceRoster     = complianceHandlers.getComplianceRoster;
+exports.requestManualOverride   = complianceHandlers.requestManualOverride;
+exports.revokeCoachClearance    = complianceHandlers.revokeCoachClearance;
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 
@@ -1377,13 +1383,37 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
 
   const superAdmin = ADMIN_EMAIL.value();
 
+  // Epic 14: Clearance Protocol — compute isCleared from Firestore clearance sub-object.
+  // Zero-Trust: only status flag + expiry are used. No PII in JWT.
+  const clearanceData = (typeof userData.clearance === 'object' && userData.clearance !== null)
+    ? userData.clearance : {};
+  const clearanceStatus = typeof clearanceData.status === 'string'
+    ? clearanceData.status : 'pending';
+  let isCleared = clearanceStatus === 'cleared';
+  if (isCleared && clearanceData.expiresAt != null) {
+    try {
+      const expMs = typeof clearanceData.expiresAt.toMillis === 'function'
+        ? clearanceData.expiresAt.toMillis()
+        : Number(clearanceData.expiresAt);
+      if (!isNaN(expMs) && expMs < Date.now()) isCleared = false;
+    } catch {
+      isCleared = false;
+    }
+  }
+  // Only coaches and recruiters are subject to the clearance gate.
+  // Directors, registrars, parents, players, and admins always pass isCleared = true.
+  const clearedRole = userData.role || 'player';
+  const requiresClearance = clearedRole === 'coach' || clearedRole === 'recruiter';
+  if (!requiresClearance) isCleared = true;
+
   const customClaims = {
     teamId: userData.teamId || null,
-    role: userData.role || 'player',
+    role: clearedRole,
     clubId: userData.clubId || null,
     householdId: userData.householdId || null,
     minor: userData.isMinor === true,
     vpcVerified: userData.vpcStatus === 'verified',
+    isCleared,
     tier: null,
     subscription_status: null,
   };

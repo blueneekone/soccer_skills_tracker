@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 	import { browser } from '$app/environment';
 	import { onMount, tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
@@ -216,19 +216,19 @@
 {#if teamId}
 	<div class="ec-coach-xp">
 		<div
-			class="ec-coach-xp__card flex flex-col rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+			class="ec-coach-xp__card vanguard-card"
 		>
-			<h3 class="mb-1 text-sm font-bold text-slate-100">Team XP velocity (last 7 days)</h3>
-			<p class="mb-1 font-mono text-2xl font-black tracking-tight text-cyan-400 tabular-nums">
+			<h3 class="ec-coach-xp__title">Team XP velocity (last 7 days)</h3>
+			<p class="ec-coach-xp__xp-total">
 				{last7DayXpTotal.toLocaleString()} XP
 			</p>
-			<p class="mb-6 text-xs text-slate-500">Daily team XP (minutes × 2) · pure CSS bars</p>
+			<p class="ec-coach-xp__subtitle">Daily team XP (minutes × 2) · pure CSS bars</p>
 
-			<div class="flex min-h-[11rem] flex-1 items-end justify-between gap-1.5 px-0.5 sm:gap-2">
+			<div class="ec-coach-xp__bars">
 				{#each velocityBars as bar, i (`${bar.label}-${i}-${bar.xp}`)}
-					<div class="flex min-w-0 flex-1 flex-col items-center gap-2">
+					<div class="ec-coach-xp__bar-col">
 						<div
-							class="flex h-36 w-full items-end justify-center rounded-t-md bg-slate-950/50 ring-1 ring-inset ring-white/[0.06]"
+							class="ec-coach-xp__bar-track"
 						>
 							<div
 								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(0, 240, 255,0.45)] transition-[height] duration-300"
@@ -236,17 +236,17 @@
 								title="{bar.xp} XP"
 							></div>
 						</div>
-						<span class="text-xs text-slate-500">{bar.label}</span>
+						<span class="ec-coach-xp__bar-label">{bar.label}</span>
 					</div>
 				{/each}
 			</div>
 		</div>
 
 		<div
-			class="ec-coach-xp__card flex flex-col rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-md"
+			class="ec-coach-xp__card vanguard-card"
 		>
-			<h3 class="mb-1 text-sm font-bold text-slate-100">Team average attributes</h3>
-			<p class="mb-4 text-xs text-slate-500">
+			<h3 class="ec-coach-xp__title">Team average attributes</h3>
+			<p class="ec-coach-xp__subtitle">
 				Average ratings from active roster `player_stats` for this team.
 			</p>
 			<div class="ec-coach-xp__chart ec-coach-xp__chart--radar flex-1">
@@ -268,6 +268,68 @@
 	.ec-coach-xp__card {
 		box-sizing: border-box;
 		min-width: 0;
+		padding: 1.5rem;
+		border-radius: 1rem;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ec-coach-xp__title {
+		margin: 0 0 0.25rem;
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: #f3f4f6;
+	}
+
+	.ec-coach-xp__xp-total {
+		margin: 0 0 0.25rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-size: 1.5rem;
+		font-weight: 900;
+		letter-spacing: -0.02em;
+		color: var(--vanguard-cyan);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.ec-coach-xp__subtitle {
+		margin: 0 0 1.5rem;
+		font-size: 0.75rem;
+		color: #6b7280;
+	}
+
+	.ec-coach-xp__bars {
+		display: flex;
+		min-height: 11rem;
+		flex: 1;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.375rem;
+		padding: 0 0.125rem;
+	}
+
+	.ec-coach-xp__bar-col {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ec-coach-xp__bar-track {
+		display: flex;
+		height: 9rem;
+		width: 100%;
+		align-items: flex-end;
+		justify-content: center;
+		border-radius: 0.375rem 0.375rem 0 0;
+		background: rgba(0, 240, 255, 0.04);
+		box-shadow: inset 0 0 0 1px rgba(0, 240, 255, 0.08);
+	}
+
+	.ec-coach-xp__bar-label {
+		font-size: 0.75rem;
+		color: #6b7280;
 	}
 
 	.ec-coach-xp__chart {

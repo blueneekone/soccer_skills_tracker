@@ -86,6 +86,20 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.role == 'registrar';
     }
 
+    // Epic 14: Vanguard Clearance Protocol.
+    // isCleared() — true only when the JWT `isCleared` custom claim is set to true
+    // by the syncUserClaims trigger AFTER a background-check provider (or Director
+    // manual override) sets clearance.status == 'cleared' in the user Firestore doc.
+    // Coaches and recruiters must be cleared before accessing any player data.
+    function isCleared() {
+      return request.auth != null && request.auth.token.isCleared == true;
+    }
+
+    // Shorthand: director OR registrar (compliance managers).
+    function isComplianceManager() {
+      return isDirector() || isRegistrar();
+    }
+
     function registrarTeamInClub(tid) {
       return isRegistrar() && tokenClub() != null
         && exists(/databases/$(database)/documents/teams/$(tid))
@@ -1246,9 +1260,11 @@ service cloud.firestore {
     // Epic 3 Sprint 6: roster mutations only via Cloud Functions (secureAdd/Remove/UpdateJersey).
     // Admin SDK bypasses rules; client SDK cannot write (including super_admin).
     match /rosters/{teamId} {
+      // Epic 14: Coaches MUST hold isCleared == true JWT claim to read rosters.
+      // Directors and registrars are exempt (compliance managers).
       allow read: if authed() && (
         isSuper()
-        || sameTeam(teamId)
+        || (sameTeam(teamId) && isCleared())
         || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
           && teamClubId(teamId) == tokenClub())
         || registrarTeamInClub(teamId)
@@ -1298,7 +1314,7 @@ service cloud.firestore {
         || isSuper()
         || (isDirector() && tokenClub() != null && lookupRowInActorClub())
         || (isRegistrar() && tokenClub() != null && lookupRowInActorClub())
-        || (isCoach() && resource.data.keys().hasAll(['teamId'])
+        || (isCoach() && isCleared() && resource.data.keys().hasAll(['teamId'])
             && coachStaffCanAccessTeam(resource.data.teamId))
         || (isParent() && parentHouseholdAllowsChildEmail(inviteId.lower()))
       );
@@ -1584,9 +1600,10 @@ service cloud.firestore {
     match /player_stats/{playerKey} {
       // playerKey is Firebase Auth uid (Elite aggregate) or legacy display-name key.
       // Peers on the same team (token.teamId) may read for leaderboard — no emails exposed.
+      // Epic 14: Coach sameTeam reads require isCleared JWT claim.
       allow read: if authed() && playerVpcAllowed() && (
         isSuper()
-        || sameTeam(resource.data.teamId)
+        || (sameTeam(resource.data.teamId) && isCleared())
         || playerKey == request.auth.uid
         || playerKey == userDoc().playerName
         || (resource.data.keys().hasAll(['playerName'])
@@ -1598,19 +1615,20 @@ service cloud.firestore {
     }
 
     match /evaluations/{docId} {
+      // Epic 14: Coach reads and writes require isCleared JWT claim.
       allow read: if authed() && playerVpcAllowed() && (
         isSuper()
         || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId))
+        || (isCoach() && sameTeam(resource.data.teamId) && isCleared())
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
       );
       allow create: if isSuper()
         || directorScopedToTeam(request.resource.data.teamId)
-        || (isCoach() && sameTeam(request.resource.data.teamId));
+        || (isCoach() && sameTeam(request.resource.data.teamId) && isCleared());
       allow update, delete: if isSuper()
         || directorScopedToTeam(resource.data.teamId)
-        || (isCoach() && sameTeam(resource.data.teamId));
+        || (isCoach() && sameTeam(resource.data.teamId) && isCleared());
     }
 
     match /passports/{emailId} {
@@ -2570,6 +2588,31 @@ service cloud.firestore {
         || (resource.data.toTenantId == tokenClub() && isDirector())
       );
       allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Epic 14: VANGUARD CLEARANCE PROTOCOL — clearance_records collection
+    // ─────────────────────────────────────────────────────────────────────────
+    // Zero-Trust: Only status flag, expiry date, and 3rd-party reference ID
+    // are stored here. No PII (SSNs, criminal records) ever enters Firebase.
+    //
+    // Write path: Cloud Functions Admin SDK ONLY (allow write: if false).
+    // Read path:
+    //   • Subject (coach/recruiter) may read their own record.
+    //   • Directors and Registrars of the same club may list records.
+    //   • Platform admins have God Mode access.
+    //
+    // The clearance sub-object on users/{email} mirrors this collection and
+    // drives the isCleared JWT claim via syncUserClaims.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /clearance_records/{userEmail} {
+      allow read: if authed() && (
+        isSuper()
+        || emailKey() == userEmail.lower()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || (isRegistrar() && resource.data.clubId == tokenClub())
+      );
+      allow write: if false;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

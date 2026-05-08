@@ -72,7 +72,7 @@
 	});
 
 	const gateCtl =
-		'tw-w-full tw-shrink-0 tw-rounded-lg tw-border tw-border-white/10 tw-transition-all tw-px-4 tw-py-3 tw-text-base tw-min-h-[3.25rem]';
+		'tw-w-full tw-shrink-0 tw-rounded-lg tw-border tw-border-[rgba(0,240,255,0.2)] tw-transition-all tw-px-4 tw-py-3 tw-text-base tw-min-h-[3.25rem]';
 
 	const handleGoogleLogin = async () => {
 		errorMsg = '';
@@ -299,14 +299,14 @@
 
 						<input
 							type="email"
-							class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+							class="{gateCtl} tw-bg-vanguard-bg/80 tw-text-gray-200 tw-placeholder-gray-500"
 							placeholder="Email"
 							autocomplete="email"
 							bind:value={email}
 						/>
 						<input
 							type="password"
-							class="{gateCtl} tw-bg-white dark:tw-bg-zinc-900/80 tw-text-[var(--text-primary)]"
+							class="{gateCtl} tw-bg-vanguard-bg/80 tw-text-gray-200 tw-placeholder-gray-500"
 							placeholder="Password"
 							autocomplete={isSignUp ? 'new-password' : 'current-password'}
 							bind:value={password}

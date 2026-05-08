@@ -13,6 +13,10 @@
 	let mediaOpen = $state(false);
 
 	const role = $derived(authStore.role);
+
+	// Epic 14: Clearance Protocol — gate the whole Coach OS behind BGC clearance.
+	const clearanceRequired = $derived(role === 'coach' || role === 'recruiter');
+	const isCleared = $derived(authStore.isCleared);
 	const userEmail = $derived((authStore.user?.email || '').trim());
 
 	const myTeams = $derived.by(() => {
@@ -75,6 +79,52 @@
 <svelte:head>
 	<title>Nexus Command · Coach OS</title>
 </svelte:head>
+
+<!-- ── Epic 14: Clearance Protocol — locked dashboard state ───────────────── -->
+{#if clearanceRequired && !isCleared && !authStore.isLoading}
+	<div class="clearance-gate" aria-live="assertive" role="alert">
+		<!-- Ambient threat grid -->
+		<div class="clearance-gate__grid" aria-hidden="true"></div>
+
+		<!-- Pulsing shield icon -->
+		<div class="clearance-gate__shield" aria-hidden="true">
+			<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<path
+					d="M32 4L8 14v18c0 14 10.5 25.5 24 28 13.5-2.5 24-14 24-28V14L32 4Z"
+					stroke="var(--vanguard-red)"
+					stroke-width="2.5"
+					fill="rgba(255,0,60,0.08)"
+				/>
+				<line x1="32" y1="22" x2="32" y2="36" stroke="var(--vanguard-red)" stroke-width="3" stroke-linecap="round"/>
+				<circle cx="32" cy="43" r="2.5" fill="var(--vanguard-red)"/>
+			</svg>
+		</div>
+
+		<!-- Status text -->
+		<div class="clearance-gate__status">CLEARANCE PENDING</div>
+		<h1 class="clearance-gate__title">ACCESS RESTRICTED</h1>
+		<p class="clearance-gate__body">
+			Access to Vanguard telemetry is restricted until SafeSport background verification is
+			complete. Your compliance package has been submitted and is awaiting review. You will
+			receive a notification when your clearance is confirmed.
+		</p>
+
+		<!-- Diagnostic strip -->
+		<div class="clearance-gate__diag">
+			<span>UID: {authStore.user?.uid?.slice(0, 12) ?? '—'}…</span>
+			<span>CLUB: {authStore.tenantId || '—'}</span>
+			<span>STATUS: BGC PENDING</span>
+		</div>
+
+		<!-- Contact CTA -->
+		<a
+			href="mailto:compliance@vanguard.app?subject=BGC%20Clearance%20Inquiry&body=UID%3A%20{authStore.user?.uid ?? ''}"
+			class="clearance-gate__contact"
+		>
+			[ CONTACT COMPLIANCE OFFICER ]
+		</a>
+	</div>
+{:else}
 
 <!-- AEGIS Lightning Alert Banner — coaches/directors only, zero-height when inactive -->
 <WeatherAlert />
@@ -292,6 +342,9 @@
 	</main>
 </div>
 
+<!-- Close the {:else} from the clearance gate above -->
+{/if}
+
 <style>
 	.nexus-banner {
 		aspect-ratio: 16 / 5;
@@ -387,4 +440,111 @@
 		color: #00f0ff;
 	}
 	.media-hub-btn__icon { font-size: 0.6rem; }
+
+	/* ── Epic 14: Clearance Gate ─────────────────────────────────────────────── */
+	.clearance-gate {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		background: var(--vanguard-bg);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+		text-align: center;
+		gap: 1rem;
+	}
+
+	.clearance-gate__grid {
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(to right, rgba(255, 0, 60, 0.04) 1px, transparent 1px),
+			linear-gradient(to bottom, rgba(255, 0, 60, 0.04) 1px, transparent 1px);
+		background-size: 4rem 4rem;
+		pointer-events: none;
+	}
+
+	.clearance-gate__shield {
+		width: 6rem;
+		height: 6rem;
+		animation: gate-shield-pulse 2.5s ease-in-out infinite;
+		filter: drop-shadow(0 0 20px rgba(255, 0, 60, 0.5));
+		position: relative;
+		z-index: 1;
+	}
+
+	@keyframes gate-shield-pulse {
+		0%, 100% { filter: drop-shadow(0 0 16px rgba(255, 0, 60, 0.4)); }
+		50% { filter: drop-shadow(0 0 36px rgba(255, 0, 60, 0.8)); }
+	}
+
+	.clearance-gate__status {
+		font-size: 0.6rem;
+		letter-spacing: 0.2em;
+		color: var(--vanguard-red);
+		text-transform: uppercase;
+		position: relative;
+		z-index: 1;
+	}
+
+	.clearance-gate__title {
+		margin: 0;
+		font-size: clamp(1.5rem, 5vw, 2.5rem);
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		color: #f3f4f6;
+		text-transform: uppercase;
+		position: relative;
+		z-index: 1;
+	}
+
+	.clearance-gate__body {
+		margin: 0;
+		max-width: 36rem;
+		font-size: 0.875rem;
+		color: #6b7280;
+		line-height: 1.7;
+		position: relative;
+		z-index: 1;
+	}
+
+	.clearance-gate__diag {
+		display: flex;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+		justify-content: center;
+		font-size: 0.6rem;
+		letter-spacing: 0.12em;
+		color: #374151;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		border: 1px solid rgba(255, 0, 60, 0.15);
+		background: rgba(255, 0, 60, 0.04);
+		padding: 0.5rem 1.25rem;
+		border-radius: 0.375rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	.clearance-gate__contact {
+		display: inline-block;
+		margin-top: 0.5rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+		color: var(--vanguard-red);
+		border: 1px solid rgba(255, 0, 60, 0.3);
+		padding: 0.5rem 1.25rem;
+		border-radius: 0.375rem;
+		text-decoration: none;
+		transition: background 0.2s, box-shadow 0.2s;
+		position: relative;
+		z-index: 1;
+	}
+
+	.clearance-gate__contact:hover {
+		background: rgba(255, 0, 60, 0.1);
+		box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+	}
 </style>
