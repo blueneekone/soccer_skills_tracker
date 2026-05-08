@@ -20,7 +20,7 @@
 
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { verifyIdToken } from 'firebase-admin/auth';
+import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert, applicationDefault } from 'firebase-admin/app';
 import { env } from '$env/dynamic/private';
@@ -142,9 +142,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 	const idToken = authHeader.slice(7);
 
-	let decodedToken: Awaited<ReturnType<typeof verifyIdToken>>;
+	let decodedToken: Awaited<ReturnType<typeof getAuth>['verifyIdToken']>;
 	try {
-		decodedToken = await verifyIdToken(idToken);
+		decodedToken = await getAuth().verifyIdToken(idToken);
 	} catch {
 		throw error(401, 'Invalid or expired token.');
 	}

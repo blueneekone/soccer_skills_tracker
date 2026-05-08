@@ -7,7 +7,6 @@
     "rules": "storage.rules"
   },
   "hosting": {
-    "predeploy": ["npm run build"],
     "public": "build",
     "ignore": [
       "firebase.json",
