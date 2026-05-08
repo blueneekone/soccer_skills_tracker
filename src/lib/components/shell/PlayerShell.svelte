@@ -150,7 +150,7 @@
 		{#if playerOsGate.blocked}
 			<PlayerReadOnlyBillingBanner
 				reasons={playerOsGate.reasons}
-				onPricing={async () => await goto('/pricing')}
+				onPricing={async () => await goto('/upgrade')}
 				onSettings={async () => await goto('/settings')}
 			/>
 		{/if}

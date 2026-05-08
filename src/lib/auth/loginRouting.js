@@ -78,6 +78,20 @@ export function getLoginWaterfallDestination(role, profile) {
 			pivotKey: 'ctx-player-home',
 		};
 	}
+	if (role === 'tutor') {
+		return {
+			path: '/tutor',
+			context: 'household',
+			pivotKey: 'ctx-tutor-portal',
+		};
+	}
+	if (role === 'recruiter') {
+		return {
+			path: '/recruiter',
+			context: 'recruiter',
+			pivotKey: 'ctx-recruiter-portal',
+		};
+	}
 	return {
 		path: '/settings',
 		context: 'household',

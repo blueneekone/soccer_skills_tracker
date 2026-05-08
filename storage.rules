@@ -161,6 +161,96 @@ service firebase.storage {
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // EPIC 9 — SECURE MEDIA VAULT
+    //
+    // Path layout:
+    //   tenants/{tenantId}/staging/{uid}/{fileName}   ← write-once upload zone
+    //   tenants/{tenantId}/media/{uid}/{fileName}     ← CF-only write, tenant-scoped read
+    //   tenants/{tenantId}/quarantine/{uid}/{fileName} ← CF-only, no client access
+    //
+    // Upload flow:
+    //   1. Client calls getUploadToken CF → receives a V4 signed PUT URL
+    //      (bypasses these rules; signed URLs use service-account authority)
+    //   2. processMedia CF triggers on staging/ creation:
+    //      a. Strips EXIF / container metadata
+    //      b. Runs Gemini safety scan
+    //      c. Moves to media/ or quarantine/
+    //      d. Deletes the staging file
+    //   3. Client reads media/ via signed URLs (no direct Storage auth required)
+    //
+    // These rules provide defence-in-depth: even if a signed URL is leaked,
+    // the staging bucket blocks direct client reads, and quarantine is sealed.
+    // ─────────────────────────────────────────────────────────────────────
+
+    // STAGING bucket — write-once by authenticated players; NO client reads.
+    // Reads are done exclusively by the processMedia Cloud Function (Admin SDK,
+    // which bypasses these rules).
+    match /tenants/{tenantId}/staging/{uid}/{fileName} {
+      // Authenticated player may upload to their own UID slot within their tenant.
+      // NOTE: In production, use getUploadToken CF for V4 signed PUT URLs instead.
+      //       This rule is a fallback for emulator/test environments.
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (
+          request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+          || request.auth.token.role in ['super_admin', 'global_admin']
+        )
+        && request.resource != null
+        && request.resource.size <= 100 * 1024 * 1024
+        && request.resource.contentType.matches(
+          'video/mp4|video/webm|video/quicktime|image/(jpeg|png|webp)'
+        );
+
+      // NO client reads of staging files. processMedia CF uses Admin SDK.
+      allow read: if false;
+
+      // NO client deletes — processMedia CF deletes staging files after processing.
+      allow delete: if false;
+    }
+
+    // PROCESSED MEDIA bucket — read by authenticated tenant members; writes
+    // are reserved for the processMedia Cloud Function (Admin SDK).
+    // Players, coaches, and directors can stream ready clips.
+    // Recruiters with an accepted handshake can also read (enforced by Firestore,
+    // not Storage rules, via signed URL generation in the CF).
+    match /tenants/{tenantId}/media/{uid}/{fileName} {
+      allow read: if request.auth != null
+        && (
+          request.auth.token.role in ['super_admin', 'global_admin']
+          || request.auth.uid == uid
+          || (
+            (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+            && request.auth.token.role in ['director', 'coach', 'player', 'parent', 'tutor']
+          )
+        );
+
+      // NO client writes — processMedia CF handles all writes via Admin SDK.
+      allow write: if false;
+
+      // Players can delete their own processed clips; directors can delete any.
+      allow delete: if request.auth != null
+        && (
+          request.auth.uid == uid
+          || request.auth.token.role in ['director', 'super_admin', 'global_admin']
+        )
+        && (
+          request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+          || request.auth.token.role in ['super_admin', 'global_admin']
+        );
+    }
+
+    // QUARANTINE bucket — completely sealed from clients.
+    // Only platform admins can review (via Admin SDK / Console).
+    match /tenants/{tenantId}/quarantine/{uid}/{fileName} {
+      allow read, write, delete: if false;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

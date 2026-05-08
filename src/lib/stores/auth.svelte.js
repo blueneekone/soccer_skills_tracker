@@ -80,6 +80,19 @@ function createAuthStore() {
 	const isParent = $derived(role === 'parent');
 
 	/**
+	 * True when the user is a Tutor — has read-only access to academic_records
+	 * for their assigned students. Scoped to a single tenantId.
+	 */
+	const isTutor = $derived(role === 'tutor');
+
+	/**
+	 * True when the user holds a Recruiter role.
+	 * Recruiters get the talent-feed view but NO raw PII until a Digital Handshake
+	 * is accepted by the player's Director/Parent.
+	 */
+	const isRecruiter = $derived(role === 'recruiter');
+
+	/**
 	 * Security guard: true when the user is fully authenticated but has no
 	 * tenantId claim — i.e. they have not yet joined an organisation.
 	 *
@@ -259,6 +272,14 @@ function createAuthStore() {
 		/** True for parent role. */
 		get isParent() {
 			return isParent;
+		},
+		/** True for tutor role. Read-only academic_records access for assigned students. */
+		get isTutor() {
+			return isTutor;
+		},
+		/** True for recruiter role. Talent-feed access; PII gated behind Digital Handshake. */
+		get isRecruiter() {
+			return isRecruiter;
 		},
 	/**
 	 * True when authenticated + loading complete + no tenantId claim.

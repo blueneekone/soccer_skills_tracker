@@ -25,6 +25,7 @@
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
 	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
+	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
 
 	let { children } = $props();
@@ -262,6 +263,8 @@
 	<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
 	     or when iOS Safari is detected and app is not in standalone mode. -->
 	<InstallPrompt />
+	<!-- Global audio player — persists across route changes during podcast sessions. -->
+	<MiniPlayer />
 	{#if authStore.role === 'player'}
 		<!-- Player OS: dark-mode, gamified, mobile-first shell -->
 		<PlayerShell>

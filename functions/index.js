@@ -43,6 +43,64 @@ const {
   grantTrainingXpAfterRepCreated,
 } = require('./gamificationWorkoutXp');
 
+// ── Epic 7: Media Integrations ────────────────────────────────────────────────
+const integrationHandlers = require('./integrations');
+exports.getSoccerNews = integrationHandlers.getSoccerNews;
+exports.searchPodcasts = integrationHandlers.searchPodcasts;
+exports.getPodcastEpisodes = integrationHandlers.getPodcastEpisodes;
+
+// ── Epic 7: AEGIS Weather & Safety Protocol ───────────────────────────────────
+const weatherHandlers = require('./weather');
+exports.getWeatherConditions = weatherHandlers.getWeatherConditions;
+
+// ── Epic 9: Secure Media Vault ────────────────────────────────────────────────
+const uploadTokenHandlers = require('./uploadTokens');
+exports.getUploadToken = uploadTokenHandlers.getUploadToken;
+exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
+
+const processMediaHandlers = require('./processMedia');
+exports.processMedia = processMediaHandlers.processMedia;
+
+// ── Epic 9: Universal Roster Ingestion ───────────────────────────────────────
+const ingestHandlers = require('./ingestRoster');
+exports.ingestRoster = ingestHandlers.ingestRoster;
+
+// ── Epic 10: Marketing / Subscription checkout stub ───────────────────────────
+const subscriptionHandlers = require('./subscription');
+exports.createSubscription = subscriptionHandlers.createSubscription;
+
+// ── Epic 11: Commerce Engine (Stripe Connect) ──────────────────────────────────
+const commerceHandlers = require('./commerce');
+exports.createRegistrationIntent = commerceHandlers.createRegistrationIntent;
+exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;
+exports.createConnectOnboarding = commerceHandlers.createConnectOnboarding;
+exports.getRegistrationStatus = commerceHandlers.getRegistrationStatus;
+
+// ── Epic 11: Pitch Collision Avoidance ────────────────────────────────────────
+const facilitiesHandlers = require('./facilities');
+exports.checkFacilityAvailability = facilitiesHandlers.checkFacilityAvailability;
+exports.bookFacility = facilitiesHandlers.bookFacility;
+exports.releaseFacilityBooking = facilitiesHandlers.releaseFacilityBooking;
+exports.listFacilities = facilitiesHandlers.listFacilities;
+
+// ── Epic 11: Vanguard Transfer Protocol ───────────────────────────────────────
+const transferHandlers = require('./transfer');
+exports.initiatePlayerTransfer = transferHandlers.initiatePlayerTransfer;
+exports.presentTransferToken = transferHandlers.presentTransferToken;
+exports.confirmPlayerTransfer = transferHandlers.confirmPlayerTransfer;
+
+// ── Epic 12: FCM Notification Dispatcher ──────────────────────────────────────
+const dispatcherHandlers = require('./dispatcher');
+exports.sendWeatherAlertToTenant = dispatcherHandlers.sendWeatherAlertToTenant;
+exports.sendGameRemindersToday = dispatcherHandlers.sendGameRemindersToday;
+
+// ── Hotfix Alpha-3: League & Fixture Management (UTC enforcement) ──────────────
+const leagueHandlers = require('./league');
+exports.createFixture    = leagueHandlers.createFixture;
+exports.updateFixture    = leagueHandlers.updateFixture;
+exports.cancelFixture    = leagueHandlers.cancelFixture;
+exports.schedulePractice = leagueHandlers.schedulePractice;
+
 // ── Epic 6+: Compliance & Communications ─────────────────────────────────────
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;

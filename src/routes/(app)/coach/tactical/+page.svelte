@@ -1,3 +1,8 @@
+<svelte:head>
+	<!-- Prevent accidental pinch-zoom on the tactical board touch canvas -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+</svelte:head>
+
 <script>
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';

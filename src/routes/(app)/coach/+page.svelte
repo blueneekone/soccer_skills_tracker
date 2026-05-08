@@ -5,6 +5,12 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
+	import MediaCenter from '$lib/components/media/MediaCenter.svelte';
+	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
+	import WeatherWidget from '$lib/components/weather/WeatherWidget.svelte';
+	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+
+	let mediaOpen = $state(false);
 
 	const role = $derived(authStore.role);
 	const userEmail = $derived((authStore.user?.email || '').trim());
@@ -39,21 +45,13 @@
 
 	const nexusBadgeLetter = $derived((clubNameDisplay.slice(0, 1) || 'A').toUpperCase());
 
-	// ── Weather Hub: mocked but realistic — drives GO / NO-GO ticker ─────────
-	const weatherTempF = 72;
-	const weatherWindMph = 8;
-	const weatherHumidityPct = 42;
-	const weatherPrecipPct = 12;
-	const weatherSkyLabel = 'PARTLY CLOUDY';
-	const weatherCoords = 'LAT 41.633° N  ·  LON 111.851° W';
-
-	// GO / NO-GO threshold logic — wind > 25, precip ≥ 65, or extreme temps trip NO-GO.
-	const deploymentStatus = $derived.by(() => {
-		if (weatherWindMph > 25 || weatherPrecipPct >= 65 || weatherTempF >= 100 || weatherTempF <= 20) {
-			return /** @type {const} */ ('NO-GO');
-		}
-		return /** @type {const} */ ('GO');
-	});
+	// ── Weather Hub: AEGIS live data via WeatherWidget / WeatherAegis ────────
+	// Default field coordinates — replaced by team's actual field location when available.
+	const fieldLat = $derived(activeTeamRow?.fieldLat ?? 41.633);
+	const fieldLng = $derived(activeTeamRow?.fieldLng ?? -111.851);
+	const weatherCoords = $derived(
+		`LAT ${Math.abs(fieldLat).toFixed(3)}° ${fieldLat >= 0 ? 'N' : 'S'}  ·  LON ${Math.abs(fieldLng).toFixed(3)}° ${fieldLng >= 0 ? 'E' : 'W'}`,
+	);
 
 	let tickerNow = $state('--:--:--');
 	$effect(() => {
@@ -72,9 +70,14 @@
 	}
 </script>
 
+<MediaCenter bind:open={mediaOpen} />
+
 <svelte:head>
 	<title>Nexus Command · Coach OS</title>
 </svelte:head>
+
+<!-- AEGIS Lightning Alert Banner — coaches/directors only, zero-height when inactive -->
+<WeatherAlert />
 
 <!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
 <div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-text-slate-200">
@@ -123,6 +126,19 @@
 
 	<!-- ── BODY ─────────────────────────────────────────────────────────────── -->
 	<main class="tw-relative tw-z-10 tw-mx-auto tw-w-full tw-max-w-7xl tw-px-3 tw-pb-16 tw-pt-6 sm:tw-px-5">
+		<!-- Media Hub trigger — floating pill button top-right -->
+		<div class="tw-flex tw-justify-end tw-mb-4">
+			<button
+				type="button"
+				class="media-hub-btn"
+				onclick={() => { mediaOpen = true; }}
+				aria-label="Open Media Hub — news and podcasts"
+			>
+				<span class="media-hub-btn__icon" aria-hidden="true">▶</span>
+				MEDIA HUB
+			</button>
+		</div>
+
 		<!-- Squad Readiness Matrix (mounted at top, primary content) -->
 		<SquadTelemetryView />
 
@@ -257,49 +273,21 @@
 				</div>
 			</article>
 
-			<!-- WEATHER MONITORING — SIEM card with GO/NO-GO ticker (lg col 3) -->
-			<article
-				class="tw-relative tw-flex tw-min-h-[280px] tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] {deploymentStatus === 'GO' ? 'tw-border-[#00f0ff]/30' : 'tw-border-[#ff003c]/40 tw-shadow-[0_0_30px_rgba(255,0,60,0.18)]'} lg:tw-col-span-3"
-				aria-label="Weather Monitoring"
-			>
-				<header class="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-white/10 tw-pb-3">
-					<div class="tw-flex tw-items-center tw-gap-2">
-						<i class="ph ph-cloud-sun tw-text-base tw-text-[#00f0ff]" aria-hidden="true"></i>
-						<h2 class="tw-m-0 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
-							Weather Monitoring · LIVE
-						</h2>
-					</div>
-					<span
-						class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-px-3 tw-py-1 tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.25em] {deploymentStatus === 'GO' ? 'tw-border-[#00f0ff]/55 tw-bg-[#00f0ff]/15 tw-text-[#00f0ff] tw-shadow-[0_0_18px_rgba(0,240,255,0.4)]' : 'tw-animate-pulse tw-border-[#ff003c]/55 tw-bg-[#ff003c]/15 tw-text-[#ff003c] tw-shadow-[0_0_18px_rgba(255,0,60,0.5)]'}"
-					>
-						<span class="tw-block tw-h-1.5 tw-w-1.5 tw-rounded-full {deploymentStatus === 'GO' ? 'tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.9)]' : 'tw-bg-[#ff003c] tw-shadow-[0_0_6px_rgba(255,0,60,0.9)]'}"></span>
-						DEPLOYMENT STATUS · {deploymentStatus}
-					</span>
-				</header>
-
-				<div class="tw-grid tw-grid-cols-2 tw-gap-4 sm:tw-grid-cols-4">
-					<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-p-3 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/40">TEMPERATURE</span>
-						<span class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-white">{weatherTempF}<span class="tw-text-base tw-text-[#00f0ff]/80">°F</span></span>
-						<span class="tw-text-[9px] tw-text-slate-500">{weatherSkyLabel}</span>
-					</div>
-					<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-p-3 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/40">WIND</span>
-						<span class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-white">{weatherWindMph}<span class="tw-text-base tw-text-[#00f0ff]/80"> MPH</span></span>
-						<span class="tw-text-[9px] tw-text-slate-500">SW · STEADY</span>
-					</div>
-					<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-p-3 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/40">HUMIDITY</span>
-						<span class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-white">{weatherHumidityPct}<span class="tw-text-base tw-text-[#00f0ff]/80">%</span></span>
-						<span class="tw-text-[9px] tw-text-slate-500">DEW PT 49°</span>
-					</div>
-					<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-xl tw-border tw-border-white/5 tw-bg-black/30 tw-p-3 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/40">PRECIP RISK</span>
-						<span class="tw-text-2xl tw-font-black tw-tabular-nums tw-text-white">{weatherPrecipPct}<span class="tw-text-base tw-text-[#00f0ff]/80">%</span></span>
-						<span class="tw-text-[9px] tw-text-slate-500">NEXT 6H</span>
-					</div>
+		<!-- WEATHER MONITORING — AEGIS live widget (lg col 3) -->
+		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
+		<div class="lg:tw-col-span-3">
+			{#if vanguardFlags.weatherEnabled}
+				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
+			{:else}
+				<div
+					class="font-mono text-xs p-4 text-center"
+					style="background: rgba(0,8,20,0.7); border: 1px solid rgba(0,255,255,0.1); border-radius:4px; color: rgba(0,255,255,0.3);"
+				>
+					⏸ AEGIS WEATHER MODULE OFFLINE<br/>
+					<span style="font-size: 9px; opacity: 0.6;">Disabled by platform configuration. Contact your administrator.</span>
 				</div>
-			</article>
+			{/if}
+		</div>
 		</section>
 	</main>
 </div>
@@ -379,4 +367,24 @@
 			border-color: rgba(0, 240, 255, 0.95);
 		}
 	}
+
+	/* ── Media Hub trigger ───────────────────────────────────────────────────── */
+	.media-hub-btn {
+		display: inline-flex; align-items: center; gap: 0.5rem;
+		padding: 0.5rem 1rem; min-height: 44px;
+		background: rgba(0, 240, 255, 0.06);
+		border: 1px solid rgba(0, 240, 255, 0.25);
+		border-radius: 999px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
+		color: rgba(0, 240, 255, 0.75);
+		cursor: pointer; transition: all 0.2s;
+	}
+	.media-hub-btn:hover {
+		background: rgba(0, 240, 255, 0.12);
+		border-color: rgba(0, 240, 255, 0.5);
+		box-shadow: 0 0 16px rgba(0, 240, 255, 0.12);
+		color: #00f0ff;
+	}
+	.media-hub-btn__icon { font-size: 0.6rem; }
 </style>

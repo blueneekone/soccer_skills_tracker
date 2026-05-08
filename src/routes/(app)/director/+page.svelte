@@ -14,6 +14,7 @@
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
+	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
@@ -65,6 +66,9 @@
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
 </script>
+
+<!-- AEGIS Lightning Alert — directors and above only -->
+<WeatherAlert />
 
 <div class="director-console-page">
 	<!-- Page identity row — sits directly inside ec-canvas (no subnav above it) -->

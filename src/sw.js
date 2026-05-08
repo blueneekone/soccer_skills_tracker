@@ -92,3 +92,44 @@ self.addEventListener('fetch', (event) => {
 		);
 	}
 });
+
+// ── AEGIS Lightning Alert: background push via postMessage ───────────────────
+// The WeatherAegis service calls `navigator.serviceWorker.controller.postMessage()`
+// with type AEGIS_LIGHTNING_ALERT when a DANGER transition occurs.
+// The SW shows a persistent notification even when the page is minimised.
+self.addEventListener('message', (event) => {
+	if (!event.data || event.data.type !== 'AEGIS_LIGHTNING_ALERT') return;
+
+	const { title, body, tag } = event.data;
+	const showNotification = self.registration.showNotification(title ?? '⚡ LIGHTNING ALERT', {
+		body: body ?? 'CRITICAL: LIGHTNING DETECTED — CLEAR THE PITCH.',
+		icon: '/icons/icon-192.png',
+		badge: '/icons/icon-72.png',
+		tag: tag ?? 'aegis-lightning',
+		requireInteraction: true,
+		vibrate: [200, 100, 200, 100, 200],
+		actions: [
+			{ action: 'acknowledge', title: 'Acknowledged' },
+		],
+	});
+
+	event.waitUntil(showNotification);
+});
+
+// Notification click — bring the coach portal to the foreground.
+self.addEventListener('notificationclick', (event) => {
+	event.notification.close();
+	if (event.action === 'acknowledge') return;
+
+	event.waitUntil(
+		self.clients
+			.matchAll({ type: 'window', includeUncontrolled: true })
+			.then((clients) => {
+				const focused = clients.find((c) => c.focused);
+				if (focused) return focused.focus();
+				const any = clients.find((c) => 'focus' in c);
+				if (any) return any.focus();
+				return self.clients.openWindow('/coach');
+			}),
+	);
+});

@@ -77,6 +77,30 @@
 		}
 	}
 
+	// ── Invite URL failsafe ─────────────────────────────────────────────────
+	// If DKIM/SPF fails or the email gets spam-filtered, directors can copy
+	// this URL and send it directly via SMS/WhatsApp/Telegram.
+	const inviteBaseUrl = $derived(
+		typeof window !== 'undefined'
+			? `${window.location.origin}/join`
+			: 'https://vanguard.app/join',
+	);
+	const generatedInviteUrl = $derived(
+		generatedCode ? `${inviteBaseUrl}?code=${generatedCode}` : '',
+	);
+
+	let copyUrlLabel = $state('COPY LINK');
+	async function copyInviteUrl() {
+		if (!generatedInviteUrl) return;
+		try {
+			await navigator.clipboard.writeText(generatedInviteUrl);
+			copyUrlLabel = 'COPIED ✓';
+			setTimeout(() => (copyUrlLabel = 'COPY LINK'), 2500);
+		} catch {
+			copyUrlLabel = 'ERR';
+		}
+	}
+
 	// ── Invite list helpers ───────────────────────────────────────────────────
 	const ROLE_COLORS: Record<string, string> = {
 		coach: '#00f0ff',
@@ -296,6 +320,29 @@
 							<button class="oi-copy-btn" onclick={copyCode}>{copyLabel}</button>
 						</div>
 						<p class="oi-gen-expiry">Expires: {generatedExpiry}</p>
+
+						<!-- ── COMMUNICATIONS FAILSAFE ──────────────────────────── -->
+						<!-- If email is bounced / spam-filtered, share this link   -->
+						<!-- directly via SMS, WhatsApp, or any channel.            -->
+						<div class="oi-url-failsafe">
+							<span class="oi-url-label">⚡ DIRECT LINK FAILSAFE</span>
+							<p class="oi-url-subtext">
+								If the invite email is blocked or bounced, share this URL directly.
+							</p>
+							<div class="oi-url-row">
+								<input
+									type="text"
+									readonly
+									value={generatedInviteUrl}
+									class="oi-url-input"
+									aria-label="Invite join URL"
+									onclick={(e) => (e.currentTarget as HTMLInputElement).select()}
+								/>
+								<button class="oi-copy-btn oi-copy-btn--url" onclick={copyInviteUrl}>
+									{copyUrlLabel}
+								</button>
+							</div>
+						</div>
 					</div>
 					<button
 						class="oi-action-btn oi-action-btn--secondary"
@@ -664,6 +711,65 @@
 		border: 1px solid rgba(0, 240, 255, 0.2);
 		border-radius: 6px;
 		padding: 0.75rem 1rem;
+	}
+	/* ── Communications Failsafe URL block ─────────────────────────────── */
+	.oi-url-failsafe {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-top: 0.5rem;
+		padding-top: 0.6rem;
+		border-top: 1px solid rgba(0, 240, 255, 0.1);
+	}
+	.oi-url-label {
+		font-size: 8px;
+		letter-spacing: 0.2em;
+		color: rgba(251, 191, 36, 0.8);
+		font-weight: 700;
+	}
+	.oi-url-subtext {
+		margin: 0;
+		font-size: 9px;
+		color: rgba(0, 240, 255, 0.4);
+		line-height: 1.5;
+	}
+	.oi-url-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.oi-url-input {
+		flex: 1;
+		min-width: 0;
+		padding: 5px 8px;
+		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-size: 10px;
+		letter-spacing: 0.03em;
+		background: rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(0, 240, 255, 0.2);
+		border-radius: 3px;
+		color: rgba(0, 240, 255, 0.7);
+		outline: none;
+		cursor: text;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.oi-url-input:focus {
+		border-color: rgba(0, 240, 255, 0.45);
+		color: #00f0ff;
+	}
+	.oi-copy-btn--url {
+		white-space: nowrap;
+		font-size: 8px;
+		padding: 5px 10px;
+		color: rgba(251, 191, 36, 0.9);
+		border-color: rgba(251, 191, 36, 0.35);
+		background: rgba(251, 191, 36, 0.05);
+	}
+	.oi-copy-btn--url:hover {
+		background: rgba(251, 191, 36, 0.12);
+		box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
 	}
 	.oi-gen-code-row {
 		display: flex;

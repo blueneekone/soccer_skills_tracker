@@ -33,6 +33,7 @@
  */
 
 import type { FirestoreTimestamp } from './tenant';
+import { formatFixtureDate as _fmtFixtureDate } from '../utils/time';
 
 // Re-export for convenience
 export type { FirestoreTimestamp };
@@ -155,12 +156,26 @@ export namespace LeagueSchema {
 		teamId: string;
 		/** Reference to opponents/{opponentId}. */
 		opponentId: string;
-		/** Kick-off date and time (stored as Timestamp for ordering). */
+		/**
+		 * Kick-off date and time.
+		 * ALWAYS stored as a UTC Firestore Timestamp — Cloud Function
+		 * `createFixture` enforces this on write; never trust a raw
+		 * client-supplied string or number here without conversion.
+		 */
 		dateTime: AnyDate;
 		/** Venue label, e.g. "Home — Lakeside Park". */
 		location: string;
 		type: FixtureType;
 		status: FixtureStatus;
+		/**
+		 * IANA timezone of the physical venue (e.g. "America/New_York").
+		 * Set when the fixture is linked to a `facilities` document that
+		 * carries its own timezone. Used by FixtureList to render local
+		 * kickoff time and warn when it differs from the viewer's browser zone.
+		 */
+		facilityTimezone?: string;
+		/** Reference to facilities/{facilityId}, if booked via the scheduler. */
+		facilityId?: string;
 		createdAt?: FirestoreTimestamp;
 		/** Set by recordMatchResult(). */
 		completedAt?: FirestoreTimestamp;
@@ -289,12 +304,6 @@ export function computeThreatAssessment(
 }
 
 /** Format a match date for display (e.g. "SAT 14 JUN · 15:00"). */
-export function formatFixtureDate(val: AnyDate | undefined | null): string {
-	const ms = toTimestampMs(val);
-	if (!ms) return '—';
-	const d = new Date(ms);
-	const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase();
-	const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
-	const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-	return `${dayStr} ${dateStr} · ${timeStr}`;
+export function formatFixtureDate(val: AnyDate | undefined | null, facilityTimezone?: string): string {
+	return _fmtFixtureDate(val, facilityTimezone);
 }

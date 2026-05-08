@@ -12,6 +12,9 @@ import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
  * `signOut`, then clear client stores so a later login on the same device has no
  * ghost session data.
  *
+ * FCM hook: removes this device's push token from Firestore before signing out
+ * to prevent rogue notifications to a logged-out device.
+ *
  * @param {object} [opts]
  * @param {string} [opts.loginPath] Defaults to `/login`
  */
@@ -19,6 +22,17 @@ export async function handleSignOut(opts = {}) {
 	if (!browser) return;
 	const loginPath =
 		typeof opts.loginPath === 'string' && opts.loginPath.trim() ? opts.loginPath.trim() : '/login';
+
+	// ── FCM logout hook: deregister device token before signing out ──────────
+	try {
+		// Dynamic import avoids circular deps and keeps the bundle lean for
+		// non-browser environments (e.g. SSR prerender)
+		const { fcmService } = await import('$lib/services/messaging.svelte.js');
+		await fcmService.deregisterDevice();
+	} catch {
+		// Best-effort — never block sign-out on FCM failure
+	}
+
 	try {
 		await goto(loginPath, { replaceState: true });
 		await signOut(auth);

@@ -60,6 +60,7 @@
 	 *   initialStats?: import('$lib/states/ArmoryEngine.svelte').ScoutsSix;
 	 *   maxTiltDeg?: number;
 	 *   class?: string;
+	 *   gpa?: number | null;
 	 * }}
 	 */
 	let {
@@ -78,8 +79,14 @@
 			VAN: '94',
 		},
 		maxTiltDeg = 10,
-		class: extraClass = ''
+		class: extraClass = '',
+		gpa = null,
 	} = $props();
+
+	// ── Scholar Badge logic ────────────────────────────────────────────────
+	// Badge activates when GPA >= 3.5. A null/undefined gpa hides the badge.
+	const scholarBadgeActive = $derived(typeof gpa === 'number' && gpa >= 3.5);
+	const gpaLabel = $derived(typeof gpa === 'number' ? gpa.toFixed(2) : null);
 
 	// ── Engine instantiation ──────────────────────────────────────────────
 	// Self-contained fallback for standalone / demo use. When a parent
@@ -244,17 +251,30 @@
 					<span class="tw-text-[7px] tw-uppercase tw-tracking-[0.45em] tw-text-white/35">
 						VAN
 					</span>
-					<!-- Jersey badge sits below the rating -->
-					<span
-						class="tw-mt-1 tw-rounded-sm tw-border tw-px-2 tw-py-0.5 tw-text-[8px] tw-tracking-[0.22em] tw-uppercase tw-tabular-nums"
-						style:color={accent}
-						style:border-color="{accent}55"
-						style:background="{accent}10"
+				<!-- Jersey badge sits below the rating -->
+				<span
+					class="tw-mt-1 tw-rounded-sm tw-border tw-px-2 tw-py-0.5 tw-text-[8px] tw-tracking-[0.22em] tw-uppercase tw-tabular-nums"
+					style:color={accent}
+					style:border-color="{accent}55"
+					style:background="{accent}10"
+				>
+					#{number}
+				</span>
+
+				<!-- Scholar Badge — glows amber-gold when GPA ≥ 3.5 -->
+				{#if gpaLabel !== null}
+					<div
+						class="vc-scholar-badge"
+						class:vc-scholar-badge--active={scholarBadgeActive}
+						title="Academic GPA: {gpaLabel}{scholarBadgeActive ? ' · Scholar' : ''}"
+						aria-label="GPA {gpaLabel}{scholarBadgeActive ? ', Scholar status active' : ''}"
 					>
-						#{number}
-					</span>
-				</div>
-			</header>
+						<span class="vc-scholar-badge__icon" aria-hidden="true">🎓</span>
+						<span class="vc-scholar-badge__gpa">{gpaLabel}</span>
+					</div>
+				{/if}
+			</div>
+		</header>
 
 		<!--
 		  VANGUARD PRISM — dynamic hexagonal stat radar.
@@ -396,6 +416,44 @@
 	 */
 	.vc-stat--row2 {
 		border-top: 1px solid rgba(255, 255, 255, 0.10);
+	}
+
+	/* ── Scholar Badge ───────────────────────────────────────────────────────── */
+	.vc-scholar-badge {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		margin-top: 4px;
+		padding: 2px 5px;
+		border-radius: 4px;
+		border: 1px solid rgba(148, 163, 184, 0.2);
+		background: rgba(0, 0, 0, 0.3);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.5rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: rgba(148, 163, 184, 0.5);
+		transition: border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+	}
+	.vc-scholar-badge--active {
+		border-color: rgba(251, 191, 36, 0.6);
+		background: rgba(251, 191, 36, 0.08);
+		color: rgba(251, 191, 36, 0.95);
+		box-shadow:
+			0 0 10px rgba(251, 191, 36, 0.35),
+			inset 0 0 8px rgba(251, 191, 36, 0.08);
+		animation: scholarPulse 2.4s ease-in-out infinite;
+	}
+	.vc-scholar-badge__icon {
+		font-size: 0.55rem;
+		line-height: 1;
+	}
+	.vc-scholar-badge__gpa {
+		font-variant-numeric: tabular-nums;
+	}
+	@keyframes scholarPulse {
+		0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.35), inset 0 0 8px rgba(251, 191, 36, 0.08); }
+		50% { box-shadow: 0 0 18px rgba(251, 191, 36, 0.6), inset 0 0 12px rgba(251, 191, 36, 0.15); }
 	}
 
 	.vc-card {

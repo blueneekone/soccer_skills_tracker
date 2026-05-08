@@ -37,6 +37,10 @@ import {
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import { getMessaging, isSupported } from 'firebase/messaging';
+import {
+	getRemoteConfig,
+	fetchAndActivate,
+} from 'firebase/remote-config';
 
 // ── Config objects ────────────────────────────────────────────────────────────
 
@@ -122,3 +126,41 @@ if (browser) {
 		}
 	});
 }
+
+/**
+ * Firebase Remote Config — Kill switches for live feature flags.
+ *
+ * Default values are set here so the app works even before the first
+ * successful fetch (e.g. offline, cold start, or before Remote Config
+ * is populated in the Firebase Console).
+ *
+ * Kill switches:
+ *   feature_weather_aegis_enabled  — disables WeatherWidget if false
+ *   feature_xp_gamification_enabled — disables XP award logic if false
+ *
+ * To flip a switch: Firebase Console → Remote Config → Add parameter.
+ * Changes propagate within the minimumFetchIntervalMillis window (5 min).
+ */
+export const remoteConfig = (() => {
+	if (!browser) return null;
+	try {
+		const rc = getRemoteConfig(app);
+		rc.settings.minimumFetchIntervalMillis = 5 * 60 * 1000; // 5 minutes
+
+		// Safe defaults — all features ON until told otherwise
+		rc.defaultConfig = {
+			feature_weather_aegis_enabled: true,
+			feature_xp_gamification_enabled: true,
+		};
+
+		// Fetch and activate in the background — never blocks rendering
+		fetchAndActivate(rc).catch(() => {
+			// Network failure: defaults remain active, no crash
+		});
+
+		return rc;
+	} catch {
+		// Remote Config not supported in this environment (e.g. test runner)
+		return null;
+	}
+})();

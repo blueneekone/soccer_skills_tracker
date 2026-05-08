@@ -312,18 +312,27 @@
 							bind:value={password}
 						/>
 
-						{#if errorMsg}
-							<div class="auth-error-msg" role="alert">{errorMsg}</div>
-						{/if}
+					{#if errorMsg}
+						<div class="auth-error-msg" role="alert">{errorMsg}</div>
+					{/if}
 
-						<button
-							type="button"
-							class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(0, 240, 255,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
-							disabled={adultBusy}
-							onclick={handleEmailLogin}
+					<button
+						type="button"
+						class="tw-w-full tw-min-h-[3.5rem] tw-rounded-lg tw-border-2 tw-border-cyan-400/70 tw-bg-cyan-500/10 tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(0, 240, 255,0.18)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20 hover:tw-text-cyan-50 disabled:tw-opacity-50"
+						disabled={adultBusy}
+						onclick={handleEmailLogin}
+					>
+						{adultBusy ? 'WORKING…' : isSignUp ? 'INITIALIZE VAULT' : 'AUTHENTICATE'}
+					</button>
+
+					{#if !isSignUp}
+						<a
+							href="/reset"
+							class="tw-block tw-mt-2 tw-text-center tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-cyan-500/40 tw-no-underline hover:tw-text-cyan-400/70 tw-transition"
 						>
-							{adultBusy ? 'WORKING…' : isSignUp ? 'INITIALIZE VAULT' : 'AUTHENTICATE'}
-						</button>
+							Forgot password? · Credential Recovery
+						</a>
+					{/if}
 					</div>
 				</section>
 			{:else}

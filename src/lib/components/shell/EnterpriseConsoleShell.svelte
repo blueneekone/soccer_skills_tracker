@@ -62,6 +62,38 @@
 	// ── Global Command Palette ───────────────────────────────────────────────────
 	let cmdPaletteOpen = $state(false);
 
+	// ── Anomaly Reporting Hook ────────────────────────────────────────────────
+	let anomalyOpen = $state(false);
+	let anomalyText = $state('');
+	let anomalySent = $state(false);
+
+	function openAnomaly() {
+		anomalyText = '';
+		anomalySent = false;
+		anomalyOpen = true;
+	}
+
+	function submitAnomaly() {
+		if (!anomalyText.trim()) return;
+		const tenantId = authStore.tenantId ?? authStore.user?.email ?? 'UNKNOWN';
+		const uid = authStore.user?.uid ?? 'UNKNOWN';
+		const subject = encodeURIComponent('VANGUARD ANOMALY REPORT');
+		const body = encodeURIComponent(
+			[
+				`Tenant ID: ${tenantId}`,
+				`User ID:   ${uid}`,
+				`Role:      ${authStore.role ?? 'unknown'}`,
+				``,
+				`Issue:`,
+				anomalyText.trim(),
+			].join('\n'),
+		);
+		const mailto = `mailto:support@sstracker.app?subject=${subject}&body=${body}`;
+		window.open(mailto, '_blank');
+		anomalySent = true;
+		setTimeout(() => (anomalyOpen = false), 2000);
+	}
+
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		/** @param {KeyboardEvent} e */
@@ -135,7 +167,7 @@
 					{/each}
 					{#if showBilling}
 						<p class="ec-nav-section">Billing</p>
-						<a class="ec-nav-link" href="/pricing" onclick={closeMobileNav}>
+						<a class="ec-nav-link" href="/upgrade" onclick={closeMobileNav}>
 							<i class="ph ph-credit-card" aria-hidden="true"></i>
 							<span class="ec-nav-link__label">Plans & Billing</span>
 						</a>
@@ -151,6 +183,11 @@
 						<i class="ph ph-lifebuoy" aria-hidden="true"></i>
 						<span class="ec-nav-link__label">Support / Help Desk</span>
 					</a>
+					<!-- ── Anomaly Reporting Hook ─────────────────────────────── -->
+					<button type="button" class="ec-nav-link ec-nav-link--anomaly" onclick={openAnomaly}>
+						<i class="ph ph-warning" aria-hidden="true"></i>
+						<span class="ec-nav-link__label">⚠ Report Anomaly</span>
+					</button>
 					<button type="button" class="ec-nav-link" onclick={() => void handleSignOut()}>
 						<i class="ph ph-sign-out" aria-hidden="true"></i>
 						<span class="ec-nav-link__label">Sign out</span>
@@ -218,6 +255,68 @@
 
 <PlayerDetailDrawer />
 
+<!-- ── Anomaly Report Modal ─────────────────────────────────────────────── -->
+{#if anomalyOpen}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="ec-anomaly-backdrop" onclick={() => (anomalyOpen = false)}>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="ec-anomaly-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Report Anomaly">
+			<!-- Corner accents -->
+			<div class="ec-anomaly-corner ec-anomaly-corner--tl"></div>
+			<div class="ec-anomaly-corner ec-anomaly-corner--br"></div>
+
+			<div class="ec-anomaly-header">
+				<span class="ec-anomaly-title">⚠ ANOMALY REPORT</span>
+				<button class="ec-anomaly-close" onclick={() => (anomalyOpen = false)} aria-label="Close">✕</button>
+			</div>
+
+			{#if anomalySent}
+				<div class="ec-anomaly-body ec-anomaly-body--sent">
+					<span class="ec-anomaly-sent-icon">✓</span>
+					<p>Mail client opened. Send the pre-filled report to complete submission.</p>
+				</div>
+			{:else}
+				<div class="ec-anomaly-body">
+					<!-- Pre-filled context block -->
+					<div class="ec-anomaly-context">
+						<div class="ec-anomaly-ctx-row">
+							<span class="ec-anomaly-ctx-key">TENANT ID</span>
+							<span class="ec-anomaly-ctx-val">{authStore.tenantId ?? authStore.user?.email ?? '—'}</span>
+						</div>
+						<div class="ec-anomaly-ctx-row">
+							<span class="ec-anomaly-ctx-key">USER ID</span>
+							<span class="ec-anomaly-ctx-val">{authStore.user?.uid ?? '—'}</span>
+						</div>
+						<div class="ec-anomaly-ctx-row">
+							<span class="ec-anomaly-ctx-key">ROLE</span>
+							<span class="ec-anomaly-ctx-val">{authStore.role ?? 'unknown'}</span>
+						</div>
+					</div>
+
+					<label class="ec-anomaly-label" for="anomaly-text">DESCRIBE THE ANOMALY</label>
+					<textarea
+						id="anomaly-text"
+						class="ec-anomaly-textarea"
+						bind:value={anomalyText}
+						placeholder="e.g. Wrong birth year locked me in COPPA gate. My DOB should be 2009-03-15."
+						rows="4"
+					></textarea>
+					<p class="ec-anomaly-hint">
+						This pre-fills a support email with your Tenant ID and User ID. No data is sent without your review.
+					</p>
+					<button
+						class="ec-anomaly-submit"
+						onclick={submitAnomaly}
+						disabled={!anomalyText.trim()}
+					>[ TRANSMIT REPORT ]</button>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+
 <style>
 	.ecs-icon-lg   { font-size: 1.5rem; }
 	.ecs-icon-md   { font-size: 1.25rem; }
@@ -237,6 +336,177 @@
 		font-size: 12px;
 		font-weight: 500;
 		min-width: 0;
+	}
+
+	/* ── Anomaly nav link variant ─────────────────────────────────────────── */
+	:global(.ec-nav-link--anomaly) {
+		color: rgba(251, 191, 36, 0.6) !important;
+	}
+	:global(.ec-nav-link--anomaly:hover) {
+		color: rgba(251, 191, 36, 0.9) !important;
+		background: rgba(251, 191, 36, 0.06) !important;
+	}
+
+	/* ── Anomaly Report Modal ─────────────────────────────────────────────── */
+	.ec-anomaly-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 9000;
+		background: rgba(0, 0, 0, 0.75);
+		backdrop-filter: blur(8px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.ec-anomaly-modal {
+		position: relative;
+		width: min(480px, 92vw);
+		background: rgba(0, 6, 16, 0.97);
+		border: 1px solid rgba(251, 191, 36, 0.25);
+		border-radius: 4px;
+		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		box-shadow: 0 0 60px rgba(251, 191, 36, 0.06);
+	}
+	/* Corner accents — amber instead of cyan to signal "warning" state */
+	.ec-anomaly-corner {
+		position: absolute;
+		width: 14px;
+		height: 14px;
+		pointer-events: none;
+	}
+	.ec-anomaly-corner--tl {
+		top: 0; left: 0;
+		border-top: 2px solid rgba(251, 191, 36, 0.5);
+		border-left: 2px solid rgba(251, 191, 36, 0.5);
+	}
+	.ec-anomaly-corner--br {
+		bottom: 0; right: 0;
+		border-bottom: 2px solid rgba(251, 191, 36, 0.5);
+		border-right: 2px solid rgba(251, 191, 36, 0.5);
+	}
+	.ec-anomaly-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 16px 10px;
+		border-bottom: 1px solid rgba(251, 191, 36, 0.12);
+		background: rgba(251, 191, 36, 0.04);
+	}
+	.ec-anomaly-title {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		color: rgba(251, 191, 36, 0.9);
+	}
+	.ec-anomaly-close {
+		background: transparent;
+		border: none;
+		color: rgba(251, 191, 36, 0.4);
+		font-family: inherit;
+		font-size: 12px;
+		cursor: pointer;
+		padding: 2px 6px;
+		transition: color 0.15s;
+	}
+	.ec-anomaly-close:hover { color: rgba(251, 191, 36, 0.85); }
+
+	.ec-anomaly-body {
+		padding: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.ec-anomaly-body--sent {
+		align-items: center;
+		text-align: center;
+		padding: 2rem;
+		gap: 10px;
+		color: rgba(0, 255, 136, 0.8);
+	}
+	.ec-anomaly-sent-icon {
+		font-size: 2rem;
+		color: #00ff88;
+	}
+	/* Pre-filled context block */
+	.ec-anomaly-context {
+		background: rgba(0, 0, 0, 0.35);
+		border: 1px solid rgba(251, 191, 36, 0.1);
+		border-radius: 3px;
+		padding: 10px 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.ec-anomaly-ctx-row {
+		display: flex;
+		gap: 10px;
+		align-items: baseline;
+	}
+	.ec-anomaly-ctx-key {
+		font-size: 8px;
+		letter-spacing: 0.18em;
+		color: rgba(251, 191, 36, 0.45);
+		min-width: 70px;
+	}
+	.ec-anomaly-ctx-val {
+		font-size: 9px;
+		color: rgba(0, 255, 255, 0.55);
+		word-break: break-all;
+	}
+	.ec-anomaly-label {
+		font-size: 9px;
+		letter-spacing: 0.15em;
+		color: rgba(251, 191, 36, 0.5);
+	}
+	.ec-anomaly-textarea {
+		width: 100%;
+		resize: vertical;
+		min-height: 90px;
+		padding: 8px 10px;
+		font-family: inherit;
+		font-size: 11px;
+		background: rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(251, 191, 36, 0.2);
+		border-radius: 3px;
+		color: #e2e8f0;
+		outline: none;
+		transition: border-color 0.15s;
+		box-sizing: border-box;
+	}
+	.ec-anomaly-textarea:focus {
+		border-color: rgba(251, 191, 36, 0.45);
+	}
+	.ec-anomaly-textarea::placeholder {
+		color: rgba(255, 255, 255, 0.2);
+		font-size: 10px;
+	}
+	.ec-anomaly-hint {
+		margin: 0;
+		font-size: 9px;
+		color: rgba(0, 255, 255, 0.3);
+		line-height: 1.5;
+	}
+	.ec-anomaly-submit {
+		font-family: inherit;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		padding: 9px 16px;
+		background: rgba(251, 191, 36, 0.08);
+		border: 1px solid rgba(251, 191, 36, 0.4);
+		border-radius: 2px;
+		color: rgba(251, 191, 36, 0.9);
+		cursor: pointer;
+		transition: background 0.15s, box-shadow 0.15s;
+		align-self: flex-start;
+	}
+	.ec-anomaly-submit:hover:not(:disabled) {
+		background: rgba(251, 191, 36, 0.15);
+		box-shadow: 0 0 14px rgba(251, 191, 36, 0.15);
+	}
+	.ec-anomaly-submit:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
 	}
 	.ec-drawer__meta {
 		margin: 0 0 12px;

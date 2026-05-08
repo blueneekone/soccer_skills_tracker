@@ -2330,6 +2330,277 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // academic_records/{playerEmail}
+    // ─────────────────────────────────
+    // Stores GPA, study hours, subjects, gpaTrend, eligibilityStatus.
+    // Tenant-scoped: tutors and coaches only access records within their clubId.
+    //
+    // Read:
+    //   • The player themselves.
+    //   • Tutors in the same tenant (tutor_assignments enforces scope client-side;
+    //     rules enforce tenant boundary).
+    //   • Coaches and Directors in the same tenant.
+    //   • Platform admins (cross-tenant).
+    //
+    // Write:
+    //   • Tutors in the same tenant (update GPA/study hours, not role fields).
+    //   • Directors and platform admins.
+    //   • The Cloud Function Admin SDK.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /academic_records/{playerEmail} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || emailKey() == playerEmail
+        || (resource.data.tenantId == tokenClub() && (
+              tokenRole() == 'tutor'
+              || isCoach()
+              || isDirector()
+           ))
+      );
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (tokenClub() != null && (
+              tokenRole() == 'tutor'
+              || isCoach()
+              || isDirector()
+           ))
+      );
+      allow create, update: if authed() && (
+        isPlatformAdmin()
+        || isDirector()
+        || (tokenRole() == 'tutor'
+            && request.resource.data.tenantId == tokenClub()
+            // Tutors may not alter the player's role, UID, or COPPA fields.
+            && !request.resource.data.diff(resource.data).affectedKeys()
+                 .hasAny(['playerUid', 'role', 'coppaStatus', 'isMinor']))
+      );
+      allow delete: if isPlatformAdmin() || isDirector();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // tutor_assignments/{tutorEmail}
+    // ─────────────────────────────────
+    // Maps a tutor to their assigned student emails array.
+    // Written only by Directors/Admins (via CF or direct SDK).
+    // Read by the tutor themselves, their director, and platform admins.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /tutor_assignments/{tutorEmail} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || emailKey() == tutorEmail
+        || (isDirector() && resource.data.tenantId == tokenClub())
+      );
+      allow list: if authed() && (isPlatformAdmin() || isDirector());
+      allow create, update, delete: if authed() && (isPlatformAdmin() || isDirector());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // recruiter_watchlist/{recruiterEmail}/bookmarks/{playerEmail}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Personal watchlist per recruiter. Recruiters read/write their own subcollection.
+    // No cross-recruiter access. Platform admins bypass.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /recruiter_watchlist/{recruiterEmail} {
+      allow read, write: if false; // only subcollection documents are accessible
+      match /bookmarks/{playerEmail} {
+        allow read, write: if authed() && (
+          isPlatformAdmin()
+          || (emailKey() == recruiterEmail && tokenRole() == 'recruiter')
+          // Entitlement-based recruiter access (Stripe tier)
+          || (emailKey() == recruiterEmail
+              && recruiterSubscriptionActive())
+        );
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // recruiter_handshakes/{handshakeId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Digital Handshake requests. Format: {recruiterEmail}__{playerEmail}.
+    //
+    // Create: Recruiters (creates their own handshake request).
+    // Read:   Recruiter, target player's Director, Platform Admin.
+    // Update: Only Directors and Platform Admins can change `status`
+    //         (approve/deny the handshake).
+    // Delete: Platform admin only.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /recruiter_handshakes/{handshakeId} {
+      allow create: if authed() && (
+        (tokenRole() == 'recruiter' || recruiterSubscriptionActive())
+        && request.resource.data.recruiterEmail == emailKey()
+        && request.resource.data.keys().hasAll(['recruiterEmail', 'playerEmail', 'status', 'requestedAt'])
+        && request.resource.data.status == 'pending'
+      );
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || resource.data.recruiterEmail == emailKey()
+        || (isDirector() && resource.data.recruiterClubId == tokenClub())
+      );
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (isDirector() && resource.data.recruiterClubId == tokenClub())
+      );
+      // Directors approve/deny; only `status` field may be changed client-side.
+      allow update: if authed() && (
+        isPlatformAdmin()
+        || (isDirector()
+            && resource.data.recruiterClubId == tokenClub()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt']))
+      );
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // stat_history/{playerEmail}/snapshots/{snapshotId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Time-series performance snapshots for growth chart analytics.
+    //
+    // Read:  The player, their coaches/directors, accepted-handshake recruiters,
+    //        and platform admins.
+    // Write: Cloud Functions / Admin SDK only (server-side snapshots).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /stat_history/{playerEmail} {
+      allow read, write: if false; // subcollection only
+      match /snapshots/{snapshotId} {
+        allow get, list: if authed() && (
+          isPlatformAdmin()
+          || emailKey() == playerEmail
+          || (resource.data.tenantId == tokenClub() && (isCoach() || isDirector()))
+          || (tokenRole() == 'recruiter'
+              && exists(/databases/$(database)/documents/recruiter_handshakes/$(emailKey() + '__' + playerEmail))
+              && get(/databases/$(database)/documents/recruiter_handshakes/$(emailKey() + '__' + playerEmail)).data.status == 'accepted')
+        );
+        allow create, update, delete: if false; // Admin SDK only
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // facilities/{facilityId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Physical pitch/court inventory for a tenant.
+    // Read:   Any authenticated member of the same tenant.
+    // Create: Director only, must set own tenantId.
+    // Update: Director only, same tenant.
+    // Delete: Platform admin only (soft-delete isActive preferred).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /facilities/{facilityId} {
+      allow get, list: if authed() && (
+        isGlobalAdmin()
+        || resource.data.tenantId == tokenClub()
+      );
+      allow create: if authed() && (
+        isDirector()
+        && request.resource.data.tenantId == tokenClub()
+        && request.resource.data.keys().hasAll(['name', 'tenantId', 'isActive'])
+      );
+      allow update: if authed() && (
+        isGlobalAdmin()
+        || (isDirector() && resource.data.tenantId == tokenClub())
+      );
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // facility_bookings/{bookingId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Time-block reservation documents created by bookFacility CF (Admin SDK).
+    // Read:   Coach, Director, or Admin of same tenant.
+    // Write:  Cloud Functions only (Admin SDK bypasses these rules).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /facility_bookings/{bookingId} {
+      allow get, list: if authed() && (
+        isGlobalAdmin()
+        || (resource.data.tenantId == tokenClub()
+            && (isCoach() || isDirector() || tokenRole() == 'registrar'))
+      );
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // season_registrations/{registrationId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Created by createRegistrationIntent CF. Updated by Stripe webhook CF.
+    // Read:   The registered player/parent, coaches/directors of same tenant, admins.
+    // Write:  Cloud Functions only.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /season_registrations/{registrationId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || resource.data.playerEmail == emailKey()
+        || (resource.data.tenantId == tokenClub() && (isCoach() || isDirector()))
+      );
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (resource.data.tenantId == tokenClub() && (isCoach() || isDirector()))
+      );
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // transfer_tokens/{tokenId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // HIGHLY RESTRICTED: contains cryptographic transfer authorization tokens.
+    // All writes are via Cloud Functions (Admin SDK).
+    // Read: The registered parent or the platform admin can read their own token.
+    //       Directors cannot read (they only need to call presentTransferToken CF).
+    // ─────────────────────────────────────────────────────────────────────────
+    match /transfer_tokens/{tokenId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || (resource.data.parentEmail == emailKey()
+            && (resource.data.status == 'pending' || resource.data.status == 'director_accepted'))
+      );
+      allow list: if isPlatformAdmin();
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // transfer_history/{entryId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Immutable transfer audit trail. Written by confirmPlayerTransfer CF.
+    // Read:   The player, their parent, directors of either involved tenant, admins.
+    // Write:  Cloud Functions only.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /transfer_history/{entryId} {
+      allow get, list: if authed() && (
+        isPlatformAdmin()
+        || resource.data.playerEmail == emailKey()
+        || (resource.data.fromTenantId == tokenClub() && isDirector())
+        || (resource.data.toTenantId == tokenClub() && isDirector())
+      );
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FCM TOKEN + PREFERENCES write rules (bolt-on to users/{email})
+    // ─────────────────────────────────────────────────────────────────────────
+    // The users/{email} document is governed by the main users rule above.
+    // Here we add a narrower sub-rule for the specific fields managed by
+    // the FCM service:
+    //
+    //  fcmTokens   — Client may only call arrayUnion with exactly one token
+    //                that matches their current session. Reads are blocked to
+    //                prevent token enumeration by other clients.
+    //
+    //  preferences — User can read/write their own preferences sub-map.
+    //                No other user or role may write another user's preferences.
+    //
+    // IMPLEMENTATION NOTE
+    // ───────────────────
+    // Firestore security rules cannot enforce "this specific arrayUnion value
+    // matches a known FCM token" — that would require calling the FCM API from
+    // rules, which is not supported. Instead:
+    //   • The write rule enforces: caller writes ONLY to their own document.
+    //   • The CF dispatcher uses Admin SDK (bypasses rules) for token pruning.
+    //   • signOutFlow.js uses the client SDK arrayRemove, constrained here to
+    //     the same "own document" rule.
+    //
+    // The rules above in users/{email} already allow authenticated users to
+    // update their own document. No additional match block needed; preferences
+    // and fcmTokens are covered by the existing update rule on users/{email}.
+    // ─────────────────────────────────────────────────────────────────────────
+
     match /{document=**} {
       allow read, write: if false;
     }

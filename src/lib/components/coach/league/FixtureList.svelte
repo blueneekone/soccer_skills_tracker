@@ -17,6 +17,11 @@
 	 */
 
 	import { formatFixtureDate, type LeagueSchema } from '$lib/types/league';
+	import { formatFixtureDateFull, getBrowserTimezone } from '$lib/utils/time';
+
+	const browserTz = getBrowserTimezone();
+	import { swipe } from '$lib/actions/swipe.js';
+	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 
 	type EnrichedFixture = LeagueSchema.Fixture & {
 		opponent: LeagueSchema.Opponent | null;
@@ -34,6 +39,10 @@
 		title?: string;
 		showFilter?: boolean;
 		onFixtureClick?: (fixture: EnrichedFixture) => void;
+		/** Swipe-left fires this (iOS/Android native UX — e.g. delete / archive). */
+		onFixtureSwipeLeft?: (fixture: EnrichedFixture) => void;
+		/** Swipe-right fires this (e.g. edit / mark complete). */
+		onFixtureSwipeRight?: (fixture: EnrichedFixture) => void;
 		/** Whether more fixtures can be fetched from the server (drives Load More button). */
 		hasMore?: boolean;
 		loadingMore?: boolean;
@@ -47,6 +56,8 @@
 		title = 'FIXTURES',
 		showFilter = true,
 		onFixtureClick,
+		onFixtureSwipeLeft,
+		onFixtureSwipeRight,
 		hasMore = false,
 		loadingMore = false,
 		onLoadMore,
@@ -169,30 +180,65 @@
 	{/if}
 
 	<!-- ── Fixture list ───────────────────────────────────────────────────────── -->
-	{#if filtered.length === 0}
-		<div class="fl-empty">
-			<span class="fl-empty-icon" aria-hidden="true">◈</span>
-			<p>No fixtures found.</p>
+	{#if fixtures.length === 0}
+		<!-- Day-zero state: no fixtures exist yet for this team/season -->
+		<div class="fl-empty-wrap">
+			<VanguardEmptyState
+				title="FIXTURE TELEMETRY EMPTY"
+				message="NO MATCH DATA FOUND. SCHEDULE YOUR FIRST FIXTURE TO BEGIN OPERATIONS."
+				cta="[ SCHEDULE FIXTURE ]"
+				onAction={onLoadMore}
+			/>
+		</div>
+	{:else if filtered.length === 0}
+		<!-- Filtered-to-zero state: fixtures exist but none match the current filter -->
+		<div class="fl-empty-wrap">
+			<VanguardEmptyState
+				title="NO MATCHES IN SECTOR"
+				message="CURRENT FILTER RETURNS ZERO RESULTS. ADJUST SEARCH PARAMETERS."
+				refCode="FILTER_NULL"
+			/>
 		</div>
 	{:else}
 		<div class="fl-list" role="list">
 			{#each filtered as fixture (fixture.id)}
 				{@const result = getResult(fixture)}
 				{@const isCompleted = fixture.status === 'Completed'}
+				{@const dtDisplay = formatFixtureDateFull(fixture.dateTime, fixture.facilityTimezone)}
 
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div
-					class="fl-row"
-					class:fl-row--clickable={!!onFixtureClick}
-					class:fl-row--completed={isCompleted}
-					onclick={() => onFixtureClick?.(fixture)}
-					role={onFixtureClick ? 'button' : 'listitem'}
-					tabindex={onFixtureClick ? 0 : -1}
-				>
-					<!-- Date column -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="fl-row"
+				class:fl-row--clickable={!!onFixtureClick}
+				class:fl-row--completed={isCompleted}
+				class:fl-row--swipeable={!!(onFixtureSwipeLeft || onFixtureSwipeRight)}
+				onclick={() => onFixtureClick?.(fixture)}
+				role={onFixtureClick ? 'button' : 'listitem'}
+				tabindex={onFixtureClick ? 0 : -1}
+				use:swipe={{
+					onSwipeLeft: onFixtureSwipeLeft ? () => onFixtureSwipeLeft(fixture) : undefined,
+					onSwipeRight: onFixtureSwipeRight ? () => onFixtureSwipeRight(fixture) : undefined,
+					threshold: 70,
+					disableScroll: true,
+				}}
+			>
+					<!-- Date column — timezone-aware display -->
 					<div class="fl-col-date">
-						<span class="fl-date">{formatFixtureDate(fixture.dateTime)}</span>
+						<span class="fl-date">
+							{dtDisplay.day} {dtDisplay.date}
+						</span>
+						<span class="fl-time">
+							{dtDisplay.time}
+							<span class="fl-tz-abbr">{dtDisplay.tzAbbr}</span>
+							{#if dtDisplay.hasTzMismatch}
+								<span
+									class="fl-tz-warn"
+									title="Venue is in {fixture.facilityTimezone} · Your local zone: {browserTz}"
+									aria-label="Timezone mismatch — venue is in {fixture.facilityTimezone}"
+								>⚠</span>
+							{/if}
+						</span>
 					</div>
 
 					<!-- Opponent + location column -->
@@ -429,6 +475,17 @@
 	.fl-row--completed {
 		border-left: 2px solid rgba(34, 197, 94, 0.2);
 	}
+	.fl-row--swipeable { touch-action: pan-y; }
+	/* Hint: show a faint directional arrow on swipeable rows on touch devices */
+	@media (pointer: coarse) {
+		.fl-row--swipeable::after {
+			content: '‹›';
+			position: absolute; right: 0.5rem;
+			font-size: 0.55rem; letter-spacing: -2px;
+			color: rgba(255, 255, 255, 0.1);
+			pointer-events: none;
+		}
+	}
 	.fl-row:last-child {
 		border-bottom: none;
 	}
@@ -442,12 +499,41 @@
 	/* Date column */
 	.fl-col-date {
 		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
 	}
 	.fl-date {
 		font-size: 10px;
 		letter-spacing: 0.08em;
 		color: #94a3b8;
 		white-space: nowrap;
+		display: block;
+	}
+	.fl-time {
+		font-size: 10px;
+		color: rgba(0, 255, 255, 0.55);
+		white-space: nowrap;
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		font-variant-numeric: tabular-nums;
+	}
+	.fl-tz-abbr {
+		font-size: 8px;
+		letter-spacing: 0.12em;
+		color: rgba(0, 255, 255, 0.3);
+	}
+	/* Amber pulsing warning icon for cross-timezone fixtures */
+	.fl-tz-warn {
+		font-size: 9px;
+		color: #f59e0b;
+		cursor: help;
+		animation: fl-tz-pulse 2.5s ease-in-out infinite;
+	}
+	@keyframes fl-tz-pulse {
+		0%, 100% { opacity: 0.6; }
+		50%       { opacity: 1; filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.7)); }
 	}
 
 	/* Main column */
@@ -561,6 +647,10 @@
 	}
 
 	/* Empty state */
+	.fl-empty-wrap {
+		padding: 1rem;
+	}
+	/* Legacy — kept for compatibility but no longer rendered */
 	.fl-empty {
 		text-align: center;
 		padding: 3rem 2rem;

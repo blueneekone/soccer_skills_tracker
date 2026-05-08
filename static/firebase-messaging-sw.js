@@ -1,5 +1,16 @@
 /* global importScripts, firebase */
-/* Epic 13: background FCM — version aligned with app firebase@10.14.x */
+/**
+ * firebase-messaging-sw.js — Vanguard FCM Background Service Worker
+ * ──────────────────────────────────────────────────────────────────
+ * Handles push messages when the app is closed / backgrounded.
+ * Must live at the root path (/firebase-messaging-sw.js) to have
+ * sufficient scope to intercept all FCM payloads.
+ *
+ * Epic 12: Enhanced with:
+ *   • Richer notification options (vibrate, badge, actions, tag)
+ *   • Category-based routing (click opens deep link from payload.data.link)
+ *   • Notification click handler — focuses existing app tab or opens new one
+ */
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
@@ -31,18 +42,69 @@ var isProd =
 var firebaseConfig = isProd ? firebaseConfigProd : firebaseConfigDev;
 
 firebase.initializeApp(firebaseConfig);
-
 var messaging = firebase.messaging();
 
+// ── Category → vibration pattern map ────────────────────────────────────────
+var VIBRATE_PATTERNS = {
+	push_weatherAlerts: [200, 100, 200, 100, 400], // urgent: triple burst
+	push_gameReminders: [150, 100, 150],            // moderate: double burst
+	push_messages:      [100],                       // light: single pulse
+	default:            [200]
+};
+
 messaging.onBackgroundMessage(function (payload) {
-	var title =
-		(payload.notification && payload.notification.title) || 'SSTRACKER';
-	var body = (payload.notification && payload.notification.body) || '';
+	var data = payload.data || {};
+	var category = data.category || 'default';
+
+	var title = (payload.notification && payload.notification.title) || 'VANGUARD NEXUS';
+	var body  = (payload.notification && payload.notification.body)  || '';
+
 	var options = {
-		body: body,
-		icon: '/Images/Phoenixes_Logo_2026.png',
-		badge: '/Images/Phoenixes_Logo_2026.png',
-		data: payload.data || {}
+		body:    body,
+		icon:    '/Images/Phoenixes_Logo_2026.png',
+		badge:   '/Images/Phoenixes_Logo_2026.png',
+		vibrate: VIBRATE_PATTERNS[category] || VIBRATE_PATTERNS['default'],
+		// Tag groups notifications by category so weather alerts don't stack
+		tag:     category,
+		// Replace previous notification of same tag (avoids spam stacking)
+		renotify: true,
+		// Deep-link stored in data for the click handler below
+		data: {
+			link:     data.link     || '/',
+			category: category,
+			tenantId: data.tenantId || ''
+		}
 	};
+
+	// Weather alerts get an amber accent via a custom image if provided
+	if (data.imageUrl) options.image = data.imageUrl;
+
 	return self.registration.showNotification(title, options);
+});
+
+// ── Notification click handler ───────────────────────────────────────────────
+// When the user taps the notification, focus the app tab if already open,
+// or open a new tab navigating to the deep link from payload.data.link.
+self.addEventListener('notificationclick', function (event) {
+	event.notification.close();
+
+	var targetUrl = (event.notification.data && event.notification.data.link) || '/';
+	var origin    = self.location.origin;
+	var fullUrl   = targetUrl.startsWith('http') ? targetUrl : origin + targetUrl;
+
+	event.waitUntil(
+		clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
+			// Focus existing tab if URL matches
+			for (var i = 0; i < windowClients.length; i++) {
+				var client = windowClients[i];
+				if (client.url.startsWith(origin) && 'focus' in client) {
+					client.focus();
+					if ('navigate' in client) client.navigate(fullUrl);
+					return;
+				}
+			}
+			// No matching tab — open a new one
+			if (clients.openWindow) return clients.openWindow(fullUrl);
+		})
+	);
 });

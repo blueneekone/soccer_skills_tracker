@@ -80,6 +80,7 @@
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase.js';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -390,6 +391,10 @@ export class ArmoryEngine {
 	 * @param reason   Human-readable explanation for the audit log.
 	 */
 	awardXP(amount: number, reason: string): void {
+		// Kill switch: feature_xp_gamification_enabled (Remote Config)
+		// Platform Admin can disable XP math from Firebase Console without a redeploy.
+		if (!vanguardFlags.xpEnabled) return;
+
 		// 1. Optimistic update — instant visual feedback
 		this.totalXP = Math.max(0, this.totalXP + amount);
 		const entry: XpHistoryEntry = {
