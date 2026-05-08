@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+﻿/* eslint-disable quotes */
 const crypto = require('crypto');
 const {onDocumentCreated, onDocumentWritten} =
     require('firebase-functions/v2/firestore');
@@ -43,17 +43,17 @@ const {
   grantTrainingXpAfterRepCreated,
 } = require('./gamificationWorkoutXp');
 
-// ── Epic 7: Media Integrations ────────────────────────────────────────────────
+// â”€â”€ Epic 7: Media Integrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const integrationHandlers = require('./integrations');
 exports.getSoccerNews = integrationHandlers.getSoccerNews;
 exports.searchPodcasts = integrationHandlers.searchPodcasts;
 exports.getPodcastEpisodes = integrationHandlers.getPodcastEpisodes;
 
-// ── Epic 7: AEGIS Weather & Safety Protocol ───────────────────────────────────
+// â”€â”€ Epic 7: AEGIS Weather & Safety Protocol â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const weatherHandlers = require('./weather');
 exports.getWeatherConditions = weatherHandlers.getWeatherConditions;
 
-// ── Epic 9: Secure Media Vault ────────────────────────────────────────────────
+// â”€â”€ Epic 9: Secure Media Vault â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const uploadTokenHandlers = require('./uploadTokens');
 exports.getUploadToken = uploadTokenHandlers.getUploadToken;
 exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
@@ -61,47 +61,47 @@ exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
 const processMediaHandlers = require('./processMedia');
 exports.processMedia = processMediaHandlers.processMedia;
 
-// ── Epic 9: Universal Roster Ingestion ───────────────────────────────────────
+// â”€â”€ Epic 9: Universal Roster Ingestion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ingestHandlers = require('./ingestRoster');
 exports.ingestRoster = ingestHandlers.ingestRoster;
 
-// ── Epic 10: Marketing / Subscription checkout stub ───────────────────────────
+// â”€â”€ Epic 10: Marketing / Subscription checkout stub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const subscriptionHandlers = require('./subscription');
 exports.createSubscription = subscriptionHandlers.createSubscription;
 
-// ── Epic 11: Commerce Engine (Stripe Connect) ──────────────────────────────────
+// â”€â”€ Epic 11: Commerce Engine (Stripe Connect) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const commerceHandlers = require('./commerce');
 exports.createRegistrationIntent = commerceHandlers.createRegistrationIntent;
 exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;
 exports.createConnectOnboarding = commerceHandlers.createConnectOnboarding;
 exports.getRegistrationStatus = commerceHandlers.getRegistrationStatus;
 
-// ── Epic 11: Pitch Collision Avoidance ────────────────────────────────────────
+// â”€â”€ Epic 11: Pitch Collision Avoidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const facilitiesHandlers = require('./facilities');
 exports.checkFacilityAvailability = facilitiesHandlers.checkFacilityAvailability;
 exports.bookFacility = facilitiesHandlers.bookFacility;
 exports.releaseFacilityBooking = facilitiesHandlers.releaseFacilityBooking;
 exports.listFacilities = facilitiesHandlers.listFacilities;
 
-// ── Epic 11: Vanguard Transfer Protocol ───────────────────────────────────────
+// â”€â”€ Epic 11: Vanguard Transfer Protocol â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const transferHandlers = require('./transfer');
 exports.initiatePlayerTransfer = transferHandlers.initiatePlayerTransfer;
 exports.presentTransferToken = transferHandlers.presentTransferToken;
 exports.confirmPlayerTransfer = transferHandlers.confirmPlayerTransfer;
 
-// ── Epic 12: FCM Notification Dispatcher ──────────────────────────────────────
+// â”€â”€ Epic 12: FCM Notification Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const dispatcherHandlers = require('./dispatcher');
 exports.sendWeatherAlertToTenant = dispatcherHandlers.sendWeatherAlertToTenant;
 exports.sendGameRemindersToday = dispatcherHandlers.sendGameRemindersToday;
 
-// ── Hotfix Alpha-3: League & Fixture Management (UTC enforcement) ──────────────
+// â”€â”€ Hotfix Alpha-3: League & Fixture Management (UTC enforcement) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const leagueHandlers = require('./league');
 exports.createFixture    = leagueHandlers.createFixture;
 exports.updateFixture    = leagueHandlers.updateFixture;
 exports.cancelFixture    = leagueHandlers.cancelFixture;
 exports.schedulePractice = leagueHandlers.schedulePractice;
 
-// ── Epic 6+: Compliance & Communications ─────────────────────────────────────
+// â”€â”€ Epic 6+: Compliance & Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 
@@ -110,7 +110,7 @@ exports.verifyDocument = verifyDocHandlers.verifyDocument;
 exports.processPendingDocDeletions = verifyDocHandlers.processPendingDocDeletions;
 exports.getRetentionReport = verifyDocHandlers.getRetentionReport;
 
-// ── Epic 5 ────────────────────────────────────────────────────────────────────
+// â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
 exports.syncUserClaims = inviteHandlers.syncUserClaims;
 exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
@@ -383,7 +383,7 @@ function assertClubStaff(request) {
 }
 
 /**
- * Coach / director / super_admin — allowed to send guarded athlete messages.
+ * Coach / director / super_admin â€” allowed to send guarded athlete messages.
  * @param {any} request Callable request
  * @return {Object} Actor with role, teamId, clubId, email.
  */
@@ -1093,7 +1093,7 @@ async function syncPublicPlayerProfile(uid) {
 
 /**
  * Epic 16: sanitized global index for recruiter search (Admin SDK only writes).
- * `statId` may be Auth UID or legacy keyed doc — resolve before syncing public profile.
+ * `statId` may be Auth UID or legacy keyed doc â€” resolve before syncing public profile.
  */
 exports.updatePublicProfile = onDocumentWritten(
     {
@@ -1114,7 +1114,7 @@ exports.updatePublicProfile = onDocumentWritten(
           await syncPublicPlayerProfile(au.uid);
           return;
         } catch (_err) {
-          /* Not a UID — proceed to name resolution. */
+          /* Not a UID â€” proceed to name resolution. */
         }
 
         if (!teamId) return;
@@ -1776,7 +1776,7 @@ exports.directorInviteCoach = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Coach accepts oldest pending invite — moves one seat from reserved to active.
+ * Coach accepts oldest pending invite â€” moves one seat from reserved to active.
  */
 exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
   if (!request.auth || !request.auth.token.email) {
@@ -1921,7 +1921,7 @@ function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
 }
 
 /**
- * Director / registrar / coach (own team) / super_admin — field metadata.
+ * Director / registrar / coach (own team) / super_admin â€” field metadata.
  */
 exports.directorUpsertField = onCall({region: REGION}, async (request) => {
   const data = request.data || {};
@@ -2405,7 +2405,7 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
   if (!playerName || playerName.length > 200) {
     throw new HttpsError(
         'invalid-argument',
-        'playerName is required (1–200 characters).',
+        'playerName is required (1â€“200 characters).',
     );
   }
 
@@ -2589,7 +2589,7 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
   if (!playerName || playerName.length > 200) {
     throw new HttpsError(
         'invalid-argument',
-        'playerName is required (1–200 characters).',
+        'playerName is required (1â€“200 characters).',
     );
   }
 
@@ -2834,7 +2834,7 @@ exports.commitMatchTelemetry = onCall({region: REGION}, async (request) => {
       try {
         pid = (await admin.auth().getUserByEmail(normEmail(pid))).uid;
       } catch (_e) {
-        /* leave pid — may be roster-only key */
+        /* leave pid â€” may be roster-only key */
       }
     }
     psRefs.push(db.collection('player_stats').doc(pid));
@@ -2970,7 +2970,7 @@ exports.createSportModule = onCall({region: REGION}, async (request) => {
   if (!sportName || sportName.length > 120) {
     throw new HttpsError(
         'invalid-argument',
-        'sportName is required (1–120 characters).',
+        'sportName is required (1â€“120 characters).',
     );
   }
   const defaultIcon =
@@ -3387,7 +3387,7 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
     throw new HttpsError(
         'failed-precondition',
         'Club context is missing for this athlete. Ask your director to set ' +
-        'the player’s club, link a household with a club, or ensure your ' +
+        'the playerâ€™s club, link a household with a club, or ensure your ' +
         'parent profile includes a club.',
     );
   }
@@ -3416,7 +3416,7 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Sprint 1.2 — COPPA 2026: player self-reports date of birth at account setup.
+ * Sprint 1.2 â€” COPPA 2026: player self-reports date of birth at account setup.
  * Server-side age derivation prevents client-side spoofing.
  * Sets isMinor (age < 17) and vpcStatus ('pending_parent' | 'not_required').
  * syncUserClaims trigger fires automatically to stamp JWT claims.
@@ -3503,9 +3503,9 @@ exports.playerSelfReportDob = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Sprint 1.2 — COPPA 2026: parent submits explicit granular consent via the
+ * Sprint 1.2 â€” COPPA 2026: parent submits explicit granular consent via the
  * online consent ceremony. Creates a structured consent_records document and
- * updates vpc_requests to 'parent_consented'. Does NOT verify the minor —
+ * updates vpc_requests to 'parent_consented'. Does NOT verify the minor â€”
  * directorApproveVpc is still required as the second factor.
  *
  * @param {{
@@ -3775,7 +3775,7 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const bodyPreview = bodyRaw.length > 200 ?
-    bodyRaw.slice(0, 200) + '…' :
+    bodyRaw.slice(0, 200) + 'â€¦' :
     bodyRaw;
 
   const msgRef = db.collection('in_app_messages').doc();
@@ -3822,7 +3822,7 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Sprint 1.3 — SafeSport Comms: server-enforced message send for the Comms Hub.
+ * Sprint 1.3 â€” SafeSport Comms: server-enforced message send for the Comms Hub.
  *
  * For channels where safesportMonitored === true, Firestore Rules block direct
  * client addDoc; all messages MUST route through this callable so the server can:
@@ -4031,8 +4031,8 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
 
 /**
  * Epic 1: Server-side workout log + HMAC integrity digest (tamper-evident).
- * — Parent: must be linked household; writes verifiedByUid / verifiedByEmail.
- * — Player: self-log only; verificationMethod player_self_log.
+ * â€” Parent: must be linked household; writes verifiedByUid / verifiedByEmail.
+ * â€” Player: self-log only; verificationMethod player_self_log.
  * Client direct writes to `reps` are disabled in Firestore rules.
  */
 exports.submitWorkoutRep = onCall(
@@ -4264,7 +4264,7 @@ function utcWeekMondayKeyFromDate(d) {
 }
 
 /**
- * Parse yyyy-mm-dd → UTC noon (stable ordering).
+ * Parse yyyy-mm-dd â†’ UTC noon (stable ordering).
  * @param {string} ymd
  * @return {Date}
  */
@@ -4291,13 +4291,13 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
   if (!Number.isFinite(duration) || duration < 1 || duration > 1440) {
     throw new HttpsError(
         'invalid-argument',
-        'duration must be 1–1440 minutes.',
+        'duration must be 1â€“1440 minutes.',
     );
   }
   if (!Number.isFinite(reps) || reps < 0 || reps > 100000) {
     throw new HttpsError(
         'invalid-argument',
-        'reps must be 0–100000.',
+        'reps must be 0â€“100000.',
     );
   }
 
@@ -5547,7 +5547,7 @@ exports.enqueueMinorRetentionPurge = onCall({region: REGION}, async (req) => {
  * "batch too large" error regardless of collection size.
  *
  * @param {FirebaseFirestore.Query} q - The query whose matching docs to delete.
- * @param {number} [pageSize=400] - Documents per batch (must be ≤ 500).
+ * @param {number} [pageSize=400] - Documents per batch (must be â‰¤ 500).
  * @return {Promise<number>} Total number of documents deleted.
  */
 async function paginatedBatchDelete(q, pageSize = 400) {
@@ -5586,8 +5586,8 @@ async function paginatedBatchDelete(q, pageSize = 400) {
  *  - assignments (where playerId == email)
  *  - Roster reference scrub
  *  - Household playerEmails/playerNames scrub
- *  - users/{email} doc — field-level anonymization
- *  - Firebase Auth record — email, displayName, photoURL cleared
+ *  - users/{email} doc â€” field-level anonymization
+ *  - Firebase Auth record â€” email, displayName, photoURL cleared
  */
 async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
   const jobRef = jobSnap.ref;
@@ -5639,7 +5639,7 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
     const teamId = u.teamId || null;
     const householdId = u.householdId || null;
 
-    // ── Phase 1: query-based paginated deletes for large collections ────────
+    // â”€â”€ Phase 1: query-based paginated deletes for large collections â”€â”€â”€â”€â”€â”€â”€â”€
     const playerIdField = 'playerId';
     const playerEmailField = 'playerEmail';
 
@@ -5662,12 +5662,12 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
         ),
       ]);
 
-    // ── Phase 2: workout_logs subcollection on the users doc ────────────────
+    // â”€â”€ Phase 2: workout_logs subcollection on the users doc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const workoutLogsDeleted = await paginatedBatchDelete(
         uRef.collection('workout_logs'),
     );
 
-    // ── Phase 3: atomic batch for documents with known IDs ──────────────────
+    // â”€â”€ Phase 3: atomic batch for documents with known IDs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const batch = db.batch();
 
     batch.delete(db.collection('passports').doc(email));
@@ -5731,7 +5731,7 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
 
     await batch.commit();
 
-    // ── Phase 4: anonymize the Firebase Auth record ──────────────────────
+    // â”€â”€ Phase 4: anonymize the Firebase Auth record â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // This is outside the batch (Admin SDK auth calls are not transactional),
     // but happens after the Firestore batch to ensure Firestore is consistent
     // before the auth record is modified.
@@ -7553,7 +7553,7 @@ async function syncSubscriptionStatusFromStripeObject(stripe, sub, status) {
 }
 
 // ---------------------------------------------------------------------------
-// Epic 13: FCM — device token registry + trial notifications
+// Epic 13: FCM â€” device token registry + trial notifications
 // ---------------------------------------------------------------------------
 
 /**
@@ -7671,7 +7671,7 @@ async function collectFcmTokensForUids(uids) {
 }
 
 /**
- * Player OS: coach deploy → assigned_missions/{missionId} → FCM to player
+ * Player OS: coach deploy â†’ assigned_missions/{missionId} â†’ FCM to player
  * (`device_tokens/{playerId}`). Resolves Auth uid from `targetPlayerKey` email
  * when `playerId` is omitted (legacy rows).
  */
@@ -7759,7 +7759,7 @@ exports.onMissionAssigned = onDocumentCreated(
         return;
       }
 
-      const title = 'New Training Mission! 🎯';
+      const title = 'New Training Mission! ðŸŽ¯';
       const body =
           'Your coach just deployed a new mission. Head to the Armory to accept it.';
 
@@ -7797,7 +7797,7 @@ exports.onMissionAssigned = onDocumentCreated(
 );
 
 /**
- * Drill library: new row in assignments/ → FCM to player (device_tokens).
+ * Drill library: new row in assignments/ â†’ FCM to player (device_tokens).
  */
 exports.onAssignmentCreated = onDocumentCreated(
     {
@@ -7824,7 +7824,7 @@ exports.onAssignmentCreated = onDocumentCreated(
       }
       if (tokens.length === 0) return;
 
-      const title = 'New Training Assigned! 📋';
+      const title = 'New Training Assigned! ðŸ“‹';
       const body = 'Check your Armory for a new drill.';
       const chunkSize = 500;
       for (let i = 0; i < tokens.length; i += chunkSize) {
@@ -7846,7 +7846,7 @@ exports.onAssignmentCreated = onDocumentCreated(
 );
 
 /**
- * Firestore: new skill trial logged under trials/ — notify linked parents.
+ * Firestore: new skill trial logged under trials/ â€” notify linked parents.
  * Path matches client writes (challenges + coach Evals).
  * Video trials use trial_scores/ + onTrialScoreWritten (player FCM on verify).
  */
@@ -7871,7 +7871,7 @@ exports.onTrialScoreAdded = onDocumentCreated(
       const score =
           typeof data.result === 'string' && data.result.trim() ?
             data.result.trim() :
-            '—';
+            'â€”';
 
       if (!teamId || !playerName) {
         return;
@@ -7899,7 +7899,7 @@ exports.onTrialScoreAdded = onDocumentCreated(
         return;
       }
 
-      const title = 'New Trial Score Logged! 🚀';
+      const title = 'New Trial Score Logged! ðŸš€';
       const body =
           `${playerName} just logged a ${score} on ${skill}. ` +
           'Tap to view their progress!';
@@ -7930,7 +7930,7 @@ exports.onTrialScoreAdded = onDocumentCreated(
 );
 
 /**
- * Epic 14: trial_scores → public profile + FCM on verify.
+ * Epic 14: trial_scores â†’ public profile + FCM on verify.
  * Legacy trials/ still uses onTrialScoreAdded for parents.
  */
 exports.onTrialScoreWritten = onDocumentWritten(
@@ -7967,7 +7967,7 @@ exports.onTrialScoreWritten = onDocumentWritten(
       }
       if (tokens.length === 0) return;
 
-      const title = 'Verification Complete! 🏆';
+      const title = 'Verification Complete! ðŸ†';
       const body =
           'Your video trial has been approved and added to your global ' +
           'scouting profile.';
@@ -7991,22 +7991,22 @@ exports.onTrialScoreWritten = onDocumentWritten(
     },
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sprint 2.7 — True Account Impersonation Engine.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Sprint 2.7 â€” True Account Impersonation Engine.
 //
 // Generates a short-lived Firebase Custom Token for a super_admin to sign in
 // as another user for incident-triage / white-glove support.
 //
 // Security model:
-//   • Caller MUST be a super_admin (request.auth.token.role === 'super_admin').
-//   • Self-impersonation is rejected (no-op / audit noise protection).
-//   • Impersonating another super_admin is denied (lateral-movement guard).
-//   • Every call writes an immutable row to `security_audit` with
+//   â€¢ Caller MUST be a super_admin (request.auth.token.role === 'super_admin').
+//   â€¢ Self-impersonation is rejected (no-op / audit noise protection).
+//   â€¢ Impersonating another super_admin is denied (lateral-movement guard).
+//   â€¢ Every call writes an immutable row to `security_audit` with
 //     action=IMPERSONATE_USER, actor=<adminEmail>, target=<targetUid/email>.
-//   • Custom token carries `additionalClaims.impersonation = true` and
+//   â€¢ Custom token carries `additionalClaims.impersonation = true` and
 //     `additionalClaims.impersonatedBy = <adminEmail>` so downstream auditing
 //     can correlate sessions.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
   const {email: adminEmail} = assertSuperAdmin(request);
   const data = request.data || {};
@@ -8082,7 +8082,7 @@ exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
   // Mint the custom token. The additionalClaims flow into the signed-in user's
   // ID token so the client-side session is permanently identifiable as an
   // impersonation session for the lifetime of that token.
-  // Sprint 2.6.1 — the banner is now derived from these claims on the client
+  // Sprint 2.6.1 â€” the banner is now derived from these claims on the client
   // (no sessionStorage), so include target email + role so the high-visibility
   // banner never requires a second Firestore round-trip.
   const additionalClaims = {
@@ -8146,16 +8146,16 @@ exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
   };
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sprint 2.7 — GDPR Purge (right-to-be-forgotten).
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Sprint 2.7 â€” GDPR Purge (right-to-be-forgotten).
 //
 // Hard-deletes a user's core identity footprint:
-//   • Firebase Auth record
-//   • users/{email}
-//   • player_lookup, coach_lookup, registrar_lookup (any matching rows)
+//   â€¢ Firebase Auth record
+//   â€¢ users/{email}
+//   â€¢ player_lookup, coach_lookup, registrar_lookup (any matching rows)
 // Writes a PURGE_USER_DATA audit record before the Auth deletion so the
 // audit trail survives even if the caller's token is invalidated.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
   const {email: adminEmail} = assertSuperAdmin(request);
   const data = request.data || {};
@@ -8175,7 +8175,7 @@ exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
     );
   }
 
-  // Lateral-movement guard: super_admin → super_admin purge is denied.
+  // Lateral-movement guard: super_admin â†’ super_admin purge is denied.
   let targetRole = '';
   try {
     const userDocSnap = await db.collection('users').doc(targetEmail).get();
@@ -8252,13 +8252,13 @@ exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
   return {ok: true, targetEmail};
 });
 
-// ─────────────────────────────────────────────────────────────────────────
-// Sprint 5.1 — Household Provisioning Engine (COPPA: minors never self-create)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Sprint 5.1 â€” Household Provisioning Engine (COPPA: minors never self-create)
 // Client direct writes to `operative_dispatches` are denied; all via onCall.
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Parent: digital COPPA / liability signature — stamps household + coppaSigned.
+ * Parent: digital COPPA / liability signature â€” stamps household + coppaSigned.
  * Creates a household if the parent has none (requires clubId on users/{email}).
  */
 exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
@@ -8373,7 +8373,7 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   if (operSlug.length < 2 || operSlug.length > 32) {
     throw new HttpsError(
         'invalid-argument',
-        'Operative Callsign must yield 2–32 letters or numbers (after normalizing).',
+        'Operative Callsign must yield 2â€“32 letters or numbers (after normalizing).',
     );
   }
   const childEmail = normEmail(`${operSlug}@operative.local`);
@@ -8644,7 +8644,7 @@ exports.operativeSignInWithDispatch = onCall({region: REGION}, async (request) =
 
 /**
  * @param {number} n Length
- * @return {string} Random A–Z0-9 string
+ * @return {string} Random Aâ€“Z0-9 string
  */
 function randomAlphaNumChunk(n) {
   const cs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -8875,11 +8875,11 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
 
 /**
  * Public: validate 6-char Clearance Code; mints a custom token for the child
- * (one use). Unauthenticated by design (child login) — do not require
+ * (one use). Unauthenticated by design (child login) â€” do not require
  * `request.auth`.
  */
 exports.validatePlayerOTP = onCall({region: REGION}, async (request) => {
-  // request.auth is intentionally ignored — unauthenticated child login.
+  // request.auth is intentionally ignored â€” unauthenticated child login.
   const data = request.data || {};
   const uRaw = typeof data.username === 'string' ? data.username : '';
   const username = uRaw.trim().toLowerCase();
@@ -8955,7 +8955,7 @@ exports.validatePlayerOTP = onCall({region: REGION}, async (request) => {
 
 /**
  * Collect Auth UIDs for players (via player_lookup email keys) and coaches
- * (coachEmail + assistants) on all teams in the club — used for strike alerts.
+ * (coachEmail + assistants) on all teams in the club â€” used for strike alerts.
  * @param {string} clubId
  * @return {Promise<string[]>}
  */
@@ -9065,7 +9065,7 @@ function parseFacilityWeatherPayload(body) {
 }
 
 /**
- * Real-time Tomorrow.io webhook: lightning proximity → LOCKED facility doc +
+ * Real-time Tomorrow.io webhook: lightning proximity â†’ LOCKED facility doc +
  * emergency FCM to club roster coaches & players.
  *
  * Configure Insights HTTP destination URL including query param:
@@ -9180,7 +9180,7 @@ exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_A
         ruleName,
         lockStartedMs,
         message:
-            'Facility locked — audit trail timestamp (ms since epoch): ' +
+            'Facility locked â€” audit trail timestamp (ms since epoch): ' +
             String(lockStartedMs),
       });
 
@@ -9204,7 +9204,7 @@ exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_A
         });
       }
 
-      const title = '🚨 RED ALERT: LIGHTNING 🚨';
+      const title = 'ðŸš¨ RED ALERT: LIGHTNING ðŸš¨';
       const bodyText =
           'Lightning strike detected within 10 miles. Clear the pitch immediately. ' +
           'The 30-minute safety clock has started.';
@@ -9255,72 +9255,24 @@ exports.facilityWeatherWebhook = onRequest({ region: REGION, secrets: [WEBHOOK_A
       });
 });
 
-// ─────────────────────────────────────────────────────────────────────────
-// Epic 4 — Multi-Tenant SaaS: invite system + automatic claims sync.
-//
-// `syncUserClaims`:    Firestore trigger on users/{emailKey} — keeps JWT
-//                      custom claims in sync with Firestore role/clubId.
-// `consumeInviteCode`: onCall — atomic invite validation + user provisioning.
-//
-// The separate `assignTenantClaims` export (below) is kept for backward
-// compatibility with any already-deployed client builds; new client code
-// should call `consumeInviteCode` instead.
-// ─────────────────────────────────────────────────────────────────────────
-const inviteHandlers = require('./invites');
-exports.syncUserClaims = inviteHandlers.syncUserClaims;
-exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// COPPA 2026 / Privacy Shield — Parental Consent Functions (Epic 5 Task 5.3)
-//
-//   sendParentalConsentEmail  — child requests email → parent receives link
-//   verifyParentalConsent     — parent grants/denies via /consent/[token] page
-//
-// These functions are the ONLY write path for coppaStatus on users/{email}.
-// The Firestore Security Rules block all client-side writes to coppaStatus.
-// ─────────────────────────────────────────────────────────────────────────────
-const coppaHandlers = require('./coppa');
-exports.sendParentalConsentEmail = coppaHandlers.sendParentalConsentEmail;
-exports.verifyParentalConsent = coppaHandlers.verifyParentalConsent;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// EPIC 5 — TASK 5.4: Sensitive Document Safeguards
-//
-//   getSensitiveDocumentUrl  — Director-only signed URL generator.
-//     1. Validates director tenantId matches the player's tenant.
-//     2. Writes an IMMUTABLE audit_logs entry BEFORE generating the URL.
-//     3. Returns a 5-minute signed URL via Admin SDK.
-//     Storage rules set `allow read: if false` on /private/* — this is the
-//     only authorized read path for birth certificates and photo IDs.
-//
-// PREREQUISITE: The Functions service account needs IAM role
-//   "Service Account Token Creator" (roles/iam.serviceAccountTokenCreator)
-//   to generate signed URLs. Grant via:
-//   gcloud projects add-iam-policy-binding PROJECT_ID \
-//     --member="serviceAccount:PROJECT_ID@appspot.gserviceaccount.com" \
-//     --role="roles/iam.serviceAccountTokenCreator"
-// ─────────────────────────────────────────────────────────────────────────────
-const auditHandlers = require('./audit');
-exports.getSensitiveDocumentUrl = auditHandlers.getSensitiveDocumentUrl;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Zero-Trust tenant utilities — available to ALL Cloud Functions in this file.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Zero-Trust tenant utilities â€” available to ALL Cloud Functions in this file.
 // Usage: const { getCallerTenantId, assertSameTenant } = require('./tenantUtils');
 //
 // These are NOT exported as Cloud Function endpoints; they are internal helpers.
 // They are require()'d here once so other CF implementations can import them
 // with confidence that the module is cached and initialised.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 require('./tenantUtils'); // pre-load module; individual functions require it directly
 
-// ─────────────────────────────────────────────────────────────────────────
-// Strike 1 (Agent 3) — Analytics aggregation triggers.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Strike 1 (Agent 3) â€” Analytics aggregation triggers.
 //
 // The Global Admin "Command Center" reads from `analytics/platform_totals`,
 // a single pre-aggregated document. These triggers keep that doc in sync
 // with the authoritative collections. Defined in functions/analytics.js and
 // re-exported here so they actually deploy.
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const analyticsTriggers = require('./analytics');
 exports.onAnalyticsUserWritten = analyticsTriggers.onUserWritten;
 exports.onAnalyticsClubWritten = analyticsTriggers.onClubWritten;
@@ -9347,13 +9299,13 @@ exports.onWorkoutLogCreated = onDocumentCreated(
     },
 );
 
-// ─────────────────────────────────────────────────────────────────────────
-// Epic 4 — Multi-Tenant SaaS: assignTenantClaims
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Epic 4 â€” Multi-Tenant SaaS: assignTenantClaims
 //
-// Callable triggered by inviteService.ts › consumeInviteCode() after the
+// Callable triggered by inviteService.ts â€º consumeInviteCode() after the
 // client marks an invite as 'consumed' in Firestore.
 //
-// This is the ONLY path that may set JWT custom claims — never from the
+// This is the ONLY path that may set JWT custom claims â€” never from the
 // client.  The function re-validates the invite before writing claims so
 // that a race-condition or a tampered client cannot elevate privileges.
 //
@@ -9363,7 +9315,7 @@ exports.onWorkoutLogCreated = onDocumentCreated(
 // After this function returns, the client calls
 //   auth.currentUser.getIdToken(true)
 // to force-refresh the JWT so new claims are active in this session.
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.assignTenantClaims = onCall(
     {
@@ -9372,7 +9324,7 @@ exports.assignTenantClaims = onCall(
       // enforceAppCheck: true,
     },
     async (request) => {
-      // ── Auth guard ────────────────────────────────────────────────────
+      // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!request.auth) {
         throw new HttpsError(
             'unauthenticated',
@@ -9387,7 +9339,7 @@ exports.assignTenantClaims = onCall(
         throw new HttpsError('invalid-argument', '`inviteId` is required.');
       }
 
-      // ── Load invite ───────────────────────────────────────────────────
+      // â”€â”€ Load invite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const inviteRef = db.collection('invites').doc(inviteId);
       const inviteSnap = await inviteRef.get();
 
@@ -9397,7 +9349,7 @@ exports.assignTenantClaims = onCall(
 
       const invite = inviteSnap.data();
 
-      // ── Re-validate status and expiry ─────────────────────────────────
+      // â”€â”€ Re-validate status and expiry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (invite.status !== 'consumed' || invite.consumedBy !== uid) {
         // Guard against replay / race: only the user who optimistically
         // marked 'consumed' (same UID) may trigger claim assignment.
@@ -9432,7 +9384,7 @@ exports.assignTenantClaims = onCall(
         );
       }
 
-      // ── Set custom claims on the Auth token ───────────────────────────
+      // â”€â”€ Set custom claims on the Auth token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const existingClaims = (await admin.auth().getUser(uid)).customClaims || {};
       const newClaims = {
         ...existingClaims,
@@ -9443,7 +9395,7 @@ exports.assignTenantClaims = onCall(
 
       await admin.auth().setCustomUserClaims(uid, newClaims);
 
-      // ── Sync role into Firestore user doc ─────────────────────────────
+      // â”€â”€ Sync role into Firestore user doc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Best-effort: update the user's Firestore profile so Firestore
       // queries based on role/clubId are immediately consistent.
       try {
@@ -9460,7 +9412,7 @@ exports.assignTenantClaims = onCall(
           );
         }
       } catch (syncErr) {
-        // Non-critical — JWT claims are the authoritative source.
+        // Non-critical â€” JWT claims are the authoritative source.
         logger.warn('[assignTenantClaims] Firestore user sync failed:', syncErr);
       }
 
