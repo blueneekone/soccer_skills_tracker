@@ -457,3 +457,138 @@ exports.revokeCoachClearance = onCall(
     return { ok: true, email: normalizedEmail, status: 'flagged' };
   },
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// markDocumentsUploaded
+// ─────────────────────────────────────────────────────────────────────────────
+// Called by a coach/recruiter after they have successfully uploaded both their
+// SafeSport and CDC Concussion certificates to Firebase Storage.
+//
+// Writes clearanceDocs sub-map to the user's Firestore document and flips the
+// top-level `documentsUploaded` flag so the Director Panopticon can surface
+// "ready for review" rows.
+//
+// Zero-Trust: caller must own the document (uid match) and be a coach or recruiter.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.markDocumentsUploaded = onCall(
+  { region: REGION, enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
+
+    const { safesportUrl, concussionUrl } = request.data || {};
+    if (!safesportUrl || !concussionUrl) {
+      throw new HttpsError('invalid-argument', 'Both safesportUrl and concussionUrl are required.');
+    }
+
+    const claims = reqAuth.token || {};
+    const role = claims.role || '';
+    if (!['coach', 'recruiter'].includes(role)) {
+      throw new HttpsError('permission-denied', 'Only coaches and recruiters may submit compliance documents.');
+    }
+
+    const email = (reqAuth.token?.email || '').toLowerCase().trim();
+    if (!email) throw new HttpsError('unauthenticated', 'Cannot resolve caller email.');
+
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await db().collection('users').doc(email).set(
+      {
+        documentsUploaded: true,
+        clearanceDocs: {
+          safesport: { url: String(safesportUrl), uploadedAt: now },
+          concussion: { url: String(concussionUrl), uploadedAt: now },
+        },
+        clearance: {
+          status: 'pending',
+          updatedAt: now,
+          source: 'self_upload',
+        },
+      },
+      { merge: true },
+    );
+
+    await db().collection('audit_logs').add({
+      action: 'compliance_docs_uploaded',
+      actorUid: reqAuth.uid,
+      actorEmail: email,
+      safesportUrl: String(safesportUrl),
+      concussionUrl: String(concussionUrl),
+      timestamp: now,
+    });
+
+    logger.info('[compliance] Documents marked uploaded', { email });
+    return { ok: true };
+  },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// simulateClearance  (Alpha — Yardstik BGC simulation)
+// ─────────────────────────────────────────────────────────────────────────────
+// Director-only callable that mimics a successful Yardstik background-check
+// callback for the Alpha test cycle.  Sets clearance.status = 'cleared' with
+// source = 'yardstik_simulated', then refreshes JWT custom claims so the coach
+// regains access immediately without requiring a logout/login cycle.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.simulateClearance = onCall(
+  { region: REGION, enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
+
+    const callerClaims = reqAuth.token || {};
+    if (!['director', 'registrar', 'super_admin', 'global_admin'].includes(callerClaims.role || '')) {
+      throw new HttpsError('permission-denied', 'Director or Registrar access required.');
+    }
+
+    const { email } = request.data || {};
+    if (!email || typeof email !== 'string') {
+      throw new HttpsError('invalid-argument', 'Target coach email is required.');
+    }
+    const normalizedEmail = email.toLowerCase().trim();
+    const clubId = callerClaims.clubId || callerClaims.tenantId || null;
+
+    const userRef = db().collection('users').doc(normalizedEmail);
+    const snap = await userRef.get();
+    const userData = snap.data() || {};
+    if (clubId && userData.clubId !== clubId) {
+      throw new HttpsError('permission-denied', 'Target user is not in your club.');
+    }
+
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await userRef.set(
+      {
+        clearance: {
+          status: 'cleared',
+          updatedAt: now,
+          source: 'yardstik_simulated',
+          clearedBy: reqAuth.uid,
+          // 1-year simulated expiry
+          expiresAt: admin.firestore.Timestamp.fromDate(
+            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          ),
+        },
+      },
+      { merge: true },
+    );
+
+    const userRecord = await auth().getUserByEmail(normalizedEmail).catch(() => null);
+    if (userRecord) {
+      await stampClearanceClaim(userRecord.uid, normalizedEmail);
+    }
+
+    await db().collection('audit_logs').add({
+      action: 'clearance_simulated_yardstik',
+      actorUid: reqAuth.uid,
+      targetEmail: normalizedEmail,
+      clubId: clubId || null,
+      timestamp: now,
+    });
+
+    logger.info('[compliance] Yardstik clearance simulated', {
+      targetEmail: normalizedEmail,
+      by: reqAuth.uid,
+    });
+
+    return { ok: true, email: normalizedEmail, status: 'cleared' };
+  },
+);

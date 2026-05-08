@@ -251,6 +251,58 @@ service firebase.storage {
       allow read, write, delete: if false;
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // EPIC 14 (ALPHA) — COACH COMPLIANCE VAULT
+    //
+    // Path layout:
+    //   /compliance/{tenantId}/{userId}/{fileName}
+    //
+    // Coaches/Recruiters upload SafeSport & Concussion certs to their own
+    // UID slot.  Directors and Registrars may read every file in their
+    // tenant to review and approve.  Only platform admins may delete.
+    // ─────────────────────────────────────────────────────────────────────
+    match /compliance/{tenantId}/{userId}/{fileName} {
+      // Write: only the owning coach/recruiter, within their tenant.
+      // 10 MB max; PDF or image only.
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && (
+          request.auth.token.tenantId == tenantId
+          || request.auth.token.clubId == tenantId
+        )
+        && request.auth.token.role in ['coach', 'recruiter']
+        && request.resource != null
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)|application/pdf');
+
+      // Read: owner OR director/registrar within the same tenant OR platform admin.
+      allow read: if request.auth != null
+        && (
+          request.auth.uid == userId
+          || request.auth.token.role in ['super_admin', 'global_admin']
+          || (
+            request.auth.token.role in ['director', 'registrar']
+            && (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+          )
+        );
+
+      // Delete: director/registrar for their tenant, or platform admin only.
+      allow delete: if request.auth != null
+        && (
+          request.auth.token.role in ['super_admin', 'global_admin']
+          || (
+            request.auth.token.role in ['director', 'registrar']
+            && (
+              request.auth.token.tenantId == tenantId
+              || request.auth.token.clubId == tenantId
+            )
+          )
+        );
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

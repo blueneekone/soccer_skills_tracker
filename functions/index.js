@@ -108,6 +108,8 @@ exports.backgroundCheckCallback = complianceHandlers.backgroundCheckCallback;
 exports.getComplianceRoster     = complianceHandlers.getComplianceRoster;
 exports.requestManualOverride   = complianceHandlers.requestManualOverride;
 exports.revokeCoachClearance    = complianceHandlers.revokeCoachClearance;
+exports.markDocumentsUploaded   = complianceHandlers.markDocumentsUploaded;
+exports.simulateClearance       = complianceHandlers.simulateClearance;
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 

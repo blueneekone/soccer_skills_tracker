@@ -104,6 +104,21 @@
 			return;
 		}
 
+		// Epic 14 (Alpha): Clearance Protocol — uncleared coaches/recruiters are
+		// hard-locked to the Compliance Terminal until their status is 'cleared'.
+		// The /compliance route itself is exempt to avoid an infinite redirect loop.
+		const clearanceRoles = ['coach', 'recruiter'];
+		if (
+			clearanceRoles.includes(authStore.role ?? '') &&
+			!authStore.isCleared &&
+			!currentPath.startsWith('/compliance')
+		) {
+			if (browser) {
+				untrack(() => goto('/compliance', { replaceState: true }));
+			}
+			return;
+		}
+
 		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
 			const dest = untrack(() => applyLoginWaterfall(authStore.role, authStore.userProfile));
 			if (browser) {
