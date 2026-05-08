@@ -330,14 +330,14 @@
 				}
 			}
 
-			/** @type {string[]} */
-			const nextPlayers = [];
-			for (const rawName of combined) {
-				const name = typeof rawName === 'string' ? rawName : String(rawName);
-				nextPlayers.push(name);
-			}
-			nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-			players = nextPlayers;
+		/** @type {string[]} */
+		const nextPlayers = [];
+		for (const rawName of combined) {
+			const name = typeof rawName === 'string' ? rawName : String(rawName);
+			nextPlayers.push(name);
+		}
+		nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+		players = nextPlayers;
 
 			/** @type {Record<string, 'compliant' | 'unverified'>} */
 			const nextCompliance = {};

@@ -190,7 +190,7 @@
 		</div>
 
 		<!-- Squad Readiness Matrix (mounted at top, primary content) -->
-		<SquadTelemetryView />
+		<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 
 		<!-- ── MISSION CONTROL GRID ──────────────────────────────────────────── -->
 		<section class="tw-mt-6 tw-grid tw-grid-cols-1 tw-gap-4 lg:tw-grid-cols-3" aria-label="Mission Control">
