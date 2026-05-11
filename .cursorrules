@@ -1,62 +1,60 @@
 # NEXUS COMMAND: VANGUARD PROTOCOL
-# MASTER ARCHITECTURE & EXECUTION RULES
+# MASTER ARCHITECTURE, DEFENSE, & EXECUTION RULES
 
-## 1. PROJECT IDENTITY & AESTHETIC
-You are developing "Nexus Command," a professional-grade, gamified SaaS platform for youth soccer player development and club management.
-- **The UI Aesthetic:** "SIEM / Tron / Cyberpunk." It must feel like a high-end cybersecurity Mission Control dashboard. 
+## 1. PROJECT SOURCE OF TRUTH & ANTI-HALLUCINATION
+- **Absolute Roadmap Enforcement:** Always reference `MASTER_BUILD_ROADMAP.md` in the root directory for feature planning, architecture decisions, and active phase context.
+- **Excluded Context:** Never read, reference, import, or hallucinate schemas from deprecated documents, `docs/archive/`, `reference/`, or legacy roadmap files.
+- **Diagnose Before Typing:** If a layout collapses, a button fails, or a query throws an error, explicitly analyze the DOM hierarchy, pointer events, or Firestore rules in your chain of thought before writing new code.
+
+## 2. DATABASE DEFENSE & ANTI-DELETION PROTOCOL (CRITICAL)
+- **Zero Data Loss Mandate:** You are explicitly forbidden from writing destructive Firestore migrations, running bulk deletion scripts, or dropping unmapped keys.
+- **Lazy Migration (Read-Repair) Enforcement:** When querying existing collections (e.g., users, profiles, rosters), assume documents may exist in a legacy schema. 
+  1. Do not overwrite, drop, or ignore unmapped legacy keys upon saving.
+  2. Implement an automated Read-Repair pattern: If required keys (`sportId`, `schemaVersion`, `tenantId`) are missing on read, patch the object with safe, context-aware defaults in memory, execute an asynchronous non-blocking merge write (`{ merge: true }`) back to Firestore, and return the upgraded object to the reactive state.
+- **Strict Tenant Isolation:** Treat youth sports PII with military-grade strictness. Every database read/write must explicitly enforce the presence of `clubId` or `tenantId` to prevent cross-tenant exposure.
+- **Infrastructure:** Indexes and security rules are strictly managed and deployed via `firebase deploy --only "firestore:indexes,firestore:rules"`.
+
+## 3. PROJECT IDENTITY & AESTHETIC
+- **Platform Identity:** "Nexus Command" — a professional-grade, gamified SaaS platform for youth athlete development and multi-sport club management.
+- **The UI Aesthetic:** "SIEM / Tron / Cyberpunk." It must feel like an ultra-premium cybersecurity Mission Control dashboard. No flat, boring white backgrounds.
 - **Colors:** Deep dark mode (`bg-[#020202]`), neon cyan accents (`text-[#00f0ff]`, `border-[#00f0ff]`), and stark whites.
-- **Typography:** Monospace fonts (`font-mono`) for data, metrics, and technical readouts.
-- **Textures:** Glassmorphism (`backdrop-blur-3xl`, `bg-[#020202]/85`). No flat, boring white dashboards.
+- **Textures:** True Glassmorphism. Panels must use extreme backdrop-blur (`tw-backdrop-blur-3xl` or `40px`) paired with highly transparent background fills (`tw-bg-[#040f16]/85` or `tw-bg-[#00f0ff]/[0.02]`). Never use solid backgrounds for UI containers.
+- **Micro-Typography:** Interface text (buttons, labels, readouts) must be ultra-small (`tw-text-[10px]` or `tw-text-xs`), use monospace fonts (`tw-font-mono`), and employ aggressive letter spacing (`tw-tracking-widest`).
+- **Active State Glows:** Selected states and active elements must physically light up using inner and outer neon shadows (e.g., `tw-shadow-[0_0_15px_rgba(0,240,255,0.4),inset_0_0_8px_rgba(0,240,255,0.2)]`).
+- **HUD Greebles:** Incorporate decorative tech brackets `[ ]`, slashes `//`, and 1px scanning lines to reinforce the tactical dashboard aesthetic.
+- **Native Scrolling Only:** Never implement custom scrollbar plugins. If a panel overflows, rely strictly on native browser scrolling.
 
-## 2. TECH STACK & STRICT SVELTE 5 MANDATES
-- Framework: Svelte 5 (Strict), SvelteKit, TypeScript, Tailwind CSS.
-- **NO LEGACY CODE:** Absolutely no Svelte 4 syntax. 
-  - Use Svelte 5 Runes (`$state`, `$derived`, `$effect`, `$props`).
+## 4. TECH STACK & STRICT SVELTE 5 MANDATES
+- **Core Stack:** Svelte 5 (Strict), SvelteKit, TypeScript, Tailwind CSS, Firebase v2 Modular SDK.
+- **NO LEGACY CODE:** Absolutely no Svelte 4 syntax permitted. 
+  - Use Svelte 5 Runes strictly (`$state`, `$derived`, `$effect`, `$props`).
   - Do NOT use `export let` for props.
-  - Do NOT use `on:click`. Use modern event handlers (`onclick`, `onpointerdown`, `oncontextmenu`).
-- **Tailwind:** You MUST use the `tw-` prefix for all utility classes (e.g., `tw-flex`, `tw-h-screen`, `tw-bg-[#020202]`).
+  - Do NOT use `on:click`. Use modern event attributes (`onclick`, `onpointerdown`, `oncontextmenu`).
+- **Tailwind Prefix:** You MUST use the `tw-` prefix for all utility classes (e.g., `tw-flex`, `tw-h-screen`, `tw-bg-[#020202]`).
 
-## 3. THE VANGUARD TRINITY PATTERN (UI ARCHITECTURE)
-Complex interactive modules (like the Tactical War Room or Player Dashboards) must strictly adhere to the Trinity Pattern. Never merge these into a single monolithic file.
-- **The Shell (`+page.svelte`):** The mounting layer. Handles fixed layout containers (`tw-relative tw-w-full tw-h-full tw-overflow-hidden`) and initializes the state engine. No logic.
+## 5. THE VANGUARD TRINITY PATTERN (UI ARCHITECTURE)
+Complex interactive modules (Tactical War Room, Player Dashboards) must strictly adhere to the Trinity Pattern. Never merge these into a monolithic file.
+- **The Shell (`+page.svelte`):** The mounting layer. Handles fixed layout containers (`tw-relative tw-w-full tw-h-full tw-overflow-hidden`) and initializes the state engine. No local logic.
 - **The Brain (`[Name]Engine.svelte.ts`):** The pure TypeScript Svelte 5 state machine. Holds all `$state` arrays, complex math, and event coordination.
-- **The Glass (`[Name]Arena.svelte`):** The pure SVG or Canvas presentation layer. Binds to the Engine. No local logic.
+- **The Glass (`[Name]Arena.svelte`):** The pure SVG or Canvas presentation layer. Binds directly to the Engine. No local logic.
 - **The HUD (`[Name]HUD.svelte`):** The HTML/Tailwind control overlay. 
   - *CRITICAL UX RULE:* The root container of the HUD must be `tw-pointer-events-none` so it does not block interactions with the board underneath. Interactive buttons inside the HUD must have `tw-pointer-events-auto`.
 
-## 4. MATHEMATICS & INTERACTION PHYSICS
-- **Zero-Gravity SVG Coordinate Math:** When mapping DOM mouse events to SVG coordinate space, always wrap `getScreenCTM().inverse()` in a `try/catch` block. Provide a manual bounding-box scaling calculation in the `catch` block to ensure the UI never freezes during hardware-acceleration drops.
+## 6. COMPONENT FRACTURING (ANTI-MONOLITH PROTOCOL)
+- **Line Limit:** Never build a Svelte component exceeding 500 lines.
+- **Fracturing:** If a UI layer contains multiple distinct contextual zones, shatter it into micro-modules. The parent file (e.g., `TacticalHUD.svelte`) must act strictly as a layout wrapper and state distributor under 150 lines. Extract distinct blocks into sub-directories.
+- **State Passing:** Do not create local state inside fragments if it affects the global ecosystem. Pass the `$state` Engine down from the parent or utilize Svelte 5 Context/Snippets.
+
+## 7. SANCTIONED 3D & RENDERING BOUNDARIES
+- **No Threlte / No Holotables:** Do not introduce `@threlte/core` or `@threlte/extras`. Do not use `<Canvas>`, `<T.*>`, or `<OrbitControls>`. Spatial aesthetics must come strictly from 2D SVG illustration, neon glows, and HUD greebles.
+- **No CSS 3D:** Do not use `rotateX`, `preserve-3d`, or `translateZ` to fake depth on tactical command surfaces. Command consoles render as flat top-down SVG `viewBox` scenes scaled to a 16:9 wrapper.
+- **Isolated Three.js Scope:** Direct use of `three` is sanctioned *only* inside isolated hero assets (e.g., `OperativeAvatar3D.svelte`), lazy-loaded via dynamic imports (`await import('three')`) so it never enters the main bundle. Never propagate Three.js into tactical boards, dashboards, or routing code.
+- **Transitions:** Utilize the native View Transitions API for navigating between major platform sections.
+
+## 8. MATHEMATICS & INTERACTION PHYSICS
+- **Zero-Gravity SVG Coordinate Math:** When mapping DOM mouse events to SVG coordinate space, wrap `getScreenCTM().inverse()` in a `try/catch` block. Provide a manual bounding-box scaling calculation in the `catch` block to ensure the UI remains highly responsive during hardware-acceleration drops.
 - **Context Menus:** Intercept default browser right-clicks using `oncontextmenu={(e) => { e.preventDefault(); ... }}` to deploy custom tactical radials.
 
-## 5. DATABASE, SECURITY, & INFRASTRUCTURE
-- **Backend:** Firebase (Firestore, Auth).
-- **Data Privacy (COPPA):** This app tracks youth sports data. Treat data isolation and security with military-grade strictness. Do not expose PII across tenant (club) boundaries.
-- **Deployment:** When modifying database structures, remember that indexes and rules are deployed via `firebase deploy --only "firestore:indexes,firestore:rules"`.
-
-## 6. EXECUTION DIRECTIVES (HOW YOU WRITE CODE)
-- **Do Not Append:** When asked to refactor or fix a file, rewrite the necessary logic cleanly. Do not append alternative solutions to the bottom of the file.
-- **Do Not Break Containment:** UI components must respect their parent layouts. Do not use global `tw-fixed tw-inset-0` unless explicitly building a modal. Do not hijack the main application background.
-- **Diagnose Before Typing:** If a layout collapses or a button fails, analyze the DOM hierarchy, pointer-events, and Svelte scope before hallucinating new CSS.
-
-## 7. COMPONENT FRACTURING (ANTI-MONOLITH PROTOCOL)
-Never build a 500+ line Svelte component. If a UI layer (like the HUD) contains multiple distinct contextual zones, you must shatter it into micro-modules.
-- **The Wrapper:** The parent file (e.g., `TacticalHUD.svelte`) should strictly be a layout wrapper and state distributor. It should be less than 150 lines.
-- **The Fragments:** Extract distinct UI blocks into sub-directories (e.g., `src/lib/components/coach/tactical/hud/TacticalDock.svelte`, `CommandDrawer.svelte`, `RadialMenu.svelte`).
-- **State Passing:** Do not create local state inside these fragments if it affects the global board. Pass the `$state` Engine down from the parent or use Svelte 5 Snippets / Context.
-
-## 8. VANGUARD STARK-TECH UI AESTHETIC (THE GOD-MODE DESIGN SYSTEM)
-This application is not a standard website; it is an ultra-premium, cinematic Heads-Up Display (HUD). You must strictly adhere to the following design laws for all UI components:
-- **True Glassmorphism:** Never use solid backgrounds for UI panels. Containers must use extreme backdrop-blur (e.g., `tw-backdrop-blur-3xl` or `40px`) paired with barely visible background colors (e.g., `tw-bg-[#040f16]/85` or `tw-bg-[#00f0ff]/[0.02]`).
-- **Micro-Typography:** Interface text (buttons, labels, readouts) must be ultra-small (`tw-text-[10px]` or `tw-text-xs`), use monospace fonts (`tw-font-mono`), and employ aggressive letter spacing (`tw-tracking-widest` or `tw-tracking-[0.2em]`).
-- **Active State Glows:** Selected states and active buttons must physically light up using inner and outer neon shadows (e.g., `tw-shadow-[0_0_15px_rgba(0,240,255,0.4),inset_0_0_8px_rgba(0,240,255,0.2)]`).
-- **HUD Greebles:** Incorporate decorative tech brackets `[ ]`, slashes `//`, and 1px scanning lines (`bg-gradient-to-r`) to reinforce the tactical system aesthetic.
-- **Native Scrolling Only:** Never implement custom scrollbar plugins or logic. If a panel overflows, rely strictly on native browser scrolling.
-
-## 9. VANGUARD ARCHITECTURE (SVELTE 5 / DOM-FIRST)
-The application is Svelte 5 + hardware-accelerated CSS first. Three.js and Threlte are NOT permitted in tactical / command surfaces; the only sanctioned exception is the Player Armory's rotating operative avatar (`OperativeAvatar3D.svelte`) which dynamically imports `three` for an isolated hero asset.
-- **The OS Shell (Svelte 5):** All dashboards, tactical boards, routing math, menus, and typography must be built using Svelte 5 and hardware-accelerated CSS (`backdrop-blur`, neon shadows, gradients). This ensures razor-sharp text and native browser accessibility.
-- **No Threlte:** Do not introduce `@threlte/core` or `@threlte/extras`. The CEO retired the 3D Holotable. Do not use `<Canvas>`, `<T.*>`, `<OrbitControls>`, `<HTML>` from Threlte, or any of its primitives.
-- **No CSS 3D:** Do not use `rotateX`, `preserve-3d`, or `translateZ` to fake depth in tactical surfaces. Spatial / holographic looks come from 2D SVG illustration, neon glows, and HUD greebles.
-- **Tactical Surfaces:** All "command consoles" (War Room, Match Day, Tactical board) must render as flat top-down SVG `viewBox` scenes scaled to a 16:9 wrapper (`aspect-ratio: 16/9; max-width:100%; max-height:100%`). Player tokens and routes are SVG primitives.
-- **Three.js (sanctioned scope only):** Direct use of `three` is permitted only inside `OperativeAvatar3D.svelte` and similar isolated hero-asset components, lazy-loaded via dynamic `await import('three')` so it never enters the main bundle. Do not propagate Three.js into tactical, dashboard, or shell code.
-- **View Transitions:** Utilize the native View Transitions API for navigating between major platform sections to create a seamless, app-like OS experience without hard reloads.
+## 9. CODE EXECUTION DIRECTIVES
+- **Do Not Append Solutions:** When instructed to refactor, fix, or modify a file, rewrite the necessary logic cleanly. Never append alternative or duplicated code blocks to the bottom of the file.
+- **Respect Containment:** UI components must respect their parent layouts. Do not use global `tw-fixed tw-inset-0` unless explicitly building an isolated modal overlay. Do not hijack the main application background.
