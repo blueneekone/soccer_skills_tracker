@@ -1,107 +1,25 @@
 <script>
 	import { httpsCallable } from 'firebase/functions';
-	import { collection, getDocs, query, where } from 'firebase/firestore';
-	import { db, functions } from '$lib/firebase.js';
+	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	let { clubId = '' } = $props();
 
-	const linkHousehold = httpsCallable(functions, 'linkHousehold');
 	const setPlayerDateOfBirth = httpsCallable(functions, 'setPlayerDateOfBirth');
-	const directorApproveVpc = httpsCallable(functions, 'directorApproveVpc');
 	const enqueueMinorRetentionPurge = httpsCallable(functions, 'enqueueMinorRetentionPurge');
 
-	let parentEmailsInput = $state('');
-	let playerEmailsInput = $state('');
-	let existingHouseholdId = $state('');
 	let busy = $state('');
 
 	let dobPlayerEmail = $state('');
 	let dobValue = $state('');
 
-	let vpcPlayerEmail = $state('');
 	let retentionPlayerEmail = $state('');
-
-	/** @type {Array<{ id: string, playerEmail?: string, parentEmail?: string, createdAt?: import('firebase/firestore').Timestamp }>} */
-	let pendingVpc = $state([]);
 
 	const scopeClub = $derived(String(clubId || authStore.userProfile?.clubId || ''));
 
 	const canUse = $derived(
 		authStore.role === 'director' || authStore.role === 'super_admin' || authStore.role === 'global_admin'
 	);
-
-	const parseEmails = (raw) =>
-		raw
-			.split(/[\s,;]+/)
-			.map((s) => s.trim().toLowerCase())
-			.filter(Boolean);
-
-	$effect(() => {
-		if (!canUse || !scopeClub) {
-			pendingVpc = [];
-			return;
-		}
-		let cancelled = false;
-		getDocs(
-			query(
-				collection(db, 'vpc_requests'),
-				where('clubId', '==', scopeClub),
-				where('status', '==', 'pending')
-			)
-		)
-			.then((snap) => {
-				if (cancelled) return;
-				const rows = [];
-				snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
-				rows.sort((a, b) => {
-					const ta = a.createdAt?.toMillis?.() ?? 0;
-					const tb = b.createdAt?.toMillis?.() ?? 0;
-					return tb - ta;
-				});
-				pendingVpc = rows;
-			})
-			.catch(() => {
-				if (!cancelled) pendingVpc = [];
-			});
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	const formatTs = (ts) => {
-		if (ts && typeof ts.toDate === 'function') {
-			return ts.toDate().toLocaleString();
-		}
-		return '—';
-	};
-
-	const onLinkHousehold = async () => {
-		const parentEmails = parseEmails(parentEmailsInput);
-		const playerEmails = parseEmails(playerEmailsInput);
-		if (parentEmails.length < 1 || playerEmails.length < 1) {
-			alert('Enter at least one parent and one player email.');
-			return;
-		}
-		busy = 'link';
-		try {
-			const payload = {
-				parentEmails,
-				playerEmails,
-				...(existingHouseholdId.trim() ? { householdId: existingHouseholdId.trim() } : {}),
-				...((authStore.role === 'super_admin' || authStore.role === 'global_admin') && clubId ? { clubId } : {})
-			};
-			const res = await linkHousehold(payload);
-			const d = res.data;
-			alert(
-				`Household linked.\nID: ${d.householdId}\nClub: ${d.clubId}\nUsers must refresh login or wait for token sync for household claims.`
-			);
-		} catch (e) {
-			alert(e.message || String(e));
-		} finally {
-			busy = '';
-		}
-	};
 
 	const onSetDob = async () => {
 		const playerEmail = dobPlayerEmail.trim().toLowerCase();
@@ -115,33 +33,6 @@
 			const d = res.data;
 			alert(
 				`Date of birth saved for ${d.playerEmail}.\nMinor: ${d.isMinor}\nvpcStatus: ${d.vpcStatus}`
-			);
-		} catch (e) {
-			alert(e.message || String(e));
-		} finally {
-			busy = '';
-		}
-	};
-
-	const onVerifyVpc = async () => {
-		const playerEmail = vpcPlayerEmail.trim().toLowerCase();
-		if (!playerEmail) {
-			alert('Enter the minor player email.');
-			return;
-		}
-		if (
-			!confirm(
-				'Record verifiable parental consent for this minor? This attests the waiver in the system (use only after your club’s VPC process).'
-			)
-		) {
-			return;
-		}
-		busy = 'vpc';
-		try {
-			await directorApproveVpc({ playerEmail });
-			pendingVpc = pendingVpc.filter((r) => (r.playerEmail || '').toLowerCase() !== playerEmail);
-			alert(
-				'VPC recorded. The player should refresh the session (reload app) so passport rules see updated claims.'
 			);
 		} catch (e) {
 			alert(e.message || String(e));
@@ -188,128 +79,50 @@
 		<p class="muted">You do not have permission to use household tools.</p>
 	{:else}
 		<div class="bento-section">
-		{#if scopeClub && pendingVpc.length > 0}
 			<div class="card">
-				<div class="card-header bg-gold-header">Pending parent VPC notifications</div>
+				<div class="card-header bg-orange-header">Player date of birth (COPPA)</div>
 				<div class="card-body">
 					<p class="help">
-						Parents submitted these after completing your external VPC step. Confirm records, then use
-						<strong>Record VPC &amp; attest waiver</strong> below.
+						Sets <code>dateOfBirth</code>, derives <code>isMinor</code> (under 13) and initial
+						<code>vpcStatus</code>. Minors require VPC before waiver attestation.
 					</p>
-					<ul class="vpc-pending-list">
-						{#each pendingVpc as row}
-							<li class="vpc-pending-row">
-								<div class="vpc-pending-meta">
-									<div><span class="lbl">Athlete</span> {row.playerEmail || '—'}</div>
-									<div><span class="lbl">Parent</span> {row.parentEmail || '—'}</div>
-									<div><span class="lbl">Submitted</span> {formatTs(row.createdAt)}</div>
-								</div>
-								<button
-									type="button"
-									class="secondary-btn"
-									onclick={() => {
-										vpcPlayerEmail = String(row.playerEmail || '');
-									}}
-								>
-									Use in verify form
-								</button>
-							</li>
-						{/each}
-					</ul>
+					<label for="dob-email">Player email</label>
+					<input id="dob-email" type="email" bind:value={dobPlayerEmail} placeholder="minor@example.com" />
+
+					<label for="dob-value">Date of birth</label>
+					<input id="dob-value" type="date" bind:value={dobValue} />
+
+					<button
+						class="primary-btn btn-orange w-100"
+						onclick={onSetDob}
+						disabled={busy !== ''}
+					>
+						{busy === 'dob' ? 'Saving…' : 'Save date of birth'}
+					</button>
 				</div>
 			</div>
-		{/if}
-		<div class="card">
-			<div class="card-header bg-blue-header">Link parent ↔ minor (household)</div>
-			<div class="card-body">
-				<p class="help">
-					Enter parent/guardian emails and minor player account emails. Every account must already exist in
-					<code>users</code> and share the same club. Application admins may link across clubs by ensuring
-					members match; directors are limited to their club.
-				</p>
-				<label>Parent / guardian emails (comma or space separated)</label>
-				<input type="text" bind:value={parentEmailsInput} placeholder="parent@example.com" />
 
-				<label>Minor player emails</label>
-				<input type="text" bind:value={playerEmailsInput} placeholder="player@example.com" />
+			<div class="card">
+				<div class="card-header bg-blue-header">Minor offboarding (TTL purge queue)</div>
+				<div class="card-body">
+					<p class="help">
+						Epic 1.3: after a minor leaves the club, queue automated redaction. A daily Cloud Function clears
+						<code>passports</code>, <code>player_lookup</code>, roster slots, household links, and scrubs the
+						<code>users</code> doc. Directors may only queue minors in their club; application admins may queue
+						any minor.
+					</p>
+					<label for="retention-email">Minor player email</label>
+					<input id="retention-email" type="email" bind:value={retentionPlayerEmail} placeholder="minor@example.com" />
 
-				<label>Optional existing household ID (merge members)</label>
-				<input type="text" bind:value={existingHouseholdId} placeholder="Leave blank to create new" />
-
-				<button
-					class="primary-btn btn-blue w-100"
-					onclick={onLinkHousehold}
-					disabled={busy !== ''}
-				>
-					{busy === 'link' ? 'Linking…' : 'Link household'}
-				</button>
+					<button
+						class="primary-btn btn-blue w-100"
+						onclick={onEnqueueRetention}
+						disabled={busy !== ''}
+					>
+						{busy === 'retention' ? 'Queueing…' : 'Queue retention purge'}
+					</button>
+				</div>
 			</div>
-		</div>
-
-		<div class="card">
-			<div class="card-header bg-orange-header">Player date of birth (COPPA)</div>
-			<div class="card-body">
-				<p class="help">
-					Sets <code>dateOfBirth</code>, derives <code>isMinor</code> (under 13) and initial
-					<code>vpcStatus</code>. Minors require VPC before waiver attestation.
-				</p>
-				<label>Player email</label>
-				<input type="email" bind:value={dobPlayerEmail} placeholder="minor@example.com" />
-
-				<label>Date of birth</label>
-				<input type="date" bind:value={dobValue} />
-
-				<button
-					class="primary-btn btn-orange w-100"
-					onclick={onSetDob}
-					disabled={busy !== ''}
-				>
-					{busy === 'dob' ? 'Saving…' : 'Save date of birth'}
-				</button>
-			</div>
-		</div>
-
-		<div class="card">
-			<div class="card-header bg-green-header">Complete VPC + waiver (minor)</div>
-			<div class="card-body">
-				<p class="help">
-					Run only after parental consent is verified per your club policy. Updates Firestore and passport
-					waiver fields via trusted backend; replaces canvas signature for under-13 athletes.
-				</p>
-				<label>Minor player email</label>
-				<input type="email" bind:value={vpcPlayerEmail} placeholder="minor@example.com" />
-
-				<button
-					class="primary-btn btn-green w-100"
-					onclick={onVerifyVpc}
-					disabled={busy !== ''}
-				>
-					{busy === 'vpc' ? 'Recording…' : 'Record VPC &amp; attest waiver'}
-				</button>
-			</div>
-		</div>
-
-		<div class="card">
-			<div class="card-header bg-blue-header">Minor offboarding (TTL purge queue)</div>
-			<div class="card-body">
-				<p class="help">
-					Epic 1.3: after a minor leaves the club, queue automated redaction. A daily Cloud Function clears
-					<code>passports</code>, <code>player_lookup</code>, roster slots, household links, and scrubs the
-					<code>users</code> doc. Directors may only queue minors in their club; application admins may queue
-					any minor.
-				</p>
-				<label>Minor player email</label>
-				<input type="email" bind:value={retentionPlayerEmail} placeholder="minor@example.com" />
-
-				<button
-					class="primary-btn btn-blue w-100"
-					onclick={onEnqueueRetention}
-					disabled={busy !== ''}
-				>
-					{busy === 'retention' ? 'Queueing…' : 'Queue retention purge'}
-				</button>
-			</div>
-		</div>
 		</div>
 	{/if}
 </div>
