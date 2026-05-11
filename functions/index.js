@@ -126,8 +126,11 @@ exports.syncUserClaims = inviteHandlers.syncUserClaims;
 exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
 
 const coppaHandlers = require('./coppa');
-exports.sendParentalConsentEmail = coppaHandlers.sendParentalConsentEmail;
-exports.verifyParentalConsent = coppaHandlers.verifyParentalConsent;
+exports.sendParentalConsentEmail    = coppaHandlers.sendParentalConsentEmail;
+exports.verifyParentalConsent       = coppaHandlers.verifyParentalConsent;
+// Epic 15: WebAuthn COPPA Attestation
+exports.generateWebAuthnChallenge   = coppaHandlers.generateWebAuthnChallenge;
+exports.verifyBiometricConsent      = coppaHandlers.verifyBiometricConsent;
 
 const auditHandlers = require('./audit');
 // IAM prerequisite: grant "Service Account Token Creator" to the Functions service account.

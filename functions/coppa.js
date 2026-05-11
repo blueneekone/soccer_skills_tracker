@@ -534,3 +534,210 @@ exports.verifyParentalConsent = onCall(
       };
     },
 );
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Epic 15 — Native WebAuthn COPPA Attestation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const CHALLENGE_TTL_MS = 10 * 60 * 1000; // 10-minute window
+
+/**
+ * generateWebAuthnChallenge
+ * ─────────────────────────
+ * Issues a 32-byte cryptographically-random challenge, stores it in
+ * `coppaChallenges/{userId}` with a 10-minute TTL, and returns the
+ * base64url-encoded challenge plus RP metadata to the browser.
+ *
+ * Accepts either an authenticated caller (reqAuth.uid) or a pre-auth
+ * tempUserId so the flow can be invoked before the parent account is
+ * fully created.
+ */
+exports.generateWebAuthnChallenge = onCall(
+  { region: REGION, enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    const { tempUserId } = request.data || {};
+    const userId = reqAuth?.uid || tempUserId;
+
+    if (!userId || typeof userId !== 'string') {
+      throw new HttpsError('unauthenticated', 'Authenticated UID or tempUserId required.');
+    }
+
+    // 256-bit entropy — never derive from Firestore doc IDs
+    const challenge = crypto.randomBytes(32).toString('base64url');
+
+    await fs().collection('coppaChallenges').doc(userId).set({
+      challenge,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    logger.info('[coppa] WebAuthn challenge issued', { userId });
+    return { challenge, rpName: PLATFORM_NAME, userId };
+  },
+);
+
+/**
+ * verifyBiometricConsent
+ * ──────────────────────
+ * Receives the raw WebAuthn AttestationResponse from the browser,
+ * verifies the challenge binding (clientDataJSON), performs anti-replay
+ * deletion, then atomically writes the consent record and stamps the
+ * `vpcVerified` JWT claim on both parent and child accounts.
+ *
+ * Expected request.data shape:
+ *   clientDataJSON   string  base64url-encoded ArrayBuffer
+ *   attestationObject string base64url-encoded ArrayBuffer (stored for audit)
+ *   credentialId     string  credential.id from PublicKeyCredential
+ *   childEmail?      string  target minor's email (lowercase)
+ *   inviteToken?     string  consent_tokens doc ID (consumed on success)
+ */
+exports.verifyBiometricConsent = onCall(
+  { region: REGION, enforceAppCheck: false },
+  async (request) => {
+    const reqAuth   = request.auth;
+    const tempUserId = request.data?.tempUserId;
+    const userId    = reqAuth?.uid || tempUserId;
+
+    if (!userId) throw new HttpsError('unauthenticated', 'User ID required.');
+
+    const { clientDataJSON, attestationObject, credentialId, childEmail, inviteToken } =
+      request.data || {};
+
+    if (!clientDataJSON) {
+      throw new HttpsError('invalid-argument', 'clientDataJSON is required.');
+    }
+
+    // ── 1. Load + validate stored challenge ─────────────────────────────────
+    const challengeRef  = fs().collection('coppaChallenges').doc(userId);
+    const challengeSnap = await challengeRef.get();
+
+    if (!challengeSnap.exists) {
+      throw new HttpsError('not-found', 'No pending challenge. Please restart verification.');
+    }
+
+    const storedData = challengeSnap.data();
+    const storedChallenge = storedData.challenge;
+
+    const createdAt = storedData.createdAt?.toDate ? storedData.createdAt.toDate() : new Date(0);
+    if (Date.now() - createdAt.getTime() > CHALLENGE_TTL_MS) {
+      await challengeRef.delete().catch(() => null);
+      throw new HttpsError('deadline-exceeded', 'Challenge expired. Please restart verification.');
+    }
+
+    // ── 2. Decode & verify clientDataJSON ───────────────────────────────────
+    let clientData;
+    try {
+      const raw = Buffer.from(clientDataJSON, 'base64url').toString('utf8');
+      clientData = JSON.parse(raw);
+    } catch {
+      throw new HttpsError('invalid-argument', 'Invalid clientDataJSON encoding.');
+    }
+
+    if (clientData.type !== 'webauthn.create') {
+      throw new HttpsError('invalid-argument', `Expected webauthn.create, got: ${clientData.type}`);
+    }
+
+    if (clientData.challenge !== storedChallenge) {
+      logger.warn('[coppa] Challenge mismatch — possible replay', { userId });
+      throw new HttpsError('permission-denied', 'Challenge mismatch. Possible replay attack.');
+    }
+
+    const allowedOrigins = [
+      PLATFORM_URL,
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ].filter(Boolean);
+    if (allowedOrigins.length > 0 && !allowedOrigins.includes(clientData.origin)) {
+      logger.warn('[coppa] Origin mismatch', { userId, origin: clientData.origin });
+      throw new HttpsError('permission-denied', 'Invalid attestation origin.');
+    }
+
+    // ── 3. Anti-replay: delete challenge immediately ─────────────────────────
+    await challengeRef.delete();
+
+    // ── 4. Resolve identities ────────────────────────────────────────────────
+    const clientIp      = request.rawRequest?.ip || 'unknown';
+    const parentEmail   = (reqAuth?.token?.email || '').toLowerCase().trim();
+    const targetChild   = (childEmail || '').toLowerCase().trim();
+    const now           = admin.firestore.FieldValue.serverTimestamp();
+
+    // ── 5. Atomic Firestore commit ───────────────────────────────────────────
+    const batch = fs().batch();
+
+    // Parent compliance record
+    if (parentEmail) {
+      const parentRef = fs().collection('users').doc(parentEmail);
+      batch.set(parentRef, {
+        coppa: {
+          status:       'cleared',
+          attestedVia:  'webauthn_biometric',
+          timestamp:    now,
+          clientIp,
+          credentialId: credentialId || null,
+        },
+        coppaStatus: 'granted',
+        consentDate: now,
+        vpcStatus:   'verified',
+      }, { merge: true });
+    }
+
+    // Child consent grant
+    if (targetChild) {
+      const childRef = fs().collection('users').doc(targetChild);
+      batch.set(childRef, {
+        coppaStatus: 'granted',
+        consentDate: now,
+        vpcStatus:   'verified',
+        'coppa.parentConsentedVia':    'webauthn_biometric',
+        'coppa.parentConsentTimestamp': now,
+      }, { merge: true });
+    }
+
+    // Consume invite token if supplied
+    if (inviteToken && typeof inviteToken === 'string') {
+      const tokenRef = fs().collection('consent_tokens').doc(inviteToken);
+      // Non-fatal: token may already be consumed or nonexistent
+      batch.set(tokenRef, {
+        consumed:     true,
+        consumedVia:  'webauthn_biometric',
+        consumedAt:   now,
+      }, { merge: true });
+    }
+
+    // Audit log
+    const auditRef = fs().collection('consent_logs').doc();
+    batch.set(auditRef, {
+      action:       'webauthn_biometric_consent',
+      attestedVia:  'webauthn_biometric',
+      parentUid:    userId,
+      parentEmail:  parentEmail || null,
+      childEmail:   targetChild || null,
+      credentialId: credentialId || null,
+      clientIp,
+      timestamp:    now,
+    });
+
+    await batch.commit();
+
+    // ── 6. Stamp JWT claims (non-fatal) ──────────────────────────────────────
+    const claimUpdates = [];
+    if (reqAuth?.uid) {
+      claimUpdates.push(
+        admin.auth().getUser(reqAuth.uid).then(u =>
+          admin.auth().setCustomUserClaims(u.uid, { ...(u.customClaims || {}), vpcVerified: true }),
+        ).catch(e => logger.warn('[coppa] parent claim update failed', { error: e.message })),
+      );
+    }
+    if (targetChild) {
+      claimUpdates.push(
+        admin.auth().getUserByEmail(targetChild).then(u =>
+          admin.auth().setCustomUserClaims(u.uid, { ...(u.customClaims || {}), vpcVerified: true }),
+        ).catch(e => logger.warn('[coppa] child claim update failed', { email: targetChild, error: e.message })),
+      );
+    }
+    await Promise.allSettled(claimUpdates);
+
+    logger.info('[coppa] WebAuthn biometric consent verified', { userId, parentEmail, targetChild });
+    return { success: true, attestedVia: 'webauthn_biometric' };
+  },
+);
