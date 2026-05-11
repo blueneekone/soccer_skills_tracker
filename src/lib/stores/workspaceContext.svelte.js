@@ -315,6 +315,37 @@ export const workspaceContextStore = {
 		activeSportConfig = config;
 	},
 	/**
+	 * Atomic boundary setter — writes all three org-topology dimensions in one
+	 * synchronous call, persists to sessionStorage, and clears the cached sport
+	 * config to notify consuming `$effect`s to reload from Firestore.
+	 *
+	 * Use this for programmatic pivots (e.g. invite-code redemption landing) where
+	 * all three dimensions are known simultaneously and must not generate three
+	 * separate reactive ticks.
+	 *
+	 * @param {string | null} orgId      Umbrella Rec-Center / league ID (null = standalone)
+	 * @param {string | null} divisionId Active club/program within the org (null = clear)
+	 * @param {string}        sportId    Sport schema ID, e.g. 'soccer' (defaults to 'soccer')
+	 */
+	setWorkspaceBoundary(orgId, divisionId, sportId) {
+		const oid = (orgId || '').trim();
+		const did = (divisionId || '').trim();
+		const sid = (sportId || 'soccer').trim();
+
+		// Write all three atomically — avoid intermediate reactive ticks
+		if (activeOrgId      !== oid) activeOrgId      = oid;
+		if (activeDivisionId !== did) {
+			activeDivisionId = did;
+			activeClubId     = did;   // keep backward-compat alias in sync
+		}
+		if (activeSportId !== sid) {
+			activeSportId    = sid;
+			activeSportConfig = null; // force config reload on next $effect cycle
+		}
+
+		persistToSession();
+	},
+	/**
 	 * @param {string} id
 	 */
 	setActiveTeamId(id) {

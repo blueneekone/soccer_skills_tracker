@@ -3,7 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
-	import { auth } from '$lib/firebase.js';
+	import { auth, db } from '$lib/firebase.js';
+	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore, resolveTeamsLoadScope } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
@@ -27,6 +28,49 @@
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
+
+	/**
+	 * Fallback accent colors per sport — used when sports_configs Firestore
+	 * doc is missing or not yet loaded.  These mirror the BASE_SPORTS_CONFIGS
+	 * defined in `functions/src/seeders/sportsSeeder.js`.
+	 */
+	const SPORT_FALLBACK_ACCENTS = /** @type {Record<string, string>} */ ({
+		soccer:     '#00f0ff', // Neon Cyan
+		basketball: '#ff6600', // Neon Orange
+		lacrosse:   '#00ff66', // Neon Green
+		baseball:   '#ffcc00', // Neon Yellow
+		volleyball: '#cc00ff', // Neon Purple
+	});
+
+	/**
+	 * Derives the primary accent from a loaded sport config or the fallback map
+	 * and stamps three CSS custom properties on `:root`:
+	 *   --vanguard-division-accent       → primary hex
+	 *   --vanguard-division-accent-dim   → rgba(..., 0.18)  borders/bg fills
+	 *   --vanguard-division-accent-glow  → rgba(..., 0.35)  box-shadow glows
+	 *
+	 * Also sets `data-sport="<sportId>"` on <html> so global CSS selectors can
+	 * apply sport-specific Tailwind overrides without JS re-renders.
+	 *
+	 * @param {string} sportId
+	 * @param {Record<string, unknown> | null} config
+	 */
+	function applySportTheme(sportId, config) {
+		if (typeof document === 'undefined') return;
+		const attrs = Array.isArray(config?.attributes) ? config.attributes : [];
+		const raw =
+			(/** @type {Record<string, unknown>} */ (attrs[0])?.hexColor) ||
+			SPORT_FALLBACK_ACCENTS[sportId] ||
+			'#00f0ff';
+		const hex = String(raw).replace('#', '');
+		const r = parseInt(hex.slice(0, 2), 16) || 0;
+		const g = parseInt(hex.slice(2, 4), 16) || 240;
+		const b = parseInt(hex.slice(4, 6), 16) || 255;
+		document.documentElement.style.setProperty('--vanguard-division-accent',      `#${hex}`);
+		document.documentElement.style.setProperty('--vanguard-division-accent-dim',  `rgba(${r},${g},${b},0.18)`);
+		document.documentElement.style.setProperty('--vanguard-division-accent-glow', `rgba(${r},${g},${b},0.35)`);
+		document.documentElement.setAttribute('data-sport', sportId);
+	}
 
 	let { children } = $props();
 
@@ -230,6 +274,42 @@
 		if (typeof document === 'undefined' || authStore.isLoading) return;
 		document.documentElement.classList.remove('player-elite', 'player-portal-theme', 'recruiter-scout-theme');
 		themeStore.apply();
+	});
+
+	// ── Sport Theme Engine ──────────────────────────────────────────────────
+	// Reactively tracks the active sport division and:
+	//   1. Immediately applies fallback accent tokens so the UI never flashes.
+	//   2. If the sport config is not yet cached in the store, fetches it from
+	//      `sports_configs/{sportId}` in Firestore and stores it for consumers
+	//      (AttributeRadar, WorkspaceContextSwitcher footer, drill engines, etc.)
+	//   3. Re-stamps CSS custom properties once the real config is loaded.
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		const sportId = workspaceContextStore.activeSportId || 'soccer';
+		const cached  = workspaceContextStore.activeSportConfig;
+
+		// Step 1 — instant fallback so borders/glows are correct on every pivot
+		applySportTheme(sportId, cached);
+
+		if (cached) return; // config already loaded; nothing more to do
+
+		// Step 2 — async load from Firestore (fire-and-forget; non-fatal)
+		let cancelled = false;
+		(async () => {
+			try {
+				const snap = await getDoc(doc(db, 'sports_configs', sportId));
+				if (cancelled) return;
+				const config = snap.exists() ? /** @type {Record<string, unknown>} */ (snap.data()) : null;
+				workspaceContextStore.setActiveSportConfig(config);
+				// Step 3 — re-apply with real attribute colors now that config is loaded
+				applySportTheme(sportId, config);
+			} catch (err) {
+				// Non-fatal: fallback tokens remain active
+				console.warn('[layout] sport config load failed', err);
+			}
+		})();
+
+		return () => { cancelled = true; };
 	});
 
 	$effect(() => {
