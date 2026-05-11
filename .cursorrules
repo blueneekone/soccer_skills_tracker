@@ -58,3 +58,8 @@ Complex interactive modules (Tactical War Room, Player Dashboards) must strictly
 ## 9. CODE EXECUTION DIRECTIVES
 - **Do Not Append Solutions:** When instructed to refactor, fix, or modify a file, rewrite the necessary logic cleanly. Never append alternative or duplicated code blocks to the bottom of the file.
 - **Respect Containment:** UI components must respect their parent layouts. Do not use global `tw-fixed tw-inset-0` unless explicitly building an isolated modal overlay. Do not hijack the main application background.
+
+## 10. DEPRECATION & RUTHLESS CODEBASE PURGING
+- **Database Safety vs. Codebase Hygiene:** The "Zero Data Loss Mandate" applies strictly to Cloud Firestore production documents and unmapped database keys. It does NOT apply to frontend components, DOM nodes, or local repository files.
+- **Search and Destroy Redundancy:** When instructed to revamp a workflow, streamline an interface, or replace a legacy module, you are explicitly ordered to delete the deprecated HTML forms, strip out redundant input fields, and permanently delete orphaned `.svelte` or `.js` files from the repository directory.
+- **No Orphaned Imports:** Whenever mounting a new component layout, thoroughly scan the parent file's script block to remove unused child imports and prevent legacy components from lingering in the compilation bundle.
