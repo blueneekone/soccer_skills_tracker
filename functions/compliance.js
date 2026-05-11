@@ -1,27 +1,28 @@
 'use strict';
 
 /**
- * Epic 14 (Pivot): Vanguard Clearance Protocol — Ankored Integration
- * ───────────────────────────────────────────────────────────────────
- * Compliance management powered by Ankored as the all-in-one aggregator
- * for SafeSport, Concussion, and Background Check verification.
+ * Epic 14: Vanguard Clearance Protocol — Checkr Native Embed
+ * ────────────────────────────────────────────────────────────
+ * Background screening via Checkr Embed SDK.  PII and payment processing
+ * are handled entirely inside Checkr's iframe — Firebase only stores the
+ * resulting status flag and a Checkr candidate/report reference.
  *
  * Zero-Trust contract:
- *   • No sensitive BGC data (SSNs, criminal records) ever enters Firebase.
- *   • Stored fields: status, ankoredId reference, lastVerified timestamp only.
+ *   • No SSNs, criminal records, or payment data ever enter Firebase.
+ *   • Stored fields: status, checkrCandidateId, lastVerified timestamp only.
  *   • The `isCleared` JWT claim is the enforcement boundary — Firestore rules
  *     reject coach reads on player data unless isCleared == true.
  *
- * Simplified clearance schema on users/{email}.clearance:
- *   { status: 'pending'|'cleared', ankoredId: string, lastVerified: Timestamp }
+ * Clearance schema on users/{email}.clearance:
+ *   { status: 'pending'|'cleared'|'flagged', checkrCandidateId: string, lastVerified: Timestamp }
  *
  * Functions exported:
- *   backgroundCheckCallback  — HTTP webhook (Ankored / 3rd-party BGC provider)
+ *   generateCheckrEmbedToken — onCall  (Coach — exchange user info for Checkr embed token)
+ *   backgroundCheckCallback  — HTTP webhook (Checkr report.completed webhook)
  *   getComplianceRoster      — onCall  (Directors & Registrars)
  *   requestManualOverride    — onCall  (Directors only)
  *   revokeCoachClearance     — onCall  (Directors only)
- *   initiateAnkoredUplink    — onCall  (Coach — Alpha self-clear via Ankored)
- *   simulateClearance        — onCall  (Director — Alpha simulation)
+ *   simulateClearance        — onCall  (Director — Alpha simulation, no live keys needed)
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
@@ -33,7 +34,13 @@ const crypto = require('crypto');
 const REGION = 'us-east1';
 
 /**
- * HMAC secret shared with the BGC provider (Checkr or equivalent).
+ * Checkr API key (secret tier) — used for embed token generation.
+ * Set via: firebase functions:secrets:set CHECKR_API_KEY
+ */
+const CHECKR_API_KEY = defineSecret('CHECKR_API_KEY');
+
+/**
+ * HMAC secret shared with Checkr for webhook signature verification.
  * Set via: firebase functions:secrets:set BGC_WEBHOOK_SECRET
  * If the secret is unset in development, signature verification is skipped.
  */
@@ -63,18 +70,108 @@ async function stampClearanceClaim(uid, email) {
   await auth().setCustomUserClaims(uid, {
     ...existing,
     isCleared,
-    clearanceRef: cl.ankoredId || cl.thirdPartyRef || null,
+    // checkrCandidateId is the canonical ref; fall back to legacy fields
+    clearanceRef: cl.checkrCandidateId || cl.ankoredId || cl.thirdPartyRef || null,
   });
 
   logger.info('[compliance] stampClearanceClaim', { uid, email, isCleared });
   return isCleared;
 }
 
-// ── 1. backgroundCheckCallback ───────────────────────────────────────────────
+// ── 0. generateCheckrEmbedToken ──────────────────────────────────────────────
 /**
- * HTTP webhook consumed by Checkr (or any compliant BGC provider).
+ * Exchange the caller's identity for a short-lived Checkr embed token.
+ * The token is returned to the frontend and passed directly to Checkr.mount().
+ * No PII is stored in Firebase — Checkr owns the candidate record.
+ *
+ * Checkr API reference: POST https://api.checkr.com/v1/embeds/tokens
+ *   Auth: Basic <base64(API_KEY:)>
+ *   Body: { candidate: { email, first_name?, last_name? }, package?: string }
+ *   Response: { token: "<embed_token>" }
+ */
+exports.generateCheckrEmbedToken = onCall(
+  { region: REGION, secrets: [CHECKR_API_KEY], enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
+
+    const claims = reqAuth.token || {};
+    const role = claims.role || '';
+    if (!['coach', 'recruiter'].includes(role)) {
+      throw new HttpsError(
+        'permission-denied',
+        'Only coaches and recruiters may initiate a Checkr background check.',
+      );
+    }
+
+    const email = (claims.email || '').toLowerCase().trim();
+    if (!email) throw new HttpsError('unauthenticated', 'Cannot resolve caller email.');
+
+    // Split display name into first/last for Checkr candidate record.
+    const rawName = String(claims.name || claims.displayName || '').trim();
+    const nameParts = rawName.split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const apiKey = CHECKR_API_KEY.value();
+    if (!apiKey) {
+      // No live key — return a sentinel so the embed component can show a
+      // "contact director" message rather than crashing.
+      logger.warn('[compliance] CHECKR_API_KEY not set — returning mock token for Alpha');
+      return { embedToken: null, alphaMode: true };
+    }
+
+    const b64Key = Buffer.from(`${apiKey}:`).toString('base64');
+    const body = {
+      candidate: {
+        email,
+        ...(firstName ? { first_name: firstName } : {}),
+        ...(lastName  ? { last_name: lastName }   : {}),
+      },
+    };
+
+    const res = await fetch('https://api.checkr.com/v1/embeds/tokens', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${b64Key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => String(res.status));
+      logger.error('[compliance] Checkr embed token request failed', {
+        status: res.status,
+        body: errText.slice(0, 500),
+      });
+      throw new HttpsError('internal', 'Failed to generate Checkr embed token. Check API key.');
+    }
+
+    const data = await res.json();
+    const embedToken = data.token || data.embed_token || null;
+    if (!embedToken) {
+      logger.error('[compliance] Checkr response missing token field', { data });
+      throw new HttpsError('internal', 'Checkr returned no embed token.');
+    }
+
+    // Mark coach as pending in Firestore so the panopticon shows correct state.
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await db().collection('users').doc(email).set(
+      { clearance: { status: 'pending', lastVerified: now } },
+      { merge: true },
+    );
+
+    logger.info('[compliance] Checkr embed token issued', { email });
+    return { embedToken };
+  },
+);
+
+// ── 1. backgroundCheckCallback / checkrWebhook ───────────────────────────────
+/**
+ * HTTP webhook consumed by Checkr.
  * Expected POST body shape:
- *   { type: 'report.completed', data: { email, status, reportId, expiresAt? } }
+ *   { type: 'report.completed', data: { email, status, reportId } }
  *
  * Checkr status → Vanguard status mapping:
  *   'clear'     → 'cleared'
@@ -84,10 +181,11 @@ async function stampClearanceClaim(uid, email) {
  *
  * Signature verification uses HMAC-SHA256 with the BGC_WEBHOOK_SECRET.
  * Header expected: X-Checkr-Signature (or X-Bgc-Signature as fallback).
+ *
+ * Exported as both `backgroundCheckCallback` (legacy) and `checkrWebhook`
+ * (canonical Checkr dashboard URL).
  */
-exports.backgroundCheckCallback = onRequest(
-  { region: REGION, secrets: [BGC_WEBHOOK_SECRET] },
-  async (req, res) => {
+async function _checkrWebhookHandler(req, res) {
     if (req.method !== 'POST') {
       res.status(405).send('Method Not Allowed');
       return;
@@ -122,7 +220,7 @@ exports.backgroundCheckCallback = onRequest(
     }
 
     // ── Payload extraction ────────────────────────────────────────────────
-    const { email, status, reportId, expiresAt: rawExpiry } = data;
+    const { email, status, reportId } = data;
     if (typeof email !== 'string' || !email) {
       res.status(400).json({ error: 'data.email is required' });
       return;
@@ -140,37 +238,15 @@ exports.backgroundCheckCallback = onRequest(
       status === 'consider' || status === 'suspended' ? 'flagged' :
       'pending';
 
-    // ── Expiry timestamp ──────────────────────────────────────────────────
-    let expiresAtTimestamp = null;
-    if (rawExpiry) {
-      try {
-        const d = new Date(rawExpiry);
-        if (!isNaN(d.getTime())) {
-          expiresAtTimestamp = admin.firestore.Timestamp.fromDate(d);
-        }
-      } catch {
-        logger.warn('[compliance] Could not parse expiresAt', { rawExpiry });
-      }
-    }
-    if (!expiresAtTimestamp && clearanceStatus === 'cleared') {
-      // Default: 2-year validity when provider does not supply an expiry.
-      const d = new Date();
-      d.setFullYear(d.getFullYear() + 2);
-      expiresAtTimestamp = admin.firestore.Timestamp.fromDate(d);
-    }
-
-    // ── Firestore write (status + ref only — Zero-Trust) ─────────────────
+    // ── Firestore write (status + Checkr reference only — Zero-Trust) ───
     try {
       const userRef = db().collection('users').doc(normalizedEmail);
       await userRef.set(
         {
           clearance: {
             status: clearanceStatus,
-            thirdPartyRef: reportId || null,
-            expiresAt: expiresAtTimestamp,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            source: 'checkr',
-            manualOverride: false,
+            checkrCandidateId: reportId || null,
+            lastVerified: admin.firestore.FieldValue.serverTimestamp(),
           },
         },
         { merge: true },
@@ -203,8 +279,11 @@ exports.backgroundCheckCallback = onRequest(
       logger.error('[compliance] BGC callback error', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
-);
+}
+
+const _checkrWebhookOpts = { region: REGION, secrets: [BGC_WEBHOOK_SECRET] };
+exports.backgroundCheckCallback = onRequest(_checkrWebhookOpts, _checkrWebhookHandler);
+exports.checkrWebhook           = onRequest(_checkrWebhookOpts, _checkrWebhookHandler);
 
 // ── 2. getComplianceRoster ───────────────────────────────────────────────────
 /**

@@ -104,12 +104,14 @@ exports.schedulePractice = leagueHandlers.schedulePractice;
 // â”€â”€ Epic 6+: Compliance & Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // -- Epic 14: Vanguard Clearance Protocol ------------------------------------
 const complianceHandlers = require('./compliance');
-exports.backgroundCheckCallback = complianceHandlers.backgroundCheckCallback;
-exports.getComplianceRoster     = complianceHandlers.getComplianceRoster;
-exports.requestManualOverride   = complianceHandlers.requestManualOverride;
-exports.revokeCoachClearance    = complianceHandlers.revokeCoachClearance;
-exports.initiateAnkoredUplink   = complianceHandlers.initiateAnkoredUplink;
-exports.simulateClearance       = complianceHandlers.simulateClearance;
+exports.generateCheckrEmbedToken = complianceHandlers.generateCheckrEmbedToken;
+exports.backgroundCheckCallback  = complianceHandlers.backgroundCheckCallback;
+exports.checkrWebhook            = complianceHandlers.checkrWebhook;
+exports.getComplianceRoster      = complianceHandlers.getComplianceRoster;
+exports.requestManualOverride    = complianceHandlers.requestManualOverride;
+exports.revokeCoachClearance     = complianceHandlers.revokeCoachClearance;
+exports.initiateAnkoredUplink    = complianceHandlers.initiateAnkoredUplink;
+exports.simulateClearance        = complianceHandlers.simulateClearance;
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 
