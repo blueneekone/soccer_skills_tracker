@@ -36,6 +36,13 @@ function createAuthStore() {
 	 * Empty string '' = platform admin, unjoined user, or not yet resolved.
 	 */
 	let tenantId = $state('');
+	/**
+	 * Umbrella organisation identifier, optional.
+	 * Present when a club belongs to a parent Rec-Center / league org.
+	 * Sourced from JWT claims (`orgId`) written by `syncUserClaims`.
+	 * Empty string '' when the user's club is a standalone tenant.
+	 */
+	let orgId = $state('');
 	let isAuthenticated = $state(false);
 	let isProfileComplete = $state(false);
 	let isLoading = $state(true);
@@ -240,6 +247,7 @@ function createAuthStore() {
 		userProfile = null;
 		role = 'guest';
 		tenantId = '';
+		orgId = '';
 		isAuthenticated = false;
 		isProfileComplete = false;
 		if (isLoading !== false) isLoading = false;
@@ -263,6 +271,9 @@ function createAuthStore() {
 			// Fall back to Firestore profile.clubId for users provisioned before the trigger.
 			const resolvedTenantId = resolved.tenantId ?? String(resolved.profile?.clubId ?? '');
 			if (tenantId !== resolvedTenantId) tenantId = resolvedTenantId;
+			// Org-topology: derive orgId from profile (optional; absent for standalone clubs).
+			const resolvedOrgId = String(resolved.profile?.orgId ?? '');
+			if (orgId !== resolvedOrgId) orgId = resolvedOrgId;
 			setProfile(resolved.profile);
 			workspaceContextStore.hydrateContext(firebaseUser, resolved.role, resolved.profile);
 			attachUserStatusListener(firebaseUser);
@@ -294,6 +305,16 @@ function createAuthStore() {
 		/** Alias for `tenantId` — matches the `currentTenantId` naming from the directive. */
 		get currentTenantId() {
 			return tenantId;
+		},
+		/**
+		 * Umbrella organisation identifier (Rec-Center / league).
+		 * Optional — empty string '' for standalone clubs not part of a parent org.
+		 * Sourced from the `orgId` JWT claim written by `syncUserClaims`.
+		 * Use this to scope compliance-vault queries:
+		 *   `orgs/{orgId}/compliance_vault/{email}`
+		 */
+		get orgId() {
+			return orgId;
 		},
 		/** Derived from verified JWT role claim. */
 		get isCoach() {
@@ -405,12 +426,15 @@ function createAuthStore() {
 				const newTenantId = String(
 					tokenResult.claims.tenantId || tokenResult.claims.clubId || '',
 				);
+				const newOrgId = String(tokenResult.claims.orgId || '');
 
 				// Only update role if the token carries one — avoids blanking the
 				// role while claims are still propagating.
 				if (newRole && role !== newRole) role = newRole;
 				// tenantId can legitimately become '' (revocation) — always sync it.
 				if (tenantId !== newTenantId) tenantId = newTenantId;
+				// orgId: sync from JWT; empty string is valid (standalone club).
+				if (orgId !== newOrgId) orgId = newOrgId;
 			} catch (err) {
 				console.warn('[auth store] refreshClaims error:', err);
 			}
@@ -431,6 +455,8 @@ function createAuthStore() {
 				if (role !== resolved.role) role = resolved.role;
 				const refreshedTenantId = resolved.tenantId ?? String(resolved.profile?.clubId ?? '');
 				if (tenantId !== refreshedTenantId) tenantId = refreshedTenantId;
+				const refreshedOrgId = String(resolved.profile?.orgId ?? '');
+				if (orgId !== refreshedOrgId) orgId = refreshedOrgId;
 				setProfile(resolved.profile);
 				workspaceContextStore.hydrateContext(auth.currentUser, resolved.role, resolved.profile);
 			} catch (err) {

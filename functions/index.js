@@ -1416,14 +1416,17 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
   if (!requiresClearance) isCleared = true;
 
   const customClaims = {
-    teamId: userData.teamId || null,
-    role: clearedRole,
-    clubId: userData.clubId || null,
+    teamId:    userData.teamId    || null,
+    role:      clearedRole,
+    clubId:    userData.clubId    || null,
+    // Org-topology: orgId = umbrella Rec-Center / league; divisionId = scoped club/program
+    orgId:      userData.orgId      || null,
+    divisionId: userData.divisionId || userData.clubId || null,
     householdId: userData.householdId || null,
-    minor: userData.isMinor === true,
+    minor:       userData.isMinor === true,
     vpcVerified: userData.vpcStatus === 'verified',
     isCleared,
-    tier: null,
+    tier:                null,
     subscription_status: null,
   };
 

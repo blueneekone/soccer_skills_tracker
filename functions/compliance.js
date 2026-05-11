@@ -113,6 +113,38 @@ exports.generateCheckrEmbedToken = onCall(
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    // ── Org-level Compliance Vault: upstream deduplication ─────────────────
+    // Before making a billable Checkr API call, check if the user is already
+    // cleared at the parent-org level.  If a sibling division already completed
+    // a BGC, propagate the result and skip the Checkr flow entirely.
+    try {
+      const userSnap = await db().collection('users').doc(email).get();
+      const orgId = userSnap.exists ? (userSnap.data()?.orgId || '') : '';
+      if (orgId) {
+        const vaultSnap = await db()
+          .collection('orgs').doc(orgId)
+          .collection('compliance_vault').doc(email)
+          .get();
+        if (vaultSnap.exists) {
+          const vault = vaultSnap.data() || {};
+          if (vault.status === 'cleared') {
+            logger.info('[compliance] Org-vault hit — propagating clearance', { email, orgId });
+            const now = admin.firestore.FieldValue.serverTimestamp();
+            await db().collection('users').doc(email).set(
+              { clearance: { status: 'cleared', source: 'org_vault_propagation', orgId, lastVerified: now } },
+              { merge: true },
+            );
+            const userRecord = await auth().getUserByEmail(email).catch(() => null);
+            if (userRecord) await stampClearanceClaim(userRecord.uid, email);
+            return { embedToken: null, orgVaultCleared: true };
+          }
+        }
+      }
+    } catch (vaultErr) {
+      // Non-fatal: vault check failure must never block the Checkr flow.
+      logger.warn('[compliance] Org-vault upstream check failed (non-fatal)', vaultErr);
+    }
+
     const apiKey = CHECKR_API_KEY.value();
     if (!apiKey) {
       // No live key — return a sentinel so the embed component can show a
@@ -256,6 +288,31 @@ async function _checkrWebhookHandler(req, res) {
       const userRecord = await auth().getUserByEmail(normalizedEmail).catch(() => null);
       if (userRecord) {
         await stampClearanceClaim(userRecord.uid, normalizedEmail);
+      }
+
+      // ── Org-level Compliance Vault write ────────────────────────────────
+      // Attach the BGC receipt to the parent-org boundary so sibling
+      // divisions can query upstream and avoid duplicate screening fees.
+      try {
+        const freshUserSnap = await db().collection('users').doc(normalizedEmail).get();
+        const orgId = freshUserSnap.exists ? (freshUserSnap.data()?.orgId || '') : '';
+        if (orgId) {
+          await db()
+            .collection('orgs').doc(orgId)
+            .collection('compliance_vault').doc(normalizedEmail)
+            .set({
+              status:     clearanceStatus,
+              userId:     normalizedEmail,
+              clubId:     freshUserSnap.data()?.clubId || null,
+              reportId:   reportId || null,
+              source:     'checkr',
+              lastVerified: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+          logger.info('[compliance] Org-vault updated', { orgId, email: normalizedEmail, clearanceStatus });
+        }
+      } catch (vaultWriteErr) {
+        // Non-fatal: vault write failure must not roll back the user clearance.
+        logger.warn('[compliance] Org-vault write failed (non-fatal)', vaultWriteErr);
       }
 
       // ── Audit log ───────────────────────────────────────────────────────

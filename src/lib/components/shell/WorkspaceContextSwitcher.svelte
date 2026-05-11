@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -7,19 +7,15 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import { getContextFromHref } from '$lib/auth/loginRouting.js';
-	import {
-		buildWorkspaceMenu,
-		getShellContextLabel,
-	} from '$lib/shell/workspaceContextMenu.js';
+	import { buildWorkspaceMenu, getShellContextLabel } from '$lib/shell/workspaceContextMenu.js';
+	import { db } from '$lib/firebase.js';
+	import { doc, getDoc } from 'firebase/firestore';
 
-	/**
-	 * @typedef {'sidebar' | 'mobile'} SwitcherVariant
-	 */
-	let { variant = /** @type {SwitcherVariant} */ ('sidebar') } = $props();
+	let { variant = 'sidebar' }: { variant?: 'sidebar' | 'mobile' } = $props();
 
 	let open = $state(false);
-	/** @type {HTMLDivElement | undefined} */
-	let rootEl = $state();
+	let rootEl: HTMLDivElement | undefined = $state();
+	let sportLoadStatus: 'idle' | 'loading' | 'done' | 'error' = $state('idle');
 
 	const pathname = $derived(page.url.pathname);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
@@ -27,57 +23,135 @@
 	const profile = $derived(authStore.userProfile);
 
 	const menuSections = $derived(
-		buildWorkspaceMenu({
-			role,
-			profile,
-			email,
-			clubs: teamsStore.clubs,
-			teams: teamsStore.teams,
-		}),
+		buildWorkspaceMenu({ role, profile, email, clubs: teamsStore.clubs, teams: teamsStore.teams })
 	);
 
 	const triggerLabel = $derived(
 		getShellContextLabel(pathname, role, profile, teamsStore.clubs, teamsStore.teams, email, {
 			activeClubId: workspaceContextStore.activeClubId,
 			activeTeamId: workspaceContextStore.activeTeamId,
-		}),
+		})
 	);
 
 	const flatCount = $derived(menuSections.reduce((n, s) => n + s.items.length, 0));
 
+	// Build org-grouped sections from teamsStore.clubs.
+	// Falls back to flat menu when no club has an orgId (backward compat).
+	const orgGroups = $derived.by(() => {
+		const clubs = teamsStore.clubs;
+		if (!clubs.length) return [];
+
+		const groups: Record<string, { orgId: string; orgName: string; clubs: typeof clubs }> = {};
+		for (const club of clubs) {
+			const oid = (club as any).orgId || '__standalone__';
+			const oname =
+				(club as any).orgName ||
+				(oid === '__standalone__' ? 'STANDALONE DIVISIONS' : oid.toUpperCase());
+			if (!groups[oid]) groups[oid] = { orgId: oid, orgName: oname, clubs: [] };
+			groups[oid].clubs.push(club);
+		}
+		return Object.values(groups);
+	});
+
+	const hasOrgTopology = $derived(orgGroups.some((g) => g.orgId !== '__standalone__'));
+
+	// Active sport accent color from the loaded sport config.
+	const sportAccent = $derived.by(() => {
+		const cfg = workspaceContextStore.activeSportConfig;
+		if (!cfg) return '#00f0ff';
+		const attrs = (cfg as any).attributes;
+		if (Array.isArray(attrs) && attrs.length > 0) return attrs[0].hexColor || '#00f0ff';
+		return '#00f0ff';
+	});
+
+	// Show popover when open AND there's something to display.
+	const popoverVisible = $derived(open && (hasOrgTopology || flatCount > 0));
+
 	function close() {
 		open = false;
-	}
-
-	/**
-	 * @param {{ id: string; label: string; href: string }} item
-	 */
-	function pick(item) {
-		workspaceContextStore.resetScope();
-		workspaceContextStore.setPivot(item.id);
-		const ctx = getContextFromHref(item.href);
-		if (ctx) workspaceContextStore.setActiveContext(ctx);
-		// Stamp scoped IDs from the URL so the target page can read them on mount.
-		const params = new URL(item.href, 'http://x').searchParams;
-		const tid = params.get('teamId');
-		if (tid) workspaceContextStore.setActiveTeamId(tid);
-		const cid = params.get('clubId');
-		if (cid) workspaceContextStore.setActiveClubId(cid);
-		close();
-		void goto(item.href);
 	}
 
 	function toggle() {
 		open = !open;
 	}
 
+	async function pick(item: { id: string; label: string; href: string }) {
+		workspaceContextStore.resetScope();
+		workspaceContextStore.setPivot(item.id);
+		const ctx = getContextFromHref(item.href);
+		if (ctx) workspaceContextStore.setActiveContext(ctx);
+
+		const params = new URL(item.href, 'http://x').searchParams;
+		const tid = params.get('teamId');
+		if (tid) workspaceContextStore.setActiveTeamId(tid);
+		const cid = params.get('clubId');
+		if (cid) workspaceContextStore.setActiveClubId(cid);
+
+		// Org-topology: stamp orgId and divisionId from the selected club.
+		if (cid) {
+			const selectedClub = teamsStore.clubs.find((c) => c.id === cid) as any;
+			if (selectedClub?.orgId) {
+				workspaceContextStore.setActiveOrgId(selectedClub.orgId);
+			}
+			workspaceContextStore.setActiveDivisionId(cid);
+
+			const sportId = selectedClub?.sportId || 'soccer';
+			workspaceContextStore.setActiveSportId(sportId);
+			sportLoadStatus = 'loading';
+			try {
+				const snap = await getDoc(doc(db, 'sports_configs', sportId));
+				if (snap.exists()) {
+					workspaceContextStore.setActiveSportConfig(snap.data() as Record<string, unknown>);
+				} else {
+					workspaceContextStore.setActiveSportConfig(null);
+				}
+				sportLoadStatus = 'done';
+			} catch {
+				sportLoadStatus = 'error';
+			}
+		}
+
+		close();
+		void goto(item.href);
+	}
+
+	// Org-topology club pick: builds the item and delegates to pick().
+	function handleClubPick(club: { id: string; name?: string }) {
+		const cid = club.id;
+		const name = (club as any).name || cid;
+		pick({
+			id: `ctx-director-${cid}`,
+			label: `Director · ${name}`,
+			href: `/director?clubId=${encodeURIComponent(cid)}&tab=home`,
+		});
+	}
+
+	// Hot-swap CSS custom properties whenever sportAccent changes.
+	$effect(() => {
+		if (!browser) return;
+		document.documentElement.style.setProperty('--vanguard-division-accent', sportAccent);
+		const hex = sportAccent.replace('#', '');
+		const r = parseInt(hex.slice(0, 2), 16);
+		const g = parseInt(hex.slice(2, 4), 16);
+		const b = parseInt(hex.slice(4, 6), 16);
+		document.documentElement.style.setProperty(
+			'--vanguard-division-accent-dim',
+			`rgba(${r}, ${g}, ${b}, 0.18)`
+		);
+		document.documentElement.style.setProperty(
+			'--vanguard-division-accent-glow',
+			`rgba(${r}, ${g}, ${b}, 0.35)`
+		);
+	});
+
+	// Click-outside + Escape to close.
 	$effect(() => {
 		if (!browser || !open) return;
-		function onDocClick(/** @type {MouseEvent} */ e) {
+		function onDocClick(e: MouseEvent) {
 			if (!rootEl || !(e.target instanceof Node)) return;
 			if (!rootEl.contains(e.target)) close();
 		}
-		function onKey(/** @type {KeyboardEvent} */ e) {
+		function onKey(e: KeyboardEvent) {
 			if (e.key === 'Escape') close();
 		}
 		document.addEventListener('click', onDocClick, true);
@@ -88,6 +162,7 @@
 		};
 	});
 
+	// Route change closes the popover.
 	$effect(() => {
 		if (!browser) return;
 		pathname;
@@ -95,14 +170,12 @@
 	});
 </script>
 
-<div
-	class="ec-ws"
-	class:ec-ws--mobile={variant === 'mobile'}
-	bind:this={rootEl}
->
+<div class="ec-ws" class:ec-ws--mobile={variant === 'mobile'} bind:this={rootEl}>
+	<!-- ─── TRIGGER ──────────────────────────────────────────────── -->
 	<button
 		type="button"
 		class="ec-ws__trigger"
+		class:ec-ws__trigger--sport-active={!!workspaceContextStore.activeSportConfig}
 		aria-haspopup="menu"
 		aria-expanded={open}
 		aria-label="Switch workspace"
@@ -112,38 +185,124 @@
 		}}
 	>
 		<ClubLogoMark size={variant === 'mobile' ? 'sm' : 'md'} />
+
 		<div class="ec-ws__text">
 			<span class="ec-ws__title ec-ws__truncate">{triggerLabel.title}</span>
 			<span class="ec-ws__sub ec-ws__truncate">{triggerLabel.sub}</span>
 		</div>
-		<i class="ph ph-caret-up-down ec-ws__caret" aria-hidden="true"></i>
+
+		<div class="ec-ws__caret-wrap" aria-hidden="true">
+			{#if sportLoadStatus === 'loading'}
+				<span class="ec-ws__sport-ping"></span>
+			{:else if workspaceContextStore.activeSportConfig}
+				<span class="ec-ws__sport-dot" style:background={sportAccent}></span>
+			{/if}
+			<i class="ph ph-caret-up-down ec-ws__caret"></i>
+		</div>
 	</button>
 
-	{#if open && flatCount > 0}
-		<div class="ec-ws__popover" role="menu" aria-label="Workspaces">
-			{#each menuSections as section (section.title)}
-				<p class="ec-ws__section-label">{section.title}</p>
-				<ul class="ec-ws__list">
-					{#each section.items as item (item.id)}
-						<li>
+	<!-- ─── POPOVER ──────────────────────────────────────────────── -->
+	{#if popoverVisible}
+		<div class="ec-ws__popover" role="menu" aria-label="Workspace Selector">
+			<!-- Header -->
+			<div class="ec-ws__pop-header">
+				<span class="ec-ws__pop-label">DIVISION SELECTOR</span>
+				{#if workspaceContextStore.activeOrgId}
+					<span class="ec-ws__org-tag" title={workspaceContextStore.activeOrgId}>
+						{workspaceContextStore.activeOrgId.slice(0, 16).toUpperCase()}
+					</span>
+				{/if}
+			</div>
+
+			<!-- Body -->
+			<div class="ec-ws__pop-body">
+				{#if hasOrgTopology}
+					<!-- Org-grouped topology view -->
+					{#each orgGroups as group (group.orgId)}
+						<div class="ec-ws__org-header">
+							<span class="ec-ws__org-accent-bar" aria-hidden="true"></span>
+							<span class="ec-ws__org-name">{group.orgName}</span>
+						</div>
+
+						{#each group.clubs as club (club.id)}
+							{@const isActive = workspaceContextStore.activeClubId === club.id}
+							{@const cSportId = (club as any).sportId || 'soccer'}
+							{@const cSportColor = (club as any).sportColor || '#6b7280'}
 							<button
 								type="button"
-								class="ec-ws__item"
+								class="ec-ws__club-row"
+								class:ec-ws__club-row--active={isActive}
 								role="menuitem"
-								onclick={() => pick(item)}
+								aria-current={isActive ? 'true' : undefined}
+								onclick={() => handleClubPick(club)}
 							>
-								{item.label}
+								<span
+									class="ec-ws__sport-indicator"
+									style:background={cSportColor}
+									aria-hidden="true"
+								></span>
+								<span class="ec-ws__club-name ec-ws__truncate">{club.name ?? club.id}</span>
+								<span class="ec-ws__sport-pill">
+									{cSportId === 'soccer'
+										? '⚽'
+										: cSportId === 'basketball'
+											? '🏀'
+											: cSportId === 'lacrosse'
+												? '🥍'
+												: '🎽'}
+									{cSportId.toUpperCase()}
+								</span>
 							</button>
-						</li>
+						{/each}
 					{/each}
-				</ul>
-			{/each}
+				{:else}
+					<!-- Standard flat view (backward compat) -->
+					{#each menuSections as section (section.title)}
+						<p class="ec-ws__section-label">{section.title}</p>
+						<ul class="ec-ws__list">
+							{#each section.items as item (item.id)}
+								<li role="none">
+									<button
+										type="button"
+										class="ec-ws__item"
+										role="menuitem"
+										onclick={() => pick(item)}
+									>
+										{item.label}
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{/each}
+				{/if}
+			</div>
+
+			<!-- Footer: always shown when popover open -->
+			<div class="ec-ws__footer">
+				<span class="ec-ws__footer-label">
+					SPORT SCHEMA: {workspaceContextStore.activeSportId.toUpperCase()}
+				</span>
+				{#if workspaceContextStore.activeSportConfig}
+					{@const attrs = (workspaceContextStore.activeSportConfig as any).attributes}
+					{#if Array.isArray(attrs) && attrs.length > 0}
+						<div class="ec-ws__attr-dots" aria-hidden="true">
+							{#each attrs as attr, i (i)}
+								<span
+									class="ec-ws__attr-dot"
+									style:background={attr.hexColor || '#00f0ff'}
+									title={attr.label || ''}
+								></span>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+			</div>
 		</div>
 	{/if}
 </div>
 
 <style>
-	/* Do not set overflow on this root — it clips the absolutely positioned menu. */
+	/* Do not set overflow on the root — it clips the absolutely-positioned menu. */
 	.ec-ws {
 		position: relative;
 		align-self: stretch;
@@ -157,11 +316,8 @@
 		min-width: 0;
 	}
 
-	/* w-full + box-border — keeps trigger inside sidebar rail.
-	   Strike 2: removed `contain: paint` (was clipping the popover). Hover
-	   bleed is prevented by `overflow: hidden` on the trigger itself, which
-	   only affects its own background/pseudo-elements — the popover is a
-	   sibling of the trigger, so it is unaffected and floats freely. */
+	/* ─── TRIGGER ──────────────────────────────────────────────── */
+
 	.ec-ws__trigger {
 		display: flex;
 		align-items: center;
@@ -173,6 +329,7 @@
 		padding: 10px 12px 10px 14px;
 		margin: 0;
 		border: none;
+		border-left: 2px solid transparent;
 		background: transparent;
 		cursor: pointer;
 		font: inherit;
@@ -180,26 +337,27 @@
 		border-radius: 0;
 		box-sizing: border-box;
 		overflow: hidden;
+		transition:
+			border-left-color 0.25s ease,
+			background 0.15s ease;
 	}
 
 	.ec-ws__trigger > :global(:first-child) {
 		flex-shrink: 0;
 	}
 
-	.ec-ws__trigger:hover,
-	.ec-ws__trigger:focus,
-	.ec-ws__trigger:focus-visible,
-	.ec-ws__trigger:active {
-		margin: 0;
-		max-width: 100%;
-	}
-
 	.ec-ws__trigger:hover {
-		background: rgba(0, 0, 0, 0.03);
+		background: rgba(0, 240, 255, 0.04);
 	}
 
-	:global(html.dark) .ec-ws__trigger:hover {
-		background: rgba(255, 255, 255, 0.05);
+	.ec-ws__trigger:focus-visible {
+		outline: 1px solid rgba(0, 240, 255, 0.45);
+		outline-offset: -2px;
+	}
+
+	/* Sport config loaded → left accent rail lights up with the division color. */
+	.ec-ws__trigger--sport-active {
+		border-left-color: var(--vanguard-division-accent, #00f0ff);
 	}
 
 	.ec-ws--mobile .ec-ws__trigger {
@@ -215,7 +373,6 @@
 		gap: 2px;
 	}
 
-	/* truncate (Tailwind parity) */
 	.ec-ws__truncate {
 		display: block;
 		min-width: 0;
@@ -239,40 +396,74 @@
 		line-height: 1.2;
 	}
 
-	.ec-ws__caret {
+	.ec-ws__caret-wrap {
+		display: flex;
+		align-items: center;
+		gap: 5px;
 		flex-shrink: 0;
-		flex-grow: 0;
+	}
+
+	.ec-ws__caret {
 		font-size: 14px;
 		color: var(--text-secondary);
 		opacity: 0.85;
 	}
 
-	/* Strike 2: popover floats OVER the main canvas. It is allowed to exceed
-	   the sidebar rail width because it is absolutely positioned relative to
-	   `.ec-ws` and sits at z-index 1000 — so it paints above the entire
-	   console chrome (sidebar z-index 50, main canvas has no stacking). */
+	/* 4px sport accent dot beside the caret when a sport config is active. */
+	.ec-ws__sport-dot {
+		display: inline-block;
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+
+	/* Pulsing dot while sport config is loading. */
+	.ec-ws__sport-ping {
+		display: inline-block;
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: #00f0ff;
+		flex-shrink: 0;
+		animation: ec-ws-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+	}
+
+	@keyframes ec-ws-ping {
+		0%,
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.25;
+			transform: scale(0.65);
+		}
+	}
+
+	/* ─── POPOVER ──────────────────────────────────────────────── */
+
 	.ec-ws__popover {
 		position: absolute;
 		left: 8px;
 		right: auto;
 		top: calc(100% + 6px);
-		width: clamp(260px, 18rem, calc(100vw - 48px));
+		min-width: 280px;
+		max-width: min(320px, calc(100vw - 32px));
 		z-index: 1000;
-		background: #ffffff;
-		border: 1px solid #e5e5e5;
-		border-radius: 10px;
-		box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
-		padding: 8px 0;
-		max-height: min(70vh, 420px);
-		overflow-y: auto;
-		overflow-x: hidden;
+		background: rgba(1, 4, 9, 0.97);
+		backdrop-filter: blur(36px);
+		-webkit-backdrop-filter: blur(36px);
+		border: 1px solid rgba(0, 240, 255, 0.2);
+		border-radius: 14px;
+		box-shadow:
+			0 24px 60px rgba(0, 0, 0, 0.6),
+			0 0 0 1px rgba(0, 240, 255, 0.05);
 		box-sizing: border-box;
-	}
-
-	:global(html.dark) .ec-ws__popover {
-		background: #0f0f11;
-		border-color: rgba(255, 255, 255, 0.12);
-		box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		max-height: min(70vh, 480px);
 	}
 
 	.ec-ws--mobile .ec-ws__popover {
@@ -280,13 +471,159 @@
 		right: 0;
 	}
 
-	.ec-ws__section-label {
-		margin: 8px 12px 4px;
-		font-size: 10px;
+	/* Popover header row */
+	.ec-ws__pop-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 10px 14px 8px;
+		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		flex-shrink: 0;
+	}
+
+	.ec-ws__pop-label {
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 9px;
 		font-weight: 700;
 		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		color: rgba(0, 240, 255, 0.4);
+	}
+
+	.ec-ws__org-tag {
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 8px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--vanguard-division-accent, #00f0ff);
+		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
+		border: 1px solid rgba(0, 240, 255, 0.22);
+		border-radius: 4px;
+		padding: 2px 6px;
+		max-width: 120px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* Scrollable body */
+	.ec-ws__pop-body {
+		flex: 1 1 0%;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 6px 0;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(0, 240, 255, 0.2) transparent;
+	}
+
+	/* ─── ORG-GROUPED TOPOLOGY ──────────────────────────────────── */
+
+	.ec-ws__org-header {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 12px 4px 14px;
+		margin-top: 4px;
+	}
+
+	.ec-ws__org-header:first-child {
+		margin-top: 0;
+	}
+
+	.ec-ws__org-accent-bar {
+		display: inline-block;
+		width: 2px;
+		height: 12px;
+		background: rgba(0, 240, 255, 0.4);
+		border-radius: 1px;
+		flex-shrink: 0;
+	}
+
+	.ec-ws__org-name {
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 9px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: rgba(0, 240, 255, 0.3);
+	}
+
+	.ec-ws__club-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 40px;
+		padding: 8px 12px;
+		border: none;
+		border-left: 2px solid transparent;
+		background: transparent;
+		cursor: pointer;
+		font: inherit;
+		text-align: left;
+		box-sizing: border-box;
+		transition:
+			background 0.12s ease,
+			border-left-color 0.15s ease;
+	}
+
+	.ec-ws__club-row:hover {
+		background: rgba(0, 240, 255, 0.05);
+	}
+
+	.ec-ws__club-row--active {
+		border-left-color: var(--vanguard-division-accent, #00f0ff);
+		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
+	}
+
+	.ec-ws__club-row--active:hover {
+		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
+	}
+
+	/* 8px sport color circle */
+	.ec-ws__sport-indicator {
+		display: inline-block;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+
+	.ec-ws__club-name {
+		flex: 1 1 0%;
+		min-width: 0;
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 12px;
+		font-weight: 500;
+		color: rgba(226, 232, 240, 0.85);
+	}
+
+	.ec-ws__sport-pill {
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 8px;
+		font-weight: 600;
+		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--text-secondary);
+		color: var(--vanguard-division-accent, #00f0ff);
+		border: 1px solid rgba(0, 240, 255, 0.3);
+		border-radius: 4px;
+		padding: 1px 5px;
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	/* ─── FLAT / LEGACY MENU ────────────────────────────────────── */
+
+	.ec-ws__section-label {
+		margin: 8px 12px 4px;
+		font-size: 9px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		color: rgba(0, 240, 255, 0.4);
 	}
 
 	.ec-ws__section-label:first-child {
@@ -306,19 +643,56 @@
 		border: none;
 		background: transparent;
 		font: inherit;
-		font-size: 13px;
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 12px;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: rgba(226, 232, 240, 0.85);
 		text-align: left;
 		cursor: pointer;
 		line-height: 1.35;
+		transition: background 0.12s ease;
 	}
 
 	.ec-ws__item:hover {
-		background: #f4f4f5;
+		background: rgba(0, 240, 255, 0.05);
 	}
 
-	:global(html.dark) .ec-ws__item:hover {
-		background: rgba(255, 255, 255, 0.06);
+	/* ─── FOOTER ────────────────────────────────────────────────── */
+
+	.ec-ws__footer {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
+		padding: 10px 14px;
+		background: rgba(0, 0, 0, 0.4);
+		border-top: 1px solid rgba(0, 240, 255, 0.1);
+		flex-shrink: 0;
+	}
+
+	.ec-ws__footer-label {
+		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+		font-size: 9px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		color: rgba(0, 240, 255, 0.4);
+		flex-shrink: 0;
+	}
+
+	.ec-ws__attr-dots {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	/* 8×8 attribute color circles */
+	.ec-ws__attr-dot {
+		display: inline-block;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		box-shadow: 0 0 4px currentColor;
 	}
 </style>
