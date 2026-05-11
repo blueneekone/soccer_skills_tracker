@@ -109,10 +109,10 @@
 			{:else if activeTab === 'compliance'}
 				<ComplianceTab {clubId} />
 	{:else if activeTab === 'household'}
-			<div class="tw-flex tw-flex-col tw-gap-6">
-				<UplinkTerminal currentClubId={clubId} {clubTeams} />
-				<IntakePanopticon currentClubId={clubId} />
-			</div>
+		<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
+			<UplinkTerminal currentClubId={clubId} {clubTeams} />
+			<IntakePanopticon currentClubId={clubId} />
+		</div>
 		{:else if activeTab === 'vanguard'}
 			<MissionControl />
 		{:else if activeTab === 'retention'}

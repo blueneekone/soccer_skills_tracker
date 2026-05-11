@@ -1,211 +1,194 @@
 <script>
-	import { httpsCallable } from 'firebase/functions';
-	import { functions } from '$lib/firebase.js';
-	import { authStore } from '$lib/stores/auth.svelte.js';
-
-	let { clubId = '' } = $props();
-
-	const setPlayerDateOfBirth = httpsCallable(functions, 'setPlayerDateOfBirth');
-	const enqueueMinorRetentionPurge = httpsCallable(functions, 'enqueueMinorRetentionPurge');
-
-	let busy = $state('');
-
-	let dobPlayerEmail = $state('');
-	let dobValue = $state('');
-
-	let retentionPlayerEmail = $state('');
-
-	const scopeClub = $derived(String(clubId || authStore.userProfile?.clubId || ''));
-
-	const canUse = $derived(
-		authStore.role === 'director' || authStore.role === 'super_admin' || authStore.role === 'global_admin'
-	);
-
-	const onSetDob = async () => {
-		const playerEmail = dobPlayerEmail.trim().toLowerCase();
-		if (!playerEmail || !dobValue) {
-			alert('Player email and date of birth are required.');
-			return;
-		}
-		busy = 'dob';
-		try {
-			const res = await setPlayerDateOfBirth({ playerEmail, dateOfBirth: dobValue });
-			const d = res.data;
-			alert(
-				`Date of birth saved for ${d.playerEmail}.\nMinor: ${d.isMinor}\nvpcStatus: ${d.vpcStatus}`
-			);
-		} catch (e) {
-			alert(e.message || String(e));
-		} finally {
-			busy = '';
-		}
-	};
-
-	const onEnqueueRetention = async () => {
-		const playerEmail = retentionPlayerEmail.trim().toLowerCase();
-		if (!playerEmail) {
-			alert('Enter the minor player email to queue for data purge.');
-			return;
-		}
-		if (
-			!confirm(
-				'Queue this minor for automated COPPA retention purge? Within ~24h the job removes roster/passport/lookup PII and redacts their user profile. This cannot be undone from the app.'
-			)
-		) {
-			return;
-		}
-		busy = 'retention';
-		try {
-			const res = await enqueueMinorRetentionPurge({ playerEmail });
-			const d = /** @type {{ duplicate?: boolean }} */ (res.data || {});
-			if (d.duplicate) {
-				alert('A pending purge job already exists for this email.');
-			} else {
-				alert(
-					'Queued. The scheduled worker processes pending jobs daily. The account should sign out; after purge, they may need a fresh club invite to return.'
-				);
-			}
-			retentionPlayerEmail = '';
-		} catch (e) {
-			alert(e instanceof Error ? e.message : String(e));
-		} finally {
-			busy = '';
-		}
-	};
+	/** @type {{ clubId?: string }} */
+	let { clubId: _clubId = '' } = $props();
 </script>
 
-<div class="household-compliance">
-	{#if !canUse}
-		<p class="muted">You do not have permission to use household tools.</p>
-	{:else}
-		<div class="bento-section">
-			<div class="card">
-				<div class="card-header bg-orange-header">Player date of birth (COPPA)</div>
-				<div class="card-body">
-					<p class="help">
-						Sets <code>dateOfBirth</code>, derives <code>isMinor</code> (under 13) and initial
-						<code>vpcStatus</code>. Minors require VPC before waiver attestation.
-					</p>
-					<label for="dob-email">Player email</label>
-					<input id="dob-email" type="email" bind:value={dobPlayerEmail} placeholder="minor@example.com" />
+<div class="hct-root">
+	<div class="hct-banner">
+		<div class="hct-banner__icon" aria-hidden="true">
+			<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M18 3L33 10.5V18C33 25.455 26.505 32.085 18 34.5C9.495 32.085 3 25.455 3 18V10.5L18 3Z" stroke="#00f0ff" stroke-width="1.5" stroke-linejoin="round" fill="rgba(0,240,255,0.06)"/>
+				<path d="M13 18L16.5 21.5L23 14" stroke="#00f0ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+		</div>
 
-					<label for="dob-value">Date of birth</label>
-					<input id="dob-value" type="date" bind:value={dobValue} />
+		<div class="hct-banner__body">
+			<p class="hct-banner__eyebrow">AUTONOMOUS CLEARANCE PROTOCOL · ACTIVE</p>
+			<h2 class="hct-banner__title">Zero-Entry Compliance Engine Online</h2>
+			<p class="hct-banner__desc">
+				COPPA attestation, date-of-birth verification, and household clearance are now handled
+				entirely through the automated <strong>On-Device WebAuthn Biometric Enclave</strong> flow.
+				Manual data entry has been permanently decommissioned from this interface.
+			</p>
 
-					<button
-						class="primary-btn btn-orange w-100"
-						onclick={onSetDob}
-						disabled={busy !== ''}
-					>
-						{busy === 'dob' ? 'Saving…' : 'Save date of birth'}
-					</button>
+			<div class="hct-flow">
+				<div class="hct-flow__step">
+					<span class="hct-flow__num">01</span>
+					<div>
+						<p class="hct-flow__label">GENERATE TEAM UPLINK</p>
+						<p class="hct-flow__sub">Director issues a time-locked cryptographic QR key via the Uplink Terminal below.</p>
+					</div>
 				</div>
-			</div>
-
-			<div class="card">
-				<div class="card-header bg-blue-header">Minor offboarding (TTL purge queue)</div>
-				<div class="card-body">
-					<p class="help">
-						Epic 1.3: after a minor leaves the club, queue automated redaction. A daily Cloud Function clears
-						<code>passports</code>, <code>player_lookup</code>, roster slots, household links, and scrubs the
-						<code>users</code> doc. Directors may only queue minors in their club; application admins may queue
-						any minor.
-					</p>
-					<label for="retention-email">Minor player email</label>
-					<input id="retention-email" type="email" bind:value={retentionPlayerEmail} placeholder="minor@example.com" />
-
-					<button
-						class="primary-btn btn-blue w-100"
-						onclick={onEnqueueRetention}
-						disabled={busy !== ''}
-					>
-						{busy === 'retention' ? 'Queueing…' : 'Queue retention purge'}
-					</button>
+				<div class="hct-flow__arrow" aria-hidden="true">▼</div>
+				<div class="hct-flow__step">
+					<span class="hct-flow__num">02</span>
+					<div>
+						<p class="hct-flow__label">GUARDIAN SELF-REGISTERS</p>
+						<p class="hct-flow__sub">Parent scans QR, creates account, inputs player DOB, and completes on-device biometric attestation.</p>
+					</div>
+				</div>
+				<div class="hct-flow__arrow" aria-hidden="true">▼</div>
+				<div class="hct-flow__step">
+					<span class="hct-flow__num">03</span>
+					<div>
+						<p class="hct-flow__label">NODE MATERIALIZES IN PANOPTICON</p>
+						<p class="hct-flow__sub">Cleared players auto-unlock. Exceptions surface in the Intake Panopticon for pitch-side override only.</p>
+					</div>
 				</div>
 			</div>
 		</div>
-	{/if}
+	</div>
 </div>
 
 <style>
-	.household-compliance {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(16px, 3vw, 24px);
-	}
-	label {
-		display: block;
-		margin-top: clamp(8px, 1.5vw, 12px);
-		margin-bottom: clamp(4px, 0.8vw, 6px);
-	}
-	input {
+	.hct-root {
 		width: 100%;
-		margin-bottom: 0;
-	}
-	.help {
-		font-size: 0.9rem;
-		opacity: 0.9;
-		margin: 0 0 clamp(8px, 1.2vw, 12px) 0;
-		line-height: 1.45;
-	}
-	.muted {
-		opacity: 0.85;
+		font-family: 'JetBrains Mono', ui-monospace, monospace;
 	}
 
-	.vpc-pending-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
+	.hct-banner {
 		display: flex;
-		flex-direction: column;
-		gap: clamp(10px, 2vw, 12px);
-	}
-
-	.vpc-pending-row {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(8px, 1.5vw, 10px);
-		padding: clamp(10px, 2vw, 14px);
+		align-items: flex-start;
+		gap: 1.5rem;
+		padding: 2rem;
 		border-radius: 16px;
-		border: 1px solid rgba(15, 23, 42, 0.1);
-		background: rgba(15, 23, 42, 0.03);
+		border: 1px solid rgba(0, 240, 255, 0.18);
+		background: linear-gradient(135deg, rgba(0, 240, 255, 0.04) 0%, rgba(1, 4, 9, 0.95) 60%);
+		backdrop-filter: blur(36px);
+		-webkit-backdrop-filter: blur(36px);
+		box-shadow:
+			0 0 40px rgba(0, 240, 255, 0.05),
+			inset 0 1px 1px rgba(255, 255, 255, 0.04);
 	}
 
-	:global(html.dark) .vpc-pending-row {
-		border-color: rgba(226, 232, 240, 0.12);
-		background: rgba(15, 23, 42, 0.35);
+	.hct-banner__icon {
+		flex-shrink: 0;
+		margin-top: 2px;
+		filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
 	}
 
-	.vpc-pending-meta {
-		font-size: 0.88rem;
-		line-height: 1.45;
+	.hct-banner__body {
+		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 0.85rem;
 	}
 
-	.lbl {
-		font-weight: 800;
-		margin-right: 6px;
+	.hct-banner__eyebrow {
+		margin: 0;
+		font-size: 0.55rem;
+		font-weight: 900;
+		letter-spacing: 0.22em;
+		color: rgba(0, 240, 255, 0.55);
 		text-transform: uppercase;
+	}
+
+	.hct-banner__title {
+		margin: 0;
+		font-size: clamp(1rem, 2vw, 1.2rem);
+		font-weight: 900;
+		letter-spacing: -0.02em;
+		color: #e2e8f0;
+		line-height: 1.2;
+	}
+
+	.hct-banner__desc {
+		margin: 0;
 		font-size: 0.72rem;
-		letter-spacing: 0.04em;
-		opacity: 0.85;
+		line-height: 1.7;
+		color: rgba(226, 232, 240, 0.55);
+		letter-spacing: 0.02em;
 	}
 
-	.secondary-btn {
-		align-self: flex-start;
-		padding: clamp(8px, 1.5vw, 10px) 14px;
-		border-radius: 14px;
-		border: 1px solid var(--glass-border);
-		background: var(--glass-bg);
-		color: inherit;
-		font: inherit;
+	.hct-banner__desc strong {
+		color: rgba(0, 240, 255, 0.85);
 		font-weight: 700;
-		cursor: pointer;
 	}
 
-	.secondary-btn:hover {
-		filter: brightness(1.05);
+	/* Flow diagram */
+	.hct-flow {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		margin-top: 0.5rem;
+		border: 1px solid rgba(0, 240, 255, 0.1);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	.hct-flow__step {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		padding: 0.85rem 1rem;
+		background: rgba(0, 240, 255, 0.025);
+		transition: background 0.2s;
+	}
+
+	.hct-flow__step:hover {
+		background: rgba(0, 240, 255, 0.05);
+	}
+
+	.hct-flow__num {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		border: 1px solid rgba(0, 240, 255, 0.3);
+		background: rgba(0, 240, 255, 0.07);
+		font-size: 0.55rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		color: #00f0ff;
+		text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+	}
+
+	.hct-flow__label {
+		margin: 0 0 2px;
+		font-size: 0.6rem;
+		font-weight: 900;
+		letter-spacing: 0.16em;
+		color: rgba(226, 232, 240, 0.8);
+		text-transform: uppercase;
+	}
+
+	.hct-flow__sub {
+		margin: 0;
+		font-size: 0.58rem;
+		line-height: 1.6;
+		color: rgba(226, 232, 240, 0.35);
+		letter-spacing: 0.02em;
+	}
+
+	.hct-flow__arrow {
+		padding: 0 1rem 0 calc(28px + 2rem);
+		font-size: 0.55rem;
+		color: rgba(0, 240, 255, 0.25);
+		border-left: none;
+		background: rgba(0, 0, 0, 0.2);
+		display: flex;
+		align-items: center;
+	}
+
+	@media (max-width: 600px) {
+		.hct-banner {
+			flex-direction: column;
+			gap: 1rem;
+			padding: 1.25rem;
+		}
 	}
 </style>
