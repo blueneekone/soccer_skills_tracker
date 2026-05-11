@@ -741,3 +741,125 @@ exports.verifyBiometricConsent = onCall(
     return { success: true, attestedVia: 'webauthn_biometric' };
   },
 );
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// directorOutOfBandClearance
+// ═══════════════════════════════════════════════════════════════════════════════
+/**
+ * Director-attested out-of-band VPC clearance.
+ * Called when a Director has physically verified parental consent and needs to
+ * unlock a player node that is stuck in `coppaStatus: 'pending_guardian'`.
+ *
+ * Zero-Trust contract:
+ *   • Caller must hold director / registrar / super_admin / global_admin role.
+ *   • Caller's clubId must match the target player's clubId (tenant isolation).
+ *   • Writes an IMMUTABLE audit log entry — never editable by the caller.
+ *   • Stamps `vpcVerified: true` JWT claim immediately (no logout required).
+ *
+ * request.data shape:
+ *   targetEmail  string  — player email (Firestore doc key)
+ *   clubId       string  — caller's club (enforced for tenant isolation)
+ */
+exports.directorOutOfBandClearance = onCall(
+  { region: REGION, enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
+
+    const callerClaims = reqAuth.token || {};
+    const allowedRoles = ['director', 'registrar', 'super_admin', 'global_admin'];
+    if (!allowedRoles.includes(callerClaims.role || '')) {
+      throw new HttpsError('permission-denied', 'Director or Registrar access required.');
+    }
+
+    const { targetEmail, clubId } = request.data || {};
+    if (!targetEmail || typeof targetEmail !== 'string') {
+      throw new HttpsError('invalid-argument', 'targetEmail is required.');
+    }
+    if (!clubId || typeof clubId !== 'string') {
+      throw new HttpsError('invalid-argument', 'clubId is required.');
+    }
+
+    // Tenant isolation: caller's club must match supplied clubId
+    const callerClub = callerClaims.clubId || callerClaims.tenantId || '';
+    const isGlobalOps = ['super_admin', 'global_admin'].includes(callerClaims.role || '');
+    if (!isGlobalOps && callerClub !== clubId) {
+      throw new HttpsError('permission-denied', 'Cross-tenant operation not permitted.');
+    }
+
+    const normalizedEmail = targetEmail.toLowerCase().trim();
+    const userRef = fs().collection('users').doc(normalizedEmail);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new HttpsError('not-found', 'Player record not found.');
+    }
+
+    const userData = userSnap.data() || {};
+
+    // Read-Repair: accept legacy clubId / tenantId field names
+    const playerClub = userData.clubId || userData.tenantId || '';
+    if (!isGlobalOps && playerClub && playerClub !== clubId) {
+      throw new HttpsError('permission-denied', 'Player is not in your club.');
+    }
+
+    const clientIp  = request.rawRequest?.ip || 'unknown';
+    const now       = admin.firestore.FieldValue.serverTimestamp();
+    const dirEmail  = (callerClaims.email || '').toLowerCase();
+
+    // Atomic batch: user update + immutable audit log
+    const batch = fs().batch();
+
+    batch.set(userRef, {
+      coppaStatus:  'granted',
+      vpcStatus:    'verified',
+      consentDate:  now,
+      coppa: {
+        status:       'cleared',
+        attestedVia:  'director_out_of_band',
+        directorUid:  reqAuth.uid,
+        directorEmail: dirEmail,
+        timestamp:    now,
+        clientIp,
+      },
+    }, { merge: true });
+
+    // Immutable audit record (no update path; autoId doc)
+    const auditRef = fs().collection('consent_logs').doc();
+    batch.set(auditRef, {
+      action:        'director_out_of_band_clearance',
+      attestedVia:   'director_out_of_band',
+      directorUid:   reqAuth.uid,
+      directorEmail: dirEmail,
+      targetEmail:   normalizedEmail,
+      clubId,
+      clientIp,
+      timestamp:     now,
+    });
+
+    await batch.commit();
+
+    // Stamp JWT claim (non-fatal)
+    try {
+      const authUser = await admin.auth().getUserByEmail(normalizedEmail);
+      const existing = authUser.customClaims || {};
+      await admin.auth().setCustomUserClaims(authUser.uid, {
+        ...existing,
+        vpcVerified: true,
+      });
+    } catch (claimErr) {
+      logger.warn('[coppa] OOB claim update failed (non-fatal)', {
+        targetEmail: normalizedEmail,
+        error: claimErr.message,
+      });
+    }
+
+    logger.info('[coppa] Director out-of-band clearance applied', {
+      targetEmail: normalizedEmail,
+      directorUid: reqAuth.uid,
+      clubId,
+    });
+
+    return { success: true, attestedVia: 'director_out_of_band' };
+  },
+);
