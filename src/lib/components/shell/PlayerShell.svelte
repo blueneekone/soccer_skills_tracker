@@ -61,6 +61,12 @@
 		)
 	);
 
+	// Close inbox panel whenever the route changes
+	$effect(() => {
+		const _path = page.url.pathname;
+		if (isInboxOpen) isInboxOpen = false;
+	});
+
 	$effect(() => {
 		if (!browser || !playerUid || role !== 'player') {
 			pendingAssignmentCount = 0;
@@ -138,7 +144,7 @@
 				aria-current={isActive(link.href) ? 'page' : undefined}
 				aria-disabled={gated ? 'true' : undefined}
 				data-sveltekit-preload-data="hover"
-				onclick={(e) => onNavClick(link.href, e)}
+				onclick={(e) => { isInboxOpen = false; onNavClick(link.href, e); }}
 			>
 				<i class="ph {link.icon} ps-bottom-nav__icon" aria-hidden="true"></i>
 				<span class="ps-bottom-nav__label">{link.label}</span>

@@ -1,7 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
-	import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+	import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
@@ -10,6 +10,8 @@
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
+	import AttributeRadar from './AttributeRadar.svelte';
+	import { DEFAULT_SPORT_CONFIG, mapToDefaultAttributes } from '$lib/config/sports.js';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import {
@@ -55,6 +57,13 @@
 
 	const skillRadar = $derived(
 		deriveSkillValuesForSchema(statsRaw, attributeSchema, totalXpHud, streakDays),
+	);
+
+	const attrRadarValues = $derived(
+		mapToDefaultAttributes(
+			statsRaw && typeof statsRaw === 'object' ? /** @type {Record<string,unknown>} */(statsRaw) : null,
+			skillRadar.values,
+		)
 	);
 
 	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
@@ -301,6 +310,17 @@
 		};
 	});
 
+	// Read-Repair: silently stamp sportId = 'soccer' on user profiles missing it.
+	$effect(() => {
+		if (!browser || !email || authStore.isLoading) return;
+		const profile = activePlayer;
+		if (!profile || typeof profile.sportId === 'string') return;
+		// Fire-and-forget — non-fatal if it fails
+		updateDoc(doc(db, 'users', email), { sportId: DEFAULT_SPORT_CONFIG.sportId }).catch(
+			(e) => console.warn('[player-dash] sportId read-repair failed', e),
+		);
+	});
+
 </script>
 
 <svelte:head>
@@ -385,8 +405,8 @@
 			>
 				<i class="ph ph-lightning tw-mb-3 tw-text-3xl tw-text-cyan-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
 				<span
-					class="tw-line-clamp-2 tw-text-xl tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
-					>Today's quests</span
+			class="tw-line-clamp-2 tw-text-[clamp(1.25rem,2.5vw,2rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
+				>Today's quests</span
 				>
 			</a>
 			<a
@@ -396,8 +416,8 @@
 			>
 				<i class="ph ph-chart-line-up tw-mb-3 tw-text-3xl tw-text-fuchsia-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
 				<span
-					class="tw-line-clamp-2 tw-text-xl tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
-					>Career stats</span
+			class="tw-line-clamp-2 tw-text-[clamp(1.25rem,2.5vw,2rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
+				>Career stats</span
 				>
 			</a>
 		</nav>
@@ -446,7 +466,7 @@
 				></div>
 			</div>
 			<p
-				class="tw-mt-5 tw-mb-0 tw-w-full tw-min-w-0 tw-truncate tw-text-center tw-font-mono tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left"
+				class="tw-mt-5 tw-mb-0 tw-w-full tw-min-w-0 tw-truncate tw-text-center tw-font-mono tw-text-[clamp(0.75rem,1vw,0.875rem)] tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left"
 				title={callsign}
 			>
 				{callsign}
@@ -540,11 +560,11 @@
 				<h2 id="lobby-radar-h" class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100">
 					Attribute radar
 				</h2>
-				<p class="tw-m-0 tw-mt-1 tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500">
-					Six-axis loadout from your latest <span class="tw-font-semibold tw-text-slate-400"
-						>{attributeSchema.canonicalKey}</span
-					> profile — keep logging to harden the shape.
-				</p>
+			<p class="tw-m-0 tw-mt-1 tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500">
+				Five-axis RPG loadout from your latest
+				<span class="tw-font-semibold tw-text-slate-400">{DEFAULT_SPORT_CONFIG.displayName}</span>
+				combat profile — keep logging to harden the shape.
+			</p>
 			</header>
 			<div
 				class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-bg-[radial-gradient(ellipse_at_center,_rgba(15,23,42,0.92)_0%,_#020617_72%)] tw-p-3 tw-shadow-[inset_0_0_60px_rgba(0,0,0,0.65)]"
@@ -554,13 +574,9 @@
 					style="background-image: linear-gradient(rgba(148,163,184,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.9) 1px, transparent 1px); background-size: 18px 18px;"
 					aria-hidden="true"
 				></div>
-				<div class="tw-relative tw-z-50 tw-min-h-[280px]">
-					<PlayerSkillRadar
-						labels={skillRadar.labels}
-						values={skillRadar.values}
-						variant="lobby"
-					/>
-				</div>
+			<div class="tw-relative tw-z-50 tw-min-h-[260px] tw-flex tw-items-center tw-justify-center">
+				<AttributeRadar values={attrRadarValues} />
+			</div>
 			</div>
 		</section>
 	</div>
