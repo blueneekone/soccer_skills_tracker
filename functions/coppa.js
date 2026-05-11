@@ -772,7 +772,12 @@ exports.directorOutOfBandClearance = onCall(
       throw new HttpsError('permission-denied', 'Director or Registrar access required.');
     }
 
-    const { targetEmail, clubId } = request.data || {};
+    const { targetEmail, clubId, attestationType: rawAttestationType } = request.data || {};
+    // Allowlist of valid attestation types for immutable audit records
+    const VALID_ATTESTATIONS = ['director_out_of_band', 'director_physical_escrow'];
+    const attestationType = VALID_ATTESTATIONS.includes(rawAttestationType)
+      ? rawAttestationType
+      : 'director_out_of_band';
     if (!targetEmail || typeof targetEmail !== 'string') {
       throw new HttpsError('invalid-argument', 'targetEmail is required.');
     }
@@ -816,7 +821,7 @@ exports.directorOutOfBandClearance = onCall(
       consentDate:  now,
       coppa: {
         status:       'cleared',
-        attestedVia:  'director_out_of_band',
+        attestedVia:  attestationType,
         directorUid:  reqAuth.uid,
         directorEmail: dirEmail,
         timestamp:    now,
@@ -827,8 +832,8 @@ exports.directorOutOfBandClearance = onCall(
     // Immutable audit record (no update path; autoId doc)
     const auditRef = fs().collection('consent_logs').doc();
     batch.set(auditRef, {
-      action:        'director_out_of_band_clearance',
-      attestedVia:   'director_out_of_band',
+      action:        `director_clearance_${attestationType}`,
+      attestedVia:   attestationType,
       directorUid:   reqAuth.uid,
       directorEmail: dirEmail,
       targetEmail:   normalizedEmail,
@@ -860,6 +865,6 @@ exports.directorOutOfBandClearance = onCall(
       clubId,
     });
 
-    return { success: true, attestedVia: 'director_out_of_band' };
+    return { success: true, attestedVia: attestationType };
   },
 );

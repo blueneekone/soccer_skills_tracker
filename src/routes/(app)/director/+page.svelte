@@ -8,6 +8,8 @@
 	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import HouseholdComplianceTab from '$lib/components/director/HouseholdComplianceTab.svelte';
+	import UplinkTerminal from './dashboard/UplinkTerminal.svelte';
+	import IntakePanopticon from './dashboard/IntakePanopticon.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
@@ -20,8 +22,9 @@
 
 	const VALID_DIR_TABS = new Set([
 		'home', 'teams', 'field', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
-		'vanguard', // EPIC 4 — Director Mission Control
-		'retention', // EPIC 6 — PII Burn Protocol compliance dashboard
+		'vanguard',   // EPIC 4 — Director Mission Control
+		'retention',  // EPIC 6 — PII Burn Protocol compliance dashboard
+		'uplink',     // ALPHA INTERLOCK — Streamlined Director OS
 	]);
 
 /** Effective tenant for Firestore; dynamically syncs with Context Switcher */
@@ -59,6 +62,12 @@
 	});
 
 	let activeTab = $state(page.url.searchParams.get('tab') || 'home');
+
+	const clubTeams = $derived(
+		teamsStore.teams
+			.filter((t) => t.clubId === clubId)
+			.map((t) => ({ id: t.id, name: t.name }))
+	);
 
 	$effect(() => {
 		const t = page.url.searchParams.get('tab') || 'home';
@@ -107,6 +116,11 @@
 			<MissionControl />
 		{:else if activeTab === 'retention'}
 			<DirectorRetentionReport />
+		{:else if activeTab === 'uplink'}
+			<div class="tw-flex tw-flex-col tw-gap-6">
+				<UplinkTerminal currentClubId={clubId} {clubTeams} />
+				<IntakePanopticon currentClubId={clubId} />
+			</div>
 		{:else}
 			<p class="director-console-fallback">Unknown section. Use the sidebar to navigate.</p>
 		{/if}
