@@ -112,6 +112,21 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.isCleared == true;
     }
 
+    // Phase 2, Epic 3 — Native Firebase Phone Number Verification.
+    // hasVerifiedPhone() — true when the JWT carries the `phoneVerified: true`
+    // custom claim stamped by the `mirrorPhoneVerification` Cloud Function
+    // after a successful linkWithPhoneNumber + confirmationResult.confirm().
+    //
+    // Use this to gate sensitive operations that require carrier-level identity
+    // proof (e.g. high-value transfer approvals, recruiter PII export):
+    //   allow write: if authed() && isDirector() && hasVerifiedPhone();
+    //
+    // NOT wired to any collection in this session — pure scaffolding for later
+    // sensitive-op gating.
+    function hasVerifiedPhone() {
+      return request.auth != null && request.auth.token.phoneVerified == true;
+    }
+
     // Shorthand: director OR registrar (compliance managers).
     function isComplianceManager() {
       return isDirector() || isRegistrar();

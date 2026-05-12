@@ -19,10 +19,12 @@
 	 * No manual "Save" button for notifications.
 	 */
 
-	import { auth, db } from '$lib/firebase.js';
+	import { auth, db, functions } from '$lib/firebase.js';
 	import { doc, updateDoc, getDoc } from 'firebase/firestore';
 	import { sendPasswordResetEmail } from 'firebase/auth';
+	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import type { UnlinkPhoneVerificationInput, UnlinkPhoneVerificationResult } from '$lib/types/phoneVerification.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { fcmService } from '$lib/services/messaging.svelte.js';
@@ -97,6 +99,30 @@
 	let profileError = $state('');
 	let profileSaveMsg = $state('');
 	let profileSaving = $state(false);
+
+	// ── Phone Verification state (Phase 2, Epic 3) ────────────────────────────
+
+	let phoneUnlinking  = $state(false);
+	let phoneUnlinkError = $state('');
+	const unlinkPhoneFn = httpsCallable<UnlinkPhoneVerificationInput, UnlinkPhoneVerificationResult>(
+		functions,
+		'unlinkPhoneVerification',
+	);
+
+	async function handleUnlinkPhone() {
+		if (!confirm('Remove your verified phone number from this account?')) return;
+		phoneUnlinking   = true;
+		phoneUnlinkError = '';
+		try {
+			await unlinkPhoneFn({});
+			// Refresh the auth store so phoneVerified + phoneNumber update.
+			await authStore.refresh({ silent: true });
+		} catch (err: unknown) {
+			phoneUnlinkError = (err instanceof Error ? err.message : null) ?? 'Failed to unlink phone.';
+		} finally {
+			phoneUnlinking = false;
+		}
+	}
 	let operativeAvatar = $state({
 		v: OPERATIVE_AVATAR_VERSION,
 		seed: `v${OPERATIVE_AVATAR_VERSION}|22|55|38|71`,
@@ -350,17 +376,50 @@
 				</div>
 			</div>
 
-			{#if profileError}
-				<div class="st-error">⚠ {profileError}</div>
-			{/if}
-			{#if profileSaveMsg}
-				<div class="st-success">✓ {profileSaveMsg}</div>
-			{/if}
+		<!-- ── Phone Verification Bento card (Phase 2, Epic 3) ────────────── -->
+		{#if !isMinorAccount}
+			<div class="st-section">
+				<div class="st-section-label">PHONE VERIFICATION</div>
+				<div class="phone-card">
+					{#if authStore.phoneVerified && authStore.phoneNumber}
+						<div class="phone-verified-row">
+							<span class="phone-verified-badge">✓ VERIFIED</span>
+							<span class="phone-ending">·· {authStore.phoneNumber.slice(-4)}</span>
+						</div>
+						<button
+							class="st-action-btn st-action-btn--danger"
+							onclick={handleUnlinkPhone}
+							disabled={phoneUnlinking}
+						>
+							{phoneUnlinking ? '[ UNLINKING… ]' : '[ UNLINK PHONE ]'}
+						</button>
+						{#if phoneUnlinkError}
+							<div class="st-error">⚠ {phoneUnlinkError}</div>
+						{/if}
+					{:else}
+						<p class="st-hint">
+							Link a verified mobile number for enhanced account security.
+							Your number is never shared or displayed in full.
+						</p>
+						<a href="/account/settings/phone" class="st-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+							⚡ ADD PHONE NUMBER
+						</a>
+					{/if}
+				</div>
+			</div>
+		{/if}
 
-			<button class="st-action-btn" onclick={saveProfile} disabled={profileSaving}>
-				{profileSaving ? '[ SYNCING... ]' : '[ SAVE PROFILE ]'}
-			</button>
-		</div>
+		{#if profileError}
+			<div class="st-error">⚠ {profileError}</div>
+		{/if}
+		{#if profileSaveMsg}
+			<div class="st-success">✓ {profileSaveMsg}</div>
+		{/if}
+
+		<button class="st-action-btn" onclick={saveProfile} disabled={profileSaving}>
+			{profileSaving ? '[ SYNCING... ]' : '[ SAVE PROFILE ]'}
+		</button>
+	</div>
 
 	<!-- ── PANEL: NOTIFICATIONS ───────────────────────────────────────────── -->
 	{:else if activeTab === 'notifications'}
@@ -857,6 +916,47 @@
 		box-shadow: 0 0 14px rgba(0, 255, 255, 0.2);
 	}
 	.st-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+	.st-action-btn--danger {
+		color: rgba(255,77,106,0.85);
+		background: rgba(255,77,106,0.06);
+		border-color: rgba(255,77,106,0.35);
+	}
+	.st-action-btn--danger:hover:not(:disabled) {
+		background: rgba(255,77,106,0.12);
+		border-color: rgba(255,77,106,0.6);
+	}
+
+	/* ── Phone Verification card ── */
+	.phone-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		padding: 0.85rem 1rem;
+		background: rgba(0,240,255,0.025);
+		border: 1px solid rgba(0,240,255,0.1);
+		border-radius: 10px;
+	}
+	.phone-verified-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.phone-verified-badge {
+		font-size: 0.55rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		color: rgba(0,230,130,0.9);
+		background: rgba(0,230,130,0.08);
+		border: 1px solid rgba(0,230,130,0.25);
+		border-radius: 4px;
+		padding: 2px 8px;
+	}
+	.phone-ending {
+		font-size: 0.65rem;
+		color: rgba(255,255,255,0.35);
+		letter-spacing: 0.1em;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+	}
 	.st-ghost-btn {
 		padding: 7px 14px;
 		font-family: inherit;

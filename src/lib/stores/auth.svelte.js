@@ -61,6 +61,19 @@ function createAuthStore() {
 	let isProfileComplete = $state(false);
 	let isLoading = $state(true);
 
+	// ── Phone Verification (Phase 2, Epic 3) ─────────────────────────────────
+	// `phoneNumber`: Firebase Auth user.phoneNumber (E.164).  Populated by
+	// linkWithPhoneNumber; null before the user links a phone.
+	// `phoneVerified`: true when BOTH the Firestore mirror AND the JWT custom
+	// claim agree the phone has been carrier-verified.
+	const phoneNumber = $derived(
+		/** @type {string | null} */ (user)?.phoneNumber ?? null,
+	);
+	const phoneVerified = $derived(
+		!!phoneNumber &&
+		!!(/** @type {Record<string, unknown>} */ (userProfile)?.phoneVerified),
+	);
+
 	// ── Claims-aware derived booleans ────────────────────────────────────────
 	// These are computed from the reactive `role` and `tenantId` $state vars,
 	// so they update instantly whenever the auth store resolves a new profile.
@@ -386,6 +399,30 @@ function createAuthStore() {
 	/** True for recruiter role. Talent-feed access; PII gated behind Digital Handshake. */
 	get isRecruiter() {
 		return isRecruiter;
+	},
+
+	// ── Phone Verification (Phase 2, Epic 3) ─────────────────────────────────
+
+	/**
+	 * E.164 phone number from `firebase.auth.currentUser.phoneNumber`.
+	 * Null until the user links and verifies a phone via linkWithPhoneNumber.
+	 * Never display the full number in UI — use the last 4 digits only.
+	 */
+	get phoneNumber() {
+		return phoneNumber;
+	},
+
+	/**
+	 * True when the user has a carrier-verified linked phone number.
+	 * Derived from BOTH the Firebase Auth user.phoneNumber AND the
+	 * Firestore `users/{email}.phoneVerified` mirror field written by
+	 * the mirrorPhoneVerification Cloud Function.
+	 *
+	 * The authoritative gate for security rules is the JWT custom claim
+	 * `phoneVerified: true` stamped by the same CF.
+	 */
+	get phoneVerified() {
+		return phoneVerified;
 	},
 	/** True for registrar role. Club-scoped compliance and roster manager. */
 	get isRegistrar() {

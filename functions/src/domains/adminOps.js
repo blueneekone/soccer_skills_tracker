@@ -129,6 +129,11 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     // Phase 1, Epic 1 — Cell-Based Routing.  Default until the
     // organizations/{clubId}.cellId lookup below resolves a dedicated cell.
     cellId: DEFAULT_CELL_ID,
+    // Phase 2, Epic 3 — Phone Verification.  Preserve the phoneVerified claim
+    // written by mirrorPhoneVerification so a syncUserClaims restamp does not
+    // silently strip it.  Source of truth is the users/{email}.phoneVerified
+    // Firestore field written server-side by the CF.
+    phoneVerified: userData.phoneVerified === true,
   };
 
   const cid =

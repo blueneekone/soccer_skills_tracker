@@ -376,6 +376,14 @@ const cellSeedHandlers = require('./cellSeed');
 exports.seedSyntheticTenant       = cellSeedHandlers.seedSyntheticTenant;
 exports.purgeSyntheticTenant      = cellSeedHandlers.purgeSyntheticTenant;
 
+// Phone Number Verification (Phase 2, Epic 3 — Native Firebase Phone Auth).
+// Secondary linking: mirrorPhoneVerification stamps phoneVerified JWT claim
+// after client-side linkWithPhoneNumber succeeds.  unlinkPhoneVerification
+// removes the credential and clears the claim.
+const phoneVerificationHandlers = require('./phoneVerification');
+exports.mirrorPhoneVerification  = phoneVerificationHandlers.mirrorPhoneVerification;
+exports.unlinkPhoneVerification  = phoneVerificationHandlers.unlinkPhoneVerification;
+
 // Magic Uplinks (Phase 2, Epic 3 — Passwordless Magic Uplinks).
 // Single-use, time-locked, email-dispatched invite tokens with scrypt-
 // hashed secrets and custom-token mint on redemption.
