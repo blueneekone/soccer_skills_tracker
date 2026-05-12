@@ -183,8 +183,10 @@ exports.getRetentionReport = verifyDocHandlers.getRetentionReport;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
-exports.syncUserClaims    = inviteHandlers.syncUserClaims;
-exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
+// NOTE: syncUserClaims is NOT exported here — the canonical implementation
+// lives in adminOps and is exported below (line ~237).  Exporting it twice
+// would silently overwrite the first assignment, creating a dead export.
+exports.consumeInviteCode  = inviteHandlers.consumeInviteCode;
 exports.generateInviteCode = inviteHandlers.generateInviteCode;
 
 const coppaHandlers = require('./coppa');
@@ -373,3 +375,12 @@ exports.purgeGatewayCaches        = cellObservabilityHandlers.purgeGatewayCaches
 const cellSeedHandlers = require('./cellSeed');
 exports.seedSyntheticTenant       = cellSeedHandlers.seedSyntheticTenant;
 exports.purgeSyntheticTenant      = cellSeedHandlers.purgeSyntheticTenant;
+
+// Magic Uplinks (Phase 2, Epic 3 — Passwordless Magic Uplinks).
+// Single-use, time-locked, email-dispatched invite tokens with scrypt-
+// hashed secrets and custom-token mint on redemption.
+const magicUplinkHandlers = require('./magicUplinks');
+exports.mintMagicUplink   = magicUplinkHandlers.mintMagicUplink;
+exports.redeemMagicUplink = magicUplinkHandlers.redeemMagicUplink;
+exports.revokeMagicUplink = magicUplinkHandlers.revokeMagicUplink;
+exports.purgeExpiredUplinks = magicUplinkHandlers.purgeExpiredUplinks;

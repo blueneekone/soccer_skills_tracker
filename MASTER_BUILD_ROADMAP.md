@@ -6,13 +6,13 @@ Objective: Eradicate legacy technical debt, secure database boundaries, and esta
 
 Epic 1: The Techno-Futurist Bento Grid Architecture
 
-Transition all dashboard layouts to a responsive CSS Bento Grid utilizing clamp() spacing functions to prevent mobile squishing, allocating spatial weight to critical KPIs.  
+Transition all dashboard layouts to a responsive CSS Bento Grid utilizing clamp() spacing functions to prevent mobile squishing, allocating spatial weight to critical KPIs.
 
 Soften components with 24px border radii, multi-layered drop shadows, and true glassmorphism.
 
 Implement Cloud Firestore atomic batch writes and increment operators to guarantee offline synchronization.
 
-Cell-Based Routing: Architect the backend API gateways to support routing ultra-large state governing bodies to isolated, dedicated database cells to prevent "noisy neighbor" throttling.  
+Cell-Based Routing: Architect the backend API gateways to support routing ultra-large state governing bodies to isolated, dedicated database cells to prevent "noisy neighbor" throttling.
 
 PHASE 2: ZERO-LIABILITY ONBOARDING & REVENUE GENERATION
 Objective: Automate enterprise club ingestion, ensure absolute legal compliance, and unlock new embedded revenue streams for tournament directors.
@@ -25,7 +25,9 @@ Integrate API endpoints for digital ticketing and housing/hotel block rebates to
 
 Epic 3: Context-Aware COPPA 2.0 & Household Engine
 
-Establish passwordless Magic Uplinks via SMS/Email leveraging single-use, time-locked invite tokens.
+Establish passwordless Magic Uplinks exclusively via Email using single-use, time-locked invite tokens to eliminate SMS costs and prevent SIM-swapping vulnerabilities.
+
+Integrate native Firebase Phone Number Verification for a frictionless, one-tap mobile login experience that verifies the number directly with the carrier, completely bypassing SMS.
 
 Integrate native WebAuthn Biometric Enclave Attestation (navigator.credentials.create()) to bind legally mandated COPPA consent directly to on-device hardware biometrics.
 
@@ -38,13 +40,13 @@ Epic 4: AI-Driven Dynamic Workouts
 
 Initialize dynamic configuration trees (sports_configs) allowing the OS to scale instantly to basketball, lacrosse, volleyball, etc.
 
-Implement Reinforcement Learning (RL) Algorithms: Transition from static training plans to dynamic engines that adjust the volume and difficulty of daily prescribed workouts based on continuous physiological feedback and historical adherence.  
+Implement Reinforcement Learning (RL) Algorithms: Transition from static training plans to dynamic engines that adjust the volume and difficulty of daily prescribed workouts based on continuous physiological feedback and historical adherence.
 
 Epic 5: The Octalysis Progression Loop
 
-Activate Core Drive 2 (Accomplishment): Construct multi-attribute hex trees visualizing physical progression across distinct capabilities.  
+Activate Core Drive 2 (Accomplishment): Construct multi-attribute hex trees visualizing physical progression across distinct capabilities.
 
-Activate Core Drive 8 (Loss Avoidance): Deploy rigorous daily habit streaks; program automated Skill Decay algorithms that drain fractions of inactive XP after consecutive missed days, triggering urgent re-engagement alerts.  
+Activate Core Drive 8 (Loss Avoidance): Deploy rigorous daily habit streaks; program automated Skill Decay algorithms that drain fractions of inactive XP after consecutive missed days, triggering urgent re-engagement alerts.
 
 Integrate Parent Co-Op mechanics, empowering parents to fund real-world rewards via automated escrow Bounties alongside one-tap telemetry boosts.
 

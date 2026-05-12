@@ -2962,6 +2962,36 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Magic Uplinks (Phase 2, Epic 3 — Passwordless Magic Uplinks).
+    // ──────────────────────────────────────────────────────────────
+    // ALL writes are Admin SDK only (mintMagicUplink / redeemMagicUplink /
+    // revokeMagicUplink / purgeExpiredUplinks callables).  Clients NEVER write
+    // this collection directly so that the single-use invariant can only be
+    // broken by the server-side atomic transaction.
+    //
+    // Read rules:
+    //   • super_admin sees every uplink across all clubs.
+    //   • The minting director/coach sees uplinks they created (`mintedByUid`).
+    //   • Any director sees uplinks scoped to their own club (`clubId`).
+    //   • Recipients cannot read their own uplink doc — the plain secret is not
+    //     stored, so the doc is safe to expose, but there is no need to allow it.
+    match /magic_uplinks/{tokenId} {
+      allow read: if authed() && (
+        isSuper()
+        || resource.data.mintedByUid == request.auth.uid
+        || (isDirector() && resource.data.clubId == tokenClub())
+      );
+      allow write: if false;
+    }
+
+    // Magic Uplink audit trail (Phase 2, Epic 3).
+    // Immutable rows written by the Cloud Functions only.
+    // Super-admin readable for compliance / support investigations.
+    match /magic_uplink_audit/{eventId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
