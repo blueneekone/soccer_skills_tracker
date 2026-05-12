@@ -221,7 +221,8 @@
 		font-weight: 800;
 		letter-spacing: 0.14em;
 		cursor: pointer;
-		backdrop-filter: blur(12px);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 		transition: all 0.2s;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 	}
@@ -249,7 +250,8 @@
 		inset: 0;
 		z-index: 8889;
 		background: rgba(0, 0, 0, 0.6);
-		backdrop-filter: blur(4px);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 	}
 
 	/* ─── Modal ─────────────────────────────────────────────────────────────── */

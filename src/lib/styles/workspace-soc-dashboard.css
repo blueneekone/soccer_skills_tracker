@@ -111,34 +111,32 @@
 	}
 }
 
-/* Operations ribbon */
+/* Operations ribbon — fluid bento columns */
 .wsd-ribbon {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 10px;
-	margin-bottom: 10px;
+	grid-template-columns: 1fr;
+	gap: var(--bento-gap-sm);
+	margin-bottom: var(--bento-gap-sm);
 }
 
-@media (max-width: 900px) {
+@media (min-width: 33rem) {
 	.wsd-ribbon {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
-@media (max-width: 520px) {
+@media (min-width: 64rem) {
 	.wsd-ribbon {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 }
 
 .wsd-ribbon__cell {
 	padding: 12px 14px;
-	border-radius: 12px;
+	border-radius: var(--vanguard-radius-sm);
 	background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
 	border: 1px solid var(--ec-ops-border-subtle, rgba(0, 240, 255, 0.22));
-	box-shadow:
-		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-		0 12px 28px rgba(0, 0, 0, 0.35);
+	box-shadow: var(--vanguard-elev-2);
 }
 
 .wsd-ribbon__metric {
@@ -177,7 +175,7 @@
 	gap: 8px 16px;
 	margin: 0 0 18px;
 	padding: 8px 12px;
-	border-radius: 10px;
+	border-radius: var(--vanguard-radius-sm);
 	background: rgba(0, 0, 0, 0.2);
 	border: 1px solid rgba(255, 255, 255, 0.06);
 	font-size: 0.65rem;
@@ -239,10 +237,10 @@
 	flex-direction: column;
 	gap: 6px;
 	padding: 16px 18px;
-	border-radius: 14px;
+	border-radius: var(--vanguard-radius);
 	background: linear-gradient(180deg, rgba(12, 12, 14, 0.98), rgba(9, 9, 11, 0.99));
 	border: 1px solid rgba(255, 255, 255, 0.06);
-	box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+	box-shadow: var(--vanguard-elev-2);
 	border-left: 3px solid rgba(113, 113, 122, 0.6);
 	min-width: 0;
 }
@@ -250,13 +248,13 @@
 .wsd-metric--crit {
 	border-left-color: #ef4444;
 	box-shadow:
-		0 14px 36px rgba(0, 0, 0, 0.4),
+		var(--vanguard-elev-2),
 		0 0 24px rgba(239, 68, 68, 0.12);
 }
 .wsd-metric--high {
 	border-left-color: #f97316;
 	box-shadow:
-		0 14px 36px rgba(0, 0, 0, 0.4),
+		var(--vanguard-elev-2),
 		0 0 20px rgba(249, 115, 22, 0.1);
 }
 .wsd-metric--med {
@@ -332,19 +330,19 @@
 
 .wsd-metric-grid {
 	display: grid;
-	gap: 12px;
-	margin-bottom: 20px;
+	gap: var(--bento-gap-sm);
+	margin-bottom: var(--bento-gap-lg);
 }
 
 .wsd-body {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding-bottom: 8px;
+	gap: var(--bento-gap-md);
+	padding-bottom: var(--bento-gap-xs);
 }
 
 .wsd-surface-accent {
-	border-radius: 14px;
+	border-radius: var(--vanguard-radius);
 	border-top: 2px solid rgba(0, 240, 255, 0.3);
-	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--vanguard-elev-2);
 }

@@ -465,10 +465,12 @@
 	/* ── Root ────────────────────────────────────────────────────────────────── */
 	.ca-root {
 		position: relative;
-		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: var(--vanguard-radius-sm);
+		border: 1px solid var(--vanguard-border);
 		background: rgba(5, 8, 15, 0.9);
-		backdrop-filter: blur(16px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		box-shadow: var(--vanguard-elev-2);
 		font-family: 'JetBrains Mono', monospace;
 		overflow: hidden;
 		min-height: 280px;

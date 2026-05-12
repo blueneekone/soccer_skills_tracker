@@ -155,7 +155,7 @@
 <!-- Vanguard Forge — bg-[#020202] root, glassmorphic cards, mono telemetry. -->
 <div class="forge-route tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-px-3 tw-py-6 sm:tw-px-5">
 	<div
-		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-6 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_20px_40px_rgba(0,0,0,0.5)] tw-backdrop-blur-3xl md:tw-p-8"
+		class="vanguard-surface tw-p-6 md:tw-p-8"
 	>
 		<header class="tw-mb-10 tw-text-center md:tw-text-left">
 			<p class="tw-mb-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/80">
@@ -187,9 +187,7 @@
 				</span>
 			</div>
 
-			<div
-				class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2 xl:tw-grid-cols-3"
-			>
+		<div class="bento-grid bento-grid--3col">
 				{#each ARMORY_DRILLS as drill (drill.id)}
 					<article
 						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-3xl tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(0, 240, 255,0.12)]"
@@ -267,7 +265,7 @@
 								</span>
 							</div>
 
-							<div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2">
+							<div class="bento-grid bento-grid--2col">
 								<label class="tw-flex tw-flex-col tw-gap-1.5">
 									<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-500">
 										Target reps

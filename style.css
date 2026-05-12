@@ -26,33 +26,36 @@
     --chart-tick: #737373;
     --chart-grid: rgba(0, 0, 0, 0.08);
 
-    /* Enterprise surfaces — flat, chromatic-neutral shell */
-    --glass-bg: #ffffff;
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --glass-edge-light: rgba(0, 0, 0, 0.06);
-    --glass-edge-dark: rgba(0, 0, 0, 0.08);
-    --glass-panel-edge: rgba(0, 0, 0, 0.08);
-    --surface-row-hover: rgba(0, 0, 0, 0.04);
-    --surface-subtle: #fafafa;
-    --border-subtle: rgba(0, 0, 0, 0.08);
-    --border-strong: rgba(0, 0, 0, 0.12);
-    --input-bg: #ffffff;
-    --input-border: #e5e5e5;
+    /* Enterprise surfaces — Vanguard dark-mode-first glass tokens */
+    --glass-bg:         var(--vanguard-glass,    rgba(0, 20, 30, 0.6));
+    --glass-border:     var(--vanguard-border,   rgba(0, 240, 255, 0.2));
+    --glass-edge-light: var(--vanguard-border,   rgba(0, 240, 255, 0.12));
+    --glass-edge-dark:  var(--vanguard-border,   rgba(0, 240, 255, 0.2));
+    --glass-panel-edge: var(--vanguard-border,   rgba(0, 240, 255, 0.2));
+    --surface-row-hover: rgba(0, 240, 255, 0.03);
+    --surface-subtle: #0a0e1a;
+    --border-subtle: rgba(0, 240, 255, 0.08);
+    --border-strong: rgba(0, 240, 255, 0.15);
+    --input-bg: rgba(0, 20, 30, 0.4);
+    --input-border: rgba(0, 240, 255, 0.2);
     --input-text: var(--text-primary);
 
-    /* Sprint 1.1: 24px premium radius for primary cards/modals; inner elements stay proportional */
-    --radius-premium: 24px;
-    --radius-inner: 12px;
+    /* Radius — deferred to Vanguard tokens (still resolves to 24px) */
+    --radius-premium: var(--vanguard-radius,    1.5rem);
+    --radius-inner:   var(--vanguard-radius-sm, 0.75rem);
     --radius-pill: 9999px;
     --spacing-fluid: clamp(16px, 3.5vw, 28px);
     --spacing-element: 16px;
-    --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 16px -4px rgba(0, 0, 0, 0.02);
-    /* Sprint 1.1: true Liquid Glass shadow — inset highlight + layered ambient depth */
-    --shadow-liquid:
-        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-        0 1px 2px rgba(0, 0, 0, 0.05),
-        0 4px 12px -2px rgba(0, 0, 0, 0.07),
-        0 16px 40px -8px rgba(0, 0, 0, 0.10);
+    /* Shadows — deferred to Vanguard elevation tokens */
+    --shadow-premium: var(--vanguard-elev-1,
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.4),
+        0 4px 12px -4px rgba(0, 0, 0, 0.5));
+    --shadow-liquid: var(--vanguard-elev-2,
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 8px 24px -8px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(0, 240, 255, 0.04));
     --shell-padding-x: clamp(1rem, 5vw, 3rem);
     --shell-padding-y: clamp(0.75rem, 2.5vw, 1.5rem);
     --grid-gap-bento: clamp(1rem, 2.8vw, 2rem);
@@ -104,6 +107,8 @@ html.player-portal-theme .welcome-subtitle {
 html.player-portal-theme .card,
 html.player-portal-theme .welcome-brand-wrap,
 html.player-portal-theme .glass-panel {
+    /* shadow-liquid now defers to --vanguard-elev-2 which already includes multi-layer depth;
+       pp-card-glow adds the inset top highlight for the player portal */
     box-shadow: var(--shadow-liquid), var(--pp-card-glow);
 }
 
@@ -287,22 +292,22 @@ html.dark .linked-badge-ui {
 }
 .card-body > * + * { margin-top: var(--spacing-element); }
 
-/* Sprint 1.1: Liquid Glassmorphism — backdrop blur + multi-layer shadow */
+/* Sprint 1.1 / Phase 1: Vanguard glassmorphism — dark-mode-first true glass */
 .glass-panel {
     border-radius: var(--radius-premium);
     border: 1px solid var(--glass-panel-edge);
-    background: rgba(255, 255, 255, 0.76);
-    backdrop-filter: blur(12px) saturate(1.5);
-    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
     box-shadow: var(--shadow-liquid);
 }
 
 html.dark .glass-panel,
 html.recruiter-scout-theme .glass-panel {
-    background: rgba(15, 15, 17, 0.80);
-    border-color: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(14px) saturate(1.6);
-    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    background: rgba(0, 20, 30, 0.6);
+    border-color: var(--vanguard-border, rgba(0, 240, 255, 0.2));
+    backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
 }
 
 /* =============================================================
@@ -358,20 +363,20 @@ html.recruiter-scout-theme .glass-panel {
 }
 
 .bento-card--glass {
-    background: rgba(255, 255, 255, 0.76);
-    backdrop-filter: blur(12px) saturate(1.5);
-    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
 }
 
 html.dark .bento-card {
-    background: #0f0f11;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 20, 30, 0.5);
+    border-color: var(--vanguard-border, rgba(0, 240, 255, 0.2));
 }
 
 html.dark .bento-card--glass {
-    background: rgba(15, 15, 17, 0.80);
-    backdrop-filter: blur(14px) saturate(1.6);
-    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    background: rgba(0, 20, 30, 0.6);
+    backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
 }
 
 /* Themed Borders & Headers — 1px, flat fills */

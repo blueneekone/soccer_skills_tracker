@@ -516,22 +516,18 @@
 		gap: 10px;
 		padding: 20px 20px 18px;
 		background: rgba(2, 2, 2, 0.82);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 1.5rem;
-		box-shadow:
-			inset 0 1px 1px rgba(255, 255, 255, 0.1),
-			0 20px 40px rgba(0, 0, 0, 0.5);
+		border: 1px solid var(--vanguard-border);
+		border-radius: var(--vanguard-radius);
+		box-shadow: var(--vanguard-elev-3);
 		overflow: visible;
-		backdrop-filter: blur(24px);
-		-webkit-backdrop-filter: blur(24px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 	}
 
 	:global(html.dark) .nm-modal {
 		background: rgba(2, 2, 2, 0.82);
-		border-color: rgba(255, 255, 255, 0.1);
-		box-shadow:
-			inset 0 1px 1px rgba(255, 255, 255, 0.08),
-			0 24px 48px rgba(0, 0, 0, 0.55);
+		border-color: var(--vanguard-border);
+		box-shadow: var(--vanguard-elev-3);
 	}
 
 	.nm-head {

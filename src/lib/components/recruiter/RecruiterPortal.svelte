@@ -840,7 +840,8 @@
 		padding: 1rem 1.5rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 		background: rgba(1, 4, 9, 0.95);
-		backdrop-filter: blur(24px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		position: sticky;
 		top: 0;
 		z-index: 50;
@@ -988,10 +989,12 @@
 		flex-direction: column;
 		gap: 0.45rem;
 		padding: 0.85rem 0.85rem 0.7rem;
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.07);
+		border-radius: var(--vanguard-radius-sm);
+		border: 1px solid var(--vanguard-border);
 		background: rgba(10, 14, 22, 0.85);
-		backdrop-filter: blur(12px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		box-shadow: var(--vanguard-elev-2);
 		cursor: pointer;
 		overflow: hidden;
 		transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s;
@@ -1205,7 +1208,8 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.6);
-		backdrop-filter: blur(4px);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 		z-index: 200;
 	}
 	.rp-detail {

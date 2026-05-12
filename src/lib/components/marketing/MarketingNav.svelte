@@ -99,8 +99,8 @@
 	}
 	.mn-root--scrolled {
 		background: rgba(1, 4, 9, 0.85);
-		backdrop-filter: blur(20px);
-		-webkit-backdrop-filter: blur(20px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		border-bottom-color: rgba(255, 255, 255, 0.06);
 	}
 
@@ -236,7 +236,8 @@
 		flex-direction: column;
 		padding: 0.75rem 1.5rem 1.25rem;
 		background: rgba(1, 4, 9, 0.96);
-		backdrop-filter: blur(24px);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		border-top: 1px solid rgba(255, 255, 255, 0.05);
 		gap: 0.1rem;
 	}

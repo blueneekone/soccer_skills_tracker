@@ -452,13 +452,11 @@
 		max-width: min(320px, calc(100vw - 32px));
 		z-index: 1000;
 		background: rgba(1, 4, 9, 0.97);
-		backdrop-filter: blur(36px);
-		-webkit-backdrop-filter: blur(36px);
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		border-radius: 14px;
-		box-shadow:
-			0 24px 60px rgba(0, 0, 0, 0.6),
-			0 0 0 1px rgba(0, 240, 255, 0.05);
+		backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
+		border: 1px solid var(--vanguard-border);
+		border-radius: var(--vanguard-radius-md);
+		box-shadow: var(--vanguard-elev-3);
 		box-sizing: border-box;
 		overflow: hidden;
 		display: flex;

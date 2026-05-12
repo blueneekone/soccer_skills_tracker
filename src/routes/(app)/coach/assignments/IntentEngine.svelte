@@ -97,7 +97,7 @@
 </script>
 
 <div
-	class="tw-flex tw-flex-col tw-gap-5 tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#00f0ff]/20 tw-rounded-2xl tw-p-6"
+	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
 	<!-- Header -->
 	<div class="tw-flex tw-flex-col tw-gap-0.5">

@@ -564,7 +564,7 @@
 	{/if}
 
 	<div
-		class="tw-flex tw-min-h-0 tw-flex-col tw-gap-4 md:tw-grid md:tw-grid-cols-1 md:tw-gap-5 lg:tw-grid-cols-1"
+		class="tw-flex tw-min-h-0 tw-flex-col tw-gap-bento-md"
 	>
 		<!-- COPPA & liability block -->
 		<section
@@ -752,7 +752,7 @@
 				account is created automatically. The engine issues a one-time
 				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 			</p>
-			<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-3 md:tw-grid md:tw-grid-cols-2 md:tw-gap-4">
+			<div class="tw-min-w-0 bento-grid bento-grid--2col">
 				<label class="phh-field tw-block tw-w-full">
 					<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 					<input
@@ -1061,8 +1061,8 @@
 		justify-content: center;
 		padding: 1rem;
 		background: rgba(0, 0, 0, 0.78);
-		backdrop-filter: blur(6px);
-		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 	}
 
 	.phh-otp-panel {

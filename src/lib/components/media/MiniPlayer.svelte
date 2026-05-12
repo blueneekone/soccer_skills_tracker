@@ -227,9 +227,9 @@
 		padding: 0.5rem 1rem;
 		background: rgba(4, 4, 12, 0.97);
 		border-top: 1px solid rgba(0, 240, 255, 0.15);
-		box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.55);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
+		box-shadow: var(--vanguard-elev-2);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		font-family: 'JetBrains Mono', monospace;
 		animation: mpRise 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 		min-height: 64px;

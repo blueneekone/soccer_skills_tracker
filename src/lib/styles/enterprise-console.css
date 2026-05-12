@@ -103,7 +103,7 @@ html.dark .ec-mobile-header {
 	height: 44px;
 	padding: 0;
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	background: transparent;
 	color: var(--text-primary);
 	cursor: pointer;
@@ -166,7 +166,7 @@ html.dark .ec-sidebar__mobile-top {
 	color: var(--text-secondary);
 	background: rgba(0, 0, 0, 0.04);
 	border: 1px solid rgba(0, 0, 0, 0.08);
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	cursor: pointer;
 	transition:
 		background 0.15s ease,
@@ -528,7 +528,7 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		padding: 8px 10px calc(6rem + env(safe-area-inset-bottom, 0px));
+		padding: var(--bento-pad-sm) var(--bento-pad-sm) calc(6rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 
@@ -556,7 +556,7 @@ html.dark .ec-nav-section {
 	height: 36px;
 	padding: 0;
 	flex-shrink: 0;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);
@@ -609,7 +609,7 @@ html.dark .ec-sidebar-toggle:hover {
 	gap: 8px;
 	height: 34px;
 	padding: 0 12px 0 10px;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid rgba(0, 0, 0, 0.12);
 	background: rgba(0, 0, 0, 0.03);
 	cursor: pointer;
@@ -716,7 +716,7 @@ html.dark .ec-topbar {
 	font-size: 13px;
 	line-height: 1.25;
 	border: 1px solid var(--input-border, #e5e5e5);
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	background: var(--input-bg, #ffffff);
 	color: var(--text-primary);
 	box-sizing: border-box;
@@ -736,7 +736,7 @@ html.dark .ec-topbar {
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);
@@ -762,7 +762,7 @@ html.dark .ec-icon-btn:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-	padding: 16px 20px calc(6rem + env(safe-area-inset-bottom, 0px));
+	padding: var(--bento-pad) var(--bento-pad) calc(6rem + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
 	width: 100%;
 }
@@ -774,11 +774,11 @@ html.dark .ec-icon-btn:hover {
  */
 .ec-page-subnav {
 	position: sticky;
-	top: -16px;
+	top: calc(-1 * var(--bento-pad));
 	z-index: 30;
-	margin-top: -16px;
-	margin-left: -20px;
-	margin-right: -20px;
+	margin-top: calc(-1 * var(--bento-pad));
+	margin-left: calc(-1 * var(--bento-pad));
+	margin-right: calc(-1 * var(--bento-pad));
 	background: var(--ec-topbar-bg, #ffffff);
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	padding: 8px 1.5rem 0;
@@ -791,11 +791,11 @@ html.dark .ec-page-subnav {
 
 @media (max-width: 1023.98px) {
 	.ec-page-subnav {
-		top: -8px;
-		margin-top: -8px;
-		margin-left: -10px;
-		margin-right: -10px;
-		padding: 6px 10px 0;
+		top: calc(-1 * var(--bento-pad-sm));
+		margin-top: calc(-1 * var(--bento-pad-sm));
+		margin-left: calc(-1 * var(--bento-pad-sm));
+		margin-right: calc(-1 * var(--bento-pad-sm));
+		padding: 6px var(--bento-pad-sm) 0;
 	}
 }
 
@@ -808,7 +808,7 @@ html.dark .ec-page-subnav {
 	overflow-y: visible;
 	-webkit-overflow-scrolling: touch;
 	border: 1px solid rgba(0, 0, 0, 0.08);
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	background: #ffffff;
 }
 
@@ -1131,7 +1131,7 @@ html.dark .ec-pdrawer__head {
 .ec-pdrawer__avatar {
 	width: 44px;
 	height: 44px;
-	border-radius: 10px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	background: #f4f4f5;
 	color: var(--text-primary);
@@ -1173,7 +1173,7 @@ html.dark .ec-pdrawer__avatar {
 	height: 36px;
 	border: 1px solid transparent;
 	background: transparent;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	cursor: pointer;
 	color: var(--text-secondary);
 	display: inline-flex;
@@ -1203,7 +1203,7 @@ html.dark .ec-pdrawer__close-x:hover {
 	margin-bottom: 16px;
 	padding: 12px;
 	border: 1px solid rgba(0, 0, 0, 0.08);
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	background: #fafafa;
 }
 
@@ -1259,7 +1259,7 @@ html.dark .ec-pdrawer__section {
 	font-size: 12px;
 	font-weight: 600;
 	padding: 8px 12px;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid rgba(0, 0, 0, 0.12);
 	background: #ffffff;
 	color: var(--text-primary);
@@ -1302,7 +1302,7 @@ html.dark .ec-pdrawer__btn--danger:hover {
 
 .ec-panel {
 	border: 1px solid #e5e5e5;
-	border-radius: 14px;
+	border-radius: var(--vanguard-radius-md);
 	background: #fafafa;
 	box-sizing: border-box;
 }
@@ -1445,7 +1445,7 @@ html.dark .adm-search-icon {
 	height: 38px;
 	/* Reserve space for .adm-search-icon (positioned at left: 0.75rem) */
 	padding: 0 14px 0 2.75rem;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid var(--border-subtle, #e5e5e5);
 	background: var(--glass-bg, #fff);
 	font: inherit;
@@ -1504,7 +1504,7 @@ html.dark .ec-mobile-header {
 }
 
 .ec-sidebar .ec-nav-link {
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 }
 
 .ec-sidebar .ec-nav-link--active {
@@ -1525,7 +1525,7 @@ html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {
 html.dark .ec-topbar {
 	background: linear-gradient(180deg, #0a0a0c 0%, #09090b 100%);
 	border-bottom-color: rgba(0, 240, 255, 0.14);
-	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+	box-shadow: var(--vanguard-elev-2);
 }
 
 html.dark .ec-cmd-trigger:focus-visible {
@@ -1574,10 +1574,7 @@ html.dark .ec-panel {
 	border-color: rgba(255, 255, 255, 0.09);
 	border-top: 1px solid rgba(0, 240, 255, 0.14);
 	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
-	box-shadow:
-		0 1px 0 rgba(255, 255, 255, 0.03) inset,
-		0 16px 48px rgba(0, 0, 0, 0.38),
-		var(--ec-ops-glow);
+	box-shadow: var(--vanguard-elev-3), var(--ec-ops-glow);
 	transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1594,7 +1591,7 @@ html.dark .adm-toolbar {
 html.dark .ec-drawer {
 	border-left: 1px solid rgba(0, 240, 255, 0.14);
 	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
-	box-shadow: -14px 0 52px rgba(0, 0, 0, 0.48);
+	box-shadow: var(--vanguard-elev-3), -14px 0 0 rgba(0, 0, 0, 0.28);
 }
 
 html.dark .ec-drawer__head {

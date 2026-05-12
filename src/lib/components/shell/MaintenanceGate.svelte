@@ -103,13 +103,12 @@
 		width: 100%;
 		max-width: 520px;
 		padding: 40px 32px 32px;
-		border-radius: 16px;
+		border-radius: var(--vanguard-radius);
 		background: rgba(24, 24, 27, 0.85);
-		border: 1px solid rgba(250, 250, 250, 0.08);
-		box-shadow:
-			0 24px 60px rgba(0, 0, 0, 0.6),
-			inset 0 1px 0 rgba(250, 250, 250, 0.04);
-		backdrop-filter: blur(16px);
+		border: 1px solid var(--vanguard-border);
+		box-shadow: var(--vanguard-elev-3);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		text-align: center;
 	}
 

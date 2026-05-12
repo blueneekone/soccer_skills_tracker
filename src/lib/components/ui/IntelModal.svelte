@@ -72,7 +72,7 @@
 	>
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
-			class="im-panel tw-vanguard-panel tw-relative tw-w-full tw-max-w-lg tw-rounded-2xl tw-px-5 tw-pt-5 tw-pb-4"
+			class="im-panel tw-vanguard-panel tw-relative tw-w-full tw-max-w-lg tw-px-5 tw-pt-5 tw-pb-4"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={titleId}

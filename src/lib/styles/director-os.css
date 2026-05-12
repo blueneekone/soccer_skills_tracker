@@ -24,11 +24,11 @@
 	background-clip: padding-box;
 }
 
-/* Bento grid: fluid gap per roadmap */
+/* Bento grid: composes from global bento tokens (app.css :root) */
 .director-bento-grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: var(--grid-gap-bento, clamp(1rem, 2.8vw, 2rem));
+	gap: var(--bento-gap-md);
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -39,16 +39,24 @@
 	}
 }
 
+@media (min-width: 80rem) {
+	.director-bento-grid--xl {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
 /* Full-width row (entitlement strip) */
 .director-bento-full {
 	grid-column: 1 / -1;
 }
 
-/* @container targets for self-adjusting cards */
+/* @container targets for self-adjusting cards — composes with .bento-cell */
 .dir-bento-card {
 	container-type: inline-size;
 	container-name: dir-bento;
 	position: relative;
+	padding: var(--bento-pad);
+	box-sizing: border-box;
 }
 
 /* Subtle club mark on glass panels when --club-logo-url is set on :root */
@@ -72,7 +80,7 @@
 }
 .dir-bento-card.dir-bento-card--interactive:hover {
 	transform: none;
-	box-shadow: var(--shadow-premium, 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 16px -4px rgba(0, 0, 0, 0.02));
+	box-shadow: var(--vanguard-elev-2);
 	opacity: 0.98;
 }
 .dir-bento-card.dir-bento-card--interactive:active {
@@ -89,10 +97,10 @@
 	justify-content: center;
 	gap: 0.5rem;
 	width: 100%;
-	padding: clamp(0.65rem, 2vw, 0.85rem) clamp(1rem, 3vw, 1.35rem);
+	padding: var(--bento-pad-sm) var(--bento-pad);
 	font-weight: 600;
 	font-size: clamp(0.875rem, 2.2vw, 1rem);
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid transparent;
 	cursor: pointer;
 	color: #ffffff;
@@ -151,7 +159,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 /* Entitlement meter */
 .dir-ent-track {
 	position: relative;
-	height: clamp(0.65rem, 2vw, 0.85rem);
+	height: var(--bento-gap-xs);
 	border-radius: 9999px;
 	overflow: hidden;
 	background: rgba(15, 23, 42, 0.08);
@@ -182,7 +190,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 .dir-ent-track--segments {
 	display: grid;
 	align-items: stretch;
-	min-height: clamp(0.65rem, 2vw, 0.85rem);
+	min-height: var(--bento-gap-xs);
 }
 
 .dir-ent-seg {
@@ -270,7 +278,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 
 .dir-field-slot {
 	min-height: 48px;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	background: rgba(255, 255, 255, 0.6);
 	border: 1px dashed rgba(0, 0, 0, 0.12);
 	transition:
@@ -298,7 +306,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	top: 4px;
 	bottom: 4px;
 	pointer-events: auto;
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	padding: 4px 6px;
 	overflow: hidden;
 	background: var(--brand-primary);
@@ -306,7 +314,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	font-size: 10px;
 	font-weight: 600;
 	line-height: 1.2;
-	box-shadow: var(--shadow-premium, 0 1px 2px rgba(0, 0, 0, 0.06));
+	box-shadow: var(--vanguard-elev-2);
 	border: 1px solid color-mix(in srgb, var(--brand-primary) 70%, #000);
 }
 
@@ -325,7 +333,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 }
 
 .dir-field-team-chip {
-	border-radius: 8px;
+	border-radius: var(--vanguard-radius-sm);
 	padding: 6px 12px;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	background: #ffffff;

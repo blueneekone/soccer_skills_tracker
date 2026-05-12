@@ -6,8 +6,7 @@
 
 	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff00ff', '#ffff00', '#ffffff']);
 
-	const glassPanel =
-		'tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_40px_rgba(0,0,0,0.5)]';
+	const glassPanel = 'vanguard-surface';
 
 	const segBtn =
 		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';

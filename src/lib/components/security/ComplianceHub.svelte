@@ -514,8 +514,14 @@
 	/* ── Stats rail ────────────────────────────────────────────────────── */
 	.ch-stats {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 0.75rem;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--bento-gap-sm);
+	}
+
+	@media (min-width: 48rem) {
+		.ch-stats {
+			grid-template-columns: repeat(4, 1fr);
+		}
 	}
 
 	.ch-stat {
@@ -823,7 +829,8 @@
 		inset: 0;
 		z-index: 9000;
 		background: rgba(0, 0, 0, 0.75);
-		backdrop-filter: blur(4px);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -963,7 +970,7 @@
 
 	/* ── Responsive ────────────────────────────────────────────────────── */
 	@media (max-width: 640px) {
-		.ch-stats { grid-template-columns: repeat(2, 1fr); }
+		/* .ch-stats is already 2-col at base — no override needed */
 
 		.ch-grid__header,
 		.ch-grid__row {

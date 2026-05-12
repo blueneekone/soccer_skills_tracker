@@ -627,9 +627,11 @@
 		display: flex;
 		flex-direction: column;
 		background: rgba(1, 4, 9, 0.8);
-		backdrop-filter: blur(24px);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 16px;
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		border: 1px solid var(--vanguard-border);
+		border-radius: var(--vanguard-radius);
+		box-shadow: var(--vanguard-elev-2);
 		overflow: hidden;
 		min-height: 520px;
 		font-family: ui-monospace, 'SFMono-Regular', monospace;

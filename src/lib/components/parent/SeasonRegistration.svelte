@@ -201,7 +201,7 @@
 	aria-modal="true"
 	aria-label="Season Registration Payment"
 	class="fixed inset-0 z-50 flex items-center justify-center"
-	style="background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);"
+	style="background: rgba(0,0,0,0.85); backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%); -webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);"
 >
 	<!-- Close target -->
 	<button

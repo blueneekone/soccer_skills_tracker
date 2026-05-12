@@ -267,10 +267,8 @@
 <style>
 	:global(.swal2-glass-toast) {
 		border: 1px solid rgba(0, 240, 255, 0.35) !important;
-		box-shadow:
-			0 8px 32px rgba(0, 0, 0, 0.45),
-			inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-		backdrop-filter: blur(12px);
+		box-shadow: var(--vanguard-elev-2) !important;
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 	}
 
 	.ml-wrap {

@@ -113,7 +113,7 @@
 </script>
 
 <section
-	class="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-border-[#00f0ff]/20 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_20px_50px_rgba(0,0,0,0.5)]"
+	class="vanguard-surface tw-relative tw-overflow-hidden tw-p-5"
 	aria-labelledby="vaq-h"
 >
 	<header class="tw-mb-4 tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-[#00f0ff]/15 tw-pb-3">

@@ -227,11 +227,12 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		padding: 1rem;
-		border-radius: 0.75rem;
-		border: 1px solid rgb(255 255 255 / 0.05);
+		border-radius: var(--vanguard-radius-sm);
+		border: 1px solid var(--vanguard-border);
 		background: rgb(15 23 42 / 0.5);
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		box-shadow: var(--vanguard-elev-2);
 		box-sizing: border-box;
 		transition:
 			background 0.2s ease,
@@ -415,8 +416,8 @@
 
 	.lb-outer {
 		grid-template-columns: 1fr;
-		gap: clamp(16px, 3vw, 24px);
-		margin-bottom: clamp(16px, 3vw, 24px);
+		gap: var(--bento-gap-md);
+		margin-bottom: var(--bento-gap-md);
 	}
 
 	.lb-shell {
@@ -428,8 +429,8 @@
 	}
 
 	.lb-header {
-		margin-bottom: clamp(14px, 2.5vw, 18px);
-		padding-bottom: clamp(12px, 2vw, 16px);
+		margin-bottom: var(--bento-gap-sm);
+		padding-bottom: var(--bento-gap-sm);
 		border-bottom: 1px solid var(--pp-border, var(--border-subtle));
 	}
 

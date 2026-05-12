@@ -152,7 +152,7 @@
 		</div>
 		<!-- Text overlay — deep backdrop-blur-md per Vanguard spec -->
 		<div
-			class="tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end tw-gap-4 tw-rounded-2xl tw-border tw-border-[#00f0ff]/20 tw-bg-[#020202]/55 tw-px-5 tw-py-4 tw-backdrop-blur-md tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),_0_30px_60px_rgba(0,0,0,0.5)] md:tw-inset-x-8 md:tw-bottom-6"
+			class="vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end tw-gap-4 tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 		>
 			<div
 				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/40 tw-bg-[rgba(0,24,32,0.6)] tw-shadow-[0_0_18px_rgba(0,240,255,0.35)] md:tw-h-14 md:tw-w-14"
@@ -193,11 +193,11 @@
 		<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 
 		<!-- ── MISSION CONTROL GRID ──────────────────────────────────────────── -->
-		<section class="tw-mt-6 tw-grid tw-grid-cols-1 tw-gap-4 lg:tw-grid-cols-3" aria-label="Mission Control">
+		<section class="bento-grid bento-grid--3col tw-mt-6" aria-label="Mission Control">
 			<!-- WAR ROOM — Holographic, pulsing cyan border, primary gateway -->
 			<button
 				type="button"
-				class="war-room-card tw-group tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-[#00f0ff]/55 tw-bg-[#020202]/80 tw-p-6 tw-text-left tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_40px_rgba(0,240,255,0.18)] tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff] lg:tw-col-span-2"
+				class="war-room-card bento-span-2 tw-group tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-[#00f0ff]/55 tw-bg-[#020202]/80 tw-p-6 tw-text-left tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_40px_rgba(0,240,255,0.18)] tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>

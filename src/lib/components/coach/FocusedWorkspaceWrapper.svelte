@@ -134,8 +134,8 @@
 		background: rgba(255, 255, 255, 0.1);
 		color: #fafafa;
 		cursor: pointer;
-		-webkit-backdrop-filter: blur(8px);
-		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 		transition: background 0.15s ease, border-color 0.15s ease;
 	}
 
@@ -198,13 +198,11 @@
 		padding: 0.65rem 1.5rem;
 		max-width: calc(100vw - 1.5rem);
 		background: rgba(15, 23, 42, 0.82);
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid var(--vanguard-border);
 		border-radius: 9999px;
-		-webkit-backdrop-filter: blur(20px) saturate(160%);
-		backdrop-filter: blur(20px) saturate(160%);
-		box-shadow:
-			0 25px 50px -12px rgba(0, 0, 0, 0.55),
-			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		box-shadow: var(--vanguard-elev-2);
 	}
 
 	:global(html.dark) .fw-island--arena {

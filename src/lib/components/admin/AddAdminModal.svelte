@@ -343,8 +343,8 @@
 		inset: 0;
 		z-index: 100;
 		background: rgba(9, 9, 11, 0.55);
-		backdrop-filter: blur(6px) saturate(1.4);
-		-webkit-backdrop-filter: blur(6px) saturate(1.4);
+		backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
 	}
 
 	.aam-root {

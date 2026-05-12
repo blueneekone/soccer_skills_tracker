@@ -261,7 +261,8 @@
 		align-items: center;
 		justify-content: center;
 		background: rgba(2, 2, 8, 0.97);
-		backdrop-filter: blur(24px) saturate(160%);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		padding: 1rem;
 		overflow-y: auto;
 	}

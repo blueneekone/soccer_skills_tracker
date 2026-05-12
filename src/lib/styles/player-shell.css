@@ -122,11 +122,9 @@
 	padding: 0 16px;
 	background: var(--pp-surface);
 	border-bottom: 1px solid var(--pp-border);
-	-webkit-backdrop-filter: blur(64px) saturate(1.6);
-	backdrop-filter: blur(64px) saturate(1.6);
-	box-shadow:
-		0 1px 0 rgba(0, 240, 255, 0.12),
-		0 12px 40px -28px rgba(0, 0, 0, 0.9);
+	-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
+	backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
+	box-shadow: var(--vanguard-elev-2), 0 1px 0 rgba(0, 240, 255, 0.12);
 	box-sizing: border-box;
 }
 
@@ -144,7 +142,7 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: 12px;
+	border-radius: var(--vanguard-radius-sm);
 	background: linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.15));
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	box-shadow: 0 0 24px -8px rgba(0, 240, 255, 0.4);
@@ -195,7 +193,7 @@
 	overflow-y: auto;
 	overflow-x: hidden;
 	-webkit-overflow-scrolling: touch;
-	padding: 16px 14px calc(var(--pp-bottomnav-height) + 28px + env(safe-area-inset-bottom, 0px));
+	padding: var(--bento-pad) var(--bento-pad-sm) calc(var(--pp-bottomnav-height) + 28px + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
 	background: transparent;
 	scrollbar-color: rgba(245, 158, 11, 0.35) rgba(255, 255, 255, 0.04);
@@ -240,8 +238,8 @@
 		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
 		0 24px 48px -20px rgba(0, 0, 0, 0.85),
 		0 0 40px -12px rgba(0, 240, 255, 0.15);
-	-webkit-backdrop-filter: blur(64px) saturate(1.6);
-	backdrop-filter: blur(64px) saturate(1.6);
+	-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
+	backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
 	box-sizing: border-box;
 }
 
@@ -264,7 +262,7 @@
 		color 0.16s ease,
 		background 0.16s ease,
 		transform 0.12s ease;
-	border-radius: 16px;
+	border-radius: var(--vanguard-radius-md);
 	border: 1px solid transparent;
 	box-sizing: border-box;
 }
@@ -353,7 +351,7 @@
 	}
 
 	.ps-canvas {
-		padding: 22px 22px 28px;
+		padding: var(--bento-pad) var(--bento-pad) 28px;
 	}
 
 	.ps-bottom-nav__link {
@@ -388,16 +386,14 @@
 	background: var(--pp-card);
 	border: 1px solid var(--pp-border);
 	color: var(--pp-text-primary);
-	border-radius: 18px;
-	box-shadow:
-		0 0 0 1px rgba(0, 0, 0, 0.25) inset,
-		0 20px 50px -32px rgba(0, 0, 0, 0.75);
+	border-radius: var(--vanguard-radius);
+	box-shadow: var(--vanguard-elev-2);
 }
 
 .ps-root :global(.card-header) {
 	border-bottom-color: var(--pp-border);
 	background: rgba(255, 255, 255, 0.02);
-	border-radius: 18px 18px 0 0;
+	border-radius: var(--vanguard-radius) var(--vanguard-radius) 0 0;
 }
 
 .ps-root :global(h1),

@@ -160,12 +160,11 @@
 		gap: 0.75rem;
 		padding: 0.75rem 1rem;
 		background: rgba(6, 8, 16, 0.97);
-		border: 1px solid rgba(0, 240, 255, 0.25);
-		border-radius: 12px;
-		box-shadow:
-			0 0 30px rgba(0, 240, 255, 0.08),
-			0 16px 40px rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(16px);
+		border: 1px solid var(--vanguard-border);
+		border-radius: var(--vanguard-radius-sm);
+		box-shadow: var(--vanguard-elev-2);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		animation: ip-slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 

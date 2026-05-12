@@ -384,7 +384,8 @@
     gap: 0.5rem; padding: 0.65rem 0.75rem; border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.04);
     background: rgba(4, 15, 22, 0.7);
-    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(var(--vanguard-blur)) saturate(180%); -webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+    box-shadow: var(--vanguard-elev-2);
     transition: border-color 0.15s, background 0.15s;
   }
   .vp-row:hover { border-color: rgba(0,240,255,0.18); background: rgba(4,15,22,0.9); }
@@ -428,15 +429,15 @@
   /* Overlay / Modal */
   .vp-overlay {
     position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%); -webkit-backdrop-filter: blur(var(--vanguard-blur-sm)) saturate(180%);
     display: flex; align-items: center; justify-content: center; padding: 1rem;
   }
   .vp-modal {
     width: 100%; max-width: 520px;
     background: rgba(4,15,22,0.97); border: 1px solid rgba(255,0,60,0.3);
-    border-radius: 10px; padding: 1.75rem;
+    border-radius: var(--vanguard-radius); padding: 1.75rem;
     display: flex; flex-direction: column; gap: 1.25rem;
-    box-shadow: 0 0 60px rgba(255,0,60,0.12), 0 30px 60px rgba(0,0,0,0.65);
+    box-shadow: var(--vanguard-elev-ares);
   }
   .vp-modal__badge { font-size: 0.52rem; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,0,60,0.6); margin-bottom: 0.25rem; display: block; }
   .vp-modal__title { margin: 0; font-size: 1rem; font-weight: 900; letter-spacing: 0.1em; color: #e5e7eb; }

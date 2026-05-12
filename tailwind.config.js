@@ -46,21 +46,39 @@ export default {
 					950: '#031016',
 				},
 			},
-			boxShadow: {
-				'tron-legacy':    'var(--legacy-glow)',
-				'tron-ares':      'var(--ares-glow)',
-				'vanguard-card':  '0 0 15px rgba(0, 240, 255, 0.05)',
-				'vanguard-glow':  '0 0 15px rgba(0, 240, 255, 0.4)',
-				'vanguard-red':   '0 0 15px rgba(255, 0, 60, 0.4)',
-			},
+		boxShadow: {
+			'tron-legacy':    'var(--legacy-glow)',
+			'tron-ares':      'var(--ares-glow)',
+			'vanguard-card':  '0 0 15px rgba(0, 240, 255, 0.05)',
+			'vanguard-glow':  '0 0 15px rgba(0, 240, 255, 0.4)',
+			'vanguard-red':   '0 0 15px rgba(255, 0, 60, 0.4)',
+			'vanguard-elev-1': 'var(--vanguard-elev-1)',
+			'vanguard-elev-2': 'var(--vanguard-elev-2)',
+			'vanguard-elev-3': 'var(--vanguard-elev-3)',
+			'vanguard-elev-ares': 'var(--vanguard-elev-ares)',
+		},
 		borderRadius: {
-			vanguard:    'var(--vanguard-radius)',
-			'vanguard-sm': 'var(--vanguard-radius-sm)',
+			vanguard:       'var(--vanguard-radius)',
+			'vanguard-sm':  'var(--vanguard-radius-sm)',
+			'vanguard-md':  'var(--vanguard-radius-md)',
+			'vanguard-xs':  'var(--vanguard-radius-xs)',
+		},
+		backdropBlur: {
+			'vanguard-sm': 'var(--vanguard-blur-sm)',
+			'vanguard':    'var(--vanguard-blur)',
+			'vanguard-lg': 'var(--vanguard-blur-lg)',
 		},
 		// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
 		spacing: {
 				/** Reserved shell height subtracted in Coach Workspace `calc(100vh - …)` */
 				header: 'var(--vanguard-shell-header, 5rem)',
+				/** Bento Grid fluid spacing — compose with tw-gap-*, tw-p-*, tw-m-* */
+				'bento-xs':  'var(--bento-gap-xs)',
+				'bento-sm':  'var(--bento-gap-sm)',
+				'bento-md':  'var(--bento-gap-md)',
+				'bento-lg':  'var(--bento-gap-lg)',
+				'bento-pad': 'var(--bento-pad)',
+				'bento-pad-sm': 'var(--bento-pad-sm)',
 			},
 			perspective: {
 				1000: '1000px',
