@@ -16,7 +16,7 @@
 
 	const directorApproveVpcFn = httpsCallable(functions, 'directorApproveVpc');
 
-	/** @type {Array<{ id: string; playerEmail: string; parentEmail: string; consentedAt: unknown; clubId: string }>} */
+	/** @type {Array<{ id: string; playerEmail: string; childEmail?: string; email?: string; parentEmail: string; consentedAt: unknown; clubId: string }>} */
 	let requests = $state([]);
 	let loading = $state(true);
 	let loadError = $state('');
@@ -42,15 +42,17 @@
 					orderBy('consentedAt', 'desc'),
 					limit(25),
 				);
-				const snap = await getDocs(q);
-				if (cancelled) return;
-				requests = snap.docs.map((d) => ({
-					id: d.id,
-					playerEmail: String(d.data().playerEmail || ''),
-					parentEmail: String(d.data().parentEmail || ''),
-					consentedAt: d.data().consentedAt || null,
-					clubId: String(d.data().clubId || ''),
-				}));
+			const snap = await getDocs(q);
+			if (cancelled) return;
+			requests = snap.docs.map((d) => ({
+				id: d.id,
+				playerEmail: String(d.data().playerEmail || ''),
+				childEmail: String(d.data().childEmail || ''),
+				email: String(d.data().email || ''),
+				parentEmail: String(d.data().parentEmail || ''),
+				consentedAt: d.data().consentedAt || null,
+				clubId: String(d.data().clubId || ''),
+			}));
 			} catch (e) {
 				if (!cancelled) {
 					loadError = e instanceof Error ? e.message : String(e);
@@ -66,18 +68,33 @@
 	});
 
 	/**
-	 * @param {string} requestId
-	 * @param {string} playerEmail
+	 * Resolve the minor's email across legacy schema variations, then dispatch
+	 * the directorApproveVpc callable with a strictly-typed payload object.
+	 * @param {{ id: string; playerEmail: string; childEmail?: string; email?: string }} requestRow
 	 */
-	async function approveVpc(requestId, playerEmail) {
-		itemState = { ...itemState, [requestId]: 'approving' };
+	async function handleVpcApproval(requestRow) {
+		const targetEmail =
+			requestRow.playerEmail ||
+			requestRow.childEmail ||
+			requestRow.email ||
+			'';
+
+		if (!targetEmail.trim()) {
+			console.error(
+				'[VpcApprovalQueue] Approval aborted: row lacks a valid target player email.',
+				requestRow,
+			);
+			return;
+		}
+
+		itemState = { ...itemState, [requestRow.id]: 'approving' };
 		try {
-			await directorApproveVpcFn({ playerEmail });
-			itemState = { ...itemState, [requestId]: 'done' };
-			requests = requests.filter((r) => r.id !== requestId);
+			await directorApproveVpcFn({ playerEmail: targetEmail.trim() });
+			itemState = { ...itemState, [requestRow.id]: 'done' };
+			requests = requests.filter((r) => r.id !== requestRow.id);
 		} catch (e) {
-			console.error('[VpcApprovalQueue] approve failed', e);
-			itemState = { ...itemState, [requestId]: 'error' };
+			console.error('[VpcApprovalQueue] Backend VPC clearance rejected:', e);
+			itemState = { ...itemState, [requestRow.id]: 'error' };
 		}
 	}
 
@@ -161,8 +178,8 @@
 						<button
 							type="button"
 							class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
-							disabled={itemState[req.id] === 'approving' || itemState[req.id] === 'done'}
-							onclick={() => approveVpc(req.id, req.playerEmail)}
+						disabled={itemState[req.id] === 'approving' || itemState[req.id] === 'done'}
+						onclick={() => handleVpcApproval(req)}
 							aria-label="Approve VPC for {req.playerEmail}"
 						>
 							{#if itemState[req.id] === 'approving'}
