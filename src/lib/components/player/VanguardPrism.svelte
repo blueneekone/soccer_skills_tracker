@@ -40,6 +40,7 @@
 	 */
 
 	import type { ScoutsSix } from '$lib/states/ArmoryEngine.svelte.js';
+	import { normaliseScoutsSix } from '$lib/utils/scoutsSixNormalise.js';
 
 	// ── Props ──────────────────────────────────────────────────────────────────
 	interface Props {
@@ -85,26 +86,8 @@
 		return { x: CX + r * Math.cos(rad(angleDeg)), y: CY + r * Math.sin(rad(angleDeg)) };
 	}
 
-	/**
-	 * Normalise a ScoutsSix string value to [0, 1] for a given key.
-	 * Returns 0 for missing/unparseable values.
-	 */
-	function normalise(key: keyof ScoutsSix, raw: string | undefined): number {
-		if (!raw) return 0;
-		const n = parseFloat(raw.replace(/[^\d.]/g, ''));
-		if (isNaN(n) || n < 0) return 0;
-		let v: number;
-		switch (key) {
-			case 'PAC': v = n / 35;           break; // mph, higher is better
-			case 'ACC': v = (3.5 - n) / 3;    break; // seconds, lower is better
-			case 'POW': v = n / 55;            break; // inches, higher is better
-			case 'VAN': v = n / 99;            break; // composite rating
-			case 'STM': v = n / 99;            break; // RPG level 0-99
-			case 'AGI': v = (9 - n) / 7;      break; // seconds, lower is better
-			default:    v = n / 99;
-		}
-		return Math.max(0, Math.min(1, v));
-	}
+	/** Alias for the shared normalise util — imported from scoutsSixNormalise.ts. */
+	const normalise = normaliseScoutsSix;
 
 	// ── Derived polygon points ────────────────────────────────────────────────
 
