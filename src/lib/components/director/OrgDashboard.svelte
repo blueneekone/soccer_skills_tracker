@@ -20,7 +20,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { generateInviteCode } from '$lib/services/inviteService';
 	import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
-	import { onDestroy } from 'svelte';
 	import type { TenantTeam, OrganizationDoc } from '$lib/types/tenant';
 	import type { TenantRole } from '$lib/types/tenant';
 
@@ -107,9 +106,9 @@
 				teamsLoading = false;
 			},
 		);
-	});
 
-	onDestroy(detach);
+		return detach;
+	});
 
 	// ── Invite generation ─────────────────────────────────────────────────
 

@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { auth, db } from '$lib/firebase.js';
 	import { doc, getDoc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
@@ -129,7 +128,7 @@
 		}
 	};
 
-	onMount(() => {
+	$effect(() => {
 		(async () => {
 			if (auth.currentUser) {
 				try {

@@ -1,6 +1,5 @@
 <script>
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 
 	const STORAGE_KEY = 'pwa_install_banner_dismissed_v1';
 
@@ -99,7 +98,7 @@
 		!runningStandalone && !sessionDismissed && (installVariant === 'ios' || installVariant === 'native'),
 	);
 
-	onMount(() => {
+	$effect(() => {
 		if (!browser) return;
 		runningStandalone = isRunningStandalonePwa();
 		sessionDismissed = readDismissed();

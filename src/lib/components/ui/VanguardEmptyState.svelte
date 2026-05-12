@@ -27,7 +27,6 @@
 	 *   />
 	 */
 
-	import { onDestroy } from 'svelte';
 
 	interface Props {
 		/** Main headline — should be SHORT_CAPS. */
@@ -56,7 +55,7 @@
 	// Blinking cursor
 	let cursorVisible = $state(true);
 	const cursorTimer = setInterval(() => { cursorVisible = !cursorVisible; }, 600);
-	onDestroy(() => clearInterval(cursorTimer));
+	$effect(() => () => clearInterval(cursorTimer));
 
 	// Corner reference code — looks like a classified document ref
 	const cornerRef = $derived(

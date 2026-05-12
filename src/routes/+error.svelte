@@ -21,7 +21,7 @@
 	 */
 
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
@@ -92,9 +92,9 @@
 	// ── Telemetry write — at-most-once per unique (status + message + path) ───
 	$effect(() => {
 		if (!browser) return;
-		const status  = $page.status;
-		const error   = $page.error;
-		const url     = $page.url;
+		const status  = page.status;
+		const error   = page.error;
+		const url     = page.url;
 		const pathKey = url?.pathname || '';
 		const msgKey  = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
 			? error.message
@@ -120,8 +120,8 @@
 		if (!browser) return;
 		const tenantId = authStore.userProfile?.clubId ?? authStore.tenantId ?? 'UNKNOWN';
 		const uid      = authStore.user?.uid ?? 'ANONYMOUS';
-		const path     = $page.url?.pathname ?? '(unknown)';
-		const status   = $page.status ?? 500;
+		const path     = page.url?.pathname ?? '(unknown)';
+		const status   = page.status ?? 500;
 		const subject  = encodeURIComponent(`CRITICAL FAILURE — STATUS ${status} — ${path}`);
 		const body     = encodeURIComponent(
 			`[VANGUARD CRITICAL FAILURE REPORT]\n` +
@@ -161,7 +161,7 @@
 		<!-- Status badge -->
 		<div class="va-badge">
 			<span class="va-badge-dot"></span>
-			SYSTEM ANOMALY · CODE {$page.status || 500}
+			SYSTEM ANOMALY · CODE {page.status || 500}
 		</div>
 
 		<!-- Primary message -->
@@ -180,22 +180,22 @@
 			</div>
 			<div class="va-diag-row">
 				<span class="va-diag-key">STATUS</span>
-				<span class="va-diag-val va-diag-val--status">{$page.status || 500}</span>
+				<span class="va-diag-val va-diag-val--status">{page.status || 500}</span>
 			</div>
 			<div class="va-diag-row">
 				<span class="va-diag-key">PATH</span>
-				<code class="va-diag-val va-diag-val--mono">{$page.url?.pathname || '(unknown)'}</code>
+				<code class="va-diag-val va-diag-val--mono">{page.url?.pathname || '(unknown)'}</code>
 			</div>
-			{#if $page.error}
+			{#if page.error}
 				<div class="va-diag-row">
 					<span class="va-diag-key">SIGNAL</span>
-					<span class="va-diag-val va-diag-val--signal">{getSignal($page.error)}</span>
+					<span class="va-diag-val va-diag-val--signal">{getSignal(page.error)}</span>
 				</div>
 			{/if}
 			{#if loggedSignature}
 				<div class="va-diag-row">
 					<span class="va-diag-key">REF</span>
-					<code class="va-diag-val va-diag-val--mono" style="font-size:8px;">{loggedSignature}</code>
+					<code class="va-diag-val va-diag-val--mono va-diag-ref">{loggedSignature}</code>
 				</div>
 			{/if}
 		</div>
@@ -489,6 +489,10 @@
 		font-family: inherit;
 		font-size: 7px;
 		color: rgba(239, 68, 68, 0.25);
+	}
+
+	.va-diag-ref {
+		font-size: 8px;
 	}
 
 	@media (max-width: 520px) {

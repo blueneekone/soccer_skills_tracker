@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
@@ -321,7 +320,7 @@
 		};
 	});
 
-	onMount(() => {
+	$effect(() => {
 		if (!browser) return;
 		(async () => {
 			const mod = await import('chart.js');

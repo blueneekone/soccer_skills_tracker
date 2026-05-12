@@ -12,7 +12,6 @@
 	} from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { onMount } from 'svelte';
 
 	const validatePlayerOTP = httpsCallable(functions, 'validatePlayerOTP');
 
@@ -56,7 +55,7 @@
 		}
 	});
 
-	onMount(() => {
+	$effect(() => {
 		getRedirectResult(auth).catch(() => {});
 		try {
 			if (sessionStorage.getItem('sstrack_access_revoked') === '1') {

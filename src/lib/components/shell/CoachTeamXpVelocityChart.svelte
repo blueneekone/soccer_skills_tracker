@@ -1,6 +1,6 @@
 ﻿<script>
 	import { browser } from '$app/environment';
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
@@ -208,7 +208,7 @@
 		return labels[dow];
 	}
 
-	onMount(() => {
+	$effect(() => {
 		mounted = true;
 	});
 </script>

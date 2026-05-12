@@ -19,7 +19,6 @@
 	 * No manual "Save" button for notifications.
 	 */
 
-	import { onMount } from 'svelte';
 	import { auth, db } from '$lib/firebase.js';
 	import { doc, updateDoc, getDoc } from 'firebase/firestore';
 	import { sendPasswordResetEmail } from 'firebase/auth';
@@ -189,19 +188,21 @@
 	let prefsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Load preferences from Firestore once on mount
-	onMount(async () => {
+	$effect(() => {
 		fcmService.init();
 		if (!email) return;
-		try {
-			const snap = await getDoc(doc(db, 'users', email));
-			if (snap.exists()) {
-				const data = snap.data();
-				if (data.preferences) {
-					prefs = { ...prefsDefaults, ...data.preferences };
+		(async () => {
+			try {
+				const snap = await getDoc(doc(db, 'users', email));
+				if (snap.exists()) {
+					const data = snap.data();
+					if (data.preferences) {
+						prefs = { ...prefsDefaults, ...data.preferences };
+					}
 				}
-			}
-		} catch { /* silent — use defaults */ }
-		prefsLoaded = true;
+			} catch { /* silent — use defaults */ }
+			prefsLoaded = true;
+		})();
 	});
 
 	// Auto-save preferences: debounced 800ms after any change
@@ -491,9 +492,9 @@
 			<div class="st-section">
 				<div class="st-section-label">BILLING & SUBSCRIPTION</div>
 				<p class="st-hint">Manage your club's plan, payment method, and invoice history.</p>
-				<a href="/upgrade" class="st-action-btn" style="text-decoration:none; display:inline-flex;">
-					[ BILLING PORTAL ]
-				</a>
+			<a href="/upgrade" class="st-action-btn tw-no-underline tw-inline-flex">
+				[ BILLING PORTAL ]
+			</a>
 			</div>
 
 			<div class="st-section">
@@ -519,9 +520,9 @@
 			<div class="st-section">
 				<div class="st-section-label">STRIPE CONNECT</div>
 				<p class="st-hint">Connect your club's bank account to receive season registration fees directly.</p>
-				<a href="/director?stripe=onboard" class="st-ghost-btn" style="display:inline-flex; text-decoration:none;">
-					[ CONNECT STRIPE ACCOUNT ]
-				</a>
+			<a href="/director?stripe=onboard" class="st-ghost-btn tw-inline-flex tw-no-underline">
+				[ CONNECT STRIPE ACCOUNT ]
+			</a>
 			</div>
 		</div>
 
@@ -572,11 +573,10 @@
 					To request deletion of a minor's data under COPPA, contact your club director
 					or platform support. All data deletion requests are logged and audited.
 				</p>
-				<a
-					href={`mailto:support@sstracker.app?subject=MINOR%20DATA%20DELETION&body=Tenant%20ID%3A%20${tenantId}%0AParent%20UID%3A%20${uid}%0ARequest%3A%20Delete%20minor%20data`}
-					class="st-danger-btn"
-					style="display:inline-flex; text-decoration:none;"
-				>[ REQUEST DATA DELETION ]</a>
+			<a
+				href={`mailto:support@sstracker.app?subject=MINOR%20DATA%20DELETION&body=Tenant%20ID%3A%20${tenantId}%0AParent%20UID%3A%20${uid}%0ARequest%3A%20Delete%20minor%20data`}
+				class="st-danger-btn tw-inline-flex tw-no-underline"
+			>[ REQUEST DATA DELETION ]</a>
 			</div>
 		</div>
 

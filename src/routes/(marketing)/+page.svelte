@@ -8,7 +8,6 @@
 	 */
 
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 
 	// ── Scroll-reveal action ──────────────────────────────────────────────────
 
@@ -80,9 +79,10 @@
 
 	let displayed = $state(METRICS.map(() => 0));
 
-	onMount(() => {
+	$effect(() => {
 		const duration = 1800;
 		const start = performance.now();
+		let rafId: number;
 		const tick = (now: number) => {
 			const elapsed = now - start;
 			const p = Math.min(elapsed / duration, 1);
@@ -91,9 +91,10 @@
 				const v = m.value * ease;
 				return m.value < 100 ? Math.round(v * 100) / 100 : Math.round(v);
 			});
-			if (p < 1) requestAnimationFrame(tick);
+			if (p < 1) rafId = requestAnimationFrame(tick);
 		};
-		requestAnimationFrame(tick);
+		rafId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(rafId);
 	});
 
 	// ── Feature pillars ───────────────────────────────────────────────────────

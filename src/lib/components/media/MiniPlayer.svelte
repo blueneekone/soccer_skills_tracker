@@ -12,7 +12,6 @@
 	 */
 
 	import { browser } from '$app/environment';
-	import { onMount, onDestroy } from 'svelte';
 	import { integrations } from '$lib/services/integrations.svelte.js';
 
 	// ── Internal refs ──────────────────────────────────────────────────────────

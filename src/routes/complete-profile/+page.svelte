@@ -1,9 +1,9 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { untrack } from 'svelte';
 
-	onMount(() => {
-		goto('/setup', { replaceState: true });
+	$effect(() => {
+		untrack(() => goto('/setup', { replaceState: true }));
 	});
 </script>
 

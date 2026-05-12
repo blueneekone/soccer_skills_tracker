@@ -53,8 +53,12 @@ export default {
 				'vanguard-glow':  '0 0 15px rgba(0, 240, 255, 0.4)',
 				'vanguard-red':   '0 0 15px rgba(255, 0, 60, 0.4)',
 			},
-			// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
-			spacing: {
+		borderRadius: {
+			vanguard:    'var(--vanguard-radius)',
+			'vanguard-sm': 'var(--vanguard-radius-sm)',
+		},
+		// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
+		spacing: {
 				/** Reserved shell height subtracted in Coach Workspace `calc(100vh - …)` */
 				header: 'var(--vanguard-shell-header, 5rem)',
 			},

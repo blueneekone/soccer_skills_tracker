@@ -1,9 +1,7 @@
 <script>
-	import { onMount } from 'svelte';
-
 	let { children } = $props();
 
-	onMount(() => {
+	$effect(() => {
 		const el = document.documentElement;
 		const hadDark = el.classList.contains('dark');
 		el.classList.add('dark');

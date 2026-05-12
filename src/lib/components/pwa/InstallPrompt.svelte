@@ -25,7 +25,6 @@
 	 */
 
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 
 	// ── Constants ──────────────────────────────────────────────────────────────
 	const DISMISSED_KEY = 'vg_pwa_dismissed_at';
@@ -66,7 +65,7 @@
 	}
 
 	// ── Mount: register service worker + detect install eligibility ────────────
-	onMount(() => {
+	$effect(() => {
 		if (!browser) return;
 		if (isDismissed() || isInStandaloneMode()) return;
 

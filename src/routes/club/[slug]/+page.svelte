@@ -1,6 +1,5 @@
 <script>
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';
@@ -109,10 +108,8 @@
 		};
 	});
 
-	onMount(() => {
-		return () => {
-			document.querySelectorAll('[data-club-landing-track]').forEach((n) => n.remove());
-		};
+	$effect(() => () => {
+		document.querySelectorAll('[data-club-landing-track]').forEach((n) => n.remove());
 	});
 
 	$effect(() => {

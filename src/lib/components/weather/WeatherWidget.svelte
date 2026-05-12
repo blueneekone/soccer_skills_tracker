@@ -14,7 +14,6 @@
 	 *   • Refresh button (manual force-poll)
 	 */
 
-	import { onMount, onDestroy } from 'svelte';
 	import { weatherAegis } from '$lib/services/weather.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
@@ -56,11 +55,9 @@
 		return n !== undefined ? String(Math.round(n)) : '--';
 	}
 
-	onMount(() => {
+	$effect(() => {
 		weatherAegis.init(lat, lng, role);
-	});
-	onDestroy(() => {
-		weatherAegis.destroy();
+		return () => weatherAegis.destroy();
 	});
 </script>
 

@@ -24,7 +24,6 @@
 	 *   becomes available.
 	 */
 
-	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -34,7 +33,7 @@
 
 	// ── Service instantiation ─────────────────────────────────────────────────
 	const org = new OrgManager();
-	onDestroy(() => org.destroy());
+	$effect(() => () => org.destroy());
 
 	// ── Access guard ──────────────────────────────────────────────────────────
 	/**
