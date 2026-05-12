@@ -783,6 +783,33 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
 
     const lv = trainingLevelFromTotalXp(newTotal);
 
+    // Subjective physiological fields (Phase 3, Epic 4 — RL pipeline).
+    // All optional; missing values stored as null for backward compatibility.
+    const subjectiveRpe =
+        Number.isFinite(Number(data.subjectiveRpe)) &&
+        Number(data.subjectiveRpe) >= 1 &&
+        Number(data.subjectiveRpe) <= 10 ?
+          Math.round(Number(data.subjectiveRpe)) :
+          null;
+    const soreness =
+        Number.isFinite(Number(data.soreness)) &&
+        Number(data.soreness) >= 1 &&
+        Number(data.soreness) <= 5 ?
+          Math.round(Number(data.soreness)) :
+          null;
+    const mood =
+        Number.isFinite(Number(data.mood)) &&
+        Number(data.mood) >= 1 &&
+        Number(data.mood) <= 5 ?
+          Math.round(Number(data.mood)) :
+          null;
+    const sleepHoursLastNight =
+        Number.isFinite(Number(data.sleepHoursLastNight)) &&
+        Number(data.sleepHoursLastNight) >= 0 &&
+        Number(data.sleepHoursLastNight) <= 12 ?
+          Number(data.sleepHoursLastNight) :
+          null;
+
     const logDoc = {
       drillType,
       duration,
@@ -796,6 +823,10 @@ exports.logTrainingSession = onCall({region: REGION}, async (request) => {
       verificationMethod,
       submittedByUid: request.auth.uid,
       timestamp: now,
+      subjectiveRpe,
+      soreness,
+      mood,
+      sleepHoursLastNight,
     };
     if (verifiedByUid) {
       logDoc.verifiedByUid = verifiedByUid;

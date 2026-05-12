@@ -3137,6 +3137,60 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── Phase 3, Epic 4 (deliverable 2) — RL Adaptive Workout Engine ─────────
+    //
+    // All RL collections are Admin-SDK-write-only from Cloud Functions.
+    // Client-side reads are gated to super_admin (audit logs) or owner
+    // (physio self-reports) only.  No PII enters any RL document.
+
+    // Inference audit log — one row per getAdaptiveWorkoutPolicy call.
+    match /rl_inference_log/{logId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Experience replay buffer — state/action/reward/nextState tuples.
+    match /rl_transitions/{tid} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Global policy deployment switch; read by inference callable.
+    // write restricted to super_admin callables via Admin SDK.
+    match /rl_policy_state/{docId} {
+      allow read: if authed();
+      allow write: if false;
+    }
+
+    // Nightly training run reports — metrics, accept/reject outcome.
+    match /rl_training_runs/{runId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Safety constraint overrides — audit trail when policy is clamped.
+    // Readable by super_admin OR the tenant director for their own tenant.
+    match /rl_safety_overrides/{eventId} {
+      allow read: if authed() && (isSuper() || isDirector());
+      allow write: if false;
+    }
+
+    // Physiological self-reports — owner-only read/write; immutable once created.
+    // Pattern: physio_self_reports/{uid}/daily/{yyyy-mm-dd}
+    match /physio_self_reports/{uid}/daily/{dateDoc} {
+      allow read: if authed() && request.auth.uid == uid;
+      // create only — no updates, no deletes (immutability invariant)
+      allow create: if authed()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.sleepHours is number
+        && request.resource.data.soreness is number
+        && request.resource.data.mood is number
+        && request.resource.data.restingFeel is number;
+      allow update, delete: if false;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     match /{document=**} {
       allow read, write: if false;
     }

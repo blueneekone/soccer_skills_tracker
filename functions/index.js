@@ -425,3 +425,27 @@ exports.archiveSportsConfig = sportsConfigOps.archiveSportsConfig;
 const clubOps = require('./src/domains/clubOps');
 exports.auditClubSportConfig = clubOps.auditClubSportConfig;
 exports.pruneOrphanedSports  = clubOps.pruneOrphanedSports;
+
+// ── Phase 3, Epic 4 (deliverable 2) — RL Adaptive Workout Engine ─────────────
+// submitPhysioSelfReport: daily player physiological self-report (S2).
+// initRlPolicy: cold-boot random-weight policy v1 (S4, stub until model ships).
+// getAdaptiveWorkoutPolicy: inference callable, returns heuristic until S5 (S5).
+// setPolicyAbPercent / freezeRlPolicy / rollbackRlPolicy: super_admin controls (S10).
+const rlOps = require('./rlOps');
+exports.submitPhysioSelfReport   = rlOps.submitPhysioSelfReport;
+exports.initRlPolicy             = rlOps.initRlPolicy;
+exports.getAdaptiveWorkoutPolicy = rlOps.getAdaptiveWorkoutPolicy;
+exports.setPolicyAbPercent       = rlOps.setPolicyAbPercent;
+exports.freezeRlPolicy           = rlOps.freezeRlPolicy;
+exports.rollbackRlPolicy         = rlOps.rollbackRlPolicy;
+
+// RL transition recording triggers (S6).
+// onWorkoutLogCreated: writes rl_transitions row when workout_logs doc is created.
+// onPhysioReportCreated: patches nextState when morning physio report arrives.
+const transitionRecorder = require('./src/ml/transitionRecorder');
+exports.rlOnWorkoutLogCreated    = transitionRecorder.onWorkoutLogCreated;
+exports.rlOnPhysioReportCreated  = transitionRecorder.onPhysioReportCreated;
+
+// Nightly RL training scheduler (S7).
+const trainer = require('./src/ml/trainer');
+exports.trainRlPolicyNightly = trainer.trainRlPolicyNightly;

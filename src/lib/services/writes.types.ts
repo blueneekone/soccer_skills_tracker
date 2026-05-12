@@ -165,6 +165,15 @@ export interface WorkoutCompletionPayload {
 	 * Defaults to `true`.
 	 */
 	incrementXp?: boolean;
+	// ── Subjective physiological fields (Phase 3, Epic 4 — RL pipeline) ──────
+	/** Raw post-workout RPE on a 1-10 Borg scale. Null when not reported. */
+	subjectiveRpe?: number | null;
+	/** Muscle/joint soreness: 1 = none, 5 = severe. Null when not reported. */
+	soreness?: number | null;
+	/** Mood / energy level: 1 = very low, 5 = excellent. Null when not reported. */
+	mood?: number | null;
+	/** Hours of sleep the previous night (0-12). Null when not reported. */
+	sleepHoursLastNight?: number | null;
 }
 
 /**

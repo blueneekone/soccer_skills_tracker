@@ -221,8 +221,15 @@
     activeMissionId = m.id;
     selectedFocus = focusIdFromArea(m.focusArea);
     selectedDrill = String(m.specificDrill || '') || null;
-    duration = Math.max(1, Math.min(1440, Math.floor(Number(m.targetDurationMinutes) || 30)));
-    intensity = Math.max(1, Math.min(10, Math.floor(Number(m.targetRpe) || 5)));
+    // Policy-prescribed duration/RPE override (Phase 3, Epic 4 — RL S9).
+    // When a mission is created from a policy recommendation, `policyDurationMinutes`
+    // and `policyTargetRpe` take priority over the assignment defaults.
+    const policyDur = Number(m.policyDurationMinutes);
+    const policyRpe = Number(m.policyTargetRpe);
+    const baseDur = Number.isFinite(policyDur) && policyDur > 0 ? policyDur : Number(m.targetDurationMinutes) || 30;
+    const baseRpe = Number.isFinite(policyRpe) && policyRpe > 0 ? policyRpe : Number(m.targetRpe) || 5;
+    duration = Math.max(1, Math.min(1440, Math.floor(baseDur)));
+    intensity = Math.max(1, Math.min(10, Math.floor(baseRpe)));
   }
 
   /**

@@ -7,22 +7,56 @@
 		getDocs,
 		orderBy,
 		doc,
+		getDoc,
 		setDoc
 	} from 'firebase/firestore';
+	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
+	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
 	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string }} Assignment */
 	/** @typedef {{ id: string; title: string; attributeId: string; tier: string; mediaType: string; payload?: string }} Drill */
+
+	/**
+	 * @typedef {{
+	 *   mode: 'policy'|'heuristic';
+	 *   recommendedDrillId: string|null;
+	 *   recommendedDurationMinutes: number|null;
+	 *   recommendedTargetRpe: number|null;
+	 *   policyVersion: number|null;
+	 *   explorationFlag: boolean;
+	 *   explanationCode: string|null;
+	 *   explanationText: string|null;
+	 * }} PolicyResult
+	 */
 
 	/** @type {Assignment[]} */
 	let assignments = $state([]);
 	/** @type {Drill | null} */
 	let suggestedDrill = $state(null);
 	let isLoading = $state(true);
+
+	// RL policy state
+	/** @type {PolicyResult | null} */
+	let policyResult = $state(null);
+	let showTooltip = $state(false);
+
+	// Morning Readiness Card — shown once per UTC day until player submits.
+	let showReadinessCard = $state(false);
+
+	$effect(() => {
+		const uid = authStore.user?.uid;
+		if (!uid) { showReadinessCard = false; return; }
+		const dateUtc = new Date().toISOString().slice(0, 10);
+		const ref = doc(db, 'physio_self_reports', uid, 'daily', dateUtc);
+		getDoc(ref)
+			.then((snap) => { showReadinessCard = !snap.exists(); })
+			.catch(() => { showReadinessCard = false; });
+	});
 
 	const playerProfile = $derived(/** @type {Record<string, unknown>} */ (authStore.userProfile));
 	const playerTeamId = $derived(String(playerProfile?.teamId ?? ''));
@@ -47,6 +81,9 @@
 		if (!activeAssignment || activeAssignment.requiredXp <= 0) return 0;
 		return Math.min(100, Math.round((playerAttributeXp / activeAssignment.requiredXp) * 100));
 	});
+
+	// Whether to show the policy-recommended drill or fall back to heuristic
+	const isPolicyMode = $derived(policyResult?.mode === 'policy' && !!policyResult.recommendedDrillId);
 
 	// Lazy migration write-back: if calculatedTier is missing, patch Firestore non-blocking
 	$effect(() => {
@@ -83,17 +120,62 @@
 		return unsub;
 	});
 
-	// Query global_drills when active assignment or frustration changes
+	// Call getAdaptiveWorkoutPolicy on mount and when active assignment changes.
+	// Falls back gracefully to heuristic on error or non-policy mode.
 	$effect(() => {
+		const _assignment = activeAssignment;
+		const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
+		let cancelled = false;
+
+		async function fetchPolicy() {
+			try {
+				const fns = getFunctions();
+				const getPolicy = httpsCallable(fns, 'getAdaptiveWorkoutPolicy');
+				const res = await getPolicy({ sportId });
+				if (!cancelled) {
+					policyResult = /** @type {PolicyResult} */ (res.data);
+				}
+			} catch {
+				// Silent fallback — heuristic path will handle
+				if (!cancelled) policyResult = null;
+			}
+		}
+
+		fetchPolicy();
+		return () => { cancelled = true; };
+	});
+
+	// Fetch the policy-recommended drill from global_drills when in policy mode.
+	// Falls through to heuristic when policy recommends null or lookup fails.
+	$effect(() => {
+		const policy = policyResult;
 		const assignment = activeAssignment;
 		const frustration = recentFrustration;
+		let cancelled = false;
 
+		// Policy mode: fetch the specific recommended drill
+		if (policy?.mode === 'policy' && policy.recommendedDrillId) {
+			getDoc(doc(db, 'global_drills', policy.recommendedDrillId))
+				.then((snap) => {
+					if (cancelled) return;
+					if (snap.exists()) {
+						suggestedDrill = { id: snap.id, .../** @type {any} */ (snap.data()) };
+					} else {
+						// Recommended drill not found — fall through to heuristic
+						policyResult = null;
+					}
+				})
+				.catch(() => {
+					if (!cancelled) policyResult = null;
+				});
+			return () => { cancelled = true; };
+		}
+
+		// Heuristic mode (existing logic)
 		if (!assignment) {
 			suggestedDrill = null;
 			return;
 		}
-
-		let cancelled = false;
 
 		async function fetchDrill() {
 			try {
@@ -132,6 +214,12 @@
 <div
 	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
+	<!-- Morning Readiness Card (Phase 3, Epic 4 — RL S2) -->
+	{#if showReadinessCard}
+		<MorningReadinessCard onSubmitted={() => { showReadinessCard = false; }} />
+		<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>
+	{/if}
+
 	<!-- Header -->
 	<div class="tw-flex tw-flex-col tw-gap-0.5">
 		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60">
@@ -198,6 +286,17 @@
 							{suggestedDrill.title}
 						</span>
 						<div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-shrink-0">
+							<!-- AI pill (policy mode only) -->
+							{#if isPolicyMode}
+								<button
+									type="button"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-[#a855f7]/15 tw-text-[#a855f7] tw-border tw-border-[#a855f7]/30 tw-cursor-pointer"
+									onclick={() => { showTooltip = !showTooltip; }}
+									aria-label="View AI explanation"
+								>
+									[ SUGGESTED BY AI ✦ ]
+								</button>
+							{/if}
 							<span
 								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-[#00f0ff]/10 tw-text-[#00f0ff]/60 tw-border tw-border-[#00f0ff]/20"
 							>
@@ -208,6 +307,22 @@
 							</span>
 						</div>
 					</div>
+
+					<!-- Explanation tooltip (policy mode) -->
+					{#if isPolicyMode && showTooltip && policyResult?.explanationText}
+						<div
+							class="tw-w-full tw-p-3 tw-rounded-lg tw-bg-[#a855f7]/8 tw-border tw-border-[#a855f7]/20"
+						>
+							<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a855f7]/80 tw-m-0 tw-leading-relaxed">
+								[ {policyResult.explanationCode} ] {policyResult.explanationText}
+							</p>
+							{#if policyResult.recommendedDurationMinutes}
+								<p class="tw-font-mono tw-text-[9px] tw-text-white/30 tw-m-0 tw-mt-1">
+									RECOMMENDED: {policyResult.recommendedDurationMinutes}min · RPE {policyResult.recommendedTargetRpe}
+								</p>
+							{/if}
+						</div>
+					{/if}
 
 					{#if suggestedDrill.mediaType === 'tactical_svg' && suggestedDrill.payload}
 						<TacticalDrillBoard

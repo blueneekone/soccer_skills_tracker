@@ -274,14 +274,16 @@
 
 		logSubmitting = true;
 		try {
-			const res = await logTrainingSession({
-				playerEmail: emailKey,
-				verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
-				drillType,
-				duration: dMin,
-				reps: 0,
-				intensity: intensityCall,
-			});
+		const res = await logTrainingSession({
+			playerEmail: emailKey,
+			verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
+			drillType,
+			duration: dMin,
+			reps: 0,
+			intensity: intensityCall,
+			// Pass raw RPE through — RL pipeline consumes the full 1-10 scale.
+			subjectiveRpe: intensity,
+		});
 			const payload = res.data;
 			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
 			const athUid =
