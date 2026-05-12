@@ -9,12 +9,12 @@
 		addDoc,
 		serverTimestamp,
 	} from 'firebase/firestore';
-	import { DEFAULT_SPORT_CONFIG } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { getRpgSportConfig } from '$lib/config/sports.js';
 
-	/** @type {Record<string, string>} */
-	const attrMap = Object.fromEntries(
-		DEFAULT_SPORT_CONFIG.attributes.map((a) => [a.id, a.name]),
-	);
+	const attrMap = $derived(Object.fromEntries(
+		getRpgSportConfig(sportsConfigStore.currentSportConfig?.sportId).attributes.map((a) => [a.id, a.name]),
+	));
 
 	const REWARD_OPTIONS = [
 		{ id: 'checkr_5', label: '$5 Checkr Credit' },

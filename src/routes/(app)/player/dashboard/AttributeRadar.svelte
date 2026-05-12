@@ -1,15 +1,19 @@
 <script lang="ts">
-	import { DEFAULT_SPORT_CONFIG } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { getRpgSportConfig } from '$lib/config/sports.js';
 
 	type Props = {
-		/** 5 values 0-99, aligned to DEFAULT_SPORT_CONFIG.attributes */
+		/** 5 values 0-99, aligned to the active RPG sport config attributes */
 		values?: number[];
+		/** Optional sport override; defaults to the workspace active sport. */
+		sportId?: string;
 	};
 
-	const { values = [] } = $props<Props>();
+	const { values = [], sportId }: Props = $props();
 
-	const ATTRS = DEFAULT_SPORT_CONFIG.attributes; // 5 items
-	const N = ATTRS.length; // 5
+	const rpgConfig = $derived(getRpgSportConfig(sportId ?? sportsConfigStore.currentSportConfig?.sportId));
+	const ATTRS = $derived(rpgConfig.attributes); // 5 items
+	const N = $derived(ATTRS.length); // 5
 	const CX = 100;
 	const CY = 100;
 	const R = 68;        // outer web radius

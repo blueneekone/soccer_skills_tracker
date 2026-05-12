@@ -1,11 +1,14 @@
 import { normalizeClubSport } from '$lib/utils/sport-icon.js';
+import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 
 /**
  * @typedef {{ keys: string[], labels: string[] }} SportAttributeSchema
  */
 
 /**
- * Six core Ultimate Team attributes per sport (keys = Firestore `player_stats` / `skills` fields).
+ * Hardcoded fallback — used when sportsConfigStore has no entry yet (cold
+ * boot, offline, or before the Firestore snapshot arrives).  Never removed:
+ * this is the read-repair source of truth per the plan invariants.
  * @type {Record<string, SportAttributeSchema>}
  */
 export const SPORT_ATTRIBUTE_SCHEMAS = {
@@ -29,6 +32,14 @@ export const SPORT_ATTRIBUTE_SCHEMAS = {
 		keys: ['serving', 'spiking', 'blocking', 'setting', 'passing', 'agility'],
 		labels: ['Serving', 'Spiking', 'Blocking', 'Setting', 'Passing', 'Agility'],
 	},
+	hockey: {
+		keys: ['skating', 'shooting', 'stickhandling', 'passing', 'defense', 'physicality'],
+		labels: ['Skating', 'Shooting', 'Stickhandling', 'Passing', 'Defense', 'Physicality'],
+	},
+	lacrosse: {
+		keys: ['stick_skills', 'shooting', 'speed', 'field_vision', 'defense', 'athleticism'],
+		labels: ['Stick Skills', 'Shooting', 'Speed', 'Field Vision', 'Defense', 'Athleticism'],
+	},
 	generic: {
 		keys: ['speed', 'power', 'technique', 'iq', 'defense', 'physical'],
 		labels: ['Speed', 'Power', 'Technique', 'IQ', 'Defense', 'Physical'],
@@ -36,13 +47,31 @@ export const SPORT_ATTRIBUTE_SCHEMAS = {
 };
 
 /**
- * Resolve the attribute schema for UI + `player_stats` field keys from a raw sport string
- * (club `sport`, team `sport`, etc.). Unknown sports (e.g. hockey) use `generic`.
+ * Resolve the attribute schema for UI + `player_stats` field keys from a raw sport string.
+ *
+ * Resolution order:
+ *   1. sportsConfigStore.resolveActiveConfig(sportRaw) — Firestore-backed live config.
+ *   2. Hardcoded SPORT_ATTRIBUTE_SCHEMAS — offline / cold-boot fallback.
  *
  * @param {string} [sportRaw]
  * @returns {SportAttributeSchema & { canonicalKey: string }}
  */
 export function getAttributeSchemaForSport(sportRaw) {
+	// 1. Live store path — preferred
+	try {
+		const cfg = sportsConfigStore.resolveActiveConfig(sportRaw);
+		if (cfg && Array.isArray(cfg.attributes) && cfg.attributes.length === 6) {
+			return {
+				keys: cfg.attributes.map((a) => a.playerStatKey),
+				labels: cfg.attributes.map((a) => a.name),
+				canonicalKey: cfg.sportId,
+			};
+		}
+	} catch {
+		// store not yet hydrated — fall through
+	}
+
+	// 2. Hardcoded fallback
 	const key = normalizeClubSport(sportRaw);
 	const mapKey = key in SPORT_ATTRIBUTE_SCHEMAS ? key : 'generic';
 	const schema = SPORT_ATTRIBUTE_SCHEMAS[mapKey] || SPORT_ATTRIBUTE_SCHEMAS.generic;

@@ -2,7 +2,8 @@
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { DEFAULT_SPORT_CONFIG } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { getRpgSportConfig } from '$lib/config/sports.js';
 
 	/**
 	 * @typedef {{
@@ -78,8 +79,9 @@
 					if (attrId) pastCounts[attrId] = (pastCounts[attrId] ?? 0) + 1;
 				});
 
+				const _rpgCfg = getRpgSportConfig(sportsConfigStore.currentSportConfig?.sportId);
 				/** @type {DeltaRow[]} */
-				const deltaSummary = DEFAULT_SPORT_CONFIG.attributes.map((attr) => {
+				const deltaSummary = _rpgCfg.attributes.map((attr) => {
 					const currentCount = currentCounts[attr.id] ?? 0;
 					const pastCount = pastCounts[attr.id] ?? 0;
 					const delta = currentCount - pastCount;

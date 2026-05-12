@@ -11,7 +11,8 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { DEFAULT_SPORT_CONFIG } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
 
 	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string }} Assignment */
@@ -30,11 +31,11 @@
 
 	const activeAssignment = $derived(/** @type {Assignment | null} */ (assignments[0] ?? null));
 
-	const activeAttribute = $derived(
-		activeAssignment
-			? (DEFAULT_SPORT_CONFIG.attributes.find((a) => a.id === activeAssignment.targetAttributeId) ?? null)
-			: null
-	);
+	const activeAttribute = $derived.by(() => {
+		if (!activeAssignment) return null;
+		const rpgCfg = getRpgSportConfig(sportsConfigStore.currentSportConfig?.sportId);
+		return rpgCfg.attributes.find((a) => a.id === activeAssignment.targetAttributeId) ?? null;
+	});
 
 	const playerAttributeXp = $derived.by(() => {
 		if (!activeAssignment || !playerProfile) return 0;

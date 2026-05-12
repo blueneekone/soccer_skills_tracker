@@ -1,8 +1,6 @@
 <script>
 	import {
 		doc,
-		getDoc,
-		setDoc,
 		addDoc,
 		collection,
 		serverTimestamp,
@@ -10,59 +8,22 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { DEFAULT_SPORT_CONFIG } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { getRpgSportConfig } from '$lib/config/sports.js';
 
-	/** @type {import('$lib/config/sports.js').SportConfig | null} */
-	let sportConfig = $state(null);
 	let selectedAttributeId = $state('');
 	let targetXp = $state(150);
 	let isDeploying = $state(false);
 	let flashSuccess = $state(false);
 	let flashError = $state(false);
 
-	const attributes = $derived(sportConfig?.attributes ?? DEFAULT_SPORT_CONFIG.attributes);
+	const sportConfig = $derived(getRpgSportConfig(sportsConfigStore.currentSportConfig?.sportId));
+	const attributes = $derived(sportConfig.attributes);
 
 	$effect(() => {
-		let cancelled = false;
-
-		async function loadConfig() {
-			try {
-				const ref = doc(db, 'sports_configs', 'soccer');
-				const snap = await getDoc(ref);
-				/** @type {import('$lib/config/sports.js').SportConfig} */
-				let config;
-
-				if (snap.exists()) {
-					const data = /** @type {Record<string, unknown>} */ (snap.data());
-					const hasAttrs = Array.isArray(data.attributes) && data.attributes.length > 0;
-					if (!hasAttrs) {
-						config = { ...DEFAULT_SPORT_CONFIG, .../** @type {any} */ (data), attributes: DEFAULT_SPORT_CONFIG.attributes };
-						setDoc(ref, { attributes: DEFAULT_SPORT_CONFIG.attributes }, { merge: true }).catch(() => {});
-					} else {
-						config = /** @type {any} */ (data);
-					}
-				} else {
-					config = DEFAULT_SPORT_CONFIG;
-					setDoc(ref, DEFAULT_SPORT_CONFIG, { merge: true }).catch(() => {});
-				}
-
-				if (!cancelled) {
-					sportConfig = config;
-					if (!selectedAttributeId && config.attributes.length > 0) {
-						selectedAttributeId = config.attributes[0].id;
-					}
-				}
-			} catch (err) {
-				console.error('[IntentEngine] sport config load error:', err);
-				if (!cancelled) {
-					sportConfig = DEFAULT_SPORT_CONFIG;
-					if (!selectedAttributeId) selectedAttributeId = DEFAULT_SPORT_CONFIG.attributes[0].id;
-				}
-			}
+		if (attributes.length > 0 && !selectedAttributeId) {
+			selectedAttributeId = attributes[0].id;
 		}
-
-		loadConfig();
-		return () => { cancelled = true; };
 	});
 
 	async function deployIntent() {

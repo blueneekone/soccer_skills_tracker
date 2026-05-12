@@ -406,3 +406,22 @@ exports.mintMagicUplink   = magicUplinkHandlers.mintMagicUplink;
 exports.redeemMagicUplink = magicUplinkHandlers.redeemMagicUplink;
 exports.revokeMagicUplink = magicUplinkHandlers.revokeMagicUplink;
 exports.purgeExpiredUplinks = magicUplinkHandlers.purgeExpiredUplinks;
+
+// Phase 3, Epic 4 — Sports_Configs Dynamic Trees.
+// seedBaseSportsConfigs: super_admin callable to cold-boot or re-seed the
+// canonical 8-sport configs into `sports_configs/{sportId}`.
+// sportsConfigOps: upsert / list / archive callables for the admin CRUD UI.
+const sportsSeeder = require('./src/seeders/sportsSeeder');
+exports.seedBaseSportsConfigs = sportsSeeder.seedBaseSportsConfigs;
+
+const sportsConfigOps = require('./sportsConfigOps');
+exports.upsertSportsConfig  = sportsConfigOps.upsertSportsConfig;
+exports.listSportsConfigs   = sportsConfigOps.listSportsConfigs;
+exports.archiveSportsConfig = sportsConfigOps.archiveSportsConfig;
+
+// Club-sport integrity triggers (Phase 3, Epic 4).
+// auditClubSportConfig: flags orphan sport when clubs/{clubId}.sport changes.
+// pruneOrphanedSports:  weekly scan → sport_audit_report/{yyyy-ww}.
+const clubOps = require('./src/domains/clubOps');
+exports.auditClubSportConfig = clubOps.auditClubSportConfig;
+exports.pruneOrphanedSports  = clubOps.pruneOrphanedSports;

@@ -11,7 +11,8 @@
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
 	import AttributeRadar from './AttributeRadar.svelte';
-	import { DEFAULT_SPORT_CONFIG, mapToDefaultAttributes } from '$lib/config/sports.js';
+	import { getRpgSportConfig, mapToDefaultAttributes } from '$lib/config/sports.js';
+	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import {
@@ -63,6 +64,7 @@
 		mapToDefaultAttributes(
 			statsRaw && typeof statsRaw === 'object' ? /** @type {Record<string,unknown>} */(statsRaw) : null,
 			skillRadar.values,
+			resolvedSportRaw,
 		)
 	);
 
@@ -316,7 +318,7 @@
 		const profile = activePlayer;
 		if (!profile || typeof profile.sportId === 'string') return;
 		// Fire-and-forget — non-fatal if it fails
-		updateDoc(doc(db, 'users', email), { sportId: DEFAULT_SPORT_CONFIG.sportId }).catch(
+		updateDoc(doc(db, 'users', email), { sportId: sportsConfigStore.currentSportConfig?.sportId ?? 'soccer' }).catch(
 			(e) => console.warn('[player-dash] sportId read-repair failed', e),
 		);
 	});
@@ -562,7 +564,7 @@
 				</h2>
 			<p class="tw-m-0 tw-mt-1 tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500">
 				Five-axis RPG loadout from your latest
-				<span class="tw-font-semibold tw-text-slate-400">{DEFAULT_SPORT_CONFIG.displayName}</span>
+				<span class="tw-font-semibold tw-text-slate-400">{getRpgSportConfig(resolvedSportRaw).displayName}</span>
 				combat profile — keep logging to harden the shape.
 			</p>
 			</header>

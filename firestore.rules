@@ -3101,6 +3101,42 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Phase 3, Epic 4 — Sports_Configs Dynamic Trees.
+    //
+    // sports_configs/{sportId}
+    // ─────────────────────────
+    // Single source of truth for every sport-specific attribute, icon,
+    // palette, and label.  Document ID = stable snake_case sportId.
+    //
+    // Read:  any authenticated user (enables client-side onSnapshot store).
+    // Write: super_admin callables only via Admin SDK.
+    //   - `create` / `update` validated: schemaVersion must be an int,
+    //     sportId in the payload must match the document path segment,
+    //     attributes array must have exactly 6 entries, each with a hexColor.
+    //   - `delete`: blocked — use archiveSportsConfig to soft-delete.
+    match /sports_configs/{sportId} {
+      allow read: if authed();
+      allow create, update: if authed()
+        && isSuper()
+        && request.resource.data.schemaVersion is int
+        && request.resource.data.sportId == sportId
+        && request.resource.data.attributes.size() == 6
+        && request.resource.data.attributes[0].hexColor is string
+        && request.resource.data.attributes[1].hexColor is string
+        && request.resource.data.attributes[2].hexColor is string
+        && request.resource.data.attributes[3].hexColor is string
+        && request.resource.data.attributes[4].hexColor is string
+        && request.resource.data.attributes[5].hexColor is string;
+      allow delete: if false;
+    }
+
+    // Weekly orphan-sport audit report (Phase 3, Epic 4).
+    // Written by the pruneOrphanedSports scheduled CF; read by super_admins.
+    match /sport_audit_report/{reportId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
