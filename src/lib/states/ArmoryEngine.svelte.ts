@@ -41,13 +41,20 @@
  * state — Firestore's offline cache will replay the write when the network
  * returns (because `firebase.js` enables `persistentLocalCache`).
  *
- * Note on xpHistory size
- * ──────────────────────
- * Each `awardXP` call appends one entry via Firestore `arrayUnion`.
- * Firestore has a 1 MB document limit — for high-volume workload consider
- * migrating xpHistory to a `users/{uid}/xpHistory` sub-collection.  At
- * the current rate (≤ 10 drills/day × 365 days × ~200 B/entry ≈ 730 KB)
- * a single document is safe for at least one season.
+ * XP history persistence (Phase 1, Epic 1)
+ * ─────────────────────────────────────────
+ * Each `awardXP` call writes the entry to the `users/{uid}/xpHistory`
+ * sub-collection via a batched `addDoc`-equivalent.  The previous design
+ * appended to an in-document `arrayUnion` field but hit the 1 MB document
+ * limit at high volume.  Sub-collection scales unboundedly and unlocks
+ * paginated history queries for the Vanguard Card timeline.
+ *
+ * Concurrent-offline XP correctness
+ * ─────────────────────────────────
+ * `armory.totalXP` is updated via Firestore `increment()` — the server
+ * accumulates the delta so two offline devices each awarding +50 XP
+ * correctly produce +100 XP on reconnect (never the last-writer-wins
+ * collapse to +50 that an absolute snapshot would cause).
  *
  * Math contract for progressToNextTier
  * ─────────────────────────────────────
@@ -79,8 +86,19 @@
 
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase.js';
-import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import {
+	addDoc,
+	collection,
+	doc,
+	getDoc,
+	increment,
+	serverTimestamp,
+	setDoc,
+	updateDoc,
+	writeBatch,
+} from 'firebase/firestore';
 import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+import { PATHS } from '$lib/services/writes.types';
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -458,30 +476,63 @@ export class ArmoryEngine {
 	// ── Private Firestore sync helpers ────────────────────────────────────
 
 	/**
-	 * Persist the latest XP total and append the history entry to Firestore.
+	 * Persist the XP delta to Firestore using an atomic batch.
 	 *
-	 * Uses `arrayUnion` so concurrent device writes each append their own
-	 * entry without overwriting each other (last-write-wins on `totalXP` is
-	 * acceptable — the delta is always positive for real drills).
+	 * CRITICAL — offline correctness:
 	 *
-	 * `setDoc(..., { merge: true })` is used so the `armory` field is created
-	 * if absent (first-ever drill for this user) while leaving all other user
-	 * document fields untouched.
+	 * Previous implementation wrote the ABSOLUTE `totalXP: this.totalXP`
+	 * snapshot.  When two devices both awarded XP while offline (e.g. a
+	 * player completes a drill on the phone AND a workout on the tablet
+	 * before either reconnects), the last writer's snapshot clobbered the
+	 * other device's delta — silently losing XP on reconnect.
+	 *
+	 * New implementation writes `increment(entry.amount)` so the SERVER
+	 * accumulates the delta.  Two offline devices each writing +50 XP
+	 * correctly produce +100 XP on reconnect, never the collapsed +50.
+	 *
+	 * The XP history entry is also moved out of an in-document `arrayUnion`
+	 * and into a per-user sub-collection (`users/{uid}/xpHistory/{batchId}`).
+	 * This eliminates the 1 MB document ceiling and unlocks paginated
+	 * history queries for the Vanguard Card timeline view.
+	 *
+	 * `armory.totalDrillCount` is incremented unconditionally as a denormalized
+	 * analytics counter — never read-before-written, always safe offline.
+	 *
+	 * The local `this.totalXP` rune state remains optimistic so the
+	 * Vanguard Card levels up instantly; the server snapshot reconciles
+	 * on the next `loadPlayerData()` call.
 	 */
 	_syncXP(entry: XpHistoryEntry): void {
 		if (!browser || !this.userId) return;
 
-		const ref = doc(db, 'users', this.userId);
-		setDoc(
-			ref,
+		const userRef = doc(db, PATHS.users, this.userId);
+		const historyRef = doc(collection(db, PATHS.userXpHistory(this.userId)));
+
+		const batchId =
+			typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+				? crypto.randomUUID()
+				: `xp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+		const batch = writeBatch(db);
+
+		batch.set(
+			userRef,
 			{
 				armory: {
-					totalXP: this.totalXP,
-					xpHistory: arrayUnion(entry),
+					totalXP: increment(entry.amount),
+					totalDrillCount: increment(1),
 				},
 			},
 			{ merge: true },
-		).catch((err: unknown) => {
+		);
+
+		batch.set(historyRef, {
+			...entry,
+			batchId,
+			loggedAt: serverTimestamp(),
+		});
+
+		batch.commit().catch((err: unknown) => {
 			console.warn('[ArmoryEngine] XP sync failed — will retry via offline cache:', err);
 		});
 	}

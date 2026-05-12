@@ -46,7 +46,6 @@ import {
 	serverTimestamp,
 	updateDoc,
 	where,
-	writeBatch,
 	limit,
 	startAfter,
 	type DocumentSnapshot,
@@ -57,6 +56,7 @@ import {
 	toTimestampMs,
 	type LeagueSchema,
 } from '$lib/types/league';
+import { commitMatchResult } from '$lib/services/writes.svelte';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -377,19 +377,45 @@ export class LeagueManager {
 	// ── completeMatch ─────────────────────────────────────────────────────────
 
 	/**
-	 * Atomically record a match result.
+	 * Atomically record a match result by delegating to the write facade.
 	 *
-	 * Uses a Firestore batch write to:
-	 *   1. Update `fixtures/{fixtureId}` → `status: 'Completed'`
-	 *   2. Write `match_results/{fixtureId}` (doc ID = fixtureId for O(1) lookup)
+	 * Single batch — all four writes either land or all retry:
+	 *   1. fixtures/{fixtureId}                  → status: 'Completed'
+	 *   2. match_results/{fixtureId}             → full result document
+	 *   3. opponents/{opponentId}                → stats counters (increment)
+	 *   4. seasons/{seasonId}                    → completedFixtureCount += 1
 	 *
-	 * Computes `outcome` ('W' | 'L' | 'D') from the scores.
+	 * Phase 1, Epic 1 hardening: all counter updates use `increment()` so
+	 * concurrent offline coaches recording matches against the same
+	 * opponent accumulate correctly on reconnect.
 	 *
 	 * @param fixtureId   Firestore document ID of the completed fixture.
 	 * @param results     Score, playerStats, coachNotes, optional highlights.
 	 */
 	async completeMatch(fixtureId: string, results: CompleteMatchInput): Promise<void> {
 		if (!this._tenantId) throw new Error('[LeagueManager] Not connected — no tenantId.');
+
+		// Resolve the parent fixture so we know which opponent and season
+		// to update.  Skipping these would leave threat assessment stale.
+		const fixture = this.fixtures.find((f) => f.id === fixtureId);
+		if (!fixture) {
+			throw new Error(
+				`[LeagueManager] Fixture "${fixtureId}" not loaded — cannot derive opponentId / seasonId.`,
+			);
+		}
+
+		await commitMatchResult({
+			fixtureId,
+			opponentId: fixture.opponentId,
+			seasonId: fixture.seasonId,
+			tenantId: this._tenantId,
+			scoreHome: results.scoreHome,
+			scoreAway: results.scoreAway,
+			playerStats: results.playerStats ?? {},
+			coachNotes: results.coachNotes,
+			highlights: results.highlights,
+			recordedBy: results.recordedBy,
+		});
 
 		const outcome: 'W' | 'L' | 'D' =
 			results.scoreHome > results.scoreAway
@@ -398,30 +424,6 @@ export class LeagueManager {
 					? 'L'
 					: 'D';
 
-		const batch = writeBatch(db);
-
-		// 1. Mark fixture complete
-		batch.update(doc(db, 'fixtures', fixtureId), {
-			status: 'Completed',
-			completedAt: serverTimestamp(),
-		});
-
-		// 2. Write match result (doc ID = fixtureId; merge: true allows corrections)
-		batch.set(
-			doc(db, 'match_results', fixtureId),
-			{
-				fixtureId,
-				tenantId: this._tenantId,
-				...results,
-				outcome,
-				recordedAt: serverTimestamp(),
-			},
-			{ merge: true },
-		);
-
-		await batch.commit();
-
-		// Optimistically update local matchResults cache for instant UI feedback.
 		this.matchResults = {
 			...this.matchResults,
 			[fixtureId]: {

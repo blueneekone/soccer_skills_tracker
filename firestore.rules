@@ -912,6 +912,32 @@ service cloud.firestore {
           && emailKey() == userId.lower();
         allow update, delete: if false;
       }
+
+      // Phase 1, Epic 1 — Vanguard XP Timeline
+      // ──────────────────────────────────────
+      // Paginated XP history for the Vanguard Card timeline view.
+      // Replaces the legacy in-document `armory.xpHistory` arrayUnion
+      // (which hit the 1 MB document ceiling).  Written exclusively by
+      // the client-side batch facade `writes.svelte.ts`; never updated
+      // after creation — entries are immutable audit records.
+      match /xpHistory/{entryId} {
+        allow read: if authed() && (
+          isSuper()
+          || emailKey() == userId.lower()
+          || parentHouseholdAllowsChildEmail(userId.lower())
+        );
+        allow create: if authed() && playerVpcAllowed()
+          && emailKey() == userId.lower()
+          && request.resource.data.keys().hasAll(['batchId', 'amount', 'source', 'loggedAt'])
+          && request.resource.data.batchId is string
+          && request.resource.data.batchId.size() > 0
+          && request.resource.data.amount is number
+          && request.resource.data.source is string
+          && request.resource.data.source in [
+               'drill_completion', 'grit_award', 'workout_completion'
+             ];
+        allow update, delete: if false;
+      }
     }
 
     match /households/{householdId} {
@@ -1805,10 +1831,21 @@ service cloud.firestore {
         && request.resource.data.tenantId is string
         && request.resource.data.tenantId.size() > 0;
       allow update: if authed()
-        && (isPlatformAdmin() || isDirector())
-        && (isPlatformAdmin() || isAuthorized(docTenantId(resource.data)))
-        // Tenant partition is immutable — may not be moved to another org.
-        && docTenantId(request.resource.data) == docTenantId(resource.data);
+        && (
+          // Directors and Platform Admins retain full update authority.
+          ((isPlatformAdmin() || isDirector())
+            && (isPlatformAdmin() || isAuthorized(docTenantId(resource.data)))
+            && docTenantId(request.resource.data) == docTenantId(resource.data))
+          // Phase 1, Epic 1 — Coaches may bump `completedFixtureCount`
+          // via increment() as part of the atomic match-completion batch
+          // (writes.svelte.ts → commitMatchResult).  Nothing else may
+          // change: the diff must touch ONLY the counter field.
+          || (isCoach()
+              && isAuthorized(docTenantId(resource.data))
+              && docTenantId(request.resource.data) == docTenantId(resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['completedFixtureCount']))
+        );
       allow delete: if isPlatformAdmin();
     }
 
@@ -2643,6 +2680,80 @@ service cloud.firestore {
     // update their own document. No additional match block needed; preferences
     // and fcmTokens are covered by the existing update rule on users/{email}.
     // ─────────────────────────────────────────────────────────────────────────
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 1, Epic 1 — Atomic Batch Audit Logs
+    //
+    // `drill_completions` and `grit_awards` are write-once audit records
+    // produced by the centralized write facade (`writes.svelte.ts`).  Each
+    // record is paired with an idempotent `users/{userKey}/xpHistory` entry
+    // and the user-document XP `increment()` inside a single Firestore
+    // `writeBatch` — meaning the audit log can never lag the player's
+    // profile and vice-versa.
+    //
+    // Offline guarantee: `persistentLocalCache` queues these batches
+    // transparently; the SDK flushes them atomically on reconnect.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /drill_completions/{recordId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['userKey'])
+            && emailKey() == resource.data.userKey)
+        || (resource.data.keys().hasAll(['playerUid'])
+            && request.auth.uid == resource.data.playerUid)
+        || (isCoach() && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (isDirector() && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (resource.data.keys().hasAll(['userKey'])
+            && parentHouseholdAllowsChildEmail(resource.data.userKey))
+      );
+      allow list: if authed() && (
+        isSuper() || isCoach() || isDirector()
+      );
+      allow create: if authed() && playerVpcAllowed()
+        && request.resource.data.keys().hasAll([
+             'batchId', 'playerUid', 'userKey', 'drillId',
+             'attributeId', 'xpAwarded', 'loggedAt'
+           ])
+        && request.resource.data.playerUid == request.auth.uid
+        && request.resource.data.userKey == emailKey()
+        && request.resource.data.xpAwarded is int
+        && request.resource.data.xpAwarded >= 0
+        && request.resource.data.xpAwarded <= 2000000;
+      allow update, delete: if false;
+    }
+
+    match /grit_awards/{recordId} {
+      allow read: if authed() && (
+        isSuper()
+        || (resource.data.keys().hasAll(['userKey'])
+            && emailKey() == resource.data.userKey)
+        || (resource.data.keys().hasAll(['playerUid'])
+            && request.auth.uid == resource.data.playerUid)
+        || (isCoach() && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (isDirector() && resource.data.keys().hasAll(['clubId'])
+            && resource.data.clubId == tokenClub())
+        || (resource.data.keys().hasAll(['userKey'])
+            && parentHouseholdAllowsChildEmail(resource.data.userKey))
+      );
+      allow list: if authed() && (
+        isSuper() || isCoach() || isDirector()
+      );
+      allow create: if authed() && playerVpcAllowed()
+        && request.resource.data.keys().hasAll([
+             'batchId', 'playerUid', 'userKey', 'drillId', 'xpAwarded', 'type', 'loggedAt'
+           ])
+        && request.resource.data.playerUid == request.auth.uid
+        && request.resource.data.userKey == emailKey()
+        && request.resource.data.type == 'failed_attempt_grit'
+        && request.resource.data.xpAwarded is int
+        && request.resource.data.xpAwarded >= 0
+        && request.resource.data.xpAwarded <= 1000;
+      allow update, delete: if false;
+    }
 
     match /{document=**} {
       allow read, write: if false;

@@ -1,7 +1,6 @@
 <script>
-	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { commitDrillCompletion, commitGritAward } from '$lib/services/writes.svelte';
 
 	/** @type {{ drillId: string, drillTitle: string, baseXp?: number, attributeId: string }} */
 	let { drillId, drillTitle, baseXp = 25, attributeId } = $props();
@@ -12,18 +11,35 @@
 	let gritFlash = $state(false);
 	let totalGritEarned = $state(0);
 
+	/**
+	 * Resolve the active player UID, email key (= users/{} doc ID),
+	 * and clubId once per call.  Cast through `Record<string,unknown>`
+	 * because authStore.userProfile is typed loosely in the legacy
+	 * auth store.
+	 */
+	function playerScope() {
+		return {
+			playerUid: authStore.user?.uid ?? '',
+			userKey: (authStore.user?.email ?? '').toLowerCase(),
+			clubId:
+				/** @type {Record<string, unknown>} */ (authStore.userProfile)?.clubId?.toString() ?? '',
+		};
+	}
+
 	async function handleComplete() {
 		if (isCompleting) return;
 		isCompleting = true;
 		try {
-			await addDoc(collection(db, 'drill_completions'), {
-				playerUid: authStore.user?.uid ?? '',
-				clubId: /** @type {Record<string, unknown>} */ (authStore.userProfile)?.clubId ?? '',
+			// Atomic batch: drill audit record + user XP increment + xpHistory entry.
+			// Bug fix — previous implementation wrote only the audit record so
+			// totalXP on the user profile never moved when a drill completed.
+			await commitDrillCompletion({
+				...playerScope(),
 				drillId,
+				drillTitle,
 				attributeId,
 				xpAwarded: baseXp,
 				outcome: 'success',
-				loggedAt: serverTimestamp(),
 			});
 			completionFlash = true;
 			setTimeout(() => {
@@ -38,13 +54,11 @@
 
 	async function handleGrit() {
 		try {
-			await addDoc(collection(db, 'grit_awards'), {
-				playerUid: authStore.user?.uid ?? '',
-				clubId: /** @type {Record<string, unknown>} */ (authStore.userProfile)?.clubId ?? '',
+			// Octalysis Core Drive 8 — reward the attempt, not the outcome.
+			// Facade hard-codes the 50 XP value.
+			await commitGritAward({
+				...playerScope(),
 				drillId,
-				xpAwarded: 50,
-				type: 'failed_attempt_grit',
-				loggedAt: serverTimestamp(),
 			});
 			totalGritEarned += 50;
 			gritMode = true;

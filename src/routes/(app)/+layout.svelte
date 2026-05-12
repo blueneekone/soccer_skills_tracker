@@ -23,6 +23,7 @@
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
 	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
 	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
+	import OfflineBanner from '$lib/components/shell/OfflineBanner.svelte';
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
 	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
@@ -352,6 +353,10 @@
 	{#if impersonationStore.active}
 		<ImpersonationBanner />
 	{/if}
+	<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
+	     Mounts the syncStatus singleton on first render; subsequent
+	     navigations are no-ops thanks to the internal init guard. -->
+	<OfflineBanner />
 	<ParentFcmPrompt />
 	<!-- Alpha-phase feedback receptacle — visible to all authenticated users. -->
 	<ReportAnomaly />

@@ -4,9 +4,10 @@
   import { untrack } from 'svelte';
   import { httpsCallable } from 'firebase/functions';
   import { db, functions } from '$lib/firebase.js';
-  import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+  import { collection, onSnapshot, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
+  import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import confetti from 'canvas-confetti';
@@ -352,14 +353,29 @@
         );
       }
       let missionCloseNote = '';
-      if (activeMissionId) {
-        const mid = activeMissionId;
+      // Mission close + xpHistory timeline entry in a single atomic batch.
+      // `incrementXp: false` — the `logTrainingSession` Cloud Function above
+      // already credited `earned` XP server-side; double-incrementing here
+      // would inflate `armory.totalXP`.  We still record the history entry
+      // so the Vanguard Card timeline shows the workout event.
+      const playerUid = authStore.user?.uid;
+      const userKey = (authStore.user?.email ?? '').toLowerCase();
+      if (playerUid && userKey) {
         try {
-          await updateDoc(doc(db, 'assigned_missions', mid), { status: 'completed' });
-          activeMissionId = null;
+          await commitWorkoutCompletion({
+            playerUid,
+            userKey,
+            missionId: activeMissionId ?? undefined,
+            xpAwarded: earned,
+            reason: `Workout — ${focusLabel} · ${selectedDrill}`,
+            incrementXp: false,
+          });
+          if (activeMissionId) activeMissionId = null;
         } catch (me) {
-          console.error('[Player OS] complete mission', me);
-          missionCloseNote = ' | Directive not cleared in Firestore (retry or ask staff).';
+          console.error('[Player OS] workout completion batch failed', me);
+          if (activeMissionId) {
+            missionCloseNote = ' | Directive not cleared in Firestore (retry or ask staff).';
+          }
         }
       }
       if (typeof payload?.level === 'number' && payload.level > oldLevel) {
@@ -632,7 +648,7 @@
     box-sizing: border-box;
     background: #000000;
     color: #fafafa;
-    padding: clamp(1rem, 2vw, 1.5rem);
+    padding: var(--bento-pad);
     --cyber: #00d4ff;
     --toxic: #39ff14;
     --threat: #ff6b00;
@@ -831,11 +847,11 @@
   .pw-hud {
     display: grid;
     grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 8rem);
-    gap: clamp(0.75rem, 2vw, 1.5rem);
+    gap: var(--bento-gap-sm);
     align-items: stretch;
     min-height: 6.5rem;
     padding: 1rem 1.25rem;
-    margin-bottom: clamp(1rem, 2vw, 1.5rem);
+    margin-bottom: var(--bento-gap-md);
     border: 1px solid var(--border);
     background: #05050a;
   }
@@ -947,7 +963,7 @@
   .pw-grid {
     display: grid;
     grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
-    gap: clamp(1rem, 2vw, 1.5rem);
+    gap: var(--bento-gap-md);
     align-items: start;
     overflow: visible;
   }
