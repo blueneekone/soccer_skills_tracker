@@ -5,6 +5,9 @@
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
+	import RevenueLedgerModule from '$lib/components/director/os/RevenueLedgerModule.svelte';
+	import EventReconciliationModule from '$lib/components/director/os/EventReconciliationModule.svelte';
+	import HotelRebatePanel from '$lib/components/director/os/HotelRebatePanel.svelte';
 	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
 	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 
@@ -191,6 +194,12 @@
 			</div>
 			<VpcApprovalQueue {clubId} />
 		</div>
+
+		<RevenueLedgerModule {clubId} />
+
+		<EventReconciliationModule {clubId} />
+
+		<HotelRebatePanel {clubId} />
 
 		<DirectorAnalyticsCharts {clubId} />
 	</WorkspaceSocShell>

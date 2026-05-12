@@ -661,8 +661,8 @@
 	.gw-hud {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 10px;
-		padding: 14px 12px;
+		gap: var(--bento-gap-xs);
+		padding: var(--bento-pad-sm) 12px;
 		background: rgba(255, 255, 255, 0.02);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 16px;
@@ -773,7 +773,7 @@
 	.gw-focus-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 12px;
+		gap: var(--bento-gap-sm);
 	}
 
 	.gw-focus-card {
@@ -1210,7 +1210,7 @@
 
 	/* ─── Legacy non-player layout (unchanged essentials) ─── */
 	.tracker-box {
-		margin-bottom: clamp(16px, 3vw, 24px);
+		margin-bottom: var(--bento-gap-md);
 	}
 	.outcome-row {
 		display: flex;

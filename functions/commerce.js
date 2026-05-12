@@ -45,12 +45,23 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineSecret, defineString} = require('firebase-functions/params');
 
+const {loadActivePolicy, computePlatformFee} = require('./pricingEngine');
+const {recordPlatformFee} = require('./feeLedger');
+const {getRegistryDb} = require('./cellRouter');
+
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET_REG = defineSecret('STRIPE_WEBHOOK_SECRET_REG');
 const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://vanguardcommand.app'});
 
 const REGION = 'us-east1';
-const PLATFORM_FEE_RATE = 0.03; // 3% platform fee
+
+// Phase 2, Epic 2 — Transaction-based pricing
+// ────────────────────────────────────────────
+// The hardcoded 3% platform fee was retired.  Fees now come from
+// `pricing_policy/default-v1` via `computePlatformFee()`, allowing live
+// rate updates without redeploy.  Stripe `application_fee_amount` is
+// still set per PaymentIntent — the SOURCE of the number is the only
+// thing that changed.
 
 const db = admin.firestore();
 
@@ -103,7 +114,26 @@ exports.createRegistrationIntent = onCall(
       }
 
       const feeAmountCents = Math.round(feeAmountDollars * 100);
-      const platformFeeCents = Math.round(feeAmountCents * PLATFORM_FEE_RATE);
+
+      // Resolve platform fee from the live pricing policy.  We look up the
+      // tenant's override first (`organizations/{tenantId}.pricingPolicyId`)
+      // then fall back to default-v1.  Fee math is integer-cents only and
+      // honours volume-tier modifiers via `ytdGrossCents`.
+      const tenantPolicyOverride = orgSnap.data()?.pricingPolicyId;
+      const ytdSnap = await db
+          .doc(`organizations/${tenantId}/fee_summary/ytd`)
+          .get();
+      const ytdGrossCents = ytdSnap.exists ?
+        Number(ytdSnap.data()?.grossCents) || 0 :
+        0;
+      const policy = await loadActivePolicy(getRegistryDb(), tenantPolicyOverride);
+      const fee = computePlatformFee({
+        policy,
+        transactionType: 'season_registration',
+        grossCents: feeAmountCents,
+        ytdGrossCents,
+      });
+      const platformFeeCents = fee.platformFeeCents;
 
       const stripeClient = getStripe();
       const paymentIntent = await stripeClient.paymentIntents.create({
@@ -118,6 +148,9 @@ exports.createRegistrationIntent = onCall(
           playerEmail: callerEmail,
           seasonId,
           type: 'season_registration',
+          policyId: policy.id,
+          policyVersion: String(policy.version),
+          rateBp: String(fee.rateBp),
         },
         description: `Season registration â€” ${orgSnap.data()?.name ?? tenantId}`,
       });
@@ -132,6 +165,9 @@ exports.createRegistrationIntent = onCall(
         seasonId,
         feeAmountCents,
         platformFeeCents,
+        rateBp: fee.rateBp,
+        policyId: policy.id,
+        policyVersion: policy.version,
         paymentIntentId: paymentIntent.id,
         paymentStatus: 'pending',
         stripeAccountId,
@@ -229,6 +265,15 @@ async function handlePaymentSucceeded(pi) {
       .get();
 
   const batch = db.batch();
+  const grossCents = Number(pi.amount) || 0;
+  // Stripe surfaces `application_fee_amount` on the source PaymentIntent.
+  // We trust the metadata stamped at intent creation as the source of truth
+  // for the ledger row, but fall back to live recompute if the field is
+  // missing (e.g. legacy intents created before the cutover).
+  let platformFeeCents = Number(pi.application_fee_amount) || 0;
+  const policyId = pi.metadata?.policyId || 'default-v1';
+  const policyVersion = Number(pi.metadata?.policyVersion) || 0;
+  const rateBp = Number(pi.metadata?.rateBp) || 0;
 
   if (!regSnap.empty) {
     batch.update(regSnap.docs[0].ref, {
@@ -236,6 +281,11 @@ async function handlePaymentSucceeded(pi) {
       paidAt: admin.firestore.FieldValue.serverTimestamp(),
       stripeChargeId: pi.latest_charge ?? null,
     });
+    // If the registration doc captured a more authoritative fee at intent
+    // creation, prefer that over the Stripe-roundtripped value (defensive
+    // against any rounding skew the API might introduce).
+    const regFee = Number(regSnap.docs[0].data()?.platformFeeCents);
+    if (Number.isFinite(regFee) && regFee >= 0) platformFeeCents = regFee;
   }
 
   // Unlock the player's active season status
@@ -259,8 +309,34 @@ async function handlePaymentSucceeded(pi) {
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
+  // Platform fee ledger row + YTD/monthly counters.  Doc ID is the
+  // PaymentIntent ID so webhook retries are idempotent.  All in the same
+  // batch as the registration flip + user unlock — atomic by construction.
+  recordPlatformFee(batch, db, {
+    tenantId,
+    transactionType: 'season_registration',
+    sourceDocPath: regSnap.empty ?
+      `season_registrations/unknown_${pi.id}` :
+      `season_registrations/${regSnap.docs[0].id}`,
+    grossCents,
+    platformFeeCents,
+    netCents: grossCents - platformFeeCents,
+    rateBp,
+    policyId,
+    policyVersion,
+    stripeChargeId: pi.latest_charge ?? null,
+    paymentIntentId: pi.id,
+    idempotencyKey: pi.id,
+  });
+
   await batch.commit();
-  logger.info('[webhook] payment succeeded', {piId: pi.id, tenantId, playerEmail});
+  logger.info('[webhook] payment succeeded', {
+    piId: pi.id,
+    tenantId,
+    playerEmail,
+    platformFeeCents,
+    rateBp,
+  });
 }
 
 async function handlePaymentFailed(pi) {

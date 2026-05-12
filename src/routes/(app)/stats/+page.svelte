@@ -682,11 +682,11 @@
 	.dossier-grid {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: clamp(0.75rem, 2vw, 1.25rem);
-		margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
+		gap: var(--bento-gap-sm);
+		margin-bottom: var(--bento-gap-sm);
 	}
 
-	@media (min-width: 960px) {
+	@media (min-width: 60rem) {
 		.dossier-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
@@ -696,7 +696,7 @@
 		background: var(--d-panel);
 		border: 1px solid var(--d-line);
 		border-radius: 0;
-		padding: clamp(0.9rem, 2vw, 1.1rem);
+		padding: var(--bento-pad-sm);
 		min-width: 0;
 	}
 
@@ -789,15 +789,15 @@
 	.dossier-badges__grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.5rem;
+		gap: var(--bento-gap-xs);
 	}
 
-	@media (min-width: 640px) {
+	@media (min-width: 40rem) {
 		.dossier-badges__grid {
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
-	@media (min-width: 1100px) {
+	@media (min-width: 69rem) {
 		.dossier-badges__grid {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}

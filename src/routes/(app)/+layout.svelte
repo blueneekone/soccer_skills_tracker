@@ -149,10 +149,14 @@
 			return;
 		}
 
-		// Epic 14 (Alpha): Clearance Protocol — uncleared coaches/recruiters are
-		// hard-locked to the Compliance Terminal until their status is 'cleared'.
+		// Epic 14 (Alpha) + Phase 2 Epic 2 Session L: Clearance Protocol.
+		// Every adult role that can touch minor PII is hard-locked to the
+		// Compliance Terminal until their `isCleared` JWT claim flips to
+		// true.  Scope per user policy:
+		//   coach, recruiter, director, tutor
+		// Players + parents self-manage and are never blocked here.
 		// The /compliance route itself is exempt to avoid an infinite redirect loop.
-		const clearanceRoles = ['coach', 'recruiter'];
+		const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 		if (
 			clearanceRoles.includes(authStore.role ?? '') &&
 			!authStore.isCleared &&

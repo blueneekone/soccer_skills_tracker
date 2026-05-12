@@ -1,0 +1,39 @@
+# Dependencies
+
+## Runtime
+
+### Other
+
+- @dicebear/adventurer: ^9.4.2
+- @dicebear/core: ^9.4.2
+- @googlemaps/js-api-loader: ^2.0.2
+- canvas-confetti: ^1.9.4
+- chart.js: ^4.5.1
+- fabric: ^7.2.0
+- firebase: ^12.12.0
+- firebase-admin: ^13.8.0
+- firebase-functions: ^4.9.0
+- pdfjs-dist: ^5.6.205
+- qrcode: ^1.5.4
+- sweetalert2: ^11.26.24
+- three: ^0.184.0
+- xlsx: npm:@e965/xlsx@^0.20.3
+
+## Dev
+
+### TypeScript / Build
+
+- typescript: ^5.7.2
+- vite: ^6.0.6
+
+### Other
+
+- @sveltejs/adapter-static: ^3.0.10
+- @sveltejs/kit: ^2.57.1
+- @sveltejs/vite-plugin-svelte: ^5.0.0
+- autoprefixer: ^10.5.0
+- postcss: ^8.5.10
+- svelte: ^5.16.0
+- svelte-check: ^4.1.1
+- tailwindcss: ^3.4.17
+- vite-plugin-pwa: ^1.3.0

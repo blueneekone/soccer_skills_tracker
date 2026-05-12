@@ -596,6 +596,11 @@ async function handleStripeWebhookEvent(stripeClient, event) {
         session.metadata && session.metadata.tierType ?
           String(session.metadata.tierType).toLowerCase() :
           '';
+    // Phase 2, Epic 2 — Session M: route recruiter subs to recruiter_accounts.
+    const recruiterEmail =
+        session.metadata && session.metadata.recruiterEmail ?
+          String(session.metadata.recruiterEmail).toLowerCase().trim() :
+          '';
     if (!clubId || !tierType) {
       logger.warn(
           'checkout.session.completed: missing clubId/tier in metadata',
@@ -612,6 +617,31 @@ async function handleStripeWebhookEvent(stripeClient, event) {
         quantity = first.quantity;
       }
     }
+
+    // Recruiter hybrid path: write `recruiter_accounts/{email}` (the canonical
+    // source of truth for recruiter access).  Also retain the legacy
+    // `license_entitlements/{clubId}` row for backwards compat during the
+    // cutover — the rules helper `recruiterSubscriptionActive()` reads from
+    // recruiter_accounts first and falls back to license_entitlements.
+    if (tierType === 'recruiter' && recruiterEmail) {
+      const recRef = db().collection('recruiter_accounts').doc(recruiterEmail);
+      await recRef.set(
+          {
+            email: recruiterEmail,
+            stripe_customer_id: typeof customerId === 'string' ?
+              customerId :
+              String(customerId || ''),
+            stripe_subscription_id: typeof subId === 'string' ? subId : '',
+            subscription_status: 'active',
+            billingModel: 'recruiter_hybrid',
+            activatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: 'stripe:checkout.session.completed',
+          },
+          {merge: true},
+      );
+    }
+
     const seats = seatsLimitForTier(tierType, quantity);
     const entRef = db().collection('license_entitlements').doc(clubId);
     await entRef.set(
@@ -636,6 +666,32 @@ async function handleStripeWebhookEvent(stripeClient, event) {
       event.data.object
     );
     await syncSubscriptionStatusFromStripeObject(stripeClient, sub, 'canceled');
+    // Phase 2, Epic 2 — Session E.  When a legacy club sub (tutor/team/club)
+    // is cancelled, flip the org-side `billingModel` so the read-only paywall
+    // (Session F) stops tripping.  Recruiter subs are intentionally skipped
+    // — they migrate via Session M, not by free-falling off the gate.
+    try {
+      const tier = sub.metadata && sub.metadata.tierType ?
+        String(sub.metadata.tierType).toLowerCase() :
+        '';
+      const clubId = sub.metadata && sub.metadata.clubId ?
+        String(sub.metadata.clubId).trim() :
+        '';
+      if (clubId && tier && tier !== 'recruiter') {
+        await db().collection('organizations').doc(clubId).set(
+            {
+              billingModel: 'transaction_billing',
+              billingModelMigratedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            {merge: true},
+        );
+        logger.info('subscription.deleted: org flipped to transaction_billing', {clubId, tier});
+      }
+    } catch (err) {
+      logger.error('subscription.deleted: org-side flip failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
     return;
   }
 
@@ -1293,6 +1349,21 @@ exports.createStripeCheckoutSession = onCall(
             'tierType must be tutor, team, club, or recruiter.',
         );
       }
+
+      // Phase 2, Epic 2 — Session N kill switch.
+      // Club-side SaaS tiers (tutor/team/club) are CLOSED to new sign-ups.
+      // Only super_admin can provision a new legacy subscription (used during
+      // the cutover window for special carve-outs).  The recruiter tier
+      // remains open — it powers the hybrid annual + per-export model in M.
+      const callerRole = request.auth.token.role ?? '';
+      const isSuperLike = callerRole === 'super_admin' || callerRole === 'global_admin';
+      if (tierTypeRaw !== 'recruiter' && !isSuperLike) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Club SaaS tiers are closed to new sign-ups. ' +
+            'Vanguard now operates on transaction-based pricing — see /pricing.',
+        );
+      }
       const successUrl =
           typeof data.successUrl === 'string' ? data.successUrl.trim() : '';
       const cancelUrl =
@@ -1338,6 +1409,14 @@ exports.createStripeCheckoutSession = onCall(
             request.auth.token.email :
             undefined;
 
+      // Phase 2, Epic 2 — Session M: stamp recruiter-tagged metadata so the
+      // webhook handler can route the resulting customer.subscription.created
+      // event into `recruiter_accounts/{email}` rather than the (now closed)
+      // club entitlement collection.
+      const recruiterEmail = tierTypeRaw === 'recruiter' && email ?
+        String(email).toLowerCase() :
+        '';
+
       const session = await stripeClient.checkout.sessions.create({
         mode: 'subscription',
         line_items: [{price: priceId, quantity: quantity}],
@@ -1350,11 +1429,13 @@ exports.createStripeCheckoutSession = onCall(
           clubId: clubId,
           tierType: tierTypeRaw,
           firebaseUid: request.auth.uid,
+          ...(recruiterEmail ? {recruiterEmail} : {}),
         },
         subscription_data: {
           metadata: {
             clubId: clubId,
             tierType: tierTypeRaw,
+            ...(recruiterEmail ? {recruiterEmail} : {}),
           },
         },
       });

@@ -773,13 +773,11 @@
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
 			>
-				<div
-					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
-				>
-					{#each strike13Executive as kpi (kpi.label)}
-						{@render socMetric(kpi)}
-					{/each}
-				</div>
+			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
+				{#each strike13Executive as kpi (kpi.label)}
+					{@render socMetric(kpi)}
+				{/each}
+			</div>
 
 				<article class="cc-chart-card cc-chart-card--soc">
 					<header class="cc-chart-card__head">
@@ -809,13 +807,11 @@
 			</section>
 		{:else if activeTab === 'growth'}
 			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
-				<div
-					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
-				>
-					{#each GROWTH_TILES as kpi (kpi.label)}
-						{@render socMetric(kpi)}
-					{/each}
-				</div>
+			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
+				{#each GROWTH_TILES as kpi (kpi.label)}
+					{@render socMetric(kpi)}
+				{/each}
+			</div>
 
 				<div class="cc-chart-row tw-min-w-0">
 					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
@@ -874,13 +870,11 @@
 		{:else if activeTab === 'security'}
 			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 				<div class="cc-soc-split">
-					<div
-						class="cc-soc-grid tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-3"
-					>
-						{#each strike13Security as kpi (kpi.label)}
-							{@render socMetric(kpi)}
-						{/each}
-					</div>
+				<div class="cc-soc-grid bento-grid bento-grid--3col">
+					{#each strike13Security as kpi (kpi.label)}
+						{@render socMetric(kpi)}
+					{/each}
+				</div>
 					<aside class="cc-soc-aside" aria-label="Automation and orchestration">
 						<div class="cc-soc-aside__head">
 							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
@@ -960,13 +954,11 @@
 			</section>
 		{:else}
 			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
-				<div
-					class="cc-soc-grid tw-mb-8 tw-grid tw-grid-cols-1 tw-gap-4 md:tw-grid-cols-2 xl:tw-grid-cols-4"
-				>
-					{#each PLATFORM_TILES as kpi (kpi.label)}
-						{@render socMetric(kpi)}
-					{/each}
-				</div>
+			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
+				{#each PLATFORM_TILES as kpi (kpi.label)}
+					{@render socMetric(kpi)}
+				{/each}
+			</div>
 
 				<div class="cc-platform-note">
 					<p>
@@ -1065,20 +1057,20 @@
 	/* Operations ribbon (SOAR / SIEM density) */
 	.cc-soc-ribbon {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 10px;
-		margin-bottom: 10px;
+		grid-template-columns: 1fr;
+		gap: var(--bento-gap-sm);
+		margin-bottom: var(--bento-gap-sm);
 	}
 
-	@media (max-width: 900px) {
+	@media (min-width: 33rem) {
 		.cc-soc-ribbon {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
-	@media (max-width: 520px) {
+	@media (min-width: 64rem) {
 		.cc-soc-ribbon {
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 	}
 
@@ -1283,15 +1275,15 @@
 
 	.cc-soc-split {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
-		gap: 16px;
+		grid-template-columns: 1fr;
+		gap: var(--bento-gap-md);
 		align-items: start;
-		margin-bottom: 20px;
+		margin-bottom: var(--bento-gap-lg);
 	}
 
-	@media (max-width: 1100px) {
+	@media (min-width: 69rem) {
 		.cc-soc-split {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
 		}
 	}
 

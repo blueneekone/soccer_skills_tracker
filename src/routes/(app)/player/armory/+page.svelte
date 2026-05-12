@@ -447,7 +447,7 @@
 				<div class="tw-space-y-6 tw-p-4 sm:tw-p-5">
 					<div class="operative-console-frame" aria-label="Operative base mesh">
 						<p class="qa-eyebrow tw-mb-3 tw-tracking-[0.28em]">OPERATIVE FRAME</p>
-						<div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2">
+						<div class="bento-grid bento-grid--2col">
 							<button
 								type="button"
 								class="operative-frame-toggle qa-mono tw-relative tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-py-7 tw-px-5 tw-text-center tw-text-[0.72rem] tw-font-black tw-tracking-[0.32em] tw-text-slate-100 tw-transition tw-duration-200 tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.bodyType ===
@@ -486,7 +486,7 @@
 					</div>
 
 					<div
-						class="tw-grid tw-items-stretch tw-gap-6 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)]"
+						class="tw-grid tw-items-stretch tw-gap-bento-md lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)]"
 					>
 					<div class="tw-relative tw-min-h-[240px] tw-h-[min(48vw,320px)] lg:tw-min-h-[280px] lg:tw-h-[320px]">
 						{#if browser}
@@ -620,7 +620,7 @@
 			<!-- Set folders (Monopoly Go–style stacks) -->
 			<div>
 				<p class="qa-eyebrow tw-mb-3">Sticker sets</p>
-				<div class="tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-3">
+				<div class="bento-grid bento-grid--3col">
 					{#each seasonOneSets as set (set.id)}
 						{@const setCards = getSeasonOneCardsForSet(set.id)}
 						{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}
@@ -747,7 +747,7 @@
 		--border: rgba(255, 255, 255, 0.1);
 		min-height: 0;
 		box-sizing: border-box;
-		padding: clamp(1rem, 2vw, 1.5rem);
+		padding: var(--bento-pad);
 		color: #fafafa;
 		background: #000;
 	}

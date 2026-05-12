@@ -49,8 +49,19 @@ export function computePlayerOsBlocked(profile, clubSnap, licenseEntitlementSnap
 		return { blocked: false, reasons: [], severity: 'none', subscriptionStatus: null };
 	}
 
+	// Phase 2, Epic 2 — Session F: also forward the org-level billingModel.
+	// The clubSnap is `clubs/{id}` (not `organizations/{id}`), but the cutover
+	// path stamps `billingModel` on both `license_entitlements` and the org
+	// doc, so we read whichever is present on the entitlement snap as a fallback.
+	const billingModel =
+		licenseEntitlementSnap && typeof licenseEntitlementSnap === 'object' &&
+		typeof licenseEntitlementSnap.billingModel === 'string'
+			? licenseEntitlementSnap.billingModel
+			: undefined;
+
 	const readOnly = isSubscriptionReadOnly(role, clubId, licenseEntitlementSnap, {
 		clubInfinite: infinite,
+		billingModel,
 	});
 
 	const raw =

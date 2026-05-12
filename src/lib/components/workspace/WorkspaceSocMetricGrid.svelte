@@ -8,14 +8,14 @@
 
 	let {
 		metrics = /** @type {SocMetric[]} */ ([]),
-		gridClass = 'tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-4',
+		gridClass = 'bento-grid bento-grid--4col',
 	} = $props();
 </script>
 
-<div class="wsd-metric-grid tw-grid {gridClass}">
+<div class="wsd-metric-grid {gridClass}">
 	{#each metrics as m (m.label)}
 		<article
-			class="wsd-metric"
+			class="wsd-metric bento-cell"
 			class:wsd-metric--crit={m.band === 'crit'}
 			class:wsd-metric--high={m.band === 'high'}
 			class:wsd-metric--med={m.band === 'med'}

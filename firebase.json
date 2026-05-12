@@ -73,6 +73,27 @@
         }
       },
       {
+        "source": "/api/webhooks/stripe/tickets",
+        "function": {
+          "functionId": "handleTicketingWebhook",
+          "region": "us-east1"
+        }
+      },
+      {
+        "source": "/api/webhooks/stripe/registration",
+        "function": {
+          "functionId": "handleRegistrationWebhook",
+          "region": "us-east1"
+        }
+      },
+      {
+        "source": "/api/webhooks/stripe/recruiter",
+        "function": {
+          "functionId": "handleRecruiterWebhook",
+          "region": "us-east1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

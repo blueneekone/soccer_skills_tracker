@@ -43,8 +43,8 @@
 <style>
 	.recruiter-locked {
 		max-width: 480px;
-		margin: clamp(32px, 6vw, 64px) auto;
-		padding: clamp(24px, 4vw, 40px);
+		margin: var(--bento-gap-lg) auto;
+		padding: var(--bento-pad);
 		border: 1px solid rgba(0, 240, 255, 0.12);
 		background: rgba(1, 4, 9, 0.9);
 		backdrop-filter: blur(24px);

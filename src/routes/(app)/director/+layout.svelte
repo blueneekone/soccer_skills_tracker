@@ -17,7 +17,10 @@
 			authStore.role,
 			licenseEntitlementStore.clubIdResolved,
 			licenseEntitlementStore.entitlement,
-			{ clubInfinite: licenseEntitlementStore.isInfiniteClub }
+			{
+				clubInfinite: licenseEntitlementStore.isInfiniteClub,
+				billingModel: licenseEntitlementStore.billingModel
+			}
 		)
 	);
 

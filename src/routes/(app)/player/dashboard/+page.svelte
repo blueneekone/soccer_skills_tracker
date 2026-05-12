@@ -395,7 +395,7 @@
 	>
 		<!-- Primary action row — AAA lobby launch tiles -->
 		<nav
-			class="lobby-action-row tw-relative tw-z-50 tw-grid tw-min-w-0 tw-grid-cols-2 tw-gap-4 sm:tw-gap-6"
+			class="lobby-action-row tw-relative tw-z-50 tw-min-w-0 bento-grid bento-grid--2col"
 			aria-label="Primary navigation"
 		>
 			<a
@@ -423,7 +423,7 @@
 		</nav>
 
 	<div
-		class="lobby-hero lobby-glass tw-relative tw-z-30 tw-grid tw-min-h-[300px] tw-min-w-0 tw-grid-cols-1 tw-gap-8 tw-overflow-hidden tw-rounded-3xl tw-p-6 md:tw-grid-cols-2 md:tw-items-stretch md:tw-gap-10 md:tw-p-8"
+		class="lobby-hero lobby-glass bento-grid bento-grid--2col tw-relative tw-z-30 tw-min-h-[300px] tw-min-w-0 tw-overflow-hidden tw-rounded-3xl tw-p-bento-pad md:tw-items-stretch"
 		aria-label="Operative profile"
 	>
 		<div
@@ -680,7 +680,7 @@
 	</section>
 
 	<div
-		class="lobby-glass tw-relative tw-z-40 tw-grid tw-w-full tw-min-w-0 tw-grid-cols-2 tw-gap-3 tw-overflow-hidden tw-rounded-3xl tw-p-4 md:tw-grid-cols-4 md:tw-gap-4 md:tw-p-5"
+		class="lobby-glass tw-relative tw-z-40 tw-grid tw-w-full tw-min-w-0 tw-grid-cols-2 tw-overflow-hidden tw-rounded-3xl md:tw-grid-cols-4 tw-gap-bento-sm tw-p-bento-pad-sm"
 		aria-label="Career telemetry"
 	>
 		<a

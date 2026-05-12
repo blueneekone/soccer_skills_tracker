@@ -355,7 +355,7 @@
 	.mc-tiles {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 1px;
+		gap: 1px; /* intentional 1px hairline gap between tiles */
 		background: rgba(255, 255, 255, 0.04);
 		border-radius: 8px;
 		overflow: hidden;

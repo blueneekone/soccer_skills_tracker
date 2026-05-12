@@ -349,10 +349,10 @@
 	.ww-grid {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: 0.75rem;
+		gap: var(--bento-gap-sm);
 		flex: 1;
 	}
-	@media (min-width: 480px) {
+	@media (min-width: 30rem) {
 		.ww-grid { grid-template-columns: repeat(4, 1fr); }
 	}
 

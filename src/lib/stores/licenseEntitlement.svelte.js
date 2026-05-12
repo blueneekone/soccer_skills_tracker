@@ -95,6 +95,52 @@ function createLicenseEntitlementStore() {
 		/** Promo / enterprise: unlimited seats & bypass Stripe read-only when true on `clubs/{id}` */
 		get isInfiniteClub() {
 			return clubDoc?.isInfinite === true;
+		},
+		/**
+		 * Phase 2, Epic 2 — Session F.
+		 * Resolved billing model for the active club.  Reads `organizations/`
+		 * via `clubDoc.billingModel` (preferred, since `syncUserClaims` writes
+		 * the field there) and falls back to the legacy `entitlement.billingModel`
+		 * field which the cutover webhook also stamps during the migration
+		 * window.  `undefined` when neither doc has been migrated.
+		 *
+		 * Used by:
+		 *   • billing.js#isSubscriptionReadOnly (paywall bypass)
+		 *   • Director OS EntitlementModule (collapse legacy banner)
+		 *   • Marketing /upgrade page ("you're already on the new model")
+		 *
+		 * @returns {string | undefined}
+		 */
+		get billingModel() {
+			const fromClub =
+				typeof clubDoc?.billingModel === 'string' && clubDoc.billingModel.trim() ?
+					clubDoc.billingModel.trim() :
+					undefined;
+			if (fromClub) return fromClub;
+			const fromEnt =
+				typeof entitlement?.billingModel === 'string' && entitlement.billingModel.trim() ?
+					entitlement.billingModel.trim() :
+					undefined;
+			return fromEnt;
+		},
+		/**
+		 * True when the active club is on the post-cutover transaction-based
+		 * model.  Derived from `billingModel` above so it stays consistent
+		 * across all consumers.
+		 *
+		 * @returns {boolean}
+		 */
+		get isTransactionBilled() {
+			const fromClub =
+				typeof clubDoc?.billingModel === 'string' && clubDoc.billingModel.trim() ?
+					clubDoc.billingModel.trim() :
+					undefined;
+			if (fromClub === 'transaction_billing') return true;
+			const fromEnt =
+				typeof entitlement?.billingModel === 'string' && entitlement.billingModel.trim() ?
+					entitlement.billingModel.trim() :
+					undefined;
+			return fromEnt === 'transaction_billing';
 		}
 	};
 }

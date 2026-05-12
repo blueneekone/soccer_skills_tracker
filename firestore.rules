@@ -60,13 +60,30 @@ service cloud.firestore {
       return isGlobalAdmin();
     }
 
-    // Epic 16: recruiter marketplace — active Stripe recruiter tier (JWT clubId → license_entitlements).
+    // Epic 16 + Phase 2 Epic 2 Session M: recruiter access gate.
+    //
+    // Primary source of truth is the new `recruiter_accounts/{email}`
+    // collection (the hybrid annual + per-export model).  We fall back to
+    // the legacy `license_entitlements/{clubId}` shape so unmigrated
+    // recruiters (those who subscribed before the cutover) retain access
+    // until their next renewal naturally flips to recruiter_hybrid.
     function recruiterSubscriptionActive() {
       return authed()
-        && tokenClub() != null
-        && exists(/databases/$(database)/documents/license_entitlements/$(tokenClub()))
-        && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('tier', '') == 'recruiter'
-        && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('subscription_status', '') == 'active';
+        && (
+          // New path: hybrid account doc keyed by recruiter email.
+          (
+            exists(/databases/$(database)/documents/recruiter_accounts/$(emailKey()))
+            && get(/databases/$(database)/documents/recruiter_accounts/$(emailKey())).data.get('subscription_status', '') == 'active'
+          )
+          ||
+          // Legacy path: license_entitlements/{clubId} with tier='recruiter'.
+          (
+            tokenClub() != null
+            && exists(/databases/$(database)/documents/license_entitlements/$(tokenClub()))
+            && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('tier', '') == 'recruiter'
+            && get(/databases/$(database)/documents/license_entitlements/$(tokenClub())).data.get('subscription_status', '') == 'active'
+          )
+        );
     }
 
     function isDirector() {
@@ -2802,6 +2819,146 @@ service cloud.firestore {
         isSuper()
         || (isDirector() && tokenClub() == tenantId)
       );
+      allow write: if false;
+    }
+
+    // Phase 2, Epic 2 — Transaction-based pricing
+    // ───────────────────────────────────────────────────────────────────
+    // Pricing policy / fee ledger / fee summaries.  All writes are
+    // Admin-SDK only (see functions/pricingPolicyOps.js, functions/feeLedger.js).
+    // The policy doc is intentionally world-readable to AUTHED users so the
+    // marketing pricing card and Director OS console can render live rates
+    // without a callable round-trip.
+
+    match /pricing_policy/{policyId} {
+      allow read: if authed();
+      allow write: if false;
+    }
+
+    match /pricing_policy_audit/{auditId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Platform fee ledger — immutable.  Read is gated by tenantId match for
+    // directors (their own org's revenue) plus platform admins (all).
+    // Recruiter-export ledger rows belong to the recruiter's own email-keyed
+    // tenant scope; the recruiter reads their own rows for an export receipt.
+    match /platform_fee_ledger/{ledgerId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.tenantId == tokenClub())
+        || (tokenRole() == 'recruiter' && resource.data.tenantId == emailKey())
+      );
+      allow write: if false;
+    }
+
+    // Per-tenant fee summary (YTD + monthly buckets).  Living under the
+    // organizations/{tenantId} doc means directors and coaches of that org
+    // can read their own aggregates without a separate collection-group rule.
+    // The 'ytd' doc is the primary console aggregate; 'YYYY-MM' docs feed
+    // the sparkline.  All writes are Admin-SDK only.
+    match /organizations/{tenantId}/fee_summary/{bucketId} {
+      allow read: if authed() && (
+        isSuper()
+        || tokenClub() == tenantId
+      );
+      allow write: if false;
+    }
+
+    // Digital ticketing (Phase 2, Epic 2, Session H).
+    // Tickets are owned by the purchaser email (so they can show their
+    // QR code in the app) and visible to directors of the host club for
+    // entry-scan reconciliation.  All writes are server-side via
+    // functions/ticketing.js — the Stripe webhook handler stamps the qrToken.
+    match /tickets/{ticketId} {
+      allow read: if authed() && (
+        isSuper()
+        || resource.data.purchaserEmail == emailKey()
+        || (isDirector() && resource.data.hostClubId == tokenClub())
+      );
+      allow write: if false;
+    }
+
+    // Hotel block rebates (Phase 2, Epic 2, Session I).
+    // The rebate doc records the partner commission + the NGB credit/
+    // Vanguard retention split.  Directors of the tenant org get a
+    // read-only view (their own org's incoming rebates); platform admins
+    // see everything.  All writes are super_admin-only via
+    // functions/hotelRebates.js callables.
+    match /hotel_rebates/{rebateId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.tenantId == tokenClub())
+      );
+      allow write: if false;
+    }
+
+    // Recruiter hybrid billing (Phase 2, Epic 2, Session M).
+    // `recruiter_accounts/{email}` holds the recruiter's Stripe sub state
+    // and the running per-export usage counter.  Self-read so a recruiter
+    // can render their own dashboard; platform admins read all.  Server-
+    // only writes via functions/recruiterBilling.js + webhook handler.
+    match /recruiter_accounts/{recruiterEmail} {
+      allow read: if authed() && (
+        isSuper()
+        || recruiterEmail == emailKey()
+      );
+      allow write: if false;
+    }
+
+    // Recruiter export log — immutable audit trail of every lead export.
+    // Recruiter reads their own rows; platform admins see all.  Used by
+    // the recruiter UI to render an export history with the fee charged.
+    match /recruiter_export_log/{exportId} {
+      allow read: if authed() && (
+        isSuper()
+        || resource.data.recruiterEmail == emailKey()
+      );
+      allow write: if false;
+    }
+
+    // Tournament events (Phase 2, Epic 2 — Embedded Finance Integration).
+    // ─────────────────────────────────────────────────────────────────────
+    // Events are authored by directors of the host club and visible to all
+    // authenticated users when `status == 'published'`.
+    //
+    // Write rules:
+    //   • Client writes are ALWAYS denied.  Directors use the
+    //     `upsertTournamentEvent` / `publishTournamentEvent` callables which
+    //     run on the Admin SDK.  This guarantees `soldCount` integrity —
+    //     only the webhook handler can increment it inside an atomic batch.
+    //
+    // Read rules:
+    //   • Directors of the host club see every status (draft, published,
+    //     concluded, archived) so the event builder can list all their events.
+    //   • super_admin sees all events across all clubs.
+    //   • Any authed user can read a published event (needed for the buyer
+    //     page to fetch tier details and remaining capacity).
+    //   • Non-authed users cannot read events (the marketing buyer page
+    //     uses an authed SDK call via the SvelteKit server-side load).
+    match /tournament_events/{eventId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.hostClubId == tokenClub())
+        || resource.data.status == 'published'
+      );
+      allow write: if false;
+    }
+
+    // Partner webhook audit log (Phase 2, Epic 2 — Session B7).
+    // Written exclusively by the API Gateway Cloud Function via Admin SDK.
+    // Super-admin read for audit/debugging; no client writes.
+    match /partner_webhook_log/{logId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Hotel partner directory (Phase 2, Epic 2 — Session B1).
+    // Provisioned exclusively by super_admin via `provisionHotelPartner` onCall.
+    // Partners never see their own doc (keys are sent once at provisioning only).
+    match /hotel_partners/{partnerId} {
+      allow read: if authed() && isSuper();
       allow write: if false;
     }
 

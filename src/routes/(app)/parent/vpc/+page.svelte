@@ -515,7 +515,7 @@
 		background: var(--surface-primary, #ffffff);
 		border: 1px solid rgba(15, 23, 42, 0.09);
 		border-radius: var(--radius-premium, 24px);
-		padding: clamp(1.25rem, 4vw, 2rem);
+		padding: var(--bento-pad);
 		box-shadow: var(--shadow-liquid);
 	}
 

@@ -95,7 +95,7 @@
 		</p>
 	</header>
 
-	<div class="tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-3">
+	<div class="bento-grid bento-grid--3col">
 		<!-- Prospect roster -->
 		<div
 			class="tw-flex tw-min-h-[min(70vh,560px)] tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
@@ -140,7 +140,7 @@
 
 		<!-- Evaluation console -->
 		<div
-			class="tw-flex tw-min-h-[min(70vh,560px)] tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-col-span-2 md:tw-min-h-[640px] md:tw-p-6"
+			class="bento-span-2 tw-flex tw-min-h-[min(70vh,560px)] tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
 		>
 			<div
 				class="tw-mb-6 tw-flex tw-flex-col tw-gap-4 tw-border-b tw-border-white/5 tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"

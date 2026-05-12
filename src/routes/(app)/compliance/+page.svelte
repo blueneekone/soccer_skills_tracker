@@ -3,15 +3,21 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import CheckrEmbed from './CheckrEmbed.svelte';
 
 	export const ssr = false;
 
-	// Redirect if already cleared
+	// Phase 2, Epic 2 — Session L.  Once isCleared flips true, route back to
+	// the role-appropriate home.  Hard-coding /coach breaks director/tutor
+	// flows (now in scope); the login waterfall already handles every role.
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (authStore.isCleared && browser) {
-			untrack(() => goto('/coach', { replaceState: true }));
+			const dest = untrack(() =>
+				applyLoginWaterfall(authStore.role, authStore.userProfile),
+			);
+			untrack(() => goto(dest, { replaceState: true }));
 		}
 	});
 </script>

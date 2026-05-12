@@ -157,13 +157,26 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     // right Firestore database without a per-request lookup.  Falls
     // through to DEFAULT_CELL_ID on any error or absence, which is the
     // correct behavior — every tenant starts on the shared cell.
+    // Phase 2, Epic 2 — Session F: also read `billingModel` from the org
+    // doc so the read-only paywall short-circuits for transaction-billed
+    // tenants.  When the org is on `transaction_billing` we explicitly
+    // null out the legacy `tier` / `subscription_status` claims so the
+    // client-side billing.js gate sees a clean "no legacy sub" state.
     try {
       const orgSnap = await db().collection('organizations').doc(cid).get();
       if (orgSnap.exists) {
         customClaims.cellId = resolveCellId(orgSnap.get('cellId'));
+        const bm = orgSnap.get('billingModel');
+        if (typeof bm === 'string' && bm.length > 0) {
+          customClaims.billingModel = bm;
+          if (bm === 'transaction_billing') {
+            customClaims.tier = null;
+            customClaims.subscription_status = null;
+          }
+        }
       }
     } catch (e) {
-      logger.warn('syncUserClaims cellId read', e);
+      logger.warn('syncUserClaims cellId/billingModel read', e);
     }
   }
 

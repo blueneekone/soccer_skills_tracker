@@ -233,13 +233,13 @@
 <style>
 	input,
 	textarea {
-		margin-bottom: clamp(10px, 2vw, 12px);
+		margin-bottom: var(--bento-gap-xs);
 	}
 
 	.passport-status-badge {
 		font-size: clamp(1.1rem, 3vw, 1.5rem);
 		font-weight: 900;
-		padding: clamp(12px, 2.5vw, 15px);
+		padding: var(--bento-pad-sm);
 		border-radius: 12px;
 		border: 2px solid;
 		display: inline-block;
@@ -264,15 +264,15 @@
 	}
 
 	.status-note {
-		margin-top: clamp(10px, 2vw, 12px);
+		margin-top: var(--bento-gap-xs);
 		font-size: 0.9rem;
 		opacity: 0.9;
 		line-height: 1.45;
 	}
 
 	.minor-waiver-panel {
-		margin-top: clamp(12px, 2vw, 16px);
-		padding: clamp(12px, 2vw, 16px);
+		margin-top: var(--bento-gap-sm);
+		padding: var(--bento-pad-sm);
 		border-radius: 12px;
 		background: rgba(15, 23, 42, 0.04);
 		border: 1px solid rgba(15, 23, 42, 0.08);
@@ -322,10 +322,10 @@
 	}
 
 	.attestation-panel {
-		margin-top: clamp(12px, 2vw, 16px);
+		margin-top: var(--bento-gap-sm);
 		display: flex;
 		flex-direction: column;
-		gap: clamp(10px, 2vw, 14px);
+		gap: var(--bento-gap-sm);
 	}
 
 	.attest-label {
@@ -336,7 +336,7 @@
 	.attest-input {
 		width: 100%;
 		box-sizing: border-box;
-		padding: clamp(10px, 2vw, 14px);
+		padding: var(--bento-pad-sm);
 		border-radius: 16px;
 		border: 1px solid var(--glass-border);
 		font: inherit;

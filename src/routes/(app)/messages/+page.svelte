@@ -187,7 +187,7 @@
 	.inbox-body {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(12px, 2vw, 16px);
+		gap: var(--bento-gap-sm);
 	}
 
 	.inbox-hint {
@@ -208,11 +208,11 @@
 		margin: 0;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(12px, 2vw, 16px);
+		gap: var(--bento-gap-sm);
 	}
 
 	.msg-card {
-		padding: clamp(12px, 2vw, 16px);
+		padding: var(--bento-pad-sm);
 		border-radius: 16px;
 		border: 1px solid var(--glass-border);
 		background: rgba(255, 255, 255, 0.04);

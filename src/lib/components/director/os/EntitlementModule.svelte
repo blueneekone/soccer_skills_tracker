@@ -1,6 +1,7 @@
 <script>
 	import { db } from '$lib/firebase.js';
 	import { doc, onSnapshot } from 'firebase/firestore';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 
 	let { clubId = '' } = $props();
 
@@ -10,6 +11,13 @@
 	let reservedSeats = $state(0);
 	let seatsLimit = $state(0);
 	let clubInfinite = $state(false);
+
+	// Phase 2, Epic 2 — Session G.
+	// Once the org has been migrated to transaction-based billing, the seat
+	// cap is no longer the source of truth for access — money flow is.  We
+	// collapse the entitlement panel into a small legacy banner so directors
+	// stop reading stale numbers, and point them at the Revenue ledger.
+	const isTransactionBilled = $derived(licenseEntitlementStore.isTransactionBilled);
 
 	$effect(() => {
 		if (!clubId) {
@@ -90,7 +98,13 @@
 		{/if}
 	</div>
 
-	{#if loading}
+	{#if isTransactionBilled}
+		<p class="tw-m-0 tw-text-sm ent-muted dir-ent-legacy-banner">
+			<strong>You're on transaction-based billing.</strong> Seat caps no
+			longer apply; revenue is tracked in the ledger panel below. The legacy
+			seat numbers are kept here for historical reference only.
+		</p>
+	{:else if loading}
 		<div class="tw-h-3 tw-rounded-full tw-animate-pulse ent-skeleton" aria-hidden="true"></div>
 	{:else if clubInfinite}
 		<p class="tw-m-0 tw-text-sm ent-muted">

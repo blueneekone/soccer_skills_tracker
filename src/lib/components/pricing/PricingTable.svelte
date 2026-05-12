@@ -1,58 +1,62 @@
 <script>
+	import { onMount } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { pricingPolicyStore } from '$lib/services/pricingEngine.svelte.ts';
+	import { bpToPercentLabel, centsToUsd } from '$lib/types/pricing';
+
+	/**
+	 * Phase 2, Epic 2 — Session N rewrite.
+	 * Two-card Bento:
+	 *   1. Clubs / NGBs — transaction-based ($0 to start; rateBp × volume)
+	 *   2. Recruiters   — hybrid (annual access + per-export flat fee)
+	 * The legacy four-tier seat checkout has been retired.  Clubs onboard by
+	 * connecting Stripe (Connect destination charges) — no SaaS sub.
+	 */
 
 	const createStripeCheckoutSession = httpsCallable(functions, 'createStripeCheckoutSession');
 
-	let { clubSeatDefault = 100 } = $props();
-
-	let clubQty = $state(clubSeatDefault);
-	let busyTier = $state(/** @type {string | null} */ (null));
+	let recruiterBusy = $state(false);
 	let errorMsg = $state('');
 
 	const role = $derived(authStore.role);
-	const canPurchase = $derived(
-		role === 'director' || role === 'super_admin' || role === 'global_admin',
-	);
-	const superNeedsClub = $derived(
-		(role === 'super_admin' || role === 'global_admin') &&
-			!(typeof authStore.userProfile?.clubId === 'string' && authStore.userProfile.clubId.trim())
+	const isRecruiter = $derived(role === 'recruiter');
+	const callerEmail = $derived(
+		typeof authStore.userProfile?.email === 'string' ?
+			authStore.userProfile.email.toLowerCase() :
+			'',
 	);
 
-	/**
-	 * @param {'tutor' | 'team' | 'club' | 'recruiter'} tierType
-	 */
-	async function checkout(tierType) {
+	onMount(() => {
+		pricingPolicyStore.ensureSubscribed();
+	});
+
+	const policy = $derived(pricingPolicyStore.policy);
+	const seasonRateBp = $derived(policy.rateCard.season_registration?.rateBp ?? null);
+	const ticketRateBp = $derived(policy.rateCard.digital_ticketing?.rateBp ?? null);
+	const exportFlatCents = $derived(policy.rateCard.recruiter_lead_export?.flatFeeCents ?? null);
+	const annualCents = $derived(policy.recruiterAnnualCents ?? null);
+
+	const rateLine = $derived.by(() => {
+		if (seasonRateBp === null) return 'Rate publishes shortly';
+		return `${bpToPercentLabel(seasonRateBp)} of every registration`;
+	});
+
+	async function recruiterCheckout() {
 		errorMsg = '';
-		if (!canPurchase || superNeedsClub) return;
-		busyTier = tierType;
+		if (!callerEmail) {
+			errorMsg = 'Sign in with your recruiting email before checkout.';
+			return;
+		}
+		recruiterBusy = true;
 		const origin = typeof window !== 'undefined' ? window.location.origin : '';
-		const successUrl = `${origin}/pricing?checkout=success`;
-		const cancelUrl = `${origin}/pricing?checkout=cancel`;
 		try {
-			const payload = {
-				tierType,
-				successUrl,
-				cancelUrl
-			};
-			if (tierType === 'club') {
-				const q = parseInt(String(clubQty), 10);
-				payload.clubSeatQuantity = Number.isFinite(q) && q >= 1 && q <= 100000 ? q : 100;
-			}
-			if (role === 'super_admin' || role === 'global_admin') {
-				const cid =
-					typeof authStore.userProfile?.clubId === 'string' ?
-						authStore.userProfile.clubId.trim() :
-						'';
-				if (!cid) {
-					errorMsg = 'Global admin: set a club scope on your profile before checkout.';
-					busyTier = null;
-					return;
-				}
-				payload.clubId = cid;
-			}
-			const res = await createStripeCheckoutSession(payload);
+			const res = await createStripeCheckoutSession({
+				tierType: 'recruiter',
+				successUrl: `${origin}/pricing?checkout=success`,
+				cancelUrl: `${origin}/pricing?checkout=cancel`,
+			});
 			const url = res.data && typeof res.data.url === 'string' ? res.data.url : '';
 			if (url) {
 				window.location.assign(url);
@@ -63,128 +67,106 @@
 			const err = /** @type {{ message?: string }} */ (e);
 			errorMsg = err.message || 'Checkout failed.';
 		} finally {
-			busyTier = null;
+			recruiterBusy = false;
 		}
 	}
 </script>
 
-<div class="pricing-bento" aria-label="Plans and pricing">
+<div class="pricing-bento" aria-label="Vanguard pricing">
 	{#if errorMsg}
 		<p class="pricing-error" role="alert">{errorMsg}</p>
 	{/if}
 
-	<article class="glass-panel pricing-card">
-		<p class="pricing-kicker">Solo Tutor</p>
-		<h2 class="pricing-title">1–15 seats</h2>
-		<p class="pricing-desc">Core tools for independent trainers and small groups.</p>
-		<ul class="pricing-features">
-			<li>Core roster &amp; session tools</li>
-			<li>Up to 15 active seats</li>
-		</ul>
-		<button
-			type="button"
-			class="btn-pricing"
-			disabled={!canPurchase || superNeedsClub || busyTier !== null}
-			onclick={() => checkout('tutor')}
-		>
-			{busyTier === 'tutor' ? 'Opening…' : 'Choose Tutor'}
-		</button>
-	</article>
-
-	<article class="glass-panel pricing-card">
-		<p class="pricing-kicker">Single Team</p>
-		<h2 class="pricing-title">Up to 25 seats</h2>
-		<p class="pricing-desc">Game stats and team workflows for one squad.</p>
-		<ul class="pricing-features">
-			<li>Game stats &amp; team insights</li>
-			<li>Up to 25 seats</li>
-		</ul>
-		<button
-			type="button"
-			class="btn-pricing"
-			disabled={!canPurchase || superNeedsClub || busyTier !== null}
-			onclick={() => checkout('team')}
-		>
-			{busyTier === 'team' ? 'Opening…' : 'Choose Team'}
-		</button>
-	</article>
-
+	<!-- Clubs / NGBs — transaction-based -->
 	<article class="glass-panel pricing-card pricing-card--featured">
-		<span class="pricing-badge">Recommended</span>
-		<p class="pricing-kicker">Pro Club</p>
-		<h2 class="pricing-title">100+ seats</h2>
-		<p class="pricing-desc">Director’s OS, field scheduling, and club-wide operations.</p>
+		<span class="pricing-badge">Now live</span>
+		<p class="pricing-kicker">Clubs · NGBs · Tournaments</p>
+		<h2 class="pricing-title">Transaction-based pricing</h2>
+		<p class="pricing-desc">
+			Zero platform fee to start. Pay a tiny percentage only when money moves
+			through Vanguard — registrations, tickets, and tournament events.
+		</p>
+
 		<ul class="pricing-features">
-			<li>Director’s OS &amp; scheduling</li>
-			<li>Configurable seat pool (min 100)</li>
+			<li>
+				<strong>$0</strong> to onboard — no seat caps, no SaaS subscription.
+			</li>
+			<li>
+				<strong>{rateLine}</strong> sent to your Stripe-Connect account.
+			</li>
+			{#if ticketRateBp !== null}
+				<li>
+					Digital ticketing at <strong>{bpToPercentLabel(ticketRateBp)}</strong> per ticket sold.
+				</li>
+			{/if}
+			<li>Real-time fee ledger inside the Director OS.</li>
+			<li>Hotel block rebates routed back to your NGB.</li>
 		</ul>
-		<label class="club-qty">
-			<span class="club-qty-label">Seats (club tier)</span>
-			<input
-				class="club-qty-input"
-				type="number"
-				min="100"
-				max="100000"
-				bind:value={clubQty}
-			/>
-		</label>
-		<button
-			type="button"
-			class="btn-pricing btn-pricing--primary"
-			disabled={!canPurchase || superNeedsClub || busyTier !== null}
-			onclick={() => checkout('club')}
-		>
-			{busyTier === 'club' ? 'Opening…' : 'Choose Pro Club'}
-		</button>
+
+		<a class="btn-pricing btn-pricing--primary" href="/setup">
+			Get started — connect Stripe
+		</a>
+
+		<p class="pricing-footnote">
+			Already on the legacy seat plan?  Your subscription will cancel at period
+			end automatically; access continues with no action needed.
+		</p>
 	</article>
 
+	<!-- Recruiters — hybrid annual + per-export -->
 	<article class="glass-panel pricing-card">
-		<p class="pricing-kicker">Recruiter Portal</p>
-		<h2 class="pricing-title">0 seats</h2>
-		<p class="pricing-desc">Global search and verified analytics for recruiting staff.</p>
+		<p class="pricing-kicker">Recruiters</p>
+		<h2 class="pricing-title">Annual access + per-export</h2>
+		<p class="pricing-desc">
+			Search the verified Vanguard talent graph.  Annual access keeps the door
+			open; you only pay per export when you actually pull contact data.
+		</p>
+
 		<ul class="pricing-features">
-			<li>Global search</li>
-			<li>Verified analytics</li>
+			<li>
+				<strong>{annualCents !== null ? centsToUsd(annualCents) : 'Price set at checkout'}</strong>
+				/ year — unlimited search.
+			</li>
+			<li>
+				<strong>{exportFlatCents !== null ? centsToUsd(exportFlatCents) : 'Per-export fee TBA'}</strong>
+				per lead export, billed on your invoice.
+			</li>
+			<li>
+				<strong>Required:</strong> Vanguard Clearance — background check via
+				Checkr before search access unlocks. See
+				<a href="/clearance-policy">why we require this</a>.
+			</li>
+			<li>Searchable verified analytics across every linked club.</li>
 		</ul>
-		<button
-			type="button"
-			class="btn-pricing"
-			disabled={!canPurchase || superNeedsClub || busyTier !== null}
-			onclick={() => checkout('recruiter')}
-		>
-			{busyTier === 'recruiter' ? 'Opening…' : 'Choose Recruiter'}
-		</button>
+
+		{#if isRecruiter}
+			<button
+				type="button"
+				class="btn-pricing"
+				disabled={recruiterBusy}
+				onclick={recruiterCheckout}
+			>
+				{recruiterBusy ? 'Opening…' : 'Start recruiter access'}
+			</button>
+		{:else}
+			<a class="btn-pricing" href="/signup?role=recruiter">
+				Apply for recruiter access
+			</a>
+		{/if}
 	</article>
 </div>
-
-{#if !canPurchase}
-	<p class="pricing-footnote">
-		Only organization directors (or app admins) can purchase or change plans. Ask your club
-		director to upgrade.
-	</p>
-{:else if superNeedsClub}
-	<p class="pricing-footnote">
-		Super admin: attach a <code>clubId</code> on your user profile before running checkout.
-	</p>
-{/if}
 
 <style>
 	.pricing-bento {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: clamp(14px, 2vw, 22px);
+		grid-template-columns: 1fr;
+		gap: clamp(1rem, 2vw, 1.6rem);
 		align-items: stretch;
 	}
 
-	@media (max-width: 1100px) {
+	@media (min-width: 52rem) {
 		.pricing-bento {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 560px) {
-		.pricing-bento {
-			grid-template-columns: 1fr;
+			grid-template-columns: 1.4fr 1fr;
 		}
 	}
 
@@ -193,19 +175,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.65rem;
-		padding: clamp(18px, 2.4vw, 26px);
-		border-radius: 22px;
+		padding: clamp(1.1rem, 1.8vw, 1.6rem);
+		border-radius: 24px;
 		min-height: 100%;
+		backdrop-filter: blur(var(--vanguard-blur, 24px));
+		-webkit-backdrop-filter: blur(var(--vanguard-blur, 24px));
 	}
 
 	.pricing-card--featured {
-		border: 1px solid color-mix(in srgb, var(--brand-primary) 45%, var(--glass-border));
+		border: 1px solid color-mix(in srgb, var(--brand-primary, #00f0ff) 45%, var(--glass-border, rgba(0,240,255,0.18)));
 		background: linear-gradient(
 			155deg,
-			color-mix(in srgb, var(--brand-primary) 12%, var(--glass-bg)),
-			var(--glass-bg)
+			color-mix(in srgb, var(--brand-primary, #00f0ff) 12%, var(--glass-bg, rgba(2,6,12,0.55))),
+			var(--glass-bg, rgba(2,6,12,0.55))
 		);
-		box-shadow: var(--shadow-liquid, var(--shadow-premium));
+		box-shadow: var(--shadow-liquid, 0 18px 48px rgba(2, 6, 12, 0.4));
 	}
 
 	.pricing-badge {
@@ -218,8 +202,8 @@
 		letter-spacing: 0.06em;
 		padding: 0.35rem 0.6rem;
 		border-radius: 999px;
-		background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent, #8b5cf6));
-		color: #fff;
+		background: linear-gradient(135deg, var(--brand-primary, #00f0ff), var(--brand-accent, #8b5cf6));
+		color: #021018;
 	}
 
 	.pricing-kicker {
@@ -228,65 +212,63 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--muted-slate);
+		color: var(--muted-slate, rgba(148, 163, 184, 0.85));
 	}
 
 	.pricing-title {
 		margin: 0;
-		font-size: 1.35rem;
+		font-size: clamp(1.2rem, 1.4vw + 0.6rem, 1.6rem);
 		font-weight: 900;
-		color: var(--text-primary);
+		color: var(--text-primary, #f8fafc);
+		letter-spacing: -0.01em;
 	}
 
 	.pricing-desc {
 		margin: 0;
 		font-size: 0.92rem;
-		line-height: 1.45;
-		color: var(--muted-slate);
-		flex: 1;
+		line-height: 1.5;
+		color: var(--muted-slate, rgba(148, 163, 184, 0.85));
 	}
 
 	.pricing-features {
 		margin: 0;
 		padding-left: 1.1rem;
 		font-size: 0.88rem;
-		line-height: 1.45;
-		color: var(--text-primary);
+		line-height: 1.5;
+		color: var(--text-primary, #f8fafc);
 	}
 
-	.club-qty {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		font-size: 0.8rem;
-		font-weight: 700;
-		color: var(--muted-slate);
+	.pricing-features li + li {
+		margin-top: 0.32rem;
 	}
 
-	.club-qty-input {
-		border-radius: 12px;
-		border: 1px solid var(--glass-border);
-		padding: 0.5rem 0.65rem;
-		font-weight: 800;
-		background: var(--surface-subtle, rgba(255, 255, 255, 0.5));
-		color: var(--text-primary);
+	.pricing-features a {
+		color: var(--brand-primary, #00f0ff);
+		text-decoration: underline;
 	}
 
 	.btn-pricing {
-		margin-top: auto;
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0.7rem 1rem;
 		border-radius: 14px;
-		border: 1px solid var(--glass-border);
-		padding: 0.75rem 1rem;
+		border: 1px solid var(--vanguard-border, rgba(0, 240, 255, 0.32));
+		background: rgba(1, 4, 9, 0.55);
+		color: var(--text-primary, #f8fafc);
 		font-weight: 800;
+		font-size: 0.92rem;
+		letter-spacing: 0.02em;
 		cursor: pointer;
-		background: var(--surface-subtle, rgba(255, 255, 255, 0.5));
-		color: var(--text-primary);
-		transition: transform 0.15s ease, box-shadow 0.15s ease;
+		text-decoration: none;
+		transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+		margin-top: auto;
 	}
 
 	.btn-pricing:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: var(--shadow-premium);
+		border-color: var(--brand-primary, #00f0ff);
+		box-shadow: 0 6px 14px rgba(0, 240, 255, 0.18);
 	}
 
 	.btn-pricing:disabled {
@@ -295,28 +277,26 @@
 	}
 
 	.btn-pricing--primary {
-		border-color: color-mix(in srgb, var(--brand-primary) 55%, transparent);
-		background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent, #8b5cf6));
-		color: #fff;
+		background: linear-gradient(135deg, var(--brand-primary, #00f0ff), var(--brand-accent, #8b5cf6));
+		color: #021018;
+		border-color: transparent;
 	}
 
 	.pricing-error {
 		grid-column: 1 / -1;
-		margin: 0 0 0.25rem;
-		padding: 0.65rem 0.85rem;
-		border-radius: 12px;
-		background: color-mix(in srgb, #ef4444 12%, transparent);
-		border: 1px solid color-mix(in srgb, #ef4444 35%, transparent);
-		font-weight: 700;
-		font-size: 0.9rem;
-		color: var(--text-primary);
+		padding: 0.6rem 0.8rem;
+		border-radius: 14px;
+		background: rgba(220, 38, 38, 0.12);
+		border: 1px solid rgba(220, 38, 38, 0.32);
+		color: #fecaca;
+		font-size: 0.85rem;
 	}
 
 	.pricing-footnote {
-		margin-top: 1.25rem;
-		font-size: 0.88rem;
-		color: var(--muted-slate);
-		max-width: 52rem;
-		line-height: 1.45;
+		margin: 0.3rem 0 0 0;
+		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-size: 11px;
+		letter-spacing: 0.04em;
+		color: rgba(148, 163, 184, 0.65);
 	}
 </style>

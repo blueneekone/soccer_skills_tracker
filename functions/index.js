@@ -76,6 +76,67 @@ exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;
 exports.createConnectOnboarding = commerceHandlers.createConnectOnboarding;
 exports.getRegistrationStatus = commerceHandlers.getRegistrationStatus;
 
+// ── Phase 2, Epic 2: Transaction-based pricing (Session E) ─────────────────
+// Sunset path for the legacy per-seat SaaS subscription model.  Recruiter
+// subscriptions are excluded — they migrate to the hybrid model in Session M.
+const legacyBillingHandlers = require('./legacyBillingOps');
+exports.sunsetLegacySubscription = legacyBillingHandlers.sunsetLegacySubscription;
+exports.sweepLegacySubscriptions = legacyBillingHandlers.sweepLegacySubscriptions;
+
+// ── Phase 2, Epic 2: Digital Ticketing (Session H) ─────────────────────────
+// Same Stripe Connect destination-charge plumbing as season registrations,
+// but for tournament/event tickets.  Generates HMAC QR tokens on success.
+const ticketingHandlers = require('./ticketing');
+exports.createTicketSaleIntent    = ticketingHandlers.createTicketSaleIntent;
+exports.handleTicketingWebhook    = ticketingHandlers.handleTicketingWebhook;
+exports.upsertTournamentEvent     = ticketingHandlers.upsertTournamentEvent;
+exports.publishTournamentEvent    = ticketingHandlers.publishTournamentEvent;
+exports.verifyScanToken           = ticketingHandlers.verifyScanToken;
+
+// ── Phase 2, Epic 2: Branded ticket receipts (Session A8 — feature-flagged) ─
+// v1 receipts are handled by Stripe's built-in receipt_email in ticketing.js.
+// This trigger fires onCreate but self-disables unless the
+// feature_flags/brandedTicketReceipts doc has enabled:true.
+const ticketReceiptsHandlers = require('./ticketReceipts');
+exports.sendTicketReceiptOnCreate = ticketReceiptsHandlers.sendTicketReceiptOnCreate;
+
+// ── Phase 2, Epic 2: Hotel Block Rebates (Session I) ───────────────────────
+// Inverted economics — record hotel partner commission receipts and
+// transfer the NGB share via Stripe Transfers.  Both callables are
+// super_admin only; the rebate flow is operated from a console.
+const hotelRebateHandlers = require('./hotelRebates');
+exports.submitHotelRebateRecord = hotelRebateHandlers.submitHotelRebateRecord;
+exports.approveHotelRebatePayout = hotelRebateHandlers.approveHotelRebatePayout;
+
+// ── Phase 2, Epic 2: Hotel Partner Directory (Session B1) ──────────────────
+// Provisioning and key-rotation callables for hotel partner API credentials.
+const hotelPartnerOpsHandlers = require('./hotelPartnerOps');
+exports.provisionHotelPartner    = hotelPartnerOpsHandlers.provisionHotelPartner;
+exports.rotateHotelPartnerKeys   = hotelPartnerOpsHandlers.rotateHotelPartnerKeys;
+exports.setHotelPartnerStatus    = hotelPartnerOpsHandlers.setHotelPartnerStatus;
+
+// ── Phase 2, Epic 2: Clearance Expiry (Session K) ──────────────────────────
+// Daily sweep — flips cleared users past the 365-day validity window to
+// 'expired' and revokes their isCleared JWT claim.
+const clearanceExpiryHandlers = require('./clearanceExpiry');
+exports.expireStaleClearances = clearanceExpiryHandlers.expireStaleClearances;
+
+// ── Phase 2, Epic 2: Recruiter Hybrid Billing (Session M) ──────────────────
+// Per-export metered billing on top of the existing annual Stripe sub.
+// Charges are stacked onto the recruiter's existing invoice via
+// invoiceItem.create — no new PaymentIntents per export.
+const recruiterBillingHandlers = require('./recruiterBilling');
+exports.recordRecruiterExport = recruiterBillingHandlers.recordRecruiterExport;
+exports.cancelRecruiterAccount = recruiterBillingHandlers.cancelRecruiterAccount;
+
+// ── Phase 2, Epic 2: Live policy admin (Session N) ─────────────────────────
+// Super-admin only.  bootstrapPricingPolicy seeds the empty default-v1 doc.
+// updatePricingPolicy is the live rate-change knob — version-bumps the
+// policy and writes an audit row in the same transaction.
+const pricingPolicyOps = require('./pricingPolicyOps');
+exports.bootstrapPricingPolicy = pricingPolicyOps.bootstrapPricingPolicy;
+exports.updatePricingPolicy = pricingPolicyOps.updatePricingPolicy;
+
 // â”€â”€ Epic 11: Pitch Collision Avoidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const facilitiesHandlers = require('./facilities');
 exports.checkFacilityAvailability = facilitiesHandlers.checkFacilityAvailability;

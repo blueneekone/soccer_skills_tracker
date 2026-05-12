@@ -97,10 +97,13 @@ exports.generateCheckrEmbedToken = onCall(
 
     const claims = reqAuth.token || {};
     const role = claims.role || '';
-    if (!['coach', 'recruiter'].includes(role)) {
+    // Phase 2, Epic 2 — Session K.  Extended clearance scope: every adult
+    // role that can touch minor PII (coach, recruiter, director, tutor).
+    // Players + parents are NOT in scope — they manage their own data.
+    if (!['coach', 'recruiter', 'director', 'tutor'].includes(role)) {
       throw new HttpsError(
         'permission-denied',
-        'Only coaches and recruiters may initiate a Checkr background check.',
+        'Only coaches, recruiters, directors, and tutors require a background check.',
       );
     }
 
@@ -457,10 +460,10 @@ exports.requestManualOverride = onCall(
     if (clubId && userData.clubId !== clubId) {
       throw new HttpsError('permission-denied', 'Target user is not in your club.');
     }
-    if (!['coach', 'recruiter'].includes(userData.role)) {
+    if (!['coach', 'recruiter', 'director', 'tutor'].includes(userData.role)) {
       throw new HttpsError(
         'invalid-argument',
-        'Manual override is only valid for coach and recruiter roles.',
+        'Manual override is only valid for coach, recruiter, director, or tutor roles.',
       );
     }
 
@@ -609,8 +612,11 @@ exports.initiateAnkoredUplink = onCall(
 
     const claims = reqAuth.token || {};
     const role = claims.role || '';
-    if (!['coach', 'recruiter'].includes(role)) {
-      throw new HttpsError('permission-denied', 'Only coaches and recruiters may initiate an Ankored uplink.');
+    if (!['coach', 'recruiter', 'director', 'tutor'].includes(role)) {
+      throw new HttpsError(
+        'permission-denied',
+        'Only coaches, recruiters, directors, and tutors may initiate an Ankored uplink.',
+      );
     }
 
     const email = (reqAuth.token?.email || '').toLowerCase().trim();

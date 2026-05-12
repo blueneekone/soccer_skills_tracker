@@ -1239,8 +1239,8 @@
 	.drill-lib {
 		display: flex;
 		flex-direction: column;
-		gap: 18px;
-		padding: 24px clamp(16px, 3vw, 32px) 48px;
+		gap: var(--bento-gap-md);
+		padding: var(--bento-pad) var(--bento-pad) 48px;
 		color: var(--text-primary, #fafafa);
 	}
 
@@ -1274,12 +1274,12 @@
 	.cdm-grid {
 		display: grid;
 		grid-template-columns: minmax(16rem, 1fr) minmax(0, 1.2fr) minmax(14rem, 0.9fr);
-		gap: clamp(0.75rem, 1.5vw, 1rem);
+		gap: var(--bento-gap-md);
 		align-items: start;
 		min-width: 0;
 	}
 
-	@media (max-width: 1100px) {
+	@media (max-width: 69rem) {
 		.cdm-grid {
 			grid-template-columns: 1fr;
 		}

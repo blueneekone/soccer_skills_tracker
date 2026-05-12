@@ -483,7 +483,7 @@
 	.od-teams-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 1.25rem;
+		gap: var(--bento-gap-md);
 	}
 	.od-team-card {
 		background: rgba(255, 255, 255, 0.03);

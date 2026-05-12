@@ -607,7 +607,7 @@
 		box-sizing: border-box;
 		background: #000000;
 		color: #fafafa;
-		padding: clamp(1rem, 2vw, 1.5rem);
+		padding: var(--bento-pad);
 		--cyber: #00d4ff;
 		--toxic: #39ff14;
 		--threat: #ff6b00;
@@ -660,11 +660,11 @@
 	.pw-hud {
 		display: grid;
 		grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 8rem);
-		gap: clamp(0.75rem, 2vw, 1.5rem);
+		gap: var(--bento-gap-sm);
 		align-items: stretch;
 		min-height: 6.5rem;
 		padding: 1rem 1.25rem;
-		margin-bottom: clamp(1rem, 2vw, 1.5rem);
+		margin-bottom: var(--bento-gap-md);
 		border: 1px solid var(--border);
 		background: #05050a;
 	}
@@ -775,7 +775,7 @@
 
 	.pw-grid {
 		display: grid;
-		gap: clamp(1rem, 2vw, 1.5rem);
+		gap: var(--bento-gap-md);
 		align-items: start;
 		overflow: visible;
 	}
