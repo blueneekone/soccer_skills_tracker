@@ -66,6 +66,7 @@
  *       generateInviteCode() will retry with a new code.
  */
 
+const crypto = require('crypto');
 const {onDocumentWritten} = require('firebase-functions/v2/firestore');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
@@ -516,5 +517,128 @@ exports.consumeInviteCode = onCall(
       });
 
       return {success: true, tenantId: finalTenantId, role: finalRole, teamId: finalTeamId};
+    },
+);
+
+// ---------------------------------------------------------------------------
+// 3.  generateInviteCode — onCall
+//
+// Director / super_admin: provisions a single-use or high-limit cryptographic
+// invite code stored as invites/{code}.  The code-as-doc-ID design guarantees
+// atomic uniqueness without a separate query — if a collision is detected via
+// ref.create(), the loop retries with a fresh code.
+//
+// enforceAppCheck: false — required for Alpha staging and Director terminal
+// usage before App Check is configured in the target environment.
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a cryptographically random alphanumeric code omitting visually
+ * ambiguous characters (I, O, 0, 1).
+ * @param {number} length
+ * @return {string}
+ */
+function generateRandomCode(length = 6) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars[crypto.randomInt(0, chars.length)];
+  }
+  return code;
+}
+
+/**
+ * Director / super_admin: generates a single-use or high-limit cryptographic
+ * invite code stored strictly as a document ID at invites/{code}.
+ */
+exports.generateInviteCode = onCall(
+    {region: REGION, enforceAppCheck: false},
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+
+      const data = request.data || {};
+      const clubId =
+          typeof data.clubId === 'string' ? data.clubId.trim() : '';
+      const teamId =
+          typeof data.teamId === 'string' && data.teamId.trim() ?
+            data.teamId.trim() :
+            null;
+      const targetRole =
+          typeof data.targetRole === 'string' && data.targetRole.trim() ?
+            data.targetRole.trim() :
+            'player';
+
+      let usageLimit = Number(data.usageLimit);
+      if (!Number.isFinite(usageLimit) || usageLimit < 1) usageLimit = 1;
+
+      let expiryHours = Number(data.expiryHours);
+      if (!Number.isFinite(expiryHours) || expiryHours < 1) expiryHours = 48;
+
+      if (!clubId) {
+        throw new HttpsError('invalid-argument', 'clubId is required.');
+      }
+
+      // Tenant isolation: verify actor context bounds.
+      const role = request.auth.token.role;
+      const tokenClub = request.auth.token.clubId;
+      if (role !== 'super_admin') {
+        if (!tokenClub || tokenClub !== clubId) {
+          throw new HttpsError(
+              'permission-denied',
+              'You can only generate access keys within your own organization.',
+          );
+        }
+      }
+
+      const firestore = fs();
+      const nowMs = Date.now();
+      const expiresAt = admin.firestore.Timestamp.fromMillis(
+          nowMs + expiryHours * 3600 * 1000,
+      );
+      const createdBy = request.auth.token.email || request.auth.uid;
+
+      // Retry loop guaranteeing absolute primary-key uniqueness.
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const code = generateRandomCode(6);
+        const ref = firestore.collection('invites').doc(code);
+        try {
+          await ref.create({
+            code,
+            tenantId: clubId,
+            clubId,
+            ...(teamId ? {teamId} : {}),
+            targetRole,
+            createdBy,
+            expiresAt,
+            usageLimit,
+            usageCount: 0,
+            consumedByUids: [],
+            status: 'pending',
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          logger.info('[generateInviteCode] access key instantiated', {
+            code,
+            clubId,
+            teamId,
+            targetRole,
+          });
+          return {code};
+        } catch (err) {
+          // gRPC ALREADY_EXISTS (code 6) — collision, retry with new code.
+          if (err && err.code === 6) continue;
+          throw new HttpsError(
+              'internal',
+              'Failed to persist unique access key matrix.',
+          );
+        }
+      }
+
+      throw new HttpsError(
+          'internal',
+          'Exhausted retry cycles attempting to allocate unique code.',
+      );
     },
 );

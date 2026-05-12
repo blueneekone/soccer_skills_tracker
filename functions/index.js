@@ -122,8 +122,9 @@ exports.getRetentionReport = verifyDocHandlers.getRetentionReport;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
-exports.syncUserClaims = inviteHandlers.syncUserClaims;
+exports.syncUserClaims    = inviteHandlers.syncUserClaims;
 exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
+exports.generateInviteCode = inviteHandlers.generateInviteCode;
 
 const coppaHandlers = require('./coppa');
 exports.sendParentalConsentEmail      = coppaHandlers.sendParentalConsentEmail;
