@@ -1,4 +1,11 @@
 ﻿/* eslint-disable quotes */
+// Phase 2, Epic 3 — Cell-Level Egress Guard (Layer 4).
+// wrapFetch MUST be the first statement before any other module is required
+// so that outbound fetch calls from all subsequently-loaded modules are
+// intercepted.  The guard is a no-op for non-teen-tainted requests.
+const {wrapFetch} = require('./egressGuard');
+wrapFetch();
+
 const crypto = require('crypto');
 const {onDocumentCreated, onDocumentWritten} =
     require('firebase-functions/v2/firestore');
@@ -197,6 +204,13 @@ exports.generateWebAuthnChallenge     = coppaHandlers.generateWebAuthnChallenge;
 exports.verifyBiometricConsent        = coppaHandlers.verifyBiometricConsent;
 // Alpha Interlock: Director Out-of-Band VPC Override
 exports.directorOutOfBandClearance    = coppaHandlers.directorOutOfBandClearance;
+// Phase 2, Epic 3: WebAuthn Biometric Attestation for Parental Consent
+exports.generateConsentAttestationChallenge = coppaHandlers.generateConsentAttestationChallenge;
+exports.attestParentalConsent               = coppaHandlers.attestParentalConsent;
+
+// Phase 2, Epic 3: Teen 13-16 Ad-Block — client beacon + CF write-validator
+const teenAdInterceptorHandlers = require('./teenAdInterceptor');
+exports.logTeenAdBlock = teenAdInterceptorHandlers.logTeenAdBlock;
 
 const auditHandlers = require('./audit');
 // IAM prerequisite: grant "Service Account Token Creator" to the Functions service account.

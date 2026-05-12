@@ -5,6 +5,9 @@
 	import { functions } from '$lib/firebase.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	// Phase 2, Epic 3 — Teen 13-16 Ad-Block: all third-party scripts must go
+	// through loadThirdPartyScript so they respect the age-band guard.
+	import { loadThirdPartyScript } from '$lib/stores/teenAdGuard.svelte.js';
 
 	const getPublicClubLanding = httpsCallable(functions, 'getPublicClubLanding');
 
@@ -117,40 +120,56 @@
 		const px = metaPixelId;
 		const ga = googleAnalyticsId;
 		document.querySelectorAll('[data-club-landing-track]').forEach((n) => n.remove());
+
+		// Phase 2, Epic 3 — Teen 13-16 Ad-Block:
+		// loadThirdPartyScript respects the isTeenAdBlocked guard.
+		// For teen13to16 subjects, both FB Pixel and gtag injection are silently
+		// suppressed (no cookies, no tracking, no ad attribution).
 		if (px) {
-			const s = document.createElement('script');
-			s.setAttribute('data-club-landing-track', 'fb');
-			s.textContent =
-				`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
-				`n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;` +
-				`n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;` +
-				`t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}` +
-				`(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');` +
-				`fbq('init','${px}');fbq('track','PageView');`;
-			document.head.appendChild(s);
-			const nos = document.createElement('noscript');
-			nos.setAttribute('data-club-landing-track', 'fb-img');
-			const img = document.createElement('img');
-			img.height = 1;
-			img.width = 1;
-			img.style.display = 'none';
-			img.alt = '';
-			img.src = `https://www.facebook.com/tr?id=${encodeURIComponent(px)}&ev=PageView&noscript=1`;
-			nos.appendChild(img);
-			document.head.appendChild(nos);
+			// FB Pixel init must run in-page after the SDK loads.
+			// Use loadThirdPartyScript for the remote SDK; the inline fbq init
+			// is appended only if the script was actually allowed.
+			const sdkScript = loadThirdPartyScript(
+				'https://connect.facebook.net/en_US/fbevents.js',
+				'fb-pixel',
+			);
+			if (sdkScript) {
+				// Inline init: fires fbq('init') after SDK loads.
+				const s = document.createElement('script');
+				s.setAttribute('data-club-landing-track', 'fb');
+				s.textContent =
+					`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
+					`n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;` +
+					`n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];` +
+					`}(window,document,'script','');` +
+					`fbq('init','${px}');fbq('track','PageView');`;
+				document.head.appendChild(s);
+				const nos = document.createElement('noscript');
+				nos.setAttribute('data-club-landing-track', 'fb-img');
+				const img = document.createElement('img');
+				img.height = 1;
+				img.width = 1;
+				img.style.display = 'none';
+				img.alt = '';
+				img.src = `https://www.facebook.com/tr?id=${encodeURIComponent(px)}&ev=PageView&noscript=1`;
+				nos.appendChild(img);
+				document.head.appendChild(nos);
+			}
 		}
 		if (ga) {
-			const s1 = document.createElement('script');
-			s1.async = true;
-			s1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga)}`;
-			s1.setAttribute('data-club-landing-track', 'ga');
-			document.head.appendChild(s1);
-			const s2 = document.createElement('script');
-			s2.setAttribute('data-club-landing-track', 'ga-inline');
-			s2.textContent =
-				`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}` +
-				`gtag('js',new Date());gtag('config','${ga}');`;
-			document.head.appendChild(s2);
+			const gtagScript = loadThirdPartyScript(
+				`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga)}`,
+				'gtag',
+			);
+			if (gtagScript) {
+				gtagScript.setAttribute('data-club-landing-track', 'ga');
+				const s2 = document.createElement('script');
+				s2.setAttribute('data-club-landing-track', 'ga-inline');
+				s2.textContent =
+					`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}` +
+					`gtag('js',new Date());gtag('config','${ga}');`;
+				document.head.appendChild(s2);
+			}
 		}
 	});
 </script>

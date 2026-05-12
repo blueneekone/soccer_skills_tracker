@@ -15,6 +15,7 @@
 		/>
 		<meta name="mobile-web-app-capable" content="yes" />
 		<!-- CSP: production uses Content-Security-Policy-Report-Only via Firebase Hosting (firebase.json). Intentionally no meta CSP here so Vite dev HMR is not blocked. -->
+		<!-- COPPA 2.0 / Phase 2 Epic 3 — Teen 13-16 Ad-Block: any new third-party SDK (analytics, ad pixels, session-recording tools) MUST be loaded via loadThirdPartyScript() from $lib/stores/teenAdGuard.svelte.js instead of direct <script> injection. Direct injection bypasses the teen 13-16 suppression guard. -->
 		<!-- Phosphor icons CDN (lightweight icon font, not a bundled library) -->
 		<script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 		%sveltekit.head%

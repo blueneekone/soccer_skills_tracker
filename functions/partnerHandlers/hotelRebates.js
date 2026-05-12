@@ -30,6 +30,10 @@ const {recordPlatformFee} = require('../feeLedger');
 const {getRegistryDb} = require('../cellRouter');
 
 const db = admin.firestore();
+// Phase 2, Epic 3 — Teen 13-16 Ad-Block: partner adapter gate.
+// Hotel rebates don't carry player PII directly, but the interceptor is
+// wired here to document the pattern and catch future payload expansions.
+const {assertNoTeenForAdContext} = require('../teenAdInterceptor');
 
 // ── Payload adapters ──────────────────────────────────────────────────────
 
@@ -64,6 +68,17 @@ function sanitizeRebateId(raw) {
  * @param {import('../apiGateway').GatewayContext} ctx
  */
 async function partnerHotelRebatesPost(ctx) {
+  // Phase 2, Epic 3: assert no teen subjects in the partner payload.
+  // `players` is an optional array of {email} objects that future partners
+  // may include.  For current hotel-rebate payloads (no player PII), the
+  // array is empty and the assertion is a no-op.  This wiring ensures that
+  // if a future payload schema adds player references, the gate is already in place.
+  const payloadPlayers = Array.isArray(ctx.body?.players) ? ctx.body.players : [];
+  await assertNoTeenForAdContext(payloadPlayers, 'partner_adapter', {
+    callerUid: ctx.partnerDoc?.id || 'partner',
+    callerIp:  ctx.ip || 'unknown',
+  });
+
   // Normalise through the partner-specific adapter before extracting fields.
   const partner = ctx.partner;
   const rawBody = ctx.body ?? {};

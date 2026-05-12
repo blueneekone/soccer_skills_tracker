@@ -127,6 +127,34 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.phoneVerified == true;
     }
 
+    // Phase 2, Epic 3 — COPPA 2.0 Age Band helpers.
+    // These helpers gate ad-data-adjacent collections for teen 13-16 subjects.
+    //
+    // tokenAgeBand() — reads the `ageBand` JWT custom claim stamped by syncUserClaims.
+    //   Defaults to 'adult' when absent (lean-permissive for users with no DOB).
+    //   Values: 'under13' | 'teen13to16' | 'adult'
+    //
+    // isTeen13to16() — true when the caller's age band is 'teen13to16'.
+    //   Gate: prevents teens from reading their own ad-export rows.
+    //
+    // ageBandBlocksAdShare() — true for under13 OR teen13to16.
+    //   Gate: blocks any ad-tech-adjacent read/write for either minor tier.
+    //
+    // These helpers are intentionally conservative: both layers block.
+    // Server-side Cloud Function validators (teenAdInterceptor.js) add a second
+    // enforcement layer so Firestore rules are defense-in-depth, not sole control.
+    function tokenAgeBand() {
+      return request.auth.token.ageBand != null ? request.auth.token.ageBand : 'adult';
+    }
+
+    function isTeen13to16() {
+      return authed() && tokenAgeBand() == 'teen13to16';
+    }
+
+    function ageBandBlocksAdShare() {
+      return authed() && (tokenAgeBand() == 'teen13to16' || tokenAgeBand() == 'under13');
+    }
+
     // Shorthand: director OR registrar (compliance managers).
     function isComplianceManager() {
       return isDirector() || isRegistrar();
@@ -1401,10 +1429,15 @@ service cloud.firestore {
     }
 
     // Epic 16: sanitized athlete index for recruiter search (Admin SDK triggers only).
+    // Phase 2, Epic 3: teen13to16 and under13 profiles are never written here
+    // (syncPublicPlayerProfile early-returns for those age bands).  The rule
+    // documents intent and provides defense-in-depth: even if a teen doc were
+    // somehow written, no client can read it via recruiterSubscriptionActive().
+    // The ageBandBlocksAdShare() helper blocks recruiter reads of teen subjects.
     match /public_player_profiles/{uid} {
       allow read: if isSuper()
-        || recruiterSubscriptionActive()
-        || (authed() && request.auth.uid == uid);
+        || (recruiterSubscriptionActive() && !ageBandBlocksAdShare())
+        || (authed() && request.auth.uid == uid && !ageBandBlocksAdShare());
       allow create, update, delete: if false;
     }
 
@@ -2925,10 +2958,17 @@ service cloud.firestore {
     // Recruiter export log — immutable audit trail of every lead export.
     // Recruiter reads their own rows; platform admins see all.  Used by
     // the recruiter UI to render an export history with the fee charged.
+    // Phase 2, Epic 3: block client reads of export rows that contain teen subjects.
+    // `containsTeenRows: true` is set by filterTeenRows in teenAdInterceptor.js
+    // (the CF validator) before any export row is committed.  This rule ensures
+    // that even if an export log entry somehow referenced teens, no client can
+    // enumerate it.  The server-side zero-tolerance policy (reject export entirely)
+    // is the primary guard; this rule is defense-in-depth.
     match /recruiter_export_log/{exportId} {
       allow read: if authed() && (
         isSuper()
-        || resource.data.recruiterEmail == emailKey()
+        || (resource.data.recruiterEmail == emailKey()
+            && resource.data.get('containsTeenRows', false) == false)
       );
       allow write: if false;
     }
@@ -3003,6 +3043,60 @@ service cloud.firestore {
     // Immutable rows written by the Cloud Functions only.
     // Super-admin readable for compliance / support investigations.
     match /magic_uplink_audit/{eventId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Phase 2, Epic 3 — WebAuthn Biometric Attestation for COPPA consent.
+    //
+    // coppa_attestations/{tokenId}
+    // ─────────────────────────────
+    // Immutable record binding a parent's biometric attestation to a COPPA
+    // consent grant.  Document ID = consent_tokens doc ID (token string).
+    // Written exclusively by the `attestParentalConsent` Cloud Function (Admin
+    // SDK).  The attestationObject + clientDataJSON are retained for legal /
+    // COPPA audit discovery.
+    //
+    // Read access:
+    //   • Platform admins (compliance review, legal discovery).
+    //   • Directors, scoped to the child's tenant (for local compliance reports).
+    // Write access: blocked — Admin SDK only.
+    match /coppa_attestations/{tokenId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.get('tenantId', '') == tokenClub())
+      );
+      allow write: if false;
+    }
+
+    // Phase 2, Epic 3 — Teen 13-16 Ad-Block Interceptors.
+    //
+    // ad_block_audit/{logId}
+    // ───────────────────────
+    // Immutable audit trail for every ad-tech data-sharing block triggered by
+    // the teen 13-16 interceptors (CF write-validator + client pixel guard).
+    // Written exclusively by Cloud Functions (Admin SDK).
+    //
+    // Read: super_admin or director scoped to the blocked subject's tenant.
+    // Write: blocked — Admin SDK only.
+    match /ad_block_audit/{logId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && resource.data.get('tenantId', '') == tokenClub())
+      );
+      allow write: if false;
+    }
+
+    // egress_block_audit/{logId}
+    // ───────────────────────────
+    // Immutable audit trail for every outbound network call blocked by the
+    // Cell-Level Egress Guard when a teen-tainted request attempted to reach
+    // a non-whitelisted host (e.g. Facebook Pixel, GTM, ad networks).
+    // Written exclusively by Cloud Functions (Admin SDK).
+    //
+    // Read: super_admin only (network-level detail; not director-facing).
+    // Write: blocked — Admin SDK only.
+    match /egress_block_audit/{logId} {
       allow read: if authed() && isSuper();
       allow write: if false;
     }

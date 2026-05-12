@@ -134,6 +134,13 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     // silently strip it.  Source of truth is the users/{email}.phoneVerified
     // Firestore field written server-side by the CF.
     phoneVerified: userData.phoneVerified === true,
+    // Phase 2, Epic 3 — COPPA 2.0 age band.  Single source of truth for the
+    // teen 13-16 targeted-ad block.  Defaults lean-restrictive for legacy users
+    // with no DOB: if isMinor is set, assume teen13to16; otherwise adult.
+    // Once a DOB is set via setPlayerDateOfBirth or playerSelfReportDob, the
+    // ageBand field is written and this default is superseded.
+    ageBand: userData.ageBand ||
+      (userData.isMinor === true ? 'teen13to16' : 'adult'),
   };
 
   const cid =

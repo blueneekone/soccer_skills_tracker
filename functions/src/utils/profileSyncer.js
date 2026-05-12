@@ -75,6 +75,21 @@ async function syncPublicPlayerProfile(uid) {
     return;
   }
 
+  // Phase 2, Epic 3 — COPPA 2.0 teen 13-16 gate.
+  // Early-return + delete public doc if ageBand is teen13to16 or under13.
+  // This is defense-in-depth against a race window: if a player turns 17
+  // but re-sync hasn't stamped 'adult' yet, the ageBand field still says
+  // 'teen13to16' and we suppress the public profile until the next DOB
+  // update triggers a re-sync.  The Firestore rule (ageBandBlocksAdShare)
+  // is the client-facing gate; this server-side guard prevents the doc
+  // from existing at all.
+  const ageBand = u.ageBand || 'adult';
+  if (ageBand === 'teen13to16' || ageBand === 'under13') {
+    await pubRef.delete().catch(() => {});
+    logger.info('syncPublicPlayerProfile: suppressed teen public profile', {uid, ageBand});
+    return;
+  }
+
   const psSnap = await db().collection('player_stats').doc(uid).get();
   if (!psSnap.exists) {
     await pubRef.delete().catch(() => {});

@@ -51,6 +51,8 @@ const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const REGION = 'us-east1';
 
 const db = admin.firestore();
+// Phase 2, Epic 3 — Teen 13-16 Ad-Block: zero-tolerance gate on recruiter exports.
+const {filterTeenRows} = require('./teenAdInterceptor');
 
 function getStripe() {
   const stripe = require('stripe');
@@ -108,6 +110,38 @@ exports.recordRecruiterExport = onCall(
       if (!Number.isInteger(leadCount) || leadCount <= 0 || leadCount > 10000) {
         throw new HttpsError('invalid-argument', 'leadCount must be 1..10000.');
       }
+
+      // ── Phase 2, Epic 3: Teen 13-16 Ad-Block (zero-tolerance) ─────────────
+      // Callers may pass `rows: Array<{email: string}>` for COPPA validation.
+      // If rows are present, any teen13to16 subject causes the entire export
+      // to be rejected (zero-tolerance policy).  No partial filtering here —
+      // the recruiter must clean their search query and re-export.
+      const exportRows = Array.isArray(request.data?.rows) ? request.data.rows : [];
+      if (exportRows.length > 0) {
+        const auditCtx = {
+          callerUid: request.auth.uid,
+          callerIp:  request.rawRequest?.ip || 'unknown',
+        };
+        const {kept, dropped} = await filterTeenRows(exportRows, {
+          integrationType: 'recruiter_export',
+          ...auditCtx,
+        });
+        if (dropped.length > 0) {
+          throw new HttpsError(
+              'failed-precondition',
+              `TEEN_BLOCKED: Export contains ${dropped.length} teen 13-16 subject(s). ` +
+              `Remove them from your search query and re-export. ` +
+              `No fee has been charged.`,
+          );
+        }
+        // Mark export as teen-free for the audit log.
+        if (kept.length > 0) {
+          logger.info('[recruiterBilling] recordRecruiterExport: teen check passed', {
+            exportId, leadCount, keptCount: kept.length,
+          });
+        }
+      }
+      // ───────────────────────────────────────────────────────────────────────
 
       // Verify the recruiter account is active.
       const recRef = db.collection('recruiter_accounts').doc(email);

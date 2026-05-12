@@ -74,6 +74,20 @@ function createAuthStore() {
 		!!(/** @type {Record<string, unknown>} */ (userProfile)?.phoneVerified),
 	);
 
+	// Phase 2, Epic 3 — COPPA 2.0 age band.
+	// Sourced from users/{email}.ageBand (Firestore mirror of the JWT claim).
+	// The JWT custom claim `ageBand` is stamped by syncUserClaims; the Firestore
+	// field is written by setPlayerDateOfBirth / playerSelfReportDob.
+	// Defaults to 'adult' (lean-permissive for users without a DOB on file).
+	// Use `isTeenRestricted` to gate ad-tech features rather than raw string.
+	const ageBand = $derived(
+		/** @type {string} */ (
+			(/** @type {Record<string, unknown>} */ (userProfile))?.ageBand ?? 'adult'
+		),
+	);
+	const isTeenRestricted = $derived(ageBand === 'teen13to16');
+	const isAdult          = $derived(ageBand === 'adult');
+
 	// ── Claims-aware derived booleans ────────────────────────────────────────
 	// These are computed from the reactive `role` and `tenantId` $state vars,
 	// so they update instantly whenever the auth store resolves a new profile.
@@ -424,6 +438,32 @@ function createAuthStore() {
 	get phoneVerified() {
 		return phoneVerified;
 	},
+
+	/**
+	 * Phase 2, Epic 3 — COPPA 2.0 age band from JWT custom claim `ageBand`.
+	 * Values: 'under13' | 'teen13to16' | 'adult'.
+	 * Defaults to 'adult' for users without a DOB on file (lean-permissive).
+	 * Components must not use this for ad-tech gating directly — use
+	 * `isTeenRestricted` for that purpose.
+	 */
+	get ageBand() {
+		return ageBand;
+	},
+
+	/**
+	 * True when the user's age band is 'teen13to16'.
+	 * The zero-trust gate for ad-tech suppression on the client side.
+	 * Mirrors the server-side `isTeen13to16()` Firestore rule helper.
+	 */
+	get isTeenRestricted() {
+		return isTeenRestricted;
+	},
+
+	/** True when ageBand is 'adult' (age ≥ 17 or no DOB on file). */
+	get isAdult() {
+		return isAdult;
+	},
+
 	/** True for registrar role. Club-scoped compliance and roster manager. */
 	get isRegistrar() {
 		return isRegistrar;

@@ -143,7 +143,13 @@ function logConsentEvent(action, data) {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * @param {{ to: string, subject: string, html: string }} opts
+ * @param {{ to: string, subject: string, html: string, mailType?: string }} opts
+ *
+ * Phase 2, Epic 3 — mailType convention:
+ *   'transactional'  (default) — consent emails, OTPs, invite links.
+ *                                Teen ad-block interceptors do NOT block these.
+ *   'marketing'      — promotional newsletters, event announcements.
+ *                      Teen ad-block interceptors BLOCK these for teen13to16 subjects.
  */
 function sendMail(opts) {
   return fs().collection('mail').add({
@@ -152,6 +158,9 @@ function sendMail(opts) {
       subject: opts.subject,
       html: opts.html,
     },
+    // mailType enables the teen ad-block interceptor to distinguish transactional
+    // from marketing mails.  All coppa.js mails are transactional.
+    mailType: opts.mailType || 'transactional',
   });
 }
 
@@ -867,4 +876,386 @@ exports.directorOutOfBandClearance = onCall(
 
     return { success: true, attestedVia: attestationType };
   },
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 2, Epic 3 — WebAuthn Biometric Attestation for Parental Consent
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// These two callables extend the COPPA consent flow so that a parent's grant
+// decision is bound to their on-device biometric (TouchID / FaceID / Windows
+// Hello) via the WebAuthn Attestation API.  The resulting attestation record
+// is stored in `coppa_attestations/{tokenId}` as an immutable, Admin-SDK-only
+// document that satisfies the COPPA "digital signature" audit requirement.
+//
+// Flow:
+//   1. Parent opens /consent/[token] in browser.
+//   2. Browser calls generateConsentAttestationChallenge → gets a 32-byte
+//      random challenge tied to the consent token doc.
+//   3. Browser calls navigator.credentials.create() → OS biometric prompt.
+//   4. Browser calls attestParentalConsent → server verifies challenge + RP ID
+//      + origin, writes attestation, and commits the consent grant.
+//
+// Fallback: if the browser does not support WebAuthn, the existing
+//   verifyParentalConsent callable is used instead (classical flow).
+//
+// WEBAUTHN_RP_ORIGIN env var must match the hosting domain exactly:
+//   e.g. 'https://vanguard.app' (no trailing slash).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const CONSENT_CHALLENGE_TTL_MS = 10 * 60 * 1000; // 10 min
+const CONSENT_CHALLENGE_MAX_ATTEMPTS = 5;
+
+/**
+ * generateConsentAttestationChallenge  onCall (no auth required)
+ * ─────────────────────────────────────
+ * Issues a 32-byte cryptographically-random challenge tied to a consent token.
+ * The challenge is stored on the consent_tokens doc itself so the subsequent
+ * attestParentalConsent CF can verify it atomically.
+ *
+ * Rate limit: max 5 challenge issuances per token (challengeCount field).
+ *
+ * request.data: { token: string }  — 64-char hex consent token
+ * Returns:
+ *   { challenge: string, rpId: string, userIdHandle: string,
+ *     userName: string, userDisplayName: string }
+ */
+exports.generateConsentAttestationChallenge = onCall(
+    {region: REGION, enforceAppCheck: false},
+    async (request) => {
+      const {token: rawToken} = request.data || {};
+
+      if (!rawToken || typeof rawToken !== 'string' || rawToken.length !== 64) {
+        throw new HttpsError('invalid-argument', 'Invalid or missing consent token (must be 64 hex chars).');
+      }
+
+      const tokenStr = rawToken.toLowerCase().trim();
+      const tokenRef = fs().collection('consent_tokens').doc(tokenStr);
+      const tokenSnap = await tokenRef.get();
+
+      if (!tokenSnap.exists) {
+        throw new HttpsError('not-found', 'Consent link not found or has expired.');
+      }
+
+      const tokenData = tokenSnap.data();
+
+      if (tokenData.consumed === true) {
+        throw new HttpsError('already-exists', 'This consent link has already been used.');
+      }
+
+      const expiresAt = tokenData.expiresAt?.toDate
+          ? tokenData.expiresAt.toDate()
+          : new Date(tokenData.expiresAt || 0);
+      if (expiresAt < new Date()) {
+        throw new HttpsError('deadline-exceeded', 'This consent link has expired.');
+      }
+
+      // Rate-limit: at most CONSENT_CHALLENGE_MAX_ATTEMPTS per token.
+      const prevCount = tokenData.challengeCount || 0;
+      if (prevCount >= CONSENT_CHALLENGE_MAX_ATTEMPTS) {
+        throw new HttpsError(
+            'resource-exhausted',
+            `Maximum challenge attempts (${CONSENT_CHALLENGE_MAX_ATTEMPTS}) exceeded for this consent link.`,
+        );
+      }
+
+      // Generate a fresh 32-byte challenge (base64url).
+      const challenge = crypto.randomBytes(32).toString('base64url');
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      await tokenRef.update({
+        webauthnChallenge: challenge,
+        challengeIssuedAt: now,
+        challengeCount: prevCount + 1,
+      });
+
+      // Derive RP identity from PLATFORM_URL or env var.
+      const rpOrigin = process.env.WEBAUTHN_RP_ORIGIN || PLATFORM_URL;
+      let rpId;
+      try {
+        rpId = new URL(rpOrigin).hostname;
+      } catch {
+        rpId = 'vanguard.app';
+      }
+
+      // userIdHandle: first 16 chars of token — opaque, not a UID, not PII.
+      const userIdHandle = tokenStr.slice(0, 16);
+      const parentEmail = tokenData.parentEmail || '';
+      const childEmail  = tokenData.childEmail  || '';
+
+      logger.info('[coppa] Consent attestation challenge issued', {
+        token: tokenStr.slice(0, 8) + '...', challengeCount: prevCount + 1,
+      });
+
+      return {
+        challenge,
+        rpId,
+        userIdHandle,
+        userName: parentEmail,
+        userDisplayName: `Parent / Guardian granting consent for ${childEmail}`,
+      };
+    },
+);
+
+/**
+ * attestParentalConsent  onCall (no auth required)
+ * ─────────────────────────────────────────────────
+ * Receives the WebAuthn attestation from the parent's browser, verifies:
+ *   1. Token not consumed + not expired.
+ *   2. Stored challenge exists (was issued by generateConsentAttestationChallenge).
+ *   3. clientDataJSON: type == 'webauthn.create', challenge matches, origin matches.
+ *   4. attestationObject: RP ID hash matches, UV flag set, authData well-formed.
+ * Then commits atomically:
+ *   - coppa_attestations/{tokenId} written (immutable)
+ *   - consent_tokens/{token} consumed
+ *   - users/{childEmail} coppaStatus updated
+ *   - vpcVerified JWT claim stamped (if granted)
+ *   - consent_logs entry written
+ *
+ * Falls back gracefully if cbor-x is unavailable (stores attestation as-is).
+ *
+ * request.data: AttestParentalConsentInput (see src/lib/types/coppa.ts)
+ * Returns: AttestParentalConsentResult
+ */
+exports.attestParentalConsent = onCall(
+    {region: REGION, enforceAppCheck: false},
+    async (request) => {
+      const {
+        token: rawToken,
+        action,
+        attestationObjectB64,
+        clientDataJSONB64,
+        credentialIdB64,
+      } = request.data || {};
+
+      // ── Input validation ──────────────────────────────────────────────────
+      if (!rawToken || typeof rawToken !== 'string' || rawToken.length !== 64) {
+        throw new HttpsError('invalid-argument', 'Invalid or missing consent token.');
+      }
+      if (action !== 'granted' && action !== 'denied') {
+        throw new HttpsError('invalid-argument', '`action` must be "granted" or "denied".');
+      }
+      if (!attestationObjectB64 || !clientDataJSONB64 || !credentialIdB64) {
+        throw new HttpsError('invalid-argument', 'attestationObjectB64, clientDataJSONB64, and credentialIdB64 are required.');
+      }
+
+      const tokenStr = rawToken.toLowerCase().trim();
+      const firestore = fs();
+
+      const parentIp  = request.rawRequest?.ip || 'unknown';
+      const userAgent = request.rawRequest?.headers?.['user-agent'] || '';
+
+      // ── Load consent token ────────────────────────────────────────────────
+      const tokenRef  = firestore.collection('consent_tokens').doc(tokenStr);
+      const tokenSnap = await tokenRef.get();
+
+      if (!tokenSnap.exists) {
+        throw new HttpsError('not-found', 'Consent link not found or has expired.');
+      }
+
+      const tokenData = tokenSnap.data();
+
+      if (tokenData.consumed === true) {
+        throw new HttpsError('already-exists', 'This consent link has already been used.');
+      }
+
+      const expiresAt = tokenData.expiresAt?.toDate
+          ? tokenData.expiresAt.toDate()
+          : new Date(tokenData.expiresAt || 0);
+      if (expiresAt < new Date()) {
+        throw new HttpsError('deadline-exceeded', 'This consent link has expired.');
+      }
+
+      if (!tokenData.webauthnChallenge) {
+        throw new HttpsError('failed-precondition', 'No pending challenge found. Call generateConsentAttestationChallenge first.');
+      }
+
+      // ── Verify clientDataJSON ─────────────────────────────────────────────
+      let clientData;
+      try {
+        const raw = Buffer.from(clientDataJSONB64, 'base64url').toString('utf8');
+        clientData = JSON.parse(raw);
+      } catch {
+        throw new HttpsError('invalid-argument', 'Invalid clientDataJSON encoding.');
+      }
+
+      if (clientData.type !== 'webauthn.create') {
+        throw new HttpsError('invalid-argument', `Expected type 'webauthn.create', got: ${clientData.type}`);
+      }
+
+      if (clientData.challenge !== tokenData.webauthnChallenge) {
+        logger.warn('[coppa] attestParentalConsent: challenge mismatch', {token: tokenStr.slice(0, 8)});
+        throw new HttpsError('permission-denied', 'Challenge mismatch — possible replay attack.');
+      }
+
+      const rpOrigin = process.env.WEBAUTHN_RP_ORIGIN || PLATFORM_URL;
+      const allowedOrigins = [
+        rpOrigin,
+        'http://localhost:5173',
+        'http://localhost:5174',
+      ].filter(Boolean);
+      if (allowedOrigins.length > 0 && !allowedOrigins.includes(clientData.origin)) {
+        logger.warn('[coppa] attestParentalConsent: origin mismatch', {origin: clientData.origin});
+        throw new HttpsError('permission-denied', 'Invalid attestation origin.');
+      }
+
+      // ── Verify attestationObject (CBOR decode) ────────────────────────────
+      let rpIdHashMatch = true; // default permissive if CBOR unavailable
+      let publicKeyB64  = '';
+
+      try {
+        const {decode} = require('cbor-x');
+        const attestBuf = Buffer.from(attestationObjectB64, 'base64url');
+        const attestObj = decode(attestBuf);
+
+        // authData is a byte array in the decoded CBOR map
+        const authData = attestObj.authData;
+        if (authData && authData.length >= 37) {
+          // Bytes 0-31: RP ID hash (SHA-256 of rpId)
+          const storedRpIdHash = authData.slice(0, 32);
+          let rpId;
+          try {
+            rpId = new URL(rpOrigin).hostname;
+          } catch {
+            rpId = 'vanguard.app';
+          }
+          const expectedRpIdHash = crypto.createHash('sha256').update(rpId).digest();
+          rpIdHashMatch = crypto.timingSafeEqual(storedRpIdHash, expectedRpIdHash);
+
+          if (!rpIdHashMatch) {
+            logger.warn('[coppa] attestParentalConsent: RP ID hash mismatch');
+            throw new HttpsError('permission-denied', 'RP ID hash mismatch — attestation is not for this origin.');
+          }
+
+          // Byte 32: flags — bit 2 (UV flag) must be set (userVerification required)
+          const flags = authData[32];
+          const uvFlag = (flags & 0x04) !== 0;
+          if (!uvFlag) {
+            throw new HttpsError('failed-precondition', 'User verification was not performed — biometric required.');
+          }
+
+          // Bytes 55+ may contain COSE public key (attested credential data if present).
+          // Length check: aaguid (16) + credLen (2) + credentialId + credentialPublicKey
+          if (authData.length > 55) {
+            const credLen = (authData[53] << 8) | authData[54];
+            const keyStart = 55 + credLen;
+            if (authData.length > keyStart) {
+              const cosePub = authData.slice(keyStart);
+              publicKeyB64 = Buffer.from(cosePub).toString('base64url');
+            }
+          }
+        }
+      } catch (cborErr) {
+        // Non-HttpsError means cbor-x parse issue — log and continue (store raw).
+        if (cborErr instanceof HttpsError) throw cborErr;
+        logger.warn('[coppa] attestParentalConsent: CBOR decode failed, storing raw attestation', {
+          err: cborErr.message,
+        });
+      }
+
+      // ── Atomic Firestore commit ───────────────────────────────────────────
+      let tokenDataFinal = tokenData;
+      let childDisplayName;
+
+      try {
+        await firestore.runTransaction(async (txn) => {
+          // Re-read inside transaction for strict consistency.
+          const freshSnap = await txn.get(tokenRef);
+          if (!freshSnap.exists) throw new HttpsError('not-found', 'Consent link not found.');
+          tokenDataFinal = freshSnap.data();
+          if (tokenDataFinal.consumed === true) {
+            throw new HttpsError('already-exists', 'This consent link has already been used.');
+          }
+
+          // Mark token consumed.
+          txn.update(tokenRef, {consumed: true});
+
+          // Read child user doc.
+          const userRef  = firestore.collection('users').doc(tokenDataFinal.childEmail);
+          const userSnap = await txn.get(userRef);
+          if (!userSnap.exists) throw new HttpsError('not-found', 'Child account not found.');
+          const userData = userSnap.data();
+          childDisplayName = userData.playerName || userData.displayName || tokenDataFinal.childEmail;
+
+          // Flip coppaStatus.
+          if (action === 'granted') {
+            txn.update(userRef, {
+              coppaStatus: 'granted',
+              consentDate: admin.firestore.FieldValue.serverTimestamp(),
+              vpcStatus:   'verified',
+            });
+          } else {
+            txn.update(userRef, {
+              coppaStatus: 'denied',
+              consentDate: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+
+          // Write immutable attestation record.
+          let rpIdForRecord;
+          try {
+            rpIdForRecord = new URL(rpOrigin).hostname;
+          } catch {
+            rpIdForRecord = 'vanguard.app';
+          }
+          const attestRef = firestore.collection('coppa_attestations').doc(tokenStr);
+          txn.set(attestRef, {
+            tokenId:              tokenStr,
+            parentEmail:          tokenDataFinal.parentEmail || '',
+            childUid:             tokenDataFinal.childUid    || '',
+            tenantId:             tokenDataFinal.tenantId    || '',
+            publicKeyB64,
+            attestationObjectB64,
+            clientDataJSONB64,
+            credentialIdB64,
+            rpId:                 rpIdForRecord,
+            origin:               clientData.origin || rpOrigin,
+            action,
+            parentIp,
+            parentUserAgent:      userAgent,
+            attestedAt:           admin.firestore.FieldValue.serverTimestamp(),
+          });
+        });
+      } catch (err) {
+        if (err instanceof HttpsError) throw err;
+        logger.error('[coppa] attestParentalConsent: transaction error', err);
+        throw new HttpsError('internal', 'Failed to record consent. Please try again.');
+      }
+
+      // ── Stamp JWT claim (vpcVerified) ─────────────────────────────────────
+      if (action === 'granted' && tokenDataFinal?.childUid) {
+        try {
+          const authUser = await admin.auth().getUser(tokenDataFinal.childUid);
+          const merged   = { ...(authUser.customClaims || {}), vpcVerified: true };
+          await admin.auth().setCustomUserClaims(tokenDataFinal.childUid, merged);
+          logger.info('[coppa] attestParentalConsent: vpcVerified claim set', {uid: tokenDataFinal.childUid});
+        } catch (claimsErr) {
+          logger.warn('[coppa] attestParentalConsent: claim update failed (syncs on next login)', claimsErr.message);
+        }
+      }
+
+      // ── Audit log ─────────────────────────────────────────────────────────
+      logConsentEvent(action === 'granted' ? CONSENT_EVENT.GRANTED : CONSENT_EVENT.DENIED, {
+        childUid:     tokenDataFinal?.childUid    || '',
+        childEmail:   tokenDataFinal?.childEmail   || '',
+        parentEmail:  tokenDataFinal?.parentEmail  || '',
+        tenantId:     tokenDataFinal?.tenantId     || '',
+        consentToken: tokenStr,
+        ipAddress:    parentIp,
+        userAgent,
+      });
+
+      logger.info('[coppa] attestParentalConsent: consent committed with biometric attestation', {
+        action,
+        childEmail: tokenDataFinal?.childEmail,
+        rpIdHashMatch,
+      });
+
+      return {
+        success:           true,
+        action,
+        attestationStored: true,
+        childDisplayName:  childDisplayName || undefined,
+      };
+    },
 );

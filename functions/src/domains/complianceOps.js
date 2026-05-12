@@ -6,7 +6,7 @@ const {HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
-const {normEmail, computeAgeYears} = require('../utils/formatters');
+const {normEmail, computeAgeYears, computeAgeBand} = require('../utils/formatters');
 const {
   assertDirectorOrSuper,
   assertParent,
@@ -540,11 +540,14 @@ exports.setPlayerDateOfBirth = onCall({region: REGION}, async (request) => {
   // COPPA 2026 / Children's Privacy Act: threshold is under 17.
   const isMinor = age < 17;
   const vpcStatus = isMinor ? 'pending' : 'not_required';
+  // Phase 2, Epic 3: COPPA 2.0 age band for teen 13-16 ad-block interceptors.
+  const ageBand = computeAgeBand(ts);
 
   await snap.ref.update({
     dateOfBirth: ts,
     isMinor,
     vpcStatus,
+    ageBand,
   });
 
   await db().collection('security_audit').add({
@@ -553,10 +556,11 @@ exports.setPlayerDateOfBirth = onCall({region: REGION}, async (request) => {
     actorEmail: actor.email || null,
     actorUid: request.auth.uid,
     isMinor,
+    ageBand,
     at: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  return {playerEmail, isMinor, vpcStatus};
+  return {playerEmail, isMinor, vpcStatus, ageBand};
 });
 
 // Legacy name; prefer directorApproveVpc for new clients (identical behavior).
@@ -742,11 +746,14 @@ exports.playerSelfReportDob = onCall({region: REGION}, async (request) => {
   const isMinor = age < 17;
   // 'pending_parent' distinguishes self-reported DOB from director-set DOB ('pending').
   const vpcStatus = isMinor ? 'pending_parent' : 'not_required';
+  // Phase 2, Epic 3: COPPA 2.0 age band for teen 13-16 ad-block interceptors.
+  const ageBand = computeAgeBand(ts);
 
   await uRef.update({
     dateOfBirth: ts,
     isMinor,
     vpcStatus,
+    ageBand,
   });
 
   await db().collection('security_audit').add({
@@ -755,10 +762,11 @@ exports.playerSelfReportDob = onCall({region: REGION}, async (request) => {
     actorUid: request.auth.uid,
     isMinor,
     vpcStatus,
+    ageBand,
     at: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  return {ok: true, isMinor, vpcStatus};
+  return {ok: true, isMinor, vpcStatus, ageBand};
 });
 
 /**

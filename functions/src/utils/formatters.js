@@ -246,6 +246,27 @@ function computeAgeYears(dob) {
 }
 
 /**
+ * Phase 2, Epic 3 — COPPA 2.0 age band computation.
+ * Computes the AgeBand value from a Firestore Timestamp DOB.
+ * Used by setPlayerDateOfBirth / playerSelfReportDob to write ageBand to
+ * users/{email} and by syncUserClaims to stamp the `ageBand` JWT claim.
+ *
+ * Thresholds (COPPA 2.0 / Children's Online Privacy Protection 2026):
+ *   under13   → age < 13
+ *   teen13to16 → 13 ≤ age ≤ 16  (targeted-ad sharing blocked)
+ *   adult      → age ≥ 17
+ *
+ * @param {admin.firestore.Timestamp} dob
+ * @return {'under13' | 'teen13to16' | 'adult'}
+ */
+function computeAgeBand(dob) {
+  const age = computeAgeYears(dob);
+  if (age < 13)  return 'under13';
+  if (age <= 16) return 'teen13to16';
+  return 'adult';
+}
+
+/**
  * Epic 16: age band label for recruiter filters (no DOB exposed on public doc).
  * @param {number} ageYears
  * @return {string}
@@ -327,6 +348,7 @@ module.exports = {
   isTrustedFirebaseStorageLogoUrl,
   coachInviteDocId,
   computeAgeYears,
+  computeAgeBand,
   ageGroupLabel,
   sanitizePublicDisplayName,
   topAttributesFromMetrics,

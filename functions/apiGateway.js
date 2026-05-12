@@ -67,6 +67,10 @@ const admin = require('firebase-admin');
 
 const {DEFAULT_CELL_ID, resolveCellId} = require('./cellConstants');
 const {getAdminDb, getRegistryDb} = require('./cellRouter');
+// Phase 2, Epic 3 — Egress guard context.
+// Wraps each handler dispatch in egressContext.run() so that teen-tainted
+// requests from any route handler cannot exfiltrate data to ad-tech hosts.
+const {egressContext} = require('./egressGuard');
 
 const REGION = 'us-east1';
 
@@ -599,7 +603,14 @@ exports.apiGateway = onRequest(
           headers: req.headers,
         };
 
-        const {status, body} = await candidate.handler(ctx);
+        // Phase 2, Epic 3: Wrap handler in egress context so teen-tainted
+        // requests propagate the taint flag through any nested fetch calls.
+        // The initial context is non-tainted; handlers that process teen data
+        // must call markPayloadTainted() to flip the flag inside this run().
+        const {status, body} = await egressContext.run(
+            {teenTainted: false, callerUid: uid, integrationType: 'api_gateway'},
+            () => candidate.handler(ctx),
+        );
 
         if (candidate.mutates) {
           await writeIdempotent(uid, idemKey, status, body);

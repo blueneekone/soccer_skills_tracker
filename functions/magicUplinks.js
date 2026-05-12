@@ -84,6 +84,8 @@ function scryptDerive(secret, salt) {
 
 /**
  * Write to the `mail/{docId}` collection consumed by the Trigger Email extension.
+ * Phase 2, Epic 3 — mailType: 'transactional' marks this as a non-marketing
+ * email so the teen ad-block interceptor does not suppress it.
  * @param {{ to: string, subject: string, html: string }} opts
  * @returns {Promise<string>} docId used as dispatchMessageId
  */
@@ -91,6 +93,7 @@ async function sendMagicUplinkEmail({to, subject, html}) {
   const ref = await db().collection('mail').add({
     to: [to],
     message: {subject, html},
+    mailType: 'transactional',
   });
   return ref.id;
 }
