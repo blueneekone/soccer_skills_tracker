@@ -37,6 +37,7 @@ const {
 } = require('../utils/formatters');
 
 const {syncPublicPlayerProfile} = require('../utils/profileSyncer');
+const {DEFAULT_CELL_ID, resolveCellId} = require('../../cellConstants');
 
 const REGION = 'us-east1';
 const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
@@ -125,6 +126,9 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     isCleared,
     tier:                null,
     subscription_status: null,
+    // Phase 1, Epic 1 — Cell-Based Routing.  Default until the
+    // organizations/{clubId}.cellId lookup below resolves a dedicated cell.
+    cellId: DEFAULT_CELL_ID,
   };
 
   const cid =
@@ -146,6 +150,20 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
       }
     } catch (e) {
       logger.warn('syncUserClaims entitlement read', e);
+    }
+
+    // Cell-Based Routing — read organizations/{tenantId}.cellId and stamp
+    // it into the JWT so the client SDK + API gateway can target the
+    // right Firestore database without a per-request lookup.  Falls
+    // through to DEFAULT_CELL_ID on any error or absence, which is the
+    // correct behavior — every tenant starts on the shared cell.
+    try {
+      const orgSnap = await db().collection('organizations').doc(cid).get();
+      if (orgSnap.exists) {
+        customClaims.cellId = resolveCellId(orgSnap.get('cellId'));
+      }
+    } catch (e) {
+      logger.warn('syncUserClaims cellId read', e);
     }
   }
 

@@ -259,3 +259,56 @@ const analyticsTriggers = require('./analytics');
 exports.onAnalyticsUserWritten   = analyticsTriggers.onUserWritten;
 exports.onAnalyticsClubWritten   = analyticsTriggers.onClubWritten;
 exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
+
+// ---------------------------------------------------------------------------
+// Phase 1, Epic 1 — Cell-Based Routing
+//
+// Registry bootstrap (Session A), tenant ↔ cell provisioning (Session B),
+// shared cell router accessor (Session D), migration tooling (Session G),
+// API gateway (Session E), and observability (Session I).
+// ---------------------------------------------------------------------------
+require('./cellRouter'); // Eager-load to seed the per-cellId Firestore cache.
+
+const cellBootstrapHandlers = require('./cellBootstrap');
+exports.bootstrapCellRegistry  = cellBootstrapHandlers.bootstrapCellRegistry;
+exports.registerDedicatedCell  = cellBootstrapHandlers.registerDedicatedCell;
+exports.activateCell           = cellBootstrapHandlers.activateCell;
+
+const cellProvisioningHandlers = require('./cellProvisioning');
+exports.provisionTenantCell    = cellProvisioningHandlers.provisionTenantCell;
+exports.peekTenantCell         = cellProvisioningHandlers.peekTenantCell;
+
+// /v1/* HTTP gateway — single entry point for all cell-aware REST traffic.
+// Session E: handlers register their routes via apiGateway.register() at
+// module load.  Adding new domain routes does not require touching
+// firebase.json or hosting rewrites — they bind to the same Cloud Function.
+const apiGatewayHandlers = require('./apiGateway');
+exports.apiGateway             = apiGatewayHandlers.apiGateway;
+
+// Tenant migration tooling (Session G).  Each callable advances a
+// migration record one phase: announce → freeze → export → import →
+// verify → cutover → rollback.  See functions/cellMigration.js for the
+// state machine.
+const cellMigrationHandlers = require('./cellMigration');
+exports.startTenantMigration      = cellMigrationHandlers.startTenantMigration;
+exports.markExportComplete        = cellMigrationHandlers.markExportComplete;
+exports.markImportComplete        = cellMigrationHandlers.markImportComplete;
+exports.verifyTenantOnCell        = cellMigrationHandlers.verifyTenantOnCell;
+exports.executeCutover            = cellMigrationHandlers.executeCutover;
+exports.rollbackTenantMigration   = cellMigrationHandlers.rollbackTenantMigration;
+
+// Observability + promotion queue (Session I).  Schedulers + admin
+// callables that feed the Director OS cell-health dashboard and
+// drive the noisy-neighbor early-warning system.
+const cellObservabilityHandlers = require('./cellObservability');
+exports.flagTenantForPromotion    = cellObservabilityHandlers.flagTenantForPromotion;
+exports.acknowledgePromotionFlag  = cellObservabilityHandlers.acknowledgePromotionFlag;
+exports.evaluateCellPromotions    = cellObservabilityHandlers.evaluateCellPromotions;
+exports.purgeGatewayCaches        = cellObservabilityHandlers.purgeGatewayCaches;
+
+// Synthetic NGB seed (Session J).  Sandboxed loader for end-to-end
+// verification of the migration pipeline — every doc is tagged
+// `synthetic: true` and tenantId must start with `synth-`.
+const cellSeedHandlers = require('./cellSeed');
+exports.seedSyntheticTenant       = cellSeedHandlers.seedSyntheticTenant;
+exports.purgeSyntheticTenant      = cellSeedHandlers.purgeSyntheticTenant;

@@ -1,4 +1,4 @@
-import { auth, db } from '$lib/firebase.js';
+import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
 import { getIdTokenResult, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { resolveUserProfile, isProfileComplete as computeIsProfileComplete } from '$lib/auth/profile.js';
@@ -43,6 +43,20 @@ function createAuthStore() {
 	 * Empty string '' when the user's club is a standalone tenant.
 	 */
 	let orgId = $state('');
+	/**
+	 * Phase 1, Epic 1 — Cell-Based Routing.
+	 *
+	 * Firestore Multi-Database cell ID this tenant is routed to.
+	 * Stamped into the JWT by `syncUserClaims` after reading
+	 * `organizations/{tenantId}.cellId`.  Defaults to the reserved
+	 * '(default)' string for tenants on the shared cell — never empty.
+	 *
+	 * Consumed by `getActiveDb()` in `$lib/firebase.js` (Session C) to
+	 * select the right Firestore instance for every cell-aware read or
+	 * write.  Components never read this directly; the cell-aware
+	 * accessor reads it on their behalf.
+	 */
+	let cellId = $state('(default)');
 	let isAuthenticated = $state(false);
 	let isProfileComplete = $state(false);
 	let isLoading = $state(true);
@@ -248,6 +262,7 @@ function createAuthStore() {
 		role = 'guest';
 		tenantId = '';
 		orgId = '';
+		cellId = '(default)';
 		isAuthenticated = false;
 		isProfileComplete = false;
 		if (isLoading !== false) isLoading = false;
@@ -274,6 +289,11 @@ function createAuthStore() {
 			// Org-topology: derive orgId from profile (optional; absent for standalone clubs).
 			const resolvedOrgId = String(resolved.profile?.orgId ?? '');
 			if (orgId !== resolvedOrgId) orgId = resolvedOrgId;
+			// Cell-Based Routing — `resolved.cellId` is always a non-empty
+			// string ('(default)' for tenants on the shared cell).  Drives
+			// `getActiveDb()` in $lib/firebase.js.
+			const resolvedCellId = resolved.cellId || '(default)';
+			if (cellId !== resolvedCellId) cellId = resolvedCellId;
 			setProfile(resolved.profile);
 			workspaceContextStore.hydrateContext(firebaseUser, resolved.role, resolved.profile);
 			attachUserStatusListener(firebaseUser);
@@ -283,6 +303,15 @@ function createAuthStore() {
 			if (isLoading !== false) isLoading = false;
 		}
 	});
+
+	// Phase 1, Epic 1 — Cell-Based Routing.
+	//
+	// Hand the firebase.js singleton a closure that reads the current
+	// reactive `cellId` value.  `getActiveDb()` invokes this on every
+	// call so the returned Firestore instance always reflects the
+	// freshest JWT claim — including after `provisionTenantCell`
+	// reassigns the tenant and `refreshClaims()` picks up the change.
+	registerActiveCellResolver(() => cellId);
 
 	return {
 		get user() {
@@ -315,6 +344,20 @@ function createAuthStore() {
 		 */
 		get orgId() {
 			return orgId;
+		},
+		/**
+		 * Phase 1, Epic 1 — Cell-Based Routing.
+		 *
+		 * Firestore Multi-Database cell ID this tenant is currently
+		 * routed to.  ALWAYS a non-empty string — '(default)' indicates
+		 * the shared cell.  Components do not read this directly; the
+		 * `getActiveDb()` accessor in `$lib/firebase.js` consumes it.
+		 *
+		 * Exposed here for the Director OS migration UI which renders
+		 * the current cell badge.
+		 */
+		get cellId() {
+			return cellId;
 		},
 		/** Derived from verified JWT role claim. */
 		get isCoach() {
@@ -427,6 +470,12 @@ function createAuthStore() {
 					tokenResult.claims.tenantId || tokenResult.claims.clubId || '',
 				);
 				const newOrgId = String(tokenResult.claims.orgId || '');
+				// Cell-Based Routing: read fresh cellId; absent → '(default)'.
+				const rawCellId =
+					typeof tokenResult.claims.cellId === 'string' &&
+					tokenResult.claims.cellId.trim().length > 0
+						? tokenResult.claims.cellId.trim()
+						: '(default)';
 
 				// Only update role if the token carries one — avoids blanking the
 				// role while claims are still propagating.
@@ -435,6 +484,9 @@ function createAuthStore() {
 				if (tenantId !== newTenantId) tenantId = newTenantId;
 				// orgId: sync from JWT; empty string is valid (standalone club).
 				if (orgId !== newOrgId) orgId = newOrgId;
+				// cellId is always non-empty; if it changed, the next read via
+				// getActiveDb() picks up the new Firestore database.
+				if (cellId !== rawCellId) cellId = rawCellId;
 			} catch (err) {
 				console.warn('[auth store] refreshClaims error:', err);
 			}
@@ -457,6 +509,8 @@ function createAuthStore() {
 				if (tenantId !== refreshedTenantId) tenantId = refreshedTenantId;
 				const refreshedOrgId = String(resolved.profile?.orgId ?? '');
 				if (orgId !== refreshedOrgId) orgId = refreshedOrgId;
+				const refreshedCellId = resolved.cellId || '(default)';
+				if (cellId !== refreshedCellId) cellId = refreshedCellId;
 				setProfile(resolved.profile);
 				workspaceContextStore.hydrateContext(auth.currentUser, resolved.role, resolved.profile);
 			} catch (err) {

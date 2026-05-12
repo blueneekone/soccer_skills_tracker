@@ -13,6 +13,28 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getIdTokenResult } from 'firebase/auth';
 import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
 import { userDocHasPlayerRole } from '$lib/auth/loginRouting.js';
+import { resolveCellId } from '$lib/types/cells';
+
+/**
+ * Extract the Firestore cell ID from a token result's custom claims.
+ *
+ * Phase 1, Epic 1 — Cell-Based Routing.
+ *
+ * `tokenResult.claims.cellId` is written by the `syncUserClaims`
+ * Cloud Function trigger after reading `organizations/{tenantId}.cellId`.
+ * For users provisioned before Session B was deployed, the claim is
+ * absent — `resolveCellId` returns the reserved '(default)' string in
+ * that case, which correctly routes them to the shared cell.
+ *
+ * Never returns an empty string — every caller can use the result
+ * directly with `getFirestore(app, cellId)`.
+ *
+ * @param {import('firebase/auth').IdTokenResult | null | undefined} tokenResult
+ * @returns {string}
+ */
+function cellIdFromClaims(tokenResult) {
+	return resolveCellId(tokenResult?.claims?.cellId);
+}
 
 /**
  * @param {Record<string, unknown> | null | undefined} baseProfile
@@ -63,6 +85,12 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	const claimedTenantId = String(
 		tokenResult.claims.clubId || tokenResult.claims.tenantId || '',
 	);
+	/**
+	 * Cell-Based Routing — Firestore Multi-Database cell ID.
+	 * Defaults to '(default)' for tenants on the shared cell or for
+	 * users whose JWT was minted before Session B's syncUserClaims update.
+	 */
+	let cellId = cellIdFromClaims(tokenResult);
 	/** @see Firebase custom claims — global admin must bypass setup even if users/{email} is missing */
 	if (tokenResult.claims.isGlobalAdmin === true || tokenResult.claims.isSuperAdmin === true) {
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
@@ -90,6 +118,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		return {
 			role: SYNTHETIC_SUSPENDED_ROLE,
 			tenantId: resolvedTenantId,
+			cellId,
 			profile: {
 				...(baseProfile || {}),
 				status: 'suspended',
@@ -103,6 +132,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		return {
 			role,
 			tenantId: resolvedTenantId,
+			cellId,
 			profile: {
 				...(baseProfile || {}),
 				playerName: fbName,
@@ -116,13 +146,14 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	if (role === 'registrar' && userSnap.exists()) {
 		const merged = { ...baseProfile, role, playerName: fbName };
 		delete merged.teamId;
-		return { role, tenantId: resolvedTenantId, profile: merged };
+		return { role, tenantId: resolvedTenantId, cellId, profile: merged };
 	}
 
 	if (userSnap.exists()) {
 		return {
 			role,
 			tenantId: resolvedTenantId,
+			cellId,
 			profile: { ...baseProfile, role, playerName: fbName }
 		};
 	}
@@ -145,7 +176,8 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		const coachTenantId =
 			String(refreshed.claims.clubId || refreshed.claims.tenantId || '') ||
 			String(data.clubId ?? '');
-		return { role, tenantId: coachTenantId, profile: { ...newProfile, role } };
+		cellId = cellIdFromClaims(refreshed);
+		return { role, tenantId: coachTenantId, cellId, profile: { ...newProfile, role } };
 	}
 
 	const registrarRef = doc(db, 'registrar_lookup', emailKey);
@@ -164,7 +196,8 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		const registrarTenantId =
 			String(refreshed.claims.clubId || refreshed.claims.tenantId || '') ||
 			String(data.clubId ?? '');
-		return { role, tenantId: registrarTenantId, profile: { ...newProfile, role } };
+		cellId = cellIdFromClaims(refreshed);
+		return { role, tenantId: registrarTenantId, cellId, profile: { ...newProfile, role } };
 	}
 
 	const inviteRef = doc(db, 'player_lookup', emailKey);
@@ -181,6 +214,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		return {
 			role,
 			tenantId: claimedTenantId || String(data.clubId != null ? data.clubId : ''),
+			cellId,
 			profile: { ...newProfile, role },
 		};
 	}
@@ -188,6 +222,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	return {
 		role,
 		tenantId: claimedTenantId,
+		cellId,
 		profile: { role, playerName: fbName }
 	};
 }

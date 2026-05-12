@@ -37,7 +37,7 @@
  */
 
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import { waitForPendingWrites } from 'firebase/firestore';
 
 class SyncStatus {
@@ -104,6 +104,14 @@ class SyncStatus {
 
 		this.isSyncing = true;
 		try {
+			// Phase 1, Epic 1 — Cell-Based Routing, Session F.
+			// Wait for the CURRENT cell's pending writes, not the
+			// module-load default.  If the user was promoted to a
+			// dedicated cell while writes were queued offline, both
+			// cells may have buffered batches — but only one is active
+			// at a time, so a single waitForPendingWrites against the
+			// active cell is the correct contract.
+			const db = getActiveDb();
 			await waitForPendingWrites(db);
 			const flushedAt = new Date();
 			this.lastSyncedAt = flushedAt;

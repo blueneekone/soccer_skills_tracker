@@ -34,6 +34,7 @@ import {
 	persistentMultipleTabManager,
 	getFirestore,
 } from 'firebase/firestore';
+import { DEFAULT_CELL_ID, resolveCellId } from '$lib/types/cells';
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import { getMessaging, isSupported } from 'firebase/messaging';
@@ -94,6 +95,12 @@ export const auth = getAuth(app);
  * `initializeFirestore` must only be called once per app; the singleton guard
  * above ensures that, but we fall back to `getFirestore` on subsequent HMR
  * cycles in dev to avoid the "already-initialized" error.
+ *
+ * `db` is a CONVENIENCE alias for the default cell — kept for backward
+ * compatibility with the ~158 modules that import `db` directly.  All
+ * cell-aware code paths (write facade, on-snapshot subscriptions for
+ * dedicated-cell tenants) MUST route through `getDb()` / `getActiveDb()`
+ * defined below.
  */
 export const db = (() => {
 	try {
@@ -106,6 +113,156 @@ export const db = (() => {
 		return getFirestore(app);
 	}
 })();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cell-Based Routing — Phase 1, Epic 1 (Session C)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * HMR-safe cache of Firestore instances keyed by cellId.
+ *
+ * SvelteKit's dev server reloads `firebase.js` on most file changes,
+ * which would normally trigger Firestore's "already initialised" error
+ * for the (default) cell and rebuild every dedicated-cell instance.
+ * We hide the cache on `globalThis` so it survives the module reload,
+ * matching the singleton guard pattern used for `app` above.
+ *
+ * Keys are the canonical cellId strings — '(default)' for the shared
+ * cell, 'cell-{region}-{nnn}' for dedicated cells.
+ *
+ * @type {Map<string, import('firebase/firestore').Firestore>}
+ */
+const cellDbCache = (() => {
+	const KEY = '__vanguardCellDbCache__';
+	const g = /** @type {{ [key: string]: Map<string, import('firebase/firestore').Firestore> }} */ (
+		globalThis
+	);
+	if (!g[KEY]) {
+		g[KEY] = new Map();
+	}
+	const cache = g[KEY];
+	// Seed with the already-initialised (default) Firestore instance so
+	// the first `getDb('(default)')` call doesn't try to re-initialise it.
+	if (!cache.has(DEFAULT_CELL_ID)) {
+		cache.set(DEFAULT_CELL_ID, db);
+	}
+	return cache;
+})();
+
+/**
+ * Get the Firestore instance for the supplied cellId.
+ *
+ * Construction strategy
+ * ─────────────────────
+ *   • (default) cell — returns the singleton `db` initialised above
+ *     (with persistent multi-tab cache, the most common case).
+ *
+ *   • Dedicated cell — lazily calls Firebase's
+ *     `initializeFirestore(app, { localCache: … }, cellId)` the first
+ *     time it's requested.  HMR-safe via `cellDbCache`.  Persistent
+ *     local cache is also enabled per cell so the offline-sync
+ *     guarantee (Phase 1, Epic 1 — atomic batch writes) holds for
+ *     dedicated-cell tenants too.
+ *
+ * Callers MUST treat the returned Firestore instance as ephemeral —
+ * they may receive a different instance per cell, and the active cell
+ * for the current user can change when `provisionTenantCell` reassigns
+ * the tenant.  Use `getActiveDb()` (below) inside any code path that
+ * wants the "current user's cell" without explicitly threading
+ * `cellId` through.
+ *
+ * @param {string} [cellId] Falsy / invalid → resolves to (default).
+ * @returns {import('firebase/firestore').Firestore}
+ */
+export function getDb(cellId) {
+	const resolved = resolveCellId(cellId);
+
+	const cached = cellDbCache.get(resolved);
+	if (cached) return cached;
+
+	// Dedicated cell — initialise on first use.  Web SDK accepts the
+	// cellId as the 3rd argument to initializeFirestore / getFirestore.
+	try {
+		const instance = initializeFirestore(
+			app,
+			{
+				localCache: persistentLocalCache({
+					tabManager: persistentMultipleTabManager(),
+				}),
+			},
+			resolved,
+		);
+		cellDbCache.set(resolved, instance);
+		return instance;
+	} catch {
+		// HMR fallback — instance already initialised for this cellId
+		// on a prior module load; recover via getFirestore.
+		const fallback = getFirestore(app, resolved);
+		cellDbCache.set(resolved, fallback);
+		return fallback;
+	}
+}
+
+/**
+ * Setter-pattern hook for the active-cell resolver.
+ *
+ * `firebase.js` cannot import `authStore` directly without creating a
+ * module cycle (authStore imports `db` from this file).  Instead, the
+ * auth store calls `registerActiveCellResolver(() => this.cellId)`
+ * once, and `getActiveDb()` invokes that callback on demand.
+ *
+ * Resolver returning falsy / invalid → defaults to (default) cell.
+ *
+ * @type {(() => string | null | undefined) | null}
+ */
+let activeCellResolver = null;
+
+/**
+ * Wire the active-cell resolver.  Called exactly once from
+ * `auth.svelte.js` after the store is constructed.
+ *
+ * @param {() => string | null | undefined} resolver
+ */
+export function registerActiveCellResolver(resolver) {
+	activeCellResolver = resolver;
+}
+
+/**
+ * Get the Firestore instance for the currently signed-in user's cell.
+ *
+ * Uses the resolver registered by the auth store (see
+ * `registerActiveCellResolver` above) to read `authStore.cellId`
+ * LAZILY at call time — never at module load — so:
+ *
+ *   1. There is no import cycle (firebase.js → authStore would cycle
+ *      since authStore imports `db` from this module).
+ *   2. The call always sees the freshest cellId, even if the user just
+ *      came back online after a `provisionTenantCell` reassignment.
+ *
+ * Falls back to the (default) cell whenever:
+ *   • The auth store has not yet registered its resolver (SSR / early boot).
+ *   • The user is anonymous / signed out.
+ *   • The cellId claim is missing (legacy tokens, will refresh shortly).
+ *
+ * Usage pattern from the write facade (Session F):
+ *
+ *   import { getActiveDb } from '$lib/firebase';
+ *   const cellDb = getActiveDb();
+ *   const batch = writeBatch(cellDb);
+ *
+ * @returns {import('firebase/firestore').Firestore}
+ */
+export function getActiveDb() {
+	if (!browser || !activeCellResolver) {
+		return getDb(DEFAULT_CELL_ID);
+	}
+	try {
+		const cellId = activeCellResolver();
+		return getDb(cellId ?? undefined);
+	} catch {
+		return getDb(DEFAULT_CELL_ID);
+	}
+}
 
 /** Matches Cloud Functions region in functions/index.js — us-east1 (HOTFIX ALPHA-4) */
 export const functions = getFunctions(app, 'us-east1');

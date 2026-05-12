@@ -1,8 +1,11 @@
 {
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
+    }
+  ],
   "storage": {
     "rules": "storage.rules"
   },
@@ -62,6 +65,13 @@
       }
     ],
     "rewrites": [
+      {
+        "source": "/v1/**",
+        "function": {
+          "functionId": "apiGateway",
+          "region": "us-east1"
+        }
+      },
       {
         "source": "**",
         "destination": "/index.html"

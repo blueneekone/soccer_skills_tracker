@@ -2755,6 +2755,56 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Phase 1, Epic 1 — Cell-Based Routing ─────────────────────────────
+    //
+    // The cells/ registry, _migrations history, and gateway plumbing
+    // collections are control-plane state.  Reads are restricted to
+    // platform admins (the Director OS migration UI authenticates as
+    // global_admin).  ALL writes flow through Cloud Function callables
+    // (cellBootstrap, cellProvisioning, cellMigration), so the rules
+    // here deny direct client writes entirely.
+
+    match /cells/{cellId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+
+      // Migration records sub-collection — admin readable, never client-writable.
+      match /records/{migrationId} {
+        allow read: if authed() && isSuper();
+        allow write: if false;
+      }
+    }
+
+    // API Gateway idempotency cache — written exclusively by the gateway
+    // Cloud Function (Admin SDK bypasses rules).  Client read is permitted
+    // ONLY for the requesting user's own records so they can introspect
+    // a stale idempotency hit during debugging.
+    match /gateway_idempotency/{recordId} {
+      allow read: if authed() && (
+        isSuper()
+        || recordId.matches(request.auth.uid + '_.*')
+      );
+      allow write: if false;
+    }
+
+    // Token-bucket rate-limit state — admin-only.  Client never reads or
+    // writes this directly; the bucket lives behind the gateway and is
+    // updated transactionally by Admin SDK.
+    match /gateway_rate_buckets/{bucketId} {
+      allow read: if authed() && isSuper();
+      allow write: if false;
+    }
+
+    // Cell promotion queue — Director OS dashboard reads its OWN tenant's
+    // queue entry; platform admins read all.
+    match /cell_promotion_queue/{tenantId} {
+      allow read: if authed() && (
+        isSuper()
+        || (isDirector() && tokenClub() == tenantId)
+      );
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

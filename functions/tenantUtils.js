@@ -24,6 +24,7 @@
  */
 
 const {HttpsError} = require('firebase-functions/v2/https');
+const {DEFAULT_CELL_ID, resolveCellId} = require('./cellConstants');
 
 /**
  * Extract the server-authoritative tenantId from the caller's JWT.
@@ -138,10 +139,38 @@ function assertRole(request, allowedRoles) {
   return role;
 }
 
+/**
+ * Extract the server-authoritative cellId from the caller's JWT.
+ *
+ * Phase 1, Epic 1 — Cell-Based Routing.
+ *
+ * Reads `request.auth.token.cellId` (written by syncUserClaims after
+ * Session B's extension).  Defaults to the reserved '(default)' string
+ * for tenants that have not been promoted to a dedicated cell — the
+ * long tail of small clubs.
+ *
+ * NEVER trust a cellId from `request.data` — routing decisions are
+ * a security boundary.  A malicious caller forging a different cellId
+ * could attempt to read another tenant's data.
+ *
+ * Returns a non-empty string — callers can pass the result directly to
+ * the Admin SDK's `getFirestore(app, cellId)` without nullish-checking.
+ *
+ * @param {import('firebase-functions/v2/https').CallableRequest} request
+ * @returns {string} The verified cellId from the JWT, or '(default)'.
+ */
+function getCallerCellId(request) {
+  if (!request.auth) {
+    return DEFAULT_CELL_ID;
+  }
+  return resolveCellId(request.auth.token.cellId);
+}
+
 module.exports = {
   getCallerTenantId,
   assertSameTenant,
   assertAuthenticated,
   getCallerRole,
   assertRole,
+  getCallerCellId,
 };

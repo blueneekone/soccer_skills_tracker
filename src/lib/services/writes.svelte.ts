@@ -36,7 +36,7 @@
  */
 
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import {
 	collection,
 	doc,
@@ -53,6 +53,26 @@ import {
 	type MatchCompletionPayload,
 	type WorkoutCompletionPayload,
 } from './writes.types';
+
+/**
+ * Phase 1, Epic 1 — Cell-Based Routing, Session F.
+ *
+ * Every facade entry point opens its `writeBatch` against the
+ * CURRENT user's cell, not the module-load-time default.  This
+ * matters because:
+ *
+ *   1.  An ultra-large NGB tenant may be promoted to a dedicated cell
+ *       (`cell-use1-001`) after the page has loaded.  The next
+ *       `commitDrillCompletion()` must land on the new cell — not the
+ *       stale (default) — without requiring a page reload.
+ *
+ *   2.  `getActiveDb()` is HMR-safe and per-cell cached, so the cost of
+ *       calling it once per batch is essentially free (a Map lookup).
+ *
+ *   3.  All documents in a single batch MUST live on the same cell —
+ *       Firestore writeBatch cannot span databases.  Capture the cell
+ *       once per batch with a local variable and never mix.
+ */
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -116,6 +136,8 @@ export async function commitDrillCompletion(
 	payload: DrillCompletionPayload,
 ): Promise<BatchWriteResult> {
 	const batchId = nextBatchId('drill');
+	// Capture the active cell ONCE per batch — see Session F header.
+	const db = getActiveDb();
 	const batch = writeBatch(db);
 
 	const drillRef = doc(collection(db, PATHS.drillCompletions));
@@ -178,6 +200,7 @@ export async function commitDrillCompletion(
 export async function commitGritAward(payload: GritAwardPayload): Promise<BatchWriteResult> {
 	const GRIT_XP = 50;
 	const batchId = nextBatchId('grit');
+	const db = getActiveDb();
 	const batch = writeBatch(db);
 
 	const gritRef = doc(collection(db, PATHS.gritAwards));
@@ -242,6 +265,7 @@ export async function commitWorkoutCompletion(
 	payload: WorkoutCompletionPayload,
 ): Promise<BatchWriteResult> {
 	const batchId = nextBatchId('workout');
+	const db = getActiveDb();
 	const batch = writeBatch(db);
 
 	const userRef = doc(db, PATHS.users, payload.userKey);
@@ -318,6 +342,7 @@ export async function commitMatchResult(
 	payload: MatchCompletionPayload,
 ): Promise<BatchWriteResult> {
 	const batchId = nextBatchId('match');
+	const db = getActiveDb();
 	const batch = writeBatch(db);
 
 	const outcome: 'W' | 'L' | 'D' =
