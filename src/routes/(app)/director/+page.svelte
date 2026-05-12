@@ -9,6 +9,7 @@
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import UplinkTerminal from './dashboard/UplinkTerminal.svelte';
 	import IntakePanopticon from './dashboard/IntakePanopticon.svelte';
+	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
@@ -72,6 +73,20 @@
 		if (!VALID_DIR_TABS.has(t)) return;
 		if (untrack(() => activeTab) !== t) activeTab = t;
 	});
+
+	// Force teamsStore to reload whenever the Context Switcher pivots to a
+	// different tenant so team dropdowns never show stale data from the
+	// layout-level cache key.
+	$effect(() => {
+		if (!clubId || authStore.role !== 'director') return;
+		untrack(() => {
+			void teamsStore.load(authStore.role, {
+				clubId,
+				scope: 'club',
+				routePath: page.url.pathname,
+			});
+		});
+	});
 </script>
 
 <!-- AEGIS Lightning Alert — directors and above only -->
@@ -112,6 +127,7 @@
 		<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 			<UplinkTerminal currentClubId={clubId} {clubTeams} />
 			<IntakePanopticon currentClubId={clubId} />
+			<VpcApprovalQueue {clubId} />
 		</div>
 		{:else if activeTab === 'vanguard'}
 			<MissionControl />
