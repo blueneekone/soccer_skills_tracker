@@ -60,6 +60,15 @@
       "collectionGroup": "vpc_requests",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "clubId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "consentedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "vpc_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "playerEmail", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
