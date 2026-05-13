@@ -308,6 +308,9 @@ export const remoteConfig = (() => {
 		rc.defaultConfig = {
 			feature_weather_aegis_enabled: true,
 			feature_xp_gamification_enabled: true,
+			// Phase 4, Epic 7 — Dopamine Engine enabled by default.
+			// Kill switch: set false in Firebase Console → Remote Config.
+			feature_dopamine_explosions_enabled: true,
 		};
 
 		// Fetch and activate in the background — never blocks rendering

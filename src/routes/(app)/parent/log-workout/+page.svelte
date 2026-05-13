@@ -13,7 +13,7 @@
 		getLevelProgressFromTotalXp,
 	} from '$lib/gamification/level.js';
 	import Swal from 'sweetalert2';
-	import confetti from 'canvas-confetti';
+	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
 	const TELEMETRY_INTEL = {
@@ -274,16 +274,19 @@
 
 		logSubmitting = true;
 		try {
-		const res = await logTrainingSession({
-			playerEmail: emailKey,
-			verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
-			drillType,
-			duration: dMin,
-			reps: 0,
-			intensity: intensityCall,
-			// Pass raw RPE through — RL pipeline consumes the full 1-10 scale.
-			subjectiveRpe: intensity,
-		});
+		const res = await dopamineOnCallable(
+			logTrainingSession({
+				playerEmail: emailKey,
+				verifierLegalName: verifierLegalName.trim().replace(/\s+/g, ' '),
+				drillType,
+				duration: dMin,
+				reps: 0,
+				intensity: intensityCall,
+				// Pass raw RPE through — RL pipeline consumes the full 1-10 scale.
+				subjectiveRpe: intensity,
+			}),
+			{ kind: 'drill' },
+		);
 			const payload = res.data;
 			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
 			const athUid =
@@ -306,12 +309,6 @@
 				}
 			}
 
-			confetti({
-				particleCount: 100,
-				spread: 70,
-				origin: { y: 0.6 },
-				colors: ['#00d4ff', '#39ff14', '#ff6b00', '#a855f7'],
-			});
 			await Swal.fire({
 				text: `Workout Logged. ${playerName} awarded ${earned} XP.`,
 				icon: 'success',

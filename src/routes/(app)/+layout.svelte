@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
+	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import { auth, db } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -320,6 +321,16 @@
 	$effect(() => {
 		if (typeof document === 'undefined') return;
 		document.documentElement.classList.add('enterprise-console-active');
+	});
+
+	// Phase 4, Epic 7 — gold supernova fired on every server-confirmed level-up.
+	// The 'phoenix:level-up' event is dispatched by the workout page ONLY after
+	// commitWorkoutCompletion resolves, tying the visual to a verified commit.
+	$effect(() => {
+		if (!browser) return;
+		const handler = () => void dopamineExplosion('levelUp');
+		window.addEventListener('phoenix:level-up', handler);
+		return () => window.removeEventListener('phoenix:level-up', handler);
 	});
 
 	// Sprint 2.7 — Global Kill Switch: block rendering for every role except

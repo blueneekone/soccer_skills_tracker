@@ -8,9 +8,9 @@
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
+  import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
-  import confetti from 'canvas-confetti';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
   const TELEMETRY_INTEL = {
@@ -369,15 +369,25 @@
       const userKey = (authStore.user?.email ?? '').toLowerCase();
       if (playerUid && userKey) {
         try {
-          await commitWorkoutCompletion({
-            playerUid,
-            userKey,
-            missionId: activeMissionId ?? undefined,
-            xpAwarded: earned,
-            reason: `Workout — ${focusLabel} · ${selectedDrill}`,
-            incrementXp: false,
-          });
+          await dopamineOnCommit(
+            commitWorkoutCompletion({
+              playerUid,
+              userKey,
+              missionId: activeMissionId ?? undefined,
+              xpAwarded: earned,
+              reason: `Workout — ${focusLabel} · ${selectedDrill}`,
+              incrementXp: false,
+            }),
+            { kind: 'drill' },
+          );
           if (activeMissionId) activeMissionId = null;
+          if (typeof payload?.level === 'number' && payload.level > oldLevel) {
+            window.dispatchEvent(
+              new CustomEvent('phoenix:level-up', {
+                detail: { from: oldLevel, to: payload.level, earnedXp: earned },
+              }),
+            );
+          }
         } catch (me) {
           console.error('[Player OS] workout completion batch failed', me);
           if (activeMissionId) {
@@ -385,19 +395,6 @@
           }
         }
       }
-      if (typeof payload?.level === 'number' && payload.level > oldLevel) {
-        window.dispatchEvent(
-          new CustomEvent('phoenix:level-up', {
-            detail: { from: oldLevel, to: payload.level, earnedXp: earned },
-          }),
-        );
-      }
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#00d4ff', '#39ff14', '#ff6b00', '#a855f7'],
-      });
       await Swal.fire({
         title: 'Command executed',
         text: `+${earned} XP · Level ${payload?.level ?? '—'}${missionCloseNote}`,

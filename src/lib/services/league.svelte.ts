@@ -57,6 +57,7 @@ import {
 	type LeagueSchema,
 } from '$lib/types/league';
 import { commitMatchResult } from '$lib/services/writes.svelte';
+import type { BatchWriteResult } from '$lib/services/writes.types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -66,6 +67,21 @@ export type CompleteMatchInput = Omit<
 	LeagueSchema.MatchResult,
 	'id' | 'fixtureId' | 'tenantId' | 'recordedAt' | 'outcome'
 >;
+
+/**
+ * Returned by `LeagueManager.completeMatch` so UI call-sites can gate a
+ * Dopamine Engine explosion on a verified server commit.
+ *
+ * Usage in a match-day Svelte component:
+ *
+ *   import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
+ *   const { result, outcome } = await league.completeMatch(fixtureId, input);
+ *   if (outcome === 'W') await dopamineOnCommit(Promise.resolve(result), { kind: 'matchWin' });
+ */
+export interface CompleteMatchResult {
+	result: BatchWriteResult;
+	outcome: 'W' | 'L' | 'D';
+}
 
 export type CreateFixtureInput = Omit<
 	LeagueSchema.Fixture,
@@ -392,7 +408,7 @@ export class LeagueManager {
 	 * @param fixtureId   Firestore document ID of the completed fixture.
 	 * @param results     Score, playerStats, coachNotes, optional highlights.
 	 */
-	async completeMatch(fixtureId: string, results: CompleteMatchInput): Promise<void> {
+	async completeMatch(fixtureId: string, results: CompleteMatchInput): Promise<CompleteMatchResult> {
 		if (!this._tenantId) throw new Error('[LeagueManager] Not connected — no tenantId.');
 
 		// Resolve the parent fixture so we know which opponent and season
@@ -404,7 +420,7 @@ export class LeagueManager {
 			);
 		}
 
-		await commitMatchResult({
+		const batchResult = await commitMatchResult({
 			fixtureId,
 			opponentId: fixture.opponentId,
 			seasonId: fixture.seasonId,
@@ -435,6 +451,8 @@ export class LeagueManager {
 				playerStats: results.playerStats ?? {},
 			},
 		};
+
+		return { result: batchResult, outcome };
 	}
 
 	// ── archiveSeason ─────────────────────────────────────────────────────────

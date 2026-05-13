@@ -10,7 +10,7 @@
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import Swal from 'sweetalert2';
-	import confetti from 'canvas-confetti';
+	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 
 	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
 	const logPlayerActivity = httpsCallable(functions, 'logPlayerActivity');
@@ -261,33 +261,30 @@
 
 		submitting = true;
 		try {
-			const res = await logTrainingSession({
+		const res = await dopamineOnCallable(
+			logTrainingSession({
 				drillType,
 				duration: mins,
 				reps: repTotal,
 				intensity: intensityApi,
 				...(homeworkAssignmentId ? { assignmentId: homeworkAssignmentId } : {}),
-			});
-			const payload = res.data;
-			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
-			const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : 0;
-			if (typeof sessionStorage !== 'undefined') {
-				sessionStorage.setItem(
-					'elite_xp_pulse',
-					JSON.stringify({
-						fromTotal: Math.max(0, newTotal - earned),
-						toTotal: newTotal,
-					}),
-				);
-			}
+			}),
+			{ kind: 'drill' },
+		);
+		const payload = res.data;
+		const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
+		const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : 0;
+		if (typeof sessionStorage !== 'undefined') {
+			sessionStorage.setItem(
+				'elite_xp_pulse',
+				JSON.stringify({
+					fromTotal: Math.max(0, newTotal - earned),
+					toTotal: newTotal,
+				}),
+			);
+		}
 
-			confetti({
-				particleCount: 100,
-				spread: 70,
-				origin: { y: 0.6 },
-				colors: ['#6366f1', '#a855f7', '#00f0ff', '#fbbf24'],
-			});
-			await Swal.fire({
+		await Swal.fire({
 				title: 'Workout Logged!',
 				text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
 				icon: 'success',

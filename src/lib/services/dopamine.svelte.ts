@@ -46,7 +46,7 @@ import type confetti from 'canvas-confetti';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type DopamineKind = 'drill' | 'grit' | 'levelUp';
+export type DopamineKind = 'drill' | 'grit' | 'levelUp' | 'matchWin';
 
 export interface DopamineOpts {
 	kind: DopamineKind;
@@ -94,6 +94,15 @@ const PRESETS: Record<DopamineKind, ConfettiOptions> = {
 		gravity: 0.8,
 		scalar: 1.1,
 		ticks: 350,
+	},
+	matchWin: {
+		particleCount: 140,
+		spread: 110,
+		colors: ['#10b981', '#34d399', '#a7f3d0', '#ffffff'],
+		startVelocity: 40,
+		gravity: 0.85,
+		scalar: 1.0,
+		ticks: 300,
 	},
 };
 
@@ -149,5 +158,26 @@ export async function dopamineOnCommit(
 		}
 	}
 
+	return result;
+}
+
+/**
+ * Wrap a Cloud Function callable promise; fire a dopamine explosion only
+ * after the server responds successfully.
+ *
+ * A resolved callable IS a server ack (unlike a local Firestore batch
+ * commit which may be enqueued offline), so the explosion always fires
+ * immediately on resolve — there is no offline-deferral path here.
+ *
+ * Reject path: no celebration, error re-thrown so the caller can handle it.
+ *
+ * Returns the callable result so callers can chain on it for UI updates.
+ */
+export async function dopamineOnCallable<T>(
+	callablePromise: Promise<T>,
+	opts: DopamineOpts,
+): Promise<T> {
+	const result = await callablePromise;
+	void dopamineExplosion(opts.kind, opts.origin);
 	return result;
 }
