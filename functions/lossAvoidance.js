@@ -59,12 +59,12 @@ const {collectFcmTokensForUids} = require('./src/domains/notificationOps');
 
 // ── Environment params (safe defaults = everything off) ───────────────────────
 
-const RC_DECAY_ENABLED         = defineString('feature_skill_decay_enabled',        {default: 'false'});
-const RC_STREAK_ENABLED        = defineString('feature_streak_enforcement_enabled',  {default: 'false'});
-const RC_GRACE_DAYS            = defineString('decay_grace_days',                   {default: '2'});
-const RC_PCT_PER_DAY           = defineString('decay_pct_per_day',                  {default: '0.01'});
-const RC_MAX_PCT               = defineString('decay_max_pct',                      {default: '0.25'});
-const RC_FREEZE_PER_WEEK       = defineString('streak_freeze_per_week',             {default: '1'});
+const RC_DECAY_ENABLED         = defineString('FEATURE_SKILL_DECAY_ENABLED',        {default: 'false'});
+const RC_STREAK_ENABLED        = defineString('FEATURE_STREAK_ENFORCEMENT_ENABLED',  {default: 'false'});
+const RC_GRACE_DAYS            = defineString('DECAY_GRACE_DAYS',                   {default: '2'});
+const RC_PCT_PER_DAY           = defineString('DECAY_PCT_PER_DAY',                  {default: '0.01'});
+const RC_MAX_PCT               = defineString('DECAY_MAX_PCT',                      {default: '0.25'});
+const RC_FREEZE_PER_WEEK       = defineString('STREAK_FREEZE_PER_WEEK',             {default: '1'});
 
 const REGION       = 'us-east1';
 const PAGE_SIZE    = 200;
