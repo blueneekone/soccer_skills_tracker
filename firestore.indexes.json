@@ -1,6 +1,15 @@
 {
   "indexes": [
     {
+      "collectionGroup": "match_results_public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "playerEmails", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "recordedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "assignments",
       "queryScope": "COLLECTION",
       "fields": [

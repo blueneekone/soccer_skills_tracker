@@ -60,6 +60,19 @@ export const PATHS = {
 	fixtures: 'fixtures',
 	/** Match result documents — doc ID = fixtureId. */
 	matchResults: 'match_results',
+	/**
+	 * Public match result summary — no per-player PII.
+	 * Readable by any tenant member; used by the Car Ride Home Engine
+	 * to surface score without requiring EQ attestation.
+	 * Doc ID = fixtureId — parallel to match_results.
+	 */
+	matchResultsPublic: 'match_results_public',
+	/**
+	 * EQ attestation records — Phase 4, Epic 8.
+	 * Doc ID convention: `{parentUid}_{fixtureId}` (deterministic).
+	 * Enables O(1) existence checks in Firestore security rules via exists().
+	 */
+	eqAttestations: 'eq_attestations',
 	/** Club-scoped opponent directory with denormalized stats. */
 	opponents: 'opponents',
 	/** Season documents — carry `completedFixtureCount` counter. */
@@ -249,6 +262,8 @@ export interface MatchCompletionPayload {
 	opponentId: string;
 	seasonId: string;
 	tenantId: string;
+	/** teamId — written to the public shadow doc to scope parent queries. */
+	teamId: string;
 	scoreHome: number;
 	scoreAway: number;
 	playerStats: Record<string, unknown>;

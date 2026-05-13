@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 	import { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
 	import CoOpHUD from '$lib/components/parent/co-op/CoOpHUD.svelte';
 	import BountyTerminal from './BountyTerminal.svelte';
+	import { CarRideEngine } from './CarRideEngine.svelte.js';
+	import CarRideArena from './CarRideArena.svelte';
+	import CarRideHUD from './CarRideHUD.svelte';
 
 	const engine = new CoOpEngine();
+	const carRideEngine = new CarRideEngine();
 
 	let showCreateBounty = $state(false);
 
@@ -17,8 +23,18 @@
 		const parentEmail = (user as { email?: string } | null)?.email?.toLowerCase() ?? '';
 		const householdId = (profile?.householdId as string | undefined) ?? '';
 		const childEmails = (profile?.playerEmails as string[] | undefined) ?? [];
+		const tenantId = authStore.tenantId ?? '';
+		const clubId = (profile?.clubId as string | undefined) ?? tenantId;
 
 		await engine.init(parentEmail, householdId, childEmails);
+
+		// Phase 4, Epic 8 — Car Ride Home Protocol.
+		// Use the first linked child email for pending fixture detection.
+		// The FCM deep link may supply a ?fixtureId= query param to pre-target.
+		const linkedPlayerEmail = childEmails[0] ?? '';
+		const urlFixtureId = get(page).url.searchParams.get('fixtureId') ?? null;
+
+		await carRideEngine.init(linkedPlayerEmail, tenantId, clubId, urlFixtureId);
 	});
 
 	onDestroy(() => {
@@ -59,6 +75,13 @@
 			</span>
 		</div>
 
+		<!-- Phase 4, Epic 8 — Car Ride Home: post-match score (always visible) -->
+		{#if carRideEngine.pendingFixtureId}
+			<div class="tw-mb-8">
+				<CarRideArena engine={carRideEngine} />
+			</div>
+		{/if}
+
 		<!-- Glass Arena -->
 		<CoOpArena {engine} />
 	</div>
@@ -69,6 +92,9 @@
 		{showCreateBounty}
 		onCreateBounty={() => (showCreateBounty = true)}
 	/>
+
+	<!-- Phase 4, Epic 8 — Car Ride Home HUD (fixed overlay, z-60) -->
+	<CarRideHUD engine={carRideEngine} />
 
 	<!-- Create Bounty Modal -->
 	{#if showCreateBounty}

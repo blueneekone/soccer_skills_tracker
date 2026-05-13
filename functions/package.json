@@ -14,6 +14,7 @@
   },
   "main": "index.js",
   "dependencies": {
+    "@google-cloud/tasks": "^6.2.2",
     "@google/genai": "^1.50.1",
     "@tensorflow/tfjs-node": "^4.22.0",
     "cbor-x": "^1.6.4",

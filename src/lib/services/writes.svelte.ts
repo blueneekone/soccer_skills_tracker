@@ -417,6 +417,23 @@ export async function commitMatchResult(
 		{ merge: true },
 	);
 
+	// Phase 4, Epic 8 — Car Ride Home: public shadow doc for parent score view.
+	// Contains NO per-player PII; playerEmails[] enables array-contains queries.
+	batch.set(
+		doc(db, PATHS.matchResultsPublic, payload.fixtureId),
+		{
+			fixtureId: payload.fixtureId,
+			tenantId: payload.tenantId,
+			teamId: payload.teamId,
+			scoreHome: payload.scoreHome,
+			scoreAway: payload.scoreAway,
+			outcome,
+			playerEmails: Object.keys(payload.playerStats),
+			recordedAt: serverTimestamp(),
+		},
+		{ merge: true },
+	);
+
 	batch.set(
 		doc(db, PATHS.opponents, payload.opponentId),
 		{

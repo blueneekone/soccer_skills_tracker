@@ -98,6 +98,14 @@ service cloud.firestore {
       return tokenRole() == 'parent';
     }
 
+    // Phase 4, Epic 8 — Car Ride Home Protocol.
+    // Returns true when the requesting parent has already submitted an EQ
+    // attestation for this fixture. Enables hybrid locking: the public score
+    // is always readable; per-player stats/coachNotes require this gate.
+    function parentAttestedForFixture(uid, fixtureId) {
+      return exists(/databases/$(database)/documents/eq_attestations/$(uid + '_' + fixtureId));
+    }
+
     // Registrar OS: custom claim from syncUserClaims / setCustomUserClaims.
     function isRegistrar() {
       return request.auth != null && request.auth.token.role == 'registrar';
@@ -2279,11 +2287,21 @@ service cloud.firestore {
     // ── match_results/{resultId} ─────────────────────────────────────────────
     // Post-match scorecards & per-player stats (LeagueManager.completeMatch()).
     // Written by the coach/director via a batch write (client SDK).
-    // playerStats map may contain PII (name-keyed stats) — list requires staff.
+    // playerStats/coachNotes contain PII — list requires staff.
+    //
+    // Phase 4, Epic 8 — Hybrid lock:
+    //   • Staff (coach/director/admin) — unrestricted read as before.
+    //   • Parents — may read ONLY after submitting an EQ attestation for this
+    //     fixture via parentAttestedForFixture(). Without attestation they can
+    //     only see the public score via match_results_public/{resultId}.
     match /match_results/{resultId} {
       allow get: if authed() && (
         isPlatformAdmin()
-        || isAuthorized(resource.data.get('tenantId', ''))
+        || (isAuthorized(resource.data.get('tenantId', ''))
+            && (isCoach() || isDirector() || !isParent()))
+        || (isParent()
+            && isAuthorized(resource.data.get('tenantId', ''))
+            && parentAttestedForFixture(request.auth.uid, resultId))
       );
       // Task 5.2: playerStats contains per-player data; list requires staff.
       allow list: if authed() && (
@@ -2314,6 +2332,53 @@ service cloud.firestore {
         // fixtureId is the logical key — may not change on update.
         && request.resource.data.get('fixtureId', '') == resource.data.get('fixtureId', '');
       allow delete: if isPlatformAdmin();
+    }
+
+    // ── match_results_public/{resultId} ──────────────────────────────────────
+    // Phase 4, Epic 8 — Car Ride Home Protocol.
+    // PII-free shadow of match_results — contains only score, outcome, teamId,
+    // and denormalized playerEmails[]. Readable by any authenticated tenant
+    // member without requiring EQ attestation.
+    // Written by the coach client SDK in the same batch as match_results.
+    match /match_results_public/{resultId} {
+      allow get: if authed()
+        && isAuthorized(resource.data.get('tenantId', ''));
+      allow list: if authed()
+        && isAuthorized(resource.data.get('tenantId', ''));
+      allow create: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && isAuthorized(request.resource.data.get('tenantId', ''))
+        && request.resource.data.keys().hasAll(['tenantId', 'fixtureId', 'scoreHome', 'scoreAway', 'outcome'])
+        && request.resource.data.scoreHome is int
+        && request.resource.data.scoreAway is int;
+      allow update: if authed()
+        && (isPlatformAdmin() || isDirector() || isCoach())
+        && isAuthorized(resource.data.get('tenantId', ''))
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '');
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ── eq_attestations/{attId} ───────────────────────────────────────────────
+    // Phase 4, Epic 8 — Car Ride Home Protocol.
+    // EQ attestation records — written by parents to unlock post-match metrics.
+    // Doc ID convention: {parentUid}_{fixtureId} — deterministic for O(1) lookup.
+    //
+    // ZERO-TRUST: immutable after creation (update + delete denied).
+    // Security rule validates the deterministic ID matches the caller UID +
+    // declared fixtureId so a parent cannot create a false attestation for
+    // another parent's UID.
+    match /eq_attestations/{attId} {
+      allow create: if authed()
+        && isParent()
+        && request.resource.data.parentUid == request.auth.uid
+        && attId == request.auth.uid + '_' + request.resource.data.fixtureId
+        && request.resource.data.protocol == 'car_ride_home_v1'
+        && request.resource.data.keys().hasAll([
+             'parentUid', 'parentEmail', 'fixtureId', 'tenantId', 'protocol'
+           ]);
+      allow update, delete: if false;
+      allow read: if authed()
+        && (resource.data.parentUid == request.auth.uid || isPlatformAdmin());
     }
 
     // ─────────────────────────────────────────────────────────────────────────

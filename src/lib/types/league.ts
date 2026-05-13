@@ -211,17 +211,62 @@ export namespace LeagueSchema {
 		outcome?: 'W' | 'L' | 'D';
 		/** Post-match notes, video links, or highlight timestamps. */
 		highlights?: string;
-		/** General coaching notes for the post-match debrief. */
+		/**
+		 * General coaching notes for the post-match debrief.
+		 * GATED: only readable by parents after EQ attestation.
+		 */
 		coachNotes?: string;
 		/**
 		 * Per-player performance data.
 		 * Key = player email (lowercase) or player Firestore doc ID.
+		 * GATED: only readable by parents after EQ attestation.
 		 */
 		playerStats: Record<string, PlayerMatchStats>;
 		/** Server timestamp of when the result was recorded. */
 		recordedAt?: FirestoreTimestamp;
 		/** Email or UID of the coach who submitted the result. */
 		recordedBy?: string;
+		/**
+		 * Set by `deliverCarRideHomePush` CF after the FCM multicast fires.
+		 * Null/absent = push not yet sent.
+		 */
+		carRideNotifiedAt?: FirestoreTimestamp;
+		/**
+		 * Cloud Tasks task name stored for idempotency deduplication.
+		 * Set by `onMatchResultCreated` CF immediately after enqueue.
+		 */
+		carRideTaskName?: string;
+	}
+
+	/**
+	 * Public summary of a match result — no PII, no per-player stats.
+	 *
+	 * Collection: `match_results_public/{fixtureId}`
+	 * Document ID = fixtureId — parallel to match_results for direct lookup.
+	 *
+	 * Written atomically alongside `match_results/{fixtureId}` in
+	 * `commitMatchResult()`. Readable by any authenticated tenant member
+	 * without requiring EQ attestation. Allows parents to see the score
+	 * before they unlock the full player metrics.
+	 *
+	 * `playerEmails` is denormalized from `playerStats` keys to enable the
+	 * single-round-trip parent query:
+	 *   .where('tenantId', '==', tenantId)
+	 *   .where('playerEmails', 'array-contains', linkedPlayerEmail)
+	 *   .orderBy('recordedAt', 'desc')
+	 *   .limit(5)
+	 */
+	export interface MatchResultPublic {
+		id?: string;
+		fixtureId: string;
+		tenantId: string;
+		teamId: string;
+		scoreHome: number;
+		scoreAway: number;
+		outcome: 'W' | 'L' | 'D';
+		/** Denormalized from playerStats keys for array-contains queries. */
+		playerEmails: string[];
+		recordedAt?: FirestoreTimestamp;
 	}
 
 	export interface PlayerMatchStats {
@@ -266,6 +311,34 @@ export namespace LeagueSchema {
 		color: string;
 		/** Our win rate 0–1. */
 		winRate: number;
+	}
+
+	// ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────
+
+	/**
+	 * EQ attestation record — written by the parent to unlock full match metrics.
+	 *
+	 * Collection: `eq_attestations/{parentUid}_{fixtureId}`
+	 * Deterministic doc ID enables an O(1) existence check without a query:
+	 *   exists(/databases/$(db)/documents/eq_attestations/$(uid + '_' + fixtureId))
+	 *
+	 * Immutable after creation — update and delete are denied in Firestore rules.
+	 */
+	export interface EqAttestation {
+		/** Firebase Auth UID of the attesting parent. */
+		parentUid: string;
+		/** Lowercase email of the attesting parent. */
+		parentEmail: string;
+		/** Linked child player email. */
+		linkedPlayerEmail: string;
+		/** Foreign key → match_results/{fixtureId}. */
+		fixtureId: string;
+		/** Tenant partition key for audit queries. */
+		tenantId: string;
+		clubId: string;
+		/** Always 'car_ride_home_v1' — version the schema for future EQ protocols. */
+		protocol: 'car_ride_home_v1';
+		attestedAt?: FirestoreTimestamp;
 	}
 }
 

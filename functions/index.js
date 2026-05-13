@@ -330,6 +330,14 @@ exports.onAssignmentCreated          = notificationOps.onAssignmentCreated;
 exports.onTrialScoreAdded            = notificationOps.onTrialScoreAdded;
 exports.onTrialScoreWritten          = notificationOps.onTrialScoreWritten;
 
+// ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
+// Fires mandatory push notifications to parents 15 minutes post-match and
+// locks per-player metrics behind an EQ attestation.
+// Requires: Cloud Tasks queue `car-ride-home` in us-east1 (see carRideOps.js).
+const carRideOps = require('./src/domains/carRideOps');
+exports.onMatchResultCreated         = carRideOps.onMatchResultCreated;
+exports.deliverCarRideHomePush       = carRideOps.deliverCarRideHomePush;
+
 // ---------------------------------------------------------------------------
 // Zero-Trust tenant utilities pre-load.
 // ---------------------------------------------------------------------------

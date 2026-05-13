@@ -425,6 +425,7 @@ export class LeagueManager {
 			opponentId: fixture.opponentId,
 			seasonId: fixture.seasonId,
 			tenantId: this._tenantId,
+			teamId: fixture.teamId ?? this._teamId ?? '',
 			scoreHome: results.scoreHome,
 			scoreAway: results.scoreAway,
 			playerStats: results.playerStats ?? {},

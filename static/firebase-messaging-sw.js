@@ -55,24 +55,29 @@ var VIBRATE_PATTERNS = {
 messaging.onBackgroundMessage(function (payload) {
 	var data = payload.data || {};
 	var category = data.category || 'default';
+	var kind = data.kind || '';
 
 	var title = (payload.notification && payload.notification.title) || 'VANGUARD NEXUS';
 	var body  = (payload.notification && payload.notification.body)  || '';
+
+	// Phase 4, Epic 8 — Car Ride Home: resolve the deep link.
+	// Prefer `clickAction` (set by deliverCarRideHomePush) over legacy `link`.
+	var resolvedLink = data.clickAction || data.link || '/';
 
 	var options = {
 		body:    body,
 		icon:    '/Images/Phoenixes_Logo_2026.png',
 		badge:   '/Images/Phoenixes_Logo_2026.png',
 		vibrate: VIBRATE_PATTERNS[category] || VIBRATE_PATTERNS['default'],
-		// Tag groups notifications by category so weather alerts don't stack
-		tag:     category,
-		// Replace previous notification of same tag (avoids spam stacking)
+		// Car Ride Home gets its own tag so it never collapses with other categories.
+		tag:     kind === 'car_ride_home' ? 'car_ride_home' : category,
 		renotify: true,
-		// Deep-link stored in data for the click handler below
 		data: {
-			link:     data.link     || '/',
-			category: category,
-			tenantId: data.tenantId || ''
+			link:      resolvedLink,
+			category:  category,
+			kind:      kind,
+			fixtureId: data.fixtureId || '',
+			tenantId:  data.tenantId  || ''
 		}
 	};
 
