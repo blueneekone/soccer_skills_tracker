@@ -100,6 +100,22 @@ export const PATHS = {
 	 */
 	telemetryBoosts: (playerEmail: string) =>
 		`users/${playerEmail}/telemetry_boosts`,
+
+	// ── Phase 3, Epic 6 — Trajectory Tracking ──────────────────────────────
+
+	/**
+	 * Time-Lapse Memory Capsules.
+	 * Written by `trajectoryPlateauDetector` CF only.
+	 * Doc ID convention: `cap_{isoWeekKey}` (prevents spam — one per week).
+	 */
+	memoryCapsules: (email: string) => `users/${email}/memory_capsules`,
+
+	/**
+	 * Monthly XP/GVI buckets.
+	 * Written by `trajectoryMonthlyAggregator` CF only.
+	 * Doc ID = 'YYYY-MM'.
+	 */
+	trajectoryMonths: (email: string) => `users/${email}/trajectory_months`,
 } as const;
 
 // ── Uniform return shape ─────────────────────────────────────────────────────
