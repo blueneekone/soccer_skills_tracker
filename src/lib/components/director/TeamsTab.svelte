@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';

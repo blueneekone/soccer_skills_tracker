@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';

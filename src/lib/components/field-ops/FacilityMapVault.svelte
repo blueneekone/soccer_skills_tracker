@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 	import { storage, db } from '$lib/firebase.js';

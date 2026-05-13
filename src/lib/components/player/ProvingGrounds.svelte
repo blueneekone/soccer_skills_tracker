@@ -24,7 +24,7 @@
   •  Pure Svelte 5 runes: $state, $derived, $derived.by, $effect.
      No framework outside the project's standard stack.
 -->
-<script>
+<script lang="ts">
 	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte';
 
 	// ── Drill catalogue ───────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * LicensesTab — Director workspace.
 	 * Houses all seat allocation and subscription-entitlement management that was

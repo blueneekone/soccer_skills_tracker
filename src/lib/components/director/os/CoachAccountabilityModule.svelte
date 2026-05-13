@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 

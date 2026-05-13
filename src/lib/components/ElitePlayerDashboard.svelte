@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';

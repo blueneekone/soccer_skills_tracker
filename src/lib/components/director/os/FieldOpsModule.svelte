@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';

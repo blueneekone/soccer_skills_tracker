@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { storage, functions } from '$lib/firebase.js';
 	import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';

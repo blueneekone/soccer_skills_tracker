@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';

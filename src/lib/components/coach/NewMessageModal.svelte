@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';

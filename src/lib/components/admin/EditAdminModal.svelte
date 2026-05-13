@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * Strike 1 (Agent 2) — Edit Admin modal.
 	 *

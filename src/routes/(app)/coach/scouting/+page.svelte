@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * @typedef {{ id: string, label: string, role: string }} Prospect
 	 */

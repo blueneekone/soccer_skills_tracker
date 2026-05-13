@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';

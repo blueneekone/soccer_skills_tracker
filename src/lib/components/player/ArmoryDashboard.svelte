@@ -26,7 +26,7 @@
   PRO       (1 000–4 999) :  Morris 3 400,   Li 1 800
   ROOKIE    (0–999)       :  Vega 650
 -->
-<script>
+<script lang="ts">
 	import { ArmoryEngine, TIER_DEFINITIONS } from '$lib/states/ArmoryEngine.svelte';
 	import VanguardCard from '$lib/components/player/VanguardCard.svelte';
 

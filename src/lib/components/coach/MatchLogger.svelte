@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { httpsCallable } from 'firebase/functions';
 	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 	import { functions, db } from '$lib/firebase.js';

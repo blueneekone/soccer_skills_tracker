@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount, tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';

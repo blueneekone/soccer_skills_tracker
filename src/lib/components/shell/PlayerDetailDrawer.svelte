@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { tick } from 'svelte';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import { db } from '$lib/firebase.js';

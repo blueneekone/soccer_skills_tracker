@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { commitDrillCompletion, commitGritAward } from '$lib/services/writes.svelte';
 	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';

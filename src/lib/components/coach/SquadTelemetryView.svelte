@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import CoachSquadReadinessCard from './CoachSquadReadinessCard.svelte';

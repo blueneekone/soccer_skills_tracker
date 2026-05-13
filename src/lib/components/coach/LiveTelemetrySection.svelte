@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import MatchLogger from '$lib/components/coach/MatchLogger.svelte';
 
 	let {

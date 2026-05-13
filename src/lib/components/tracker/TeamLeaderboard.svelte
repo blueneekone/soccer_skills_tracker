@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * Sprint 2.6.1 — Recruiter Marketplace Oversight.
 	 *

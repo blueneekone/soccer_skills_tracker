@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { collection, addDoc } from 'firebase/firestore';

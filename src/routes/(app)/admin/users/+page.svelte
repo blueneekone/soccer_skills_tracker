@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * Sprint 2.6 / 2.7 — Global User Command Center.
 	 *

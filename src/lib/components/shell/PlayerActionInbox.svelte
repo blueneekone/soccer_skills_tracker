@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { collection, query, where, getDocs } from 'firebase/firestore';

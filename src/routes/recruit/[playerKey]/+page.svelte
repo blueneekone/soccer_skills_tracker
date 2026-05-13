@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';

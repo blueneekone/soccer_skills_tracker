@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { getFirestore, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
