@@ -286,6 +286,27 @@ export class ArmoryEngine {
 	/** True when a `claimStreakFreeze` call is in flight. */
 	freezeClaimPending = $state(false);
 
+	// ── Epic 5.4: Parent Co-Op Boost state ───────────────────────────────
+
+	/**
+	 * Email of the parent who most recently sponsored a telemetry boost.
+	 * Null when no boost has ever been applied.  Written server-side in
+	 * `armory.lastBoostSponsor` by the XP grant transaction.
+	 */
+	lastBoostSponsor = $state<string | null>(null);
+
+	/**
+	 * The multiplier of the most recently applied parent boost (e.g. 1.5).
+	 * Null when no boost has been applied.
+	 */
+	lastBoostMultiplier = $state<number | null>(null);
+
+	/**
+	 * ISO-8601 date string (UTC) of when the last boost was applied.
+	 * Null when no boost has been applied.
+	 */
+	lastBoostAt = $state<string | null>(null);
+
 	// ── Reactive derivations ─────────────────────────────────────────────
 
 	/**
@@ -413,6 +434,31 @@ export class ArmoryEngine {
 		return this.streakFreeze?.available ?? 0;
 	}
 
+	// ── Epic 5.4: Parent Co-Op Boost getters ─────────────────────────────
+
+	/**
+	 * True when the player's most recent XP earn was amplified by a parent boost.
+	 * "Active" is defined as: a boost was applied today (same UTC date as now).
+	 * The real-time multiplier lives on the server; this is a display hint only.
+	 */
+	get boostAppliedToday(): boolean {
+		if (!this.lastBoostAt) return false;
+		const today = new Date().toISOString().slice(0, 10);
+		return this.lastBoostAt >= today;
+	}
+
+	/**
+	 * Human-readable boost badge label (e.g. "1.5× boost by mom@example.com").
+	 * Null when no boost has been applied today.
+	 */
+	get boostBadgeLabel(): string | null {
+		if (!this.boostAppliedToday || !this.lastBoostMultiplier) return null;
+		const sponsorLabel = this.lastBoostSponsor
+			? ` by ${this.lastBoostSponsor.split('@')[0]}`
+			: '';
+		return `${this.lastBoostMultiplier}× boost${sponsorLabel}`;
+	}
+
 	// ── Constructor ──────────────────────────────────────────────────────
 
 	constructor(init: ArmoryEngineInit = {}) {
@@ -472,6 +518,19 @@ export class ArmoryEngine {
 			}
 			if (armory.streakFreeze && typeof armory.streakFreeze === 'object') {
 				this.streakFreeze = armory.streakFreeze as StreakFreezeDoc;
+			}
+
+			// ── Epic 5.4: Parent Co-Op boost fields ───────────────────────────
+			const raw = snap.data() as Record<string, unknown>;
+			const rawArmory = (raw?.armory ?? {}) as Record<string, unknown>;
+			if (typeof rawArmory.lastBoostSponsor === 'string') {
+				this.lastBoostSponsor = rawArmory.lastBoostSponsor;
+			}
+			if (typeof rawArmory.lastBoostMultiplier === 'number') {
+				this.lastBoostMultiplier = rawArmory.lastBoostMultiplier;
+			}
+			if (typeof rawArmory.lastBoostAt === 'string') {
+				this.lastBoostAt = rawArmory.lastBoostAt;
 			}
 		} catch (err) {
 			console.warn('[ArmoryEngine] loadPlayerData failed — offline or permission denied:', err);
@@ -558,6 +617,9 @@ export class ArmoryEngine {
 		this.lastActiveUtc = '';
 		this.decayState = null;
 		this.streakFreeze = null;
+		this.lastBoostSponsor = null;
+		this.lastBoostMultiplier = null;
+		this.lastBoostAt = null;
 	}
 
 	// ── Epic 5: Loss Avoidance mutations ──────────────────────────────────

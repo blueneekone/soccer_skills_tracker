@@ -3191,6 +3191,117 @@ service cloud.firestore {
     }
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3, Epic 5 — Loss Avoidance: reengagement_alerts
+    // ─────────────────────────────────────────────────────────────────────────
+    // Written exclusively by `dispatchReengagementAlerts` CF.
+    // The player reads their own alerts; the parent reads alerts for their
+    // linked children; coaches/directors read for their tenant.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /reengagement_alerts/{alertId} {
+      allow get: if authed() && (
+        isSuper()
+        || request.auth.uid == resource.data.uid
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.userKey))
+        || (isCoach()    && tokenClub() != null && resource.data.clubId == tokenClub())
+        || (isDirector() && tokenClub() != null && resource.data.clubId == tokenClub())
+      );
+      allow list: if authed() && (
+        isSuper()
+        || (request.auth.uid != null && resource.data.uid == request.auth.uid)
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.userKey))
+        || (isCoach()    && tokenClub() != null && resource.data.clubId == tokenClub())
+        || (isDirector() && tokenClub() != null && resource.data.clubId == tokenClub())
+      );
+      allow create, update, delete: if false; // CF Admin SDK only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3, Epic 5.4 — Parent Co-Op Bounties
+    // ─────────────────────────────────────────────────────────────────────────
+    // Created/updated by CF callables only (createBountyEscrow, issueBountyReward,
+    // voidBounty, tremendousWebhook).
+    // Read:
+    //   • Parent — must own the household listed on the document.
+    //   • Player — must be the playerEmail on the document (their own bounty).
+    //   • Coach / Director — same tenant, read-only visibility.
+    //   • Global admin — unrestricted.
+    // Write: Cloud Functions (Admin SDK) only.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /bounties/{bountyId} {
+      allow get: if authed() && (
+        isSuper()
+        || (isParent()
+            && tokenHousehold() != null
+            && resource.data.householdId == tokenHousehold())
+        || (emailKey() == resource.data.playerEmail)
+        || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
+        || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
+      );
+      allow list: if authed() && (
+        isSuper()
+        || (isParent()
+            && tokenHousehold() != null
+            && resource.data.householdId == tokenHousehold())
+        || (emailKey() == resource.data.playerEmail)
+        || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
+        || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
+      );
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // bounty_completions/{bountyId} — immutable verification records
+    // ─────────────────────────────────────────────────────────────────────────
+    match /bounty_completions/{completionId} {
+      allow get: if authed() && (
+        isSuper()
+        || (isParent()
+            && tokenHousehold() != null
+            && resource.data.householdId == tokenHousehold())
+        || (emailKey() == resource.data.playerEmail)
+        || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
+        || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
+      );
+      allow list: if authed() && (
+        isSuper()
+        || (isParent()
+            && tokenHousehold() != null
+            && resource.data.householdId == tokenHousehold())
+        || (emailKey() == resource.data.playerEmail)
+      );
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // bounty_audit/{auditId} — immutable COPPA/money paper trail
+    // ─────────────────────────────────────────────────────────────────────────
+    match /bounty_audit/{auditId} {
+      allow get: if authed() && (
+        isSuper()
+        || (isParent()
+            && tokenHousehold() != null
+            && resource.data.householdId == tokenHousehold())
+      );
+      allow list: if authed() && isSuper();
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // users/{playerEmail}/telemetry_boosts/{boostId}
+    // ─────────────────────────────────────────────────────────────────────────
+    // The activating parent writes via callable; the player and parent read.
+    // No client writes.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /users/{playerEmail}/telemetry_boosts/{boostId} {
+      allow get, list: if authed() && (
+        isSuper()
+        || emailKey() == playerEmail
+        || (isParent() && parentHouseholdAllowsChildEmail(playerEmail))
+      );
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

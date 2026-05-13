@@ -8,6 +8,8 @@
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 const {resolveStreak, utcDateStr, isoWeekKey} = require("./streakUtils");
+const {evaluateActiveBountiesForPlayer} = require("./bountyVerification");
+const {resolveActiveBoostMultiplier} = require("./coOpOps");
 
 /** Absolute max level (inclusive). */
 const MAX_PLAYER_LEVEL = 99;
@@ -232,8 +234,8 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
   const d = repSnap.data() || {};
   if (d.gamificationXpGranted === true) return;
 
-  const earned = calculateRepsEarnedXp(d);
-  if (earned < 1) {
+  const baseEarned = calculateRepsEarnedXp(d);
+  if (baseEarned < 1) {
     return;
   }
 
@@ -242,6 +244,18 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
     logger.warn("grantTrainingXpAfterRepCreated: missing playerEmail", {repId});
     return;
   }
+
+  // ── Apply parent-sponsored telemetry boost (Epic 5.4) ────────────────────
+  let boostMultiplier         = 1.0;
+  let boostSponsorEmail       = null;
+  try {
+    const boostResult = await resolveActiveBoostMultiplier(db, playerEmail, new Date());
+    boostMultiplier   = boostResult.multiplier;
+    boostSponsorEmail = boostResult.sponsoredByParentEmail;
+  } catch (boostErr) {
+    logger.warn("grantTrainingXpAfterRepCreated: boost resolution failed", {repId, err: boostErr});
+  }
+  const earned = Math.floor(baseEarned * boostMultiplier);
 
   let athleteUid = "";
   try {
@@ -377,7 +391,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
           {merge: true},
       );
 
-      tx.update(uRef, {
+      const userUpdateFields = {
         xp: xpInc,
         totalXp: xpInc,
         trainingLevel: lv.level,
@@ -385,16 +399,56 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
         longestStreak: Math.max(prevLong, streakDays),
         'armory.lastActiveUtc': todayStr,
         updatedAt: now,
-      });
+      };
+      // Stamp Co-Op boost audit field if a parent-sponsored boost was applied.
+      if (boostSponsorEmail && boostMultiplier > 1.0) {
+        userUpdateFields['armory.lastBoostSponsor'] = boostSponsorEmail;
+        userUpdateFields['armory.lastBoostMultiplier'] = boostMultiplier;
+        userUpdateFields['armory.lastBoostAt'] = todayStr;
+      }
+      tx.update(uRef, userUpdateFields);
+
+      // xpHistory entry with optional parent-boost annotation.
+      const xpHistoryEntry = {
+        date: todayStr,
+        amount: earned,
+        baseAmount: baseEarned,
+        reason: boostSponsorEmail && boostMultiplier > 1.0 ? 'parent_boost' : 'workout',
+        sponsoredByParentEmail: boostSponsorEmail || null,
+        boostMultiplier: boostMultiplier > 1.0 ? boostMultiplier : null,
+        runningTotal: newTotal,
+        createdAt: now,
+      };
+      const xpHistRef = db.collection(`users/${playerEmail}/xpHistory`).doc();
+      tx.set(xpHistRef, xpHistoryEntry);
 
       tx.update(repRef, {
         gamificationXpGranted: true,
         gamificationEarnedXp: earned,
+        gamificationBaseXp: baseEarned,
+        gamificationBoostMultiplier: boostMultiplier,
         gamificationGrantedAt: now,
       });
     });
   } catch (e) {
     logger.error("grantTrainingXpAfterRepCreated transaction failed", {repId, err: e});
+    return;
+  }
+
+  // ── Post-transaction: evaluate active Co-Op bounties ──────────────────────
+  // Runs outside the XP transaction so a bounty verification failure never
+  // rolls back the XP grant.
+  try {
+    const psSnap = await db.collection("player_stats").doc(athleteUid).get();
+    const psData = psSnap.exists ? psSnap.data() : {};
+    await evaluateActiveBountiesForPlayer(db, playerEmail, {
+      totalReps:    typeof psData.reps_this_week === "number" ? psData.reps_this_week : repsTotal,
+      totalMinutes: typeof psData.minutes_this_week === "number" ? psData.minutes_this_week : duration,
+      streakDays:   typeof psData.streak_days === "number" ? psData.streak_days : 0,
+      triggerSource: `reps/${repId}`,
+    });
+  } catch (e) {
+    logger.error("grantTrainingXpAfterRepCreated: bounty evaluation failed", {repId, err: e});
   }
 }
 

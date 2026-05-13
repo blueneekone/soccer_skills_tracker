@@ -50,7 +50,7 @@ Implement a Hybrid Data Model for the skill tree. The frontend UI must strictly 
 
 Activate Core Drive 8 (Loss Avoidance): Deploy rigorous daily habit streaks; program automated Skill Decay algorithms that drain fractions of inactive XP after consecutive missed days, triggering urgent re-engagement alerts.
 
-Integrate Parent Co-Op mechanics, empowering parents to fund real-world rewards via automated escrow Bounties alongside one-tap telemetry boosts.
+	[IMPLEMENTED — Phase 3, Epic 5.4] Integrate Parent Co-Op mechanics, empowering parents to fund real-world rewards via automated escrow Bounties (Tremendous API, pay-as-you-go) alongside one-tap telemetry XP boosts (1.5×/2×/3×). Objective-only verification via automated CF triggers on existing reps/workout/streak/mastery/GPA telemetry collections. CV biomechanics criterion (cv_verified_drill) schema-slotted and deferred behind feature_cv_bounty_enabled Remote Config flag.
 
 Epic 6: Vertical Comparison & Trajectory Tracking
 

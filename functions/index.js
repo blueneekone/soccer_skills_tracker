@@ -459,3 +459,36 @@ const lossAvoidance = require('./lossAvoidance');
 exports.enforceLossAvoidance        = lossAvoidance.enforceLossAvoidance;
 exports.dispatchReengagementAlerts  = lossAvoidance.dispatchReengagementAlerts;
 exports.claimStreakFreeze           = lossAvoidance.claimStreakFreeze;
+
+// ── Phase 3, Epic 5.4 — Parent Co-Op & Automated Escrow Bounties ─────────────
+//
+// bountyOps:
+//   linkTremendousFundingSource  — parent links bank/card via Tremendous
+//   listTremendousFundingSources — list available funding sources for picker
+//   createBountyEscrow           — parent creates an objective bounty
+//   voidBounty                   — parent cancels an active/verified bounty
+//
+// coOpOps:
+//   activateTelemetryBoost       — parent activates a time-bounded XP multiplier
+//
+// bountyVerification:
+//   onSkillTreeNodeWritten       — trigger on mastery_node_unlock criterion
+//   onAcademicRecordWritten      — trigger on gpa_threshold criterion
+//
+// tremendousWebhook:
+//   tremendousWebhook            — HTTPS handler for Tremendous reward status events
+const bountyOpsModule = require('./bountyOps');
+exports.linkTremendousFundingSource  = bountyOpsModule.linkTremendousFundingSource;
+exports.listTremendousFundingSources = bountyOpsModule.listTremendousFundingSources;
+exports.createBountyEscrow           = bountyOpsModule.createBountyEscrow;
+exports.voidBounty                   = bountyOpsModule.voidBounty;
+
+const coOpOpsModule = require('./coOpOps');
+exports.activateTelemetryBoost = coOpOpsModule.activateTelemetryBoost;
+
+const bountyVerificationModule = require('./bountyVerification');
+exports.onSkillTreeNodeWritten  = bountyVerificationModule.onSkillTreeNodeWritten;
+exports.onAcademicRecordWritten = bountyVerificationModule.onAcademicRecordWritten;
+
+const {tremendousWebhook} = require('./tremendousWebhook');
+exports.tremendousWebhook = tremendousWebhook;

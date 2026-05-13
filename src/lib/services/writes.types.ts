@@ -72,6 +72,34 @@ export const PATHS = {
 	 * One immutable event record per player per calendar day.
 	 */
 	reengagementAlerts: 'reengagement_alerts',
+
+	// ── Phase 3, Epic 5.4 — Parent Co-Op & Escrow Bounties ─────────────────
+
+	/**
+	 * Parent-funded escrow bounties.
+	 * Written by `createBountyEscrow` CF callable only.
+	 * Read by parent (household-scoped) and player (email-scoped).
+	 */
+	bounties: 'bounties',
+
+	/**
+	 * Immutable verification record written when bounty criteria are met.
+	 * Doc ID = bountyId for O(1) join.
+	 */
+	bountyCompletions: 'bounty_completions',
+
+	/**
+	 * Immutable audit trail for every bounty status transition.
+	 * Zero-liability paper trail for all money-adjacent events.
+	 */
+	bountyAudit: 'bounty_audit',
+
+	/**
+	 * Time-bounded XP multiplier boosts sponsored by parents.
+	 * Sub-collection path: `users/{playerEmail}/telemetry_boosts/{boostId}`.
+	 */
+	telemetryBoosts: (playerEmail: string) =>
+		`users/${playerEmail}/telemetry_boosts`,
 } as const;
 
 // ── Uniform return shape ─────────────────────────────────────────────────────

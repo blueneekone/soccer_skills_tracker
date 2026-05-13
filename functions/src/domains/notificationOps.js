@@ -451,6 +451,130 @@ exports.onTrialScoreAdded = onDocumentCreated(
     },
 );
 
+// ── Phase 3, Epic 5.4 — Parent Co-Op Notification Dispatchers ────────────────
+
+/**
+ * Shared helper: send an FCM multicast to a list of UIDs.
+ * Resolves UIDs from email keys when needed.
+ * Non-fatal — logs errors but never throws.
+ *
+ * @param {string[]} uids
+ * @param {{ title: string, body: string }} notification
+ * @param {Record<string, string>} data
+ */
+async function sendFcmToUids(uids, notification, data) {
+  if (uids.length === 0) return;
+  let tokens = [];
+  try {
+    tokens = await collectFcmTokensForUids(uids);
+  } catch (e) {
+    logger.error('sendFcmToUids: token load failed', {err: e});
+    return;
+  }
+  if (tokens.length === 0) return;
+  const chunkSize = 500;
+  for (let i = 0; i < tokens.length; i += chunkSize) {
+    const chunk = tokens.slice(i, i + chunkSize);
+    try {
+      await admin.messaging().sendMulticast({tokens: chunk, notification, data});
+    } catch (e) {
+      logger.error('sendFcmToUids: sendMulticast failed', {err: e});
+    }
+  }
+}
+
+/**
+ * Resolve Auth UIDs for an email array (best-effort, skips missing users).
+ * @param {string[]} emails
+ * @return {Promise<string[]>}
+ */
+async function emailsToUids(emails) {
+  const uids = [];
+  await Promise.all(emails.map(async (em) => {
+    const key = normEmail(String(em));
+    if (!key || !key.includes('@')) return;
+    try {
+      const ur = await admin.auth().getUserByEmail(key);
+      if (ur && ur.uid) uids.push(ur.uid);
+    } catch (_) {}
+  }));
+  return [...new Set(uids)];
+}
+
+/**
+ * Notify child player when a parent creates a new bounty for them.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {object} bountyData
+ * @param {string} bountyId
+ */
+async function dispatchBountyCreated(firestore, bountyData, bountyId) {
+  const {playerEmail, title} = bountyData;
+  if (!playerEmail) return;
+  const uids = await emailsToUids([playerEmail]);
+  await sendFcmToUids(
+      uids,
+      {title: '🎯 New Bounty Created!', body: `A parent set a reward bounty: "${title}". Complete the goal to earn your reward!`},
+      {kind: 'bounty_created', bountyId: String(bountyId)},
+  );
+}
+exports.dispatchBountyCreated = dispatchBountyCreated;
+
+/**
+ * Notify both parent and child when a bounty is verified (criteria met).
+ * Called by issueBountyReward before Tremendous order is confirmed.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {object} bountyData
+ * @param {string} bountyId
+ */
+async function dispatchBountyVerified(firestore, bountyData, bountyId) {
+  const {playerEmail, parentEmail, title} = bountyData;
+  const allEmails = [playerEmail, parentEmail].filter(Boolean);
+  const uids = await emailsToUids(allEmails);
+  await sendFcmToUids(
+      uids,
+      {title: '🏆 Bounty Completed!', body: `"${title}" — Goal achieved! Your reward is being processed.`},
+      {kind: 'bounty_verified', bountyId: String(bountyId)},
+  );
+}
+exports.dispatchBountyVerified = dispatchBountyVerified;
+
+/**
+ * Notify both parent and child when Tremendous confirms the reward is paid.
+ * Called by tremendousWebhook.js on REWARDS.PAID.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {object} bountyData
+ * @param {string} bountyId
+ */
+async function dispatchBountyPaid(firestore, bountyData, bountyId) {
+  const {playerEmail, parentEmail, title} = bountyData;
+  const allEmails = [playerEmail, parentEmail].filter(Boolean);
+  const uids = await emailsToUids(allEmails);
+  await sendFcmToUids(
+      uids,
+      {title: '💰 Reward Sent!', body: `The reward for "${title}" has been delivered. Check your email!`},
+      {kind: 'bounty_paid', bountyId: String(bountyId)},
+  );
+}
+exports.dispatchBountyPaid = dispatchBountyPaid;
+
+/**
+ * Notify the child player when a parent activates a telemetry boost.
+ * Called by coOpOps.js activateTelemetryBoost.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {string} playerEmail
+ * @param {{ label: string, expiresAt: string }} boostInfo
+ */
+async function dispatchBoostActivated(firestore, playerEmail, boostInfo) {
+  if (!playerEmail) return;
+  const uids = await emailsToUids([playerEmail]);
+  await sendFcmToUids(
+      uids,
+      {title: '⚡ XP Boost Activated!', body: `Your parent activated a ${boostInfo.label} boost! Train now for bonus XP.`},
+      {kind: 'boost_activated', expiresAt: boostInfo.expiresAt},
+  );
+}
+exports.dispatchBoostActivated = dispatchBoostActivated;
+
 /**
  * Epic 14: trial_scores -> public profile + FCM on verify.
  * Legacy trials/ still uses onTrialScoreAdded for parents.

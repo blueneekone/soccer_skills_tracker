@@ -49,6 +49,16 @@ const PARAM_DECAY_PCT_PER_DAY = 'decay_pct_per_day';
 const PARAM_DECAY_MAX_PCT = 'decay_max_pct';
 const PARAM_STREAK_FREEZE_PER_WEEK = 'streak_freeze_per_week';
 
+// ── Epic 5.4: Parent Co-Op flags ─────────────────────────────────────────────
+
+/**
+ * Master kill switch for the CV Biomechanics bounty criterion.
+ * Off by default — the server schema slot and handler exist but the UI
+ * hides the `cv_verified_drill` criterion type until the MediaPipe
+ * inference sub-epic is deployed and verified in staging.
+ */
+const FLAG_CV_BOUNTY = 'feature_cv_bounty_enabled';
+
 // ── VanguardFlagService ───────────────────────────────────────────────────────
 
 class VanguardFlagService {
@@ -90,6 +100,16 @@ class VanguardFlagService {
 	/** Streak freezes replenished per ISO week. Default: 1. */
 	streakFreezePerWeek = $state(1);
 
+	// ── Epic 5.4: Parent Co-Op ────────────────────────────────────────────
+
+	/**
+	 * Shows the `cv_verified_drill` criterion type in the BountyTerminal UI.
+	 * Defaults to `false` — the schema slot and server handler exist but the
+	 * MediaPipe inference pipeline (future sub-epic) is not yet deployed.
+	 * Enable in Firebase Console → Remote Config when CV verification is live.
+	 */
+	cvBountyEnabled = $state(false);
+
 	/**
 	 * Reads the current (already-fetched) flag values from Remote Config.
 	 * Safe to call multiple times — subsequent calls just re-read the cache.
@@ -105,6 +125,8 @@ class VanguardFlagService {
 		this.decayPctPerDay = getValue(rc, PARAM_DECAY_PCT_PER_DAY).asNumber() || 0.01;
 		this.decayMaxPct = getValue(rc, PARAM_DECAY_MAX_PCT).asNumber() || 0.25;
 		this.streakFreezePerWeek = getValue(rc, PARAM_STREAK_FREEZE_PER_WEEK).asNumber() || 1;
+		// Epic 5.4
+		this.cvBountyEnabled = getValue(rc, FLAG_CV_BOUNTY).asBoolean();
 	}
 }
 
