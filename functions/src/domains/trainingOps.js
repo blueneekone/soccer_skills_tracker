@@ -11,10 +11,12 @@
 //   • Public leaderboard + recruit profile reads
 //   • Daily activity XP (logPlayerActivity)
 //   • AI tactical analysis (analyzeTacticWithAI)
+//   • Epic 8: Intent deploy/cancel/extend + lifecycle triggers + expiry scheduler
 // ─────────────────────────────────────────────────────────────────────────────
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
-const {onDocumentCreated} = require('firebase-functions/v2/firestore');
+const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
+const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineSecret} = require('firebase-functions/params');
@@ -1921,6 +1923,224 @@ exports.analyzeTacticWithAI = onCall(
     },
 );
 
+// ── Epic 8: Intent-Based Homework Triggers ────────────────────────────────────
+
+/**
+ * Epic 8 — Deploy a macro-goal intent to team_assignments.
+ * Coach/director picks a target attribute + XP bounty; the RL engine resolves
+ * individualized drills per player at inference time.
+ */
+exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const tenantId = typeof data.tenantId === 'string' ? data.tenantId.trim() : '';
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const targetAttributeId = typeof data.targetAttributeId === 'string' ? data.targetAttributeId.trim() : '';
+  const requiredXp = Number(data.requiredXp);
+  const durationDays = Number(data.durationDays);
+  const scope = data.scope === 'players' ? 'players' : 'team';
+  const targetUids = scope === 'players' && Array.isArray(data.targetUids)
+    ? data.targetUids.filter((u) => typeof u === 'string' && u.trim()).map((u) => u.trim())
+    : [];
+  const priority = Number.isFinite(Number(data.priority)) && Number(data.priority) >= 1
+    ? Math.floor(Number(data.priority))
+    : 100;
+
+  if (!teamId || teamId === 'admin') throw new HttpsError('invalid-argument', 'teamId is required.');
+  if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
+  if (!clubId) throw new HttpsError('invalid-argument', 'clubId is required.');
+  if (!targetAttributeId) throw new HttpsError('invalid-argument', 'targetAttributeId is required.');
+  if (!Number.isFinite(requiredXp) || requiredXp < 1 || requiredXp > 100000) {
+    throw new HttpsError('invalid-argument', 'requiredXp must be 1–100000.');
+  }
+  if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > 90) {
+    throw new HttpsError('invalid-argument', 'durationDays must be 1–90.');
+  }
+  if (scope === 'players' && targetUids.length === 0) {
+    throw new HttpsError('invalid-argument', 'targetUids must be non-empty when scope is "players".');
+  }
+  if (targetUids.length > 100) {
+    throw new HttpsError('invalid-argument', 'targetUids may not exceed 100 entries.');
+  }
+
+  const {clubId: verifiedClubId} = await assertCanSecureAddPlayer(request, teamId);
+  if (verifiedClubId !== clubId) {
+    throw new HttpsError('permission-denied', 'clubId mismatch — cross-tenant write denied.');
+  }
+
+  // When scoped to specific players, verify each uid is on this team.
+  if (scope === 'players' && targetUids.length > 0) {
+    const teamDoc = await db().collection('teams').doc(teamId).get();
+    if (!teamDoc.exists) throw new HttpsError('not-found', 'Team not found.');
+    const rosterSnap = await db().collection('users').where('teamId', '==', teamId).get();
+    const teamUids = new Set(rosterSnap.docs.map((d) => d.data().uid || d.id));
+    for (const uid of targetUids) {
+      if (!teamUids.has(uid)) {
+        throw new HttpsError('failed-precondition', `UID ${uid} is not on team ${teamId}.`);
+      }
+    }
+  }
+
+  const expiresAt = admin.firestore.Timestamp.fromMillis(
+    Date.now() + durationDays * 86_400_000,
+  );
+
+  const intentRef = db().collection('team_assignments').doc();
+  const intentId = intentRef.id;
+
+  await intentRef.set({
+    intentId,
+    teamId,
+    tenantId,
+    clubId,
+    assignedByUid: request.auth.uid,
+    targetAttributeId,
+    requiredXp: Math.floor(requiredXp),
+    scope,
+    targetUids,
+    priority,
+    status: 'active',
+    fulfilledByUids: [],
+    intentVersion: 1,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await db().collection('security_audit').add({
+    action: 'secureDeployIntent',
+    intentId,
+    teamId,
+    tenantId,
+    clubId,
+    targetAttributeId,
+    requiredXp,
+    scope,
+    targetCount: scope === 'players' ? targetUids.length : 'team',
+    actorUid: request.auth.uid,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {
+    intentId,
+    status: 'active',
+    expiresAt: expiresAt.toDate().toISOString(),
+    targetCount: scope === 'players' ? targetUids.length : 0,
+  };
+});
+
+/**
+ * Epic 8 — Cancel an active intent.
+ * Allowed: the deploying coach, any director on the same club, super_admin.
+ */
+exports.secureCancelIntent = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const intentId = typeof data.intentId === 'string' ? data.intentId.trim() : '';
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const tenantId = typeof data.tenantId === 'string' ? data.tenantId.trim() : '';
+
+  if (!intentId) throw new HttpsError('invalid-argument', 'intentId is required.');
+  if (!teamId) throw new HttpsError('invalid-argument', 'teamId is required.');
+  if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
+
+  const ref = db().collection('team_assignments').doc(intentId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Intent not found.');
+
+  const intent = snap.data();
+  if (intent.teamId !== teamId || intent.tenantId !== tenantId) {
+    throw new HttpsError('permission-denied', 'Cross-tenant cancel denied.');
+  }
+  if (intent.status !== 'active') {
+    throw new HttpsError('failed-precondition', `Intent is already ${intent.status}.`);
+  }
+
+  await assertCanSecureAddPlayer(request, teamId);
+
+  await ref.update({
+    status: 'cancelled',
+    lastModifiedByUid: request.auth.uid,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await db().collection('security_audit').add({
+    action: 'secureCancelIntent',
+    intentId,
+    teamId,
+    tenantId,
+    actorUid: request.auth.uid,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {intentId, status: 'cancelled'};
+});
+
+/**
+ * Epic 8 — Extend the expiry of an active intent by additional days.
+ */
+exports.secureExtendIntent = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const data = request.data || {};
+  const intentId = typeof data.intentId === 'string' ? data.intentId.trim() : '';
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const tenantId = typeof data.tenantId === 'string' ? data.tenantId.trim() : '';
+  const additionalDays = Number(data.additionalDays);
+
+  if (!intentId) throw new HttpsError('invalid-argument', 'intentId is required.');
+  if (!teamId) throw new HttpsError('invalid-argument', 'teamId is required.');
+  if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
+  if (!Number.isFinite(additionalDays) || additionalDays < 1 || additionalDays > 90) {
+    throw new HttpsError('invalid-argument', 'additionalDays must be 1–90.');
+  }
+
+  const ref = db().collection('team_assignments').doc(intentId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Intent not found.');
+
+  const intent = snap.data();
+  if (intent.teamId !== teamId || intent.tenantId !== tenantId) {
+    throw new HttpsError('permission-denied', 'Cross-tenant extend denied.');
+  }
+  if (intent.status !== 'active') {
+    throw new HttpsError('failed-precondition', `Cannot extend — intent is ${intent.status}.`);
+  }
+
+  await assertCanSecureAddPlayer(request, teamId);
+
+  const currentExpiry = intent.expiresAt && typeof intent.expiresAt.toMillis === 'function'
+    ? intent.expiresAt.toMillis()
+    : Date.now();
+  const newExpiresAt = admin.firestore.Timestamp.fromMillis(
+    Math.max(currentExpiry, Date.now()) + additionalDays * 86_400_000,
+  );
+
+  await ref.update({
+    expiresAt: newExpiresAt,
+    lastModifiedByUid: request.auth.uid,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await db().collection('security_audit').add({
+    action: 'secureExtendIntent',
+    intentId,
+    teamId,
+    tenantId,
+    additionalDays,
+    actorUid: request.auth.uid,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {intentId, newExpiresAt: newExpiresAt.toDate().toISOString()};
+});
+
 /** Server XP grant when a `reps` doc is created (parent/player submitWorkoutRep). */
 exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
     {
@@ -1940,6 +2160,153 @@ exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
         await grantTrainingXpAfterRepCreated(db(), snap, repId);
       } catch (e) {
         logger.error('onRepCreatedApplyGamificationXp failed', e);
+      }
+    },
+);
+
+// ── Epic 8: Intent lifecycle trigger ─────────────────────────────────────────
+
+/**
+ * Fires when a user doc is updated. If xpByAttribute changed, check all active
+ * intents where this player is in scope. For each intent where the player's XP
+ * for the target attribute now meets requiredXp, append their uid to
+ * fulfilledByUids. When ALL targeted players have fulfilled, flip status to
+ * 'fulfilled'.
+ */
+exports.onUserXpUpdateIntentLifecycle = onDocumentUpdated(
+    {
+      document: 'users/{userId}',
+      region: REGION,
+    },
+    async (event) => {
+      try {
+        const before = event.data && event.data.before ? event.data.before.data() : null;
+        const after = event.data && event.data.after ? event.data.after.data() : null;
+        if (!before || !after) return;
+
+        const uid = after.uid || event.params.userId;
+        if (!uid || typeof uid !== 'string') return;
+
+        // Fast-exit: if xpByAttribute hasn't changed, nothing to do.
+        const xpBefore = before.xpByAttribute || {};
+        const xpAfter = after.xpByAttribute || {};
+        const changedAttrs = Object.keys(xpAfter).filter(
+          (k) => (xpAfter[k] || 0) !== (xpBefore[k] || 0),
+        );
+        if (changedAttrs.length === 0) return;
+
+        const teamId = typeof after.teamId === 'string' ? after.teamId.trim() : '';
+        if (!teamId) return;
+
+        // Query active intents for this team where a changed attribute matches.
+        // Firestore does not support OR on different fields, so query by teamId+status
+        // and filter in memory — the result set is small (< 20 active intents per team).
+        const intentsSnap = await db()
+          .collection('team_assignments')
+          .where('teamId', '==', teamId)
+          .where('status', '==', 'active')
+          .get();
+
+        if (intentsSnap.empty) return;
+
+        const firestoreBatch = db().batch();
+        let batchHasWork = false;
+
+        for (const intentDoc of intentsSnap.docs) {
+          const intent = intentDoc.data();
+          const attrId = intent.targetAttributeId;
+          if (!changedAttrs.includes(attrId)) continue;
+
+          // Check if this player is in scope.
+          const scope = intent.scope || 'team';
+          const targetUids = Array.isArray(intent.targetUids) ? intent.targetUids : [];
+          const inScope = scope === 'team' || targetUids.includes(uid);
+          if (!inScope) continue;
+
+          const requiredXp = Number(intent.requiredXp) || 0;
+          const playerXp = Number((xpAfter)[attrId] || 0);
+          if (playerXp < requiredXp) continue;
+
+          // Player has met the threshold.
+          const alreadyFulfilled = Array.isArray(intent.fulfilledByUids) &&
+            intent.fulfilledByUids.includes(uid);
+          if (alreadyFulfilled) continue;
+
+          const newFulfilled = [...(intent.fulfilledByUids || []), uid];
+
+          // Determine whether ALL targets are now fulfilled.
+          let intentComplete = false;
+          if (scope === 'team') {
+            // Team-wide: check all roster players.
+            const rosterSnap = await db()
+              .collection('users')
+              .where('teamId', '==', teamId)
+              .where('role', '==', 'player')
+              .get();
+            const rosterUids = rosterSnap.docs.map((d) => d.data().uid || d.id);
+            intentComplete = rosterUids.length > 0 &&
+              rosterUids.every((ru) => newFulfilled.includes(ru));
+          } else {
+            intentComplete = targetUids.length > 0 &&
+              targetUids.every((tu) => newFulfilled.includes(tu));
+          }
+
+          firestoreBatch.update(intentDoc.ref, {
+            fulfilledByUids: newFulfilled,
+            ...(intentComplete ? {
+              status: 'fulfilled',
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            } : {
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }),
+          });
+          batchHasWork = true;
+
+          if (intentComplete) {
+            logger.info(`[intentLifecycle] Intent ${intentDoc.id} fully fulfilled.`);
+          }
+        }
+
+        if (batchHasWork) {
+          await firestoreBatch.commit();
+        }
+      } catch (e) {
+        logger.error('[onUserXpUpdateIntentLifecycle] error:', e);
+      }
+    },
+);
+
+/**
+ * Hourly scheduler: flip status to 'expired' for any active intent whose
+ * expiresAt has passed. Runs in us-east1 to match the rest of the functions.
+ */
+exports.scheduledExpireIntents = onSchedule(
+    {
+      schedule: 'every 60 minutes',
+      region: REGION,
+    },
+    async () => {
+      try {
+        const now = admin.firestore.Timestamp.now();
+        const expiredSnap = await db()
+          .collection('team_assignments')
+          .where('status', '==', 'active')
+          .where('expiresAt', '<=', now)
+          .get();
+
+        if (expiredSnap.empty) return;
+
+        const batch = db().batch();
+        for (const doc of expiredSnap.docs) {
+          batch.update(doc.ref, {
+            status: 'expired',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+        logger.info(`[scheduledExpireIntents] Expired ${expiredSnap.size} intent(s).`);
+      } catch (e) {
+        logger.error('[scheduledExpireIntents] error:', e);
       }
     },
 );

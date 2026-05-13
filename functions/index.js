@@ -250,6 +250,12 @@ exports.getTeamLeaderboard            = trainingOps.getTeamLeaderboard;
 exports.logPlayerActivity             = trainingOps.logPlayerActivity;
 exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;
+// Epic 8 — Intent-Based Homework Triggers
+exports.secureDeployIntent   = trainingOps.secureDeployIntent;
+exports.secureCancelIntent   = trainingOps.secureCancelIntent;
+exports.secureExtendIntent   = trainingOps.secureExtendIntent;
+exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
+exports.scheduledExpireIntents        = trainingOps.scheduledExpireIntents;
 exports.syncUserClaims            = adminOps.syncUserClaims;
 exports.listTeamsForClub          = adminOps.listTeamsForClub;
 exports.logSecurityAudit          = adminOps.logSecurityAudit;

@@ -8,7 +8,7 @@
 		orderBy,
 		doc,
 		getDoc,
-		setDoc
+		setDoc,
 	} from 'firebase/firestore';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { db } from '$lib/firebase.js';
@@ -18,7 +18,7 @@
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
 	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
-	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string }} Assignment */
+	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string; scope?: string; targetUids?: string[]; priority?: number; status?: string }} Assignment */
 	/** @typedef {{ id: string; title: string; attributeId: string; tier: string; mediaType: string; payload?: string }} Drill */
 
 	/**
@@ -63,7 +63,10 @@
 	const recentFrustration = $derived(String(playerProfile?.recentFrustration ?? 'low'));
 	const playerTier = $derived(playerProfile?.calculatedTier ? String(playerProfile.calculatedTier) : 'beginner');
 
+	// Highest-priority intent (lowest priority number wins — already sorted asc by onSnapshot query).
 	const activeAssignment = $derived(/** @type {Assignment | null} */ (assignments[0] ?? null));
+	// Queue depth: remaining intents after the active one.
+	const queueCount = $derived(Math.max(0, assignments.length - 1));
 
 	const activeAttribute = $derived.by(() => {
 		if (!activeAssignment) return null;
@@ -93,9 +96,15 @@
 		setDoc(doc(db, 'users', uid), { calculatedTier: 'beginner' }, { merge: true }).catch(() => {});
 	});
 
-	// Real-time subscription to active team assignments
+	// Epic 8: uid for scope filtering
+	const playerUid = $derived(authStore.user?.uid ?? '');
+
+	// Real-time subscription to ALL active intents this player is scoped into.
+	// Filters: status==='active', scope==='team' OR uid in targetUids.
+	// Sorted client-side by priority asc (lowest priority number = highest priority).
 	$effect(() => {
 		const teamId = playerTeamId;
+		const uid = playerUid;
 		if (!teamId) {
 			assignments = [];
 			isLoading = false;
@@ -103,12 +112,23 @@
 		}
 
 		isLoading = true;
-		const q = query(collection(db, 'team_assignments'), where('teamId', '==', teamId));
+		const q = query(
+			collection(db, 'team_assignments'),
+			where('teamId', '==', teamId),
+			where('status', '==', 'active'),
+			orderBy('priority', 'asc'),
+		);
 
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				assignments = snap.docs.map((d) => ({ id: d.id, .../** @type {any} */ (d.data()) }));
+				/** @type {Assignment[]} */
+				const all = snap.docs.map((d) => ({ id: d.id, .../** @type {any} */ (d.data()) }));
+				// Scope-filter: keep team-wide intents and player-scoped ones that include this uid.
+				assignments = all.filter((a) => {
+					if (!a.scope || a.scope === 'team') return true;
+					return Array.isArray(a.targetUids) && uid && a.targetUids.includes(uid);
+				});
 				isLoading = false;
 			},
 			(err) => {
@@ -221,13 +241,24 @@
 	{/if}
 
 	<!-- Header -->
-	<div class="tw-flex tw-flex-col tw-gap-0.5">
-		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60">
-			[ // ADAPTIVE HOMEWORK ]
-		</span>
-		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30">
-			[ EQ-SCAFFOLDED DRILL QUEUE ]
-		</span>
+	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
+		<div class="tw-flex tw-flex-col tw-gap-0.5">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60">
+				[ // ADAPTIVE HOMEWORK ]
+			</span>
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30">
+				[ EQ-SCAFFOLDED DRILL QUEUE ]
+			</span>
+		</div>
+		<!-- Queue depth pill: shows remaining intents behind the active one -->
+		{#if queueCount > 0}
+			<span
+				class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-2 tw-py-0.5 tw-rounded tw-bg-[#6366f1]/15 tw-text-[#6366f1] tw-border tw-border-[#6366f1]/30"
+				title="{queueCount} more intent{queueCount === 1 ? '' : 's'} queued"
+			>
+				+{queueCount} QUEUED
+			</span>
+		{/if}
 	</div>
 
 	<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>

@@ -193,14 +193,34 @@ async function buildStateVector(uid, now = new Date()) {
           .orderBy('createdAt', 'desc')
           .limit(20)
           .get(),
+      // Epic 8: filter active intents only, then scope-filter in memory.
       db().collection('team_assignments')
           .where('teamId', '==', teamId)
-          .orderBy('createdAt', 'desc')
-          .limit(1)
+          .where('status', '==', 'active')
+          .orderBy('priority', 'asc')
+          .limit(20)
           .get(),
     ]);
     assignDocs = aSnap.docs.map((d) => d.data());
-    teamAssignDocs = taSnap.docs.map((d) => d.data());
+
+    // Epic 8: apply read-repair defaults and scope-filter for this uid.
+    const allActiveIntents = taSnap.docs.map((d) => {
+      const raw = d.data();
+      return {
+        scope: 'team',
+        targetUids: [],
+        priority: 100,
+        status: 'active',
+        fulfilledByUids: [],
+        intentVersion: 1,
+        ...raw,
+      };
+    });
+    // Keep only intents this player is in scope for.
+    teamAssignDocs = allActiveIntents.filter((intent) => {
+      if (intent.scope === 'team') return true;
+      return Array.isArray(intent.targetUids) && intent.targetUids.includes(uid);
+    });
   }
 
   const logs = logsSnap.docs.map((d) => d.data());
@@ -273,7 +293,8 @@ async function buildStateVector(uid, now = new Date()) {
     nowMs;
   const trainingAgeDays = clamp01((nowMs - firstLogMs) / (365 * DAY_MS));
 
-  // Coach intent (latest team assignment)
+  // Epic 8: highest-priority active intent in scope (lowest priority number wins).
+  // Falls back to first doc if priority field is missing (read-repair default 100 applied above).
   const latestTeamAssign = teamAssignDocs[0];
   const coachAttrId = String(latestTeamAssign?.targetAttributeId ?? '');
 

@@ -10,9 +10,7 @@
 		orderBy,
 		query,
 		serverTimestamp,
-		Timestamp,
 		where,
-		writeBatch,
 	} from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { auth, db, functions } from '$lib/firebase.js';
@@ -62,8 +60,8 @@
 
 	const currentTeam = $derived(myTeams.find((t) => t.id === selectedTeamId));
 
-	/** @type {'mission' | 'library' | 'designer' | 'schedule'} */
-	let pageView = $state('mission');
+	/** @type {'library' | 'designer' | 'schedule'} */
+	let pageView = $state('library');
 
 	/** @type {'game' | 'practice'} */
 	let scheduleEventKind = $state('practice');
@@ -171,61 +169,7 @@
 		void workoutsStore.loadForTeam(selectedTeamId);
 	});
 
-	const FOCUS_AREAS = [
-		{ id: /** @type {const} */ ('technical'), label: 'Technical' },
-		{ id: /** @type {const} */ ('physical'), label: 'Physical' },
-		{ id: /** @type {const} */ ('tactical'), label: 'Tactical' },
-		{ id: /** @type {const} */ ('recovery'), label: 'Recovery' },
-	];
-	const MISSION_DRILLS = {
-		technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
-		physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
-		tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
-		recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
-	};
-
-	/** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
-	let missionFocus = $state('technical');
-	/** @type {string} */
-	let missionDrill = $state('Juggling');
-	let missionDuration = $state(45);
-	let missionRpe = $state(6);
-	/** @type {'squad' | 'individual'} */
-	let deployMode = $state('squad');
-	/** @type {string} */
-	let selectedPlayerEmail = $state('');
-	let deployBusy = $state(false);
-	let deployErr = $state('');
-	let deployOk = $state('');
-
-	const missionDrillOptions = $derived(MISSION_DRILLS[missionFocus] || []);
-
-	$effect(() => {
-		missionFocus;
-		const list = missionDrillOptions;
-		if (list.length && !list.includes(missionDrill)) {
-			untrack(() => {
-				missionDrill = list[0];
-			});
-		}
-	});
-
-	/** @param {number} rpe */
-	function rpeMultiplier(rpe) {
-		if (rpe <= 3) return 1.0;
-		if (rpe <= 7) return 1.15;
-		return 1.35;
-	}
-	/** @param {number} rpe */
-	function rpeToIntensity(rpe) {
-		if (rpe <= 3) return /** @type {const} */ ('low');
-		if (rpe <= 7) return /** @type {const} */ ('medium');
-		return /** @type {const} */ ('high');
-	}
-
-	const missionXpBounty = $derived(
-		Math.max(1, Math.floor(missionDuration * 10 * rpeMultiplier(missionRpe))),
-	);
+	// Mission deploy tab removed (Epic 8). Intents are now deployed via /coach/assignments.
 
 	// ── Drill library data loads ─────────────────────────────────────────────
 	/** @typedef {{ id: string, title: string, category: string, metricType: string, videoUrl: string, description: string, durationMinutes: number, baseXp: number, source: 'team' | 'global', createdBy?: string }} DrillRow */
@@ -473,75 +417,9 @@
 	let loadingRoster = $state(false);
 	let selectedEmails = $state(/** @type {Set<string>} */ (new Set()));
 
-	const canDeploy = $derived.by(() => {
-		if (!selectedTeamId) return false;
-		if (deployBusy) return false;
-		if (roster.length === 0) return false;
-		if (deployMode === 'individual' && !selectedPlayerEmail) return false;
-		return true;
-	});
-
-	async function deployMission() {
-		if (!canDeploy || !selectedTeamId) return;
-		const coach = auth.currentUser;
-		if (!coach?.uid) {
-			deployErr = 'Session expired. Sign in again.';
-			return;
-		}
-		const focusLabel =
-			(FOCUS_AREAS.find((f) => f.id === missionFocus) ?? { label: 'Session' }).label;
-		const targets =
-			deployMode === 'squad' ?
-				roster.slice() :
-				roster.filter((r) => r.email === selectedPlayerEmail);
-		if (targets.length === 0) {
-			deployErr = 'No target athletes in scope.';
-			return;
-		}
-		deployBusy = true;
-		deployErr = '';
-		deployOk = '';
-		const batchId = crypto.randomUUID();
-		const due = Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-		const rpe = missionRpe;
-		const intensity = rpeToIntensity(rpe);
-		const xp = missionXpBounty;
-		try {
-			const batch = writeBatch(db);
-			for (const t of targets) {
-				const ref = doc(collection(db, 'assigned_missions'));
-				batch.set(ref, {
-					teamId: selectedTeamId,
-					createdBy: coach.uid,
-					deployMode,
-					targetPlayerKey: t.email,
-					playerName: t.playerName,
-					focusArea: focusLabel,
-					specificDrill: missionDrill,
-					targetDurationMinutes: Math.max(1, Math.min(1440, Math.floor(missionDuration))),
-					targetRpe: Math.max(1, Math.min(10, Math.floor(missionRpe))),
-					intensity,
-					xpBounty: xp,
-					status: 'pending',
-					batchId,
-					createdAt: serverTimestamp(),
-					dueDate: due,
-					missionSource: 'player_os',
-				});
-			}
-			await batch.commit();
-			deployOk = `Ordnance away · ${targets.length} row(s) ingested. Batch ${batchId.slice(0, 8).toUpperCase()}`;
-		} catch (e) {
-			deployErr =
-				e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Deploy failed.';
-		} finally {
-			deployBusy = false;
-		}
-	}
-
 	$effect(() => {
 		if (!browser || !selectedTeamId) return;
-		if (!assignOpen && pageView !== 'mission') return;
+		if (!assignOpen) return;
 		loadingRoster = true;
 		let cancelled = false;
 		(async () => {
@@ -650,14 +528,13 @@
 				Team › {currentTeam?.name || selectedTeamId || '—'}
 			</p>
 			<nav class="cdm-seg" aria-label="Coach section">
-				<button
-					type="button"
-					class="cdm-seg__btn"
-					class:cdm-seg__btn--on={pageView === 'mission'}
-					onclick={() => (pageView = 'mission')}
+				<a
+					href="/coach/assignments"
+					class="cdm-seg__btn cdm-seg__btn--intent"
+					title="Deploy macro-goal intents — individualized drills per player"
 				>
-					Mission deploy
-				</button>
+					Intent deploy
+				</a>
 				<button
 					type="button"
 					class="cdm-seg__btn"
@@ -704,140 +581,7 @@
 		</div>
 	</header>
 
-	{#if pageView === 'mission'}
-		<div class="cdm-grid" data-region="mission-deployment">
-			<aside class="cdm-panel cdm-panel--target" aria-labelledby="cdm-target-h">
-				<div class="cdm-panel__head">
-					<span class="cdm-eyebrow">Phase 1 · Target acquisition</span>
-					<h2 id="cdm-target-h" class="cdm-h2">Assignee scope</h2>
-				</div>
-				<div class="cdm-toggle" role="group" aria-label="Deployment mode">
-					<button
-						type="button"
-						class="cdm-toggle__btn"
-						class:cdm-toggle__btn--on={deployMode === 'squad'}
-						onclick={() => {
-							deployMode = 'squad';
-							selectedPlayerEmail = '';
-						}}
-					>
-						Deploy to squad
-					</button>
-					<button
-						type="button"
-						class="cdm-toggle__btn"
-						class:cdm-toggle__btn--on={deployMode === 'individual'}
-						onclick={() => (deployMode = 'individual')}
-					>
-						Deploy to individual
-					</button>
-				</div>
-				{#if loadingRoster}
-					<p class="cdm-muted">Scanning roster…</p>
-				{:else if roster.length === 0}
-					<p class="cdm-muted">No player accounts on this team.</p>
-				{:else}
-					{#if deployMode === 'individual'}
-						<label class="cdm-field">
-							<span class="cdm-eyebrow">Select athlete</span>
-							<select class="cdm-select" bind:value={selectedPlayerEmail}>
-								<option value="">— designate target —</option>
-								{#each roster as p (p.email)}
-									<option value={p.email}>{p.playerName} · {p.email}</option>
-								{/each}
-							</select>
-						</label>
-					{:else}
-						<ul class="cdm-roster" aria-label="Squad roster">
-							{#each roster as p (p.email)}
-								<li class="cdm-roster__row">
-									<span class="cdm-mono cdm-roster__name">{p.playerName}</span>
-									<span class="cdm-mono cdm-roster__em">{p.email}</span>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				{/if}
-			</aside>
-
-			<div class="cdm-panel cdm-panel--params" aria-labelledby="cdm-params-h">
-				<div class="cdm-panel__head">
-					<span class="cdm-eyebrow">Phase 2 · Mission parameters</span>
-					<h2 id="cdm-params-h" class="cdm-h2">Tactical loadout</h2>
-				</div>
-				<label class="cdm-field">
-					<span class="cdm-eyebrow">Focus area</span>
-					<select class="cdm-select" bind:value={missionFocus}>
-						{#each FOCUS_AREAS as f}
-							<option value={f.id}>{f.label}</option>
-						{/each}
-					</select>
-				</label>
-				<label class="cdm-field">
-					<span class="cdm-eyebrow">Specific drill</span>
-					<select class="cdm-select" bind:value={missionDrill}>
-						{#each missionDrillOptions as d}
-							<option value={d}>{d}</option>
-						{/each}
-					</select>
-				</label>
-				<div class="cdm-gauge">
-					<div class="cdm-gauge__head">
-						<span class="cdm-eyebrow">Target duration (min)</span>
-						<span class="cdm-mono cdm-cyber">{missionDuration}</span>
-					</div>
-					<input
-						class="cdm-range"
-						type="range"
-						min="5"
-						max="120"
-						step="5"
-						bind:value={missionDuration}
-					/>
-				</div>
-				<div class="cdm-gauge">
-					<div class="cdm-gauge__head">
-						<span class="cdm-eyebrow">Target intensity (RPE 1–10)</span>
-						<span class="cdm-mono cdm-orange">{missionRpe}</span>
-					</div>
-					<input class="cdm-range cdm-range--rpe" type="range" min="1" max="10" step="1" bind:value={missionRpe} />
-				</div>
-			</div>
-
-			<aside class="cdm-panel cdm-panel--payload" aria-labelledby="cdm-payload-h">
-				<div class="cdm-panel__head">
-					<span class="cdm-eyebrow">Phase 3 · Payload</span>
-					<h2 id="cdm-payload-h" class="cdm-h2">Yield projection</h2>
-				</div>
-				<div class="cdm-bounty">
-					<span class="cdm-eyebrow">XP bounty (on compliant execution)</span>
-					<p class="cdm-mono cdm-bounty__val">{missionXpBounty}</p>
-				</div>
-				<p class="cdm-hint">
-					Est. uses training load model: minutes × 10 × RPE band (low 1.0 / mid 1.15 / high 1.35). Due +7d UTC.
-				</p>
-				{#if deployErr}
-					<p class="cdm-err" role="alert">{deployErr}</p>
-				{/if}
-				{#if deployOk}
-					<p class="cdm-ok" role="status">{deployOk}</p>
-				{/if}
-				<button
-					type="button"
-					class="cdm-deploy"
-					disabled={!canDeploy}
-					onclick={() => deployMission()}
-				>
-					{#if deployBusy}
-						<span class="cdm-mono">Transmitting…</span>
-					{:else}
-						<i class="ph ph-lightning" aria-hidden="true"></i>
-						Authorize & deploy mission
-					{/if}
-				</button>
-			</aside>
-		</div>
-	{:else if pageView === 'designer'}
+	{#if pageView === 'designer'}
 		<div class="cdm-designer" data-region="spatial-designer">
 			<DrillDesignerTab
 				teamId={selectedTeamId}
@@ -1269,6 +1013,19 @@
 		background: #000;
 		color: var(--cdm-cyber);
 		box-shadow: 0 0 14px rgba(0, 212, 255, 0.2);
+	}
+
+	.cdm-seg__btn--intent {
+		color: #a855f7;
+		border: 1px solid rgba(168, 85, 247, 0.3);
+		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.cdm-seg__btn--intent:hover {
+		background: rgba(168, 85, 247, 0.1);
+		box-shadow: 0 0 14px rgba(168, 85, 247, 0.2);
 	}
 
 	.cdm-grid {

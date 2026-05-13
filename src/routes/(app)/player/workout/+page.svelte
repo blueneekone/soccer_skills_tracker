@@ -4,7 +4,7 @@
   import { untrack } from 'svelte';
   import { httpsCallable } from 'firebase/functions';
   import { db, functions } from '$lib/firebase.js';
-  import { collection, onSnapshot, query, where } from 'firebase/firestore';
+  import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
@@ -148,34 +148,42 @@
     }
   }
 
+  // Epic 8: subscribe to active team_assignments intents this player is in scope for.
+  // Replaces the orphaned assigned_missions collection (mission-deploy removed).
   $effect(() => {
     if (!browser) return;
-    const em = (authStore.user?.email || '').toLowerCase().trim();
-    if (authStore.role !== 'player' || !em) {
+    const uid = authStore.user?.uid ?? '';
+    const teamId = typeof authStore.userProfile?.teamId === 'string'
+      ? authStore.userProfile.teamId
+      : '';
+    if (authStore.role !== 'player' || !uid || !teamId) {
       incomingMissions = [];
       missionsErr = '';
       return;
     }
     missionsErr = '';
     const qy = query(
-      collection(db, 'assigned_missions'),
-      where('targetPlayerKey', '==', em),
-      where('status', '==', 'pending'),
+      collection(db, 'team_assignments'),
+      where('teamId', '==', teamId),
+      where('status', '==', 'active'),
+      orderBy('priority', 'asc'),
     );
     const unsub = onSnapshot(
       qy,
       (snap) => {
-        incomingMissions = snap.docs.map((d) => {
-          const x = d.data() || {};
-          return /** @type {Record<string, unknown> & { id: string }} */ ({
-            id: d.id,
-            ...x,
+        incomingMissions = snap.docs
+          .map((d) => {
+            const x = d.data() || {};
+            return /** @type {Record<string, unknown> & { id: string }} */ ({ id: d.id, ...x });
+          })
+          .filter((m) => {
+            if (!m.scope || m.scope === 'team') return true;
+            return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
           });
-        });
       },
       (e) => {
-        missionsErr = e instanceof Error ? e.message : 'Mission link offline.';
-        console.error('[Player OS] assigned_missions', e);
+        missionsErr = e instanceof Error ? e.message : 'Intent feed offline.';
+        console.error('[Player OS] team_assignments', e);
       },
     );
     return () => {
@@ -453,33 +461,23 @@
         <p class="pw-err" role="alert">{missionsErr}</p>
       {/if}
       {#if incomingMissions.length > 0}
-        <p class="pw-tx-eyebrow">INCOMING TRANSMISSION</p>
-        <ul class="pw-txlist" aria-label="Coach-assigned missions">
+        <p class="pw-tx-eyebrow">ACTIVE TACTICAL INTENTS</p>
+        <ul class="pw-txlist" aria-label="Coach tactical intents">
           {#each incomingMissions as m (m.id)}
             <li>
-              <button
-                type="button"
-                class="pw-tx"
-                class:pw-tx--active={activeMissionId === m.id}
-                onclick={() => applyMission(m)}
-              >
+              <div class="pw-tx">
                 <div class="pw-tx__grid">
-                  <span class="pw-mono pw-tx__k">BATCH</span>
-                  <span class="pw-mono pw-tx__v">{String(m.batchId || '—').slice(0, 8)}<span class="pw-dim">…</span></span>
-                  <span class="pw-mono pw-tx__k">FOCUS</span>
-                  <span class="pw-mono pw-tx__v">{m.focusArea}</span>
-                  <span class="pw-mono pw-tx__k">DRILL</span>
-                  <span class="pw-mono pw-tx__v pw-tx__drill">{m.specificDrill}</span>
-                  <span class="pw-mono pw-tx__k">DUR</span>
-                  <span class="pw-mono pw-tx__v">{m.targetDurationMinutes} MIN</span>
-                  <span class="pw-mono pw-tx__k">RPE</span>
-                  <span class="pw-mono pw-tx__v">{m.targetRpe} / 10</span>
-                  <span class="pw-mono pw-tx__k">YIELD</span>
-                  <span class="pw-mono pw-tx__v pw-green">{m.xpBounty} XP</span>
+                  <span class="pw-mono pw-tx__k">TARGET</span>
+                  <span class="pw-mono pw-tx__v">{String(m.targetAttributeId || '—').toUpperCase()}</span>
+                  <span class="pw-mono pw-tx__k">SCOPE</span>
+                  <span class="pw-mono pw-tx__v">{m.scope === 'players' ? 'SELECTED' : 'SQUAD'}</span>
+                  <span class="pw-mono pw-tx__k">GOAL</span>
+                  <span class="pw-mono pw-tx__v pw-green">{m.requiredXp} XP</span>
                   <span class="pw-mono pw-tx__k">DUE</span>
-                  <span class="pw-mono pw-tx__v">{fmtDue(m.dueDate)}</span>
+                  <span class="pw-mono pw-tx__v">{fmtDue(m.expiresAt)}</span>
                 </div>
-              </button>
+                <p class="pw-tx__hint">Open dashboard for AI-recommended drill</p>
+              </div>
             </li>
           {/each}
         </ul>
@@ -755,12 +753,20 @@
     background: #000;
     color: #e5e5e5;
     border: 1px solid rgba(0, 212, 255, 0.45);
-    cursor: pointer;
     box-shadow:
       0 0 0 1px rgba(57, 255, 20, 0.15),
       0 0 20px rgba(0, 212, 255, 0.12);
     animation: pw-tx-breathe 2.4s ease-in-out infinite;
     transition: border-color 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .pw-tx__hint {
+    margin: 0.45rem 0 0;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.3);
   }
 
   @keyframes pw-tx-breathe {

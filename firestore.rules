@@ -3357,6 +3357,55 @@ service cloud.firestore {
       allow create, update, delete: if false; // Admin SDK / Cloud Functions only
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Phase 3, Epic 8 — Intent-Based Homework Triggers
+    // ─────────────────────────────────────────────────────────────────────────
+    // team_assignments/{intentId}
+    //
+    // Writes: secureDeployIntent / secureCancelIntent / secureExtendIntent
+    //         callables use Admin SDK → all client writes blocked.
+    //
+    // Reads:
+    //   • Coaches / directors: list/get intents for their team (tenantId match).
+    //   • Players: list/get intents where scope==='team' (same teamId)
+    //              OR their UID appears in targetUids.
+    //   • super_admin: unrestricted.
+    //
+    // NOTE: The onUserXpUpdateIntentLifecycle trigger also updates these docs via
+    //       Admin SDK. scheduledExpireIntents uses Admin SDK. Both bypass rules.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /team_assignments/{intentId} {
+      // ── Reads ────────────────────────────────────────────────────────────
+      allow get: if authed() && (
+        isSuper()
+        // Coach or director in the same club can read
+        || (
+          (isCoach() || isDirector())
+          && tokenClub() != null
+          && resource.data.tenantId == tokenClub()
+        )
+        // Player reads team-wide intent on their team
+        || (
+          isPlayer()
+          && resource.data.status == 'active'
+          && (
+            (resource.data.scope == 'team' && resource.data.teamId == tokenTeam())
+            || (resource.data.scope == 'players' && request.auth.uid in resource.data.targetUids)
+          )
+        )
+      );
+
+      allow list: if authed() && (
+        isSuper()
+        || (isCoach() || isDirector()) && tokenClub() != null
+        || isPlayer()
+      );
+
+      // All writes are Admin SDK only (callable functions).
+      allow create, update, delete: if false;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     match /{document=**} {
       allow read, write: if false;
     }
