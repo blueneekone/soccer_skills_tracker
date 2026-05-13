@@ -218,10 +218,12 @@ function bucketToRpe(intensityBucket) {
  *  8. Write rl_inference_log/{logId}.
  *  9. Return policy recommendation.
  *
- * Min instances = 1 keeps the TF.js model warm.
+ * Alpha cost-control: scales to zero (no minInstances). Cold start trades
+ * ~1–2s first-request latency for $0 idle baseline. Reinstate minInstances
+ * post-Alpha if cold-start latency becomes user-visible.
  */
 exports.getAdaptiveWorkoutPolicy = onCall(
-    {region: REGION, minInstances: 1, memory: '512MiB'},
+    {region: REGION, memory: '512MiB'},
     async (request) => {
       if (!request.auth?.uid) {
         throw new HttpsError('unauthenticated', 'Sign in required.');
