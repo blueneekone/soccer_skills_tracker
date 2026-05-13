@@ -44,6 +44,45 @@
 	/** Filtered to visible nodes only — avoids calling the getter twice. */
 	const visibleNodes = $derived(engine.nodes.filter((n) => n.visible));
 
+	// ── Decay re-fog pulse ─────────────────────────────────────────────────────
+
+	/**
+	 * Tracks node IDs that just transitioned unlocked/mastered → locked due to
+	 * skill decay. The animation CSS class is removed after the keyframe completes
+	 * so subsequent renders don't re-trigger it.
+	 */
+	let decayedNodeIds = $state(new Set<string>());
+
+	// Snapshot of last-known states for delta comparison.
+	let prevNodeStates = new Map<string, string>();
+
+	$effect(() => {
+		const current = engine.nodes;
+		const newlyDecayed = new Set<string>();
+
+		for (const node of current) {
+			const prev = prevNodeStates.get(node.id);
+			// Detect unlocked/mastered → locked transition (decay re-fog).
+			if (
+				(prev === 'unlocked' || prev === 'mastered') &&
+				node.state === 'locked'
+			) {
+				newlyDecayed.add(node.id);
+			}
+			prevNodeStates.set(node.id, node.state);
+		}
+
+		if (newlyDecayed.size > 0) {
+			decayedNodeIds = new Set([...decayedNodeIds, ...newlyDecayed]);
+			// Clear after animation duration (1.4 s).
+			setTimeout(() => {
+				decayedNodeIds = new Set(
+					[...decayedNodeIds].filter((id) => !newlyDecayed.has(id)),
+				);
+			}, 1400);
+		}
+	});
+
 	// ── Pure render helpers (no state, safe to call from template) ────────────
 
 	function nodeFill(state: string, hovered: boolean, selected: boolean): string {
@@ -153,6 +192,7 @@
 			{@const isHovered  = node.id === engine.hoveredNodeId}
 			{@const isSelected = node.id === engine.selectedNodeId}
 			{@const isMastered = node.state === 'mastered'}
+			{@const isDecaying = decayedNodeIds.has(node.id)}
 
 			<!-- Selection ring — rendered first (behind the main hex) -->
 			{#if isSelected}
@@ -174,7 +214,7 @@
 				stroke={nodeStroke(node.state)}
 				stroke-width={nodeStrokeWidth(isHovered)}
 				filter={bloomFilter(node.state)}
-				class="{isMastered ? 'st-node-mastered' : ''} tw-cursor-pointer"
+				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} tw-cursor-pointer"
 				role="button"
 				aria-label="Skill: {node.label} ({node.state})"
 				tabindex="0"
@@ -242,5 +282,20 @@
 
 	.st-node-mastered {
 		animation: stNodePulse 3s ease-in-out infinite;
+	}
+
+	/**
+	 * Decay re-fog pulse — fires once when a node transitions
+	 * unlocked/mastered → locked due to Skill Decay (Epic 5).
+	 * A red-orange drain flash reinforces Loss Avoidance feedback.
+	 */
+	@keyframes stNodeDecay {
+		0%   { opacity: 1;   filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9)); }
+		40%  { opacity: 0.6; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6)); }
+		100% { opacity: 1;   filter: none; }
+	}
+
+	.st-node-decayed {
+		animation: stNodeDecay 1.4s ease-out forwards;
 	}
 </style>

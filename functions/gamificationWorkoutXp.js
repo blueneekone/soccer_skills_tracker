@@ -7,6 +7,7 @@
 
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const {resolveStreak, utcDateStr, isoWeekKey} = require("./streakUtils");
 
 /** Absolute max level (inclusive). */
 const MAX_PLAYER_LEVEL = 99;
@@ -265,9 +266,9 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
 
   const duration = Math.max(0, Math.floor(Number(d.minutes) || 0));
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const yesterdayStr = utcYmdAddDays(todayStr, -1);
-  const weekKey = utcWeekMondayKey();
+  const nowMs = Date.now();
+  const todayStr = utcDateStr(nowMs);
+  const weekKey = isoWeekKey(nowMs);
 
   const uRef = db.collection("users").doc(playerEmail);
   const psRef = db.collection("player_stats").doc(athleteUid);
@@ -322,23 +323,31 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
           psSnap.exists && typeof psSnap.data().last_training_utc === "string" ?
             psSnap.data().last_training_utc :
             "";
-      let streakDays = 1;
-      if (psSnap.exists) {
-        const sd = psSnap.data();
-        const prevSt =
-            typeof sd.streak_days === "number" && !Number.isNaN(sd.streak_days) ?
-              Math.floor(sd.streak_days) :
-              0;
-        if (lastTr === todayStr) {
-          streakDays = Math.max(1, prevSt);
-        } else if (lastTr === yesterdayStr) {
-          streakDays = Math.max(1, prevSt + 1);
-        } else if (lastTr) {
-          streakDays = 1;
-        } else {
-          streakDays = 1;
-        }
-      }
+      const prevSt =
+          psSnap.exists &&
+          typeof psSnap.data().streak_days === "number" &&
+          !Number.isNaN(psSnap.data().streak_days) ?
+            Math.floor(psSnap.data().streak_days) :
+            0;
+      const prevStatus =
+          psSnap.exists && typeof psSnap.data().streakStatus === "string" ?
+            psSnap.data().streakStatus :
+            "";
+      const freezeAvail =
+          psSnap.exists && typeof psSnap.data().streakFreezeAvailable === "number" ?
+            Math.floor(psSnap.data().streakFreezeAvailable) :
+            0;
+
+      const streakResult = resolveStreak({
+        lastTrainingUtc: lastTr,
+        prevStreakDays: prevSt,
+        streakStatus: prevStatus,
+        freezeAvailable: freezeAvail,
+        workoutLoggedToday: true,
+        nowMs: Date.now(),
+        enforcementEnabled: true,
+      });
+      const streakDays = streakResult.newStreakDays;
 
       const lv = trainingLevelFromTotalXp(newTotal);
       const xpInc = admin.firestore.FieldValue.increment(earned);
@@ -360,6 +369,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
             minutes_this_week: minsWeek,
             xp_this_week: xpWeek,
             streak_days: streakDays,
+            streakStatus: streakResult.newStreakStatus,
             stats_week_key: weekKey,
             last_training_utc: todayStr,
             updatedAt: now,
@@ -373,6 +383,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
         trainingLevel: lv.level,
         currentStreak: streakDays,
         longestStreak: Math.max(prevLong, streakDays),
+        'armory.lastActiveUtc': todayStr,
         updatedAt: now,
       });
 

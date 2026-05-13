@@ -449,3 +449,13 @@ exports.rlOnPhysioReportCreated  = transitionRecorder.onPhysioReportCreated;
 // Nightly RL training scheduler (S7).
 const trainer = require('./src/ml/trainer');
 exports.trainRlPolicyNightly = trainer.trainRlPolicyNightly;
+
+// ── Phase 3, Epic 5 — Loss Avoidance (Octalysis Core Drive 8) ────────────────
+// enforceLossAvoidance:       nightly sweep drains inactive XP, breaks/freezes
+//                             streaks, and queues reengagement alerts.
+// dispatchReengagementAlerts: runs every 30 min to flush the alert queue via FCM.
+// claimStreakFreeze:          onCall — player/parent consumes a streak freeze.
+const lossAvoidance = require('./lossAvoidance');
+exports.enforceLossAvoidance        = lossAvoidance.enforceLossAvoidance;
+exports.dispatchReengagementAlerts  = lossAvoidance.dispatchReengagementAlerts;
+exports.claimStreakFreeze           = lossAvoidance.claimStreakFreeze;

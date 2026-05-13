@@ -139,6 +139,12 @@ export interface TenantUser {
 		totalXP?: number;
 		stats?: Partial<Record<string, string>>;
 		xpHistory?: XpHistoryEntry[];
+		/** ISO-8601 date of the most recent XP-earning event (set server-side). */
+		lastActiveUtc?: string;
+		/** Rolling decay diagnostics — written by enforceLossAvoidance Cloud Function. */
+		decayState?: DecayStateDoc;
+		/** Weekly streak freeze entitlement. */
+		streakFreeze?: StreakFreezeDoc;
 	};
 }
 
@@ -379,4 +385,69 @@ export interface XpHistoryEntry {
 	amount: number;
 	reason: string;
 	runningTotal: number;
+}
+
+// ── Epic 5: Loss Avoidance types ───────────────────────────────────────────
+
+/**
+ * Decay diagnostics stored under `users/{uid}.armory.decayState`.
+ * Written exclusively by `enforceLossAvoidance` Cloud Function.
+ * Never written from the client — read-only on the frontend.
+ */
+export interface DecayStateDoc {
+	/** ISO-8601 date of the last decay sweep that touched this player. */
+	lastDecayRunUtc: string;
+	/** Consecutive idle days at the time of last decay run. */
+	idleDays: number;
+	/** Cumulative XP drained across all decay events. */
+	totalDecayedXp: number;
+	/** Fraction drained in the last run (0-1). */
+	lastDecayPct: number;
+}
+
+/**
+ * Weekly streak-freeze entitlement stored under `users/{uid}.armory.streakFreeze`.
+ * `available` is decremented when the player (or the decay job) consumes a freeze.
+ * Replenished to `streak_freeze_per_week` at ISO week rollover.
+ */
+export interface StreakFreezeDoc {
+	/** Freezes remaining this ISO week. */
+	available: number;
+	/** ISO week key (e.g. "2026-W19") — used to detect rollover and replenish. */
+	weekKey: string;
+	/** ISO-8601 timestamp of the last time a freeze was consumed. */
+	consumedAt?: string;
+}
+
+/**
+ * `reengagement_alerts/{uid}_{YYYYMMDD}` — one immutable event record per
+ * player per calendar day.  The client HUD subscribes and acknowledges;
+ * `dispatchReengagementAlerts` sets `sentAt`; the player tapping the HUD sets
+ * `acknowledgedAt`.
+ */
+export interface ReengagementAlertDoc {
+	/** Firebase Auth UID of the player this alert targets. */
+	uid: string;
+	/** Email-key of the player (document ID in `users`). */
+	userKey: string;
+	/** Tenant partition key. */
+	clubId: string;
+	/** Alert category. */
+	kind: 'streak_warning' | 'streak_lost' | 'decay_started';
+	/**
+	 * Urgency level 1-3 — escalates each day the player remains inactive.
+	 * Controls push notification copy and HUD colour.
+	 */
+	severity: 1 | 2 | 3;
+	/** ISO-8601 timestamp the alert was scheduled for dispatch. */
+	scheduledFor: string;
+	/** ISO-8601 timestamp set by dispatch function after FCM delivery. */
+	sentAt?: string;
+	/** ISO-8601 timestamp set by the client when the HUD renders the alert. */
+	acknowledgedAt?: string;
+	/** Number of idle days at alert creation (for notification copy). */
+	idleDays: number;
+	/** XP lost so far (for notification copy). */
+	decayedXp: number;
+	createdAt?: FirestoreTimestamp;
 }

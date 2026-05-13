@@ -85,7 +85,7 @@
  */
 
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
+import { db, functions } from '$lib/firebase.js';
 import {
 	addDoc,
 	collection,
@@ -97,8 +97,10 @@ import {
 	updateDoc,
 	writeBatch,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 import { PATHS } from '$lib/services/writes.types';
+import type { DecayStateDoc, StreakFreezeDoc } from '$lib/types/tenant.js';
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -260,6 +262,30 @@ export class ArmoryEngine {
 	 */
 	xpHistory = $state<XpHistoryEntry[]>([]);
 
+	// ── Epic 5: Loss Avoidance state ─────────────────────────────────────
+
+	/**
+	 * ISO-8601 UTC date string of the most recent XP-earning event.
+	 * Written server-side by `grantTrainingXpAfterRepCreated` and
+	 * `commitWorkoutCompletion`; read here to derive `daysIdle`.
+	 */
+	lastActiveUtc = $state<string>('');
+
+	/**
+	 * Decay diagnostics from the last `enforceLossAvoidance` sweep.
+	 * null = no decay has run yet for this player.
+	 */
+	decayState = $state<DecayStateDoc | null>(null);
+
+	/**
+	 * Weekly streak-freeze entitlement.
+	 * null = server has never written this field (pre-Epic-5 accounts).
+	 */
+	streakFreeze = $state<StreakFreezeDoc | null>(null);
+
+	/** True when a `claimStreakFreeze` call is in flight. */
+	freezeClaimPending = $state(false);
+
 	// ── Reactive derivations ─────────────────────────────────────────────
 
 	/**
@@ -340,6 +366,53 @@ export class ArmoryEngine {
 		return this.nextTier?.floor ?? this.currentTier.floor + 1;
 	}
 
+	// ── Epic 5: Loss Avoidance reactive getters ───────────────────────────
+
+	/**
+	 * Number of calendar days since the player last earned XP.
+	 * Returns 0 when `lastActiveUtc` is empty (never set) or is today.
+	 */
+	get daysIdle(): number {
+		if (!this.lastActiveUtc) return 0;
+		const todayMs = Date.now();
+		const todayStr = new Date(todayMs).toISOString().slice(0, 10);
+		const diff = Math.floor(
+			(Date.parse(todayStr) - Date.parse(this.lastActiveUtc)) / 86_400_000,
+		);
+		return Math.max(0, diff);
+	}
+
+	/**
+	 * True when the player is actively losing XP (idle > grace period AND
+	 * the decay kill switch is enabled client-side).
+	 */
+	get isDecaying(): boolean {
+		return vanguardFlags.decayEnabled && this.daysIdle > vanguardFlags.decayGraceDays;
+	}
+
+	/**
+	 * ISO-8601 date string of when the next decay hit will occur.
+	 * Returns null when decay is disabled or the player is still in grace.
+	 */
+	get nextDecayHitAt(): string | null {
+		if (!vanguardFlags.decayEnabled || !this.lastActiveUtc) return null;
+		const graceCutoffMs =
+			Date.parse(this.lastActiveUtc) + vanguardFlags.decayGraceDays * 86_400_000;
+		if (graceCutoffMs > Date.now()) {
+			return new Date(graceCutoffMs).toISOString().slice(0, 10);
+		}
+		// Already in decay — next hit is tomorrow.
+		const tomorrow = Date.now() + 86_400_000;
+		return new Date(tomorrow).toISOString().slice(0, 10);
+	}
+
+	/**
+	 * Number of streak freezes available this week, or 0 if none recorded.
+	 */
+	get freezesAvailable(): number {
+		return this.streakFreeze?.available ?? 0;
+	}
+
 	// ── Constructor ──────────────────────────────────────────────────────
 
 	constructor(init: ArmoryEngineInit = {}) {
@@ -388,6 +461,17 @@ export class ArmoryEngine {
 			}
 			if (Array.isArray(armory.xpHistory)) {
 				this.xpHistory = armory.xpHistory as XpHistoryEntry[];
+			}
+
+			// ── Epic 5: Loss Avoidance fields ─────────────────────────────────
+			if (typeof armory.lastActiveUtc === 'string') {
+				this.lastActiveUtc = armory.lastActiveUtc;
+			}
+			if (armory.decayState && typeof armory.decayState === 'object') {
+				this.decayState = armory.decayState as DecayStateDoc;
+			}
+			if (armory.streakFreeze && typeof armory.streakFreeze === 'object') {
+				this.streakFreeze = armory.streakFreeze as StreakFreezeDoc;
 			}
 		} catch (err) {
 			console.warn('[ArmoryEngine] loadPlayerData failed — offline or permission denied:', err);
@@ -471,6 +555,59 @@ export class ArmoryEngine {
 		this.totalXP = 0;
 		this.playerStats = { PAC: '—', ACC: '—', AGI: '—', STM: '—', POW: '—', VAN: '—' };
 		this.xpHistory = [];
+		this.lastActiveUtc = '';
+		this.decayState = null;
+		this.streakFreeze = null;
+	}
+
+	// ── Epic 5: Loss Avoidance mutations ──────────────────────────────────
+
+	/**
+	 * Consume a streak freeze via the `claimStreakFreeze` Cloud Function.
+	 *
+	 * Optimistic: decrements `streakFreeze.available` locally before the
+	 * server responds so the HUD reflects the change instantly.
+	 * Rolls back on error.
+	 *
+	 * @returns {Promise<void>} Resolves when the server confirms.
+	 */
+	async consumeStreakFreeze(): Promise<void> {
+		if (!browser || !this.userId) return;
+		if (this.freezesAvailable <= 0) return;
+		if (this.freezeClaimPending) return;
+
+		this.freezeClaimPending = true;
+
+		// Optimistic local update.
+		const prev = this.streakFreeze;
+		if (this.streakFreeze) {
+			this.streakFreeze = {
+				...this.streakFreeze,
+				available: Math.max(0, this.streakFreeze.available - 1),
+				consumedAt: new Date().toISOString(),
+			};
+		}
+
+		try {
+			const claimFn = httpsCallable<Record<string, never>, { ok: boolean; freezesRemaining: number }>(
+				functions,
+				'claimStreakFreeze',
+			);
+			const result = await claimFn({});
+			// Reconcile with server value.
+			if (this.streakFreeze) {
+				this.streakFreeze = {
+					...this.streakFreeze,
+					available: result.data.freezesRemaining,
+				};
+			}
+		} catch (err) {
+			// Roll back optimistic update.
+			this.streakFreeze = prev;
+			console.warn('[ArmoryEngine] consumeStreakFreeze failed:', err);
+		} finally {
+			this.freezeClaimPending = false;
+		}
 	}
 
 	// ── Private Firestore sync helpers ────────────────────────────────────

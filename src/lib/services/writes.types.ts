@@ -64,6 +64,14 @@ export const PATHS = {
 	opponents: 'opponents',
 	/** Season documents — carry `completedFixtureCount` counter. */
 	seasons: 'seasons',
+	/** Player stats — streak_days, total_xp, last_training_utc, etc. Doc ID = email key. */
+	playerStats: 'player_stats',
+	/**
+	 * Loss Avoidance re-engagement alerts (Epic 5).
+	 * Doc ID convention: `{uid}_{YYYYMMDD}`.
+	 * One immutable event record per player per calendar day.
+	 */
+	reengagementAlerts: 'reengagement_alerts',
 } as const;
 
 // ── Uniform return shape ─────────────────────────────────────────────────────
