@@ -44,14 +44,13 @@ Implement Reinforcement Learning (RL) Algorithms: Transition from static trainin
 
 Epic 5: The Octalysis Progression Loop
 
-Activate Core Drive 2 (Accomplishment): Construct multi-attribute hex trees visualizing physical progression across distinct capabilities.
+Activate Core Drive 2 (Accomplishment): Construct multi-attribute hex trees using a Composite Snowflake visual layout branching outward from a central core to support the "Fog of War" masking.
+
+Implement a Hybrid Data Model for the skill tree. The frontend UI must strictly render Synthetic Authored Nodes (abstract action abstractions like "Pace" or "Vision") to prevent cognitive overload. The Firestore backend must utilize a competency knowledge graph to map these synthetic nodes to the raw "Drill-as-Node" curriculum. Operating in the space of action abstractions rather than primitive actions is mathematically required for the Reinforcement Learning algorithms to efficiently calculate and converge on the optimal training paths.
 
 Activate Core Drive 8 (Loss Avoidance): Deploy rigorous daily habit streaks; program automated Skill Decay algorithms that drain fractions of inactive XP after consecutive missed days, triggering urgent re-engagement alerts.
 
 Integrate Parent Co-Op mechanics, empowering parents to fund real-world rewards via automated escrow Bounties alongside one-tap telemetry boosts.
-
-PHASE 4: THE EMOTIONAL INTELLIGENCE (EQ) PERIMETER
-Objective: Sever horizontal roster comparisons, protect beginner vulnerability, and build an ecosystem explicitly validating player self-worth.
 
 Epic 6: Vertical Comparison & Trajectory Tracking
 
