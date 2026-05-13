@@ -1,8 +1,8 @@
 /**
- * Vanguard OS — VFX / immersion enforcement.
- * Custom thin scrollbars: obsidian track, vanguard-cyan thumb.
- * Tactical SVGs: prefer `<feGaussianBlur>` filter defs for neon bloom on active geometry.
- * Controls: no flat white/light-grey buttons — translucent slate glass + luminous borders/hover.
+ * Nexus Command OS — VFX / immersion enforcement.
+ * Custom thin scrollbars: enterprise-slate track, indigo thumb.
+ * Tactical SVGs: prefer `<feGaussianBlur>` filter defs for indigo bloom on active geometry.
+ * Controls: no flat white/light-grey buttons — translucent slate glass + luminous indigo borders/hover.
  */
 
 html {
@@ -20,7 +20,7 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(0, 240, 255, 0.35);
+	background: rgba(99, 102, 241, 0.35);
 	border-radius: 2px;
 }
 
@@ -35,31 +35,31 @@ html {
 /* Firefox thin scrollbar with matching colours */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: rgba(0, 240, 255, 0.35) var(--vanguard-bg);
+	scrollbar-color: rgba(99, 102, 241, 0.35) var(--vanguard-bg);
 }
 
 /**
- * Vanguard OS — global SIEM shell tokens.
- * Tron Legacy / Ares + void palette — tactical HUD chrome.
+ * Nexus Command OS — global enterprise SIEM shell tokens.
+ * Enterprise Slate / Indigo palette — tactical HUD chrome.
  *
  * DESIGN TOKEN DICTIONARY
  * ────────────────────────
- * --vanguard-bg      Deep Obsidian global background
- * --vanguard-cyan    Primary Glow / Success / XP
- * --vanguard-red     Ares Red / Danger / Errors
- * --vanguard-glass   Glassmorphism base surface
- * --vanguard-border  Subtle cyan border
+ * --vanguard-bg      Enterprise Slate-900 global background (#0f172a)
+ * --vanguard-cyan    Primary Indigo Accent / Success / XP (#6366f1)
+ * --vanguard-red     Critical / Danger / Errors
+ * --vanguard-glass   Glassmorphism base surface (slate-tinted)
+ * --vanguard-border  Subtle indigo border
  *
  * Tailwind aliases: tw-bg-vanguard-bg, tw-text-vanguard-cyan,
  *   tw-border-vanguard-border, tw-shadow-vanguard-card, etc.
  */
 :root {
-	/* ── Vanguard Protocol Token Dictionary (canonical) ─────────────── */
-	--vanguard-bg:        #010409;
-	--vanguard-cyan:      #00f0ff;
+	/* ── Nexus Command Token Dictionary (canonical) ──────────────────── */
+	--vanguard-bg:        #0f172a;
+	--vanguard-cyan:      #6366f1;
 	--vanguard-red:       #ff003c;
-	--vanguard-glass:     rgba(255, 255, 255, 0.03);
-	--vanguard-border:    rgba(0, 240, 255, 0.2);
+	--vanguard-glass:     rgba(15, 23, 42, 0.55);
+	--vanguard-border:    rgba(99, 102, 241, 0.22);
 	--vanguard-radius:    1.5rem;   /* 24px — primary card/panel radius */
 	--vanguard-radius-sm: 0.75rem;  /* 12px — button/badge radius */
 	--vanguard-radius-md: 1rem;     /* 16px — modal / sub-panel */
@@ -76,18 +76,18 @@ html {
 		inset 0 1px 0 rgba(255, 255, 255, 0.04),
 		0 1px 2px rgba(0, 0, 0, 0.4),
 		0 4px 12px -4px rgba(0, 0, 0, 0.5);
-	/* elev-2: cards / panels — inset rim + ambient depth + subtle cyan glow */
+	/* elev-2: cards / panels — inset rim + ambient depth + subtle indigo glow */
 	--vanguard-elev-2:
 		inset 0 1px 0 rgba(255, 255, 255, 0.06),
 		0 1px 2px rgba(0, 0, 0, 0.3),
 		0 8px 24px -8px rgba(0, 0, 0, 0.5),
-		0 0 15px rgba(0, 240, 255, 0.04);
-	/* elev-3: modals / heroes / drawers — strong drop + wider cyan glow */
+		0 0 15px rgba(99, 102, 241, 0.06);
+	/* elev-3: modals / heroes / drawers — strong drop + wider indigo glow */
 	--vanguard-elev-3:
 		inset 0 1px 0 rgba(255, 255, 255, 0.08),
 		0 1px 2px rgba(0, 0, 0, 0.3),
 		0 16px 40px -12px rgba(0, 0, 0, 0.6),
-		0 0 20px rgba(0, 240, 255, 0.06);
+		0 0 20px rgba(99, 102, 241, 0.08);
 	/* elev-ares: breach / critical state — crimson inset + red glow */
 	--vanguard-elev-ares:
 		inset 0 0 0 1px rgba(255, 0, 60, 0.3),
@@ -102,14 +102,14 @@ html {
 	--bento-pad:     clamp(1rem,    3vw,   1.75rem);
 	--bento-pad-sm:  clamp(0.75rem, 2vw,   1.25rem);
 
-	/* ── THE VOID (Backgrounds) ──────────────────────────────────────── */
+	/* ── ENTERPRISE SLATE (Backgrounds) ─────────────────────────────── */
 	--void-black: #000000;
-	--obsidian: #050505;
+	--obsidian: #0f172a;
 
-	/* ── TRON: LEGACY (Standard Ops) ────────────────────────────────── */
-	--legacy-cyan: #00f0ff;
-	--legacy-glow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.2);
-	--legacy-glass: rgba(0, 20, 30, 0.6);
+	/* ── NEXUS: STANDARD OPS ─────────────────────────────────────────── */
+	--legacy-cyan: #6366f1;
+	--legacy-glow: 0 0 15px rgba(99, 102, 241, 0.4), inset 0 0 10px rgba(99, 102, 241, 0.2);
+	--legacy-glass: rgba(15, 23, 42, 0.6);
 
 	/* ── TRON: ARES (Threat State & Overrides) ───────────────────────── */
 	--ares-crimson: #ff0033;
@@ -134,11 +134,11 @@ body {
 	margin: 0;
 	background-color: var(--vanguard-bg);
 	background-image:
-		linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-		linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+		linear-gradient(to right, rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
 	background-size: 4rem 4rem;
 	background-attachment: fixed;
-	color: #e5e7eb; /* gray-200 — high contrast on obsidian */
+	color: #e5e7eb; /* gray-200 — high contrast on enterprise slate */
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 }
 
@@ -255,11 +255,11 @@ body {
 
 	/**
 	 * .vanguard-btn-primary
-	 * Luminous cyan CTA. Idle: translucent tint + cyan border.
+	 * Luminous indigo CTA. Idle: translucent tint + indigo border.
 	 * Hover: stronger fill + outer neon halo.
 	 */
 	.vanguard-btn-primary {
-		background: rgba(0, 240, 255, 0.1);
+		background: rgba(99, 102, 241, 0.1);
 		border: 1px solid var(--vanguard-cyan);
 		color: var(--vanguard-cyan);
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
@@ -275,8 +275,8 @@ body {
 	}
 
 	.vanguard-btn-primary:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.2);
-		box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+		background: rgba(99, 102, 241, 0.2);
+		box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
 	}
 
 	.vanguard-btn-primary:disabled {
@@ -446,9 +446,9 @@ input[type='range'] {
 
 input[type='range']::-webkit-slider-runnable-track {
 	height: 4px;
-	background: rgba(0, 240, 255, 0.1);
+	background: rgba(99, 102, 241, 0.1);
 	border-radius: 2px;
-	box-shadow: inset 0 0 5px rgba(0, 240, 255, 0.2);
+	box-shadow: inset 0 0 5px rgba(99, 102, 241, 0.2);
 }
 
 input[type='range']::-webkit-slider-thumb {
@@ -458,14 +458,14 @@ input[type='range']::-webkit-slider-thumb {
 	background: #ffffff;
 	border-radius: 1px;
 	margin-top: -6px;
-	box-shadow: 0 0 15px 5px rgba(0, 240, 255, 0.8);
+	box-shadow: 0 0 15px 5px rgba(99, 102, 241, 0.8);
 }
 
 input[type='range']::-moz-range-track {
 	height: 4px;
-	background: rgba(0, 240, 255, 0.1);
+	background: rgba(99, 102, 241, 0.1);
 	border-radius: 2px;
-	box-shadow: inset 0 0 5px rgba(0, 240, 255, 0.2);
+	box-shadow: inset 0 0 5px rgba(99, 102, 241, 0.2);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -474,7 +474,7 @@ input[type='range']::-moz-range-thumb {
 	background: #ffffff;
 	border-radius: 1px;
 	border: none;
-	box-shadow: 0 0 15px 5px rgba(0, 240, 255, 0.8);
+	box-shadow: 0 0 15px 5px rgba(99, 102, 241, 0.8);
 }
 
 @keyframes glitch-pulse {
@@ -498,10 +498,10 @@ input[type='range']::-moz-range-thumb {
 }
 
 @layer components {
-	/* SIEM/SOAR Panels — Tron Legacy standard ops */
+	/* Enterprise Slate Panels — Nexus standard ops */
 	.vanguard-panel {
 		@apply tw-overflow-visible;
-		background-color: rgba(0, 20, 30, 0.6);
+		background-color: rgba(15, 23, 42, 0.6);
 		border: var(--ui-border-thin);
 		border-radius: var(--vanguard-radius-md);
 		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
@@ -523,13 +523,13 @@ input[type='range']::-moz-range-thumb {
 
 	.btn-director {
 		@apply tw-border tw-bg-transparent tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-300;
-		border-color: rgb(0 240 255 / 0.5);
+		border-color: rgba(99, 102, 241, 0.5);
 		color: var(--legacy-cyan);
 		letter-spacing: 0.15em;
 	}
 
 	.btn-director:hover {
-		@apply tw-border-[#00f0ff] tw-bg-[#00f0ff]/20 tw-text-white;
+		@apply tw-border-indigo-400 tw-bg-indigo-500/20 tw-text-white;
 		box-shadow: var(--legacy-glow);
 	}
 
@@ -656,15 +656,15 @@ input[type='range']::-moz-range-thumb {
 		border-radius: 9999px;
 		background: linear-gradient(
 			90deg,
-			rgba(0, 240, 255, 0.35),
-			rgba(0, 240, 255, 0.95),
-			rgba(0, 240, 255, 0.35)
+			rgba(99, 102, 241, 0.35),
+			rgba(99, 102, 241, 0.95),
+			rgba(99, 102, 241, 0.35)
 		);
 		box-shadow:
-			inset 0 0 14px rgba(0, 240, 255, 0.55),
-			0 0 15px #00f0ff,
-			0 0 28px rgba(0, 240, 255, 0.55);
-		border: 1px solid rgba(0, 240, 255, 0.85);
+			inset 0 0 14px rgba(99, 102, 241, 0.55),
+			0 0 15px #6366f1,
+			0 0 28px rgba(99, 102, 241, 0.55);
+		border: 1px solid rgba(99, 102, 241, 0.85);
 	}
 
 	.tw-vanguard-range::-webkit-slider-thumb {
@@ -673,13 +673,13 @@ input[type='range']::-moz-range-thumb {
 		width: 1.35rem;
 		height: 1.35rem;
 		border-radius: 9999px;
-		background: radial-gradient(circle at 35% 28%, #ecfeff, #00f0ff);
-		border: 2px solid rgba(236, 254, 255, 0.65);
+		background: radial-gradient(circle at 35% 28%, #e0e7ff, #6366f1);
+		border: 2px solid rgba(224, 231, 255, 0.65);
 		margin-top: -0.42rem;
 		box-shadow:
-			0 0 15px #00f0ff,
-			0 0 28px rgba(0, 240, 255, 0.95),
-			0 0 44px rgba(0, 240, 255, 0.55);
+			0 0 15px #6366f1,
+			0 0 28px rgba(99, 102, 241, 0.95),
+			0 0 44px rgba(99, 102, 241, 0.55);
 	}
 
 	.tw-vanguard-range::-moz-range-track {
@@ -687,34 +687,34 @@ input[type='range']::-moz-range-thumb {
 		border-radius: 9999px;
 		background: linear-gradient(
 			90deg,
-			rgba(0, 240, 255, 0.35),
-			rgba(0, 240, 255, 0.95),
-			rgba(0, 240, 255, 0.35)
+			rgba(99, 102, 241, 0.35),
+			rgba(99, 102, 241, 0.95),
+			rgba(99, 102, 241, 0.35)
 		);
 		box-shadow:
-			inset 0 0 14px rgba(0, 240, 255, 0.55),
-			0 0 15px #00f0ff,
-			0 0 28px rgba(0, 240, 255, 0.55);
-		border: 1px solid rgba(0, 240, 255, 0.85);
+			inset 0 0 14px rgba(99, 102, 241, 0.55),
+			0 0 15px #6366f1,
+			0 0 28px rgba(99, 102, 241, 0.55);
+		border: 1px solid rgba(99, 102, 241, 0.85);
 	}
 
 	.tw-vanguard-range::-moz-range-thumb {
 		width: 1.35rem;
 		height: 1.35rem;
 		border-radius: 9999px;
-		border: 2px solid rgba(236, 254, 255, 0.65);
-		background: radial-gradient(circle at 35% 28%, #ecfeff, #00f0ff);
+		border: 2px solid rgba(224, 231, 255, 0.65);
+		background: radial-gradient(circle at 35% 28%, #e0e7ff, #6366f1);
 		box-shadow:
-			0 0 15px #00f0ff,
-			0 0 28px rgba(0, 240, 255, 0.95),
-			0 0 44px rgba(0, 240, 255, 0.55);
+			0 0 15px #6366f1,
+			0 0 28px rgba(99, 102, 241, 0.95),
+			0 0 44px rgba(99, 102, 241, 0.55);
 	}
 
 	/**
 	 * Native checkbox — minimal HUD tint (full custom checkbox UI preferred for AAA parity).
 	 */
 	.tw-vanguard-checkbox {
-		accent-color: rgb(0 240 255);
+		accent-color: rgb(99 102 241);
 		width: 1rem;
 		height: 1rem;
 		border-radius: 0.25rem;
@@ -736,9 +736,9 @@ input[type='range']::-moz-range-thumb {
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		border-radius: 0.75rem;
-		border: 1px solid rgb(0 240 255 / 0.42);
+		border: 1px solid rgb(99 102 241 / 0.42);
 		/* Slate glass — never flat white / grey slabs */
-		background-color: rgb(2 6 23 / 0.4);
+		background-color: rgb(15 23 42 / 0.4);
 		backdrop-filter: blur(16px);
 		-webkit-backdrop-filter: blur(16px);
 		padding: 0.5rem 1rem;
@@ -749,10 +749,10 @@ input[type='range']::-moz-range-thumb {
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		text-decoration: none !important;
-		color: rgb(207 250 254);
+		color: rgb(199 210 254);
 		box-shadow:
 			inset 0 1px 0 rgb(255 255 255 / 0.06),
-			0 0 0 1px rgb(0 240 255 / 0.06);
+			0 0 0 1px rgb(99 102 241 / 0.06);
 		transition:
 			border-color 160ms ease,
 			background-color 160ms ease,
@@ -761,23 +761,23 @@ input[type='range']::-moz-range-thumb {
 	}
 
 	.tw-vanguard-btn-director:hover {
-		border-color: rgb(0 240 255 / 0.72);
-		background-color: rgb(2 6 23 / 0.55);
+		border-color: rgb(99 102 241 / 0.72);
+		background-color: rgb(15 23 42 / 0.55);
 		box-shadow:
 			inset 0 1px 0 rgb(255 255 255 / 0.09),
-			0 0 28px rgb(0 240 255 / 0.48),
-			0 0 52px rgb(0 240 255 / 0.22);
+			0 0 28px rgb(99 102 241 / 0.48),
+			0 0 52px rgb(99 102 241 / 0.22);
 	}
 
 	.tw-vanguard-btn-director:active {
 		transform: scale(0.98);
 		box-shadow:
 			inset 0 1px 0 rgb(255 255 255 / 0.05),
-			0 0 36px rgb(0 240 255 / 0.62);
+			0 0 36px rgb(99 102 241 / 0.62);
 	}
 
 	.tw-vanguard-btn-director:focus-visible {
-		outline: 2px solid rgb(0 240 255 / 0.65);
+		outline: 2px solid rgb(99 102 241 / 0.65);
 		outline-offset: 2px;
 	}
 
@@ -789,18 +789,18 @@ input[type='range']::-moz-range-thumb {
 	}
 
 	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab:hover {
-		background-color: rgb(8 51 68 / 0.32) !important;
-		border-color: rgb(0 240 255 / 0.38) !important;
+		background-color: rgb(30 27 75 / 0.32) !important;
+		border-color: rgb(99 102 241 / 0.38) !important;
 		box-shadow:
 			inset 0 1px 0 rgb(255 255 255 / 0.05),
-			0 0 28px rgb(0 240 255 / 0.38) !important;
+			0 0 28px rgb(99 102 241 / 0.38) !important;
 	}
 
 	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-active-cyan {
-		border-bottom: 2px solid rgb(0 240 255) !important;
+		border-bottom: 2px solid rgb(99 102 241) !important;
 		border-radius: 0.75rem 0.75rem 0 0;
-		color: rgb(236 254 255);
-		text-shadow: 0 0 14px rgba(0, 240, 255, 0.55);
+		color: rgb(224 231 255);
+		text-shadow: 0 0 14px rgba(99, 102, 241, 0.55);
 	}
 
 	.tw-vanguard-btn-director.tw-vanguard-btn-director--tab-active-amber {
@@ -836,13 +836,13 @@ input[type='range']::-moz-range-thumb {
 	}
 
 	.tw-vanguard-btn-director.tw-vanguard-btn-director--dock-sm.tw-vanguard-btn-director--dock-active {
-		border-color: rgb(0 240 255 / 0.78) !important;
-		background-color: rgb(8 51 68 / 0.48) !important;
-		color: rgb(236 254 255);
+		border-color: rgb(99 102 241 / 0.78) !important;
+		background-color: rgb(30 27 75 / 0.48) !important;
+		color: rgb(224 231 255);
 		box-shadow:
 			inset 0 1px 0 rgb(255 255 255 / 0.08),
-			0 0 22px rgb(0 240 255 / 0.42),
-			0 0 40px rgb(0 240 255 / 0.18) !important;
+			0 0 22px rgb(99 102 241 / 0.42),
+			0 0 40px rgb(99 102 241 / 0.18) !important;
 	}
 }
 

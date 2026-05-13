@@ -24,22 +24,21 @@
 <nav class="mn-root" class:mn-root--scrolled={scrolled} aria-label="Site navigation">
 	<div class="mn-inner">
 		<!-- Brand -->
-		<a href="/" class="mn-brand" aria-label="Vanguard Command — home">
+		<a href="/" class="mn-brand" aria-label="SSTracker Nexus Command — home">
 			<svg class="mn-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
-				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#00f0ff" stroke-width="1.5" fill="rgba(0,240,255,0.06)"/>
-				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="#00f0ff" stroke-width="0.7" fill="rgba(0,240,255,0.04)" opacity="0.6"/>
+				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="var(--vanguard-cyan)" stroke-width="1.5" fill="color-mix(in srgb, var(--vanguard-cyan) 6%, transparent)"/>
+				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="var(--vanguard-cyan)" stroke-width="0.7" fill="color-mix(in srgb, var(--vanguard-cyan) 4%, transparent)" opacity="0.6"/>
 			</svg>
-			<span class="mn-brand__text">VANGUARD<span class="mn-brand__sub">COMMAND</span></span>
+			<span class="mn-brand__text">SSTRACKER<span class="mn-brand__sub">NEXUS COMMAND</span></span>
 		</a>
 
 		<!-- Desktop links -->
 		<div class="mn-links" role="list">
-			{#each links as link}
+			{#each links as link (link.href)}
 				<a
 					href={link.href}
 					class="mn-link"
 					class:mn-link--active={currentPath === link.href}
-					role="listitem"
 				>
 					{link.label}
 				</a>
@@ -69,7 +68,7 @@
 	<!-- Mobile menu -->
 	{#if mobileOpen}
 		<div class="mn-mobile" id="mn-mobile-menu" role="menu">
-			{#each links as link}
+			{#each links as link (link.href)}
 				<a
 					href={link.href}
 					class="mn-mobile__link"
@@ -125,7 +124,7 @@
 	.mn-brand__hex {
 		width: 28px;
 		height: 32px;
-		filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.5));
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--vanguard-cyan) 50%, transparent));
 	}
 	.mn-brand__text {
 		font-family: 'JetBrains Mono', monospace;
@@ -140,7 +139,7 @@
 		font-size: 0.45rem;
 		font-weight: 500;
 		letter-spacing: 0.25em;
-		color: rgba(0, 240, 255, 0.6);
+		color: color-mix(in srgb, var(--vanguard-cyan) 60%, transparent);
 		margin-top: 1px;
 	}
 
@@ -166,7 +165,7 @@
 		color: rgba(255, 255, 255, 0.9);
 		background: rgba(255, 255, 255, 0.05);
 	}
-	.mn-link--active { color: #00f0ff; }
+	.mn-link--active { color: var(--vanguard-cyan); }
 
 	/* CTAs */
 	.mn-ctas {
@@ -194,14 +193,14 @@
 	}
 	.mn-cta--ghost:hover { color: white; border-color: rgba(255, 255, 255, 0.25); }
 	.mn-cta--primary {
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.45);
-		color: #00f0ff;
-		box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+		background: color-mix(in srgb, var(--vanguard-cyan) 10%, transparent);
+		border: 1px solid var(--vanguard-border);
+		color: var(--vanguard-cyan);
+		box-shadow: 0 0 14px color-mix(in srgb, var(--vanguard-cyan) 20%, transparent);
 	}
 	.mn-cta--primary:hover {
-		background: rgba(0, 240, 255, 0.18);
-		box-shadow: 0 0 24px rgba(0, 240, 255, 0.4);
+		background: color-mix(in srgb, var(--vanguard-cyan) 18%, transparent);
+		box-shadow: 0 0 24px color-mix(in srgb, var(--vanguard-cyan) 40%, transparent);
 	}
 
 	/* Hamburger */
@@ -261,13 +260,13 @@
 		margin-top: 0.5rem;
 		padding: 0.8rem;
 		border-radius: 8px;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		background: color-mix(in srgb, var(--vanguard-cyan) 8%, transparent);
+		border: 1px solid var(--vanguard-border);
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 800;
 		letter-spacing: 0.12em;
-		color: #00f0ff;
+		color: var(--vanguard-cyan);
 		text-decoration: none;
 		text-align: center;
 		min-height: 44px;
