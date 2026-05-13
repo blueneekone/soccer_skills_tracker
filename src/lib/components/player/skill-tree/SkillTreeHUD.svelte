@@ -13,6 +13,22 @@
 	const summaries = $derived(engine.branchSummaries);
 	const tier = $derived(armory.currentTier);
 
+	/** True when the player is in the ROOKIE tier (Fog of War rank-gate active). */
+	const isRookie = $derived(tier.id === 'ROOKIE');
+
+	/**
+	 * Per-branch revealed count: how many of the branch's nodes are currently
+	 * visible (not fogged). Used to display "ATTR · revealed/total" in chips.
+	 */
+	const revealedCounts = $derived.by(() => {
+		const counts: Record<string, number> = {};
+		for (const node of engine.nodes) {
+			if (!counts[node.parentAttr]) counts[node.parentAttr] = 0;
+			if (node.visible) counts[node.parentAttr]++;
+		}
+		return counts;
+	});
+
 	function statusLabel(state: 'locked' | 'unlocked' | 'mastered'): string {
 		if (state === 'mastered') return 'MASTERED';
 		if (state === 'unlocked') return 'UNLOCKED';
@@ -44,7 +60,7 @@
 					style:box-shadow={isFocused ? '0 0 8px rgba(0,240,255,0.5)' : 'none'}
 					onclick={() => engine.focusBranch(s.attr)}
 				>
-					{s.attr}&nbsp;·&nbsp;{s.unlocked}/{s.total}
+					{s.attr}&nbsp;·&nbsp;{s.unlocked}<span class="tw-text-[8px] tw-opacity-40">/</span>{revealedCounts[s.attr] ?? s.total}<span class="tw-text-[8px] tw-opacity-30">/{s.total}</span>
 				</button>
 			{/each}
 		</div>
@@ -130,8 +146,16 @@
 				</span>
 			</div>
 
+			<!-- Fog of War density hint -->
+			<div class="tw-text-[8px] tw-font-mono tw-tracking-[0.15em] tw-border-t tw-pt-1.5" style:border-color="rgba(255,255,255,0.06)" style:color="rgba(157,0,255,0.45)">
+				{#if isRookie}
+					[ MIST DENSITY: HIGH · COMPLETE A RANK-1 NODE TO REVEAL ]
+				{:else}
+					[ MIST DENSITY: ADAPTIVE · UNLOCK PARENTS TO REVEAL ]
+				{/if}
+			</div>
 			<!-- Sprint 5.2 placeholder -->
-			<div class="tw-text-[8px] tw-font-mono tw-tracking-[0.15em] tw-text-slate-700 tw-border-t tw-pt-1.5" style:border-color="rgba(255,255,255,0.06)">
+			<div class="tw-text-[8px] tw-font-mono tw-tracking-[0.15em] tw-text-slate-700 tw-pt-0.5">
 				[ DRILL MAPPINGS · BACKEND SPRINT ]
 			</div>
 		</div>

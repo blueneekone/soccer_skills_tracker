@@ -178,12 +178,20 @@ export interface DrillCompletionPayload {
  * Input for `commitGritAward()` — XP for a failed attempt on a hard drill
  * (Octalysis Core Drive 8: Loss Avoidance — celebrate the try, not the
  * outcome).  Facade hard-codes the 50 XP award and the 'grit' type.
+ *
+ * Epic 7 additions:
+ *   • `complexityRank` — rank of the synthetic skill-tree node attempted.
+ *     The facade will pre-flight reject anything that is not rank-3 when
+ *     `vanguardFlags.gritGateEnabled` is true.  Stored in the audit doc for
+ *     the RL feature builder (`gritBonusEarned30d` signal in featureBuilder.js).
  */
 export interface GritAwardPayload {
 	playerUid: string;
 	userKey: string;
 	clubId: string;
 	drillId: string;
+	/** Drill complexity rank (1 = beginner, 2 = intermediate, 3 = advanced). */
+	complexityRank: 1 | 2 | 3;
 }
 
 /**

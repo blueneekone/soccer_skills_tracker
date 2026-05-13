@@ -51,6 +51,7 @@ import {
 } from '$lib/data/skillTree/physicalSnowflakeTaxonomy.js';
 import type { SyntheticNode } from '$lib/data/skillTree/physicalSnowflakeTaxonomy.js';
 import { normaliseScoutsSix } from '$lib/utils/scoutsSixNormalise.js';
+import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -131,29 +132,52 @@ export class SkillTreeEngine {
 	/** ID of the node currently under the pointer (hover), or null. */
 	hoveredNodeId = $state<string | null>(null);
 
+	/**
+	 * Set of node IDs that just transitioned from hidden → visible.
+	 * Arena watches this to fire the cyan "fog-dispelled" reveal pulse.
+	 * Entries self-clear after 1.4 s (same budget as the decay animation).
+	 */
+	revealedTransitions = $state(new Set<string>());
+
 	// ── Constructor ───────────────────────────────────────────────────────
 
 	constructor(armory: ArmoryEngine) {
 		this.#armory = armory;
 	}
 
-	// ── Fog of War stub ───────────────────────────────────────────────────
+	// ── Fog of War — Epic 7 Hybrid Predicate ─────────────────────────────
 
 	/**
-	 * Determine whether a node should be rendered.
+	 * Hybrid Asymmetric UI Fog of War (Epic 7).
 	 *
-	 * Phase 3 / Sprint 5.1: always returns `true` — all nodes are visible.
+	 * Kill switch: `vanguardFlags.fogEnabled === false` → show everything.
 	 *
-	 * Epic 7 (Asymmetric UI Fog of War) will replace this predicate with
-	 * a threshold-based unlock rule: rank > 1 nodes are hidden until their
-	 * parentNode is in 'unlocked' or 'mastered' state.  Because Arena
-	 * checks `isNodeVisible` before rendering, Epic 7 requires zero changes
-	 * to the rendering layer.
+	 * ROOKIE tier (totalXP < 1 000):
+	 *   Only rank-1 trunk nodes are visible. Rank-2 / rank-3 nodes remain
+	 *   fogged — preventing cognitive overload for complete beginners.
 	 *
-	 * @param _nodeId  The synthetic node ID (unused until Epic 7).
+	 * PRO+ tier (totalXP ≥ 1 000):
+	 *   Rank-1 → always visible.
+	 *   Rank-2 / rank-3 → visible only when the direct parent node is in
+	 *   'unlocked' or 'mastered' state (per-branch progressive reveal).
+	 *   This is the "asymmetric" behaviour: two players at the same tier
+	 *   see different sub-trees based on their individual training history.
 	 */
-	isNodeVisible(_nodeId: string): boolean {
-		return true;
+	isNodeVisible(nodeId: string): boolean {
+		if (!vanguardFlags.fogEnabled) return true;
+
+		const node = TAXONOMY_BY_ID[nodeId];
+		if (!node) return false;
+
+		// Rank-1 trunk nodes are always visible once fog is enabled.
+		if (node.rank === 1) return true;
+
+		// ROOKIE tier: only rank-1 nodes visible.
+		if (this.#armory.currentTier.id === 'ROOKIE') return false;
+
+		// PRO+ per-branch progressive reveal: check parent state.
+		if (node.parentNodeId === null) return true; // safety — rank-1 nodes already handled
+		return this.#nodeStateById(node.parentNodeId) !== 'locked';
 	}
 
 	// ── Reactive derivations ──────────────────────────────────────────────
@@ -300,6 +324,19 @@ export class SkillTreeEngine {
 		if (progress < threshold) return 'locked';
 		if (progress >= threshold + 0.15) return 'mastered';
 		return 'unlocked';
+	}
+
+	/**
+	 * Resolve the render state of any node in the taxonomy by its ID.
+	 * Used by `isNodeVisible` to evaluate parent-node state without
+	 * requiring a full `nodes` array traversal.
+	 * Returns 'locked' for unknown IDs (safe default).
+	 */
+	#nodeStateById(nodeId: string): NodeState {
+		const node = TAXONOMY_BY_ID[nodeId];
+		if (!node) return 'locked';
+		const progress = this.normalisedRatings[node.parentAttr];
+		return this.#nodeState(progress, node.threshold);
 	}
 
 	/**

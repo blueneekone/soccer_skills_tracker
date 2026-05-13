@@ -328,6 +328,28 @@
         { "fieldPath": "acknowledgedAt", "order": "ASCENDING" },
         { "fieldPath": "scheduledFor", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "memory_capsules",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "acknowledged", "order": "ASCENDING" },
+        { "fieldPath": "surfacedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "xpHistory",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trajectory_months",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "monthKey", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

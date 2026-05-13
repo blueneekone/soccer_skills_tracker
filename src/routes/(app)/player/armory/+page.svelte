@@ -18,6 +18,16 @@
 	import OperativeAvatar3D from '$lib/components/player/OperativeAvatar3D.svelte';
 	import Swal from 'sweetalert2';
 
+	// ── Phase 3, Epic 6 — Trajectory Tracking ───────────────────────────────
+	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
+	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import GrowthVelocityHUD from '$lib/components/player/trajectory/GrowthVelocityHUD.svelte';
+	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
+	import MemoryCapsuleHUD from '$lib/components/player/trajectory/MemoryCapsuleHUD.svelte';
+	import { onDestroy } from 'svelte';
+
+	const trajectoryEngine = new TrajectoryEngine();
+
 	/** Preset hex chips for the loadout glass studio (sync with OperativeAvatar3D defaults). */
 	const AVATAR_SKIN_SWATCHES = /** @type {const} */ ([
 		'#d2996c',
@@ -232,6 +242,17 @@
 		playerEngine.detach();
 	});
 
+	// ── Epic 6: connect TrajectoryEngine when player email resolves ──────────
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		const emailKey = (authStore.user?.email ?? '').toLowerCase();
+		if (emailKey) {
+			trajectoryEngine.connect(emailKey);
+		}
+	});
+
+	onDestroy(() => trajectoryEngine.destroy());
+
 	/**
 	 * Quartermaster: deduct TC via {@link processDeploymentRequest}, then optimistically update local profile.
 	 * @param {import('$lib/gamification/armory.js').QuartermasterItem} item
@@ -305,6 +326,53 @@
 </svelte:head>
 
 <div class="qa-root" data-region="quartermaster-armory">
+
+	<!-- ── Phase 3, Epic 6 · Memory Capsule fixed overlay ──────────────────── -->
+	{#if vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
+		<MemoryCapsuleHUD
+			capsule={trajectoryEngine.activeCapsule}
+			baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+			onDismiss={() => {
+				if (trajectoryEngine.activeCapsule) {
+					void trajectoryEngine.acknowledgeCapsule(trajectoryEngine.activeCapsule.capsuleId);
+				}
+			}}
+		/>
+	{/if}
+
+	<!-- ── Phase 3, Epic 6 · Growth Velocity Index bento cell ─────────────── -->
+	{#if vanguardFlags.gviEnabled || vanguardFlags.capsulesEnabled}
+		<section
+			class="tw-mb-[clamp(1rem,2vw,1.35rem)]"
+			aria-label="Growth Velocity Index"
+		>
+			<GrowthVelocityHUD
+				gvi={trajectoryEngine.gvi}
+				gviTier={trajectoryEngine.gviTier}
+				gviLabel={trajectoryEngine.gviLabel}
+				gviFormatted={trajectoryEngine.gviFormatted}
+				currentMonthXp={trajectoryEngine.currentMonthXp}
+				lastMonthXp={trajectoryEngine.lastMonthXp}
+				monthsActive={trajectoryEngine.monthsActive}
+				loading={trajectoryEngine.loading}
+			/>
+		</section>
+	{/if}
+
+	<!-- ── Phase 3, Epic 6 · Capsule Arena inline panel (when active) ──────── -->
+	{#if vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
+		<section
+			class="tw-mb-[clamp(1rem,2vw,1.35rem)]"
+			aria-label="Time-Lapse Memory Capsule"
+		>
+			<MemoryCapsuleArena
+				capsule={trajectoryEngine.activeCapsule}
+				baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+				capsuleHeadline={trajectoryEngine.capsuleHeadline}
+			/>
+		</section>
+	{/if}
+
 	<section
 		class="qa-pathway-shell tw-mb-[clamp(1rem,2vw,1.35rem)] tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-[linear-gradient(165deg,rgba(0, 240, 255,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:tw-p-5"
 		aria-labelledby="operative-pathway-heading"

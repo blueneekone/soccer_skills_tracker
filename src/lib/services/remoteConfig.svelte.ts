@@ -59,6 +59,38 @@ const PARAM_STREAK_FREEZE_PER_WEEK = 'streak_freeze_per_week';
  */
 const FLAG_CV_BOUNTY = 'feature_cv_bounty_enabled';
 
+// ── Epic 7: Asymmetric Fog of War + Grit XP + Dopamine Engine ────────────────
+
+/** Master kill switch for Asymmetric UI Fog of War on the skill tree. */
+const FLAG_FOG_OF_WAR = 'feature_fog_of_war_enabled';
+
+/**
+ * When true, Grit XP is restricted to rank-3 nodes only.
+ * When false, falls back to pre-Epic-7 any-drill behavior for safe rollback.
+ */
+const FLAG_GRIT_GATE = 'feature_grit_complexity_gate_enabled';
+
+/** Maximum Grit awards a player may earn per UTC calendar day. */
+const PARAM_GRIT_DAILY_CAP = 'grit_daily_cap';
+
+/**
+ * Controls canvas-confetti particle explosions on verified commits.
+ * Toggle off for users who prefer reduced motion (also checked against
+ * prefers-reduced-motion media query at call time).
+ */
+const FLAG_DOPAMINE = 'feature_dopamine_explosions_enabled';
+
+// ── Epic 6: Trajectory Tracking flags ────────────────────────────────────────
+
+/** Master kill switch for Time-Lapse Memory Capsule overlay. Default: false. */
+const FLAG_CAPSULES = 'feature_trajectory_capsules_enabled';
+
+/** Master kill switch for the Growth Velocity Index HUD cell. Default: false. */
+const FLAG_GVI = 'feature_growth_velocity_enabled';
+
+/** XP floor for GVI denominator so beginners get saturated scores. Default: 200. */
+const PARAM_GVI_FLOOR_XP = 'gvi_floor_xp';
+
 // ── VanguardFlagService ───────────────────────────────────────────────────────
 
 class VanguardFlagService {
@@ -110,6 +142,50 @@ class VanguardFlagService {
 	 */
 	cvBountyEnabled = $state(false);
 
+	// ── Epic 7: Asymmetric Fog of War + Grit XP + Dopamine Engine ────────────
+
+	/**
+	 * Master kill switch for Asymmetric UI Fog of War.
+	 * When false, all 30 skill-tree nodes are visible regardless of tier or
+	 * parent state — matching pre-Epic-7 behavior.
+	 */
+	fogEnabled = $state(true);
+
+	/**
+	 * When true, Grit XP is gated to rank-3 nodes only.
+	 * When false, any drill can mint Grit XP (legacy behavior).
+	 */
+	gritGateEnabled = $state(true);
+
+	/** Max Grit awards a player may earn in a single UTC calendar day. */
+	gritDailyCap = $state(3);
+
+	/**
+	 * Controls canvas-confetti particle explosions on verified Firestore
+	 * commits. Complements the prefers-reduced-motion media query check
+	 * inside dopamine.svelte.ts.
+	 */
+	dopamineEnabled = $state(true);
+
+	// ── Epic 6: Trajectory Tracking ───────────────────────────────────────
+
+	/**
+	 * Shows the Time-Lapse Memory Capsule overlay in the Armory.
+	 * Defaults to `false` — enable after the plateau detector CF has run a
+	 * full backfill pass and capsules are verified in staging.
+	 */
+	capsulesEnabled = $state(false);
+
+	/**
+	 * Shows the Growth Velocity Index HUD cell in the Armory bento grid.
+	 * Defaults to `false` — enable after the monthly aggregator CF has
+	 * written at least two months of trajectory_months data.
+	 */
+	gviEnabled = $state(false);
+
+	/** XP floor for GVI denominator. Sourced from Remote Config. Default: 200. */
+	gviFloorXp = $state(200);
+
 	/**
 	 * Reads the current (already-fetched) flag values from Remote Config.
 	 * Safe to call multiple times — subsequent calls just re-read the cache.
@@ -127,6 +203,16 @@ class VanguardFlagService {
 		this.streakFreezePerWeek = getValue(rc, PARAM_STREAK_FREEZE_PER_WEEK).asNumber() || 1;
 		// Epic 5.4
 		this.cvBountyEnabled = getValue(rc, FLAG_CV_BOUNTY).asBoolean();
+
+		// Epic 6: Trajectory Tracking
+		this.capsulesEnabled = getValue(rc, FLAG_CAPSULES).asBoolean();
+		this.gviEnabled = getValue(rc, FLAG_GVI).asBoolean();
+		this.gviFloorXp = getValue(rc, PARAM_GVI_FLOOR_XP).asNumber() || 200;
+		// Epic 7: Asymmetric Fog of War + Grit XP + Dopamine Engine
+		this.fogEnabled = getValue(rc, FLAG_FOG_OF_WAR).asBoolean();
+		this.gritGateEnabled = getValue(rc, FLAG_GRIT_GATE).asBoolean();
+		this.gritDailyCap = getValue(rc, PARAM_GRIT_DAILY_CAP).asNumber() || 3;
+		this.dopamineEnabled = getValue(rc, FLAG_DOPAMINE).asBoolean();
 	}
 }
 

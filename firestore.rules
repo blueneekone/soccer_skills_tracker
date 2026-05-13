@@ -3302,6 +3302,61 @@ service cloud.firestore {
       allow create, update, delete: if false; // Admin SDK / Cloud Functions only
     }
 
+    // ── Phase 3, Epic 6 — Trajectory Tracking ────────────────────────────────
+    //
+    // memory_capsules/{capsuleId}
+    // ────────────────────────────────────────────────────────────────────────────
+    // Written exclusively by the `trajectoryPlateauDetector` Cloud Function
+    // (Admin SDK).  The only client-writable field is `acknowledged` — the player
+    // can dismiss their own capsule via a narrow update guard.
+    //
+    // Read:
+    //   • Player — own capsules (emailKey == playerEmail).
+    //   • Parent — household-scoped via parentHouseholdAllowsChildEmail.
+    //   • Super admin — unrestricted.
+    //
+    // Update:
+    //   • Player — `acknowledged` field only (dismiss UX).
+    //
+    // Create / delete:
+    //   • Cloud Functions / Admin SDK only (false for all clients).
+    // ────────────────────────────────────────────────────────────────────────────
+    match /users/{playerEmail}/memory_capsules/{capsuleId} {
+      allow get, list: if authed() && (
+        isSuper()
+        || emailKey() == playerEmail
+        || (isParent() && parentHouseholdAllowsChildEmail(playerEmail))
+      );
+      // Narrow update: only allow patching the `acknowledged` boolean.
+      // The request must not touch any other fields.
+      allow update: if authed()
+        && emailKey() == playerEmail
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledged'])
+        && request.resource.data.acknowledged is bool;
+      allow create, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
+    // ── Phase 3, Epic 6 — trajectory_months/{monthKey} ───────────────────────
+    //
+    // Monthly XP/GVI buckets written exclusively by `trajectoryMonthlyAggregator`.
+    // Read-only from the frontend.
+    //
+    // Read:
+    //   • Player — own buckets.
+    //   • Parent — household-scoped.
+    //   • Super admin — unrestricted.
+    //
+    // Write:  Cloud Functions / Admin SDK only.
+    // ────────────────────────────────────────────────────────────────────────────
+    match /users/{playerEmail}/trajectory_months/{monthKey} {
+      allow get, list: if authed() && (
+        isSuper()
+        || emailKey() == playerEmail
+        || (isParent() && parentHouseholdAllowsChildEmail(playerEmail))
+      );
+      allow create, update, delete: if false; // Admin SDK / Cloud Functions only
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

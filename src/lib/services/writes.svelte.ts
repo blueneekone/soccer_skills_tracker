@@ -40,8 +40,12 @@ import { getActiveDb } from '$lib/firebase.js';
 import {
 	collection,
 	doc,
+	getDocs,
 	increment,
+	query,
 	serverTimestamp,
+	Timestamp,
+	where,
 	writeBatch,
 	type WriteBatch,
 } from 'firebase/firestore';
@@ -53,6 +57,7 @@ import {
 	type MatchCompletionPayload,
 	type WorkoutCompletionPayload,
 } from './writes.types';
+import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 
 /**
  * Phase 1, Epic 1 — Cell-Based Routing, Session F.
@@ -191,16 +196,50 @@ export async function commitDrillCompletion(
  * Hard-coded 50 XP because the value is a UX constant, not a per-drill
  * variable.
  *
+ * Epic 7 pre-flights (run BEFORE the batch is built):
+ *   1.  Complexity gate — rejects non rank-3 drills when `gritGateEnabled`.
+ *       Throws 'GRIT_NOT_ELIGIBLE' (caller silences this; it is expected).
+ *   2.  Daily cap — counts today's `grit_awards` for this player; throws
+ *       'GRIT_DAILY_CAP' when the count reaches `vanguardFlags.gritDailyCap`.
+ *       The Cloud Function backstop (`onGritAwardCreated`) provides a
+ *       server-side safety net for stale clients.
+ *
  * Batch contents
  * ──────────────
- *   1.  grit_awards/{auto}                    — audit record
- *   2.  users/{uid}                           — armory.totalXP += 50
- *   3.  users/{uid}/xpHistory/{auto}          — timeline entry tagged 'grit'
+ *   1.  grit_awards/{auto}           — audit record (includes complexityRank)
+ *   2.  users/{uid}                  — armory.totalXP += 50
+ *   3.  users/{uid}/xpHistory/{auto} — timeline entry tagged 'grit'
  */
 export async function commitGritAward(payload: GritAwardPayload): Promise<BatchWriteResult> {
 	const GRIT_XP = 50;
-	const batchId = nextBatchId('grit');
+
+	// ── Pre-flight 1: complexity gate ─────────────────────────────────────
+	if (vanguardFlags.gritGateEnabled && payload.complexityRank !== 3) {
+		throw new Error('GRIT_NOT_ELIGIBLE');
+	}
+
+	// ── Pre-flight 2: daily cap ───────────────────────────────────────────
 	const db = getActiveDb();
+	const todayStartMs = Date.UTC(
+		new Date().getUTCFullYear(),
+		new Date().getUTCMonth(),
+		new Date().getUTCDate(),
+	);
+	const todayStartTs = Timestamp.fromMillis(todayStartMs);
+
+	const capSnap = await getDocs(
+		query(
+			collection(db, PATHS.gritAwards),
+			where('playerUid', '==', payload.playerUid),
+			where('loggedAt', '>=', todayStartTs),
+		),
+	);
+	if (capSnap.size >= vanguardFlags.gritDailyCap) {
+		throw new Error('GRIT_DAILY_CAP');
+	}
+
+	// ── Batch write ───────────────────────────────────────────────────────
+	const batchId = nextBatchId('grit');
 	const batch = writeBatch(db);
 
 	const gritRef = doc(collection(db, PATHS.gritAwards));
@@ -213,6 +252,7 @@ export async function commitGritAward(payload: GritAwardPayload): Promise<BatchW
 		userKey: payload.userKey,
 		clubId: payload.clubId,
 		drillId: payload.drillId,
+		complexityRank: payload.complexityRank,
 		xpAwarded: GRIT_XP,
 		type: 'failed_attempt_grit',
 		loggedAt: serverTimestamp(),
@@ -235,6 +275,7 @@ export async function commitGritAward(payload: GritAwardPayload): Promise<BatchW
 		reason: 'Grit — failed attempt rewarded',
 		source: 'grit_award',
 		drillId: payload.drillId,
+		complexityRank: payload.complexityRank,
 		loggedAt: serverTimestamp(),
 	});
 

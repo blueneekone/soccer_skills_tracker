@@ -41,8 +41,11 @@
 
 	// ── Derived ────────────────────────────────────────────────────────────────
 
-	/** Filtered to visible nodes only — avoids calling the getter twice. */
+	/** Nodes that are fully visible — rendered as interactive hex polygons. */
 	const visibleNodes = $derived(engine.nodes.filter((n) => n.visible));
+
+	/** Nodes hidden by Fog of War — rendered as dim placeholder silhouettes. */
+	const foggedNodes = $derived(engine.nodes.filter((n) => !n.visible));
 
 	// ── Decay re-fog pulse ─────────────────────────────────────────────────────
 
@@ -56,28 +59,49 @@
 	// Snapshot of last-known states for delta comparison.
 	let prevNodeStates = new Map<string, string>();
 
+	// Snapshot of last-known visibility for reveal-transition delta comparison.
+	let prevNodeVisibility = new Map<string, boolean>();
+
 	$effect(() => {
 		const current = engine.nodes;
 		const newlyDecayed = new Set<string>();
+		const newlyRevealed = new Set<string>();
 
 		for (const node of current) {
-			const prev = prevNodeStates.get(node.id);
+			const prevState = prevNodeStates.get(node.id);
+			const prevVisible = prevNodeVisibility.get(node.id);
+
 			// Detect unlocked/mastered → locked transition (decay re-fog).
 			if (
-				(prev === 'unlocked' || prev === 'mastered') &&
+				(prevState === 'unlocked' || prevState === 'mastered') &&
 				node.state === 'locked'
 			) {
 				newlyDecayed.add(node.id);
 			}
+
+			// Detect hidden → visible transition (fog dispelled).
+			if (prevVisible === false && node.visible === true) {
+				newlyRevealed.add(node.id);
+			}
+
 			prevNodeStates.set(node.id, node.state);
+			prevNodeVisibility.set(node.id, node.visible);
 		}
 
 		if (newlyDecayed.size > 0) {
 			decayedNodeIds = new Set([...decayedNodeIds, ...newlyDecayed]);
-			// Clear after animation duration (1.4 s).
 			setTimeout(() => {
 				decayedNodeIds = new Set(
 					[...decayedNodeIds].filter((id) => !newlyDecayed.has(id)),
+				);
+			}, 1400);
+		}
+
+		if (newlyRevealed.size > 0) {
+			engine.revealedTransitions = new Set([...engine.revealedTransitions, ...newlyRevealed]);
+			setTimeout(() => {
+				engine.revealedTransitions = new Set(
+					[...engine.revealedTransitions].filter((id) => !newlyRevealed.has(id)),
 				);
 			}, 1400);
 		}
@@ -187,12 +211,26 @@
 			{/if}
 		{/each}
 
+		<!-- ── (c2) Fogged edge ghost paths ──────────────────────────────────── -->
+		{#each foggedNodes as node (node.id)}
+			{#if node.edgePath}
+				<path
+					d={node.edgePath}
+					stroke="rgba(255,255,255,0.02)"
+					stroke-width="0.5"
+					fill="none"
+					aria-hidden="true"
+				/>
+			{/if}
+		{/each}
+
 		<!-- ── (d) Hex node polygons ─────────────────────────────────────────── -->
 		{#each visibleNodes as node (node.id)}
 			{@const isHovered  = node.id === engine.hoveredNodeId}
 			{@const isSelected = node.id === engine.selectedNodeId}
 			{@const isMastered = node.state === 'mastered'}
 			{@const isDecaying = decayedNodeIds.has(node.id)}
+			{@const isRevealed = engine.revealedTransitions.has(node.id)}
 
 			<!-- Selection ring — rendered first (behind the main hex) -->
 			{#if isSelected}
@@ -214,7 +252,7 @@
 				stroke={nodeStroke(node.state)}
 				stroke-width={nodeStrokeWidth(isHovered)}
 				filter={bloomFilter(node.state)}
-				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} tw-cursor-pointer"
+				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} {isRevealed ? 'st-node-revealed' : ''} tw-cursor-pointer"
 				role="button"
 				aria-label="Skill: {node.label} ({node.state})"
 				tabindex="0"
@@ -245,6 +283,18 @@
 					{truncate(node.label)}
 				</text>
 			{/if}
+		{/each}
+
+		<!-- ── (d2) Fogged hex silhouettes ───────────────────────────────────── -->
+		{#each foggedNodes as node (node.id)}
+			<polygon
+				points={node.hexPoints}
+				fill="rgba(255,255,255,0.03)"
+				stroke="rgba(255,255,255,0.05)"
+				stroke-width="0.5"
+				class="st-node-fogged tw-pointer-events-none"
+				aria-hidden="true"
+			/>
 		{/each}
 
 		<!-- ── (e) Center glow disc ──────────────────────────────────────────── -->
@@ -297,5 +347,33 @@
 
 	.st-node-decayed {
 		animation: stNodeDecay 1.4s ease-out forwards;
+	}
+
+	/**
+	 * Fog-dispelled reveal pulse — fires once when a node transitions
+	 * hidden → visible (Fog of War lifted by tier or parent unlock).
+	 * Inverse of the decay flash: cyan surge → settle.
+	 */
+	@keyframes stNodeReveal {
+		0%   { opacity: 0;   filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.0)); }
+		30%  { opacity: 1;   filter: drop-shadow(0 0 14px rgba(0, 240, 255, 1.0)); }
+		100% { opacity: 1;   filter: none; }
+	}
+
+	.st-node-revealed {
+		animation: stNodeReveal 1.4s ease-out forwards;
+	}
+
+	/**
+	 * Fogged placeholder silhouette — slow ambient drift to signal
+	 * "something is hidden here" without revealing content.
+	 */
+	@keyframes stNodeFog {
+		0%, 100% { opacity: 0.04; }
+		50%       { opacity: 0.09; }
+	}
+
+	.st-node-fogged {
+		animation: stNodeFog 4s ease-in-out infinite;
 	}
 </style>

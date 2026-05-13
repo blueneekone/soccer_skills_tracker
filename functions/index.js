@@ -492,3 +492,99 @@ exports.onAcademicRecordWritten = bountyVerificationModule.onAcademicRecordWritt
 
 const {tremendousWebhook} = require('./tremendousWebhook');
 exports.tremendousWebhook = tremendousWebhook;
+
+// ── Phase 3, Epic 6 — Trajectory Tracking ────────────────────────────────────
+//
+// trajectoryMonthlyAggregator: hourly — sums xpHistory per calendar month,
+//   writes trajectory_months/{YYYY-MM} buckets and updates users/{email}.trajectory
+//   summary map (GVI + monthsActive + current/last month XP).
+//
+// trajectoryPlateauDetector: daily at 02:30 UTC — detects XP plateaus over the
+//   configurable lookback window and writes memory_capsules/cap_{isoWeekKey}.
+//
+// getMemoryCapsule: onCall — returns the most recent unacknowledged capsule for
+//   the authenticated player (on-demand "show me my breakthrough" UX).
+const trajectoryAggregatorHandlers = require('./trajectoryAggregator');
+exports.trajectoryMonthlyAggregator = trajectoryAggregatorHandlers.trajectoryMonthlyAggregator;
+
+const trajectoryPlateauHandlers = require('./trajectoryPlateauDetector');
+exports.trajectoryPlateauDetector = trajectoryPlateauHandlers.trajectoryPlateauDetector;
+exports.getMemoryCapsule          = trajectoryPlateauHandlers.getMemoryCapsule;
+
+// ── Phase 4, Epic 7 — Grit XP Daily-Cap Backstop ─────────────────────────────
+//
+// Client-side pre-flight in commitGritAward() blocks most over-cap writes, but
+// a stale service worker or tampered client could bypass it.  This Cloud
+// Function acts as the authoritative server-side safety net:
+//
+//   1.  Counts today's grit_awards for the same playerUid (UTC day boundary).
+//   2.  If count > GRIT_DAILY_CAP (default 3), voids the doc by setting
+//       { void: true, voidReason: 'over_cap' } and reverses the XP increment
+//       on the user document with a compensating decrement.
+//
+// The function intentionally uses a hard-coded cap of 3; the Remote Config
+// value is only consumed client-side (fast UX gate).  Server-side the cap is
+// the source of truth defined here.
+exports.onGritAwardCreated = onDocumentCreated(
+    'grit_awards/{recordId}',
+    async (event) => {
+      const snap = event.data;
+      if (!snap) return;
+
+      const data = snap.data();
+      // Ignore already-voided docs (prevents re-trigger loops).
+      if (data.void) return;
+
+      const playerUid = data.playerUid;
+      if (!playerUid) return;
+
+      const GRIT_DAILY_CAP = 3;
+      const GRIT_XP = 50;
+
+      // Compute today's UTC midnight boundary.
+      const now = new Date();
+      const todayStart = new Date(Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate(),
+      ));
+
+      const todaySnap = await db
+          .collection('grit_awards')
+          .where('playerUid', '==', playerUid)
+          .where('loggedAt', '>=', admin.firestore.Timestamp.fromDate(todayStart))
+          .get();
+
+      // todaySnap already includes the current doc, so cap threshold is > not >=.
+      if (todaySnap.size <= GRIT_DAILY_CAP) return;
+
+      logger.warn('[onGritAwardCreated] Over-cap detected', {
+        playerUid,
+        todayCount: todaySnap.size,
+        recordId: event.params.recordId,
+      });
+
+      const batch = db.batch();
+
+      // Void the over-cap doc.
+      batch.update(snap.ref, {
+        void: true,
+        voidReason: 'over_cap',
+        voidedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Reverse the XP increment on the user document.
+      // userKey is the doc ID convention (lowercase email).
+      const userKey = data.userKey;
+      if (userKey) {
+        const userRef = db.collection('users').doc(userKey);
+        batch.set(
+            userRef,
+            {armory: {totalXP: admin.firestore.FieldValue.increment(-GRIT_XP)}},
+            {merge: true},
+        );
+      }
+
+      await batch.commit();
+    },
+);

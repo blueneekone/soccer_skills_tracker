@@ -1,15 +1,25 @@
 <script>
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { commitDrillCompletion, commitGritAward } from '$lib/services/writes.svelte';
+	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
 
-	/** @type {{ drillId: string, drillTitle: string, baseXp?: number, attributeId: string }} */
-	let { drillId, drillTitle, baseXp = 25, attributeId } = $props();
+	/**
+	 * @type {{ drillId: string, drillTitle: string, baseXp?: number, attributeId: string, complexityRank?: 1 | 2 | 3 }}
+	 *
+	 * complexityRank: drill difficulty rank from the Composite Snowflake taxonomy.
+	 *   1 = beginner node, 2 = intermediate, 3 = advanced.
+	 *   Only rank-3 drills show the "LOG GRIT" button (Epic 7 gate).
+	 *   Defaults to 1 so legacy callers that omit the prop never see the button.
+	 */
+	let { drillId, drillTitle, baseXp = 25, attributeId, complexityRank = 1 } = $props();
 
 	let isCompleting = $state(false);
 	let gritMode = $state(false);
 	let completionFlash = $state(false);
 	let gritFlash = $state(false);
 	let totalGritEarned = $state(0);
+	/** Set to true when the server rejects a Grit award due to the daily cap. */
+	let gritCapReached = $state(false);
 
 	/**
 	 * Resolve the active player UID, email key (= users/{} doc ID),
@@ -31,16 +41,18 @@
 		isCompleting = true;
 		try {
 			// Atomic batch: drill audit record + user XP increment + xpHistory entry.
-			// Bug fix — previous implementation wrote only the audit record so
-			// totalXP on the user profile never moved when a drill completed.
-			await commitDrillCompletion({
-				...playerScope(),
-				drillId,
-				drillTitle,
-				attributeId,
-				xpAwarded: baseXp,
-				outcome: 'success',
-			});
+			// Dopamine explosion fires only after the Firestore SDK confirms the write.
+			await dopamineOnCommit(
+				commitDrillCompletion({
+					...playerScope(),
+					drillId,
+					drillTitle,
+					attributeId,
+					xpAwarded: baseXp,
+					outcome: 'success',
+				}),
+				{ kind: 'drill' },
+			);
 			completionFlash = true;
 			setTimeout(() => {
 				completionFlash = false;
@@ -55,11 +67,15 @@
 	async function handleGrit() {
 		try {
 			// Octalysis Core Drive 8 — reward the attempt, not the outcome.
-			// Facade hard-codes the 50 XP value.
-			await commitGritAward({
-				...playerScope(),
-				drillId,
-			});
+			// Magenta dopamine explosion fires only after commit is verified.
+			await dopamineOnCommit(
+				commitGritAward({
+					...playerScope(),
+					drillId,
+					complexityRank,
+				}),
+				{ kind: 'grit' },
+			);
 			totalGritEarned += 50;
 			gritMode = true;
 			gritFlash = true;
@@ -68,7 +84,12 @@
 				gritMode = false;
 			}, 2000);
 		} catch (err) {
-			console.error('[DrillExecution] grit error:', err);
+			const msg = err instanceof Error ? err.message : String(err);
+			if (msg === 'GRIT_DAILY_CAP') {
+				gritCapReached = true;
+			} else if (msg !== 'GRIT_NOT_ELIGIBLE') {
+				console.error('[DrillExecution] grit error:', err);
+			}
 		}
 	}
 
@@ -129,13 +150,21 @@
 			{isCompleting ? '[ LOGGING... ]' : '[ COMPLETE DRILL ]'}
 		</button>
 
-		<!-- Log Grit -->
-		<button
-			onclick={handleGrit}
-			class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-[#9d00ff] tw-bg-[#9d00ff]/10 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#9d00ff] tw-transition-all tw-duration-200 hover:tw-bg-[#9d00ff]/20 tw-shadow-[0_0_15px_rgba(157,0,255,0.4)] hover:tw-shadow-[0_0_25px_rgba(157,0,255,0.6)]"
-		>
-			[ FAILED ATTEMPT: LOG GRIT ]
-		</button>
+		<!-- Log Grit — only shown for rank-3 (advanced) drills, and hidden once daily cap is reached -->
+		{#if complexityRank === 3}
+			{#if gritCapReached}
+				<div class="tw-w-full tw-py-3 tw-px-4 tw-rounded-xl tw-border tw-border-[#9d00ff]/20 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#9d00ff]/40 tw-text-center">
+					[ GRIT CAP REACHED · RESETS TOMORROW ]
+				</div>
+			{:else}
+				<button
+					onclick={handleGrit}
+					class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-[#9d00ff] tw-bg-[#9d00ff]/10 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#9d00ff] tw-transition-all tw-duration-200 hover:tw-bg-[#9d00ff]/20 tw-shadow-[0_0_15px_rgba(157,0,255,0.4)] hover:tw-shadow-[0_0_25px_rgba(157,0,255,0.6)]"
+				>
+					[ FAILED ATTEMPT: LOG GRIT ]
+				</button>
+			{/if}
+		{/if}
 	</div>
 
 	<!-- Completion Flash -->
