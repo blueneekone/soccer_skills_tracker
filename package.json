@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./jsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:functions": "npm --prefix functions run lint",
+    "deploy:functions": "npm run lint:functions && firebase deploy --only functions",
+    "deploy": "npm run lint:functions && firebase deploy"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
