@@ -901,6 +901,19 @@ service cloud.firestore {
 
       allow delete: if isSuper();
 
+      // Phase 2 Epic 3 — WebAuthn passkey credentials.
+      // Writes are performed exclusively by the Cloud Functions Admin SDK.
+      // Clients may only read their own credentials (to list enrolled passkeys).
+      match /passkeys/{credentialId} {
+        allow get, list: if authed() && request.auth.uid == userId;
+        allow create, update, delete: if false;
+      }
+
+      // Phase 2 Epic 3 — WebAuthn challenge nonce storage (TTL-bound, server-only).
+      match /passkey_challenges/{challengeId} {
+        allow read, write: if false;
+      }
+
       // Epic 2/3: training session logs (writes via logTrainingSession only).
       match /workout_logs/{logId} {
         allow read: if authed() && (

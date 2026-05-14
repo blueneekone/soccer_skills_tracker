@@ -602,3 +602,10 @@ exports.onGritAwardCreated = onDocumentCreated(
       await batch.commit();
     },
 );
+
+// -- Phase 2 Epic 3: WebAuthn (Passkey) Passwordless Auth --------------------
+const webauthnHandlers = require('./webauthn');
+exports.webauthnRegisterStart = webauthnHandlers.webauthnRegisterStart;
+exports.webauthnRegisterFinish = webauthnHandlers.webauthnRegisterFinish;
+exports.webauthnLoginStart = webauthnHandlers.webauthnLoginStart;
+exports.webauthnLoginFinish = webauthnHandlers.webauthnLoginFinish;

@@ -32,6 +32,8 @@ Integrate native Firebase Phone Number Verification for a frictionless, one-tap 
 
 Integrate native WebAuthn Biometric Enclave Attestation (navigator.credentials.create()) to bind legally mandated COPPA consent directly to on-device hardware biometrics.
 
+[IMPLEMENTED — Phase 1, Epic 3 / Phase 2 Epic 3] Passwordless WebAuthn (passkey) + Magic Link auth fully shipped. Password form permanently removed from /login. Four Cloud Functions deployed (webauthnRegisterStart/Finish, webauthnLoginStart/Finish, us-east1). LoginEngine.svelte.ts (Vanguard Trinity Brain) wires @simplewebauthn/browser to Firebase custom token pattern. Magic link callback at /auth/magic-link/callback. Passkey credentials stored in users/{uid}/passkeys/{credentialId} (Admin SDK write-only; Firestore rules: client read-only). Operative OTP flow (kids) preserved alongside new passwordless surface. Login card: Strategic Minimalism — slate-900 bg, 1px vanguard-border, Geist Mono, 150ms transitions, zero glassmorphism.
+
 Enforce COPPA 2.0 Compliance (2026): Implement strict opt-in consent architectures for teens aged 13-16 and hard-code database interceptors to explicitly block individual-specific targeted advertising data sharing.  
 
 PHASE 3: MULTI-SPORT INFRASTRUCTURE & OCTALYSIS RPG ENGINE
