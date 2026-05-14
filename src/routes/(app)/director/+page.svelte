@@ -101,6 +101,26 @@
 		<h2 class="director-console-page__title">Director Portal</h2>
 	</div>
 
+	<!-- Mobile-only horizontal tab strip -->
+	<div class="dir-mobile-tabs">
+		{#each [
+			{ label: 'Home',     icon: 'ph-house',        tab: 'home' },
+			{ label: 'Roster',   icon: 'ph-users-three',  tab: 'teams' },
+			{ label: 'Field',    icon: 'ph-map-pin',       tab: 'field' },
+			{ label: 'Comply',   icon: 'ph-shield-check', tab: 'compliance' },
+			{ label: 'Families', icon: 'ph-house-line',   tab: 'household' },
+		] as item (item.tab)}
+			<a
+				href="/director?tab={item.tab}"
+				class="dir-mobile-tabs__pill"
+				class:dir-mobile-tabs__pill--active={activeTab === item.tab}
+			>
+				<i class="{item.icon} dir-mobile-tabs__icon"></i>
+				{item.label}
+			</a>
+		{/each}
+	</div>
+
 	{#if activeTab === 'home'}
 		<section class="director-console-page__section">
 			<DirectorCommandCenter {clubId} />
@@ -171,5 +191,70 @@
 		margin: 0;
 		font-size: 13px;
 		color: var(--text-secondary);
+	}
+
+	/* ── Mobile tab strip ─────────────────────────────────────────────────── */
+	.dir-mobile-tabs {
+		display: none; /* shown only on mobile via media query below */
+		overflow-x: auto;
+		scrollbar-width: none;
+		height: 48px;
+		align-items: center;
+		gap: 6px;
+		padding: 0 4px;
+		margin-bottom: 12px;
+	}
+
+	.dir-mobile-tabs::-webkit-scrollbar {
+		display: none;
+	}
+
+	.dir-mobile-tabs__pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		min-height: 36px;
+		min-width: 36px;
+		white-space: nowrap;
+		padding: 6px 12px;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.5);
+		font-family: monospace;
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		text-decoration: none;
+		flex-shrink: 0;
+		transition: background 0.15s, border-color 0.15s, color 0.15s;
+	}
+
+	.dir-mobile-tabs__pill--active {
+		background: rgba(0, 240, 255, 0.12);
+		border-color: rgba(0, 240, 255, 0.4);
+		color: #00f0ff;
+	}
+
+	.dir-mobile-tabs__icon {
+		font-size: 14px;
+		line-height: 1;
+	}
+
+	/* ── Responsive ───────────────────────────────────────────────────────── */
+	@media (max-width: 767.98px) {
+		.director-console-page__header {
+			display: none;
+		}
+
+		.dir-mobile-tabs {
+			display: flex;
+		}
+	}
+
+	@media (max-width: 1023.98px) {
+		.director-console-page {
+			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+		}
 	}
 </style>

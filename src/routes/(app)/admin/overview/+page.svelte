@@ -1852,4 +1852,70 @@
 		margin-top: 2px;
 		flex-shrink: 0;
 	}
+
+	/* ── Mobile progressive disclosure (< 768px) ─────────────────────────────
+	   Keep the KPI tiles as the primary surface; collapse the verbose hero
+	   text and compress chart heights so the page is scannable on one screen.
+	   Bottom padding reserves space for the MobileTabBar.
+	 ─────────────────────────────────────────────────────────────────────────── */
+	@media (max-width: 767.98px) {
+		.cc-root {
+			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+			padding-left: 0.75rem;
+			padding-right: 0.75rem;
+		}
+
+		/* Hide verbose hero description; keep only the heading */
+		.cc-lede {
+			display: none;
+		}
+
+		.cc-hero__badges {
+			display: none;
+		}
+
+		.cc-hero__text h1 {
+			font-size: 1.5rem !important;
+		}
+
+		/* SOC ribbon: horizontal scroll instead of grid */
+		.cc-soc-ribbon {
+			display: flex;
+			flex-direction: row;
+			overflow-x: auto;
+			scrollbar-width: none;
+			gap: 8px;
+			padding-bottom: 4px;
+		}
+
+		.cc-soc-ribbon__cell {
+			flex: 0 0 auto;
+			min-width: 100px;
+		}
+
+		/* Compress chart heights on mobile */
+		.tw-h-\[350px\] {
+			height: 200px !important;
+		}
+
+		.tw-h-\[260px\] {
+			height: 180px !important;
+		}
+
+		/* Full-width chart row on mobile */
+		.cc-chart-row {
+			flex-direction: column;
+		}
+
+		.cc-chart-card--half {
+			width: 100%;
+		}
+	}
+
+	/* Reserve bottom space on tablet too (for tab bar) */
+	@media (max-width: 1023.98px) {
+		.cc-root {
+			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+		}
+	}
 </style>

@@ -6,6 +6,8 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
+	import MobileTabBar from '$lib/components/shell/MobileTabBar.svelte';
+	import MobileDirectorFab from '$lib/components/shell/MobileDirectorFab.svelte';
 	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
@@ -54,6 +56,11 @@
 	});
 
 	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
+
+	const MANAGEMENT_ROLES = new Set(['director', 'super_admin', 'global_admin', 'registrar', 'coach']);
+	const showMobileChrome = $derived(
+		!isDesktop && MANAGEMENT_ROLES.has(authStore.role ?? ''),
+	);
 
 	function toggleDesktopSidebar() {
 		workspaceContextStore.toggleSidebar();
@@ -248,6 +255,16 @@
 		</div>
 	</div>
 	</div>
+
+	<!-- Mobile bottom tab bar + FAB — only for management roles on mobile viewports -->
+	{#if showMobileChrome}
+		<MobileTabBar
+			links={links}
+			pathname={page.url.pathname}
+			searchParams={page.url.searchParams}
+		/>
+		<MobileDirectorFab pathname={page.url.pathname} />
+	{/if}
 </div>
 
 <!-- Global Command Palette (Cmd+K) -->

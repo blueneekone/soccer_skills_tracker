@@ -25,6 +25,9 @@
 	overflow-x: hidden;
 	background: var(--ec-canvas-bg, #f4f4f5);
 	box-sizing: border-box;
+	/* Create an isolated stacking context so global overlays (OfflineBanner,
+	   ImpersonationBanner, etc.) cannot accidentally paint over the mobile header. */
+	isolation: isolate;
 }
 
 /* Main row: sidebar + canvas (desktop); mobile overrides below */
@@ -130,7 +133,7 @@ html.dark .ec-mobile-header__hamburger:hover {
 	right: 0;
 	top: 56px;
 	bottom: 0;
-	z-index: 50;
+	z-index: 998;
 	background: rgba(0, 0, 0, 0.48);
 	opacity: 0;
 	pointer-events: none;
@@ -461,7 +464,7 @@ html.dark .ec-nav-section {
 		top: 0;
 		left: 0;
 		right: 0;
-		z-index: 60;
+		z-index: 1000;
 		padding-top: env(safe-area-inset-top);
 		min-height: calc(56px + env(safe-area-inset-top));
 		height: auto;
@@ -491,7 +494,7 @@ html.dark .ec-nav-section {
 		min-width: 0;
 		height: auto;
 		max-height: none;
-		z-index: 55;
+		z-index: 999;
 		transform: translate3d(-100%, 0, 0);
 		transition: transform 0.2s ease-out;
 		box-shadow: none;
@@ -528,7 +531,8 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		padding: var(--bento-pad-sm) var(--bento-pad-sm) calc(6rem + env(safe-area-inset-bottom, 0px));
+		/* 8rem reserves space for the 56px MobileTabBar + 56px MobileDirectorFab + gap */
+		padding: var(--bento-pad-sm) var(--bento-pad-sm) calc(8rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 

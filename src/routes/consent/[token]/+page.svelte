@@ -26,7 +26,8 @@
 
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions as fns } from '$lib/firebase.js';
 	import type {
 		VerifyConsentInput,
 		VerifyConsentResult,
@@ -71,8 +72,6 @@
 		phase === 'submitting_attestation' ||
 		phase === 'processing',
 	);
-
-	const fns = getFunctions();
 
 	const generateChallengeFn = httpsCallable<GenerateConsentChallengeInput, GenerateConsentChallengeResult>(
 		fns,

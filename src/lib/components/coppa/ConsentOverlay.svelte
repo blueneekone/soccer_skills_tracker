@@ -21,7 +21,8 @@
 	 *   The verifyParentalConsent CF is the ONLY write path for coppaStatus.
 	 */
 
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { SendConsentEmailInput } from '$lib/types/coppa.js';
 
@@ -41,7 +42,6 @@
 		'your account',
 	);
 
-	const functions = getFunctions();
 	const sendConsentEmailFn = httpsCallable<SendConsentEmailInput, { success: boolean; resent?: boolean }>(
 		functions,
 		'sendParentalConsentEmail',
