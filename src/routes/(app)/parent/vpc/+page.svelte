@@ -166,7 +166,7 @@
 		submitError = '';
 
 		try {
-			await parentGrantVpcConsentFn({
+			const payload = $state.snapshot({
 				playerEmail: activePlayerEmail,
 				parentDisplayName: parentDisplayName.trim(),
 				consentItems: {
@@ -176,6 +176,7 @@
 					comms: consentComms,
 				},
 			});
+			await parentGrantVpcConsentFn(payload);
 			playerStatuses = {
 				...playerStatuses,
 				[activePlayerEmail]: 'parent_consented',

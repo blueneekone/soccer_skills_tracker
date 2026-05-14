@@ -20,6 +20,19 @@ const db = () => admin.firestore();
 
 // ── Private helpers ──────────────────────────────────────────────────────────
 
+/**
+ * Returns a deterministic Firestore document ID for a vpc_requests entry.
+ * One canonical row per (parentUid, playerEmail) pair — prevents queue stacking
+ * when a parent re-submits consent for the same child.
+ * @param {string} parentUid  Firebase Auth UID of the parent.
+ * @param {string} playerEmail  Normalised (lowercased) player email.
+ * @returns {string}
+ */
+function vpcRequestId(parentUid, playerEmail) {
+  const safeEmail = String(playerEmail).replace(/[^a-z0-9._-]/g, '_');
+  return `${parentUid}__${safeEmail}`;
+}
+
 async function resolveClubIdForVpcIntent(u, h, parentEmail) {
   const fromUser =
       typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : null;
@@ -636,15 +649,6 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
     return {ok: true, alreadyVerified: true, playerEmail};
   }
 
-  const dup = await db().collection('vpc_requests')
-      .where('playerEmail', '==', playerEmail)
-      .where('status', '==', 'pending')
-      .limit(1)
-      .get();
-  if (!dup.empty) {
-    return {ok: true, duplicate: true, playerEmail};
-  }
-
   const clubIdResolved = await resolveClubIdForVpcIntent(u, h, actor.email);
   if (!clubIdResolved) {
     throw new HttpsError(
@@ -656,14 +660,15 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
   }
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-  await db().collection('vpc_requests').add({
+  const docId = vpcRequestId(request.auth.uid, playerEmail);
+  await db().collection('vpc_requests').doc(docId).set({
     playerEmail,
     parentEmail: actor.email,
     householdId: actor.householdId,
     clubId: clubIdResolved,
     status: 'pending',
     createdAt: now,
-  });
+  }, {merge: true});
 
   await db().collection('security_audit').add({
     action: 'parentSubmitVpcIntent',
@@ -886,31 +891,17 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
     grantedAtIso: nowIso,
   });
 
-  const dupQ = await db().collection('vpc_requests')
-      .where('playerEmail', '==', playerEmail)
-      .where('status', '==', 'pending')
-      .limit(1)
-      .get();
-
-  if (!dupQ.empty) {
-    await dupQ.docs[0].ref.update({
-      status: 'parent_consented',
-      parentEmail: actor.email,
-      consentRecordId: consentRef.id,
-      consentedAt: now,
-    });
-  } else {
-    await db().collection('vpc_requests').add({
-      playerEmail,
-      parentEmail: actor.email,
-      householdId: actor.householdId,
-      clubId,
-      status: 'parent_consented',
-      consentRecordId: consentRef.id,
-      createdAt: now,
-      consentedAt: now,
-    });
-  }
+  const docId = vpcRequestId(request.auth.uid, playerEmail);
+  await db().collection('vpc_requests').doc(docId).set({
+    playerEmail,
+    parentEmail: actor.email,
+    householdId: actor.householdId,
+    clubId,
+    status: 'parent_consented',
+    consentRecordId: consentRef.id,
+    consentedAt: now,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
 
   await db().collection('security_audit').add({
     action: 'parentGrantVpcConsent',
