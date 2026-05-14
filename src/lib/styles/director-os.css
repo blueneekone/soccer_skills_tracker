@@ -76,7 +76,7 @@
 
 /* Actionable tiles — subtle shadow / scale (enterprise: no vertical lift) */
 .dir-bento-card.dir-bento-card--interactive {
-	transition: box-shadow 0.15s ease-out, transform 0.1s ease-out, opacity 0.15s ease-out;
+	transition: box-shadow var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease), opacity var(--motion-fast) var(--motion-ease);
 }
 .dir-bento-card.dir-bento-card--interactive:hover {
 	transform: none;
@@ -106,7 +106,7 @@
 	color: #ffffff;
 	background: #0a0a0a;
 	box-shadow: none;
-	transition: opacity 0.15s ease, transform 0.1s ease;
+	transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
 }
 
 html.dark .dir-os-btn-primary {
@@ -170,7 +170,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	height: 100%;
 	width: var(--dir-ent-pct, 0%);
 	border-radius: 9999px;
-	transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: width var(--motion-slow) var(--motion-ease);
 	background: var(--brand-primary);
 }
 
@@ -195,7 +195,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 
 .dir-ent-seg {
 	min-width: 0;
-	transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: width var(--motion-slow) var(--motion-ease);
 }
 
 .dir-ent-seg--active {

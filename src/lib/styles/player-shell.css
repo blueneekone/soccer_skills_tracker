@@ -296,7 +296,7 @@
 	pointer-events: none;
 	color: inherit;
 	opacity: 0.92;
-	transition: color 0.16s ease;
+	transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .ps-bottom-nav__label {

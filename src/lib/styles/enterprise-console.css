@@ -5,12 +5,12 @@
 
 /* Operations-console accent (SOC-adjacent) — shared with workspace dashboards */
 :root {
-	--ec-ops-accent: #00f0ff;
-	--ec-ops-accent-dim: rgba(0, 240, 255, 0.5);
-	--ec-ops-sheen: rgba(0, 240, 255, 0.12);
-	--ec-ops-ambient: rgba(0, 240, 255, 0.045);
-	--ec-ops-glow: 0 0 42px rgba(0, 240, 255, 0.05);
-	--ec-ops-border-subtle: rgba(0, 240, 255, 0.22);
+	--ec-ops-accent: #14b8a6;               /* Muted teal — replaces neon cyan */
+	--ec-ops-accent-dim: rgba(20, 184, 166, 0.45);
+	--ec-ops-sheen: rgba(20, 184, 166, 0.08);
+	--ec-ops-ambient: rgba(20, 184, 166, 0.03);
+	--ec-ops-glow: none;                    /* was: 0 0 42px rgba(0,240,255,0.05) */
+	--ec-ops-border-subtle: rgba(148, 163, 184, 0.14); /* Slate, NOT teal */
 }
 
 .ec-root {
@@ -112,8 +112,8 @@ html.dark .ec-mobile-header {
 	cursor: pointer;
 	flex-shrink: 0;
 	transition:
-		background 0.15s ease,
-		border-color 0.15s ease;
+		background var(--motion-fast) var(--motion-ease),
+		border-color var(--motion-fast) var(--motion-ease);
 }
 
 .ec-mobile-header__hamburger:hover {
@@ -137,7 +137,7 @@ html.dark .ec-mobile-header__hamburger:hover {
 	background: rgba(0, 0, 0, 0.48);
 	opacity: 0;
 	pointer-events: none;
-	transition: opacity 0.2s ease-out;
+	transition: opacity var(--motion-base) ease-out;
 }
 
 .ec-nav-backdrop--open {
@@ -172,8 +172,8 @@ html.dark .ec-sidebar__mobile-top {
 	border-radius: var(--vanguard-radius-sm);
 	cursor: pointer;
 	transition:
-		background 0.15s ease,
-		color 0.15s ease;
+		background var(--motion-fast) var(--motion-ease),
+		color var(--motion-fast) var(--motion-ease);
 }
 
 .ec-sidebar__close-btn:hover {
@@ -203,9 +203,9 @@ html.dark .ec-sidebar__close-btn:hover {
 	background: var(--ec-sidebar-bg, #fafafa);
 	box-sizing: border-box;
 	transition:
-		width 0.22s ease,
-		max-width 0.22s ease,
-		border-color 0.22s ease;
+		width var(--motion-slow) var(--motion-ease),
+		max-width var(--motion-slow) var(--motion-ease),
+		border-color var(--motion-slow) var(--motion-ease);
 }
 
 .ec-sidebar__panel {
@@ -218,7 +218,7 @@ html.dark .ec-sidebar__close-btn:hover {
 	flex-direction: column;
 	height: 100%;
 	box-sizing: border-box;
-	transition: transform 0.22s ease;
+	transition: transform var(--motion-slow) var(--motion-ease);
 }
 
 html.dark .ec-sidebar {
@@ -395,7 +395,7 @@ html.dark .ec-sidebar__system {
 	min-width: 0;
 	text-align: left;
 	cursor: pointer;
-	transition: background 0.12s ease, color 0.12s ease;
+	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 	letter-spacing: -0.01em;
 }
 
@@ -496,7 +496,7 @@ html.dark .ec-nav-section {
 		max-height: none;
 		z-index: 999;
 		transform: translate3d(-100%, 0, 0);
-		transition: transform 0.2s ease-out;
+		transition: transform var(--motion-base) ease-out;
 		box-shadow: none;
 		border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	}
@@ -565,7 +565,7 @@ html.dark .ec-nav-section {
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
-	transition: background 0.12s ease, color 0.12s ease;
+	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 
 .ec-sidebar-toggle:hover {
@@ -618,7 +618,7 @@ html.dark .ec-sidebar-toggle:hover {
 	background: rgba(0, 0, 0, 0.03);
 	cursor: pointer;
 	white-space: nowrap;
-	transition: border-color 0.12s ease, background 0.12s ease;
+	transition: border-color var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease);
 	min-width: 220px;
 	max-width: 360px;
 }
@@ -745,7 +745,7 @@ html.dark .ec-topbar {
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
-	transition: background 0.12s ease, color 0.12s ease;
+	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 
 .ec-icon-btn:hover {
@@ -864,7 +864,7 @@ html.dark .ec-table td {
 
 .ec-table tbody tr.ec-table__row-click {
 	cursor: pointer;
-	transition: background 0.1s ease;
+	transition: background var(--motion-fast) var(--motion-ease);
 }
 
 .ec-table tbody tr.ec-table__row-click:hover {
@@ -956,7 +956,7 @@ html.enterprise-console-active body {
 	z-index: 200;
 	opacity: 0;
 	pointer-events: none;
-	transition: opacity 0.2s ease-out;
+	transition: opacity var(--motion-base) ease-out;
 }
 
 .ec-drawer-backdrop--open {
@@ -977,7 +977,7 @@ html.enterprise-console-active body {
 	box-shadow: none;
 	z-index: 210;
 	transform: translateX(100%);
-	transition: transform 0.2s ease-out;
+	transition: transform var(--motion-base) ease-out;
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
@@ -1064,7 +1064,7 @@ html.dark .ec-drawer__close:hover {
 	z-index: 300;
 	opacity: 0;
 	pointer-events: none;
-	transition: opacity 0.2s ease-out;
+	transition: opacity var(--motion-base) ease-out;
 }
 
 .ec-pdrawer-backdrop--open {
@@ -1086,8 +1086,8 @@ html.dark .ec-drawer__close:hover {
 	z-index: 310;
 	transform: translateX(100%);
 	transition:
-		transform 0.2s ease-out,
-		border-color 0.15s ease;
+		transform var(--motion-base) ease-out,
+		border-color var(--motion-fast) var(--motion-ease);
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
@@ -1457,7 +1457,7 @@ html.dark .adm-search-icon {
 	color: var(--text-primary);
 	outline: none;
 	width: 100%;
-	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	transition: border-color var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
 }
 
 .adm-search:focus {
@@ -1499,12 +1499,11 @@ html.dark .ec-main {
 }
 
 html.dark .ec-sidebar {
-	border-right-color: rgba(0, 240, 255, 0.11);
+	border-right-color: rgba(148, 163, 184, 0.12);
 }
 
 html.dark .ec-mobile-header {
-	border-bottom-color: rgba(0, 240, 255, 0.12);
-	box-shadow: 0 1px 0 rgba(0, 240, 255, 0.05);
+	border-bottom-color: rgba(148, 163, 184, 0.12);
 }
 
 .ec-sidebar .ec-nav-link {
@@ -1513,7 +1512,7 @@ html.dark .ec-mobile-header {
 
 .ec-sidebar .ec-nav-link--active {
 	box-shadow: inset 3px 0 0 var(--ec-ops-accent);
-	background: linear-gradient(90deg, var(--ec-ops-sheen), transparent 78%);
+	background: linear-gradient(90deg, var(--ec-ops-sheen), transparent 80%);
 	color: var(--text-primary);
 	font-weight: 600;
 }
@@ -1528,7 +1527,7 @@ html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {
 
 html.dark .ec-topbar {
 	background: linear-gradient(180deg, #0a0a0c 0%, #09090b 100%);
-	border-bottom-color: rgba(0, 240, 255, 0.14);
+	border-bottom-color: rgba(148, 163, 184, 0.12);
 	box-shadow: var(--vanguard-elev-2);
 }
 
@@ -1542,62 +1541,59 @@ html.dark .ec-cmd-trigger:focus-visible {
 }
 
 html.dark .ec-canvas {
-	scrollbar-color: rgba(0, 240, 255, 0.38) rgba(255, 255, 255, 0.04);
+	scrollbar-color: rgba(148, 163, 184, 0.25) rgba(255, 255, 255, 0.03);
 }
 
 html.dark .ec-canvas::-webkit-scrollbar {
-	width: 10px;
-	height: 10px;
+	width: 6px;
+	height: 6px;
 }
 
 html.dark .ec-canvas::-webkit-scrollbar-thumb {
-	background: linear-gradient(180deg, rgba(0, 240, 255, 0.5), rgba(0, 240, 255, 0.18));
+	background: rgba(148, 163, 184, 0.28);
 	border-radius: 999px;
-	border: 2px solid transparent;
-	background-clip: padding-box;
 }
 
 html.dark .ec-canvas::-webkit-scrollbar-track {
-	background: rgba(255, 255, 255, 0.03);
+	background: rgba(255, 255, 255, 0.02);
 	border-radius: 999px;
 }
 
 html.dark .ec-page-subnav {
-	border-bottom-color: rgba(0, 240, 255, 0.1);
-	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+	border-bottom-color: rgba(148, 163, 184, 0.1);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
 }
 
 html:not(.dark) .ec-panel {
 	box-shadow:
 		0 1px 0 rgba(255, 255, 255, 0.8) inset,
 		0 12px 36px rgba(15, 23, 42, 0.06);
-	transition: box-shadow 0.2s ease, border-color 0.2s ease;
+	transition: box-shadow var(--motion-base) var(--motion-ease), border-color var(--motion-base) var(--motion-ease);
 }
 
 html.dark .ec-panel {
-	border-color: rgba(255, 255, 255, 0.09);
-	border-top: 1px solid rgba(0, 240, 255, 0.14);
-	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
-	box-shadow: var(--vanguard-elev-3), var(--ec-ops-glow);
-	transition: box-shadow 0.2s ease, border-color 0.2s ease;
+	border-color: rgba(148, 163, 184, 0.1);
+	border-top: 1px solid rgba(148, 163, 184, 0.14);
+	background: var(--vanguard-surface);
+	box-shadow: var(--vanguard-elev-2);
+	transition: box-shadow var(--motion-base) var(--motion-ease), border-color var(--motion-base) var(--motion-ease);
 }
 
 html.dark .ec-table-wrap {
-	border-color: rgba(255, 255, 255, 0.09);
-	border-top: 1px solid rgba(0, 240, 255, 0.1);
-	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
+	border-color: rgba(148, 163, 184, 0.1);
+	background: var(--vanguard-surface);
 }
 
 html.dark .adm-toolbar {
-	border-bottom-color: rgba(0, 240, 255, 0.12);
+	border-bottom-color: rgba(148, 163, 184, 0.1);
 }
 
 html.dark .ec-drawer {
-	border-left: 1px solid rgba(0, 240, 255, 0.14);
-	background: linear-gradient(180deg, #121214 0%, #0f0f11 100%);
-	box-shadow: var(--vanguard-elev-3), -14px 0 0 rgba(0, 0, 0, 0.28);
+	border-left: 1px solid rgba(148, 163, 184, 0.12);
+	background: var(--vanguard-surface);
+	box-shadow: var(--vanguard-elev-3);
 }
 
 html.dark .ec-drawer__head {
-	border-bottom-color: rgba(0, 240, 255, 0.1);
+	border-bottom-color: rgba(148, 163, 184, 0.1);
 }

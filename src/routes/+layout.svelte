@@ -1,4 +1,7 @@
 <script>
+	import '@fontsource/geist-mono/400.css';
+	import '@fontsource/geist-mono/500.css';
+	import '@fontsource/geist-mono/600.css';
 	import '../../style.css';
 	import '../app.css';
 	import { browser } from '$app/environment';

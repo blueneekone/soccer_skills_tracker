@@ -32,6 +32,7 @@
   "dependencies": {
     "@dicebear/adventurer": "^9.4.2",
     "@dicebear/core": "^9.4.2",
+    "@fontsource/geist-mono": "^5.2.7",
     "@googlemaps/js-api-loader": "^2.0.2",
     "@stripe/stripe-js": "^9.4.0",
     "@types/papaparse": "^5.5.2",

@@ -115,7 +115,7 @@
 	});
 </script>
 
-<div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop}>
+<div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop} data-vanguard-os="tactical">
 	<!-- Field mode: fixed bar with club mark + menu (< lg only, see CSS) -->
 	<header class="ec-mobile-header">
 		<div class="ec-mobile-header__brand">
@@ -381,7 +381,7 @@
 		background: rgba(0, 6, 16, 0.97);
 		border: 1px solid rgba(251, 191, 36, 0.25);
 		border-radius: 4px;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: var(--font-mono);
 		box-shadow: 0 0 60px rgba(251, 191, 36, 0.06);
 	}
 	/* Corner accents — amber instead of cyan to signal "warning" state */

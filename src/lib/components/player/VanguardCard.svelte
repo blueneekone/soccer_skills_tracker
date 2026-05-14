@@ -137,7 +137,7 @@
 	);
 
 	const cardTransition = $derived(
-		isHover ? 'transform 0.12s ease-out' : 'transform 0.5s ease-out'
+		isHover ? 'transform 0.15s ease-out' : 'transform 0.25s ease-out'
 	);
 
 	const foilBackground = $derived(
@@ -346,7 +346,7 @@
 					  width is clamped by the engine to [0, 100].
 					-->
 					<div
-						class="tw-absolute tw-inset-y-0 tw-left-0 tw-rounded-full tw-transition-all tw-duration-500"
+						class="tw-absolute tw-inset-y-0 tw-left-0 tw-rounded-full tw-transition-all tw-duration-[250ms]"
 						style:width="{armory.progressToNextTier}%"
 						style:background={accent}
 						style:box-shadow="0 0 10px {accent}, 0 0 4px {accent}"
@@ -383,9 +383,9 @@
 		inset: 0;
 		border-radius: inherit;
 		box-shadow:
-			inset 0 0 0 1px color-mix(in srgb, var(--vc-accent, #00f0ff) 35%, transparent),
-			inset 0 0 24px color-mix(in srgb, var(--vc-accent, #00f0ff) 18%, transparent),
-			0 0 32px color-mix(in srgb, var(--vc-accent, #00f0ff) 16%, transparent);
+			inset 0 0 0 1px color-mix(in srgb, var(--vc-accent, #14b8a6) 35%, transparent),
+			inset 0 0 24px color-mix(in srgb, var(--vc-accent, #14b8a6) 18%, transparent),
+			0 0 32px color-mix(in srgb, var(--vc-accent, #14b8a6) 16%, transparent);
 		pointer-events: none;
 	}
 
@@ -428,12 +428,12 @@
 		border-radius: 4px;
 		border: 1px solid rgba(148, 163, 184, 0.2);
 		background: rgba(0, 0, 0, 0.3);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.5rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		color: rgba(148, 163, 184, 0.5);
-		transition: border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+		transition: border-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease), color var(--motion-base) var(--motion-ease);
 	}
 	.vc-scholar-badge--active {
 		border-color: rgba(251, 191, 36, 0.6);
