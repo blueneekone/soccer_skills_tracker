@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * Sprint 2.7 — Impersonation Mode Active banner.
 	 *
@@ -9,6 +9,8 @@
 	 */
 
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let ending = $state(false);
 	const handleExit = async () => {
@@ -64,7 +66,7 @@
 		disabled={ending}
 		aria-label="Exit impersonation session"
 	>
-		<i class="ph ph-sign-out" aria-hidden="true"></i>
+		<Icon name="nav.sign-out" size={16} />
 		<span>{ending ? 'Exiting…' : 'Exit impersonation'}</span>
 	</button>
 </div>

@@ -1,6 +1,7 @@
 <script>
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
-	import { clubSportIconClass } from '$lib/utils/sport-icon.js';
+	import { clubSportIconToken } from '$lib/utils/sport-icon.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * @typedef {'sm' | 'md' | 'lg' | 'xl'} LogoSize
@@ -28,7 +29,7 @@
 			clubBrandingStore.sport
 	);
 
-	const iconClass = $derived(clubSportIconClass(effectiveSport));
+	const iconToken = $derived(clubSportIconToken(effectiveSport));
 
 	const dim = $derived(
 		(
@@ -61,7 +62,7 @@
 		role="img"
 		aria-label={alt}
 	>
-		<i class="{iconClass} club-logo-mark-fallback__icon" aria-hidden="true"></i>
+		<Icon name={iconToken} class="club-logo-mark-fallback__icon" aria-hidden="true" />
 	</span>
 {/if}
 

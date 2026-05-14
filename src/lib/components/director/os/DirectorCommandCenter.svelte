@@ -10,6 +10,7 @@
 	import HotelRebatePanel from '$lib/components/director/os/HotelRebatePanel.svelte';
 	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
 	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -189,7 +190,7 @@
 
 		<div class="dcc-vpc-section">
 			<div class="dcc-vpc-section__head">
-				<i class="ph ph-shield-check" aria-hidden="true"></i>
+				<Icon name="status.shield-check" />
 				<span>VPC approval queue</span>
 			</div>
 			<VpcApprovalQueue {clubId} />

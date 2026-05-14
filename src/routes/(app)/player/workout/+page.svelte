@@ -2,6 +2,8 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { untrack } from 'svelte';
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
   import { httpsCallable } from 'firebase/functions';
   import { db, functions } from '$lib/firebase.js';
   import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
@@ -12,6 +14,8 @@
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
@@ -443,7 +447,7 @@
     <div class="pw-hud__cell pw-hud__cell--streak">
       <span class="pw-eyebrow">Uptime (day streak)</span>
       <p class="pw-mono pw-hud__streak">
-        <i class="ph-fill ph-lightning pw-ico pw-ico--orange" aria-hidden="true"></i>
+        <Icon name="game.zap" class="pw-ico pw-ico--orange" />
         <span>{streak}D</span>
       </p>
     </div>
@@ -628,7 +632,7 @@
           {#if logSubmitting}
             <span class="pw-mono">TRANSMITTING…</span>
           {:else}
-            <i class="ph ph-lightning" aria-hidden="true"></i>
+            <Icon name="game.zap" />
             <span>EXECUTE & CLAIM XP</span>
             <span class="pw-mono pw-exec__xp">+{estimatedLogXp}</span>
           {/if}
@@ -949,7 +953,7 @@
     color: var(--threat);
   }
 
-  .pw-ico--orange {
+  :global(.pw-ico--orange) {
     color: var(--threat);
     filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.8));
   }

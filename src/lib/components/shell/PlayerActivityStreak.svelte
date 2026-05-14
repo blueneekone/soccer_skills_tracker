@@ -14,6 +14,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import type { ReengagementAlertDoc } from '$lib/types/tenant.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** When true, transparent chrome for embedding in top HUD bars. */
 	let { compact = false, armory = null } = $props<{
@@ -150,15 +152,15 @@
 >
 	<!-- Icon -->
 	<div class="pas__icon-wrap" aria-hidden="true">
-		{#if mode === 'frozen'}
-			<i class="ph ph-snowflake pas__icon pas__icon--frozen"></i>
-		{:else if mode === 'broken'}
-			<i class="ph ph-x-circle pas__icon pas__icon--broken"></i>
-		{:else if mode === 'at_risk'}
-			<i class="ph ph-warning pas__icon pas__icon--risk"></i>
-		{:else}
-			<i class="ph ph-fire pas__icon pas__icon--fire"></i>
-		{/if}
+	{#if mode === 'frozen'}
+		<Icon name="env.snow" size={22} class="pas__icon pas__icon--frozen" />
+	{:else if mode === 'broken'}
+		<Icon name="sys.close" size={22} class="pas__icon pas__icon--broken" />
+	{:else if mode === 'at_risk'}
+		<Icon name="status.warning" size={22} class="pas__icon pas__icon--risk" />
+	{:else}
+		<Icon name="game.flame" size={22} class="pas__icon pas__icon--fire" />
+	{/if}
 	</div>
 
 	<!-- Body -->
@@ -222,8 +224,8 @@
 				onclick={handleFreeze}
 				aria-label="Use streak freeze"
 			>
-				<i class="ph ph-snowflake"></i>
-				{freezePending ? 'Activating…' : `Use Freeze (${freezesAvailable} left)`}
+			<Icon name="env.snow" size={14} />
+			{freezePending ? 'Activating…' : `Use Freeze (${freezesAvailable} left)`}
 			</button>
 		{/if}
 	</div>

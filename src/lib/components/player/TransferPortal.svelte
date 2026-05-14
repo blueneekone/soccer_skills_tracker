@@ -18,6 +18,8 @@
 	 */
 
 	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		role: 'parent' | 'director' | 'global_admin';
@@ -237,18 +239,17 @@
 		<!-- ── COMPLETED ───────────────────────────────────────────────────── -->
 		{#if stage === 'completed'}
 			<div class="flex flex-col items-center gap-4 py-4 text-center">
-				<div
-					class="w-16 h-16 rounded-full flex items-center justify-center"
-					style="
-						background: rgba(0,255,136,0.08);
-						border: 2px solid rgba(0,255,136,0.6);
-						box-shadow: 0 0 40px rgba(0,255,136,0.2);
-					"
-				>
-					<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-						<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#00ff88"/>
-					</svg>
-				</div>
+			<div
+				class="w-16 h-16 rounded-full flex items-center justify-center"
+				style="
+					background: rgba(0,255,136,0.08);
+					border: 2px solid rgba(0,255,136,0.6);
+					box-shadow: 0 0 40px rgba(0,255,136,0.2);
+					color: #00ff88;
+				"
+			>
+				<Icon name="status.check" size={28} strokeWidth={2.5} />
+			</div>
 				<div class="space-y-1">
 					<div class="text-sm font-bold" style="color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.5);">
 						TRANSFER PROTOCOL COMPLETE

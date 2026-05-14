@@ -1,7 +1,9 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
@@ -87,32 +89,32 @@
 	const ballList = $derived(workoutsStore.byType('ball_mastery'));
 	const basicsList = $derived(workoutsStore.byType('foundation'));
 
-	const FOCUS_OPTIONS = /** @type {const} */ ([
+	const FOCUS_OPTIONS: Array<{ id: 'technical' | 'physical' | 'match' | 'recovery'; label: string; blurb: string; icon: IconName }> = [
 		{
 			id: 'technical',
 			label: 'Technical',
 			blurb: 'Touches, passing, finishing',
-			icon: 'ph-soccer-ball',
+			icon: 'sport.soccer',
 		},
 		{
 			id: 'physical',
 			label: 'Physical',
 			blurb: 'Strength, speed, conditioning',
-			icon: 'ph-barbell',
+			icon: 'game.dumbbell',
 		},
 		{
 			id: 'match',
 			label: 'Match',
 			blurb: 'Games, scrimmages, reps',
-			icon: 'ph-flag',
+			icon: 'sys.flag',
 		},
 		{
 			id: 'recovery',
 			label: 'Recovery',
 			blurb: 'Mobility, reset, prehab',
-			icon: 'ph-pulse',
+			icon: 'data.pulse',
 		},
-	]);
+	];
 
 	const intensityApi = $derived(intensityApiFromStep(intensitySlider));
 	const repTotalEst = $derived(sessionTotalReps(sessionItems));
@@ -320,7 +322,7 @@
 				<div class="gw-hud__cell">
 					<span class="gw-hud__label">Day streak</span>
 					<span class="gw-hud__value gw-hud__value--streak">
-						<i class="ph ph-fire" aria-hidden="true"></i>
+						<Icon name="game.flame" />
 						{streakDays}d
 					</span>
 				</div>
@@ -347,7 +349,7 @@
 							class:gw-focus-card--active={workoutFocus === opt.id}
 							onclick={() => (workoutFocus = opt.id)}
 						>
-							<i class="ph {opt.icon} gw-focus-card__icon" aria-hidden="true"></i>
+							<Icon name={opt.icon} class="gw-focus-card__icon" />
 							<span class="gw-focus-card__label">{opt.label}</span>
 							<span class="gw-focus-card__blurb">{opt.blurb}</span>
 						</button>
@@ -423,7 +425,7 @@
 					onclick={() => (builderOpen = !builderOpen)}
 				>
 					<span>Add specific drills (optional)</span>
-					<i class="ph ph-caret-down gw-accordion-btn__icon" class:gw-accordion-btn__icon--open={builderOpen} aria-hidden="true"></i>
+					<Icon name="nav.chevron-down" class="gw-accordion-btn__icon {builderOpen ? 'gw-accordion-btn__icon--open' : ''}" />
 				</button>
 				{#if builderOpen}
 					<div class="gw-builder">

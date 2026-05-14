@@ -7,6 +7,8 @@
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { getApp } from 'firebase/app';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	export const ssr = false;
 
@@ -191,8 +193,8 @@
 	<!-- ── Search ─────────────────────────────────────────────────────────── -->
 	<div class="dp-search-row">
 		<div class="dp-search">
-			<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-			<input
+		<Icon name="action.search" />
+		<input
 				type="search"
 				class="dp-search__input"
 				placeholder="SEARCH STAFF…"
@@ -216,8 +218,8 @@
 		<div class="dp-error">{loadError}</div>
 	{:else if filtered.length === 0}
 		<div class="dp-empty">
-			<i class="ph ph-users-three" aria-hidden="true"></i>
-			<p>NO STAFF RECORDS FOUND</p>
+		<Icon name="user.group" size={40} />
+		<p>NO STAFF RECORDS FOUND</p>
 		</div>
 	{:else}
 		<div class="dp-table-wrap" role="region" aria-label="Compliance roster">
@@ -250,10 +252,10 @@
 							<!-- Ankored status -->
 							<td class="dp-cell dp-cell--status">
 								<div class="dp-status dp-status--{status}">
-									{#if status === 'cleared'}
-										<i class="ph ph-check-circle" aria-hidden="true"></i>
-									{:else if status === 'flagged'}
-										<i class="ph ph-warning-circle" aria-hidden="true"></i>
+								{#if status === 'cleared'}
+									<Icon name="status.verified" />
+								{:else if status === 'flagged'}
+									<Icon name="status.warning-circle" />
 									{:else}
 										<span class="dp-pulse-dot dp-pulse-dot--sm"></span>
 									{/if}
@@ -281,8 +283,8 @@
 										{#if rs.simulating}
 											<span class="dp-btn-spin">↻</span> SYNCING…
 										{:else}
-											<i class="ph ph-lightning" aria-hidden="true"></i>
-											SIMULATE ANKORED CLEARANCE
+										<Icon name="game.zap" />
+										SIMULATE ANKORED CLEARANCE
 										{/if}
 									</button>
 								{/if}
@@ -293,8 +295,8 @@
 									class="dp-btn dp-btn--ankored"
 									aria-label="Open Ankored Dashboard (external)"
 								>
-									<i class="ph ph-arrow-square-out" aria-hidden="true"></i>
-									OPEN DASHBOARD
+								<Icon name="nav.external" />
+								OPEN DASHBOARD
 								</a>
 							</td>
 
@@ -310,8 +312,8 @@
 										onclick={() => revokeCoach(coach)}
 										aria-label="Revoke clearance for {coach.email}"
 									>
-										<i class="ph ph-prohibit" aria-hidden="true"></i>
-										REVOKE
+									<Icon name="sys.ban" />
+									REVOKE
 									</button>
 								{/if}
 							</td>

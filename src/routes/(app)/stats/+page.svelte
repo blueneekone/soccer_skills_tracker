@@ -7,6 +7,8 @@
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { dossierRadarFromPlayerStats } from '$lib/utils/sport-attributes.js';
 	import '$lib/styles/director-os.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const isPlayerRole = $derived(authStore.role === 'player');
 
@@ -37,7 +39,7 @@
 	let dossierXp = $state(0);
 
 	/**
-	 * @typedef {{ id: string; title: string; phIcon: string; unlocked: boolean; tier?: 'standard' | 'elite' }} BadgeDef
+	 * @typedef {{ id: string; title: string; icon: IconName; unlocked: boolean; tier?: 'standard' | 'elite' }} BadgeDef
 	 */
 
 	/** Monthly XP chart rows — mirrored on `player_stats` when recruit profile is private. */
@@ -110,90 +112,90 @@
 		const lv = Math.max(1, Math.floor(level || 1));
 		const xp = Math.max(0, Math.floor(totalXp || 0));
 		return [
-			{
-				id: 'streak',
-				title: '100_DAY_STREAK',
-				phIcon: 'ph-fire',
-				unlocked: lv >= 8 || xp >= 12000,
-				tier: 'elite',
-			},
-			{
-				id: 'marksman',
-				title: 'ELITE_MARKSMAN',
-				phIcon: 'ph-target',
-				unlocked: lv >= 14 || xp >= 28000,
-				tier: 'elite',
-			},
-			{
-				id: 'vector',
-				title: 'VECTOR_ACE',
-				phIcon: 'ph-radar',
-				unlocked: lv >= 6 || xp >= 9000,
-				tier: 'standard',
-			},
-			{
-				id: 'iron',
-				title: 'IRON_LUNGS',
-				phIcon: 'ph-wind',
-				unlocked: lv >= 10 || xp >= 18000,
-				tier: 'standard',
-			},
-			{
-				id: 'ghost',
-				title: 'GHOST_PRESS',
-				phIcon: 'ph-ghost',
-				unlocked: lv >= 18 || xp >= 42000,
-				tier: 'elite',
-			},
-			{
-				id: 'crown',
-				title: 'DYNASTY_MODE',
-				phIcon: 'ph-crown',
-				unlocked: lv >= 22 || xp >= 55000,
-				tier: 'elite',
-			},
-			{
-				id: 'sword',
-				title: 'BLADE_RUNNER',
-				phIcon: 'ph-sword',
-				unlocked: lv >= 16 || xp >= 38000,
-				tier: 'standard',
-			},
-			{
-				id: 'lock',
-				title: 'ZERO_DAY_PROTOCOL',
-				phIcon: 'ph-shield-chevron',
-				unlocked: lv >= 12 || xp >= 24000,
-				tier: 'standard',
-			},
-			{
-				id: 'flame',
-				title: 'COMBUSTION_99',
-				phIcon: 'ph-flame',
-				unlocked: lv >= 26 || xp >= 72000,
-				tier: 'elite',
-			},
-			{
-				id: 'medal',
-				title: 'ORBITAL_STRIKE',
-				phIcon: 'ph-medal',
-				unlocked: lv >= 20 || xp >= 48000,
-				tier: 'elite',
-			},
-			{
-				id: 'timer',
-				title: 'CHRONO_LOCK',
-				phIcon: 'ph-timer',
-				unlocked: lv >= 24 || xp >= 62000,
-				tier: 'standard',
-			},
-			{
-				id: 'code',
-				title: 'OVERRIDE_KEY',
-				phIcon: 'ph-key',
-				unlocked: lv >= 30 || xp >= 95000,
-				tier: 'elite',
-			},
+		{
+			id: 'streak',
+			title: '100_DAY_STREAK',
+			icon: /** @type {IconName} */ ('game.flame'),
+			unlocked: lv >= 8 || xp >= 12000,
+			tier: 'elite',
+		},
+		{
+			id: 'marksman',
+			title: 'ELITE_MARKSMAN',
+			icon: /** @type {IconName} */ ('data.target'),
+			unlocked: lv >= 14 || xp >= 28000,
+			tier: 'elite',
+		},
+		{
+			id: 'vector',
+			title: 'VECTOR_ACE',
+			icon: /** @type {IconName} */ ('data.radar'),
+			unlocked: lv >= 6 || xp >= 9000,
+			tier: 'standard',
+		},
+		{
+			id: 'iron',
+			title: 'IRON_LUNGS',
+			icon: /** @type {IconName} */ ('env.wind'),
+			unlocked: lv >= 10 || xp >= 18000,
+			tier: 'standard',
+		},
+		{
+			id: 'ghost',
+			title: 'GHOST_PRESS',
+			icon: /** @type {IconName} */ ('game.ghost'),
+			unlocked: lv >= 18 || xp >= 42000,
+			tier: 'elite',
+		},
+		{
+			id: 'crown',
+			title: 'DYNASTY_MODE',
+			icon: /** @type {IconName} */ ('game.crown'),
+			unlocked: lv >= 22 || xp >= 55000,
+			tier: 'elite',
+		},
+		{
+			id: 'sword',
+			title: 'BLADE_RUNNER',
+			icon: /** @type {IconName} */ ('game.sword'),
+			unlocked: lv >= 16 || xp >= 38000,
+			tier: 'standard',
+		},
+		{
+			id: 'lock',
+			title: 'ZERO_DAY_PROTOCOL',
+			icon: /** @type {IconName} */ ('status.shield-check'),
+			unlocked: lv >= 12 || xp >= 24000,
+			tier: 'standard',
+		},
+		{
+			id: 'flame',
+			title: 'COMBUSTION_99',
+			icon: /** @type {IconName} */ ('game.flame'),
+			unlocked: lv >= 26 || xp >= 72000,
+			tier: 'elite',
+		},
+		{
+			id: 'medal',
+			title: 'ORBITAL_STRIKE',
+			icon: /** @type {IconName} */ ('game.medal'),
+			unlocked: lv >= 20 || xp >= 48000,
+			tier: 'elite',
+		},
+		{
+			id: 'timer',
+			title: 'CHRONO_LOCK',
+			icon: /** @type {IconName} */ ('sys.timer'),
+			unlocked: lv >= 24 || xp >= 62000,
+			tier: 'standard',
+		},
+		{
+			id: 'code',
+			title: 'OVERRIDE_KEY',
+			icon: /** @type {IconName} */ ('sys.key'),
+			unlocked: lv >= 30 || xp >= 95000,
+			tier: 'elite',
+		},
 		];
 	}
 
@@ -640,7 +642,7 @@
 						aria-hidden="true"
 						class:dossier-badge__icon--locked={!b.unlocked}
 					>
-						<i class="ph {b.phIcon}"></i>
+						<Icon name={b.icon} />
 					</div>
 					<div class="dossier-badge__text font-mono">
 						{#if b.unlocked}
@@ -837,10 +839,10 @@
 		filter: drop-shadow(0 0 6px rgba(0, 255, 200, 0.55));
 	}
 
-	.dossier-badge__icon {
-		font-size: 1.45rem;
+	.dossier-badge__icon :global(svg) {
+		width: 1.45rem;
+		height: 1.45rem;
 		color: rgba(0, 240, 255, 0.9);
-		line-height: 1;
 	}
 	.dossier-badge__icon--locked {
 		color: rgba(255, 255, 255, 0.2);

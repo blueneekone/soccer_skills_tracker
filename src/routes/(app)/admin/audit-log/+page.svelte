@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { db } from '$lib/firebase.js';
 	import {
 		collection,
@@ -10,6 +10,8 @@
 	} from 'firebase/firestore';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const PAGE_SIZE = 100;
 
@@ -106,7 +108,7 @@
 	<div class="adm-toolbar al-page__toolbar">
 		<div class="adm-toolbar__left">
 			<h1 class="adm-toolbar__title adm-toolbar__title--icon">
-				<i class="ph ph-shield-check" aria-hidden="true"></i>
+				<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 				Security Audit Log
 			</h1>
 			<div class="adm-toolbar__meta">
@@ -118,7 +120,7 @@
 		</div>
 		<div class="adm-toolbar__right">
 			<div class="adm-search-wrap">
-				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
+				<Icon name={"action.search" as IconName} class="adm-search-icon" aria-hidden="true" />
 				<input
 					type="search"
 					class="adm-search tw-text-sm"
@@ -148,17 +150,14 @@
 				title={loading ? 'Loading…' : 'Refresh audit log'}
 				aria-label="Refresh audit log"
 			>
-				<i
-					class="ph ph-arrows-clockwise tw-text-lg {loading ? 'al-refresh-spin' : ''}"
-					aria-hidden="true"
-				></i>
+			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'al-refresh-spin' : ''}" aria-hidden="true" />
 			</button>
 		</div>
 	</div>
 
 	{#if loadErr}
 		<div class="al-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
 			{loadErr}
 		</div>
 	{/if}

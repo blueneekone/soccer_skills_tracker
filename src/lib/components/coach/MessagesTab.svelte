@@ -14,23 +14,25 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { teamId = '', players: _players = [], clubId: _clubId = '' } = $props();
 
-	/** @type {Array<{ id: string; label: string; description: string; icon: string }>} */
+	/** @type {Array<{ id: string; label: string; description: string; icon: IconName }>} */
 	const DEFAULT_CHANNELS = [
-		{ id: 'game-day', label: 'Game Day', description: 'Matchday logistics & squad notes', icon: 'ph-trophy' },
+		{ id: 'game-day', label: 'Game Day', description: 'Matchday logistics & squad notes', icon: /** @type {IconName} */ ('game.trophy') },
 		{
 			id: 'practice-sessions',
 			label: 'Practice',
 			description: 'Session plans, drills, and attendance',
-			icon: 'ph-soccer-ball',
+			icon: /** @type {IconName} */ ('game.dumbbell'),
 		},
 		{
 			id: 'general',
 			label: 'General',
 			description: 'Everyday team conversation',
-			icon: 'ph-chats-circle',
+			icon: /** @type {IconName} */ ('comm.chats'),
 		},
 	];
 
@@ -260,7 +262,7 @@
 					class:matrix__chip--on={activeChannel === ch.id}
 					onclick={() => (activeChannel = ch.id)}
 				>
-					<i class="ph {ch.icon}" aria-hidden="true"></i>
+					<Icon name={ch.icon} />
 					<span>{ch.label}</span>
 				</button>
 			{/each}

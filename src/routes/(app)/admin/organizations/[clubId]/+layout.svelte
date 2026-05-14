@@ -4,6 +4,8 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { setContext } from 'svelte';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** @type {{ children: import('svelte').Snippet }} */
 	let { children } = $props();
@@ -63,10 +65,10 @@
 <!-- Breadcrumb navigation sub-header -->
 <nav class="club-layout__breadcrumb" aria-label="Breadcrumb">
 	<a class="club-layout__bc-link" href="/admin/organizations">
-		<i class="ph ph-buildings" aria-hidden="true"></i>
+		<Icon name={"org.building" as IconName} aria-hidden="true" />
 		Organizations
 	</a>
-	<i class="ph ph-caret-right club-layout__bc-sep" aria-hidden="true"></i>
+	<Icon name={"nav.chevron-right" as IconName} class="club-layout__bc-sep" aria-hidden="true" />
 	{#if clubLoading}
 		<span class="club-layout__bc-current club-layout__bc-current--loading">Loading…</span>
 	{:else if clubErr}
@@ -85,7 +87,7 @@
 		role="tab"
 		aria-selected={page.url.pathname === `/admin/organizations/${clubId}`}
 	>
-		<i class="ph ph-info" aria-hidden="true"></i>
+		<Icon name={"status.info" as IconName} aria-hidden="true" />
 		Overview
 	</a>
 	<a
@@ -95,7 +97,7 @@
 		role="tab"
 		aria-selected={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
 	>
-		<i class="ph ph-users-three" aria-hidden="true"></i>
+		<Icon name={"user.group" as IconName} aria-hidden="true" />
 		Teams
 	</a>
 </div>

@@ -132,8 +132,16 @@ export interface SportsConfigDoc {
   /**
    * Phosphor icon class suffix, e.g. 'ph-soccer-ball'.
    * Full class = `ph ${iconClass}`.
+   * @deprecated Use {@link iconName} (Lucide registry token) instead.
+   *   Kept for backward compatibility and read-repair lazy migration.
    */
   iconClass: string;
+  /**
+   * Lucide icon registry token, e.g. 'sport.soccer'.
+   * Populated on first read if missing (lazy migration from `iconClass`).
+   * Consumers should prefer this field over `iconClass`.
+   */
+  iconName?: string;
   /**
    * Legacy normalization aliases.  Any of these raw strings (lowercased) will
    * resolve to this sport via `resolveActiveConfig`.  Used for read-repair of
@@ -163,7 +171,13 @@ export interface UpsertSportsConfigInput {
   /** Must have exactly 6 entries. */
   attributes: SportAttribute[];
   palette: SportPalette;
+  /**
+   * @deprecated Use {@link iconName} (Lucide registry token) instead.
+   * Kept for backward compatibility.
+   */
   iconClass: string;
+  /** Lucide icon registry token, e.g. 'sport.soccer'. Written on upsert. */
+  iconName?: string;
   aliases: string[];
   rpgProjection: RpgAttributeProjection;
   /** If provided, allows creating in 'draft' status. */

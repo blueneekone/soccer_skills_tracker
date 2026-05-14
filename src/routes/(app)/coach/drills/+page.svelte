@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import {
 		addDoc,
 		collection,
@@ -574,7 +576,7 @@
 			{/if}
 			{#if pageView === 'library'}
 				<button type="button" class="drill-lib__btn drill-lib__btn--primary" onclick={openAddDrill}>
-					<i class="ph ph-plus-circle" aria-hidden="true"></i>
+					<Icon name="status.circle-plus" />
 					<span>Add Drill</span>
 				</button>
 			{/if}
@@ -721,7 +723,7 @@
 
 	<div class="drill-lib__toolbar">
 		<label class="drill-lib__search">
-			<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+			<Icon name="action.search" />
 			<input
 				type="search"
 				placeholder="Search by title, category, or metric…"
@@ -793,7 +795,7 @@
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										<i class="ph ph-play-circle" aria-hidden="true"></i>
+										<Icon name="status.circle-play" />
 										<span>Watch</span>
 									</a>
 								{:else}
@@ -808,7 +810,7 @@
 										class="drill-lib__btn drill-lib__btn--ghost"
 										onclick={() => openAssign(row)}
 									>
-										<i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
+										<Icon name="comm.send" />
 										<span>Assign</span>
 									</button>
 								{:else}
@@ -818,7 +820,7 @@
 										onclick={() => deleteDrill(row)}
 										aria-label={`Delete drill ${row.title}`}
 									>
-										<i class="ph ph-trash" aria-hidden="true"></i>
+										<Icon name="action.delete" />
 										<span>Delete</span>
 									</button>
 								{/if}
@@ -1502,13 +1504,14 @@
 		max-width: 420px;
 	}
 
-	.drill-lib__search i {
+	.drill-lib__search :global(svg) {
 		position: absolute;
 		top: 50%;
 		left: 12px;
 		transform: translateY(-50%);
 		color: #a1a1aa;
-		font-size: 16px;
+		width: 16px;
+		height: 16px;
 		pointer-events: none;
 	}
 

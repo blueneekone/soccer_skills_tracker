@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const STORAGE_KEY = 'pwa_install_banner_dismissed_v1';
 
@@ -135,7 +137,7 @@
 					<span
 						class="tw-inline-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-cyan-500/50 tw-bg-black/50 tw-text-cyan-300"
 					>
-						<i class="ph ph-share-network tw-text-base"></i>
+						<Icon name={"comm.share" as IconName} size={16} />
 					</span>
 					<span class="tw-text-[0.65rem] tw-font-mono tw-uppercase tw-tracking-widest tw-text-cyan-500/80"
 						>Share</span
@@ -186,9 +188,3 @@
 	</div>
 {/if}
 
-<style>
-	:global(i.ph) {
-		font-size: 0.85rem;
-		line-height: 1;
-	}
-</style>

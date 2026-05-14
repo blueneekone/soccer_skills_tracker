@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
 	import { scale, fade } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * Holographic Radial Intercept Menu — scales in from the click point.
@@ -14,14 +16,14 @@
 	const INNER_R = 28;
 	const ICON_R = 32;
 
-	/** @typedef {{ id: string; label: string; icon: string; color: string; action: () => void }} RadialAction */
+	/** @typedef {{ id: string; label: string; icon: IconName; color: string; action: () => void }} RadialAction */
 
 	/** @type {RadialAction[]} */
 	const ACTIONS = [
 		{
 			id: 'route',
 			label: 'DRAW ROUTE',
-			icon: 'ph-vector-three',
+			icon: /** @type {IconName} */ ('sys.route'),
 			color: '#00f0ff',
 			action: () => {
 				model.setActiveTool('ROUTE');
@@ -31,7 +33,7 @@
 		{
 			id: 'drag',
 			label: 'DRAG',
-			icon: 'ph-cursor',
+			icon: /** @type {IconName} */ ('nav.crosshair'),
 			color: '#a855f7',
 			action: () => {
 				model.setActiveTool('DRAG');
@@ -41,7 +43,7 @@
 		{
 			id: 'clear',
 			label: 'CLEAR ROUTES',
-			icon: 'ph-eraser',
+			icon: /** @type {IconName} */ ('action.eraser'),
 			color: '#ffff00',
 			action: () => {
 				model.clearRoutesOnly();
@@ -51,7 +53,7 @@
 		{
 			id: 'recall',
 			label: 'RECALL',
-			icon: 'ph-arrow-u-up-left',
+			icon: /** @type {IconName} */ ('nav.arrow-left'),
 			color: '#ff6600',
 			action: () => {
 				model.recallBench();
@@ -61,7 +63,7 @@
 		{
 			id: 'cancel',
 			label: 'CANCEL',
-			icon: 'ph-x',
+			icon: /** @type {IconName} */ ('sys.close'),
 			color: '#ff003c',
 			action: () => model.closeMenu(),
 		},
@@ -189,7 +191,7 @@
 						s.action();
 					}}
 				>
-					<i class="ph {s.icon} tw-text-lg" aria-hidden="true"></i>
+					<Icon name={s.icon} size={18} />
 					<span class="tw-leading-none">{s.label}</span>
 				</button>
 			{/each}

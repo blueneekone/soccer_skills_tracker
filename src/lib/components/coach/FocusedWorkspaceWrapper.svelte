@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * Reusable "Focused Workspace" shell for full-bleed canvas tools (Strategy, Drill Designer).
@@ -54,7 +56,7 @@
 		aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
 		title={isFullscreen ? 'Exit full screen (Esc)' : 'Enter full screen'}
 	>
-		<i class="ph {isFullscreen ? 'ph-corners-in' : 'ph-corners-out'}" aria-hidden="true"></i>
+		<Icon name={isFullscreen ? 'nav.minimize' : 'nav.maximize'} />
 	</button>
 
 	<!-- Main canvas content injected by parent -->
@@ -144,8 +146,9 @@
 		border-color: rgba(255, 255, 255, 0.38);
 	}
 
-	.fw-fs-btn i {
-		font-size: 1.25rem;
+	.fw-fs-btn :global(svg) {
+		width: 1.25rem;
+		height: 1.25rem;
 		pointer-events: none;
 	}
 

@@ -26,6 +26,8 @@
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { loginEngine } from '$lib/auth/LoginEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const validatePlayerOTP = httpsCallable(functions, 'validatePlayerOTP');
 
@@ -144,7 +146,7 @@
 	>
 		<!-- Logo + wordmark -->
 		<div class="tw-mx-auto tw-mb-5 tw-flex tw-h-14 tw-w-14 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-vanguard-border tw-bg-vanguard-bg" aria-hidden="true">
-			<i class="ph ph-soccer-ball tw-text-2xl tw-text-vanguard-text-primary"></i>
+			<Icon name="sport.soccer" size={24} class="tw-text-vanguard-text-primary" />
 		</div>
 		<h2 class="tw-m-0 tw-mb-6 tw-font-mono tw-text-base tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-vanguard-text-primary">
 			NEXUS COMMAND

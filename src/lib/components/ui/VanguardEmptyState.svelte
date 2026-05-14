@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+
 	/**
 	 * VanguardEmptyState.svelte — "Blank Slate" Day-Zero UI
 	 * ───────────────────────────────────────────────────────
@@ -79,22 +81,7 @@
 	<div class="ves-body">
 		<!-- Icon: glowing diamond -->
 		<div class="ves-icon" aria-hidden="true">
-			<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<polygon
-					points="24,4 44,24 24,44 4,24"
-					fill="none"
-					stroke="rgba(0,255,255,0.5)"
-					stroke-width="1"
-				/>
-				<polygon
-					points="24,10 38,24 24,38 10,24"
-					fill="none"
-					stroke="rgba(0,255,255,0.25)"
-					stroke-width="0.75"
-					stroke-dasharray="4 4"
-				/>
-				<circle cx="24" cy="24" r="3" fill="rgba(0,255,255,0.6)"/>
-			</svg>
+			<Icon name="game.diamond" size={48} class="tw-text-teal-500/70" />
 		</div>
 
 		<!-- Title + cursor -->

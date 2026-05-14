@@ -32,6 +32,8 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	/**
 	 * @typedef {Object} Props
 	 * @property {boolean} open
@@ -177,7 +179,7 @@
 	>
 		<header class="aam-head">
 			<div class="aam-head__icon" aria-hidden="true">
-				<i class="ph ph-globe"></i>
+				<Icon name={"content.globe" as IconName} />
 			</div>
 			<div class="aam-head__body">
 				<h2 id="aam-title" class="aam-title">Add Admin</h2>
@@ -194,7 +196,7 @@
 				disabled={saving}
 				aria-label="Close Add Admin dialog"
 			>
-				<i class="ph ph-x" aria-hidden="true"></i>
+				<Icon name={"sys.close" as IconName} aria-hidden="true" />
 			</button>
 		</header>
 
@@ -266,7 +268,7 @@
 					<label class="aam-label" for="aam-address">
 						Verified Address
 						<span class="aam-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-map-pin-line" aria-hidden="true"></i>
+							<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -290,7 +292,7 @@
 					<label class="aam-label" for="aam-facility">
 						Primary Facility
 						<span class="aam-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-buildings" aria-hidden="true"></i>
+							<Icon name={"org.building" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -328,7 +330,7 @@
 					Cancel
 				</button>
 				<button type="submit" class="aam-btn aam-btn--primary" disabled={saving}>
-					<i class="ph ph-shield-check" aria-hidden="true"></i>
+					<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 					{saving ? 'Granting…' : 'Grant Access'}
 				</button>
 			</footer>

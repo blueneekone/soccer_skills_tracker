@@ -1,4 +1,6 @@
 import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+import { db } from '$lib/firebase.js';
+import { doc, setDoc } from 'firebase/firestore';
 
 /**
  * Hardcoded fallback icon map — used when sportsConfigStore has no entry.
@@ -14,6 +16,21 @@ const SPORT_ICON_SUFFIX = {
 	hockey: 'ph-ice-skate',
 	lacrosse: 'ph-tennis-ball',
 	generic: 'ph-shield-check',
+};
+
+/**
+ * Registry token map — maps canonical sport keys to Icon component tokens.
+ * @type {Record<string, string>}
+ */
+const SPORT_ICON_TOKEN = {
+	soccer:     'sport.soccer',
+	basketball: 'sport.basketball',
+	baseball:   'sport.baseball',
+	football:   'sport.football',
+	volleyball: 'sport.volleyball',
+	hockey:     'sport.hockey',
+	lacrosse:   'sport.lacrosse',
+	generic:    'sport.generic',
 };
 
 /**
@@ -89,6 +106,77 @@ export function clubSportIconSuffix(sport) {
 	} catch { /* fall through */ }
 	const key = normalizeClubSport(sport);
 	return SPORT_ICON_SUFFIX[key] || SPORT_ICON_SUFFIX.generic;
+}
+
+/**
+ * Registry token for the `<Icon>` component, e.g. `sport.soccer`.
+ * Always returns a valid `IconName` token — unknown/store-driven sports fall back to `sport.generic`.
+ *
+ * Implements the read-repair lazy migration (Database Defense Protocol):
+ *   - If the sportsConfig doc has an `iconName` field, return it.
+ *   - If `iconName` is missing, derive from `iconClass` and fire-and-forget
+ *     a Firestore `setDoc` patch to write `iconName` for future reads.
+ *   - Never blocks on the patch — falls back to derived token immediately.
+ *
+ * @param {string} [sport]
+ * @returns {string}
+ */
+export function clubSportIconToken(sport) {
+	try {
+		const cfg = sportsConfigStore.resolveActiveConfig(sport);
+		if (cfg) {
+			// Preferred path: iconName already populated
+			if (cfg.iconName) return cfg.iconName;
+
+			// Read-repair: derive iconName from iconClass and patch Firestore
+			const derivedToken = deriveIconTokenFromClass(cfg.iconClass);
+			if (derivedToken && cfg.sportId) {
+				// Fire-and-forget — never awaited, never blocks render
+				setDoc(
+					doc(db, 'sports_configs', cfg.sportId),
+					{ iconName: derivedToken },
+					{ merge: true },
+				).catch(() => {
+					// Silently ignore — network errors are expected offline
+				});
+			}
+			return derivedToken || SPORT_ICON_TOKEN.generic;
+		}
+	} catch { /* store not hydrated — fall through */ }
+
+	const key = normalizeClubSport(sport);
+	return SPORT_ICON_TOKEN[key] || SPORT_ICON_TOKEN.generic;
+}
+
+/**
+ * Map a legacy Phosphor `iconClass` suffix to a registry token.
+ * Used internally for read-repair migration.
+ *
+ * @param {string | undefined} iconClass
+ * @returns {string}
+ */
+function deriveIconTokenFromClass(iconClass) {
+	/** @type {Record<string, string>} */
+	const MAP = {
+		'ph-soccer-ball': 'sport.soccer',
+		'ph-basketball':  'sport.basketball',
+		'ph-baseball':    'sport.baseball',
+		'ph-football':    'sport.football',
+		'ph-volleyball':  'sport.volleyball',
+		'ph-ice-skate':   'sport.hockey',
+		'ph-tennis-ball': 'sport.lacrosse',
+		'ph-shield-check':'sport.generic',
+	};
+	return MAP[iconClass ?? ''] || 'sport.generic';
+}
+
+/**
+ * @deprecated Use {@link clubSportIconToken} instead.
+ * Kept for the read-repair bridge — will be removed once all sport docs
+ * have `iconName` populated in Firestore.
+ */
+export function clubSportIconName(sport) {
+	return clubSportIconToken(sport);
 }
 
 /**

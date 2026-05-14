@@ -14,10 +14,10 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import {
-		clubSportIconClass,
-		clubSportAccent,
-		normalizeClubSport
-	} from '$lib/utils/sport-icon.js';
+	clubSportIconToken,
+	clubSportAccent,
+	normalizeClubSport
+} from '$lib/utils/sport-icon.js';
 	import { auth, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { signInWithCustomToken } from 'firebase/auth';
@@ -26,6 +26,8 @@
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import EditOrganizationModal from '$lib/components/admin/EditOrganizationModal.svelte';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const createSportModuleFn = httpsCallable(functions, 'createSportModule');
 	const impersonateUserFn   = httpsCallable(functions, 'impersonateUserFn');
@@ -184,11 +186,11 @@
 	/** Strike 3 (A2.1) — Subscription tier catalog. Mirrors the pricing
 	 *  surface and the Revenue-by-Tier chart on the Overview dashboard. */
 	const TIER_OPTIONS = /** @type {const} */ ([
-		{ key: 'enterprise', label: 'Enterprise', accent: '#4338ca', icon: 'ph-diamond'      },
-		{ key: 'club',       label: 'Club',       accent: '#0ea5e9', icon: 'ph-buildings'    },
-		{ key: 'pro',        label: 'Pro',        accent: '#10b981', icon: 'ph-trophy'       },
-		{ key: 'starter',    label: 'Starter',    accent: '#f59e0b', icon: 'ph-seedling'     },
-		{ key: 'unassigned', label: 'Unassigned', accent: '#71717a', icon: 'ph-question'     },
+		{ key: 'enterprise', label: 'Enterprise', accent: '#4338ca', icon: 'game.diamond'    },
+		{ key: 'club',       label: 'Club',       accent: '#0ea5e9', icon: 'org.building'    },
+		{ key: 'pro',        label: 'Pro',        accent: '#10b981', icon: 'game.trophy'     },
+		{ key: 'starter',    label: 'Starter',    accent: '#f59e0b', icon: 'game.seedling'   },
+		{ key: 'unassigned', label: 'Unassigned', accent: '#71717a', icon: 'sys.question'    },
 	]);
 
 	/** Count of non-default filters (used for the pill badge). */
@@ -243,15 +245,15 @@
 
 	/** Sport sub-nav tab definitions (CTO mandate: strict, finite tabstrip). */
 	const SPORT_TABS = /** @type {const} */ ([
-		{ key: 'all',        label: 'All',        icon: 'ph-squares-four'  },
-		{ key: 'soccer',     label: 'Soccer',     icon: 'ph-soccer-ball'   },
-		{ key: 'basketball', label: 'Basketball', icon: 'ph-basketball'    },
-		{ key: 'volleyball', label: 'Volleyball', icon: 'ph-volleyball'    },
-		{ key: 'baseball',   label: 'Baseball',   icon: 'ph-baseball'      },
-		{ key: 'football',   label: 'Football',   icon: 'ph-football'      },
-		{ key: 'hockey',     label: 'Hockey',     icon: 'ph-ice-skate'     },
-		{ key: 'lacrosse',   label: 'Lacrosse',   icon: 'ph-tennis-ball'   },
-		{ key: 'generic',    label: 'Other',      icon: 'ph-shield-check'  }
+		{ key: 'all',        label: 'All',        icon: 'content.grid'     },
+		{ key: 'soccer',     label: 'Soccer',     icon: 'sport.soccer'     },
+		{ key: 'basketball', label: 'Basketball', icon: 'sport.basketball' },
+		{ key: 'volleyball', label: 'Volleyball', icon: 'sport.volleyball' },
+		{ key: 'baseball',   label: 'Baseball',   icon: 'sport.baseball'   },
+		{ key: 'football',   label: 'Football',   icon: 'sport.football'   },
+		{ key: 'hockey',     label: 'Hockey',     icon: 'sport.hockey'     },
+		{ key: 'lacrosse',   label: 'Lacrosse',   icon: 'sport.lacrosse'   },
+		{ key: 'generic',    label: 'Other',      icon: 'sport.generic'    }
 	]);
 
 	$effect(() => {
@@ -348,8 +350,8 @@
 		if (cl?.isInfinite === true) {
 			return {
 				label: 'Promo',
-				accent: '#f59e0b',
-				icon: 'ph-infinity',
+			accent: '#f59e0b',
+			icon: 'sys.infinity',
 			};
 		}
 		const key = tierForClub(cl);
@@ -357,7 +359,7 @@
 		return {
 			label: opt?.label ?? 'Unassigned',
 			accent: opt?.accent ?? '#71717a',
-			icon: opt?.icon ?? 'ph-question',
+			icon: opt?.icon ?? 'sys.question',
 		};
 	}
 
@@ -700,7 +702,7 @@
 		</div>
 		<div class="adm-toolbar__right">
 			<div class="adm-search-wrap">
-				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
+				<Icon name={"action.search" as IconName} class="adm-search-icon" aria-hidden="true" />
 				<input
 					type="search"
 					class="adm-search tw-text-sm"
@@ -721,8 +723,8 @@
 					aria-expanded={filterOpen}
 					onclick={toggleFilter}
 				>
-					<i class="ph ph-funnel" aria-hidden="true"></i>
-					<span>Enterprise Filter</span>
+				<Icon name={"action.filter" as IconName} aria-hidden="true" />
+				<span>Enterprise Filter</span>
 					{#if filterActiveCount > 0}
 						<span class="orgs3-filter-badge" aria-label="{filterActiveCount} active filters">
 							{filterActiveCount}
@@ -744,11 +746,11 @@
 								onclick={closeFilter}
 								aria-label="Close filter"
 							>
-								<i class="ph ph-x" aria-hidden="true"></i>
-							</button>
-						</div>
+							<Icon name={"sys.close" as IconName} aria-hidden="true" />
+						</button>
+					</div>
 
-						<!-- ── Subscription Tier (multi-select) ────────────────── -->
+					<!-- ── Subscription Tier (multi-select) ────────────────── -->
 						<fieldset class="orgs3-filter-group">
 							<legend class="orgs3-filter-group__legend">
 								Subscription Tier
@@ -773,7 +775,7 @@
 										onclick={() => (filterTiers = toggleInList(filterTiers, tier.key))}
 									>
 										<span class="orgs3-filter-chip__dot" style="background:{tier.accent};"></span>
-										<i class="ph {tier.icon}" aria-hidden="true"></i>
+									<Icon name={tier.icon as IconName} aria-hidden="true" />
 										<span>{tier.label}</span>
 										<span class="orgs3-filter-chip__count">{count}</span>
 									</button>
@@ -802,9 +804,9 @@
 							{:else}
 								{#if knownStates.length > 6}
 									<label class="orgs3-filter-state" for="orgs3-filter-region-q">
-										<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-										<input
-											id="orgs3-filter-region-q"
+						<Icon name={"action.search" as IconName} aria-hidden="true" />
+									<input
+										id="orgs3-filter-region-q"
 											type="search"
 											class="orgs3-filter-state__typeahead"
 											placeholder="Search states (TX, CA, NY…)"
@@ -825,10 +827,7 @@
 											class:orgs3-filter-state-chip--active={active}
 											onclick={() => (filterStates = toggleInList(filterStates, st))}
 										>
-											<i
-												class="ph {active ? 'ph-check-square' : 'ph-square'}"
-												aria-hidden="true"
-											></i>
+								<Icon name={active ? ("status.check-square" as IconName) : ("sys.square" as IconName)} aria-hidden="true" />
 											{st}
 										</button>
 									{:else}
@@ -848,23 +847,23 @@
 								on file count as <strong>Verified</strong>.
 							</p>
 							<div class="orgs3-filter-chips" role="radiogroup" aria-label="Verification Status">
-								{#each [
-									{ key: 'all',       label: 'All',       dot: '#a1a1aa', icon: 'ph-list'         },
-									{ key: 'verified',  label: 'Verified',  dot: '#22c55e', icon: 'ph-seal-check'   },
-									{ key: 'pending',   label: 'Pending',   dot: '#f59e0b', icon: 'ph-clock'        }
-								] as opt (opt.key)}
-									<button
-										type="button"
-										role="radio"
-										aria-checked={filterVerification === opt.key}
-										class="orgs3-filter-chip"
-										class:orgs3-filter-chip--active={filterVerification === opt.key}
-										onclick={() => (filterVerification = /** @type {any} */ (opt.key))}
-									>
-										<span class="orgs3-filter-chip__dot" style="background:{opt.dot};"></span>
-										<i class="ph {opt.icon}" aria-hidden="true"></i>
-										{opt.label}
-									</button>
+							{#each [
+								{ key: 'all',       label: 'All',       dot: '#a1a1aa', icon: 'content.list'       },
+								{ key: 'verified',  label: 'Verified',  dot: '#22c55e', icon: 'status.seal-check'  },
+								{ key: 'pending',   label: 'Pending',   dot: '#f59e0b', icon: 'sys.clock'          }
+							] as opt (opt.key)}
+								<button
+									type="button"
+									role="radio"
+									aria-checked={filterVerification === opt.key}
+									class="orgs3-filter-chip"
+									class:orgs3-filter-chip--active={filterVerification === opt.key}
+									onclick={() => (filterVerification = /** @type {any} */ (opt.key))}
+								>
+									<span class="orgs3-filter-chip__dot" style="background:{opt.dot};"></span>
+									<Icon name={opt.icon as IconName} aria-hidden="true" />
+									{opt.label}
+								</button>
 								{/each}
 							</div>
 						</fieldset>
@@ -897,17 +896,17 @@
 				onclick={importViaStackSports}
 				title="Import organizations from Stack Sports"
 			>
-				<i class="ph ph-cloud-arrow-down" aria-hidden="true"></i>
-				Import via Stack Sports API
+			<Icon name={"action.download" as IconName} aria-hidden="true" />
+			Import via Stack Sports API
 			</button>
 
-			<button
-				type="button"
-				class="orgs3-add-btn"
-				onclick={() => (showAddForm = !showAddForm)}
-				aria-expanded={showAddForm}
-			>
-				<i class="ph {showAddForm ? 'ph-x' : 'ph-plus'}" aria-hidden="true"></i>
+		<button
+			type="button"
+			class="orgs3-add-btn"
+			onclick={() => (showAddForm = !showAddForm)}
+			aria-expanded={showAddForm}
+		>
+			<Icon name={showAddForm ? ("sys.close" as IconName) : ("action.add" as IconName)} aria-hidden="true" />
 				{showAddForm ? 'Cancel' : 'Add Organization'}
 			</button>
 		</div>
@@ -918,16 +917,16 @@
 		<div class="orgs3-toasts" role="status" aria-live="polite">
 			{#each toasts as t (t.id)}
 				<div class="orgs3-toast orgs3-toast--{t.tone}">
-					<i
-						class="ph {t.tone === 'ok'
-							? 'ph-check-circle'
-							: t.tone === 'warn'
-								? 'ph-warning-circle'
-								: 'ph-info'}"
-						aria-hidden="true"
-					></i>
-					<span>{t.text}</span>
-				</div>
+				<Icon
+					name={t.tone === 'ok'
+						? ("status.verified" as IconName)
+						: t.tone === 'warn'
+							? ("status.warning-circle" as IconName)
+							: ("status.info" as IconName)}
+					aria-hidden="true"
+				/>
+				<span>{t.text}</span>
+			</div>
 			{/each}
 		</div>
 	{/if}
@@ -947,7 +946,7 @@
 					data-sport={tab.key}
 					onclick={() => (activeSportTab = tab.key)}
 				>
-					<i class="ph {tab.icon}" aria-hidden="true"></i>
+							<Icon name={tab.icon as IconName} aria-hidden="true" />
 					<span class="orgs3-tab__label">{tab.label}</span>
 					<span class="orgs3-tab__count">{count}</span>
 				</button>
@@ -1009,9 +1008,9 @@
 				<div class="orgs3-field orgs3-field--wide">
 					<label class="orgs3-field-label" for="add-club-address">
 						Verified Address
-						<span class="orgs3-places-chip">
-							<i class="ph ph-map-pin-line" aria-hidden="true"></i>
-							Google Places Autocomplete active
+					<span class="orgs3-places-chip">
+						<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
+						Google Places Autocomplete active
 						</span>
 					</label>
 					<input
@@ -1029,9 +1028,9 @@
 					<label class="orgs3-field-label" for="add-club-facility">
 						Primary Facility
 						<span class="orgs3-places-chip">
-							<i class="ph ph-buildings" aria-hidden="true"></i>
-							Google Places Autocomplete active
-						</span>
+					<Icon name={"org.building" as IconName} aria-hidden="true" />
+						Google Places Autocomplete active
+					</span>
 					</label>
 					<input
 						id="add-club-facility"
@@ -1048,8 +1047,8 @@
 			<!-- ── New Sport inline panel — shown only when "+ Create new sport…" is selected -->
 			{#if newSportMode}
 				<div class="orgs3-new-sport-panel">
-					<div class="orgs3-new-sport-panel__label">
-						<i class="ph ph-trophy" aria-hidden="true"></i>
+				<div class="orgs3-new-sport-panel__label">
+					<Icon name={"game.trophy" as IconName} aria-hidden="true" />
 						New Sport Module
 						<span class="orgs3-new-sport-panel__sub">
 							Provisioned via Cloud Function before the club is saved.
@@ -1100,13 +1099,13 @@
 	<!-- ── Enterprise DataTable ───────────────────────────────────────────────── -->
 	{#if clubsErr}
 		<div class="orgs3-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
 			{clubsErr}
 		</div>
 	{/if}
 	{#if loginAsDirectorErr}
 		<div class="orgs3-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
 			{loginAsDirectorErr}
 		</div>
 	{/if}
@@ -1152,12 +1151,12 @@
 									<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 								{:else}
 									<span
-										class="orgs3-logo-chip"
-										style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
-										aria-hidden="true"
-									>
-										<i class="ph {clubSportIconClass(cl.sport ?? 'generic')}"></i>
-									</span>
+									class="orgs3-logo-chip"
+									style="--sport-fg:{accent.fg}; --sport-glow:{accent.glow}; --sport-ring:{accent.ring};"
+									aria-hidden="true"
+								>
+									<Icon name={clubSportIconToken(cl.sport ?? 'generic') as IconName} />
+								</span>
 								{/if}
 							</td>
 
@@ -1187,7 +1186,7 @@
 									style="--lic-accent:{licenseMeta.accent};"
 									title={cl?.isInfinite === true ? 'Enterprise / unlimited promo license' : `Subscription: ${licenseMeta.label}`}
 								>
-									<i class="ph {licenseMeta.icon}" aria-hidden="true"></i>
+							<Icon name={licenseMeta.icon as IconName} aria-hidden="true" />
 									{licenseMeta.label}
 								</span>
 							</td>
@@ -1240,7 +1239,7 @@
 										href="/admin/organizations/{cl.id}"
 										aria-label="View {cl.name || cl.id}"
 									>
-										View <i class="ph ph-arrow-right" aria-hidden="true"></i>
+										View <Icon name={"nav.arrow-right" as IconName} aria-hidden="true" />
 									</a>
 									<button
 										type="button"
@@ -1250,7 +1249,7 @@
 										aria-label="Actions for {cl.name || cl.id}"
 										onclick={(e) => { e.stopPropagation(); toggleRowMenu(cl.id); }}
 									>
-										<i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+										<Icon name={"nav.more-v" as IconName} aria-hidden="true" />
 									</button>
 									{#if openRowMenuId === cl.id}
 										<div class="orgs3-row-menu" role="menu">
@@ -1260,8 +1259,8 @@
 												class="orgs3-row-menu__item"
 												onclick={() => openEdit(cl)}
 											>
-												<i class="ph ph-pencil-simple" aria-hidden="true"></i>
-												Edit Organization
+											<Icon name={"action.edit" as IconName} aria-hidden="true" />
+											Edit Organization
 											</button>
 											<a
 												role="menuitem"
@@ -1269,7 +1268,7 @@
 												href="/admin/organizations/{cl.id}"
 												onclick={closeRowMenu}
 											>
-												<i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+												<Icon name={"nav.external" as IconName} aria-hidden="true" />
 												Open Details
 											</a>
 											<!-- Strike 2 — Login As Director (P0). Disabled when the
@@ -1281,13 +1280,13 @@
 												disabled={loginAsDirectorBusyFor === cl.id || !(cl.directorEmail || '').trim()}
 												onclick={() => void loginAsDirector(cl)}
 											>
-												{#if loginAsDirectorBusyFor === cl.id}
-													<i class="ph ph-circle-notch orgs3-row-menu__spin" aria-hidden="true"></i>
-													Launching session…
-												{:else}
-													<i class="ph ph-sign-in" aria-hidden="true"></i>
-													Login As Director
-												{/if}
+											{#if loginAsDirectorBusyFor === cl.id}
+												<Icon name={"status.loading" as IconName} class="orgs3-row-menu__spin" aria-hidden="true" />
+												Launching session…
+											{:else}
+												<Icon name={"nav.sign-in" as IconName} aria-hidden="true" />
+												Login As Director
+											{/if}
 											</button>
 											<button
 												type="button"
@@ -1295,8 +1294,8 @@
 												class="orgs3-row-menu__item orgs3-row-menu__item--danger"
 												onclick={() => { closeRowMenu(); void deleteClub(cl.id, cl.name || cl.id); }}
 											>
-												<i class="ph ph-trash" aria-hidden="true"></i>
-												Delete Organization
+											<Icon name={"action.delete" as IconName} aria-hidden="true" />
+											Delete Organization
 											</button>
 										</div>
 									{/if}
@@ -1400,8 +1399,9 @@
 		border-color: #7c3aed;
 	}
 
-	.orgs3-filter-btn i {
-		font-size: 0.875rem;
+	.orgs3-filter-btn :global(svg) {
+		width: 0.875rem;
+		height: 0.875rem;
 	}
 
 	.orgs3-filter-badge {
@@ -1699,8 +1699,9 @@
 		transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
 	}
 
-	.orgs3-filter-state-chip i {
-		font-size: 0.85rem;
+	.orgs3-filter-state-chip :global(svg) {
+		width: 0.85rem;
+		height: 0.85rem;
 		color: var(--text-secondary);
 	}
 
@@ -1714,7 +1715,7 @@
 		color: #312e81;
 	}
 
-	.orgs3-filter-state-chip--active i {
+	.orgs3-filter-state-chip--active :global(svg) {
 		color: #4338ca;
 	}
 
@@ -1730,7 +1731,7 @@
 		color: #fafafa;
 	}
 
-	:global(html.dark) .orgs3-filter-state-chip--active i {
+	:global(html.dark) .orgs3-filter-state-chip--active :global(svg) {
 		color: #c7d2fe;
 	}
 
@@ -1845,8 +1846,9 @@
 		color: #fafafa;
 	}
 
-	.orgs3-tab i {
-		font-size: 0.95rem;
+	.orgs3-tab :global(svg) {
+		width: 0.95rem;
+		height: 0.95rem;
 	}
 
 	.orgs3-tab__count {
@@ -2008,7 +2010,7 @@
 
 	.orgs3-toast--ok   { border-color: rgba(16,185,129,0.35); }
 	.orgs3-toast--warn { border-color: rgba(245,158,11,0.4); }
-	.orgs3-toast i     { font-size: 1rem; }
+	.orgs3-toast :global(svg) { width: 1rem; height: 1rem; }
 
 	/* ── Inline add form ────────────────────────────────────────────── */
 	.orgs3-add-form {
@@ -2585,8 +2587,9 @@
 		cursor: not-allowed;
 	}
 
-	.orgs3-row-menu__item i {
-		font-size: 1rem;
+	.orgs3-row-menu__item :global(svg) {
+		width: 1rem;
+		height: 1rem;
 		color: var(--text-secondary);
 	}
 
@@ -2606,7 +2609,7 @@
 		color: #b91c1c;
 	}
 
-	.orgs3-row-menu__item--danger i {
+	.orgs3-row-menu__item--danger :global(svg) {
 		color: #b91c1c;
 	}
 
@@ -2618,7 +2621,7 @@
 		color: #fca5a5;
 	}
 
-	:global(html.dark) .orgs3-row-menu__item--danger i {
+	:global(html.dark) .orgs3-row-menu__item--danger :global(svg) {
 		color: #fca5a5;
 	}
 

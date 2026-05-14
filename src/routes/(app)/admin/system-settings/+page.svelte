@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { db } from '$lib/firebase.js';
 	import {
 		doc,
@@ -12,6 +12,8 @@
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * Sprint 2.7 — System Settings (Enterprise 3-tab).
@@ -222,7 +224,7 @@
 			category: 'Video Analysis Sync',
 			description:
 				'Two-way clip exchange so coaches can pull film libraries into the Video Room and push highlight reels back into HUDL.',
-			icon: 'ph-film-strip',
+			icon: 'content.film',
 			accent: '#f97316',
 			sprintEta: 'Sprint 3.1'
 		},
@@ -232,7 +234,7 @@
 			category: 'Marketing CRM',
 			description:
 				'Sync club admins, parents, and verified scouts into marketing journeys with tier-aware segmentation.',
-			icon: 'ph-envelope-simple',
+			icon: 'comm.mail' as IconName,
 			accent: '#facc15',
 			sprintEta: 'Sprint 3.2'
 		},
@@ -242,7 +244,7 @@
 			category: 'Background Vetting',
 			description:
 				'Automated background checks for Coaches, Recruiters, and Facility Managers — drives the Compliance Alerts KPI.',
-			icon: 'ph-fingerprint',
+			icon: 'sys.fingerprint',
 			accent: '#22c55e',
 			sprintEta: 'Sprint 3.3'
 		},
@@ -252,7 +254,7 @@
 			category: 'Payouts',
 			description:
 				'Marketplace payouts for Recruiter commissions, facility rentals, and tournament disbursements.',
-			icon: 'ph-credit-card',
+			icon: 'sys.credit-card' as IconName,
 			accent: '#6366f1',
 			sprintEta: 'Sprint 3.4'
 		}
@@ -380,7 +382,7 @@
 			aria-selected={activeTab === 'access'}
 			onclick={() => (activeTab = 'access')}
 		>
-			<i class="ph ph-shield-star" aria-hidden="true"></i>
+			<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 			<span>Access Control</span>
 		</button>
 		<button
@@ -391,8 +393,8 @@
 			aria-selected={activeTab === 'flags'}
 			onclick={() => (activeTab = 'flags')}
 		>
-			<i class="ph ph-toggle-right" aria-hidden="true"></i>
-			<span>Feature Flags</span>
+		<Icon name={"nav.toggle-on" as IconName} aria-hidden="true" />
+		<span>Feature Flags</span>
 		</button>
 		<button
 			type="button"
@@ -402,9 +404,9 @@
 			aria-selected={activeTab === 'integrations'}
 			onclick={() => (activeTab = 'integrations')}
 		>
-			<i class="ph ph-plugs-connected" aria-hidden="true"></i>
-			<span>External Integrations</span>
-		</button>
+		<Icon name={"sys.plug-zap" as IconName} aria-hidden="true" />
+		<span>External Integrations</span>
+	</button>
 	</div>
 
 	<!-- ══════════════════════════════════════════════════════════════════════
@@ -413,7 +415,7 @@
 	{#if activeTab === 'access'}
 		<section class="ss-section" aria-labelledby="ss-access-heading">
 			<div class="ss-section__label">
-				<i class="ph ph-crown" aria-hidden="true"></i>
+				<Icon name={"game.crown" as IconName} aria-hidden="true" />
 				<h2 id="ss-access-heading" class="ss-section__heading">System Administrators</h2>
 			</div>
 			<p class="ss-section__desc">
@@ -469,7 +471,7 @@
 	{#if activeTab === 'flags'}
 		<section class="ss-section" aria-labelledby="ss-flags-heading">
 			<div class="ss-section__label ss-section__label--danger">
-				<i class="ph ph-warning-octagon" aria-hidden="true"></i>
+				<Icon name={"status.warning-octagon" as IconName} aria-hidden="true" />
 				<h2 id="ss-flags-heading" class="ss-section__heading">Global Kill Switch</h2>
 			</div>
 			<p class="ss-section__desc">
@@ -576,8 +578,8 @@
 	{#if activeTab === 'integrations'}
 		<section class="ss-section" aria-labelledby="ss-int-heading">
 			<div class="ss-section__label">
-				<i class="ph ph-plugs-connected" aria-hidden="true"></i>
-				<h2 id="ss-int-heading" class="ss-section__heading">External Integrations (API)</h2>
+			<Icon name={"sys.plug-zap" as IconName} aria-hidden="true" />
+			<h2 id="ss-int-heading" class="ss-section__heading">External Integrations (API)</h2>
 			</div>
 			<p class="ss-section__desc">
 				Pro league data feeds, webhook health, and third-party credentials. API keys are
@@ -609,7 +611,7 @@
 			     breadcrumb if hammered via DevTools so we capture demand signal.
 			     ══════════════════════════════════════════════════════════════ -->
 			<div class="ss-section__label ss-section__label--pad">
-				<i class="ph ph-rocket-launch" aria-hidden="true"></i>
+				<Icon name={"game.rocket" as IconName} aria-hidden="true" />
 				<h2 class="ss-section__heading">Upcoming Integrations</h2>
 				<span class="ss-upcoming__header-chip">Roadmap</span>
 			</div>
@@ -623,13 +625,13 @@
 				{#each upcomingIntegrations as spec (spec.id)}
 					<article class="ss-upcoming-card" aria-labelledby="ss-upcoming-{spec.id}">
 						<header class="ss-upcoming-card__head">
-							<span
-								class="ss-upcoming-card__icon"
-								style="background: {spec.accent}1f; color: {spec.accent};"
-								aria-hidden="true"
-							>
-								<i class="ph {spec.icon}"></i>
-							</span>
+						<span
+							class="ss-upcoming-card__icon"
+							style="background: {spec.accent}1f; color: {spec.accent};"
+							aria-hidden="true"
+						>
+						<Icon name={spec.icon as IconName} />
+						</span>
 							<div class="ss-upcoming-card__title-wrap">
 								<h3 id="ss-upcoming-{spec.id}" class="ss-upcoming-card__title">
 									{spec.label}
@@ -643,7 +645,7 @@
 						<p class="ss-upcoming-card__desc">{spec.description}</p>
 						<div class="ss-upcoming-card__foot">
 							<span class="ss-upcoming-card__status">
-								<i class="ph ph-lock-simple" aria-hidden="true"></i>
+							<Icon name={"sys.lock-simple" as IconName} aria-hidden="true" />
 								Not enabled
 							</span>
 							<button
@@ -654,7 +656,7 @@
 								onclick={() => onUpcomingIntegrationClick(spec)}
 								title="Disabled — ships in {spec.sprintEta}"
 							>
-								<i class="ph ph-plugs" aria-hidden="true"></i>
+								<Icon name={"sys.plug" as IconName} aria-hidden="true" />
 								Connect
 							</button>
 						</div>
@@ -663,7 +665,7 @@
 			</div>
 
 			<div class="ss-section__label ss-section__label--pad">
-				<i class="ph ph-activity" aria-hidden="true"></i>
+				<Icon name={"data.activity" as IconName} aria-hidden="true" />
 				<h2 class="ss-section__heading">Webhook Status Log</h2>
 			</div>
 			<p class="ss-section__desc">

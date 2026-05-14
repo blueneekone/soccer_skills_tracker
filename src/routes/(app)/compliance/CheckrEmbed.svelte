@@ -2,6 +2,8 @@
 	import { browser } from '$app/environment';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const generateToken = httpsCallable(functions, 'generateCheckrEmbedToken');
 
@@ -73,7 +75,7 @@
 	{#if status === 'alpha'}
 		<div class="checkr-embed__alpha vanguard-card">
 			<div class="checkr-embed__alpha-icon" aria-hidden="true">
-				<i class="ph ph-shield-check"></i>
+				<Icon name="status.shield-check" size={48} />
 			</div>
 			<h2 class="checkr-embed__alpha-title">SECURE CONNECTION ESTABLISHING</h2>
 			<p class="checkr-embed__alpha-body">Pending Provider Verification</p>
@@ -90,7 +92,7 @@
 
 	{#if status === 'error'}
 		<div class="checkr-embed__error" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			<Icon name="status.warning-circle" />
 			<p>{errorMsg}</p>
 		</div>
 	{/if}

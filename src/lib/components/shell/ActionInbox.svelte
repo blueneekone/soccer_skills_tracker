@@ -1,7 +1,9 @@
-﻿<script>
+﻿<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { collection, doc, query, where, getDoc, getDocs, getCountFromServer } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -270,7 +272,7 @@
 								<span class="ai-meta">{row.meta}</span>
 							{/if}
 						</span>
-						<i class="ph ph-caret-right ai-caret" aria-hidden="true"></i>
+						<Icon name="nav.chevron-right" size={14} class="ai-caret" />
 					</a>
 				</li>
 			{/each}

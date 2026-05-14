@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -15,6 +17,8 @@
 	import Swal from 'sweetalert2';
 	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',
@@ -370,7 +374,7 @@
 		<div class="pw-hud__cell pw-hud__cell--streak">
 			<span class="pw-eyebrow">Uptime (day streak)</span>
 			<p class="pw-mono pw-hud__streak">
-				<i class="ph-fill ph-lightning pw-ico pw-ico--orange" aria-hidden="true"></i>
+				<Icon name="game.zap" class="pw-ico pw-ico--orange" />
 				<span>{selectedChildEmail ? `${streak}D` : '—'}</span>
 			</p>
 		</div>
@@ -523,7 +527,7 @@
 					{#if logSubmitting}
 						<span class="pw-mono">TRANSMITTING…</span>
 					{:else}
-						<i class="ph ph-lightning" aria-hidden="true"></i>
+						<Icon name="game.zap" />
 						<span>LOG FOR OPERATIVE · +{estimatedLogXp} XP</span>
 					{/if}
 				</button>
@@ -751,7 +755,7 @@
 		color: var(--threat);
 	}
 
-	.pw-ico--orange {
+	:global(.pw-ico--orange) {
 		color: var(--threat);
 		filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.8));
 	}

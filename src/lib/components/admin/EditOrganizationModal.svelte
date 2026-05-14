@@ -19,6 +19,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { portal } from '$lib/actions/portal.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -191,9 +193,9 @@
 		tabindex="-1"
 	>
 		<header class="eom-head">
-			<div class="eom-head__icon" aria-hidden="true">
-				<i class="ph ph-pencil-simple"></i>
-			</div>
+		<div class="eom-head__icon" aria-hidden="true">
+			<Icon name={"action.edit" as IconName} />
+		</div>
 			<div class="eom-head__body">
 				<h2 id="eom-title" class="eom-title">Edit Organization</h2>
 				<p class="eom-sub">
@@ -208,7 +210,7 @@
 				disabled={saving}
 				aria-label="Close Edit Organization dialog"
 			>
-				<i class="ph ph-x" aria-hidden="true"></i>
+				<Icon name={"sys.close" as IconName} aria-hidden="true" />
 			</button>
 		</header>
 
@@ -281,7 +283,7 @@
 					<label class="eom-label" for="eom-address">
 						Verified Address
 						<span class="eom-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-map-pin-line" aria-hidden="true"></i>
+							<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -301,7 +303,7 @@
 					<label class="eom-label" for="eom-facility">
 						Primary Facility
 						<span class="eom-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-buildings" aria-hidden="true"></i>
+							<Icon name={"org.building" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -339,7 +341,7 @@
 					Cancel
 				</button>
 				<button type="submit" class="eom-btn eom-btn--primary" disabled={saving}>
-					<i class="ph ph-floppy-disk" aria-hidden="true"></i>
+					<Icon name={"action.save" as IconName} aria-hidden="true" />
 					{saving ? 'Saving…' : 'Save Changes'}
 				</button>
 			</footer>

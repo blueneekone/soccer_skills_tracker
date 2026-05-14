@@ -4,6 +4,8 @@
   import { db, functions } from '$lib/firebase.js';
   import { httpsCallable } from 'firebase/functions';
   import { SvelteSet } from 'svelte/reactivity';
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
 
   type Props = { currentClubId: string };
   const { currentClubId } = $props<Props>();
@@ -181,11 +183,7 @@
   <!-- Empty state -->
   {:else if pendingNodes.length === 0}
     <div class="vp-empty" role="status">
-      <svg class="vp-empty__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2"/>
-        <polyline points="14,24 21,31 34,16" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <Icon name="status.verified" size={40} class="vp-empty__icon" />
       <p class="vp-empty__label">ALL HOUSEHOLD NODES VERIFIED</p>
       <p class="vp-empty__sub">No pending guardian consent locks.</p>
     </div>

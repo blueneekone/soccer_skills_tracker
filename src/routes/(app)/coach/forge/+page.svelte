@@ -1,7 +1,9 @@
-<script>
+<script lang="ts">
 	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @typedef {{ id: string, title: string, subtitle: string, xp: number, bountyTone: 'emerald' | 'gold' }} ArmoryDrill
@@ -215,7 +217,7 @@
 							class="tw-mt-auto tw-inline-flex tw-w-full tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-cyan-950/40 tw-py-2.5 tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-cyan-200 tw-transition hover:tw-border-cyan-400/60 hover:tw-bg-cyan-900/50 hover:tw-text-white focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400"
 							onclick={() => addToPayload(drill)}
 						>
-							<i class="ph ph-plus-circle tw-text-base" aria-hidden="true"></i>
+							<Icon name="status.circle-plus" class="tw-text-base" />
 							Add to payload
 						</button>
 					</article>
@@ -309,10 +311,10 @@
 					onclick={() => void deployMission()}
 				>
 					{#if isDeploying}
-						<i class="ph ph-spinner-gap tw-animate-spin tw-text-xl" aria-hidden="true"></i>
+						<Icon name="status.loading" class="tw-animate-spin tw-text-xl" />
 						<span>Uploading to satellite...</span>
 					{:else if deploySuccess}
-						<i class="ph ph-check-circle tw-text-xl" aria-hidden="true"></i>
+						<Icon name="status.verified" class="tw-text-xl" />
 						<span>Mission deployed!</span>
 					{:else}
 						<span>Deploy mission to squad</span>

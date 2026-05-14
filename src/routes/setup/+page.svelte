@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
@@ -210,7 +212,7 @@
 
 <div class="full-screen-center setup-theme">
 	<div class="auth-card">
-		<div class="logo-circle" aria-hidden="true"><i class="ph ph-soccer-ball"></i></div>
+		<div class="logo-circle" aria-hidden="true"><Icon name="sport.soccer" size={24} /></div>
 		<h2 class="auth-title">Complete Profile</h2>
 		<p class="auth-subtitle">Link your account to your organization.</p>
 

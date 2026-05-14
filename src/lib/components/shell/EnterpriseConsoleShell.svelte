@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
@@ -12,9 +12,12 @@
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
-	/** @type {{ breadcrumb?: string, children?: import('svelte').Snippet }} */
-	let { breadcrumb = '', children } = $props();
+	import type { Snippet } from 'svelte';
+
+	let { breadcrumb = '', children }: { breadcrumb?: string; children?: Snippet } = $props();
 
 	function closeDrawer() {
 		enterprisePlayerDrawer.close();
@@ -27,7 +30,7 @@
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
 
-	function navActive(item) {
+	function navActive(item: { tab?: string; label: string; icon: string; href: string }) {
 		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
 	}
 
@@ -129,7 +132,7 @@
 			aria-controls="ec-workspace-nav"
 			aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
 		>
-			<i class="ph ph-list ecs-icon-lg" aria-hidden="true"></i>
+			<Icon name="nav.menu" size={24} />
 		</button>
 	</header>
 
@@ -152,7 +155,7 @@
 			<div class="ec-sidebar__panel">
 				<div class="ec-sidebar__mobile-top">
 					<button type="button" class="ec-sidebar__close-btn" onclick={closeMobileNav}>
-						<i class="ph ph-x" aria-hidden="true"></i>
+						<Icon name="sys.close" size={20} />
 						Close
 					</button>
 				</div>
@@ -168,14 +171,14 @@
 							data-sveltekit-preload-data="hover"
 							onclick={closeMobileNav}
 						>
-							<i class="ph {item.icon}" aria-hidden="true"></i>
+							<Icon name={item.icon as IconName} size={18} />
 							<span class="ec-nav-link__label">{item.label}</span>
 						</a>
 					{/each}
 					{#if showBilling}
 						<p class="ec-nav-section">Billing</p>
 						<a class="ec-nav-link" href="/upgrade" onclick={closeMobileNav}>
-							<i class="ph ph-credit-card" aria-hidden="true"></i>
+							<Icon name="sys.credit-card" size={18} />
 							<span class="ec-nav-link__label">Plans & Billing</span>
 						</a>
 					{/if}
@@ -187,16 +190,16 @@
 						href="mailto:support@sstracker.app?subject=SSTRACKER%20support"
 						rel="noopener noreferrer"
 					>
-						<i class="ph ph-lifebuoy" aria-hidden="true"></i>
+						<Icon name="sys.lifebuoy" size={18} />
 						<span class="ec-nav-link__label">Support / Help Desk</span>
 					</a>
 					<!-- ── Anomaly Reporting Hook ─────────────────────────────── -->
 					<button type="button" class="ec-nav-link ec-nav-link--anomaly" onclick={openAnomaly}>
-						<i class="ph ph-warning" aria-hidden="true"></i>
+						<Icon name="status.warning" size={18} />
 						<span class="ec-nav-link__label">⚠ Report Anomaly</span>
 					</button>
 					<button type="button" class="ec-nav-link" onclick={() => void handleSignOut()}>
-						<i class="ph ph-sign-out" aria-hidden="true"></i>
+						<Icon name="nav.sign-out" size={18} />
 						<span class="ec-nav-link__label">Sign out</span>
 					</button>
 				</div>
@@ -213,7 +216,7 @@
 				aria-controls="ec-workspace-nav"
 				aria-label={workspaceContextStore.isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
 			>
-				<i class="ph ph-sidebar-simple" aria-hidden="true"></i>
+				<Icon name="nav.sidebar" size={20} />
 			</button>
 			<div class="ec-breadcrumb">
 				{#if breadcrumb}
@@ -231,7 +234,7 @@
 				aria-keyshortcuts="Meta+K Control+K"
 				aria-haspopup="dialog"
 			>
-				<i class="ph ph-magnifying-glass ec-cmd-trigger__icon" aria-hidden="true"></i>
+				<Icon name="action.search" size={14} class="ec-cmd-trigger__icon" />
 				<span class="ec-cmd-trigger__text">Search &amp; jump to…</span>
 				<kbd class="ec-cmd-trigger__kbd">⌘K</kbd>
 			</button>
@@ -242,7 +245,7 @@
 					onclick={() => goto('/settings')}
 					aria-label="Settings"
 				>
-					<i class="ph ph-gear" aria-hidden="true"></i>
+					<Icon name="sys.settings" size={18} />
 				</button>
 				<div class="ec-topbar-user ecs-user-label" title={authStore.user?.email ?? ''}>
 					<span class="ec-topbar-user-name">{authStore.userProfile?.playerName || authStore.user?.email || 'Account'}</span>
@@ -335,8 +338,6 @@
 {/if}
 
 <style>
-	.ecs-icon-lg   { font-size: 1.5rem; }
-	.ecs-icon-md   { font-size: 1.25rem; }
 	.ecs-user-label { color: var(--text-secondary); max-width: 140px; }
 	.ecs-empty-msg  { margin: 0; color: var(--text-secondary); }
 

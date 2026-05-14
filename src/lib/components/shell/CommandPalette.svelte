@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { db } from '$lib/firebase.js';
 	import { collection, getDocs } from 'firebase/firestore';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** @type {{ open: boolean }} */
 	let { open = $bindable(false) } = $props();
@@ -12,10 +14,10 @@
 
 	/** @type {CmdItem[]} */
 	const JUMP_ACTIONS = [
-		{ type: 'action', label: 'Go to Overview',       sub: '/admin/overview',       icon: 'ph-chart-line',   href: '/admin/overview' },
-		{ type: 'action', label: 'Go to Organizations',   sub: '/admin/organizations',  icon: 'ph-buildings',    href: '/admin/organizations' },
-		{ type: 'action', label: 'Go to Audit Log',       sub: '/admin/audit-log',      icon: 'ph-shield-check', href: '/admin/audit-log' },
-		{ type: 'action', label: 'Go to System Settings', sub: '/admin/system-settings',icon: 'ph-gear-six',     href: '/admin/system-settings' },
+		{ type: 'action', label: 'Go to Overview',       sub: '/admin/overview',       icon: 'data.chart-line',   href: '/admin/overview' },
+		{ type: 'action', label: 'Go to Organizations',   sub: '/admin/organizations',  icon: 'org.building',      href: '/admin/organizations' },
+		{ type: 'action', label: 'Go to Audit Log',       sub: '/admin/audit-log',      icon: 'status.shield-check', href: '/admin/audit-log' },
+		{ type: 'action', label: 'Go to System Settings', sub: '/admin/system-settings',icon: 'sys.settings-adv', href: '/admin/system-settings' },
 	];
 
 	// ── Query + search state ─────────────────────────────────────────────────────
@@ -98,13 +100,13 @@
 			const id = (cl.id || '').toLowerCase();
 			const dir = (cl.directorEmail || '').toLowerCase();
 			if (name.includes(q) || id.includes(q) || dir.includes(q)) {
-				matched.push({
-					type: 'org',
-					label: cl.name || cl.id,
-					sub: cl.id,
-					icon: 'ph-buildings',
-					href: `/admin/organizations/${cl.id}`,
-				});
+			matched.push({
+				type: 'org',
+				label: cl.name || cl.id,
+				sub: cl.id,
+				icon: 'org.building',
+				href: `/admin/organizations/${cl.id}`,
+			});
 				clubCount++;
 			}
 		}
@@ -116,13 +118,13 @@
 			const id = (u.id || '').toLowerCase();
 			const role = (u.role || '').toLowerCase();
 			if (id.includes(q) || role.includes(q)) {
-				matched.push({
-					type: 'user',
-					label: u.id,
-					sub: u.role || 'user',
-					icon: 'ph-user-circle',
-					href: `/admin/organizations`,
-				});
+			matched.push({
+				type: 'user',
+				label: u.id,
+				sub: u.role || 'user',
+				icon: 'user.avatar',
+				href: `/admin/organizations`,
+			});
 				userCount++;
 			}
 		}
@@ -207,7 +209,7 @@
 
 			<!-- ── Search input ─────────────────────────────────────────────── -->
 			<div class="cp-search">
-				<i class="ph ph-magnifying-glass cp-search__icon" aria-hidden="true"></i>
+				<Icon name="action.search" size={18} class="cp-search__icon" />
 				<input
 					bind:this={inputEl}
 					bind:value={query}
@@ -238,7 +240,7 @@
 			>
 				{#if results.length === 0}
 					<li class="cp-empty">
-						<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+						<Icon name="action.search" size={18} />
 						No results for "<strong>{query}</strong>"
 					</li>
 				{:else}
@@ -257,9 +259,9 @@
 							onmouseenter={() => (selectedIdx = idx)}
 							onclick={() => activateItem(item)}
 						>
-							<span class="cp-item__icon-wrap cp-item__icon-wrap--{item.type}">
-								<i class="ph {item.icon}" aria-hidden="true"></i>
-							</span>
+						<span class="cp-item__icon-wrap cp-item__icon-wrap--{item.type}">
+							<Icon name={item.icon as IconName} size={16} />
+						</span>
 							<span class="cp-item__body">
 								<span class="cp-item__label">{item.label}</span>
 								<span class="cp-item__sub">{item.sub}</span>
@@ -359,7 +361,6 @@
 
 	.cp-search__icon {
 		flex-shrink: 0;
-		font-size: 1.1rem;
 		color: #52525b;
 	}
 

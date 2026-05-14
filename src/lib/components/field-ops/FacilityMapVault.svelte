@@ -18,6 +18,8 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import TacticalBuilder from '$lib/components/field-ops/TacticalBuilder.svelte';
 	import FacilityDrawingMap from '$lib/components/field-ops/FacilityDrawingMap.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
@@ -1070,12 +1072,12 @@
 	{#if previewRow}
 		<div class="ec-drawer__head">
 			<h2 class="ec-drawer__title">{previewRow.name}</h2>
-			<button type="button" class="ec-drawer__close" onclick={closePreview} aria-label="Close">
-				<i class="ph ph-x" style="font-size: 1.25rem;"></i>
-			</button>
-		</div>
-		<div class="ec-drawer__body fm-preview-body">
-			<!-- Location and logistics: always rendered for a selected facility (map handles missing API key). -->
+		<button type="button" class="ec-drawer__close" onclick={closePreview} aria-label="Close">
+			<Icon name={"sys.close" as IconName} size={20} />
+		</button>
+	</div>
+	<div class="ec-drawer__body fm-preview-body">
+		<!-- Location and logistics: always rendered for a selected facility (map handles missing API key). -->
 			<section class="fm-logistics-bento" aria-labelledby="fm-location-h">
 				<h3 id="fm-location-h" class="fm-logistics__title">Location & routing matrix</h3>
 				{#if previewRow.lockReason || previewRow.status === 'LOCKED'}
@@ -1234,12 +1236,12 @@
 	{:else if previewOpen}
 		<div class="ec-drawer__head">
 			<h2 class="ec-drawer__title">Facility</h2>
-			<button type="button" class="ec-drawer__close" onclick={closePreview} aria-label="Close">
-				<i class="ph ph-x" style="font-size: 1.25rem;"></i>
-			</button>
-		</div>
-		<div class="ec-drawer__body fm-preview-body">
-			<p class="fm-panel__empty">This facility is no longer available. Close and select another map.</p>
+		<button type="button" class="ec-drawer__close" onclick={closePreview} aria-label="Close">
+			<Icon name={"sys.close" as IconName} size={20} />
+		</button>
+	</div>
+	<div class="ec-drawer__body fm-preview-body">
+		<p class="fm-panel__empty">This facility is no longer available. Close and select another map.</p>
 		</div>
 	{/if}
 </aside>

@@ -16,6 +16,8 @@
 	import { getContext } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @type {{
@@ -204,19 +206,19 @@
 
 	<!-- ── Extended breadcrumb (Organizations > Club > Teams > Team > Roster) ──── -->
 	<nav class="roster-breadcrumb" aria-label="Breadcrumb">
-		<a class="roster-bc__link" href="/admin/organizations/{ctx.clubId}/teams">
-			<i class="ph ph-users-three" aria-hidden="true"></i>
-			Teams
-		</a>
-		<i class="ph ph-caret-right roster-bc__sep" aria-hidden="true"></i>
-		{#if teamLoading}
-			<span class="roster-bc__current roster-bc__current--loading">Loading…</span>
-		{:else if teamErr && !teamDoc}
-			<span class="roster-bc__current roster-bc__current--err">{teamId}</span>
-		{:else}
-			<span class="roster-bc__current">{teamName}</span>
-		{/if}
-		<i class="ph ph-caret-right roster-bc__sep" aria-hidden="true"></i>
+	<a class="roster-bc__link" href="/admin/organizations/{ctx.clubId}/teams">
+		<Icon name={"user.group" as IconName} aria-hidden="true" />
+		Teams
+	</a>
+	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" aria-hidden="true" />
+	{#if teamLoading}
+		<span class="roster-bc__current roster-bc__current--loading">Loading…</span>
+	{:else if teamErr && !teamDoc}
+		<span class="roster-bc__current roster-bc__current--err">{teamId}</span>
+	{:else}
+		<span class="roster-bc__current">{teamName}</span>
+	{/if}
+	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" aria-hidden="true" />
 		<span class="roster-bc__leaf">Roster</span>
 	</nav>
 
@@ -224,7 +226,7 @@
 	<div class="roster-toolbar">
 		<div class="roster-toolbar__left">
 			<h2 class="roster-toolbar__title">
-				<i class="ph ph-users" aria-hidden="true"></i>
+				<Icon name={"user.group" as IconName} aria-hidden="true" />
 				Roster
 			</h2>
 			{#if !rosterLoading}
@@ -234,7 +236,7 @@
 			{/if}
 		</div>
 		<div class="roster-search-wrap">
-			<i class="ph ph-magnifying-glass roster-search-icon" aria-hidden="true"></i>
+			<Icon name={"action.search" as IconName} class="roster-search-icon" aria-hidden="true" />
 			<input
 				type="search"
 				class="roster-search"
@@ -247,9 +249,9 @@
 	</div>
 
 	{#if rosterErr}
-		<p class="roster-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
-			{rosterErr}
+	<p class="roster-err" role="alert">
+		<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
+		{rosterErr}
 		</p>
 	{/if}
 

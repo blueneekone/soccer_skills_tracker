@@ -26,6 +26,7 @@
 	import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	// ── State ──────────────────────────────────────────────────────────────────
 	let open = $state(false);
@@ -127,10 +128,7 @@
 			<!-- Success state -->
 			<div class="ra-success">
 				<div class="ra-success__icon" aria-hidden="true">
-					<svg viewBox="0 0 40 40" fill="none">
-						<circle cx="20" cy="20" r="17" stroke="#00ff88" stroke-width="1.2" fill="rgba(0,255,136,0.05)" />
-						<path d="M12 20l5.5 5.5 10.5-10.5" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-					</svg>
+					<Icon name="status.verified" size={44} class="tw-text-[#00ff88]" />
 				</div>
 				<p class="ra-success__msg">Anomaly logged. Thank you, Operative.</p>
 				<button class="ra-submit" onclick={close}>CLOSE</button>

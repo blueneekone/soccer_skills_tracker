@@ -3,6 +3,8 @@
 	import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
 	import { getAvailableItems, processDeploymentRequest } from '$lib/gamification/armory.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
@@ -25,6 +27,8 @@
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 	import MemoryCapsuleHUD from '$lib/components/player/trajectory/MemoryCapsuleHUD.svelte';
 	import { onDestroy } from 'svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const trajectoryEngine = new TrajectoryEngine();
 
@@ -431,7 +435,7 @@
 			{#each lineItems as item (item.id)}
 				<article class="qa-card">
 					<div class="qa-card__icon" aria-hidden="true">
-						<i class="ph {item.icon}"></i>
+						<Icon name={item.icon as IconName} />
 					</div>
 					<span
 						class="qa-pill"
@@ -676,7 +680,7 @@
 						<div
 							class="tw-flex tw-min-h-[10rem] tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-xl tw-border tw-border-dashed tw-border-white/15 tw-bg-slate-950/50 tw-text-center tw-p-6"
 						>
-							<i class="ph ph-user-circle tw-text-4xl tw-text-slate-500" aria-hidden="true"></i>
+							<Icon name="user.avatar" class="tw-text-4xl tw-text-slate-500" />
 							<p class="tw-m-0 tw-text-sm tw-font-bold tw-tracking-wide tw-text-slate-400">
 								Sign in to bind your operative dossier card.
 							</p>
@@ -789,7 +793,7 @@
 								class="album-slot-empty tw-flex tw-aspect-[280/380] tw-min-h-[8.5rem] tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-xl tw-border-2 tw-border-dashed tw-border-slate-600/70 tw-bg-slate-950/80 tw-text-center tw-p-2"
 								aria-label={`Locked slot · ${card.name} · ${formatVariantLabel(card.variant)}`}
 							>
-								<i class="ph ph-lock-key tw-text-2xl tw-text-slate-600" aria-hidden="true"></i>
+								<Icon name="sys.lock" class="tw-text-2xl tw-text-slate-600" />
 								<p class="qa-mono tw-m-0 tw-text-[0.55rem] tw-font-bold tw-tracking-wider tw-text-slate-600">
 									LOCKED
 								</p>

@@ -6,6 +6,8 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @type {{
@@ -82,7 +84,7 @@
 	<div class="teams-page__toolbar">
 		<div class="teams-page__toolbar-left">
 			<h2 class="teams-page__title">
-				<i class="ph ph-users-three" aria-hidden="true"></i>
+				<Icon name={"user.group" as IconName} aria-hidden="true" />
 				Teams
 			</h2>
 			{#if !ctx.clubLoading && ctx.clubDoc}
@@ -97,7 +99,7 @@
 			onclick={() => (showAddForm = !showAddForm)}
 			aria-expanded={showAddForm}
 		>
-			<i class="ph {showAddForm ? 'ph-x' : 'ph-plus'}" aria-hidden="true"></i>
+			<Icon name={showAddForm ? ("sys.close" as IconName) : ("action.add" as IconName)} aria-hidden="true" />
 			{showAddForm ? 'Cancel' : 'Add Team'}
 		</button>
 	</div>
@@ -197,8 +199,8 @@
 									href="/admin/organizations/{ctx.clubId}/teams/{t.id}/roster"
 									aria-label="View roster for {t.name || t.id}"
 								>
-									<i class="ph ph-users" aria-hidden="true"></i>
-									View Roster
+								<Icon name={"user.group" as IconName} aria-hidden="true" />
+								View Roster
 								</a>
 							</td>
 						</tr>

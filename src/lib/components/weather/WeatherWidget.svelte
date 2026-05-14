@@ -16,6 +16,8 @@
 
 	import { weatherAegis } from '$lib/services/weather.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		lat?: number;
@@ -67,13 +69,13 @@
 >
 	<header class="ww-header">
 		<div class="ww-header__left">
-			{#if level === 'DANGER'}
-				<i class="ph ph-lightning tw-text-base" style="color:#ff0033;" aria-hidden="true"></i>
-			{:else if level === 'CAUTION'}
-				<i class="ph ph-warning tw-text-base" style="color:rgba(245,158,11,0.9);" aria-hidden="true"></i>
-			{:else}
-				<i class="ph ph-cloud-sun tw-text-base tw-text-[#00f0ff]" aria-hidden="true"></i>
-			{/if}
+		{#if level === 'DANGER'}
+			<Icon name={"game.zap" as IconName} size={16} style="color:#ff0033;" aria-hidden="true" />
+		{:else if level === 'CAUTION'}
+			<Icon name={"status.warning" as IconName} size={16} style="color:rgba(245,158,11,0.9);" aria-hidden="true" />
+		{:else}
+			<Icon name={"env.weather" as IconName} size={16} class="tw-text-[#00f0ff]" aria-hidden="true" />
+		{/if}
 			<h2 class="ww-title">
 				Weather Monitoring ·
 				<span class="ww-live">{loading ? 'UPDATING…' : 'LIVE'}</span>
@@ -103,15 +105,15 @@
 				aria-label="Refresh weather"
 				title="Refresh weather data"
 			>
-				<i class="ph ph-arrows-clockwise" class:ww-spin={loading} aria-hidden="true"></i>
+				<Icon name={"nav.refresh" as IconName} class={loading ? 'ww-spin' : ''} aria-hidden="true" />
 			</button>
 		</div>
 	</header>
 
 	{#if err}
-		<p class="ww-error">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
-			{err}
+	<p class="ww-error">
+		<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
+		{err}
 			<button class="ww-error__retry" onclick={() => weatherAegis.refresh()}>RETRY</button>
 		</p>
 	{/if}

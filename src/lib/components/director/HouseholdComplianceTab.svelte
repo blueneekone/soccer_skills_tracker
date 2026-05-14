@@ -1,4 +1,6 @@
 <script>
+	import Icon from '$lib/components/ui/Icon.svelte';
+
 	/** @type {{ clubId?: string }} */
 	let { clubId: _clubId = '' } = $props();
 </script>
@@ -6,10 +8,7 @@
 <div class="hct-root">
 	<div class="hct-banner">
 		<div class="hct-banner__icon" aria-hidden="true">
-			<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M18 3L33 10.5V18C33 25.455 26.505 32.085 18 34.5C9.495 32.085 3 25.455 3 18V10.5L18 3Z" stroke="#00f0ff" stroke-width="1.5" stroke-linejoin="round" fill="rgba(0,240,255,0.06)"/>
-				<path d="M13 18L16.5 21.5L23 14" stroke="#00f0ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
+			<Icon name="status.shield-check" size={36} class="tw-text-[#00f0ff]" />
 		</div>
 
 		<div class="hct-banner__body">

@@ -1,7 +1,9 @@
-<script>
+<script lang="ts">
 	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const profile = $derived(authStore.userProfile);
 
@@ -36,7 +38,7 @@
 		<div class="gw-hud__cell">
 			<span class="gw-hud__label">Day streak</span>
 			<span class="gw-hud__value gw-hud__value--streak">
-				<i class="ph ph-fire" aria-hidden="true"></i>
+				<Icon name="game.flame" />
 				{streakDays}d
 			</span>
 		</div>
@@ -111,8 +113,9 @@
 		color: #fb923c;
 	}
 
-	.gw-hud__value--streak i {
-		font-size: 1.15rem;
+	.gw-hud__value--streak :global(svg) {
+		width: 1.15rem;
+		height: 1.15rem;
 	}
 
 	.pt-lb {

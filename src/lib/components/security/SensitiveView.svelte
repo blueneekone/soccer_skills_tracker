@@ -36,6 +36,7 @@
 
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	// ── Props ──────────────────────────────────────────────────────────────────
 	interface Props {
@@ -186,13 +187,7 @@
 				<!-- Lock overlay -->
 				<div class="sv-lock-overlay">
 					<div class="sv-lock-icon">
-						<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-							<rect x="5" y="11" width="14" height="10" rx="2"
-								stroke="currentColor" stroke-width="1.5" />
-							<path d="M8 11V7a4 4 0 018 0v4"
-								stroke="currentColor" stroke-width="1.5"
-								stroke-linecap="round" />
-						</svg>
+						<Icon name="sys.lock" size={18} />
 					</div>
 				</div>
 			</div>
@@ -224,12 +219,7 @@
 						<span class="sv-reveal-btn__spinner" aria-hidden="true"></span>
 						AUTHENTICATING...
 					{:else}
-						<svg viewBox="0 0 24 24" fill="none" class="sv-reveal-btn__icon" aria-hidden="true">
-							<path d="M12 5C6.5 5 2 12 2 12s4.5 7 10 7 10-7 10-7S17.5 5 12 5z"
-								stroke="currentColor" stroke-width="1.5" />
-							<circle cx="12" cy="12" r="3"
-								stroke="currentColor" stroke-width="1.5" />
-						</svg>
+					<Icon name="sys.eye" size={15} class="sv-reveal-btn__icon" />
 						REVEAL DOCUMENT
 					{/if}
 				</button>
@@ -253,13 +243,7 @@
 						EXPIRES {timerLabel}
 					</span>
 					<button class="sv-relock-btn" onclick={handleRelock} aria-label="Relock document">
-						<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-							<rect x="5" y="11" width="14" height="10" rx="2"
-								stroke="currentColor" stroke-width="1.5" />
-							<path d="M8 11V7a4 4 0 018 0v4"
-								stroke="currentColor" stroke-width="1.5"
-								stroke-linecap="round" />
-						</svg>
+						<Icon name="sys.lock" size={11} />
 						RELOCK
 					</button>
 				</div>
@@ -303,13 +287,7 @@
 							class="sv-view-btn"
 							aria-label="View {label} in new tab"
 						>
-							<svg viewBox="0 0 24 24" fill="none" class="sv-view-btn__icon" aria-hidden="true">
-								<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
-									stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-								<path d="M15 3h6v6M10 14L21 3"
-									stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-									stroke-linejoin="round" />
-							</svg>
+						<Icon name="nav.external" size={13} class="sv-view-btn__icon" />
 							VIEW DOCUMENT
 						</a>
 					</div>

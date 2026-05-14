@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
@@ -13,6 +13,8 @@
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import { getLevelProgressFromTotalXp, getCurrentRank } from '$lib/gamification/level.js';
 	import '$lib/styles/player-shell.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let disconnectBusy = $state(false);
 	let isInboxOpen = $state(false);
@@ -91,12 +93,12 @@
 	});
 
 	/** Bottom / rail nav — HQ first, then core athlete loops. */
-	const NAV_LINKS = [
-		{ href: '/player/dashboard', icon: 'ph-squares-four', label: 'HQ' },
-		{ href: '/stats', icon: 'ph-chart-bar', label: 'Stats' },
-		{ href: '/player/workout', icon: 'ph-list-checks', label: 'Train' },
-		{ href: '/player/armory', icon: 'ph-shield-check', label: 'Armory' },
-		{ href: '/settings', icon: 'ph-gear', label: 'Settings' },
+	const NAV_LINKS: Array<{ href: string; icon: IconName; label: string }> = [
+		{ href: '/player/dashboard', icon: 'content.grid', label: 'HQ' },
+		{ href: '/stats', icon: 'data.chart-bar', label: 'Stats' },
+		{ href: '/player/workout', icon: 'content.checks', label: 'Train' },
+		{ href: '/player/armory', icon: 'status.shield-check', label: 'Armory' },
+		{ href: '/settings', icon: 'sys.settings', label: 'Settings' },
 	];
 
 	/**
@@ -146,7 +148,7 @@
 				data-sveltekit-preload-data="hover"
 				onclick={(e) => { isInboxOpen = false; onNavClick(link.href, e); }}
 			>
-				<i class="ph {link.icon} ps-bottom-nav__icon" aria-hidden="true"></i>
+				<span class="ps-bottom-nav__icon" aria-hidden="true"><Icon name={link.icon} /></span>
 				<span class="ps-bottom-nav__label">{link.label}</span>
 			</a>
 		{/each}
@@ -163,8 +165,8 @@
 		<header class="ps-topbar">
 			<div class="ps-topbar__brand">
 				<span class="ps-topbar__mark" aria-hidden="true">
-					<i class="ph ph-polygon"></i>
-				</span>
+				<Icon name="sys.hexagon" size={20} />
+			</span>
 				<div class="ps-topbar__hello">
 					<span class="ps-topbar__greet">Player OS</span>
 					<span class="ps-topbar__name">{firstName}</span>
@@ -194,7 +196,7 @@
 						aria-label="Alerts — notifications and assignments"
 						onclick={() => (isInboxOpen = !isInboxOpen)}
 					>
-						<i class="ph ph-bell tw-text-lg" aria-hidden="true"></i>
+						<Icon name="comm.bell" size={18} />
 						{#if pendingAssignmentCount > 0}
 							<span
 								class="tw-pointer-events-none tw-absolute tw-right-1.5 tw-top-1.5 tw-h-2 tw-w-2 tw-rounded-full tw-bg-red-500 tw-ring-2 tw-ring-black/80"

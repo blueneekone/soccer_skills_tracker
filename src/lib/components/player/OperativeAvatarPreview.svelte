@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { renderOperativeAvatarSvg, parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * Parsed `users.operativeAvatar` (`{ v, seed }`) or `null` if unset / invalid.
@@ -53,26 +54,17 @@
 			role="img"
 			aria-label="Avatar locked — parental consent required"
 		>
-			<div
-				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-full"
-				style="background: radial-gradient(ellipse at 50% 38%, rgba(255,0,60,0.18) 0%, transparent 70%);"
-				aria-hidden="true"
-			></div>
-			<svg
+		<div
+			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-full"
+			style="background: radial-gradient(ellipse at 50% 38%, rgba(255,0,60,0.18) 0%, transparent 70%);"
+			aria-hidden="true"
+		></div>
+			<Icon
+				name="sys.lock-simple"
+				size={Math.round(size * 0.38)}
+				strokeWidth={1.75}
 				class="tw-relative tw-z-[1] tw-block tw-text-red-400/80"
-				width={Math.round(size * 0.38)}
-				height={Math.round(size * 0.42)}
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.75"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				aria-hidden="true"
-			>
-				<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-				<path d="M7 11V7a5 5 0 0 1 10 0v4" />
-			</svg>
+			/>
 			<span
 				class="tw-relative tw-z-[1] tw-mt-2 tw-text-center tw-font-mono tw-font-black tw-uppercase tw-tracking-wider tw-text-red-400/90"
 				style="font-size: {Math.max(7, Math.round(size * 0.065))}px; line-height: 1.2;"
@@ -91,21 +83,12 @@
 		>
 			<div class="oap-ghost-glow tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-full" aria-hidden="true"></div>
 			<!-- Generic human silhouette (Lucide User–style), centered -->
-			<svg
+			<Icon
+				name="user.profile"
+				size={Math.round(size * 0.42)}
+				strokeWidth={1.75}
 				class="oap-silhouette tw-relative tw-z-[1] tw-block tw-text-cyan-200/90"
-				width={Math.round(size * 0.42)}
-				height={Math.round(size * 0.48)}
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.75"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				aria-hidden="true"
-			>
-				<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-				<circle cx="12" cy="7" r="4" />
-			</svg>
+			/>
 			{#if showInitializeCta}
 				<a
 					href={resolve('/player/armory')}

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -14,6 +14,8 @@
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
@@ -104,18 +106,18 @@
 	<!-- Mobile-only horizontal tab strip -->
 	<div class="dir-mobile-tabs">
 		{#each [
-			{ label: 'Home',     icon: 'ph-house',        tab: 'home' },
-			{ label: 'Roster',   icon: 'ph-users-three',  tab: 'teams' },
-			{ label: 'Field',    icon: 'ph-map-pin',       tab: 'field' },
-			{ label: 'Comply',   icon: 'ph-shield-check', tab: 'compliance' },
-			{ label: 'Families', icon: 'ph-house-line',   tab: 'household' },
+			{ label: 'Home',     icon: 'nav.home' as IconName,            tab: 'home' },
+			{ label: 'Roster',   icon: 'user.group' as IconName,          tab: 'teams' },
+			{ label: 'Field',    icon: 'sys.map-pin' as IconName,         tab: 'field' },
+			{ label: 'Comply',   icon: 'status.shield-check' as IconName, tab: 'compliance' },
+			{ label: 'Families', icon: 'nav.home' as IconName,            tab: 'household' },
 		] as item (item.tab)}
 			<a
 				href="/director?tab={item.tab}"
 				class="dir-mobile-tabs__pill"
 				class:dir-mobile-tabs__pill--active={activeTab === item.tab}
 			>
-				<i class="{item.icon} dir-mobile-tabs__icon"></i>
+				<Icon name={item.icon} size={18} class="dir-mobile-tabs__icon" />
 				{item.label}
 			</a>
 		{/each}
@@ -236,9 +238,10 @@
 		color: #00f0ff;
 	}
 
-	.dir-mobile-tabs__icon {
-		font-size: 14px;
-		line-height: 1;
+	.dir-mobile-tabs__pill :global(svg) {
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
 	}
 
 	/* ── Responsive ───────────────────────────────────────────────────────── */

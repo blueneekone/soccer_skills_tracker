@@ -28,6 +28,8 @@
 
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import {
 		collection,
 		query,
@@ -386,9 +388,7 @@
 	<header class="rp-header">
 		<div class="rp-header__brand">
 			<span class="rp-header__icon" aria-hidden="true">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-					<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-				</svg>
+				<Icon name="action.search" size={18} strokeWidth={2.2} />
 			</span>
 			<span class="rp-header__title">NEXUS TALENT INTEL</span>
 			<span class="rp-header__badge">RESTRICTED ACCESS</span>
@@ -423,9 +423,7 @@
 	{#if activeTab === 'feed'}
 		<div class="rp-filters">
 			<div class="rp-filter-group rp-filter-group--search">
-				<svg class="rp-filter-group__icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-					<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-				</svg>
+				<Icon name="action.search" size={13} strokeWidth={2.2} class="rp-filter-group__icon" />
 				<input
 					class="rp-input"
 					type="search"
@@ -604,9 +602,7 @@
 		{:else if activeTab === 'watchlist'}
 			{#if watchlist.length === 0}
 				<div class="rp-empty rp-empty--center">
-					<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.2" aria-hidden="true">
-						<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
-					</svg>
+					<Icon name="game.star" size={40} class="tw-opacity-20" />
 					<span>YOUR WATCHLIST IS EMPTY</span>
 					<span class="rp-empty__sub">Click the ★ on any player to track milestones.</span>
 				</div>

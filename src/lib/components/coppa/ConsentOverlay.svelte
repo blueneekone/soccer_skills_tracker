@@ -25,6 +25,8 @@
 	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { SendConsentEmailInput } from '$lib/types/coppa.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	// ── State ──────────────────────────────────────────────────────────────────
 	type Phase = 'idle' | 'sending' | 'sent' | 'error' | 'already_granted';
@@ -189,14 +191,9 @@
 		<!-- ── PHASE: sent ────────────────────────────────────────────────── -->
 		{#if phase === 'sent'}
 			<div class="co-sent-state">
-				<div class="co-sent-icon" aria-hidden="true">
-					<svg viewBox="0 0 48 48" fill="none">
-						<circle cx="24" cy="24" r="20" stroke="#00ff88" stroke-width="1.5"
-							fill="rgba(0,255,136,0.06)" />
-						<path d="M14 24l7 7 13-13" stroke="#00ff88" stroke-width="2"
-							stroke-linecap="round" stroke-linejoin="round" />
-					</svg>
-				</div>
+			<div class="co-sent-icon" aria-hidden="true" style="color: #00ff88;">
+				<Icon name="status.verified" size={52} strokeWidth={1.5} />
+			</div>
 				<h2 class="co-sent-title">TRANSMISSION COMPLETE</h2>
 				<p class="co-sent-body">
 					A consent request has been sent to

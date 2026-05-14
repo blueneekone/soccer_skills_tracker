@@ -12,6 +12,8 @@
 	} from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** Strike 16 — Tabbed command center (SOAR/SIEM-style statistical surfaces) */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
@@ -650,12 +652,12 @@
 		return 'info';
 	}
 
-	function actionIcon(action) {
+	function actionIcon(action: string): IconName {
 		const t = actionTone(action);
-		if (t === 'danger') return 'ph-warning-octagon';
-		if (t === 'success') return 'ph-check-circle';
-		if (t === 'warn') return 'ph-shield-chevron';
-		return 'ph-activity';
+		if (t === 'danger') return 'status.warning-circle' as IconName;
+		if (t === 'success') return 'status.verified' as IconName;
+		if (t === 'warn') return 'status.warning' as IconName;
+		return 'status.info' as IconName;
 	}
 
 	function prettyAction(action) {
@@ -781,9 +783,9 @@
 
 				<article class="cc-chart-card cc-chart-card--soc">
 					<header class="cc-chart-card__head">
-						<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
-							<i class="ph ph-chart-line-up"></i>
-						</div>
+					<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
+						<Icon name={"data.trending" as IconName} />
+					</div>
 						<div>
 							<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
 							<p class="cc-chart-card__sub">Trailing six months · enterprise growth signal</p>
@@ -816,9 +818,9 @@
 				<div class="cc-chart-row tw-min-w-0">
 					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
 						<header class="cc-chart-card__head">
-							<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
-								<i class="ph ph-chart-pie-slice"></i>
-							</div>
+						<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
+							<Icon name={"data.chart-pie" as IconName} />
+						</div>
 							<div>
 								<h2 class="cc-chart-card__title">Revenue by tier</h2>
 								<p class="cc-chart-card__sub">MRR composition</p>
@@ -843,7 +845,7 @@
 					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
 						<header class="cc-chart-card__head">
 							<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
-								<i class="ph ph-soccer-ball"></i>
+							<Icon name={"sport.soccer" as IconName} />
 							</div>
 							<div>
 								<h2 class="cc-chart-card__title">Players by sport</h2>
@@ -917,23 +919,23 @@
 					{#if feedErr}
 						<p class="cc-err cc-err--inline" role="alert">{feedErr}</p>
 					{/if}
-					{#if feedLoading && liveFeed.length === 0}
-						<div class="cc-feed-empty">
-							<i class="ph ph-spinner cc-spin" aria-hidden="true"></i>
-							Loading audit stream…
-						</div>
-					{:else if liveFeed.length === 0}
-						<div class="cc-feed-empty">
-							<i class="ph ph-moon-stars" aria-hidden="true"></i>
-							No audit events yet.
-						</div>
+				{#if feedLoading && liveFeed.length === 0}
+					<div class="cc-feed-empty">
+						<Icon name={"status.loading" as IconName} class="cc-spin" aria-hidden="true" />
+						Loading audit stream…
+					</div>
+				{:else if liveFeed.length === 0}
+					<div class="cc-feed-empty">
+						<Icon name={"env.moon" as IconName} aria-hidden="true" />
+						No audit events yet.
+					</div>
 					{:else}
 						<ol class="cc-feed-list">
 							{#each liveFeed as ev (ev.id)}
 								<li class="cc-feed-item cc-feed-item--{actionTone(ev.action)}">
-									<span class="cc-feed-item__icon" aria-hidden="true">
-										<i class="ph {actionIcon(ev.action)}"></i>
-									</span>
+								<span class="cc-feed-item__icon" aria-hidden="true">
+									<Icon name={actionIcon(ev.action)} />
+								</span>
 									<div class="cc-feed-item__body">
 										<div class="cc-feed-item__row">
 											<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
@@ -962,8 +964,8 @@
 
 				<div class="cc-platform-note">
 					<p>
-						<i class="ph ph-info" aria-hidden="true"></i>
-						KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
+					<Icon name={"status.info" as IconName} aria-hidden="true" />
+					KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
 						<code class="cc-code">analytics/platform_totals</code> when available.
 					</p>
 				</div>

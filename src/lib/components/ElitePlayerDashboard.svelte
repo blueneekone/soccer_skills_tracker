@@ -15,6 +15,7 @@
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const SESSION_KEY = 'elite_xp_pulse';
 
@@ -244,13 +245,7 @@
 		<div class="epd__badge-grid">
 			<div class="epd__badge">
 				<div class="epd__badge-icon" aria-hidden="true">
-					<svg viewBox="0 0 48 48" width="40" height="40" class="epd__svg">
-						<circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2" opacity="0.25" />
-						<path
-							fill="currentColor"
-							d="M24 8l2.2 6.8H33l-5.5 4 2.1 6.7L24 21.4l-5.6 4.1 2.1-6.7-5.5-4h6.8z"
-						/>
-					</svg>
+					<Icon name="game.star" size={40} />
 				</div>
 				<span class="epd__badge-label">Level {levelInfo.level}</span>
 				<span class="epd__badge-meta">Tier milestone</span>
@@ -258,12 +253,7 @@
 
 			<div class="epd__badge">
 				<div class="epd__badge-icon epd__badge-icon--amber" aria-hidden="true">
-					<svg viewBox="0 0 48 48" width="40" height="40" class="epd__svg">
-						<path
-							fill="currentColor"
-							d="M10 34c0-6 6.5-11 14-11s14 5 14 11H10zm14-15a7.5 7.5 0 10-0.01 0.01z"
-						/>
-					</svg>
+					<Icon name="user.profile" size={40} />
 				</div>
 				<span class="epd__badge-label">
 					{loading ? '…' : streakDays > 0 ? `${streakDays}-day streak` : 'Start a streak'}
@@ -273,12 +263,7 @@
 
 			<div class="epd__badge">
 				<div class="epd__badge-icon epd__badge-icon--violet" aria-hidden="true">
-					<svg viewBox="0 0 48 48" width="40" height="40" class="epd__svg">
-						<path
-							fill="currentColor"
-							d="M14 12h20v4H14v-4zm-2 8h24v18H12V20zm8 22v4h8v-4h-8z"
-						/>
-					</svg>
+					<Icon name="data.chart-bar" size={40} />
 				</div>
 				<span class="epd__badge-label">
 					{loading ? '…' : `${xpWeek.toLocaleString()} XP`}
@@ -288,12 +273,7 @@
 
 			<div class="epd__badge">
 				<div class="epd__badge-icon epd__badge-icon--gold" aria-hidden="true">
-					<svg viewBox="0 0 48 48" width="40" height="40" class="epd__svg">
-						<path
-							fill="currentColor"
-							d="M10 36V20h6l4-8h8l4 8h6v16H10zm14-20c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4z"
-						/>
-					</svg>
+					<Icon name="game.trophy" size={40} />
 				</div>
 				<span class="epd__badge-label">{totalXpLive.toLocaleString()} XP</span>
 				<span class="epd__badge-meta">Career total</span>
@@ -663,10 +643,6 @@
 		color: #92400e;
 		background: linear-gradient(145deg, #fef9c3, #fde68a);
 		border-color: rgba(245, 158, 11, 0.5);
-	}
-
-	.epd__svg {
-		display: block;
 	}
 
 	.epd__badge-label {

@@ -3,6 +3,8 @@
 	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** Optional team id for director / global_admin. */
 	let { teamIdForStaff = '', compact = false } = $props();
@@ -166,9 +168,9 @@
 										<span>Lv {row.currentLevel}</span>
 										<span class="lb-card-meta-sep" aria-hidden="true">·</span>
 										{#if row.streak > 0}
-											<span class="lb-card-meta-streak" title="Consecutive active weeks">
-												<i class="ph ph-fire" aria-hidden="true"></i>
-												{row.streak} streak
+									<span class="lb-card-meta-streak" title="Consecutive active weeks">
+											<Icon name={"game.flame" as IconName} aria-hidden="true" />
+											{row.streak} streak
 											</span>
 										{:else}
 											<span class="lb-card-meta-muted">No streak</span>
@@ -183,9 +185,9 @@
 								<span class="lb-xp-suffix">XP</span>
 							</span>
 							{#if compact && row.streak > 0}
-								<span class="lb-card-streak-compact" title="Streak">
-									<i class="ph ph-fire" aria-hidden="true"></i>
-									{row.streak}
+							<span class="lb-card-streak-compact" title="Streak">
+								<Icon name={"game.flame" as IconName} aria-hidden="true" />
+								{row.streak}
 								</span>
 							{/if}
 						</div>
@@ -361,8 +363,9 @@
 		color: rgb(251 146 60);
 	}
 
-	.lb-card-meta-streak .ph {
-		font-size: 0.85em;
+	.lb-card-meta-streak :global(svg) {
+		width: 0.85em;
+		height: 0.85em;
 	}
 
 	.lb-card-meta-muted {
@@ -410,8 +413,9 @@
 		color: rgb(251 146 60);
 	}
 
-	.lb-card-streak-compact .ph {
-		font-size: 0.9em;
+	.lb-card-streak-compact :global(svg) {
+		width: 0.9em;
+		height: 0.9em;
 	}
 
 	.lb-outer {

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
@@ -336,7 +338,7 @@
 		aria-live="polite"
 		aria-busy="true"
 	>
-		<i class="ph ph-spinner-gap tw-animate-spin tw-text-4xl tw-text-cyan-400/90" aria-hidden="true"></i>
+		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-cyan-400/90" />
 		<span class="tw-sr-only">Loading player dashboard</span>
 	</div>
 {:else if !activePlayer}
@@ -344,7 +346,7 @@
 		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
 		role="alert"
 	>
-		<i class="ph ph-warning-circle tw-text-4xl tw-text-amber-400" aria-hidden="true"></i>
+		<Icon name="status.warning-circle" class="tw-text-4xl tw-text-amber-400" />
 		<p class="tw-m-0 tw-text-base tw-font-semibold tw-text-slate-100">
 			Unable to load this operative profile. Try refreshing the page.
 		</p>
@@ -405,7 +407,7 @@
 				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(0, 240, 255,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
-				<i class="ph ph-lightning tw-mb-3 tw-text-3xl tw-text-cyan-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
+				<Icon name="game.zap" class="tw-mb-3 tw-text-3xl tw-text-cyan-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" />
 				<span
 			class="tw-line-clamp-2 tw-text-[clamp(1.25rem,2.5vw,2rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
 				>Today's quests</span
@@ -416,7 +418,7 @@
 				class="lobby-action-btn tw-group tw-relative tw-z-50 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-600/80 tw-bg-gradient-to-br tw-from-slate-800 tw-to-slate-900 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-shadow-[0_8px_30px_-8px_rgba(0,0,0,0.75)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-border-cyan-400/50 hover:tw-shadow-[0_10px_40px_-10px_rgba(0, 240, 255,0.5)] active:tw-scale-[0.99]"
 				data-sveltekit-preload-data="hover"
 			>
-				<i class="ph ph-chart-line-up tw-mb-3 tw-text-3xl tw-text-fuchsia-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" aria-hidden="true"></i>
+				<Icon name="data.trending" class="tw-mb-3 tw-text-3xl tw-text-fuchsia-400 tw-transition-transform tw-duration-300 tw-group-hover:tw-scale-110" />
 				<span
 			class="tw-line-clamp-2 tw-text-[clamp(1.25rem,2.5vw,2rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100"
 				>Career stats</span
@@ -609,7 +611,7 @@
 		<div class="tw-relative tw-z-50 tw-min-w-0">
 			{#if deploymentsLoading}
 				<p class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-font-mono tw-text-xs tw-text-slate-500">
-					<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i>
+					<Icon name="status.loading" class="tw-animate-spin" />
 					SYNCING CARTRIDGES…
 				</p>
 			{:else}
@@ -669,7 +671,7 @@
 										class="tw-pointer-events-auto tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.4)] active:tw-scale-95"
 										aria-label="Start session for {dep.title}"
 									>
-										<i class="ph ph-play tw-text-xs" aria-hidden="true"></i>
+										<Icon name="status.circle-play" class="tw-text-xs" />
 										START SESSION
 									</button>
 								</div>
@@ -849,7 +851,7 @@
 		color: rgb(167 243 208 / 0.95);
 	}
 
-	.lobby-missions :global(.pai__head .ph-lightning) {
+	.lobby-missions :global(.pai__head svg) {
 		color: rgb(52 211 153);
 		filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
 	}

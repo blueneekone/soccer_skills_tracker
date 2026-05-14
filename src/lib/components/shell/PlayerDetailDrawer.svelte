@@ -14,6 +14,8 @@
 		where,
 	} from 'firebase/firestore';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const row = $derived(enterprisePlayerDrawer.selected);
 	const act = $derived(enterprisePlayerDrawer.actions);
@@ -261,7 +263,7 @@
 				</div>
 			</div>
 			<button type="button" class="ec-pdrawer__close-x" onclick={closePanel} aria-label="Close">
-				<i class="ph ph-x pdrawer-close-icon" aria-hidden="true"></i>
+				<Icon name="sys.close" size={20} class="pdrawer-close-icon" />
 			</button>
 		</div>
 

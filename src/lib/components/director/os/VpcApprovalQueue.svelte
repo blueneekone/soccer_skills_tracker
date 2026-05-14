@@ -10,6 +10,8 @@
 		getDocs,
 	} from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** @type {{ clubId?: string }} */
 	let { clubId = '' } = $props();
@@ -133,15 +135,15 @@
 
 	{#if loading}
 		<p class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-font-mono tw-text-xs tw-tracking-wider tw-text-slate-500">
-			<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i>
-			SYNCING CONSENT MANIFEST…
+		<Icon name="status.loader" class="tw-animate-spin" />
+		SYNCING CONSENT MANIFEST…
 		</p>
 	{:else if loadError}
 		<p
 			class="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-[#ff003c]/40 tw-bg-[#ff003c]/10 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ff003c]"
 			role="alert"
 		>
-			<i class="ph ph-warning-circle" aria-hidden="true"></i> {loadError}
+			<Icon name="status.warning-circle" /> {loadError}
 		</p>
 	{:else if requests.length === 0}
 		<p class="tw-py-4 tw-font-mono tw-text-xs tw-leading-relaxed tw-text-slate-600">
@@ -155,7 +157,7 @@
 				>
 					<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
-							<i class="ph ph-user-circle tw-shrink-0 tw-text-base tw-text-[#00f0ff]/80" aria-hidden="true"></i>
+							<Icon name="user.avatar" class="tw-shrink-0 tw-text-[#00f0ff]/80" />
 							<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-100">{req.playerEmail}</span>
 						</div>
 						<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-3 tw-pl-6 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-500">
@@ -168,11 +170,11 @@
 					<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
 						{#if itemState[req.id] === 'done'}
 							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]">
-								<i class="ph ph-check-circle" aria-hidden="true"></i> Approved
+							<Icon name="status.verified" /> Approved
 							</span>
 						{:else if itemState[req.id] === 'error'}
 							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#ff003c]">
-								<i class="ph ph-warning" aria-hidden="true"></i> Retry
+							<Icon name="status.warning" /> Retry
 							</span>
 						{/if}
 						<button
@@ -183,9 +185,9 @@
 							aria-label="Approve VPC for {req.playerEmail}"
 						>
 							{#if itemState[req.id] === 'approving'}
-								<i class="ph ph-spinner-gap tw-animate-spin" aria-hidden="true"></i> Approving…
+								<Icon name="status.loader" class="tw-animate-spin" /> Approving…
 							{:else}
-								<i class="ph ph-seal-check" aria-hidden="true"></i> Approve VPC
+								<Icon name="status.seal-check" /> Approve VPC
 							{/if}
 						</button>
 					</div>

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { isShellNavActive } from '$lib/shell/workspaceNav.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface NavLink {
 		label: string;
@@ -33,7 +35,7 @@
 				class="tab-item tw-flex tw-flex-col tw-items-center tw-justify-center tw-flex-1 tw-gap-0.5 tw-no-underline tw-select-none"
 				class:tab-item--active={active}
 			>
-				<i class="ph {item.icon} tab-icon"></i>
+				<Icon name={item.icon as IconName} size={22} />
 				<span class="tab-label">{item.label}</span>
 			</a>
 		{/each}
@@ -70,15 +72,6 @@
 
 	.tab-item--active {
 		color: #00f0ff;
-	}
-
-	.tab-icon {
-		font-size: 22px;
-		line-height: 1;
-	}
-
-	.tab-item--active .tab-icon {
-		filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.6));
 	}
 
 	.tab-label {

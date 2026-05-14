@@ -20,6 +20,8 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { portal } from '$lib/actions/portal.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -208,9 +210,9 @@
 		tabindex="-1"
 	>
 		<header class="eam-head">
-			<div class="eam-head__icon" aria-hidden="true">
-				<i class="ph ph-user-gear"></i>
-			</div>
+		<div class="eam-head__icon" aria-hidden="true">
+			<Icon name={"user.settings" as IconName} />
+		</div>
 			<div class="eam-head__body">
 				<h2 id="eam-title" class="eam-title">Edit Admin</h2>
 				<p class="eam-sub">
@@ -225,7 +227,7 @@
 				disabled={saving}
 				aria-label="Close Edit Admin dialog"
 			>
-				<i class="ph ph-x" aria-hidden="true"></i>
+				<Icon name={"sys.close" as IconName} aria-hidden="true" />
 			</button>
 		</header>
 
@@ -293,7 +295,7 @@
 					<label class="eam-label" for="eam-address">
 						Verified Address
 						<span class="eam-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-map-pin-line" aria-hidden="true"></i>
+							<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -312,7 +314,7 @@
 					<label class="eam-label" for="eam-facility">
 						Primary Facility
 						<span class="eam-places-chip" title="Google Places Autocomplete active">
-							<i class="ph ph-buildings" aria-hidden="true"></i>
+							<Icon name={"org.building" as IconName} aria-hidden="true" />
 							Google Places Autocomplete active
 						</span>
 					</label>
@@ -348,7 +350,7 @@
 					Cancel
 				</button>
 				<button type="submit" class="eam-btn eam-btn--primary" disabled={saving}>
-					<i class="ph ph-floppy-disk" aria-hidden="true"></i>
+					<Icon name={"action.save" as IconName} aria-hidden="true" />
 					{saving ? 'Saving…' : 'Save Changes'}
 				</button>
 			</footer>

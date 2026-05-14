@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
@@ -197,7 +199,7 @@
 			{:else if workspaceContextStore.activeSportConfig}
 				<span class="ec-ws__sport-dot" style:background={sportAccent}></span>
 			{/if}
-			<i class="ph ph-caret-up-down ec-ws__caret"></i>
+			<Icon name="nav.sort" size={14} class="ec-ws__caret" />
 		</div>
 	</button>
 

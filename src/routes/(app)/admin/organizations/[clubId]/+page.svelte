@@ -8,6 +8,8 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const generateLicenseFn = httpsCallable(functions, 'generateLicense');
 
@@ -215,7 +217,7 @@
 		<div class="cd-loading">Loading organization…</div>
 	{:else if ctx.clubErr}
 		<div class="cd-err" role="alert">
-			<i class="ph ph-warning-circle" aria-hidden="true"></i>
+			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
 			{ctx.clubErr}
 			<a href="/admin/organizations" class="cd-err__back">← Back to Organizations</a>
 		</div>
@@ -232,7 +234,7 @@
 				/>
 			{:else}
 				<div class="cd-identity__logo-fallback" aria-hidden="true">
-					<i class="ph ph-buildings" aria-hidden="true"></i>
+					<Icon name={"org.building" as IconName} aria-hidden="true" />
 				</div>
 			{/if}
 			<div class="cd-identity__text">
@@ -267,13 +269,13 @@
 		<!-- ── Strike 2: Operations & Contact (Google-Places demographics) ────── -->
 		<div class="card">
 			<div class="card-header">
-				<i class="ph ph-map-pin-line" aria-hidden="true"></i> Operations &amp; Contact
+				<Icon name={"sys.map-pin" as IconName} aria-hidden="true" /> Operations &amp; Contact
 			</div>
 			<div class="card-body">
 				<div class="cd-ops">
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<i class="ph ph-map-pin" aria-hidden="true"></i>
+							<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
 							Verified Address
 						</span>
 						{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
@@ -286,7 +288,7 @@
 					</div>
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<i class="ph ph-phone" aria-hidden="true"></i>
+							<Icon name={"comm.phone" as IconName} aria-hidden="true" />
 							Phone Number
 						</span>
 						{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
@@ -299,7 +301,7 @@
 					</div>
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<i class="ph ph-soccer-ball" aria-hidden="true"></i>
+							<Icon name={"sport.soccer" as IconName} aria-hidden="true" />
 							Primary Facility
 						</span>
 						{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
@@ -315,12 +317,12 @@
 		<!-- ── Licensing & Entitlement ────────────────────────────────────────── -->
 		<div class="card border-gold">
 			<div class="card-header bg-gold-header">
-				<i class="ph ph-credit-card" aria-hidden="true"></i> Licensing & Entitlement
+				<Icon name={"sys.credit-card" as IconName} aria-hidden="true" /> Licensing & Entitlement
 			</div>
 			<div class="card-body">
 				{#if ctx.clubDoc.isInfinite === true}
-					<p class="cd-license__infinite">
-						<i class="ph ph-infinity" aria-hidden="true"></i>
+				<p class="cd-license__infinite">
+					<Icon name={"sys.infinity" as IconName} aria-hidden="true" />
 						This organization has an infinite / promotional license — no seat cap enforcement.
 					</p>
 				{:else if entitlementLoading}
@@ -397,7 +399,7 @@
 		<!-- ── Edit organization ──────────────────────────────────────────────── -->
 		<div class="card">
 			<div class="card-header">
-				<i class="ph ph-pencil-simple" aria-hidden="true"></i> Edit Organization
+				<Icon name={"action.edit" as IconName} aria-hidden="true" /> Edit Organization
 			</div>
 			<div class="card-body">
 				{#if editErr}
@@ -448,7 +450,7 @@
 		<!-- ── Assign Director ────────────────────────────────────────────────── -->
 		<div class="card">
 			<div class="card-header">
-				<i class="ph ph-user-circle-gear" aria-hidden="true"></i> Assign Director
+				<Icon name={"user.settings" as IconName} aria-hidden="true" /> Assign Director
 			</div>
 			<div class="card-body">
 				{#if assignDirErr}
@@ -480,7 +482,7 @@
 		<!-- ── Danger zone ─────────────────────────────────────────────────────── -->
 		<div class="cd-danger">
 			<p class="cd-danger__label">
-				<i class="ph ph-warning" aria-hidden="true"></i>
+				<Icon name={"status.warning" as IconName} aria-hidden="true" />
 				Danger Zone
 			</p>
 			<p class="cd-danger__hint">
@@ -492,7 +494,7 @@
 				class="delete-btn cd-danger__btn"
 				onclick={deleteCurrentClub}
 			>
-				<i class="ph ph-trash" aria-hidden="true"></i>
+				<Icon name={"action.delete" as IconName} aria-hidden="true" />
 				Delete organization "{ctx.clubDoc.name || ctx.clubId}"
 			</button>
 		</div>

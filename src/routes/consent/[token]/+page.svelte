@@ -28,6 +28,7 @@
 	import { page } from '$app/state';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions as fns } from '$lib/firebase.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import type {
 		VerifyConsentInput,
 		VerifyConsentResult,
@@ -411,14 +412,9 @@
 			<!-- PHASE: granted -->
 			{:else if phase === 'granted'}
 				<div class="cv-state cv-state--success">
-					<div class="cv-state__icon cv-state__icon--success" aria-hidden="true">
-						<svg viewBox="0 0 64 64" fill="none">
-							<circle cx="32" cy="32" r="28" stroke="#00ff88" stroke-width="1.5"
-								fill="rgba(0,255,136,0.06)" />
-							<path d="M18 32l10 10 18-18" stroke="#00ff88" stroke-width="2.5"
-								stroke-linecap="round" stroke-linejoin="round" />
-						</svg>
-					</div>
+				<div class="cv-state__icon cv-state__icon--success" aria-hidden="true">
+					<Icon name="status.verified" size={60} class="tw-text-[#00ff88]" />
+				</div>
 					<h1 class="cv-state__title cv-state__title--success">CONSENT GRANTED</h1>
 					<p class="cv-state__body">
 						Thank you. Consent has been granted for <strong class="cv-accent-green">{childDisplayName}</strong>
@@ -440,14 +436,9 @@
 			<!-- PHASE: denied -->
 			{:else if phase === 'denied'}
 				<div class="cv-state cv-state--denied">
-					<div class="cv-state__icon" aria-hidden="true">
-						<svg viewBox="0 0 64 64" fill="none">
-							<circle cx="32" cy="32" r="28" stroke="rgba(255,77,106,0.5)"
-								stroke-width="1.5" fill="rgba(255,77,106,0.05)" />
-							<path d="M22 22l20 20M42 22L22 42" stroke="rgba(255,77,106,0.8)"
-								stroke-width="2.5" stroke-linecap="round" />
-						</svg>
-					</div>
+				<div class="cv-state__icon" aria-hidden="true">
+					<Icon name="status.error" size={60} class="tw-text-[rgba(255,77,106,0.8)]" />
+				</div>
 					<h1 class="cv-state__title">CONSENT DENIED</h1>
 					<p class="cv-state__body">
 						Your decision has been recorded. The account for

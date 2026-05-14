@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import CheckrEmbed from './CheckrEmbed.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	export const ssr = false;
 
@@ -69,7 +71,7 @@
 
 	<!-- Zero-liability callout -->
 	<div class="ct-zero-liability">
-		<i class="ph ph-lock-simple" aria-hidden="true"></i>
+		<Icon name="sys.lock-simple" />
 		<span>PII, SSN &amp; payment data processed exclusively inside Checkr's encrypted iframe.</span>
 	</div>
 </div>
@@ -187,7 +189,8 @@
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 	}
 
-	.ct-zero-liability i {
-		font-size: 0.85rem;
+	.ct-zero-liability :global(svg) {
+		width: 0.85rem;
+		height: 0.85rem;
 	}
 </style>

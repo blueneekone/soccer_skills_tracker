@@ -12,6 +12,8 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const AGE_GROUPS = ['U10', 'U12', 'U14', 'U16', 'U18', 'U19+'];
 	const POSITIONS = ['Forward', 'Midfield', 'Defender', 'Goalkeeper', 'Unlisted'];
@@ -316,7 +318,7 @@
 							openVideo(row);
 						}}
 					>
-						<i class="ph ph-play-circle" aria-hidden="true"></i>
+						<Icon name={"status.circle-play" as IconName} size={26} aria-hidden="true" />
 					</button>
 				{/if}
 			</div>
@@ -513,8 +515,9 @@
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 	}
 
-	.rse-play-fab i {
-		font-size: 1.65rem;
+	.rse-play-fab :global(svg) {
+		width: 1.65rem;
+		height: 1.65rem;
 	}
 
 	.rse-card {

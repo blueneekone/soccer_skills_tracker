@@ -1,10 +1,9 @@
-<script>
-	/**
-	 * Full-screen “Red Alert” intercept for new tactical / homework assignments.
-	 * @typedef {{ (): void }} VoidFn
-	 */
-	/** @type {{ open?: boolean, onAccept: VoidFn, onDefer: VoidFn }} */
-	let { open = false, onAccept, onDefer } = $props();
+<script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
+	interface Props { open?: boolean; onAccept: () => void; onDefer: () => void; }
+	let { open = false, onAccept, onDefer }: Props = $props();
 </script>
 
 {#if open}
@@ -27,7 +26,7 @@
 					class="tw-mb-4 tw-flex tw-h-20 tw-w-20 tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-red-500/50 tw-bg-red-950/60 tw-text-red-400 tw-shadow-[0_0_24px_rgba(239,68,68,0.45)]"
 					aria-hidden="true"
 				>
-					<i class="ph ph-warning-circle tw-text-5xl"></i>
+					<Icon name={"status.warning-circle" as IconName} size={48} />
 				</div>
 				<h2
 					id="red-alert-title"

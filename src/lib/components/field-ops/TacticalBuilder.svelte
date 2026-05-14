@@ -1,9 +1,11 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 
 	import { db } from '$lib/firebase.js';
 	import { doc, updateDoc } from 'firebase/firestore';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let {
 		clubId = '',
@@ -344,7 +346,7 @@
 			aria-pressed={isFullscreen}
 			aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
 		>
-			<i class="ph {isFullscreen ? 'ph-corners-in' : 'ph-corners-out'}" aria-hidden="true"></i>
+			<Icon name={isFullscreen ? ("nav.minimize" as IconName) : ("nav.maximize" as IconName)} size={20} aria-hidden="true" />
 		</button>
 
 		<div
@@ -361,22 +363,22 @@
 		{#if canManage}
 			<div class="fm-tactical-island" role="toolbar" aria-label="Tactical canvas tools">
 				<div class="fm-tactical-island__tools">
-					<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addCone}>
-						<i class="ph ph-triangle" aria-hidden="true"></i>
-						Cone
-					</button>
-					<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addGoal}>
-						<i class="ph ph-rectangle-dashed" aria-hidden="true"></i>
-						Goal
-					</button>
-					<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addLine}>
-						<i class="ph ph-line-segment" aria-hidden="true"></i>
-						Line
-					</button>
-					<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addText}>
-						<i class="ph ph-text-t" aria-hidden="true"></i>
-						Text
-					</button>
+				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addCone}>
+					<Icon name={"sys.triangle" as IconName} aria-hidden="true" />
+					Cone
+				</button>
+				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addGoal}>
+					<Icon name={"sys.square-dash" as IconName} aria-hidden="true" />
+					Goal
+				</button>
+				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addLine}>
+					<Icon name={"sys.minus" as IconName} aria-hidden="true" />
+					Line
+				</button>
+				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addText}>
+					<Icon name={"content.text" as IconName} aria-hidden="true" />
+					Text
+				</button>
 				</div>
 				<div class="fm-tactical-island__meta">
 					<button
@@ -499,8 +501,9 @@
 		border-color: rgba(255, 255, 255, 0.38);
 	}
 
-	.fm-tactical-fs-btn i {
-		font-size: 1.25rem;
+	.fm-tactical-fs-btn :global(svg) {
+		width: 1.25rem;
+		height: 1.25rem;
 	}
 
 	.fm-tactical-pitch-area {
@@ -620,8 +623,9 @@
 		white-space: nowrap;
 	}
 
-	.fm-tb-btn i {
-		font-size: 1rem;
+	.fm-tb-btn :global(svg) {
+		width: 1rem;
+		height: 1rem;
 		opacity: 0.9;
 	}
 

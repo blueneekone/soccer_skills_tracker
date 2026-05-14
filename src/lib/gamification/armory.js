@@ -16,7 +16,7 @@ import { db } from '$lib/firebase.js';
  * @property {ArmoryItemType} type — Fulfillment channel: on-field kit vs. in-app entitlements.
  * @property {number} cost — **Tactical Credits (TC)** required at list price; non-negative integer.
  * @property {number} minLevel — Minimum Operative level before this row appears in the available catalog.
- * @property {string} icon — Phosphor icon class token (e.g. `ph-crosshair` with `class="ph ph-crosshair"`).
+ * @property {string} icon — Icon registry token (e.g. `nav.crosshair`).
  */
 
 /**
@@ -32,7 +32,7 @@ export const QUARTERMASTER_INVENTORY = Object.freeze([
 		type: 'physical',
 		cost: 1500,
 		minLevel: 5,
-		icon: 'ph-crosshair',
+		icon: 'nav.crosshair',
 	},
 	{
 		id: 'digi_border_neon',
@@ -41,7 +41,7 @@ export const QUARTERMASTER_INVENTORY = Object.freeze([
 		type: 'digital',
 		cost: 500,
 		minLevel: 2,
-		icon: 'ph-bounding-box',
+		icon: 'content.package',
 	},
 	{
 		id: 'tactical_override',
@@ -51,7 +51,7 @@ export const QUARTERMASTER_INVENTORY = Object.freeze([
 		type: 'digital',
 		cost: 800,
 		minLevel: 3,
-		icon: 'ph-whistle',
+		icon: 'comm.bell',
 	},
 	{
 		id: 'gear_armband',
@@ -60,7 +60,7 @@ export const QUARTERMASTER_INVENTORY = Object.freeze([
 		type: 'physical',
 		cost: 5000,
 		minLevel: 10,
-		icon: 'ph-shield-star',
+		icon: 'status.shield-check',
 	},
 ]);
 

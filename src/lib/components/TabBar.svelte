@@ -1,13 +1,12 @@
-<script>
-	/**
-	 * @type {{ id: string, label: string, icon?: string }[]}
-	 */
+<script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
 	let {
-		tabs = [],
+		tabs = [] as { id: string; label: string; icon?: IconName }[],
 		activeTab = $bindable(''),
-		variant = 'admin', // 'admin' | 'director' | 'coach'
-		/** @type {((id: string) => void) | undefined} */
-		onPick = undefined,
+		variant = 'admin' as 'admin' | 'director' | 'coach',
+		onPick = undefined as ((id: string) => void) | undefined,
 	} = $props();
 
 	const tabClass = $derived(
@@ -16,7 +15,7 @@
 </script>
 
 <div class="tab-bar-container" role="tablist">
-	{#each tabs as tab}
+	{#each tabs as tab (tab.id)}
 		<button
 			class={tabClass}
 			class:active={activeTab === tab.id}
@@ -29,7 +28,7 @@
 				onPick?.(tab.id);
 			}}
 		>
-			{#if tab.icon}<i class="ph {tab.icon} tab-bar-icon" aria-hidden="true"></i>{/if}
+			{#if tab.icon}<Icon name={tab.icon} size={20} class="tab-bar-icon" />{/if}
 			<span class="tab-bar-label">{tab.label}</span>
 		</button>
 	{/each}

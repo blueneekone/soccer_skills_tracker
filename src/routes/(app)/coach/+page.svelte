@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
@@ -261,7 +263,7 @@
 						class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#00f0ff]/55 tw-bg-[#00f0ff]/10 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] group-hover:tw-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
 					>
 						ENTER WAR ROOM
-						<i class="ph ph-arrow-right" aria-hidden="true"></i>
+						<Icon name="nav.arrow-right" />
 					</span>
 				</div>
 			</button>
@@ -272,7 +274,7 @@
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="tw-mb-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
-					<i class="ph ph-broadcast tw-text-base tw-text-[#00f0ff]" aria-hidden="true"></i>
+					<Icon name="comm.broadcast" class="tw-text-base tw-text-[#00f0ff]" />
 					<h2 class="tw-m-0 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
 						Facility Ops &amp; Staging
 					</h2>
@@ -306,19 +308,19 @@
 						href="/coach/forge"
 						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
 					>
-						<i class="ph ph-hammer" aria-hidden="true"></i> FORGE
+						<Icon name="sys.hammer" /> FORGE
 					</a>
 					<a
 						href="/coach/match-day"
 						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
 					>
-						<i class="ph ph-target" aria-hidden="true"></i> MATCH LOG
+						<Icon name="data.target" /> MATCH LOG
 					</a>
 					<a
 						href="/coach/drills"
 						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
 					>
-						<i class="ph ph-list-checks" aria-hidden="true"></i> DRILLS
+						<Icon name="content.checks" /> DRILLS
 					</a>
 				</div>
 			</article>

@@ -4,6 +4,7 @@
 	import { db } from '$lib/firebase.js';
 	import { getLevelProgressFromTotalXp, MAX_PLAYER_LEVEL } from '$lib/gamification/level.js';
 	import EligibilityBadge from './EligibilityBadge.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * @typedef {{
@@ -247,20 +248,17 @@
 					</p>
 				</div>
 			</div>
-			{#if !player.vpc_approved}
-				<div
-					class="tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-xl tw-bg-[#020202]/80 tw-backdrop-blur-sm"
+		{#if !player.vpc_approved}
+			<div
+				class="tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-xl tw-bg-[#020202]/80 tw-backdrop-blur-sm"
+			>
+				<Icon name="sys.lock" size={14} class="tw-text-[#ff003c]" />
+				<span
+					class="tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.15em] tw-text-[#ff003c]"
+					>CONSENT REQUIRED</span
 				>
-					<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-						<rect x="1" y="6" width="12" height="7" rx="1.5" fill="none" stroke="#ff003c" stroke-width="1.25" />
-						<path d="M4 6V4.5a3 3 0 0 1 6 0V6" stroke="#ff003c" stroke-width="1.25" stroke-linecap="round" fill="none" />
-					</svg>
-					<span
-						class="tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.15em] tw-text-[#ff003c]"
-						>CONSENT REQUIRED</span
-					>
-				</div>
-			{/if}
+			</div>
+		{/if}
 		</div>
 
 		<!-- Skill Radar sparkline — cyan-bloomed bars -->

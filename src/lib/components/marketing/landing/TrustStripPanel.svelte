@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { TRUST_BADGES } from './landingContent.js';
+	import StatusChip from '$lib/components/ui/StatusChip.svelte';
 </script>
 
 <section class="ts-root" aria-label="Platform compliance and security certifications">
@@ -8,7 +9,7 @@
 		<div class="ts-badges" role="list">
 			{#each TRUST_BADGES as badge (badge.label)}
 				<div class="ts-badge glass-panel" role="listitem">
-					<span class="ts-badge__label">{badge.label}</span>
+					<StatusChip tone="verified" label={badge.label} size="md" />
 					<span class="ts-badge__sub">{badge.sublabel}</span>
 				</div>
 			{/each}

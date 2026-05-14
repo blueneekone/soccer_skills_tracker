@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -6,7 +6,9 @@
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
-	import { clubSportIconSuffix } from '$lib/utils/sport-icon.js';
+	import { clubSportIconToken } from '$lib/utils/sport-icon.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { title = '' } = $props();
 
@@ -18,7 +20,7 @@
 			(authStore.role ? authStore.role.charAt(0).toUpperCase() + authStore.role.slice(1) : 'Player'),
 	);
 
-	const sportIcon = $derived(clubSportIconSuffix(clubBrandingStore.sport));
+	const sportIconName = $derived(clubSportIconToken(clubBrandingStore.sport) as IconName);
 </script>
 
 <!--
@@ -44,7 +46,7 @@
 			{#if authStore.userProfile?.clubId}
 				<ClubLogoMark size="md" />
 			{:else}
-				<i class="ph {sportIcon} tw-text-2xl tw-text-[#00f0ff] tw-drop-shadow-[0_0_8px_rgba(0,240,255,0.55)]" aria-hidden="true"></i>
+				<Icon name={sportIconName as IconName} size={24} class="tw-text-[#14b8a6]" />
 			{/if}
 			<div class="tw-min-w-0">
 				<h3 class="tw-m-0 tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-white">
@@ -63,7 +65,7 @@
 				onclick={() => goto('/settings')}
 				aria-label="Profile and settings"
 			>
-				<i class="ph ph-gear tw-text-base" aria-hidden="true"></i>
+				<Icon name="sys.settings" size={18} />
 			</button>
 			{#if authStore.role !== 'super_admin' && authStore.role !== 'global_admin'}
 				<button
@@ -71,7 +73,7 @@
 					class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-md tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
 					onclick={() => goto('/support')}
 				>
-					<i class="ph ph-lifebuoy" aria-hidden="true"></i>
+					<Icon name="sys.lifebuoy" size={14} />
 					<span>SUPPORT</span>
 				</button>
 			{/if}

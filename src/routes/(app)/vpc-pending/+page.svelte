@@ -1,14 +1,16 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const userEmail = $derived(authStore.user?.email || '');
 	const vpcStatus = $derived(authStore.userProfile?.vpcStatus || '');
-	const statusLabel = $derived(() => {
+	const statusLabel = $derived.by(() => {
 		switch (vpcStatus) {
 			case 'pending': return 'Pending — Awaiting parent';
 			case 'pending_parent': return 'Pending — Awaiting parent';
@@ -58,7 +60,7 @@
 <div class="vpc-pending-page">
 	<div class="vpc-pending-card">
 		<div class="vpc-pending__icon" aria-hidden="true">
-			<i class="ph ph-lock-key-open"></i>
+			<Icon name="sys.lock-open" size={48} />
 		</div>
 
 		<h1 class="vpc-pending__title">Parental consent required</h1>
@@ -70,7 +72,7 @@
 
 		<div class="vpc-pending__status-row">
 			<span class="vpc-pending__status-dot" aria-hidden="true"></span>
-			<span class="vpc-pending__status-text">{statusLabel()}</span>
+			<span class="vpc-pending__status-text">{statusLabel}</span>
 		</div>
 
 		{#if userEmail}
@@ -110,7 +112,7 @@
 				class="vpc-pending__btn vpc-pending__btn--outline"
 				onclick={copyParentLink}
 			>
-				<i class="ph {copyDone ? 'ph-check' : 'ph-copy'}" aria-hidden="true"></i>
+				<Icon name={copyDone ? 'status.check' : 'action.copy'} />
 				{copyDone ? 'Copied!' : 'Copy parent consent link'}
 			</button>
 			<button
@@ -119,7 +121,7 @@
 				disabled={refreshing}
 				onclick={refreshStatus}
 			>
-				<i class="ph {refreshing ? 'ph-spinner' : 'ph-arrow-clockwise'}" aria-hidden="true"></i>
+				<Icon name={refreshing ? 'status.loading' : 'nav.rotate-cw'} class={refreshing ? 'tw-animate-spin' : ''} />
 				{refreshing ? 'Checking…' : 'Refresh my status'}
 			</button>
 		</div>

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
 	interface FabEntry {
 		prefix: string;
 		tab?: string | null;
@@ -13,16 +16,16 @@
 	}
 
 	const FAB_ACTIONS: FabEntry[] = [
-		{ prefix: '/director', tab: 'teams',      label: 'Invite Player',  icon: 'ph-user-plus',    href: '/director?tab=teams' },
-		{ prefix: '/director', tab: 'household',  label: 'Add Household',  icon: 'ph-house-line',   href: '/director?tab=household' },
-		{ prefix: '/director', tab: 'compliance', label: 'Run Compliance', icon: 'ph-shield-check', href: '/director/compliance' },
-		{ prefix: '/director', tab: null,         label: 'Quick Action',   icon: 'ph-lightning',    href: '/director?tab=teams' },
-		{ prefix: '/admin/organizations',         label: 'New Club',       icon: 'ph-buildings',    href: '/admin/organizations' },
-		{ prefix: '/admin/users',                 label: 'Add User',       icon: 'ph-user-plus',    href: '/admin/users' },
-		{ prefix: '/admin',                       label: 'Overview',       icon: 'ph-chart-line',   href: '/admin/overview' },
-		{ prefix: '/coach/forge',                 label: 'Create Drill',   icon: 'ph-barbell',      href: '/coach/forge' },
-		{ prefix: '/coach/match-day',             label: 'Log Match',      icon: 'ph-activity',     href: '/coach/match-day' },
-		{ prefix: '/coach',                       label: 'View Roster',    icon: 'ph-users-three',  href: '/coach' },
+		{ prefix: '/director', tab: 'teams',      label: 'Invite Player',  icon: 'user.plus',           href: '/director?tab=teams' },
+		{ prefix: '/director', tab: 'household',  label: 'Add Household',  icon: 'nav.home',            href: '/director?tab=household' },
+		{ prefix: '/director', tab: 'compliance', label: 'Run Compliance', icon: 'status.shield-check', href: '/director/compliance' },
+		{ prefix: '/director', tab: null,         label: 'Quick Action',   icon: 'game.zap',            href: '/director?tab=teams' },
+		{ prefix: '/admin/organizations',         label: 'New Club',       icon: 'org.building',        href: '/admin/organizations' },
+		{ prefix: '/admin/users',                 label: 'Add User',       icon: 'user.plus',           href: '/admin/users' },
+		{ prefix: '/admin',                       label: 'Overview',       icon: 'data.chart-line',     href: '/admin/overview' },
+		{ prefix: '/coach/forge',                 label: 'Create Drill',   icon: 'game.dumbbell',       href: '/coach/forge' },
+		{ prefix: '/coach/match-day',             label: 'Log Match',      icon: 'data.activity',       href: '/coach/match-day' },
+		{ prefix: '/coach',                       label: 'View Roster',    icon: 'user.group',          href: '/coach' },
 	];
 
 	let { pathname }: Props = $props();
@@ -39,11 +42,11 @@
 	{#if expanded}
 		<div class="fab-chips">
 			<a href="mailto:support@sstracker.app" class="fab-chip" title="Support">
-				<i class="ph ph-lifebuoy"></i>
+				<Icon name="sys.lifebuoy" size={20} />
 				<span class="fab-chip-label">Support</span>
 			</a>
 			<a href="/settings" class="fab-chip" title="Settings">
-				<i class="ph ph-gear"></i>
+				<Icon name="sys.settings" size={20} />
 				<span class="fab-chip-label">Settings</span>
 			</a>
 		</div>
@@ -51,7 +54,7 @@
 
 	{#if fabAction?.href && !expanded}
 		<a class="fab-btn" href={fabAction.href} aria-label={fabAction.label}>
-			<i class="ph {fabAction.icon}"></i>
+			<Icon name={fabAction.icon as IconName} size={24} />
 		</a>
 	{:else}
 		<button
@@ -60,7 +63,11 @@
 			aria-label={expanded ? 'Close menu' : (fabAction?.label ?? 'Quick Action')}
 			aria-expanded={expanded}
 		>
-			<i class="ph {expanded ? 'ph-x' : (fabAction?.icon ?? 'ph-lightning')}"></i>
+				{#if expanded}
+				<Icon name="sys.close" size={24} />
+			{:else}
+				<Icon name={(fabAction?.icon ?? 'game.zap') as IconName} size={24} />
+			{/if}
 		</button>
 	{/if}
 

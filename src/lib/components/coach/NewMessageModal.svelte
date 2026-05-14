@@ -12,6 +12,8 @@
 		serverTimestamp,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @typedef {{ email: string; role: string; label: string }} CandidateUser
@@ -382,9 +384,9 @@
 		>
 			<div class="nm-head">
 				<h2 id="nm-title" class="nm-title">New chat</h2>
-				<button type="button" class="nm-close" onclick={() => onClose()} aria-label="Close">
-					<i class="ph ph-x" aria-hidden="true"></i>
-				</button>
+			<button type="button" class="nm-close" onclick={() => onClose()} aria-label="Close">
+				<Icon name={"sys.close" as IconName} />
+			</button>
 			</div>
 
 			{#if loading}
@@ -393,8 +395,8 @@
 				<p class="nm-err" role="alert">{loadErr}</p>
 			{:else}
 				<label class="nm-label" for="nm-search">To</label>
-				<div class="nm-search-wrap">
-					<i class="ph ph-magnifying-glass nm-search-ico" aria-hidden="true"></i>
+			<div class="nm-search-wrap">
+				<span class="nm-search-ico" aria-hidden="true"><Icon name={"action.search" as IconName} size={18} /></span>
 					<input
 						id="nm-search"
 						class="nm-search"
@@ -417,7 +419,7 @@
 									aria-label="Remove {s.label}"
 									onclick={() => removeChip(s.email)}
 								>
-									<i class="ph ph-x" aria-hidden="true"></i>
+									<Icon name={"sys.close" as IconName} size={14} />
 								</button>
 							</li>
 						{/each}
@@ -428,8 +430,8 @@
 					<p class="nm-muted nm-pending">Looking up linked guardian…</p>
 				{/if}
 			{#if shadowCc && isStaffShadow && !plan.shadowPending}
-				<div class="nm-safesport">
-					<i class="ph ph-shield-check nm-safesport-icon" aria-hidden="true"></i>
+			<div class="nm-safesport">
+				<span class="nm-safesport-icon" aria-hidden="true"><Icon name={"status.shield-check" as IconName} size={14} /></span>
 					<div class="nm-safesport-body">
 						<strong>SafeSport Protocol: Parent automatically CC'd.</strong>
 						{#if plan.ccParentEmails.length > 0}

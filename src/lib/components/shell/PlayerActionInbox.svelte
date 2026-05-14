@@ -4,6 +4,8 @@
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const uid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
@@ -65,7 +67,7 @@
 
 <div class="pai" aria-label="Alerts and assignments">
 	<div class="pai__head">
-		<i class="ph ph-lightning" aria-hidden="true"></i>
+		<Icon name="game.zap" size={18} />
 		<span>Alerts</span>
 	</div>
 

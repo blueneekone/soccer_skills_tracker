@@ -16,6 +16,7 @@
 
 	import { onMount } from 'svelte';
 	import { syncStatus } from '$lib/services/offlineSync.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	onMount(() => {
 		syncStatus.init();
@@ -34,7 +35,7 @@
 		role="status"
 		aria-live="polite"
 	>
-		<span class="ob-dot" aria-hidden="true"></span>
+		<Icon name={mode === 'offline' ? 'net.offline' : 'status.loading'} size={14} class="ob-icon" />
 		<span class="ob-label">
 			{#if mode === 'offline'}
 				Working offline · Changes will sync when connected
@@ -82,18 +83,9 @@
 		border: 1px solid rgba(34, 211, 238, 0.5);
 	}
 
-	.ob-dot {
+	.ob-icon {
 		flex-shrink: 0;
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: currentColor;
-		animation: ob-pulse 1.4s ease-in-out infinite;
-	}
-
-	@keyframes ob-pulse {
-		0%, 100% { opacity: 1; transform: scale(1); }
-		50% { opacity: 0.45; transform: scale(0.78); }
+		opacity: 0.9;
 	}
 
 	@keyframes ob-fade-in {

@@ -84,6 +84,7 @@ export class SportsConfigEditorEngine {
       })) as UpsertSportsConfigInput['attributes'],
       palette: { fg: '#a1a1aa', glow: 'rgba(161,161,170,0.18)', ring: 'rgba(161,161,170,0.4)' },
       iconClass: 'ph-shield-check',
+      iconName: 'sport.generic',
       aliases: [],
       rpgProjection: { ball_mastery: [], striking: [], pace: [], scanning: [], grit: [] },
       status: 'active',

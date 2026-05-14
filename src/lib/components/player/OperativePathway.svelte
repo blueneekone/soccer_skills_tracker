@@ -1,4 +1,7 @@
-<script>
+<script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
 	/** Battle-pass ladder length (inclusive). */
 	const PATHWAY_MAX = 50;
 
@@ -29,14 +32,14 @@
 	 * Reward glyph inside each node (placeholder economy — pack / gear / spotlight tiers).
 	 * @param {number} tier
 	 */
-	function rewardIconClass(tier) {
-		if (tier === 5) return 'ph-package';
-		if (tier === 7) return 'ph-sneaker';
-		if (tier === 10) return 'ph-star';
-		if (tier === 25 || tier === 50) return 'ph-trophy';
-		if (tier % 15 === 0) return 'ph-medal';
-		if (tier % 5 === 0) return 'ph-gift';
-		return 'ph-sparkle';
+	function rewardIconClass(tier: number): IconName {
+		if (tier === 5) return 'game.sparkles';
+		if (tier === 7) return 'game.sparkles';
+		if (tier === 10) return 'game.star';
+		if (tier === 25 || tier === 50) return 'game.trophy';
+		if (tier % 15 === 0) return 'game.medal';
+		if (tier % 5 === 0) return 'game.sparkles';
+		return 'game.sparkles';
 	}
 
 	/**
@@ -78,21 +81,18 @@
 					class="tw-mb-3 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/30"
 					aria-hidden="true"
 				>
-					<i
-						class="ph {rewardIconClass(tier)} tw-text-2xl tw-text-cyan-300/85"
-						aria-hidden="true"
-					></i>
+				<Icon name={rewardIconClass(tier)} size={24} class="tw-text-cyan-300/85" aria-hidden="true" />
 				</div>
 
 				{#if state === 'unlocked'}
-					<i class="ph ph-check-circle tw-text-xl tw-text-emerald-400/90" aria-hidden="true"></i>
+					<Icon name={"status.verified" as IconName} size={20} class="tw-text-emerald-400/90" aria-hidden="true" />
 					<span class="tw-sr-only">Cleared</span>
 				{:else if state === 'current'}
 					<span class="tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300">
 						NOW
 					</span>
 				{:else}
-					<i class="ph ph-lock-key tw-text-xl tw-text-slate-600" aria-hidden="true"></i>
+					<Icon name={"sys.lock-simple" as IconName} size={20} class="tw-text-slate-600" aria-hidden="true" />
 					<span class="tw-sr-only">Locked</span>
 				{/if}
 			</li>

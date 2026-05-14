@@ -23,6 +23,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	// ── Types ────────────────────────────────────────────────────────────────
 	/**
@@ -454,7 +456,7 @@
 		</div>
 		<div class="adm-toolbar__right">
 			<div class="adm-search-wrap adm-search--narrow">
-				<i class="ph ph-magnifying-glass adm-search-icon" aria-hidden="true"></i>
+				<Icon name={"action.search" as IconName} class="adm-search-icon" aria-hidden="true" />
 				<input
 					type="search"
 					class="adm-search tw-text-sm"
@@ -473,7 +475,7 @@
 				title={loading ? 'Syncing…' : 'Refresh'}
 				aria-label="Refresh recruiter list from Firestore"
 			>
-				<i class="ph ph-arrows-clockwise tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true"></i>
+				<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true" />
 			</button>
 			<div class="ar-tabs" role="tablist" aria-label="Verification filter">
 				<button
@@ -575,7 +577,7 @@
 									{/if}
 									{#if row.region}
 										<span class="ar-agency__meta">
-											<i class="ph ph-map-pin" aria-hidden="true"></i>
+										<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
 											{row.region}
 										</span>
 									{/if}
@@ -596,35 +598,37 @@
 								{/if}
 							</td>
 							<td class="ar-td">
-								<span
-									class="ar-verify-pill ar-verify-pill--{row.verificationStatus}"
-								>
-									<i
-										class="ph {row.verificationStatus === 'verified'
-											? 'ph-seal-check'
-											: row.verificationStatus === 'rejected'
-												? 'ph-prohibit'
-												: 'ph-hourglass-medium'}"
-										aria-hidden="true"
-									></i>
-									{row.verificationStatus}
-								</span>
+							<span
+								class="ar-verify-pill ar-verify-pill--{row.verificationStatus}"
+							>
+								{#if row.verificationStatus === 'verified'}
+									<Icon name={"status.seal-check" as IconName} aria-hidden="true" />
+								{:else}
+									{#if row.verificationStatus === 'rejected'}
+									<Icon name={"sys.ban" as IconName} aria-hidden="true" />
+								{:else}
+									<Icon name={"sys.hourglass" as IconName} aria-hidden="true" />
+								{/if}
+								{/if}
+								{row.verificationStatus}
+							</span>
 							</td>
 							<!-- Strike 2 — Checkr Vetting Status column. -->
 							<td class="ar-td">
-								<span class="ar-vet-pill ar-vet-pill--{row.vettingStatus}">
-									<i
-										class="ph {row.vettingStatus === 'cleared'
-											? 'ph-shield-check'
-											: row.vettingStatus === 'flagged'
-												? 'ph-warning-octagon'
-												: row.vettingStatus === 'processing'
-													? 'ph-circle-notch ar-vet-pill__spin'
-													: 'ph-hourglass-medium'}"
-										aria-hidden="true"
-									></i>
-									{row.vettingStatus}
-								</span>
+							<span class="ar-vet-pill ar-vet-pill--{row.vettingStatus}">
+								{#if row.vettingStatus === 'cleared'}
+									<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
+								{:else if row.vettingStatus === 'processing'}
+									<Icon name={"status.loading" as IconName} class="ar-vet-pill__spin" aria-hidden="true" />
+								{:else}
+									{#if row.vettingStatus === 'flagged'}
+									<Icon name={"status.warning-octagon" as IconName} aria-hidden="true" />
+								{:else}
+									<Icon name={"sys.hourglass" as IconName} aria-hidden="true" />
+								{/if}
+								{/if}
+								{row.vettingStatus}
+							</span>
 							</td>
 							<td class="ar-td">
 								<span class="ar-muted" title={row.createdAt ? `created ${new Date(row.createdAt).toISOString()}` : ''}>
@@ -667,8 +671,8 @@
 												onclick={() => approve(row)}
 												disabled={busyFor === row.id}
 											>
-												<i class="ph ph-check-circle" aria-hidden="true"></i>
-												Approve
+										<Icon name={"status.verified" as IconName} aria-hidden="true" />
+											Approve
 											</button>
 										{/if}
 										{#if row.verificationStatus !== 'rejected'}
@@ -678,8 +682,8 @@
 												onclick={() => openReject(row)}
 												disabled={busyFor === row.id}
 											>
-												<i class="ph ph-x-circle" aria-hidden="true"></i>
-												Reject
+										<Icon name={"sys.close" as IconName} aria-hidden="true" />
+											Reject
 											</button>
 										{/if}
 										<div class="ar-menu-wrap">
@@ -692,7 +696,7 @@
 												aria-label="More actions for {row.email}"
 												disabled={busyFor === row.id}
 											>
-												<i class="ph ph-dots-three-vertical" aria-hidden="true"></i>
+												<Icon name={"nav.more-v" as IconName} aria-hidden="true" />
 											</button>
 											{#if openMenuFor === row.id}
 												<div
@@ -708,7 +712,7 @@
 														class="ar-menu__item"
 														onclick={() => runBackgroundCheck(row)}
 													>
-														<i class="ph ph-shield-chevron" aria-hidden="true"></i>
+														<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 														<span class="ar-menu__item-body">
 															<span class="ar-menu__item-label">Run Background Check</span>
 															<span class="ar-menu__item-hint">Checkr API — Sprint 2.9</span>
@@ -721,7 +725,7 @@
 															class="ar-menu__item"
 															onclick={() => { closeMenu(); resetPending(row); }}
 														>
-															<i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>
+															<Icon name={"nav.rotate-ccw" as IconName} aria-hidden="true" />
 															<span class="ar-menu__item-body">
 																<span class="ar-menu__item-label">Reset to Pending</span>
 																<span class="ar-menu__item-hint">Return to queue</span>
@@ -734,7 +738,7 @@
 														class="ar-menu__item"
 														onclick={() => closeMenu()}
 													>
-														<i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
+														<Icon name={"comm.send" as IconName} aria-hidden="true" />
 														<span class="ar-menu__item-body">
 															<span class="ar-menu__item-label">Email Scout</span>
 															<span class="ar-menu__item-hint">{row.email}</span>
@@ -757,16 +761,16 @@
 		<div class="ar-toast-stack" role="region" aria-live="polite" aria-label="Notifications">
 			{#each toasts as t (t.id)}
 				<div class="ar-toast ar-toast--{t.tone}" role="status">
-					<i
-						class="ph {t.tone === 'ok'
-							? 'ph-check-circle'
-							: t.tone === 'warn'
-								? 'ph-warning'
-								: 'ph-shield-chevron'}"
-						aria-hidden="true"
-					></i>
-					<span>{t.text}</span>
-				</div>
+				<Icon
+					name={t.tone === 'ok'
+						? ("status.verified" as IconName)
+						: t.tone === 'warn'
+							? ("status.warning" as IconName)
+							: ("status.info" as IconName)}
+					aria-hidden="true"
+				/>
+				<span>{t.text}</span>
+			</div>
 			{/each}
 		</div>
 	{/if}

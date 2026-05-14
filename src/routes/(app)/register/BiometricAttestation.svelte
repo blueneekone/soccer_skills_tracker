@@ -2,6 +2,7 @@
   import { browser } from '$app/environment';
   import { functions } from '$lib/firebase.js';
   import { httpsCallable } from 'firebase/functions';
+  import Icon from '$lib/components/ui/Icon.svelte';
 
   type Props = {
     inviteToken?: string;
@@ -126,11 +127,7 @@
 
   {#if flowStatus === 'success'}
     <div class="ba-success" role="status">
-      <svg class="ba-success__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-        <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2.5"/>
-        <polyline points="13,24 21,33 35,16" stroke="currentColor" stroke-width="3"
-          stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <Icon name="status.verified" size={56} class="ba-success__icon" />
       <p class="ba-success__label">CONSENT VERIFIED</p>
       <p class="ba-success__sub">Redirecting to War Room…</p>
     </div>
@@ -139,12 +136,7 @@
     <div class="ba-card vanguard-card">
 
       <div class="ba-card__header">
-        <svg class="ba-card__shield" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-          <path d="M32 4L8 14v18c0 14 11 26 24 28 13-2 24-14 24-28V14L32 4Z"
-            stroke="currentColor" stroke-width="2.5"/>
-          <polyline points="22,32 29,39 42,24" stroke="currentColor" stroke-width="3"
-            stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <Icon name="status.shield-check" size={40} class="ba-card__shield" />
         <div>
           <p class="ba-card__badge">LEGAL GUARDIAN ATTESTATION · WEBAUTHN</p>
           <h2 class="ba-card__title">BIOMETRIC ENCLAVE AUTHORIZATION</h2>
@@ -174,9 +166,7 @@
 
       {#if attestationError}
         <div class="ba-error" role="alert">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-          </svg>
+          <Icon name="status.warning" size={18} />
           <span>{attestationError}</span>
         </div>
       {/if}
@@ -211,12 +201,7 @@
     <div class="ba-card vanguard-card">
 
       <div class="ba-card__header">
-        <svg class="ba-card__shield ba-card__shield--amber" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-          <path d="M32 4L8 14v18c0 14 11 26 24 28 13-2 24-14 24-28V14L32 4Z"
-            stroke="currentColor" stroke-width="2.5"/>
-          <line x1="32" y1="22" x2="32" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="32" cy="43" r="2.5" fill="currentColor"/>
-        </svg>
+        <Icon name="status.shield-alert" size={40} class="ba-card__shield ba-card__shield--amber" />
         <div>
           <p class="ba-card__badge ba-card__badge--amber">PITCH-SIDE ACTIVATION PIN · EMAIL FALLBACK</p>
           <h2 class="ba-card__title">ENTER CONSENT CODE</h2>
@@ -230,9 +215,7 @@
 
       {#if pinError}
         <div class="ba-error" role="alert">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-          </svg>
+          <Icon name="status.warning" size={18} />
           <span>{pinError}</span>
         </div>
       {/if}

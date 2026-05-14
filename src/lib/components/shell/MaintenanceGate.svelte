@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	/**
 	 * Sprint 2.7 — Maintenance Mode full-screen gate.
 	 *
@@ -12,6 +12,8 @@
 
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/** @type {{ message?: string }} */
 	let { message = '' } = $props();
@@ -39,7 +41,7 @@
 <div class="mnt-root" role="alertdialog" aria-modal="true" aria-labelledby="mnt-title">
 	<div class="mnt-card">
 		<div class="mnt-logo" aria-hidden="true">
-			<i class="ph-bold ph-shield-warning"></i>
+			<Icon name={"status.shield-alert" as IconName} size={28} />
 		</div>
 
 		<div class="mnt-kicker">SSTracker</div>

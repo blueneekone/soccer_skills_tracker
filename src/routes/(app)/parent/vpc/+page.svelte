@@ -3,7 +3,11 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const parentGrantVpcConsentFn = httpsCallable(functions, 'parentGrantVpcConsent');
 
@@ -201,7 +205,7 @@
 
 			{:else if !householdId}
 				<div class="vpc-empty-state">
-					<i class="ph ph-users vpc-empty-state__icon" aria-hidden="true"></i>
+					<Icon name="user.group" class="vpc-empty-state__icon" />
 					<p class="vpc-empty-state__text">
 						Your account is not linked to a household yet. Your club director must connect parent
 						and athlete emails before the consent flow appears here.
@@ -223,7 +227,7 @@
 			{:else if wizardStage === 'done'}
 				<!-- ── DONE STATE ─────────────────────────────────────────────── -->
 				<div class="vpc-done">
-					<div class="vpc-done__icon" aria-hidden="true"><i class="ph ph-check-circle"></i></div>
+					<div class="vpc-done__icon" aria-hidden="true"><Icon name="status.verified" /></div>
 					<h3 class="vpc-done__title">Consent submitted</h3>
 					<p class="vpc-done__body">
 						Your digital consent for <strong>{activePlayerEmail}</strong> has been recorded.
@@ -254,7 +258,7 @@
 							</div>
 							{#if playerStatuses[em] === 'verified' || playerStatuses[em] === 'not_required'}
 								<span class="vpc-athlete-row__done">
-									<i class="ph ph-check" aria-hidden="true"></i> Complete
+									<Icon name="status.check" /> Complete
 								</span>
 							{:else if playerStatuses[em] === 'parent_consented'}
 								<span class="vpc-athlete-row__done vpc-athlete-row__done--amber">
@@ -277,7 +281,7 @@
 				<!-- ── STEP 1: DATA USE DISCLOSURE ───────────────────────────── -->
 				<div class="vpc-wizard-header">
 					<button type="button" class="vpc-back-btn" onclick={cancelWizard} aria-label="Cancel wizard">
-						<i class="ph ph-arrow-left" aria-hidden="true"></i>
+						<Icon name="nav.arrow-left" />
 					</button>
 					<div class="vpc-wizard-progress">
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--active">1</span>
@@ -343,7 +347,7 @@
 					<p>This disclosure is version <strong>2026-04</strong>, effective April 2026.</p>
 
 					<p class="vpc-disclosure__scroll-prompt">
-						<i class="ph ph-arrow-down" aria-hidden="true"></i>
+						<Icon name="nav.arrow-down" />
 						Scroll to the bottom to confirm you have read this disclosure.
 					</p>
 				</div>
@@ -356,10 +360,10 @@
 					onclick={() => (wizardStage = 'step2')}
 				>
 					{#if disclosureScrolled}
-						<i class="ph ph-check-circle" aria-hidden="true"></i>
+						<Icon name="status.verified" />
 						I have read the disclosure — continue
 					{:else}
-						<i class="ph ph-arrow-circle-down" aria-hidden="true"></i>
+						<Icon name="nav.arrow-down" />
 						Scroll to the bottom to continue ↓
 					{/if}
 				</button>
@@ -368,11 +372,11 @@
 				<!-- ── STEP 2: GRANULAR CONSENT ASSERTIONS ───────────────────── -->
 				<div class="vpc-wizard-header">
 					<button type="button" class="vpc-back-btn" onclick={() => (wizardStage = 'step1')} aria-label="Back">
-						<i class="ph ph-arrow-left" aria-hidden="true"></i>
+						<Icon name="nav.arrow-left" />
 					</button>
 					<div class="vpc-wizard-progress">
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--done">
-							<i class="ph ph-check" aria-hidden="true"></i>
+							<Icon name="status.check" />
 						</span>
 						<span class="vpc-wizard-progress__line vpc-wizard-progress__line--done"></span>
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--active">2</span>
@@ -444,15 +448,15 @@
 				<!-- ── STEP 3: IDENTITY ATTESTATION ──────────────────────────── -->
 				<div class="vpc-wizard-header">
 					<button type="button" class="vpc-back-btn" onclick={() => (wizardStage = 'step2')} aria-label="Back">
-						<i class="ph ph-arrow-left" aria-hidden="true"></i>
+						<Icon name="nav.arrow-left" />
 					</button>
 					<div class="vpc-wizard-progress">
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--done">
-							<i class="ph ph-check" aria-hidden="true"></i>
+							<Icon name="status.check" />
 						</span>
 						<span class="vpc-wizard-progress__line vpc-wizard-progress__line--done"></span>
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--done">
-							<i class="ph ph-check" aria-hidden="true"></i>
+							<Icon name="status.check" />
 						</span>
 						<span class="vpc-wizard-progress__line vpc-wizard-progress__line--done"></span>
 						<span class="vpc-wizard-progress__step vpc-wizard-progress__step--active">3</span>
@@ -500,9 +504,9 @@
 					onclick={submitConsent}
 				>
 					{#if submitting}
-						<i class="ph ph-spinner" aria-hidden="true"></i> Submitting…
+						<Icon name="status.loading" /> Submitting…
 					{:else}
-						<i class="ph ph-seal-check" aria-hidden="true"></i> Submit consent
+						<Icon name="status.seal-check" /> Submit consent
 					{/if}
 				</button>
 			{/if}
@@ -555,8 +559,9 @@
 		padding: 2rem 1rem;
 		text-align: center;
 	}
-	.vpc-empty-state__icon {
-		font-size: 2.25rem;
+	:global(.vpc-empty-state__icon) {
+		width: 2.25rem;
+		height: 2.25rem;
 		color: var(--text-secondary);
 		opacity: 0.45;
 	}
@@ -647,7 +652,7 @@
 		gap: 0.85rem;
 		padding: 1rem 0 0.5rem;
 	}
-	.vpc-done__icon { font-size: 3rem; color: #16a34a; line-height: 1; }
+	.vpc-done__icon :global(svg) { width: 3rem; height: 3rem; color: #16a34a; }
 	:global(html.dark) .vpc-done__icon { color: #4ade80; }
 	.vpc-done__title { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text-primary); }
 	.vpc-done__body {

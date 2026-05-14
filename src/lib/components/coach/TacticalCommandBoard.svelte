@@ -6,6 +6,8 @@
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const TACTICAL_INTEL = {
 		title: 'TACTICAL BUILDER',
@@ -530,7 +532,7 @@
 				title="Tactics library"
 				aria-label="Toggle tactics library"
 			>
-				<i class="ph ph-books" aria-hidden="true"></i>
+				<Icon name={"content.books" as IconName} aria-hidden="true" />
 				<span class="strategy-dock-txt">Library</span>
 			</button>
 			<div class="strategy-island-sep" aria-hidden="true"></div>
@@ -547,7 +549,7 @@
 					aria-label="Pen"
 					aria-pressed={currentTool === 'pen'}
 				>
-					<i class="ph ph-pencil-simple" aria-hidden="true"></i>
+					<Icon name={"action.edit" as IconName} aria-hidden="true" />
 				</button>
 				<button
 					type="button"
@@ -558,7 +560,7 @@
 					aria-label="Arrow"
 					aria-pressed={currentTool === 'arrow'}
 				>
-					<i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+					<Icon name={"nav.arrow-up-right" as IconName} aria-hidden="true" />
 				</button>
 				<div class="strategy-island-sep" aria-hidden="true"></div>
 				<div class="strategy-island-token-cluster" role="group" aria-label="Plays and board">
@@ -569,21 +571,21 @@
 						onclick={() => (currentTool = 'X')}
 						title="X Player"
 						aria-label="X player marker"
-						aria-pressed={currentTool === 'X'}
-					>
-						<i class="ph ph-x" aria-hidden="true"></i>
-					</button>
-					<button
-						type="button"
-						class="strategy-island-btn"
-						class:strategy-island-btn--active={currentTool === 'O'}
+					aria-pressed={currentTool === 'X'}
+				>
+					<Icon name={"sys.close" as IconName} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					class="strategy-island-btn"
+					class:strategy-island-btn--active={currentTool === 'O'}
 						onclick={() => (currentTool = 'O')}
 						title="O Player"
 						aria-label="O player marker"
-						aria-pressed={currentTool === 'O'}
-					>
-						<i class="ph ph-circle" aria-hidden="true"></i>
-					</button>
+					aria-pressed={currentTool === 'O'}
+				>
+					<Icon name={"sys.circle" as IconName} aria-hidden="true" />
+				</button>
 					<button
 						type="button"
 						class="strategy-island-clear-siem"
@@ -613,7 +615,7 @@
 					aria-label="Toggle whiteboard mode"
 					aria-pressed={whiteboard}
 				>
-					<i class="ph ph-eraser" aria-hidden="true"></i>
+					<Icon name={"action.eraser" as IconName} aria-hidden="true" />
 				</button>
 			{/snippet}
 
@@ -743,7 +745,7 @@
 					onclick={() => (libraryOpen = false)}
 					aria-label="Close library"
 				>
-					<i class="ph ph-x" aria-hidden="true"></i>
+					<Icon name={"sys.close" as IconName} aria-hidden="true" />
 				</button>
 				{#if !teamId}
 					<p class="strategy-hint">Select a team from the coach header to use tactics.</p>
@@ -965,8 +967,9 @@
 		color: #ecfeff;
 	}
 
-	.strategy-dock-library i {
-		font-size: 1rem;
+	.strategy-dock-library :global(svg) {
+		width: 1rem;
+		height: 1rem;
 		pointer-events: none;
 	}
 
@@ -1285,8 +1288,9 @@
 		color: #a1a1aa;
 	}
 
-	.strategy-island-btn i {
-		font-size: 1.1rem;
+	.strategy-island-btn :global(svg) {
+		width: 1.1rem;
+		height: 1.1rem;
 		pointer-events: none;
 	}
 

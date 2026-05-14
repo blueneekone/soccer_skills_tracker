@@ -1,11 +1,29 @@
 <script lang="ts">
   import type { SportsConfigEditorEngine } from './SportsConfigEditorEngine.svelte';
   import SportsConfigEditorHUD from './SportsConfigEditorHUD.svelte';
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
 
   type Props = { engine: SportsConfigEditorEngine };
   const { engine }: Props = $props();
 
   const RPG_SLOTS = ['ball_mastery', 'striking', 'pace', 'scanning', 'grit'] as const;
+
+  const ICON_CLASS_MAP: Record<string, IconName> = {
+    'ph-soccer-ball': 'sport.soccer',
+    'ph-basketball':  'sport.basketball',
+    'ph-baseball':    'sport.baseball',
+    'ph-football':    'sport.football',
+    'ph-volleyball':  'sport.volleyball',
+    'ph-ice-skate':   'sport.hockey',
+    'ph-tennis-ball': 'sport.lacrosse',
+  };
+
+  /** Prefer `iconName` from doc; fall back to `iconClass` bridge for legacy docs. */
+  function resolveIconName(cfg: { iconName?: string; iconClass: string }): IconName {
+    if (cfg.iconName) return cfg.iconName as IconName;
+    return ICON_CLASS_MAP[cfg.iconClass] ?? 'sport.generic';
+  }
 
   function updateRpgSlot(slot: string, value: string) {
     if (!engine.dirtyBuffer) return;
@@ -30,7 +48,7 @@
         class:rail-item--active={engine.selectedConfig?.sportId === cfg.sportId}
         onclick={() => engine.selectConfig(cfg)}
       >
-        <i class="ph {cfg.iconClass} rail-icon" style="color: {cfg.palette.fg}"></i>
+        <span style="color: {cfg.palette.fg}"><Icon name={resolveIconName(cfg)} size={18} /></span>
         <span class="rail-name">{cfg.displayName}</span>
         <span class="rail-version">v{cfg.schemaVersion}</span>
       </button>
@@ -63,7 +81,7 @@
   <section class="arena-editor">
     {#if engine.viewMode === 'list'}
       <div class="arena-empty">
-        <i class="ph ph-shield-check tw-text-4xl tw-text-slate-600"></i>
+        <Icon name={"status.shield-check" as IconName} size={36} class="tw-text-slate-600" />
         <p class="tw-text-slate-500 tw-text-sm tw-mt-2">Select a sport to edit or create a new one.</p>
       </div>
 
@@ -97,13 +115,25 @@
             </label>
           </div>
           <label class="field-block tw-mt-3">
-            <span class="field-label">Icon Class (Phosphor)</span>
+            <span class="field-label">Icon Name (registry token)</span>
             <div class="tw-flex tw-gap-2 tw-items-center">
-              <input class="field-input tw-flex-1" bind:value={engine.dirtyBuffer.iconClass} placeholder="ph-soccer-ball" />
-              {#if engine.dirtyBuffer.iconClass}
-                <i class="ph {engine.dirtyBuffer.iconClass} tw-text-xl tw-text-slate-300"></i>
+              <input
+                class="field-input tw-flex-1"
+                value={(engine.dirtyBuffer as Record<string, unknown>).iconName ?? resolveIconName(engine.dirtyBuffer as { iconName?: string; iconClass: string })}
+                oninput={(e) => {
+                  const val = (e.currentTarget as HTMLInputElement).value;
+                  engine.dirtyBuffer = { ...engine.dirtyBuffer!, iconName: val };
+                }}
+                placeholder="sport.soccer"
+              />
+              {#if engine.dirtyBuffer}
+                <Icon name={resolveIconName(engine.dirtyBuffer as { iconName?: string; iconClass: string })} size={20} class="tw-text-slate-300" />
               {/if}
             </div>
+          </label>
+          <label class="field-block tw-mt-2">
+            <span class="field-label tw-opacity-40">Icon Class (Phosphor — legacy, kept for backward compat)</span>
+            <input class="field-input tw-opacity-40" bind:value={engine.dirtyBuffer.iconClass} placeholder="ph-soccer-ball" />
           </label>
           <label class="field-block tw-mt-3">
             <span class="field-label">Aliases (comma-separated)</span>
@@ -189,7 +219,16 @@
               class="chip-preview tw-mt-3"
               style="background: radial-gradient(ellipse at center, {engine.dirtyBuffer.palette.glow}, transparent); border: 1px solid {engine.dirtyBuffer.palette.ring}; color: {engine.dirtyBuffer.palette.fg};"
             >
-              <i class="ph {engine.dirtyBuffer.iconClass ?? 'ph-shield-check'}"></i>
+              <Icon name={
+                engine.dirtyBuffer.iconClass === 'ph-soccer-ball' ? 'sport.soccer' :
+                engine.dirtyBuffer.iconClass === 'ph-basketball' ? 'sport.basketball' :
+                engine.dirtyBuffer.iconClass === 'ph-baseball' ? 'sport.baseball' :
+                engine.dirtyBuffer.iconClass === 'ph-football' ? 'sport.football' :
+                engine.dirtyBuffer.iconClass === 'ph-volleyball' ? 'sport.volleyball' :
+                engine.dirtyBuffer.iconClass === 'ph-ice-skate' ? 'sport.hockey' :
+                engine.dirtyBuffer.iconClass === 'ph-tennis-ball' ? 'sport.lacrosse' :
+                'status.shield-check'
+              } size={16} />
               <span>{engine.dirtyBuffer.displayName ?? 'Sport'}</span>
             </div>
           {/if}
@@ -302,7 +341,7 @@
   .rail-item:hover { background: rgba(0,240,255,0.06); color: rgba(255,255,255,0.85); }
   .rail-item--active { background: rgba(0,240,255,0.1); color: #fff; border: 1px solid rgba(0,240,255,0.2); }
   .rail-item--archived { opacity: 0.45; }
-  .rail-icon { font-size: 15px; flex-shrink: 0; }
+  .rail-item span { flex-shrink: 0; display: flex; align-items: center; }
   .rail-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .rail-version {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

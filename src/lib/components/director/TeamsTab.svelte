@@ -9,6 +9,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { clubId = '' } = $props();
 
@@ -259,7 +261,7 @@
 <!-- ── Control Bar ──────────────────────────────────────────────────────── -->
 <div class="tt-control-bar">
 	<div class="tt-search-wrap">
-		<i class="ph ph-magnifying-glass tt-search-icon" aria-hidden="true"></i>
+		<Icon name="action.search" class="tt-search-icon" size={15} />
 		<input
 			type="search"
 			bind:value={searchQuery}
@@ -269,7 +271,7 @@
 		/>
 		{#if searchQuery}
 			<button class="tt-search-clear" onclick={() => (searchQuery = '')} aria-label="Clear search">
-				<i class="ph ph-x"></i>
+				<Icon name="sys.close" />
 			</button>
 		{/if}
 	</div>
@@ -297,7 +299,7 @@
 				class:tt-new-btn--active={showCreateForm}
 				onclick={() => (showCreateForm = !showCreateForm)}
 			>
-				<i class="ph ph-plus"></i>
+				<Icon name="action.add" />
 				<span>NEW SQUAD</span>
 			</button>
 		</div>
@@ -309,7 +311,7 @@
 	<div class="tt-create-panel">
 		<div class="tt-create-panel__inner">
 			<p class="tt-create-panel__head">
-				<i class="ph ph-shield-plus"></i> PROVISION NEW SQUAD
+				<Icon name="status.shield-plus" /> PROVISION NEW SQUAD
 			</p>
 			<div class="tt-create-fields">
 				<div class="tt-field-group">
@@ -381,7 +383,7 @@
 <!-- ── Empty State ───────────────────────────────────────────────────────── -->
 {#if filteredTeams.length === 0}
 	<div class="tt-empty">
-		<i class="ph ph-shield-slash tt-empty-icon" aria-hidden="true"></i>
+		<Icon name="status.shield-ban" class="tt-empty-icon" size={40} />
 		<p class="tt-empty-head">
 			{#if searchQuery || statusFilter !== 'all'}
 				No squads match the current filters.
@@ -391,7 +393,7 @@
 		</p>
 		{#if !searchQuery && statusFilter === 'all'}
 			<button class="tt-empty-cta" onclick={() => (showCreateForm = true)}>
-				<i class="ph ph-plus"></i> Provision First Squad
+				<Icon name="action.add" /> Provision First Squad
 			</button>
 		{/if}
 	</div>
@@ -490,7 +492,7 @@
 
 				<!-- Coach row -->
 				<div class="tt-card-coach-row">
-					<i class="ph ph-user-circle tt-coach-icon" aria-hidden="true"></i>
+					<Icon name="user.avatar" class="tt-coach-icon" size={14} />
 					<span class="tt-coach-email">{t.coachEmail || 'No coach assigned'}</span>
 				</div>
 
@@ -500,20 +502,20 @@
 						href="/admin/organizations/{clubId}/teams/{t.id}/roster"
 						class="tt-card-act-link"
 					>
-						<i class="ph ph-users"></i> ROSTER
+						<Icon name="user.group" /> ROSTER
 					</a>
 					<button
 						class="tt-card-act-btn"
 						onclick={() => openTeamDrawer(t)}
 					>
-						<i class="ph ph-sidebar"></i> INSPECT
+						<Icon name="nav.sidebar" /> INSPECT
 					</button>
 					{#if !t.coachEmail}
 						<button
 							class="tt-card-act-invite"
 							onclick={() => (showInlineInvite = { ...showInlineInvite, [t.id]: !showInvForm })}
 						>
-							<i class="ph ph-envelope-simple-open"></i> INVITE
+							<Icon name="comm.mail-open" /> INVITE
 						</button>
 					{/if}
 				</div>
@@ -558,7 +560,7 @@
 			disabled={batchWorking}
 			title="Re-dispatch seat reservation reminder to pending coaches"
 		>
-			<i class="ph ph-envelope-open"></i>
+			<Icon name="comm.mail-open" />
 			<span>BULK SEAT REMINDER</span>
 		</button>
 
@@ -568,7 +570,7 @@
 			disabled={batchWorking}
 			title="Copy multi-squad CSV roster extract to clipboard"
 		>
-			<i class="ph ph-download-simple"></i>
+			<Icon name="action.download" />
 			<span>EXPORT CSV</span>
 		</button>
 
@@ -579,7 +581,7 @@
 			onclick={() => (selectedTeamIds = [])}
 			aria-label="Clear selection"
 		>
-			<i class="ph ph-x"></i>
+			<Icon name="sys.close" />
 		</button>
 	</div>
 {/if}
@@ -614,7 +616,8 @@
 	.tt-search-icon {
 		position: absolute;
 		left: 12px;
-		font-size: 15px;
+		width: 15px;
+		height: 15px;
 		color: rgba(0, 240, 255, 0.5);
 		pointer-events: none;
 	}
@@ -923,7 +926,7 @@
 		padding: 60px 24px;
 		text-align: center;
 	}
-	.tt-empty-icon { font-size: 40px; color: rgba(0, 240, 255, 0.2); }
+	.tt-empty-icon { width: 40px; height: 40px; color: rgba(0, 240, 255, 0.2); }
 	.tt-empty-head {
 		margin: 0;
 		font-family: var(--tt-mono);
@@ -1081,7 +1084,7 @@
 		gap: 8px;
 		min-height: 20px;
 	}
-	.tt-coach-icon { font-size: 14px; color: rgba(248, 250, 252, 0.3); }
+	.tt-coach-icon { width: 14px; height: 14px; color: rgba(248, 250, 252, 0.3); flex-shrink: 0; }
 	.tt-coach-email {
 		font-family: var(--tt-mono);
 		font-size: 11px;

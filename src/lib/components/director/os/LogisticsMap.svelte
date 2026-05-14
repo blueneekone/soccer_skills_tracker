@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 	import { createAdvancedPinMarker } from '$lib/maps/advancedMarkers.js';
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -129,14 +130,14 @@
 		role="img"
 		aria-label="Google Maps API key required"
 	>
-		<i class="ph ph-lock-key logistics-map-empty__icon" aria-hidden="true"></i>
+		<span class="logistics-map-empty__icon"><Icon name="sys.lock" size={36} /></span>
 		<p class="logistics-map-empty__text">
 			Google Maps API Key Required. Configure in .env to activate visual routing.
 		</p>
 	</div>
 {:else if !mapsMapId}
 	<div class="logistics-map-empty logistics-map-empty--no-key" role="img" aria-label="Google Maps Map ID required">
-		<i class="ph ph-map-pin logistics-map-empty__icon" aria-hidden="true"></i>
+		<span class="logistics-map-empty__icon"><Icon name="sys.map-pin" size={36} /></span>
 		<p class="logistics-map-empty__text">
 			Set <code class="lm-code">VITE_GOOGLE_MAPS_MAP_ID</code> (Google Cloud → Map Management → Map IDs) for Advanced
 			Markers.
@@ -148,7 +149,7 @@
 		role="img"
 		aria-label="Google Maps failed to load"
 	>
-		<i class="ph ph-map-pin logistics-map-empty__icon" aria-hidden="true"></i>
+		<span class="logistics-map-empty__icon"><Icon name="sys.map-pin" size={36} /></span>
 		<p class="logistics-map-empty__text">
 			Unable to load Google Maps. Check your API key and billing.
 		</p>
@@ -232,8 +233,11 @@
 	}
 
 	.logistics-map-empty__icon {
-		font-size: 2.25rem;
-		line-height: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
 		color: #d97706;
 	}
 

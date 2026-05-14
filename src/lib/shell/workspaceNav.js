@@ -9,34 +9,34 @@
 
 /** @type {ShellNavItem[]} */
 const adminLinks = [
-	{ label: 'Overview',        icon: 'ph-chart-line',   href: '/admin/overview' },
-	{ label: 'Organizations',   icon: 'ph-buildings',    href: '/admin/organizations' },
-	{ label: 'Global Users',    icon: 'ph-globe',        href: '/admin/users' },
-	{ label: 'Recruiters',      icon: 'ph-binoculars',   href: '/admin/recruiters' },
-	{ label: 'Audit Log',       icon: 'ph-shield-check', href: '/admin/audit-log' },
-	{ label: 'System Settings', icon: 'ph-gear-six',     href: '/admin/system-settings' },
+	{ label: 'Overview',        icon: 'data.chart-line',   href: '/admin/overview' },
+	{ label: 'Organizations',   icon: 'org.building',      href: '/admin/organizations' },
+	{ label: 'Global Users',    icon: 'content.globe',     href: '/admin/users' },
+	{ label: 'Recruiters',      icon: 'sys.binoculars',    href: '/admin/recruiters' },
+	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
+	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
 ];
 
 /** @type {ShellNavItem[]} */
 const directorLinks = [
-	{ tab: 'home', label: 'Overview', icon: 'ph-house', href: '/director?tab=home' },
-	{ tab: 'teams', label: 'Roster & Teams', icon: 'ph-users-three', href: '/director?tab=teams' },
-	{ tab: 'field', label: 'Field Ops', icon: 'ph-map-pin', href: '/director?tab=field' },
-	{ tab: 'registrars', label: 'Registrars', icon: 'ph-swap', href: '/director?tab=registrars' },
-	{ tab: 'brand', label: 'Club Branding', icon: 'ph-palette', href: '/director?tab=brand' },
-	{ tab: 'playbook', label: 'Playbook', icon: 'ph-strategy', href: '/director?tab=playbook' },
-	{ tab: 'licenses', label: 'Licenses & Seats', icon: 'ph-credit-card', href: '/director?tab=licenses' },
-	{ tab: 'compliance', label: 'Compliance', icon: 'ph-shield-check', href: '/director?tab=compliance' },
-	{ tab: 'household', label: 'Households & COPPA', icon: 'ph-house-line', href: '/director?tab=household' },
+	{ tab: 'home',       label: 'Overview',          icon: 'nav.home',           href: '/director?tab=home' },
+	{ tab: 'teams',      label: 'Roster & Teams',    icon: 'user.group',         href: '/director?tab=teams' },
+	{ tab: 'field',      label: 'Field Ops',         icon: 'sys.map-pin',        href: '/director?tab=field' },
+	{ tab: 'registrars', label: 'Registrars',        icon: 'nav.swap',           href: '/director?tab=registrars' },
+	{ tab: 'brand',      label: 'Club Branding',     icon: 'sys.palette',        href: '/director?tab=brand' },
+	{ tab: 'playbook',   label: 'Playbook',          icon: 'data.target',        href: '/director?tab=playbook' },
+	{ tab: 'licenses',   label: 'Licenses & Seats',  icon: 'sys.credit-card',   href: '/director?tab=licenses' },
+	{ tab: 'compliance', label: 'Compliance',        icon: 'status.shield-check',href: '/director?tab=compliance' },
+	{ tab: 'household',  label: 'Households & COPPA',icon: 'nav.home',           href: '/director?tab=household' },
 ];
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ label: 'Daily Intel', href: '/coach', icon: 'ph-squares-four' },
-	{ label: 'The Forge', href: '/coach/forge', icon: 'ph-barbell' },
-	{ label: 'Match Day', href: '/coach/match-day', icon: 'ph-activity' },
-	{ label: 'Proving Grounds', href: '/coach/scouting', icon: 'ph-target' },
-	{ label: 'Logistics & Comms', href: '/coach/logistics', icon: 'ph-calendar-blank' },
+	{ label: 'Daily Intel',       href: '/coach',           icon: 'content.grid' },
+	{ label: 'The Forge',         href: '/coach/forge',     icon: 'game.dumbbell' },
+	{ label: 'Match Day',         href: '/coach/match-day', icon: 'data.activity' },
+	{ label: 'Proving Grounds',   href: '/coach/scouting',  icon: 'data.target' },
+	{ label: 'Logistics & Comms', href: '/coach/logistics', icon: 'sys.calendar' },
 ];
 
 /**
@@ -44,23 +44,23 @@ const coachLinks = [
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
-	{ tab: '', label: 'Command Center', icon: 'ph-crosshair', href: '/player/workout' },
-	{ tab: '', label: 'Operative Dossier', icon: 'ph-fingerprint', href: '/stats' },
-	{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
+	{ tab: '', label: 'Command Center',   icon: 'nav.crosshair',    href: '/player/workout' },
+	{ tab: '', label: 'Operative Dossier',icon: 'sys.fingerprint',  href: '/stats' },
+	{ tab: '', label: 'Settings',         icon: 'sys.settings',     href: '/settings' },
 ];
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
-	{ tab: '', label: 'Clearance', icon: 'ph-shield-check', href: '/parent/household' },
-	{ tab: '', label: 'Household', icon: 'ph-house', href: '/parent/vpc' },
-	{ tab: '', label: 'Log Workout', icon: 'ph-user-check', href: '/parent/log-workout' },
-	{ tab: '', label: 'Payments', icon: 'ph-credit-card', href: '/pricing' },
-	{ tab: '', label: 'Messages', icon: 'ph-chat-circle', href: '/messages' },
+	{ tab: '', label: 'Clearance',   icon: 'status.shield-check', href: '/parent/household' },
+	{ tab: '', label: 'Household',   icon: 'nav.home',             href: '/parent/vpc' },
+	{ tab: '', label: 'Log Workout', icon: 'user.check',           href: '/parent/log-workout' },
+	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/pricing' },
+	{ tab: '', label: 'Messages',    icon: 'comm.chat',            href: '/messages' },
 ];
 
 /** @type {ShellNavItem[]} */
 const recruiterLinks = [
-	{ tab: '', label: 'Recruiter Search', icon: 'ph-magnifying-glass', href: '/recruiter' },
+	{ tab: '', label: 'Recruiter Search', icon: 'action.search', href: '/recruiter' },
 ];
 
 /**
@@ -182,10 +182,10 @@ export function getWorkspaceNav(pathname, role, activeContext = '') {
 			return {
 				workspaceLabel: 'Workspace',
 				mobileTitle: 'App',
-				links: [
-					{ tab: '', label: 'Home', icon: 'ph-house', href: '/' },
-					{ tab: '', label: 'Settings', icon: 'ph-gear', href: '/settings' },
-				],
+		links: [
+				{ tab: '', label: 'Home', icon: 'nav.home', href: '/' },
+				{ tab: '', label: 'Settings', icon: 'sys.settings', href: '/settings' },
+			],
 				showBilling: false,
 			};
 		}

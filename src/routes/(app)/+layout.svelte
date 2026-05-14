@@ -28,6 +28,7 @@
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
 	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
+import Icon from '$lib/components/ui/Icon.svelte';
 	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
 
@@ -356,7 +357,7 @@
 		aria-label="Verifying your session with Firebase"
 	>
 		<div class="auth-splash__mark" aria-hidden="true">
-			<i class="ph ph-polygon"></i>
+			<Icon name="sys.hexagon" size={48} />
 		</div>
 		<div class="auth-splash__spinner" aria-hidden="true"></div>
 		<p class="auth-splash__label">SSTRACKER</p>

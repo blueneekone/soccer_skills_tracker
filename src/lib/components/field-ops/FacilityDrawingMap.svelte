@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
 	import { createAdvancedPinMarker } from '$lib/maps/advancedMarkers.js';
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @typedef {{ lat: number; lng: number }} LatLng
@@ -899,7 +901,7 @@
 		role="img"
 		aria-label="Google Maps API key required"
 	>
-		<i class="ph ph-lock-key fd-map-empty__icon" aria-hidden="true"></i>
+		<Icon name={"sys.lock-simple" as IconName} class="fd-map-empty__icon" aria-hidden="true" />
 		<p class="fd-map-empty__text">
 			Set <code class="fd-map-code">VITE_GOOGLE_MAPS_API_KEY</code> (or
 			<code class="fd-map-code">VITE_PUBLIC_GOOGLE_MAPS_API_KEY</code>) to enable satellite drawing tools.
@@ -907,7 +909,7 @@
 	</div>
 {:else if !mapsMapId}
 	<div class="fd-map-empty fd-map-empty--no-key" role="img" aria-label="Google Maps Map ID required">
-		<i class="ph ph-map-pin fd-map-empty__icon" aria-hidden="true"></i>
+		<Icon name={"sys.map-pin" as IconName} class="fd-map-empty__icon" aria-hidden="true" />
 		<p class="fd-map-empty__text">
 			Set <code class="fd-map-code">VITE_GOOGLE_MAPS_MAP_ID</code> (Google Cloud → Map Management → Map IDs) so Advanced
 			Markers work — required after Google deprecated classic markers.
@@ -915,7 +917,7 @@
 	</div>
 {:else if loadError}
 	<div class="fd-map-empty fd-map-empty--error" role="img" aria-label="Google Maps failed to load">
-		<i class="ph ph-map-pin fd-map-empty__icon" aria-hidden="true"></i>
+		<Icon name={"sys.map-pin" as IconName} class="fd-map-empty__icon" aria-hidden="true" />
 		<p class="fd-map-empty__text">Unable to load Google Maps. Check your API key and billing.</p>
 	</div>
 {:else}

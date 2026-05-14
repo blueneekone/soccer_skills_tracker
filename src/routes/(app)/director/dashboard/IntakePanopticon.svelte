@@ -4,6 +4,8 @@
   import { httpsCallable } from 'firebase/functions';
   import { SvelteSet } from 'svelte/reactivity';
   import { browser } from '$app/environment';
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
 
   interface PendingNode {
     id: string;
@@ -177,11 +179,7 @@
   <!-- ═══ EMPTY STATE ═══ -->
   {:else if pendingNodes.length === 0}
     <div class="ip-empty" role="status">
-      <svg class="ip-empty-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2"/>
-        <polyline points="14,24 21,31 34,16" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <Icon name="status.verified" size={48} class="ip-empty-icon" />
       <h3 class="ip-empty-title">ALL NODES CLEARED</h3>
       <p class="ip-empty-sub">No pending guardian verifications.</p>
     </div>

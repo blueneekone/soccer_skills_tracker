@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
 	type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
 	let {
@@ -247,7 +250,7 @@
 				onclick={onDeploy}
 			>
 				{#if deployPhase === 'idle'}
-					<i class="ph ph-lightning tw-text-sm"></i>
+					<Icon name={"game.zap" as IconName} size={14} />
 				{/if}
 				{deployBtnLabel}
 			</button>

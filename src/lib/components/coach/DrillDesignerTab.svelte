@@ -4,6 +4,8 @@
 	import { collection, addDoc } from 'firebase/firestore';
 	import Swal from 'sweetalert2';
 	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { teamId = '', workouts = [], onWorkoutSaved } = $props();
 
@@ -108,7 +110,7 @@
 			<label>Spatial Layout</label>
 			<FocusedWorkspaceWrapper>
 				{#snippet toolbar()}
-					{#each DRAG_ITEMS as item}
+					{#each DRAG_ITEMS as item (item.type)}
 						<div
 							class="dd-drag-item"
 							draggable="true"
@@ -131,7 +133,7 @@
 						title="Clear canvas"
 						aria-label="Clear canvas"
 					>
-						<i class="ph ph-eraser" aria-hidden="true"></i>
+						<Icon name={"action.eraser" as IconName} />
 					</button>
 				{/snippet}
 
@@ -276,8 +278,9 @@
 		color: #b91c1c;
 	}
 
-	.dd-clear-btn i {
-		font-size: 1.1rem;
+	.dd-clear-btn svg {
+		width: 1.1rem;
+		height: 1.1rem;
 		pointer-events: none;
 	}
 

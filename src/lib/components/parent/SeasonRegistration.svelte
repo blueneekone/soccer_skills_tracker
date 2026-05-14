@@ -22,6 +22,8 @@
 
 	import { onMount, onDestroy } from 'svelte';
 	import { CommerceEngine } from '$lib/services/commerce.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		playerEmail: string;
@@ -460,14 +462,12 @@
 			<!-- ── PHASE: CONFIRMED ───────────────────────────────────────────── -->
 			{:else if phase === 'confirmed'}
 				<div class="flex flex-col items-center gap-5 py-4 text-center">
-					<div
-						class="w-16 h-16 rounded-full flex items-center justify-center"
-						style="background: rgba(0,255,136,0.1); border: 2px solid rgba(0,255,136,0.6); box-shadow: 0 0 30px rgba(0,255,136,0.2);"
-					>
-						<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-							<path d="M5 13l4 4L19 7" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-						</svg>
-					</div>
+				<div
+					class="w-16 h-16 rounded-full flex items-center justify-center"
+					style="background: rgba(0,255,136,0.1); border: 2px solid rgba(0,255,136,0.6); box-shadow: 0 0 30px rgba(0,255,136,0.2); color: #00ff88;"
+				>
+					<Icon name="status.check" size={28} strokeWidth={2.5} />
+				</div>
 					<div class="space-y-2">
 						<div class="font-mono text-base font-bold" style="color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.4);">
 							PAYMENT CONFIRMED

@@ -16,6 +16,7 @@
 
 	import { weatherAegis } from '$lib/services/weather.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const role = $derived(authStore.role);
 
@@ -47,7 +48,13 @@
 		<!-- Left: icon + primary message -->
 		<div class="wa-left">
 			<span class="wa-icon" aria-hidden="true">
-				{#if level === 'DANGER'}⚡{:else if level === 'CAUTION'}⚠{:else}◷{/if}
+				{#if level === 'DANGER'}
+					<Icon name="game.zap" size={16} />
+				{:else if level === 'CAUTION'}
+					<Icon name="status.warning" size={16} />
+				{:else}
+					<Icon name="status.pending" size={16} />
+				{/if}
 			</span>
 			<div class="wa-msg">
 				{#if level === 'DANGER'}

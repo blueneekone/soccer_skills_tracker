@@ -39,6 +39,8 @@
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
 	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
 	import '$lib/styles/enterprise-console.css';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
 	const purgeUserDataFn = httpsCallable(functions, 'purgeUserDataFn');
@@ -733,13 +735,13 @@
 					onclick={() => (showAddAdmin = true)}
 					aria-haspopup="dialog"
 				>
-					<i class="ph ph-user-plus" aria-hidden="true"></i>
-					Add Admin
+				<Icon name={"user.plus" as IconName} aria-hidden="true" />
+				Add Admin
 				</button>
 			</div>
 			<div class="adm-toolbar__search-flex">
-				<div class="gu-search" role="search">
-					<i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+			<div class="gu-search" role="search">
+				<Icon name={"action.search" as IconName} aria-hidden="true" />
 					<input
 						type="search"
 						bind:value={searchInput}
@@ -757,12 +759,12 @@
 							aria-label="Clear search"
 							title="Clear search"
 						>
-							<i class="ph ph-x" aria-hidden="true"></i>
-						</button>
-					{/if}
-					<button
-						type="button"
-						class="gu-search__submit"
+						<Icon name={"sys.close" as IconName} aria-hidden="true" />
+					</button>
+				{/if}
+				<button
+					type="button"
+					class="gu-search__submit"
 						onclick={runSearch}
 						disabled={loading}
 						aria-label="Run search"
@@ -924,8 +926,8 @@
 							<td class="gu-td">
 								{#if row.clubId}
 									<span class="gu-club">
-										<i class="ph ph-buildings" aria-hidden="true"></i>
-										<span>{clubNameMap.get(row.clubId) || row.clubId}</span>
+								<Icon name={"org.building" as IconName} aria-hidden="true" />
+									<span>{clubNameMap.get(row.clubId) || row.clubId}</span>
 									</span>
 								{:else}
 									<span class="gu-muted">—</span>
@@ -947,11 +949,11 @@
 										aria-expanded={openMenuFor === row.id}
 										disabled={loginAsBusyFor === row.id}
 									>
-										{#if loginAsBusyFor === row.id}
-											<i class="ph ph-circle-notch gu-menu__spin" aria-hidden="true"></i>
-										{:else}
-											<i class="ph ph-dots-three" aria-hidden="true"></i>
-										{/if}
+									{#if loginAsBusyFor === row.id}
+										<Icon name={"status.loading" as IconName} class="gu-menu__spin" aria-hidden="true" />
+									{:else}
+										<Icon name={"nav.more" as IconName} aria-hidden="true" />
+									{/if}
 									</button>
 
 									{#if openMenuFor === row.id}
@@ -962,8 +964,8 @@
 												role="menuitem"
 												onclick={() => openEditAdmin(row)}
 											>
-												<i class="ph ph-pencil-simple" aria-hidden="true"></i>
-												<span>Edit {row.role === 'global_admin' || row.role === 'super_admin' ? 'Admin' : 'User'}</span>
+										<Icon name={"action.edit" as IconName} aria-hidden="true" />
+											<span>Edit {row.role === 'global_admin' || row.role === 'super_admin' ? 'Admin' : 'User'}</span>
 											</button>
 
 											<div class="gu-menu__sep" aria-hidden="true"></div>
@@ -977,13 +979,13 @@
 													loginAsBusyFor === row.id}
 												onclick={() => void loginAs(row)}
 											>
-												{#if loginAsBusyFor === row.id}
-													<i class="ph ph-circle-notch gu-menu__spin" aria-hidden="true"></i>
-													<span>Launching session…</span>
-												{:else}
-													<i class="ph ph-sign-in" aria-hidden="true"></i>
-													<span>Login As</span>
-												{/if}
+											{#if loginAsBusyFor === row.id}
+												<Icon name={"status.loading" as IconName} class="gu-menu__spin" aria-hidden="true" />
+												<span>Launching session…</span>
+											{:else}
+												<Icon name={"nav.sign-in" as IconName} aria-hidden="true" />
+												<span>Login As</span>
+											{/if}
 												{#if row.role === 'super_admin' || row.role === 'global_admin'}
 													<span class="gu-menu__hint">global admin</span>
 												{/if}
@@ -998,7 +1000,7 @@
 												onclick={() => openDeactivate(row)}
 												disabled={!canDeactivateUser(row)}
 											>
-												<i class="ph ph-prohibit" aria-hidden="true"></i>
+												<Icon name={"sys.ban" as IconName} aria-hidden="true" />
 												<span>Revoke access / Deactivate</span>
 											</button>
 
@@ -1011,8 +1013,8 @@
 												onclick={() => openPurge(row)}
 												disabled={row.role === 'super_admin' || row.role === 'global_admin'}
 											>
-												<i class="ph ph-trash" aria-hidden="true"></i>
-												<span>Purge User Data (GDPR)</span>
+											<Icon name={"action.delete" as IconName} aria-hidden="true" />
+											<span>Purge User Data (GDPR)</span>
 											</button>
 										</div>
 									{/if}
@@ -1035,8 +1037,8 @@
 				onclick={goPrev}
 				disabled={loading || pageIndex === 0}
 			>
-				<i class="ph ph-caret-left" aria-hidden="true"></i>
-				<span>Prev</span>
+			<Icon name={"nav.chevron-left" as IconName} aria-hidden="true" />
+			<span>Prev</span>
 			</button>
 			<button
 				type="button"
@@ -1044,8 +1046,8 @@
 				onclick={goNext}
 				disabled={loading || !hasNextPage}
 			>
-				<span>Next</span>
-				<i class="ph ph-caret-right" aria-hidden="true"></i>
+			<span>Next</span>
+			<Icon name={"nav.chevron-right" as IconName} aria-hidden="true" />
 			</button>
 		</div>
 	</footer>
@@ -1091,7 +1093,7 @@
 		>
 			<header class="gu-deactivate-card__head">
 				<div class="gu-deactivate-card__icon" aria-hidden="true">
-					<i class="ph-bold ph-warning-octagon"></i>
+					<Icon name={"status.warning-octagon" as IconName} />
 				</div>
 				<div>
 					<h2 id="gu-deact-title" class="gu-deactivate-card__title">Revoke access</h2>
@@ -1156,7 +1158,7 @@
 		>
 			<header class="gu-modal__head">
 				<div class="gu-modal__icon gu-modal__icon--danger" aria-hidden="true">
-					<i class="ph-bold ph-shield-warning"></i>
+					<Icon name={"status.shield-alert" as IconName} />
 				</div>
 				<div>
 					<h2 id="gu-purge-title" class="gu-modal__title">

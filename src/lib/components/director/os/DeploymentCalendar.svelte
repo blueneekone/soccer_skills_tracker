@@ -14,6 +14,8 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
 	 * @typedef {{ id: string; title?: string; kind?: string; startsAt?: unknown; endsAt?: unknown; facilityId?: string; teamIds?: string[] }} CalRow
@@ -246,7 +248,7 @@
 				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-950/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
 				onclick={openModal}
 			>
-				<i class="ph ph-plus-circle tw-text-base" aria-hidden="true"></i>
+				<Icon name="status.circle-plus" />
 				New deployment
 			</button>
 		{/if}
@@ -300,8 +302,8 @@
 								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-md tw-border tw-border-emerald-500/25 tw-bg-emerald-950/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-emerald-300/95"
 								title={facilityLabel(row.facilityId)}
 							>
-								<i class="ph ph-map-pin tw-text-emerald-400/90" aria-hidden="true"></i>
-								{facilityLabel(row.facilityId)}
+							<Icon name="sys.map-pin" class="tw-text-emerald-400/90" />
+							{facilityLabel(row.facilityId)}
 							</span>
 						{/if}
 						{#if row.teamIds && row.teamIds[0]}
@@ -416,7 +418,7 @@
 					onclick={closeModal}
 					aria-label="Close"
 				>
-					<i class="ph ph-x tw-text-lg" aria-hidden="true"></i>
+					<Icon name="sys.close" size={18} />
 				</button>
 			</div>
 
