@@ -87,7 +87,11 @@ async function executeDirectorVpcApproval(request, auditAction) {
       throw new HttpsError('permission-denied', 'Out of club scope.');
     }
   }
-  if (u.isMinor !== true) {
+  // Guard: only block when isMinor is EXPLICITLY false.
+  // isMinor === undefined / null means DOB was never self-reported (legacy player);
+  // a player in the VPC queue is by definition a minor, so allow the director
+  // to finalize rather than dead-locking the flow for pre-DOB-feature accounts.
+  if (u.isMinor === false) {
     throw new HttpsError(
         'failed-precondition',
         'User is not marked as a minor (set date of birth first).',
@@ -114,7 +118,7 @@ async function executeDirectorVpcApproval(request, auditAction) {
 
   const pendingReqs = await db().collection('vpc_requests')
       .where('playerEmail', '==', playerEmail)
-      .where('status', '==', 'pending')
+      .where('status', 'in', ['pending', 'parent_consented'])
       .get();
 
   const batch = db().batch();

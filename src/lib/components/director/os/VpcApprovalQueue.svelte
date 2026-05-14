@@ -44,15 +44,18 @@
 				);
 				const snap = await getDocs(q);
 				if (cancelled) return;
-				requests = snap.docs.map((d) => ({
-					id: d.id,
-					playerEmail: String(d.data().playerEmail || ''),
-					childEmail: String(d.data().childEmail || ''),
-					email: String(d.data().email || ''),
-					parentEmail: String(d.data().parentEmail || ''),
-					consentedAt: d.data().consentedAt || null,
-					clubId: String(d.data().clubId || ''),
-				}));
+			requests = snap.docs.map((d) => ({
+				id: d.id,
+				playerEmail: String(d.data().playerEmail || ''),
+				childEmail: String(d.data().childEmail || ''),
+				email: String(d.data().email || ''),
+				parentEmail: String(d.data().parentEmail || ''),
+				consentedAt: d.data().consentedAt || null,
+				clubId: String(d.data().clubId || ''),
+			}));
+			// #region agent log H-D/H-E
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d0d2bb'},body:JSON.stringify({sessionId:'d0d2bb',location:'VpcApprovalQueue.svelte:queue-loaded',message:'Queue loaded',data:{count:snap.docs.length,rows:snap.docs.map(d=>({id:d.id,playerEmail:d.data().playerEmail,parentEmail:d.data().parentEmail,status:d.data().status}))},timestamp:Date.now(),hypothesisId:'H-D/H-E'})}).catch(()=>{});
+			// #endregion
 			} catch (e) {
 				if (!cancelled) {
 					loadError = e instanceof Error ? e.message : String(e);
@@ -79,6 +82,10 @@
 			requestRow.email ||
 			'';
 
+		// #region agent log H-C
+		fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d0d2bb'},body:JSON.stringify({sessionId:'d0d2bb',location:'VpcApprovalQueue.svelte:handleVpcApproval-entry',message:'Approval attempt',data:{docId:requestRow.id,playerEmail:requestRow.playerEmail,childEmail:requestRow.childEmail,email:requestRow.email,targetEmail,targetEmailEmpty:!targetEmail.trim()},timestamp:Date.now(),hypothesisId:'H-C'})}).catch(()=>{});
+		// #endregion
+
 		if (!targetEmail.trim()) {
 			console.error(
 				'[VpcApprovalQueue] Approval aborted: row lacks a valid target player email.',
@@ -92,7 +99,15 @@
 			await directorApproveVpcFn({ playerEmail: targetEmail.trim() });
 			itemState = { ...itemState, [requestRow.id]: 'done' };
 			requests = requests.filter((r) => r.id !== requestRow.id);
+			// #region agent log post-fix success
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d0d2bb'},body:JSON.stringify({sessionId:'d0d2bb',location:'VpcApprovalQueue.svelte:handleVpcApproval-success',message:'Approval SUCCESS',data:{docId:requestRow.id,targetEmail,runId:'post-fix'},timestamp:Date.now(),hypothesisId:'H-A'})}).catch(()=>{});
+			// #endregion
 		} catch (e) {
+			// #region agent log H-A/H-B
+			const errCode = /** @type {any} */ (e)?.code ?? 'unknown';
+			const errMsg = e instanceof Error ? e.message : String(e);
+			fetch('http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d0d2bb'},body:JSON.stringify({sessionId:'d0d2bb',location:'VpcApprovalQueue.svelte:handleVpcApproval-error',message:'Callable error',data:{docId:requestRow.id,targetEmail,errCode,errMsg},timestamp:Date.now(),hypothesisId:'H-A/H-B'})}).catch(()=>{});
+			// #endregion
 			console.error('[VpcApprovalQueue] Backend VPC clearance rejected:', e);
 			itemState = { ...itemState, [requestRow.id]: 'error' };
 		}
