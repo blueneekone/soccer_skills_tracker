@@ -16,16 +16,18 @@ Lazy Migration (Read-Repair): If required keys (sportId, schemaVersion, tenantId
 
 Strict Tenant Isolation: Every database read/write must explicitly enforce clubId or tenantId to prevent cross-tenant exposure.
 
-3. PROJECT IDENTITY & TECHNO-FUTURIST AESTHETIC
-Platform Identity: "Nexus Command" — a professional-grade, gamified SaaS platform for youth athlete development.
+PROJECT IDENTITY & TACTICAL SIEM AESTHETIC
+Platform Identity: "Nexus Command" — A professional-grade, strategic SaaS platform for youth athlete development.
 
-The UI Aesthetic: "Techno-Futurist SIEM / Cyberpunk." It must feel like an ultra-premium cybersecurity Mission Control dashboard. No flat, boring white backgrounds.  
+The UI Aesthetic: "Tactical SIEM / Commander." It must feel like an ultra-premium, high-stakes military or cybersecurity Mission Control dashboard.
 
-Colors: Deep dark mode (bg-[#020202]), neon cyan/indigo accents (text-[#00f0ff], border-[#00f0ff]), and stark whites.
+Colors: Deep muted slate/navy dark mode (e.g., bg-), stark white data points, and a single muted accent (e.g., Deep Teal). NO PURE BLACK. NO NEON GLOWS.
 
-Textures & Layouts: True Glassmorphism with deep backdrop-blur. Implement rigid Bento Grid layouts using CSS clamp() functions to build fluid, scannable hierarchies without static media queries.  
+Typography: Use modern neo-grotesque fonts for body text and strictly use Geist Mono for all data labels, metrics, and technical readouts to reinforce the data-dense commander vibe.
 
-Micro-Typography: Interface text must be ultra-small (tw-text-[10px]), use monospace fonts, and employ aggressive letter spacing (tw-tracking-widest).
+Textures & Layouts: Strategic Minimalism. Use rigid Bento Grids with thin, low-contrast borders. Glassmorphism is STRICTLY LIMITED to floating modals, sticky headers, or dropdowns. Data cards must have solid, opaque backgrounds to preserve text contrast.
+
+Micro-Interactions: Premium, fast, and brutalist. Limit animations to 150–250ms. Use subtle 1% dimming or micro-pulses for state changes. No bouncy or decorative motion.
 
 4. TECH STACK & STRICT SVELTE 5 MANDATES
 Core Stack: Svelte 5 (Strict Runes), SvelteKit, TypeScript, Tailwind CSS, Firebase v2 Modular SDK.

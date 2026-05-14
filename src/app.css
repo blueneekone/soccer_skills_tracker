@@ -67,40 +67,59 @@ html {
  */
 :root {
 	/* ── Nexus Command Token Dictionary (canonical) ──────────────────── */
-	--vanguard-bg:        #0f172a;
-	--vanguard-cyan:      #6366f1;
+	--vanguard-bg:        #0f172a;   /* Slate-900 global background — NO pure black */
+
+	/* ── Opaque surface tokens — data cards MUST use these, not glass ── */
+	--vanguard-surface:        #131c2e;  /* Primary card / panel fill */
+	--vanguard-surface-raised: #182236;  /* Elevated rows, table headers */
+
+	/* ── Muted slate-teal accent (replaces Tron neon #00f0ff / #6366f1) */
+	--vanguard-accent:     #14b8a6;
+	--vanguard-accent-dim: rgba(20, 184, 166, 0.45);
+
+	/* ── DEPRECATED aliases — alias to accent; remove after full migration */
+	--vanguard-cyan:  #14b8a6;  /* was: #6366f1 */
+
 	--vanguard-red:       #ff003c;
-	--vanguard-glass:     rgba(15, 23, 42, 0.55);
-	--vanguard-border:    rgba(99, 102, 241, 0.22);
+	--vanguard-glass:     rgba(19, 28, 46, 0.72);  /* Floating modals / dock only */
+	--vanguard-border:    rgba(148, 163, 184, 0.12); /* Slate-400 @ 12% — thin, NOT teal */
+	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
+	--vanguard-text-primary:   #e2e8f0; /* Slate-200 */
+	--vanguard-text-secondary: #94a3b8; /* Slate-400 */
 	--vanguard-radius:    1.5rem;   /* 24px — primary card/panel radius */
 	--vanguard-radius-sm: 0.75rem;  /* 12px — button/badge radius */
 	--vanguard-radius-md: 1rem;     /* 16px — modal / sub-panel */
 	--vanguard-radius-xs: 0.5rem;   /* 8px  — chip / tag (last resort) */
 
-	/* ── Vanguard Blur Scale ─────────────────────────────────────────── */
+	/* ── Vanguard Blur Scale — floating surfaces only ───────────────── */
 	--vanguard-blur-sm: 16px;
 	--vanguard-blur:    24px;
 	--vanguard-blur-lg: 40px;
 
-	/* ── Vanguard Elevation Scale ────────────────────────────────────── */
+	/* ── Motion Scale — 150-250ms canonical range ────────────────────── */
+	--motion-fast: 150ms;  /* State toggles, hover background fills */
+	--motion-base: 200ms;  /* Primary buttons, card hovers, focus ring */
+	--motion-slow: 250ms;  /* Drawer/modal open, page transitions */
+	--motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);  /* Premium snap, no bounce */
+
+	/* ── Typography tokens ───────────────────────────────────────────── */
+	--font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	/* ── Vanguard Elevation Scale — NO neon halos on data cards ─────── */
 	/* elev-1: chips / inputs — minimal rim + soft drop */
 	--vanguard-elev-1:
 		inset 0 1px 0 rgba(255, 255, 255, 0.04),
-		0 1px 2px rgba(0, 0, 0, 0.4),
-		0 4px 12px -4px rgba(0, 0, 0, 0.5);
-	/* elev-2: cards / panels — inset rim + ambient depth + subtle indigo glow */
+		0 1px 2px rgba(0, 0, 0, 0.4);
+	/* elev-2: cards / panels — inset rim + ambient depth (no cyan halo) */
 	--vanguard-elev-2:
-		inset 0 1px 0 rgba(255, 255, 255, 0.06),
-		0 1px 2px rgba(0, 0, 0, 0.3),
-		0 8px 24px -8px rgba(0, 0, 0, 0.5),
-		0 0 15px rgba(99, 102, 241, 0.06);
-	/* elev-3: modals / heroes / drawers — strong drop + wider indigo glow */
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		0 4px 12px -4px rgba(0, 0, 0, 0.55);
+	/* elev-3: floating modals/heroes/drawers — stronger depth (glass layers only) */
 	--vanguard-elev-3:
-		inset 0 1px 0 rgba(255, 255, 255, 0.08),
-		0 1px 2px rgba(0, 0, 0, 0.3),
-		0 16px 40px -12px rgba(0, 0, 0, 0.6),
-		0 0 20px rgba(99, 102, 241, 0.08);
-	/* elev-ares: breach / critical state — crimson inset + red glow */
+		inset 0 1px 0 rgba(255, 255, 255, 0.06),
+		0 12px 32px -10px rgba(0, 0, 0, 0.65);
+	/* elev-ares: breach / critical state — crimson inset + red glow (state, not decoration) */
 	--vanguard-elev-ares:
 		inset 0 0 0 1px rgba(255, 0, 60, 0.3),
 		0 0 24px rgba(255, 0, 60, 0.35),
@@ -136,9 +155,9 @@ html {
 	--obsidian: #0f172a;
 
 	/* ── NEXUS: STANDARD OPS ─────────────────────────────────────────── */
-	--legacy-cyan: #6366f1;
-	--legacy-glow: 0 0 15px rgba(99, 102, 241, 0.4), inset 0 0 10px rgba(99, 102, 241, 0.2);
-	--legacy-glass: rgba(15, 23, 42, 0.6);
+	--legacy-cyan: #14b8a6;  /* DEPRECATED alias → --vanguard-accent */
+	--legacy-glow: none;     /* was: neon cyan halo — zeroed; var() calls degrade gracefully */
+	--legacy-glass: rgba(19, 28, 46, 0.72);
 
 	/* ── TRON: ARES (Threat State & Overrides) ───────────────────────── */
 	--ares-crimson: #ff0033;
@@ -146,7 +165,7 @@ html {
 	--ares-glass: rgba(20, 0, 0, 0.9);
 
 	/* ── AAA HUD GREEBLING ───────────────────────────────────────────── */
-	--ui-border-thin: 1px solid rgba(255, 255, 255, 0.1);
+	--ui-border-thin: 1px solid rgba(255, 255, 255, 0.08);
 
 	--vanguard-z-base: 0;
 	--vanguard-z-dock: 50;
@@ -163,12 +182,12 @@ body {
 	margin: 0;
 	background-color: var(--vanguard-bg);
 	background-image:
-		linear-gradient(to right, rgba(99, 102, 241, 0.04) 1px, transparent 1px),
-		linear-gradient(to bottom, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+		linear-gradient(to right, rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
 	background-size: 4rem 4rem;
 	background-attachment: fixed;
-	color: #e5e7eb; /* gray-200 — high contrast on enterprise slate */
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+	color: var(--vanguard-text-primary); /* slate-200 — high contrast on enterprise slate */
+	font-family: var(--font-body);
 }
 
 /**
@@ -216,17 +235,27 @@ body {
  * without repeating the full glassmorphism stack.
  */
 @layer components {
+	/*
+	 * ╔══════════════════════════════════════════════════════════════════╗
+	 * ║  GLASSMORPHISM CARVE-OUT — ALLOWED SURFACES (per .cursorrules)  ║
+	 * ║  backdrop-filter is ONLY permitted on:                          ║
+	 * ║  • .vanguard-surface--hero  (floating modals / hero overlays)   ║
+	 * ║  • .tw-vanguard-dock-pill   (floating dock chrome)              ║
+	 * ║  • CommandPalette.svelte    (sticky search overlay)             ║
+	 * ║  • .vanguard-surface--modal (sticky headers / dropdowns)        ║
+	 * ║  ALL data cards use opaque var(--vanguard-surface) fills.       ║
+	 * ╚══════════════════════════════════════════════════════════════════╝
+	 */
+
 	/**
 	 * .vanguard-surface
-	 * Canonical Vanguard glass surface. All card/panel primitives compose on this.
-	 * Use modifiers to vary elevation, radius, or blur tier.
+	 * Canonical opaque data-card surface. All card/panel primitives compose on this.
+	 * Use modifiers to vary elevation, radius, or enable glass for floating layers.
 	 */
 	.vanguard-surface {
-		background: var(--vanguard-glass);
+		background: var(--vanguard-surface);
 		border: 1px solid var(--vanguard-border);
 		border-radius: var(--vanguard-radius);
-		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		box-shadow: var(--vanguard-elev-2);
 	}
 
@@ -241,11 +270,19 @@ body {
 		border-radius: var(--vanguard-radius-md);
 	}
 
-	/* hero / overlay — stronger depth + wider blur */
+	/* FLOATING GLASS — hero overlays / modals / drawers only */
 	.vanguard-surface--hero {
+		background: var(--vanguard-glass);
 		box-shadow: var(--vanguard-elev-3);
 		backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
 		-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
+	}
+
+	/* FLOATING GLASS — sticky modal variant */
+	.vanguard-surface--modal {
+		background: var(--vanguard-glass);
+		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 	}
 
 	/* breach / critical threat state — crimson rim + red glow */
@@ -298,14 +335,11 @@ body {
 
 	/**
 	 * .vanguard-card
-	 * Glassmorphism surface: obsidian-translucent fill, blurred backdrop,
-	 * subtle cyan perimeter glow. Base for all panel / widget containers.
-	 * Composes on .vanguard-surface tokens.
+	 * Opaque data-card surface. Solid fill ensures text contrast on SIEM dashboards.
+	 * Do NOT add backdrop-filter here — glass is reserved for floating overlays only.
 	 */
 	.vanguard-card {
-		background: var(--vanguard-glass);
-		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
+		background: var(--vanguard-surface);
 		border: 1px solid var(--vanguard-border);
 		border-radius: var(--vanguard-radius);
 		box-shadow: var(--vanguard-elev-2);
@@ -313,14 +347,14 @@ body {
 
 	/**
 	 * .vanguard-btn-primary
-	 * Luminous indigo CTA. Idle: translucent tint + indigo border.
-	 * Hover: stronger fill + outer neon halo.
+	 * Teal-accent CTA. Idle: translucent tint + teal border.
+	 * Hover: subtle fill lift only — no neon halo.
 	 */
 	.vanguard-btn-primary {
-		background: rgba(99, 102, 241, 0.1);
-		border: 1px solid var(--vanguard-cyan);
-		color: var(--vanguard-cyan);
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid var(--vanguard-accent);
+		color: var(--vanguard-accent);
+		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -328,13 +362,13 @@ body {
 		border-radius: var(--vanguard-radius-sm);
 		cursor: pointer;
 		transition:
-			background 0.2s ease,
-			box-shadow 0.2s ease;
+			background var(--motion-base) var(--motion-ease),
+			border-color var(--motion-base) var(--motion-ease);
 	}
 
 	.vanguard-btn-primary:hover:not(:disabled) {
-		background: rgba(99, 102, 241, 0.2);
-		box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+		background: rgba(20, 184, 166, 0.16);
+		border-color: var(--vanguard-accent);
 	}
 
 	.vanguard-btn-primary:disabled {
@@ -345,12 +379,13 @@ body {
 	/**
 	 * .vanguard-btn-danger
 	 * Ares Red CTA — for destructive / critical actions.
+	 * Hover glow is intentionally retained as a critical-state signal.
 	 */
 	.vanguard-btn-danger {
-		background: rgba(255, 0, 60, 0.1);
+		background: rgba(255, 0, 60, 0.08);
 		border: 1px solid var(--vanguard-red);
 		color: var(--vanguard-red);
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -358,13 +393,13 @@ body {
 		border-radius: var(--vanguard-radius-sm);
 		cursor: pointer;
 		transition:
-			background 0.2s ease,
-			box-shadow 0.2s ease;
+			background var(--motion-base) var(--motion-ease),
+			box-shadow var(--motion-base) var(--motion-ease);
 	}
 
 	.vanguard-btn-danger:hover:not(:disabled) {
-		background: rgba(255, 0, 60, 0.2);
-		box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
+		background: rgba(255, 0, 60, 0.18);
+		box-shadow: 0 0 12px rgba(255, 0, 60, 0.35);
 	}
 
 	.vanguard-btn-danger:disabled {
@@ -606,35 +641,31 @@ input[type='range'] {
 
 input[type='range']::-webkit-slider-runnable-track {
 	height: 4px;
-	background: rgba(99, 102, 241, 0.1);
+	background: rgba(148, 163, 184, 0.15);
 	border-radius: 2px;
-	box-shadow: inset 0 0 5px rgba(99, 102, 241, 0.2);
 }
 
 input[type='range']::-webkit-slider-thumb {
 	-webkit-appearance: none;
-	height: 16px;
-	width: 8px;
-	background: #ffffff;
-	border-radius: 1px;
-	margin-top: -6px;
-	box-shadow: 0 0 15px 5px rgba(99, 102, 241, 0.8);
+	height: 14px;
+	width: 6px;
+	background: var(--vanguard-accent);
+	border-radius: 2px;
+	margin-top: -5px;
 }
 
 input[type='range']::-moz-range-track {
 	height: 4px;
-	background: rgba(99, 102, 241, 0.1);
+	background: rgba(148, 163, 184, 0.15);
 	border-radius: 2px;
-	box-shadow: inset 0 0 5px rgba(99, 102, 241, 0.2);
 }
 
 input[type='range']::-moz-range-thumb {
-	height: 16px;
-	width: 8px;
-	background: #ffffff;
-	border-radius: 1px;
+	height: 14px;
+	width: 6px;
+	background: var(--vanguard-accent);
+	border-radius: 2px;
 	border: none;
-	box-shadow: 0 0 15px 5px rgba(99, 102, 241, 0.8);
 }
 
 @keyframes glitch-pulse {
@@ -658,18 +689,16 @@ input[type='range']::-moz-range-thumb {
 }
 
 @layer components {
-	/* Enterprise Slate Panels — Nexus standard ops */
+	/* Enterprise Slate Panels — opaque solid surface, NO glass */
 	.vanguard-panel {
 		@apply tw-overflow-visible;
-		background-color: rgba(15, 23, 42, 0.6);
+		background-color: var(--vanguard-surface);
 		border: var(--ui-border-thin);
 		border-radius: var(--vanguard-radius-md);
-		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		box-shadow: var(--vanguard-elev-2), var(--legacy-glow);
+		box-shadow: var(--vanguard-elev-2);
 	}
 
-	/* Ares breach — critical threat chrome */
+	/* Ares breach — critical threat chrome (glow retained: state signal) */
 	.vanguard-panel-breach {
 		@apply tw-overflow-visible;
 		background-color: var(--ares-glass);
@@ -682,19 +711,20 @@ input[type='range']::-moz-range-thumb {
 	}
 
 	.btn-director {
-		@apply tw-border tw-bg-transparent tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-300;
-		border-color: rgba(99, 102, 241, 0.5);
-		color: var(--legacy-cyan);
+		@apply tw-border tw-bg-transparent tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-[200ms];
+		border-color: rgba(20, 184, 166, 0.4);
+		color: var(--vanguard-accent);
 		letter-spacing: 0.15em;
 	}
 
 	.btn-director:hover {
-		@apply tw-border-indigo-400 tw-bg-indigo-500/20 tw-text-white;
-		box-shadow: var(--legacy-glow);
+		@apply tw-text-white;
+		border-color: var(--vanguard-accent);
+		background-color: rgba(20, 184, 166, 0.12);
 	}
 
 	.btn-ares {
-		@apply tw-border tw-bg-[#ff0033]/10 tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-300;
+		@apply tw-border tw-bg-[#ff0033]/10 tw-px-6 tw-py-2 tw-text-[11px] tw-font-bold tw-uppercase tw-transition-all tw-duration-[200ms];
 		border-color: rgb(255 0 51 / 0.8);
 		color: var(--ares-crimson);
 		letter-spacing: 0.15em;
@@ -707,17 +737,15 @@ input[type='range']::-moz-range-thumb {
 }
 
 /**
- * Unified glass panel — ALL major HUD surfaces (Weather, Mission, Player OS, War Room palettes).
- * Exact combo mandated for visual parity (slate-950/60, blur-2xl, cyan-900/30 rim, inset cyan wash).
+ * Unified opaque panel — ALL major HUD data surfaces.
+ * Glass treatment restricted to floating layers (see glassmorphism carve-out comment above).
  */
 @layer utilities {
 	.tw-vanguard-panel {
-		background-color: rgb(2 6 23 / 0.6);
-		border: 1px solid rgb(22 78 99 / 0.3);
+		background-color: var(--vanguard-surface);
+		border: 1px solid var(--vanguard-border);
 		border-radius: var(--vanguard-radius);
-		backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
-		-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(180%);
-		box-shadow: var(--vanguard-elev-3);
+		box-shadow: var(--vanguard-elev-2);
 	}
 
 	/**
@@ -812,69 +840,43 @@ input[type='range']::-moz-range-thumb {
 	}
 
 	.tw-vanguard-range::-webkit-slider-runnable-track {
-		height: 0.55rem;
+		height: 0.35rem;
 		border-radius: 9999px;
-		background: linear-gradient(
-			90deg,
-			rgba(99, 102, 241, 0.35),
-			rgba(99, 102, 241, 0.95),
-			rgba(99, 102, 241, 0.35)
-		);
-		box-shadow:
-			inset 0 0 14px rgba(99, 102, 241, 0.55),
-			0 0 15px #6366f1,
-			0 0 28px rgba(99, 102, 241, 0.55);
-		border: 1px solid rgba(99, 102, 241, 0.85);
+		background: rgba(148, 163, 184, 0.18);
+		border: 1px solid rgba(148, 163, 184, 0.22);
 	}
 
 	.tw-vanguard-range::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
-		width: 1.35rem;
-		height: 1.35rem;
+		width: 1.1rem;
+		height: 1.1rem;
 		border-radius: 9999px;
-		background: radial-gradient(circle at 35% 28%, #e0e7ff, #6366f1);
-		border: 2px solid rgba(224, 231, 255, 0.65);
-		margin-top: -0.42rem;
-		box-shadow:
-			0 0 15px #6366f1,
-			0 0 28px rgba(99, 102, 241, 0.95),
-			0 0 44px rgba(99, 102, 241, 0.55);
+		background: var(--vanguard-accent);
+		border: 2px solid rgba(255, 255, 255, 0.25);
+		margin-top: -0.38rem;
 	}
 
 	.tw-vanguard-range::-moz-range-track {
-		height: 0.55rem;
+		height: 0.35rem;
 		border-radius: 9999px;
-		background: linear-gradient(
-			90deg,
-			rgba(99, 102, 241, 0.35),
-			rgba(99, 102, 241, 0.95),
-			rgba(99, 102, 241, 0.35)
-		);
-		box-shadow:
-			inset 0 0 14px rgba(99, 102, 241, 0.55),
-			0 0 15px #6366f1,
-			0 0 28px rgba(99, 102, 241, 0.55);
-		border: 1px solid rgba(99, 102, 241, 0.85);
+		background: rgba(148, 163, 184, 0.18);
+		border: 1px solid rgba(148, 163, 184, 0.22);
 	}
 
 	.tw-vanguard-range::-moz-range-thumb {
-		width: 1.35rem;
-		height: 1.35rem;
+		width: 1.1rem;
+		height: 1.1rem;
 		border-radius: 9999px;
-		border: 2px solid rgba(224, 231, 255, 0.65);
-		background: radial-gradient(circle at 35% 28%, #e0e7ff, #6366f1);
-		box-shadow:
-			0 0 15px #6366f1,
-			0 0 28px rgba(99, 102, 241, 0.95),
-			0 0 44px rgba(99, 102, 241, 0.55);
+		border: 2px solid rgba(255, 255, 255, 0.25);
+		background: var(--vanguard-accent);
 	}
 
 	/**
 	 * Native checkbox — minimal HUD tint (full custom checkbox UI preferred for AAA parity).
 	 */
 	.tw-vanguard-checkbox {
-		accent-color: rgb(99 102 241);
+		accent-color: var(--vanguard-accent);
 		width: 1rem;
 		height: 1rem;
 		border-radius: 0.25rem;

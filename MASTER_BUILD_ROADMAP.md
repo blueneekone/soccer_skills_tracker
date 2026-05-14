@@ -4,18 +4,19 @@ Architecture Philosophy: Zero-Liability PII, Exception-Only Administration, Dyna
 PHASE 1: FOUNDATIONAL STABILIZATION & ENTERPRISE SCALABILITY
 Objective: Eradicate legacy technical debt, secure database boundaries, and establish an un-squished, ultra-premium visual baseline capable of enterprise scale.
 
-Epic 1: The Techno-Futurist Bento Grid Architecture
+Epic 1: The Tactical SIEM Architecture & Strategic Minimalism
 
 Transition all dashboard layouts to a responsive CSS Bento Grid utilizing clamp() spacing functions to prevent mobile squishing, allocating spatial weight to critical KPIs.
 
-Soften components with 24px border radii, multi-layered drop shadows, and true glassmorphism.
+Execute a global aesthetic overhaul: purge all neon gradients, pure black backgrounds, and heavy glassmorphism on data cards. Replace with deep slate/navy backgrounds and thin, precise borders to ensure text legibility.
+
+Integrate the Geist Mono typeface for all metrics, tables, and numerical readouts to establish a highly technical, mission-control environment.
+
+Standardize all UI micro-interactions (buttons, hovers, state changes) to a strict 150-250ms duration to project a lightning-fast, premium feel.
 
 Implement Cloud Firestore atomic batch writes and increment operators to guarantee offline synchronization.
 
 Cell-Based Routing: Architect the backend API gateways to support routing ultra-large state governing bodies to isolated, dedicated database cells to prevent "noisy neighbor" throttling.
-
-PHASE 2: ZERO-LIABILITY ONBOARDING & REVENUE GENERATION
-Objective: Automate enterprise club ingestion, ensure absolute legal compliance, and unlock new embedded revenue streams for tournament directors.
 
 Epic 2: Embedded Finance and Ancillary Revenue
 

@@ -16,47 +16,47 @@ export default {
 				 *
 				 * CSS variable counterparts live in :root in app.css.
 				 */
-				vanguard: {
-					bg:     '#010409',              // Deep Obsidian — global background
-					cyan:   '#00f0ff',              // Primary Glow / Success / XP
-					red:    '#ff003c',              // Ares Red / Danger / Errors
-					glass:  'var(--vanguard-glass)',  // rgba(255,255,255,0.03) — glassmorphism base
-					border: 'var(--vanguard-border)', // rgba(0,240,255,0.2) — subtle cyan border
-				},
-				void: {
-					black: 'var(--void-black)',
-					obsidian: 'var(--obsidian)',
-				},
-				tron: {
-					legacy: 'var(--legacy-cyan)',
-					ares: 'var(--ares-crimson)',
-				},
-				/** Vanguard lockstep: all Tailwind `cyan-*` utilities resolve to Legacy Tron cyan (#00f0ff family). */
-				cyan: {
-					50: '#ecfeff',
-					100: '#cffafe',
-					200: '#a5f3fc',
-					300: '#67e8f9',
-					400: '#00f0ff',
-					500: '#00f0ff',
-					600: '#00c9dc',
-					700: '#009eae',
-					800: '#065a66',
-					900: '#073940',
-					950: '#031016',
-				},
+			vanguard: {
+				bg:      'var(--vanguard-bg)',       // #0f172a — Slate-900 global background
+				accent:  'var(--vanguard-accent)',   // #14b8a6 — muted teal, replaces neon cyan
+				cyan:    'var(--vanguard-accent)',   // DEPRECATED alias → accent
+				red:     '#ff003c',                  // Ares Red / Danger / Errors
+				glass:   'var(--vanguard-glass)',    // Floating surfaces only
+				border:  'var(--vanguard-border)',   // Slate-400 @ 12% — thin, low-contrast
+				surface: 'var(--vanguard-surface)',  // Opaque card fill
 			},
-		boxShadow: {
-			'tron-legacy':    'var(--legacy-glow)',
-			'tron-ares':      'var(--ares-glow)',
-			'vanguard-card':  '0 0 15px rgba(0, 240, 255, 0.05)',
-			'vanguard-glow':  '0 0 15px rgba(0, 240, 255, 0.4)',
-			'vanguard-red':   '0 0 15px rgba(255, 0, 60, 0.4)',
-			'vanguard-elev-1': 'var(--vanguard-elev-1)',
-			'vanguard-elev-2': 'var(--vanguard-elev-2)',
-			'vanguard-elev-3': 'var(--vanguard-elev-3)',
-			'vanguard-elev-ares': 'var(--vanguard-elev-ares)',
-		},
+			void: {
+				black: 'var(--void-black)',
+				obsidian: 'var(--obsidian)',
+			},
+			tron: {
+				legacy: 'var(--legacy-cyan)',
+				ares: 'var(--ares-crimson)',
+			},
+			/** Tactical teal scale — replaces the neon Tron cyan override */
+			teal: {
+				50:  '#f0fdfa',
+				100: '#ccfbf1',
+				200: '#99f6e4',
+				300: '#5eead4',
+				400: '#2dd4bf',
+				500: '#14b8a6',
+				600: '#0d9488',
+				700: '#0f766e',
+				800: '#115e59',
+				900: '#134e4a',
+				950: '#042f2e',
+			},
+			},
+	boxShadow: {
+		'tron-ares':         'var(--ares-glow)',      /* Critical state — crimson only */
+		'vanguard-card':     'var(--vanguard-elev-2)',
+		'vanguard-red':      '0 0 15px rgba(255, 0, 60, 0.4)',
+		'vanguard-elev-1':   'var(--vanguard-elev-1)',
+		'vanguard-elev-2':   'var(--vanguard-elev-2)',
+		'vanguard-elev-3':   'var(--vanguard-elev-3)',
+		'vanguard-elev-ares':'var(--vanguard-elev-ares)',
+	},
 		borderRadius: {
 			vanguard:       'var(--vanguard-radius)',
 			'vanguard-sm':  'var(--vanguard-radius-sm)',
@@ -67,6 +67,15 @@ export default {
 			'vanguard-sm': 'var(--vanguard-blur-sm)',
 			'vanguard':    'var(--vanguard-blur)',
 			'vanguard-lg': 'var(--vanguard-blur-lg)',
+		},
+		fontFamily: {
+			sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+		},
+		transitionDuration: {
+			fast: '150ms',
+			base: '200ms',
+			slow: '250ms',
 		},
 		// Player dashboard 3D card — literal `tw-perspective-1000` + back face rotation
 		spacing: {

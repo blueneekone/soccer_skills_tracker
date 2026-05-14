@@ -7,12 +7,17 @@
 - @dicebear/adventurer: ^9.4.2
 - @dicebear/core: ^9.4.2
 - @googlemaps/js-api-loader: ^2.0.2
+- @stripe/stripe-js: ^9.4.0
+- @types/papaparse: ^5.5.2
 - canvas-confetti: ^1.9.4
 - chart.js: ^4.5.1
 - fabric: ^7.2.0
 - firebase: ^12.12.0
 - firebase-admin: ^13.8.0
 - firebase-functions: ^4.9.0
+- html5-qrcode: ^2.3.8
+- libphonenumber-js: ^1.13.1
+- papaparse: ^5.5.3
 - pdfjs-dist: ^5.6.205
 - qrcode: ^1.5.4
 - sweetalert2: ^11.26.24
@@ -20,6 +25,10 @@
 - xlsx: npm:@e965/xlsx@^0.20.3
 
 ## Dev
+
+### Testing
+
+- vitest: ^4.1.6
 
 ### TypeScript / Build
 
@@ -31,6 +40,7 @@
 - @sveltejs/adapter-static: ^3.0.10
 - @sveltejs/kit: ^2.57.1
 - @sveltejs/vite-plugin-svelte: ^5.0.0
+- @vitest/coverage-v8: ^4.1.6
 - autoprefixer: ^10.5.0
 - postcss: ^8.5.10
 - svelte: ^5.16.0
