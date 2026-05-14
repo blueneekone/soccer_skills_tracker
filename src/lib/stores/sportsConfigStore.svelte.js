@@ -256,8 +256,6 @@ function stopListener() {
  * @returns {import('$lib/types/sportsConfig').SportsConfigDoc}
  */
 function getConfig(sportId) {
-  startListener();
-
   if (_configs.has(sportId)) {
     return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(sportId));
   }
@@ -278,8 +276,6 @@ function getConfig(sportId) {
  * @returns {import('$lib/types/sportsConfig').SportsConfigDoc}
  */
 function resolveActiveConfig(sportRaw) {
-  startListener();
-
   const norm = (sportRaw || '').toLowerCase().trim();
   if (!norm) return getConfig('generic');
 
@@ -316,6 +312,13 @@ function resolveActiveConfig(sportRaw) {
 const currentSportConfig = $derived(
   resolveActiveConfig(workspaceContextStore.activeSportId),
 );
+
+// Eagerly start the listener once on module load (browser only).
+// MUST be done outside any $derived getter — calling startListener() inside
+// a getter mutates _unsubscribe ($state) during derived eval, which throws
+// state_unsafe_mutation. The internal `if (!browser || _unsubscribe) return`
+// guard makes this safe under SSR and idempotent across HMR.
+if (browser) startListener();
 
 export const sportsConfigStore = {
   /** True once the first Firestore snapshot has arrived. */
