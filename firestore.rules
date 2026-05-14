@@ -120,21 +120,6 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.isCleared == true;
     }
 
-    // Phase 2, Epic 3 — Native Firebase Phone Number Verification.
-    // hasVerifiedPhone() — true when the JWT carries the `phoneVerified: true`
-    // custom claim stamped by the `mirrorPhoneVerification` Cloud Function
-    // after a successful linkWithPhoneNumber + confirmationResult.confirm().
-    //
-    // Use this to gate sensitive operations that require carrier-level identity
-    // proof (e.g. high-value transfer approvals, recruiter PII export):
-    //   allow write: if authed() && isDirector() && hasVerifiedPhone();
-    //
-    // NOT wired to any collection in this session — pure scaffolding for later
-    // sensitive-op gating.
-    function hasVerifiedPhone() {
-      return request.auth != null && request.auth.token.phoneVerified == true;
-    }
-
     // Phase 2, Epic 3 — COPPA 2.0 Age Band helpers.
     // These helpers gate ad-data-adjacent collections for teen 13-16 subjects.
     //
@@ -142,30 +127,19 @@ service cloud.firestore {
     //   Defaults to 'adult' when absent (lean-permissive for users with no DOB).
     //   Values: 'under13' | 'teen13to16' | 'adult'
     //
-    // isTeen13to16() — true when the caller's age band is 'teen13to16'.
-    //   Gate: prevents teens from reading their own ad-export rows.
-    //
     // ageBandBlocksAdShare() — true for under13 OR teen13to16.
     //   Gate: blocks any ad-tech-adjacent read/write for either minor tier.
     //
-    // These helpers are intentionally conservative: both layers block.
+    // For phone-verified gating (JWT `phoneVerified`), inline:
+    //   request.auth != null && request.auth.token.phoneVerified == true
     // Server-side Cloud Function validators (teenAdInterceptor.js) add a second
     // enforcement layer so Firestore rules are defense-in-depth, not sole control.
     function tokenAgeBand() {
       return request.auth.token.ageBand != null ? request.auth.token.ageBand : 'adult';
     }
 
-    function isTeen13to16() {
-      return authed() && tokenAgeBand() == 'teen13to16';
-    }
-
     function ageBandBlocksAdShare() {
       return authed() && (tokenAgeBand() == 'teen13to16' || tokenAgeBand() == 'under13');
-    }
-
-    // Shorthand: director OR registrar (compliance managers).
-    function isComplianceManager() {
-      return isDirector() || isRegistrar();
     }
 
     function registrarTeamInClub(tid) {
