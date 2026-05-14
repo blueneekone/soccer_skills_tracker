@@ -42,10 +42,10 @@
 
 	.ts-headline {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.44rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.35em;
-		color: color-mix(in srgb, var(--vanguard-cyan) 50%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-transform: uppercase;
 	}
 
@@ -76,31 +76,32 @@
 
 	.ts-badge__label {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.52rem, 1.2vw, 0.65rem);
+		font-size: clamp(0.6875rem, 1.2vw, 0.75rem);
 		font-weight: 900;
 		letter-spacing: 0.12em;
-		color: white;
+		color: var(--vanguard-text-1, #ffffff);
 	}
 
 	.ts-badge__sub {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.38rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 600;
 		letter-spacing: 0.15em;
-		color: color-mix(in srgb, var(--vanguard-cyan) 60%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-transform: uppercase;
 	}
 
 	.ts-note {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.48rem;
-		color: rgba(255, 255, 255, 0.22);
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+		color: var(--vanguard-text-3, #cbd5e1);
 		margin: 0;
 		text-align: center;
+		opacity: 0.7;
 	}
 
 	.ts-note-link {
-		color: color-mix(in srgb, var(--vanguard-cyan) 65%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-decoration: none;
 		transition: color 0.15s;
 	}

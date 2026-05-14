@@ -88,7 +88,7 @@
     align-items: center;
     gap: 0.4rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.44rem;
+    font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     font-weight: 700;
     letter-spacing: 0.25em;
     color: var(--sc-accent);
@@ -115,8 +115,8 @@
 
   .sc-body {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.58rem, 1.2vw, 0.65rem);
-    color: rgba(255, 255, 255, 0.38);
+    font-size: clamp(0.875rem, 1.2vw, 0.9375rem);
+    color: var(--vanguard-text-2, #e2e8f0);
     line-height: 1.8;
     margin: 0;
     flex: 1;
@@ -136,8 +136,8 @@
     align-items: center;
     gap: 0.4rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(0.48rem, 1vw, 0.55rem);
-    color: rgba(255, 255, 255, 0.35);
+    font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+    color: var(--vanguard-text-3, #cbd5e1);
   }
 
   .sc-feature-dot {
@@ -154,10 +154,10 @@
     padding-top: 0.75rem;
     border-top: 1px solid color-mix(in srgb, var(--sc-accent) 20%, transparent);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.42rem;
+    font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     font-weight: 700;
     letter-spacing: 0.2em;
-    color: color-mix(in srgb, var(--sc-accent) 55%, white);
+    color: color-mix(in srgb, var(--sc-accent) 75%, white);
   }
 
   @keyframes badge-pulse {

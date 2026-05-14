@@ -83,26 +83,26 @@
 
 	.bm-eyebrow {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.55rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 500;
 		letter-spacing: 0.3em;
 		text-transform: uppercase;
-		color: color-mix(in srgb, var(--vanguard-cyan) 60%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 	}
 
 	.bm-headline {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: clamp(1.6rem, 4vw, 2.8rem);
 		font-weight: 900;
-		color: #ffffff;
+		color: var(--vanguard-text-1, #ffffff);
 		margin: 0;
 		line-height: 1.1;
 	}
 
 	.bm-subline {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-		color: rgba(255, 255, 255, 0.5);
+		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+		color: var(--vanguard-text-2, #e2e8f0);
 		line-height: 1.7;
 		margin: 0;
 		max-width: 60ch;
@@ -158,25 +158,25 @@
 
 	.bm-card__metric {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.52rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 600;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: rgba(255, 255, 255, 0.45);
+		color: var(--vanguard-text-3, #cbd5e1);
 	}
 
 	.bm-card__desc {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.62rem;
+		font-size: clamp(0.875rem, 1.3vw, 0.9375rem);
 		line-height: 1.75;
-		color: rgba(255, 255, 255, 0.35);
+		color: var(--vanguard-text-2, #e2e8f0);
 		margin: 0;
 		flex: 1;
 	}
 
 	.bm-card__link {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.5rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 600;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
@@ -200,21 +200,23 @@
 
 	.bm-separator__tagline {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.55rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 400;
 		letter-spacing: 0.1em;
-		color: rgba(255, 255, 255, 0.2);
+		color: var(--vanguard-text-3, #cbd5e1);
 		text-align: center;
 		margin: 0;
+		opacity: 0.55;
 	}
 
 	/* Footnote */
 	.bm-footnote {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.45rem;
-		color: rgba(255, 255, 255, 0.2);
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+		color: var(--vanguard-text-3, #cbd5e1);
 		text-align: center;
 		margin: 0;
 		letter-spacing: 0.05em;
+		opacity: 0.45;
 	}
 </style>

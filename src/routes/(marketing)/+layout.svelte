@@ -17,6 +17,17 @@
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		}
 	});
+
+	// Post-LCP: activate backdrop-filter after the LCP paint window closes.
+	// Two rAF frames ensure we don't trigger compositing during the initial paint.
+	$effect(() => {
+		if (!browser) return;
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				document.body.classList.add('is-hydrated');
+			});
+		});
+	});
 </script>
 
 <svelte:head>

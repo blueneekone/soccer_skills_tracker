@@ -48,10 +48,10 @@
 	.sb-eyebrow {
 		display: inline-block;
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.48rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: color-mix(in srgb, var(--vanguard-cyan) 65%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-transform: uppercase;
 	}
 
@@ -60,14 +60,14 @@
 		font-size: clamp(1.6rem, 4vw, 2.8rem);
 		font-weight: 900;
 		line-height: 1.1;
-		color: white;
+		color: var(--vanguard-text-1, #ffffff);
 		margin: 0;
 	}
 
 	.sb-sub {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.62rem, 1.5vw, 0.76rem);
-		color: rgba(255, 255, 255, 0.38);
+		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+		color: var(--vanguard-text-2, #e2e8f0);
 		line-height: 1.75;
 		margin: 0;
 		max-width: 520px;

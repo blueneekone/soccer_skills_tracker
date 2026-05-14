@@ -16,7 +16,13 @@ const config = {
 			fallback: 'index.html', // Crucial for Firebase SPA routing
 			precompress: false,
 			strict: true
-		})
+		}),
+		prerender: {
+			// Deep-link anchors in FeatureBento (#rl-workouts, #skill-tree, etc.)
+			// target IDs on /features that will be wired in a future sprint.
+			// Warn rather than error so the marketing landing build does not block.
+			handleMissingId: 'warn'
+		}
 	},
 	preprocess: vitePreprocess()
 };

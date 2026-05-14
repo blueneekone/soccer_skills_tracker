@@ -66,10 +66,10 @@
 
 	.fc-eyebrow {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.48rem;
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: color-mix(in srgb, var(--vanguard-cyan) 60%, transparent);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-transform: uppercase;
 	}
 
@@ -78,14 +78,14 @@
 		font-size: clamp(1.5rem, 4vw, 2.8rem);
 		font-weight: 900;
 		line-height: 1.12;
-		color: white;
+		color: var(--vanguard-text-1, #ffffff);
 		margin: 0;
 	}
 
 	.fc-sub {
 		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.62rem, 1.5vw, 0.76rem);
-		color: rgba(255, 255, 255, 0.35);
+		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+		color: var(--vanguard-text-2, #e2e8f0);
 		line-height: 1.75;
 		margin: 0;
 		max-width: 540px;
@@ -128,16 +128,16 @@
 	}
 
 	.fc-cta--ghost {
-		font-size: clamp(0.55rem, 1.2vw, 0.68rem);
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
-		color: rgba(255, 255, 255, 0.35);
+		color: var(--vanguard-text-3, #cbd5e1);
 		padding: 0.5rem;
 		border: none;
 		background: none;
 	}
 
 	.fc-cta--ghost:hover {
-		color: white;
+		color: var(--vanguard-text-1, #ffffff);
 	}
 
 	.fc-checklist {
@@ -155,13 +155,13 @@
 		align-items: center;
 		gap: 0.35rem;
 		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.44rem, 1vw, 0.54rem);
-		color: rgba(255, 255, 255, 0.28);
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+		color: var(--vanguard-text-3, #cbd5e1);
 	}
 
 	.fc-check-icon {
-		color: color-mix(in srgb, var(--vanguard-cyan) 65%, transparent);
-		font-size: clamp(0.5rem, 1.2vw, 0.62rem);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 	}
 
 	@keyframes fc-glow-drift {
