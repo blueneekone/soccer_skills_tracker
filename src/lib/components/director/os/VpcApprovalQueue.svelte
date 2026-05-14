@@ -42,17 +42,17 @@
 					orderBy('consentedAt', 'desc'),
 					limit(25),
 				);
-			const snap = await getDocs(q);
-			if (cancelled) return;
-			requests = snap.docs.map((d) => ({
-				id: d.id,
-				playerEmail: String(d.data().playerEmail || ''),
-				childEmail: String(d.data().childEmail || ''),
-				email: String(d.data().email || ''),
-				parentEmail: String(d.data().parentEmail || ''),
-				consentedAt: d.data().consentedAt || null,
-				clubId: String(d.data().clubId || ''),
-			}));
+				const snap = await getDocs(q);
+				if (cancelled) return;
+				requests = snap.docs.map((d) => ({
+					id: d.id,
+					playerEmail: String(d.data().playerEmail || ''),
+					childEmail: String(d.data().childEmail || ''),
+					email: String(d.data().email || ''),
+					parentEmail: String(d.data().parentEmail || ''),
+					consentedAt: d.data().consentedAt || null,
+					clubId: String(d.data().clubId || ''),
+				}));
 			} catch (e) {
 				if (!cancelled) {
 					loadError = e instanceof Error ? e.message : String(e);
