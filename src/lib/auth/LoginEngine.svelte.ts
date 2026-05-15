@@ -54,6 +54,28 @@ const webauthnRegisterFinishFn = httpsCallable<
   { verified: boolean }
 >(functions, 'webauthnRegisterFinish');
 
+/** Human-readable copy for Firebase/Functions objects and odd throwables. */
+export function userFacingErrorMessage(err: unknown, fallback: string): string {
+  // TypeError is an Error — handle typical "Failed to fetch" before the generic branch
+  if (err instanceof TypeError && browser) {
+    const m = String(err.message || '');
+    if (/fetch|network|load failed|failed to fetch/i.test(m)) {
+      return 'Network error. Check your connection and try again.';
+    }
+  }
+  if (err instanceof Error) {
+    const m = err.message;
+    if (typeof m === 'string' && m.trim()) return m;
+    return fallback;
+  }
+  if (typeof err === 'string' && err.trim()) return err;
+  if (err !== null && typeof err === 'object') {
+    const o = err as { message?: unknown };
+    if (typeof o.message === 'string' && o.message.trim()) return o.message;
+  }
+  return fallback;
+}
+
 // ── Engine class ─────────────────────────────────────────────────────────────
 class LoginEngine {
   email = $state('');
@@ -130,10 +152,10 @@ class LoginEngine {
         // User dismissed the passkey prompt — not an error state
         this.error = '';
       } else {
-        this.error =
-          err instanceof Error
-            ? err.message
-            : 'Passkey sign-in failed. Try again or use a magic link.';
+        this.error = userFacingErrorMessage(
+          err,
+          'Passkey sign-in failed. Try again or use a magic link.',
+        );
       }
     } finally {
       this.busy = false;
@@ -176,23 +198,54 @@ class LoginEngine {
     this.passkeyRegistered = false;
     try {
       // 1. Get registration options from server
-      const startResult = await webauthnRegisterStartFn({});
-      const options = startResult.data;
+      let options: PublicKeyCredentialCreationOptionsJSON;
+      try {
+        const startResult = await webauthnRegisterStartFn({});
+        options = startResult.data;
+      } catch (err) {
+        this.error = userFacingErrorMessage(
+          err,
+          'Could not start passkey registration. Check your connection and try again.',
+        );
+        return;
+      }
 
       // 2. Trigger browser native passkey creation
-      const attResp = await startRegistration({ optionsJSON: options });
+      let attResp: unknown;
+      try {
+        attResp = await startRegistration({ optionsJSON: options });
+      } catch (err) {
+        if (err instanceof Error && err.name === 'NotAllowedError') {
+          this.error = '';
+        } else {
+          this.error = userFacingErrorMessage(
+            err,
+            'Passkey registration was interrupted. Try again.',
+          );
+        }
+        return;
+      }
 
       // 3. Verify and persist on server
-      await webauthnRegisterFinishFn({ attResp });
+      try {
+        await webauthnRegisterFinishFn({ attResp });
+      } catch (err) {
+        this.error = userFacingErrorMessage(
+          err,
+          'Could not save your passkey. Check your connection and try again.',
+        );
+        return;
+      }
       this.passkeyRegistered = true;
     } catch (err) {
+      // Defensive: nested try/catch above should cover normal paths
       if (err instanceof Error && err.name === 'NotAllowedError') {
         this.error = '';
       } else {
-        this.error =
-          err instanceof Error
-            ? err.message
-            : 'Passkey registration failed. Try again.';
+        this.error = userFacingErrorMessage(
+          err,
+          'Passkey registration failed. Try again.',
+        );
       }
     } finally {
       this.busy = false;

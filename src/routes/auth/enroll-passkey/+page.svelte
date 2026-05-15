@@ -11,7 +11,7 @@
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { loginEngine } from '$lib/auth/LoginEngine.svelte.js';
+	import { loginEngine, userFacingErrorMessage } from '$lib/auth/LoginEngine.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { requiresPasskeyEnrollmentBeforeApp } from '$lib/auth/passkeyGate.js';
 	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
@@ -76,13 +76,21 @@
 	});
 
 	async function registerAndContinue(): Promise<void> {
-		await loginEngine.registerPasskey();
-		if (loginEngine.passkeyRegistered && auth.currentUser) {
-			const stillNeed = await requiresPasskeyEnrollmentBeforeApp(auth.currentUser);
-			if (!stillNeed) {
-				phase = 'routing';
-				await navigateAfterLogin({ replaceState: true });
+		try {
+			await loginEngine.registerPasskey();
+			if (loginEngine.passkeyRegistered && auth.currentUser) {
+				const stillNeed = await requiresPasskeyEnrollmentBeforeApp(auth.currentUser);
+				if (!stillNeed) {
+					phase = 'routing';
+					await navigateAfterLogin({ replaceState: true });
+				}
 			}
+		} catch (e) {
+			console.error('[enroll-passkey] registerAndContinue', e);
+			loginEngine.error = userFacingErrorMessage(
+				e,
+				'Something went wrong after registration. Check your connection and try again.',
+			);
 		}
 	}
 </script>
