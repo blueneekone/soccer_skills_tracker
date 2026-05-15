@@ -887,29 +887,6 @@
 		min-height: 280px;
 	}
 
-	:global(.pd-team-lb .lb-shell--compact) {
-		background: rgba(2, 6, 23, 0.55) !important;
-		border: 1px solid rgba(255, 255, 255, 0.06) !important;
-		box-shadow: 0 12px 40px -18px rgba(0, 0, 0, 0.65) !important;
-	}
-
-	:global(.pd-team-lb .lb-title) {
-		color: #f8fafc !important;
-	}
-
-	:global(.pd-team-lb .lb-sub),
-	:global(.pd-team-lb .lb-hint) {
-		color: rgba(226, 232, 240, 0.78) !important;
-	}
-
-	:global(.pd-team-lb .lb-card) {
-		background: rgba(15, 23, 42, 0.55) !important;
-		border-color: rgba(255, 255, 255, 0.06) !important;
-	}
-
-	:global(.pd-team-lb .lb-card:hover) {
-		background: rgba(30, 41, 59, 0.65) !important;
-	}
 
 	.tabular-num {
 		font-variant-numeric: tabular-nums;
