@@ -53,10 +53,57 @@ async function loadCredentialsForUid(uid) {
     .doc(uid)
     .collection('passkeys')
     .get();
-  return snap.docs.map((d) => ({
-    id: d.data().credentialID,
-    transports: d.data().transports || [],
-  }));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      const stored = data.credentialID;
+      const id =
+        typeof stored === 'string' && stored
+          ? stored
+          : typeof d.id === 'string' && d.id
+            ? d.id
+            : null;
+      if (!id) return null;
+      return {
+        id,
+        transports: Array.isArray(data.transports) ? data.transports : [],
+      };
+    })
+    .filter(Boolean);
+}
+
+/**
+ * Firestore / Node may return `publicKey` as Buffer or plain Uint8Array — not
+ * always an object with `toUint8Array()` (runtime log: toUint8Array is not a function).
+ * @param {unknown} pk
+ * @returns {Uint8Array}
+ */
+function publicKeyToUint8Array(pk) {
+  if (!pk) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Stored credential is missing publicKey.',
+    );
+  }
+  if (pk instanceof Uint8Array) {
+    return pk;
+  }
+  if (Buffer.isBuffer(pk)) {
+    return new Uint8Array(pk.buffer, pk.byteOffset, pk.byteLength);
+  }
+  if (typeof pk.toUint8Array === 'function') {
+    return new Uint8Array(pk.toUint8Array());
+  }
+  if (typeof pk === 'object') {
+    const vals = Object.values(pk);
+    if (vals.length > 0 && vals.every((v) => typeof v === 'number')) {
+      return Uint8Array.from(vals);
+    }
+  }
+  throw new HttpsError(
+    'failed-precondition',
+    'Stored credential publicKey has an unsupported encoding.',
+  );
 }
 
 // ── webauthnRegisterStart ────────────────────────────────────────────────────
@@ -140,6 +187,8 @@ exports.webauthnRegisterFinish = onCall(
         expectedChallenge: challenge,
         expectedOrigin: RP_ORIGIN,
         expectedRPID: RP_ID,
+        // Must match authenticatorSelection.userVerification: 'preferred' in register start
+        requireUserVerification: false,
       });
     } catch (err) {
       throw new HttpsError('invalid-argument', `Passkey verification failed: ${err.message}`);
@@ -279,10 +328,12 @@ exports.webauthnLoginFinish = onCall(
         expectedRPID: RP_ID,
         credential: {
           id: credData.credentialID,
-          publicKey: new Uint8Array(credData.publicKey.toUint8Array()),
+          publicKey: publicKeyToUint8Array(credData.publicKey),
           counter: credData.counter,
           transports: credData.transports,
         },
+        // Align with generateAuthenticationOptions({ userVerification: 'preferred' })
+        requireUserVerification: false,
       });
     } catch (err) {
       throw new HttpsError('invalid-argument', `Passkey authentication failed: ${err.message}`);
