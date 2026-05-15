@@ -74,7 +74,7 @@
 		{:else if level === 'CAUTION'}
 			<Icon name={"status.warning" as IconName} size={16} style="color:rgba(245,158,11,0.9);" aria-hidden="true" />
 		{:else}
-			<Icon name={"env.weather" as IconName} size={16} class="tw-text-[#00f0ff]" aria-hidden="true" />
+			<Icon name={"env.weather" as IconName} size={16} class="tw-text-[#14b8a6]" aria-hidden="true" />
 		{/if}
 			<h2 class="ww-title">
 				Weather Monitoring ·
@@ -221,7 +221,7 @@
 		color: white;
 	}
 	.ww-live {
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 	}
 
 	/* ── Lightning pill ─────────────────────────────────────────────────────── */
@@ -268,10 +268,10 @@
 		text-transform: uppercase;
 	}
 	.ww-badge--go {
-		border-color: rgba(0, 240, 255, 0.55);
-		background: rgba(0, 240, 255, 0.1);
-		color: #00f0ff;
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+		border-color: rgba(20, 184, 166, 0.55);
+		background: rgba(20, 184, 166, 0.1);
+		color: #14b8a6;
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.3);
 	}
 	.ww-badge--hold {
 		border-color: rgba(245, 158, 11, 0.5);
@@ -313,8 +313,8 @@
 		font-size: 0.85rem;
 	}
 	.ww-refresh:hover:not(:disabled) {
-		color: #00f0ff;
-		border-color: rgba(0, 240, 255, 0.4);
+		color: #14b8a6;
+		border-color: rgba(20, 184, 166, 0.4);
 	}
 	.ww-refresh:disabled { opacity: 0.4; cursor: not-allowed; }
 	.ww-spin { animation: ww-spin 0.8s linear infinite; }
@@ -389,7 +389,7 @@
 	}
 	.ww-card__unit {
 		font-size: 0.8rem;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 	}
 	.ww-card__sub {
 		font-size: 0.55rem;

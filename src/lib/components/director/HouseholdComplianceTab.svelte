@@ -8,7 +8,7 @@
 <div class="hct-root">
 	<div class="hct-banner">
 		<div class="hct-banner__icon" aria-hidden="true">
-			<Icon name="status.shield-check" size={36} class="tw-text-[#00f0ff]" />
+			<Icon name="status.shield-check" size={36} class="tw-text-[#14b8a6]" />
 		</div>
 
 		<div class="hct-banner__body">
@@ -61,19 +61,19 @@
 		gap: 1.5rem;
 		padding: 2rem;
 		border-radius: 16px;
-		border: 1px solid rgba(0, 240, 255, 0.18);
-		background: linear-gradient(135deg, rgba(0, 240, 255, 0.04) 0%, rgba(1, 4, 9, 0.95) 60%);
+		border: 1px solid rgba(20, 184, 166, 0.18);
+		background: linear-gradient(135deg, rgba(20, 184, 166, 0.04) 0%, rgba(1, 4, 9, 0.95) 60%);
 		backdrop-filter: blur(36px);
 		-webkit-backdrop-filter: blur(36px);
 		box-shadow:
-			0 0 40px rgba(0, 240, 255, 0.05),
+			0 0 40px rgba(20, 184, 166, 0.05),
 			inset 0 1px 1px rgba(255, 255, 255, 0.04);
 	}
 
 	.hct-banner__icon {
 		flex-shrink: 0;
 		margin-top: 2px;
-		filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
+		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.5));
 	}
 
 	.hct-banner__body {
@@ -89,7 +89,7 @@
 		font-size: 0.55rem;
 		font-weight: 900;
 		letter-spacing: 0.22em;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		text-transform: uppercase;
 	}
 
@@ -111,7 +111,7 @@
 	}
 
 	.hct-banner__desc strong {
-		color: rgba(0, 240, 255, 0.85);
+		color: rgba(20, 184, 166, 0.85);
 		font-weight: 700;
 	}
 
@@ -121,7 +121,7 @@
 		flex-direction: column;
 		gap: 0;
 		margin-top: 0.5rem;
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 10px;
 		overflow: hidden;
 	}
@@ -131,12 +131,12 @@
 		align-items: flex-start;
 		gap: 1rem;
 		padding: 0.85rem 1rem;
-		background: rgba(0, 240, 255, 0.025);
+		background: rgba(20, 184, 166, 0.025);
 		transition: background 0.2s;
 	}
 
 	.hct-flow__step:hover {
-		background: rgba(0, 240, 255, 0.05);
+		background: rgba(20, 184, 166, 0.05);
 	}
 
 	.hct-flow__num {
@@ -147,13 +147,13 @@
 		width: 28px;
 		height: 28px;
 		border-radius: 50%;
-		border: 1px solid rgba(0, 240, 255, 0.3);
-		background: rgba(0, 240, 255, 0.07);
+		border: 1px solid rgba(20, 184, 166, 0.3);
+		background: rgba(20, 184, 166, 0.07);
 		font-size: 0.55rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: #00f0ff;
-		text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+		color: #14b8a6;
+		text-shadow: 0 0 8px rgba(20, 184, 166, 0.6);
 	}
 
 	.hct-flow__label {
@@ -176,7 +176,7 @@
 	.hct-flow__arrow {
 		padding: 0 1rem 0 calc(28px + 2rem);
 		font-size: 0.55rem;
-		color: rgba(0, 240, 255, 0.25);
+		color: rgba(20, 184, 166, 0.25);
 		border-left: none;
 		background: rgba(0, 0, 0, 0.2);
 		display: flex;

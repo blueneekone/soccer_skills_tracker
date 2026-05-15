@@ -132,7 +132,7 @@
 			<!-- Success state -->
 			<div class="ra-success">
 				<div class="ra-success__icon" aria-hidden="true">
-					<Icon name="status.verified" size={44} class="tw-text-[#00ff88]" />
+					<Icon name="status.verified" size={44} class="tw-text-[#2dd4bf]" />
 				</div>
 				<p class="ra-success__msg">Anomaly logged. Thank you, Operative.</p>
 				<button class="ra-submit" onclick={close}>CLOSE</button>
@@ -215,9 +215,9 @@
 		gap: 0.4rem;
 		padding: 0.5rem 0.75rem;
 		background: rgba(8, 10, 18, 0.9);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 20px;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 		font-family: var(--font-mono);
 		font-size: 0.58rem;
 		font-weight: 800;
@@ -230,10 +230,10 @@
 	}
 
 	.ra-trigger:hover {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.45);
-		color: #00f0ff;
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.12), 0 4px 20px rgba(0, 0, 0, 0.5);
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.45);
+		color: #14b8a6;
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.12), 0 4px 20px rgba(0, 0, 0, 0.5);
 	}
 
 	.ra-trigger__icon {
@@ -264,12 +264,12 @@
 		z-index: 8890;
 		width: min(420px, calc(100vw - 2.5rem));
 		background: rgba(6, 8, 16, 0.96);
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 14px;
 		box-shadow:
-			0 0 40px rgba(0, 240, 255, 0.07),
+			0 0 40px rgba(20, 184, 166, 0.07),
 			0 20px 60px rgba(0, 0, 0, 0.8),
-			inset 0 1px 0 rgba(0, 240, 255, 0.1);
+			inset 0 1px 0 rgba(20, 184, 166, 0.1);
 		overflow: hidden;
 		font-family: var(--font-mono);
 	}
@@ -280,8 +280,8 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding: 1rem 1.125rem 0.875rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
-		background: rgba(0, 240, 255, 0.04);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
+		background: rgba(20, 184, 166, 0.04);
 	}
 
 	.ra-modal__badge {
@@ -296,7 +296,7 @@
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 	}
 
 	.ra-modal__title {
@@ -347,7 +347,7 @@
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 	}
 
 	.ra-label__req { color: rgba(255, 77, 106, 0.8); }
@@ -374,9 +374,9 @@
 	}
 
 	.ra-cat-btn--active {
-		background: rgba(0, 240, 255, 0.1);
-		border-color: rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.1);
+		border-color: rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 
 	.ra-cat-btn:hover:not(.ra-cat-btn--active) {
@@ -390,8 +390,8 @@
 		resize: vertical;
 		min-height: 90px;
 		padding: 0.6rem 0.75rem;
-		background: rgba(0, 240, 255, 0.03);
-		border: 1px solid rgba(0, 240, 255, 0.15);
+		background: rgba(20, 184, 166, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.15);
 		border-radius: 7px;
 		color: #ffffff;
 		font-family: var(--font-mono);
@@ -403,7 +403,7 @@
 	}
 
 	.ra-textarea::placeholder { color: rgba(255, 255, 255, 0.2); }
-	.ra-textarea:focus { border-color: rgba(0, 240, 255, 0.4); }
+	.ra-textarea:focus { border-color: rgba(20, 184, 166, 0.4); }
 	.ra-textarea:disabled { opacity: 0.45; cursor: not-allowed; }
 
 	.ra-char-count {
@@ -427,7 +427,7 @@
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: rgba(0, 240, 255, 0.35);
+		color: rgba(20, 184, 166, 0.35);
 		flex-shrink: 0;
 	}
 
@@ -454,10 +454,10 @@
 		justify-content: center;
 		gap: 0.4rem;
 		padding: 0.7rem 1rem;
-		background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 180, 255, 0.07));
-		border: 1px solid rgba(0, 240, 255, 0.38);
+		background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(0, 180, 255, 0.07));
+		border: 1px solid rgba(20, 184, 166, 0.38);
 		border-radius: 7px;
-		color: #00f0ff;
+		color: #14b8a6;
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
 		font-weight: 700;
@@ -468,9 +468,9 @@
 	}
 
 	.ra-submit:hover:not(:disabled) {
-		background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(0, 180, 255, 0.12));
-		border-color: rgba(0, 240, 255, 0.6);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+		background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(0, 180, 255, 0.12));
+		border-color: rgba(20, 184, 166, 0.6);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.15);
 	}
 
 	.ra-submit:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -478,8 +478,8 @@
 	.ra-submit__spinner {
 		width: 12px;
 		height: 12px;
-		border: 1.5px solid rgba(0, 240, 255, 0.3);
-		border-top-color: #00f0ff;
+		border: 1.5px solid rgba(20, 184, 166, 0.3);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 		flex-shrink: 0;
@@ -508,7 +508,7 @@
 	.ra-success__icon svg {
 		width: 44px;
 		height: 44px;
-		filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.35));
+		filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.35));
 	}
 
 	.ra-success__msg {

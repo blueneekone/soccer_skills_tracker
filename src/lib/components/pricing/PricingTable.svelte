@@ -183,10 +183,10 @@
 	}
 
 	.pricing-card--featured {
-		border: 1px solid color-mix(in srgb, var(--brand-primary, #00f0ff) 45%, var(--glass-border, rgba(0,240,255,0.18)));
+		border: 1px solid color-mix(in srgb, var(--brand-primary, #14b8a6) 45%, var(--glass-border, rgba(20, 184, 166,0.18)));
 		background: linear-gradient(
 			155deg,
-			color-mix(in srgb, var(--brand-primary, #00f0ff) 12%, var(--glass-bg, rgba(2,6,12,0.55))),
+			color-mix(in srgb, var(--brand-primary, #14b8a6) 12%, var(--glass-bg, rgba(2,6,12,0.55))),
 			var(--glass-bg, rgba(2,6,12,0.55))
 		);
 		box-shadow: var(--shadow-liquid, 0 18px 48px rgba(2, 6, 12, 0.4));
@@ -202,7 +202,7 @@
 		letter-spacing: 0.06em;
 		padding: 0.35rem 0.6rem;
 		border-radius: 999px;
-		background: linear-gradient(135deg, var(--brand-primary, #00f0ff), var(--brand-accent, #8b5cf6));
+		background: linear-gradient(135deg, var(--brand-primary, #14b8a6), var(--brand-accent, #8b5cf6));
 		color: #021018;
 	}
 
@@ -243,7 +243,7 @@
 	}
 
 	.pricing-features a {
-		color: var(--brand-primary, #00f0ff);
+		color: var(--brand-primary, #14b8a6);
 		text-decoration: underline;
 	}
 
@@ -253,7 +253,7 @@
 		align-items: center;
 		padding: 0.7rem 1rem;
 		border-radius: 14px;
-		border: 1px solid var(--vanguard-border, rgba(0, 240, 255, 0.32));
+		border: 1px solid var(--vanguard-border, rgba(20, 184, 166, 0.32));
 		background: rgba(1, 4, 9, 0.55);
 		color: var(--text-primary, #f8fafc);
 		font-weight: 800;
@@ -267,8 +267,8 @@
 
 	.btn-pricing:hover:not(:disabled) {
 		transform: translateY(-1px);
-		border-color: var(--brand-primary, #00f0ff);
-		box-shadow: 0 6px 14px rgba(0, 240, 255, 0.18);
+		border-color: var(--brand-primary, #14b8a6);
+		box-shadow: 0 6px 14px rgba(20, 184, 166, 0.18);
 	}
 
 	.btn-pricing:disabled {
@@ -277,7 +277,7 @@
 	}
 
 	.btn-pricing--primary {
-		background: linear-gradient(135deg, var(--brand-primary, #00f0ff), var(--brand-accent, #8b5cf6));
+		background: linear-gradient(135deg, var(--brand-primary, #14b8a6), var(--brand-accent, #8b5cf6));
 		color: #021018;
 		border-color: transparent;
 	}

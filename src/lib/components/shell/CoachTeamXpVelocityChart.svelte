@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
@@ -231,7 +231,7 @@
 							class="ec-coach-xp__bar-track"
 						>
 							<div
-								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(0, 240, 255,0.45)] transition-[height] duration-300"
+								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(20, 184, 166,0.45)] transition-[height] duration-300"
 								style="height: {bar.heightPct}%"
 								title="{bar.xp} XP"
 							></div>
@@ -323,8 +323,8 @@
 		align-items: flex-end;
 		justify-content: center;
 		border-radius: 0.375rem 0.375rem 0 0;
-		background: rgba(0, 240, 255, 0.04);
-		box-shadow: inset 0 0 0 1px rgba(0, 240, 255, 0.08);
+		background: rgba(20, 184, 166, 0.04);
+		box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.08);
 	}
 
 	.ec-coach-xp__bar-label {

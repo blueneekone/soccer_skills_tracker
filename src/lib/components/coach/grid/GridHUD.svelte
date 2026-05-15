@@ -2,17 +2,17 @@
 	import { fade } from 'svelte/transition';
 
 	const ARES = '#ff003c';
-	const CYAN = '#00f0ff';
+	const CYAN = '#14b8a6';
 
-	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff00ff', '#ffff00', '#ffffff']);
+	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ff00ff', '#ffff00', '#ffffff']);
 
 	const glassPanel = 'vanguard-surface';
 
 	const segBtn =
-		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
+		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
 
 	const segBtnOn =
-		'tw-border-[#00f0ff]/50 tw-bg-[#00f0ff]/10 tw-text-[#00f0ff] tw-shadow-[inset_0_0_10px_rgba(0,240,255,0.12)]';
+		'tw-border-[#14b8a6]/50 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-shadow-[inset_0_0_10px_rgba(20, 184, 166,0.12)]';
 
 	let {
 		warRoomTool = $bindable(),
@@ -88,12 +88,12 @@
 
 	<!-- Center flight deck -->
 	<div
-		class="tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-overflow-visible tw-rounded-2xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/75 tw-bg-gradient-to-b tw-from-[#00f0ff]/12 tw-to-transparent tw-px-4 tw-py-3 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_16px_36px_rgba(0,0,0,0.45)]"
+		class="tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-overflow-visible tw-rounded-2xl tw-border tw-border-[#14b8a6]/25 tw-bg-[#020202]/75 tw-bg-gradient-to-b tw-from-[#14b8a6]/12 tw-to-transparent tw-px-4 tw-py-3 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_16px_36px_rgba(0,0,0,0.45)]"
 		aria-label="Simulator playback"
 	>
 		<div class="tw-mb-1 tw-flex tw-w-full tw-flex-wrap tw-items-center tw-justify-center tw-gap-2">
 			<button type="button" class="{segBtn} tw-px-3" onclick={() => simulator.reset()}>|&lt; RST</button>
-			<div class="tw-flex tw-items-center tw-gap-1.5 tw-border-l tw-border-[#00f0ff]/25 tw-pl-3" aria-label="Ink">
+			<div class="tw-flex tw-items-center tw-gap-1.5 tw-border-l tw-border-[#14b8a6]/25 tw-pl-3" aria-label="Ink">
 				{#each INK_PALETTE as color (color)}
 					<button
 						type="button"
@@ -102,7 +102,7 @@
 						:	'none'};"
 						class="tw-pointer-events-auto tw-h-3 tw-w-7 tw-shrink-0 tw-skew-x-[-14deg] tw-border tw-transition-all {activeRouteColor === color ?
 							'tw-scale-105 tw-border-white'
-						:	'tw-border-white/30 hover:tw-border-[#00f0ff]/45'}"
+						:	'tw-border-white/30 hover:tw-border-[#14b8a6]/45'}"
 						onclick={() => (activeRouteColor = color)}
 						aria-label="Select route color"
 					></button>

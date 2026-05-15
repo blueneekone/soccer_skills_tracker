@@ -133,7 +133,7 @@
 		font-size: 10px;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--brand-primary, #00f0ff);
+		color: var(--brand-primary, #14b8a6);
 	}
 
 	.cp-title {
@@ -155,7 +155,7 @@
 	.cp-card {
 		padding: clamp(1.1rem, 1.8vw, 1.6rem);
 		border-radius: 24px;
-		border: 1px solid var(--vanguard-border, rgba(0, 240, 255, 0.18));
+		border: 1px solid var(--vanguard-border, rgba(20, 184, 166, 0.18));
 		background: linear-gradient(135deg, rgba(8, 17, 28, 0.78), rgba(2, 6, 12, 0.92));
 		backdrop-filter: blur(var(--vanguard-blur, 24px));
 		-webkit-backdrop-filter: blur(var(--vanguard-blur, 24px));
@@ -198,8 +198,8 @@
 		font-size: 0.85em;
 		padding: 0.05rem 0.32rem;
 		border-radius: 6px;
-		background: rgba(0, 240, 255, 0.08);
-		color: var(--brand-primary, #00f0ff);
+		background: rgba(20, 184, 166, 0.08);
+		color: var(--brand-primary, #14b8a6);
 	}
 
 	.cp-footer {
@@ -214,7 +214,7 @@
 		gap: 0.4rem;
 		padding: 0.7rem 1.2rem;
 		border-radius: 14px;
-		border: 1px solid var(--vanguard-border, rgba(0, 240, 255, 0.32));
+		border: 1px solid var(--vanguard-border, rgba(20, 184, 166, 0.32));
 		background: rgba(1, 4, 9, 0.55);
 		color: var(--text-primary, #f8fafc);
 		font-weight: 800;
@@ -223,7 +223,7 @@
 	}
 
 	.cp-cta:hover {
-		border-color: var(--brand-primary, #00f0ff);
-		box-shadow: 0 6px 14px rgba(0, 240, 255, 0.18);
+		border-color: var(--brand-primary, #14b8a6);
+		box-shadow: 0 6px 14px rgba(20, 184, 166, 0.18);
 	}
 </style>

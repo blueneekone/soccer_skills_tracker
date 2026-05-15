@@ -529,7 +529,7 @@
 <svelte:window onkeydown={onOtpKeydown} />
 
 <div
-	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-black tw-px-3 tw-pb-10 tw-pt-4 md:tw-px-6"
+	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-slate-950 tw-px-3 tw-pb-10 tw-pt-4 md:tw-px-6"
 	data-region="household-clearance"
 >
 	<header class="phh-page-head tw-mb-6">
@@ -814,10 +814,10 @@
 			</div>
 			{#if lastDispatch}
 				<div
-					class="tw-mt-3 tw-min-w-0 tw-border tw-border-[#39ff14]/40 tw-bg-[#05050a] tw-px-3 tw-py-3"
+					class="tw-mt-3 tw-min-w-0 tw-border tw-border-[#2dd4bf]/40 tw-bg-[#05050a] tw-px-3 tw-py-3"
 					role="status"
 				>
-					<p class="phh-eyebrow tw-mb-1 tw-text-[#39ff14]">Last dispatch (share once; keep secure)</p>
+					<p class="phh-eyebrow tw-mb-1 tw-text-[#2dd4bf]">Last dispatch (share once; keep secure)</p>
 					<p class="phh-mono tw-break-all tw-text-lg tw-text-[#7dff9a] sm:tw-text-xl">
 						{lastDispatch}
 					</p>
@@ -997,7 +997,7 @@
 		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
 		color: #67e8f9;
 		background: rgba(8, 47, 73, 0.55);
-		border: 1px solid rgba(0, 240, 255, 0.45);
+		border: 1px solid rgba(20, 184, 166, 0.45);
 		border-radius: 0.2rem;
 		cursor: pointer;
 		box-shadow: none;
@@ -1008,7 +1008,7 @@
 
 	.phh-dispatch-gen:hover:not(:disabled) {
 		background: rgba(8, 47, 73, 0.75);
-		border-color: rgba(0, 240, 255, 0.65);
+		border-color: rgba(20, 184, 166, 0.65);
 	}
 
 	.phh-dispatch-gen:disabled {
@@ -1069,10 +1069,10 @@
 		width: 100%;
 		max-width: 22rem;
 		padding: 1.25rem 1.25rem 1rem;
-		border: 1px solid rgba(0, 240, 255, 0.5);
+		border: 1px solid rgba(20, 184, 166, 0.5);
 		border-radius: 0.35rem;
 		background: #05050a;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 28px rgba(0, 240, 255, 0.12);
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 28px rgba(20, 184, 166, 0.12);
 	}
 
 	.phh-otp-h3 {

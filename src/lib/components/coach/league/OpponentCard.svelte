@@ -209,7 +209,7 @@
 		cursor: pointer;
 	}
 	.oc-card--clickable:hover {
-		background: rgba(0, 240, 255, 0.03);
+		background: rgba(20, 184, 166, 0.03);
 		border-color: rgba(255, 255, 255, 0.1);
 	}
 
@@ -396,7 +396,7 @@
 	}
 	.oc-notes-toggle-icon {
 		font-size: 10px;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 	.oc-notes-list {
 		margin: 0.4rem 0 0;
@@ -417,7 +417,7 @@
 		content: '›';
 		position: absolute;
 		left: 0;
-		color: #00f0ff;
+		color: #14b8a6;
 		opacity: 0.5;
 	}
 

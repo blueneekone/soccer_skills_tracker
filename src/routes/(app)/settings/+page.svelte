@@ -315,7 +315,7 @@
 				<div class="st-section-label">IDENTITY MATRIX</div>
 				<div class="st-info-grid">
 					<div class="st-info-row"><span class="st-info-key">EMAIL</span><span class="st-info-val">{email || '—'}</span></div>
-					<div class="st-info-row"><span class="st-info-key">ROLE</span><span class="st-info-val" style="color: #00ffff;">{role.toUpperCase()}</span></div>
+					<div class="st-info-row"><span class="st-info-key">ROLE</span><span class="st-info-val" style="color: #14b8a6;">{role.toUpperCase()}</span></div>
 					<div class="st-info-row"><span class="st-info-key">CLUB</span><span class="st-info-val">{clubLabel}</span></div>
 					<div class="st-info-row"><span class="st-info-key">TEAM</span><span class="st-info-val">{teamLabel}</span></div>
 					<div class="st-info-row"><span class="st-info-key">TENANT</span><span class="st-info-val" style="font-size:10px;">{tenantId || '—'}</span></div>
@@ -593,7 +593,7 @@
 				<div class="st-info-grid">
 					<div class="st-info-row">
 						<span class="st-info-key">VPC STATUS</span>
-						<span class="st-info-val" style="color: {profile?.vpcVerified ? '#00ff88' : '#f59e0b'};">
+						<span class="st-info-val" style="color: {profile?.vpcVerified ? '#2dd4bf' : '#f59e0b'};">
 							{profile?.vpcVerified ? '✓ VERIFIED' : '⚠ PENDING VERIFICATION'}
 						</span>
 					</div>
@@ -731,13 +731,13 @@
 	.st-header-dot {
 		width: 8px; height: 8px;
 		border-radius: 50%;
-		background: #00ffff;
-		box-shadow: 0 0 8px #00ffff;
+		background: #14b8a6;
+		box-shadow: 0 0 8px #14b8a6;
 		animation: st-dot-pulse 2.5s ease-in-out infinite;
 	}
 	@keyframes st-dot-pulse {
-		0%, 100% { opacity: 0.6; box-shadow: 0 0 6px #00ffff; }
-		50%       { opacity: 1;   box-shadow: 0 0 16px #00ffff; }
+		0%, 100% { opacity: 0.6; box-shadow: 0 0 6px #14b8a6; }
+		50%       { opacity: 1;   box-shadow: 0 0 16px #14b8a6; }
 	}
 	.st-header-title {
 		font-size: 10px;
@@ -785,8 +785,8 @@
 	}
 	.st-tab:hover { color: rgba(0, 255, 255, 0.7); background: rgba(0, 255, 255, 0.04); }
 	.st-tab--active {
-		color: #00ffff;
-		border-bottom-color: #00ffff;
+		color: #14b8a6;
+		border-bottom-color: #14b8a6;
 		background: rgba(0, 255, 255, 0.06);
 		text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
 	}
@@ -864,7 +864,7 @@
 		color: rgba(0, 255, 255, 0.6);
 		cursor: pointer;
 	}
-	.st-checkbox-row input { accent-color: #00ffff; }
+	.st-checkbox-row input { accent-color: #14b8a6; }
 
 	/* ── Hints ────────────────────────────────────────────────────────────── */
 	.st-hint {
@@ -902,7 +902,7 @@
 		font-size: 9px;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: #00ffff;
+		color: #14b8a6;
 		background: rgba(0, 255, 255, 0.08);
 		border: 1px solid rgba(0, 255, 255, 0.4);
 		border-radius: 2px;
@@ -932,8 +932,8 @@
 		flex-direction: column;
 		gap: 0.65rem;
 		padding: 0.85rem 1rem;
-		background: rgba(0,240,255,0.025);
-		border: 1px solid rgba(0,240,255,0.1);
+		background: rgba(20, 184, 166,0.025);
+		border: 1px solid rgba(20, 184, 166,0.1);
 		border-radius: 10px;
 	}
 	.phone-verified-row {
@@ -1005,7 +1005,7 @@
 	.st-theme-btn--active {
 		background: rgba(0, 255, 255, 0.1);
 		border-color: rgba(0, 255, 255, 0.5);
-		color: #00ffff;
+		color: #14b8a6;
 	}
 
 	/* ── FCM Permission cards ─────────────────────────────────────────────── */
@@ -1022,8 +1022,8 @@
 		border: 1px solid rgba(0, 255, 255, 0.12);
 	}
 	.st-permission-card--active {
-		background: rgba(0, 255, 136, 0.05);
-		border: 1px solid rgba(0, 255, 136, 0.25);
+		background: rgba(45, 212, 191, 0.05);
+		border: 1px solid rgba(45, 212, 191, 0.25);
 	}
 	.st-permission-card--denied {
 		background: rgba(239, 68, 68, 0.04);
@@ -1118,8 +1118,8 @@
 		margin-left: 1px;
 	}
 	.st-relay--on .st-relay-seg--tip {
-		background: #00ffff;
-		border-color: #00ffff;
+		background: #14b8a6;
+		border-color: #14b8a6;
 		box-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
 	}
 
@@ -1137,7 +1137,7 @@
 		transition: background 0.2s, box-shadow 0.2s;
 	}
 	.st-relay--on .st-relay-knob {
-		background: #00ffff;
+		background: #14b8a6;
 		box-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
 	}
 
@@ -1158,8 +1158,8 @@
 		margin-top: 10px;
 		font-size: 9px;
 		letter-spacing: 0.18em;
-		color: #00ff88;
-		text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+		color: #2dd4bf;
+		text-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
 		animation: st-flash 0.3s ease-out;
 	}
 	@keyframes st-flash {

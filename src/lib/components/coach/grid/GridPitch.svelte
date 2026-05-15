@@ -2,8 +2,8 @@
 	let { showLabels = false } = $props();
 
 	/** Razor-sharp neon-cyan stroke spec applied uniformly to every pitch line. */
-	const NEON = '#00f0ff';
-	const NEON_GLOW = 'filter: drop-shadow(0 0 4px #00f0ff);';
+	const NEON = '#14b8a6';
+	const NEON_GLOW = 'filter: drop-shadow(0 0 4px #14b8a6);';
 </script>
 
 <!--
@@ -21,7 +21,7 @@
 	y="2"
 	width="1596"
 	height="896"
-	fill="rgba(0,240,255,0.02)"
+	fill="rgba(20, 184, 166,0.02)"
 	stroke={NEON}
 	stroke-width="1.5"
 	style={NEON_GLOW}

@@ -226,7 +226,7 @@
 		display: flex; align-items: center; gap: 0.75rem;
 		padding: 0.5rem 1rem;
 		background: rgba(4, 4, 12, 0.97);
-		border-top: 1px solid rgba(0, 240, 255, 0.15);
+		border-top: 1px solid rgba(20, 184, 166, 0.15);
 		box-shadow: var(--vanguard-elev-2);
 		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
@@ -247,8 +247,8 @@
 	}
 	.mp-cover--ph {
 		display: flex; align-items: center; justify-content: center;
-		background: rgba(0, 240, 255, 0.08);
-		color: rgba(0, 240, 255, 0.4); font-size: 0.9rem;
+		background: rgba(20, 184, 166, 0.08);
+		color: rgba(20, 184, 166, 0.4); font-size: 0.9rem;
 	}
 	.mp-track-info { min-width: 0; }
 	.mp-ep-title {
@@ -258,7 +258,7 @@
 	}
 	.mp-pod-name {
 		display: block; font-size: 0.55rem;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 	}
 
@@ -275,16 +275,16 @@
 		color: rgba(255, 255, 255, 0.5);
 		cursor: pointer; transition: all 0.15s;
 	}
-	.mp-btn:hover { border-color: rgba(0, 240, 255, 0.3); color: #00f0ff; }
+	.mp-btn:hover { border-color: rgba(20, 184, 166, 0.3); color: #14b8a6; }
 	.mp-btn--play {
-		background: rgba(0, 240, 255, 0.1);
-		border-color: rgba(0, 240, 255, 0.3);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.1);
+		border-color: rgba(20, 184, 166, 0.3);
+		color: #14b8a6;
 		width: 36px; height: 36px;
 	}
 	.mp-btn--play:hover {
-		background: rgba(0, 240, 255, 0.2);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.2);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.25);
 	}
 	.mp-btn--stop { border-color: rgba(255, 50, 80, 0.2); color: rgba(255, 50, 80, 0.5); }
 	.mp-btn--stop:hover { border-color: rgba(255, 50, 80, 0.5); color: rgba(255, 50, 80, 0.9); }
@@ -300,7 +300,7 @@
 		-webkit-appearance: none; appearance: none;
 		background: linear-gradient(
 			to right,
-			rgba(0, 240, 255, 0.7) var(--prog, 0%),
+			rgba(20, 184, 166, 0.7) var(--prog, 0%),
 			rgba(255, 255, 255, 0.1) var(--prog, 0%)
 		);
 		border-radius: 2px; outline: none; cursor: pointer;
@@ -309,8 +309,8 @@
 		-webkit-appearance: none;
 		width: 12px; height: 12px;
 		border-radius: 50%;
-		background: #00f0ff;
-		box-shadow: 0 0 6px rgba(0, 240, 255, 0.6);
+		background: #14b8a6;
+		box-shadow: 0 0 6px rgba(20, 184, 166, 0.6);
 	}
 
 	/* ── Right side ─────────────────────────────────────────────────────────── */

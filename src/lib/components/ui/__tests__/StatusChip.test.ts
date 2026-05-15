@@ -32,9 +32,9 @@ describe('StatusChip tone palette', () => {
 		}
 	});
 
-	it('has no neon hex values (#00f0ff, #ff003c) in any tone', () => {
+	it('has no neon hex values (#14b8a6, #ff003c) in any tone', () => {
 		for (const [tone, style] of Object.entries(TONE_STYLE)) {
-			expect(style, `Neon cyan found in tone: ${tone}`).not.toContain('#00f0ff');
+			expect(style, `Neon cyan found in tone: ${tone}`).not.toContain('#14b8a6');
 			expect(style, `Neon red found in tone: ${tone}`).not.toContain('#ff003c');
 		}
 	});

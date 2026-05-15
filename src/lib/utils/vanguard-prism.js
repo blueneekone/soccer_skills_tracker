@@ -4,7 +4,8 @@
  * Used by both AttributeRadar (dashboard chart) and any future VanguardPrism
  * stat-hex so they share one source of truth for value derivation.
  *
- * Axis order (ALWAYS maintained): PACE · ACCEL · AGILITY · STAMINA · POWER · VANGUARD
+ * Axis order (ALWAYS maintained): PACE · ACCEL · AGILITY · STAMINA · POWER · COMP
+ * (Sixth axis is composite / armory `VAN` — labeled COMP in UI to avoid clashing with product name.)
  *
  * Hybrid strategy (in priority order per axis):
  *   1. Prefer numeric value from player_stats doc (coach-entered telemetry).
@@ -109,7 +110,7 @@ function parseVanguard(s) {
 /**
  * Derive 6 normalized 0-99 values for the Vanguard Prism axes.
  *
- * Axis order: [PACE, ACCEL, AGILITY, STAMINA, POWER, VANGUARD]
+ * Axis order: [PACE, ACCEL, AGILITY, STAMINA, POWER, COMP]
  *
  * @param {Record<string, unknown> | null} statsRaw  player_stats doc (coach telemetry)
  * @param {ArmoryStats} armoryStats  activePlayer.armory.stats strings
@@ -138,5 +139,5 @@ export function deriveVanguardPrism(statsRaw, armoryStats) {
 
 /** Canonical axis labels — exported so consumers stay in sync. */
 export const VANGUARD_PRISM_LABELS = /** @type {const} */ ([
-	'PACE', 'ACCEL', 'AGILITY', 'STAMINA', 'POWER', 'VANGUARD',
+	'PACE', 'ACCEL', 'AGILITY', 'STAMINA', 'POWER', 'COMP',
 ]);

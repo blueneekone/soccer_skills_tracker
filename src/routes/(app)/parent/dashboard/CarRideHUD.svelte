@@ -54,7 +54,7 @@
 							</span>
 						</div>
 						<span
-							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-[#00f0ff]' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
+							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-[#14b8a6]' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
 						>
 							{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 						</span>

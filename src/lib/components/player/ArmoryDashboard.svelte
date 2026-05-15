@@ -120,7 +120,7 @@
 	// ── Tier filter button definitions ────────────────────────────────────
 	// Rendered highest-to-lowest so VANGUARD is the first filter a scout sees.
 	const TIER_BTNS = [
-		{ id: 'ALL', label: 'ALL', accent: '#00f0ff' },
+		{ id: 'ALL', label: 'ALL', accent: '#14b8a6' },
 		...[...TIER_DEFINITIONS].reverse().map((t) => ({ id: t.id, label: t.label, accent: t.accent })),
 	];
 
@@ -249,7 +249,7 @@
 			<select
 				id="ad-sort"
 				bind:value={sortKey}
-				class="tw-bg-[#0a0e14] tw-border tw-border-white/12 tw-rounded tw-px-3 tw-py-1.5 tw-text-[9px] tw-uppercase tw-tracking-[0.3em] tw-text-white/55 tw-font-mono tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-border-white/25 focus:tw-outline-none focus:tw-border-[#00f0ff]/40"
+				class="tw-bg-[#0a0e14] tw-border tw-border-white/12 tw-rounded tw-px-3 tw-py-1.5 tw-text-[9px] tw-uppercase tw-tracking-[0.3em] tw-text-white/55 tw-font-mono tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-border-white/25 focus:tw-outline-none focus:tw-border-[#14b8a6]/40"
 			>
 				{#each SORT_OPTIONS as opt (opt.value)}
 					<option value={opt.value}>{opt.label}</option>
@@ -300,7 +300,7 @@
 
 	/* ── Search input ─────────────────────────────────────────────────── */
 	.ad-search:focus {
-		border-bottom-color: rgba(0, 240, 255, 0.5);
+		border-bottom-color: rgba(20, 184, 166, 0.5);
 	}
 
 	/* Webkit browsers show a built-in clear button in search inputs; hide it
@@ -337,10 +337,10 @@
 	}
 
 	.ad-tier-btn--active {
-		color: var(--btn-accent, #00f0ff);
-		border-color: var(--btn-accent, #00f0ff);
-		background: color-mix(in srgb, var(--btn-accent, #00f0ff) 10%, transparent);
-		box-shadow: 0 0 14px color-mix(in srgb, var(--btn-accent, #00f0ff) 18%, transparent);
+		color: var(--btn-accent, #14b8a6);
+		border-color: var(--btn-accent, #14b8a6);
+		background: color-mix(in srgb, var(--btn-accent, #14b8a6) 10%, transparent);
+		box-shadow: 0 0 14px color-mix(in srgb, var(--btn-accent, #14b8a6) 18%, transparent);
 	}
 
 	/* Small numeric badge inside each tier button */

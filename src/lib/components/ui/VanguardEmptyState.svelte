@@ -200,7 +200,7 @@
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: #00ffff;
+		color: #14b8a6;
 		background: rgba(0, 255, 255, 0.07);
 		border: 1px solid rgba(0, 255, 255, 0.35);
 		border-radius: 2px;

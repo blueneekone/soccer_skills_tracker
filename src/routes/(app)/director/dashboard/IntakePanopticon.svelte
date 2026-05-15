@@ -170,8 +170,8 @@
   {#if isLoading}
     <div class="ip-loading" aria-busy="true">
       <svg class="ip-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" stroke="rgba(0,240,255,0.18)" stroke-width="2.5"/>
-        <path d="M12 3a9 9 0 0 1 9 9" stroke="#00f0ff" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="9" stroke="rgba(20, 184, 166,0.18)" stroke-width="2.5"/>
+        <path d="M12 3a9 9 0 0 1 9 9" stroke="#14b8a6" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
       <span>SCANNING INTAKE STREAM...</span>
     </div>
@@ -327,7 +327,7 @@
     flex-direction: column;
     gap: 0;
     background: rgba(2, 2, 2, 0.92);
-    border: 1px solid rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(20, 184, 166, 0.15);
     border-radius: 12px;
     overflow: hidden;
     backdrop-filter: blur(36px);
@@ -342,7 +342,7 @@
     align-items: center;
     gap: 1rem;
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+    border-bottom: 1px solid rgba(20, 184, 166, 0.1);
     flex-wrap: wrap;
     background: rgba(4, 15, 22, 0.6);
   }
@@ -353,8 +353,8 @@
   }
   .ip-icon {
     font-size: 1.6rem;
-    color: #00f0ff;
-    filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.6));
+    color: #14b8a6;
+    filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.6));
     line-height: 1;
     flex-shrink: 0;
   }
@@ -363,23 +363,23 @@
     font-size: clamp(0.85rem, 2vw, 1rem);
     font-weight: 900;
     letter-spacing: 0.15em;
-    color: #00f0ff;
-    text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    color: #14b8a6;
+    text-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
   }
   .ip-subtitle {
     margin: 0.2rem 0 0;
     font-size: 0.5rem;
     letter-spacing: 0.14em;
-    color: rgba(0, 240, 255, 0.45);
+    color: rgba(20, 184, 166, 0.45);
     text-transform: uppercase;
   }
   .ip-count-badge {
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.14em;
-    color: rgba(0, 240, 255, 0.8);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    background: rgba(0, 240, 255, 0.06);
+    color: rgba(20, 184, 166, 0.8);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    background: rgba(20, 184, 166, 0.06);
     border-radius: 999px;
     padding: 0.3rem 0.9rem;
     white-space: nowrap;
@@ -394,7 +394,7 @@
     padding: 3rem 1.5rem;
     font-size: 0.6rem;
     letter-spacing: 0.16em;
-    color: rgba(0, 240, 255, 0.45);
+    color: rgba(20, 184, 166, 0.45);
   }
   .ip-spinner {
     width: 1.5rem;
@@ -441,8 +441,8 @@
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(0, 240, 255, 0.35);
-    border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+    color: rgba(20, 184, 166, 0.35);
+    border-bottom: 1px solid rgba(20, 184, 166, 0.08);
     background: rgba(4, 15, 22, 0.5);
   }
 
@@ -452,14 +452,14 @@
     grid-template-columns: 1.8fr 1fr 2fr 1fr 1.8fr 2fr;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.05);
+    border-bottom: 1px solid rgba(20, 184, 166, 0.05);
     background: rgba(4, 15, 22, 0.7);
     transition: background 0.15s, border-color 0.15s;
   }
   .ip-row:last-child { border-bottom: none; }
   .ip-row:hover {
-    background: rgba(0, 240, 255, 0.03);
-    border-bottom-color: rgba(0, 240, 255, 0.12);
+    background: rgba(20, 184, 166, 0.03);
+    border-bottom-color: rgba(20, 184, 166, 0.12);
   }
 
   /* ── Cells ───────────────────────────────────────────────────── */
@@ -499,9 +499,9 @@
     font-size: 0.54rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: rgba(0, 240, 255, 0.7);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    background: rgba(0, 240, 255, 0.06);
+    color: rgba(20, 184, 166, 0.7);
+    border: 1px solid rgba(20, 184, 166, 0.25);
+    background: rgba(20, 184, 166, 0.06);
     border-radius: 3px;
     padding: 0.15rem 0.5rem;
     white-space: nowrap;
@@ -547,9 +547,9 @@
     font-size: 0.5rem;
     font-weight: 700;
     letter-spacing: 0.14em;
-    color: #00f0ff;
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    background: rgba(0, 240, 255, 0.04);
+    color: #14b8a6;
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    background: rgba(20, 184, 166, 0.04);
     border-radius: 3px;
     padding: 0.25rem 0.55rem;
     white-space: nowrap;
@@ -576,13 +576,13 @@
   .ip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .ip-btn--nudge {
-    background: rgba(0, 240, 255, 0.04);
-    border-color: rgba(0, 240, 255, 0.35);
-    color: rgba(0, 240, 255, 0.8);
+    background: rgba(20, 184, 166, 0.04);
+    border-color: rgba(20, 184, 166, 0.35);
+    color: rgba(20, 184, 166, 0.8);
   }
   .ip-btn--nudge:hover:not(:disabled) {
-    background: rgba(0, 240, 255, 0.1);
-    border-color: rgba(0, 240, 255, 0.6);
+    background: rgba(20, 184, 166, 0.1);
+    border-color: rgba(20, 184, 166, 0.6);
   }
 
   .ip-btn--override {
@@ -637,14 +637,14 @@
     width: 100%;
     max-width: 480px;
     background: rgba(2, 2, 2, 0.97);
-    border: 1px solid rgba(0, 240, 255, 0.2);
+    border: 1px solid rgba(20, 184, 166, 0.2);
     border-radius: 14px;
     padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     box-shadow:
-      0 0 60px rgba(0, 240, 255, 0.08),
+      0 0 60px rgba(20, 184, 166, 0.08),
       0 30px 60px rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
@@ -728,18 +728,18 @@
       gap: 0.6rem;
       padding: 1rem 1rem 1.1rem;
       background: rgba(4, 15, 22, 0.85);
-      border: 1px solid rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(20, 184, 166, 0.1);
       border-radius: 8px;
       margin: 0.35rem 0.75rem;
     }
-    .ip-row:last-child { border-bottom: 1px solid rgba(0, 240, 255, 0.1); }
+    .ip-row:last-child { border-bottom: 1px solid rgba(20, 184, 166, 0.1); }
 
     .ip-cell::before {
       content: attr(data-label);
       display: block;
       font-size: 0.46rem;
       letter-spacing: 0.18em;
-      color: rgba(0, 240, 255, 0.35);
+      color: rgba(20, 184, 166, 0.35);
       margin-bottom: 0.2rem;
       text-transform: uppercase;
     }

@@ -101,25 +101,25 @@
 </script>
 
 <div
-	class="tw-w-full tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#00f0ff]/20 tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-5"
+	class="tw-w-full tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#14b8a6]/20 tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-5"
 >
 	<!-- HEADER -->
 	<div class="tw-flex tw-flex-col tw-gap-1">
 		<div class="tw-flex tw-items-center tw-gap-2">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 				//
 			</span>
-			<h2 class="tw-font-mono tw-text-[13px] tw-tracking-widest tw-text-[#00f0ff] tw-uppercase">
+			<h2 class="tw-font-mono tw-text-[13px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
 				BOUNTY TERMINAL
 			</h2>
 		</div>
-		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 			[ DEPLOY ESCROW BOUNTY ]
 		</p>
 	</div>
 
 	<!-- DIVIDER -->
-	<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>
+	<div class="tw-w-full tw-h-px tw-bg-[#14b8a6]/10"></div>
 
 	<!-- FUNDING SOURCE WARNING -->
 	{#if !engine.hasFundingSource}
@@ -137,16 +137,16 @@
 	<div class="tw-flex tw-flex-col tw-gap-2">
 		<label
 			for="player-select"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 		>
 			TARGET PLAYER
 		</label>
 		{#if engine.householdChildren.length === 0}
 			<div
-				class="tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#00f0ff]/10 tw-px-4 tw-py-3"
+				class="tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-px-4 tw-py-3"
 			>
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
 				>
 					[ NO CHILDREN LINKED TO HOUSEHOLD ]
 				</span>
@@ -155,7 +155,7 @@
 			<select
 				id="player-select"
 				bind:value={selectedPlayerEmail}
-				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 focus:tw-shadow-[0_0_10px_rgba(0,240,255,0.2)] tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
+				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
 			>
 				<option value="" disabled>— SELECT PLAYER —</option>
 				{#each engine.householdChildren as child (child.email)}
@@ -169,9 +169,9 @@
 	<div class="tw-flex tw-flex-col tw-gap-2">
 		<label
 			for="bounty-title"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 		>
-			BOUNTY TITLE <span class="tw-text-[#00f0ff]/25">— MAX 100 CHARS</span>
+			BOUNTY TITLE <span class="tw-text-[#14b8a6]/25">— MAX 100 CHARS</span>
 		</label>
 		<input
 			id="bounty-title"
@@ -179,16 +179,16 @@
 			bind:value={title}
 			maxlength={100}
 			placeholder="e.g. 500 REPS THIS WEEK"
-			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 focus:tw-shadow-[0_0_10px_rgba(0,240,255,0.2)] tw-transition-all tw-duration-150 placeholder:tw-text-[#00f0ff]/20"
+			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
 		/>
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/25 tw-text-right">
+		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-text-right">
 			{title.length}/100
 		</span>
 	</div>
 
 	<!-- CRITERION TYPE -->
 	<div class="tw-flex tw-flex-col tw-gap-3">
-		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 			COMPLETION CRITERION
 		</p>
 		<div class="tw-flex tw-flex-col tw-gap-2">
@@ -197,19 +197,19 @@
 				<label
 					class="tw-flex tw-items-center tw-gap-3 tw-rounded-lg tw-px-4 tw-py-3 tw-border tw-cursor-pointer tw-transition-all tw-duration-150
 					{isActive
-						? 'tw-border-[#00f0ff]/60 tw-bg-[#00f0ff]/8 tw-shadow-[0_0_12px_rgba(0,240,255,0.2),inset_0_0_6px_rgba(0,240,255,0.08)]'
-						: 'tw-border-[#00f0ff]/10 tw-bg-transparent hover:tw-border-[#00f0ff]/30'}"
+						? 'tw-border-[#14b8a6]/60 tw-bg-[#14b8a6]/8 tw-shadow-[0_0_12px_rgba(20, 184, 166,0.2),inset_0_0_6px_rgba(20, 184, 166,0.08)]'
+						: 'tw-border-[#14b8a6]/10 tw-bg-transparent hover:tw-border-[#14b8a6]/30'}"
 				>
 					<input
 						type="radio"
 						name="criterion-type"
 						value={opt.id}
 						bind:group={criterionType}
-						class="tw-accent-[#00f0ff] tw-w-3 tw-h-3"
+						class="tw-accent-[#14b8a6] tw-w-3 tw-h-3"
 					/>
 					<span
 						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase
-						{isActive ? 'tw-text-[#00f0ff]' : 'tw-text-[#e0e0e0]/60'}"
+						{isActive ? 'tw-text-[#14b8a6]' : 'tw-text-[#e0e0e0]/60'}"
 					>
 						{opt.label}
 					</span>
@@ -219,8 +219,8 @@
 	</div>
 
 	<!-- DYNAMIC CRITERION FIELDS -->
-	<div class="tw-flex tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#00f0ff]/10 tw-p-4">
-		<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase">
+	<div class="tw-flex tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-p-4">
+		<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase">
 			// CRITERION PARAMETERS
 		</p>
 
@@ -228,7 +228,7 @@
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="target-reps"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 				>
 					TARGET REPS
 				</label>
@@ -238,7 +238,7 @@
 					bind:value={targetReps}
 					min={1}
 					step={1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150"
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
 				/>
 			</div>
 
@@ -246,7 +246,7 @@
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="target-kj"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 				>
 					TARGET KILOJOULES
 				</label>
@@ -256,7 +256,7 @@
 					bind:value={targetKj}
 					min={1}
 					step={0.1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150"
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
 				/>
 			</div>
 
@@ -264,7 +264,7 @@
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="target-days"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 				>
 					TARGET STREAK (DAYS)
 				</label>
@@ -274,7 +274,7 @@
 					bind:value={targetDays}
 					min={1}
 					step={1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150"
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
 				/>
 			</div>
 
@@ -282,7 +282,7 @@
 			<div class="tw-flex tw-flex-col tw-gap-2">
 				<label
 					for="minimum-gpa"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 				>
 					MINIMUM GPA (0.0 – 4.0)
 				</label>
@@ -293,7 +293,7 @@
 					min={0}
 					max={4.0}
 					step={0.1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150"
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
 				/>
 			</div>
 
@@ -302,7 +302,7 @@
 				<div class="tw-flex tw-flex-col tw-gap-2">
 					<label
 						for="node-id"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 					>
 						NODE ID
 					</label>
@@ -311,13 +311,13 @@
 						type="text"
 						bind:value={nodeId}
 						placeholder="skill_tree_node_id"
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#00f0ff]/20"
+						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
 					/>
 				</div>
 				<div class="tw-flex tw-flex-col tw-gap-2">
 					<label
 						for="node-label"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 					>
 						NODE LABEL
 					</label>
@@ -326,20 +326,20 @@
 						type="text"
 						bind:value={nodeLabel}
 						placeholder="e.g. Advanced Dribbling"
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#00f0ff]/20"
+						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
 					/>
 				</div>
 				<div class="tw-flex tw-flex-col tw-gap-2">
 					<label
 						for="required-status"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 					>
 						REQUIRED STATUS
 					</label>
 					<select
 						id="required-status"
 						bind:value={requiredStatus}
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#040f16] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
+						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
 					>
 						<option value="unlocked">UNLOCKED</option>
 						<option value="mastered">MASTERED</option>
@@ -353,13 +353,13 @@
 	<div class="tw-flex tw-flex-col tw-gap-2">
 		<label
 			for="reward-dollars"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 		>
 			REWARD AMOUNT (USD) — MIN $1
 		</label>
 		<div class="tw-relative">
 			<span
-				class="tw-absolute tw-left-4 tw-top-1/2 -tw-translate-y-1/2 tw-font-mono tw-text-[11px] tw-text-[#00f0ff]/50"
+				class="tw-absolute tw-left-4 tw-top-1/2 -tw-translate-y-1/2 tw-font-mono tw-text-[11px] tw-text-[#14b8a6]/50"
 			>
 				$
 			</span>
@@ -369,7 +369,7 @@
 				bind:value={rewardDollars}
 				min={1}
 				step={1}
-				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-pl-8 tw-pr-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 focus:tw-shadow-[0_0_10px_rgba(0,240,255,0.2)] tw-transition-all tw-duration-150"
+				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-pl-8 tw-pr-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150"
 			/>
 		</div>
 	</div>
@@ -378,7 +378,7 @@
 	<div class="tw-flex tw-flex-col tw-gap-2">
 		<label
 			for="expires-at"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 		>
 			BOUNTY EXPIRY DATE
 		</label>
@@ -387,7 +387,7 @@
 			type="date"
 			bind:value={expiresAt}
 			min={minExpiryDate}
-			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#00f0ff]/60 focus:tw-shadow-[0_0_10px_rgba(0,240,255,0.2)] tw-transition-all tw-duration-150 tw-cursor-pointer"
+			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 tw-cursor-pointer"
 		/>
 	</div>
 

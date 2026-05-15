@@ -650,11 +650,11 @@
     height: auto;
     overflow: visible;
     box-sizing: border-box;
-    background: #000000;
+    background: var(--vanguard-bg);
     color: #fafafa;
     padding: var(--bento-pad);
     --cyber: #00d4ff;
-    --toxic: #39ff14;
+    --toxic: #2dd4bf;
     --threat: #ff6b00;
     --border: rgba(255, 255, 255, 0.1);
   }
@@ -722,7 +722,7 @@
     font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 0.28em;
-    color: #39ff14;
+    color: #2dd4bf;
     margin: 0 0 0.6rem;
     text-shadow: 0 0 12px rgba(57, 255, 20, 0.45);
     animation: pw-pulse-ops 2.2s ease-in-out infinite;
@@ -790,7 +790,7 @@
   }
 
   .pw-tx--active {
-    border-color: #39ff14;
+    border-color: #2dd4bf;
     box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.5), 0 0 28px rgba(57, 255, 20, 0.25);
     animation: none;
   }
@@ -837,7 +837,7 @@
   .pw-armed {
     font-size: 0.6rem;
     letter-spacing: 0.12em;
-    color: #39ff14;
+    color: #2dd4bf;
     border: 1px solid rgba(57, 255, 20, 0.25);
     background: #000;
     padding: 0.45rem 0.6rem;

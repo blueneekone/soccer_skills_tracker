@@ -118,7 +118,7 @@
 					number: String(i + 1).padStart(2, '0'),
 					position: '',
 					side: /** @type {'friendly'} */ ('friendly'),
-					color: '#00f0ff',
+					color: '#14b8a6',
 				}));
 				return;
 				}
@@ -144,7 +144,7 @@
 							number: String(++idx).padStart(2, '0'),
 							position: typeof data.position === 'string' ? data.position : '',
 							side: /** @type {'friendly'} */ ('friendly'),
-							color: '#00f0ff',
+							color: '#14b8a6',
 						});
 					});
 				tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -159,7 +159,7 @@
 					number: String(i + 1).padStart(2, '0'),
 					position: '',
 					side: /** @type {'friendly'} */ ('friendly'),
-					color: '#00f0ff',
+					color: '#14b8a6',
 				}));
 			} catch (e) {
 				console.error('[War Room] roster load error:', e);
@@ -170,7 +170,7 @@
 					number: String(i + 1).padStart(2, '0'),
 					position: '',
 					side: /** @type {'friendly'} */ ('friendly'),
-					color: '#00f0ff',
+					color: '#14b8a6',
 				}));
 			}
 		})();

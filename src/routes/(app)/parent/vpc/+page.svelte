@@ -757,7 +757,7 @@
 		overflow-y: auto;
 		/* Vanguard thin scrollbar — matches global app.css token */
 		scrollbar-width: thin;
-		scrollbar-color: rgba(0, 240, 255, 0.35) rgba(15, 23, 42, 0.1);
+		scrollbar-color: rgba(20, 184, 166, 0.35) rgba(15, 23, 42, 0.1);
 	}
 	:global(html.dark) .vpc-disclosure {
 		background: rgba(255,255,255,0.02);

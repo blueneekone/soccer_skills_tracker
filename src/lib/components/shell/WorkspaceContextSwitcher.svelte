@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -60,10 +60,10 @@
 	// Active sport accent color from the loaded sport config.
 	const sportAccent = $derived.by(() => {
 		const cfg = workspaceContextStore.activeSportConfig;
-		if (!cfg) return '#00f0ff';
+		if (!cfg) return '#14b8a6';
 		const attrs = (cfg as any).attributes;
-		if (Array.isArray(attrs) && attrs.length > 0) return attrs[0].hexColor || '#00f0ff';
-		return '#00f0ff';
+		if (Array.isArray(attrs) && attrs.length > 0) return attrs[0].hexColor || '#14b8a6';
+		return '#14b8a6';
 	});
 
 	// Show popover when open AND there's something to display.
@@ -123,7 +123,7 @@
 		const name = (club as any).name || cid;
 		pick({
 			id: `ctx-director-${cid}`,
-			label: `Director · ${name}`,
+			label: `Director Â· ${name}`,
 			href: `/director?clubId=${encodeURIComponent(cid)}&tab=home`,
 		});
 	}
@@ -173,7 +173,7 @@
 </script>
 
 <div class="ec-ws" class:ec-ws--mobile={variant === 'mobile'} bind:this={rootEl}>
-	<!-- ─── TRIGGER ──────────────────────────────────────────────── -->
+	<!-- â”€â”€â”€ TRIGGER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 	<button
 		type="button"
 		class="ec-ws__trigger"
@@ -203,7 +203,7 @@
 		</div>
 	</button>
 
-	<!-- ─── POPOVER ──────────────────────────────────────────────── -->
+	<!-- â”€â”€â”€ POPOVER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 	{#if popoverVisible}
 		<div class="ec-ws__popover" role="menu" aria-label="Workspace Selector">
 			<!-- Header -->
@@ -246,12 +246,12 @@
 								<span class="ec-ws__club-name ec-ws__truncate">{club.name ?? club.id}</span>
 								<span class="ec-ws__sport-pill">
 									{cSportId === 'soccer'
-										? '⚽'
+										? 'âš½'
 										: cSportId === 'basketball'
-											? '🏀'
+											? 'ðŸ€'
 											: cSportId === 'lacrosse'
-												? '🥍'
-												: '🎽'}
+												? 'ðŸ¥'
+												: 'ðŸŽ½'}
 									{cSportId.toUpperCase()}
 								</span>
 							</button>
@@ -291,7 +291,7 @@
 							{#each attrs as attr, i (i)}
 								<span
 									class="ec-ws__attr-dot"
-									style:background={attr.hexColor || '#00f0ff'}
+									style:background={attr.hexColor || '#14b8a6'}
 									title={attr.label || ''}
 								></span>
 							{/each}
@@ -304,7 +304,7 @@
 </div>
 
 <style>
-	/* Do not set overflow on the root — it clips the absolutely-positioned menu. */
+	/* Do not set overflow on the root â€” it clips the absolutely-positioned menu. */
 	.ec-ws {
 		position: relative;
 		align-self: stretch;
@@ -318,7 +318,7 @@
 		min-width: 0;
 	}
 
-	/* ─── TRIGGER ──────────────────────────────────────────────── */
+	/* â”€â”€â”€ TRIGGER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 	.ec-ws__trigger {
 		display: flex;
@@ -349,17 +349,17 @@
 	}
 
 	.ec-ws__trigger:hover {
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 	}
 
 	.ec-ws__trigger:focus-visible {
-		outline: 1px solid rgba(0, 240, 255, 0.45);
+		outline: 1px solid rgba(20, 184, 166, 0.45);
 		outline-offset: -2px;
 	}
 
-	/* Sport config loaded → left accent rail lights up with the division color. */
+	/* Sport config loaded â†’ left accent rail lights up with the division color. */
 	.ec-ws__trigger--sport-active {
-		border-left-color: var(--vanguard-division-accent, #00f0ff);
+		border-left-color: var(--vanguard-division-accent, #14b8a6);
 	}
 
 	.ec-ws--mobile .ec-ws__trigger {
@@ -426,7 +426,7 @@
 		width: 5px;
 		height: 5px;
 		border-radius: 50%;
-		background: #00f0ff;
+		background: #14b8a6;
 		flex-shrink: 0;
 		animation: ec-ws-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
 	}
@@ -443,7 +443,7 @@
 		}
 	}
 
-	/* ─── POPOVER ──────────────────────────────────────────────── */
+	/* â”€â”€â”€ POPOVER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 	.ec-ws__popover {
 		position: absolute;
@@ -478,7 +478,7 @@
 		justify-content: space-between;
 		gap: 8px;
 		padding: 10px 14px 8px;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 		flex-shrink: 0;
 	}
 
@@ -488,7 +488,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.18em;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 	}
 
 	.ec-ws__org-tag {
@@ -497,9 +497,9 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: var(--vanguard-division-accent, #00f0ff);
-		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
-		border: 1px solid rgba(0, 240, 255, 0.22);
+		color: var(--vanguard-division-accent, #14b8a6);
+		background: var(--vanguard-division-accent-dim, rgba(20, 184, 166, 0.08));
+		border: 1px solid rgba(20, 184, 166, 0.22);
 		border-radius: 4px;
 		padding: 2px 6px;
 		max-width: 120px;
@@ -515,10 +515,10 @@
 		overflow-x: hidden;
 		padding: 6px 0;
 		scrollbar-width: thin;
-		scrollbar-color: rgba(0, 240, 255, 0.2) transparent;
+		scrollbar-color: rgba(20, 184, 166, 0.2) transparent;
 	}
 
-	/* ─── ORG-GROUPED TOPOLOGY ──────────────────────────────────── */
+	/* â”€â”€â”€ ORG-GROUPED TOPOLOGY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 	.ec-ws__org-header {
 		display: flex;
@@ -536,7 +536,7 @@
 		display: inline-block;
 		width: 2px;
 		height: 12px;
-		background: rgba(0, 240, 255, 0.4);
+		background: rgba(20, 184, 166, 0.4);
 		border-radius: 1px;
 		flex-shrink: 0;
 	}
@@ -547,7 +547,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
-		color: rgba(0, 240, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 	}
 
 	.ec-ws__club-row {
@@ -570,16 +570,16 @@
 	}
 
 	.ec-ws__club-row:hover {
-		background: rgba(0, 240, 255, 0.05);
+		background: rgba(20, 184, 166, 0.05);
 	}
 
 	.ec-ws__club-row--active {
-		border-left-color: var(--vanguard-division-accent, #00f0ff);
-		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
+		border-left-color: var(--vanguard-division-accent, #14b8a6);
+		background: var(--vanguard-division-accent-dim, rgba(20, 184, 166, 0.08));
 	}
 
 	.ec-ws__club-row--active:hover {
-		background: var(--vanguard-division-accent-dim, rgba(0, 240, 255, 0.08));
+		background: var(--vanguard-division-accent-dim, rgba(20, 184, 166, 0.08));
 	}
 
 	/* 8px sport color circle */
@@ -606,15 +606,15 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--vanguard-division-accent, #00f0ff);
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		color: var(--vanguard-division-accent, #14b8a6);
+		border: 1px solid rgba(20, 184, 166, 0.3);
 		border-radius: 4px;
 		padding: 1px 5px;
 		flex-shrink: 0;
 		white-space: nowrap;
 	}
 
-	/* ─── FLAT / LEGACY MENU ────────────────────────────────────── */
+	/* â”€â”€â”€ FLAT / LEGACY MENU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 	.ec-ws__section-label {
 		margin: 8px 12px 4px;
@@ -623,7 +623,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.16em;
 		font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 	}
 
 	.ec-ws__section-label:first-child {
@@ -654,10 +654,10 @@
 	}
 
 	.ec-ws__item:hover {
-		background: rgba(0, 240, 255, 0.05);
+		background: rgba(20, 184, 166, 0.05);
 	}
 
-	/* ─── FOOTER ────────────────────────────────────────────────── */
+	/* â”€â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 	.ec-ws__footer {
 		display: flex;
@@ -666,7 +666,7 @@
 		flex-wrap: wrap;
 		padding: 10px 14px;
 		background: rgba(0, 0, 0, 0.4);
-		border-top: 1px solid rgba(0, 240, 255, 0.1);
+		border-top: 1px solid rgba(20, 184, 166, 0.1);
 		flex-shrink: 0;
 	}
 
@@ -676,7 +676,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.18em;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 		flex-shrink: 0;
 	}
 
@@ -686,7 +686,7 @@
 		gap: 4px;
 	}
 
-	/* 8×8 attribute color circles */
+	/* 8Ã—8 attribute color circles */
 	.ec-ws__attr-dot {
 		display: inline-block;
 		width: 8px;

@@ -31,7 +31,7 @@
 		tierAccent?: string;
 	}
 
-	let { engine, armoryStats = {}, tierAccent = '#00f0ff' }: Props = $props();
+	let { engine, armoryStats = {}, tierAccent = '#14b8a6' }: Props = $props();
 
 	/** Unique prefix so gradient/filter IDs don't collide across instances. */
 	const uid = `sta-${Math.random().toString(36).slice(2, 7)}`;
@@ -112,8 +112,8 @@
 	function nodeFill(state: string, hovered: boolean, selected: boolean): string {
 		const boost = hovered || selected ? 0.2 : 0;
 		if (state === 'locked') return `rgba(255,255,255,${(0.04 + boost).toFixed(2)})`;
-		if (state === 'mastered') return `rgba(0,240,255,${Math.min(0.55 + boost, 0.9).toFixed(2)})`;
-		return `rgba(0,240,255,${Math.min(0.25 + boost, 0.85).toFixed(2)})`;
+		if (state === 'mastered') return `rgba(20, 184, 166,${Math.min(0.55 + boost, 0.9).toFixed(2)})`;
+		return `rgba(20, 184, 166,${Math.min(0.25 + boost, 0.85).toFixed(2)})`;
 	}
 
 	function nodeStroke(state: string): string {
@@ -125,7 +125,7 @@
 	}
 
 	function edgeStroke(state: string): string {
-		return state === 'locked' ? 'rgba(255,255,255,0.05)' : 'rgba(0,240,255,0.18)';
+		return state === 'locked' ? 'rgba(255,255,255,0.05)' : 'rgba(20, 184, 166,0.18)';
 	}
 
 	function labelFill(state: string): string {
@@ -146,8 +146,8 @@
 	class="st-arena tw-relative tw-w-full tw-rounded-xl tw-border tw-overflow-visible"
 	style:background="rgba(2,2,2,0.85)"
 	style:backdrop-filter="blur(12px)"
-	style:border-color="rgba(0,240,255,0.12)"
-	style:box-shadow="inset 0 0 48px rgba(0,240,255,0.04), 0 0 0 1px rgba(0,240,255,0.06)"
+	style:border-color="rgba(20, 184, 166,0.12)"
+	style:box-shadow="inset 0 0 48px rgba(20, 184, 166,0.04), 0 0 0 1px rgba(20, 184, 166,0.06)"
 >
 	<!-- ─── SVG snowflake canvas ────────────────────────────────────────────── -->
 	<svg
@@ -160,9 +160,9 @@
 		<defs>
 			<!-- Center prism glow: cyan → transparent -->
 			<radialGradient id="{uid}-core-glow" cx="50%" cy="50%" r="50%">
-				<stop offset="0%"   stop-color="#00f0ff" stop-opacity="0.24" />
-				<stop offset="55%"  stop-color="#00f0ff" stop-opacity="0.07" />
-				<stop offset="100%" stop-color="#00f0ff" stop-opacity="0"    />
+				<stop offset="0%"   stop-color="#14b8a6" stop-opacity="0.24" />
+				<stop offset="55%"  stop-color="#14b8a6" stop-opacity="0.07" />
+				<stop offset="100%" stop-color="#14b8a6" stop-opacity="0"    />
 			</radialGradient>
 
 			<!-- Node bloom glow filter -->
@@ -194,7 +194,7 @@
 			<line
 				x1={spoke.x1} y1={spoke.y1}
 				x2={spoke.x2} y2={spoke.y2}
-				stroke="rgba(0,240,255,0.10)"
+				stroke="rgba(20, 184, 166,0.10)"
 				stroke-width="0.5"
 			/>
 		{/each}
@@ -355,8 +355,8 @@
 	 * Inverse of the decay flash: cyan surge → settle.
 	 */
 	@keyframes stNodeReveal {
-		0%   { opacity: 0;   filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.0)); }
-		30%  { opacity: 1;   filter: drop-shadow(0 0 14px rgba(0, 240, 255, 1.0)); }
+		0%   { opacity: 0;   filter: drop-shadow(0 0 10px rgba(20, 184, 166, 0.0)); }
+		30%  { opacity: 1;   filter: drop-shadow(0 0 14px rgba(20, 184, 166, 1.0)); }
 		100% { opacity: 1;   filter: none; }
 	}
 

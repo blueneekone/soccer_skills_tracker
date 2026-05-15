@@ -97,7 +97,7 @@
 	// ── Season badge ──────────────────────────────────────────────────────────
 	function seasonBadge(season: string | undefined): { label: string; color: string } {
 		if (!season) return { label: 'INACTIVE', color: '#334155' };
-		return { label: season.toUpperCase(), color: '#00f0ff' };
+		return { label: season.toUpperCase(), color: '#14b8a6' };
 	}
 </script>
 
@@ -307,14 +307,14 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		padding: 1.25rem 1.5rem 0.75rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 		gap: 1rem;
 		flex-wrap: wrap;
 	}
 	.sm-eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 3px;
 	}
@@ -333,7 +333,7 @@
 	.sm-count {
 		font-size: 1.4rem;
 		font-weight: 700;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
@@ -351,16 +351,16 @@
 		font-weight: 700;
 		padding: 7px 14px;
 		border-radius: 3px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.08);
-		color: #00f0ff;
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.08);
+		color: #14b8a6;
 		cursor: pointer;
 		transition: all 0.15s;
 		white-space: nowrap;
 	}
 	.sm-create-btn:hover {
-		background: rgba(0, 240, 255, 0.16);
-		box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.16);
+		box-shadow: 0 0 14px rgba(20, 184, 166, 0.2);
 	}
 
 	/* ── Table ───────────────────────────────────────────────────────────── */
@@ -432,7 +432,7 @@
 	.sm-roster-num {
 		font-size: 15px;
 		font-weight: 700;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 	.sm-roster-lbl {
 		font-size: 8px;
@@ -502,10 +502,10 @@
 	}
 	.sm-modal {
 		background: #080d18;
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 8px;
 		width: min(440px, 94vw);
-		box-shadow: 0 0 40px rgba(0, 240, 255, 0.07);
+		box-shadow: 0 0 40px rgba(20, 184, 166, 0.07);
 	}
 	.sm-modal-header {
 		display: flex;
@@ -517,7 +517,7 @@
 	.sm-modal-label {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 	.sm-modal-close {
 		background: none;
@@ -574,7 +574,7 @@
 		box-sizing: border-box;
 	}
 	.sm-input:focus {
-		border-color: rgba(0, 240, 255, 0.4);
+		border-color: rgba(20, 184, 166, 0.4);
 	}
 	.sm-input::placeholder {
 		color: #334155;
@@ -604,13 +604,13 @@
 		width: 100%;
 		cursor: pointer;
 		transition: all 0.15s;
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 	.sm-confirm-btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.18);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.18);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
 	}
 	.sm-confirm-btn:disabled {
 		opacity: 0.45;

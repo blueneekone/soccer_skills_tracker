@@ -108,12 +108,12 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		padding: 1.25rem 1.5rem 0.75rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 	}
 	.ot-eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 3px;
 	}
@@ -127,7 +127,7 @@
 	.ot-stat {
 		font-size: 1.4rem;
 		font-weight: 700;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;

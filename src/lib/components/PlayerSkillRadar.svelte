@@ -19,7 +19,7 @@
 	const TIERS = [0.22, 0.42, 0.62, 0.82, 1];
 
 	const lobbyMode = $derived(variant === 'lobby');
-	const strokeColor = $derived(lobbyMode ? '#00f0ff' : '#a855f7');
+	const strokeColor = $derived(lobbyMode ? '#14b8a6' : '#a855f7');
 
 	const safeLabels = $derived(
 		labels.length >= N ? labels.slice(0, N) : ['—', '—', '—', '—', '—', '—'],
@@ -64,9 +64,9 @@
 	>
 		<defs>
 			<radialGradient id="{uid}-fill" cx="50%" cy="50%" r="50%">
-				<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.55" />
-				<stop offset="60%" stop-color="#00f0ff" stop-opacity="0.18" />
-				<stop offset="100%" stop-color="#00f0ff" stop-opacity="0" />
+				<stop offset="0%" stop-color="#14b8a6" stop-opacity="0.55" />
+				<stop offset="60%" stop-color="#14b8a6" stop-opacity="0.18" />
+				<stop offset="100%" stop-color="#14b8a6" stop-opacity="0" />
 			</radialGradient>
 			<filter id="{uid}-bloom" x="-30%" y="-30%" width="160%" height="160%">
 				<feGaussianBlur in="SourceGraphic" stdDeviation="0.9" result="blur" />
@@ -85,7 +85,7 @@
 				cy={CY}
 				r={R * t}
 				fill="none"
-				stroke="rgba(0, 240, 255, 0.12)"
+				stroke="rgba(20, 184, 166, 0.12)"
 				stroke-width="0.35"
 				vector-effect="non-scaling-stroke"
 			/>
@@ -100,7 +100,7 @@
 				y1={hub.y}
 				x2={tip.x}
 				y2={tip.y}
-				stroke="rgba(0, 240, 255, 0.18)"
+				stroke="rgba(20, 184, 166, 0.18)"
 				stroke-width="0.4"
 				vector-effect="non-scaling-stroke"
 			/>
@@ -123,7 +123,7 @@
 				cx={v.x}
 				cy={v.y}
 				r="1.6"
-				fill="#00f0ff"
+				fill="#14b8a6"
 				filter="url(#{uid}-bloom)"
 			/>
 		{/each}

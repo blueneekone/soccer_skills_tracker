@@ -2,7 +2,7 @@
 	import { VANGUARD_PRISM_LABELS } from '$lib/utils/vanguard-prism.js';
 
 	type Props = {
-		/** Six 0–99 values: PACE · ACCEL · AGILITY · STAMINA · POWER · VANGUARD */
+		/** Six 0–99 values: PACE · ACCEL · AGILITY · STAMINA · POWER · COMP */
 		values?: number[];
 	};
 

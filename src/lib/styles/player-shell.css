@@ -8,17 +8,17 @@
 	--pp-surface: rgba(14, 14, 18, 0.82);
 	--pp-card: rgba(22, 22, 28, 0.92);
 	--pp-border: rgba(255, 255, 255, 0.08);
-	--pp-border-glow: rgba(0, 240, 255, 0.22);
+	--pp-border-glow: rgb(30 41 59);
 	--pp-text-primary: #f4f4f5;
 	--pp-text-secondary: #c4c4ce;
 	--pp-accent: var(--brand-primary, #f59e0b);
-	--pp-accent-cool: #00f0ff;
+	--pp-accent-cool: #2dd4bf;
 	--pp-accent-violet: #a855f7;
 	--pp-topbar-height: 64px;
 	--pp-bottomnav-height: 64px;
 	--pp-rail-width: 88px;
 	--pp-dock-radius: 22px;
-	--pp-font-display: ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+	--pp-font-display: 'Geist', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
 }
 
 .ps-root {
@@ -76,13 +76,13 @@
 .ps-ambient__glow--a {
 	top: -12%;
 	left: -8%;
-	background: radial-gradient(circle, rgba(0, 240, 255, 0.5), transparent 65%);
+	background: radial-gradient(circle, rgba(15, 118, 110, 0.18), transparent 65%);
 }
 
 .ps-ambient__glow--b {
 	bottom: -20%;
 	right: -10%;
-	background: radial-gradient(circle, rgba(168, 85, 247, 0.45), transparent 65%);
+	background: radial-gradient(circle, rgba(51, 65, 85, 0.22), transparent 65%);
 	animation-delay: -9s;
 }
 
@@ -124,7 +124,7 @@
 	border-bottom: 1px solid var(--pp-border);
 	-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
 	backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
-	box-shadow: var(--vanguard-elev-2), 0 1px 0 rgba(0, 240, 255, 0.12);
+	box-shadow: var(--vanguard-elev-2);
 	box-sizing: border-box;
 }
 
@@ -143,9 +143,9 @@
 	width: 36px;
 	height: 36px;
 	border-radius: var(--vanguard-radius-sm);
-	background: linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.15));
+	background: rgba(20, 184, 166, 0.12);
 	border: 1px solid rgba(255, 255, 255, 0.12);
-	box-shadow: 0 0 24px -8px rgba(0, 240, 255, 0.4);
+	box-shadow: var(--vanguard-elev-1);
 	flex-shrink: 0;
 }
 
@@ -236,8 +236,7 @@
 	border-radius: var(--pp-dock-radius);
 	box-shadow:
 		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-		0 24px 48px -20px rgba(0, 0, 0, 0.85),
-		0 0 40px -12px rgba(0, 240, 255, 0.15);
+		0 24px 48px -20px rgba(0, 0, 0, 0.85);
 	-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
 	backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
 	box-sizing: border-box;

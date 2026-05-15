@@ -53,7 +53,7 @@
 		padding-bottom: env(safe-area-inset-bottom, 0px);
 		background: rgba(2, 2, 2, 0.88);
 		backdrop-filter: blur(20px) saturate(160%);
-		border-top: 1px solid rgba(0, 240, 255, 0.15);
+		border-top: 1px solid rgba(20, 184, 166, 0.15);
 		box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.6);
 	}
 

@@ -368,7 +368,7 @@
 								<th>OPERATIVE</th>
 								<th>POSITION</th>
 								<th>TIER</th>
-								<th class="tw-text-[#00f0ff]/50">VAN</th>
+								<th class="tw-text-[#14b8a6]/50">VAN</th>
 								<th>LAST ACTIVE</th>
 								<th class="tw-text-right">ACTIONS</th>
 							</tr>
@@ -415,8 +415,8 @@
 										<span
 											class="tw-font-bold tw-tabular-nums"
 											class:cc-van-active={van !== '—'}
-											style:color={van !== '—' ? '#00f0ff' : 'rgba(255,255,255,0.2)'}
-											style:filter={van !== '—' ? 'drop-shadow(0 0 6px rgba(0,240,255,0.6))' : 'none'}
+											style:color={van !== '—' ? '#14b8a6' : 'rgba(255,255,255,0.2)'}
+											style:filter={van !== '—' ? 'drop-shadow(0 0 6px rgba(20, 184, 166,0.6))' : 'none'}
 										>
 											{van}
 										</span>
@@ -493,7 +493,7 @@
 					{#if selectedDrillId}
 						{@const drill = DRILL_CATALOG.find(d => d.id === selectedDrillId)}
 						<p class="tw-mt-1.5 tw-text-[8px] tw-tracking-[0.2em] tw-text-white/25 tw-uppercase">
-							WRITES → <span class="tw-text-[#00f0ff]/60">{drill?.statKey}</span> METRIC
+							WRITES → <span class="tw-text-[#14b8a6]/60">{drill?.statKey}</span> METRIC
 						</p>
 					{/if}
 				</div>
@@ -604,13 +604,13 @@
 
 					<!-- Pre-flight checklist -->
 					<ul class="tw-mt-3 tw-space-y-1.5 tw-text-[8px] tw-font-mono tw-tracking-[0.2em] tw-text-white/25">
-						<li class={selectedDrillId ? 'tw-text-[#00f0ff]/50' : ''}>
+						<li class={selectedDrillId ? 'tw-text-[#14b8a6]/50' : ''}>
 							{selectedDrillId ? '◉' : '○'} DRILL SELECTED
 						</li>
-						<li class={missionTargetIds.length > 0 ? 'tw-text-[#00f0ff]/50' : ''}>
+						<li class={missionTargetIds.length > 0 ? 'tw-text-[#14b8a6]/50' : ''}>
 							{missionTargetIds.length > 0 ? '◉' : '○'} TARGETS LOCKED ({missionTargetIds.length})
 						</li>
-						<li class={missionDeadline ? 'tw-text-[#00f0ff]/50' : ''}>
+						<li class={missionDeadline ? 'tw-text-[#14b8a6]/50' : ''}>
 							{missionDeadline ? '◉' : '○'} DEADLINE SET
 						</li>
 					</ul>
@@ -687,8 +687,8 @@
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
-		background: #00f0ff;
-		box-shadow: 0 0 8px #00f0ff;
+		background: #14b8a6;
+		box-shadow: 0 0 8px #14b8a6;
 		animation: cc-pulse-dot 2s ease-in-out infinite;
 	}
 
@@ -785,9 +785,9 @@
 	}
 
 	.cc-action-btn--edit:hover {
-		color: #00f0ff;
-		border-color: rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.08);
+		color: #14b8a6;
+		border-color: rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.08);
 	}
 
 	.cc-action-btn--remove {
@@ -857,7 +857,7 @@
 
 	.cc-select:focus,
 	.cc-input:focus {
-		border-color: rgba(0, 240, 255, 0.4);
+		border-color: rgba(20, 184, 166, 0.4);
 	}
 
 	.cc-select option {
@@ -895,9 +895,9 @@
 	}
 
 	.cc-mode-btn--active {
-		color: #00f0ff;
-		border-color: rgba(0, 240, 255, 0.45);
-		background: rgba(0, 240, 255, 0.08);
+		color: #14b8a6;
+		border-color: rgba(20, 184, 166, 0.45);
+		background: rgba(20, 184, 166, 0.08);
 	}
 
 	/* ── Player checklist ──────────────────────────────────────────────── */
@@ -930,7 +930,7 @@
 	.cc-checkbox {
 		width: 12px;
 		height: 12px;
-		accent-color: #00f0ff;
+		accent-color: #14b8a6;
 		cursor: pointer;
 		flex-shrink: 0;
 	}
@@ -974,10 +974,10 @@
 	}
 
 	.cc-deploy-btn--success {
-		color: #00ff88;
-		border-color: rgba(0, 255, 136, 0.5);
-		background: rgba(0, 255, 136, 0.06);
-		box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+		color: #2dd4bf;
+		border-color: rgba(45, 212, 191, 0.5);
+		background: rgba(45, 212, 191, 0.06);
+		box-shadow: 0 0 20px rgba(45, 212, 191, 0.1);
 		cursor: default;
 	}
 

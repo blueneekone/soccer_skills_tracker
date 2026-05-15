@@ -8,9 +8,9 @@ export const DELAY_STEP_MS = 500;
 export const TRAIL_MAX_POINTS = 140;
 export const DRAG_TRAIL_MAX_POINTS = 20;
 
-export const INK_PALETTE = ['#00f0ff', '#ff00ff', '#ffff00', '#ffffff'] as const;
+export const INK_PALETTE = ['#14b8a6', '#ff00ff', '#ffff00', '#ffffff'] as const;
 
-export const FRIENDLY_RING = '#00f0ff';
+export const FRIENDLY_RING = '#14b8a6';
 export const OPP_RING = '#fb7185';
 
 const OPP_FORMATION_LABELS = [

@@ -45,7 +45,7 @@
 		max-width: 480px;
 		margin: var(--bento-gap-lg) auto;
 		padding: var(--bento-pad);
-		border: 1px solid rgba(0, 240, 255, 0.12);
+		border: 1px solid rgba(20, 184, 166, 0.12);
 		background: rgba(1, 4, 9, 0.9);
 		backdrop-filter: blur(24px);
 		border-radius: 16px;
@@ -54,7 +54,7 @@
 	}
 	.recruiter-locked__icon {
 		font-size: 2.5rem;
-		color: rgba(0, 240, 255, 0.25);
+		color: rgba(20, 184, 166, 0.25);
 		line-height: 1;
 		margin-bottom: 1rem;
 	}
@@ -76,27 +76,27 @@
 		font-family: inherit;
 		padding: 1px 5px;
 		border-radius: 3px;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.15);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.15);
+		color: #14b8a6;
 	}
 	.recruiter-locked__btn {
 		padding: 0.65rem 1.6rem;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.35);
-		background: rgba(0, 240, 255, 0.06);
+		border: 1px solid rgba(20, 184, 166, 0.35);
+		background: rgba(20, 184, 166, 0.06);
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 800;
 		letter-spacing: 0.15em;
-		color: #00f0ff;
+		color: #14b8a6;
 		cursor: pointer;
 		transition: background 0.2s, box-shadow 0.2s;
 		min-height: 44px;
 	}
 	.recruiter-locked__btn:hover {
-		background: rgba(0, 240, 255, 0.12);
-		box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.12);
+		box-shadow: 0 0 20px rgba(20, 184, 166, 0.2);
 	}
 	.recruiter-checking {
 		text-align: center;

@@ -79,7 +79,7 @@ export class SportsConfigEditorEngine {
         id: `attr_${i + 1}`,
         name: `Attribute ${i + 1}`,
         shortLabel: `A${i + 1}`,
-        hexColor: '#00f0ff',
+        hexColor: '#14b8a6',
         playerStatKey: `stat_${i + 1}`,
       })) as UpsertSportsConfigInput['attributes'],
       palette: { fg: '#a1a1aa', glow: 'rgba(161,161,170,0.18)', ring: 'rgba(161,161,170,0.4)' },

@@ -160,7 +160,7 @@ export const TIER_DEFINITIONS: readonly ArmoryTier[] = [
 		id: 'VANGUARD',
 		floor: 10_000,
 		ceiling: Infinity, // terminal tier — no upper bound
-		accent: '#00f0ff', // Stark cyan — the signature Vanguard look
+		accent: '#14b8a6', // Stark cyan — the signature Vanguard look
 		muted: '#0e7490',
 		label: 'VANGUARD',
 	},

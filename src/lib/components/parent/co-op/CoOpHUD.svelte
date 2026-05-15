@@ -34,10 +34,10 @@
 		>
 			<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
 				<div
-					class="tw-w-8 tw-h-8 tw-rounded-full tw-border-2 tw-border-[#00f0ff]/30 tw-border-t-[#00f0ff] tw-animate-spin"
+					class="tw-w-8 tw-h-8 tw-rounded-full tw-border-2 tw-border-[#14b8a6]/30 tw-border-t-[#14b8a6] tw-animate-spin"
 				></div>
 				<span
-					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase tw-animate-pulse"
+					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase tw-animate-pulse"
 				>
 					INITIALIZING CO-OP ENGINE...
 				</span>
@@ -68,22 +68,22 @@
 	>
 		<!-- Escrow readout -->
 		<div
-			class="tw-rounded-2xl tw-bg-[#040f16]/90 tw-backdrop-blur-xl tw-border tw-border-[#00f0ff]/20 tw-px-5 tw-py-3.5 tw-flex tw-flex-col tw-items-end tw-gap-1"
-			style="box-shadow: 0 0 30px rgba(0,240,255,0.08), 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(0,240,255,0.08);"
+			class="tw-rounded-2xl tw-bg-[#040f16]/90 tw-backdrop-blur-xl tw-border tw-border-[#14b8a6]/20 tw-px-5 tw-py-3.5 tw-flex tw-flex-col tw-items-end tw-gap-1"
+			style="box-shadow: 0 0 30px rgba(20, 184, 166,0.08), 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(20, 184, 166,0.08);"
 		>
 			<span
-				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 			>
 				ACTIVE ESCROW
 			</span>
 			<span
-				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-[#00f0ff] tw-leading-none"
-				style="text-shadow: 0 0 20px rgba(0,240,255,0.6), 0 0 40px rgba(0,240,255,0.3);"
+				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-[#14b8a6] tw-leading-none"
+				style="text-shadow: 0 0 20px rgba(20, 184, 166,0.6), 0 0 40px rgba(20, 184, 166,0.3);"
 			>
 				${activeDollars}
 			</span>
 			<span
-				class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase"
+				class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
 			>
 				{activeBounties.length} BOUNTI{activeBounties.length === 1 ? 'Y' : 'ES'} ACTIVE
 			</span>
@@ -94,14 +94,14 @@
 			<div class="tw-flex tw-items-center tw-gap-1.5">
 				{#each dotBounties as b (b.id)}
 					<div
-						class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#00f0ff]"
+						class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6]"
 						title={b.title}
-						style="box-shadow: 0 0 6px rgba(0,240,255,0.8);"
+						style="box-shadow: 0 0 6px rgba(20, 184, 166,0.8);"
 					></div>
 				{/each}
 				{#if extraBounties > 0}
 					<span
-						class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase"
+						class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase"
 					>
 						+{extraBounties}
 					</span>
@@ -112,8 +112,8 @@
 		<!-- New bounty CTA -->
 		<button
 			onclick={onCreateBounty}
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#00f0ff]/50 tw-text-[#00f0ff] tw-bg-[#00f0ff]/8 tw-rounded-xl tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-[#00f0ff]/15 hover:tw-border-[#00f0ff]/80 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.4),inset_0_0_12px_rgba(0,240,255,0.12)] active:tw-scale-95"
-			style="text-shadow: 0 0 12px rgba(0,240,255,0.5);"
+			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/50 tw-text-[#14b8a6] tw-bg-[#14b8a6]/8 tw-rounded-xl tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-[#14b8a6]/15 hover:tw-border-[#14b8a6]/80 hover:tw-shadow-[0_0_20px_rgba(20, 184, 166,0.4),inset_0_0_12px_rgba(20, 184, 166,0.12)] active:tw-scale-95"
+			style="text-shadow: 0 0 12px rgba(20, 184, 166,0.5);"
 		>
 			[ + NEW BOUNTY ]
 		</button>

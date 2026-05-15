@@ -590,9 +590,9 @@
 	/* ── Design tokens ─────────────────────────────────────────────────── */
 	:root {
 		--tt-bg:       #020202;
-		--tt-glass:    rgba(0, 240, 255, 0.03);
-		--tt-border:   rgba(0, 240, 255, 0.14);
-		--tt-accent:   #00f0ff;
+		--tt-glass:    rgba(20, 184, 166, 0.03);
+		--tt-border:   rgba(20, 184, 166, 0.14);
+		--tt-accent:   #14b8a6;
 		--tt-orange:   #f97316;
 		--tt-pending:  #f59e0b;
 		--tt-vacant:   rgba(248, 250, 252, 0.35);
@@ -618,14 +618,14 @@
 		left: 12px;
 		width: 15px;
 		height: 15px;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 		pointer-events: none;
 	}
 
 	.tt-search-input {
 		width: 100%;
 		padding: 9px 36px 9px 36px;
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 		border: 1px solid var(--tt-border);
 		border-radius: 10px;
 		color: #f8fafc;
@@ -641,8 +641,8 @@
 	.tt-search-input::placeholder { color: rgba(248, 250, 252, 0.25); }
 
 	.tt-search-input:focus {
-		border-color: rgba(0, 240, 255, 0.45);
-		box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08);
+		border-color: rgba(20, 184, 166, 0.45);
+		box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.08);
 	}
 
 	.tt-search-clear {
@@ -677,8 +677,8 @@
 	.tt-seg {
 		padding: 5px 10px;
 		border-radius: 6px;
-		border: 1px solid rgba(0, 240, 255, 0.12);
-		background: rgba(0, 240, 255, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.12);
+		background: rgba(20, 184, 166, 0.03);
 		color: rgba(248, 250, 252, 0.45);
 		font-family: var(--tt-mono);
 		font-size: 10px;
@@ -688,12 +688,12 @@
 		transition: all 0.15s;
 		pointer-events: auto;
 	}
-	.tt-seg:hover { border-color: rgba(0, 240, 255, 0.3); color: rgba(248, 250, 252, 0.7); }
+	.tt-seg:hover { border-color: rgba(20, 184, 166, 0.3); color: rgba(248, 250, 252, 0.7); }
 	.tt-seg--on {
 		border-color: var(--tt-accent);
-		background: rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.1);
 		color: var(--tt-accent);
-		box-shadow: 0 0 8px rgba(0, 240, 255, 0.15);
+		box-shadow: 0 0 8px rgba(20, 184, 166, 0.15);
 	}
 
 	.tt-control-actions {
@@ -715,13 +715,13 @@
 		width: 30px;
 		height: 17px;
 		border-radius: 99px;
-		background: rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.1);
 		border: 1px solid var(--tt-border);
 		position: relative;
 		transition: background 0.2s;
 	}
 	.tt-dense-toggle:has(.tt-dense-cb:checked) .tt-dense-track {
-		background: rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.25);
 		border-color: var(--tt-accent);
 	}
 	.tt-dense-thumb {
@@ -753,8 +753,8 @@
 		gap: 6px;
 		padding: 6px 14px;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.3);
-		background: rgba(0, 240, 255, 0.06);
+		border: 1px solid rgba(20, 184, 166, 0.3);
+		background: rgba(20, 184, 166, 0.06);
 		color: var(--tt-accent);
 		font-family: var(--tt-mono);
 		font-size: 11px;
@@ -766,16 +766,16 @@
 	}
 	.tt-new-btn:hover,
 	.tt-new-btn--active {
-		background: rgba(0, 240, 255, 0.12);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.12);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
 	}
 
 	/* ── Create Panel ──────────────────────────────────────────────────── */
 	.tt-create-panel {
 		margin-bottom: 16px;
 		border-radius: 12px;
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		background: rgba(0, 240, 255, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		background: rgba(20, 184, 166, 0.03);
 		backdrop-filter: blur(24px);
 		overflow: hidden;
 	}
@@ -822,14 +822,14 @@
 		width: 100%;
 		box-sizing: border-box;
 	}
-	.tt-input:focus { border-color: rgba(0, 240, 255, 0.45); }
+	.tt-input:focus { border-color: rgba(20, 184, 166, 0.45); }
 	.tt-input--sm { padding: 6px 10px; font-size: 11px; }
 	.tt-create-actions { display: flex; gap: 8px; align-items: center; }
 	.tt-create-submit {
 		padding: 8px 18px;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.1);
 		color: var(--tt-accent);
 		font-family: var(--tt-mono);
 		font-size: 11px;
@@ -839,7 +839,7 @@
 		transition: all 0.15s;
 		white-space: nowrap;
 	}
-	.tt-create-submit:hover { background: rgba(0, 240, 255, 0.18); }
+	.tt-create-submit:hover { background: rgba(20, 184, 166, 0.18); }
 	.tt-create-submit--readonly { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.3); }
 	.tt-create-cancel {
 		background: none;
@@ -866,7 +866,7 @@
 		padding: 10px 16px;
 		border-radius: 10px;
 		border: 1px solid var(--tt-border);
-		background: rgba(0, 240, 255, 0.02);
+		background: rgba(20, 184, 166, 0.02);
 	}
 	.tt-telem-cell {
 		display: flex;
@@ -913,7 +913,7 @@
 		letter-spacing: 0.14em;
 		border: 1px solid transparent;
 	}
-	.status--active  { color: var(--tt-accent);   border-color: rgba(0,240,255,0.25); background: rgba(0,240,255,0.08); }
+	.status--active  { color: var(--tt-accent);   border-color: rgba(20, 184, 166,0.25); background: rgba(20, 184, 166,0.08); }
 	.status--pending { color: var(--tt-pending);   border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.08); }
 	.status--vacant  { color: rgba(248,250,252,0.4); border-color: rgba(248,250,252,0.1); background: rgba(248,250,252,0.04); }
 
@@ -926,7 +926,7 @@
 		padding: 60px 24px;
 		text-align: center;
 	}
-	.tt-empty-icon { width: 40px; height: 40px; color: rgba(0, 240, 255, 0.2); }
+	.tt-empty-icon { width: 40px; height: 40px; color: rgba(20, 184, 166, 0.2); }
 	.tt-empty-head {
 		margin: 0;
 		font-family: var(--tt-mono);
@@ -940,8 +940,8 @@
 		gap: 6px;
 		padding: 8px 18px;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.3);
-		background: rgba(0, 240, 255, 0.06);
+		border: 1px solid rgba(20, 184, 166, 0.3);
+		background: rgba(20, 184, 166, 0.06);
 		color: var(--tt-accent);
 		font-family: var(--tt-mono);
 		font-size: 11px;
@@ -950,14 +950,14 @@
 		cursor: pointer;
 		transition: all 0.15s;
 	}
-	.tt-empty-cta:hover { background: rgba(0, 240, 255, 0.12); }
+	.tt-empty-cta:hover { background: rgba(20, 184, 166, 0.12); }
 
 	/* ── Dense Matrix ──────────────────────────────────────────────────── */
 	.tt-matrix {
 		border: 1px solid var(--tt-border);
 		border-radius: 12px;
 		overflow: hidden;
-		background: rgba(0, 240, 255, 0.015);
+		background: rgba(20, 184, 166, 0.015);
 		margin-bottom: 80px;
 	}
 	.tt-matrix-head {
@@ -965,7 +965,7 @@
 		grid-template-columns: 40px 1fr 200px 200px 90px 160px;
 		gap: 0;
 		padding: 8px 12px;
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 		border-bottom: 1px solid var(--tt-border);
 	}
 	.tt-matrix-row {
@@ -973,13 +973,13 @@
 		grid-template-columns: 40px 1fr 200px 200px 90px 160px;
 		gap: 0;
 		padding: 8px 12px;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.06);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.06);
 		transition: background 0.15s;
 		align-items: center;
 	}
 	.tt-matrix-row:last-child { border-bottom: none; }
-	.tt-matrix-row:hover { background: rgba(0, 240, 255, 0.04); }
-	.tt-matrix-row--sel { background: rgba(0, 240, 255, 0.07) !important; }
+	.tt-matrix-row:hover { background: rgba(20, 184, 166, 0.04); }
+	.tt-matrix-row--sel { background: rgba(20, 184, 166, 0.07) !important; }
 
 	@media (max-width: 900px) {
 		.tt-matrix-head,
@@ -1002,7 +1002,7 @@
 	}
 	.tt-matrix-cell--cb { padding-left: 0; }
 	.tt-m-name { font-size: 12px; font-weight: 600; color: #f8fafc; letter-spacing: 0; }
-	.tt-m-code { font-size: 10px; color: rgba(0, 240, 255, 0.6); background: rgba(0, 240, 255, 0.06); padding: 2px 6px; border-radius: 4px; }
+	.tt-m-code { font-size: 10px; color: rgba(20, 184, 166, 0.6); background: rgba(20, 184, 166, 0.06); padding: 2px 6px; border-radius: 4px; }
 	.tt-m-coach { font-size: 11px; color: rgba(248, 250, 252, 0.5); }
 
 	.tt-act-link,
@@ -1021,7 +1021,7 @@
 		transition: background 0.15s;
 	}
 	.tt-act-link:hover,
-	.tt-act-btn:hover { background: rgba(0, 240, 255, 0.08); }
+	.tt-act-btn:hover { background: rgba(20, 184, 166, 0.08); }
 
 	/* ── Card Grid ─────────────────────────────────────────────────────── */
 	.tt-card-grid {
@@ -1034,7 +1034,7 @@
 	.tt-squad-card {
 		border-radius: 14px;
 		border: 1px solid var(--tt-border);
-		background: rgba(0, 240, 255, 0.025);
+		background: rgba(20, 184, 166, 0.025);
 		backdrop-filter: blur(24px);
 		padding: 16px;
 		display: flex;
@@ -1042,10 +1042,10 @@
 		gap: 12px;
 		transition: border-color 0.2s, box-shadow 0.2s;
 	}
-	.tt-squad-card:hover { border-color: rgba(0, 240, 255, 0.3); }
+	.tt-squad-card:hover { border-color: rgba(20, 184, 166, 0.3); }
 	.tt-squad-card--sel {
 		border-color: var(--tt-accent);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.12), inset 0 0 0 1px rgba(0, 240, 255, 0.08);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.12), inset 0 0 0 1px rgba(20, 184, 166, 0.08);
 	}
 	.tt-squad-card--pending { border-color: rgba(245, 158, 11, 0.3); }
 
@@ -1068,8 +1068,8 @@
 	.tt-card-id {
 		font-family: var(--tt-mono);
 		font-size: 10px;
-		color: rgba(0, 240, 255, 0.5);
-		background: rgba(0, 240, 255, 0.06);
+		color: rgba(20, 184, 166, 0.5);
+		background: rgba(20, 184, 166, 0.06);
 		padding: 2px 6px;
 		border-radius: 4px;
 		display: block;
@@ -1115,11 +1115,11 @@
 		pointer-events: auto;
 	}
 	.tt-card-act-link {
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		background: rgba(0, 240, 255, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		background: rgba(20, 184, 166, 0.04);
 		color: var(--tt-accent);
 	}
-	.tt-card-act-link:hover { background: rgba(0, 240, 255, 0.1); }
+	.tt-card-act-link:hover { background: rgba(20, 184, 166, 0.1); }
 	.tt-card-act-btn {
 		border: 1px solid rgba(248, 250, 252, 0.1);
 		background: rgba(248, 250, 252, 0.03);
@@ -1168,10 +1168,10 @@
 		gap: 10px;
 		padding: 10px 20px;
 		border-radius: 99px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
+		border: 1px solid rgba(20, 184, 166, 0.4);
 		background: rgba(8, 13, 24, 0.95);
 		backdrop-filter: blur(32px);
-		box-shadow: 0 8px 40px rgba(0, 240, 255, 0.15), 0 0 0 1px rgba(0, 240, 255, 0.08);
+		box-shadow: 0 8px 40px rgba(20, 184, 166, 0.15), 0 0 0 1px rgba(20, 184, 166, 0.08);
 		white-space: nowrap;
 		pointer-events: auto;
 	}
@@ -1199,7 +1199,7 @@
 	.tt-batch-divider {
 		width: 1px;
 		height: 22px;
-		background: rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.2);
 		flex-shrink: 0;
 	}
 
@@ -1209,8 +1209,8 @@
 		gap: 6px;
 		padding: 6px 12px;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		background: rgba(0, 240, 255, 0.05);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		background: rgba(20, 184, 166, 0.05);
 		color: rgba(248, 250, 252, 0.8);
 		font-family: var(--tt-mono);
 		font-size: 10px;
@@ -1220,7 +1220,7 @@
 		transition: all 0.15s;
 		pointer-events: auto;
 	}
-	.tt-batch-action:hover { border-color: var(--tt-accent); color: var(--tt-accent); background: rgba(0, 240, 255, 0.1); }
+	.tt-batch-action:hover { border-color: var(--tt-accent); color: var(--tt-accent); background: rgba(20, 184, 166, 0.1); }
 	.tt-batch-action:disabled { opacity: 0.45; cursor: not-allowed; }
 
 	.tt-batch-clear {

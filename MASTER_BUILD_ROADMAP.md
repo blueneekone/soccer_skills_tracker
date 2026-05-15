@@ -74,3 +74,20 @@ Epic 8: Adult EQ Interceptors
 Build intent-based homework triggers allowing coaches to assign single macro-goals while the backend autonomously serves individualized, RL-optimized drills per player.
 
 Engineer "The Car Ride Home" Protocol firing mandatory push notifications to parents 15 minutes post-match, locking metrics behind an attestation to prioritize emotional safety and providing highly empathetic conversation anchors.
+
+PHASE 5: ALPHA REMEDIATION & SIEM POLISH
+Objective: Eradicate "AI Slop" aesthetics, fix CSS boundary blowouts, resolve SvelteKit PWA routing stasis, and enforce the progressive disclosure hierarchy to establish a multi-billion-dollar enterprise feel.
+
+Epic 9: The Tactical SIEM UI/UX Overhaul
+
+[x] Sprint 9.1 (Routing & Service Worker Resolution): Update service-worker.js to strictly bypass SvelteKit's /_app/immutable/ chunks. Apply data-sveltekit-reload to all EnterpriseConsoleShell sidebar <a> tags to guarantee immediate, native browser navigation without requiring user refreshes.
+
+[x] Sprint 9.2 (Bento Grid Asymmetry & Hierarchy): Restructure the Player OS into a true asymmetric 12-column Bento Grid. Move "Quick View Stats" (XP, Level, Streak) to the very top. Apply min-w-0 to all flex/grid children and truncate to text elements to permanently fix boundary blowouts (specifically targeting the XP ring and Core Attributes card).
+
+[x] Sprint 9.3 (Strategic Minimalism & Typography): Purge all neon glows, pure black backgrounds, and cheap glassmorphism. Enforce deep slate backgrounds with border-slate-800 1px borders. Apply Geist Sans for headings and Geist Mono exclusively for data/metrics. Constrain all primary action buttons with w-fit inline-flex and a 44x44px minimum tap target.
+
+Sprint 9.4 (Radar Chart & Deterministic Avatars): Fix the SVG viewBox padding on the Attribute Radar to prevent text clipping. Bind the radar to the 6-axis Vanguard Prism. Replace the stretched Operative image with a deterministic, code-generated Bauhaus SVG constrained by aspect-square, object-cover, and rounded-full.
+
+Sprint 9.5 (EQ Perimeter Enforcement): Permanently delete the "Team Leaderboard" component to protect athlete psychology. Replace it with the "Time-Lapse Memory Capsules" (Ghost Profile) component.
+
+Sprint 9.6 (Consolidation & Parent OS Finance): Delete the redundant "Active Missions / Alerts" card and route those notifications to a slide-out drawer connected to the top-nav bell. In the Parent OS, refactor the "Payments" tab to specifically interface with Stripe Connect for club dues and team fees, not platform licensing.

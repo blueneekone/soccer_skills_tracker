@@ -7,8 +7,6 @@
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
-	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
-	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 	import AttributeRadar from './AttributeRadar.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
@@ -134,26 +132,15 @@
 
 	const operativeAvatarConfig = $derived(parseOperativeAvatar(activePlayer?.operativeAvatar));
 
-	/**
-	 * VanguardPrism stats — derived from the player's armory (ScoutsSix map
-	 * stored in users/{email}.armory.stats).  Falls back to zero-values so the
-	 * prism renders a minimal shape instead of nothing while data loads.
-	 * @type {import('$lib/states/ArmoryEngine.svelte.js').ScoutsSix}
-	 */
-	const prismStats = $derived.by(() => {
-		/** @type {Record<string, unknown>} */
-		const s = /** @type {Record<string, unknown>} */ (
-			/** @type {Record<string, unknown> | null} */ (activePlayer)?.armory?.stats ?? {}
-		);
-		return {
-			PAC: String(s.PAC ?? '0 MPH'),
-			ACC: String(s.ACC ?? '3.5s'),
-			AGI: String(s.AGI ?? '5.0s'),
-			STM: String(s.STM ?? 'Lvl 0'),
-			POW: String(s.POW ?? '0 in'),
-			VAN: String(s.VAN ?? '0'),
-		};
+	const xpHudCompact = $derived.by(() => {
+		const x = totalXpHud;
+		if (x >= 1_000_000) return `${(x / 1_000_000).toFixed(1)}M`;
+		if (x >= 100_000) return `${Math.round(x / 1000)}k`;
+		if (x >= 1000) return `${(x / 1000).toFixed(1)}k`;
+		return x.toLocaleString();
 	});
+
+	const sportHudToken = $derived((resolvedSportRaw || '—').slice(0, 4).toUpperCase());
 
 	const combatTelemetryReady = $derived(
 		hasDocumentedSkillRatings(
@@ -166,8 +153,8 @@
 
 	const combatHudRows = $derived.by(() => {
 		const schema = attributeSchema;
-		const keys = schema.keys.slice(0, 3);
-		const labels = schema.labels.slice(0, 3);
+		const keys = schema.keys;
+		const labels = schema.labels;
 		if (!combatTelemetryReady) {
 			return labels.map((label) => ({ label, pct: 0, display: '00' }));
 		}
@@ -350,9 +337,9 @@
 		{#if impersonationStore.active}
 			<p class="tw-m-0 tw-text-xs tw-leading-relaxed tw-text-slate-500">
 				Impersonation is active for
-				<span class="tw-font-mono tw-text-slate-400"
-					>{impersonationStore.targetEmail || impersonationStore.targetUid}</span
-				>. If this keeps happening, exit impersonation from the banner and try again.
+				<span class="tw-font-mono tw-text-slate-400">
+					{impersonationStore.targetEmail || impersonationStore.targetUid}
+				</span>. If this keeps happening, exit impersonation from the banner and try again.
 			</p>
 		{/if}
 	</div>
@@ -361,16 +348,18 @@
 	class="lobby-page tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-bg-slate-950 tw-text-slate-50"
 	data-region="player-lobby"
 >
-	<!-- Top HUD: level ring + streak — isolated above main scroll content -->
+	<!-- Top HUD: level ring + compact career readouts (streak lives on operative card) -->
 	<header
-		class="lobby-hud-bar tw-relative tw-z-40 tw-mb-8 tw-flex tw-w-full tw-items-center tw-justify-center tw-border-b tw-border-white/10 tw-bg-slate-900/80 tw-py-4 tw-backdrop-blur-xl"
+		class="lobby-hud-bar tw-relative tw-z-40 tw-mb-6 tw-w-full tw-border-b tw-border-slate-800 tw-bg-slate-900/90 tw-backdrop-blur-xl"
 		aria-label="Combat HUD"
 	>
 		<div
-			class="tw-relative tw-z-40 tw-flex tw-w-full tw-max-w-6xl tw-min-w-0 tw-flex-col tw-items-stretch tw-gap-5 tw-px-6 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+			class="tw-mx-auto tw-flex tw-w-full tw-max-w-6xl tw-min-w-0 tw-items-stretch tw-gap-0 tw-px-3 sm:tw-px-5"
 		>
+			<!-- Tile 1: Level ring -->
 			<div
-				class="lobby-hud-ring tw-relative tw-z-50 tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-justify-center sm:tw-justify-start"
+				class="lobby-hud-tile lobby-hud-tile--primary tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-border-r tw-border-slate-800 tw-px-4 tw-py-3 sm:tw-px-6"
+				aria-label="Level"
 			>
 				<div class="lobby-hud-ring__inner">
 					<LevelProgressRing
@@ -384,152 +373,211 @@
 						showLevelSegment={true}
 					/>
 				</div>
+				<span class="tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-slate-500">Level</span>
 			</div>
-			<div class="tw-relative tw-z-50 tw-min-w-0 tw-flex-1 sm:tw-max-w-md md:tw-max-w-lg">
-				<PlayerActivityStreak compact />
+			<!-- Tile 2: XP -->
+			<div
+				class="lobby-hud-tile tw-flex tw-flex-1 tw-flex-col tw-items-center tw-justify-center tw-gap-0.5 tw-border-r tw-border-slate-800 tw-px-4 tw-py-3 sm:tw-px-6"
+				aria-label="Total XP"
+			>
+				<span class="tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-slate-500">XP</span>
+				<span class="tabular-num tw-min-w-0 tw-truncate tw-font-mono tw-text-lg tw-font-black tw-leading-none tw-tracking-tight tw-text-slate-100" title={String(totalXpHud)}>{xpHudCompact}</span>
+			</div>
+			<!-- Tile 3: Streak -->
+			<div
+				class="lobby-hud-tile tw-flex tw-flex-1 tw-flex-col tw-items-center tw-justify-center tw-gap-0.5 tw-px-4 tw-py-3 sm:tw-px-6"
+				aria-label="Training streak"
+			>
+				<span class="tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-slate-500">Streak</span>
+				<span class="tabular-num tw-font-mono tw-text-lg tw-font-black tw-leading-none tw-tracking-tight tw-text-teal-400">{streak}d</span>
+				<span class="tabular-num tw-font-mono tw-text-[0.5rem] tw-font-semibold tw-uppercase tw-tracking-[0.14em] tw-text-slate-600">Best {longestStreak}d</span>
 			</div>
 		</div>
 	</header>
 
+	<!-- Sprint 9.2: converted from flex-column to 12-col asymmetric bento grid -->
 	<div
-		class="lobby-root tw-relative tw-z-30 tw-mx-auto tw-box-border tw-flex tw-min-w-0 tw-w-full tw-max-w-6xl tw-flex-col tw-gap-8 tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-0 sm:tw-px-5"
+		class="lobby-root bento-grid bento-grid--12col tw-relative tw-z-30 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-6xl tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-0 sm:tw-px-5"
 	>
-		<!-- Primary action row — structured bento card -->
-		<section class="bento-card tw-relative tw-z-50 tw-min-w-0 tw-p-bento-pad" aria-label="Primary actions">
-			<p class="lobby-eyebrow tw-mb-3 tw-text-slate-400">Primary actions</p>
-			<nav class="bento-grid bento-grid--2col" aria-label="Primary navigation">
-			<a
-				href={resolve('/player/tracker')}
-				class="quest-tile tw-group tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-transition-all tw-duration-150 hover:tw-border-slate-700 hover:tw-bg-slate-900 active:tw-scale-95"
-				data-sveltekit-preload-data="hover"
-				data-sveltekit-reload
-			>
-				<Icon name="game.zap" class="tw-mb-3 tw-text-3xl tw-text-slate-300 tw-transition-transform tw-duration-150 tw-group-hover:tw-scale-110" />
-				<span class="tw-min-w-0 tw-break-words tw-line-clamp-2 tw-font-mono tw-text-[clamp(1.1rem,2.5vw,1.6rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100">Today's quests</span>
-			</a>
-			<a
-				href={resolve('/player/armory')}
-				class="quest-tile tw-group tw-relative tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-py-8 tw-px-6 tw-text-center tw-no-underline tw-transition-all tw-duration-150 hover:tw-border-slate-700 hover:tw-bg-slate-900 active:tw-scale-95"
-				data-sveltekit-preload-data="hover"
-				data-sveltekit-reload
-			>
-				<Icon name="data.trending" class="tw-mb-3 tw-text-3xl tw-text-slate-300 tw-transition-transform tw-duration-150 tw-group-hover:tw-scale-110" />
-					<span class="tw-min-w-0 tw-break-words tw-line-clamp-2 tw-font-mono tw-text-[clamp(1.1rem,2.5vw,1.6rem)] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-100">Career stats</span>
-				</a>
-			</nav>
-		</section>
-
 	<div
-		class="lobby-hero bento-card bento-grid bento-grid--2col tw-relative tw-z-30 tw-min-h-[300px] tw-min-w-0 tw-overflow-hidden tw-p-bento-pad md:tw-items-stretch"
+		class="lobby-hero bento-span-12 bento-card bento-grid bento-grid--2col tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-items-stretch tw-p-4 md:tw-p-5"
 		aria-label="Operative profile"
 	>
 		<div
-			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-flex-col tw-items-center tw-justify-center md:tw-items-start"
+			class="operative-stack tw-relative tw-z-50 tw-flex tw-h-full tw-min-h-0 tw-min-w-0 tw-w-full tw-flex-col tw-items-stretch"
 		>
-			<p
-				class="lobby-eyebrow tw-mb-4 tw-w-full tw-min-w-0 tw-break-words tw-text-center md:tw-text-left"
-			>
-				The operative
-			</p>
-			<div class="holo-stage tw-relative tw-z-30 tw-mx-auto tw-min-w-0 tw-max-w-full md:tw-mx-0">
-				<!--
-					VanguardPrism — stat hexagon rendered behind the operative avatar.
-					z-10 keeps it below the avatar (z-50). pointer-events: none ensures
-					it does not intercept clicks on the avatar.
-				-->
+			<div class="operative-casefile operative-casefile--siem tw-flex tw-h-full tw-min-h-0 tw-w-full tw-flex-1 tw-flex-col">
 				<div
-					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10"
+					class="operative-casefile__rail tw-mb-0 tw-flex tw-shrink-0 tw-items-center tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-1.5 tw-font-mono tw-text-[0.55rem] tw-font-semibold tw-uppercase tw-tracking-[0.18em] tw-text-slate-500"
 					aria-hidden="true"
 				>
-					<VanguardPrism
-						stats={prismStats}
-						size={220}
-						accent="#14b8a6"
-						showLabels={false}
-						animated={true}
-					/>
+					<span class="tw-truncate">SOAR · casefile</span>
+					<span class="tw-shrink-0 tw-tabular-nums tw-text-slate-600">OP-ASSET</span>
 				</div>
-				<div class="holo-plate tw-relative tw-z-50">
+				<div
+					class="operative-siem-statusrow tw-flex tw-shrink-0 tw-items-center tw-justify-between tw-gap-2 tw-border-b tw-border-slate-800 tw-py-1.5 tw-font-mono tw-text-[0.5rem] tw-font-semibold tw-uppercase tw-tracking-[0.14em] tw-text-slate-500"
+				>
+					<span class="tw-min-w-0 tw-truncate">Field operative · clearance</span>
+					<span
+						class="tw-shrink-0 tw-rounded-sm tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-1.5 tw-py-0.5 tw-tabular-nums tw-tracking-widest tw-text-slate-400"
+					>
+						LV {osLevel}
+					</span>
+				</div>
+				<div
+					class="operative-siem-body tw-mt-3 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-1 tw-flex-col tw-items-stretch tw-gap-4 sm:tw-flex-row"
+				>
+				<div
+					class="operative-siem-photo tw-relative tw-mx-auto tw-aspect-square tw-w-full tw-max-w-[176px] tw-shrink-0 tw-overflow-hidden tw-rounded-full sm:tw-mx-0"
+				>
 					<OperativeAvatarPreview
 						config={operativeAvatarConfig}
 						size={176}
-						showInitializeCta={true}
-						class="tw-rounded-full"
+						showInitializeCta={false}
+						class="tw-block tw-h-full tw-w-full tw-rounded-full tw-object-cover"
 					/>
 				</div>
-			</div>
-			<p
-				class="tw-mt-5 tw-mb-0 tw-w-full tw-min-w-0 tw-break-words tw-text-center tw-font-mono tw-text-[clamp(0.75rem,1vw,0.875rem)] tw-font-bold tw-tracking-wide tw-text-slate-300 md:tw-text-left"
-				title={callsign}
-			>
-				{callsign}
-			</p>
-			{#if teamAssignmentLabel}
-				<p
-					class="tw-mt-1 tw-mb-0 tw-w-full tw-min-w-0 tw-break-words tw-line-clamp-2 tw-text-center tw-text-xs tw-tracking-widest tw-text-slate-500 md:tw-text-left"
-					title={teamAssignmentLabel}
-				>
-					{teamAssignmentLabel}
-				</p>
+					<div class="operative-siem-meta tw-flex tw-h-full tw-min-h-0 tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-2">
+						<p
+							class="tw-m-0 tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
+						>
+							Subject
+						</p>
+						<p
+							class="tw-m-0 tw-min-w-0 tw-truncate tw-font-mono tw-text-base tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-lg"
+							title={callsign}
+						>
+							{callsign}
+						</p>
+						<p
+							class="tw-m-0 tw-min-w-0 tw-line-clamp-2 tw-text-[0.65rem] tw-font-medium tw-leading-snug tw-tracking-wide tw-text-slate-500"
+							title={teamAssignmentLabel || 'No team assignment'}
+						>
+							{teamAssignmentLabel || 'No team assignment'}
+						</p>
+						<p
+							class="tw-m-0 tw-min-w-0 tw-truncate tw-font-mono tw-text-[0.55rem] tw-font-semibold tw-tracking-wide tw-text-slate-600"
+							title={rankProgress.rank}
+						>
+							Rank · {rankProgress.rank}
+						</p>
+					<div class="tw-mt-auto tw-pt-1 tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+						<div class="operative-siem-tile tw-flex-1 tw-min-w-0">
+							<span class="operative-siem-tile__k">Sport</span>
+							<span class="operative-siem-tile__v tw-truncate" title={resolvedSportRaw}>{sportHudToken}</span>
+						</div>
+						<div class="operative-siem-tile tw-flex-1 tw-min-w-0">
+							<span class="operative-siem-tile__k">Rank</span>
+							<span class="operative-siem-tile__v tw-truncate" title={rankProgress.rank}>{rankProgress.rank.slice(0, 8)}</span>
+						</div>
+					</div>
+					</div>
+				</div>
+			{#if !operativeAvatarConfig}
+				<div class="tw-mt-auto tw-shrink-0 tw-pt-3">
+					<a
+						href={resolve('/player/armory')}
+						class="operative-init-btn tw-inline-flex tw-w-fit tw-min-h-[44px] tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-800 tw-px-4 tw-py-2.5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-100 tw-no-underline tw-transition-all tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-700 hover:tw-text-white active:tw-scale-[0.98]"
+						data-sveltekit-preload-data="hover"
+					>
+						Initialize Operative
+					</a>
+				</div>
 			{/if}
+			</div>
 		</div>
 
-		<div
-			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-w-full tw-flex-1 tw-flex-col tw-items-center tw-gap-5 tw-overflow-hidden md:tw-items-stretch"
+		<section
+			class="combat-hud-shell tw-relative tw-z-50 tw-flex tw-h-full tw-min-h-0 tw-min-w-0 tw-w-full tw-flex-col tw-gap-3 tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4 md:tw-p-5"
+			aria-label="Core attributes and navigation"
 		>
-			<div
-				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-p-4 md:tw-gap-6 md:tw-p-5"
-				aria-label="Combat stats"
+			<h2
+				class="combat-attributes-heading tw-min-w-0 tw-text-center tw-text-slate-400 md:tw-text-left"
 			>
-				<div
-					class="tw-w-full tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4"
-				>
-				<p
-					class="lobby-eyebrow tw-mb-4 tw-min-w-0 tw-break-words tw-text-center tw-text-slate-400 md:tw-text-left"
-				>
-					Core attributes
-				</p>
-					<ul class="tw-m-0 tw-list-none tw-space-y-3.5 tw-p-0" aria-label="Combat attribute bars">
-						{#each combatHudRows as row (row.label)}
-							<li class="tw-min-w-0">
-								<div
-									class="tw-mb-1 tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-2 tw-text-[0.7rem]"
-								>
-									<span
-										class="tw-min-w-0 tw-break-words tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-slate-400 tw-line-clamp-2"
-										title={row.label}>{row.label}</span
-									>
-									<span
-										class="tw-font-mono tw-text-sm tw-font-black tw-tabular-nums tw-tracking-wide tw-text-slate-100"
-										>{row.display}</span
-									>
-								</div>
-								<div
-									class="tw-h-2 tw-overflow-hidden tw-rounded-full tw-border tw-border-white/5 tw-bg-slate-900/80"
-									role="presentation"
-								>
-									<div
-										class="tw-h-full tw-rounded-full tw-bg-teal-500 tw-transition-[width] tw-duration-500"
-										style={`width: ${row.pct}%;`}
-									></div>
-								</div>
-							</li>
-						{/each}
-					</ul>
-					{#if !combatTelemetryReady}
-						<p
-							class="tw-mb-0 tw-mt-4 tw-text-center tw-text-[0.68rem] tw-font-semibold tw-uppercase tw-tracking-[0.14em] tw-text-slate-500 md:tw-text-left"
+				Core attributes
+			</h2>
+			<ul
+				class="combat-attributes-list tw-m-0 tw-min-w-0 tw-w-full tw-list-none tw-space-y-2.5 tw-p-0 sm:tw-space-y-3"
+				aria-label="Combat attribute bars"
+			>
+				{#each combatHudRows as row (row.label)}
+					<li class="tw-min-w-0 tw-w-full">
+						<div
+							class="tw-mb-1.5 tw-flex tw-min-w-0 tw-w-full tw-items-baseline tw-justify-between tw-gap-3 tw-text-[0.7rem]"
 						>
-							Awaiting Coach Telemetry.
-						</p>
-					{/if}
-				</div>
-			</div>
-		</div>
+						<span
+							class="tw-min-w-0 tw-flex-1 tw-truncate tw-font-black tw-uppercase tw-leading-tight tw-tracking-[0.12em] tw-text-slate-400"
+							title={row.label}
+						>
+							{row.label}
+						</span>
+							<span
+								class="tw-shrink-0 tw-font-mono tw-text-sm tw-font-black tw-tabular-nums tw-tracking-wide tw-text-slate-100"
+							>
+								{row.display}
+							</span>
+						</div>
+						<div
+							class="tw-h-2 tw-overflow-hidden tw-rounded-full tw-border tw-border-white/5 tw-bg-slate-900/80"
+							role="presentation"
+						>
+							<div
+								class="tw-h-full tw-rounded-full tw-bg-teal-500 tw-transition-[width] tw-duration-500"
+								style={`width: ${row.pct}%;`}
+							></div>
+						</div>
+					</li>
+				{/each}
+			</ul>
+			{#if !combatTelemetryReady}
+				<p
+					class="tw-mb-0 tw-mt-1 tw-text-center tw-text-[0.65rem] tw-font-semibold tw-uppercase tw-tracking-[0.12em] tw-text-slate-500 md:tw-text-left"
+				>
+					Awaiting Coach Telemetry.
+				</p>
+			{/if}
+		<nav
+			class="lobby-quick-nav tw-mt-4 tw-flex tw-w-full tw-min-w-0 tw-flex-wrap tw-gap-3 tw-border-t tw-border-slate-800 tw-pt-3"
+			aria-label="Primary navigation"
+		>
+			<a
+				href={resolve('/player/tracker')}
+				class="lobby-quick-nav__tile tw-group tw-inline-flex tw-w-fit tw-min-h-[44px] tw-min-w-[44px] tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-4 tw-py-2.5 tw-text-center tw-no-underline tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 active:tw-scale-[0.98]"
+				data-sveltekit-preload-data="hover"
+				data-sveltekit-reload
+			>
+				<Icon
+					name="game.zap"
+					class="tw-shrink-0 tw-text-base tw-text-slate-400 tw-transition-transform tw-duration-150 group-hover:tw-scale-105"
+				/>
+				<span
+					class="tw-font-mono tw-text-[0.58rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-[0.14em] tw-text-slate-200"
+				>
+					Today's Quests
+				</span>
+			</a>
+			<a
+				href={resolve('/player/armory')}
+				class="lobby-quick-nav__tile tw-group tw-inline-flex tw-w-fit tw-min-h-[44px] tw-min-w-[44px] tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-4 tw-py-2.5 tw-text-center tw-no-underline tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 active:tw-scale-[0.98]"
+				data-sveltekit-preload-data="hover"
+				data-sveltekit-reload
+			>
+				<Icon
+					name="data.trending"
+					class="tw-shrink-0 tw-text-base tw-text-slate-400 tw-transition-transform tw-duration-150 group-hover:tw-scale-105"
+				/>
+				<span
+					class="tw-font-mono tw-text-[0.58rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-[0.14em] tw-text-slate-200"
+				>
+					Career Stats
+				</span>
+			</a>
+		</nav>
+		</section>
 	</div>
 
 	<section
-		class="lobby-radar bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
+		class="lobby-radar bento-span-8 bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
 		aria-labelledby="lobby-radar-h"
 	>
 		<header class="tw-relative tw-z-50 tw-mb-3 tw-min-w-0">
@@ -547,7 +595,8 @@
 			</p>
 		</header>
 		<div
-			class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4"
+			class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4"
+			style="clip-path: inset(0 round 1rem);"
 		>
 			<div class="tw-relative tw-z-50 tw-flex tw-min-h-[260px] tw-max-w-sm tw-w-full tw-mx-auto tw-items-center tw-justify-center">
 				<AttributeRadar values={attrRadarValues} />
@@ -556,7 +605,7 @@
 	</section>
 
 	<section
-		class="bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
+		class="bento-span-4 bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
 		aria-labelledby="lobby-capsules-h"
 	>
 		<header class="tw-mb-3 tw-min-w-0">
@@ -580,7 +629,7 @@
 	</section>
 
 	<section
-		class="bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
+		class="bento-span-12 bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
 		aria-labelledby="lobby-mission-log-h"
 	>
 		<header class="tw-relative tw-z-50 tw-mb-4 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-slate-800 tw-pb-3">
@@ -588,7 +637,7 @@
 				<p class="lobby-eyebrow tw-mb-1 tw-min-w-0 tw-break-words tw-text-slate-400">Tactical ops</p>
 				<h2
 					id="lobby-mission-log-h"
-					class="tw-m-0 tw-min-w-0 tw-break-words tw-font-mono tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
+					class="tw-m-0 tw-min-w-0 tw-break-words tw-font-sans tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
 				>
 					MISSION LOG
 				</h2>
@@ -605,12 +654,12 @@
 					SYNCING CARTRIDGES…
 				</p>
 			{:else}
-				<ul class="tw-m-0 tw-grid tw-list-none tw-grid-cols-1 tw-gap-3 tw-p-0 sm:tw-grid-cols-2">
+				<ul class="tw-m-0 tw-grid tw-list-none tw-grid-cols-1 tw-gap-4 tw-p-0 sm:tw-grid-cols-2 md:tw-gap-6">
 					{#each missionLogEntries as dep (dep.id)}
 						<li class="tw-group tw-flex tw-min-w-0 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-transition-colors tw-duration-150 hover:tw-border-slate-700">
-							<!-- Pitch thumbnail -->
-							<div class="tw-relative tw-overflow-hidden tw-border-b tw-border-slate-800 tw-bg-slate-950">
-								<svg class="tw-block tw-h-24 tw-w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+						<!-- Pitch thumbnail -->
+						<div class="tw-relative tw-aspect-video tw-w-full tw-overflow-hidden tw-border-b tw-border-slate-800 tw-bg-slate-950">
+							<svg class="tw-block tw-h-full tw-w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
 									<rect x="0" y="0" width="100" height="56" fill="#0f172a" />
 									<!-- Pitch markings — high-contrast slate-50 @ 30%, analytics-grade -->
 									<rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(241,245,249,0.30)" stroke-width="0.5" />
@@ -655,7 +704,7 @@
 									</div>
 									<button
 										type="button"
-										class="tw-pointer-events-auto tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-200 tw-transition-all tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 active:tw-scale-95"
+										class="tw-pointer-events-auto tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-min-h-[44px] tw-min-w-[44px] tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-200 tw-transition-all tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 active:tw-scale-95"
 										aria-label="Start session for {dep.title}"
 									>
 										<Icon name="status.circle-play" class="tw-text-xs" />
@@ -669,59 +718,6 @@
 			{/if}
 		</div>
 	</section>
-
-	<div
-		class="bento-card tw-relative tw-z-40 tw-grid tw-w-full tw-min-w-0 tw-grid-cols-2 tw-overflow-hidden md:tw-grid-cols-4 tw-gap-bento-sm tw-p-bento-pad-sm"
-		aria-label="Career telemetry"
-	>
-	<a
-		href={resolve('/stats')}
-		class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-3 tw-py-4 tw-no-underline tw-transition-colors tw-duration-200 hover:tw-border-slate-700"
-		data-sveltekit-preload-data="hover"
-		data-sveltekit-reload
-	>
-		<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
-			>Total XP</span
-		>
-		<span class="tw-font-mono tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
-			{totalXpHud.toLocaleString()}
-		</span>
-	</a>
-	<a
-		href={resolve('/stats')}
-		class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-3 tw-py-4 tw-no-underline tw-transition-colors tw-duration-200 hover:tw-border-slate-700"
-		data-sveltekit-preload-data="hover"
-		data-sveltekit-reload
-	>
-		<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
-			>Level</span
-		>
-		<span class="tw-font-mono tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
-			{osLevel}
-		</span>
-	</a>
-	<a
-		href={resolve('/player/workout')}
-		class="lobby-stat-tile tw-relative tw-z-50 tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-3 tw-py-4 tw-no-underline tw-transition-colors tw-duration-200 hover:tw-border-slate-700"
-		data-sveltekit-preload-data="hover"
-		data-sveltekit-reload
-	>
-			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
-				>Streak</span
-			>
-			<span class="tw-font-mono tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-teal-400 md:tw-text-2xl">
-				{streak}<span class="tw-text-base tw-font-bold tw-text-slate-500">d</span>
-			</span>
-		</a>
-		<div class="tw-flex tw-min-w-0 tw-flex-col tw-gap-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-px-3 tw-py-4">
-			<span class="tw-text-[0.6rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-slate-500"
-				>Best</span
-			>
-			<span class="tw-font-mono tabular-num tw-min-w-0 tw-truncate tw-text-xl tw-font-black tw-tracking-tight tw-text-slate-50 md:tw-text-2xl">
-				{longestStreak}<span class="tw-text-base tw-font-bold tw-text-slate-500">d</span>
-			</span>
-		</div>
-	</div>
 	</div>
 </div>
 
@@ -733,17 +729,14 @@
 		   to avoid pushing text outside the SVG boundary. */
 	}
 
-	.lobby-hud-bar :global(.pas__title) {
-		color: rgb(148 163 184);
-		letter-spacing: 0.14em;
+	.lobby-hud-tile {
+		box-sizing: border-box;
+		min-width: 0;
 	}
 
-	.lobby-hud-bar :global(.pas__val) {
-		color: rgb(241 245 249);
-	}
-
-	.lobby-hud-bar :global(.pas__unit) {
-		color: rgb(226 232 240);
+	.lobby-hud-tile--primary {
+		flex-shrink: 1;
+		flex-basis: auto;
 	}
 
 	.lobby-root {
@@ -767,6 +760,30 @@
 		background: rgb(15 23 42); /* slate-900 */
 	}
 
+	/* Operative hero: balanced RPG-style split — player card | core attributes */
+	.lobby-hero.bento-grid--2col {
+		align-items: stretch;
+	}
+
+	@media (min-width: 40rem) {
+		.lobby-hero.bento-grid--2col {
+			grid-template-columns: minmax(0, 12fr) minmax(0, 12fr);
+		}
+	}
+
+	.lobby-hero.bento-grid--2col > * {
+		min-height: 0;
+	}
+
+	.combat-hud-shell {
+		box-sizing: border-box;
+	}
+
+	.lobby-quick-nav__tile:focus-visible {
+		outline: 2px solid rgb(20 184 166 / 0.45);
+		outline-offset: 2px;
+	}
+
 	.lobby-eyebrow {
 		font-size: 0.65rem;
 		font-weight: 900;
@@ -775,18 +792,107 @@
 		color: rgb(148 163 184);
 	}
 
-	.holo-stage {
-		position: relative;
-		width: fit-content;
-		max-width: 100%;
-		min-width: 0;
-		perspective: 960px;
-		perspective-origin: 50% 40%;
+	.combat-attributes-heading {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: clamp(0.75rem, 1.4vw, 0.875rem);
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: rgb(148 163 184);
+		line-height: 1.2;
+		padding-bottom: 0.25rem;
+		border-bottom: 1px solid rgb(51 65 85 / 0.55);
+		margin: 0 0 clamp(0.6rem, 0.45rem + 0.75vw, 1rem) 0;
 	}
 
-	.holo-plate {
+	.operative-casefile {
 		position: relative;
-		filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
+		box-sizing: border-box;
+		padding: clamp(0.65rem, 0.45rem + 0.9vw, 0.95rem);
+		border-radius: 2px;
+		border: 1px solid rgb(51 65 85 / 0.85);
+		background: linear-gradient(
+			168deg,
+			rgb(15 23 42 / 0.97) 0%,
+			rgb(15 23 42 / 0.92) 45%,
+			rgb(15 23 42 / 0.98) 100%
+		);
+		box-shadow:
+			inset 0 0 0 1px rgb(15 23 42 / 0.5),
+			inset 0 1px 0 rgb(255 255 255 / 0.04);
+	}
+
+	.operative-casefile--siem {
+		background: rgb(15 23 42);
+		min-height: 0;
+	}
+
+	.operative-casefile::before,
+	.operative-casefile::after {
+		content: '';
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		border-color: rgb(100 116 139 / 0.75);
+		border-style: solid;
+		pointer-events: none;
+	}
+
+	.operative-casefile::before {
+		top: 5px;
+		left: 5px;
+		border-width: 1px 0 0 1px;
+	}
+
+	.operative-casefile::after {
+		bottom: 5px;
+		right: 5px;
+		border-width: 0 1px 1px 0;
+	}
+
+	.operative-casefile__rail {
+		border-bottom-color: rgb(51 65 85 / 0.75);
+	}
+
+	.operative-siem-tile {
+		box-sizing: border-box;
+		min-width: 0;
+		padding: 0.35rem 0.45rem 0.45rem;
+		border-radius: 2px;
+		border: 1px solid rgb(30 41 59);
+		background: rgb(2 6 23 / 0.45);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+	}
+
+	.operative-siem-tile__k {
+		display: block;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.45rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: rgb(100 116 139);
+		margin-bottom: 0.1rem;
+	}
+
+	.operative-siem-tile__v {
+		display: block;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: rgb(241 245 249);
+		line-height: 1.15;
+	}
+
+	.operative-siem-tile__v--truncate {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.operative-init-btn:focus-visible {
+		outline: 2px solid rgb(20 184 166 / 0.55);
+		outline-offset: 2px;
 	}
 
 
@@ -798,16 +904,6 @@
 
 	.tabular-num {
 		font-variant-numeric: tabular-nums;
-	}
-
-	.lobby-stat-tile {
-		cursor: pointer;
-		color: inherit;
-	}
-
-	.lobby-stat-tile:hover {
-		border-color: rgb(34 211 238 / 0.25);
-		box-shadow: 0 0 0 1px rgb(34 211 238 / 0.08);
 	}
 
 </style>

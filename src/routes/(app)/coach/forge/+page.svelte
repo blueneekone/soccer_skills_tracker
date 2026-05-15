@@ -82,13 +82,13 @@
 			return `${base} tw-border-emerald-500/60 tw-bg-gradient-to-r tw-from-emerald-700 tw-via-emerald-600 tw-to-teal-600 tw-text-emerald-50 tw-shadow-[0_0_28px_rgba(52,211,153,0.45)] focus-visible:tw-outline-emerald-300`;
 		}
 		if (isDeploying) {
-			return `${base} tw-cursor-wait tw-border-cyan-400/45 tw-bg-gradient-to-r tw-from-cyan-700 tw-via-cyan-600 tw-to-teal-700 tw-text-white tw-shadow-[0_0_24px_rgba(0, 240, 255,0.35)] focus-visible:tw-outline-cyan-300`;
+			return `${base} tw-cursor-wait tw-border-cyan-400/45 tw-bg-gradient-to-r tw-from-cyan-700 tw-via-cyan-600 tw-to-teal-700 tw-text-white tw-shadow-[0_0_24px_rgba(20, 184, 166,0.35)] focus-visible:tw-outline-cyan-300`;
 		}
-		const idleCyan = `${base} tw-border-cyan-400/50 tw-bg-gradient-to-r tw-from-cyan-600 tw-via-cyan-500 tw-to-teal-500 tw-text-white tw-shadow-[0_0_32px_rgba(0, 240, 255,0.45)] focus-visible:tw-outline-cyan-300`;
+		const idleCyan = `${base} tw-border-cyan-400/50 tw-bg-gradient-to-r tw-from-cyan-600 tw-via-cyan-500 tw-to-teal-500 tw-text-white tw-shadow-[0_0_32px_rgba(20, 184, 166,0.45)] focus-visible:tw-outline-cyan-300`;
 		if (payload.length === 0) {
 			return `${idleCyan} tw-cursor-not-allowed tw-opacity-60`;
 		}
-		return `${idleCyan} hover:tw-border-cyan-300 hover:tw-shadow-[0_0_48px_rgba(0, 240, 255,0.55)]`;
+		return `${idleCyan} hover:tw-border-cyan-300 hover:tw-shadow-[0_0_48px_rgba(20, 184, 166,0.55)]`;
 	});
 
 	const deployPulseClass = $derived(
@@ -164,7 +164,7 @@
 				Coach OS · Workout Architect
 			</p>
 			<h1
-				class="tw-font-black tw-uppercase tw-tracking-tight tw-text-white tw-drop-shadow-[0_0_24px_rgba(0, 240, 255,0.25)] md:tw-text-5xl tw-text-3xl"
+				class="tw-font-black tw-uppercase tw-tracking-tight tw-text-white tw-drop-shadow-[0_0_24px_rgba(20, 184, 166,0.25)] md:tw-text-5xl tw-text-3xl"
 			>
 				<span class="tw-text-slate-500">[</span>
 				The Forge <span class="tw-text-slate-600">:</span>
@@ -192,7 +192,7 @@
 		<div class="bento-grid bento-grid--3col">
 				{#each ARMORY_DRILLS as drill (drill.id)}
 					<article
-						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-3xl tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(0, 240, 255,0.12)]"
+						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-3xl tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]"
 					>
 						<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-3">
 							<div class="tw-min-w-0">
@@ -238,7 +238,7 @@
 						Active mission timeline
 					</p>
 					<p
-						class="forge-bounty-total tw-mt-6 tw-font-black tw-tabular-nums tw-text-cyan-400 tw-text-4xl tw-tracking-tight tw-shadow-[0_0_15px_rgba(0, 240, 255,0.5)] md:tw-text-5xl"
+						class="forge-bounty-total tw-mt-6 tw-font-black tw-tabular-nums tw-text-cyan-400 tw-text-4xl tw-tracking-tight tw-shadow-[0_0_15px_rgba(20, 184, 166,0.5)] md:tw-text-5xl"
 					>
 						{totalMissionBounty.toLocaleString()}
 						<span class="tw-text-lg tw-font-bold tw-text-cyan-200/80 md:tw-text-xl">XP</span>
@@ -334,19 +334,19 @@
 		0%,
 		100% {
 			box-shadow:
-				0 0 28px rgba(0, 240, 255, 0.4),
-				0 0 0 0 rgba(0, 240, 255, 0.2);
+				0 0 28px rgba(20, 184, 166, 0.4),
+				0 0 0 0 rgba(20, 184, 166, 0.2);
 			filter: brightness(1);
 		}
 		50% {
 			box-shadow:
-				0 0 48px rgba(0, 240, 255, 0.65),
+				0 0 48px rgba(20, 184, 166, 0.65),
 				0 0 80px rgba(20, 184, 166, 0.25);
 			filter: brightness(1.06);
 		}
 	}
 
 	.forge-bounty-total {
-		text-shadow: 0 0 24px rgba(0, 240, 255, 0.45);
+		text-shadow: 0 0 24px rgba(20, 184, 166, 0.45);
 	}
 </style>

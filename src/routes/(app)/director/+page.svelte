@@ -233,9 +233,9 @@
 	}
 
 	.dir-mobile-tabs__pill--active {
-		background: rgba(0, 240, 255, 0.12);
-		border-color: rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.12);
+		border-color: rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 
 	.dir-mobile-tabs__pill :global(svg) {

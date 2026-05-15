@@ -139,7 +139,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: clamp(16px, 5vw, 40px);
-		background: radial-gradient(ellipse at 30% 20%, rgba(0,240,255,0.05), transparent 60%),
+		background: radial-gradient(ellipse at 30% 20%, rgba(20, 184, 166,0.05), transparent 60%),
 		            radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.06), transparent 60%),
 		            #020208;
 	}

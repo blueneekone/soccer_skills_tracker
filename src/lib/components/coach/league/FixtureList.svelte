@@ -105,7 +105,7 @@
 
 	// ── Static configs ────────────────────────────────────────────────────────
 	const TYPE_COLORS: Record<LeagueSchema.FixtureType, string> = {
-		League: '#00f0ff',
+		League: '#14b8a6',
 		Tournament: '#a855f7',
 		Friendly: '#22c55e',
 	};
@@ -276,7 +276,7 @@
 								class="fl-score-badge"
 								style:--outcome-color={result.outcome
 									? OUTCOME_COLORS[result.outcome]
-									: '#00f0ff'}
+									: '#14b8a6'}
 							>
 								{#if result.outcome}
 									<span class="fl-outcome-tag" style:color={OUTCOME_COLORS[result.outcome]}>
@@ -347,12 +347,12 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		padding: 1.25rem 1.5rem 0.75rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 	}
 	.fl-eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 3px;
 	}
@@ -366,7 +366,7 @@
 	.fl-count {
 		font-size: 1.4rem;
 		font-weight: 700;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
@@ -410,9 +410,9 @@
 		color: #94a3b8;
 	}
 	.fl-tab--active {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.3);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.3);
+		color: #14b8a6;
 	}
 	.fl-tab-count {
 		background: rgba(255, 255, 255, 0.08);
@@ -421,7 +421,7 @@
 		font-size: 8px;
 	}
 	.fl-tab--active .fl-tab-count {
-		background: rgba(0, 240, 255, 0.15);
+		background: rgba(20, 184, 166, 0.15);
 	}
 	.fl-search-wrap {
 		display: flex;
@@ -448,7 +448,7 @@
 		transition: border-color 0.2s;
 	}
 	.fl-search:focus {
-		border-bottom-color: rgba(0, 240, 255, 0.5);
+		border-bottom-color: rgba(20, 184, 166, 0.5);
 	}
 	.fl-search::placeholder {
 		color: #334155;
@@ -493,7 +493,7 @@
 		background: rgba(255, 255, 255, 0.02);
 	}
 	.fl-row--clickable:hover {
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 	}
 
 	/* Date column */
@@ -643,7 +643,7 @@
 		transition: color 0.15s;
 	}
 	.fl-row--clickable:hover .fl-chevron {
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 
 	/* Empty state */
@@ -681,7 +681,7 @@
 		display: flex;
 		justify-content: center;
 		padding: 0.875rem 1.5rem;
-		border-top: 1px solid rgba(0, 240, 255, 0.06);
+		border-top: 1px solid rgba(20, 184, 166, 0.06);
 	}
 
 	.fl-load-more__btn {
@@ -690,9 +690,9 @@
 		gap: 0.4rem;
 		padding: 0.45rem 1.1rem;
 		background: transparent;
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 6px;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		font-family: inherit;
 		font-size: 10px;
 		font-weight: 700;
@@ -702,9 +702,9 @@
 	}
 
 	.fl-load-more__btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.06);
-		border-color: rgba(0, 240, 255, 0.35);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.06);
+		border-color: rgba(20, 184, 166, 0.35);
+		color: #14b8a6;
 	}
 
 	.fl-load-more__btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -712,8 +712,8 @@
 	.fl-load-more__spin {
 		width: 10px;
 		height: 10px;
-		border: 1.5px solid rgba(0, 240, 255, 0.25);
-		border-top-color: rgba(0, 240, 255, 0.8);
+		border: 1.5px solid rgba(20, 184, 166, 0.25);
+		border-top-color: rgba(20, 184, 166, 0.8);
 		border-radius: 50%;
 		animation: fl-spin 0.7s linear infinite;
 	}

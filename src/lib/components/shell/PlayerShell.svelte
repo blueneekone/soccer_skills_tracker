@@ -142,11 +142,12 @@
 				class="ps-bottom-nav__link"
 				class:ps-bottom-nav__link--active={isActive(link.href)}
 				class:ps-bottom-nav__link--gated={gated}
-				href={link.href}
-				aria-current={isActive(link.href) ? 'page' : undefined}
-				aria-disabled={gated ? 'true' : undefined}
-				data-sveltekit-preload-data="hover"
-				onclick={(e) => { isInboxOpen = false; onNavClick(link.href, e); }}
+			href={link.href}
+			aria-current={isActive(link.href) ? 'page' : undefined}
+			aria-disabled={gated ? 'true' : undefined}
+			data-sveltekit-preload-data="hover"
+			data-sveltekit-reload
+			onclick={(e) => { isInboxOpen = false; onNavClick(link.href, e); }}
 			>
 				<span class="ps-bottom-nav__icon" aria-hidden="true"><Icon name={link.icon} /></span>
 				<span class="ps-bottom-nav__label">{link.label}</span>
@@ -190,7 +191,7 @@
 				<div class="tw-relative">
 					<button
 						type="button"
-						class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-cyan-500/25 tw-bg-black/50 tw-text-cyan-200 tw-transition hover:tw-border-cyan-400/50 hover:tw-bg-cyan-950/30 hover:tw-text-cyan-100"
+						class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-slate-900/70 tw-text-slate-300 tw-transition hover:tw-border-slate-600 hover:tw-bg-slate-800 hover:tw-text-slate-100"
 						aria-expanded={isInboxOpen}
 						aria-controls="ps-action-inbox-panel"
 						aria-label="Alerts — notifications and assignments"
@@ -219,7 +220,7 @@
 		{#if isInboxOpen}
 			<div
 				id="ps-action-inbox-panel"
-				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/85 tw-px-3 tw-py-3 tw-backdrop-blur-3xl tw-shadow-[0_20px_50px_rgba(0,0,0,0.65),_0_0_30px_rgba(0,240,255,0.08)]"
+				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-950/95 tw-px-3 tw-py-3 tw-backdrop-blur-xl tw-shadow-lg"
 				style="top: var(--pp-topbar-height);"
 				role="region"
 				aria-label="Alerts"

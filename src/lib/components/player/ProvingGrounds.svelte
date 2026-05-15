@@ -56,7 +56,7 @@
 			description:
 				'Top-end velocity over 30 metres from a stationary start. Measures pure speed ceiling.',
 			category: 'SPEED',
-			categoryAccent: '#00f0ff',
+			categoryAccent: '#14b8a6',
 			statKey: /** @type {const} */ ('PAC'),
 			unit: 'MPH',
 			placeholder: 'e.g. 24.1',
@@ -74,7 +74,7 @@
 			description:
 				'Time from stationary to first full stride. Lower is faster — measures explosive first step.',
 			category: 'SPEED',
-			categoryAccent: '#00f0ff',
+			categoryAccent: '#14b8a6',
 			statKey: /** @type {const} */ ('ACC'),
 			unit: 's',
 			placeholder: 'e.g. 1.48',
@@ -401,7 +401,7 @@
 						<div class="tw-flex-1 tw-relative">
 						<label
 							for="pg-input"
-							class="tw-block tw-text-[8px] tw-uppercase tw-tracking-[0.45em] tw-mb-3 {submitState === 'success' ? 'tw-text-[#00ff88]' : submitState === 'error' ? 'tw-text-[#ff4444]' : 'tw-text-white/30'}"
+							class="tw-block tw-text-[8px] tw-uppercase tw-tracking-[0.45em] tw-mb-3 {submitState === 'success' ? 'tw-text-[#2dd4bf]' : submitState === 'error' ? 'tw-text-[#ff4444]' : 'tw-text-white/30'}"
 						>
 								{#if submitState === 'success'}
 									◉ METRIC ENCRYPTED · DATA SECURE
@@ -495,7 +495,7 @@
 						class:pg-submit-btn--success={submitState === 'success'}
 						class:pg-submit-btn--error={submitState === 'error'}
 						disabled={!isInputValid || submitState !== 'idle'}
-						style:--submit-accent={submitState === 'success' ? '#00ff88' : submitState === 'error' ? '#ff4444' : selectedDrill.categoryAccent}
+						style:--submit-accent={submitState === 'success' ? '#2dd4bf' : submitState === 'error' ? '#ff4444' : selectedDrill.categoryAccent}
 					>
 						{#if submitState === 'success'}
 							◉ &nbsp;+{lastAwardedXP.toLocaleString()} XP ENCRYPTED TO ARMORY
@@ -568,7 +568,7 @@
 		top: 0;
 		bottom: 0;
 		width: 2px;
-		background: var(--drill-accent, #00f0ff);
+		background: var(--drill-accent, #14b8a6);
 		opacity: 0;
 		transition: opacity 0.15s ease;
 	}
@@ -629,9 +629,9 @@
 		background: linear-gradient(
 			to right,
 			transparent 0%,
-			rgba(0, 240, 255, 0.12) 30%,
-			rgba(0, 240, 255, 0.25) 50%,
-			rgba(0, 240, 255, 0.12) 70%,
+			rgba(20, 184, 166, 0.12) 30%,
+			rgba(20, 184, 166, 0.25) 50%,
+			rgba(20, 184, 166, 0.12) 70%,
 			transparent 100%
 		);
 		animation: pg-scan 4s linear infinite;
@@ -661,7 +661,7 @@
 		position: absolute;
 		width: 12px;
 		height: 12px;
-		border-color: rgba(0, 240, 255, 0.2);
+		border-color: rgba(20, 184, 166, 0.2);
 		border-style: solid;
 		z-index: 3;
 		pointer-events: none;
@@ -734,13 +734,13 @@
 	}
 
 	.pg-input:focus {
-		border-bottom-color: rgba(0, 240, 255, 0.6);
-		filter: drop-shadow(0 4px 12px rgba(0, 240, 255, 0.1));
+		border-bottom-color: rgba(20, 184, 166, 0.6);
+		filter: drop-shadow(0 4px 12px rgba(20, 184, 166, 0.1));
 	}
 
 	.pg-input--success {
-		border-bottom-color: rgba(0, 255, 136, 0.7) !important;
-		color: #00ff88;
+		border-bottom-color: rgba(45, 212, 191, 0.7) !important;
+		color: #2dd4bf;
 	}
 
 	.pg-input--error {
@@ -770,25 +770,25 @@
 	}
 
 	.pg-submit-btn--ready {
-		color: var(--submit-accent, #00f0ff);
-		border-color: var(--submit-accent, #00f0ff);
-		background: color-mix(in srgb, var(--submit-accent, #00f0ff) 8%, transparent);
+		color: var(--submit-accent, #14b8a6);
+		border-color: var(--submit-accent, #14b8a6);
+		background: color-mix(in srgb, var(--submit-accent, #14b8a6) 8%, transparent);
 		cursor: pointer;
 	}
 
 	.pg-submit-btn--ready:hover {
-		background: color-mix(in srgb, var(--submit-accent, #00f0ff) 14%, transparent);
+		background: color-mix(in srgb, var(--submit-accent, #14b8a6) 14%, transparent);
 		box-shadow:
-			0 0 20px color-mix(in srgb, var(--submit-accent, #00f0ff) 22%, transparent),
-			inset 0 0 20px color-mix(in srgb, var(--submit-accent, #00f0ff) 5%, transparent);
-		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--submit-accent, #00f0ff) 40%, transparent));
+			0 0 20px color-mix(in srgb, var(--submit-accent, #14b8a6) 22%, transparent),
+			inset 0 0 20px color-mix(in srgb, var(--submit-accent, #14b8a6) 5%, transparent);
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--submit-accent, #14b8a6) 40%, transparent));
 	}
 
 	.pg-submit-btn--success {
-		color: #00ff88;
-		border-color: rgba(0, 255, 136, 0.5);
-		background: rgba(0, 255, 136, 0.06);
-		box-shadow: 0 0 24px rgba(0, 255, 136, 0.12);
+		color: #2dd4bf;
+		border-color: rgba(45, 212, 191, 0.5);
+		background: rgba(45, 212, 191, 0.06);
+		box-shadow: 0 0 24px rgba(45, 212, 191, 0.12);
 		cursor: default;
 	}
 

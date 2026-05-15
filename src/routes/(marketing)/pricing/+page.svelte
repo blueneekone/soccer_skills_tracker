@@ -52,7 +52,7 @@
 			tagline: 'Full clubs with unlimited AI analysis and recruiter access.',
 			price: '$299',
 			priceSub: '/ month per club',
-			accentColor: '#00f0ff',
+			accentColor: '#14b8a6',
 			badge: 'MOST POPULAR',
 			features: [
 				{ label: 'Unlimited players', highlight: true },
@@ -295,7 +295,7 @@
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		margin-bottom: 1rem;
 	}
 	.pricing-h1 {
@@ -336,15 +336,15 @@
 		gap: 1.25rem;
 	}
 	.tier-card--featured {
-		border-color: rgba(0, 240, 255, 0.35);
-		background: rgba(0, 240, 255, 0.04);
-		box-shadow: 0 0 48px rgba(0, 240, 255, 0.12);
+		border-color: rgba(20, 184, 166, 0.35);
+		background: rgba(20, 184, 166, 0.04);
+		box-shadow: 0 0 48px rgba(20, 184, 166, 0.12);
 	}
 	.tier-card:hover:not(.tier-card--featured) {
 		border-color: color-mix(in srgb, var(--accent) 30%, transparent);
 	}
 	.tier-card--featured:hover {
-		box-shadow: 0 0 72px rgba(0, 240, 255, 0.22);
+		box-shadow: 0 0 72px rgba(20, 184, 166, 0.22);
 	}
 
 	/* Badge */
@@ -355,12 +355,12 @@
 		transform: translateX(-50%);
 		padding: 3px 14px;
 		border-radius: 20px;
-		background: rgba(0, 240, 255, 0.12);
-		border: 1px solid rgba(0, 240, 255, 0.45);
+		background: rgba(20, 184, 166, 0.12);
+		border: 1px solid rgba(20, 184, 166, 0.45);
 		font-size: 0.45rem;
 		font-weight: 900;
 		letter-spacing: 0.2em;
-		color: #00f0ff;
+		color: #14b8a6;
 		white-space: nowrap;
 	}
 
@@ -532,12 +532,12 @@
 	.pricing-cta-strip__link {
 		font-size: 0.6rem;
 		font-weight: 700;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 		text-decoration: none;
 		letter-spacing: 0.06em;
 		transition: color 0.15s;
 	}
-	.pricing-cta-strip__link:hover { color: #00f0ff; }
+	.pricing-cta-strip__link:hover { color: #14b8a6; }
 
 	/* ── Keyframes ───────────────────────────────────────────────────────────── */
 	@keyframes tier-dot {

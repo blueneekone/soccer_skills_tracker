@@ -118,17 +118,17 @@
 	class="vanguard-surface tw-relative tw-overflow-hidden tw-p-5"
 	aria-labelledby="vaq-h"
 >
-	<header class="tw-mb-4 tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-[#00f0ff]/15 tw-pb-3">
+	<header class="tw-mb-4 tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-[#14b8a6]/15 tw-pb-3">
 		<div class="tw-min-w-0">
-			<p class="tw-mb-1 tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-[#00f0ff]/85">
+			<p class="tw-mb-1 tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-[#14b8a6]/85">
 				COPPA · CONSENT QUEUE
 			</p>
 			<h3 id="vaq-h" class="tw-m-0 tw-font-mono tw-text-base tw-font-black tw-tracking-tight tw-text-slate-100">
 				Pending Director Approvals
 			</h3>
 		</div>
-		<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/30 tw-bg-[#00f0ff]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#00f0ff]">
-			<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.7)]"></span>
+		<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/30 tw-bg-[#14b8a6]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#14b8a6]">
+			<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_6px_rgba(20, 184, 166,0.7)]"></span>
 			{requests.length} OPEN
 		</span>
 	</header>
@@ -153,11 +153,11 @@
 		<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0" role="list">
 			{#each requests as req (req.id)}
 				<li
-					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] tw-transition-colors hover:tw-border-[#00f0ff]/35"
+					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] tw-transition-colors hover:tw-border-[#14b8a6]/35"
 				>
 					<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
-							<Icon name="user.avatar" class="tw-shrink-0 tw-text-[#00f0ff]/80" />
+							<Icon name="user.avatar" class="tw-shrink-0 tw-text-[#14b8a6]/80" />
 							<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-sm tw-font-bold tw-text-slate-100">{req.playerEmail}</span>
 						</div>
 						<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-3 tw-pl-6 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-slate-500">
@@ -169,7 +169,7 @@
 					</div>
 					<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
 						{#if itemState[req.id] === 'done'}
-							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]">
+							<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6]">
 							<Icon name="status.verified" /> Approved
 							</span>
 						{:else if itemState[req.id] === 'error'}
@@ -179,7 +179,7 @@
 						{/if}
 						<button
 							type="button"
-							class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/80 hover:tw-bg-[#00f0ff]/10 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
+							class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/40 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/80 hover:tw-bg-[#14b8a6]/10 hover:tw-shadow-[0_0_20px_rgba(20, 184, 166,0.35)] active:tw-scale-95 disabled:tw-cursor-not-allowed disabled:tw-opacity-30"
 						disabled={itemState[req.id] === 'approving' || itemState[req.id] === 'done'}
 						onclick={() => handleVpcApproval(req)}
 							aria-label="Approve VPC for {req.playerEmail}"

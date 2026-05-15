@@ -163,6 +163,9 @@
 					<WorkspaceContextSwitcher variant="sidebar" />
 				</div>
 				<nav class="ec-sidebar__nav">
+					<!-- Sprint 9.1: data-sveltekit-reload on every workspace nav anchor guarantees
+					     native browser navigation (full document request) so deploys never leave
+					     the user stuck on a stale SvelteKit client graph without a refresh. -->
 					{#each links as item (item.href)}
 						<a
 							class="ec-nav-link"
@@ -449,11 +452,11 @@
 		text-align: center;
 		padding: 2rem;
 		gap: 10px;
-		color: rgba(0, 255, 136, 0.8);
+		color: rgba(45, 212, 191, 0.8);
 	}
 	.ec-anomaly-sent-icon {
 		font-size: 2rem;
-		color: #00ff88;
+		color: #2dd4bf;
 	}
 	/* Pre-filled context block */
 	.ec-anomaly-context {

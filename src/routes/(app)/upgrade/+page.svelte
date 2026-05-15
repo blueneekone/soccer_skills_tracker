@@ -130,7 +130,7 @@
 	.upgrade-info-link {
 		align-self: flex-start;
 		font-weight: 800;
-		color: var(--brand-primary, #00f0ff);
+		color: var(--brand-primary, #14b8a6);
 		text-decoration: none;
 		padding: 0.4rem 0;
 	}

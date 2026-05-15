@@ -16,12 +16,12 @@
   let { payload, title, tier }: Props = $props();
 
   const tierColor = $derived(
-    tier === 'beginner' ? '#00f0ff' : tier === 'intermediate' ? '#ffcc00' : '#ff0055'
+    tier === 'beginner' ? '#14b8a6' : tier === 'intermediate' ? '#ffcc00' : '#ff0055'
   );
 </script>
 
 <div
-  class="tw-w-full tw-aspect-video tw-relative tw-overflow-hidden tw-rounded-xl tw-bg-[#020202] tw-border tw-border-[#00f0ff]/30"
+  class="tw-w-full tw-aspect-video tw-relative tw-overflow-hidden tw-rounded-xl tw-bg-[#020202] tw-border tw-border-[#14b8a6]/30"
 >
   <svg viewBox="0 0 400 250" class="tw-w-full tw-h-full" xmlns="http://www.w3.org/2000/svg">
     <!-- Obsidian field base -->
@@ -34,7 +34,7 @@
       width="392"
       height="242"
       fill="none"
-      stroke="#00f0ff"
+      stroke="#14b8a6"
       stroke-opacity="0.25"
       stroke-width="1"
     />
@@ -45,13 +45,13 @@
       cy="125"
       r="40"
       fill="none"
-      stroke="#00f0ff"
+      stroke="#14b8a6"
       stroke-opacity="0.15"
       stroke-width="1"
     />
 
     <!-- Centre spot -->
-    <circle cx="200" cy="125" r="3" fill="#00f0ff" fill-opacity="0.4" />
+    <circle cx="200" cy="125" r="3" fill="#14b8a6" fill-opacity="0.4" />
 
     {#if payload === 'svg_sole_taps'}
       <!-- Left foot -->
@@ -60,7 +60,7 @@
         cy="145"
         r="12"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.5"
         stroke-width="1.5"
       />
@@ -70,7 +70,7 @@
         cy="145"
         r="12"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.5"
         stroke-width="1.5"
       />
@@ -80,7 +80,7 @@
         y1="145"
         x2="237"
         y2="145"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.25"
         stroke-width="1"
         stroke-dasharray="4,3"
@@ -91,35 +91,35 @@
         cx="175"
         cy="145"
         r="8"
-        fill="#00f0ff"
+        fill="#14b8a6"
         fill-opacity="0.9"
-        style="filter:drop-shadow(0 0 8px #00f0ff)"
+        style="filter:drop-shadow(0 0 8px #14b8a6)"
       />
     {:else if payload === 'svg_inside_outside_cut'}
       <!-- Dashed path trace -->
       <polyline
         points="130,200 200,150 270,200"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.2"
         stroke-width="1"
         stroke-dasharray="4,4"
       />
       <!-- Vertex indicator — start -->
-      <polygon points="127,197 134,200 127,203" fill="#00f0ff" fill-opacity="0.5" />
+      <polygon points="127,197 134,200 127,203" fill="#14b8a6" fill-opacity="0.5" />
       <!-- Vertex indicator — apex -->
-      <polygon points="197,147 200,154 203,147" fill="#00f0ff" fill-opacity="0.65" />
+      <polygon points="197,147 200,154 203,147" fill="#14b8a6" fill-opacity="0.65" />
       <!-- Vertex indicator — end -->
-      <polygon points="267,197 274,200 267,203" fill="#00f0ff" fill-opacity="0.4" />
+      <polygon points="267,197 274,200 267,203" fill="#14b8a6" fill-opacity="0.4" />
       <!-- Animated ball: cx/cy driven by CSS animation -->
       <circle
         class="ball-zigzag"
         cx="130"
         cy="200"
         r="8"
-        fill="#00f0ff"
+        fill="#14b8a6"
         fill-opacity="0.9"
-        style="filter:drop-shadow(0 0 8px #00f0ff)"
+        style="filter:drop-shadow(0 0 8px #14b8a6)"
       />
     {:else if payload === 'svg_speed_ladder'}
       <!-- Five horizontal rungs -->
@@ -137,9 +137,9 @@
         cx="155"
         cy="80"
         r="6"
-        fill="#00f0ff"
+        fill="#14b8a6"
         fill-opacity="0.9"
-        style="filter:drop-shadow(0 0 8px #00f0ff)"
+        style="filter:drop-shadow(0 0 8px #14b8a6)"
       />
       <!-- Right foot dot: moves up through rungs (offset phase) -->
       <circle
@@ -158,7 +158,7 @@
         cy="180"
         r="14"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.6"
         stroke-width="1.5"
       />
@@ -168,7 +168,7 @@
         cy="166"
         r="6"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-opacity="0.4"
         stroke-width="1"
       />
@@ -176,7 +176,7 @@
       <path
         d="M 188,174 A 36,36 0 0 0 162,152"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-width="1.5"
         class="scan-arc-left"
       />
@@ -184,7 +184,7 @@
       <path
         d="M 212,174 A 36,36 0 0 1 238,152"
         fill="none"
-        stroke="#00f0ff"
+        stroke="#14b8a6"
         stroke-width="1.5"
         class="scan-arc-right"
       />
@@ -194,8 +194,8 @@
         cx="200"
         cy="157"
         r="4"
-        fill="#00f0ff"
-        style="filter:drop-shadow(0 0 8px #00f0ff)"
+        fill="#14b8a6"
+        style="filter:drop-shadow(0 0 8px #14b8a6)"
       />
     {/if}
   </svg>
@@ -206,7 +206,7 @@
   >
     <!-- Top row: label + tier badge -->
     <div class="tw-flex tw-justify-between tw-items-start">
-      <span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60"
+      <span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60"
         >[ TACTICAL BOARD ]</span
       >
       <span

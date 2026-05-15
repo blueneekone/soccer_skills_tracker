@@ -46,7 +46,7 @@
 	/* ─── Base (liquid glass accent — outer chrome from parent) ─── */
 	.svc--base {
 		box-shadow:
-			0 0 24px rgba(0, 240, 255, 0.08),
+			0 0 24px rgba(20, 184, 166, 0.08),
 			inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	}
 

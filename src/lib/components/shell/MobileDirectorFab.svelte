@@ -106,11 +106,11 @@
 		width: 56px;
 		height: 56px;
 		border-radius: 50%;
-		background: rgba(0, 240, 255, 0.12);
-		border: 1px solid rgba(0, 240, 255, 0.45);
+		background: rgba(20, 184, 166, 0.12);
+		border: 1px solid rgba(20, 184, 166, 0.45);
 		backdrop-filter: blur(16px);
-		box-shadow: 0 0 24px rgba(0, 240, 255, 0.25), 0 8px 32px rgba(0, 0, 0, 0.6);
-		color: #00f0ff;
+		box-shadow: 0 0 24px rgba(20, 184, 166, 0.25), 0 8px 32px rgba(0, 0, 0, 0.6);
+		color: #14b8a6;
 		font-size: 24px;
 		cursor: pointer;
 		text-decoration: none;
@@ -120,7 +120,7 @@
 
 	.fab-btn:active {
 		transform: scale(0.93);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.18), 0 4px 16px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.18), 0 4px 16px rgba(0, 0, 0, 0.5);
 	}
 
 	.fab-label {
@@ -132,7 +132,7 @@
 		font-size: 9px;
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		pointer-events: none;
 		line-height: 56px;
 	}
@@ -158,11 +158,11 @@
 		width: 44px;
 		height: 44px;
 		border-radius: 50%;
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.35);
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.35);
 		backdrop-filter: blur(16px);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.5);
-		color: #00f0ff;
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.2), 0 4px 20px rgba(0, 0, 0, 0.5);
+		color: #14b8a6;
 		font-size: 20px;
 		text-decoration: none;
 		transition: transform 0.12s ease;
@@ -181,7 +181,7 @@
 		font-size: 9px;
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		pointer-events: none;
 	}
 </style>

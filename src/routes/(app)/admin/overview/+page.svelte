@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
 	import {
@@ -15,19 +15,19 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
-	/** Strike 16 — Tabbed command center (SOAR/SIEM-style statistical surfaces) */
+	/** Strike 16 â€” Tabbed command center (SOAR/SIEM-style statistical surfaces) */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
 	const TAB_LABELS = /** @type {const} */ (['Executive', 'Growth', 'Security', 'Platform']);
 
 	/** @type {'executive' | 'growth' | 'security' | 'platform'} */
 	let activeTab = $state('executive');
 
-	/** SOC-style ribbon — headline operational telemetry (representative / demo). */
+	/** SOC-style ribbon â€” headline operational telemetry (representative / demo). */
 	const SOC_RIBBON = /** @type {const} */ ([
-		{ k: 'MTTR', v: '18m', s: 'Incidents · rolling 7d p50' },
-		{ k: 'Playbooks', v: '2.4k', s: 'Automation runs · 24h' },
-		{ k: 'Detections', v: '847/s', s: 'Rule evaluations · pipeline' },
-		{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics · p95' },
+		{ k: 'MTTR', v: '18m', s: 'Incidents Â· rolling 7d p50' },
+		{ k: 'Playbooks', v: '2.4k', s: 'Automation runs Â· 24h' },
+		{ k: 'Detections', v: '847/s', s: 'Rule evaluations Â· pipeline' },
+		{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics Â· p95' },
 	]);
 
 	/**
@@ -41,7 +41,7 @@
 		{ label: 'ARR', value: '$510k', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
 		{ label: 'Active Orgs', value: '142', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
 		{ label: 'Total Players', value: '12.4k', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
-		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: '—', deltaDir: 'flat' },
+		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: 'â€”', deltaDir: 'flat' },
 		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU', band: 'info', delta: '+$12', deltaDir: 'up' },
 		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross', band: 'ok', delta: '+0.4pp', deltaDir: 'up' },
 		{ label: 'LTV', value: '$12k', hint: 'Cohort average', band: 'info', delta: '+3%', deltaDir: 'up' },
@@ -49,11 +49,11 @@
 
 	/** @type {SocMetric[]} */
 	let strike13Security = $state([
-		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy · 24h', band: 'info', delta: '+112', deltaDir: 'up' },
-		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: '−8%', deltaDir: 'down' },
+		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy Â· 24h', band: 'info', delta: '+112', deltaDir: 'up' },
+		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: 'âˆ’8%', deltaDir: 'down' },
 		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions', band: 'ok', delta: '0', deltaDir: 'flat' },
 		{ label: 'Vetting Pending', value: '14', hint: 'Background queue', band: 'med', delta: '+3', deltaDir: 'up' },
-		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: '−1', deltaDir: 'down' },
+		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: 'âˆ’1', deltaDir: 'down' },
 		{ label: 'API Abuse', value: '12', hint: 'Throttle / WAF', band: 'med', delta: '+2', deltaDir: 'up' },
 		{ label: 'Priv. Escalation', value: '0', hint: 'Elevation attempts', band: 'ok', delta: '0', deltaDir: 'flat' },
 		{ label: 'Suspicious IPs', value: '4', hint: 'Threat intel feed', band: 'high', delta: '+1', deltaDir: 'up' },
@@ -80,7 +80,7 @@
 			value: MOCK_KPI.growth.churn,
 			hint: 'Logo + revenue',
 			band: 'low',
-			delta: '−0.1pp',
+			delta: 'âˆ’0.1pp',
 			deltaDir: 'down',
 		},
 		{
@@ -96,7 +96,7 @@
 			value: `${MOCK_KPI.growth.paybackMo} mo`,
 			hint: 'Months to recover',
 			band: 'med',
-			delta: '−1 mo',
+			delta: 'âˆ’1 mo',
 			deltaDir: 'down',
 		},
 	];
@@ -106,9 +106,9 @@
 		{
 			label: 'API latency',
 			value: MOCK_KPI.platform.apiLatency,
-			hint: 'p50 edge → API',
+			hint: 'p50 edge â†’ API',
 			band: 'ok',
-			delta: '−4ms',
+			delta: 'âˆ’4ms',
 			deltaDir: 'down',
 		},
 		{
@@ -214,7 +214,7 @@
 				const totalsSnap = await getDoc(totalsRef);
 				if (totalsSnap.exists()) totals = totalsSnap.data() || {};
 			} catch (e) {
-				console.warn('[overview] analytics/platform_totals read failed — using defaults', e);
+				console.warn('[overview] analytics/platform_totals read failed â€” using defaults', e);
 				totals = null;
 			}
 
@@ -423,14 +423,14 @@
 							{
 								label: 'Monthly active users',
 								data: series.map((p) => p.value),
-								borderColor: '#00f0ff',
-								backgroundColor: 'rgba(0, 240, 255,0.14)',
+								borderColor: '#14b8a6',
+								backgroundColor: 'rgba(20, 184, 166,0.14)',
 								borderWidth: 2.5,
 								tension: 0.35,
 								fill: true,
 								pointRadius: 3,
 								pointHoverRadius: 5,
-								pointBackgroundColor: '#00f0ff',
+								pointBackgroundColor: '#14b8a6',
 								pointBorderColor: '#ffffff',
 								pointBorderWidth: 1.5,
 							},
@@ -491,7 +491,7 @@
 				if (destroyed || !target.isConnected) return;
 				mod.Chart.register(...mod.registerables);
 				const muted = cssVar('--text-secondary', '#475569');
-				const palette = ['#00f0ff', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
+				const palette = ['#14b8a6', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
 				chart = new mod.Chart(target, {
 					type: 'doughnut',
 					data: {
@@ -536,7 +536,7 @@
 											0,
 										);
 										const pct = total > 0 ? Math.round((Number(ctx.parsed) / total) * 100) : 0;
-										return ` $${Number(ctx.parsed).toLocaleString()} · ${pct}%`;
+										return ` $${Number(ctx.parsed).toLocaleString()} Â· ${pct}%`;
 									},
 								},
 							},
@@ -579,8 +579,8 @@
 							{
 								label: 'Players',
 								data: series.map((p) => p.value),
-								backgroundColor: 'rgba(0, 240, 255, 0.45)',
-								borderColor: 'rgba(0, 240, 255, 0.9)',
+								backgroundColor: 'rgba(20, 184, 166, 0.45)',
+								borderColor: 'rgba(20, 184, 166, 0.9)',
 								borderWidth: 1,
 								borderRadius: 4,
 								maxBarThickness: 28,
@@ -634,7 +634,7 @@
 	});
 
 	function relativeTime(d) {
-		if (!(d instanceof Date)) return '—';
+		if (!(d instanceof Date)) return 'â€”';
 		const diff = Date.now() - d.getTime();
 		if (diff < 60_000) return `${Math.max(1, Math.round(diff / 1000))}s ago`;
 		if (diff < 3_600_000) return `${Math.round(diff / 60_000)}m ago`;
@@ -701,7 +701,7 @@
 
 	<header class="cc-hero">
 		<div class="cc-hero__text">
-			<span class="cc-eyebrow">Global admin · operations console</span>
+			<span class="cc-eyebrow">Global admin Â· operations console</span>
 			<h1
 				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-white md:tw-!text-5xl"
 				style="line-height: 1.08;"
@@ -710,7 +710,7 @@
 			</h1>
 			<p class="cc-lede">
 				Dense statistical surfaces in the spirit of SOAR / SIEM control rooms: KPI ribbons, severity-banded
-				cards, and live audit ingest. Charts — MAU <strong class="cc-lede-strong">{mauSource}</strong>, revenue
+				cards, and live audit ingest. Charts â€” MAU <strong class="cc-lede-strong">{mauSource}</strong>, revenue
 				<strong class="cc-lede-strong">{revenueSource}</strong>, sports
 				<strong class="cc-lede-strong">{sportSource}</strong>.
 			</p>
@@ -720,7 +720,7 @@
 				<span class="cc-live__dot" aria-hidden="true"></span>
 				Live ingest
 			</span>
-			<span class="cc-hero__meta">Last refresh · client</span>
+			<span class="cc-hero__meta">Last refresh Â· client</span>
 		</div>
 	</header>
 
@@ -788,7 +788,7 @@
 					</div>
 						<div>
 							<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
-							<p class="cc-chart-card__sub">Trailing six months · enterprise growth signal</p>
+							<p class="cc-chart-card__sub">Trailing six months Â· enterprise growth signal</p>
 							<span
 								class="cc-src"
 								class:cc-src--live={mauSource === 'live'}
@@ -913,7 +913,7 @@
 						<h2 class="cc-feed-shell__title">Live event stream</h2>
 						<p class="cc-feed-shell__sub">
 							<code class="cc-code">security_audit</code>
-							· {liveFeed.length} events ingested
+							Â· {liveFeed.length} events ingested
 						</p>
 					</header>
 					{#if feedErr}
@@ -922,7 +922,7 @@
 				{#if feedLoading && liveFeed.length === 0}
 					<div class="cc-feed-empty">
 						<Icon name={"status.loading" as IconName} class="cc-spin" aria-hidden="true" />
-						Loading audit stream…
+						Loading audit streamâ€¦
 					</div>
 				{:else if liveFeed.length === 0}
 					<div class="cc-feed-empty">
@@ -1080,7 +1080,7 @@
 		padding: 12px 14px;
 		border-radius: 12px;
 		background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
-		border: 1px solid rgba(0, 240, 255, 0.22);
+		border: 1px solid rgba(20, 184, 166, 0.22);
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
 			0 12px 28px rgba(0, 0, 0, 0.35);
@@ -1175,7 +1175,7 @@
 		background: #34d399;
 	}
 	.cc-soc-dot--info {
-		background: #00f0ff;
+		background: #14b8a6;
 	}
 
 	/* Severity-banded metric tiles */
@@ -1214,7 +1214,7 @@
 		border-left-color: #22c55e;
 	}
 	.cc-soc-card--info {
-		border-left-color: #00f0ff;
+		border-left-color: #14b8a6;
 	}
 
 	.cc-soc-card__top {
@@ -1293,7 +1293,7 @@
 		padding: 16px 18px;
 		border-radius: 14px;
 		background: rgba(9, 9, 11, 0.75);
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 	}
 
@@ -1307,7 +1307,7 @@
 		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: rgba(0, 240, 255, 0.85);
+		color: rgba(20, 184, 166, 0.85);
 		margin-bottom: 4px;
 	}
 
@@ -1363,7 +1363,7 @@
 	}
 
 	.cc-chart-card--soc {
-		border-top: 2px solid rgba(0, 240, 255, 0.35);
+		border-top: 2px solid rgba(20, 184, 166, 0.35);
 		box-shadow:
 			0 1px 0 rgba(255, 255, 255, 0.06) inset,
 			0 18px 40px rgba(0, 0, 0, 0.18);
@@ -1376,12 +1376,12 @@
 	}
 
 	.cc-chart-card__icon--cyan {
-		background: rgba(0, 240, 255, 0.2);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.2);
+		color: #14b8a6;
 	}
 
 	:global(html.dark) .cc-chart-card__icon--cyan {
-		background: rgba(0, 240, 255, 0.22);
+		background: rgba(20, 184, 166, 0.22);
 		color: #a5f3fc;
 	}
 
@@ -1855,11 +1855,11 @@
 		flex-shrink: 0;
 	}
 
-	/* ── Mobile progressive disclosure (< 768px) ─────────────────────────────
+	/* â”€â”€ Mobile progressive disclosure (< 768px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	   Keep the KPI tiles as the primary surface; collapse the verbose hero
 	   text and compress chart heights so the page is scannable on one screen.
 	   Bottom padding reserves space for the MobileTabBar.
-	 ─────────────────────────────────────────────────────────────────────────── */
+	 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 	@media (max-width: 767.98px) {
 		.cc-root {
 			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));

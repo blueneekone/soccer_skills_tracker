@@ -183,7 +183,7 @@
 
 	.ip-icon {
 		font-size: 0.9rem;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 		flex-shrink: 0;
 	}
 
@@ -206,7 +206,7 @@
 		color: rgba(255, 255, 255, 0.4);
 	}
 
-	.ip-copy__sub strong { color: rgba(0, 240, 255, 0.75); font-weight: 700; }
+	.ip-copy__sub strong { color: rgba(20, 184, 166, 0.75); font-weight: 700; }
 
 	.ip-actions {
 		display: flex;
@@ -228,14 +228,14 @@
 	}
 
 	.ip-btn--primary {
-		background: rgba(0, 240, 255, 0.12);
-		border: 1px solid rgba(0, 240, 255, 0.45);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.12);
+		border: 1px solid rgba(20, 184, 166, 0.45);
+		color: #14b8a6;
 	}
 
 	.ip-btn--primary:hover {
-		background: rgba(0, 240, 255, 0.2);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.2);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
 	}
 
 	.ip-btn--ghost {

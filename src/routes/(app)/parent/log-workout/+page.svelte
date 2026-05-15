@@ -606,11 +606,11 @@
 		height: auto;
 		overflow: visible;
 		box-sizing: border-box;
-		background: #000000;
+		background: var(--vanguard-bg);
 		color: #fafafa;
 		padding: var(--bento-pad);
 		--cyber: #00d4ff;
-		--toxic: #39ff14;
+		--toxic: #2dd4bf;
 		--threat: #ff6b00;
 		--border: rgba(255, 255, 255, 0.1);
 	}

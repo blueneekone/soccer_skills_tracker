@@ -291,7 +291,7 @@
     min-height: 0;
     overflow: hidden;
     border-radius: var(--vanguard-radius, 24px);
-    border: 1px solid rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(20, 184, 166, 0.1);
     background: rgba(2, 6, 23, 0.75);
     backdrop-filter: blur(16px);
   }
@@ -304,7 +304,7 @@
     flex-direction: column;
     gap: 2px;
     padding: 1rem 0.75rem;
-    border-right: 1px solid rgba(0, 240, 255, 0.08);
+    border-right: 1px solid rgba(20, 184, 166, 0.08);
     overflow-y: auto;
   }
   .rail-header {
@@ -317,7 +317,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 9px;
     letter-spacing: 0.12em;
-    color: rgba(0, 240, 255, 0.45);
+    color: rgba(20, 184, 166, 0.45);
   }
   .rail-count {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -338,29 +338,29 @@
     font-size: 13px;
     transition: background 0.15s, color 0.15s;
   }
-  .rail-item:hover { background: rgba(0,240,255,0.06); color: rgba(255,255,255,0.85); }
-  .rail-item--active { background: rgba(0,240,255,0.1); color: #fff; border: 1px solid rgba(0,240,255,0.2); }
+  .rail-item:hover { background: rgba(20, 184, 166,0.06); color: rgba(255,255,255,0.85); }
+  .rail-item--active { background: rgba(20, 184, 166,0.1); color: #fff; border: 1px solid rgba(20, 184, 166,0.2); }
   .rail-item--archived { opacity: 0.45; }
   .rail-item span { flex-shrink: 0; display: flex; align-items: center; }
   .rail-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .rail-version {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 9px;
-    color: rgba(0,240,255,0.4);
+    color: rgba(20, 184, 166,0.4);
   }
   .rail-new-btn {
     margin-top: 1rem;
     padding: 0.5rem 0.75rem;
     border-radius: 10px;
-    border: 1px dashed rgba(0,240,255,0.25);
+    border: 1px dashed rgba(20, 184, 166,0.25);
     background: transparent;
-    color: rgba(0,240,255,0.6);
+    color: rgba(20, 184, 166,0.6);
     font-size: 12px;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s;
   }
-  .rail-new-btn:hover { background: rgba(0,240,255,0.08); color: #00f0ff; border-color: rgba(0,240,255,0.5); }
+  .rail-new-btn:hover { background: rgba(20, 184, 166,0.08); color: #14b8a6; border-color: rgba(20, 184, 166,0.5); }
 
   .arena-editor {
     flex: 1;
@@ -392,7 +392,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
-    color: rgba(0,240,255,0.5);
+    color: rgba(20, 184, 166,0.5);
     margin: 0 0 0.875rem;
     text-transform: uppercase;
     display: flex;
@@ -428,7 +428,7 @@
     width: 100%;
     box-sizing: border-box;
   }
-  .field-input:focus { border-color: rgba(0,240,255,0.4); }
+  .field-input:focus { border-color: rgba(20, 184, 166,0.4); }
   .field-input:disabled { opacity: 0.45; cursor: not-allowed; }
 
   .attr-table { display: flex; flex-direction: column; gap: 4px; }
@@ -438,7 +438,7 @@
     gap: 6px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 9px;
-    color: rgba(0,240,255,0.35);
+    color: rgba(20, 184, 166,0.35);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0 2px;
@@ -528,15 +528,15 @@
   .btn-save {
     padding: 0.5rem 1.5rem;
     border-radius: 10px;
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    background: rgba(0, 240, 255, 0.1);
-    color: #00f0ff;
+    border: 1px solid rgba(20, 184, 166, 0.4);
+    background: rgba(20, 184, 166, 0.1);
+    color: #14b8a6;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
   }
-  .btn-save:hover:not(:disabled) { background: rgba(0, 240, 255, 0.2); box-shadow: 0 0 12px rgba(0, 240, 255, 0.2); }
+  .btn-save:hover:not(:disabled) { background: rgba(20, 184, 166, 0.2); box-shadow: 0 0 12px rgba(20, 184, 166, 0.2); }
   .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-save--loading { animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }

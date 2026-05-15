@@ -35,13 +35,13 @@
 				};
 			case 'CLIMBING':
 				return {
-					badgeBg: 'tw-bg-[#00f0ff]/10',
-					badgeBorder: 'tw-border-[#00f0ff]/30',
-					badgeText: 'tw-text-[#00f0ff]',
-					glow: 'tw-shadow-[0_0_20px_rgba(0,240,255,0.12)]',
-					barCurrent: 'tw-bg-[#00f0ff]',
-					barCurrentGlow: 'tw-shadow-[0_0_6px_rgba(0,240,255,0.7)]',
-					valueColor: 'tw-text-[#00f0ff]',
+					badgeBg: 'tw-bg-[#14b8a6]/10',
+					badgeBorder: 'tw-border-[#14b8a6]/30',
+					badgeText: 'tw-text-[#14b8a6]',
+					glow: 'tw-shadow-[0_0_20px_rgba(20, 184, 166,0.12)]',
+					barCurrent: 'tw-bg-[#14b8a6]',
+					barCurrentGlow: 'tw-shadow-[0_0_6px_rgba(20, 184, 166,0.7)]',
+					valueColor: 'tw-text-[#14b8a6]',
 				};
 			case 'PLATEAU':
 				return {
@@ -69,12 +69,12 @@
 </script>
 
 <div
-	class="tw-relative tw-flex tw-flex-col tw-rounded-2xl tw-border tw-border-[#00f0ff]/15 tw-bg-[linear-gradient(165deg,rgba(0,240,255,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-overflow-hidden {tierConfig.glow}"
+	class="tw-relative tw-flex tw-flex-col tw-rounded-2xl tw-border tw-border-[#14b8a6]/15 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-overflow-hidden {tierConfig.glow}"
 	style="padding: clamp(0.75rem, 2vw, 1.25rem); gap: clamp(0.5rem, 1.5vw, 0.75rem);"
 >
 	<!-- Ambient top glow -->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_70%_35%_at_50%_0%,rgba(0,240,255,0.04)_0%,transparent_70%)]"
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_70%_35%_at_50%_0%,rgba(20, 184, 166,0.04)_0%,transparent_70%)]"
 		aria-hidden="true"
 	></div>
 
@@ -93,7 +93,7 @@
 		<!-- Eyebrow -->
 		<div class="tw-relative tw-flex tw-items-center tw-justify-between">
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-[#00f0ff]/60 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase"
 				style="font-size: clamp(7px, 0.9vw, 10px);"
 			>
 				[ GROWTH VELOCITY INDEX ]
@@ -189,7 +189,7 @@
 			<div class="tw-flex tw-items-center tw-gap-1.5">
 				<span
 					class="tw-inline-block tw-w-1.5 tw-h-1.5 tw-rounded-full {gviTier !== 'IGNITING'
-						? 'tw-bg-[#00f0ff] tw-animate-pulse tw-shadow-[0_0_4px_rgba(0,240,255,0.8)]'
+						? 'tw-bg-[#14b8a6] tw-animate-pulse tw-shadow-[0_0_4px_rgba(20, 184, 166,0.8)]'
 						: 'tw-bg-slate-600'}"
 					aria-hidden="true"
 				></span>

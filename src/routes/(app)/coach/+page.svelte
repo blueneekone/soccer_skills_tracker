@@ -157,21 +157,21 @@
 			class="vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end tw-gap-4 tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 		>
 			<div
-				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/40 tw-bg-[rgba(0,24,32,0.6)] tw-shadow-[0_0_18px_rgba(0,240,255,0.35)] md:tw-h-14 md:tw-w-14"
+				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#14b8a6]/40 tw-bg-[rgba(0,24,32,0.6)] tw-shadow-[0_0_18px_rgba(20, 184, 166,0.35)] md:tw-h-14 md:tw-w-14"
 			>
-				<span class="tw-font-mono tw-text-2xl tw-font-black tw-tracking-widest tw-text-[#00f0ff]">{nexusBadgeLetter}</span>
+				<span class="tw-font-mono tw-text-2xl tw-font-black tw-tracking-widest tw-text-[#14b8a6]">{nexusBadgeLetter}</span>
 			</div>
 			<div class="tw-min-w-0 tw-flex-1">
 				<h1 class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">
 					Nexus Command
 				</h1>
-				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#00f0ff]/85 tw-uppercase">
+				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6]/85 tw-uppercase">
 					{clubNameDisplay} <span class="tw-text-slate-600">//</span> {teamNameDisplay}
 				</p>
 			</div>
 			<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-1 tw-font-mono">
 				<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-white/40">UPLINK</span>
-				<span class="tw-text-sm tw-font-black tw-tabular-nums tw-text-[#00f0ff] tw-drop-shadow-[0_0_8px_rgba(0,240,255,0.55)]">{tickerNow}</span>
+				<span class="tw-text-sm tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_8px_rgba(20, 184, 166,0.55)]">{tickerNow}</span>
 			</div>
 		</div>
 	</header>
@@ -199,7 +199,7 @@
 			<!-- WAR ROOM — Holographic, pulsing cyan border, primary gateway -->
 			<button
 				type="button"
-				class="war-room-card bento-span-2 tw-group tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-[#00f0ff]/55 tw-bg-[#020202]/80 tw-p-6 tw-text-left tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_40px_rgba(0,240,255,0.18)] tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#00f0ff]"
+				class="war-room-card bento-span-2 tw-group tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-[#14b8a6]/55 tw-bg-[#020202]/80 tw-p-6 tw-text-left tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_40px_rgba(20, 184, 166,0.18)] tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#14b8a6]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>
@@ -210,15 +210,15 @@
 					preserveAspectRatio="xMidYMid slice"
 					aria-hidden="true"
 				>
-					<rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(0,240,255,0.25)" stroke-width="0.3" />
-					<line x1="50" y1="2" x2="50" y2="54" stroke="rgba(0,240,255,0.2)" stroke-width="0.3" />
-					<circle cx="50" cy="28" r="6" fill="none" stroke="rgba(0,240,255,0.2)" stroke-width="0.3" />
-					<rect x="2" y="18" width="10" height="20" fill="none" stroke="rgba(0,240,255,0.2)" stroke-width="0.3" />
-					<rect x="88" y="18" width="10" height="20" fill="none" stroke="rgba(0,240,255,0.2)" stroke-width="0.3" />
+					<rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(20, 184, 166,0.25)" stroke-width="0.3" />
+					<line x1="50" y1="2" x2="50" y2="54" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
+					<circle cx="50" cy="28" r="6" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
+					<rect x="2" y="18" width="10" height="20" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
+					<rect x="88" y="18" width="10" height="20" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
 					<path
 						d="M 18 42 Q 40 18 60 28 T 88 12"
 						fill="none"
-						stroke="#00f0ff"
+						stroke="#14b8a6"
 						stroke-width="0.5"
 						stroke-linecap="round"
 						filter="url(#neonBloom)"
@@ -235,12 +235,12 @@
 
 				<!-- Pulsing border ring overlay -->
 				<span
-					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[1] tw-rounded-2xl tw-border tw-border-[#00f0ff]/50 tw-animate-[warRoomPulse_2.4s_ease-in-out_infinite]"
+					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-[1] tw-rounded-2xl tw-border tw-border-[#14b8a6]/50 tw-animate-[warRoomPulse_2.4s_ease-in-out_infinite]"
 					aria-hidden="true"
 				></span>
 
 				<div class="tw-relative tw-z-10">
-					<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#00f0ff]/90">
+					<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#14b8a6]/90">
 						PRIMARY GATEWAY
 					</p>
 					<h2 class="tw-mt-2 tw-font-mono tw-text-3xl tw-font-black tw-uppercase tw-tracking-[0.08em] tw-text-white md:tw-text-4xl">
@@ -254,13 +254,13 @@
 				<div class="tw-relative tw-z-10 tw-flex tw-items-end tw-justify-between tw-gap-3">
 					<div class="tw-flex tw-flex-col tw-gap-1 tw-font-mono">
 						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">ENGINE STATUS</span>
-						<span class="tw-flex tw-items-center tw-gap-1.5 tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff]">
-							<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_6px_rgba(0,240,255,0.9)]"></span>
+						<span class="tw-flex tw-items-center tw-gap-1.5 tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6]">
+							<span class="tw-block tw-h-1.5 tw-w-1.5 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_6px_rgba(20, 184, 166,0.9)]"></span>
 							READY · HOT START
 						</span>
 					</div>
 					<span
-						class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#00f0ff]/55 tw-bg-[#00f0ff]/10 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-shadow-[0_0_20px_rgba(0,240,255,0.35)] group-hover:tw-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
+						class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-[#14b8a6]/55 tw-bg-[#14b8a6]/10 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(20, 184, 166,0.35)] group-hover:tw-shadow-[0_0_30px_rgba(20, 184, 166,0.55)]"
 					>
 						ENTER WAR ROOM
 						<Icon name="nav.arrow-right" />
@@ -274,7 +274,7 @@
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="tw-mb-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
-					<Icon name="comm.broadcast" class="tw-text-base tw-text-[#00f0ff]" />
+					<Icon name="comm.broadcast" class="tw-text-base tw-text-[#14b8a6]" />
 					<h2 class="tw-m-0 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
 						Facility Ops &amp; Staging
 					</h2>
@@ -283,7 +283,7 @@
 				<dl class="tw-m-0 tw-flex tw-flex-col tw-gap-3 tw-font-mono tw-text-[11px]">
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">PITCH</dt>
-						<dd class="tw-tabular-nums tw-text-[#00f0ff]/90">TURF 2 · LANE A</dd>
+						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">TURF 2 · LANE A</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COORDS</dt>
@@ -295,7 +295,7 @@
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COMMS</dt>
-						<dd class="tw-tabular-nums tw-text-[#00f0ff]/90">ENCRYPTED · NEXUS-7</dd>
+						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">ENCRYPTED · NEXUS-7</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">EGRESS</dt>
@@ -306,19 +306,19 @@
 				<div class="tw-mt-auto tw-flex tw-flex-wrap tw-gap-2 tw-pt-4">
 					<a
 						href="/coach/forge"
-						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
+						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
 					>
 						<Icon name="sys.hammer" /> FORGE
 					</a>
 					<a
 						href="/coach/match-day"
-						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
+						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
 					>
 						<Icon name="data.target" /> MATCH LOG
 					</a>
 					<a
 						href="/coach/drills"
-						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00f0ff] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#00f0ff]/75 hover:tw-bg-[#00f0ff]/10"
+						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
 					>
 						<Icon name="content.checks" /> DRILLS
 					</a>
@@ -360,7 +360,7 @@
 		position: absolute;
 		inset: 0;
 		overflow: hidden;
-		background: radial-gradient(ellipse at 30% 25%, rgba(0, 240, 255, 0.25) 0%, transparent 55%),
+		background: radial-gradient(ellipse at 30% 25%, rgba(20, 184, 166, 0.25) 0%, transparent 55%),
 			radial-gradient(ellipse at 75% 60%, rgba(168, 85, 247, 0.22) 0%, transparent 55%),
 			linear-gradient(135deg, #020617 0%, #020202 60%, #050511 100%);
 	}
@@ -368,8 +368,8 @@
 	.nexus-banner__grid {
 		position: absolute;
 		inset: 0;
-		background-image: linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(0, 240, 255, 0.08) 1px, transparent 1px);
+		background-image: linear-gradient(rgba(20, 184, 166, 0.08) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(20, 184, 166, 0.08) 1px, transparent 1px);
 		background-size: 36px 36px;
 		mask-image: linear-gradient(to bottom, #000 0%, transparent 95%);
 		-webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 95%);
@@ -388,7 +388,7 @@
 		left: 8%;
 		width: 38%;
 		height: 70%;
-		background: radial-gradient(ellipse, rgba(0, 240, 255, 0.55), transparent 70%);
+		background: radial-gradient(ellipse, rgba(20, 184, 166, 0.55), transparent 70%);
 	}
 
 	.nexus-banner__glow--b {
@@ -406,20 +406,20 @@
 			0deg,
 			transparent,
 			transparent 4px,
-			rgba(0, 240, 255, 0.04) 4px,
-			rgba(0, 240, 255, 0.04) 5px
+			rgba(20, 184, 166, 0.04) 4px,
+			rgba(20, 184, 166, 0.04) 5px
 		);
 		mix-blend-mode: screen;
 	}
 
 	@keyframes warRoomPulse {
 		0%, 100% {
-			box-shadow: inset 0 0 0 1px rgba(0, 240, 255, 0.4), 0 0 30px rgba(0, 240, 255, 0.25);
-			border-color: rgba(0, 240, 255, 0.55);
+			box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.4), 0 0 30px rgba(20, 184, 166, 0.25);
+			border-color: rgba(20, 184, 166, 0.55);
 		}
 		50% {
-			box-shadow: inset 0 0 0 2px rgba(0, 240, 255, 0.85), 0 0 50px rgba(0, 240, 255, 0.55);
-			border-color: rgba(0, 240, 255, 0.95);
+			box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.85), 0 0 50px rgba(20, 184, 166, 0.55);
+			border-color: rgba(20, 184, 166, 0.95);
 		}
 	}
 
@@ -427,19 +427,19 @@
 	.media-hub-btn {
 		display: inline-flex; align-items: center; gap: 0.5rem;
 		padding: 0.5rem 1rem; min-height: 44px;
-		background: rgba(0, 240, 255, 0.06);
-		border: 1px solid rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.06);
+		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 999px;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
-		color: rgba(0, 240, 255, 0.75);
+		color: rgba(20, 184, 166, 0.75);
 		cursor: pointer; transition: all 0.2s;
 	}
 	.media-hub-btn:hover {
-		background: rgba(0, 240, 255, 0.12);
-		border-color: rgba(0, 240, 255, 0.5);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.12);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.12);
+		border-color: rgba(20, 184, 166, 0.5);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.12);
+		color: #14b8a6;
 	}
 	.media-hub-btn__icon { font-size: 0.6rem; }
 

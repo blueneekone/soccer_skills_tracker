@@ -158,8 +158,8 @@
 	// ── Progress step helper ──────────────────────────────────────────────────
 
 	function stepColor(n: number): string {
-		if (n < currentStep) return '#00ff88';
-		if (n === currentStep) return '#00ffff';
+		if (n < currentStep) return '#2dd4bf';
+		if (n === currentStep) return '#14b8a6';
 		return 'rgba(0,255,255,0.2)';
 	}
 </script>
@@ -180,8 +180,8 @@
 		<div class="flex items-center gap-3">
 			<div class="relative">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-					<path d="M13 3l9 9-9 9" stroke="#00ffff" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-					<path d="M3 3l9 9-9 9" stroke="#00ffff" stroke-width="1.5" stroke-linecap="round"/>
+					<path d="M13 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+					<path d="M3 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/>
 				</svg>
 			</div>
 			<div>
@@ -216,7 +216,7 @@
 						style="
 							border: 1.5px solid {stepColor(step.n)};
 							color: {stepColor(step.n)};
-							background: {step.n < currentStep ? 'rgba(0,255,136,0.1)' : step.n === currentStep ? 'rgba(0,255,255,0.08)' : 'transparent'};
+							background: {step.n < currentStep ? 'rgba(45, 212, 191,0.1)' : step.n === currentStep ? 'rgba(0,255,255,0.08)' : 'transparent'};
 							box-shadow: {step.n === currentStep ? '0 0 12px rgba(0,255,255,0.3)' : 'none'};
 						"
 					>
@@ -227,7 +227,7 @@
 					</span>
 				</div>
 				{#if step.n < 4}
-					<div class="flex-1 h-px" style="background: {step.n < currentStep ? 'rgba(0,255,136,0.5)' : 'rgba(0,255,255,0.1)'};"></div>
+					<div class="flex-1 h-px" style="background: {step.n < currentStep ? 'rgba(45, 212, 191,0.5)' : 'rgba(0,255,255,0.1)'};"></div>
 				{/if}
 			{/each}
 		</div>
@@ -242,16 +242,16 @@
 			<div
 				class="w-16 h-16 rounded-full flex items-center justify-center"
 				style="
-					background: rgba(0,255,136,0.08);
-					border: 2px solid rgba(0,255,136,0.6);
-					box-shadow: 0 0 40px rgba(0,255,136,0.2);
-					color: #00ff88;
+					background: rgba(45, 212, 191,0.08);
+					border: 2px solid rgba(45, 212, 191,0.6);
+					box-shadow: 0 0 40px rgba(45, 212, 191,0.2);
+					color: #2dd4bf;
 				"
 			>
 				<Icon name="status.check" size={28} strokeWidth={2.5} />
 			</div>
 				<div class="space-y-1">
-					<div class="text-sm font-bold" style="color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.5);">
+					<div class="text-sm font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.5);">
 						TRANSFER PROTOCOL COMPLETE
 					</div>
 					{#if completedResult}
@@ -267,8 +267,8 @@
 				<button
 					onclick={reset}
 					class="px-5 py-2 text-xs tracking-widest transition-all"
-					style="border: 1px solid rgba(0,255,136,0.4); color: #00ff88;"
-					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(0,255,136,0.08)')}
+					style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
+					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(45, 212, 191,0.08)')}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
 				>[ CLOSE PROTOCOL ]</button>
 			</div>
@@ -305,7 +305,7 @@
 						placeholder="player@club.com"
 						autocomplete="email"
 						class="w-full px-3 py-2.5 text-xs bg-transparent outline-none"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff;"
+						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
 						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
 						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
 					/>
@@ -319,7 +319,7 @@
 					onclick={handleInitiate}
 					disabled={isLoading}
 					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #00ffff;"
+					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
 				>
@@ -332,7 +332,7 @@
 			<div class="space-y-4">
 				<div class="px-3 py-3 space-y-2" style="background: rgba(0,255,255,0.04); border: 1px solid rgba(0,255,255,0.2);">
 					<div class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN GENERATED</div>
-					<div class="text-xs font-bold break-all" style="color: #00ffff; word-break: break-all;">{tokenId}</div>
+					<div class="text-xs font-bold break-all" style="color: #14b8a6; word-break: break-all;">{tokenId}</div>
 					{#if expiresAt}
 						<div class="text-xs" style="color: rgba(0,255,255,0.3);">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
 					{/if}
@@ -350,7 +350,7 @@
 						placeholder="XXXXXXXXXXXX"
 						maxlength="12"
 						class="w-full px-3 py-2.5 text-sm font-bold tracking-[0.25em] bg-transparent outline-none uppercase"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff;"
+						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
 						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
 						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
 					/>
@@ -367,7 +367,7 @@
 					onclick={handleConfirm}
 					disabled={isLoading || !authCode.trim()}
 					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #00ffff;"
+					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
 				>
@@ -390,7 +390,7 @@
 						placeholder="64-character transfer token"
 						rows="2"
 						class="w-full px-3 py-2.5 text-xs font-mono bg-transparent outline-none resize-none"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff; word-break: break-all;"
+						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; word-break: break-all;"
 						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
 						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
 					></textarea>
@@ -404,7 +404,7 @@
 					onclick={handleDirectorPresent}
 					disabled={isLoading || !directorTokenInput.trim()}
 					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #00ffff;"
+					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
 				>
@@ -416,8 +416,8 @@
 		{:else if isDirector && stage === 'director_accepted'}
 			{#if directorResult}
 				<div class="space-y-3">
-					<div class="px-3 py-3" style="background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.3);">
-						<div class="text-xs font-bold mb-1" style="color: #00ff88;">TOKEN ACCEPTED</div>
+					<div class="px-3 py-3" style="background: rgba(45, 212, 191,0.05); border: 1px solid rgba(45, 212, 191,0.3);">
+						<div class="text-xs font-bold mb-1" style="color: #2dd4bf;">TOKEN ACCEPTED</div>
 						<div class="text-xs space-y-0.5" style="color: rgba(0,255,255,0.5);">
 							<div>PLAYER: <span style="color: rgba(0,255,255,0.8);">{directorResult.playerName}</span></div>
 							<div>DESTINATION: <span style="color: rgba(0,255,255,0.8);">{directorResult.destinationClubName}</span></div>
@@ -429,7 +429,7 @@
 						This terminal will remain open until confirmation is received.
 					</div>
 					<div class="flex items-center gap-2 animate-pulse">
-						<div class="w-2 h-2 rounded-full" style="background: #00ffff; box-shadow: 0 0 6px #00ffff;"></div>
+						<div class="w-2 h-2 rounded-full" style="background: #14b8a6; box-shadow: 0 0 6px #14b8a6;"></div>
 						<span class="text-xs" style="color: rgba(0,255,255,0.5);">AWAITING PARENT AUTHORIZATION...</span>
 					</div>
 				</div>
@@ -439,7 +439,7 @@
 		{:else if stage === 'parent_confirming'}
 			<div class="flex flex-col items-center gap-4 py-4 text-center">
 				<div class="relative w-12 h-12">
-					<div class="w-full h-full rounded-full border-2 animate-spin" style="border-color: rgba(0,255,255,0.15); border-top-color: #00ffff;"></div>
+					<div class="w-full h-full rounded-full border-2 animate-spin" style="border-color: rgba(0,255,255,0.15); border-top-color: #14b8a6;"></div>
 				</div>
 				<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.6);">
 					EXECUTING ATOMIC DATA PORT...

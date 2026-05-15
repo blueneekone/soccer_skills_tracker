@@ -36,7 +36,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	let pitchSvgEl = $state<SVGSVGElement | undefined>();
 
-	let activeRouteColor = $state('#00f0ff');
+	let activeRouteColor = $state('#14b8a6');
 	let routeDrawKind = $state<'curve' | 'cut'>('curve');
 	let showLabels = $state(false);
 	let focusedPlayerId = $state<string | null>(null);
@@ -52,7 +52,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	let draggingPlayer = $state<TacticalToken | null>(null);
 	let activeDragTrail = $state<TrailPt[]>([]);
-	let trailRibbonColor = '#00f0ff';
+	let trailRibbonColor = '#14b8a6';
 
 	const trailString = $derived(activeDragTrail.map((pt) => `${pt.x},${pt.y}`).join(' '));
 

@@ -89,7 +89,7 @@ describe('Dopamine Engine', () => {
 			await flushAsync();
 			expect(mockConfetti).toHaveBeenCalledTimes(1);
 			const callArg = mockConfetti.mock.calls[0][0] as Record<string, unknown>;
-			expect(callArg.colors).toContain('#00f0ff');
+			expect(callArg.colors).toContain('#14b8a6');
 		});
 
 		it('returns the BatchWriteResult unchanged', async () => {

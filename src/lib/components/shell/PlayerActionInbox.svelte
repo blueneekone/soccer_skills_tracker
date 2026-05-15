@@ -360,6 +360,6 @@
 
 	:global(html.dark) .pai__li-link:hover {
 		color: #67e8f9;
-		text-decoration-color: rgba(0, 240, 255, 0.7);
+		text-decoration-color: rgba(20, 184, 166, 0.7);
 	}
 </style>

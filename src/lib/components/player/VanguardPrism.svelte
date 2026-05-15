@@ -33,7 +33,7 @@
 	 * ─────
 	 *   stats        — ScoutsSix object (string values from ArmoryEngine)
 	 *   size         — outer SVG size in pixels (default 120; the viewBox is 200×200)
-	 *   accent       — primary glow colour (default #00f0ff, driven by tier or tenantId)
+	 *   accent       — primary glow colour (default #14b8a6, driven by tier or tenantId)
 	 *   showLabels   — render stat abbreviations outside the hex (default false)
 	 *   animated     — pulsing fill opacity animation (default true)
 	 *   class        — extra CSS class
@@ -56,7 +56,7 @@
 	let {
 		stats = {},
 		size = 120,
-		accent = '#00f0ff',
+		accent = '#14b8a6',
 		showLabels = false,
 		animated = true,
 		class: extraClass = '',

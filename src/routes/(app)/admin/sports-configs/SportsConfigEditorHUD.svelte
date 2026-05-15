@@ -22,7 +22,7 @@
     saveState === 'success' ? '#00ff66'
     : saveState === 'error' ? '#ff0055'
     : (saveState === 'saving' || saveState === 'validating') ? '#ffcc00'
-    : '#00f0ff'
+    : '#14b8a6'
   );
 </script>
 
@@ -61,7 +61,7 @@
     padding: 0.375rem 0.875rem;
     background: rgba(2, 6, 23, 0.85);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 240, 255, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.12);
     border-radius: 9999px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 10px;
@@ -69,7 +69,7 @@
     color: rgba(255, 255, 255, 0.4);
     flex-wrap: wrap;
   }
-  .hud-label { color: rgba(0, 240, 255, 0.4); margin-right: 0.2rem; }
+  .hud-label { color: rgba(20, 184, 166, 0.4); margin-right: 0.2rem; }
   .hud-value { color: rgba(255, 255, 255, 0.75); }
   .hud-sep { color: rgba(255, 255, 255, 0.15); }
   .hud-warn { color: #ffcc00; font-weight: 700; }

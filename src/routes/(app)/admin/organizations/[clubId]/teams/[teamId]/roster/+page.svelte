@@ -599,7 +599,7 @@
 		display: flex;
 		justify-content: center;
 		padding: 1rem 1.5rem;
-		border-top: 1px solid rgba(0, 240, 255, 0.06);
+		border-top: 1px solid rgba(20, 184, 166, 0.06);
 	}
 
 	.roster-load-more__btn {
@@ -608,9 +608,9 @@
 		gap: 0.45rem;
 		padding: 0.55rem 1.25rem;
 		background: transparent;
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 7px;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
@@ -620,9 +620,9 @@
 	}
 
 	.roster-load-more__btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.06);
-		border-color: rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.06);
+		border-color: rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 
 	.roster-load-more__btn:disabled {
@@ -633,8 +633,8 @@
 	.roster-load-more__spin {
 		width: 12px;
 		height: 12px;
-		border: 1.5px solid rgba(0, 240, 255, 0.25);
-		border-top-color: rgba(0, 240, 255, 0.8);
+		border: 1.5px solid rgba(20, 184, 166, 0.25);
+		border-top-color: rgba(20, 184, 166, 0.8);
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 	}

@@ -3,11 +3,11 @@
 	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel }} */
 	let { model: engine } = $props();
 
-	const INK_PALETTE = /** @type {const} */ (['#00f0ff', '#ff2a2a', '#ffff00', '#ffffff']);
+	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ff2a2a', '#ffff00', '#ffffff']);
 
 	const segBtn =
-		'tw-w-full tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/20 tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/60 tw-transition-colors hover:tw-border-[#00f0ff]/40 hover:tw-text-[#00f0ff]';
-	const segBtnOn = 'tw-border-[#00f0ff]/55 !tw-bg-[#00f0ff]/12 !tw-text-[#00f0ff]';
+		'tw-w-full tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/20 tw-px-3 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/60 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
+	const segBtnOn = 'tw-border-[#14b8a6]/55 !tw-bg-[#14b8a6]/12 !tw-text-[#14b8a6]';
 	/** Route-shape palette: curve = Amber, cut = Deep Purple. */
 	const curveBtnOn =
 		'tw-text-[#ffaa00] tw-bg-[#ffaa00]/15 tw-border-[#ffaa00]/60 tw-shadow-[0_0_15px_rgba(255,170,0,0.4)] tw-drop-shadow-[0_0_4px_currentColor]';
@@ -36,24 +36,24 @@
 	  An inline style bypasses the cascade entirely and guarantees the slide.
 	-->
 	<div
-		class="tw-absolute tw-inset-0 tw-bg-[#02060d]/85 tw-backdrop-blur-[50px] tw-border-l tw-border-[#00f0ff]/20 tw-shadow-[-20px_0_50px_-10px_rgba(0,240,255,0.15)] tw-pointer-events-auto tw-overflow-y-auto tw-overflow-x-hidden tw-transition-transform tw-duration-500 tw-ease-[cubic-bezier(0.16,1,0.3,1)]"
+		class="tw-absolute tw-inset-0 tw-bg-[#02060d]/85 tw-backdrop-blur-[50px] tw-border-l tw-border-[#14b8a6]/20 tw-shadow-[-20px_0_50px_-10px_rgba(20, 184, 166,0.15)] tw-pointer-events-auto tw-overflow-y-auto tw-overflow-x-hidden tw-transition-transform tw-duration-500 tw-ease-[cubic-bezier(0.16,1,0.3,1)]"
 		style="transform: translateX({engine.isDrawerOpen ? '0%' : '100%'});"
 		aria-hidden={!engine.isDrawerOpen}
 	>
 		<!-- HUD greeble — top-edge laser scanner. -->
 		<div
-			class="tw-h-[1px] tw-w-full tw-bg-gradient-to-r tw-from-transparent tw-via-[#00f0ff]/50 tw-to-transparent tw-shadow-[0_0_10px_rgba(0,240,255,1)]"
+			class="tw-h-[1px] tw-w-full tw-bg-gradient-to-r tw-from-transparent tw-via-[#14b8a6]/50 tw-to-transparent tw-shadow-[0_0_10px_rgba(20, 184, 166,1)]"
 			aria-hidden="true"
 		></div>
 		<div
-			class="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-px tw-bg-gradient-to-b tw-from-transparent tw-via-[#00f0ff]/45 tw-to-transparent"
+			class="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-px tw-bg-gradient-to-b tw-from-transparent tw-via-[#14b8a6]/45 tw-to-transparent"
 			aria-hidden="true"
 		></div>
 
 		<div
-			class="tw-sticky tw-top-0 tw-z-10 tw-flex tw-items-center tw-border-b tw-border-[#00f0ff]/20 tw-bg-[#040f16]/70 tw-px-5 tw-py-4 tw-backdrop-blur-xl"
+			class="tw-sticky tw-top-0 tw-z-10 tw-flex tw-items-center tw-border-b tw-border-[#14b8a6]/20 tw-bg-[#040f16]/70 tw-px-5 tw-py-4 tw-backdrop-blur-xl"
 		>
-			<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#00ff00] tw-drop-shadow-[0_0_6px_#00ff00]">
+			<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-teal-400">
 				[ COMMAND_CONSOLE ]
 			</h2>
 		</div>
@@ -159,7 +159,7 @@
 				ROSTER / BENCH
 			</p>
 			<div
-				class="tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-black/15 tw-px-4 tw-py-6"
+				class="tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#14b8a6]/15 tw-bg-black/15 tw-px-4 tw-py-6"
 			>
 				<span class="tw-font-mono tw-text-[8px] tw-text-white/30">ROSTER_PANEL · NEXT_EPOCH</span>
 			</div>
@@ -170,7 +170,7 @@
 				TACTIC_BANK
 			</p>
 			<div
-				class="tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-black/15 tw-px-4 tw-py-6"
+				class="tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#14b8a6]/15 tw-bg-black/15 tw-px-4 tw-py-6"
 			>
 				<span class="tw-font-mono tw-text-[8px] tw-text-white/30">LOAD · SAVE · NEXT_EPOCH</span>
 			</div>

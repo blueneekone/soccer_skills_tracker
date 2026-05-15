@@ -33,7 +33,7 @@
 
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
 	const successProb = $derived(Math.round(Math.max(0, Math.min(100, playerStamina * (1 - routeDistance / 2000)))));
-	const probColor = $derived(successProb >= 70 ? '#00f0ff' : successProb >= 40 ? '#ffff00' : '#ff003c');
+	const probColor = $derived(successProb >= 70 ? '#14b8a6' : successProb >= 40 ? '#ffff00' : '#ff003c');
 </script>
 
 {#if renderLayer === 'stroke'}

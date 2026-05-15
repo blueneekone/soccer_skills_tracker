@@ -87,7 +87,7 @@ export class IntentEngine {
 			const intent: IntentDoc = { ...INTENT_MIGRATION_DEFAULTS, ...raw } as IntentDoc;
 			const attr = sportConfig.attributes.find((a: { id: string }) => a.id === intent.targetAttributeId);
 			const attributeName = attr?.name ?? intent.targetAttributeId;
-			const attributeHexColor = attr?.hexColor ?? '#00f0ff';
+			const attributeHexColor = attr?.hexColor ?? '#14b8a6';
 
 			const scopedRoster: RosterEntry[] =
 				intent.scope === 'team'

@@ -36,7 +36,7 @@ const _FALLBACK_SOCCER_RPG = /** @type {SportConfig} */ ({
 	sportId: 'soccer',
 	displayName: 'Vanguard Soccer',
 	attributes: [
-		{ id: 'ball_mastery', name: 'Ball Mastery',         shortLabel: 'BM',  hexColor: '#00f0ff' },
+		{ id: 'ball_mastery', name: 'Ball Mastery',         shortLabel: 'BM',  hexColor: '#14b8a6' },
 		{ id: 'striking',     name: 'Striking & Finishing', shortLabel: 'STR', hexColor: '#ff0055' },
 		{ id: 'pace',         name: 'Pace & Agility',       shortLabel: 'PAC', hexColor: '#00ff66' },
 		{ id: 'scanning',     name: 'Vision & Scanning',    shortLabel: 'VIS', hexColor: '#ffcc00' },
@@ -46,7 +46,7 @@ const _FALLBACK_SOCCER_RPG = /** @type {SportConfig} */ ({
 
 // ── RPG hex colours per slot (stable even across sport changes) ───────────────
 const RPG_SLOT_COLORS = /** @type {Record<string, string>} */ ({
-	ball_mastery: '#00f0ff',
+	ball_mastery: '#14b8a6',
 	striking:     '#ff0055',
 	pace:         '#00ff66',
 	scanning:     '#ffcc00',

@@ -1,7 +1,7 @@
 /* =======================================================
    SSTRACKER — global design system (enterprise console)
    ======================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Sprint 9.3: Inter import removed — Geist Sans is the canonical sans font (loaded in app.html) */
 
 :root {
     /* Brand — use only for active controls, meters, accents */
@@ -26,18 +26,18 @@
     --chart-tick: #737373;
     --chart-grid: rgba(0, 0, 0, 0.08);
 
-    /* Enterprise surfaces — Vanguard dark-mode-first glass tokens */
-    --glass-bg:         var(--vanguard-glass,    rgba(0, 20, 30, 0.6));
-    --glass-border:     var(--vanguard-border,   rgba(0, 240, 255, 0.2));
-    --glass-edge-light: var(--vanguard-border,   rgba(0, 240, 255, 0.12));
-    --glass-edge-dark:  var(--vanguard-border,   rgba(0, 240, 255, 0.2));
-    --glass-panel-edge: var(--vanguard-border,   rgba(0, 240, 255, 0.2));
-    --surface-row-hover: rgba(0, 240, 255, 0.03);
+    /* Enterprise surfaces — Vanguard dark-mode-first slate tokens (Sprint 9.3: cyan fallbacks purged) */
+    --glass-bg:         var(--vanguard-glass,    rgba(19, 28, 46, 0.72));
+    --glass-border:     var(--vanguard-border,   #1e293b);
+    --glass-edge-light: var(--vanguard-border,   #1e293b);
+    --glass-edge-dark:  var(--vanguard-border,   #1e293b);
+    --glass-panel-edge: var(--vanguard-border,   #1e293b);
+    --surface-row-hover: rgba(148, 163, 184, 0.04);
     --surface-subtle: #0a0e1a;
-    --border-subtle: rgba(0, 240, 255, 0.08);
-    --border-strong: rgba(0, 240, 255, 0.15);
-    --input-bg: rgba(0, 20, 30, 0.4);
-    --input-border: rgba(0, 240, 255, 0.2);
+    --border-subtle: rgba(30, 41, 59, 0.8);
+    --border-strong: #1e293b;
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --input-border: #1e293b;
     --input-text: var(--text-primary);
 
     /* Radius — deferred to Vanguard tokens (still resolves to 24px) */
@@ -54,8 +54,7 @@
     --shadow-liquid: var(--vanguard-elev-2,
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 1px 2px rgba(0, 0, 0, 0.3),
-        0 8px 24px -8px rgba(0, 0, 0, 0.5),
-        0 0 15px rgba(0, 240, 255, 0.04));
+        0 8px 24px -8px rgba(0, 0, 0, 0.5));
     --shell-padding-x: clamp(1rem, 5vw, 3rem);
     --shell-padding-y: clamp(0.75rem, 2.5vw, 1.5rem);
     --grid-gap-bento: clamp(1rem, 2.8vw, 2rem);
@@ -67,8 +66,8 @@
        hard-coded #f4f4f5 in enterprise-console.css). */
     --ec-canvas-bg: #f4f4f5;
 
-    /* Operations accent — aligns with enterprise / SOC-style shell */
-    --ec-ops-accent: #00f0ff;
+    /* Operations accent — muted teal (Sprint 9.3: replaced neon cyan) */
+    --ec-ops-accent: #14b8a6;
 }
 
 /* Elite Player Portal — same enterprise dark canvas */
@@ -117,7 +116,7 @@ html.player-portal-theme .glass-panel {
    ========================================== */
 body {
     background: #fafafa;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.01em;
     margin: 0;
     color: var(--text-primary);
@@ -305,7 +304,7 @@ html.dark .linked-badge-ui {
 html.dark .glass-panel,
 html.recruiter-scout-theme .glass-panel {
     background: rgba(0, 20, 30, 0.6);
-    border-color: var(--vanguard-border, rgba(0, 240, 255, 0.2));
+    border-color: var(--vanguard-border, #1e293b);
     backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
     -webkit-backdrop-filter: blur(var(--vanguard-blur, 24px)) saturate(1.8);
 }
@@ -370,7 +369,7 @@ html.recruiter-scout-theme .glass-panel {
 
 html.dark .bento-card {
     background: rgba(0, 20, 30, 0.5);
-    border-color: var(--vanguard-border, rgba(0, 240, 255, 0.2));
+    border-color: var(--vanguard-border, #1e293b);
 }
 
 html.dark .bento-card--glass {
@@ -499,7 +498,7 @@ textarea,
     border-radius: min(8px, var(--radius-premium));
     background: var(--input-bg);
     box-shadow: none;
-    font-size: 1rem; font-family: 'Inter', sans-serif; transition: border-color 0.15s ease, box-shadow 0.15s ease; color: var(--input-text);
+    font-size: 1rem; font-family: inherit; transition: border-color 0.15s ease, box-shadow 0.15s ease; color: var(--input-text);
 }
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="color"]):focus,
 select:focus,

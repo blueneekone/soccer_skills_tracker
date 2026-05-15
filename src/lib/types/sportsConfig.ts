@@ -44,7 +44,7 @@ export interface SportAttribute {
   name: string;
   /** Short axis label for radar charts, e.g. "STR". ≤ 5 chars recommended. */
   shortLabel: string;
-  /** Neon accent hex for radar vertex dots + labels, e.g. "#00f0ff". */
+  /** Neon accent hex for radar vertex dots + labels, e.g. "#14b8a6". */
   hexColor: string;
   /**
    * Key on `player_stats/{uid}` (or `skills` sub-object) that stores the

@@ -490,7 +490,7 @@
 
 	.ch-reload-btn {
 		background: transparent;
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		border: 1px solid rgba(20, 184, 166, 0.3);
 		color: var(--vanguard-cyan);
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 		font-size: 0.7rem;
@@ -503,7 +503,7 @@
 
 	.ch-reload-btn:hover:not(:disabled) {
 		border-color: var(--vanguard-cyan);
-		background: rgba(0, 240, 255, 0.06);
+		background: rgba(20, 184, 166, 0.06);
 	}
 
 	.ch-reload-btn:disabled {
@@ -550,7 +550,7 @@
 	}
 
 	.ch-stat--cleared .ch-stat__num { color: var(--vanguard-cyan); }
-	.ch-stat--cleared { border-color: rgba(0, 240, 255, 0.25); }
+	.ch-stat--cleared { border-color: rgba(20, 184, 166, 0.25); }
 
 	.ch-stat--pending .ch-stat__num { color: #d97706; }
 	.ch-stat--pending { border-color: rgba(217, 119, 6, 0.25); }
@@ -601,12 +601,12 @@
 		transition: border-color 0.15s, color 0.15s;
 	}
 
-	.ch-pill:hover { border-color: rgba(0, 240, 255, 0.3); color: #9ca3af; }
+	.ch-pill:hover { border-color: rgba(20, 184, 166, 0.3); color: #9ca3af; }
 
 	.ch-pill--active {
 		border-color: var(--vanguard-cyan);
 		color: var(--vanguard-cyan);
-		background: rgba(0, 240, 255, 0.06);
+		background: rgba(20, 184, 166, 0.06);
 	}
 
 	/* ── Grid ──────────────────────────────────────────────────────────── */
@@ -620,7 +620,7 @@
 		display: grid;
 		grid-template-columns: 2fr 1fr 1.25fr 1fr 1fr auto;
 		padding: 0.6rem 1rem;
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 		border-bottom: 1px solid var(--vanguard-border);
 		font-size: 0.6rem;
 		letter-spacing: 0.12em;
@@ -634,14 +634,14 @@
 		display: grid;
 		grid-template-columns: 2fr 1fr 1.25fr 1fr 1fr auto;
 		padding: 0.75rem 1rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.06);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.06);
 		gap: 0.5rem;
 		align-items: center;
 		transition: background 0.15s;
 	}
 
 	.ch-grid__row:last-child { border-bottom: none; }
-	.ch-grid__row:hover { background: rgba(0, 240, 255, 0.02); }
+	.ch-grid__row:hover { background: rgba(20, 184, 166, 0.02); }
 
 	.ch-grid__row--flagged {
 		animation: ch-flag-pulse 2.5s ease-in-out infinite;
@@ -698,9 +698,9 @@
 
 	.ch-badge--cleared {
 		color: var(--vanguard-cyan);
-		border-color: rgba(0, 240, 255, 0.3);
-		background: rgba(0, 240, 255, 0.08);
-		text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+		border-color: rgba(20, 184, 166, 0.3);
+		background: rgba(20, 184, 166, 0.08);
+		text-shadow: 0 0 8px rgba(20, 184, 166, 0.6);
 	}
 
 	.ch-badge--pending {
@@ -756,14 +756,14 @@
 	}
 
 	.ch-action-btn--grant {
-		border-color: rgba(0, 240, 255, 0.4);
+		border-color: rgba(20, 184, 166, 0.4);
 		color: var(--vanguard-cyan);
-		background: rgba(0, 240, 255, 0.06);
+		background: rgba(20, 184, 166, 0.06);
 	}
 
 	.ch-action-btn--grant:hover {
-		background: rgba(0, 240, 255, 0.14);
-		box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+		background: rgba(20, 184, 166, 0.14);
+		box-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
 	}
 
 	.ch-action-btn--revoke {
@@ -924,8 +924,8 @@
 
 	.ch-modal__success {
 		padding: 0.75rem 1rem;
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.3);
 		border-radius: 0.375rem;
 		color: var(--vanguard-cyan);
 		font-size: 0.8rem;

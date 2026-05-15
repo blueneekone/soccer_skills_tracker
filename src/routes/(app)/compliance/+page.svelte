@@ -164,9 +164,9 @@
 		justify-content: center;
 		font-size: 0.62rem;
 		letter-spacing: 0.12em;
-		color: rgba(0, 240, 255, 0.45);
-		border-top: 1px solid rgba(0, 240, 255, 0.08);
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		color: rgba(20, 184, 166, 0.45);
+		border-top: 1px solid rgba(20, 184, 166, 0.08);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 		padding: 0.5rem 1rem;
 		width: 100%;
 		max-width: 680px;

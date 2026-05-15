@@ -78,7 +78,7 @@
 			label: 'TOTAL ATHLETES',
 			sublabel: 'REGISTERED PLAYERS',
 			getValue: () => org.playerCount,
-			color: '#00f0ff',
+			color: '#14b8a6',
 			icon: '◉',
 		},
 		{
@@ -280,12 +280,12 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 		padding-bottom: 1.25rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.12);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.12);
 	}
 	.mc-eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.3em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 4px;
 	}
@@ -304,10 +304,10 @@
 		padding: 2px 9px;
 		font-size: 8px;
 		letter-spacing: 0.2em;
-		border: 1px solid rgba(0, 240, 255, 0.35);
+		border: 1px solid rgba(20, 184, 166, 0.35);
 		border-radius: 2px;
-		color: #00f0ff;
-		background: rgba(0, 240, 255, 0.06);
+		color: #14b8a6;
+		background: rgba(20, 184, 166, 0.06);
 	}
 	.mc-header-right {
 		display: flex;
@@ -458,8 +458,8 @@
 		color: #94a3b8;
 	}
 	.mc-nav-btn--active {
-		color: #00f0ff;
-		border-bottom-color: #00f0ff;
+		color: #14b8a6;
+		border-bottom-color: #14b8a6;
 	}
 	.mc-nav-icon {
 		font-size: 11px;
@@ -473,8 +473,8 @@
 		color: #64748b;
 	}
 	.mc-nav-btn--active .mc-nav-badge {
-		background: rgba(0, 240, 255, 0.12);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.12);
+		color: #14b8a6;
 	}
 
 	/* ── Content ─────────────────────────────────────────────────────────── */

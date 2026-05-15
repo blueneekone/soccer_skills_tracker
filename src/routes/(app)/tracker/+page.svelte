@@ -894,8 +894,8 @@
 	}
 
 	.gw-pill--active {
-		border-color: rgba(0, 240, 255, 0.45);
-		background: rgba(0, 240, 255, 0.12);
+		border-color: rgba(20, 184, 166, 0.45);
+		background: rgba(20, 184, 166, 0.12);
 		color: #fafafa;
 	}
 

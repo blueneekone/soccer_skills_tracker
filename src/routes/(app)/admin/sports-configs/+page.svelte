@@ -74,7 +74,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 10px;
     letter-spacing: 0.14em;
-    color: rgba(0, 240, 255, 0.45);
+    color: rgba(20, 184, 166, 0.45);
   }
   .sc-title {
     font-size: 1.5rem;
@@ -100,7 +100,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #00f0ff;
+    background: #14b8a6;
     animation: pulse 1s ease-in-out infinite;
   }
   .sc-arena-wrap {

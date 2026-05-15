@@ -291,9 +291,9 @@
 		font-size: 0.5rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0,240,255,0.8);
-		background: rgba(0,240,255,0.08);
-		border: 1px solid rgba(0,240,255,0.22);
+		color: rgba(20, 184, 166,0.8);
+		background: rgba(20, 184, 166,0.08);
+		border: 1px solid rgba(20, 184, 166,0.22);
 		border-radius: 4px;
 		padding: 2px 8px;
 		margin-bottom: 6px;
@@ -323,9 +323,9 @@
 		font-size: 0.7rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: #00f0ff;
-		background: rgba(0,240,255,0.07);
-		border: 1px solid rgba(0,240,255,0.35);
+		color: #14b8a6;
+		background: rgba(20, 184, 166,0.07);
+		border: 1px solid rgba(20, 184, 166,0.35);
 		border-radius: 8px;
 		text-decoration: none;
 		transition: background 0.18s, border-color 0.18s;
@@ -334,8 +334,8 @@
 	}
 
 	.compose-btn:hover {
-		background: rgba(0,240,255,0.13);
-		border-color: rgba(0,240,255,0.6);
+		background: rgba(20, 184, 166,0.13);
+		border-color: rgba(20, 184, 166,0.6);
 	}
 
 	/* ── Tabs ── */
@@ -365,8 +365,8 @@
 	}
 
 	.tab--active {
-		color: #00f0ff;
-		border-bottom-color: #00f0ff;
+		color: #14b8a6;
+		border-bottom-color: #14b8a6;
 	}
 
 	.tab-count {
@@ -377,8 +377,8 @@
 	}
 
 	.tab--active .tab-count {
-		background: rgba(0,240,255,0.12);
-		color: rgba(0,240,255,0.8);
+		background: rgba(20, 184, 166,0.12);
+		color: rgba(20, 184, 166,0.8);
 	}
 
 	/* ── Error / empty ── */
@@ -423,7 +423,7 @@
 	}
 
 	.row:hover {
-		border-color: rgba(0,240,255,0.18);
+		border-color: rgba(20, 184, 166,0.18);
 	}
 
 	.row-main {
@@ -467,7 +467,7 @@
 	}
 
 	.chip--role    { color: rgba(168,85,247,0.8); background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25); }
-	.chip--purpose { color: rgba(0,240,255,0.65); background: rgba(0,240,255,0.06); border-color: rgba(0,240,255,0.18); }
+	.chip--purpose { color: rgba(20, 184, 166,0.65); background: rgba(20, 184, 166,0.06); border-color: rgba(20, 184, 166,0.18); }
 	.chip--team    { color: rgba(240,199,94,0.65); background: rgba(240,199,94,0.06); border-color: rgba(240,199,94,0.18); }
 
 	.row-dates {
@@ -491,17 +491,17 @@
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: rgba(0,240,255,0.7);
-		background: rgba(0,240,255,0.05);
-		border: 1px solid rgba(0,240,255,0.2);
+		color: rgba(20, 184, 166,0.7);
+		background: rgba(20, 184, 166,0.05);
+		border: 1px solid rgba(20, 184, 166,0.2);
 		border-radius: 6px;
 		cursor: pointer;
 		transition: background 0.15s, border-color 0.15s;
 	}
 
 	.action-btn:hover:not(:disabled) {
-		background: rgba(0,240,255,0.1);
-		border-color: rgba(0,240,255,0.4);
+		background: rgba(20, 184, 166,0.1);
+		border-color: rgba(20, 184, 166,0.4);
 	}
 
 	.action-btn:disabled {
@@ -541,7 +541,7 @@
 
 	.modal {
 		background: #080a12;
-		border: 1px solid rgba(0,240,255,0.2);
+		border: 1px solid rgba(20, 184, 166,0.2);
 		border-radius: 16px;
 		padding: 1.5rem;
 		width: 100%;
@@ -561,7 +561,7 @@
 		font-size: 0.5rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0,240,255,0.7);
+		color: rgba(20, 184, 166,0.7);
 	}
 
 	.modal-close {
@@ -610,7 +610,7 @@
 	}
 
 	.audit-action {
-		color: #00f0ff;
+		color: #14b8a6;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		font-weight: 700;

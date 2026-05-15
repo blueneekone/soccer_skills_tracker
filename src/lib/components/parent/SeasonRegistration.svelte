@@ -122,12 +122,12 @@
 				cardElement = elements.create('card', {
 					style: {
 						base: {
-							color: '#00ffff',
+							color: '#14b8a6',
 							fontFamily: '"Space Mono", "Courier New", monospace',
 							fontSize: '14px',
 							letterSpacing: '0.08em',
 							'::placeholder': { color: '#0a7a7a' },
-							iconColor: '#00ffff',
+							iconColor: '#14b8a6',
 						},
 						invalid: { color: '#ff4060', iconColor: '#ff4060' },
 					},
@@ -237,7 +237,7 @@
 				<div
 					class="w-2 h-2 rounded-full"
 					class:animate-pulse={phase === 'processing' || phase === 'loading'}
-					style="background: {phase === 'confirmed' ? '#00ff88' : phase === 'error' ? '#ff4060' : '#00ffff'}; box-shadow: 0 0 8px currentColor;"
+					style="background: {phase === 'confirmed' ? '#2dd4bf' : phase === 'error' ? '#ff4060' : '#14b8a6'}; box-shadow: 0 0 8px currentColor;"
 				></div>
 				<span class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.7);">
 					SECURE PAYMENT TERMINAL v2.4
@@ -262,11 +262,11 @@
 				<div class="flex justify-between items-start">
 					<div>
 						<div class="font-mono text-xs tracking-widest mb-1" style="color: rgba(0,255,255,0.5);">OPERATION</div>
-						<div class="font-mono text-sm font-bold" style="color: #00ffff;">{seasonName}</div>
+						<div class="font-mono text-sm font-bold" style="color: #14b8a6;">{seasonName}</div>
 					</div>
 					<div class="text-right">
 						<div class="font-mono text-xs tracking-widest mb-1" style="color: rgba(0,255,255,0.5);">FEE PAYLOAD</div>
-						<div class="font-mono text-xl font-bold" style="color: #00ffff; text-shadow: 0 0 20px rgba(0,255,255,0.5);">
+						<div class="font-mono text-xl font-bold" style="color: #14b8a6; text-shadow: 0 0 20px rgba(0,255,255,0.5);">
 							${feeAmountDollars.toFixed(2)}
 						</div>
 						<div class="font-mono text-xs" style="color: rgba(0,255,255,0.3);">{hexFee}</div>
@@ -277,7 +277,7 @@
 					style="border-top: 1px solid rgba(0,255,255,0.08);"
 				>
 					<svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-						<path d="M12 2L2 7l10 5 10-5-10-5zm0 10L2 7v10l10 5 10-5V7L12 12z" stroke="#00ff88" stroke-width="1.5"/>
+						<path d="M12 2L2 7l10 5 10-5-10-5zm0 10L2 7v10l10 5 10-5V7L12 12z" stroke="#2dd4bf" stroke-width="1.5"/>
 					</svg>
 					<span class="font-mono text-xs" style="color: rgba(0,255,255,0.4);">
 						Player status locked until payment confirmed · Stripe Connect secured
@@ -299,7 +299,7 @@
 						style="
 							background: rgba(0,255,255,0.08);
 							border: 1px solid rgba(0,255,255,0.4);
-							color: #00ffff;
+							color: #14b8a6;
 							letter-spacing: 0.15em;
 						"
 						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.15)')}
@@ -313,7 +313,7 @@
 					<div class="relative">
 						<div
 							class="w-12 h-12 rounded-full border-2 animate-spin"
-							style="border-color: rgba(0,255,255,0.2); border-top-color: #00ffff;"
+							style="border-color: rgba(0,255,255,0.2); border-top-color: #14b8a6;"
 						></div>
 						<div class="absolute inset-2 rounded-full border border-dashed animate-spin"
 							style="animation-direction: reverse; border-color: rgba(0,255,255,0.15); animation-duration: 3s;"
@@ -354,7 +354,7 @@
 							style="
 								border: 1px solid rgba(0,255,255,0.2);
 								border-radius: 2px;
-								color: #00ffff;
+								color: #14b8a6;
 								letter-spacing: 0.06em;
 							"
 							onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
@@ -402,7 +402,7 @@
 						</div>
 						<div
 							class="flex justify-between font-mono text-xs font-bold pt-1"
-							style="color: #00ffff; border-top: 1px solid rgba(0,255,255,0.08);"
+							style="color: #14b8a6; border-top: 1px solid rgba(0,255,255,0.08);"
 						>
 							<span>TOTAL CHARGE</span>
 							<span>${feeAmountDollars.toFixed(2)}</span>
@@ -425,7 +425,7 @@
 						style="
 							background: rgba(0,255,255,0.1);
 							border: 1px solid rgba(0,255,255,0.5);
-							color: #00ffff;
+							color: #14b8a6;
 							letter-spacing: 0.15em;
 						"
 						onmouseenter={(e) => { if (!commerce.isConfirming) e.currentTarget.style.background = 'rgba(0,255,255,0.18)'; }}
@@ -441,15 +441,15 @@
 					<div class="relative w-16 h-16">
 						<svg viewBox="0 0 100 100" class="w-full h-full animate-spin" style="animation-duration: 4s;">
 							<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,255,255,0.1)" stroke-width="2"/>
-							<circle cx="50" cy="50" r="40" fill="none" stroke="#00ffff" stroke-width="2"
+							<circle cx="50" cy="50" r="40" fill="none" stroke="#14b8a6" stroke-width="2"
 								stroke-dasharray="40 211" stroke-dashoffset="0" stroke-linecap="round"/>
 						</svg>
-						<div class="absolute inset-0 flex items-center justify-center font-mono text-xs" style="color: #00ffff;">
+						<div class="absolute inset-0 flex items-center justify-center font-mono text-xs" style="color: #14b8a6;">
 							TXN
 						</div>
 					</div>
 					<div class="space-y-1">
-						<div class="font-mono text-sm font-bold animate-pulse" style="color: #00ffff;">PROCESSING PAYMENT</div>
+						<div class="font-mono text-sm font-bold animate-pulse" style="color: #14b8a6;">PROCESSING PAYMENT</div>
 						<div class="font-mono text-xs" style="color: rgba(0,255,255,0.4);">
 							Awaiting Stripe confirmation signal...
 						</div>
@@ -464,12 +464,12 @@
 				<div class="flex flex-col items-center gap-5 py-4 text-center">
 				<div
 					class="w-16 h-16 rounded-full flex items-center justify-center"
-					style="background: rgba(0,255,136,0.1); border: 2px solid rgba(0,255,136,0.6); box-shadow: 0 0 30px rgba(0,255,136,0.2); color: #00ff88;"
+					style="background: rgba(45, 212, 191,0.1); border: 2px solid rgba(45, 212, 191,0.6); box-shadow: 0 0 30px rgba(45, 212, 191,0.2); color: #2dd4bf;"
 				>
 					<Icon name="status.check" size={28} strokeWidth={2.5} />
 				</div>
 					<div class="space-y-2">
-						<div class="font-mono text-base font-bold" style="color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.4);">
+						<div class="font-mono text-base font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.4);">
 							PAYMENT CONFIRMED
 						</div>
 						<div class="font-mono text-xs" style="color: rgba(0,255,255,0.5);">
@@ -485,8 +485,8 @@
 					<button
 						onclick={() => onclose?.()}
 						class="px-6 py-2 font-mono text-xs tracking-widest transition-all"
-						style="border: 1px solid rgba(0,255,136,0.4); color: #00ff88;"
-						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(0,255,136,0.08)')}
+						style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
+						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(45, 212, 191,0.08)')}
 						onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
 					>[ CLOSE TERMINAL ]</button>
 				</div>

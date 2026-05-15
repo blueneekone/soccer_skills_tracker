@@ -22,7 +22,7 @@ export interface StakeholderCard {
 	body: string;
 	features: string[];
 	accentLabel: string;
-	/** Asymmetric placement on lg+ (grid-line syntax for a 6-col template). */
+	/** Asymmetric placement on lg+ (grid-line syntax for a 12-col template). */
 	gridLg: { col: string; row: string };
 }
 
@@ -57,7 +57,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Multi-team tenant isolation',
 		],
 		accentLabel: 'CLUB COMMAND',
-		gridLg: { col: '1 / 5', row: '1 / 2' },
+		gridLg: { col: '1 / 8', row: '1 / 2' },
 	},
 	{
 		id: 'coaches',
@@ -72,7 +72,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Tactical War Room SVG canvas',
 		],
 		accentLabel: 'COACH COMMAND',
-		gridLg: { col: '5 / 7', row: '1 / 2' },
+		gridLg: { col: '8 / 13', row: '1 / 2' },
 	},
 	{
 		id: 'athletes',
@@ -87,7 +87,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'CV-verified Tremendous bounties',
 		],
 		accentLabel: 'PLAYER OS',
-		gridLg: { col: '1 / 3', row: '2 / 3' },
+		gridLg: { col: '1 / 4', row: '2 / 3' },
 	},
 	{
 		id: 'parents',
@@ -102,7 +102,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Household co-op bounty dashboard',
 		],
 		accentLabel: 'FAMILY SHIELD',
-		gridLg: { col: '3 / 7', row: '2 / 3' },
+		gridLg: { col: '4 / 13', row: '2 / 3' },
 	},
 ];
 
@@ -197,14 +197,14 @@ export interface FeatureCell {
 	accentColor: string;
 	/** Lucide registry token rendered via <Icon> in the bento cell. */
 	icon: IconName;
-	/** Asymmetric placement on lg+ (grid line syntax). Single column stacks by DOM order. */
+	/** Asymmetric placement on lg+ (grid line syntax for a 12-col template). Single column stacks by DOM order. */
 	gridLg: { col: string; row: string };
 }
 
 export const FEATURE_BENTO: FeatureCell[] = [
 	{
 		id: 'rl-workouts',
-		gridLg: { col: '1 / 5', row: '1 / 4' },
+		gridLg: { col: '1 / 8', row: '1 / 3' },
 		eyebrow: 'ADAPTIVE AI ENGINE',
 		headline: 'RL Workouts That Learn You.',
 		body: 'A Reinforcement Learning policy adjusts drill volume, intensity, and sequence in real time based on physiological feedback and historical adherence — not a static template.',
@@ -214,7 +214,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'skill-tree',
-		gridLg: { col: '5 / 7', row: '1 / 2' },
+		gridLg: { col: '8 / 13', row: '1 / 2' },
 		eyebrow: 'OCTALYSIS RPG',
 		headline: 'Composite Snowflake Skill Tree.',
 		body: 'Synthetic Authored Nodes map 50+ skill axes to 5,000+ raw drills. Fog of War masks advanced nodes until earned.',
@@ -224,7 +224,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'coppa',
-		gridLg: { col: '5 / 7', row: '2 / 3' },
+		gridLg: { col: '8 / 13', row: '2 / 3' },
 		eyebrow: 'COMPLIANCE',
 		headline: 'WebAuthn COPPA 2.0.',
 		body: 'Biometric enclave attestation binds parental consent to hardware. Four-layer teen ad-block. Zero SMS exposure.',
@@ -234,7 +234,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'cell-routing',
-		gridLg: { col: '5 / 7', row: '3 / 4' },
+		gridLg: { col: '1 / 5', row: '3 / 4' },
 		eyebrow: 'INFRASTRUCTURE',
 		headline: 'Cell-Based Tenant Routing.',
 		body: 'Large NGBs land in isolated Firestore cells. No noisy-neighbor throttling. Backend-issued JWT selects the cell.',
@@ -244,7 +244,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'bounties',
-		gridLg: { col: '1 / 3', row: '4 / 5' },
+		gridLg: { col: '5 / 9', row: '3 / 4' },
 		eyebrow: 'EMBEDDED FINANCE',
 		headline: 'Tremendous Bounty Escrow.',
 		body: 'Parents fund real-world rewards. CV-verified biomechanics triggers atomic Firestore payout. No manual verification.',
@@ -254,7 +254,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'pricing',
-		gridLg: { col: '3 / 7', row: '4 / 5' },
+		gridLg: { col: '9 / 13', row: '3 / 4' },
 		eyebrow: 'ENTERPRISE PRICING',
 		headline: '$0 Platform Fee. Always.',
 		body: 'No seat licenses. No monthly minimums. A fractional micro-percentage on transaction volume only. Revenue that scales with your club.',

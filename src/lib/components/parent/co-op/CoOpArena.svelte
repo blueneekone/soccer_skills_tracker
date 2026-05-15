@@ -39,7 +39,7 @@
 	function statusColor(status: BountyDoc['status']): string {
 		switch (status) {
 			case 'active':
-				return 'tw-text-[#00f0ff] tw-border-[#00f0ff]/40 tw-bg-[#00f0ff]/10';
+				return 'tw-text-[#14b8a6] tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10';
 			case 'verified':
 				return 'tw-text-[#ffcc00] tw-border-[#ffcc00]/40 tw-bg-[#ffcc00]/10';
 			case 'paid':
@@ -58,7 +58,7 @@
 	function criterionBadgeColor(type: BountyDoc['criterion']['type']): string {
 		switch (type) {
 			case 'reps_count':
-				return 'tw-text-[#00f0ff]/80 tw-border-[#00f0ff]/20 tw-bg-[#00f0ff]/5';
+				return 'tw-text-[#14b8a6]/80 tw-border-[#14b8a6]/20 tw-bg-[#14b8a6]/5';
 			case 'workout_volume_kj':
 				return 'tw-text-[#a78bfa]/80 tw-border-[#a78bfa]/20 tw-bg-[#a78bfa]/5';
 			case 'streak_length':
@@ -107,8 +107,8 @@
 </script>
 
 <div
-	class="tw-w-full tw-h-full tw-backdrop-blur-xl tw-bg-[#040f16]/70 tw-border tw-border-[#00f0ff]/15 tw-rounded-3xl tw-p-0 tw-overflow-hidden"
-	style="box-shadow: 0 0 40px rgba(0,240,255,0.06), 0 0 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(0,240,255,0.08);"
+	class="tw-w-full tw-h-full tw-backdrop-blur-xl tw-bg-[#040f16]/70 tw-border tw-border-[#14b8a6]/15 tw-rounded-3xl tw-p-0 tw-overflow-hidden"
+	style="box-shadow: 0 0 40px rgba(20, 184, 166,0.06), 0 0 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(20, 184, 166,0.08);"
 >
 	<!-- BENTO GRID -->
 	<div
@@ -117,19 +117,19 @@
 	>
 		<!-- ─── CELL 1: BOUNTY BOARD (left, full height) ──────────────────── -->
 		<div
-			class="tw-row-span-2 tw-flex tw-flex-col tw-gap-0 tw-border-r tw-border-[#00f0ff]/10"
+			class="tw-row-span-2 tw-flex tw-flex-col tw-gap-0 tw-border-r tw-border-[#14b8a6]/10"
 		>
 			<!-- Cell header -->
-			<div class="tw-px-6 tw-pt-6 tw-pb-4 tw-border-b tw-border-[#00f0ff]/10">
+			<div class="tw-px-6 tw-pt-6 tw-pb-4 tw-border-b tw-border-[#14b8a6]/10">
 				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#00f0ff]/40 tw-tracking-widest">
+					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
 						//
 					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#00f0ff] tw-uppercase">
+					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
 						BOUNTY BOARD
 					</span>
 					<span
-						class="tw-ml-auto tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase"
+						class="tw-ml-auto tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
 					>
 						{displayBounties.length} ACTIVE
 					</span>
@@ -140,16 +140,16 @@
 			<div class="tw-flex-1 tw-overflow-y-auto tw-flex tw-flex-col tw-gap-3 tw-p-6">
 				{#if displayBounties.length === 0}
 					<div
-						class="tw-flex-1 tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-dashed tw-border-[#00f0ff]/10 tw-py-16"
+						class="tw-flex-1 tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-dashed tw-border-[#14b8a6]/10 tw-py-16"
 					>
 						<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
 							<div
-								class="tw-w-8 tw-h-8 tw-rounded-full tw-border tw-border-[#00f0ff]/20 tw-flex tw-items-center tw-justify-center"
+								class="tw-w-8 tw-h-8 tw-rounded-full tw-border tw-border-[#14b8a6]/20 tw-flex tw-items-center tw-justify-center"
 							>
-								<span class="tw-font-mono tw-text-[14px] tw-text-[#00f0ff]/30">◎</span>
+								<span class="tw-font-mono tw-text-[14px] tw-text-[#14b8a6]/30">◎</span>
 							</div>
 							<span
-								class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/25 tw-uppercase"
+								class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase"
 							>
 								[ NO ACTIVE BOUNTIES — DEPLOY ONE ]
 							</span>
@@ -160,7 +160,7 @@
 						{@const progress = engine.bountyProgress(bounty)}
 						{@const isActive = bounty.status === 'active'}
 						<div
-							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#00f0ff]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-transition-all tw-duration-200 hover:tw-border-[#00f0ff]/25 hover:tw-shadow-[0_0_20px_rgba(0,240,255,0.06)]"
+							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#14b8a6]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-transition-all tw-duration-200 hover:tw-border-[#14b8a6]/25 hover:tw-shadow-[0_0_20px_rgba(20, 184, 166,0.06)]"
 						>
 							<!-- Bounty top row -->
 							<div class="tw-flex tw-items-start tw-gap-3">
@@ -171,7 +171,7 @@
 										{bounty.title}
 									</span>
 									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 									>
 										→ {bounty.playerEmail}
 									</span>
@@ -196,22 +196,22 @@
 							{#if bounty.progressTarget && bounty.progressTarget > 0}
 								<div class="tw-flex tw-flex-col tw-gap-1">
 									<div
-										class="tw-w-full tw-h-1.5 tw-rounded-full tw-bg-[#00f0ff]/10 tw-overflow-hidden"
+										class="tw-w-full tw-h-1.5 tw-rounded-full tw-bg-[#14b8a6]/10 tw-overflow-hidden"
 									>
 										<div
-											class="tw-h-full tw-rounded-full tw-bg-[#00f0ff] tw-transition-all tw-duration-500"
-											style="width: {progress}%; box-shadow: 0 0 8px rgba(0,240,255,0.6);"
+											class="tw-h-full tw-rounded-full tw-bg-[#14b8a6] tw-transition-all tw-duration-500"
+											style="width: {progress}%; box-shadow: 0 0 8px rgba(20, 184, 166,0.6);"
 										></div>
 									</div>
 									<div class="tw-flex tw-justify-between tw-items-center">
 										<span
-											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 										>
 											{bounty.progressCurrent ?? 0} / {bounty.progressTarget}
 											{bounty.progressUnit ?? ''}
 										</span>
 										<span
-											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/60"
+											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/60"
 										>
 											{progress}%
 										</span>
@@ -220,18 +220,18 @@
 							{/if}
 
 							<!-- Bottom row: reward + expiry + void -->
-							<div class="tw-flex tw-items-center tw-gap-3 tw-pt-1 tw-border-t tw-border-[#00f0ff]/8">
+							<div class="tw-flex tw-items-center tw-gap-3 tw-pt-1 tw-border-t tw-border-[#14b8a6]/8">
 								<span
 									class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#ffcc00] tw-font-bold"
 								>
 									${((bounty.rewardCents ?? 0) / 100).toFixed(2)}
 								</span>
-								<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase">
+								<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase">
 									USD
 								</span>
 								<span class="tw-flex-1"></span>
 								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
 								>
 									EXP: {formatExpiry(bounty.expiresAt)}
 								</span>
@@ -252,14 +252,14 @@
 		</div>
 
 		<!-- ─── CELL 2: BOOST CONSOLE (right, top half) ────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-0 tw-border-b tw-border-[#00f0ff]/10">
+		<div class="tw-flex tw-flex-col tw-gap-0 tw-border-b tw-border-[#14b8a6]/10">
 			<!-- Cell header -->
-			<div class="tw-px-5 tw-pt-5 tw-pb-4 tw-border-b tw-border-[#00f0ff]/10">
+			<div class="tw-px-5 tw-pt-5 tw-pb-4 tw-border-b tw-border-[#14b8a6]/10">
 				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#00f0ff]/40 tw-tracking-widest">
+					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
 						//
 					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#00f0ff] tw-uppercase">
+					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
 						BOOST CONSOLE
 					</span>
 				</div>
@@ -270,7 +270,7 @@
 				{#if engine.householdChildren.length === 0}
 					<div class="tw-flex tw-items-center tw-justify-center tw-py-8">
 						<span
-							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/25 tw-uppercase"
+							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase"
 						>
 							[ NO CHILDREN LINKED ]
 						</span>
@@ -278,7 +278,7 @@
 				{:else}
 					{#each engine.householdChildren as child (child.email)}
 						<div
-							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#00f0ff]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3"
+							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#14b8a6]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3"
 						>
 							<!-- Child info row -->
 							<div class="tw-flex tw-items-start tw-justify-between tw-gap-2">
@@ -289,7 +289,7 @@
 										{child.displayName}
 									</span>
 									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/35 tw-uppercase tw-truncate"
+										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase tw-truncate"
 									>
 										{child.email}
 									</span>
@@ -301,7 +301,7 @@
 										{child.totalXP.toLocaleString()} XP
 									</span>
 									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 									>
 										🔥 {child.currentStreak}d
 									</span>
@@ -341,12 +341,12 @@
 		<!-- ─── CELL 3: FUNDING SOURCE (right, bottom half) ───────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-0">
 			<!-- Cell header -->
-			<div class="tw-px-5 tw-pt-4 tw-pb-3 tw-border-b tw-border-[#00f0ff]/10">
+			<div class="tw-px-5 tw-pt-4 tw-pb-3 tw-border-b tw-border-[#14b8a6]/10">
 				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#00f0ff]/40 tw-tracking-widest">
+					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
 						//
 					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#00f0ff] tw-uppercase">
+					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
 						FUNDING SOURCE
 					</span>
 				</div>
@@ -386,17 +386,17 @@
 					<div class="tw-flex tw-flex-col tw-gap-3">
 						{#if availableSources.length === 0 && !loadingSources}
 							<div
-								class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-dashed tw-border-[#00f0ff]/15 tw-p-4 tw-flex tw-flex-col tw-items-center tw-gap-3"
+								class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-dashed tw-border-[#14b8a6]/15 tw-p-4 tw-flex tw-flex-col tw-items-center tw-gap-3"
 							>
 								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase tw-text-center"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-text-center"
 								>
 									NO FUNDING SOURCE LINKED
 								</span>
 								<button
 									onclick={fetchSources}
 									disabled={loadingSources}
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-border tw-border-[#00f0ff]/40 tw-text-[#00f0ff] tw-bg-[#00f0ff]/5 tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-150 hover:tw-bg-[#00f0ff]/10 hover:tw-border-[#00f0ff]/70 hover:tw-shadow-[0_0_10px_rgba(0,240,255,0.25)] disabled:tw-opacity-40"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-bg-[#14b8a6]/5 tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-150 hover:tw-bg-[#14b8a6]/10 hover:tw-border-[#14b8a6]/70 hover:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.25)] disabled:tw-opacity-40"
 								>
 									[ LINK FUNDING SOURCE ]
 								</button>
@@ -404,7 +404,7 @@
 						{:else if loadingSources}
 							<div class="tw-flex tw-items-center tw-justify-center tw-py-4">
 								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase tw-animate-pulse"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-animate-pulse"
 								>
 									[ FETCHING SOURCES... ]
 								</span>
@@ -413,14 +413,14 @@
 							<div class="tw-flex tw-flex-col tw-gap-2">
 								<label
 									for="source-select"
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase"
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
 								>
 									SELECT FUNDING SOURCE
 								</label>
 								<select
 									id="source-select"
 									bind:value={selectedSourceId}
-									class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-rounded-lg tw-px-3 tw-py-2.5 tw-outline-none focus:tw-border-[#00f0ff]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
+									class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-3 tw-py-2.5 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
 								>
 									<option value="" disabled>— SELECT —</option>
 									{#each availableSources as src (src.id)}

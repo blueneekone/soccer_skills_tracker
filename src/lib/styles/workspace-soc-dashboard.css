@@ -52,7 +52,7 @@
 .wsd-lede-strong {
 	font-weight: 800;
 	color: #a5f3fc;
-	color: color-mix(in srgb, var(--ec-ops-accent, #00f0ff) 72%, #ffffff);
+	color: color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 72%, #ffffff);
 	letter-spacing: 0.02em;
 	text-transform: uppercase;
 	font-size: 0.72em;
@@ -135,7 +135,7 @@
 	padding: 12px 14px;
 	border-radius: var(--vanguard-radius-sm);
 	background: linear-gradient(145deg, rgba(9, 9, 11, 0.92), rgba(24, 24, 27, 0.88));
-	border: 1px solid var(--ec-ops-border-subtle, rgba(0, 240, 255, 0.22));
+	border: 1px solid var(--ec-ops-border-subtle, rgba(20, 184, 166, 0.22));
 	box-shadow: var(--vanguard-elev-2);
 }
 
@@ -204,7 +204,7 @@
 	border-left-color: #22c55e;
 }
 .wsd-metric--info {
-	border-left-color: #00f0ff;
+	border-left-color: #14b8a6;
 }
 
 .wsd-metric__top {
@@ -280,6 +280,6 @@
 
 .wsd-surface-accent {
 	border-radius: var(--vanguard-radius);
-	border-top: 2px solid rgba(0, 240, 255, 0.3);
+	border-top: 2px solid rgba(20, 184, 166, 0.3);
 	box-shadow: var(--vanguard-elev-2);
 }

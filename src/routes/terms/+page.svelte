@@ -177,7 +177,7 @@
 		pointer-events: none;
 		background: repeating-linear-gradient(
 			0deg, transparent, transparent 2px,
-			rgba(0, 240, 255, 0.012) 2px, rgba(0, 240, 255, 0.012) 4px
+			rgba(20, 184, 166, 0.012) 2px, rgba(20, 184, 166, 0.012) 4px
 		);
 		z-index: 0;
 	}
@@ -201,7 +201,7 @@
 
 	.legal-brand__mark {
 		font-size: 1.2rem;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 	}
 
 	.legal-brand__name {
@@ -210,7 +210,7 @@
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.18em;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 	}
 
 	.legal-brand__sub {
@@ -223,15 +223,15 @@
 
 	.legal-panel {
 		background: rgba(6, 8, 16, 0.9);
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 14px;
 		overflow: hidden;
 	}
 
 	.legal-doc-header {
 		padding: 2rem 2rem 1.5rem;
-		background: rgba(0, 240, 255, 0.03);
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		background: rgba(20, 184, 166, 0.03);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -240,14 +240,14 @@
 	.legal-doc-badge {
 		display: inline-block;
 		padding: 2px 10px;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 4px;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.2em;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		align-self: flex-start;
 	}
 
@@ -288,9 +288,9 @@
 		font-size: 0.7rem;
 		font-weight: 800;
 		letter-spacing: 0.16em;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		padding-bottom: 0.4rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 	}
 
 	.legal-body p {
@@ -303,7 +303,7 @@
 	.legal-body strong { color: rgba(255, 255, 255, 0.75); font-weight: 600; }
 
 	.legal-link {
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
@@ -320,12 +320,12 @@
 	.legal-footer__link {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
-		color: rgba(0, 240, 255, 0.45);
+		color: rgba(20, 184, 166, 0.45);
 		text-decoration: none;
 		letter-spacing: 0.08em;
 		transition: color 0.15s;
 	}
 
-	.legal-footer__link:hover { color: rgba(0, 240, 255, 0.8); }
+	.legal-footer__link:hover { color: rgba(20, 184, 166, 0.8); }
 	.legal-footer__sep { color: rgba(255, 255, 255, 0.15); font-size: 0.65rem; }
 </style>

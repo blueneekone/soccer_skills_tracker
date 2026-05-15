@@ -179,7 +179,7 @@
 
 		<p class="pas__val">
 			{#if mode === 'loading'}
-				<span class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-[#00f0ff]/50">…</span>
+				<span class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-[#14b8a6]/50">…</span>
 			{:else if mode === 'empty'}
 				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-white/50">
 					Log a workout to start a streak.
@@ -192,7 +192,7 @@
 				<span class="pas__unit tw-text-amber-400">day{streakDays === 1 ? '' : 's'} — log today!</span>
 			{:else if mode === 'frozen'}
 				<span class="pas__num pas__num--frozen">{streakDays}</span>
-				<span class="pas__unit tw-text-[#00f0ff]">day{streakDays === 1 ? '' : 's'} protected</span>
+				<span class="pas__unit tw-text-[#14b8a6]">day{streakDays === 1 ? '' : 's'} protected</span>
 			{:else if mode === 'broken'}
 				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-white/60">
 					Your streak reset. Log a session to restart.
@@ -205,7 +205,7 @@
 				Grace ends in {graceCountdown} — log now to save your streak.
 			</p>
 		{:else if mode === 'frozen'}
-			<p class="pas__hint tw-text-[#00f0ff]/70">
+			<p class="pas__hint tw-text-[#14b8a6]/70">
 				Streak Freeze active — you're covered for today.
 			</p>
 		{:else if mode === 'broken'}
@@ -253,8 +253,8 @@
 	}
 
 	.pas--frozen {
-		border-color: rgba(0, 240, 255, 0.4);
-		box-shadow: 0 0 18px rgba(0, 240, 255, 0.12);
+		border-color: rgba(20, 184, 166, 0.4);
+		box-shadow: 0 0 18px rgba(20, 184, 166, 0.12);
 	}
 
 	.pas--broken {
@@ -293,8 +293,8 @@
 	}
 
 	.pas--frozen .pas__icon-wrap {
-		background: linear-gradient(145deg, rgba(0, 240, 255, 0.1), rgba(14, 116, 144, 0.2));
-		border-color: rgba(0, 240, 255, 0.35);
+		background: linear-gradient(145deg, rgba(20, 184, 166, 0.1), rgba(14, 116, 144, 0.2));
+		border-color: rgba(20, 184, 166, 0.35);
 	}
 
 	.pas--broken .pas__icon-wrap {
@@ -308,7 +308,7 @@
 
 	.pas__icon--fire   { color: #ea580c; }
 	.pas__icon--risk   { color: #f59e0b; }
-	.pas__icon--frozen { color: #00f0ff; }
+	.pas__icon--frozen { color: #14b8a6; }
 	.pas__icon--broken { color: #9ca3af; }
 
 	/* Body */
@@ -328,7 +328,7 @@
 	}
 
 	.pas--at-risk  .pas__title { color: rgba(251, 191, 36, 0.8); }
-	.pas--frozen   .pas__title { color: rgba(0, 240, 255, 0.8); }
+	.pas--frozen   .pas__title { color: rgba(20, 184, 166, 0.8); }
 	.pas--broken   .pas__title { color: rgba(156, 163, 175, 0.6); }
 
 	.pas__val {
@@ -348,7 +348,7 @@
 	}
 
 	.pas__num--risk   { color: #f59e0b; }
-	.pas__num--frozen { color: #00f0ff; }
+	.pas__num--frozen { color: #14b8a6; }
 
 	.pas__unit {
 		font-size: 0.85rem;
@@ -373,9 +373,9 @@
 		margin-top: 2px;
 		padding: 5px 12px;
 		border-radius: 8px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.08);
-		color: #00f0ff;
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.08);
+		color: #14b8a6;
 		font-size: 10px;
 		font-weight: 800;
 		font-family: ui-monospace, 'Cascadia Code', monospace;
@@ -386,8 +386,8 @@
 	}
 
 	.pas__freeze-btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.16);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.16);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
 	}
 
 	.pas__freeze-btn:disabled {

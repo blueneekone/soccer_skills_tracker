@@ -46,8 +46,8 @@
 		font-weight: 900;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: #00f0ff;
-		text-shadow: 0 0 18px rgba(0, 240, 255, 0.2);
+		color: #14b8a6;
+		text-shadow: 0 0 18px rgba(20, 184, 166, 0.2);
 	}
 	.stw__live-sub {
 		margin: 0;

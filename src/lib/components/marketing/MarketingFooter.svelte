@@ -3,7 +3,7 @@
 		<!-- Brand block -->
 		<div class="mf-brand">
 			<svg class="mf-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
-				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#00f0ff" stroke-width="1.5" fill="rgba(0,240,255,0.05)"/>
+				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#14b8a6" stroke-width="1.5" fill="rgba(20, 184, 166,0.05)"/>
 			</svg>
 			<div>
 				<p class="mf-brand__name">VANGUARD COMMAND</p>
@@ -69,7 +69,7 @@
 		height: 28px;
 		flex-shrink: 0;
 		margin-top: 2px;
-		filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.4));
+		filter: drop-shadow(0 0 4px rgba(20, 184, 166, 0.4));
 	}
 	.mf-brand__name {
 		margin: 0;
@@ -116,7 +116,7 @@
 		display: flex;
 		align-items: center;
 	}
-	.mf-link:hover { color: rgba(0, 240, 255, 0.7); }
+	.mf-link:hover { color: rgba(20, 184, 166, 0.7); }
 
 	/* Status */
 	.mf-status {
@@ -166,7 +166,7 @@
 	.mf-stack {
 		margin: 0;
 		font-size: 0.45rem;
-		color: rgba(0, 240, 255, 0.25);
+		color: rgba(20, 184, 166, 0.25);
 		letter-spacing: 0.08em;
 	}
 

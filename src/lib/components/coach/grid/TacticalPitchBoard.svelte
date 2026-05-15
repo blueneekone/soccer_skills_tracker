@@ -89,7 +89,7 @@
 -->
 <div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-bg-[#010308]">
 	<div
-		class="tw-relative tw-rounded-xl tw-border tw-border-[#00f0ff]/30 tw-bg-[#020a14]/60 tw-shadow-[0_0_50px_rgba(0,240,255,0.1),inset_0_0_30px_rgba(0,240,255,0.2)] tw-overflow-visible"
+		class="tw-relative tw-rounded-xl tw-border tw-border-[#14b8a6]/30 tw-bg-[#020a14]/60 tw-shadow-[0_0_50px_rgba(20, 184, 166,0.1),inset_0_0_30px_rgba(20, 184, 166,0.2)] tw-overflow-visible"
 		style="aspect-ratio: 16 / 9; max-width: 100%; max-height: 100%; width: 100%; height: 100%;"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

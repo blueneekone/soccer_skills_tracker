@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -52,7 +52,7 @@
 <div class="tw-inline-flex tw-align-middle">
 	<button
 		type="button"
-		class="im-trigger tw-inline-flex tw-items-center tw-justify-center !tw-min-h-0 !tw-h-5 !tw-w-auto !tw-px-1.5 !tw-py-0 !tw-text-[0.55rem] tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(0, 240, 255,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(0, 240, 255,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
+		class="im-trigger tw-inline-flex tw-items-center tw-justify-center !tw-min-h-0 !tw-h-5 !tw-w-auto !tw-px-1.5 !tw-py-0 !tw-text-[0.55rem] tw-border tw-border-cyan-500/55 tw-bg-[#05050a] tw-font-mono tw-font-extrabold tw-tracking-[0.12em] tw-uppercase tw-text-cyan-300 tw-shadow-[inset_0_0_0_1px_rgba(20, 184, 166,0.2)] tw-transition hover:tw-border-cyan-400/80 hover:tw-text-cyan-200 hover:tw-shadow-[0_0_12px_rgba(20, 184, 166,0.15)] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400/70"
 		onclick={openModal}
 		aria-haspopup="dialog"
 		aria-expanded={open}
@@ -111,6 +111,6 @@
 <style>
 	/* Extra contrast on body text without fighting Tailwind layer order */
 	.im-list::marker {
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 </style>

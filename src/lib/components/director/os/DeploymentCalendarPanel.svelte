@@ -97,7 +97,7 @@
 			</p>
 		</div>
 	{:else}
-		<ul class="tw-m-0 tw-list-none tw-divide-y tw-divide-[rgba(0,240,255,0.1)] tw-rounded-lg tw-border tw-border-[rgba(0,240,255,0.2)] tw-bg-vanguard-bg/80">
+		<ul class="tw-m-0 tw-list-none tw-divide-y tw-divide-[rgba(20, 184, 166,0.1)] tw-rounded-lg tw-border tw-border-[rgba(20, 184, 166,0.2)] tw-bg-vanguard-bg/80">
 			{#each rows as row (row.id)}
 				<li class="tw-px-3 tw-py-2">
 					<p class="tw-m-0 tw-text-sm tw-font-bold tw-text-gray-200">

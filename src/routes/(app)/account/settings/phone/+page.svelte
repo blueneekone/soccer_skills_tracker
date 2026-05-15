@@ -109,13 +109,13 @@
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: rgba(0,240,255,0.5);
+		color: rgba(20, 184, 166,0.5);
 		text-decoration: none;
 		text-transform: uppercase;
 		transition: color 0.15s;
 		width: fit-content;
 	}
-	.back-link:hover { color: rgba(0,240,255,0.85); }
+	.back-link:hover { color: rgba(20, 184, 166,0.85); }
 
 	.page-title {
 		margin: 0;

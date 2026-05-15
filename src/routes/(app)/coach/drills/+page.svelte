@@ -977,7 +977,7 @@
 		--cdm-panel: #05050a;
 		--cdm-line: rgba(255, 255, 255, 0.1);
 		--cdm-cyber: #00d4ff;
-		--cdm-toxic: #39ff14;
+		--cdm-toxic: #2dd4bf;
 		--cdm-threat: #ff6b00;
 		background: var(--cdm-bg);
 	}
@@ -1314,7 +1314,7 @@
 		letter-spacing: 0.08em;
 		padding: 0.2rem 0.45rem;
 		border: 1px solid rgba(0, 212, 255, 0.35);
-		color: var(--cdm-cyber, #00f0ff);
+		color: var(--cdm-cyber, #14b8a6);
 	}
 
 	.cdm-sch-time {

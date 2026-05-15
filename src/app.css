@@ -73,7 +73,7 @@ html {
 	--vanguard-surface:        #131c2e;  /* Primary card / panel fill */
 	--vanguard-surface-raised: #182236;  /* Elevated rows, table headers */
 
-	/* ── Muted slate-teal accent (replaces Tron neon #00f0ff / #6366f1) */
+	/* ── Muted slate-teal accent (replaces Tron neon #14b8a6 / #6366f1) */
 	--vanguard-accent:     #14b8a6;
 	--vanguard-accent-dim: rgba(20, 184, 166, 0.45);
 
@@ -84,6 +84,8 @@ html {
 	--vanguard-glass:     rgba(19, 28, 46, 0.72);  /* Floating modals / dock only */
 	--vanguard-border:    rgba(148, 163, 184, 0.12); /* Slate-400 @ 12% — thin, NOT teal */
 	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
+	--border-slate-800:   #1e293b;          /* Sprint 9.3: 1px opaque border for all non-modal cards */
+	--surface-modal-scrim: rgba(0, 0, 0, 0.75); /* Sprint 9.3: ONLY legitimate modal backdrop use */
 	--vanguard-text-primary:   #e2e8f0; /* Slate-200 */
 	--vanguard-text-secondary: #94a3b8; /* Slate-400 */
 	--vanguard-radius:    1.5rem;   /* 24px — primary card/panel radius */
@@ -353,6 +355,12 @@ body {
 	 * Hover: subtle fill lift only — no neon halo.
 	 */
 	.vanguard-btn-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: fit-content;
+		min-height: 44px;
 		background: rgba(20, 184, 166, 0.08);
 		border: 1px solid var(--vanguard-accent);
 		color: var(--vanguard-accent);
@@ -469,6 +477,21 @@ body {
 		}
 	}
 
+	/** 12-col asymmetric grid — Sprint 9.2 Player OS Bento
+	 *  Mobile: 1 col (all spans collapse to full width)
+	 *  Desktop (64rem+): 12 equal tracks for asymmetric card placement
+	 *  DO NOT add an intermediate 6-col breakpoint — radar+capsule row
+	 *  must remain stacked on tablet for readability.
+	 */
+	.bento-grid.bento-grid--12col {
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 64rem) {
+		.bento-grid.bento-grid--12col {
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+		}
+	}
+
 	/** Span helpers */
 	.bento-span-full {
 		grid-column: 1 / -1;
@@ -476,6 +499,13 @@ body {
 	.bento-span-2 {
 		grid-column: span 2;
 	}
+	/* Sprint 9.2 extended span helpers for 12-col asymmetric grid */
+	.bento-span-3  { grid-column: span 3; }
+	.bento-span-4  { grid-column: span 4; }
+	.bento-span-6  { grid-column: span 6; }
+	.bento-span-8  { grid-column: span 8; }
+	.bento-span-9  { grid-column: span 9; }
+	.bento-span-12 { grid-column: span 12; }
 
 	/**
 	 * .bento-cell

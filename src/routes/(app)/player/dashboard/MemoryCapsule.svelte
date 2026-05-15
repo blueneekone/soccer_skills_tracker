@@ -119,11 +119,11 @@
 </script>
 
 <div
-	class="tw-flex tw-flex-col tw-gap-5 tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#00f0ff]/20 tw-rounded-xl tw-p-6"
+	class="tw-flex tw-flex-col tw-gap-5 tw-backdrop-blur-[40px] tw-bg-slate-950/90 tw-border tw-border-slate-700/60 tw-rounded-xl tw-p-6"
 >
 	<!-- Header -->
 	<div class="tw-flex tw-flex-col tw-gap-1">
-		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60">
+		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/60">
 			[ // 30-DAY MEMORY CAPSULE ]
 		</span>
 		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#ffcc00]/60">
@@ -131,19 +131,19 @@
 		</span>
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>
+	<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
 
 	{#if isLoading}
 		<div class="tw-flex tw-items-center tw-justify-center tw-py-10">
 			<div class="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-w-full">
 				<div
-					class="tw-w-full tw-h-1 tw-bg-[#00f0ff]/10 tw-rounded-full tw-overflow-hidden tw-relative"
+					class="tw-w-full tw-h-1 tw-bg-slate-800/60 tw-rounded-full tw-overflow-hidden tw-relative"
 				>
-					<div class="scan-bar tw-absolute tw-inset-y-0 tw-w-1/3 tw-bg-[#00f0ff]/60 tw-rounded-full">
+					<div class="scan-bar tw-absolute tw-inset-y-0 tw-w-1/3 tw-bg-teal-400/60 tw-rounded-full">
 					</div>
 				</div>
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-animate-pulse"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/40 tw-animate-pulse"
 				>
 					[ SCANNING TEMPORAL ARCHIVE... ]
 				</span>
@@ -189,7 +189,7 @@
 
 					<!-- Delta Badge -->
 					{#if row.delta > 0}
-						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00ff66]">
+						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-teal-400">
 							[▲ +{row.delta} VERTICAL POSITIVE]
 						</span>
 					{:else if row.delta < 0}

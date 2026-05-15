@@ -77,8 +77,8 @@
 
 	.sb-grid {
 		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-		gap: clamp(0.75rem, 1.5vw, 1rem);
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: clamp(0.75rem, 1.25vw, 1.25rem);
 		align-items: stretch;
 	}
 

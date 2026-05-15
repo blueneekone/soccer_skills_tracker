@@ -376,7 +376,7 @@
 	{/if}
 
 	<section
-		class="qa-pathway-shell tw-mb-[clamp(1rem,2vw,1.35rem)] tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-[linear-gradient(165deg,rgba(0, 240, 255,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:tw-p-5"
+		class="qa-pathway-shell tw-mb-[clamp(1rem,2vw,1.35rem)] tw-rounded-xl tw-border tw-border-cyan-500/15 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:tw-p-5"
 		aria-labelledby="operative-pathway-heading"
 	>
 		<p
@@ -522,7 +522,7 @@
 								type="button"
 								class="operative-frame-toggle qa-mono tw-relative tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-py-7 tw-px-5 tw-text-center tw-text-[0.72rem] tw-font-black tw-tracking-[0.32em] tw-text-slate-100 tw-transition tw-duration-200 tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.bodyType ===
 								'alpha' ?
-									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(0, 240, 255,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(0, 240, 255,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
+									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(20, 184, 166,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
 								:	'tw-border-white/10 tw-bg-[linear-gradient(165deg,rgba(255,255,255,0.08)_0%,rgba(15,23,42,0.45)_50%,rgba(0,0,0,0.55)_100%)] hover:tw-border-white/25'}"
 								aria-pressed={avatar3dConfig.bodyType === 'alpha'}
 								onclick={() => {
@@ -531,7 +531,7 @@
 							>
 								<span class="tw-relative tw-z-[1]">TYPE ALPHA</span>
 								<span
-									class="tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-40 tw-bg-[radial-gradient(circle_at_30%_20%,rgba(0, 240, 255,0.35),transparent_55%)]"
+									class="tw-pointer-events-none tw-absolute tw-inset-0 tw-opacity-40 tw-bg-[radial-gradient(circle_at_30%_20%,rgba(20, 184, 166,0.35),transparent_55%)]"
 									aria-hidden="true"
 								></span>
 							</button>
@@ -539,7 +539,7 @@
 								type="button"
 								class="operative-frame-toggle qa-mono tw-relative tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-py-7 tw-px-5 tw-text-center tw-text-[0.72rem] tw-font-black tw-tracking-[0.32em] tw-text-slate-100 tw-transition tw-duration-200 tw-backdrop-blur-md focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.bodyType ===
 								'bravo' ?
-									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(0, 240, 255,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(0, 240, 255,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
+									'tw-border-cyan-400/70 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.22)_0%,rgba(15,23,42,0.75)_55%,rgba(0,0,0,0.65)_100%)] tw-shadow-[0_0_28px_rgba(20, 184, 166,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]'
 								:	'tw-border-white/10 tw-bg-[linear-gradient(165deg,rgba(255,255,255,0.08)_0%,rgba(15,23,42,0.45)_50%,rgba(0,0,0,0.55)_100%)] hover:tw-border-white/25'}"
 								aria-pressed={avatar3dConfig.bodyType === 'bravo'}
 								onclick={() => {
@@ -581,7 +581,7 @@
 										type="button"
 										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.skinTone ===
 										hex ?
-											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(0, 240, 255,0.45)]'
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(20, 184, 166,0.45)]'
 										:	'tw-border-white/15 hover:tw-border-white/35'}"
 										style={`background-color:${hex}`}
 										aria-label={`Skin tone ${hex}`}
@@ -601,7 +601,7 @@
 										type="button"
 										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.jerseyColor ===
 										hex ?
-											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(0, 240, 255,0.45)]'
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(20, 184, 166,0.45)]'
 										:	'tw-border-white/15 hover:tw-border-white/35'}"
 										style={`background-color:${hex}`}
 										aria-label={`Jersey color ${hex}`}
@@ -621,7 +621,7 @@
 										type="button"
 										class="loadout-swatch tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-full tw-border-2 tw-transition tw-duration-150 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {avatar3dConfig.cleatColor ===
 										hex ?
-											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(0, 240, 255,0.45)]'
+											'tw-border-cyan-400 tw-shadow-[0_0_14px_rgba(20, 184, 166,0.45)]'
 										:	'tw-border-white/15 hover:tw-border-white/35'}"
 										style={`background-color:${hex}`}
 										aria-label={`Cleat color ${hex}`}
@@ -698,7 +698,7 @@
 							type="button"
 							class="album-folder tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-bg-slate-900/60 tw-p-4 tw-text-left tw-backdrop-blur-md tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {selectedAlbumSetId ===
 							set.id ?
-								'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(0, 240, 255,0.12)]'
+								'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]'
 							:	'tw-border-white/5 hover:tw-border-white/15'}"
 							onclick={() => (selectedAlbumSetId = set.id)}
 							aria-pressed={selectedAlbumSetId === set.id}
@@ -813,7 +813,7 @@
 	/* Quartermaster — SIEM storefront (Path B) */
 	.qa-root {
 		--cyber: #00d4ff;
-		--toxic: #39ff14;
+		--toxic: #2dd4bf;
 		--border: rgba(255, 255, 255, 0.1);
 		min-height: 0;
 		box-sizing: border-box;
@@ -1117,14 +1117,14 @@
 		transform: translateX(-50%) rotate(0deg);
 		box-shadow:
 			0 10px 28px rgba(0, 0, 0, 0.45),
-			inset 0 0 0 1px rgba(0, 240, 255, 0.15);
+			inset 0 0 0 1px rgba(20, 184, 166, 0.15);
 	}
 
 	.album-folder:hover .album-folder__sheet--front {
 		box-shadow:
 			0 12px 32px rgba(0, 0, 0, 0.5),
-			0 0 24px rgba(0, 240, 255, 0.12),
-			inset 0 0 0 1px rgba(0, 240, 255, 0.22);
+			0 0 24px rgba(20, 184, 166, 0.12),
+			inset 0 0 0 1px rgba(20, 184, 166, 0.22);
 	}
 
 	.album-dossier-card :global(.pro-card-outer) {

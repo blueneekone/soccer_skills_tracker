@@ -767,24 +767,24 @@
 
 <!-- ── SQUAD UPTIME — aggregate readiness ticker ─────────────────────────── -->
 <section
-	class="tw-mb-4 tw-rounded-2xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(0,240,255,0.08)]"
+	class="tw-mb-4 tw-rounded-2xl tw-border tw-border-[#14b8a6]/25 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(20, 184, 166,0.08)]"
 	aria-label="Squad uptime"
 >
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 		<div class="tw-flex tw-items-center tw-gap-3">
-			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.95)]"></span>
-			<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#00f0ff]/85">
+			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.95)]"></span>
+			<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#14b8a6]/85">
 				SQUAD UPTIME · LIVE TICKER
 			</p>
 		</div>
 		<div class="tw-flex tw-items-baseline tw-gap-2 tw-font-mono">
 			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">READINESS SCORE</span>
-			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#00f0ff] tw-drop-shadow-[0_0_12px_rgba(0,240,255,0.55)]" filter="url(#neonBloom)">{SQUAD_UPTIME_PCT}%</span>
+			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_12px_rgba(20, 184, 166,0.55)]" filter="url(#neonBloom)">{SQUAD_UPTIME_PCT}%</span>
 		</div>
 	</div>
 	<div class="tw-mt-3 tw-h-1.5 tw-overflow-hidden tw-rounded-full tw-bg-white/10 tw-shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
 		<div
-			class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#00f0ff]/50 tw-to-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.65)]"
+			class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#14b8a6]/50 tw-to-[#14b8a6] tw-shadow-[0_0_12px_rgba(20, 184, 166,0.65)]"
 			style="width: {SQUAD_UPTIME_PCT}%;"
 		></div>
 	</div>
@@ -798,10 +798,10 @@
 	<!-- Matrix header -->
 	<div class="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-white/10 tw-pb-4">
 		<div class="tw-flex tw-items-center tw-gap-3">
-			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
+			<span class="tw-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.8)]"></span>
 			<h2
 				id="readiness-matrix-title"
-				class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#00f0ff]"
+				class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#14b8a6]"
 			>
 				READINESS MATRIX · ALPHA UNIT
 			</h2>
@@ -809,7 +809,7 @@
 		<div class="tw-flex tw-flex-wrap tw-gap-4">
 			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
 				COMBAT READY
-				<span class="tw-ml-1 tw-tabular-nums tw-text-[#00f0ff]">{rmReady}</span>
+				<span class="tw-ml-1 tw-tabular-nums tw-text-[#14b8a6]">{rmReady}</span>
 			</span>
 			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
 				CONSENT PENDING
@@ -922,7 +922,7 @@
 					{:else}
 						<button
 							type="button"
-							class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(0, 240, 255,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
+							class="tw-min-h-[2.75rem] tw-rounded tw-border tw-border-cyan-500/50 tw-bg-cyan-950/30 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300 tw-shadow-[0_0_18px_rgba(20, 184, 166,0.12)] tw-transition hover:tw-border-cyan-400/70 hover:tw-bg-cyan-900/25 disabled:tw-opacity-50"
 							disabled={!teamId || inviteBusy}
 							onclick={generateTeamDispatchCode}
 						>
@@ -1102,7 +1102,7 @@
 		--st-panel: #05050a;
 		--st-line: rgba(255, 255, 255, 0.1);
 		--st-c: #00d4ff;
-		--st-g: #39ff14;
+		--st-g: #2dd4bf;
 		--st-o: #ff6b00;
 		background: var(--st-bg);
 		color: #fafafa;
@@ -1429,7 +1429,7 @@
 	}
 
 	.stw__tel-line--assist .stw__tel-act {
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 
 	.stw__tel-line--shot .stw__tel-act {

@@ -38,7 +38,7 @@
 			? 'rgba(57,255,20,0.45)'
 			: deployPhase === 'error'
 				? 'rgba(255,48,64,0.45)'
-				: 'rgba(0,240,255,0.25)',
+				: 'rgba(20, 184, 166,0.25)',
 	);
 </script>
 
@@ -47,12 +47,12 @@
 
 	<!-- Glass card: pointer-events-auto restores interactivity for the panel itself -->
 	<div
-		class="tw-pointer-events-auto tw-bg-[#020202]/95 tw-backdrop-blur-xl tw-border tw-border-[#00f0ff]/20
+		class="tw-pointer-events-auto tw-bg-[#020202]/95 tw-backdrop-blur-xl tw-border tw-border-[#14b8a6]/20
 		       tw-rounded-2xl tw-p-5 tw-flex tw-flex-col tw-gap-4"
 	>
 		<!-- ── Header ──────────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60 tw-uppercase">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase">
 				[ // INTENT ENGINE ]
 			</span>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30 tw-uppercase">
@@ -60,20 +60,20 @@
 			</span>
 		</div>
 
-		<div class="tw-h-px tw-w-full tw-bg-[#00f0ff]/10"></div>
+		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
 
 		<!-- ── Attribute picker ───────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<label for="hud-attr" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+			<label for="hud-attr" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 				TARGET ATTRIBUTE
 			</label>
 			<select
 				id="hud-attr"
 				bind:value={draftAttributeId}
-				class="tw-w-full tw-rounded-lg tw-border tw-border-[#00f0ff]/20 tw-bg-[#020202]
-				       tw-text-[#00f0ff]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
+				class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+				       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
 				       tw-px-3 tw-py-1.5 tw-outline-none tw-appearance-none
-				       focus:tw-border-[#00f0ff] tw-transition-colors"
+				       focus:tw-border-[#14b8a6] tw-transition-colors"
 			>
 				{#each attributes as attr (attr.id)}
 					<option value={attr.id}>{attr.name}</option>
@@ -84,10 +84,10 @@
 		<!-- ── XP bounty ──────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 					XP BOUNTY
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#00f0ff] tw-font-bold">
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
 					{draftRequiredXp}
 				</span>
 			</div>
@@ -98,17 +98,17 @@
 				max="2000"
 				step="25"
 				bind:value={draftRequiredXp}
-				class="tw-w-full tw-accent-[#00f0ff] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
 			/>
 		</div>
 
 		<!-- ── Duration ───────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 					DURATION
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#00f0ff] tw-font-bold">
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
 					{draftDurationDays}d
 				</span>
 			</div>
@@ -119,13 +119,13 @@
 				max="90"
 				step="1"
 				bind:value={draftDurationDays}
-				class="tw-w-full tw-accent-[#00f0ff] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
 			/>
 		</div>
 
 		<!-- ── Priority (secondary row) ─────────────────── -->
 		<div class="tw-flex tw-items-center tw-gap-3">
-			<label for="hud-pri" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/30 tw-uppercase tw-shrink-0">
+			<label for="hud-pri" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-shrink-0">
 				PRIORITY
 			</label>
 			<input
@@ -135,16 +135,16 @@
 				max="200"
 				step="5"
 				bind:value={draftPriority}
-				class="tw-flex-1 tw-accent-[#00f0ff] tw-h-px tw-cursor-pointer"
+				class="tw-flex-1 tw-accent-[#14b8a6] tw-h-px tw-cursor-pointer"
 			/>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-[#00f0ff]/50 tw-w-8 tw-text-right tw-shrink-0">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-[#14b8a6]/50 tw-w-8 tw-text-right tw-shrink-0">
 				{draftPriority}
 			</span>
 		</div>
 
 		<!-- ── Scope toggle ───────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-uppercase">
+			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 				SCOPE
 			</span>
 			<div class="tw-flex tw-gap-2">
@@ -152,8 +152,8 @@
 					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
 					       tw-uppercase tw-border tw-transition-all"
 					style={draftScope === 'team'
-						? 'border-color:#00f0ff; color:#00f0ff; background:rgba(0,240,255,0.1);'
-						: 'border-color:rgba(0,240,255,0.2); color:rgba(0,240,255,0.35);'}
+						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
 					onclick={() => (draftScope = 'team')}
 				>
 					SQUAD
@@ -162,8 +162,8 @@
 					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
 					       tw-uppercase tw-border tw-transition-all"
 					style={draftScope === 'players'
-						? 'border-color:#00f0ff; color:#00f0ff; background:rgba(0,240,255,0.1);'
-						: 'border-color:rgba(0,240,255,0.2); color:rgba(0,240,255,0.35);'}
+						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
 					onclick={() => (draftScope = 'players')}
 				>
 					OPERATIVES
@@ -178,20 +178,20 @@
 				<div class="tw-flex tw-items-center tw-gap-2">
 					<button
 						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#00f0ff]/50 hover:tw-text-[#00f0ff] tw-transition-colors"
+						       tw-text-[#14b8a6]/50 hover:tw-text-[#14b8a6] tw-transition-colors"
 						onclick={onSelectAll}
 					>
 						SELECT ALL
 					</button>
-					<span class="tw-text-[#00f0ff]/20">·</span>
+					<span class="tw-text-[#14b8a6]/20">·</span>
 					<button
 						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#00f0ff]/50 hover:tw-text-[#ff3040] tw-transition-colors"
+						       tw-text-[#14b8a6]/50 hover:tw-text-[#ff3040] tw-transition-colors"
 						onclick={onClearSelection}
 					>
 						CLEAR
 					</button>
-					<span class="tw-ml-auto tw-font-mono tw-text-[9px] tw-text-[#00f0ff]/30">
+					<span class="tw-ml-auto tw-font-mono tw-text-[9px] tw-text-[#14b8a6]/30">
 						{draftTargetUids.length} selected
 					</span>
 				</div>
@@ -199,7 +199,7 @@
 				<!-- Player list -->
 				<div
 					class="tw-flex tw-flex-col tw-gap-px tw-overflow-y-auto tw-rounded-lg
-					       tw-border tw-border-[#00f0ff]/10"
+					       tw-border tw-border-[#14b8a6]/10"
 					style="max-height:160px;"
 				>
 					{#if isLoadingRoster}
@@ -211,18 +211,18 @@
 							{@const isChecked = draftTargetUids.includes(player.uid)}
 							<label
 								class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-cursor-pointer
-								       tw-transition-colors hover:tw-bg-[#00f0ff]/5"
-								style={isChecked ? 'background:rgba(0,240,255,0.07);' : ''}
+								       tw-transition-colors hover:tw-bg-[#14b8a6]/5"
+								style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
 							>
 								<input
 									type="checkbox"
 									checked={isChecked}
 									onchange={() => onToggleUid(player.uid)}
-									class="tw-accent-[#00f0ff] tw-w-3 tw-h-3 tw-shrink-0"
+									class="tw-accent-[#14b8a6] tw-w-3 tw-h-3 tw-shrink-0"
 								/>
 								<span
 									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									style={isChecked ? 'color:#00f0ff;' : 'color:rgba(0,240,255,0.45);'}
+									style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
 								>
 									{player.playerName}
 								</span>
@@ -245,7 +245,7 @@
 				       tw-uppercase tw-border tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2
 				       disabled:tw-opacity-30 disabled:tw-cursor-not-allowed
 				       enabled:hover:tw-brightness-125 active:tw-scale-[0.98]"
-				style="border-color:{deployBorderColor}; color:{deployPhase === 'success' ? '#39ff14' : deployPhase === 'error' ? '#ff3040' : '#00f0ff'};"
+				style="border-color:{deployBorderColor}; color:{deployPhase === 'success' ? '#2dd4bf' : deployPhase === 'error' ? '#ff3040' : '#14b8a6'};"
 				disabled={!canDeploy}
 				onclick={onDeploy}
 			>
@@ -257,7 +257,7 @@
 		</div>
 
 		<!-- ── Footer ─────────────────────────────────────── -->
-		<div class="tw-h-px tw-w-full tw-bg-[#00f0ff]/10"></div>
+		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
 		<div class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-white/10 tw-uppercase tw-text-center">
 			[ NEXUS INTENT ENGINE v1 ]
 		</div>

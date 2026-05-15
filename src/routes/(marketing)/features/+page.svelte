@@ -18,7 +18,7 @@
 		{
 			id: 'armory',
 			icon: '⚔',
-			accentColor: '#00f0ff',
+			accentColor: '#14b8a6',
 			name: 'THE ARMORY',
 			subtitle: 'Gamified Player Progression',
 			description: `The Armory is the core of every player's Vanguard profile. It tracks six athletic dimensions — Pace, Acceleration, Agility, Stamina, Power, and the composite Vanguard Rating — as a living, gamified system that motivates players and gives coaches actionable data.`,
@@ -36,7 +36,7 @@
 		{
 			id: 'warroom',
 			icon: '🎯',
-			accentColor: '#00f0ff',
+			accentColor: '#14b8a6',
 			name: 'THE WAR ROOM',
 			subtitle: 'Tactical Pitch Board',
 			description: `A zero-latency SVG-native tactical pitch board designed for match-day speed. Coaches can drag player magnets, draw movement routes, place annotations, and export plays as shareable PDFs — all without leaving the browser.`,
@@ -244,7 +244,7 @@
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		margin-bottom: 0.85rem;
 	}
 	.feat-h1 {
@@ -286,14 +286,14 @@
 		left: 0;
 		right: 0;
 		height: 2px;
-		background: linear-gradient(90deg, var(--accent, #00f0ff), transparent 60%);
+		background: linear-gradient(90deg, var(--accent, #14b8a6), transparent 60%);
 		opacity: 0.5;
 	}
 	.mod-section--alt {
 		background: rgba(0, 0, 0, 0.2);
 	}
 	.mod-section:hover {
-		border-color: color-mix(in srgb, var(--accent, #00f0ff) 18%, transparent);
+		border-color: color-mix(in srgb, var(--accent, #14b8a6) 18%, transparent);
 	}
 
 	/* Bar */
@@ -308,7 +308,7 @@
 		font-size: 0.45rem;
 		font-weight: 700;
 		letter-spacing: 0.25em;
-		color: color-mix(in srgb, var(--accent, #00f0ff) 70%, white);
+		color: color-mix(in srgb, var(--accent, #14b8a6) 70%, white);
 		margin-bottom: 0.2rem;
 	}
 	.mod-h2 {
@@ -351,7 +351,7 @@
 		width: 4px;
 		height: 4px;
 		border-radius: 50%;
-		background: var(--accent, #00f0ff);
+		background: var(--accent, #14b8a6);
 		opacity: 0.65;
 		margin-top: 5px;
 		flex-shrink: 0;
@@ -374,7 +374,7 @@
 	.mod-footnote__code {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.48rem;
-		color: rgba(0, 240, 255, 0.35);
+		color: rgba(20, 184, 166, 0.35);
 		background: none;
 		border: none;
 		padding: 0;
@@ -404,23 +404,23 @@
 	.feat-cta__btn {
 		padding: 0.85rem 1.75rem;
 		border-radius: 10px;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.45);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.45);
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 900;
 		letter-spacing: 0.12em;
-		color: #00f0ff;
+		color: #14b8a6;
 		text-decoration: none;
 		min-height: 48px;
 		display: flex;
 		align-items: center;
-		box-shadow: 0 0 24px rgba(0, 240, 255, 0.2);
+		box-shadow: 0 0 24px rgba(20, 184, 166, 0.2);
 		transition: all 0.25s;
 	}
 	.feat-cta__btn:hover {
-		background: rgba(0, 240, 255, 0.16);
-		box-shadow: 0 0 48px rgba(0, 240, 255, 0.4);
+		background: rgba(20, 184, 166, 0.16);
+		box-shadow: 0 0 48px rgba(20, 184, 166, 0.4);
 		transform: translateY(-2px);
 	}
 	.feat-cta__ghost {

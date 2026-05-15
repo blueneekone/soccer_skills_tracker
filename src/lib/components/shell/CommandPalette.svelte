@@ -333,9 +333,9 @@
 	:global(html.dark) .cp-panel {
 		background: linear-gradient(180deg, rgba(22, 22, 26, 0.97) 0%, rgba(14, 14, 16, 0.96) 100%);
 		border-color: rgba(255, 255, 255, 0.1);
-		border-top: 2px solid rgba(0, 240, 255, 0.38);
+		border-top: 2px solid rgba(20, 184, 166, 0.38);
 		box-shadow:
-			0 0 48px rgba(0, 240, 255, 0.07),
+			0 0 48px rgba(20, 184, 166, 0.07),
 			0 32px 64px -12px rgba(0, 0, 0, 0.72),
 			0 0 0 1px rgba(255, 255, 255, 0.06);
 	}
@@ -474,10 +474,10 @@
 	:global(html.dark) .cp-item--selected {
 		background: linear-gradient(
 			90deg,
-			rgba(0, 240, 255, 0.12) 0%,
+			rgba(20, 184, 166, 0.12) 0%,
 			rgba(245, 158, 11, 0.08) 100%
 		);
-		box-shadow: inset 3px 0 0 rgba(0, 240, 255, 0.65);
+		box-shadow: inset 3px 0 0 rgba(20, 184, 166, 0.65);
 	}
 
 	/* Icon wrapper with type-specific accent */

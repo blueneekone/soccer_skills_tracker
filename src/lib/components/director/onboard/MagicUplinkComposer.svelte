@@ -284,7 +284,7 @@
 		gap: 1.1rem;
 		padding: 1.75rem;
 		background: rgba(2,4,9,0.88);
-		border: 1px solid rgba(0,240,255,0.14);
+		border: 1px solid rgba(20, 184, 166,0.14);
 		border-radius: 24px;
 		backdrop-filter: blur(36px);
 		-webkit-backdrop-filter: blur(36px);
@@ -297,7 +297,7 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(0,240,255,0.045) 0%, transparent 70%);
+		background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(20, 184, 166,0.045) 0%, transparent 70%);
 		pointer-events: none;
 	}
 
@@ -318,9 +318,9 @@
 		font-size: 0.52rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0,240,255,0.85);
-		background: rgba(0,240,255,0.08);
-		border: 1px solid rgba(0,240,255,0.25);
+		color: rgba(20, 184, 166,0.85);
+		background: rgba(20, 184, 166,0.08);
+		border: 1px solid rgba(20, 184, 166,0.25);
 		border-radius: 4px;
 		padding: 2px 8px;
 		display: inline-block;
@@ -341,8 +341,8 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: #00f0ff;
-		box-shadow: 0 0 8px #00f0ff, 0 0 20px rgba(0,240,255,0.4);
+		background: #14b8a6;
+		box-shadow: 0 0 8px #14b8a6, 0 0 20px rgba(20, 184, 166,0.4);
 		animation: pulse 2s ease-in-out infinite;
 		flex-shrink: 0;
 	}
@@ -369,13 +369,13 @@
 		font-size: 0.5rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: rgba(0,240,255,0.45);
+		color: rgba(20, 184, 166,0.45);
 		text-transform: uppercase;
 	}
 
 	.field-input {
 		background: #010409;
-		border: 1px solid rgba(0,240,255,0.22);
+		border: 1px solid rgba(20, 184, 166,0.22);
 		border-radius: 8px;
 		color: #e5e7eb;
 		font-family: inherit;
@@ -389,8 +389,8 @@
 	}
 
 	.field-input:focus {
-		border-color: rgba(0,240,255,0.55);
-		box-shadow: 0 0 0 1px rgba(0,240,255,0.2), 0 0 12px rgba(0,240,255,0.06);
+		border-color: rgba(20, 184, 166,0.55);
+		box-shadow: 0 0 0 1px rgba(20, 184, 166,0.2), 0 0 12px rgba(20, 184, 166,0.06);
 	}
 
 	/* ── Expiry slider ── */
@@ -402,7 +402,7 @@
 
 	.slider-val {
 		font-size: 0.6rem;
-		color: rgba(0,240,255,0.65);
+		color: rgba(20, 184, 166,0.65);
 		letter-spacing: 0.08em;
 	}
 
@@ -411,7 +411,7 @@
 		appearance: none;
 		width: 100%;
 		height: 3px;
-		background: rgba(0,240,255,0.15);
+		background: rgba(20, 184, 166,0.15);
 		border-radius: 2px;
 		outline: none;
 		cursor: pointer;
@@ -422,8 +422,8 @@
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
-		background: #00f0ff;
-		box-shadow: 0 0 8px rgba(0,240,255,0.6);
+		background: #14b8a6;
+		box-shadow: 0 0 8px rgba(20, 184, 166,0.6);
 		cursor: pointer;
 	}
 
@@ -438,8 +438,8 @@
 
 	/* ── Preview pane ── */
 	.preview-pane {
-		background: rgba(0,240,255,0.025);
-		border: 1px solid rgba(0,240,255,0.12);
+		background: rgba(20, 184, 166,0.025);
+		border: 1px solid rgba(20, 184, 166,0.12);
 		border-radius: 10px;
 		padding: 1rem 1.1rem;
 		display: flex;
@@ -452,7 +452,7 @@
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0,240,255,0.35);
+		color: rgba(20, 184, 166,0.35);
 	}
 
 	.preview-line {
@@ -463,7 +463,7 @@
 	}
 
 	.preview-key {
-		color: rgba(0,240,255,0.4);
+		color: rgba(20, 184, 166,0.4);
 		min-width: 60px;
 		letter-spacing: 0.1em;
 	}
@@ -486,19 +486,19 @@
 		font-weight: 700;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		color: #00f0ff;
-		background: rgba(0,240,255,0.07);
-		border: 1px solid rgba(0,240,255,0.4);
+		color: #14b8a6;
+		background: rgba(20, 184, 166,0.07);
+		border: 1px solid rgba(20, 184, 166,0.4);
 		border-radius: 10px;
 		cursor: pointer;
 		transition: background 0.18s, border-color 0.18s, box-shadow 0.18s, opacity 0.18s;
-		box-shadow: 0 0 18px rgba(0,240,255,0.06), inset 0 1px 0 rgba(0,240,255,0.07);
+		box-shadow: 0 0 18px rgba(20, 184, 166,0.06), inset 0 1px 0 rgba(20, 184, 166,0.07);
 	}
 
 	.send-btn:hover:not(:disabled) {
-		background: rgba(0,240,255,0.13);
-		border-color: rgba(0,240,255,0.65);
-		box-shadow: 0 0 28px rgba(0,240,255,0.18), inset 0 1px 0 rgba(0,240,255,0.1);
+		background: rgba(20, 184, 166,0.13);
+		border-color: rgba(20, 184, 166,0.65);
+		box-shadow: 0 0 28px rgba(20, 184, 166,0.18), inset 0 1px 0 rgba(20, 184, 166,0.1);
 	}
 
 	.send-btn:disabled {

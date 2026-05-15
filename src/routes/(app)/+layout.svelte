@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
@@ -39,7 +39,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	 * defined in `functions/src/seeders/sportsSeeder.js`.
 	 */
 	const SPORT_FALLBACK_ACCENTS = /** @type {Record<string, string>} */ ({
-		soccer:     '#00f0ff', // Neon Cyan
+		soccer:     '#14b8a6', // Neon Cyan
 		basketball: '#ff6600', // Neon Orange
 		lacrosse:   '#00ff66', // Neon Green
 		baseball:   '#ffcc00', // Neon Yellow
@@ -65,7 +65,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		const raw =
 			(/** @type {Record<string, unknown>} */ (attrs[0])?.hexColor) ||
 			SPORT_FALLBACK_ACCENTS[sportId] ||
-			'#00f0ff';
+			'#14b8a6';
 		const hex = String(raw).replace('#', '');
 		const r = parseInt(hex.slice(0, 2), 16) || 0;
 		const g = parseInt(hex.slice(2, 4), 16) || 240;
@@ -77,6 +77,77 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	}
 
 	let { children } = $props();
+
+	// #region agent log
+	const DEBUG_ENDPOINT = 'http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24';
+	/** @param {string} location @param {string} message @param {Record<string, unknown>} data @param {string} hypothesisId */
+	function debugLog(location, message, data, hypothesisId) {
+		fetch(DEBUG_ENDPOINT, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'ed51bc' },
+			body: JSON.stringify({
+				sessionId: 'ed51bc',
+				runId: 'pre-fix',
+				hypothesisId,
+				location,
+				message,
+				data,
+				timestamp: Date.now(),
+			}),
+		}).catch(() => {});
+	}
+
+	$effect(() => {
+		if (!browser || !('serviceWorker' in navigator)) return;
+		(async () => {
+			const controller = navigator.serviceWorker.controller;
+			const registrations = await navigator.serviceWorker.getRegistrations();
+			debugLog(
+				'(app)/+layout.svelte:sw-audit',
+				'Service worker controller audit',
+				{
+					controllerScriptUrl: controller?.scriptURL ?? null,
+					registrations: registrations.map((r) => ({
+						scope: r.scope,
+						activeScriptUrl: r.active?.scriptURL ?? null,
+						waitingScriptUrl: r.waiting?.scriptURL ?? null,
+					})),
+				},
+				'H1',
+			);
+		})();
+	});
+
+	beforeNavigate((nav) => {
+		if (!browser) return;
+		debugLog(
+			'(app)/+layout.svelte:beforeNavigate',
+			'Client navigation starting',
+			{
+				from: nav.from?.url?.pathname ?? null,
+				to: nav.to?.url?.pathname ?? null,
+				willUnload: nav.willUnload,
+				type: nav.type,
+				cancelled: nav.cancel,
+			},
+			'H5',
+		);
+	});
+
+	afterNavigate((nav) => {
+		if (!browser) return;
+		debugLog(
+			'(app)/+layout.svelte:afterNavigate',
+			'Client navigation completed',
+			{
+				from: nav.from?.url?.pathname ?? null,
+				to: nav.to?.url?.pathname ?? null,
+				type: nav.type,
+			},
+			'H5',
+		);
+	});
+	// #endregion
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
@@ -476,15 +547,15 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		align-items: center;
 		justify-content: center;
 		border-radius: 1rem;
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		background: linear-gradient(145deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.12));
-		box-shadow: 0 0 2rem -0.5rem rgba(0, 240, 255, 0.35);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		background: linear-gradient(145deg, rgba(20, 184, 166, 0.15), rgba(168, 85, 247, 0.12));
+		box-shadow: 0 0 2rem -0.5rem rgba(20, 184, 166, 0.35);
 		animation: authPulse 1.6s ease-in-out infinite;
 	}
 
 	.auth-splash__mark .ph {
 		font-size: 1.6rem;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 
 	.auth-splash__label {

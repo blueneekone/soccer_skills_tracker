@@ -120,8 +120,8 @@
 		<div class="co-badge" aria-hidden="true">
 			<svg viewBox="0 0 48 48" fill="none" class="co-badge__svg">
 				<path d="M24 4L6 12v12c0 9.94 7.64 19.24 18 21 10.36-1.76 18-11.06 18-21V12L24 4z"
-					stroke="#00f0ff" stroke-width="1.5" fill="rgba(0,240,255,0.08)" />
-				<text x="24" y="29" text-anchor="middle" font-size="14" fill="#00f0ff"
+					stroke="#14b8a6" stroke-width="1.5" fill="rgba(20, 184, 166,0.08)" />
+				<text x="24" y="29" text-anchor="middle" font-size="14" fill="#14b8a6"
 					font-family="monospace" font-weight="900">⚠</text>
 			</svg>
 		</div>
@@ -191,7 +191,7 @@
 		<!-- ── PHASE: sent ────────────────────────────────────────────────── -->
 		{#if phase === 'sent'}
 			<div class="co-sent-state">
-			<div class="co-sent-icon" aria-hidden="true" style="color: #00ff88;">
+			<div class="co-sent-icon" aria-hidden="true" style="color: #2dd4bf;">
 				<Icon name="status.verified" size={52} strokeWidth={1.5} />
 			</div>
 				<h2 class="co-sent-title">TRANSMISSION COMPLETE</h2>
@@ -272,8 +272,8 @@
 			0deg,
 			transparent,
 			transparent 2px,
-			rgba(0, 240, 255, 0.018) 2px,
-			rgba(0, 240, 255, 0.018) 4px
+			rgba(20, 184, 166, 0.018) 2px,
+			rgba(20, 184, 166, 0.018) 4px
 		);
 		z-index: 0;
 	}
@@ -283,8 +283,8 @@
 		inset: 0;
 		pointer-events: none;
 		background-image:
-			linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+			linear-gradient(rgba(20, 184, 166, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
 		background-size: 48px 48px;
 		z-index: 0;
 	}
@@ -296,12 +296,12 @@
 		width: 100%;
 		max-width: 520px;
 		background: rgba(8, 10, 18, 0.92);
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 16px;
 		box-shadow:
-			0 0 60px rgba(0, 240, 255, 0.08),
+			0 0 60px rgba(20, 184, 166, 0.08),
 			0 0 120px rgba(0, 0, 0, 0.9),
-			inset 0 1px 0 rgba(0, 240, 255, 0.12);
+			inset 0 1px 0 rgba(20, 184, 166, 0.12);
 		padding: 2.5rem 2rem;
 		display: flex;
 		flex-direction: column;
@@ -317,13 +317,13 @@
 	.co-badge__svg {
 		width: 56px;
 		height: 56px;
-		filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.4));
+		filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.4));
 		animation: badgePulse 3s ease-in-out infinite;
 	}
 
 	@keyframes badgePulse {
-		0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.35)); }
-		50%       { opacity: 1;    filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.7)); }
+		0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 10px rgba(20, 184, 166, 0.35)); }
+		50%       { opacity: 1;    filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.7)); }
 	}
 
 	/* ─── Header ────────────────────────────────────────────────────────────── */
@@ -333,7 +333,7 @@
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 		text-align: center;
 	}
 
@@ -345,7 +345,7 @@
 		letter-spacing: 0.08em;
 		color: #ffffff;
 		text-align: center;
-		text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+		text-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
 	}
 
 	.co-subtitle {
@@ -357,14 +357,14 @@
 	}
 
 	.co-accent {
-		color: #00f0ff;
+		color: #14b8a6;
 		font-weight: 700;
 	}
 
 	/* ─── Legal strip ───────────────────────────────────────────────────────── */
 	.co-legal-strip {
-		background: rgba(0, 240, 255, 0.04);
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 8px;
 		padding: 0.875rem 1rem;
 	}
@@ -395,7 +395,7 @@
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
-		color: rgba(0, 240, 255, 0.65);
+		color: rgba(20, 184, 166, 0.65);
 	}
 
 	.co-form__input-wrap {
@@ -408,15 +408,15 @@
 		position: absolute;
 		left: 0.85rem;
 		font-size: 0.8rem;
-		color: rgba(0, 240, 255, 0.35);
+		color: rgba(20, 184, 166, 0.35);
 		pointer-events: none;
 	}
 
 	.co-form__input {
 		width: 100%;
 		padding: 0.75rem 0.875rem 0.75rem 2.2rem;
-		background: rgba(0, 240, 255, 0.04);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 8px;
 		color: #ffffff;
 		font-family: 'JetBrains Mono', monospace;
@@ -430,8 +430,8 @@
 	}
 
 	.co-form__input:focus {
-		border-color: rgba(0, 240, 255, 0.6);
-		box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08), 0 0 16px rgba(0, 240, 255, 0.1);
+		border-color: rgba(20, 184, 166, 0.6);
+		box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.08), 0 0 16px rgba(20, 184, 166, 0.1);
 	}
 
 	.co-form__input:disabled {
@@ -454,10 +454,10 @@
 		justify-content: center;
 		gap: 0.5rem;
 		padding: 0.875rem 1.5rem;
-		background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 180, 255, 0.08));
-		border: 1px solid rgba(0, 240, 255, 0.45);
+		background: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(0, 180, 255, 0.08));
+		border: 1px solid rgba(20, 184, 166, 0.45);
 		border-radius: 8px;
-		color: #00f0ff;
+		color: #14b8a6;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.75rem;
 		font-weight: 700;
@@ -472,7 +472,7 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), transparent);
+		background: linear-gradient(135deg, rgba(20, 184, 166, 0.08), transparent);
 		opacity: 0;
 		transition: opacity 0.2s;
 	}
@@ -480,8 +480,8 @@
 	.co-submit-btn:hover:not(:disabled)::before { opacity: 1; }
 
 	.co-submit-btn:hover:not(:disabled) {
-		border-color: rgba(0, 240, 255, 0.7);
-		box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), 0 4px 16px rgba(0, 0, 0, 0.4);
+		border-color: rgba(20, 184, 166, 0.7);
+		box-shadow: 0 0 20px rgba(20, 184, 166, 0.2), 0 4px 16px rgba(0, 0, 0, 0.4);
 		transform: translateY(-1px);
 	}
 
@@ -495,8 +495,8 @@
 	.co-submit-btn__spinner {
 		width: 14px;
 		height: 14px;
-		border: 2px solid rgba(0, 240, 255, 0.3);
-		border-top-color: #00f0ff;
+		border: 2px solid rgba(20, 184, 166, 0.3);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 	}
@@ -515,7 +515,7 @@
 	.co-sent-icon svg {
 		width: 52px;
 		height: 52px;
-		filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.4));
+		filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.4));
 	}
 
 	.co-sent-title {
@@ -524,7 +524,7 @@
 		font-size: 1rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: #00ff88;
+		color: #2dd4bf;
 	}
 
 	.co-sent-body {
@@ -535,7 +535,7 @@
 	}
 
 	.co-sent-email {
-		color: #00f0ff;
+		color: #14b8a6;
 		font-weight: 700;
 		font-family: 'JetBrains Mono', monospace;
 	}
@@ -553,8 +553,8 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding: 0.6rem 0.875rem;
-		background: rgba(0, 255, 136, 0.04);
-		border: 1px solid rgba(0, 255, 136, 0.12);
+		background: rgba(45, 212, 191, 0.04);
+		border: 1px solid rgba(45, 212, 191, 0.12);
 		border-radius: 6px;
 		text-align: left;
 	}
@@ -563,7 +563,7 @@
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 900;
-		color: rgba(0, 255, 136, 0.5);
+		color: rgba(45, 212, 191, 0.5);
 		letter-spacing: 0.1em;
 		flex-shrink: 0;
 	}

@@ -266,7 +266,7 @@
 
 <style>
 	:global(.swal2-glass-toast) {
-		border: 1px solid rgba(0, 240, 255, 0.35) !important;
+		border: 1px solid rgba(20, 184, 166, 0.35) !important;
 		box-shadow: var(--vanguard-elev-2) !important;
 		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 	}
@@ -315,7 +315,7 @@
 	.ml-mono {
 		font-family: ui-monospace, Menlo, Consolas, monospace;
 		font-size: 0.62rem;
-		color: rgba(0, 240, 255, 0.85);
+		color: rgba(20, 184, 166, 0.85);
 	}
 
 	.ml-muted-inline {
@@ -449,19 +449,19 @@
 	.ml-plus--pulse {
 		animation: ml-tap-pulse 0.52s ease-out;
 		box-shadow:
-			0 0 22px rgba(0, 240, 255, 0.55),
-			inset 0 0 0 1px rgba(0, 240, 255, 0.35);
+			0 0 22px rgba(20, 184, 166, 0.55),
+			inset 0 0 0 1px rgba(20, 184, 166, 0.35);
 	}
 
 	@keyframes ml-tap-pulse {
 		0% {
 			box-shadow:
-				0 0 0 0 rgba(0, 240, 255, 0.65),
-				inset 0 0 0 1px rgba(0, 240, 255, 0.45);
+				0 0 0 0 rgba(20, 184, 166, 0.65),
+				inset 0 0 0 1px rgba(20, 184, 166, 0.45);
 		}
 		100% {
 			box-shadow:
-				0 0 28px 6px rgba(0, 240, 255, 0),
+				0 0 28px 6px rgba(20, 184, 166, 0),
 				inset 0 0 0 1px var(--ml-glow);
 		}
 	}
@@ -485,9 +485,9 @@
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: #05050a;
-		background: linear-gradient(180deg, #00f0ff 0%, #00f0ff 100%);
-		border: 1px solid rgba(0, 240, 255, 0.9);
-		box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+		background: linear-gradient(180deg, #14b8a6 0%, #14b8a6 100%);
+		border: 1px solid rgba(20, 184, 166, 0.9);
+		box-shadow: 0 0 20px rgba(20, 184, 166, 0.35);
 		cursor: pointer;
 		touch-action: manipulation;
 	}

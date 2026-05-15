@@ -921,7 +921,7 @@
 	.tcb-lib-close:hover {
 		transform: scale(1.06);
 		background: rgba(30, 41, 59, 0.85);
-		border-color: rgba(0, 240, 255, 0.35);
+		border-color: rgba(20, 184, 166, 0.35);
 	}
 
 	.tcb-lib-close i {
@@ -939,7 +939,7 @@
 		margin: 0;
 		border-radius: 999px;
 		border: 1px solid transparent;
-		background: rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.1);
 		color: #a5f3fc;
 		cursor: pointer;
 		transition:
@@ -949,14 +949,14 @@
 	}
 
 	.strategy-dock-library:hover {
-		background: rgba(0, 240, 255, 0.18);
-		border-color: rgba(0, 240, 255, 0.35);
+		background: rgba(20, 184, 166, 0.18);
+		border-color: rgba(20, 184, 166, 0.35);
 		transform: scale(1.03);
 	}
 
 	.strategy-dock-library--open {
-		background: rgba(0, 240, 255, 0.22);
-		border-color: rgba(0, 240, 255, 0.45);
+		background: rgba(20, 184, 166, 0.22);
+		border-color: rgba(20, 184, 166, 0.45);
 	}
 
 	.strategy-dock-txt {
@@ -1205,7 +1205,7 @@
 		transform: translate(-50%, -50%) scale(1.14);
 		box-shadow:
 			0 18px 36px rgba(0, 0, 0, 0.45),
-			0 0 0 3px rgba(0, 240, 255, 0.45),
+			0 0 0 3px rgba(20, 184, 166, 0.45),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
@@ -1309,9 +1309,9 @@
 		letter-spacing: 0.18em;
 		font-variant-numeric: tabular-nums;
 		text-transform: uppercase;
-		color: color-mix(in srgb, var(--ec-ops-accent, #00f0ff) 88%, #ffffff);
+		color: color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 88%, #ffffff);
 		background: rgba(15, 23, 42, 0.55);
-		border: 1px solid color-mix(in srgb, var(--ec-ops-accent, #00f0ff) 45%, rgba(255, 255, 255, 0.1));
+		border: 1px solid color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 45%, rgba(255, 255, 255, 0.1));
 		box-shadow: none;
 		cursor: pointer;
 		flex-shrink: 0;
@@ -1324,14 +1324,14 @@
 
 	.strategy-island-clear-siem:hover {
 		background: rgba(15, 23, 42, 0.72);
-		border-color: color-mix(in srgb, var(--ec-ops-accent, #00f0ff) 60%, #ffffff);
+		border-color: color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 60%, #ffffff);
 		transform: scale(1.04);
 	}
 
 	:global(html.dark) .strategy-island-clear-siem {
 		color: #67e8f9;
 		background: rgba(8, 47, 73, 0.45);
-		border-color: rgba(0, 240, 255, 0.4);
+		border-color: rgba(20, 184, 166, 0.4);
 	}
 
 	:global(html.dark) .strategy-island-clear-siem:hover {

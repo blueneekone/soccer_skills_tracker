@@ -292,16 +292,16 @@
   .ba-success__icon {
     width: 3.5rem;
     height: 3.5rem;
-    color: var(--vanguard-cyan, #00f0ff);
-    filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.55));
+    color: var(--vanguard-cyan, #14b8a6);
+    filter: drop-shadow(0 0 14px rgba(20, 184, 166, 0.55));
   }
   .ba-success__label {
     margin: 0;
     font-size: 1rem;
     font-weight: 900;
     letter-spacing: 0.18em;
-    color: var(--vanguard-cyan, #00f0ff);
-    text-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+    color: var(--vanguard-cyan, #14b8a6);
+    text-shadow: 0 0 16px rgba(20, 184, 166, 0.45);
   }
   .ba-success__sub {
     margin: 0;
@@ -327,8 +327,8 @@
     flex-shrink: 0;
     width: 2.5rem;
     height: 2.5rem;
-    color: var(--vanguard-cyan, #00f0ff);
-    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.45));
+    color: var(--vanguard-cyan, #14b8a6);
+    filter: drop-shadow(0 0 10px rgba(20, 184, 166, 0.45));
   }
   .ba-card__shield--amber {
     color: #fbbf24;
@@ -339,7 +339,7 @@
     font-size: 0.55rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: rgba(0, 240, 255, 0.6);
+    color: rgba(20, 184, 166, 0.6);
   }
   .ba-card__badge--amber {
     color: rgba(251, 191, 36, 0.7);
@@ -367,9 +367,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.45rem;
-    border: 1px solid rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(20, 184, 166, 0.08);
     border-radius: 4px;
-    background: rgba(0, 240, 255, 0.025);
+    background: rgba(20, 184, 166, 0.025);
   }
   .ba-claim {
     display: flex;
@@ -384,8 +384,8 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: var(--vanguard-cyan, #00f0ff);
-    box-shadow: 0 0 4px var(--vanguard-cyan, #00f0ff);
+    background: var(--vanguard-cyan, #14b8a6);
+    box-shadow: 0 0 4px var(--vanguard-cyan, #14b8a6);
   }
 
   /* ── Error alert ─────────────────────────────────────────────────────────── */
@@ -456,13 +456,13 @@
     font-family: inherit;
     font-size: 0.62rem;
     letter-spacing: 0.1em;
-    color: rgba(0, 240, 255, 0.45);
+    color: rgba(20, 184, 166, 0.45);
     cursor: pointer;
     text-align: center;
     transition: color 0.15s;
   }
   .ba-fallback-link:hover {
-    color: var(--vanguard-cyan, #00f0ff);
+    color: var(--vanguard-cyan, #14b8a6);
   }
 
   /* ── PIN group ───────────────────────────────────────────────────────────── */
@@ -475,13 +475,13 @@
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.14em;
-    color: rgba(0, 240, 255, 0.55);
+    color: rgba(20, 184, 166, 0.55);
   }
   .ba-pin-input {
     width: 100%;
     padding: 0.7rem 0.85rem;
     background: rgba(1, 4, 9, 0.8);
-    border: 1px solid rgba(0, 240, 255, 0.2);
+    border: 1px solid rgba(20, 184, 166, 0.2);
     border-radius: 4px;
     color: #e5e7eb;
     font-family: inherit;
@@ -494,8 +494,8 @@
     color: rgba(229, 231, 235, 0.2);
   }
   .ba-pin-input:focus {
-    border-color: rgba(0, 240, 255, 0.5);
-    box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08);
+    border-color: rgba(20, 184, 166, 0.5);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.08);
   }
   .ba-pin-input:disabled {
     opacity: 0.5;
@@ -511,7 +511,7 @@
     justify-content: center;
     align-items: center;
     padding: 3rem;
-    color: var(--vanguard-cyan, #00f0ff);
+    color: var(--vanguard-cyan, #14b8a6);
   }
 
   /* ── Keyframes ───────────────────────────────────────────────────────────── */

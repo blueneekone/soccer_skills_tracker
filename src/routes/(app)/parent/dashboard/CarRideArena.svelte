@@ -22,15 +22,15 @@
 	{#if engine.publicScore}
 		{@const score = engine.publicScore}
 		<div
-			class="tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-4"
+			class="tw-rounded-xl tw-border tw-border-[#14b8a6]/15 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-4"
 		>
 			<!-- Header -->
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 					// MATCH RESULT
 				</span>
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2 tw-py-0.5 tw-rounded tw-border {score.outcome === 'W' ? 'tw-text-[#00f0ff] tw-border-[#00f0ff]/40 tw-bg-[#00f0ff]/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2 tw-py-0.5 tw-rounded tw-border {score.outcome === 'W' ? 'tw-text-[#14b8a6] tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
 				>
 					{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 				</span>
@@ -65,10 +65,10 @@
 
 		<!-- Unlock confirmation banner -->
 		<div
-			class="tw-rounded-xl tw-border tw-border-[#00f0ff]/25 tw-bg-[#00f0ff]/5 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			class="tw-rounded-xl tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/5 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
 		>
-			<span class="tw-text-[#00f0ff] tw-text-[14px]">✓</span>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/80 tw-uppercase">
+			<span class="tw-text-[#14b8a6] tw-text-[14px]">✓</span>
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/80 tw-uppercase">
 				EQ ATTESTATION CONFIRMED — FULL METRICS UNLOCKED
 			</span>
 		</div>
@@ -77,7 +77,7 @@
 		{#if Object.keys(metrics.playerStats).length > 0}
 			<div class="tw-rounded-xl tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-overflow-hidden">
 				<div class="tw-px-5 tw-py-3 tw-border-b tw-border-[#ffffff]/5">
-					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase">
+					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 						// PLAYER PERFORMANCE
 					</span>
 				</div>
@@ -95,15 +95,15 @@
 						</thead>
 						<tbody>
 							{#each Object.entries(metrics.playerStats) as [email, stat]}
-								<tr class="tw-border-b tw-border-[#ffffff]/4 last:tw-border-b-0 hover:tw-bg-[#00f0ff]/3 tw-transition-colors tw-duration-150">
+								<tr class="tw-border-b tw-border-[#ffffff]/4 last:tw-border-b-0 hover:tw-bg-[#14b8a6]/3 tw-transition-colors tw-duration-150">
 									<td class="tw-px-4 tw-py-2.5 tw-font-mono tw-text-[10px] tw-text-[#e0e0e0] tw-max-w-[140px] tw-truncate">{email}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#a0a0a0]">{fmt(stat.minutesPlayed)}</td>
-									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#00f0ff]">{fmt(stat.goals)}</td>
+									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#14b8a6]">{fmt(stat.goals)}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#a78bfa]">{fmt(stat.assists)}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center">
 										{#if stat.rating !== undefined && stat.rating !== null}
 											<span
-												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-[#00f0ff]' : stat.rating >= 6 ? 'tw-text-[#a0a0a0]' : 'tw-text-[#ff6b6b]'}"
+												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-[#14b8a6]' : stat.rating >= 6 ? 'tw-text-[#a0a0a0]' : 'tw-text-[#ff6b6b]'}"
 											>
 												{stat.rating}/10
 											</span>
@@ -122,7 +122,7 @@
 		<!-- Coach notes -->
 		{#if metrics.coachNotes && metrics.coachNotes.trim().length > 0}
 			<div class="tw-rounded-xl tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 					// COACH NOTES
 				</span>
 				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#c0c0c0] tw-whitespace-pre-wrap">
@@ -134,7 +134,7 @@
 		<!-- Highlights -->
 		{#if metrics.highlights && metrics.highlights.trim().length > 0}
 			<div class="tw-rounded-xl tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/50 tw-uppercase">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 					// HIGHLIGHTS
 				</span>
 				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#c0c0c0]">

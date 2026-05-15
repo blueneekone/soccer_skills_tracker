@@ -71,7 +71,7 @@ const PRESETS: Record<DopamineKind, ConfettiOptions> = {
 	drill: {
 		particleCount: 80,
 		spread: 70,
-		colors: ['#00f0ff', '#cffafe', '#ffffff', '#0ea5e9'],
+		colors: ['#14b8a6', '#cffafe', '#ffffff', '#0ea5e9'],
 		startVelocity: 30,
 		gravity: 0.9,
 		scalar: 0.9,
@@ -89,7 +89,7 @@ const PRESETS: Record<DopamineKind, ConfettiOptions> = {
 	levelUp: {
 		particleCount: 160,
 		spread: 120,
-		colors: ['#f0a500', '#fbbf24', '#fde68a', '#00f0ff', '#ffffff'],
+		colors: ['#f0a500', '#fbbf24', '#fde68a', '#14b8a6', '#ffffff'],
 		startVelocity: 45,
 		gravity: 0.8,
 		scalar: 1.1,

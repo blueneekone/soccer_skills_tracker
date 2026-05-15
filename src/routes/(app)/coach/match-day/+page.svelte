@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -14,7 +14,7 @@
 	 * @typedef {{ id: string; matchTs: string; line: string; tone: PadTone }} FeedLine
 	 */
 
-	/** Strict Arc Reactor grid: 2×3 — order row-major */
+	/** Strict Arc Reactor grid: 2Ã—3 â€” order row-major */
 	const TELEMETRY_PAD = /** @type {const} */ ([
 		{ id: 'GOAL', label: 'GOAL', tone: 'emerald' },
 		{ id: 'SHOT_ON_TARGET', label: 'SHOT ON TARGET', tone: 'emerald' },
@@ -136,7 +136,7 @@
 							String(data.position).trim().toUpperCase().slice(0, 3)
 						:	'MID';
 					const sid =
-						d.id.length > 14 ? d.id.slice(0, 10).toUpperCase() + '…' : d.id.toUpperCase();
+						d.id.length > 14 ? d.id.slice(0, 10).toUpperCase() + 'â€¦' : d.id.toUpperCase();
 					rows.push({ id: d.id, shortId: sid, name, role: pos });
 				});
 				rows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
@@ -275,7 +275,7 @@
 		const n = eventFeed.length;
 		const isLatest = n > 0 && idx === n - 1;
 		if (isLatest) {
-			return 'tw-font-mono tw-text-[11px] tw-leading-snug tw-tracking-wide tw-text-cyan-300 tw-drop-shadow-[0_0_10px_rgba(0, 240, 255,0.55)]';
+			return 'tw-font-mono tw-text-[11px] tw-leading-snug tw-tracking-wide tw-text-cyan-300 tw-drop-shadow-[0_0_10px_rgba(20, 184, 166,0.55)]';
 		}
 		const muted =
 			entry.tone === 'rose' ? 'tw-text-rose-600/45'
@@ -290,7 +290,7 @@
 	function padFlashShadow(tone) {
 		if (tone === 'emerald') return 'tw-shadow-[0_0_30px_rgba(52,211,153,0.95)]';
 		if (tone === 'rose') return 'tw-shadow-[0_0_30px_rgba(244,63,94,0.95)]';
-		return 'tw-shadow-[0_0_30px_rgba(0, 240, 255,0.95)]';
+		return 'tw-shadow-[0_0_30px_rgba(20, 184, 166,0.95)]';
 	}
 
 	/** .cursorrules PRIMARY-style clipped tactical buttons */
@@ -301,7 +301,7 @@
 
 	const padBtnRose = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-rose-500/65 tw-bg-rose-600 tw-px-2 tw-py-3 tw-font-black tw-text-white tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_28px_rgba(244,63,94,0.55)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
 
-	const padBtnCyan = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-cyan-400/65 tw-bg-cyan-500 tw-px-2 tw-py-3 tw-font-black tw-text-black tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_24px_rgba(0, 240, 255,0.55)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
+	const padBtnCyan = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-cyan-400/65 tw-bg-cyan-500 tw-px-2 tw-py-3 tw-font-black tw-text-black tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_24px_rgba(20, 184, 166,0.55)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
 
 	/**
 	 * @param {TelemetryPadDef} a
@@ -316,14 +316,14 @@
 	}
 </script>
 
-<!-- Vanguard Match-Day — bg-[#020202] void root, mono telemetry, blur-3xl cards. -->
+<!-- Vanguard Match-Day â€” bg-[#020202] void root, mono telemetry, blur-3xl cards. -->
 <div
-	class="tw-relative tw-mx-auto tw-flex tw-h-screen tw-max-w-md tw-flex-col tw-overflow-hidden tw-bg-[#020202] tw-font-mono tw-text-slate-300 tw-selection:bg-[#00f0ff]/30"
+	class="tw-relative tw-mx-auto tw-flex tw-h-screen tw-max-w-md tw-flex-col tw-overflow-hidden tw-bg-[#020202] tw-font-mono tw-text-slate-300 tw-selection:bg-[#14b8a6]/30"
 	class:matchLoggerPulse={ingestPulse}
 >
 	<!-- Deep space grid -->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-bg-[radial-gradient(ellipse_at_50%_0%,rgba(0, 240, 255,0.08)_0%,transparent_55%)]"
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-bg-[radial-gradient(ellipse_at_50%_0%,rgba(20, 184, 166,0.08)_0%,transparent_55%)]"
 		aria-hidden="true"
 	></div>
 	<div
@@ -334,12 +334,12 @@
 
 	<a
 		href="/coach"
-		class="tw-absolute tw-right-3 tw-top-3 tw-z-[50] tw-rounded-md tw-border tw-border-[#00f0ff]/40 tw-bg-[#020202]/80 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-black tw-tracking-widest tw-text-cyan-400 tw-backdrop-blur-sm tw-transition-colors hover:tw-border-cyan-400 hover:tw-bg-cyan-950/40 hover:tw-text-cyan-200"
+		class="tw-absolute tw-right-3 tw-top-3 tw-z-[50] tw-rounded-md tw-border tw-border-[#14b8a6]/40 tw-bg-[#020202]/80 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-black tw-tracking-widest tw-text-cyan-400 tw-backdrop-blur-sm tw-transition-colors hover:tw-border-cyan-400 hover:tw-bg-cyan-950/40 hover:tw-text-cyan-200"
 	>
 		HUB
 	</a>
 
-	<!-- Top viewport ~15% — clock & score -->
+	<!-- Top viewport ~15% â€” clock & score -->
 	<header
 		class="tw-relative tw-z-10 tw-flex tw-shrink-0 tw-basis-[15%] tw-min-h-0 tw-flex-col tw-items-center tw-justify-center tw-border-b tw-border-cyan-500/20 tw-px-4 tw-pt-10 tw-pb-2"
 	>
@@ -349,7 +349,7 @@
 			Live match clock
 		</p>
 		<p
-			class="tw-font-mono tw-text-5xl tw-font-black tw-tabular-nums tw-tracking-tight tw-text-cyan-300 tw-drop-shadow-[0_0_24px_rgba(0, 240, 255,0.55)] sm:tw-text-6xl"
+			class="tw-font-mono tw-text-5xl tw-font-black tw-tabular-nums tw-tracking-tight tw-text-cyan-300 tw-drop-shadow-[0_0_24px_rgba(20, 184, 166,0.55)] sm:tw-text-6xl"
 			aria-live="polite"
 		>
 			{matchClockDisplay}
@@ -357,13 +357,13 @@
 		<p class="tw-mt-2 tw-max-w-full tw-truncate tw-text-center tw-font-mono tw-text-xs tw-font-black tw-tracking-[0.14em] tw-text-white tw-uppercase">
 			{activeTeamLabel}
 			<span class="tw-tabular-nums tw-text-cyan-400"> {homeScore} </span>
-			<span class="tw-text-slate-500">—</span>
+			<span class="tw-text-slate-500">â€”</span>
 			<span class="tw-tabular-nums tw-text-rose-300"> {awayScore} </span>
 			<span class="tw-text-slate-400"> ENEMY</span>
 		</p>
 	</header>
 
-	<!-- Middle viewport ~35% — holographic feed -->
+	<!-- Middle viewport ~35% â€” holographic feed -->
 	<section
 		class="tw-relative tw-z-10 tw-flex tw-min-h-0 tw-shrink-0 tw-basis-[35%] tw-flex-col tw-px-3 tw-pt-2"
 		aria-label="Telemetry event stream"
@@ -383,7 +383,7 @@
 			>
 				{#if eventFeed.length === 0}
 					<p class="tw-py-8 tw-text-center tw-font-mono tw-text-[10px] tw-text-slate-600">
-						AWAITING FIRST INGEST…
+						AWAITING FIRST INGESTâ€¦
 					</p>
 				{:else}
 					{#each eventFeed as entry, idx (entry.id)}
@@ -414,7 +414,7 @@
 		>
 			{#if rosterLoading}
 				<p class="tw-whitespace-nowrap tw-py-3 tw-font-mono tw-text-[10px] tw-text-slate-500">
-					SYNCING…
+					SYNCINGâ€¦
 				</p>
 			{:else}
 				{#each operatives as op (op.id)}
@@ -423,7 +423,7 @@
 						role="tab"
 						class="tw-relative tw-flex tw-h-14 tw-w-14 tw-shrink-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-bg-black/70 tw-transition-[box-shadow,border-color] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {						activeTarget ===
 						op.id ?
-							'tw-border-cyan-400 tw-shadow-[0_0_28px_rgba(0, 240, 255,0.95),0_0_48px_rgba(0, 240, 255,0.35)]'
+							'tw-border-cyan-400 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.95),0_0_48px_rgba(20, 184, 166,0.35)]'
 						:	'tw-border-white/10 hover:tw-border-cyan-500/35'}"
 						aria-selected={activeTarget === op.id}
 						aria-label="Target {op.name}"
@@ -461,13 +461,13 @@
 <style>
 	@keyframes matchLoggerIngestPulse {
 		0% {
-			box-shadow: inset 0 0 0 0 rgba(0, 240, 255, 0);
+			box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0);
 		}
 		40% {
-			box-shadow: inset 0 0 36px 3px rgba(0, 240, 255, 0.28);
+			box-shadow: inset 0 0 36px 3px rgba(20, 184, 166, 0.28);
 		}
 		100% {
-			box-shadow: inset 0 0 0 0 rgba(0, 240, 255, 0);
+			box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0);
 		}
 	}
 

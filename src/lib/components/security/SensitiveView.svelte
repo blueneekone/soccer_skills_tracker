@@ -263,12 +263,12 @@
 						<div class="sv-document__file-icon" aria-hidden="true">
 							<svg viewBox="0 0 40 48" fill="none">
 								<path d="M24 2H8a2 2 0 00-2 2v40a2 2 0 002 2h24a2 2 0 002-2V16L24 2z"
-									stroke="rgba(0,240,255,0.4)" stroke-width="1.2"
-									fill="rgba(0,240,255,0.06)" />
+									stroke="rgba(20, 184, 166,0.4)" stroke-width="1.2"
+									fill="rgba(20, 184, 166,0.06)" />
 								<path d="M24 2v14h14"
-									stroke="rgba(0,240,255,0.3)" stroke-width="1.2" />
+									stroke="rgba(20, 184, 166,0.3)" stroke-width="1.2" />
 								<path d="M13 26h14M13 32h10"
-									stroke="rgba(0,240,255,0.3)" stroke-width="1" stroke-linecap="round" />
+									stroke="rgba(20, 184, 166,0.3)" stroke-width="1" stroke-linecap="round" />
 							</svg>
 						</div>
 						<div class="sv-document__file-info">
@@ -318,7 +318,7 @@
 		flex-direction: column;
 		gap: 0;
 		background: rgba(8, 10, 18, 0.85);
-		border: 1px solid rgba(0, 240, 255, 0.12);
+		border: 1px solid rgba(20, 184, 166, 0.12);
 		border-radius: 10px;
 		overflow: hidden;
 		transition: border-color 0.3s;
@@ -383,10 +383,10 @@
 		justify-content: center;
 		width: 36px;
 		height: 36px;
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 8px;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 	}
 
 	.sv-lock-icon svg { width: 18px; height: 18px; }
@@ -456,10 +456,10 @@
 		justify-content: center;
 		gap: 0.5rem;
 		padding: 0.65rem 1rem;
-		background: rgba(0, 240, 255, 0.06);
-		border: 1px solid rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.06);
+		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 6px;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 700;
@@ -470,10 +470,10 @@
 	}
 
 	.sv-reveal-btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.1);
-		border-color: rgba(0, 240, 255, 0.45);
-		color: #00f0ff;
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.1);
+		border-color: rgba(20, 184, 166, 0.45);
+		color: #14b8a6;
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.1);
 	}
 
 	.sv-reveal-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -482,8 +482,8 @@
 
 	.sv-reveal-btn__spinner {
 		width: 12px; height: 12px;
-		border: 1.5px solid rgba(0, 240, 255, 0.3);
-		border-top-color: #00f0ff;
+		border: 1.5px solid rgba(20, 184, 166, 0.3);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 	}
@@ -581,8 +581,8 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 0.75rem;
-		background: rgba(0, 240, 255, 0.03);
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 8px;
 	}
 
@@ -611,7 +611,7 @@
 		margin: 0;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.62rem;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 		letter-spacing: 0.08em;
 	}
 
@@ -625,8 +625,8 @@
 	.sv-code {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.58rem;
-		color: rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.05);
+		color: rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.05);
 		padding: 0 3px;
 		border-radius: 2px;
 	}
@@ -638,10 +638,10 @@
 		gap: 0.35rem;
 		flex-shrink: 0;
 		padding: 0.5rem 0.75rem;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.3);
 		border-radius: 6px;
-		color: #00f0ff;
+		color: #14b8a6;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
@@ -652,9 +652,9 @@
 	}
 
 	.sv-view-btn:hover {
-		background: rgba(0, 240, 255, 0.14);
-		border-color: rgba(0, 240, 255, 0.55);
-		box-shadow: 0 0 10px rgba(0, 240, 255, 0.12);
+		background: rgba(20, 184, 166, 0.14);
+		border-color: rgba(20, 184, 166, 0.55);
+		box-shadow: 0 0 10px rgba(20, 184, 166, 0.12);
 	}
 
 	.sv-view-btn__icon { width: 13px; height: 13px; flex-shrink: 0; }

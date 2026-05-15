@@ -72,7 +72,7 @@ export interface OrganizationDoc {
 	sport?: string;
 	/** Public logo URL (Firebase Storage). */
 	logoUrl?: string;
-	/** Hex brand colour (e.g. "#00f0ff"). */
+	/** Hex brand colour (e.g. "#14b8a6"). */
 	primaryColor?: string;
 	/** Subscription / entitlement tier (e.g. "team", "club", "infinite"). */
 	plan?: string;

@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -323,7 +323,7 @@
 
 	.ai-row:hover {
 		border-color: var(--vanguard-border);
-		background: rgba(0, 240, 255, 0.04);
+		background: rgba(20, 184, 166, 0.04);
 	}
 
 	.ai-dot {

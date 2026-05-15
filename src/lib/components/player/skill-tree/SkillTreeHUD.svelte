@@ -37,7 +37,7 @@
 
 	function statusColor(state: 'locked' | 'unlocked' | 'mastered'): string {
 		if (state === 'mastered') return '#f0a500';
-		if (state === 'unlocked') return '#00f0ff';
+		if (state === 'unlocked') return '#14b8a6';
 		return '#4b5563';
 	}
 </script>
@@ -55,9 +55,9 @@
 				{@const hasUnlocked = s.unlocked > 0}
 				<button
 					class="tw-pointer-events-auto tw-text-[10px] tw-font-black tw-tracking-[0.2em] tw-uppercase tw-font-mono tw-px-2 tw-py-1 tw-rounded tw-border tw-transition tw-bg-transparent tw-cursor-pointer"
-					style:border-color={isFocused ? 'rgba(0,240,255,0.8)' : hasUnlocked ? 'rgba(0,240,255,0.4)' : 'rgba(255,255,255,0.1)'}
-					style:color={isFocused ? '#00f0ff' : hasUnlocked ? '#cffafe' : '#64748b'}
-					style:box-shadow={isFocused ? '0 0 8px rgba(0,240,255,0.5)' : 'none'}
+					style:border-color={isFocused ? 'rgba(20, 184, 166,0.8)' : hasUnlocked ? 'rgba(20, 184, 166,0.4)' : 'rgba(255,255,255,0.1)'}
+					style:color={isFocused ? '#14b8a6' : hasUnlocked ? '#cffafe' : '#64748b'}
+					style:box-shadow={isFocused ? '0 0 8px rgba(20, 184, 166,0.5)' : 'none'}
 					onclick={() => engine.focusBranch(s.attr)}
 				>
 					{s.attr}&nbsp;·&nbsp;{s.unlocked}<span class="tw-text-[8px] tw-opacity-40">/</span>{revealedCounts[s.attr] ?? s.total}<span class="tw-text-[8px] tw-opacity-30">/{s.total}</span>
@@ -82,7 +82,7 @@
 		<div
 			class="tw-absolute tw-bottom-2 tw-left-2 tw-right-2 tw-pointer-events-none tw-rounded tw-border tw-p-3 tw-flex tw-flex-col tw-gap-2"
 			style:background="rgba(2,2,2,0.82)"
-			style:border-color="rgba(0,240,255,0.25)"
+			style:border-color="rgba(20, 184, 166,0.25)"
 			style:backdrop-filter="blur(6px)"
 		>
 			<!-- Dismiss button -->
@@ -98,7 +98,7 @@
 			<div class="tw-flex tw-flex-col tw-gap-0.5 tw-pr-5">
 				<span
 					class="tw-text-[13px] tw-font-black tw-tracking-widest tw-uppercase tw-font-mono"
-					style:color="#00f0ff"
+					style:color="#14b8a6"
 				>
 					{detail.label}
 				</span>
@@ -114,8 +114,8 @@
 					<div
 						class="tw-absolute tw-top-0 tw-left-0 tw-h-full tw-rounded-full tw-transition-all tw-duration-300"
 						style:width="{detail.progressPct}%"
-						style:background="linear-gradient(90deg, rgba(0,240,255,0.6), #00f0ff)"
-						style:box-shadow="0 0 6px #00f0ff88"
+						style:background="linear-gradient(90deg, rgba(20, 184, 166,0.6), #14b8a6)"
+						style:box-shadow="0 0 6px #14b8a688"
 					></div>
 					<!-- Threshold tick -->
 					<div

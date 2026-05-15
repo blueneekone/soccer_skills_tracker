@@ -69,11 +69,11 @@
 <div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-font-mono">
   <!-- Header -->
   <header
-    class="tw-bg-[#020202] tw-border-b tw-border-[#00f0ff]/10 tw-px-5 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4"
+    class="tw-bg-[#020202] tw-border-b tw-border-[#14b8a6]/10 tw-px-5 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4"
   >
     <div class="tw-flex tw-flex-col tw-gap-0.5">
       <h1 class="tw-text-2xl tw-font-black tw-tracking-tight tw-text-white">
-        <span class="tw-text-[#00f0ff]">INTENT</span> ENGINE
+        <span class="tw-text-[#14b8a6]">INTENT</span> ENGINE
       </h1>
       <p class="tw-text-[10px] tw-tracking-widest tw-text-white/30 tw-uppercase">
         [ TACTICAL ASSIGNMENT TERMINAL ]
@@ -90,7 +90,7 @@
       {#if myTeams.length > 1}
         <select
           bind:value={selectedTeamId}
-          class="tw-bg-[#020202] tw-border tw-border-[#00f0ff]/20 tw-text-white/80 tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#00f0ff]/40 tw-transition-colors"
+          class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-text-white/80 tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6]/40 tw-transition-colors"
         >
           {#each myTeams as team (team.id)}
             <option value={team.id}>{team.name}</option>

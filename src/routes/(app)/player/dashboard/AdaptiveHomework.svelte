@@ -237,13 +237,13 @@
 	<!-- Morning Readiness Card (Phase 3, Epic 4 — RL S2) -->
 	{#if showReadinessCard}
 		<MorningReadinessCard onSubmitted={() => { showReadinessCard = false; }} />
-		<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>
+		<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
 	{/if}
 
 	<!-- Header -->
 	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/60">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/60">
 				[ // ADAPTIVE HOMEWORK ]
 			</span>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30">
@@ -261,12 +261,12 @@
 		{/if}
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-[#00f0ff]/10"></div>
+	<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
 
 	{#if isLoading}
 		<div class="tw-flex tw-items-center tw-justify-center tw-py-10">
 			<span
-				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/40 tw-animate-pulse"
+				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-500/40 tw-animate-pulse"
 			>
 				[ SYNCING TACTICAL DATA... ]
 			</span>
@@ -299,9 +299,9 @@
 			<!-- EQ scaffolding protection mode banner -->
 			{#if recentFrustration === 'high'}
 				<div
-					class="tw-w-full tw-py-1.5 tw-px-3 tw-rounded-lg tw-border tw-border-[#9d00ff]/40 tw-bg-[#9d00ff]/10"
+					class="tw-w-full tw-py-1.5 tw-px-3 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800"
 				>
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#9d00ff]">
+					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400">
 						[ SCAFFOLDING ACTIVE: EQ PROTECTION MODE ]
 					</span>
 				</div>
@@ -310,7 +310,7 @@
 			<!-- Suggested drill card -->
 			{#if suggestedDrill}
 				<div
-					class="tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-[#00f0ff]/10"
+					class="tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-slate-800/60"
 				>
 					<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 						<span class="tw-font-mono tw-text-xs tw-text-white/70 tw-leading-relaxed">
@@ -329,7 +329,7 @@
 								</button>
 							{/if}
 							<span
-								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-[#00f0ff]/10 tw-text-[#00f0ff]/60 tw-border tw-border-[#00f0ff]/20"
+								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-slate-800/60 tw-text-teal-400/60 tw-border tw-border-slate-700/60"
 							>
 								{suggestedDrill.mediaType === 'tactical_svg' ? '[ SVG ]' : '[ YT ]'}
 							</span>
@@ -379,11 +379,11 @@
 					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
 						XP PROGRESS
 					</span>
-					<span class="tw-font-mono tw-text-[9px] tw-text-[#00f0ff]/60">{xpProgressPct}%</span>
+					<span class="tw-font-mono tw-text-[9px] tw-text-teal-400/60">{xpProgressPct}%</span>
 				</div>
-				<div class="tw-w-full tw-h-1 tw-bg-[#00f0ff]/20 tw-rounded-full tw-overflow-hidden">
+				<div class="tw-w-full tw-h-1 tw-bg-slate-700/60 tw-rounded-full tw-overflow-hidden">
 					<div
-						class="tw-h-full tw-bg-[#00f0ff] tw-rounded-full tw-transition-all tw-duration-700"
+						class="tw-h-full tw-bg-teal-500 tw-rounded-full tw-transition-all tw-duration-700"
 						style="width:{xpProgressPct}%"
 					></div>
 				</div>

@@ -27,12 +27,12 @@
 	>
 		<!-- Notification strip -->
 		<div
-			class="tw-pointer-events-none tw-relative tw-w-full tw-max-w-2xl tw-flex tw-items-stretch tw-overflow-hidden tw-rounded-2xl tw-border tw-border-[#00f0ff]/20 tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-shadow-[0_0_40px_rgba(0,240,255,0.12),0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]"
+			class="tw-pointer-events-none tw-relative tw-w-full tw-max-w-2xl tw-flex tw-items-stretch tw-overflow-hidden tw-rounded-2xl tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-shadow-[0_0_40px_rgba(20, 184, 166,0.12),0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]"
 			style="padding: clamp(0.75rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.25rem);"
 		>
 			<!-- Neon cyan left border accent -->
 			<div
-				class="tw-pointer-events-none tw-absolute tw-left-0 tw-inset-y-0 tw-w-[3px] tw-rounded-l-2xl tw-bg-[#00f0ff] tw-shadow-[0_0_12px_rgba(0,240,255,0.8)]"
+				class="tw-pointer-events-none tw-absolute tw-left-0 tw-inset-y-0 tw-w-[3px] tw-rounded-l-2xl tw-bg-[#14b8a6] tw-shadow-[0_0_12px_rgba(20, 184, 166,0.8)]"
 				aria-hidden="true"
 			></div>
 
@@ -44,12 +44,12 @@
 				<!-- Icon / eyebrow -->
 				<div class="tw-flex-shrink-0 tw-flex tw-flex-col tw-items-start tw-gap-1">
 					<span
-						class="tw-font-mono tw-tracking-widest tw-text-[#00f0ff] tw-uppercase tw-opacity-70"
+						class="tw-font-mono tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-opacity-70"
 						style="font-size: clamp(7px, 0.9vw, 9px);"
 					>
 						[ TIME-LAPSE ]
 					</span>
-					<span class="tw-text-[#00f0ff]" aria-hidden="true" style="font-size: 1.25rem;">◈</span>
+					<span class="tw-text-[#14b8a6]" aria-hidden="true" style="font-size: 1.25rem;">◈</span>
 				</div>
 
 				<!-- Message -->
@@ -62,7 +62,7 @@
 						<span class="tw-text-white/50">LVL {capsule.baselineSnapshot.level}</span>
 						— YOU'VE GROWN
 						<span
-							class="tw-text-[#00f0ff] tw-font-bold tw-tabular-nums tw-shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+							class="tw-text-[#14b8a6] tw-font-bold tw-tabular-nums tw-shadow-[0_0_8px_rgba(20, 184, 166,0.5)]"
 						>
 							+{capsule.deltaSummary.xpGained.toLocaleString()} XP
 						</span>
@@ -81,7 +81,7 @@
 				<button
 					type="button"
 					onclick={dismiss}
-					class="tw-ml-3 tw-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-[#00f0ff]/20 tw-bg-[#00f0ff]/5 tw-text-white/50 tw-font-mono tw-tracking-widest tw-uppercase tw-transition-all tw-duration-200 hover:tw-border-[#00f0ff]/60 hover:tw-bg-[#00f0ff]/15 hover:tw-text-[#00f0ff] hover:tw-shadow-[0_0_12px_rgba(0,240,255,0.3)] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[#00f0ff]/50"
+					class="tw-ml-3 tw-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#14b8a6]/5 tw-text-white/50 tw-font-mono tw-tracking-widest tw-uppercase tw-transition-all tw-duration-200 hover:tw-border-[#14b8a6]/60 hover:tw-bg-[#14b8a6]/15 hover:tw-text-[#14b8a6] hover:tw-shadow-[0_0_12px_rgba(20, 184, 166,0.3)] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[#14b8a6]/50"
 					style="font-size: clamp(7px, 0.9vw, 9px); padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);"
 					aria-label="Dismiss memory capsule"
 				>

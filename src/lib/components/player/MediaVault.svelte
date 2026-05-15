@@ -89,7 +89,7 @@
 	};
 	const STATUS_COLOR: Record<ClipStatus, string> = {
 		uploading:   '#f59e0b',
-		processing:  '#00f0ff',
+		processing:  '#14b8a6',
 		ready:       '#22c55e',
 		quarantined: '#ff003c',
 		error:       '#ff003c',
@@ -397,11 +397,11 @@
 	.mv-header__count {
 		padding: 1px 7px;
 		border-radius: 10px;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		font-size: 0.5rem;
 		font-weight: 800;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 	}
 
 	/* ── Delete All Button ──────────────────────────────────────────────────── */
@@ -533,7 +533,7 @@
 		width: 5px;
 		height: 5px;
 		border-radius: 50%;
-		background: rgba(0, 240, 255, 0.5);
+		background: rgba(20, 184, 166, 0.5);
 		animation: mv-dot 1.2s ease-in-out infinite;
 	}
 	.mv-loading__dot:nth-child(2) { animation-delay: 0.2s; }
@@ -588,11 +588,11 @@
 	.mv-target-chip {
 		padding: 1px 6px;
 		border-radius: 4px;
-		background: rgba(0, 240, 255, 0.07);
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		background: rgba(20, 184, 166, 0.07);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		font-size: 0.45rem;
 		font-weight: 800;
-		color: rgba(0, 240, 255, 0.65);
+		color: rgba(20, 184, 166, 0.65);
 	}
 	.mv-processing-name {
 		font-size: 0.55rem;
@@ -622,8 +622,8 @@
 		transition: border-color 0.2s, box-shadow 0.2s;
 	}
 	.mv-card:hover {
-		border-color: rgba(0, 240, 255, 0.2);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.06);
+		border-color: rgba(20, 184, 166, 0.2);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.06);
 	}
 
 	.mv-card__thumb {
@@ -649,10 +649,10 @@
 		padding: 2px 6px;
 		border-radius: 4px;
 		background: rgba(0, 0, 0, 0.75);
-		border: 1px solid rgba(0, 240, 255, 0.35);
+		border: 1px solid rgba(20, 184, 166, 0.35);
 		font-size: 0.45rem;
 		font-weight: 900;
-		color: #00f0ff;
+		color: #14b8a6;
 		letter-spacing: 0.1em;
 	}
 
@@ -673,8 +673,8 @@
 		margin-top: 0.25rem;
 		padding: 0.35rem 0.4rem;
 		border-radius: 4px;
-		background: rgba(0, 240, 255, 0.04);
-		border-left: 2px solid rgba(0, 240, 255, 0.3);
+		background: rgba(20, 184, 166, 0.04);
+		border-left: 2px solid rgba(20, 184, 166, 0.3);
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
@@ -683,7 +683,7 @@
 		font-size: 0.4rem;
 		font-weight: 900;
 		letter-spacing: 0.15em;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 	}
 	.mv-card__analysis-text {
 		font-size: 0.48rem;
@@ -693,7 +693,7 @@
 	.mv-card__analysis-xp {
 		font-size: 0.48rem;
 		font-weight: 800;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 	}
 
 	.mv-card__footer {
@@ -706,14 +706,14 @@
 		flex: 1;
 		padding: 0.3rem;
 		border-radius: 4px;
-		border: 1px solid rgba(0, 240, 255, 0.2);
-		background: rgba(0, 240, 255, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		background: rgba(20, 184, 166, 0.04);
 		text-align: center;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
-		color: rgba(0, 240, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		text-decoration: none;
 		min-height: 28px;
 		display: flex;
@@ -721,7 +721,7 @@
 		justify-content: center;
 		transition: background 0.15s;
 	}
-	.mv-card__view-btn:hover { background: rgba(0, 240, 255, 0.1); }
+	.mv-card__view-btn:hover { background: rgba(20, 184, 166, 0.1); }
 
 	.mv-card__del-btn {
 		padding: 0.3rem 0.5rem;

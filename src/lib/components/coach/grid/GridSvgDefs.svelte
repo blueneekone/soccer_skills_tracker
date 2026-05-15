@@ -91,7 +91,7 @@
 			repeatCount="indefinite"
 		/>
 		<rect width="40" height="40" fill="none" />
-		<path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,240,255,0.07)" stroke-width="1" />
+		<path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(20, 184, 166,0.07)" stroke-width="1" />
 	</pattern>
 	<radialGradient id="grid-fade" cx="50%" cy="50%" r="50%">
 		<stop offset="40%" stop-color="white" stop-opacity="1" />

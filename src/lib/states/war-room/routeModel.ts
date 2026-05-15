@@ -23,7 +23,7 @@ export function normalizeRoute(r: unknown): TacticalRoute {
 		cy,
 		x2,
 		y2,
-		color: String(o.color ?? '#00f0ff'),
+		color: String(o.color ?? '#14b8a6'),
 		bindPlayerId: o.bindPlayerId != null ? String(o.bindPlayerId) : null,
 		pathKind: o.pathKind === 'cut' ? 'cut' : 'curve',
 		delay: Number.isFinite(Number(o.delay)) ? Math.max(0, Math.min(DELAY_MAX_MS, Number(o.delay))) : 0,

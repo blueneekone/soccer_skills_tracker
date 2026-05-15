@@ -113,7 +113,7 @@
 	}
 
 	function actionColor(action: string): string {
-		if (action === 'DOCUMENT_BURNED') return 'rgba(0, 240, 255, 0.7)';
+		if (action === 'DOCUMENT_BURNED') return 'rgba(20, 184, 166, 0.7)';
 		if (action === 'DOCUMENT_VERIFIED') return 'rgba(251, 146, 60, 0.75)';
 		return 'rgba(255, 50, 80, 0.85)'; // Ares Red for any PII access
 	}
@@ -233,12 +233,12 @@
 		flex-shrink: 0;
 		transition: all 0.15s;
 	}
-	.ppd-refresh:hover:not(:disabled) { border-color: rgba(0, 240, 255, 0.3); color: #00f0ff; }
+	.ppd-refresh:hover:not(:disabled) { border-color: rgba(20, 184, 166, 0.3); color: #14b8a6; }
 	.ppd-refresh:disabled { opacity: 0.4; cursor: not-allowed; }
 	.ppd-refresh__spin {
 		width: 14px; height: 14px;
-		border: 2px solid rgba(0, 240, 255, 0.25);
-		border-top-color: #00f0ff;
+		border: 2px solid rgba(20, 184, 166, 0.25);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 	}
@@ -263,8 +263,8 @@
 	}
 	.ppd-loading__spin {
 		width: 20px; height: 20px;
-		border: 2px solid rgba(0, 240, 255, 0.2);
-		border-top-color: #00f0ff;
+		border: 2px solid rgba(20, 184, 166, 0.2);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 	}

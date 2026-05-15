@@ -69,7 +69,7 @@ export default {
 			'vanguard-lg': 'var(--vanguard-blur-lg)',
 		},
 		fontFamily: {
-			sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			sans: ['Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
 			mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
 		},
 		transitionDuration: {

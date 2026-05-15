@@ -35,7 +35,7 @@
 	const xpPct = $derived(player ? Math.min(100, Math.round((player.xp / player.xpMax) * 100)) : 0);
 	/** @type {Record<string, string>} */
 	const STATUS_COLORS = {
-		READY: '#00f0ff',
+		READY: '#14b8a6',
 		FATIGUED: '#ffff00',
 		INJURED: '#ff003c',
 		SUSPENDED: '#ff6600',
@@ -53,10 +53,10 @@
 	);
 	const SKILL_LABELS = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'];
 	const staminaColor = $derived(
-		player ? (player.stamina >= 70 ? '#00f0ff' : player.stamina >= 40 ? '#ffff00' : '#ff003c') : '#00f0ff',
+		player ? (player.stamina >= 70 ? '#14b8a6' : player.stamina >= 40 ? '#ffff00' : '#ff003c') : '#14b8a6',
 	);
 	const hrColor = $derived(
-		player ? (player.hr <= 80 ? '#00f0ff' : player.hr <= 100 ? '#ffff00' : '#ff003c') : '#00f0ff',
+		player ? (player.hr <= 80 ? '#14b8a6' : player.hr <= 100 ? '#ffff00' : '#ff003c') : '#14b8a6',
 	);
 
 	/** @type {Array<{ name: string, level: number, xpToNext: number, gap: number }>} */
@@ -172,7 +172,7 @@
 			? 'tw-border-[#ff003c]/55 tw-bg-[#1a0008]/80 tw-shadow-[inset_0_1px_1px_rgba(255,0,60,0.1),_0_0_24px_rgba(255,0,60,0.35)] tw-animate-[atRiskPulse_2.4s_ease-in-out_infinite]'
 			: isOffline
 				? 'tw-border-white/8 tw-bg-[#020202]/60 tw-opacity-60 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]'
-				: 'tw-border-white/10 tw-bg-[#020202]/80 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:tw-border-white/20 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(0,240,255,0.06)]'}"
+				: 'tw-border-white/10 tw-bg-[#020202]/80 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] hover:tw-border-white/20 hover:tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_24px_rgba(20, 184, 166,0.06)]'}"
 		data-player-id={player.id}
 		data-status={player.status}
 	>
@@ -206,7 +206,7 @@
 		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-white/[0.02] tw-px-3 tw-py-2.5">
 			<div class="tw-mb-1.5 tw-flex tw-items-center tw-justify-between tw-gap-2">
 				<span
-					class="tw-rounded-md tw-border tw-border-[#00f0ff]/25 tw-bg-[#00f0ff]/10 tw-px-1.5 tw-py-0.5 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#00f0ff]"
+					class="tw-rounded-md tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/10 tw-px-1.5 tw-py-0.5 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#14b8a6]"
 				>
 					LVL {player.level}
 				</span>
@@ -216,7 +216,7 @@
 			</div>
 			<div class="tw-h-1 tw-overflow-hidden tw-rounded-full tw-bg-white/10">
 				<div
-					class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#00f0ff]/50 tw-to-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.45)]"
+					class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#14b8a6]/50 tw-to-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.45)]"
 					style="width: {xpPct}%;"
 				></div>
 			</div>
@@ -262,8 +262,8 @@
 		</div>
 
 		<!-- Skill Radar sparkline — cyan-bloomed bars -->
-		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-[#00f0ff]/15 tw-bg-[#00f0ff]/[0.03] tw-p-2.5">
-			<p class="tw-mb-1.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#00f0ff]/70">
+		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-[#14b8a6]/15 tw-bg-[#14b8a6]/[0.03] tw-p-2.5">
+			<p class="tw-mb-1.5 tw-font-mono tw-text-[8px] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#14b8a6]/70">
 				SKILL RADAR
 			</p>
 			<svg class="tw-block tw-h-10 tw-w-full" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
@@ -277,8 +277,8 @@
 						</feMerge>
 					</filter>
 					<linearGradient id="csrcSparkGrad-{player.id}" x1="0" y1="1" x2="0" y2="0">
-						<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.25" />
-						<stop offset="100%" stop-color="#00f0ff" stop-opacity="1" />
+						<stop offset="0%" stop-color="#14b8a6" stop-opacity="0.25" />
+						<stop offset="100%" stop-color="#14b8a6" stop-opacity="1" />
 					</linearGradient>
 				</defs>
 				{#each skillBars as v, i (i)}
@@ -322,7 +322,7 @@
 		</div>
 		<div class="h-2 overflow-hidden rounded-full bg-slate-800/80">
 			<div
-				class="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(0, 240, 255,0.35)] transition-[width] duration-500"
+				class="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(20, 184, 166,0.35)] transition-[width] duration-500"
 				style="width: {READINESS_PCT}%"
 			></div>
 		</div>

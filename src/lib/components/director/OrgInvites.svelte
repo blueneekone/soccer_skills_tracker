@@ -103,7 +103,7 @@
 
 	// ── Invite list helpers ───────────────────────────────────────────────────
 	const ROLE_COLORS: Record<string, string> = {
-		coach: '#00f0ff',
+		coach: '#14b8a6',
 		player: '#22c55e',
 		director: '#a855f7',
 		parent: '#f59e0b',
@@ -387,14 +387,14 @@
 		justify-content: space-between;
 		align-items: flex-end;
 		padding: 1.25rem 1.5rem 0.75rem;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 		gap: 1rem;
 		flex-wrap: wrap;
 	}
 	.oi-eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 3px;
 	}
@@ -423,13 +423,13 @@
 		white-space: nowrap;
 	}
 	.oi-gen-btn--coach {
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		background: rgba(0, 240, 255, 0.07);
-		color: #00f0ff;
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		background: rgba(20, 184, 166, 0.07);
+		color: #14b8a6;
 	}
 	.oi-gen-btn--coach:hover {
-		background: rgba(0, 240, 255, 0.14);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.14);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
 	}
 	.oi-gen-btn--player {
 		border: 1px solid rgba(34, 197, 94, 0.35);
@@ -467,9 +467,9 @@
 		color: #94a3b8;
 	}
 	.oi-tab--active {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.3);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.3);
+		color: #14b8a6;
 	}
 	.oi-tab-count {
 		background: rgba(255, 255, 255, 0.07);
@@ -478,7 +478,7 @@
 		font-size: 8px;
 	}
 	.oi-tab--active .oi-tab-count {
-		background: rgba(0, 240, 255, 0.15);
+		background: rgba(20, 184, 166, 0.15);
 	}
 
 	/* ── Code list ───────────────────────────────────────────────────────── */
@@ -533,7 +533,7 @@
 	}
 	.oi-usage-fill {
 		height: 100%;
-		background: #00f0ff;
+		background: #14b8a6;
 		border-radius: 2px;
 		transition: width 0.4s;
 	}
@@ -592,10 +592,10 @@
 	}
 	.oi-modal {
 		background: #080d18;
-		border: 1px solid rgba(0, 240, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 8px;
 		width: min(440px, 94vw);
-		box-shadow: 0 0 40px rgba(0, 240, 255, 0.07);
+		box-shadow: 0 0 40px rgba(20, 184, 166, 0.07);
 	}
 	.oi-modal-header {
 		display: flex;
@@ -607,7 +607,7 @@
 	.oi-modal-label {
 		font-size: 9px;
 		letter-spacing: 0.28em;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 	.oi-modal-close {
 		background: none;
@@ -687,9 +687,9 @@
 		transition: all 0.15s;
 	}
 	.oi-limit-chip--active {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.35);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.35);
+		color: #14b8a6;
 	}
 	.oi-limit-input {
 		background: rgba(255, 255, 255, 0.04);
@@ -707,8 +707,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		background: rgba(0, 240, 255, 0.04);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 6px;
 		padding: 0.75rem 1rem;
 	}
@@ -719,7 +719,7 @@
 		gap: 0.35rem;
 		margin-top: 0.5rem;
 		padding-top: 0.6rem;
-		border-top: 1px solid rgba(0, 240, 255, 0.1);
+		border-top: 1px solid rgba(20, 184, 166, 0.1);
 	}
 	.oi-url-label {
 		font-size: 8px;
@@ -730,7 +730,7 @@
 	.oi-url-subtext {
 		margin: 0;
 		font-size: 9px;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 		line-height: 1.5;
 	}
 	.oi-url-row {
@@ -746,9 +746,9 @@
 		font-size: 10px;
 		letter-spacing: 0.03em;
 		background: rgba(0, 0, 0, 0.4);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 3px;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		outline: none;
 		cursor: text;
 		overflow: hidden;
@@ -756,8 +756,8 @@
 		white-space: nowrap;
 	}
 	.oi-url-input:focus {
-		border-color: rgba(0, 240, 255, 0.45);
-		color: #00f0ff;
+		border-color: rgba(20, 184, 166, 0.45);
+		color: #14b8a6;
 	}
 	.oi-copy-btn--url {
 		white-space: nowrap;
@@ -781,24 +781,24 @@
 		font-size: 2rem;
 		font-weight: 700;
 		letter-spacing: 0.35em;
-		color: #00f0ff;
-		text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+		color: #14b8a6;
+		text-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
 	}
 	.oi-copy-btn {
 		font-family: inherit;
 		font-size: 9px;
 		letter-spacing: 0.18em;
 		padding: 5px 12px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
+		border: 1px solid rgba(20, 184, 166, 0.4);
 		border-radius: 3px;
-		background: rgba(0, 240, 255, 0.08);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		color: #14b8a6;
 		cursor: pointer;
 		transition: all 0.15s;
 		flex-shrink: 0;
 	}
 	.oi-copy-btn:hover {
-		background: rgba(0, 240, 255, 0.16);
+		background: rgba(20, 184, 166, 0.16);
 	}
 	.oi-gen-expiry {
 		font-size: 10px;
@@ -816,13 +816,13 @@
 		width: 100%;
 		cursor: pointer;
 		transition: all 0.15s;
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 	.oi-action-btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.18);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.18);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
 	}
 	.oi-action-btn:disabled {
 		opacity: 0.45;

@@ -15,19 +15,34 @@
  *
  * Caching strategy
  * ────────────────
- * 1. Precache  — All app-shell assets (JS, CSS, HTML, fonts, icons) are
- *                stored at install time via Workbox's precache list.
- * 2. Cache-first — Static images (SVG, PNG) from the /static path.
- * 3. Network-first — Firebase SDK requests (firestore, auth, functions)
+ * 1. NetworkOnly  — SvelteKit code-split chunks (/_app/*), API routes (/api/*),
+ *                   and __data.json endpoints are ALWAYS network-only. Stale
+ *                   cached chunks cause module-hash mismatches after deploys.
+ * 2. Precache     — All other app-shell assets (CSS, fonts, icons) are stored
+ *                   at install time via Workbox's precache list.
+ * 3. Cache-first  — Static images (SVG, PNG) from the /static path.
+ * 4. Network-first — Firebase SDK requests (firestore, auth, functions)
  *                    are always network-first so stale tokens never block auth.
- * 4. StaleWhileRevalidate — Google Fonts and CDN icon fonts.
+ * 5. StaleWhileRevalidate — Google Fonts and CDN icon fonts.
  */
 
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+
+// ── CRITICAL: bypass cache for SvelteKit code-split chunks and API routes ─────
+// Register these routes BEFORE precacheAndRoute so Workbox router matches them
+// first. Serving stale hashed JS chunks breaks dynamic import() after deploys.
+registerRoute(
+	({ url }) =>
+		url.pathname.startsWith('/_app/') ||
+		url.pathname.startsWith('/api/') ||
+		url.pathname.endsWith('__data.json') ||
+		url.pathname.endsWith('/_app/version.json'),
+	new NetworkOnly(),
+);
 
 // ── Precache the app shell ────────────────────────────────────────────────────
 // The `self.__WB_MANIFEST` placeholder is replaced by Workbox at build time
@@ -81,16 +96,20 @@ registerRoute(
 	}),
 );
 
-// ── Offline fallback ─────────────────────────────────────────────────────────
+// ── Navigate: network-first with offline fallback ───────────────────────────
 // When a navigation request fails (no network, SW has no cached version),
 // serve the precached root index.html so the app can show its own offline
 // state rather than a bare browser error page.
 self.addEventListener('fetch', (event) => {
-	if (event.request.mode === 'navigate') {
-		event.respondWith(
-			fetch(event.request).catch(() => caches.match('/').then((r) => r ?? Response.error())),
-		);
-	}
+	const req = event.request;
+	if (req.method !== 'GET' || req.mode !== 'navigate') return;
+
+	event.respondWith(
+		fetch(req).catch(async () => {
+			const cached = await caches.match('/');
+			return cached ?? Response.error();
+		}),
+	);
 });
 
 // ── AEGIS Lightning Alert: background push via postMessage ───────────────────
@@ -101,7 +120,7 @@ self.addEventListener('message', (event) => {
 	if (!event.data || event.data.type !== 'AEGIS_LIGHTNING_ALERT') return;
 
 	const { title, body, tag } = event.data;
-	const showNotification = self.registration.showNotification(title ?? '⚡ LIGHTNING ALERT', {
+	const showNotification = self.registration.showNotification(title ?? 'LIGHTNING ALERT', {
 		body: body ?? 'CRITICAL: LIGHTNING DETECTED — CLEAR THE PITCH.',
 		icon: '/icons/icon-192.png',
 		badge: '/icons/icon-72.png',

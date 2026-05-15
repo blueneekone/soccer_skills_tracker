@@ -24,7 +24,7 @@
 			id: 'route',
 			label: 'DRAW ROUTE',
 			icon: /** @type {IconName} */ ('sys.route'),
-			color: '#00f0ff',
+			color: '#14b8a6',
 			action: () => {
 				model.setActiveTool('ROUTE');
 				model.closeMenu();
@@ -122,8 +122,8 @@
 			>
 				<defs>
 					<radialGradient id="ctxRadialBg" cx="50%" cy="50%" r="50%">
-						<stop offset="0%" stop-color="rgba(0, 240, 255, 0.18)" />
-						<stop offset="60%" stop-color="rgba(0, 240, 255, 0.05)" />
+						<stop offset="0%" stop-color="rgba(20, 184, 166, 0.18)" />
+						<stop offset="60%" stop-color="rgba(20, 184, 166, 0.05)" />
 						<stop offset="100%" stop-color="rgba(2, 2, 2, 0)" />
 					</radialGradient>
 					<filter id="ctxBloom" x="-50%" y="-50%" width="200%" height="200%">
@@ -143,7 +143,7 @@
 					cy="0"
 					r={RADIUS}
 					fill="none"
-					stroke="rgba(0, 240, 255, 0.35)"
+					stroke="rgba(20, 184, 166, 0.35)"
 					stroke-width="1"
 					stroke-dasharray="3 4"
 					filter="url(#ctxBloom)"
@@ -156,15 +156,15 @@
 						y1="0"
 						x2={s.cx}
 						y2={s.cy}
-						stroke="rgba(0, 240, 255, 0.2)"
+						stroke="rgba(20, 184, 166, 0.2)"
 						stroke-width="0.6"
 						stroke-dasharray="2 4"
 					/>
 				{/each}
 				<!-- Inner core ring + crosshair -->
-				<circle cx="0" cy="0" r={INNER_R} fill="rgba(2,2,2,0.65)" stroke="rgba(0, 240, 255, 0.55)" stroke-width="1.2" filter="url(#ctxBloom)" />
-				<line x1={-(INNER_R - 8)} y1="0" x2={INNER_R - 8} y2="0" stroke="rgba(0, 240, 255, 0.6)" stroke-width="0.8" />
-				<line x1="0" y1={-(INNER_R - 8)} x2="0" y2={INNER_R - 8} stroke="rgba(0, 240, 255, 0.6)" stroke-width="0.8" />
+				<circle cx="0" cy="0" r={INNER_R} fill="rgba(2,2,2,0.65)" stroke="rgba(20, 184, 166, 0.55)" stroke-width="1.2" filter="url(#ctxBloom)" />
+				<line x1={-(INNER_R - 8)} y1="0" x2={INNER_R - 8} y2="0" stroke="rgba(20, 184, 166, 0.6)" stroke-width="0.8" />
+				<line x1="0" y1={-(INNER_R - 8)} x2="0" y2={INNER_R - 8} stroke="rgba(20, 184, 166, 0.6)" stroke-width="0.8" />
 				<text
 					x="0"
 					y="2"
@@ -174,7 +174,7 @@
 					font-size="7.5"
 					font-weight="900"
 					letter-spacing="1.2"
-					fill="#00f0ff"
+					fill="#14b8a6"
 				>NEXUS</text>
 			</svg>
 

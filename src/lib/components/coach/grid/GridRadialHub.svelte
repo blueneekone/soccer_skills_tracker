@@ -47,8 +47,8 @@
 		<path
 			pointer-events="none"
 			d={hubArcPath(178, 104, Math.PI * 0.48, Math.PI * 1.04)}
-			fill="rgba(0,240,255,0.09)"
-			stroke="#00f0ff"
+			fill="rgba(20, 184, 166,0.09)"
+			stroke="#14b8a6"
 			stroke-width="0.5"
 		>
 			<animate
@@ -81,7 +81,7 @@
 			height="152"
 			rx="16"
 			fill="rgba(4,6,12,0.4)"
-			stroke="#00f0ff"
+			stroke="#14b8a6"
 			stroke-width="0.5"
 			opacity="0.95"
 		/>
@@ -98,19 +98,19 @@
 			<circle
 				r="48"
 				fill="none"
-				stroke="#00f0ff"
+				stroke="#14b8a6"
 				stroke-width="0.5"
 				stroke-dasharray="6 14"
 				opacity="0.88"
 			/>
-			<circle r="40" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.28" />
+			<circle r="40" fill="none" stroke="#14b8a6" stroke-width="0.5" opacity="0.28" />
 		</g>
 
 		<text
 			pointer-events="none"
 			y="8"
 			text-anchor="middle"
-			fill="#00f0ff"
+			fill="#14b8a6"
 			class="tw-font-mono tw-text-[12px] tw-tracking-[0.22em]"
 			style="paint-order: stroke; stroke: rgba(0,0,0,0.82); stroke-width: 4px;"
 		>

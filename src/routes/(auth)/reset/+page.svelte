@@ -309,7 +309,7 @@
 		border: none;
 		outline: none;
 		color: rgba(0, 255, 255, 0.85);
-		caret-color: #00ffff;
+		caret-color: #14b8a6;
 		min-width: 0;
 	}
 	.cr-input::placeholder { color: rgba(0, 255, 255, 0.18); }
@@ -336,7 +336,7 @@
 		font-size: 9px;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: #00ffff;
+		color: #14b8a6;
 		background: rgba(0, 255, 255, 0.08);
 		border: 1px solid rgba(0, 255, 255, 0.4);
 		border-radius: 2px;
@@ -414,7 +414,7 @@
 		margin-bottom: 6px;
 		text-align: center;
 	}
-	.cr-redirect-count { color: #00ffff; font-weight: 700; }
+	.cr-redirect-count { color: #14b8a6; font-weight: 700; }
 	.cr-redirect-bar {
 		height: 2px;
 		background: rgba(0, 255, 255, 0.08);

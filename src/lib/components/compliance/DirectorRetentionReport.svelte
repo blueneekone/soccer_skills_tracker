@@ -202,7 +202,7 @@
 							<span class="drr-cell drr-cell--doc">{row.documentType}</span>
 							<span class="drr-cell drr-cell--dim">{fmtDate(row.completedAt)}</span>
 							<span class="drr-cell"
-								style:color={row.status === 'failed' ? 'rgba(255,50,80,0.8)' : 'rgba(0,240,255,0.7)'}>
+								style:color={row.status === 'failed' ? 'rgba(255,50,80,0.8)' : 'rgba(20, 184, 166,0.7)'}>
 								{row.status.toUpperCase()}
 							</span>
 						</div>
@@ -216,7 +216,7 @@
 <style>
 	.drr-root {
 		background: rgba(6, 8, 16, 0.92);
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 12px;
 		overflow: hidden;
 		font-family: 'JetBrains Mono', monospace;
@@ -225,8 +225,8 @@
 	.drr-header {
 		display: flex; align-items: flex-start; justify-content: space-between;
 		padding: 1.25rem 1.5rem 1rem;
-		background: rgba(0, 240, 255, 0.03);
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		background: rgba(20, 184, 166, 0.03);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 	}
 
 	.drr-eyebrow {
@@ -251,7 +251,7 @@
 		background: transparent; border: 1px solid rgba(255,255,255,0.1);
 		color: rgba(255,255,255,0.35);
 	}
-	.drr-btn--ghost:hover:not(:disabled) { border-color: rgba(0,240,255,0.3); color: #00f0ff; }
+	.drr-btn--ghost:hover:not(:disabled) { border-color: rgba(20, 184, 166,0.3); color: #14b8a6; }
 	.drr-btn--export {
 		background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.35);
 		color: rgba(251,146,60,0.9);
@@ -263,7 +263,7 @@
 
 	.drr-spin {
 		display: inline-block; width: 12px; height: 12px;
-		border: 1.5px solid rgba(0,240,255,0.25); border-top-color: #00f0ff;
+		border: 1.5px solid rgba(20, 184, 166,0.25); border-top-color: #14b8a6;
 		border-radius: 50%; animation: spin 0.7s linear infinite;
 	}
 
@@ -299,7 +299,7 @@
 		font-size: 0.6rem; font-weight: 700;
 	}
 	.drr-badge--warn { background: rgba(251,146,60,0.15); color: rgba(251,146,60,0.8); }
-	.drr-badge--ok   { background: rgba(0,240,255,0.1);   color: rgba(0,240,255,0.7); }
+	.drr-badge--ok   { background: rgba(20, 184, 166,0.1);   color: rgba(20, 184, 166,0.7); }
 
 	.drr-toggle {
 		margin-left: auto; padding: 2px 8px;
@@ -309,7 +309,7 @@
 		letter-spacing: 0.1em; cursor: pointer;
 		transition: all 0.15s;
 	}
-	.drr-toggle:hover { border-color: rgba(0,240,255,0.3); color: #00f0ff; }
+	.drr-toggle:hover { border-color: rgba(20, 184, 166,0.3); color: #14b8a6; }
 
 	.drr-empty {
 		display: flex; align-items: center; justify-content: center;
@@ -335,7 +335,7 @@
 
 	.drr-cell { font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 	.drr-cell--email { color: rgba(255,255,255,0.75); }
-	.drr-cell--doc { color: rgba(0,240,255,0.6); font-size: 0.62rem; }
+	.drr-cell--doc { color: rgba(20, 184, 166,0.6); font-size: 0.62rem; }
 	.drr-cell--dim { color: rgba(255,255,255,0.35); }
 	.drr-cell--countdown {
 		display: flex; align-items: center; gap: 0.3rem;

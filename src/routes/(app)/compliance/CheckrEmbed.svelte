@@ -121,7 +121,7 @@
 		justify-content: center;
 		gap: 0.75rem;
 		min-height: 300px;
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 8px;
 		background: rgba(255, 255, 255, 0.015);
 		backdrop-filter: blur(12px);
@@ -133,8 +133,8 @@
 	.checkr-embed__spinner {
 		width: 2rem;
 		height: 2rem;
-		border: 2px solid rgba(0, 240, 255, 0.15);
-		border-top-color: var(--vanguard-cyan, #00f0ff);
+		border: 2px solid rgba(20, 184, 166, 0.15);
+		border-top-color: var(--vanguard-cyan, #14b8a6);
 		border-radius: 50%;
 		animation: ceSpinAnim 0.8s linear infinite;
 	}
@@ -148,8 +148,8 @@
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.18em;
-		color: var(--vanguard-cyan, #00f0ff);
-		text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+		color: var(--vanguard-cyan, #14b8a6);
+		text-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
 	}
 
 	.checkr-embed__skeleton-sub {
@@ -174,8 +174,8 @@
 
 	.checkr-embed__alpha-icon {
 		font-size: 3rem;
-		color: var(--vanguard-cyan, #00f0ff);
-		filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.55));
+		color: var(--vanguard-cyan, #14b8a6);
+		filter: drop-shadow(0 0 14px rgba(20, 184, 166, 0.55));
 	}
 
 	.checkr-embed__alpha-title {
@@ -230,7 +230,7 @@
 	}
 
 	.checkr-embed__alpha-hint strong {
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 	}
 
 	/* Error */

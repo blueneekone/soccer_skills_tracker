@@ -137,19 +137,19 @@
 	<!-- ── AUTHORIZED TERMINAL ───────────────────────────────────────────── -->
 	<div
 		class="tw-w-full tw-max-w-2xl tw-mx-auto tw-space-y-4
-		       tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#00f0ff]/20
+		       tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#14b8a6]/20
 		       tw-rounded-xl tw-p-6 tw-relative tw-overflow-hidden"
 	>
 		<!-- Ambient glow -->
 		<div
 			class="tw-absolute tw-top-0 tw-left-0 tw-right-0 tw-h-px
-			       tw-bg-gradient-to-r tw-from-transparent tw-via-[#00f0ff]/40 tw-to-transparent"
+			       tw-bg-gradient-to-r tw-from-transparent tw-via-[#14b8a6]/40 tw-to-transparent"
 		></div>
 
 		<!-- ── HEADER ──────────────────────────────────────────────────────── -->
 		<div class="tw-space-y-2">
 			<p
-				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]
+				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]
 				       tw-uppercase tw-font-bold"
 			>
 				// FAILSAFE OVERRIDE TERMINAL
@@ -172,10 +172,10 @@
 		<!-- ── FLASH STATES ─────────────────────────────────────────────────── -->
 		{#if clearSuccess}
 			<div
-				class="tw-bg-[#00ff88]/10 tw-border tw-border-[#00ff88]/30 tw-rounded-lg
+				class="tw-bg-[#2dd4bf]/10 tw-border tw-border-[#2dd4bf]/30 tw-rounded-lg
 				       tw-px-4 tw-py-3"
 			>
-				<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00ff88] tw-uppercase">
+				<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#2dd4bf] tw-uppercase">
 					✓ NODE CLEARED — IMMUTABLE RECORD WRITTEN
 				</p>
 			</div>
@@ -201,11 +201,11 @@
 			{#if isLoadingNodes}
 				<div class="tw-flex tw-items-center tw-gap-2 tw-py-4">
 					<span
-						class="tw-inline-block tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-[#00f0ff]
+						class="tw-inline-block tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-[#14b8a6]
 						       tw-animate-pulse"
 					></span>
 					<p
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00f0ff]/70
+						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/70
 						       tw-uppercase tw-animate-pulse"
 					>
 						SCANNING PENDING NODES...
@@ -213,11 +213,11 @@
 				</div>
 			{:else if pendingNodes.length === 0}
 				<div
-					class="tw-bg-[#00ff88]/5 tw-border tw-border-[#00ff88]/20 tw-rounded-lg
+					class="tw-bg-[#2dd4bf]/5 tw-border tw-border-[#2dd4bf]/20 tw-rounded-lg
 					       tw-px-4 tw-py-3"
 				>
 					<p
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00ff88]/80
+						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#2dd4bf]/80
 						       tw-uppercase"
 					>
 						ALL NODES CLEARED — NO PENDING ESCROW
@@ -232,8 +232,8 @@
 							       tw-px-4 tw-py-3 tw-rounded-lg tw-transition-all tw-duration-200
 							       tw-bg-[#020202]/60 tw-border tw-text-left
 							       {selectedNodeId === node.id
-								? 'tw-border-[#00f0ff]/60 tw-shadow-[0_0_12px_rgba(0,240,255,0.15)]'
-								: 'tw-border-[#00f0ff]/10 hover:tw-border-[#00f0ff]/30'}"
+								? 'tw-border-[#14b8a6]/60 tw-shadow-[0_0_12px_rgba(20, 184, 166,0.15)]'
+								: 'tw-border-[#14b8a6]/10 hover:tw-border-[#14b8a6]/30'}"
 						>
 							<div class="tw-space-y-0.5">
 								<p class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-white/80">
@@ -259,7 +259,7 @@
 								<span
 									class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase
 									       {selectedNodeId === node.id
-										? 'tw-text-[#00f0ff]'
+										? 'tw-text-[#14b8a6]'
 										: 'tw-text-white/30'}"
 								>
 									{selectedNodeId === node.id ? '[ SELECTED ]' : '[ SELECT ]'}
@@ -274,7 +274,7 @@
 		<!-- ── ACTION BLOCK ──────────────────────────────────────────────────── -->
 		{#if selectedNode}
 			<div
-				class="tw-space-y-4 tw-pt-4 tw-border-t tw-border-[#00f0ff]/10"
+				class="tw-space-y-4 tw-pt-4 tw-border-t tw-border-[#14b8a6]/10"
 			>
 				<!-- Selected node info -->
 				<div>
@@ -292,7 +292,7 @@
 
 				<!-- Telemetry preview -->
 				<div
-					class="tw-bg-[#020202] tw-border tw-border-[#00f0ff]/10 tw-rounded-lg
+					class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-rounded-lg
 					       tw-px-4 tw-py-3"
 				>
 					<p
@@ -302,13 +302,13 @@
 						INJECTED TELEMETRY PREVIEW
 					</p>
 					<div class="tw-space-y-0.5">
-						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#00f0ff]/70">
+						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
 							attestedVia: <span class="tw-text-white/60">'manual_director_override'</span>
 						</p>
-						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#00f0ff]/70">
+						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
 							overrideUid: <span class="tw-text-white/60">{authStore.user?.uid ?? 'unknown'}</span>
 						</p>
-						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#00f0ff]/70">
+						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
 							overrideTimestamp: <span class="tw-text-white/60">[NOW]</span>
 						</p>
 					</div>

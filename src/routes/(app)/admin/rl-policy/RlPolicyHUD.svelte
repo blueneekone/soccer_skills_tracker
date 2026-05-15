@@ -15,10 +15,10 @@
 	const statusColor = $derived.by(() => {
 		if (engine.saveState === 'error') return '#ff6b6b';
 		if (engine.saveState === 'saving') return '#f59e0b';
-		if (engine.saveState === 'success') return '#39ff14';
+		if (engine.saveState === 'success') return '#2dd4bf';
 		if (engine.frozen) return '#ff6b6b';
 		if (engine.abPercent === 0) return 'rgba(255,255,255,0.25)';
-		if (engine.abPercent === 100) return '#39ff14';
+		if (engine.abPercent === 100) return '#2dd4bf';
 		return '#00d4ff';
 	});
 

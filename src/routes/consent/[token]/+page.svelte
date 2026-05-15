@@ -265,10 +265,10 @@
 			<div class="cv-brand__mark" aria-hidden="true">
 				<svg viewBox="0 0 32 32" fill="none">
 					<polygon points="16,2 30,10 30,22 16,30 2,22 2,10"
-						stroke="#00f0ff" stroke-width="1.2"
-						fill="rgba(0,240,255,0.08)" />
+						stroke="#14b8a6" stroke-width="1.2"
+						fill="rgba(20, 184, 166,0.08)" />
 					<text x="16" y="21" text-anchor="middle" font-size="11"
-						fill="#00f0ff" font-family="monospace" font-weight="900">V</text>
+						fill="#14b8a6" font-family="monospace" font-weight="900">V</text>
 				</svg>
 			</div>
 			<div>
@@ -413,7 +413,7 @@
 			{:else if phase === 'granted'}
 				<div class="cv-state cv-state--success">
 				<div class="cv-state__icon cv-state__icon--success" aria-hidden="true">
-					<Icon name="status.verified" size={60} class="tw-text-[#00ff88]" />
+					<Icon name="status.verified" size={60} class="tw-text-[#2dd4bf]" />
 				</div>
 					<h1 class="cv-state__title cv-state__title--success">CONSENT GRANTED</h1>
 					<p class="cv-state__body">
@@ -512,7 +512,7 @@
 		pointer-events: none;
 		background: repeating-linear-gradient(
 			0deg, transparent, transparent 2px,
-			rgba(0, 240, 255, 0.015) 2px, rgba(0, 240, 255, 0.015) 4px
+			rgba(20, 184, 166, 0.015) 2px, rgba(20, 184, 166, 0.015) 4px
 		);
 		z-index: 0;
 	}
@@ -522,8 +522,8 @@
 		inset: 0;
 		pointer-events: none;
 		background-image:
-			linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+			linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
 		background-size: 56px 56px;
 		z-index: 0;
 	}
@@ -549,7 +549,7 @@
 	.cv-brand__mark svg {
 		width: 36px;
 		height: 36px;
-		filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.3));
+		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.3));
 	}
 
 	.cv-brand__sub {
@@ -558,7 +558,7 @@
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 	}
 
 	.cv-brand__law {
@@ -572,12 +572,12 @@
 	/* ─── Panel ─────────────────────────────────────────────────────────────── */
 	.cv-panel {
 		background: rgba(8, 10, 18, 0.92);
-		border: 1px solid rgba(0, 240, 255, 0.14);
+		border: 1px solid rgba(20, 184, 166, 0.14);
 		border-radius: 16px;
 		box-shadow:
-			0 0 60px rgba(0, 240, 255, 0.06),
+			0 0 60px rgba(20, 184, 166, 0.06),
 			0 0 120px rgba(0, 0, 0, 0.8),
-			inset 0 1px 0 rgba(0, 240, 255, 0.1);
+			inset 0 1px 0 rgba(20, 184, 166, 0.1);
 		padding: 2.5rem 2rem;
 		display: flex;
 		flex-direction: column;
@@ -590,7 +590,7 @@
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: rgba(0, 240, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 	}
 
 	.cv-title {
@@ -609,13 +609,13 @@
 		color: rgba(255, 255, 255, 0.55);
 	}
 
-	.cv-accent { color: #00f0ff; font-weight: 700; }
-	.cv-accent-green { color: #00ff88; font-weight: 700; }
+	.cv-accent { color: #14b8a6; font-weight: 700; }
+	.cv-accent-green { color: #2dd4bf; font-weight: 700; }
 
 	/* ─── Legal box ─────────────────────────────────────────────────────────── */
 	.cv-legal-box {
-		background: rgba(0, 240, 255, 0.03);
-		border: 1px solid rgba(0, 240, 255, 0.1);
+		background: rgba(20, 184, 166, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 10px;
 		padding: 1.25rem;
 		display: flex;
@@ -629,7 +629,7 @@
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.15em;
-		color: rgba(0, 240, 255, 0.6);
+		color: rgba(20, 184, 166, 0.6);
 	}
 
 	.cv-legal-text {
@@ -680,15 +680,15 @@
 	.cv-btn__icon { font-size: 0.75rem; }
 
 	.cv-btn--grant {
-		background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 200, 100, 0.08));
-		border: 1px solid rgba(0, 255, 136, 0.45);
-		color: #00ff88;
+		background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(0, 200, 100, 0.08));
+		border: 1px solid rgba(45, 212, 191, 0.45);
+		color: #2dd4bf;
 	}
 
 	.cv-btn--grant:hover:not(:disabled) {
-		background: linear-gradient(135deg, rgba(0, 255, 136, 0.22), rgba(0, 200, 100, 0.14));
-		border-color: rgba(0, 255, 136, 0.7);
-		box-shadow: 0 0 20px rgba(0, 255, 136, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
+		background: linear-gradient(135deg, rgba(45, 212, 191, 0.22), rgba(0, 200, 100, 0.14));
+		border-color: rgba(45, 212, 191, 0.7);
+		box-shadow: 0 0 20px rgba(45, 212, 191, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
 		transform: translateY(-1px);
 	}
 
@@ -730,7 +730,7 @@
 		line-height: 1;
 	}
 
-	.cv-state__icon--success svg { width: 60px; height: 60px; filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.35)); }
+	.cv-state__icon--success svg { width: 60px; height: 60px; filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.35)); }
 
 	.cv-state__title {
 		margin: 0;
@@ -741,7 +741,7 @@
 		color: #ffffff;
 	}
 
-	.cv-state__title--success { color: #00ff88; }
+	.cv-state__title--success { color: #2dd4bf; }
 
 	.cv-state__body {
 		margin: 0;
@@ -753,15 +753,15 @@
 
 	.cv-state__body--small { font-size: 0.75rem; color: rgba(255, 255, 255, 0.35); }
 
-	.cv-state--success { color: #00ff88; }
+	.cv-state--success { color: #2dd4bf; }
 	.cv-state--error .cv-state__icon { color: rgba(255, 240, 94, 0.7); }
 	.cv-state--loading .cv-state__title { color: rgba(255, 255, 255, 0.6); }
 
 	.cv-state__spinner {
 		width: 32px;
 		height: 32px;
-		border: 2.5px solid rgba(0, 240, 255, 0.2);
-		border-top-color: #00f0ff;
+		border: 2.5px solid rgba(20, 184, 166, 0.2);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.75s linear infinite;
 	}
@@ -804,12 +804,12 @@
 		align-items: flex-start;
 		gap: 0.6rem;
 		padding: 0.85rem 1rem;
-		background: rgba(0, 240, 255, 0.04);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 8px;
 		font-size: 0.78rem;
 		line-height: 1.6;
-		color: rgba(0, 240, 255, 0.75);
+		color: rgba(20, 184, 166, 0.75);
 		font-family: 'JetBrains Mono', monospace;
 	}
 	.cv-biometric-notice__icon { font-size: 1.1rem; flex-shrink: 0; }
@@ -835,7 +835,7 @@
 		animation: pulse-glow 1.4s ease-in-out infinite alternate;
 	}
 	@keyframes pulse-glow {
-		from { filter: drop-shadow(0 0 4px rgba(0,240,255,0.3)); }
-		to   { filter: drop-shadow(0 0 18px rgba(0,240,255,0.75)); }
+		from { filter: drop-shadow(0 0 4px rgba(20, 184, 166,0.3)); }
+		to   { filter: drop-shadow(0 0 18px rgba(20, 184, 166,0.75)); }
 	}
 </style>

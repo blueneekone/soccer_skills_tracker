@@ -20,7 +20,7 @@
 		if (id === 'erase') {
 			return 'tw-text-[#ff2a2a] tw-bg-[#ff2a2a]/15 tw-border-[#ff2a2a]/60 tw-shadow-[0_0_15px_rgba(255,42,42,0.4)]';
 		}
-		return 'tw-text-[#00f0ff] tw-bg-[#00f0ff]/15 tw-border-[#00f0ff]/60 tw-shadow-[0_0_15px_rgba(0,240,255,0.4)]';
+		return 'tw-text-[#14b8a6] tw-bg-[#14b8a6]/15 tw-border-[#14b8a6]/60 tw-shadow-[0_0_15px_rgba(20, 184, 166,0.4)]';
 	}
 
 	function pickMode(/** @type {'cursor' | 'draw' | 'erase'} */ mode) {
@@ -76,7 +76,7 @@
 >
 	<!-- Floating glass pill: heavy backdrop-blur, hairline cyan border, rounded-xl. -->
 	<div
-		class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-bg-black/40 tw-backdrop-blur-3xl tw-border tw-border-[#00f0ff]/20 tw-rounded-xl tw-pointer-events-auto"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-bg-black/40 tw-backdrop-blur-3xl tw-border tw-border-[#14b8a6]/20 tw-rounded-xl tw-pointer-events-auto"
 		role="toolbar"
 		aria-label="Tactical dock"
 	>
@@ -93,7 +93,7 @@
 					? activePalette(tool.id)
 					: tool.id === 'erase'
 						? 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#ff2a2a]'
-						: 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#00f0ff]'}"
+						: 'tw-text-gray-400 tw-bg-transparent tw-border-transparent hover:tw-text-[#14b8a6]'}"
 				onclick={() => pickMode(tool.id)}
 				aria-pressed={dockMode === tool.id}
 			>
@@ -101,11 +101,11 @@
 			</button>
 		{/each}
 
-		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#00f0ff]/20" aria-hidden="true"></span>
+		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#14b8a6]/20" aria-hidden="true"></span>
 
 		<button
 			type="button"
-			class="tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#00f0ff]/35 tw-bg-[#020202]/60 tw-font-mono tw-text-[11px] tw-font-bold tw-text-[#00f0ff] tw-transition-all hover:tw-bg-[#00f0ff]/15 hover:tw-shadow-[0_0_14px_rgba(0,240,255,0.28)] active:tw-scale-95"
+			class="tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/60 tw-font-mono tw-text-[11px] tw-font-bold tw-text-[#14b8a6] tw-transition-all hover:tw-bg-[#14b8a6]/15 hover:tw-shadow-[0_0_14px_rgba(20, 184, 166,0.28)] active:tw-scale-95"
 			onclick={() => model.resetPositions()}
 			aria-label="Rewind timeline and reset token positions"
 			title="Rewind / reset"
@@ -164,16 +164,16 @@
 			onpointercancel={onRailUp}
 		>
 			<div
-				class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-0 tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#00f0ff]/30 tw-to-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.4)]"
+				class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-0 tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#14b8a6]/30 tw-to-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.4)]"
 				style="width: {model.timelineNorm * 100}%;"
 			></div>
 		</div>
 
-		<span class="tw-font-mono tw-text-[11px] tw-font-bold tw-tabular-nums tw-text-[#00f0ff]">
+		<span class="tw-font-mono tw-text-[11px] tw-font-bold tw-tabular-nums tw-text-[#14b8a6]">
 			{model.formatTimelineMs(model.simulator.currentTime)}
 		</span>
 
-		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#00f0ff]/20" aria-hidden="true"></span>
+		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#14b8a6]/20" aria-hidden="true"></span>
 
 		<!--
 		  [ SYS.MENU ] — hardwired through the DOM:
@@ -199,7 +199,7 @@
 			[ SYS.MENU ]
 		</button>
 
-		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#00f0ff]/20" aria-hidden="true"></span>
+		<span class="tw-mx-1 tw-h-5 tw-w-px tw-shrink-0 tw-bg-[#14b8a6]/20" aria-hidden="true"></span>
 
 		<!-- [ ↑ DEPLOY ] — green confirmation button. -->
 		<button

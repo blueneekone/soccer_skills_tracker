@@ -53,13 +53,13 @@
 	);
 
 	/** Base SIEM color: opponent = Ares Red (#ff2a2a), friendly = Cyan. */
-	const siemColor = $derived(player.side === 'opponent' ? '#ff2a2a' : '#00f0ff');
+	const siemColor = $derived(player.side === 'opponent' ? '#ff2a2a' : '#14b8a6');
 	/**
 	 * Contrast highlight: when an opponent token is selected or hovered the ring
 	 * flips to Cyan so it reads cleanly against the Ares Red disc body.
 	 */
 	const highlightColor = $derived(
-		player.side === 'opponent' && (isSelected || isHovered) ? '#00f0ff' : siemColor
+		player.side === 'opponent' && (isSelected || isHovered) ? '#14b8a6' : siemColor
 	);
 
 </script>
@@ -229,18 +229,18 @@
 		>
 			<rect x="0" y="-58" width="112" height="58" rx="4"
 				fill="#040f16" fill-opacity="0.92"
-				stroke="#00f0ff" stroke-width="0.5" stroke-opacity="0.4"
+				stroke="#14b8a6" stroke-width="0.5" stroke-opacity="0.4"
 			/>
-			<line x1="0" y1="-48" x2="112" y2="-48" stroke="#00f0ff" stroke-width="0.5" stroke-opacity="0.25" />
-			<text x="56" y="-50" font-family="monospace" font-size="6" fill="#00f0ff" fill-opacity="0.5"
+			<line x1="0" y1="-48" x2="112" y2="-48" stroke="#14b8a6" stroke-width="0.5" stroke-opacity="0.25" />
+			<text x="56" y="-50" font-family="monospace" font-size="6" fill="#14b8a6" fill-opacity="0.5"
 				text-anchor="middle" letter-spacing="2">OPERATOR_STATS</text>
-			<text x="8" y="-37" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+			<text x="8" y="-37" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
 				ID: {player.number || 'XX'}
 			</text>
-			<text x="8" y="-25" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+			<text x="8" y="-25" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
 				SPD: 94  STM: 88
 			</text>
-			<text x="8" y="-13" font-family="monospace" font-size="8" fill="#00f0ff" text-anchor="start">
+			<text x="8" y="-13" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
 				POS: {player.position || 'FWD'}
 			</text>
 		</g>

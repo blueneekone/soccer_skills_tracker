@@ -358,14 +358,14 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: flex-end;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.15);
 		padding-bottom: 1.25rem;
 		margin-bottom: 1.25rem;
 	}
 	.od-label {
 		font-size: 10px;
 		letter-spacing: 0.25em;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		margin-bottom: 0.25rem;
 	}
@@ -382,10 +382,10 @@
 		padding: 2px 8px;
 		font-size: 9px;
 		letter-spacing: 0.2em;
-		border: 1px solid rgba(0, 240, 255, 0.4);
+		border: 1px solid rgba(20, 184, 166, 0.4);
 		border-radius: 2px;
-		color: #00f0ff;
-		background: rgba(0, 240, 255, 0.06);
+		color: #14b8a6;
+		background: rgba(20, 184, 166, 0.06);
 	}
 	.od-header-right {
 		display: flex;
@@ -398,7 +398,7 @@
 	.od-stat-value {
 		font-size: 1.5rem;
 		font-weight: 700;
-		color: #00f0ff;
+		color: #14b8a6;
 		display: block;
 		line-height: 1;
 	}
@@ -475,7 +475,7 @@
 		margin: 0 0 1.25rem;
 	}
 	.od-section-count {
-		color: #00f0ff;
+		color: #14b8a6;
 		opacity: 0.7;
 	}
 
@@ -496,7 +496,7 @@
 		transition: border-color 0.2s;
 	}
 	.od-team-card:hover {
-		border-color: rgba(0, 240, 255, 0.2);
+		border-color: rgba(20, 184, 166, 0.2);
 	}
 	.od-team-card--loading {
 		pointer-events: none;
@@ -516,10 +516,10 @@
 	.od-age-badge {
 		font-size: 9px;
 		letter-spacing: 0.18em;
-		border: 1px solid rgba(0, 240, 255, 0.3);
+		border: 1px solid rgba(20, 184, 166, 0.3);
 		border-radius: 2px;
 		padding: 1px 6px;
-		color: #00f0ff;
+		color: #14b8a6;
 		flex-shrink: 0;
 	}
 	.od-team-meta {
@@ -562,13 +562,13 @@
 		border: 1px solid transparent;
 	}
 	.od-invite-btn--coach {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.3);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.3);
+		color: #14b8a6;
 	}
 	.od-invite-btn--coach:hover {
-		background: rgba(0, 240, 255, 0.15);
-		box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.15);
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.2);
 	}
 	.od-invite-btn--player {
 		background: rgba(34, 197, 94, 0.06);
@@ -642,10 +642,10 @@
 	}
 	.od-modal {
 		background: #0a0f1a;
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 8px;
 		width: min(420px, 92vw);
-		box-shadow: 0 0 40px rgba(0, 240, 255, 0.08);
+		box-shadow: 0 0 40px rgba(20, 184, 166, 0.08);
 	}
 	.od-modal-header {
 		display: flex;
@@ -657,7 +657,7 @@
 	.od-modal-label {
 		font-size: 10px;
 		letter-spacing: 0.25em;
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 	.od-modal-close {
 		background: none;
@@ -697,8 +697,8 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		background: rgba(0, 240, 255, 0.04);
-		border: 1px solid rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 6px;
 		padding: 0.75rem 1rem;
 	}
@@ -707,24 +707,24 @@
 		font-size: 2rem;
 		font-weight: 700;
 		letter-spacing: 0.35em;
-		color: #00f0ff;
-		text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+		color: #14b8a6;
+		text-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
 	}
 	.od-copy-btn {
 		font-family: inherit;
 		font-size: 9px;
 		letter-spacing: 0.18em;
 		padding: 5px 12px;
-		border: 1px solid rgba(0, 240, 255, 0.4);
+		border: 1px solid rgba(20, 184, 166, 0.4);
 		border-radius: 3px;
-		background: rgba(0, 240, 255, 0.08);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		color: #14b8a6;
 		cursor: pointer;
 		transition: all 0.15s;
 		flex-shrink: 0;
 	}
 	.od-copy-btn:hover {
-		background: rgba(0, 240, 255, 0.15);
+		background: rgba(20, 184, 166, 0.15);
 	}
 	.od-code-expiry {
 		font-size: 10px;
@@ -747,13 +747,13 @@
 		width: 100%;
 	}
 	.od-generate-btn {
-		background: rgba(0, 240, 255, 0.1);
-		border: 1px solid rgba(0, 240, 255, 0.4);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		color: #14b8a6;
 	}
 	.od-generate-btn:hover:not(:disabled) {
-		background: rgba(0, 240, 255, 0.18);
-		box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+		background: rgba(20, 184, 166, 0.18);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
 	}
 	.od-generate-btn:disabled {
 		opacity: 0.45;

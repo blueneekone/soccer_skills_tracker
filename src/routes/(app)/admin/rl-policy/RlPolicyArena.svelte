@@ -336,7 +336,7 @@
 
 	.badge-ok {
 		background: rgba(57, 255, 20, 0.1);
-		color: #39ff14;
+		color: #2dd4bf;
 		border: 1px solid rgba(57, 255, 20, 0.25);
 	}
 

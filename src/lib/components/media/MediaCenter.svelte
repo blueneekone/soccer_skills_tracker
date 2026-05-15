@@ -8,7 +8,7 @@
 	 *
 	 * Stark/Vanguard aesthetic:
 	 *   • Obsidian glass backdrop (backdrop-blur-3xl)
-	 *   • Cyan (#00f0ff) left-border on news cards
+	 *   • Cyan (#14b8a6) left-border on news cards
 	 *   • All external images: grayscale(50%) + slight sepia — never clashes with UI
 	 *   • Lazy-loaded images via loading="lazy"
 	 */
@@ -342,7 +342,7 @@
 		width: min(420px, 100vw);
 		display: flex; flex-direction: column;
 		background: rgba(5, 5, 14, 0.97);
-		border-left: 1px solid rgba(0, 240, 255, 0.12);
+		border-left: 1px solid rgba(20, 184, 166, 0.12);
 		box-shadow: -12px 0 60px rgba(0, 0, 0, 0.6);
 		animation: mcSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 		overflow: hidden;
@@ -352,14 +352,14 @@
 	.mc-header {
 		display: flex; align-items: flex-start; justify-content: space-between;
 		padding: 1rem 1rem 0;
-		border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
 		flex-shrink: 0;
 	}
 	.mc-header__left { display: flex; flex-direction: column; gap: 0.6rem; }
 	.mc-eyebrow {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.5rem; font-weight: 800; letter-spacing: 0.25em;
-		color: rgba(0, 240, 255, 0.45);
+		color: rgba(20, 184, 166, 0.45);
 	}
 
 	.mc-tabs { display: flex; gap: 0; }
@@ -373,7 +373,7 @@
 		cursor: pointer; transition: all 0.15s;
 		min-height: 44px; /* touch target */
 	}
-	.mc-tab--active { color: #00f0ff; border-bottom-color: #00f0ff; }
+	.mc-tab--active { color: #14b8a6; border-bottom-color: #14b8a6; }
 	.mc-tab:hover:not(.mc-tab--active) { color: rgba(255, 255, 255, 0.6); }
 
 	.mc-close {
@@ -408,9 +408,9 @@
 		cursor: pointer; transition: all 0.15s;
 	}
 	.mc-cat-btn--active {
-		background: rgba(0, 240, 255, 0.08);
-		border-color: rgba(0, 240, 255, 0.3);
-		color: #00f0ff;
+		background: rgba(20, 184, 166, 0.08);
+		border-color: rgba(20, 184, 166, 0.3);
+		color: #14b8a6;
 	}
 	.mc-cat-btn:hover:not(:disabled):not(.mc-cat-btn--active) {
 		border-color: rgba(255, 255, 255, 0.2);
@@ -430,7 +430,7 @@
 		outline: none; transition: border-color 0.15s;
 	}
 	.mc-search::placeholder { color: rgba(255, 255, 255, 0.25); }
-	.mc-search:focus { border-color: rgba(0, 240, 255, 0.35); }
+	.mc-search:focus { border-color: rgba(20, 184, 166, 0.35); }
 
 	/* ── Scrollable body ────────────────────────────────────────────────────── */
 	.mc-scroll {
@@ -440,7 +440,7 @@
 	.mc-scroll::-webkit-scrollbar { width: 4px; }
 	.mc-scroll::-webkit-scrollbar-track { background: transparent; }
 	.mc-scroll::-webkit-scrollbar-thumb {
-		background: rgba(0, 240, 255, 0.15); border-radius: 2px;
+		background: rgba(20, 184, 166, 0.15); border-radius: 2px;
 	}
 
 	/* ── Loading / empty / error ─────────────────────────────────────────────── */
@@ -449,13 +449,13 @@
 		padding: 3rem 1rem;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.65rem; letter-spacing: 0.12em;
-		color: rgba(0, 240, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 	}
 	.mc-loading--sm { padding: 1rem; }
 	.mc-spin {
 		width: 14px; height: 14px;
-		border: 1.5px solid rgba(0, 240, 255, 0.2);
-		border-top-color: #00f0ff;
+		border: 1.5px solid rgba(20, 184, 166, 0.2);
+		border-top-color: #14b8a6;
 		border-radius: 50%;
 		animation: spin 0.7s linear infinite;
 		flex-shrink: 0;
@@ -492,11 +492,11 @@
 		padding: 0.75rem 0.75rem 0.75rem 1rem;
 		background: rgba(255, 255, 255, 0.03);
 		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-left: 2px solid #00f0ff;
+		border-left: 2px solid #14b8a6;
 		border-radius: 6px;
 		transition: background 0.15s;
 	}
-	.mc-news-card:hover { background: rgba(0, 240, 255, 0.04); }
+	.mc-news-card:hover { background: rgba(20, 184, 166, 0.04); }
 
 	.mc-news-card__img-wrap {
 		flex-shrink: 0; width: 72px; height: 52px;
@@ -514,7 +514,7 @@
 	.mc-news-card__meta { display: flex; align-items: center; gap: 0.5rem; }
 	.mc-news-card__source {
 		font-size: 0.55rem; font-weight: 700; letter-spacing: 0.15em;
-		color: rgba(0, 240, 255, 0.55); font-family: 'JetBrains Mono', monospace;
+		color: rgba(20, 184, 166, 0.55); font-family: 'JetBrains Mono', monospace;
 	}
 	.mc-news-card__date {
 		font-size: 0.55rem; color: rgba(255, 255, 255, 0.25);
@@ -527,7 +527,7 @@
 		display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 		overflow: hidden;
 	}
-	.mc-news-card__title:hover { color: #00f0ff; }
+	.mc-news-card__title:hover { color: #14b8a6; }
 	.mc-news-card__desc {
 		margin: 0; font-size: 0.68rem; line-height: 1.5;
 		color: rgba(255, 255, 255, 0.38);
@@ -545,7 +545,7 @@
 		background: rgba(255, 255, 255, 0.02);
 		transition: border-color 0.15s;
 	}
-	.mc-pod-card--expanded { border-color: rgba(0, 240, 255, 0.2); }
+	.mc-pod-card--expanded { border-color: rgba(20, 184, 166, 0.2); }
 
 	.mc-pod-card__cover-btn {
 		width: 100%; display: flex; align-items: center; gap: 0.75rem;
@@ -553,7 +553,7 @@
 		background: transparent; border: none;
 		cursor: pointer; text-align: left;
 	}
-	.mc-pod-card__cover-btn:hover { background: rgba(0, 240, 255, 0.03); }
+	.mc-pod-card__cover-btn:hover { background: rgba(20, 184, 166, 0.03); }
 
 	.mc-pod-cover {
 		width: 48px; height: 48px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
@@ -561,8 +561,8 @@
 	}
 	.mc-pod-cover--placeholder {
 		display: flex; align-items: center; justify-content: center;
-		background: rgba(0, 240, 255, 0.08);
-		color: rgba(0, 240, 255, 0.4);
+		background: rgba(20, 184, 166, 0.08);
+		color: rgba(20, 184, 166, 0.4);
 		font-size: 1.1rem;
 	}
 	.mc-pod-card__label { flex: 1; min-width: 0; }
@@ -578,7 +578,7 @@
 	}
 
 	/* ── EPISODE LIST ─────────────────────────────────────────────────────── */
-	.mc-episodes { border-top: 1px solid rgba(0, 240, 255, 0.08); }
+	.mc-episodes { border-top: 1px solid rgba(20, 184, 166, 0.08); }
 
 	.mc-ep {
 		display: flex; align-items: center; gap: 0.6rem;
@@ -586,14 +586,14 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 		min-height: 56px; /* touch target */
 	}
-	.mc-ep--active { background: rgba(0, 240, 255, 0.04); }
+	.mc-ep--active { background: rgba(20, 184, 166, 0.04); }
 	.mc-ep__info { flex: 1; min-width: 0; }
 	.mc-ep__title {
 		display: block; font-size: 0.72rem; font-weight: 600;
 		color: rgba(255, 255, 255, 0.75);
 		white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 	}
-	.mc-ep--active .mc-ep__title { color: #00f0ff; }
+	.mc-ep--active .mc-ep__title { color: #14b8a6; }
 	.mc-ep__meta {
 		display: block; font-size: 0.58rem;
 		font-family: 'JetBrains Mono', monospace;
@@ -603,21 +603,21 @@
 	.mc-ep__play {
 		width: 32px; height: 32px; min-width: 44px; min-height: 44px;
 		display: flex; align-items: center; justify-content: center;
-		background: rgba(0, 240, 255, 0.08);
-		border: 1px solid rgba(0, 240, 255, 0.2);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 50%;
-		color: rgba(0, 240, 255, 0.7);
+		color: rgba(20, 184, 166, 0.7);
 		font-size: 0.65rem;
 		cursor: pointer; transition: all 0.15s;
 	}
-	.mc-ep__play:hover { background: rgba(0, 240, 255, 0.18); box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
-	.mc-ep__play--playing { background: rgba(0, 240, 255, 0.15); border-color: rgba(0, 240, 255, 0.5); }
+	.mc-ep__play:hover { background: rgba(20, 184, 166, 0.18); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); }
+	.mc-ep__play--playing { background: rgba(20, 184, 166, 0.15); border-color: rgba(20, 184, 166, 0.5); }
 
 	.mc-ep__bars {
 		display: flex; align-items: flex-end; gap: 2px; height: 12px;
 	}
 	.mc-ep__bars span {
-		width: 3px; background: #00f0ff; border-radius: 1px;
+		width: 3px; background: #14b8a6; border-radius: 1px;
 		animation: bars 0.8s ease infinite;
 	}
 	.mc-ep__bars span:nth-child(2) { animation-delay: 0.2s; }

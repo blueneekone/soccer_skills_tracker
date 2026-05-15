@@ -210,7 +210,7 @@
 						OPERATIVE · {classification}
 					</p>
 					<h2
-						class="tw-mt-1 tw-truncate tw-text-[15px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-white"
+						class="tw-mt-1 tw-truncate tw-text-[15px] tw-font-sans tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-white"
 					>
 						{name}
 					</h2>

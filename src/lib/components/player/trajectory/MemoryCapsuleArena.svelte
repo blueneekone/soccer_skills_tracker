@@ -43,19 +43,19 @@
 </script>
 
 <article
-	class="tw-relative tw-w-full tw-bg-[#020202]/80 tw-backdrop-blur-xl tw-rounded-3xl tw-border tw-border-[#00f0ff]/20 tw-shadow-[0_0_60px_rgba(0,240,255,0.08),inset_0_1px_0_rgba(255,255,255,0.04)] tw-overflow-hidden"
+	class="tw-relative tw-w-full tw-bg-[#020202]/80 tw-backdrop-blur-xl tw-rounded-3xl tw-border tw-border-[#14b8a6]/20 tw-shadow-[0_0_60px_rgba(20, 184, 166,0.08),inset_0_1px_0_rgba(255,255,255,0.04)] tw-overflow-hidden"
 	style="padding: clamp(1rem, 3vw, 2rem);"
 >
 	<!-- Ambient glow layer -->
 	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(0,240,255,0.05)_0%,transparent_70%)]"
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(20, 184, 166,0.05)_0%,transparent_70%)]"
 		aria-hidden="true"
 	></div>
 
 	<!-- Header -->
 	<header class="tw-relative tw-mb-6 tw-flex tw-flex-col tw-gap-2">
 		<span
-			class="tw-font-mono tw-tracking-widest tw-text-[#00f0ff] tw-uppercase tw-opacity-70"
+			class="tw-font-mono tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-opacity-70"
 			style="font-size: clamp(8px, 1vw, 10px);"
 		>
 			[ TIME-LAPSE MEMORY CAPSULE ]
@@ -67,7 +67,7 @@
 			{capsuleHeadline}
 		</h2>
 		<div class="tw-flex tw-items-center tw-gap-2">
-			<span class="tw-w-8 tw-h-px tw-bg-[#00f0ff]/30"></span>
+			<span class="tw-w-8 tw-h-px tw-bg-[#14b8a6]/30"></span>
 			<span
 				class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
 				style="font-size: clamp(8px, 1vw, 10px);"
@@ -90,7 +90,7 @@
 		</span>
 		<span class="tw-w-6"></span>
 		<span
-			class="tw-font-mono tw-tracking-widest tw-text-[#00f0ff]/70 tw-uppercase tw-text-right"
+			class="tw-font-mono tw-tracking-widest tw-text-[#14b8a6]/70 tw-uppercase tw-text-right"
 			style="font-size: clamp(8px, 1vw, 10px);"
 		>
 			CURRENT / TODAY
@@ -99,7 +99,7 @@
 
 	<!-- Scout's Six comparison grid -->
 	<div
-		class="tw-grid tw-grid-cols-1 tw-gap-px tw-bg-[#00f0ff]/5 tw-rounded-xl tw-overflow-hidden tw-border tw-border-[#00f0ff]/10"
+		class="tw-grid tw-grid-cols-1 tw-gap-px tw-bg-[#14b8a6]/5 tw-rounded-xl tw-overflow-hidden tw-border tw-border-[#14b8a6]/10"
 	>
 		{#each SCOUTS_SIX_KEYS as key (key)}
 			{@const delta = getDelta(key)}
@@ -145,7 +145,7 @@
 				<div class="tw-flex tw-items-center tw-justify-end tw-gap-3">
 					<span
 						class="tw-font-mono tw-tabular-nums {delta > 0
-							? 'tw-text-[#00f0ff]'
+							? 'tw-text-[#14b8a6]'
 							: delta < 0
 								? 'tw-text-orange-400'
 								: 'tw-text-white/80'}"
@@ -169,7 +169,7 @@
 	>
 		<!-- XP Gained bar -->
 		<div
-			class="tw-col-span-3 sm:tw-col-span-1 tw-flex tw-flex-col tw-gap-2 tw-bg-[#00f0ff]/5 tw-rounded-xl tw-border tw-border-[#00f0ff]/10"
+			class="tw-col-span-3 sm:tw-col-span-1 tw-flex tw-flex-col tw-gap-2 tw-bg-[#14b8a6]/5 tw-rounded-xl tw-border tw-border-[#14b8a6]/10"
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span
@@ -179,14 +179,14 @@
 				XP GAINED
 			</span>
 			<span
-				class="tw-font-mono tw-font-bold tw-text-[#00f0ff] tw-tabular-nums"
+				class="tw-font-mono tw-font-bold tw-text-[#14b8a6] tw-tabular-nums"
 				style="font-size: clamp(1rem, 2vw, 1.25rem);"
 			>
 				+{capsule.deltaSummary.xpGained.toLocaleString()}
 			</span>
 			<div class="tw-h-1 tw-w-full tw-rounded-full tw-bg-white/5 tw-overflow-hidden">
 				<div
-					class="tw-h-full tw-rounded-full tw-bg-[#00f0ff] tw-shadow-[0_0_8px_rgba(0,240,255,0.6)] tw-transition-all tw-duration-700"
+					class="tw-h-full tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.6)] tw-transition-all tw-duration-700"
 					style="width: {xpBarPct}%;"
 				></div>
 			</div>
@@ -194,7 +194,7 @@
 
 		<!-- Level Delta -->
 		<div
-			class="tw-flex tw-flex-col tw-gap-1 tw-bg-[#00f0ff]/5 tw-rounded-xl tw-border tw-border-[#00f0ff]/10 tw-items-center tw-justify-center"
+			class="tw-flex tw-flex-col tw-gap-1 tw-bg-[#14b8a6]/5 tw-rounded-xl tw-border tw-border-[#14b8a6]/10 tw-items-center tw-justify-center"
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span
@@ -221,7 +221,7 @@
 
 		<!-- Streak Delta -->
 		<div
-			class="tw-flex tw-flex-col tw-gap-1 tw-bg-[#00f0ff]/5 tw-rounded-xl tw-border tw-border-[#00f0ff]/10 tw-items-center tw-justify-center"
+			class="tw-flex tw-flex-col tw-gap-1 tw-bg-[#14b8a6]/5 tw-rounded-xl tw-border tw-border-[#14b8a6]/10 tw-items-center tw-justify-center"
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span

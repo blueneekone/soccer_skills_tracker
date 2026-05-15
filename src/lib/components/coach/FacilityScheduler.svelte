@@ -216,13 +216,13 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
-			<div class="w-1.5 h-1.5 rounded-full bg-cyan-400" style="box-shadow: 0 0 6px #00ffff;"></div>
+			<div class="w-1.5 h-1.5 rounded-full bg-cyan-400" style="box-shadow: 0 0 6px #14b8a6;"></div>
 			<span class="text-xs tracking-widest" style="color: rgba(0,255,255,0.7);">FACILITY SCHEDULER</span>
 		</div>
 		{#if isChecking}
 			<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.4);">PROBING...</span>
 		{:else if availStatus === 'available'}
-			<span class="text-xs" style="color: #00ff88;">■ AVAILABLE</span>
+			<span class="text-xs" style="color: #2dd4bf;">■ AVAILABLE</span>
 		{:else if availStatus === 'conflict'}
 			<span class="text-xs" style="color: #ff4060; text-shadow: 0 0 8px #ff4060;">■ CONFLICT</span>
 		{/if}
@@ -290,12 +290,12 @@
 				style="
 					border: 1px solid rgba(0,255,255,0.2);
 					border-radius: 2px;
-					color: #00ffff;
+					color: #14b8a6;
 					background: rgba(0,255,255,0.02);
 				"
 			>
 				{#each facilities as f}
-					<option value={f.facilityId} style="background: #000e1a; color: #00ffff;">
+					<option value={f.facilityId} style="background: #000e1a; color: #14b8a6;">
 						{f.name} · {f.pitchType}{f.capacity ? ` · cap ${f.capacity}` : ''}
 					</option>
 				{/each}
@@ -311,7 +311,7 @@
 				type="date"
 				bind:value={date}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
 				min={todayISO()}
 			/>
 		</div>
@@ -321,7 +321,7 @@
 				type="time"
 				bind:value={startTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
 			/>
 		</div>
 		<div class="space-y-1">
@@ -330,7 +330,7 @@
 				type="time"
 				bind:value={endTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
 			/>
 		</div>
 	</div>
@@ -351,7 +351,7 @@
 			bind:value={label}
 			placeholder="e.g. U14 Training Block"
 			class="w-full px-3 py-2 text-xs bg-transparent outline-none"
-			style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #00ffff;"
+			style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
 			onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
 			onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
 		/>
@@ -367,7 +367,7 @@
 					style="
 						border: 1px solid {eventType === et ? 'rgba(0,255,255,0.5)' : 'rgba(0,255,255,0.15)'};
 						background: {eventType === et ? 'rgba(0,255,255,0.1)' : 'transparent'};
-						color: {eventType === et ? '#00ffff' : 'rgba(0,255,255,0.4)'};
+						color: {eventType === et ? '#14b8a6' : 'rgba(0,255,255,0.4)'};
 						border-radius: 2px;
 					"
 				>{et}</button>
@@ -385,7 +385,7 @@
 		<div class="px-3 py-2 text-xs" style="color: rgba(255,200,100,0.6);">⚠ {checkError}</div>
 	{/if}
 	{#if bookSuccess}
-		<div class="px-3 py-2 text-xs" style="background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.3); color: #00ff88;">
+		<div class="px-3 py-2 text-xs" style="background: rgba(45, 212, 191,0.06); border: 1px solid rgba(45, 212, 191,0.3); color: #2dd4bf;">
 			✓ BOOKING CONFIRMED · ID: {bookSuccess.slice(0, 8).toUpperCase()}
 		</div>
 	{/if}
@@ -398,7 +398,7 @@
 		style="
 			background: {availStatus === 'conflict' ? 'rgba(255,64,96,0.08)' : 'rgba(0,255,255,0.08)'};
 			border: 1px solid {availStatus === 'conflict' ? 'rgba(255,64,96,0.4)' : 'rgba(0,255,255,0.4)'};
-			color: {availStatus === 'conflict' ? '#ff4060' : '#00ffff'};
+			color: {availStatus === 'conflict' ? '#ff4060' : '#14b8a6'};
 			border-radius: 2px;
 		"
 		onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = availStatus === 'conflict' ? 'rgba(255,64,96,0.14)' : 'rgba(0,255,255,0.14)'; }}

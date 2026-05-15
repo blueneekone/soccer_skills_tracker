@@ -53,7 +53,7 @@
 	}
 	function eligColor(status: EligibilityStatus): string {
 		switch (status) {
-			case 'eligible':   return '#00f0ff';
+			case 'eligible':   return '#14b8a6';
 			case 'probation':  return '#f59e0b';
 			case 'ineligible': return '#ff003c';
 			default:           return '#64748b';
@@ -63,7 +63,7 @@
 		return trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
 	}
 	function trendColor(trend: 'up' | 'down' | 'stable'): string {
-		return trend === 'up' ? '#00f0ff' : trend === 'down' ? '#ff003c' : '#64748b';
+		return trend === 'up' ? '#14b8a6' : trend === 'down' ? '#ff003c' : '#64748b';
 	}
 
 	function openEdit(email: string, record: AcademicRecord | null): void {
@@ -137,7 +137,7 @@
 				<span class="td-kpi__label">AVG GPA</span>
 			</div>
 			<div class="td-kpi">
-				<span class="td-kpi__val" style:color="#00f0ff">{roster.eligibleCount}</span>
+				<span class="td-kpi__val" style:color="#14b8a6">{roster.eligibleCount}</span>
 				<span class="td-kpi__label">ELIGIBLE</span>
 			</div>
 			<div class="td-kpi">
@@ -397,7 +397,7 @@
 		color: white;
 		line-height: 1;
 	}
-	.td-kpi__val--cyan { color: #00f0ff; }
+	.td-kpi__val--cyan { color: #14b8a6; }
 	.td-kpi__label {
 		font-size: 0.45rem;
 		letter-spacing: 0.2em;
@@ -594,7 +594,7 @@
 	.td-card__subj-grade {
 		font-size: 0.65rem;
 		font-weight: 800;
-		color: rgba(0,240,255,0.8);
+		color: rgba(20, 184, 166,0.8);
 		flex-shrink: 0;
 	}
 	.td-card__subj-grade--warn { color: rgba(245,158,11,0.9); }

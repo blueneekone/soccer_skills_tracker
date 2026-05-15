@@ -9,7 +9,7 @@
 	--ec-ops-accent-dim: rgba(20, 184, 166, 0.45);
 	--ec-ops-sheen: rgba(20, 184, 166, 0.08);
 	--ec-ops-ambient: rgba(20, 184, 166, 0.03);
-	--ec-ops-glow: none;                    /* was: 0 0 42px rgba(0,240,255,0.05) */
+	--ec-ops-glow: none;                    /* was: 0 0 42px rgba(20, 184, 166,0.05) */
 	--ec-ops-border-subtle: rgba(148, 163, 184, 0.14); /* Slate, NOT teal */
 
 	/* Icon stroke system — 1.5 mathematically matches Geist Mono cap stroke */
