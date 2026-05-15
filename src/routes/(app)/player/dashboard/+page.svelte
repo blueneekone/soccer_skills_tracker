@@ -6,7 +6,6 @@
 	import { collection, doc, getDoc, limit, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
-	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
 	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
@@ -387,7 +386,7 @@
 						rankName={rankProgress.rank}
 						totalXp={totalXpHud}
 						level={osLevel}
-						size="md"
+						size="lg"
 						variant="dark"
 						showLevelSegment={true}
 					/>
@@ -483,7 +482,7 @@
 		</div>
 
 		<div
-			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-flex-1 tw-flex-col tw-items-center tw-gap-5 md:tw-items-stretch"
+			class="tw-relative tw-z-50 tw-flex tw-min-h-[300px] tw-min-w-0 tw-w-full tw-flex-1 tw-flex-col tw-items-center tw-gap-5 tw-overflow-hidden md:tw-items-stretch"
 		>
 			<div
 				class="combat-hud-shell tw-flex tw-w-full tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-5 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900 tw-p-4 md:tw-gap-6 md:tw-p-5"
@@ -592,10 +591,27 @@
 	</div>
 
 	<section
-		class="pd-team-lb bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-4"
-		aria-label="Team leaderboard"
+		class="bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
+		aria-labelledby="lobby-capsules-h"
 	>
-		<TeamLeaderboard compact />
+		<header class="tw-mb-3 tw-min-w-0">
+			<p class="lobby-eyebrow tw-mb-1 tw-text-slate-400">Self comparison</p>
+			<h2
+				id="lobby-capsules-h"
+				class="tw-m-0 tw-min-w-0 tw-break-words tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
+			>
+				Time-Lapse Memory Capsules
+			</h2>
+			<p class="tw-mt-1 tw-min-w-0 tw-break-words tw-text-xs tw-leading-relaxed tw-text-slate-500">
+				Compare your performance only against your past self. Capsules unlock at the end of each
+				training cycle.
+			</p>
+		</header>
+		<div
+			class="tw-flex tw-min-h-[140px] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-800 tw-bg-slate-950 tw-p-6 tw-text-center tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
+		>
+			Ghost profile · awaiting first capsule
+		</div>
 	</section>
 
 	<section
@@ -748,14 +764,8 @@
 
 <style>
 	.lobby-hud-ring__inner {
-		transform: scale(1.12);
-		transform-origin: center center;
-	}
-
-	@media (min-width: 640px) {
-		.lobby-hud-ring__inner {
-			transform: scale(1.18);
-		}
+		/* Size is controlled via the size="lg" prop on LevelProgressRing — no scale() transform
+		   to avoid pushing text outside the SVG boundary. */
 	}
 
 	.lobby-hud-bar :global(.pas__title) {
@@ -787,6 +797,7 @@
 	.bento-card {
 		border-radius: 1.5rem;
 		overflow: hidden;
+		min-width: 0;
 		border: 1px solid rgb(30 41 59); /* slate-800 */
 		background: rgb(15 23 42); /* slate-900 */
 	}

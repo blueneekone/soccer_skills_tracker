@@ -347,13 +347,6 @@
       ]
     },
     {
-      "collectionGroup": "trajectory_months",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "monthKey", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "team_assignments",
       "queryScope": "COLLECTION",
       "fields": [
@@ -388,6 +381,16 @@
       "indexes": [
         {
           "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "trajectory_months",
+      "fieldPath": "monthKey",
+      "indexes": [
+        {
+          "order": "DESCENDING",
           "queryScope": "COLLECTION_GROUP"
         }
       ]

@@ -7,7 +7,7 @@
 // @ts-expect-error virtual module
 import { build, files, version } from '$service-worker';
 
-const CACHE = `pwa-core-${version}`;
+const CACHE = `pwa-core-${version}-v3`;
 
 /**
  * Auth, WebAuthn, and Firebase Identity traffic must not go through the PWA
@@ -28,6 +28,11 @@ function shouldBypassServiceWorker(url) {
 		return true;
 	}
 
+	// API routes must always hit the network directly.
+	if (path.startsWith('/api/')) {
+		return true;
+	}
+
 	// Firebase Auth / Identity Platform (REST)
 	if (
 		host === 'identitytoolkit.googleapis.com' ||
@@ -44,8 +49,33 @@ function shouldBypassServiceWorker(url) {
 	return false;
 }
 
+/**
+ * SvelteKit client modules and data fetches must not be satisfied from the SW
+ * cache with an HTML shell fallback — that breaks dynamic `import()` and client
+ * routing until a full reload.
+ *
+ * Explicitly enumerates immutable chunks, the version manifest, and __data.json
+ * so none of these can accidentally receive a cached HTML fallback.
+ *
+ * @param {URL} url
+ * @returns {boolean}
+ */
+function isSvelteKitClientFetch(url) {
+	const p = url.pathname;
+	return (
+		p.startsWith('/_app/immutable/') ||
+		p.startsWith('/_app/') ||
+		p.endsWith('__data.json') ||
+		p.endsWith('/_app/version.json')
+	);
+}
+
 self.addEventListener('install', (event) => {
-	const precache = build.concat(files);
+	// Precache only static files (fonts, icons, offline shell, etc.).
+	// SvelteKit `build` chunks are hashed and versioned — caching them here
+	// causes stale-module bugs after deploys because the SW serves the old
+	// hash while the HTML references new ones. Let those hit the network.
+	const precache = files;
 	event.waitUntil(
 		caches
 			.open(CACHE)
@@ -72,20 +102,28 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
 	if (event.request.method !== 'GET') return;
-	const url = new URL(event.request.url);
+	const req = event.request;
+	const url = new URL(req.url);
+
 	if (shouldBypassServiceWorker(url)) return;
+	if (isSvelteKitClientFetch(url)) return;
+	// Page navigations must go through SvelteKit's server — never serve cached HTML.
+	if (req.mode === 'navigate') return;
+	// JS module requests must never be shimmed with a cached response.
+	if (req.destination === 'script') return;
 	if (url.origin !== self.location.origin) return;
 
 	event.respondWith(
 		caches.open(CACHE).then((cache) =>
-			fetch(event.request)
+			fetch(req)
 				.then((res) => {
 					if (res.status === 200) {
-						cache.put(event.request, res.clone());
+						cache.put(req, res.clone());
 					}
 					return res;
 				})
-				.catch(() => cache.match(event.request).then((r) => r || cache.match('/'))),
+				// Never fall back to '/' — that would serve HTML for a non-navigation request.
+				.catch(() => cache.match(req)),
 		),
 	);
 });

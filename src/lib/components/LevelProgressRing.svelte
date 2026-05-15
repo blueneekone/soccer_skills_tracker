@@ -195,6 +195,7 @@
 		width: var(--ring-size, 128px);
 		height: var(--ring-size, 128px);
 		flex-shrink: 0;
+		container-type: inline-size;
 	}
 
 	.lp-ring__svg {
@@ -217,30 +218,39 @@
 
 	.lp-ring__center {
 		position: absolute;
-		inset: 0;
+		top: 50%;
+		left: 50%;
+		/* Inscribed square: √2/2 ≈ 70.7% of the ring diameter stays inside the stroke. */
+		width: 70.7%;
+		height: 70.7%;
+		transform: translate(-50%, -50%);
 		display: flex;
 		min-width: 0;
-		max-width: 100%;
 		box-sizing: border-box;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		text-align: center;
 		pointer-events: none;
-		padding: 8px;
+		overflow: hidden;
 	}
 
 	.lp-ring__level {
-		font-size: 0.72rem;
+		font-size: clamp(0.55rem, 1.6cqw, 0.72rem);
 		font-weight: 900;
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
 		color: rgba(103, 232, 249, 0.92);
 		margin-bottom: 2px;
+		min-width: 0;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.lp-ring__xp {
-		font-size: 1.15rem;
+		font-size: clamp(0.85rem, 2.6cqw, 1.15rem);
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
 		color: #f8fafc;
@@ -253,12 +263,17 @@
 	}
 
 	.lp-ring__xp-label {
-		font-size: 0.62rem;
+		font-size: clamp(0.5rem, 1.4cqw, 0.62rem);
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		color: rgba(0, 240, 255, 0.55);
 		margin-top: 2px;
+		min-width: 0;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.lp-ring__seg {
@@ -266,8 +281,8 @@
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
-		margin-top: 6px;
-		font-size: 0.65rem;
+		margin-top: 4px;
+		font-size: clamp(0.55rem, 1.5cqw, 0.65rem);
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
 		color: #00f0ff;

@@ -13,11 +13,13 @@
 
 	const rpgConfig = $derived(getRpgSportConfig(sportId ?? sportsConfigStore.currentSportConfig?.sportId));
 	const ATTRS = $derived(rpgConfig.attributes); // 5 items
-	const N = $derived(ATTRS.length); // 5
-	const CX = 100;
-	const CY = 100;
-	const R = 68;        // outer web radius
-	const LABEL_R = 88;  // label placement radius
+	const N = $derived(ATTRS.length);
+
+	// Expanded viewBox centre + radii so labels never clip
+	const CX = 120;
+	const CY = 120;
+	const R = 72;        // outer web radius
+	const LABEL_R = 98;  // label placement radius — well clear of the web
 	const TIERS = [0.2, 0.4, 0.6, 0.8, 1.0];
 
 	const safeValues = $derived(
@@ -40,10 +42,22 @@
 		}).join(' ');
 	}
 
+	/**
+	 * Angle-aware text-anchor: right-side labels anchor start, left-side anchor end,
+	 * top/bottom labels stay centred. Prevents label overlap with the polygon.
+	 */
+	function anchorFor(i: number): 'start' | 'middle' | 'end' {
+		const a = (i * 2 * Math.PI) / N - Math.PI / 2;
+		const x = Math.cos(a);
+		if (x > 0.25) return 'start';
+		if (x < -0.25) return 'end';
+		return 'middle';
+	}
+
 	const skillVertices = $derived(
 		safeValues.map((v, i) => {
 			const mult = Math.max(0.04, v / 99);
-			return { ...pt(i, R * mult), raw: v, color: ATTRS[i].hexColor };
+			return { ...pt(i, R * mult), raw: v };
 		}),
 	);
 
@@ -54,90 +68,72 @@
 	const labelVertices = $derived(
 		ATTRS.map((attr, i) => ({ ...pt(i, LABEL_R), attr })),
 	);
-
-	// Unique filter id per instance to avoid SVG filter collisions
-	const uid = `ar-${Math.random().toString(36).slice(2, 8)}`;
 </script>
 
 <div class="ar-root">
 	<svg
 		class="ar-svg"
-		viewBox="0 0 200 200"
+		viewBox="0 0 240 240"
 		preserveAspectRatio="xMidYMid meet"
 		role="img"
 		aria-label="Attribute radar chart"
 	>
-		<defs>
-			<!-- Neon bloom filter for polygon + dots -->
-			<filter id="{uid}-bloom" x="-35%" y="-35%" width="170%" height="170%">
-				<feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="blur" />
-				<feMerge>
-					<feMergeNode in="blur" />
-					<feMergeNode in="SourceGraphic" />
-				</feMerge>
-			</filter>
-		</defs>
-
-		<!-- ── Web tiers (concentric pentagons) ─────────────────────────────── -->
+		<!-- ── Web tiers (concentric pentagons) — low-contrast slate lines ──── -->
 		{#each TIERS as tier, ti (tier)}
 			<polygon
 				points={pentagonPoints(R * tier)}
 				fill="none"
-				stroke="rgba(0, 240, 255, 0.10)"
-				stroke-width={ti === TIERS.length - 1 ? '0.5' : '0.35'}
+				stroke="rgba(148, 163, 184, 0.20)"
+				stroke-width={ti === TIERS.length - 1 ? '0.6' : '0.4'}
 				vector-effect="non-scaling-stroke"
 			/>
 		{/each}
 
-		<!-- ── Axis spokes ───────────────────────────────────────────────────── -->
-		{#each ATTRS as attr, i (`spoke-${i}`)}
+		<!-- ── Axis spokes — hairline slate ──────────────────────────────────── -->
+		{#each ATTRS as _attr, i (`spoke-${i}`)}
 			{@const tip = pt(i, R)}
 			<line
 				x1={CX} y1={CY}
 				x2={tip.x} y2={tip.y}
-				stroke="rgba(0, 240, 255, 0.14)"
+				stroke="rgba(148, 163, 184, 0.15)"
 				stroke-width="0.4"
 				vector-effect="non-scaling-stroke"
 			/>
 		{/each}
 
-		<!-- ── Skill envelope: unified cyan fill + glowing stroke ───────────── -->
+		<!-- ── Skill envelope — muted slate-teal, no glow ───────────────────── -->
 		<polygon
 			points={skillPolygonPoints}
-			fill="rgba(0, 240, 255, 0.15)"
-			stroke="#00f0ff"
-			stroke-width="2"
+			fill="rgba(20, 184, 166, 0.18)"
+			stroke="#14b8a6"
+			stroke-width="1.5"
 			stroke-linejoin="round"
 			vector-effect="non-scaling-stroke"
-			style="filter: drop-shadow(0px 0px 4px #00f0ff)"
-			filter="url(#{uid}-bloom)"
 		/>
 
-		<!-- ── Per-vertex dots (per-attribute color) ──────────────────────────── -->
+		<!-- ── Per-vertex dots — neutral white ──────────────────────────────── -->
 		{#each skillVertices as v, vi (`vtx-${vi}`)}
 			<circle
 				cx={v.x}
 				cy={v.y}
-				r="3"
-				fill={v.color}
-				style="filter: drop-shadow(0 0 3px {v.color})"
+				r="2.5"
+				fill="#f8fafc"
 			/>
 		{/each}
 
-		<!-- ── Axis labels (per-attribute color, monospace micro-type) ───────── -->
+		<!-- ── Axis labels — Geist Mono, slate-300, angle-aware anchoring ───── -->
 		{#each labelVertices as lv, li (`lbl-${li}`)}
 			<text
 				x={lv.x}
 				y={lv.y}
-				font-size="7.5"
-				font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-				font-weight="800"
-				letter-spacing="0.8"
-				text-anchor="middle"
+				font-size="8"
+				font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+				font-weight="700"
+				letter-spacing="0.5"
+				text-anchor={anchorFor(li)}
 				dominant-baseline="middle"
-				fill={lv.attr.hexColor}
-				style="filter: drop-shadow(0 0 4px {lv.attr.hexColor}); pointer-events:none;"
-			>{lv.attr.name.toUpperCase().slice(0, 6)}</text>
+				fill="#cbd5e1"
+			>{lv.attr.name.toUpperCase()}</text>
 		{/each}
 	</svg>
 </div>
