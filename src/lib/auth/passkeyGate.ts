@@ -3,11 +3,14 @@
  *
  * Users who authenticate with Firebase "password" (email+password OR magic links) must
  * register at least one WebAuthn passkey once `users/{uid}/passkeys` is non-empty.
+ * Player / operative (kid) sessions are exempt — they use the Operative OTP surface,
+ * not the Command passkey mandate.
  */
 
 import type { User } from 'firebase/auth';
 import { getIdTokenResult } from 'firebase/auth';
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
 
 export const PASSKEY_ENROLL_ROUTE = '/auth/enroll-passkey';
@@ -34,6 +37,19 @@ async function isPlatformOperatorExempt(user: User | null): Promise<boolean> {
 	return false;
 }
 
+/** Kid / athlete accounts (Operative OTP + player portal) — no Command passkey mandate. */
+async function isPlayerRoleExempt(user: User | null): Promise<boolean> {
+	if (!user) return false;
+	if (authStore.role === 'player') return true;
+	try {
+		const tr = await getIdTokenResult(user, false);
+		const c = tr.claims as Record<string, unknown>;
+		return c?.role === 'player';
+	} catch {
+		return false;
+	}
+}
+
 /** True when the user's passkeys subcollection has at least one credential doc. */
 export async function userHasRegisteredPasskey(uid: string): Promise<boolean> {
 	const q = query(collection(db, 'users', uid, 'passkeys'), limit(1));
@@ -48,6 +64,7 @@ export async function requiresPasskeyEnrollmentBeforeApp(user: User | null): Pro
 	if (!user?.uid) return false;
 	if (!userHasLegacyEmailProvider(user)) return false;
 	if (await isPlatformOperatorExempt(user)) return false;
+	if (await isPlayerRoleExempt(user)) return false;
 	const hasPasskey = await userHasRegisteredPasskey(user.uid);
 	return !hasPasskey;
 }
