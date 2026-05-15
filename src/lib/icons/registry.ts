@@ -161,6 +161,10 @@ import Network from 'lucide-svelte/icons/network';
 import MapPin from 'lucide-svelte/icons/map-pin';
 import Plug from 'lucide-svelte/icons/plug';
 import PlugZap from 'lucide-svelte/icons/plug-zap';
+import Server from 'lucide-svelte/icons/server';
+import CircleDollarSign from 'lucide-svelte/icons/circle-dollar-sign';
+import ShieldHalf from 'lucide-svelte/icons/shield-half';
+import BarChart2 from 'lucide-svelte/icons/bar-chart-2';
 import Wifi from 'lucide-svelte/icons/wifi';
 import WifiOff from 'lucide-svelte/icons/wifi-off';
 import CloudSun from 'lucide-svelte/icons/cloud-sun';
@@ -202,6 +206,7 @@ export const REGISTRY = {
 	'status.shield-plus':    ShieldPlus,       // ph-shield-plus
 	'status.shield-ban':     ShieldBan,        // ph-shield-slash
 	'status.shield-x':       ShieldX,          // ph-shield-x
+	'status.shield-half':    ShieldHalf,       // Player OS Command Center
 	'status.seal-check':     BadgeCheck,       // ph-seal-check
 	'status.info':           Info,             // ph-info
 	'status.check':          Check,            // ph-check
@@ -283,6 +288,7 @@ export const REGISTRY = {
 
 	// ── Data / analytics ──
 	'data.chart-bar':  ChartBar,    // ph-chart-bar
+	'data.chart-bar-2':BarChart2,   // Operative Dossier / stats
 	'data.chart-line': ChartLine,   // ph-chart-line / ph-chart-line-up
 	'data.chart-pie':  ChartPie,    // ph-chart-pie-slice
 	'data.trending':   TrendingUp,  // ph-chart-line-up
@@ -339,6 +345,8 @@ export const REGISTRY = {
 	'sys.map-pin':     MapPin,          // ph-map-pin / ph-map-pin-line
 	'sys.plug':        Plug,            // ph-plugs
 	'sys.plug-zap':    PlugZap,         // ph-plugs-connected
+	'sys.server':      Server,          // cell-routing / infrastructure
+	'sys.dollar':      CircleDollarSign, // pricing / $0 platform fee
 	'sys.flag':        Flag,            // ph-flag
 	'sys.ban':         Ban,             // ph-prohibit
 	'sys.close':       X,               // ph-x (close / dismiss)

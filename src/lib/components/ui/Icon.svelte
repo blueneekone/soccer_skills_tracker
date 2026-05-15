@@ -14,6 +14,9 @@
 	 * - Color via tw-text-* only; stroke inherits currentColor automatically.
 	 * - `decorative` defaults to true (aria-hidden). Set false + label for icons
 	 *   that carry meaning without adjacent text.
+	 * - `absoluteStrokeWidth` (default true) keeps the visual stroke at exactly
+	 *   1.5px regardless of the `size` prop — mathematically matching Geist Mono
+	 *   typography weight at every icon size.
 	 */
 
 	import { REGISTRY, type IconName } from '$lib/icons/registry.js';
@@ -22,6 +25,7 @@
 		name: IconName;
 		size?: number;
 		strokeWidth?: number;
+		absoluteStrokeWidth?: boolean;
 		class?: string;
 		decorative?: boolean;
 		label?: string;
@@ -31,6 +35,7 @@
 		name,
 		size = 16,
 		strokeWidth = 1.5,
+		absoluteStrokeWidth = true,
 		class: className = '',
 		decorative = true,
 		label,
@@ -45,6 +50,7 @@
 <IconComponent
 	{size}
 	stroke-width={strokeWidth}
+	absolute-stroke-width={absoluteStrokeWidth}
 	class={className}
 	aria-hidden={ariaHidden}
 	aria-label={ariaLabel}

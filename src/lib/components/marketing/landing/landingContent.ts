@@ -3,6 +3,7 @@
  * All marketing copy, card definitions, and metric constants.
  * No Svelte runes. No side effects. Import-only.
  */
+import type { IconName } from '$lib/icons/registry.js';
 
 // ── Hero copy (sub-10-word locked headline + A/B alternates) ─────────────
 export const HERO_HEADLINE = 'Run your club like a Mission Control.';
@@ -194,8 +195,8 @@ export interface FeatureCell {
 	body: string;
 	href: string;
 	accentColor: string;
-	/** inline SVG string for the cell's glyph/illustration */
-	glyphId: string;
+	/** Lucide registry token rendered via <Icon> in the bento cell. */
+	icon: IconName;
 	/** Asymmetric placement on lg+ (grid line syntax). Single column stacks by DOM order. */
 	gridLg: { col: string; row: string };
 }
@@ -209,7 +210,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'A Reinforcement Learning policy adjusts drill volume, intensity, and sequence in real time based on physiological feedback and historical adherence — not a static template.',
 		href: '/features#rl-workouts',
 		accentColor: '#6366f1',
-		glyphId: 'glyph-waveform',
+		icon: 'data.activity',
 	},
 	{
 		id: 'skill-tree',
@@ -219,7 +220,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Synthetic Authored Nodes map 50+ skill axes to 5,000+ raw drills. Fog of War masks advanced nodes until earned.',
 		href: '/features#skill-tree',
 		accentColor: '#8b5cf6',
-		glyphId: 'glyph-hexradar',
+		icon: 'data.radar',
 	},
 	{
 		id: 'coppa',
@@ -229,7 +230,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Biometric enclave attestation binds parental consent to hardware. Four-layer teen ad-block. Zero SMS exposure.',
 		href: '/features#coppa',
 		accentColor: '#10b981',
-		glyphId: 'glyph-fingerprint',
+		icon: 'sys.fingerprint',
 	},
 	{
 		id: 'cell-routing',
@@ -239,7 +240,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Large NGBs land in isolated Firestore cells. No noisy-neighbor throttling. Backend-issued JWT selects the cell.',
 		href: '/features#architecture',
 		accentColor: '#06b6d4',
-		glyphId: 'glyph-routing',
+		icon: 'sys.server',
 	},
 	{
 		id: 'bounties',
@@ -249,7 +250,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Parents fund real-world rewards. CV-verified biomechanics triggers atomic Firestore payout. No manual verification.',
 		href: '/features#bounties',
 		accentColor: '#f59e0b',
-		glyphId: 'glyph-escrow',
+		icon: 'sys.escrow',
 	},
 	{
 		id: 'pricing',
@@ -259,6 +260,6 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'No seat licenses. No monthly minimums. A fractional micro-percentage on transaction volume only. Revenue that scales with your club.',
 		href: '/pricing',
 		accentColor: '#6366f1',
-		glyphId: 'glyph-zero',
+		icon: 'sys.dollar',
 	},
 ];

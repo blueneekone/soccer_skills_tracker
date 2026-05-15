@@ -44,9 +44,9 @@ const coachLinks = [
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
-	{ tab: '', label: 'Command Center',   icon: 'nav.crosshair',    href: '/player/workout' },
-	{ tab: '', label: 'Operative Dossier',icon: 'sys.fingerprint',  href: '/stats' },
-	{ tab: '', label: 'Settings',         icon: 'sys.settings',     href: '/settings' },
+	{ tab: '', label: 'Command Center',   icon: 'status.shield-half', href: '/player/workout' },
+	{ tab: '', label: 'Operative Dossier',icon: 'data.chart-bar-2',   href: '/stats' },
+	{ tab: '', label: 'Settings',         icon: 'sys.settings',       href: '/settings' },
 ];
 
 /** @type {ShellNavItem[]} */

@@ -126,7 +126,7 @@
 		</div>
 		<button
 			type="button"
-			class="ec-mobile-header__hamburger"
+			class="ec-mobile-header__hamburger icon-tap"
 			onclick={toggleMobileNav}
 			aria-expanded={mobileNavOpen}
 			aria-controls="ec-workspace-nav"
@@ -154,10 +154,10 @@
 		>
 			<div class="ec-sidebar__panel">
 				<div class="ec-sidebar__mobile-top">
-					<button type="button" class="ec-sidebar__close-btn" onclick={closeMobileNav}>
-						<Icon name="sys.close" size={20} />
-						Close
-					</button>
+				<button type="button" class="ec-sidebar__close-btn icon-tap" onclick={closeMobileNav}>
+					<Icon name="sys.close" size={20} />
+					Close
+				</button>
 				</div>
 				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
 					<WorkspaceContextSwitcher variant="sidebar" />
@@ -168,6 +168,7 @@
 							class="ec-nav-link"
 							class:ec-nav-link--active={navActive(item)}
 							href={item.href}
+							data-sveltekit-reload
 							data-sveltekit-preload-data="hover"
 							onclick={closeMobileNav}
 						>
@@ -177,7 +178,7 @@
 					{/each}
 					{#if showBilling}
 						<p class="ec-nav-section">Billing</p>
-						<a class="ec-nav-link" href="/upgrade" onclick={closeMobileNav}>
+						<a class="ec-nav-link" href="/upgrade" data-sveltekit-reload onclick={closeMobileNav}>
 							<Icon name="sys.credit-card" size={18} />
 							<span class="ec-nav-link__label">Plans & Billing</span>
 						</a>
@@ -210,7 +211,7 @@
 		<header class="ec-topbar">
 			<button
 				type="button"
-				class="ec-sidebar-toggle ec-sidebar-toggle--desktop"
+				class="ec-sidebar-toggle ec-sidebar-toggle--desktop icon-tap"
 				onclick={toggleDesktopSidebar}
 				aria-expanded={workspaceContextStore.isSidebarOpen}
 				aria-controls="ec-workspace-nav"
@@ -241,7 +242,7 @@
 			<div class="ec-topbar__right">
 				<button
 					type="button"
-					class="ec-icon-btn"
+					class="ec-icon-btn icon-tap"
 					onclick={() => goto('/settings')}
 					aria-label="Settings"
 				>

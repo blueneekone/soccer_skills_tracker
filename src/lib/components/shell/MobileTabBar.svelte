@@ -67,11 +67,21 @@
 		min-height: 44px;
 		min-width: 44px;
 		color: rgba(255, 255, 255, 0.45);
-		transition: color 0.15s ease;
+		transition: color 150ms ease, transform 150ms ease;
+	}
+
+	.tab-item:active {
+		transform: scale(0.95);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.tab-item:active {
+			transform: none;
+		}
 	}
 
 	.tab-item--active {
-		color: #00f0ff;
+		color: #14b8a6;
 	}
 
 	.tab-label {

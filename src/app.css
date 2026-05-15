@@ -1072,6 +1072,22 @@ input[type='range']::-moz-range-thumb {
 	}
 }
 
+/* ── Haptic micro-interaction — 150ms premium tactile feedback ──────────── */
+/* Apply .icon-tap to any clickable icon button or nav link.                 */
+.icon-tap {
+	transition: transform 150ms ease, color 150ms ease;
+}
+.icon-tap:active {
+	transform: scale(0.95);
+}
+@media (prefers-reduced-motion: reduce) {
+	.icon-tap,
+	.icon-tap:active {
+		transition: none;
+		transform: none;
+	}
+}
+
 /* Vanguard OS shell: strip default link underlines; keep buttons clean inside dark HUD routes */
 .vanguard-os-shell a {
 	text-decoration: none;

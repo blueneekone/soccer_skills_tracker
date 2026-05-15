@@ -403,8 +403,18 @@ html.dark .ec-sidebar__system {
 	min-width: 0;
 	text-align: left;
 	cursor: pointer;
-	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), transform 150ms ease;
 	letter-spacing: -0.01em;
+}
+
+.ec-nav-link:active {
+	transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ec-nav-link:active {
+		transform: none;
+	}
 }
 
 .ec-nav-link > span,
@@ -1519,14 +1529,22 @@ html.dark .ec-mobile-header {
 }
 
 .ec-sidebar .ec-nav-link--active {
-	box-shadow: inset 3px 0 0 var(--ec-ops-accent);
-	background: linear-gradient(90deg, var(--ec-ops-sheen), transparent 80%);
-	color: var(--text-primary);
+	box-shadow: inset 2px 0 0 var(--ec-ops-accent);
+	background: rgba(20, 184, 166, 0.06);
+	color: #f8fafc;
 	font-weight: 600;
 }
 
+.ec-sidebar .ec-nav-link--active :global(svg) {
+	color: var(--ec-ops-accent);
+}
+
 html.dark .ec-sidebar .ec-nav-link--active {
-	color: #fafafa;
+	color: #f8fafc;
+}
+
+html.dark .ec-sidebar .ec-nav-link--active :global(svg) {
+	color: var(--ec-ops-accent);
 }
 
 html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {

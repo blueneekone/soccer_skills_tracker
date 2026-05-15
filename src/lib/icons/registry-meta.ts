@@ -13,7 +13,7 @@ export const REGISTRY_KEYS = [
 	'status.info', 'status.loading', 'status.warning-circle', 'status.error-circle',
 	'status.check', 'status.check-square', 'status.circle-plus', 'status.circle-play',
 	'status.shield', 'status.shield-check', 'status.shield-alert', 'status.shield-plus',
-	'status.shield-ban', 'status.shield-x', 'status.seal-check',
+	'status.shield-ban', 'status.shield-x', 'status.shield-half', 'status.seal-check',
 	// Navigation
 	'nav.home', 'nav.menu', 'nav.sidebar', 'nav.chevron-down', 'nav.chevron-left',
 	'nav.chevron-right', 'nav.sort', 'nav.arrow-down', 'nav.arrow-left',
@@ -21,6 +21,7 @@ export const REGISTRY_KEYS = [
 	'nav.external', 'nav.sign-in', 'nav.sign-out', 'nav.refresh', 'nav.maximize',
 	'nav.minimize', 'nav.crosshair', 'nav.arrow-left',
 	// System / UI
+	'sys.server', 'sys.dollar',
 	'sys.close', 'sys.lock', 'sys.lock-simple', 'sys.eye', 'sys.hexagon',
 	'sys.triangle', 'sys.square', 'sys.square-dash', 'sys.minus', 'sys.circle',
 	'sys.question', 'sys.heart',
@@ -34,7 +35,7 @@ export const REGISTRY_KEYS = [
 	'user.profile', 'user.group', 'user.add', 'user.badge',
 	'org.building',
 	// Data / content
-	'data.chart-line', 'data.chart-bar', 'data.chart-pie', 'data.activity',
+	'data.chart-line', 'data.chart-bar', 'data.chart-bar-2', 'data.chart-pie', 'data.activity',
 	'content.text', 'content.books',
 	// Communication
 	'comm.bell', 'comm.chats', 'comm.share',
