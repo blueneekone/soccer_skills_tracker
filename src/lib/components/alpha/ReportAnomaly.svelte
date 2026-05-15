@@ -27,6 +27,7 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	// ── State ──────────────────────────────────────────────────────────────────
 	let open = $state(false);
@@ -90,16 +91,12 @@
 	aria-label="Report an anomaly or bug"
 	title="Report Anomaly — Alpha Feedback"
 >
-	<svg viewBox="0 0 20 20" fill="none" class="ra-trigger__icon" aria-hidden="true">
-		<!-- Bug silhouette -->
-		<ellipse cx="10" cy="11" rx="5" ry="6" stroke="currentColor" stroke-width="1.4" />
-		<path d="M7 6c0-1.657 1.343-3 3-3s3 1.343 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-		<line x1="10" y1="5" x2="10" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-		<line x1="5" y1="9" x2="2.5" y2="7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-		<line x1="15" y1="9" x2="17.5" y2="7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-		<line x1="5" y1="13" x2="2.5" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-		<line x1="15" y1="13" x2="17.5" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-	</svg>
+	<Icon
+		name={"status.warning-octagon" as IconName}
+		size={16}
+		strokeWidth={1.5}
+		class="ra-trigger__icon"
+	/>
 	<span class="ra-trigger__label">ALPHA</span>
 </button>
 
@@ -116,7 +113,14 @@
 	>
 		<!-- Header -->
 		<div class="ra-modal__header">
-			<div class="ra-modal__badge" aria-hidden="true">⚠</div>
+			<div class="ra-modal__badge" aria-hidden="true">
+				<Icon
+					name={"status.warning-octagon" as IconName}
+					size={18}
+					strokeWidth={1.5}
+					class="tw-text-[rgba(240,199,94,0.85)]"
+				/>
+			</div>
 			<div>
 				<p class="ra-modal__eyebrow">VANGUARD · ALPHA CHANNEL</p>
 				<h2 class="ra-modal__title" id="ra-modal-title">REPORT ANOMALY</h2>
@@ -214,7 +218,7 @@
 		border: 1px solid rgba(0, 240, 255, 0.2);
 		border-radius: 20px;
 		color: rgba(0, 240, 255, 0.6);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.58rem;
 		font-weight: 800;
 		letter-spacing: 0.14em;
@@ -267,6 +271,7 @@
 			0 20px 60px rgba(0, 0, 0, 0.8),
 			inset 0 1px 0 rgba(0, 240, 255, 0.1);
 		overflow: hidden;
+		font-family: var(--font-mono);
 	}
 
 	/* ─── Modal header ──────────────────────────────────────────────────────── */
@@ -280,14 +285,14 @@
 	}
 
 	.ra-modal__badge {
-		font-size: 1rem;
-		color: rgba(240, 199, 94, 0.7);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
 	}
 
 	.ra-modal__eyebrow {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
@@ -296,7 +301,6 @@
 
 	.ra-modal__title {
 		margin: 0.15rem 0 0;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.9rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
@@ -340,7 +344,6 @@
 	}
 
 	.ra-label {
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;
@@ -362,7 +365,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 4px;
 		color: rgba(255, 255, 255, 0.3);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -391,7 +394,7 @@
 		border: 1px solid rgba(0, 240, 255, 0.15);
 		border-radius: 7px;
 		color: #ffffff;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		line-height: 1.6;
 		outline: none;
@@ -405,7 +408,6 @@
 
 	.ra-char-count {
 		align-self: flex-end;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.6rem;
 		color: rgba(255, 255, 255, 0.2);
 	}
@@ -422,7 +424,6 @@
 	}
 
 	.ra-context__label {
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -431,7 +432,7 @@
 	}
 
 	.ra-context__url {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		color: rgba(255, 255, 255, 0.25);
 		overflow: hidden;
@@ -442,7 +443,6 @@
 	/* Error */
 	.ra-error {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.68rem;
 		color: rgba(255, 77, 106, 0.8);
 	}
@@ -458,7 +458,7 @@
 		border: 1px solid rgba(0, 240, 255, 0.38);
 		border-radius: 7px;
 		color: #00f0ff;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 0.7rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -489,7 +489,6 @@
 
 	.ra-privacy-note {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.58rem;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.18);
@@ -514,7 +513,6 @@
 
 	.ra-success__msg {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.8rem;
 		color: rgba(255, 255, 255, 0.6);
 	}

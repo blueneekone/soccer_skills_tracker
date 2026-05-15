@@ -27,8 +27,6 @@
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 	import MemoryCapsuleHUD from '$lib/components/player/trajectory/MemoryCapsuleHUD.svelte';
 	import { onDestroy } from 'svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const trajectoryEngine = new TrajectoryEngine();
 

@@ -14,8 +14,6 @@
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import Swal from 'sweetalert2';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
-  import Icon from '$lib/components/ui/Icon.svelte';
-  import type { IconName } from '$lib/icons/registry.js';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',

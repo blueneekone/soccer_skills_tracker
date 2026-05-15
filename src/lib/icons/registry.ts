@@ -2,7 +2,7 @@
  * Semantic icon registry — the single source of truth for icon identity.
  *
  * ALL icon usage in the codebase must go through this registry.
- * Keys are domain tokens (e.g. 'status.verified'); values are Lucide components.
+ * Keys are domain tokens (e.g. 'status.verified'); values are Lucide-style components (Lucide-derived or bespoke SVGs wired to the same props contract).
  * This design enables tree-shaking and enforces a 1.5px stroke-width contract
  * via the Icon.svelte wrapper.
  *
@@ -180,6 +180,8 @@ import SquareDashed from 'lucide-svelte/icons/square-dashed';
 import CircleQuestionMark from 'lucide-svelte/icons/circle-question-mark';
 import Circle from 'lucide-svelte/icons/circle';
 
+import SportSoccerBallIcon from '$lib/icons/custom/SportSoccerBallIcon.svelte';
+
 // ────────────────────────────────────────────────────────────────
 // Registry — semantic token → Lucide component
 // ────────────────────────────────────────────────────────────────
@@ -207,8 +209,8 @@ export const REGISTRY = {
 	'status.circle-plus':    CirclePlus,       // ph-plus-circle
 	'status.circle-play':    CirclePlay,       // ph-play-circle
 
-	// ── Sport icons (Lucide Phase 4 — best semantic matches) ──
-	'sport.soccer':      Volleyball,  // closest to round ball; CircleDot was too generic
+	// ── Sport icons (Lucide Phase 4 + bespoke where Lucide lacks a glyph) ──
+	'sport.soccer':      SportSoccerBallIcon,
 	'sport.basketball':  Dumbbell,    // training/sport weight — no basketball in Lucide
 	'sport.baseball':    Disc2,       // flat disc = baseball silhouette
 	'sport.football':    Medal,       // gridiron — no football shape in Lucide

@@ -658,7 +658,7 @@
 			<div class="st-section">
 				<div class="st-section-label" style="color: rgba(239,68,68,0.8);">ANOMALY REPORT</div>
 				<p class="st-hint">
-					Found a data error? Use the ⚠ Report Anomaly button in the sidebar
+					Found a data error? Use the Report Anomaly button in the sidebar
 					to send a pre-formatted correction request to the platform team.
 				</p>
 			</div>

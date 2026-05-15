@@ -54,7 +54,6 @@ const SVG_STROKE_ALLOWLIST = [
 	'MarketingNav.svelte',
 	'MarketingFooter.svelte',
 	'VpcPanopticon.svelte',
-	'ReportAnomaly.svelte',
 	'SensitiveView.svelte',
 	'consent/',
 	'coach/+page.svelte',

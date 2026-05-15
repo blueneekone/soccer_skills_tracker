@@ -10,7 +10,6 @@
 		title = '',
 		lede = '',
 		ribbon = /** @type {RibbonRow[]} */ ([]),
-		showLegend = true,
 		liveLabel = 'Live ingest',
 		metaLine = 'Last refresh · client',
 		/** @type {import('svelte').Snippet | undefined} */
@@ -48,20 +47,6 @@
 				</div>
 			{/each}
 		</div>
-	{/if}
-
-	{#if showLegend}
-		<p class="wsd-legend">
-			<span class="wsd-legend__title">Severity key</span>
-			<span class="wsd-legend__items">
-				<span><i class="wsd-dot wsd-dot--crit"></i> critical</span>
-				<span><i class="wsd-dot wsd-dot--high"></i> high</span>
-				<span><i class="wsd-dot wsd-dot--med"></i> medium</span>
-				<span><i class="wsd-dot wsd-dot--low"></i> low</span>
-				<span><i class="wsd-dot wsd-dot--ok"></i> steady</span>
-				<span><i class="wsd-dot wsd-dot--info"></i> info</span>
-			</span>
-		</p>
 	{/if}
 
 	<div class="wsd-body">

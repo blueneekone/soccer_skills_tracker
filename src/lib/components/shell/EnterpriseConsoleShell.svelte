@@ -196,7 +196,7 @@
 					<!-- ── Anomaly Reporting Hook ─────────────────────────────── -->
 					<button type="button" class="ec-nav-link ec-nav-link--anomaly" onclick={openAnomaly}>
 						<Icon name="status.warning" size={18} />
-						<span class="ec-nav-link__label">⚠ Report Anomaly</span>
+						<span class="ec-nav-link__label">Report Anomaly</span>
 					</button>
 					<button type="button" class="ec-nav-link" onclick={() => void handleSignOut()}>
 						<Icon name="nav.sign-out" size={18} />
@@ -288,7 +288,7 @@
 			<div class="ec-anomaly-corner ec-anomaly-corner--br"></div>
 
 			<div class="ec-anomaly-header">
-				<span class="ec-anomaly-title">⚠ ANOMALY REPORT</span>
+				<span class="ec-anomaly-title">ANOMALY REPORT</span>
 				<button class="ec-anomaly-close" onclick={() => (anomalyOpen = false)} aria-label="Close">✕</button>
 			</div>
 

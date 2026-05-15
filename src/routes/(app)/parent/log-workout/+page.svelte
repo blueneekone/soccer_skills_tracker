@@ -17,8 +17,6 @@
 	import Swal from 'sweetalert2';
 	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',

@@ -6,8 +6,6 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const parentGrantVpcConsentFn = httpsCallable(functions, 'parentGrantVpcConsent');
 
