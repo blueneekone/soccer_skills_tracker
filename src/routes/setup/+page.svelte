@@ -8,6 +8,7 @@
 	import { getIdTokenResult } from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
+	import { PASSKEY_ENROLL_ROUTE, requiresPasskeyEnrollmentBeforeApp } from '$lib/auth/passkeyGate.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
@@ -25,6 +26,16 @@
 		void (async () => {
 			const u = auth.currentUser;
 			if (!u) return;
+
+			try {
+				if (await requiresPasskeyEnrollmentBeforeApp(u)) {
+					goto(PASSKEY_ENROLL_ROUTE, { replaceState: true });
+					return;
+				}
+			} catch (e) {
+				console.warn('[setup] passkey enrollment gate failed', e);
+			}
+
 			try {
 				const tr = await getIdTokenResult(u, false);
 				const isPlatformAdmin =

@@ -1,12 +1,13 @@
 /**
  * LoginEngine.svelte.ts
  * ──────────────────────────────────────────────────────────────────────────
- * Phase 2 Epic 3 — Passwordless Auth Brain (Vanguard Trinity: The Brain)
+ * Vanguard Trinity Auth Brain — phased passwordless rollout
  *
- * Exposes three auth flows:
- *   sendMagicLink    → Firebase email-link sign-in (sendSignInLinkToEmail)
- *   loginWithPasskey → WebAuthn assertion via @simplewebauthn/browser
- *   registerPasskey  → WebAuthn registration (post-sign-in passkey enrolment)
+ * Exposes flows:
+ *   sendMagicLink         → Firebase email-link sign-in (sendSignInLinkToEmail)
+ *   loginWithPasskey      → WebAuthn assertion → custom token
+ *   loginWithEmailPassword→ Legacy escape hatch (paired with mandatory passkey enrollment)
+ *   registerPasskey       → WebAuthn registration (mandatory gate for legacy / magic-link)
  *
  * Follows .cursorrules mandates:
  *   - Svelte 5 Runes strictly ($state, $derived, untrack)
@@ -19,6 +20,7 @@ import { auth, functions } from '$lib/firebase.js';
 import {
   sendSignInLinkToEmail,
   signInWithCustomToken,
+  signInWithEmailAndPassword,
   type ActionCodeSettings,
 } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
@@ -133,6 +135,31 @@ class LoginEngine {
             ? err.message
             : 'Passkey sign-in failed. Try again or use a magic link.';
       }
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  /**
+   * Legacy email + password (escape hatch until every account has enrolled a passkey).
+   */
+  async loginWithEmailPassword(email: string, password: string): Promise<void> {
+    if (!browser) return;
+    const em = email.trim();
+    const pw = password.trim();
+    if (!em || !pw) {
+      this.error = 'Enter your email and password.';
+      return;
+    }
+    this.busy = true;
+    this.error = '';
+    try {
+      await signInWithEmailAndPassword(auth, em, pw);
+    } catch (err) {
+      this.error =
+        err instanceof Error
+          ? err.message
+          : 'Sign-in failed. Check your credentials or reset your password.';
     } finally {
       this.busy = false;
     }

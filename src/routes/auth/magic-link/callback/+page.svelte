@@ -5,7 +5,8 @@
 	 * Phase 2 Epic 3 — Magic Link sign-in completion.
 	 *
 	 * Firebase emails the user a link pointing here. On mount we verify it,
-	 * complete the sign-in, refresh the auth store, and route via waterfall.
+	 * complete the sign-in, refresh the auth store, and delegate routing to navigateAfterLogin
+	 * (passkey enrollment gate → setup → waterfall).
 	 *
 	 * MANUAL STEP REQUIRED (one-time):
 	 *   Firebase Console → Authentication → Settings → Authorized domains
@@ -13,12 +14,11 @@
 	 *   The callback URL must match actionCodeSettings.url in LoginEngine.svelte.ts.
 	 */
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { auth } from '$lib/firebase.js';
 	import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
 
 	type Phase = 'verifying' | 'prompting' | 'done' | 'error';
 
@@ -34,9 +34,9 @@
 			try { window.localStorage.removeItem('sstrack_magic_email'); } catch { /* private mode */ }
 			await authStore.refresh({ silent: true });
 			phase = 'done';
-			// Use untrack() per .cursorrules rule 4 to prevent effect re-entry
+			// Mandatory passkey gate for email-link flows (see navigateAfterLogin).
 			untrack(() => {
-				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
+				void navigateAfterLogin({ replaceState: true });
 			});
 		} catch (err) {
 			errorMsg = err instanceof Error ? err.message : 'Sign-in failed. Request a new link.';

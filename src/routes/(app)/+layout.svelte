@@ -17,6 +17,7 @@
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
+	import { PASSKEY_ENROLL_ROUTE, requiresPasskeyEnrollmentBeforeApp, userHasLegacyEmailProvider } from '$lib/auth/passkeyGate.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
@@ -118,65 +119,95 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	});
 
 	// Auth guard: driven by `onAuthStateChanged` in `auth.svelte.js` (cache wipe → no user).
+	// Firestore-backed passkey check must run BEFORE /setup fallback so legacy / magic-link
+	// sessions cannot onboard without enrolling WebAuthn.
 	// untrack() on every `goto` avoids reactive loops; `browser` avoids SSR `goto` noise.
 	$effect(() => {
-		if (authStore.isLoading) return;
+		if (!browser || authStore.isLoading) return;
+
 		if (!authStore.isAuthenticated) {
-			if (browser) {
-				untrack(() => goto('/login', { replaceState: true }));
-			}
-			return;
-		}
-		if (!authStore.isProfileComplete) {
-			if (browser) {
-				untrack(() => goto('/setup', { replaceState: true }));
-			}
+			passkeyEligibilityConfirmed = true;
+			untrack(() => goto('/login', { replaceState: true }));
 			return;
 		}
 
-		// COPPA 2026 / Privacy Shield: minor players must remain on /vpc-pending
-		// until a parent completes consent AND a director approves the VPC request.
-		const prof = authStore.userProfile;
-		const currentPath = page.url.pathname;
-		if (
-			authStore.role === 'player' &&
-			prof?.isMinor === true &&
-			prof?.vpcStatus !== 'verified' &&
-			prof?.vpcStatus !== 'not_required' &&
-			!currentPath.startsWith('/vpc-pending')
-		) {
-			if (browser) {
-				untrack(() => goto('/vpc-pending', { replaceState: true }));
-			}
-			return;
-		}
+		let cancelled = false;
+		void (async () => {
+			let requiresPasskey = false;
 
-		// Epic 14 (Alpha) + Phase 2 Epic 2 Session L: Clearance Protocol.
-		// Every adult role that can touch minor PII is hard-locked to the
-		// Compliance Terminal until their `isCleared` JWT claim flips to
-		// true.  Scope per user policy:
-		//   coach, recruiter, director, tutor
-		// Players + parents self-manage and are never blocked here.
-		// The /compliance route itself is exempt to avoid an infinite redirect loop.
-		const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
-		if (
-			clearanceRoles.includes(authStore.role ?? '') &&
-			!authStore.isCleared &&
-			!currentPath.startsWith('/compliance')
-		) {
-			if (browser) {
-				untrack(() => goto('/compliance', { replaceState: true }));
-			}
-			return;
-		}
+			try {
+				const user = auth.currentUser;
+				const legacyProbe =
+					!!user &&
+					authStore.isProfileComplete &&
+					userHasLegacyEmailProvider(user);
 
-		if (!isRouteAllowedForRole(currentPath, authStore.role)) {
-			const dest = untrack(() => applyLoginWaterfall(authStore.role, authStore.userProfile));
-			if (browser) {
-				untrack(() => goto(dest, { replaceState: true }));
+				if (legacyProbe && !cancelled) {
+					passkeyEligibilityConfirmed = false;
+				}
+
+				if (user) {
+					try {
+						requiresPasskey = await requiresPasskeyEnrollmentBeforeApp(user);
+					} catch (err) {
+						console.warn('[layout] passkey enrollment check failed', err);
+					}
+				}
+
+				if (cancelled || !browser) return;
+
+				const currentPath = untrack(() => page.url.pathname);
+				if (requiresPasskey && !currentPath.startsWith(PASSKEY_ENROLL_ROUTE)) {
+					await goto(PASSKEY_ENROLL_ROUTE, { replaceState: true });
+					return;
+				}
+
+				if (!authStore.isProfileComplete) {
+					untrack(() => goto('/setup', { replaceState: true }));
+					return;
+				}
+
+				const prof = authStore.userProfile;
+				const pathVpc = untrack(() => page.url.pathname);
+				if (
+					authStore.role === 'player' &&
+					prof?.isMinor === true &&
+					prof?.vpcStatus !== 'verified' &&
+					prof?.vpcStatus !== 'not_required' &&
+					!pathVpc.startsWith('/vpc-pending')
+				) {
+					untrack(() => goto('/vpc-pending', { replaceState: true }));
+					return;
+				}
+
+				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
+				const pathClr = untrack(() => page.url.pathname);
+				if (
+					clearanceRoles.includes(authStore.role ?? '') &&
+					!authStore.isCleared &&
+					!pathClr.startsWith('/compliance')
+				) {
+					untrack(() => goto('/compliance', { replaceState: true }));
+					return;
+				}
+
+				const pathRole = untrack(() => page.url.pathname);
+				if (!isRouteAllowedForRole(pathRole, authStore.role)) {
+					const dest = untrack(() =>
+						applyLoginWaterfall(authStore.role, authStore.userProfile),
+					);
+					untrack(() => goto(dest, { replaceState: true }));
+				}
+			} finally {
+				if (!cancelled && !requiresPasskey) {
+					passkeyEligibilityConfirmed = true;
+				}
 			}
-			return;
-		}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	// Scoped teams/clubs by route + role (never full `teams` except Super Admin on /admin).
@@ -344,6 +375,12 @@ import Icon from '$lib/components/ui/Icon.svelte';
 			authStore.role !== 'super_admin' &&
 			authStore.role !== 'global_admin',
 	);
+
+	/**
+	 * Hide enterprise / player shells until we know a legacy email session either
+	 * has a passkey or is being redirected to enrolment (avoids dashboard flash).
+	 */
+	let passkeyEligibilityConfirmed = $state(true);
 </script>
 
 <!-- Global Vanguard SVG filter defs — referenced by url(#neonBloom) / url(#aresBloom) across every portal. -->
@@ -365,7 +402,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
-{:else if authStore.isAuthenticated && authStore.isProfileComplete}
+{:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed}
 	{#if impersonationStore.active}
 		<ImpersonationBanner />
 	{/if}

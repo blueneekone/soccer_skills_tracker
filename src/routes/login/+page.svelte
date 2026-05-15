@@ -5,16 +5,14 @@
 	 * Vanguard Trinity Shell.
 	 *
 	 * Command surface (adults):
-	 *   1. Sign in with Passkey  (WebAuthn → webauthnLoginStart/Finish → customToken)
-	 *   2. Send Magic Link       (Firebase email-link → /auth/magic-link/callback)
-	 *   3. Continue with Google  (signInWithPopup — tertiary)
+	 *   1. Sign in with Passkey     (WebAuthn → webauthnLoginStart/Finish → customToken)
+	 *   2. Send Magic Link           (Firebase email-link → passkey enrollment if needed → /setup)
+	 *   3. Legacy email + password   (escape hatch; same passkey mandate as magic link when missing)
+	 *   4. Continue with Google      (signInWithPopup — not subject to the email-link passkey gate)
 	 *
 	 * Operative surface (kids):
 	 *   Preserved: Callsign + clearance code → validatePlayerOTP → customToken
-	 *
-	 * Phase 2 Epic 3 — Passwordless auth. Password form permanently removed.
 	 */
-	import { goto } from '$app/navigation';
 	import { auth, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
@@ -23,11 +21,10 @@
 		signInWithCustomToken,
 		getRedirectResult,
 	} from 'firebase/auth';
-	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { loginEngine } from '$lib/auth/LoginEngine.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const validatePlayerOTP = httpsCallable(functions, 'validatePlayerOTP');
 
@@ -48,14 +45,14 @@
 	let accessRevokedBanner = $state(false);
 	let showPwaPrompt = $state(false);
 
+	/** Legacy password form (escape hatch; passkey enrollment still required when missing). */
+	let legacyPassword = $state('');
+	let legacyReveal = $state(false);
+
 	// ── Auto-redirect for already-authenticated users ─────────────────────────
 	$effect(() => {
 		if (!authStore.isLoading && authStore.isAuthenticated) {
-			if (authStore.isProfileComplete) {
-				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
-			} else {
-				goto('/setup', { replaceState: true });
-			}
+			void navigateAfterLogin({ replaceState: true });
 		}
 	});
 
@@ -74,18 +71,32 @@
 		showPwaPrompt = isIos && !isInStandaloneMode && !navigator.userAgent.includes('Chrome');
 	});
 
-	// ── Token-driven shared input/button styles ───────────────────────────────
 	const gateCtl =
-		'tw-w-full tw-shrink-0 tw-rounded-md tw-border tw-border-vanguard-border ' +
+		'tw-w-full tw-shrink-0 tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border ' +
 		'tw-bg-vanguard-bg tw-font-mono tw-px-4 tw-py-3 tw-text-sm tw-text-vanguard-text-primary ' +
-		'tw-placeholder-slate-500 tw-transition-colors tw-duration-fast ' +
-		'hover:tw-border-vanguard-border-strong focus:tw-border-vanguard-accent focus:tw-outline-none';
+		'tw-placeholder-slate-400 tw-transition-colors tw-duration-fast ' +
+		'hover:tw-[border-color:var(--vanguard-border-strong)] focus:tw-border-vanguard-accent focus:tw-outline-none ' +
+		'focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-[#0b1220]';
 
 	const primaryBtn =
-		'tw-w-full tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-vanguard-border ' +
+		'tw-w-full tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border ' +
 		'tw-bg-vanguard-surface-raised tw-font-mono tw-text-sm tw-font-bold tw-uppercase ' +
 		'tw-tracking-[0.14em] tw-text-vanguard-text-primary tw-transition-colors tw-duration-fast ' +
-		'hover:tw-border-vanguard-accent hover:tw-text-vanguard-accent disabled:tw-opacity-50';
+		'hover:tw-border-vanguard-accent hover:tw-text-vanguard-accent disabled:tw-opacity-50 ' +
+		'focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-[#0b1220]';
+
+	const secondaryBtn =
+		'tw-w-full tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border ' +
+		'tw-bg-vanguard-bg tw-font-mono tw-text-sm tw-font-bold tw-uppercase ' +
+		'tw-tracking-[0.14em] tw-text-slate-300 tw-transition-colors tw-duration-fast ' +
+		'hover:tw-[border-color:var(--vanguard-border-strong)] hover:tw-text-vanguard-text-primary ' +
+		'disabled:tw-opacity-50 ' +
+		'focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-[#0b1220]';
+
+	const handleLegacyLogin = async () => {
+		loginEngine.error = '';
+		await loginEngine.loginWithEmailPassword(loginEngine.email.trim(), legacyPassword);
+	};
 
 	// ── Handlers ──────────────────────────────────────────────────────────────
 	const handleGoogleLogin = async () => {
@@ -139,14 +150,17 @@
 </script>
 
 <div
-	class="tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-center tw-justify-center tw-p-4 sm:tw-p-8 tw-overflow-x-hidden tw-overflow-y-auto tw-bg-vanguard-bg"
+	class="tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-center tw-justify-center tw-bg-[#0b1220] tw-px-4 tw-py-8 tw-overflow-x-hidden tw-overflow-y-auto sm:tw-px-6 sm:tw-py-10"
 >
 	<div
-		class="tw-flex tw-w-full tw-max-w-md tw-flex-col tw-text-center tw-rounded-lg tw-border tw-border-vanguard-border tw-bg-vanguard-surface tw-p-8"
+		class="tw-flex tw-w-full tw-max-w-[26rem] tw-flex-col tw-text-center tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-surface tw-shadow-vanguard-elev-1 tw-p-7 sm:tw-p-8"
 	>
-		<!-- Logo + wordmark -->
-		<div class="tw-mx-auto tw-mb-5 tw-flex tw-h-14 tw-w-14 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-vanguard-border tw-bg-vanguard-bg" aria-hidden="true">
-			<Icon name="sport.soccer" size={24} class="tw-text-vanguard-text-primary" />
+		<!-- Logo + wordmark — flat mark, thin rim (strategic minimalism) -->
+		<div
+			class="tw-mx-auto tw-mb-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-bg"
+			aria-hidden="true"
+		>
+			<Icon name="sport.soccer" size={22} class="tw-text-vanguard-text-primary" />
 		</div>
 		<h2 class="tw-m-0 tw-mb-6 tw-font-mono tw-text-base tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-vanguard-text-primary">
 			NEXUS COMMAND
@@ -166,11 +180,11 @@
 			</div>
 		{/if}
 
-		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-4">
+		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-5">
 
 			<!-- Surface selector tab strip -->
 			<div
-				class="tw-flex tw-w-full tw-rounded-md tw-border tw-border-vanguard-border tw-bg-vanguard-bg tw-p-0.5"
+				class="tw-flex tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-bg tw-p-0.5"
 				role="tablist"
 				aria-label="Operative or command sign-in"
 			>
@@ -178,10 +192,10 @@
 					type="button"
 					role="tab"
 					aria-selected={authSurface === 'operative'}
-					class="tw-cursor-pointer tw-flex-1 tw-rounded-sm tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem]"
+					class="tw-cursor-pointer tw-flex-1 tw-rounded-[0.3125rem] tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-inset"
 					class:tw-bg-vanguard-surface-raised={authSurface === 'operative'}
 					class:tw-text-vanguard-text-primary={authSurface === 'operative'}
-					class:tw-text-slate-500={authSurface !== 'operative'}
+					class:tw-text-slate-400={authSurface !== 'operative'}
 					onclick={() => { authSurface = 'operative'; loginEngine.error = ''; googleError = ''; }}
 				>
 					Operative (kids)
@@ -190,18 +204,18 @@
 					type="button"
 					role="tab"
 					aria-selected={authSurface === 'command'}
-					class="tw-cursor-pointer tw-flex-1 tw-rounded-sm tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem]"
+					class="tw-cursor-pointer tw-flex-1 tw-rounded-[0.3125rem] tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-inset"
 					class:tw-bg-vanguard-surface-raised={authSurface === 'command'}
 					class:tw-text-vanguard-text-primary={authSurface === 'command'}
-					class:tw-text-slate-500={authSurface !== 'command'}
+					class:tw-text-slate-400={authSurface !== 'command'}
 					onclick={() => { authSurface = 'command'; opError = ''; }}
 				>
 					Command (adults)
 				</button>
 			</div>
 
-			<p class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-500">
-				{authSurface === 'operative' ? 'Operative login · clearance code' : 'Command login · passkey · magic link · Google'}
+			<p class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-400">
+				{authSurface === 'operative' ? 'Operative login · clearance code' : 'Command login · passkey · magic link · legacy · Google'}
 			</p>
 
 			<!-- ── COMMAND SURFACE ───────────────────────────────────────────── -->
@@ -229,7 +243,7 @@
 					<!-- 2. Magic Link -->
 					<button
 						type="button"
-						class="tw-w-full tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-vanguard-border tw-bg-vanguard-bg tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-transition-colors tw-duration-fast hover:tw-border-vanguard-border-strong hover:tw-text-vanguard-text-primary disabled:tw-opacity-50"
+						class={secondaryBtn}
 						disabled={loginEngine.busy}
 						onclick={() => loginEngine.sendMagicLink()}
 					>
@@ -237,26 +251,66 @@
 					</button>
 
 					{#if loginEngine.magicLinkSent}
-						<p class="tw-m-0 tw-font-mono tw-text-[0.65rem] tw-text-slate-500">
+						<p class="tw-m-0 tw-font-mono tw-text-[0.65rem] tw-text-slate-400">
 							Link dispatched to <span class="tw-text-vanguard-text-primary">{loginEngine.email}</span> — check your inbox.
 						</p>
 					{/if}
+
+					<details
+						class="tw-group tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-bg tw-text-left tw-transition-colors open:tw-border-vanguard-border-strong"
+						bind:open={legacyReveal}
+					>
+						<summary
+							class="tw-cursor-pointer tw-list-none tw-select-none tw-rounded-md tw-px-4 tw-py-3 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-outline-none hover:tw-text-vanguard-text-primary focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent [&::-webkit-details-marker]:tw-hidden"
+						>
+							Legacy login — email & password
+						</summary>
+						<div
+							class="tw-flex tw-flex-col tw-gap-3 tw-border-t tw-border-solid tw-border-vanguard-border tw-px-4 tw-py-4"
+						>
+							<p class="tw-m-0 tw-font-mono tw-text-[0.65rem] tw-leading-relaxed tw-text-slate-500">
+								Use the email field above plus your password. After sign-in you'll register a device passkey (required once).
+							</p>
+							<label class="tw-m-0 tw-block" for="legacy-password">
+								<span class="tw-mb-1.5 tw-block tw-font-mono tw-text-[0.58rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-400">
+									Password
+								</span>
+								<input
+									id="legacy-password"
+									type="password"
+									class={gateCtl}
+									placeholder="Password"
+									autocomplete="current-password"
+									disabled={loginEngine.busy}
+									bind:value={legacyPassword}
+								/>
+							</label>
+							<button
+								type="button"
+								class={secondaryBtn}
+								disabled={loginEngine.busy}
+								onclick={handleLegacyLogin}
+							>
+								LEGACY SIGN IN
+							</button>
+						</div>
+					</details>
 
 					{#if loginEngine.error}
 						<div class="tw-rounded-md tw-border tw-border-red-500/40 tw-bg-red-950/60 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-text-red-300" role="alert">{loginEngine.error}</div>
 					{/if}
 
-					<!-- OR divider -->
+					<!-- Divider before Google SSO -->
 					<div class="tw-flex tw-items-center tw-gap-3">
-						<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-vanguard-border" />
-						<span class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600">or</span>
-						<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-vanguard-border" />
+						<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-solid tw-border-vanguard-border" />
+						<span class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-400">or</span>
+						<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-solid tw-border-vanguard-border" />
 					</div>
 
 					<!-- 3. Google (tertiary) -->
 					<button
 						type="button"
-						class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-2 tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-vanguard-border tw-bg-vanguard-bg tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-transition-colors tw-duration-fast hover:tw-border-vanguard-border-strong hover:tw-text-vanguard-text-primary"
+						class="{secondaryBtn} tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-2"
 						onclick={handleGoogleLogin}
 					>
 						<img
@@ -275,18 +329,18 @@
 			<!-- ── OPERATIVE SURFACE ─────────────────────────────────────────── -->
 			{:else}
 				<section
-					class="tw-min-w-0 tw-shrink-0 tw-rounded-md tw-border tw-border-vanguard-border tw-bg-vanguard-bg tw-p-4"
+					class="tw-min-w-0 tw-shrink-0 tw-border-0 tw-border-t tw-border-solid tw-border-vanguard-border tw-pt-4 tw-text-left"
 					aria-label="Operative sign-in with parent clearance code"
 				>
 					<p class="tw-mb-1 tw-text-center tw-font-mono tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-vanguard-accent">
 						Clearance
 					</p>
-					<p class="tw-mb-3 tw-text-center tw-font-mono tw-text-xs tw-text-slate-500">
+					<p class="tw-mb-3 tw-text-center tw-font-mono tw-text-xs tw-text-slate-400">
 						Operative Callsign and 6-character clearance code
 					</p>
 					<div class="tw-flex tw-flex-col tw-gap-3">
-						<label class="tw-m-0" for="op-username">
-							<span class="tw-mb-1.5 tw-block tw-font-mono tw-text-[0.58rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-500">Operative Callsign</span>
+						<label class="tw-m-0 tw-block tw-text-left" for="op-username">
+							<span class="tw-mb-1.5 tw-block tw-font-mono tw-text-[0.58rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-400">Operative Callsign</span>
 							<input
 								id="op-username"
 								type="text"
@@ -298,8 +352,8 @@
 								bind:value={opUsername}
 							/>
 						</label>
-						<label class="tw-m-0">
-							<span class="tw-mb-1.5 tw-block tw-font-mono tw-text-[0.58rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-500">Clearance code</span>
+						<label class="tw-m-0 tw-block tw-text-left">
+							<span class="tw-mb-1.5 tw-block tw-font-mono tw-text-[0.58rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-slate-400">Clearance code</span>
 							<input
 								id="op-clearance"
 								type="text"
@@ -312,7 +366,7 @@
 								bind:value={dispatchCode}
 							/>
 						</label>
-						<p class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.7rem] tw-leading-snug tw-text-slate-600">
+						<p class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.7rem] tw-leading-snug tw-text-slate-400">
 							Get this temporary 6-character code from your parent.
 						</p>
 						{#if opError}
@@ -334,14 +388,22 @@
 	</div>
 
 	{#if showPwaPrompt}
-		<div class="pwa-prompt tw-mt-6 tw-w-full tw-max-w-md sm:tw-mx-auto">
-			<h3 class="pwa-title">Install the app</h3>
-			<p class="pwa-text">To log in and save your stats securely, install the app to your device.</p>
-			<div class="pwa-box">
-				<b>iOS / iPhone:</b> Tap the <b>Share</b> icon, then tap <b>Add to Home Screen</b>.<br /><br />
-				<b>Android:</b> Tap the three-dot menu and select <b>Install App</b>.
+		<div
+			class="tw-mt-8 tw-w-full tw-max-w-[26rem] tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-surface tw-p-5 tw-text-left tw-shadow-vanguard-elev-1 tw-font-mono sm:tw-mx-auto"
+		>
+			<h3 class="tw-m-0 tw-mb-2 tw-text-sm tw-font-bold tw-tracking-wide tw-text-vanguard-text-primary">
+				Install the app
+			</h3>
+			<p class="tw-m-0 tw-mb-3 tw-text-[0.8rem] tw-leading-relaxed tw-text-slate-300">
+				To log in and save your stats securely, install the app to your device.
+			</p>
+			<div
+				class="tw-mb-4 tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-bg tw-p-3 tw-text-[0.8rem] tw-leading-snug tw-text-slate-300"
+			>
+				<strong class="tw-text-vanguard-text-primary">iOS / iPhone:</strong> Tap the Share icon, then tap Add to Home Screen.<br /><br />
+				<strong class="tw-text-vanguard-text-primary">Android:</strong> Tap the three-dot menu and select Install App.
 			</div>
-			<button class="tw-w-full {gateCtl}" onclick={dismissPwa}>Continue in browser</button>
+			<button type="button" class="tw-w-full {gateCtl}" onclick={dismissPwa}>Continue in browser</button>
 		</div>
 	{/if}
 </div>
