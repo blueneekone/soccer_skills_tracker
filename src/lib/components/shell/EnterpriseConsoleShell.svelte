@@ -242,6 +242,15 @@
 			<div class="ec-topbar__right">
 				<button
 					type="button"
+					class="ec-icon-btn icon-tap ec-bell-btn"
+					onclick={() => goto('/player/tracker')}
+					aria-label="Notifications"
+					aria-haspopup="false"
+				>
+					<Icon name="comm.bell" size={18} />
+				</button>
+				<button
+					type="button"
 					class="ec-icon-btn icon-tap"
 					onclick={() => goto('/settings')}
 					aria-label="Settings"
@@ -553,5 +562,10 @@
 		text-decoration: none;
 		color: #0f172a;
 		background: var(--brand-primary, #f59e0b);
+	}
+
+	/* Bell button — player notification shortcut */
+	.ec-bell-btn {
+		position: relative;
 	}
 </style>
