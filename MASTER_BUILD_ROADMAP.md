@@ -86,7 +86,7 @@ Epic 9: The Tactical SIEM UI/UX Overhaul
 
 [x] Sprint 9.3 (Strategic Minimalism & Typography): Purge all neon glows, pure black backgrounds, and cheap glassmorphism. Enforce deep slate backgrounds with border-slate-800 1px borders. Apply Geist Sans for headings and Geist Mono exclusively for data/metrics. Constrain all primary action buttons with w-fit inline-flex and a 44x44px minimum tap target.
 
-Sprint 9.4 (Radar Chart & Deterministic Avatars): Fix the SVG viewBox padding on the Attribute Radar to prevent text clipping. Bind the radar to the 6-axis Vanguard Prism. Replace the stretched Operative image with a deterministic, code-generated Bauhaus SVG constrained by aspect-square, object-cover, and rounded-full.
+[x] Sprint 9.4 (Radar Chart & Deterministic Avatars): Fix the SVG viewBox padding on the Attribute Radar to prevent text clipping. Bind the radar to the 6-axis Vanguard Prism. Replace the stretched Operative image with a deterministic, code-generated Bauhaus SVG constrained by aspect-square, object-cover, and rounded-full.
 
 Sprint 9.5 (EQ Perimeter Enforcement): Permanently delete the "Team Leaderboard" component to protect athlete psychology. Replace it with the "Time-Lapse Memory Capsules" (Ghost Profile) component.
 

@@ -577,7 +577,7 @@
 	</div>
 
 	<section
-		class="lobby-radar bento-span-8 bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
+		class="lobby-radar bento-span-8 bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-5 md:tw-p-6"
 		aria-labelledby="lobby-radar-h"
 	>
 		<header class="tw-relative tw-z-50 tw-mb-3 tw-min-w-0">
@@ -596,7 +596,6 @@
 		</header>
 		<div
 			class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4"
-			style="clip-path: inset(0 round 1rem);"
 		>
 			<div class="tw-relative tw-z-50 tw-flex tw-min-h-[260px] tw-max-w-sm tw-w-full tw-mx-auto tw-items-center tw-justify-center">
 				<AttributeRadar values={attrRadarValues} />

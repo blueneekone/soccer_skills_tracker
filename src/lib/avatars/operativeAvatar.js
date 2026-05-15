@@ -1,16 +1,24 @@
-import { createAvatar } from '@dicebear/core';
-import { create as adventurerCreate, meta as adventurerMeta } from '@dicebear/adventurer';
+/**
+ * Operative Avatar — thin wrapper that routes rendering to the Bauhaus generator.
+ *
+ * Sprint 9.4: replaced DiceBear adventurer with the zero-dependency
+ * bauhausAvatar generator. The public API surface (renderOperativeAvatarSvg,
+ * parseOperativeAvatar, normalizeOperativeAvatarSeed, OPERATIVE_AVATAR_VERSION)
+ * is unchanged so all call-sites continue to work without modification.
+ */
 
-/** @type {import('@dicebear/core').Style<{}>} */
-const adventurerStyle = { create: adventurerCreate, meta: adventurerMeta };
+import { renderBauhausAvatarSvg } from './bauhausAvatar.js';
+
+export { renderBauhausAvatarSvg };
 
 export const OPERATIVE_AVATAR_VERSION = 1;
 
-/** Max Firestore-safe seed length (no image blobs — deterministic SVG only). */
+/** Max Firestore-safe seed length. */
 const MAX_SEED_LEN = 128;
 
 /**
  * @param {unknown} seed
+ * @returns {string}
  */
 export function normalizeOperativeAvatarSeed(seed) {
 	const s = String(seed ?? '')
@@ -20,16 +28,14 @@ export function normalizeOperativeAvatarSeed(seed) {
 }
 
 /**
- * Client-rendered SVG string — never persisted as binary; only `seed` JSON may be stored.
+ * Client-rendered SVG string — never persisted as binary; only `seed` JSON is stored.
  *
  * @param {unknown} seed
  * @param {number} [size]
+ * @returns {string}
  */
 export function renderOperativeAvatarSvg(seed, size = 128) {
-	return createAvatar(adventurerStyle, {
-		seed: normalizeOperativeAvatarSeed(seed),
-		size,
-	}).toString();
+	return renderBauhausAvatarSvg(normalizeOperativeAvatarSeed(seed), size);
 }
 
 /**

@@ -34,18 +34,21 @@
 			return;
 		}
 		const cfg = resolvedConfig;
-		if (!cfg) {
-			svgMarkup = '';
-			return;
+		if (cfg) {
+			svgMarkup = renderOperativeAvatarSvg(cfg.seed, size);
+		} else {
+			// Fall back to a deterministic Bauhaus avatar keyed to the player's UID
+			// so every operative has a unique visual identity before they customise.
+			const uid = authStore.user?.uid;
+			svgMarkup = uid ? renderOperativeAvatarSvg(uid, size) : '';
 		}
-		svgMarkup = renderOperativeAvatarSvg(cfg.seed, size);
 	});
 </script>
 
 <div
 	class={`operative-avatar-preview tw-relative tw-aspect-square tw-h-full tw-w-full tw-shrink-0 tw-overflow-hidden ${className}`}
 	style={size ? `max-width: ${size}px` : undefined}
-	aria-hidden={resolvedConfig ? 'true' : undefined}
+	aria-hidden={svgMarkup ? 'true' : undefined}
 >
 	{#if !vpc_approved}
 		<!-- COPPA lock — parental consent required -->
@@ -54,11 +57,11 @@
 			role="img"
 			aria-label="Avatar locked — parental consent required"
 		>
-		<div
-			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-full"
-			style="background: radial-gradient(ellipse at 50% 38%, rgba(255,0,60,0.18) 0%, transparent 70%);"
-			aria-hidden="true"
-		></div>
+			<div
+				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-full"
+				style="background: radial-gradient(ellipse at 50% 38%, rgba(255,0,60,0.18) 0%, transparent 70%);"
+				aria-hidden="true"
+			></div>
 			<Icon
 				name="sys.lock-simple"
 				size={Math.round(size * 0.38)}
@@ -70,14 +73,23 @@
 				style="font-size: {Math.max(7, Math.round(size * 0.065))}px; line-height: 1.2;"
 			>PARENTAL<br>CONSENT<br>REQUIRED</span>
 		</div>
-	{:else if resolvedConfig}
-		{#if svgMarkup}
-			<!-- DiceBear-generated SVG (deterministic from seed). -->
-			{@html svgMarkup}
+	{:else if svgMarkup}
+		<!-- Bauhaus SVG — either config seed or UID-keyed fallback. -->
+		{@html svgMarkup}
+		{#if showInitializeCta && !resolvedConfig}
+			<!-- Overlay CTA when rendering the auto-generated (non-customised) avatar. -->
+			<a
+				href={resolve('/player/armory')}
+				class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900/90 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.48rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-200 tw-no-underline tw-backdrop-blur-sm tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem]"
+				data-sveltekit-preload-data="hover"
+			>
+				Customize operative
+			</a>
 		{/if}
 	{:else}
+		<!-- SSR skeleton or no-UID state. -->
 		<div
-			class="oap-ghost tw-relative tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border tw-border-slate-700/80 tw-bg-slate-950"
+			class="oap-ghost tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700/80 tw-bg-slate-950"
 			role="img"
 			aria-label="Operative not initialized"
 		>
@@ -86,15 +98,6 @@
 				alt=""
 				class="oap-placeholder tw-h-[72%] tw-w-[72%] tw-object-contain tw-opacity-70"
 			/>
-			{#if showInitializeCta}
-				<a
-					href={resolve('/player/armory')}
-					class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.48rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-200 tw-no-underline tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem]"
-					data-sveltekit-preload-data="hover"
-				>
-					Initialize operative
-				</a>
-			{/if}
 		</div>
 	{/if}
 </div>

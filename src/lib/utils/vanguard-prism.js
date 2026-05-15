@@ -110,7 +110,11 @@ function parseVanguard(s) {
 /**
  * Derive 6 normalized 0-99 values for the Vanguard Prism axes.
  *
- * Axis order: [PACE, ACCEL, AGILITY, STAMINA, POWER, COMP]
+ * Axis order (matches VanguardPrism.svelte SLOTS, clockwise from top):
+ *   [PACE, ACCEL, POWER, COMP, STAMINA, AGILITY]
+ *
+ * Sprint 9.4: order realigned from [PACE,ACCEL,AGILITY,STAMINA,POWER,COMP] so
+ * the dashboard AttributeRadar shares one vertex layout with the Armory widget.
  *
  * @param {Record<string, unknown> | null} statsRaw  player_stats doc (coach telemetry)
  * @param {ArmoryStats} armoryStats  activePlayer.armory.stats strings
@@ -129,15 +133,18 @@ export function deriveVanguardPrism(statsRaw, armoryStats) {
 
 	const pace     = pickStat(['pace', 'speed'])                   ?? parsePace(armoryStats?.PAC)     ?? 0;
 	const accel    = pickStat(['acceleration', 'accel'])           ?? parseAccel(armoryStats?.ACC)    ?? 0;
-	const agility  = pickStat(['agility', 'agi'])                  ?? parseAgility(armoryStats?.AGI)  ?? 0;
-	const stamina  = pickStat(['stamina', 'endurance', 'fitness']) ?? parseStamina(armoryStats?.STM)  ?? 0;
 	const power    = pickStat(['power', 'strength', 'physical'])   ?? parsePower(armoryStats?.POW)    ?? 0;
 	const vanguard = pickStat(['vanguard', 'van', 'grit'])         ?? parseVanguard(armoryStats?.VAN) ?? 0;
+	const stamina  = pickStat(['stamina', 'endurance', 'fitness']) ?? parseStamina(armoryStats?.STM)  ?? 0;
+	const agility  = pickStat(['agility', 'agi'])                  ?? parseAgility(armoryStats?.AGI)  ?? 0;
 
-	return [pace, accel, agility, stamina, power, vanguard];
+	return [pace, accel, power, vanguard, stamina, agility];
 }
 
-/** Canonical axis labels — exported so consumers stay in sync. */
+/**
+ * Canonical axis labels — clockwise from top, matching VanguardPrism.svelte SLOTS.
+ * Sprint 9.4: realigned from PACE/ACCEL/AGILITY/STAMINA/POWER/COMP.
+ */
 export const VANGUARD_PRISM_LABELS = /** @type {const} */ ([
-	'PACE', 'ACCEL', 'AGILITY', 'STAMINA', 'POWER', 'COMP',
+	'PACE', 'ACCEL', 'POWER', 'COMP', 'STAMINA', 'AGILITY',
 ]);

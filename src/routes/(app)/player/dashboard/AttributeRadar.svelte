@@ -64,7 +64,7 @@
 <div class="ar-root">
 	<svg
 		class="ar-svg"
-		viewBox="0 0 280 280"
+		viewBox="-30 -30 340 340"
 		preserveAspectRatio="xMidYMid meet"
 		role="img"
 		aria-label="Vanguard Prism attribute radar"
