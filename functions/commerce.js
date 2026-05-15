@@ -74,9 +74,24 @@ function getStripe() {
 // â”€â”€ createRegistrationIntent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
+ * Accepted fee types for createRegistrationIntent.
+ * Sprint 9.6: extended from a single implicit 'season_registration' to an enum
+ * so parents can pay for equipment fees and camp registrations via the same flow.
+ *
+ * @type {readonly string[]}
+ */
+const VALID_FEE_TYPES = /** @type {const} */ ([
+  'season_registration',
+  'equipment_fee',
+  'camp_registration',
+]);
+
+/**
  * Creates a Stripe PaymentIntent routed to the club's Stripe Connect account.
  *
- * Input: { seasonId: string, feeAmountDollars: number }
+ * Input: { seasonId: string, feeAmountDollars: number, feeType?: string }
+ *   feeType defaults to 'season_registration' when omitted.
+ *   Allowed values: 'season_registration' | 'equipment_fee' | 'camp_registration'
  * Returns: { clientSecret: string, registrationId: string, feeAmountCents: number }
  */
 exports.createRegistrationIntent = onCall(
@@ -93,7 +108,13 @@ exports.createRegistrationIntent = onCall(
         throw new HttpsError('permission-denied', 'Only parents and players can initiate registration payment.');
       }
 
-      const {seasonId, feeAmountDollars} = request.data ?? {};
+      const {seasonId, feeAmountDollars, feeType: rawFeeType} = request.data ?? {};
+
+      // Validate and normalise feeType (default: season_registration)
+      const feeType =
+        typeof rawFeeType === 'string' && VALID_FEE_TYPES.includes(rawFeeType.trim()) ?
+          rawFeeType.trim() :
+          'season_registration';
       if (!seasonId) throw new HttpsError('invalid-argument', 'seasonId is required.');
       if (!feeAmountDollars || feeAmountDollars <= 0) {
         throw new HttpsError('invalid-argument', 'feeAmountDollars must be positive.');
@@ -129,7 +150,7 @@ exports.createRegistrationIntent = onCall(
       const policy = await loadActivePolicy(getRegistryDb(), tenantPolicyOverride);
       const fee = computePlatformFee({
         policy,
-        transactionType: 'season_registration',
+        transactionType: feeType, // Sprint 9.6: pass feeType through to fee engine
         grossCents: feeAmountCents,
         ytdGrossCents,
       });
@@ -147,7 +168,7 @@ exports.createRegistrationIntent = onCall(
           playerUid: callerUid,
           playerEmail: callerEmail,
           seasonId,
-          type: 'season_registration',
+          type: feeType,
           policyId: policy.id,
           policyVersion: String(policy.version),
           rateBp: String(fee.rateBp),
@@ -163,6 +184,7 @@ exports.createRegistrationIntent = onCall(
         playerEmail: callerEmail,
         tenantId,
         seasonId,
+        feeType, // Sprint 9.6: persisted for audit trail and fee-type-specific reporting
         feeAmountCents,
         platformFeeCents,
         rateBp: fee.rateBp,

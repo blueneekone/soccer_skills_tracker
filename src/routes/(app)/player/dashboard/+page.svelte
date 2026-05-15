@@ -20,6 +20,10 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
+	import { onDestroy } from 'svelte';
+	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
+	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -38,6 +42,16 @@
 	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 	const uid = $derived(authStore.user?.uid || '');
+
+	// ── Trajectory Engine (memory capsules) ──────────────────────────────────
+	const trajectoryEngine = new TrajectoryEngine();
+
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		if (email) trajectoryEngine.connect(email);
+	});
+
+	onDestroy(() => trajectoryEngine.destroy());
 
 	/** @type {Record<string, unknown> | null} */
 	let statsRaw = $state(null);
@@ -620,11 +634,19 @@
 				training cycle.
 			</p>
 		</header>
-		<div
-			class="tw-flex tw-min-h-[140px] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-800 tw-bg-slate-950 tw-p-6 tw-text-center tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
-		>
-			Ghost profile · awaiting first capsule
-		</div>
+		{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
+			<MemoryCapsuleArena
+				capsule={trajectoryEngine.activeCapsule}
+				baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+				capsuleHeadline={trajectoryEngine.capsuleHeadline}
+			/>
+		{:else}
+			<div
+				class="tw-flex tw-min-h-[140px] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-800 tw-bg-slate-950 tw-p-6 tw-text-center tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
+			>
+				Ghost profile · awaiting first capsule
+			</div>
+		{/if}
 	</section>
 
 	<section

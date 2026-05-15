@@ -2700,10 +2700,15 @@ service cloud.firestore {
       allow get: if authed() && (
         isPlatformAdmin()
         || resource.data.playerEmail == emailKey()
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.playerEmail))
         || (resource.data.tenantId == tokenClub() && (isCoach() || isDirector()))
       );
+      // Sprint 9.6: players can list own registrations (needed by CommerceEngine onSnapshot);
+      // parents can list registrations for their household's linked players.
       allow list: if authed() && (
         isPlatformAdmin()
+        || resource.data.playerEmail == emailKey()
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.playerEmail))
         || (resource.data.tenantId == tokenClub() && (isCoach() || isDirector()))
       );
       allow create, update, delete: if false; // Admin SDK / Cloud Functions only

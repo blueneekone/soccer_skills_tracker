@@ -1,9 +1,13 @@
 <script lang="ts">
-	import TeamLeaderboard from '$lib/components/tracker/TeamLeaderboard.svelte';
+	import { browser } from '$app/environment';
+	import { onDestroy } from 'svelte';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
+	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 
 	const profile = $derived(authStore.userProfile);
 
@@ -17,6 +21,16 @@
 			: String(Math.max(0, levelHud.xpToNext - levelHud.xpIntoLevel)),
 	);
 	const streakDays = $derived(Math.max(0, Math.floor(Number(profile?.currentStreak) || 0)));
+
+	const trajectoryEngine = new TrajectoryEngine();
+
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		const emailKey = (authStore.user?.email ?? '').toLowerCase();
+		if (emailKey) trajectoryEngine.connect(emailKey);
+	});
+
+	onDestroy(() => trajectoryEngine.destroy());
 </script>
 
 <svelte:head>
@@ -44,15 +58,27 @@
 		</div>
 	</section>
 
-	{#if profile?.teamId && profile.teamId !== 'admin'}
-		<section class="pt-lb tw-min-w-0" aria-label="Team leaderboard">
-			<TeamLeaderboard />
-		</section>
+	{#if vanguardFlags.capsulesEnabled}
+		{#if trajectoryEngine.activeCapsule}
+			<section class="pt-lb tw-min-w-0" aria-label="Time-Lapse Memory Capsule">
+				<MemoryCapsuleArena
+					capsule={trajectoryEngine.activeCapsule}
+					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+					capsuleHeadline={trajectoryEngine.capsuleHeadline}
+				/>
+			</section>
+		{:else if !trajectoryEngine.loading}
+			<section
+				class="pt-lb tw-min-w-0 tw-flex tw-min-h-[120px] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-800 tw-bg-slate-950 tw-p-6 tw-text-center tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
+				aria-label="No memory capsule available"
+			>
+				Ghost profile · awaiting first capsule
+			</section>
+		{/if}
 	{/if}
 </div>
 
 <style>
-	/* Mirrors `(app)/tracker` gamified HUD so leaderboard sits beside the same pulse strip. */
 	.gw-hud {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));

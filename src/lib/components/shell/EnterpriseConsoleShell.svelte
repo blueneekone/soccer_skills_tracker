@@ -12,6 +12,8 @@
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
+	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
+	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -246,11 +248,17 @@
 				<button
 					type="button"
 					class="ec-icon-btn icon-tap ec-bell-btn"
-					onclick={() => goto('/player/tracker')}
-					aria-label="Notifications"
-					aria-haspopup="false"
+					onclick={() => alertsDrawer.toggle()}
+					aria-label="Alerts"
+					aria-haspopup="dialog"
+					aria-expanded={alertsDrawer.open}
 				>
 					<Icon name="comm.bell" size={18} />
+					{#if alertsDrawer.unreadCount > 0}
+						<span class="ec-bell-badge" aria-label="{alertsDrawer.unreadCount} unread alerts">
+							{alertsDrawer.unreadCount > 9 ? '9+' : alertsDrawer.unreadCount}
+						</span>
+					{/if}
 				</button>
 				<button
 					type="button"
@@ -287,6 +295,7 @@
 <CommandPalette bind:open={cmdPaletteOpen} />
 
 <PlayerDetailDrawer />
+<AlertsDrawer />
 
 <!-- ── Anomaly Report Modal ─────────────────────────────────────────────── -->
 {#if anomalyOpen}
@@ -567,8 +576,28 @@
 		background: var(--brand-primary, #f59e0b);
 	}
 
-	/* Bell button — player notification shortcut */
+	/* Bell button — alerts drawer toggle */
 	.ec-bell-btn {
 		position: relative;
+	}
+
+	/* Unread count badge */
+	.ec-bell-badge {
+		position: absolute;
+		top: -3px;
+		right: -4px;
+		min-width: 16px;
+		height: 16px;
+		padding: 0 3px;
+		border-radius: 999px;
+		background: #e11d48;
+		color: #fff;
+		font-size: 0.6rem;
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		line-height: 16px;
+		text-align: center;
+		pointer-events: none;
+		box-shadow: 0 0 0 2px var(--ec-topbar-bg, #0f172a);
 	}
 </style>

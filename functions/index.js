@@ -246,7 +246,6 @@ exports.onRepCreatedUpdateTeamStats   = trainingOps.onRepCreatedUpdateTeamStats;
 exports.getAccountabilityReport       = trainingOps.getAccountabilityReport;
 exports.getPublicRecruitProfile       = trainingOps.getPublicRecruitProfile;
 exports.getPublicClubLanding          = trainingOps.getPublicClubLanding;
-exports.getTeamLeaderboard            = trainingOps.getTeamLeaderboard;
 exports.logPlayerActivity             = trainingOps.logPlayerActivity;
 exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;

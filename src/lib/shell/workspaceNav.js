@@ -54,7 +54,7 @@ const parentLinks = [
 	{ tab: '', label: 'Clearance',   icon: 'status.shield-check', href: '/parent/household' },
 	{ tab: '', label: 'Household',   icon: 'nav.home',             href: '/parent/vpc' },
 	{ tab: '', label: 'Log Workout', icon: 'user.check',           href: '/parent/log-workout' },
-	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/pricing' },
+	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/parent/payments' },
 	{ tab: '', label: 'Messages',    icon: 'comm.chat',            href: '/messages' },
 ];
 

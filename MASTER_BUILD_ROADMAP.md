@@ -88,6 +88,6 @@ Epic 9: The Tactical SIEM UI/UX Overhaul
 
 [x] Sprint 9.4 (Radar Chart & Deterministic Avatars): Fix the SVG viewBox padding on the Attribute Radar to prevent text clipping. Bind the radar to the 6-axis Vanguard Prism. Replace the stretched Operative image with a deterministic, code-generated Bauhaus SVG constrained by aspect-square, object-cover, and rounded-full.
 
-Sprint 9.5 (EQ Perimeter Enforcement): Permanently delete the "Team Leaderboard" component to protect athlete psychology. Replace it with the "Time-Lapse Memory Capsules" (Ghost Profile) component.
+[x] Sprint 9.5 (EQ Perimeter Enforcement): Permanently delete the "Team Leaderboard" component to protect athlete psychology. Replace it with the "Time-Lapse Memory Capsules" (Ghost Profile) component.
 
-Sprint 9.6 (Consolidation & Parent OS Finance): Delete the redundant "Active Missions / Alerts" card and route those notifications to a slide-out drawer connected to the top-nav bell. In the Parent OS, refactor the "Payments" tab to specifically interface with Stripe Connect for club dues and team fees, not platform licensing.
+[x] Sprint 9.6 (Consolidation & Parent OS Finance): Delete the redundant "Active Missions / Alerts" card and route those notifications to a slide-out drawer connected to the top-nav bell. In the Parent OS, refactor the "Payments" tab to specifically interface with Stripe Connect for club dues and team fees, not platform licensing.
