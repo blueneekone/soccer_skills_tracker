@@ -1,15 +1,16 @@
 <script lang="ts">
   import type { StakeholderCard } from './landingContent.js';
 
-  let { card }: { card: StakeholderCard } = $props();
+  let { card, gridLg }: { card: StakeholderCard; gridLg?: { col: string; row: string } } = $props();
 
   let hovered = $state(false);
 </script>
 
 <article
-  class="sc-root glass-panel {card.roleClass}"
+  class="sc-root vanguard-card tw-border-slate-800 {card.roleClass}"
   class:sc-root--hovered={hovered}
   aria-labelledby="sc-{card.id}-title"
+  style={gridLg ? `--gcol: ${gridLg.col}; --grow: ${gridLg.row}` : undefined}
   onmouseenter={() => (hovered = true)}
   onmouseleave={() => (hovered = false)}
 >
@@ -36,10 +37,19 @@
     flex-direction: column;
     gap: clamp(0.65rem, 1.5vw, 1rem);
     padding: var(--bento-pad);
-    border-radius: var(--radius-premium);
-    transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    border-radius: 4px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
     position: relative;
     overflow: hidden;
+    grid-column: var(--gcol, auto);
+    grid-row: var(--grow, auto);
+  }
+
+  @media (max-width: 63.99rem) {
+    .sc-root {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
   }
 
   .sc-root::before {
@@ -57,9 +67,8 @@
   }
 
   .sc-root--hovered {
-    transform: translateY(-4px);
-    box-shadow: var(--vanguard-elev-3);
-    border-color: color-mix(in srgb, var(--sc-accent) 35%, transparent);
+    border-color: rgb(71 85 105);
+    box-shadow: none;
   }
 
   .sc-root--hovered::before {
@@ -87,7 +96,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     font-weight: 700;
     letter-spacing: 0.25em;
@@ -105,7 +114,7 @@
   }
 
   .sc-headline {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: clamp(0.8rem, 1.8vw, 1rem);
     font-weight: 800;
     color: white;
@@ -114,8 +123,9 @@
   }
 
   .sc-body {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-sans);
     font-size: clamp(0.875rem, 1.2vw, 0.9375rem);
+    font-weight: 400;
     color: var(--vanguard-text-2, #e2e8f0);
     line-height: 1.8;
     margin: 0;
@@ -135,7 +145,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     color: var(--vanguard-text-3, #cbd5e1);
   }
@@ -153,7 +163,7 @@
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid color-mix(in srgb, var(--sc-accent) 20%, transparent);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     font-weight: 700;
     letter-spacing: 0.2em;

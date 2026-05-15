@@ -47,8 +47,8 @@
 
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
-			<a href="/login" class="mn-cta mn-cta--ghost">Sign In</a>
-			<a href="/setup" class="mn-cta mn-cta--primary">Deploy Club →</a>
+			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
+			<a href="/setup" class="tw-vanguard-btn-primary mn-cta-size">Deploy Club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->
@@ -174,33 +174,11 @@
 		gap: 0.65rem;
 		flex-shrink: 0;
 	}
-	.mn-cta {
-		padding: 0.45rem 1rem;
-		border-radius: 7px;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.58rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-decoration: none;
-		transition: background 0.2s, color 0.2s;
-		min-height: 36px;
-		display: flex;
-		align-items: center;
-	}
-	.mn-cta--ghost {
-		color: rgba(255, 255, 255, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
-	.mn-cta--ghost:hover { color: white; border-color: rgba(255, 255, 255, 0.25); }
-	.mn-cta--primary {
-		background: color-mix(in srgb, var(--vanguard-cyan) 10%, transparent);
-		border: 1px solid var(--vanguard-border);
-		color: var(--vanguard-cyan);
-		box-shadow: 0 0 14px color-mix(in srgb, var(--vanguard-cyan) 20%, transparent);
-	}
-	.mn-cta--primary:hover {
-		background: color-mix(in srgb, var(--vanguard-cyan) 18%, transparent);
-		box-shadow: 0 0 24px color-mix(in srgb, var(--vanguard-cyan) 40%, transparent);
+	/* Compact size override for nav context */
+	.mn-cta-size {
+		font-size: 0.625rem;
+		padding: 0 0.85rem;
+		min-height: 34px;
 	}
 
 	/* Hamburger */
@@ -259,20 +237,24 @@
 	.mn-mobile__cta {
 		margin-top: 0.5rem;
 		padding: 0.8rem;
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--vanguard-cyan) 8%, transparent);
-		border: 1px solid var(--vanguard-border);
-		font-family: 'JetBrains Mono', monospace;
+		border-radius: 4px;
+		background: var(--vanguard-accent);
+		border: 1px solid var(--vanguard-accent);
+		font-family: var(--font-mono);
 		font-size: 0.65rem;
-		font-weight: 800;
+		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: var(--vanguard-cyan);
+		color: rgb(2 6 23);
 		text-decoration: none;
 		text-align: center;
 		min-height: 44px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		transition: background-color 150ms ease;
+	}
+	.mn-mobile__cta:hover {
+		background: color-mix(in srgb, var(--vanguard-accent) 85%, white 15%);
 	}
 
 	@media (max-width: 768px) {

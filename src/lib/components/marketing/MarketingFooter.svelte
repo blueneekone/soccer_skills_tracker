@@ -43,10 +43,9 @@
 
 <style>
 	.mf-root {
-		border-top: 1px solid rgba(255, 255, 255, 0.06);
-		background: rgba(1, 4, 9, 0.7);
-		backdrop-filter: blur(12px);
-		font-family: 'JetBrains Mono', monospace;
+		border-top: 1px solid rgb(30 41 59);
+		background: rgb(2 6 23);
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 	.mf-inner {
 		max-width: 1180px;

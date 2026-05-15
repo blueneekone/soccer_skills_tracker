@@ -3,7 +3,6 @@
 </script>
 
 <section class="fc-root" aria-labelledby="fc-heading">
-	<div class="fc-glow" aria-hidden="true"></div>
 	<div class="fc-inner">
 		<span class="fc-eyebrow">DEPLOY NOW</span>
 		<h2 class="fc-h2" id="fc-heading">
@@ -14,11 +13,10 @@
 			CSV ingestion.
 		</p>
 		<div class="fc-actions">
-			<a href="/setup" class="fc-cta fc-cta--primary">
-				DEPLOY YOUR CLUB
-				<span aria-hidden="true">→</span>
+			<a href="/setup" class="tw-vanguard-btn-primary">
+				DEPLOY YOUR CLUB →
 			</a>
-			<a href="/pricing" class="fc-cta fc-cta--ghost">VIEW PRICING →</a>
+			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>
 		</div>
 		<ul class="fc-checklist" aria-label="Included features">
 			{#each FINAL_CTA_FEATURES as item (item)}
@@ -36,21 +34,10 @@
 		position: relative;
 		padding-block: clamp(5rem, 10vw, 8rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
-		border-top: 1px solid var(--vanguard-border);
+		border-top: 1px solid rgb(30 41 59);
 		text-align: center;
 		overflow: hidden;
-	}
-
-	.fc-glow {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		background: radial-gradient(
-			ellipse at center,
-			color-mix(in srgb, var(--vanguard-cyan) 8%, transparent) 0%,
-			transparent 65%
-		);
-		animation: fc-glow-drift 8s ease-in-out infinite alternate;
+		background: rgb(2 6 23);
 	}
 
 	.fc-inner {
@@ -65,7 +52,7 @@
 	}
 
 	.fc-eyebrow {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
@@ -74,17 +61,19 @@
 	}
 
 	.fc-h2 {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-display);
 		font-size: clamp(1.5rem, 4vw, 2.8rem);
-		font-weight: 900;
-		line-height: 1.12;
+		font-weight: 800;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
 		color: var(--vanguard-text-1, #ffffff);
 		margin: 0;
 	}
 
 	.fc-sub {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+		font-family: var(--font-sans);
+		font-size: clamp(0.9375rem, 1.5vw, 1rem);
+		font-weight: 400;
 		color: var(--vanguard-text-2, #e2e8f0);
 		line-height: 1.75;
 		margin: 0;
@@ -99,44 +88,19 @@
 		flex-wrap: wrap;
 	}
 
-	.fc-cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-family: 'JetBrains Mono', monospace;
-		letter-spacing: 0.12em;
-		text-decoration: none;
-		border-radius: var(--vanguard-radius-sm);
-		transition: all 0.25s;
-	}
-
-	.fc-cta--primary {
-		padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2.25rem);
-		min-height: 52px;
-		font-size: clamp(0.6rem, 1.5vw, 0.78rem);
-		font-weight: 900;
-		background: color-mix(in srgb, var(--vanguard-cyan) 10%, transparent);
-		border: 1px solid var(--vanguard-border);
-		color: var(--vanguard-cyan);
-		box-shadow: 0 0 32px color-mix(in srgb, var(--vanguard-cyan) 22%, transparent);
-	}
-
-	.fc-cta--primary:hover {
-		background: color-mix(in srgb, var(--vanguard-cyan) 18%, transparent);
-		box-shadow: 0 0 60px color-mix(in srgb, var(--vanguard-cyan) 40%, transparent);
-		transform: translateY(-3px);
-	}
-
-	.fc-cta--ghost {
+	/* Plain mono link CTA — secondary weight, not a button */
+	.fc-link-cta {
+		font-family: var(--font-mono);
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
+		letter-spacing: 0.12em;
 		color: var(--vanguard-text-3, #cbd5e1);
-		padding: 0.5rem;
-		border: none;
-		background: none;
+		text-decoration: none;
+		transition: color 150ms ease;
+		align-self: center;
 	}
 
-	.fc-cta--ghost:hover {
+	.fc-link-cta:hover {
 		color: var(--vanguard-text-1, #ffffff);
 	}
 
@@ -154,7 +118,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		color: var(--vanguard-text-3, #cbd5e1);
 	}
@@ -164,12 +128,4 @@
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 	}
 
-	@keyframes fc-glow-drift {
-		from {
-			transform: translate(0, 0) scale(1);
-		}
-		to {
-			transform: translate(0, -20px) scale(1.05);
-		}
-	}
 </style>

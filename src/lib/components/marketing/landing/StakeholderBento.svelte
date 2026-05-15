@@ -17,7 +17,7 @@
 		</div>
 		<div class="sb-grid">
 			{#each STAKEHOLDERS as card (card.id)}
-				<StakeholderCard {card} />
+				<StakeholderCard {card} gridLg={card.gridLg} />
 			{/each}
 		</div>
 	</div>
@@ -47,7 +47,7 @@
 
 	.sb-eyebrow {
 		display: inline-block;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
@@ -56,17 +56,19 @@
 	}
 
 	.sb-h2 {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: var(--font-display);
 		font-size: clamp(1.6rem, 4vw, 2.8rem);
-		font-weight: 900;
-		line-height: 1.1;
+		font-weight: 800;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
 		color: var(--vanguard-text-1, #ffffff);
 		margin: 0;
 	}
 
 	.sb-sub {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+		font-family: var(--font-sans);
+		font-size: clamp(0.9375rem, 1.5vw, 1rem);
+		font-weight: 400;
 		color: var(--vanguard-text-2, #e2e8f0);
 		line-height: 1.75;
 		margin: 0;
@@ -75,11 +77,14 @@
 
 	.sb-grid {
 		display: grid;
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax(min(100%, clamp(260px, 28vw, 360px)), 1fr)
-		);
-		gap: var(--bento-gap-md);
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: clamp(0.75rem, 1.5vw, 1rem);
 		align-items: stretch;
+	}
+
+	@media (max-width: 63.99rem) {
+		.sb-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

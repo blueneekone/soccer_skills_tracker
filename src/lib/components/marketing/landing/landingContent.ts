@@ -21,14 +21,20 @@ export interface StakeholderCard {
 	body: string;
 	features: string[];
 	accentLabel: string;
+	/** Asymmetric placement on lg+ (grid-line syntax for a 6-col template). */
+	gridLg: { col: string; row: string };
 }
 
 export interface RevenueEngine {
 	id: string;
+	/** Uppercase row key in pricing readout panel */
+	readoutKey: string;
 	label: string;
 	value: string;
 	descriptor: string;
 	href: string;
+	/** Terminal-style status token */
+	status: string;
 }
 
 export interface TrustBadge {
@@ -50,6 +56,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Multi-team tenant isolation',
 		],
 		accentLabel: 'CLUB COMMAND',
+		gridLg: { col: '1 / 5', row: '1 / 2' },
 	},
 	{
 		id: 'coaches',
@@ -64,6 +71,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Tactical War Room SVG canvas',
 		],
 		accentLabel: 'COACH COMMAND',
+		gridLg: { col: '5 / 7', row: '1 / 2' },
 	},
 	{
 		id: 'athletes',
@@ -78,6 +86,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'CV-verified Tremendous bounties',
 		],
 		accentLabel: 'PLAYER OS',
+		gridLg: { col: '1 / 3', row: '2 / 3' },
 	},
 	{
 		id: 'parents',
@@ -92,30 +101,37 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Household co-op bounty dashboard',
 		],
 		accentLabel: 'FAMILY SHIELD',
+		gridLg: { col: '3 / 7', row: '2 / 3' },
 	},
 ];
 
 export const REVENUE_ENGINES: RevenueEngine[] = [
 	{
 		id: 'base',
+		readoutKey: 'BASE_PLATFORM',
 		label: '$0',
 		value: 'BASE PLATFORM FEE',
 		descriptor: 'No seat licenses. No monthly minimums. No off-season friction. Clubs pay nothing until athletes transact.',
 		href: '/pricing',
+		status: 'OK',
 	},
 	{
 		id: 'transaction',
+		readoutKey: 'TX_MICRO',
 		label: '< 1%',
 		value: 'TRANSACTION MICRO-FEE',
 		descriptor: 'A fractional percentage on registration volume only. The more your club grows, the more our incentives align with yours.',
 		href: '/pricing',
+		status: 'OK',
 	},
 	{
 		id: 'ancillary',
+		readoutKey: 'ANCILLARY',
 		label: '+',
 		value: 'ANCILLARY REVENUE ENGINES',
 		descriptor: 'Digital ticketing sales and hotel block rebates turn your management software into a profit center for your NGB.',
 		href: '/pricing',
+		status: 'OPT-IN',
 	},
 ];
 
@@ -173,7 +189,6 @@ export const INTEGRATIONS: LogoMark[] = [
 // ── Feature Bento Grid 2.0 ────────────────────────────────────────────────
 export interface FeatureCell {
 	id: string;
-	span: 'single' | 'double';
 	eyebrow: string;
 	headline: string;
 	body: string;
@@ -181,12 +196,14 @@ export interface FeatureCell {
 	accentColor: string;
 	/** inline SVG string for the cell's glyph/illustration */
 	glyphId: string;
+	/** Asymmetric placement on lg+ (grid line syntax). Single column stacks by DOM order. */
+	gridLg: { col: string; row: string };
 }
 
 export const FEATURE_BENTO: FeatureCell[] = [
 	{
 		id: 'rl-workouts',
-		span: 'double',
+		gridLg: { col: '1 / 5', row: '1 / 4' },
 		eyebrow: 'ADAPTIVE AI ENGINE',
 		headline: 'RL Workouts That Learn You.',
 		body: 'A Reinforcement Learning policy adjusts drill volume, intensity, and sequence in real time based on physiological feedback and historical adherence — not a static template.',
@@ -196,7 +213,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'skill-tree',
-		span: 'single',
+		gridLg: { col: '5 / 7', row: '1 / 2' },
 		eyebrow: 'OCTALYSIS RPG',
 		headline: 'Composite Snowflake Skill Tree.',
 		body: 'Synthetic Authored Nodes map 50+ skill axes to 5,000+ raw drills. Fog of War masks advanced nodes until earned.',
@@ -206,7 +223,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'coppa',
-		span: 'single',
+		gridLg: { col: '5 / 7', row: '2 / 3' },
 		eyebrow: 'COMPLIANCE',
 		headline: 'WebAuthn COPPA 2.0.',
 		body: 'Biometric enclave attestation binds parental consent to hardware. Four-layer teen ad-block. Zero SMS exposure.',
@@ -216,7 +233,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'cell-routing',
-		span: 'single',
+		gridLg: { col: '5 / 7', row: '3 / 4' },
 		eyebrow: 'INFRASTRUCTURE',
 		headline: 'Cell-Based Tenant Routing.',
 		body: 'Large NGBs land in isolated Firestore cells. No noisy-neighbor throttling. Backend-issued JWT selects the cell.',
@@ -226,7 +243,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'bounties',
-		span: 'single',
+		gridLg: { col: '1 / 3', row: '4 / 5' },
 		eyebrow: 'EMBEDDED FINANCE',
 		headline: 'Tremendous Bounty Escrow.',
 		body: 'Parents fund real-world rewards. CV-verified biomechanics triggers atomic Firestore payout. No manual verification.',
@@ -236,7 +253,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'pricing',
-		span: 'double',
+		gridLg: { col: '3 / 7', row: '4 / 5' },
 		eyebrow: 'ENTERPRISE PRICING',
 		headline: '$0 Platform Fee. Always.',
 		body: 'No seat licenses. No monthly minimums. A fractional micro-percentage on transaction volume only. Revenue that scales with your club.',

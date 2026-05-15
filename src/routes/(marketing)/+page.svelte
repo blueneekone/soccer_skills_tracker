@@ -6,6 +6,7 @@
 	 * Pre-rendered (SSR/static) for maximum SEO and LCP performance.
 	 */
 	import LandingHero from '$lib/components/marketing/landing/LandingHero.svelte';
+	import PoweredByStrip from '$lib/components/marketing/landing/PoweredByStrip.svelte';
 	import ClientLogoBar from '$lib/components/marketing/landing/ClientLogoBar.svelte';
 	import FeatureBento from '$lib/components/marketing/landing/FeatureBento.svelte';
 	import StakeholderBento from '$lib/components/marketing/landing/StakeholderBento.svelte';
@@ -31,11 +32,11 @@
 
 	<!-- LCP critical resource preloads -->
 	<link rel="preload" as="image" href="/marketing/hero-poster.svg" fetchpriority="high" type="image/svg+xml" />
-	<link rel="preload" as="font" href="/fonts/jetbrains-mono-latin-700.woff2" type="font/woff2" crossorigin="anonymous" />
 </svelte:head>
 
-<div class="landing-shell">
+<div class="landing-shell tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-slate-950 tw-text-slate-100">
 	<LandingHero />
+	<PoweredByStrip />
 	<ClientLogoBar />
 	<FeatureBento />
 	<StakeholderBento />
@@ -43,12 +44,3 @@
 	<TrustStripPanel />
 	<FinalCtaPanel />
 </div>
-
-<style>
-	.landing-shell {
-		display: flex;
-		flex-direction: column;
-		width: 100%;
-		min-height: 100dvh;
-	}
-</style>

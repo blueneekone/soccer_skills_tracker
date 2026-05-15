@@ -28,35 +28,58 @@
 	aria-label="Enterprise Pricing Model"
 >
 	<div class="bm-wrapper">
-		<div class="bm-header">
-			<span class="bm-eyebrow">ENTERPRISE PRICING MODEL</span>
-			<h2 class="bm-headline">The $0 Platform Fee.</h2>
-			<p class="bm-subline">
-				Clubs pay nothing until athletes transact. Then a fractional micro-percentage. That's the
-				entire model.
-			</p>
-		</div>
-
-		<div class="bm-grid">
-			{#each REVENUE_ENGINES as engine (engine.id)}
-				<div class="glass-panel bm-card">
-					<span class="bm-card__value">{engine.label}</span>
-					<span class="bm-card__metric">{engine.value}</span>
-					<p class="bm-card__desc">{engine.descriptor}</p>
-					<a class="bm-card__link" href={engine.href}>VIEW PRICING →</a>
+		<div
+			class="bm-readout vanguard-card tw-border-slate-800"
+			role="region"
+			aria-labelledby="bm-readout-title"
+		>
+			<header class="bm-readout__hdr">
+				<div class="bm-readout__hdr-left">
+					<span class="bm-readout__kicker">REVENUE_CMD</span>
+					<span class="bm-readout__sep" aria-hidden="true">/</span>
+					<span id="bm-readout-title" class="bm-readout__title">The $0 Platform Fee</span>
 				</div>
-			{/each}
-		</div>
+				<span class="bm-readout__mode" aria-hidden="true">READOUT · STATIC</span>
+			</header>
 
-		<div class="bm-separator">
-			<p class="bm-separator__tagline">
-				Built for clubs that grow. Revenue that scales with you.
-			</p>
-		</div>
+			<div class="bm-readout__table-wrap">
+				<table class="bm-readout__table">
+					<thead>
+						<tr>
+							<th scope="col">PARAM_ID</th>
+							<th scope="col" class="bm-num">VALUE</th>
+							<th scope="col">CLASS</th>
+							<th scope="col" class="bm-status">STS</th>
+							<th scope="col" class="bm-link">ACK</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each REVENUE_ENGINES as engine (engine.id)}
+							<tr>
+								<td class="bm-mono">{engine.readoutKey}</td>
+								<td class="bm-mono bm-num bm-val">{engine.label}</td>
+								<td>{engine.value}</td>
+								<td class="bm-status"><span class="bm-pill">{engine.status}</span></td>
+								<td class="bm-link">
+									<a class="bm-ack" href={engine.href}>DISCLOSURE</a>
+								</td>
+							</tr>
+							<tr class="bm-readout__sub">
+								<td colspan="5">{engine.descriptor}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 
-		<p class="bm-footnote">
-			Transaction fees are disclosed in full at /pricing. No surprise charges.
-		</p>
+			<footer class="bm-readout__foot">
+				<span class="bm-readout__hash" aria-hidden="true">CHK: FEES_FULL_DISCLOSURE_V1</span>
+				<p class="bm-readout__note">
+					Clubs pay nothing until athletes transact — then a fractional micro-percentage.
+					<a class="bm-readout__a" href="/pricing">/pricing →</a>
+				</p>
+			</footer>
+		</div>
 	</div>
 </section>
 
@@ -68,155 +91,197 @@
 	}
 
 	.bm-wrapper {
-		max-width: 1200px;
+		max-width: 900px;
 		margin-inline: auto;
+	}
+
+	.bm-readout {
+		border-radius: 4px;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(2rem, 4vw, 3rem);
-	}
-
-	.bm-header {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.bm-eyebrow {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		font-weight: 500;
-		letter-spacing: 0.3em;
-		text-transform: uppercase;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
-	}
-
-	.bm-headline {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(1.6rem, 4vw, 2.8rem);
-		font-weight: 900;
-		color: var(--vanguard-text-1, #ffffff);
-		margin: 0;
-		line-height: 1.1;
-	}
-
-	.bm-subline {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
-		color: var(--vanguard-text-2, #e2e8f0);
-		line-height: 1.7;
-		margin: 0;
-		max-width: 60ch;
-	}
-
-	/* Revenue engine grid */
-	.bm-grid {
-		display: grid;
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax(min(100%, clamp(240px, 30vw, 360px)), 1fr)
-		);
-		gap: var(--bento-gap-md, 1.25rem);
-	}
-
-	.bm-card {
-		padding: var(--bento-pad, clamp(1rem, 3vw, 1.75rem));
-		border-radius: var(--radius-premium, var(--vanguard-radius, 1.5rem));
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
+		box-shadow: none;
 		opacity: 0;
-		transform: translateY(24px);
+		transform: translateY(16px);
 		transition:
-			opacity 0.7s ease,
-			transform 0.7s ease;
+			opacity 0.55s ease,
+			transform 0.55s ease;
 	}
 
-	.bm-card:nth-child(1) {
-		transition-delay: 0ms;
-	}
-
-	.bm-card:nth-child(2) {
-		transition-delay: 120ms;
-	}
-
-	.bm-card:nth-child(3) {
-		transition-delay: 240ms;
-	}
-
-	.bm-section--revealed .bm-card {
+	.bm-section--revealed .bm-readout {
 		opacity: 1;
 		transform: none;
 	}
 
-	.bm-card__value {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(2.8rem, 5vw, 4rem);
-		font-weight: 900;
-		color: var(--vanguard-cyan);
-		line-height: 1;
-	}
-
-	.bm-card__metric {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		color: var(--vanguard-text-3, #cbd5e1);
-	}
-
-	.bm-card__desc {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: clamp(0.875rem, 1.3vw, 0.9375rem);
-		line-height: 1.75;
-		color: var(--vanguard-text-2, #e2e8f0);
-		margin: 0;
-		flex: 1;
-	}
-
-	.bm-card__link {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		font-weight: 600;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
-		color: var(--vanguard-cyan);
-		text-decoration: none;
-		transition: opacity 0.2s ease;
-		align-self: flex-start;
-	}
-
-	.bm-card__link:hover {
-		opacity: 0.8;
-	}
-
-	/* Separator bar */
-	.bm-separator {
-		border-top: 1px solid var(--vanguard-border);
-		padding-top: 1.5rem;
+	.bm-readout__hdr {
 		display: flex;
-		justify-content: center;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
+		padding: 0.65rem 0.85rem;
+		background: rgb(2 6 23);
+		border-bottom: 1px solid rgb(30 41 59);
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
-	.bm-separator__tagline {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+	.bm-readout__hdr-left {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.35rem 0.5rem;
+		min-width: 0;
+	}
+
+	.bm-readout__kicker {
+		font-size: 0.5625rem;
+		font-weight: 700;
+		letter-spacing: 0.24em;
+		color: rgb(71 85 105);
+	}
+
+	.bm-readout__sep {
+		color: rgb(51 65 85);
 		font-weight: 400;
-		letter-spacing: 0.1em;
-		color: var(--vanguard-text-3, #cbd5e1);
-		text-align: center;
-		margin: 0;
-		opacity: 0.55;
 	}
 
-	/* Footnote */
-	.bm-footnote {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		color: var(--vanguard-text-3, #cbd5e1);
-		text-align: center;
+	.bm-readout__title {
+		font-size: clamp(0.75rem, 2vw, 0.875rem);
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		color: rgb(226 232 240);
+	}
+
+	.bm-readout__mode {
+		font-size: 0.5rem;
+		letter-spacing: 0.2em;
+		color: rgb(51 65 85);
+		flex-shrink: 0;
+	}
+
+	.bm-readout__table-wrap {
+		overflow-x: auto;
+	}
+
+	.bm-readout__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.625rem;
+		letter-spacing: 0.04em;
+	}
+
+	.bm-readout__table thead th {
+		text-align: left;
+		padding: 0.5rem 0.65rem;
+		background: rgb(2 6 23);
+		color: rgb(71 85 105);
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		border-bottom: 1px solid rgb(30 41 59);
+		white-space: nowrap;
+	}
+
+	.bm-readout__table tbody td {
+		padding: 0.5rem 0.65rem;
+		vertical-align: top;
+		color: rgb(203 213 225 / 0.92);
+		border-bottom: 1px solid rgb(30 41 59);
+		line-height: 1.45;
+	}
+
+	.bm-readout__table tbody tr.bm-readout__sub td {
+		padding-top: 0.35rem;
+		padding-bottom: 0.65rem;
+		color: rgb(100 116 139);
+		font-size: 0.5625rem;
+		letter-spacing: 0.03em;
+		border-bottom: 1px solid rgb(30 41 59);
+	}
+
+	.bm-mono {
+		font-weight: 700;
+		color: rgb(226 232 240 / 0.95) !important;
+	}
+
+	.bm-num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.bm-val {
+		font-size: 0.75rem;
+		color: var(--vanguard-accent) !important;
+		font-weight: 900;
+	}
+
+	.bm-status {
+		white-space: nowrap;
+	}
+
+	.bm-pill {
+		display: inline-block;
+		padding: 1px 6px;
+		border: 1px solid rgb(51 65 85);
+		border-radius: 2px;
+		font-size: 0.5rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		color: rgb(148 163 184 / 0.85);
+	}
+
+	.bm-link {
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.bm-ack {
+		color: var(--vanguard-accent);
+		text-decoration: none;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		transition: opacity 0.15s ease;
+	}
+
+	.bm-ack:hover {
+		opacity: 0.75;
+	}
+
+	.bm-readout__foot {
+		padding: 0.65rem 0.85rem;
+		background: rgb(2 6 23);
+		border-top: 1px solid rgb(30 41 59);
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+
+	.bm-readout__hash {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.5rem;
+		letter-spacing: 0.16em;
+		color: rgb(51 65 85);
+	}
+
+	.bm-readout__note {
 		margin: 0;
-		letter-spacing: 0.05em;
-		opacity: 0.45;
+		font-family: var(--font-sans);
+		font-size: 0.625rem;
+		font-weight: 400;
+		line-height: 1.65;
+		color: rgb(100 116 139);
+		letter-spacing: 0;
+	}
+
+	.bm-readout__a {
+		color: rgb(148 163 184 / 0.85);
+		text-decoration: none;
+		margin-left: 0.35rem;
+		font-weight: 700;
+	}
+
+	.bm-readout__a:hover {
+		color: var(--vanguard-accent);
 	}
 </style>

@@ -103,7 +103,9 @@ html {
 	--motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);  /* Premium snap, no bounce */
 
 	/* ── Typography tokens ───────────────────────────────────────────── */
-	--font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-body: var(--font-sans);
+	--font-display: var(--font-sans);
 	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	/* ── Vanguard Elevation Scale — NO neon halos on data cards ─────── */
@@ -420,6 +422,11 @@ body {
 		gap: var(--bento-gap-md);
 		width: 100%;
 		box-sizing: border-box;
+	}
+
+	/* Flex/grid children default to min-width:auto; long content blows out bento cells */
+	.bento-grid > * {
+		min-width: 0;
 	}
 
 	/** 2-col at 640px+ */
@@ -769,6 +776,73 @@ input[type='range']::-moz-range-thumb {
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
 		color: rgb(148 163 184);
+	}
+
+	/* Geist Sans display heading helper — H1/H2 on marketing pages */
+	.tw-vanguard-display {
+		font-family: var(--font-display);
+		font-weight: 800;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+		color: var(--vanguard-text-1);
+	}
+
+	/* Geist Mono kicker/label/data helper — buttons, eyebrows, data points */
+	.tw-vanguard-mono {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+	}
+
+	/**
+	 * Marketing CTA button system — primary/secondary hierarchy.
+	 * 44px minimum height, 150ms transitions, no transform-bounce, no neon halos.
+	 */
+	.tw-vanguard-btn-primary,
+	.tw-vanguard-btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 clamp(1rem, 2.5vw, 1.5rem);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		border-radius: 4px;
+		border: 1px solid rgb(30 41 59);
+		transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+		cursor: pointer;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.tw-vanguard-btn-primary {
+		background: var(--vanguard-accent);
+		color: rgb(2 6 23);
+		border-color: var(--vanguard-accent);
+	}
+
+	.tw-vanguard-btn-primary:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--vanguard-accent) 85%, white 15%);
+		border-color: color-mix(in srgb, var(--vanguard-accent) 85%, white 15%);
+	}
+
+	.tw-vanguard-btn-secondary {
+		background: transparent;
+		color: var(--vanguard-text-1);
+	}
+
+	.tw-vanguard-btn-secondary:hover:not(:disabled) {
+		border-color: rgb(71 85 105);
+		color: #fff;
+	}
+
+	.tw-vanguard-btn-primary:disabled,
+	.tw-vanguard-btn-secondary:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	/** Numeric / coordinate / clock emphasis — Geist Mono via token */

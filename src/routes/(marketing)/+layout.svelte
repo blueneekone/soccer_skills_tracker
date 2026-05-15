@@ -31,19 +31,13 @@
 </script>
 
 <svelte:head>
-	<meta name="theme-color" content="#010409" />
+	<meta name="theme-color" content="#020617" />
 </svelte:head>
 
 <MarketingNav />
 
-<main>
+<main class="tw-min-h-dvh tw-bg-slate-950">
 	{@render children()}
 </main>
 
 <MarketingFooter />
-
-<style>
-	main {
-		min-height: 100dvh;
-	}
-</style>

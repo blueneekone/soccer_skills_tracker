@@ -8,7 +8,7 @@
 		<span class="ts-headline">ENTERPRISE TRUST LAYER</span>
 		<div class="ts-badges" role="list">
 			{#each TRUST_BADGES as badge (badge.label)}
-				<div class="ts-badge glass-panel" role="listitem">
+				<div class="ts-badge vanguard-card tw-border-slate-800" role="listitem">
 					<StatusChip tone="verified" label={badge.label} size="md" />
 					<span class="ts-badge__sub">{badge.sublabel}</span>
 				</div>
@@ -25,11 +25,9 @@
 	.ts-root {
 		padding-block: clamp(2.5rem, 5vw, 4rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
-		border-top: 1px solid var(--vanguard-border);
-		border-bottom: 1px solid var(--vanguard-border);
-		background: color-mix(in srgb, var(--vanguard-glass) 80%, transparent);
-		backdrop-filter: blur(var(--vanguard-blur));
-		-webkit-backdrop-filter: blur(var(--vanguard-blur));
+		border-top: 1px solid rgb(30 41 59);
+		border-bottom: 1px solid rgb(30 41 59);
+		background: rgb(2 6 23);
 	}
 
 	.ts-inner {
@@ -42,7 +40,7 @@
 	}
 
 	.ts-headline {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.35em;
@@ -63,20 +61,20 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 2px;
-		border-radius: var(--vanguard-radius-sm);
+		border-radius: 4px;
 		transition:
-			border-color 0.2s,
-			box-shadow 0.2s;
+			border-color 0.2s ease;
 		cursor: default;
+		box-shadow: none;
 	}
 
 	.ts-badge:hover {
-		border-color: color-mix(in srgb, var(--vanguard-cyan) 35%, transparent);
-		box-shadow: var(--vanguard-elev-2);
+		border-color: rgb(71 85 105);
+		box-shadow: none;
 	}
 
 	.ts-badge__label {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: clamp(0.6875rem, 1.2vw, 0.75rem);
 		font-weight: 900;
 		letter-spacing: 0.12em;
@@ -84,7 +82,7 @@
 	}
 
 	.ts-badge__sub {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 600;
 		letter-spacing: 0.15em;
@@ -93,7 +91,7 @@
 	}
 
 	.ts-note {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		color: var(--vanguard-text-3, #cbd5e1);
 		margin: 0;
@@ -108,6 +106,6 @@
 	}
 
 	.ts-note-link:hover {
-		color: var(--vanguard-cyan);
+		color: var(--vanguard-accent);
 	}
 </style>
