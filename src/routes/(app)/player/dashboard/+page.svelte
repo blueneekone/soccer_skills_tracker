@@ -8,17 +8,14 @@
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
 	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
-	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
-	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
 	import AttributeRadar from './AttributeRadar.svelte';
-	import { getRpgSportConfig, mapToDefaultAttributes } from '$lib/config/sports.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import {
 		getAttributeSchemaForSport,
-		deriveSkillValuesForSchema,
 		hasDocumentedSkillRatings,
 		pickSkillRatingForKey,
 	} from '$lib/utils/sport-attributes.js';
@@ -55,17 +52,13 @@
 		:	'soccer',
 	);
 	const attributeSchema = $derived(getAttributeSchemaForSport(resolvedSportRaw));
-	const streakDays = $derived(Math.max(0, Math.floor(Number(activePlayer?.currentStreak) || 0)));
-
-	const skillRadar = $derived(
-		deriveSkillValuesForSchema(statsRaw, attributeSchema, totalXpHud, streakDays),
-	);
 
 	const attrRadarValues = $derived(
-		mapToDefaultAttributes(
+		deriveVanguardPrism(
 			statsRaw && typeof statsRaw === 'object' ? /** @type {Record<string,unknown>} */(statsRaw) : null,
-			skillRadar.values,
-			resolvedSportRaw,
+			/** @type {import('$lib/utils/vanguard-prism.js').ArmoryStats} */ (
+				/** @type {Record<string, unknown> | null} */ (activePlayer)?.armory?.stats ?? {}
+			),
 		)
 	);
 
@@ -535,60 +528,32 @@
 		</div>
 	</div>
 
-	<div class="tw-grid tw-min-w-0 tw-grid-cols-1 tw-gap-8 lg:tw-grid-cols-2">
-		<section
-			class="lobby-missions bento-card tw-relative tw-z-40 tw-min-h-0 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
-			aria-labelledby="lobby-missions-h"
-		>
-			<header class="tw-relative tw-z-50 tw-mb-4 tw-min-w-0 tw-border-b tw-border-emerald-500/25 tw-pb-3">
-				<p
-					id="lobby-missions-h"
-					class="lobby-eyebrow tw-mb-1 tw-min-w-0 tw-break-words tw-text-emerald-400/90"
-				>
-					Active missions
-				</p>
-				<h2
-					class="tw-m-0 tw-min-w-0 tw-break-words tw-line-clamp-2 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
-				>
-					Assigned workouts · pending trials
-				</h2>
-			</header>
-			<div class="tw-relative tw-z-50 tw-min-w-0">
-				<PlayerActionInbox />
-			</div>
-		</section>
-
-		<section
-			class="lobby-radar bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
-			aria-labelledby="lobby-radar-h"
-		>
-			<header class="tw-relative tw-z-50 tw-mb-3 tw-min-w-0">
-				<p class="lobby-eyebrow tw-mb-1 tw-min-w-0 tw-break-words tw-text-slate-400">Combat stats</p>
-				<h2
-					id="lobby-radar-h"
-					class="tw-m-0 tw-min-w-0 tw-break-words tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
-				>
-					Attribute radar
-				</h2>
-				<p
-					class="tw-m-0 tw-mt-1 tw-min-w-0 tw-break-words tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500"
-				>
-					Five-axis RPG loadout from your latest
-					<span class="tw-font-semibold tw-text-slate-400"
-						>{getRpgSportConfig(resolvedSportRaw).displayName}</span
-					>
-					combat profile — keep logging to harden the shape.
-				</p>
-			</header>
+	<section
+		class="lobby-radar bento-card tw-relative tw-z-40 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 md:tw-p-6"
+		aria-labelledby="lobby-radar-h"
+	>
+		<header class="tw-relative tw-z-50 tw-mb-3 tw-min-w-0">
+			<p class="lobby-eyebrow tw-mb-1 tw-min-w-0 tw-break-words tw-text-slate-400">Combat stats</p>
+			<h2
+				id="lobby-radar-h"
+				class="tw-m-0 tw-min-w-0 tw-break-words tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
+			>
+				Attribute radar
+			</h2>
+			<p
+				class="tw-m-0 tw-mt-1 tw-min-w-0 tw-break-words tw-line-clamp-3 tw-text-xs tw-leading-relaxed tw-text-slate-500"
+			>
+				Six-axis Vanguard Prism — your live combat profile. Keep logging to harden the shape.
+			</p>
+		</header>
 		<div
 			class="lobby-radar-canvas tw-relative tw-z-30 tw-min-h-0 tw-min-w-0 tw-flex-1 tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-950 tw-p-4"
 		>
-			<div class="tw-relative tw-z-50 tw-min-h-[260px] tw-flex tw-items-center tw-justify-center">
+			<div class="tw-relative tw-z-50 tw-flex tw-min-h-[260px] tw-max-w-sm tw-w-full tw-mx-auto tw-items-center tw-justify-center">
 				<AttributeRadar values={attrRadarValues} />
 			</div>
 		</div>
-		</section>
-	</div>
+	</section>
 
 	<section
 		class="bento-card tw-relative tw-z-40 tw-min-w-0 tw-overflow-hidden tw-p-5 md:tw-p-6"
@@ -824,63 +789,6 @@
 		filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
 	}
 
-	.lobby-missions :global(.pai) {
-		border: none;
-		background: transparent;
-		padding: 0;
-		border-left: 4px solid rgb(16 185 129 / 0.85);
-		padding-left: 1rem;
-		box-shadow: none;
-	}
-
-	.lobby-missions :global(.pai__head) {
-		color: rgb(167 243 208 / 0.95);
-	}
-
-	.lobby-missions :global(.pai__head svg) {
-		color: rgb(52 211 153);
-		filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
-	}
-
-	.lobby-missions :global(.pai__card) {
-		background: rgb(2 6 23 / 0.55);
-		border-color: rgb(16 185 129 / 0.22);
-		box-shadow: inset 0 0 0 1px rgb(16 185 129 / 0.08), 0 0 28px rgb(16 185 129 / 0.06);
-	}
-
-	.lobby-missions :global(.pai__kicker) {
-		color: rgb(52 211 153);
-	}
-
-	.lobby-missions :global(.pai__title) {
-		color: rgb(241 245 249);
-	}
-
-	.lobby-missions :global(.pai__btn--primary) {
-		background: linear-gradient(135deg, rgb(16 185 129), rgb(6 182 212));
-		color: rgb(2 6 23);
-		border-color: rgb(16 185 129 / 0.5);
-	}
-
-	.lobby-missions :global(.pai__btn--ghost) {
-		color: rgb(209 250 229);
-		border-color: rgb(52 211 153 / 0.4);
-		background: rgb(2 6 23 / 0.35);
-	}
-
-	.lobby-missions :global(.pai__btn--ghost:hover) {
-		border-color: rgb(52 211 153 / 0.75);
-		background: rgb(6 78 59 / 0.35);
-	}
-
-	.lobby-missions :global(.pai__muted) {
-		color: rgb(148 163 184);
-	}
-
-	.lobby-missions :global(.pai__details) {
-		border-color: rgb(51 65 85 / 0.6);
-		background: rgb(15 23 42 / 0.45);
-	}
 
 	.lobby-radar-canvas {
 		position: relative;
