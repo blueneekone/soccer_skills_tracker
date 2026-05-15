@@ -182,9 +182,9 @@
 
 		<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-5">
 
-			<!-- Surface selector tab strip -->
+			<!-- Surface selector: two distinct bordered choices (kid/player vs adult/parent flow) -->
 			<div
-				class="tw-flex tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-bg tw-p-0.5"
+				class="tw-flex tw-w-full tw-min-w-0 tw-flex-row tw-items-stretch tw-gap-6"
 				role="tablist"
 				aria-label="Operative or command sign-in"
 			>
@@ -192,8 +192,9 @@
 					type="button"
 					role="tab"
 					aria-selected={authSurface === 'operative'}
-					class="tw-cursor-pointer tw-flex-1 tw-rounded-[0.3125rem] tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-inset"
+					class="tw-cursor-pointer tw-flex-1 tw-min-w-0 tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-px-2 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-150 sm:tw-px-3 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-vanguard-surface hover:tw-border-vanguard-accent hover:tw-text-vanguard-accent"
 					class:tw-bg-vanguard-surface-raised={authSurface === 'operative'}
+					class:tw-bg-vanguard-bg={authSurface !== 'operative'}
 					class:tw-text-vanguard-text-primary={authSurface === 'operative'}
 					class:tw-text-slate-400={authSurface !== 'operative'}
 					onclick={() => { authSurface = 'operative'; loginEngine.error = ''; googleError = ''; }}
@@ -204,8 +205,9 @@
 					type="button"
 					role="tab"
 					aria-selected={authSurface === 'command'}
-					class="tw-cursor-pointer tw-flex-1 tw-rounded-[0.3125rem] tw-border-0 tw-px-1 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-fast sm:tw-px-2 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-inset"
+					class="tw-cursor-pointer tw-flex-1 tw-min-w-0 tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-px-2 tw-py-2.5 tw-text-center tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-leading-tight tw-tracking-[0.1em] tw-transition-colors tw-duration-150 sm:tw-px-3 sm:tw-text-[0.6rem] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-vanguard-accent focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-vanguard-surface hover:tw-border-vanguard-accent hover:tw-text-vanguard-accent"
 					class:tw-bg-vanguard-surface-raised={authSurface === 'command'}
+					class:tw-bg-vanguard-bg={authSurface !== 'command'}
 					class:tw-text-vanguard-text-primary={authSurface === 'command'}
 					class:tw-text-slate-400={authSurface !== 'command'}
 					onclick={() => { authSurface = 'command'; opError = ''; }}
