@@ -1,9 +1,19 @@
 /**
- * Nexus Command OS — VFX / immersion enforcement.
- * Custom thin scrollbars: enterprise-slate track, indigo thumb.
- * Tactical SVGs: prefer `<feGaussianBlur>` filter defs for indigo bloom on active geometry.
- * Controls: no flat white/light-grey buttons — translucent slate glass + luminous indigo borders/hover.
+ * Nexus Command OS — Global Enterprise SIEM Stylesheet
+ * ──────────────────────────────────────────────────────
+ * Phase 0: Slate-900 dark-mode-first aesthetic (Vanguard Protocol).
+ *
+ * Typography:
+ *   Headings + UI labels  → Geist Sans   (Google Fonts CDN via app.html)
+ *   Data / metrics / mono → Geist Mono   (@fontsource/geist-mono, loaded in +layout.svelte)
+ *
+ * Tailwind layer order:
+ *   @tailwind base       → CSS variable injection (preflight disabled in tailwind.config.js)
+ *   @tailwind components → .vanguard-card, .vanguard-btn-* component classes (line ~234)
+ *   @tailwind utilities  → tw-* utility classes (line ~594)
  */
+
+@tailwind base;
 
 /* ── Self-hosted JetBrains Mono (latin subset, woff2 — variable font) ──── */
 @font-face {
