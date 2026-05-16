@@ -24,18 +24,28 @@ import type { Timestamp } from 'firebase/firestore';
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Role hierarchy (ascending privilege):
- *   guest → player → parent → coach → director → super_admin
+ * Canonical role hierarchy (ascending privilege):
  *
- * Source: legacy/app.js `getAppContext()` and `checkRoles()`
+ *   guest → player → parent → tutor → registrar → recruiter
+ *         → coach → director → global_admin → super_admin
+ *
+ * Sources:
+ *   • legacy/app.js `getAppContext()` and `checkRoles()`
+ *   • src/lib/stores/auth.svelte.js role-derived booleans
+ *   • src/lib/auth/authRouter.ts `getRoleDestination()`
+ *   • src/lib/auth/loginRouting.js `getLoginWaterfallDestination()`
  */
 export type UserRole =
-	| 'super_admin'
-	| 'director'
-	| 'coach'
-	| 'parent'
-	| 'player'
-	| 'guest';
+	| 'super_admin'     // Platform-level SaaS admin (cross-tenant)
+	| 'global_admin'    // Alias for super_admin from JWT claims
+	| 'director'        // Club/tenant owner (single org)
+	| 'coach'           // Team coach (single or multiple teams)
+	| 'registrar'       // Club-scoped compliance & roster staff
+	| 'recruiter'       // Talent-feed viewer (PII gated)
+	| 'parent'          // Household guardian (links to player accounts)
+	| 'player'          // Athlete (may be a child account under a parent)
+	| 'tutor'           // Academic tutor (read-only records)
+	| 'guest';          // Unauthenticated / pre-login state
 
 /**
  * Firestore document: `users/{email}`
@@ -89,6 +99,47 @@ export interface AppContext {
 	cid: string | null;
 	role: UserRole;
 	playerName?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// § 1b  Auth Routing (Sprint 1.2 — Vanguard Routing Interceptor)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Result of the role-based routing waterfall.
+ * Produced by `getRoleDestination()` in `src/lib/auth/authRouter.ts`.
+ */
+export interface AuthRoutingDestination {
+	/** SvelteKit route path for `goto()`. */
+	path: string;
+	/** Workspace context key for the sidebar switcher store. */
+	context: string;
+	/** Unique pivot key for the workspace context store. */
+	pivotKey: string;
+}
+
+/**
+ * Magic link dispatch state — tracks the lifecycle of a
+ * `sendSignInLinkToEmail` call in the login UI.
+ */
+export type MagicLinkPhase = 'idle' | 'sending' | 'sent' | 'error';
+
+/**
+ * WebAuthn passkey authentication phases — mirrors the
+ * `loginWithPasskey()` flow in `LoginEngine.svelte.ts`.
+ */
+export type PasskeyPhase = 'idle' | 'prompting' | 'verifying' | 'success' | 'error';
+
+/**
+ * Aggregate auth flow state for the login page.
+ * All fields are reactive `$state` bindings in `+page.svelte`.
+ */
+export interface LoginPageState {
+	email: string;
+	busy: boolean;
+	error: string;
+	magicLinkPhase: MagicLinkPhase;
+	passkeyPhase: PasskeyPhase;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

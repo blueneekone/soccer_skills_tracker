@@ -92,10 +92,11 @@ export function getLoginWaterfallDestination(role, profile) {
 			pivotKey: 'ctx-recruiter-portal',
 		};
 	}
+	// No recognized role — route to onboarding for invite-code / profile setup
 	return {
-		path: '/settings',
+		path: '/onboarding',
 		context: 'household',
-		pivotKey: 'ctx-fallback-settings',
+		pivotKey: 'ctx-onboarding',
 	};
 }
 
