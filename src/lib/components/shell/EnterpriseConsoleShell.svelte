@@ -16,13 +16,28 @@
 	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import VanguardAvatar from '$lib/components/shell/VanguardAvatar.svelte';
 
 	import type { Snippet } from 'svelte';
 
 	let { breadcrumb = '', children }: { breadcrumb?: string; children?: Snippet } = $props();
 
+	let disconnectBusy = $state(false);
+
 	function closeDrawer() {
 		enterprisePlayerDrawer.close();
+	}
+
+	async function disconnect(): Promise<void> {
+		if (disconnectBusy) return;
+		disconnectBusy = true;
+		try {
+			await handleSignOut();
+		} catch (e) {
+			console.error('[EnterpriseConsoleShell] sign out', e);
+		} finally {
+			disconnectBusy = false;
+		}
 	}
 
 	const nav = $derived.by(() =>
@@ -268,8 +283,47 @@
 				>
 					<Icon name="sys.settings" size={18} />
 				</button>
-				<div class="ec-topbar-user ecs-user-label" title={authStore.user?.email ?? ''}>
-					<span class="ec-topbar-user-name">{authStore.userProfile?.playerName || authStore.user?.email || 'Account'}</span>
+				<!-- Context Switcher stub — center topbar identity pill -->
+				<button
+					type="button"
+					class="ec-ctx-stub tw-hidden sm:tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-800/60 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-text-slate-200 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-1 focus-visible:tw-ring-offset-slate-900"
+					aria-label="Switch workspace context"
+					title="Context Switcher — Sprint 2.2"
+				>
+					<span class="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-teal-500" aria-hidden="true"></span>
+					<span class="tw-max-w-[7rem] tw-truncate">
+						{workspaceContextStore.activeContext || authStore.role || 'workspace'}
+					</span>
+					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path d="M6 9l6 6 6-6"/>
+					</svg>
+				</button>
+				<!-- User identity: avatar + name + disconnect -->
+				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2 tw-pl-1">
+					<VanguardAvatar
+						seed={authStore.user?.uid || authStore.user?.email || 'nexus'}
+						size={32}
+					/>
+					<span
+						class="tw-hidden lg:tw-block tw-max-w-[7rem] tw-truncate tw-font-mono tw-text-[0.65rem] tw-font-medium tw-text-slate-400"
+						title={authStore.user?.email ?? ''}
+					>
+						{authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Account'}
+					</span>
+					<button
+						type="button"
+						class="tw-ml-1 tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-red-500/20 tw-bg-transparent tw-text-red-500/50 tw-transition-colors tw-duration-150 hover:tw-border-red-500/50 hover:tw-bg-red-950/40 hover:tw-text-red-400 disabled:tw-cursor-not-allowed disabled:tw-opacity-30 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-red-500 focus-visible:tw-ring-offset-1 focus-visible:tw-ring-offset-slate-900"
+						disabled={disconnectBusy}
+						onclick={disconnect}
+						aria-label="Disconnect — sign out"
+						title="Disconnect"
+					>
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+							<polyline points="16 17 21 12 16 7"/>
+							<line x1="21" y1="12" x2="9" y2="12"/>
+						</svg>
+					</button>
 				</div>
 			</div>
 		</header>

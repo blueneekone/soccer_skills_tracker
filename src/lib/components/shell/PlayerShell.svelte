@@ -9,12 +9,15 @@
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
 	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
+	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
 	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
 	import { getLevelProgressFromTotalXp, getCurrentRank } from '$lib/gamification/level.js';
 	import '$lib/styles/player-shell.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import VanguardAvatar from '$lib/components/shell/VanguardAvatar.svelte';
 
 	let disconnectBusy = $state(false);
 	let isInboxOpen = $state(false);
@@ -128,6 +131,9 @@
 	}
 </script>
 
+<!-- Sprint 9.2: Reengagement alerts surface — mounted in Player OS, opened via bell -->
+<AlertsDrawer />
+
 <div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
@@ -187,25 +193,37 @@
 					/>
 				</div>
 			</div>
+			<VanguardAvatar
+				seed={playerUid || authStore.user?.email || 'player'}
+				size={36}
+				class="tw-shrink-0"
+			/>
 			<div class="ps-topbar__actions tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2">
-				<div class="tw-relative">
-					<button
-						type="button"
-						class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-slate-900/70 tw-text-slate-300 tw-transition hover:tw-border-slate-600 hover:tw-bg-slate-800 hover:tw-text-slate-100"
-						aria-expanded={isInboxOpen}
-						aria-controls="ps-action-inbox-panel"
-						aria-label="Alerts — notifications and assignments"
-						onclick={() => (isInboxOpen = !isInboxOpen)}
-					>
-						<Icon name="comm.bell" size={18} />
-						{#if pendingAssignmentCount > 0}
-							<span
-								class="tw-pointer-events-none tw-absolute tw-right-1.5 tw-top-1.5 tw-h-2 tw-w-2 tw-rounded-full tw-bg-red-500 tw-ring-2 tw-ring-black/80"
-								aria-hidden="true"
-							></span>
-						{/if}
-					</button>
-				</div>
+			<div class="tw-relative">
+				<button
+					type="button"
+					class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-slate-900/70 tw-text-slate-300 tw-transition hover:tw-border-slate-600 hover:tw-bg-slate-800 hover:tw-text-slate-100"
+					aria-expanded={isInboxOpen || alertsDrawer.open}
+					aria-controls="ps-action-inbox-panel"
+					aria-label="Alerts — notifications and assignments"
+					onclick={() => {
+						if (alertsDrawer.unreadCount > 0) {
+							alertsDrawer.toggle();
+							isInboxOpen = false;
+						} else {
+							isInboxOpen = !isInboxOpen;
+						}
+					}}
+				>
+					<Icon name="comm.bell" size={18} />
+					{#if pendingAssignmentCount > 0 || alertsDrawer.unreadCount > 0}
+						<span
+							class="tw-pointer-events-none tw-absolute tw-right-1.5 tw-top-1.5 tw-h-2 tw-w-2 tw-rounded-full tw-bg-red-500 tw-ring-2 tw-ring-black/80"
+							aria-hidden="true"
+						></span>
+					{/if}
+				</button>
+			</div>
 				<button
 					type="button"
 					class="tw-min-h-11 tw-min-w-[5.5rem] tw-shrink-0 tw-touch-manipulation tw-border tw-border-red-500/30 tw-bg-black/40 tw-px-3 tw-py-2.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-500 tw-transition-colors hover:tw-border-red-500/60 hover:tw-bg-red-950/50 hover:tw-text-red-400 active:tw-bg-red-950/70 disabled:tw-opacity-50"
