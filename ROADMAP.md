@@ -76,18 +76,23 @@ Build intent-based homework triggers allowing coaches to assign single macro-goa
 Engineer "The Car Ride Home" Protocol firing mandatory push notifications to parents 15 minutes post-match, locking metrics behind an attestation to prioritize emotional safety and providing highly empathetic conversation anchors.
 
 PHASE 5: ALPHA REMEDIATION & SIEM POLISH
-Objective: Eradicate "AI Slop" aesthetics, fix CSS boundary blowouts, resolve SvelteKit PWA routing stasis, and enforce the progressive disclosure hierarchy to establish a multi-billion-dollar enterprise feel.
+Objective: Eradicate "AI Slop" aesthetics, fix CSS boundary blowouts, eliminate wasted space, and enforce progressive disclosure to establish an ultra-premium enterprise feel.
 
 Epic 9: The Tactical SIEM UI/UX Overhaul
 
-[x] Sprint 9.1 (Routing & Service Worker Resolution): Update service-worker.js to strictly bypass SvelteKit's /_app/immutable/ chunks. Apply data-sveltekit-reload to all EnterpriseConsoleShell sidebar <a> tags to guarantee immediate, native browser navigation without requiring user refreshes.
+Sprint 9.1 (High-Density Spatial Weighting): Restructure the Player OS into a true asymmetric 12-column Bento Grid. Eliminate wasted whitespace. Apply min-w-0 to all flex/grid children to permanently fix boundary blowouts. Move "Quick View Stats" (XP, Level, Streak) to the very top left/center.
 
-[x] Sprint 9.2 (Bento Grid Asymmetry & Hierarchy): Restructure the Player OS into a true asymmetric 12-column Bento Grid. Move "Quick View Stats" (XP, Level, Streak) to the very top. Apply min-w-0 to all flex/grid children and truncate to text elements to permanently fix boundary blowouts (specifically targeting the XP ring and Core Attributes card).
+Sprint 9.2 (Routing & Redundancy Fix): Fix the routing collision between "Today's Quests" and "Initialize Operative." Build "Initialize Operative" as a distinct one-time setup modal. Delete the redundant "Active Missions / Alerts" card to free up grid space, moving alerts to the top-nav notification bell.
 
-[x] Sprint 9.3 (Strategic Minimalism & Typography): Purge all neon glows, pure black backgrounds, and cheap glassmorphism. Enforce deep slate backgrounds with border-slate-800 1px borders. Apply Geist Sans for headings and Geist Mono exclusively for data/metrics. Constrain all primary action buttons with w-fit inline-flex and a 44x44px minimum tap target.
+Sprint 9.3 (Deterministic Avatars): Install bauhaus-avatar-generator. Replace all abstract profile image placeholders with deterministic SVGs seeded by the player's UID. Constrain the avatar wrapper with aspect-square, object-cover, and rounded-full within a strict maximum width.
 
-[x] Sprint 9.4 (Radar Chart & Deterministic Avatars): Fix the SVG viewBox padding on the Attribute Radar to prevent text clipping. Bind the radar to the 6-axis Vanguard Prism. Replace the stretched Operative image with a deterministic, code-generated Bauhaus SVG constrained by aspect-square, object-cover, and rounded-full.
+Sprint 9.4 (Strategic Minimalism & Typography): Audit the entire dashboard to purge any remaining neon glows. Enforce deep slate backgrounds (#0B0F19) with border-slate-800 1px borders. Apply Geist Mono exclusively to all data points. Constrain all buttons with w-fit inline-flex (44x44px minimum tap target).
 
-[x] Sprint 9.5 (EQ Perimeter Enforcement): Permanently delete the "Team Leaderboard" component to protect athlete psychology. Replace it with the "Time-Lapse Memory Capsules" (Ghost Profile) component.
+PHASE 6: THE AI TRAINING ENGINE
+Objective: Replace static, template-based workout loggers with an intelligent, adaptive Execution Terminal.
 
-[x] Sprint 9.6 (Consolidation & Parent OS Finance): Delete the redundant "Active Missions / Alerts" card and route those notifications to a slide-out drawer connected to the top-nav bell. In the Parent OS, refactor the "Payments" tab to specifically interface with Stripe Connect for club dues and team fees, not platform licensing.
+Epic 10: The RL Execution Terminal
+
+Sprint 10.1 (Terminal UI Construction): Delete the legacy workout selection interface. Build the "Execution Terminal" UI, styled like a SIEM command prompt. It must feature sliders/inputs for Time on Task and Rate of Perceived Exertion (RPE intensity 1-10).
+
+Sprint 10.2 (Adaptive Logic Scaffolding): Wire the UI to support dynamic workout parameters (volume, intensity, rest). Frame the data payload so the backend Reinforcement Learning (RL) Markov Decision Process can autonomously adjust tomorrow's recommended drills based on today's RPE and completion metrics.

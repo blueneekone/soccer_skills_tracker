@@ -1,51 +1,34 @@
 NEXUS COMMAND: VANGUARD PROTOCOL 2026
 MASTER ARCHITECTURE, DEFENSE, & EXECUTION RULES
 1. PROJECT SOURCE OF TRUTH & COST OPTIMIZATION (CRITICAL)
-Absolute Roadmap Enforcement: Always reference MASTER_BUILD_ROADMAP.md for feature planning.
+Absolute Roadmap Enforcement: Always reference ROADMAP.md for feature planning.
 
-Pre-Indexed Context: To minimize massive cache-read costs, read the .stack-shared-ai/ directory index to understand routes and models before exploring raw source files.
+Pre-Indexed Context: Read the .stack-shared-ai/ directory index to understand routes and models before exploring raw source files.
 
-Anti-Monolith Sprints: Do not attempt 500-line refactors in a single prompt. Break large changes into focused 100-line sessions to prevent context degradation and token waste.
+Anti-Monolith Sprints: Do not attempt 500-line refactors. Break large changes into focused 100-line sessions to prevent context degradation and token waste.
 
-Strategic Model Switching: Use premium models (Claude 3.5 Sonnet/Opus) exclusively in Plan Mode for complex reasoning, then execute the agreed-upon plan using the cheaper Composer-1 (Auto mode).
-
-2. DATABASE DEFENSE & ANTI-DELETION PROTOCOL
-Zero Data Loss Mandate: You are explicitly forbidden from writing destructive Firestore migrations or dropping unmapped keys.
-
-Lazy Migration (Read-Repair): If required keys (sportId, schemaVersion, tenantId) are missing on read, patch the object with safe defaults in memory and execute an asynchronous non-blocking merge write ({ merge: true }).
-
-Strict Tenant Isolation: Every database read/write must explicitly enforce clubId or tenantId to prevent cross-tenant exposure.
-
-PROJECT IDENTITY & TACTICAL SIEM AESTHETIC
+2. PROJECT IDENTITY & TACTICAL SIEM AESTHETIC
 Platform Identity: "Nexus Command" — A professional-grade, strategic SaaS platform for youth athlete development.
 
-The UI Aesthetic: "Tactical SIEM / Commander." It must feel like an ultra-premium, high-stakes military or cybersecurity Mission Control dashboard.
+The UI Aesthetic: "Tactical SIEM / Commander." It must feel like an ultra-premium, high-stakes cybersecurity Mission Control dashboard.
 
-Colors: Deep muted slate/navy dark mode (e.g., bg-), stark white data points, and a single muted accent (e.g., Deep Teal). NO PURE BLACK. NO NEON GLOWS.
+Colors: Deep muted slate/navy dark mode (e.g., #0B0F19), stark white data points, and a single muted accent (e.g., Deep Teal #14b8a6). NO PURE BLACK. NO NEON GLOWS.
 
-Typography: Use modern neo-grotesque fonts for body text and strictly use Geist Mono for all data labels, metrics, and technical readouts to reinforce the data-dense commander vibe.
+Typography: Use Geist Sans for headings and strictly use Geist Mono for all data labels, metrics, and technical readouts.
 
-Textures & Layouts: Strategic Minimalism. Use rigid Bento Grids with thin, low-contrast borders. Glassmorphism is STRICTLY LIMITED to floating modals, sticky headers, or dropdowns. Data cards must have solid, opaque backgrounds to preserve text contrast.
+3. HIGH-DENSITY SPACING & BENTO GRID 2.0 (NO WASTED SPACE)
+True Asymmetry: Grid layouts must be 12-column asymmetric Bento Grids. Hero KPIs span 4-6 columns; secondary cards span 2-3 columns. Do not use equal 3-column layouts.
 
-Micro-Interactions: Premium, fast, and brutalist. Limit animations to 150–250ms. Use subtle 1% dimming or micro-pulses for state changes. No bouncy or decorative motion.
+Information Density: This is a SIEM dashboard, not a consumer blog. Minimize internal padding. Eliminate wasted whitespace. Use min-w-0 on flex/grid children and truncate on text to prevent boundary blowouts.
 
-4. TECH STACK & STRICT SVELTE 5 MANDATES
-Core Stack: Svelte 5 (Strict Runes), SvelteKit, TypeScript, Tailwind CSS, Firebase v2 Modular SDK.
+Button Ergonomics: Action buttons must use w-fit inline-flex with a strict 44x44px minimum tap target for thumb-friendly mobile ergonomics. Do not let buttons stretch to fill parent containers.
 
-Reactivity: Use Svelte 5 Runes strictly ($state, $derived, $effect). You must use untrack() for goto() calls inside $effect blocks to prevent infinite execution loops.
+4. ROUTING & STATE INTEGRITY
+No Duplicate Routes: Ensure primary action buttons route to distinct, purposeful views.
 
-Tailwind Prefix: You MUST use the tw- prefix for all utility classes.
+Avatars: Do not use static image placeholders. Avatars must be generated deterministically via the bauhaus-avatar-generator library using the user's email or UID as the seed.
 
-5. THE VANGUARD TRINITY PATTERN (UI ARCHITECTURE)
-The Shell (+page.svelte): The mounting layer. Handles fixed layout containers.
+5. TECH STACK & STRICT SVELTE 5 MANDATES
+Core Stack: Svelte 5 (Strict Runes), SvelteKit, TypeScript, Tailwind CSS.
 
-The Brain ([Name]Engine.svelte.ts): The pure TypeScript Svelte 5 state machine.
-
-The Glass ([Name]Arena.svelte): The pure presentation layer.
-
-The HUD ([Name]HUD.svelte): The HTML/Tailwind control overlay. The root container must be tw-pointer-events-none so it does not block interactions with the board underneath.
-
-6. CODE EXECUTION DIRECTIVES
-Do Not Append Solutions: When instructed to refactor, rewrite the necessary logic cleanly. Never append alternative code blocks to the bottom of the file.
-
-Search and Destroy Redundancy: When replacing a legacy module, explicitly delete the deprecated HTML forms and permanently delete orphaned .svelte files.
+Reactivity: Use Svelte 5 Runes strictly ($state, $derived, $effect). Use untrack() for goto() calls inside $effect blocks.
