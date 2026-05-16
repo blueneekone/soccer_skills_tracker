@@ -128,174 +128,140 @@
 	<div class="tw-w-full tw-max-w-[26rem] tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900 tw-p-8">
 
 		{#if loginView === 'operative'}
-			<!-- Operative terminal header -->
-			<div class="tw-mb-6 tw-flex tw-items-start tw-justify-between tw-gap-3">
-				<div class="tw-flex tw-items-center tw-gap-3">
-					<!-- Terminal icon mark -->
-					<div class="tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-teal-500/30 tw-bg-teal-950/30">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tw-text-teal-400" aria-hidden="true">
-							<polyline points="4 17 10 11 4 5"/>
-							<line x1="12" y1="19" x2="20" y2="19"/>
-						</svg>
-					</div>
-					<div>
-						<p class="tw-m-0 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-teal-600">COPPA-SECURE GATE</p>
-						<h2 class="tw-m-0 tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-[0.16em] tw-text-teal-300">OPERATIVE TERMINAL</h2>
+			<!-- Terminal header row -->
+			<div class="tw-mb-5 tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-2">
+				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tw-shrink-0 tw-text-teal-500" aria-hidden="true">
+						<polyline points="4 17 10 11 4 5"/>
+						<line x1="12" y1="19" x2="20" y2="19"/>
+					</svg>
+					<div class="tw-min-w-0">
+						<p class="tw-m-0 tw-truncate tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-600">COPPA-SECURE GATE</p>
+						<h2 class="tw-m-0 tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.16em] tw-text-teal-400">OPERATIVE TERMINAL</h2>
 					</div>
 				</div>
-				<!-- Return to command -->
 				<button
 					type="button"
 					onclick={() => { loginView = 'command'; opError = ''; opCode = ''; opCallsign = ''; }}
-					class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.16em] tw-text-slate-600 tw-transition-colors tw-duration-150 hover:tw-text-slate-300 focus-visible:tw-outline-none"
+					class="tw-inline-flex tw-w-fit tw-shrink-0 tw-items-center tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-600 tw-transition-colors tw-duration-150 hover:tw-text-slate-300 focus-visible:tw-outline-none"
 					aria-label="Return to adult login"
 				>
 					← COMMAND
 				</button>
 			</div>
 
-			<!-- Mode tabs -->
-			<div class="tw-mb-5 tw-flex tw-gap-1 tw-rounded-md tw-border tw-border-slate-800 tw-bg-slate-950/50 tw-p-0.5" role="tablist" aria-label="Authentication mode">
+			<!-- Mode tabs — slim pill switcher -->
+			<div class="tw-mb-5 tw-flex tw-gap-px tw-border-b tw-border-slate-800 tw-pb-0" role="tablist" aria-label="Authentication mode">
 				<button
 					type="button"
 					role="tab"
 					aria-selected={operativeMode === 'otp'}
 					onclick={() => { operativeMode = 'otp'; opCode = ''; opError = ''; }}
-					class="tw-flex-1 tw-rounded tw-px-3 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-transition-all tw-duration-150 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 {operativeMode === 'otp' ? 'tw-bg-teal-950/60 tw-text-teal-400 tw-border tw-border-teal-500/30' : 'tw-text-slate-600 hover:tw-text-slate-400'}"
-				>
-					Clearance Code
-				</button>
+					class="tw-px-3 tw-pb-2 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-transition-colors tw-duration-150 focus-visible:tw-outline-none {operativeMode === 'otp' ? 'tw-border-b-2 tw-border-teal-500 tw-text-teal-400 -tw-mb-px' : 'tw-text-slate-600 hover:tw-text-slate-400'}"
+				>Clearance Code</button>
 				<button
 					type="button"
 					role="tab"
 					aria-selected={operativeMode === 'dispatch'}
 					onclick={() => { operativeMode = 'dispatch'; opCode = ''; opError = ''; }}
-					class="tw-flex-1 tw-rounded tw-px-3 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-transition-all tw-duration-150 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 {operativeMode === 'dispatch' ? 'tw-bg-teal-950/60 tw-text-teal-400 tw-border tw-border-teal-500/30' : 'tw-text-slate-600 hover:tw-text-slate-400'}"
-				>
-					Dispatch Code
-				</button>
+					class="tw-px-3 tw-pb-2 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-transition-colors tw-duration-150 focus-visible:tw-outline-none {operativeMode === 'dispatch' ? 'tw-border-b-2 tw-border-teal-500 tw-text-teal-400 -tw-mb-px' : 'tw-text-slate-600 hover:tw-text-slate-400'}"
+				>Dispatch Code</button>
 			</div>
 
-			<!-- Mode description -->
-			<p class="tw-mb-4 tw-font-mono tw-text-[0.6rem] tw-leading-relaxed tw-text-slate-600">
-				{#if operativeMode === 'otp'}
-					Enter the 6-character Clearance Code your parent generated for this session.
-				{:else}
-					Enter your Operative Callsign and the permanent Dispatch Code issued at setup.
-				{/if}
-			</p>
-
-			<!-- Callsign input -->
-			<label class="tw-mb-1 tw-block tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-700" for="op-callsign">
-				Operative Callsign
-			</label>
+			<!-- Callsign input — lean terminal style -->
+			<div class="tw-mb-1">
+				<label class="tw-block tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600" for="op-callsign">Operative Callsign</label>
+			</div>
 			<input
 				id="op-callsign"
 				type="text"
 				autocomplete="username"
 				autocapitalize="none"
 				spellcheck={false}
-				placeholder={operativeMode === 'otp' ? 'Callsign, name, or email' : 'Callsign (e.g. STRIKER7)'}
+				placeholder={operativeMode === 'otp' ? 'callsign, name, or email' : 'callsign (e.g. striker7)'}
 				bind:value={opCallsign}
-				class="tw-mb-4 tw-w-full tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-950/60 tw-px-4 tw-py-3 tw-font-mono tw-text-sm tw-text-teal-200 tw-placeholder-slate-700 tw-transition-colors tw-duration-150 focus:tw-border-teal-600 focus:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-slate-900"
+				class="tw-mb-4 tw-w-full tw-border-0 tw-border-b tw-border-slate-700 tw-bg-transparent tw-pb-2 tw-font-mono tw-text-sm tw-text-slate-300 tw-placeholder-slate-700 tw-transition-colors tw-duration-150 focus:tw-border-teal-500 focus:tw-outline-none focus:tw-ring-0"
 			/>
 
-			<!-- Code input -->
-			{#if operativeMode === 'otp'}
-				<label class="tw-mb-1 tw-block tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-700" for="op-code-otp">
-					Clearance Code
+			<!-- Code entry — dark inset container -->
+			<div class="tw-mb-5 tw-rounded-md tw-bg-slate-950/50 tw-px-4 tw-py-5">
+				<label class="tw-mb-2 tw-block tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600" for={operativeMode === 'otp' ? 'op-code-otp' : 'op-code-dispatch'}>
+					{operativeMode === 'otp' ? 'Clearance Code' : 'Dispatch Code'}
 				</label>
-				<input
-					id="op-code-otp"
-					type="text"
-					inputmode="text"
-					autocomplete="one-time-code"
-					autocapitalize="characters"
-					spellcheck={false}
-					maxlength={7}
-					placeholder="XXX-XXX"
-					value={opCode}
-					oninput={handleOtpInput}
-					class="tw-mb-5 tw-w-full tw-rounded-md tw-border tw-border-teal-800/60 tw-bg-slate-950/60 tw-px-4 tw-py-3.5 tw-text-center tw-font-mono tw-text-2xl tw-font-bold tw-tracking-[0.5em] tw-text-teal-300 tw-placeholder-slate-800 tw-transition-colors tw-duration-150 focus:tw-border-teal-500 focus:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-slate-900"
-				/>
-			{:else}
-				<label class="tw-mb-1 tw-block tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-700" for="op-code-dispatch">
-					Dispatch Code
-				</label>
-				<input
-					id="op-code-dispatch"
-					type="text"
-					autocomplete="off"
-					autocapitalize="characters"
-					spellcheck={false}
-					maxlength={8}
-					placeholder="XXXXXXXX"
-					value={opCode}
-					oninput={handleDispatchInput}
-					class="tw-mb-5 tw-w-full tw-rounded-md tw-border tw-border-teal-800/60 tw-bg-slate-950/60 tw-px-4 tw-py-3.5 tw-text-center tw-font-mono tw-text-2xl tw-font-bold tw-tracking-[0.4em] tw-text-teal-300 tw-placeholder-slate-800 tw-transition-colors tw-duration-150 focus:tw-border-teal-500 focus:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-slate-900"
-				/>
-			{/if}
-
-			<!-- Authenticate button -->
-			<button
-				type="button"
-				onclick={handleOperativeAuth}
-				disabled={opBusy || navigating || !opCallsign.trim() || !opCode.trim()}
-				class="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2.5 tw-min-h-[3rem] tw-rounded-md tw-border tw-border-teal-500/40 tw-bg-teal-950/40 tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-teal-300 tw-transition-all tw-duration-150 hover:tw-border-teal-400/70 hover:tw-bg-teal-900/50 hover:tw-text-teal-200 disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-slate-900"
-			>
-				{#if opBusy}
-					<div class="tw-h-4 tw-w-4 tw-animate-spin tw-rounded-full tw-border-2 tw-border-teal-700 tw-border-t-teal-300" role="status" aria-label="Authenticating"></div>
-					VERIFYING CLEARANCE…
+				{#if operativeMode === 'otp'}
+					<input
+						id="op-code-otp"
+						type="text"
+						inputmode="text"
+						autocomplete="one-time-code"
+						autocapitalize="characters"
+						spellcheck={false}
+						maxlength={7}
+						placeholder="XXX-XXX"
+						value={opCode}
+						oninput={handleOtpInput}
+						class="tw-w-full tw-border-0 tw-border-b tw-border-slate-700 tw-bg-transparent tw-pb-2 tw-text-center tw-font-mono tw-text-2xl tw-font-bold tw-tracking-[0.5em] tw-text-teal-400 tw-placeholder-slate-800 tw-transition-colors tw-duration-150 focus:tw-border-teal-500 focus:tw-outline-none focus:tw-ring-0"
+					/>
 				{:else}
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-						<path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-					</svg>
-					AUTHENTICATE OPERATIVE
+					<input
+						id="op-code-dispatch"
+						type="text"
+						autocomplete="off"
+						autocapitalize="characters"
+						spellcheck={false}
+						maxlength={8}
+						placeholder="XXXXXXXX"
+						value={opCode}
+						oninput={handleDispatchInput}
+						class="tw-w-full tw-border-0 tw-border-b tw-border-slate-700 tw-bg-transparent tw-pb-2 tw-text-center tw-font-mono tw-text-2xl tw-font-bold tw-tracking-[0.4em] tw-text-teal-400 tw-placeholder-slate-800 tw-transition-colors tw-duration-150 focus:tw-border-teal-500 focus:tw-outline-none focus:tw-ring-0"
+					/>
 				{/if}
-			</button>
+				<p class="tw-mt-2 tw-font-mono tw-text-[0.55rem] tw-leading-relaxed tw-text-slate-700">
+					{#if operativeMode === 'otp'}
+						6-char code generated by your parent · 10 min TTL · single use
+					{:else}
+						permanent code issued at provisioning
+					{/if}
+				</p>
+			</div>
+
+			<!-- Action row: submit + cancel — w-fit inline-flex per cursorrules -->
+			<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
+				<button
+					type="button"
+					onclick={() => { loginView = 'command'; opError = ''; opCode = ''; opCallsign = ''; }}
+					class="tw-inline-flex tw-h-11 tw-w-fit tw-items-center tw-justify-center tw-border tw-border-slate-800 tw-px-4 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-500 tw-transition-colors tw-duration-150 hover:tw-border-slate-700 hover:tw-bg-slate-800 hover:tw-text-slate-300 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500"
+				>
+					← Cancel
+				</button>
+				<button
+					type="button"
+					onclick={handleOperativeAuth}
+					disabled={opBusy || navigating || !opCallsign.trim() || !opCode.trim()}
+					class="tw-inline-flex tw-h-11 tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-teal-500/30 tw-bg-teal-950/30 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-400 tw-transition-colors tw-duration-150 hover:tw-border-teal-400/60 hover:tw-bg-teal-900/40 hover:tw-text-teal-300 disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500"
+				>
+					{#if opBusy}
+						<div class="tw-h-3.5 tw-w-3.5 tw-animate-spin tw-rounded-full tw-border tw-border-teal-700 tw-border-t-teal-300" role="status" aria-label="Authenticating"></div>
+						VERIFYING…
+					{:else}
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+							<path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+						</svg>
+						AUTHENTICATE
+					{/if}
+				</button>
+			</div>
 
 			<!-- Error alert -->
 			{#if opError}
 				<div
-					class="tw-mt-3 tw-rounded-md tw-border tw-border-red-500/40 tw-bg-red-950/60 tw-px-3 tw-py-2.5 tw-font-mono tw-text-xs tw-text-red-300"
+					class="tw-mt-3 tw-rounded tw-border tw-border-red-500/30 tw-bg-red-950/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[0.65rem] tw-text-red-400"
 					role="alert"
 				>{opError}</div>
 			{/if}
 
-			<!-- Return to command — bottom link -->
-			<div class="tw-mt-6 tw-text-center">
-				<button
-					type="button"
-					onclick={() => { loginView = 'command'; opError = ''; opCode = ''; opCallsign = ''; }}
-					class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-700 tw-transition-colors tw-duration-150 hover:tw-text-slate-400 focus-visible:tw-outline-none"
-				>
-					← Cancel / Return to Command
-				</button>
-			</div>
-
 		{:else}
-			<!-- OPERATIVE GATE — top of card, before standard auth -->
-			<button
-				type="button"
-				onclick={() => { loginView = 'operative'; opError = ''; opCode = ''; opCallsign = ''; }}
-				disabled={navigating}
-				class="tw-mb-5 tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-3 tw-min-h-[3.25rem] tw-rounded-md tw-border tw-border-teal-500/30 tw-bg-teal-950/20 tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-teal-400 tw-transition-all tw-duration-150 hover:tw-border-teal-400/60 hover:tw-bg-teal-900/30 hover:tw-text-teal-300 disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-slate-900"
-			>
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<polyline points="4 17 10 11 4 5"/>
-					<line x1="12" y1="19" x2="20" y2="19"/>
-				</svg>
-				[ INITIALIZE OPERATIVE ]
-			</button>
-
-			<!-- Divider between OPERATIVE GATE and standard adult auth -->
-			<div class="tw-mb-6 tw-flex tw-items-center tw-gap-3">
-				<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-slate-800" />
-				<span class="tw-font-mono tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-700">Adult Access</span>
-				<hr class="tw-flex-1 tw-border-0 tw-border-t tw-border-slate-800" />
-			</div>
-
 			<!-- Logo mark -->
 			<div class="tw-mx-auto tw-mb-5 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-800">
 				<svg
@@ -442,6 +408,22 @@
 			<p class="tw-mt-8 tw-text-center tw-font-mono tw-text-[0.6rem] tw-tracking-[0.14em] tw-text-slate-700">
 				TACTICAL OPERATIONS PLATFORM
 			</p>
+
+			<!-- Operative escape hatch — stealthy bottom link -->
+			<div class="tw-mt-6 tw-flex tw-justify-center">
+				<button
+					type="button"
+					onclick={() => { loginView = 'operative'; opError = ''; opCode = ''; opCallsign = ''; }}
+					disabled={navigating}
+					class="tw-inline-flex tw-w-fit tw-items-center tw-gap-2 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-600 tw-transition-colors tw-duration-150 hover:tw-text-teal-500 disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none"
+				>
+					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<polyline points="4 17 10 11 4 5"/>
+						<line x1="12" y1="19" x2="20" y2="19"/>
+					</svg>
+					INITIALIZE OPERATIVE
+				</button>
+			</div>
 		{/if}
 
 	</div>
