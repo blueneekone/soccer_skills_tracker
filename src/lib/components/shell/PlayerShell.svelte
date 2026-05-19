@@ -11,16 +11,16 @@
 	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
 	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
-	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
+	import PlayerCommandCenter from '$lib/components/player/dashboard/PlayerCommandCenter.svelte';
 	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
-	import { getLevelProgressFromTotalXp, getCurrentRank } from '$lib/gamification/level.js';
 	import '$lib/styles/player-shell.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-	import VanguardAvatar from '$lib/components/shell/VanguardAvatar.svelte';
+	import UidAvatar from '$lib/components/player/UidAvatar.svelte';
 
 	let disconnectBusy = $state(false);
 	let isInboxOpen = $state(false);
+	let commandCenterOpen = $state(false);
 	let pendingAssignmentCount = $state(0);
 
 	async function disconnect() {
@@ -37,10 +37,6 @@
 
 	/** @type {{ children?: import('svelte').Snippet }} */
 	let { children } = $props();
-
-	const shellTotalXp = $derived(Math.max(0, Math.floor(Number(authStore.userProfile?.totalXp ?? authStore.userProfile?.xp) || 0)));
-	const shellRank = $derived(getCurrentRank(shellTotalXp));
-	const shellLevel = $derived(getLevelProgressFromTotalXp(shellTotalXp).level);
 
 	const playerName = $derived(
 		authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Athlete',
@@ -133,6 +129,7 @@
 
 <!-- Sprint 9.2: Reengagement alerts surface — mounted in Player OS, opened via bell -->
 <AlertsDrawer />
+<PlayerCommandCenter bind:open={commandCenterOpen} pendingCount={pendingAssignmentCount} />
 
 <div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
 	<div class="ps-ambient" aria-hidden="true">
@@ -179,26 +176,26 @@
 					<span class="ps-topbar__name">{firstName}</span>
 				</div>
 			</div>
-			<!-- Compact RPG ring: 128px md ring scaled to 48px visual via CSS clip+scale -->
-			<div class="tw-relative tw-h-12 tw-w-12 tw-shrink-0 tw-overflow-hidden tw-rounded-full">
-				<div style="transform: scale(0.375); transform-origin: top left; width: 128px; height: 128px;">
-					<LevelProgressRing
-						currentXp={shellRank.xpInCurrentTier}
-						nextRankXp={shellRank.xpToNextRank}
-						rankName={shellRank.rank}
-						totalXp={shellTotalXp}
-						level={shellLevel}
-						size="md"
-						variant="dark"
-					/>
-				</div>
-			</div>
-			<VanguardAvatar
+			<UidAvatar
 				seed={playerUid || authStore.user?.email || 'player'}
 				size={36}
 				class="tw-shrink-0"
 			/>
 			<div class="ps-topbar__actions tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2">
+			<button
+				type="button"
+				class="tw-inline-flex tw-min-h-11 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-transition hover:tw-opacity-90"
+				style="border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 40%, transparent); color: var(--color-accent, #fbbf24); background: color-mix(in srgb, var(--color-accent, #fbbf24) 8%, transparent);"
+				aria-expanded={commandCenterOpen}
+				aria-controls="player-command-center"
+				onclick={() => {
+					commandCenterOpen = !commandCenterOpen;
+					isInboxOpen = false;
+				}}
+			>
+				<Icon name="status.shield-half" size={16} />
+				<span class="tw-hidden sm:tw-inline">Command</span>
+			</button>
 			<div class="tw-relative">
 				<button
 					type="button"

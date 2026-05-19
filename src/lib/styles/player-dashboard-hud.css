@@ -1,0 +1,131 @@
+/**
+ * Player OS dashboard HUD — Sprint 1.4 gaming density tokens.
+ * Scoped under .player-hud-root to avoid leaking into other workspaces.
+ */
+
+.player-hud-root {
+	--player-hud-gap: var(--bento-gap-liquid);
+	--player-hud-pad: clamp(12px, 2.5vw, 20px);
+	--player-hud-radius: 24px;
+	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
+}
+
+.player-hud-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: clamp(12px, 3vw, 20px);
+	width: 100%;
+	max-width: 72rem;
+	margin-inline: auto;
+	padding: var(--player-hud-pad);
+	box-sizing: border-box;
+	border-radius: var(--player-hud-radius);
+	border: 1px solid color-mix(in srgb, var(--color-structural) 22%, transparent);
+	background: color-mix(in srgb, var(--color-dominant) 92%, transparent);
+	box-shadow: var(--shadow-liquid);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+}
+
+.player-hud-header__lead {
+	display: flex;
+	align-items: center;
+	gap: clamp(10px, 2.5vw, 16px);
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.player-hud-header__rings {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: clamp(10px, 2.5vw, 18px);
+	flex-shrink: 0;
+	padding-inline-end: 2px;
+}
+
+.player-hud-header__identity {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(2px, 0.5vw, 4px);
+	min-width: 0;
+}
+
+.player-hud-header__name {
+	margin: 0;
+	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+	font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--vanguard-text-1, #f8fafc);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-hud-header__meta {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.55rem, 1.2vw, 0.65rem);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: color-mix(in srgb, var(--color-structural) 70%, #94a3b8);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-hud-casefile {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	gap: var(--player-hud-gap);
+}
+
+.player-hud-casefile__body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	align-items: flex-start;
+	gap: var(--player-hud-gap);
+}
+
+.player-hud-casefile__meta {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+	gap: clamp(4px, 1vw, 8px);
+}
+
+.player-hud-tile {
+	padding: clamp(6px, 1.2vw, 10px);
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--color-structural) 18%, transparent);
+	background: color-mix(in srgb, var(--color-dominant) 88%, #000);
+}
+
+.player-hud-tile__k {
+	display: block;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.45rem;
+	font-weight: 800;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-structural) 55%, #64748b);
+}
+
+.player-hud-tile__v {
+	display: block;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--vanguard-text-1, #f1f5f9);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

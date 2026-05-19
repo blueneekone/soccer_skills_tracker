@@ -1,6 +1,10 @@
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase.js';
 import { doc, onSnapshot } from 'firebase/firestore';
+import {
+	applySixtyThirtyTenPalette,
+	paletteFromClubBranding,
+} from '$lib/player/dashboard/brandingPalette.js';
 
 /**
  * Club-wide branding from `clubs/{clubId}` (logo + hex) for app shell + Director OS.
@@ -67,13 +71,8 @@ function createClubBrandingStore() {
 				sport = sp;
 				const p = typeof d.brandPrimaryHex === 'string' ? d.brandPrimaryHex : '';
 				const a = typeof d.brandAccentHex === 'string' ? d.brandAccentHex : '';
-				if (browser && typeof document !== 'undefined') {
-					if (/^#[0-9A-Fa-f]{6}$/.test(p)) {
-						document.documentElement.style.setProperty('--brand-primary', p);
-					}
-					if (/^#[0-9A-Fa-f]{6}$/.test(a)) {
-						document.documentElement.style.setProperty('--brand-accent', a);
-					}
+				if (browser && typeof document !== 'undefined' && /^#[0-9A-Fa-f]{6}$/.test(p) && /^#[0-9A-Fa-f]{6}$/.test(a)) {
+					applySixtyThirtyTenPalette(paletteFromClubBranding(p, a));
 				}
 				applyToDocument();
 			},

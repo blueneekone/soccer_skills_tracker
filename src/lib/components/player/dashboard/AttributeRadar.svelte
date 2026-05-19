@@ -2,7 +2,7 @@
 	import { VANGUARD_PRISM_LABELS } from '$lib/utils/vanguard-prism.js';
 
 	type Props = {
-		/** Six 0–99 values: PACE · ACCEL · AGILITY · STAMINA · POWER · COMP */
+		/** Six 0–99 values: PAC · ACC · POW · COMP · STM · AGI (Vanguard Protocol) */
 		values?: number[];
 	};
 
@@ -94,15 +94,15 @@
 
 		<polygon
 			points={skillPolygonPoints}
-			fill="rgba(20,184,166,0.16)"
-			stroke="#14b8a6"
+			fill="color-mix(in srgb, var(--color-structural, #3b82f6) 16%, transparent)"
+			stroke="var(--color-structural, #3b82f6)"
 			stroke-width="1.4"
 			stroke-linejoin="round"
 			vector-effect="non-scaling-stroke"
 		/>
 
 		{#each skillVertices as v, vi (`vtx-${vi}`)}
-			<circle cx={v.x} cy={v.y} r="2.5" fill="#14b8a6" />
+			<circle cx={v.x} cy={v.y} r="2.5" fill="var(--color-structural, #3b82f6)" />
 		{/each}
 
 		{#each labelVertices as lv, li (`lbl-${li}`)}

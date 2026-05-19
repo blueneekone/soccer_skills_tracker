@@ -4,6 +4,10 @@
 	import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 	import { httpsCallable } from 'firebase/functions';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
+	import {
+		applySixtyThirtyTenPalette,
+		paletteFromClubBranding,
+	} from '$lib/player/dashboard/brandingPalette.js';
 
 	let { clubId = '' } = $props();
 
@@ -27,8 +31,7 @@
 
 	function applyRootBranding() {
 		if (typeof document === 'undefined') return;
-		document.documentElement.style.setProperty('--brand-primary', primaryHex);
-		document.documentElement.style.setProperty('--brand-accent', accentHex);
+		applySixtyThirtyTenPalette(paletteFromClubBranding(primaryHex, accentHex));
 	}
 
 	$effect(() => {

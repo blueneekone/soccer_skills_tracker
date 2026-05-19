@@ -30,7 +30,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'src/lib/components/marketing/',
 	'static/',
 	'PlayerSkillRadar.svelte',
-	'AttributeRadar.svelte',
+	'src/lib/components/player/dashboard/AttributeRadar.svelte',
 	'SkillTreeArena.svelte',
 	'VanguardPrism.svelte',
 	'RevenueLedgerModule.svelte',

@@ -1,7 +1,18 @@
 import { defineConfig } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'path';
 
 export default defineConfig({
+	plugins: [
+		// Required so Vitest can transform .svelte files for jsdom render tests.
+		// Node-environment tests (CSS-source, logic) are unaffected.
+		svelte({ hot: !process.env.VITEST }),
+	],
+	resolve: {
+		// Prefer browser exports so Svelte 5 `mount()` uses the DOM build,
+		// not `index-server.js`, in jsdom-environment tests.
+		conditions: ['browser', 'import', 'module', 'default'],
+	},
 	test: {
 		environment: 'node',
 		include: ['src/**/__tests__/**/*.test.ts'],

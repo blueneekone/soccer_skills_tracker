@@ -164,6 +164,30 @@ html {
 	--bento-pad:     clamp(1rem,    3vw,   1.75rem);
 	--bento-pad-sm:  clamp(0.75rem, 2vw,   1.25rem);
 
+	/* ── Sprint 1.1 Liquid Bento Tokens ─────────────────────────────── */
+	/* Exact ROADMAP spec: clamp(20px, 4vw, 32px) */
+	--bento-gap-liquid: clamp(20px, 4vw, 32px);
+	--bento-pad-liquid: clamp(20px, 4vw, 32px);
+	/*
+	 * --shadow-liquid: tactile "Liquid Glass" elevation stack.
+	 *   Layer 1 (inset): 1px inner top-highlight — simulates glass refraction.
+	 *   Layer 2 (inset): subtle bottom-rim to close the shape.
+	 *   Layer 3 (drop):  soft ambient depth — premium tactile feel.
+	 *   Layer 4 (drop):  tight crisp drop for z-separation.
+	 * Applied ONLY to .vanguard-surface--liquid (opaque cards).
+	 * .vanguard-surface--hero-liquid uses this + backdrop-filter (glass carve-out allowed).
+	 */
+	--shadow-liquid:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+		0 8px 32px -8px rgba(0, 0, 0, 0.55),
+		0 2px 6px -2px rgba(0, 0, 0, 0.35);
+
+	/* ── 60-30-10 enterprise palette (white-label via director branding) ─ */
+	--color-dominant: var(--brand-dominant, #0f172a);
+	--color-structural: var(--brand-structural, #3b82f6);
+	--color-accent: var(--brand-accent, #fbbf24);
+
 	/* ── ENTERPRISE SLATE (Backgrounds) ─────────────────────────────── */
 	--void-black: #000000;
 	--obsidian: #0f172a;
@@ -253,11 +277,13 @@ body {
 	 * ╔══════════════════════════════════════════════════════════════════╗
 	 * ║  GLASSMORPHISM CARVE-OUT — ALLOWED SURFACES (per .cursorrules)  ║
 	 * ║  backdrop-filter is ONLY permitted on:                          ║
-	 * ║  • .vanguard-surface--hero  (floating modals / hero overlays)   ║
-	 * ║  • .tw-vanguard-dock-pill   (floating dock chrome)              ║
-	 * ║  • CommandPalette.svelte    (sticky search overlay)             ║
-	 * ║  • .vanguard-surface--modal (sticky headers / dropdowns)        ║
+	 * ║  • .vanguard-surface--hero        (floating modals / heroes)    ║
+	 * ║  • .vanguard-surface--hero-liquid (Sprint 1.1 Bento hero tile)  ║
+	 * ║  • .tw-vanguard-dock-pill         (floating dock chrome)        ║
+	 * ║  • CommandPalette.svelte          (sticky search overlay)       ║
+	 * ║  • .vanguard-surface--modal       (sticky headers / dropdowns)  ║
 	 * ║  ALL data cards use opaque var(--vanguard-surface) fills.       ║
+	 * ║  .vanguard-surface--liquid is opaque — NO backdrop-filter.      ║
 	 * ╚══════════════════════════════════════════════════════════════════╝
 	 */
 
@@ -598,6 +624,57 @@ body {
 		.bento-cell--interactive:hover {
 			transform: none;
 		}
+	}
+
+	/* ── Sprint 1.1: Liquid Bento Grid modifier ──────────────────────── */
+	/**
+	 * .bento-grid--liquid
+	 * Composes on top of .bento-grid--12col to add:
+	 *   • grid-auto-flow: dense — fills holes left by asymmetric spans
+	 *   • clamp(20px, 4vw, 32px) gap — ROADMAP-specified fluid spacing
+	 * Apply both classes: class="bento-grid bento-grid--12col bento-grid--liquid"
+	 */
+	.bento-grid--liquid {
+		grid-auto-flow: dense;
+		gap: var(--bento-gap-liquid);
+	}
+
+	/**
+	 * .vanguard-surface--liquid
+	 * Opaque data-card modifier for Sprint 1.1 Liquid Glass aesthetic.
+	 * Composes on .vanguard-card / .vanguard-surface — adds the tactile
+	 * --shadow-liquid elevation stack + a soft inner highlight.
+	 * MUST NOT use backdrop-filter — carve-out preserved per .cursorrules §2.
+	 */
+	.vanguard-surface--liquid {
+		box-shadow: var(--shadow-liquid);
+		border-color: rgba(148, 163, 184, 0.14);
+		/* Subtle inner highlight gradient — simulates glass without blur cost */
+		background-image: linear-gradient(
+			160deg,
+			rgba(255, 255, 255, 0.035) 0%,
+			rgba(255, 255, 255, 0) 60%
+		);
+	}
+
+	/**
+	 * .vanguard-surface--hero-liquid
+	 * Glass hero tile for Sprint 1.1 dashboard tops.
+	 * Extends the existing --hero carve-out with stronger saturation (200%)
+	 * and the --shadow-liquid drop stack for tactile depth.
+	 * ONE allowed glass surface per dashboard — carve-out explicitly updated above.
+	 */
+	.vanguard-surface--hero-liquid {
+		background: var(--vanguard-glass);
+		box-shadow: var(--shadow-liquid), var(--vanguard-elev-3);
+		backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(200%);
+		-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(200%);
+		border-color: rgba(255, 255, 255, 0.08);
+		background-image: linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.05) 0%,
+			rgba(255, 255, 255, 0) 50%
+		);
 	}
 }
 

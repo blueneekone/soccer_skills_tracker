@@ -1,17 +1,26 @@
 import { db } from '$lib/firebase.js';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import {
+	applySixtyThirtyTenPalette,
+	DEFAULT_PALETTE,
+	paletteFromTeamBranding,
+} from '$lib/player/dashboard/brandingPalette.js';
 
 function createBrandingStore() {
 	let appName = $state('SSTRACKER');
 	let logoUrl = $state('');
-	let primaryColor = $state('#0f172a');
-	let secondaryColor = $state('#fbbf24');
+	let primaryColor = $state(DEFAULT_PALETTE.dominant);
+	let secondaryColor = $state(DEFAULT_PALETTE.accent);
+	let structuralColor = $state(DEFAULT_PALETTE.structural);
 	let bgUrl = $state('');
 
 	function applyToCss() {
-		if (typeof document === 'undefined') return;
-		document.documentElement.style.setProperty('--aggie-blue', primaryColor);
-		document.documentElement.style.setProperty('--aggie-gold', secondaryColor);
+		applySixtyThirtyTenPalette(
+			paletteFromTeamBranding(primaryColor, secondaryColor),
+		);
+		if (structuralColor && structuralColor !== DEFAULT_PALETTE.structural) {
+			document.documentElement.style.setProperty('--brand-structural', structuralColor);
+		}
 		if (bgUrl && bgUrl.trim()) {
 			document.body.style.backgroundImage = `url('${bgUrl}')`;
 			document.body.style.backgroundSize = 'cover';
@@ -25,6 +34,7 @@ function createBrandingStore() {
 		get logoUrl() { return logoUrl; },
 		get primaryColor() { return primaryColor; },
 		get secondaryColor() { return secondaryColor; },
+		get structuralColor() { return structuralColor; },
 		get bgUrl() { return bgUrl; },
 
 		async loadForTeam(teamId) {
@@ -35,8 +45,9 @@ function createBrandingStore() {
 					const data = snap.data();
 					appName = data.appName || 'SSTRACKER';
 					logoUrl = data.logoUrl || '';
-					primaryColor = data.primaryColor || '#0f172a';
-					secondaryColor = data.secondaryColor || '#fbbf24';
+					primaryColor = data.primaryColor || DEFAULT_PALETTE.dominant;
+					secondaryColor = data.secondaryColor || DEFAULT_PALETTE.accent;
+					structuralColor = data.structuralColor || DEFAULT_PALETTE.structural;
 					bgUrl = data.bgUrl || '';
 					applyToCss();
 				}
@@ -51,6 +62,7 @@ function createBrandingStore() {
 			logoUrl = data.logoUrl || logoUrl;
 			primaryColor = data.primaryColor || primaryColor;
 			secondaryColor = data.secondaryColor || secondaryColor;
+			structuralColor = data.structuralColor || structuralColor;
 			bgUrl = data.bgUrl || bgUrl;
 			applyToCss();
 		},
@@ -59,8 +71,9 @@ function createBrandingStore() {
 			await deleteDoc(doc(db, 'config', `branding_${teamId}`));
 			appName = 'SSTRACKER';
 			logoUrl = '';
-			primaryColor = '#0f172a';
-			secondaryColor = '#fbbf24';
+			primaryColor = DEFAULT_PALETTE.dominant;
+			secondaryColor = DEFAULT_PALETTE.accent;
+			structuralColor = DEFAULT_PALETTE.structural;
 			bgUrl = '';
 			applyToCss();
 		},
@@ -69,8 +82,9 @@ function createBrandingStore() {
 		resetLocalDefaults() {
 			appName = 'SSTRACKER';
 			logoUrl = '';
-			primaryColor = '#0f172a';
-			secondaryColor = '#fbbf24';
+			primaryColor = DEFAULT_PALETTE.dominant;
+			secondaryColor = DEFAULT_PALETTE.accent;
+			structuralColor = DEFAULT_PALETTE.structural;
 			bgUrl = '';
 			if (typeof document !== 'undefined') {
 				document.body.style.backgroundImage = '';
