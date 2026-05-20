@@ -549,8 +549,9 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		/* 8rem reserves space for the 56px MobileTabBar + 56px MobileDirectorFab + gap */
-		padding: var(--bento-pad-sm) var(--bento-pad-sm) calc(8rem + env(safe-area-inset-bottom, 0px));
+		/* 8rem reserves space for MobileTabBar + MobileDirectorFab — not bento rhythm */
+		padding: 0;
+		padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 
@@ -784,41 +785,29 @@ html.dark .ec-icon-btn:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-	padding: var(--bento-pad) var(--bento-pad) calc(6rem + env(safe-area-inset-bottom, 0px));
+	/* Sprint 1.1 — zero inset; page bento grids own --bento-pad-liquid */
+	padding: 0;
 	box-sizing: border-box;
 	width: 100%;
 }
 
 /*
- * Sub-page navigation bar — pinned directly below ec-topbar, outside the scroll flow.
- * Uses negative margins to break out of ec-canvas padding so it sits flush at the top edge.
- * Drop this div as the FIRST child of any page wrapper rendered inside ec-canvas.
+ * Sub-page navigation bar — pinned directly below ec-topbar.
+ * ec-canvas has zero padding (Sprint 1.1); horizontal inset uses --bento-pad-liquid.
  */
 .ec-page-subnav {
 	position: sticky;
-	top: calc(-1 * var(--bento-pad));
+	top: 0;
 	z-index: 30;
-	margin-top: calc(-1 * var(--bento-pad));
-	margin-left: calc(-1 * var(--bento-pad));
-	margin-right: calc(-1 * var(--bento-pad));
+	margin: 0;
 	background: var(--ec-topbar-bg, #ffffff);
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
-	padding: 8px 1.5rem 0;
+	padding: 8px var(--bento-pad-liquid) 0;
 }
 
 html.dark .ec-page-subnav {
 	background: #09090b;
 	border-bottom-color: rgba(255, 255, 255, 0.08);
-}
-
-@media (max-width: 1023.98px) {
-	.ec-page-subnav {
-		top: calc(-1 * var(--bento-pad-sm));
-		margin-top: calc(-1 * var(--bento-pad-sm));
-		margin-left: calc(-1 * var(--bento-pad-sm));
-		margin-right: calc(-1 * var(--bento-pad-sm));
-		padding: 6px var(--bento-pad-sm) 0;
-	}
 }
 
 /* Dense data tables — horizontal scroll on narrow viewports; table keeps readable column widths */

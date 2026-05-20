@@ -71,7 +71,7 @@
 	}
 </script>
 
-<div class="tw-mb-10 tw-mt-2 tw-min-w-0 tw-flex-1">
+<div class="tw-mb-10 tw-mt-2 tw-min-w-0 tw-flex-1" style="padding: var(--bento-pad-liquid);">
 	<header class="tw-mb-8 tw-text-center md:tw-text-left">
 		<h1
 			class="tw-font-black tw-uppercase tw-tracking-tight tw-text-transparent tw-bg-clip-text tw-bg-gradient-to-r tw-from-cyan-300 tw-via-emerald-300 tw-to-cyan-400 tw-drop-shadow-[0_0_28px_rgba(20, 184, 166,0.35)] md:tw-text-4xl tw-text-2xl"
@@ -95,10 +95,10 @@
 		</p>
 	</header>
 
-	<div class="bento-grid bento-grid--3col">
+	<div class="bento-grid bento-grid--12col bento-grid--liquid">
 		<!-- Prospect roster -->
 		<div
-			class="tw-flex tw-min-h-[min(70vh,560px)] tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
+			class="bento-span-4 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
 		>
 			<h2 class="tw-mb-3 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.25em] tw-text-slate-500">
 				Prospect roster
@@ -140,10 +140,10 @@
 
 		<!-- Evaluation console -->
 		<div
-			class="bento-span-2 tw-flex tw-min-h-[min(70vh,560px)] tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
+			class="bento-span-8 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
 		>
 			<div
-				class="tw-mb-6 tw-flex tw-flex-col tw-gap-4 tw-border-b tw-border-white/5 tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"
+				class="bento-mb-lg tw-flex tw-flex-col bento-gap-md tw-border-b tw-border-white/5 tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"
 			>
 				<div class="tw-min-w-0">
 					<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">
@@ -165,7 +165,7 @@
 				</div>
 			</div>
 
-			<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto">
+			<div class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col bento-gap-lg tw-overflow-y-auto">
 				{#each CRITERIA as row (row.key)}
 					{@const k = /** @type {'pace' | 'technique' | 'tacticalVision' | 'physicality' | 'mentality'} */ (
 						row.key
@@ -204,7 +204,7 @@
 				{/each}
 			</div>
 
-			<div class="tw-mt-6 tw-shrink-0 tw-border-t tw-border-white/5 tw-pt-5">
+			<div class="bento-mt-lg tw-shrink-0 tw-border-t tw-border-white/5 tw-pt-5">
 				<button
 					type="button"
 					class="tw-w-full tw-rounded-xl tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-py-3.5 tw-text-center tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.22em] tw-text-emerald-200 tw-shadow-[0_0_20px_rgba(52,211,153,0.2)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-900/40 hover:tw-text-white focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-emerald-400 {lockFlash

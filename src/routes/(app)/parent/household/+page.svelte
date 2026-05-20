@@ -19,6 +19,11 @@
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
+	import type { HouseholdOperativeRow } from '$lib/types/household.js';
+	import {
+		buildEnrichedOperativeRows,
+		loadHouseholdOperativeRows,
+	} from '$lib/parent/householdOperatives.js';
 
 	const DISPATCH_CODE_INTEL = {
 		title: 'DISPATCH CODES',
@@ -56,19 +61,7 @@
 	/** @type {string} */
 	let teamDispatchCode = $state('');
 
-	/**
-	 * @typedef {Object} OperativeRow
-	 * @property {string} email
-	 * @property {string} name
-	 * @property {string} callsign
-	 * @property {string} loginCallsign
-	 * @property {string} dispatchCode
-	 * @property {string | null} pendingGamertag
-	 * @property {number} gamertagChangesLeft
-	 * @property {string} hudErr
-	 */
-
-	/** @type {OperativeRow[]} */
+	/** @type {HouseholdOperativeRow[]} */
 	let operativeRows = $state([]);
 
 	/** @type {string | null} */
@@ -115,124 +108,13 @@
 		return `${m}:${r.toString().padStart(2, '0')}`;
 	});
 
-	/**
-	 * @param {Record<string, unknown>} d
-	 * @returns {Array<{ email: string; name: string; callsign: string }>}
-	 */
-	function baseRowsFromHousehold(d) {
-		const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
-		const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
-		const pcall = Array.isArray(d.playerCallsigns) ? d.playerCallsigns : [];
-		return pe
-			.map((em, i) => {
-				const email = String(em || '')
-					.trim()
-					.toLowerCase();
-				const nm =
-					typeof pnames[i] === 'string' && pnames[i].trim() ? pnames[i].trim() : '';
-				const callsign =
-					typeof pcall[i] === 'string' && pcall[i].trim() ?
-						pcall[i].trim()
-					:	email && email.endsWith('@operative.local') ?
-						email.split('@')[0]
-					:	'';
-				return {
-					email,
-					callsign,
-					name: nm || (email ? email.split('@')[0] : 'Operative'),
-				};
-			})
-			.filter((r) => r.email);
-	}
-
-	/**
-	 * @param {{ email: string; name: string; callsign: string }} row
-	 * @returns {Promise<OperativeRow>}
-	 */
-	async function enrichOperativeRow(row) {
-		const em = row.email;
-		if (!em.endsWith('@operative.local')) {
-			return {
-				...row,
-				loginCallsign: '',
-				dispatchCode: '',
-				pendingGamertag: null,
-				gamertagChangesLeft: 3,
-				hudErr: '',
-			};
-		}
-		const local = em.includes('@') ? em.split('@')[0] : em;
-		let pendingGamertag = null;
-		let gamertagChangesLeft = 3;
-		let dispatchCode = '';
-		let hudErr = '';
-		try {
-			const uSnap = await getDoc(doc(db, 'users', em));
-			const dSnap = await getDocs(
-				query(collection(db, 'operative_dispatches'), where('childEmail', '==', em), limit(20)),
-			);
-			if (uSnap.exists()) {
-				const ud = uSnap.data() || {};
-				if (typeof ud.pendingGamertag === 'string' && ud.pendingGamertag.trim()) {
-					pendingGamertag = ud.pendingGamertag.trim();
-				}
-				if (typeof ud.gamertagChangesLeft === 'number' && !Number.isNaN(ud.gamertagChangesLeft)) {
-					gamertagChangesLeft = ud.gamertagChangesLeft;
-				}
-			}
-			if (!dSnap.empty) {
-				let best = dSnap.docs[0];
-				let bestMs = 0;
-				for (const qd of dSnap.docs) {
-					const x = qd.data();
-					const t = x && typeof x.createdAt?.toMillis === 'function' ? x.createdAt.toMillis() : 0;
-					if (t >= bestMs) {
-						bestMs = t;
-						best = qd;
-					}
-				}
-				const b = best.data() || {};
-				dispatchCode = typeof b.dispatchCode === 'string' ? b.dispatchCode.trim() : '';
-			}
-		} catch (e) {
-			hudErr = e instanceof Error ? e.message : 'Load failed';
-		}
-		return {
-			...row,
-			loginCallsign: local,
-			dispatchCode,
-			pendingGamertag,
-			gamertagChangesLeft,
-			hudErr,
-		};
-	}
-
-	/**
-	 * @param {Record<string, unknown>} d
-	 * @returns {Promise<OperativeRow[]>}
-	 */
-	async function buildEnrichedOperativeRows(d) {
-		const base = baseRowsFromHousehold(d);
-		return Promise.all(base.map((r) => enrichOperativeRow(r)));
-	}
-
 	/** @returns {Promise<void>} */
 	async function refreshHouseholdOperatives() {
-		const hid = householdId && String(householdId).trim() ? String(householdId) : '';
-		if (!hid) {
-			operativeRows = [];
-			return;
-		}
-		const hs = await getDoc(doc(db, 'households', hid));
-		if (hs.exists()) {
-			operativeRows = await buildEnrichedOperativeRows(hs.data() || {});
-		} else {
-			operativeRows = [];
-		}
+		operativeRows = await loadHouseholdOperativeRows(db, householdId);
 	}
 
 	/**
-	 * @param {OperativeRow} row
+	 * @param {HouseholdOperativeRow} row
 	 */
 	async function approveGamertagForRow(row) {
 		actErr = '';
@@ -285,7 +167,7 @@
 	}
 
 	/**
-	 * @param {OperativeRow} row
+	 * @param {HouseholdOperativeRow} row
 	 */
 	async function denyGamertagForRow(row) {
 		actErr = '';
@@ -345,7 +227,7 @@
 					const d = snap.data() || {};
 					coppaSigned = d.coppaSigned === true;
 					coppaAt = d.coppaSignedAt ?? null;
-					operativeRows = await buildEnrichedOperativeRows(d);
+					operativeRows = await buildEnrichedOperativeRows(db, d);
 				} else {
 					coppaSigned = false;
 					coppaAt = null;
@@ -439,7 +321,7 @@
 			if (householdId) {
 				const hs = await getDoc(doc(db, 'households', householdId));
 				if (hs.exists()) {
-					operativeRows = await buildEnrichedOperativeRows(hs.data() || {});
+					operativeRows = await buildEnrichedOperativeRows(db, hs.data() || {});
 				}
 			}
 		} catch (e) {
@@ -529,10 +411,11 @@
 <svelte:window onkeydown={onOtpKeydown} />
 
 <div
-	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-slate-950 tw-px-3 tw-pb-10 tw-pt-4 md:tw-px-6"
+	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-slate-950"
+	style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	data-region="household-clearance"
 >
-	<header class="phh-page-head tw-mb-6">
+	<header class="phh-page-head bento-mb-lg">
 		<div class="phh-page-head__actions">
 			<button
 				type="button"
@@ -556,7 +439,7 @@
 
 	{#if loadErr}
 		<div
-			class="tw-mb-4 tw-border tw-border-red-500/50 tw-bg-red-950/30 tw-px-4 tw-py-3 tw-text-sm tw-text-red-200"
+			class="bento-mb-md tw-border tw-border-red-500/50 tw-bg-red-950/30 tw-px-4 tw-py-3 tw-text-sm tw-text-red-200"
 			role="alert"
 		>
 			{loadErr}
@@ -564,11 +447,11 @@
 	{/if}
 
 	<div
-		class="tw-flex tw-min-h-0 tw-flex-col tw-gap-bento-md"
+		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full"
 	>
 		<!-- COPPA & liability block -->
 		<section
-			class="phh-surface tw-min-w-0 tw-border-2 tw-border-red-500/60 tw-px-3 tw-py-4 tw-shadow-[0_0_24px_rgba(239,68,68,0.12)] sm:tw-px-4 md:tw-px-5"
+			class="phh-surface bento-span-12 tw-min-w-0 tw-border-2 tw-border-red-500/60 tw-px-3 tw-py-4 tw-shadow-[0_0_24px_rgba(239,68,68,0.12)] sm:tw-px-4 md:tw-px-5"
 			aria-labelledby="phh-coppa"
 		>
 			<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
@@ -577,7 +460,7 @@
 					Minor accounts locked
 				</h2>
 			</div>
-			<p class="tw-mb-4 tw-text-sm tw-leading-relaxed tw-text-white/70">
+			<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-white/70">
 				Until you execute the digital signature below, child operative accounts in this household
 				remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
 				By signing, you assert parental authority to provision credentials per club policy and
@@ -616,7 +499,7 @@
 		<!-- Linked operatives — ephemeral OTP login -->
 		{#if operativeRows.length > 0}
 			<section
-				class="phh-surface tw-min-w-0 tw-border tw-border-cyan-500/25 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-cyan-500/25 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 				aria-labelledby="phh-active-ops"
 			>
 				<div class="tw-mb-3">
@@ -632,7 +515,7 @@
 					Issue a 10-minute clearance code your athlete can enter with their Operative Callsign on
 					the login page.
 				</p>
-				<ul class="tw-m-0 tw-list-none tw-space-y-3 tw-p-0">
+				<ul class="tw-m-0 tw-list-none bento-stack-sm tw-p-0">
 					{#each operativeRows as row (row.email)}
 						<li
 							class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3"
@@ -737,7 +620,7 @@
 
 		<!-- Operative generation -->
 		<section
-			class="phh-surface tw-min-w-0 tw-border tw-border-cyan-500/30 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+			class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-cyan-500/30 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 			aria-labelledby="phh-ops"
 		>
 			<div class="tw-mb-3">
@@ -746,13 +629,13 @@
 					Credential dispatch
 				</h2>
 			</div>
-			<p class="tw-mb-4 tw-text-sm tw-text-white/55">
+			<p class="bento-mb-md tw-text-sm tw-text-white/55">
 				Register the minor’s <span class="tw-text-white/80">legal display name</span> and a unique
 				<span class="tw-text-white/80">Operative Callsign</span> (username for sign-in). A proxy
 				account is created automatically. The engine issues a one-time
 				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 			</p>
-			<div class="tw-min-w-0 bento-grid bento-grid--2col">
+			<div class="tw-min-w-0 bento-grid bento-grid--2col bento-grid--liquid">
 				<label class="phh-field tw-block tw-w-full">
 					<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 					<input
@@ -802,7 +685,7 @@
 					</p>
 				</div>
 			</div>
-			<div class="tw-mt-4">
+			<div class="bento-mt-md">
 				<button
 					type="button"
 					class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
@@ -828,7 +711,7 @@
 
 	{#if actErr}
 		<div
-			class="tw-mt-4 tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
+			class="bento-mt-md tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
 			role="alert"
 		>
 			{actErr}
@@ -861,7 +744,7 @@
 				This clearance code expires 10 minutes after it is generated.
 			</p>
 			<div
-				class="phh-otp-ttl tw-mb-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"
+				class="phh-otp-ttl bento-mb-md tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-cyan-200/80"
 			>
 				<span class="phh-eyebrow !tw-m-0 tw-text-[0.6rem]">Expires in</span>
 				<span class="phh-mono tw-text-lg tw-font-black tw-text-cyan-300 tw-tabular-nums"
@@ -927,6 +810,13 @@
 	}
 	.phh-surface {
 		background: #05050a;
+		/* Sprint 1.1: tactile liquid shadow + inner highlight */
+		box-shadow: var(--shadow-liquid);
+		background-image: linear-gradient(
+			160deg,
+			rgba(255, 255, 255, 0.03) 0%,
+			rgba(255, 255, 255, 0) 60%
+		);
 	}
 	.phh-mono {
 		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -1142,7 +1032,7 @@
 	<!-- Privacy Dashboard — shows PII access log for each linked operative. -->
 	<div class="tw-mx-auto tw-w-full tw-max-w-3xl tw-px-3 tw-pb-6 md:tw-px-6">
 		{#each operativeRows as row (row.email)}
-			<details class="phh-privacy-details tw-mt-4">
+			<details class="phh-privacy-details bento-mt-md">
 				<summary class="phh-privacy-summary">
 					<span class="phh-privacy-label">PRIVACY LOG</span>
 					<span class="phh-privacy-name">{row.name || row.email}</span>

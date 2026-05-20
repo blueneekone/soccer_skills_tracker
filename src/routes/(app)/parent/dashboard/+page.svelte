@@ -58,32 +58,57 @@
 		></div>
 	</div>
 
-	<!-- Page content -->
-	<div class="tw-relative tw-z-10 tw-p-6 lg:tw-p-8">
-		<!-- Page header -->
-		<div class="tw-flex tw-items-center tw-gap-3 tw-mb-8">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				//
-			</span>
-			<h1 class="tw-font-mono tw-text-[14px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-				PARENT CO-OP COMMAND
-			</h1>
-			<span
-				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase tw-ml-2"
-			>
-				PHASE 3 · EPIC 5.4
-			</span>
-		</div>
+	<!-- Page content — Sprint 1.1: 12-col liquid bento -->
+	<div class="tw-relative tw-z-10" style="padding: var(--bento-pad-liquid);">
+		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full">
+			<header class="bento-span-12 tw-flex tw-flex-wrap tw-items-center tw-gap-3">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+					//
+				</span>
+				<h1 class="tw-font-mono tw-text-[14px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
+					PARENT CO-OP COMMAND
+				</h1>
+				<span
+					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase tw-ml-2"
+				>
+					PHASE 3 · EPIC 5.4
+				</span>
+			</header>
 
-		<!-- Phase 4, Epic 8 — Car Ride Home: post-match score (always visible) -->
-		{#if carRideEngine.pendingFixtureId}
-			<div class="tw-mb-8">
-				<CarRideArena engine={carRideEngine} />
+			{#if carRideEngine.pendingFixtureId}
+				<div class="bento-span-12 tw-min-w-0">
+					<CarRideArena engine={carRideEngine} />
+				</div>
+			{/if}
+
+			<div class="bento-span-8 tw-min-w-0">
+				<CoOpArena {engine} />
 			</div>
-		{/if}
 
-		<!-- Glass Arena -->
-		<CoOpArena {engine} />
+			<aside
+				class="vanguard-surface vanguard-surface--liquid bento-span-4 bento-cell tw-flex tw-min-h-[280px] tw-min-w-0 tw-flex-col tw-justify-between tw-rounded-vanguard"
+				aria-label="Parent co-op operations"
+			>
+				<div>
+					<p class="tw-m-0 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-[#14b8a6]/80">
+						Ops terminal
+					</p>
+					<h2 class="tw-mt-2 tw-m-0 tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-wider tw-text-slate-100">
+						Bounty dispatch
+					</h2>
+					<p class="tw-mt-2 tw-text-xs tw-leading-relaxed tw-text-slate-500">
+						Authorize household rewards and post-match protocols from this panel.
+					</p>
+				</div>
+				<button
+					type="button"
+					class="vanguard-btn-primary tw-w-full"
+					onclick={() => (showCreateBounty = true)}
+				>
+					Create bounty
+				</button>
+			</aside>
+		</div>
 	</div>
 
 	<!-- HUD overlay (pointer-events-none at root, children opt in) -->

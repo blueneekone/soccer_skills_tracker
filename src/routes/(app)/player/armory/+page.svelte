@@ -327,7 +327,7 @@
 	<title>Armory · Quartermaster &amp; Sticker Album · SSTRACKER</title>
 </svelte:head>
 
-<div class="qa-root" data-region="quartermaster-armory">
+<div class="qa-root" data-region="quartermaster-armory" style="padding: var(--bento-pad-liquid);">
 
 	<!-- ── Phase 3, Epic 6 · Memory Capsule fixed overlay ──────────────────── -->
 	{#if vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
@@ -381,7 +381,7 @@
 	>
 		<p
 			id="operative-pathway-heading"
-			class="qa-mono tw-mb-4 tw-text-center tw-text-[0.68rem] tw-font-black tw-tracking-[0.32em] tw-text-cyan-200/95"
+			class="qa-mono bento-mb-md tw-text-center tw-text-[0.68rem] tw-font-black tw-tracking-[0.32em] tw-text-cyan-200/95"
 		>
 			[ MISSION REWARDS PATHWAY ]
 		</p>
@@ -429,9 +429,9 @@
 	</nav>
 
 	{#if armoryWorkspace === 'quartermaster'}
-		<section class="qa-grid" aria-label="Available armory line items">
+		<section class="qa-grid bento-grid bento-grid--12col bento-grid--liquid" aria-label="Available armory line items">
 			{#each lineItems as item (item.id)}
-				<article class="qa-card">
+				<article class="qa-card bento-span-4 tw-min-w-0">
 					<div class="qa-card__icon" aria-hidden="true">
 						<Icon name={item.icon as IconName} />
 					</div>
@@ -477,7 +477,7 @@
 			<div
 				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-p-4 tw-shadow-[0_8px_40px_rgba(0,0,0,0.35)] sm:tw-p-5"
 			>
-				<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4">
+				<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between bento-gap-md">
 					<div>
 						<p id="album-season-heading" class="qa-eyebrow tw-mb-1">Season 1 · Sticker album</p>
 						<p class="tw-m-0 tw-font-black tw-text-xl tw-tracking-wide tw-text-slate-100 sm:tw-text-2xl">
@@ -507,7 +507,10 @@
 
 			<!-- Three.js operative preview + liquid glass swatches -->
 			<div
-				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden tw-shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
+				class="bento-grid bento-grid--12col bento-grid--liquid"
+			>
+			<div
+				class="bento-span-8 tw-min-w-0 tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden tw-shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
 			>
 				<p
 					class="qa-mono tw-m-0 tw-border-b tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-[0.65rem] tw-font-black tw-tracking-[0.2em] tw-text-cyan-200/90"
@@ -572,7 +575,7 @@
 							</div>
 						{/if}
 					</div>
-					<div class="tw-flex tw-flex-col tw-justify-center tw-gap-6">
+					<div class="tw-flex tw-flex-col tw-justify-center bento-gap-lg">
 						<div>
 							<p class="qa-eyebrow tw-mb-2">Skin tone</p>
 							<div class="tw-flex tw-flex-wrap tw-gap-2">
@@ -656,7 +659,7 @@
 
 			<!-- Operative dossier (existing Pro card, glass shell) -->
 			<div
-				class="tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden"
+				class="bento-span-4 tw-min-w-0 tw-rounded-2xl tw-bg-slate-900/60 tw-backdrop-blur-md tw-border tw-border-white/5 tw-overflow-hidden"
 			>
 				<p class="qa-mono tw-m-0 tw-border-b tw-border-white/5 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-[0.65rem] tw-font-black tw-tracking-[0.2em] tw-text-cyan-200/90">
 					OPERATIVE DOSSIER · FIELD CARD
@@ -686,24 +689,25 @@
 					{/if}
 				</div>
 			</div>
+			</div>
 
 			<!-- Set folders (Monopoly Go–style stacks) -->
 			<div>
 				<p class="qa-eyebrow tw-mb-3">Sticker sets</p>
-				<div class="bento-grid bento-grid--3col">
+				<div class="bento-grid bento-grid--12col bento-grid--liquid">
 					{#each seasonOneSets as set (set.id)}
 						{@const setCards = getSeasonOneCardsForSet(set.id)}
 						{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}
 						<button
 							type="button"
-							class="album-folder tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-bg-slate-900/60 tw-p-4 tw-text-left tw-backdrop-blur-md tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {selectedAlbumSetId ===
+							class="album-folder bento-span-4 tw-min-w-0 tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-bg-slate-900/60 tw-p-4 tw-text-left tw-backdrop-blur-md tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {selectedAlbumSetId ===
 							set.id ?
 								'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]'
 							:	'tw-border-white/5 hover:tw-border-white/15'}"
 							onclick={() => (selectedAlbumSetId = set.id)}
 							aria-pressed={selectedAlbumSetId === set.id}
 						>
-							<span class="album-folder__stack tw-mb-4 tw-self-center" aria-hidden="true">
+							<span class="album-folder__stack bento-mb-md tw-self-center" aria-hidden="true">
 								<span class="album-folder__sheet album-folder__sheet--back"></span>
 								<span class="album-folder__sheet album-folder__sheet--mid"></span>
 								<span class="album-folder__sheet album-folder__sheet--front"></span>
@@ -943,9 +947,6 @@
 	}
 
 	.qa-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
-		gap: 1.1rem;
 		align-items: stretch;
 	}
 
@@ -954,9 +955,15 @@
 		flex-direction: column;
 		min-width: 0;
 		padding: 1.1rem 1.1rem 1.15rem;
-		border: 1px solid var(--border);
-		background: linear-gradient(165deg, #07070d 0%, #000 55%);
-		box-shadow: inset 0 0 0 1px rgba(0, 212, 255, 0.08);
+		border: 1px solid rgba(148, 163, 184, 0.14);
+		background: rgb(15 23 42);
+		/* Sprint 1.1: liquid shadow + inner highlight */
+		box-shadow: var(--shadow-liquid);
+		background-image: linear-gradient(
+			160deg,
+			rgba(255, 255, 255, 0.035) 0%,
+			rgba(255, 255, 255, 0) 60%
+		);
 	}
 
 	.qa-card__icon {

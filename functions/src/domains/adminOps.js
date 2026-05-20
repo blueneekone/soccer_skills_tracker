@@ -38,6 +38,7 @@ const {
 
 const {syncPublicPlayerProfile} = require('../utils/profileSyncer');
 const {DEFAULT_CELL_ID, resolveCellId} = require('../../cellConstants');
+const {buildBaseCustomClaims} = require('../auth/customClaims');
 
 const REGION = 'us-east1';
 const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
@@ -90,58 +91,11 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
 
   const superAdmin = ADMIN_EMAIL.value();
 
-  // Epic 14: Clearance Protocol — compute isCleared from Firestore clearance sub-object.
-  // Zero-Trust: only status flag + expiry are used. No PII in JWT.
-  const clearanceData = (typeof userData.clearance === 'object' && userData.clearance !== null)
-    ? userData.clearance : {};
-  const clearanceStatus = typeof clearanceData.status === 'string'
-    ? clearanceData.status : 'pending';
-  let isCleared = clearanceStatus === 'cleared';
-  if (isCleared && clearanceData.expiresAt != null) {
-    try {
-      const expMs = typeof clearanceData.expiresAt.toMillis === 'function'
-        ? clearanceData.expiresAt.toMillis()
-        : Number(clearanceData.expiresAt);
-      if (!isNaN(expMs) && expMs < Date.now()) isCleared = false;
-    } catch {
-      isCleared = false;
-    }
+  const customClaims = buildBaseCustomClaims(userData);
+  if (!customClaims) {
+    logger.warn('syncUserClaims: empty profile payload', userEmail);
+    return null;
   }
-  // Only coaches and recruiters are subject to the clearance gate.
-  // Directors, registrars, parents, players, and admins always pass isCleared = true.
-  const clearedRole = userData.role || 'player';
-  const requiresClearance = clearedRole === 'coach' || clearedRole === 'recruiter';
-  if (!requiresClearance) isCleared = true;
-
-  const customClaims = {
-    teamId:    userData.teamId    || null,
-    role:      clearedRole,
-    clubId:    userData.clubId    || null,
-    // Org-topology: orgId = umbrella Rec-Center / league; divisionId = scoped club/program
-    orgId:      userData.orgId      || null,
-    divisionId: userData.divisionId || userData.clubId || null,
-    householdId: userData.householdId || null,
-    minor:       userData.isMinor === true,
-    vpcVerified: userData.vpcStatus === 'verified',
-    isCleared,
-    tier:                null,
-    subscription_status: null,
-    // Phase 1, Epic 1 — Cell-Based Routing.  Default until the
-    // organizations/{clubId}.cellId lookup below resolves a dedicated cell.
-    cellId: DEFAULT_CELL_ID,
-    // Phase 2, Epic 3 — Phone Verification.  Preserve the phoneVerified claim
-    // written by mirrorPhoneVerification so a syncUserClaims restamp does not
-    // silently strip it.  Source of truth is the users/{email}.phoneVerified
-    // Firestore field written server-side by the CF.
-    phoneVerified: userData.phoneVerified === true,
-    // Phase 2, Epic 3 — COPPA 2.0 age band.  Single source of truth for the
-    // teen 13-16 targeted-ad block.  Defaults lean-restrictive for legacy users
-    // with no DOB: if isMinor is set, assume teen13to16; otherwise adult.
-    // Once a DOB is set via setPlayerDateOfBirth or playerSelfReportDob, the
-    // ageBand field is written and this default is superseded.
-    ageBand: userData.ageBand ||
-      (userData.isMinor === true ? 'teen13to16' : 'adult'),
-  };
 
   const cid =
       typeof userData.clubId === 'string' && userData.clubId.trim() ?

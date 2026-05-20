@@ -69,12 +69,8 @@
 		if (!browser) return;
 		if (isDismissed() || isInStandaloneMode()) return;
 
-		// Register the Vanguard service worker (vite-plugin-pwa: registerType: 'prompt')
-		if ('serviceWorker' in navigator) {
-			navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch((err) => {
-				console.warn('[SW] registration failed:', err);
-			});
-		}
+		// SvelteKit auto-registers /service-worker.js at scope '/'.
+		// No manual registration needed here — see src/service-worker.ts.
 
 		// Android / Chrome / Edge path
 		const handler = (e: Event) => {

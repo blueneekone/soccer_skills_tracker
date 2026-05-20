@@ -81,13 +81,16 @@ export default {
 		spacing: {
 				/** Reserved shell height subtracted in Coach Workspace `calc(100vh - …)` */
 				header: 'var(--vanguard-shell-header, 5rem)',
-				/** Bento Grid fluid spacing — compose with tw-gap-*, tw-p-*, tw-m-* */
-				'bento-xs':  'var(--bento-gap-xs)',
-				'bento-sm':  'var(--bento-gap-sm)',
-				'bento-md':  'var(--bento-gap-md)',
-				'bento-lg':  'var(--bento-gap-lg)',
-				'bento-pad': 'var(--bento-pad)',
-				'bento-pad-sm': 'var(--bento-pad-sm)',
+			/** Bento Grid fluid spacing — compose with tw-gap-*, tw-p-*, tw-m-* */
+			'bento-xs':  'var(--bento-gap-xs)',
+			'bento-sm':  'var(--bento-gap-sm)',
+			'bento-md':  'var(--bento-gap-md)',
+			'bento-lg':  'var(--bento-gap-lg)',
+			'bento-pad': 'var(--bento-pad)',
+			'bento-pad-sm': 'var(--bento-pad-sm)',
+			/** Sprint 1.1 Liquid Bento — clamp(20px, 4vw, 32px) */
+			'bento-liquid': 'var(--bento-gap-liquid)',
+			'bento-pad-liquid': 'var(--bento-pad-liquid)',
 			},
 			perspective: {
 				1000: '1000px',

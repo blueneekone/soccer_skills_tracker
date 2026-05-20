@@ -1,0 +1,156 @@
+/**
+ * Epic 1.2 — Telemetry HUD shared tokens (clamp spacing, avatar clip).
+ */
+
+.hud-telemetry-root {
+	--hud-gap: var(--bento-gap-liquid, clamp(10px, 2vw, 18px));
+	--hud-pad: clamp(12px, 2.5vw, 20px);
+	--hud-radius: 24px;
+	--hud-avatar-size: clamp(52px, 10vw, 72px);
+	width: 100%;
+	min-width: 0;
+}
+
+.hud-telemetry-root .hud-telemetry-panel {
+	padding: var(--hud-pad);
+	border-radius: var(--hud-radius);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: rgba(2, 2, 2, 0.82);
+	min-width: 0;
+}
+
+.hud-telemetry-root .hud-telemetry-avatar,
+.hud-telemetry-root :global(.hud-seeded-ring__avatar) {
+	overflow: hidden;
+	border-radius: 24px;
+}
+
+.hud-telemetry-uptime__grid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: var(--hud-gap);
+	align-items: center;
+}
+
+.hud-telemetry-uptime__label {
+	grid-column: span 7;
+	min-width: 0;
+}
+
+.hud-telemetry-uptime__score {
+	grid-column: span 5;
+	justify-self: end;
+	text-align: right;
+	min-width: 0;
+}
+
+.hud-telemetry-uptime__bar {
+	grid-column: 1 / -1;
+	height: clamp(4px, 0.8vw, 6px);
+	overflow: hidden;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.hud-telemetry-uptime__bar-fill {
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, rgba(20, 184, 166, 0.5), #14b8a6);
+}
+
+.hud-telemetry-matrix__head {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: var(--hud-gap);
+	align-items: center;
+	padding-bottom: var(--hud-gap);
+	margin-bottom: var(--hud-gap);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-telemetry-matrix__title {
+	grid-column: span 12;
+}
+
+@media (min-width: 768px) {
+	.hud-telemetry-matrix__title {
+		grid-column: span 5;
+	}
+
+	.hud-telemetry-matrix__stats {
+		grid-column: span 7;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: clamp(6px, 1.2vw, 12px);
+	}
+}
+
+.hud-readiness-card {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: clamp(6px, 1vw, 10px);
+	align-items: center;
+	padding: clamp(10px, 1.8vw, 14px);
+	min-width: 0;
+}
+
+.hud-readiness-card__ring {
+	grid-column: span 4;
+	justify-self: center;
+}
+
+.hud-readiness-card__meta {
+	grid-column: span 8;
+	min-width: 0;
+}
+
+.hud-bounty-row {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: clamp(8px, 1.5vw, 14px);
+	align-items: center;
+	width: 100%;
+	min-width: 0;
+	padding: clamp(8px, 1.5vw, 12px) 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hud-bounty-row__copy {
+	grid-column: span 12;
+	min-width: 0;
+}
+
+.hud-bounty-row__ring {
+	grid-column: span 2;
+	justify-self: center;
+}
+
+.hud-bounty-row__reward {
+	grid-column: span 3;
+	justify-self: end;
+	text-align: right;
+	min-width: 0;
+}
+
+.hud-bounty-row__cmd {
+	grid-column: span 2;
+	justify-self: end;
+}
+
+@media (min-width: 640px) {
+	.hud-bounty-row__copy {
+		grid-column: span 5;
+	}
+
+	.hud-bounty-row__ring {
+		grid-column: span 2;
+	}
+
+	.hud-bounty-row__reward {
+		grid-column: span 3;
+	}
+
+	.hud-bounty-row__cmd {
+		grid-column: span 2;
+	}
+}

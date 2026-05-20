@@ -35,7 +35,7 @@
 	<header class="vpp-head">
 		<div class="vpp-head__copy">
 			<p class="vpp-eyebrow">Vanguard Protocol</p>
-			<h2 id="vpp-heading" class="vpp-title">Core attributes</h2>
+			<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
 			<p class="vpp-lede">
 				PAC · ACC · POW · COMP · STM · AGI — synced from live coach telemetry. Tap a card for detail.
 			</p>
@@ -53,35 +53,37 @@
 	</header>
 
 	<div class="vpp-body">
-		<ul class="vpp-grid" aria-label="Vanguard Protocol attribute cards">
-			{#each rows as row (row.id)}
-				<li>
-					<button
-						type="button"
-						class="vpp-card"
-						class:vpp-card--open={expandedAxis === row.id}
-						aria-expanded={expandedAxis === row.id}
-						onclick={() => toggleAxis(row.id)}
-					>
-						<span class="vpp-card__code">{row.label}</span>
-						<span class="vpp-card__score">{row.display}</span>
-						<span class="vpp-card__name">{row.fullName}</span>
-						<span
-							class="vpp-card__bar"
-							role="presentation"
-							style={`--vpp-fill: ${row.pct}%;`}
-						></span>
-						{#if expandedAxis === row.id}
-							<span class="vpp-card__detail">
-								{row.fullName} rating {row.display} / 99 — {row.pct}% of peak.
-							</span>
-						{/if}
-					</button>
-				</li>
-			{/each}
-		</ul>
+		<div class="vpp-attributes">
+			<ul class="vpp-grid" aria-label="Vanguard Protocol attribute cards">
+				{#each rows as row (row.id)}
+					<li class="vpp-grid__cell">
+						<button
+							type="button"
+							class="vpp-card"
+							class:vpp-card--open={expandedAxis === row.id}
+							aria-expanded={expandedAxis === row.id}
+							onclick={() => toggleAxis(row.id)}
+						>
+							<span class="vpp-card__code">{row.label}</span>
+							<span class="vpp-card__score">{row.display}</span>
+							<span class="vpp-card__name">{row.fullName}</span>
+							<span
+								class="vpp-card__bar"
+								role="presentation"
+								style={`--vpp-fill: ${row.pct}%;`}
+							></span>
+							{#if expandedAxis === row.id}
+								<span class="vpp-card__detail">
+									{row.fullName} rating {row.display} / 99 — {row.pct}% of peak.
+								</span>
+							{/if}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
 
-		<div class="vpp-radar" aria-label="Attribute radar">
+		<div class="vpp-chart" aria-label="Attribute radar">
 			<AttributeRadar values={prismValues} />
 		</div>
 	</div>
@@ -110,7 +112,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--player-hud-gap, var(--bento-gap-liquid));
+		width: 100%;
 		min-width: 0;
+		box-sizing: border-box;
 	}
 
 	.vpp-head {
@@ -133,8 +137,11 @@
 
 	.vpp-title {
 		margin: 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: clamp(1rem, 2.4vw, 1.125rem);
 		font-weight: 800;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
 		color: var(--vanguard-text-1, #f8fafc);
 	}
 
@@ -161,33 +168,39 @@
 		cursor: pointer;
 	}
 
+	/* Two-column shell: attribute cards (left) + radar (right); stacks on mobile */
 	.vpp-body {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: var(--player-hud-gap, var(--bento-gap-liquid));
+		gap: 16px;
+		width: 100%;
 		min-width: 0;
+		align-items: stretch;
 	}
 
-	@media (min-width: 900px) {
+	@media (min-width: 768px) {
 		.vpp-body {
-			grid-template-columns: minmax(0, 1.1fr) minmax(200px, 0.9fr);
+			grid-template-columns: minmax(0, 1fr) minmax(0, clamp(220px, 38vw, 360px));
 			align-items: center;
 		}
 	}
 
+	.vpp-attributes {
+		width: 100%;
+		min-width: 0;
+	}
+
 	.vpp-grid {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: clamp(8px, 2vw, 14px);
+		grid-template-columns: repeat(2, 1fr);
+		gap: 16px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	@media (min-width: 640px) {
-		.vpp-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
+	.vpp-grid__cell {
+		min-width: 0;
 	}
 
 	.vpp-card {
@@ -270,15 +283,23 @@
 		color: #cbd5e1;
 	}
 
-	.vpp-radar {
+	.vpp-chart {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 220px;
+		width: 100%;
+		min-width: 0;
 		padding: clamp(8px, 2vw, 16px);
 		border-radius: 20px;
 		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 14%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 95%, #000);
+		box-sizing: border-box;
+	}
+
+	.vpp-chart :global(.ar-root) {
+		width: min(100%, 320px);
+		max-width: 100%;
+		margin-inline: auto;
 	}
 
 	.vpp-advanced {

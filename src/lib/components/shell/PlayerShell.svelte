@@ -1,54 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
-	import { collection, onSnapshot, query, where } from 'firebase/firestore';
-	import { handleSignOut } from '$lib/auth/signOutFlow.js';
-	import { db } from '$lib/firebase.js';
-	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
-	import ActiveAssignmentsInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
 	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
-	import PlayerCommandCenter from '$lib/components/player/dashboard/PlayerCommandCenter.svelte';
-	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import '$lib/styles/player-shell.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-	import UidAvatar from '$lib/components/player/UidAvatar.svelte';
-
-	let disconnectBusy = $state(false);
-	let isInboxOpen = $state(false);
-	let commandCenterOpen = $state(false);
-	let pendingAssignmentCount = $state(0);
-
-	async function disconnect() {
-		if (disconnectBusy) return;
-		disconnectBusy = true;
-		try {
-			await handleSignOut();
-		} catch (e) {
-			console.error('[PlayerShell] sign out', e);
-		} finally {
-			disconnectBusy = false;
-		}
-	}
 
 	/** @type {{ children?: import('svelte').Snippet }} */
 	let { children } = $props();
 
-	const playerName = $derived(
-		authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Athlete',
-	);
-
-	const firstName = $derived(
-		String(playerName)
-			.trim()
-			.split(/\s+/)[0] || playerName,
-	);
-
-	const playerUid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
 
 	const playerOsGate = $derived(
@@ -62,74 +26,39 @@
 		)
 	);
 
-	// Close inbox panel whenever the route changes
-	$effect(() => {
-		const _path = page.url.pathname;
-		if (isInboxOpen) isInboxOpen = false;
-	});
+	const HQ_HREF = '/player/dashboard';
 
-	$effect(() => {
-		if (!browser || !playerUid || role !== 'player') {
-			pendingAssignmentCount = 0;
-			return;
-		}
-		const q = query(
-			collection(db, 'assignments'),
-			where('playerId', '==', playerUid),
-			where('status', '==', 'pending'),
-		);
-		const unsub = onSnapshot(
-			q,
-			(snap) => {
-				pendingAssignmentCount = snap.size;
-			},
-			(e) => {
-				console.error('[PlayerShell] assignments snapshot', e);
-				pendingAssignmentCount = 0;
-			},
-		);
-		return () => unsub();
-	});
-
-	/** Bottom / rail nav — HQ first, then core athlete loops. */
 	const NAV_LINKS: Array<{ href: string; icon: IconName; label: string }> = [
-		{ href: '/player/dashboard', icon: 'content.grid', label: 'HQ' },
+		{ href: HQ_HREF, icon: 'content.grid', label: 'HQ' },
 		{ href: '/stats', icon: 'data.chart-bar', label: 'Stats' },
 		{ href: '/player/workout', icon: 'content.checks', label: 'Train' },
 		{ href: '/player/armory', icon: 'status.shield-check', label: 'Armory' },
 		{ href: '/settings', icon: 'sys.settings', label: 'Settings' },
 	];
 
-	/**
-	 * @param {string} href
-	 */
-	function isActive(href) {
-		const path = page.url.pathname;
+	function isHubActive(path: string) {
+		return path === HQ_HREF || path.startsWith(`${HQ_HREF}/`);
+	}
+
+	function isNavActive(href: string, path: string) {
+		if (href === HQ_HREF) return isHubActive(path);
 		if (path === href) return true;
-		/* Avoid treating every /player/* route as HQ */
-		if (href === '/player/dashboard') return false;
 		if (href === '/operative/profile') {
 			return path === '/operative/profile' || path.startsWith('/operative/');
 		}
-		return path.startsWith(href + '/');
+		return path.startsWith(`${href}/`);
 	}
 
 	const PRIMARY_LOCK_HREFS = new Set(['/player/workout', '/player/armory']);
 
-	/**
-	 * @param {string} href
-	 * @param {MouseEvent} e
-	 */
-	function onNavClick(href, e) {
+	function onNavClick(href: string, e: MouseEvent) {
 		if (!playerOsGate.blocked || !PRIMARY_LOCK_HREFS.has(href)) return;
 		e.preventDefault();
 		void goto('/settings');
 	}
 </script>
 
-<!-- Sprint 9.2: Reengagement alerts surface — mounted in Player OS, opened via bell -->
 <AlertsDrawer />
-<PlayerCommandCenter bind:open={commandCenterOpen} pendingCount={pendingAssignmentCount} />
 
 <div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
 	<div class="ps-ambient" aria-hidden="true">
@@ -138,23 +67,34 @@
 		<div class="ps-ambient__glow ps-ambient__glow--b"></div>
 	</div>
 
-	<nav class="ps-bottom-nav" aria-label="Player navigation">
-		{#each NAV_LINKS as link (link.href)}
+	<nav class="ps-rail" aria-label="Player navigation">
+		{#each NAV_LINKS as link, index (link.href)}
+			{@const path = page.url.pathname}
+			{@const isHub = index === 0}
+			{@const hubActive = isHub && isHubActive(path)}
+			{@const routeActive = !isHub && isNavActive(link.href, path)}
 			{@const gated = playerOsGate.blocked && PRIMARY_LOCK_HREFS.has(link.href)}
 			<a
-				class="ps-bottom-nav__link"
-				class:ps-bottom-nav__link--active={isActive(link.href)}
-				class:ps-bottom-nav__link--gated={gated}
-			href={link.href}
-			aria-current={isActive(link.href) ? 'page' : undefined}
-			aria-disabled={gated ? 'true' : undefined}
-			data-sveltekit-preload-data="hover"
-			data-sveltekit-reload
-			onclick={(e) => { isInboxOpen = false; onNavClick(link.href, e); }}
+				class="ps-rail__link"
+				class:ps-rail__link--hub={isHub}
+				class:ps-rail__link--hub-active={hubActive}
+				class:ps-rail__link--active={routeActive}
+				class:ps-rail__link--gated={gated}
+				href={link.href}
+				aria-label={link.label}
+				aria-current={hubActive || routeActive ? 'page' : undefined}
+				aria-disabled={gated ? 'true' : undefined}
+				data-sveltekit-preload-data="hover"
+				data-sveltekit-reload
+				onclick={(e) => onNavClick(link.href, e)}
 			>
-				<span class="ps-bottom-nav__icon" aria-hidden="true"><Icon name={link.icon} /></span>
-				<span class="ps-bottom-nav__label">{link.label}</span>
+				<span class="ps-rail__icon" aria-hidden="true">
+					<Icon name={link.icon} size={24} />
+				</span>
 			</a>
+			{#if isHub}
+				<div class="ps-rail__divider" aria-hidden="true"></div>
+			{/if}
 		{/each}
 	</nav>
 
@@ -165,83 +105,6 @@
 				onPricing={async () => await goto('/upgrade')}
 				onSettings={async () => await goto('/settings')}
 			/>
-		{/if}
-		<header class="ps-topbar">
-			<div class="ps-topbar__brand">
-				<span class="ps-topbar__mark" aria-hidden="true">
-				<Icon name="sys.hexagon" size={20} />
-			</span>
-				<div class="ps-topbar__hello">
-					<span class="ps-topbar__greet">Player OS</span>
-					<span class="ps-topbar__name">{firstName}</span>
-				</div>
-			</div>
-			<UidAvatar
-				seed={playerUid || authStore.user?.email || 'player'}
-				size={36}
-				class="tw-shrink-0"
-			/>
-			<div class="ps-topbar__actions tw-flex tw-min-w-0 tw-shrink-0 tw-items-center tw-gap-2">
-			<button
-				type="button"
-				class="tw-inline-flex tw-min-h-11 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-transition hover:tw-opacity-90"
-				style="border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 40%, transparent); color: var(--color-accent, #fbbf24); background: color-mix(in srgb, var(--color-accent, #fbbf24) 8%, transparent);"
-				aria-expanded={commandCenterOpen}
-				aria-controls="player-command-center"
-				onclick={() => {
-					commandCenterOpen = !commandCenterOpen;
-					isInboxOpen = false;
-				}}
-			>
-				<Icon name="status.shield-half" size={16} />
-				<span class="tw-hidden sm:tw-inline">Command</span>
-			</button>
-			<div class="tw-relative">
-				<button
-					type="button"
-					class="tw-relative tw-flex tw-h-11 tw-w-11 tw-touch-manipulation tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-slate-900/70 tw-text-slate-300 tw-transition hover:tw-border-slate-600 hover:tw-bg-slate-800 hover:tw-text-slate-100"
-					aria-expanded={isInboxOpen || alertsDrawer.open}
-					aria-controls="ps-action-inbox-panel"
-					aria-label="Alerts — notifications and assignments"
-					onclick={() => {
-						if (alertsDrawer.unreadCount > 0) {
-							alertsDrawer.toggle();
-							isInboxOpen = false;
-						} else {
-							isInboxOpen = !isInboxOpen;
-						}
-					}}
-				>
-					<Icon name="comm.bell" size={18} />
-					{#if pendingAssignmentCount > 0 || alertsDrawer.unreadCount > 0}
-						<span
-							class="tw-pointer-events-none tw-absolute tw-right-1.5 tw-top-1.5 tw-h-2 tw-w-2 tw-rounded-full tw-bg-red-500 tw-ring-2 tw-ring-black/80"
-							aria-hidden="true"
-						></span>
-					{/if}
-				</button>
-			</div>
-				<button
-					type="button"
-					class="tw-min-h-11 tw-min-w-[5.5rem] tw-shrink-0 tw-touch-manipulation tw-border tw-border-red-500/30 tw-bg-black/40 tw-px-3 tw-py-2.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-500 tw-transition-colors hover:tw-border-red-500/60 hover:tw-bg-red-950/50 hover:tw-text-red-400 active:tw-bg-red-950/70 disabled:tw-opacity-50"
-					disabled={disconnectBusy}
-					onclick={disconnect}
-				>
-					{disconnectBusy ? '…' : 'DISCONNECT'}
-				</button>
-			</div>
-		</header>
-
-		{#if isInboxOpen}
-			<div
-				id="ps-action-inbox-panel"
-				class="ps-inbox-dropdown tw-absolute tw-left-2 tw-right-2 tw-z-[80] tw-max-h-[min(70vh,28rem)] tw-overflow-y-auto tw-overflow-x-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-950/95 tw-px-3 tw-py-3 tw-backdrop-blur-xl tw-shadow-lg"
-				style="top: var(--pp-topbar-height);"
-				role="region"
-				aria-label="Alerts"
-			>
-				<ActiveAssignmentsInbox />
-			</div>
 		{/if}
 
 		<div class="ps-scroll-shell tw-relative tw-flex-1 tw-min-h-0 tw-overflow-y-auto">

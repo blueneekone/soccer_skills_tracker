@@ -33,19 +33,19 @@
  * offline model returns from `batch.commit()` as soon as the write is
  * enqueued locally; server acknowledgement is observed separately via
  * `offlineSync.svelte.ts → waitForPendingWrites()`).
+ *
+ * RMW audit registry: see `$lib/services/writesAudit.ts` (Phase C).
  */
 
 import { browser } from '$app/environment';
+import { functions } from '$lib/firebase.js';
 import { getActiveDb } from '$lib/firebase.js';
+import { httpsCallable } from 'firebase/functions';
 import {
 	collection,
 	doc,
-	getDocs,
 	increment,
-	query,
 	serverTimestamp,
-	Timestamp,
-	where,
 	writeBatch,
 	type WriteBatch,
 } from 'firebase/firestore';
@@ -58,6 +58,11 @@ import {
 	type WorkoutCompletionPayload,
 } from './writes.types';
 import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+
+const triggerGritAwardUpdateFn = httpsCallable<
+	GritAwardPayload & { batchId?: string },
+	{ committed?: boolean; batchId?: string; offlineQueued?: boolean }
+>(functions, 'triggerGritAwardUpdate');
 
 /**
  * Phase 1, Epic 1 — Cell-Based Routing, Session F.
@@ -196,90 +201,50 @@ export async function commitDrillCompletion(
  * Hard-coded 50 XP because the value is a UX constant, not a per-drill
  * variable.
  *
- * Epic 7 pre-flights (run BEFORE the batch is built):
- *   1.  Complexity gate — rejects non rank-3 drills when `gritGateEnabled`.
- *       Throws 'GRIT_NOT_ELIGIBLE' (caller silences this; it is expected).
- *   2.  Daily cap — counts today's `grit_awards` for this player; throws
- *       'GRIT_DAILY_CAP' when the count reaches `vanguardFlags.gritDailyCap`.
- *       The Cloud Function backstop (`onGritAwardCreated`) provides a
- *       server-side safety net for stale clients.
+ * Pre-flight (client):
+ *   • Complexity gate — rejects non rank-3 drills when `gritGateEnabled`.
+ *     Throws 'GRIT_NOT_ELIGIBLE' (caller silences this; it is expected).
  *
- * Batch contents
- * ──────────────
- *   1.  grit_awards/{auto}           — audit record (includes complexityRank)
- *   2.  users/{uid}                  — armory.totalXP += 50
- *   3.  users/{uid}/xpHistory/{auto} — timeline entry tagged 'grit'
+ * Authoritative write path:
+ *   • `triggerGritAwardUpdate` Cloud Function — Firestore transaction reads
+ *     `users/{userKey}.daily_grit_count`, enforces the daily cap, and atomically
+ *     credits XP + grit_awards + xpHistory.
  */
 export async function commitGritAward(payload: GritAwardPayload): Promise<BatchWriteResult> {
-	const GRIT_XP = 50;
-
-	// ── Pre-flight 1: complexity gate ─────────────────────────────────────
 	if (vanguardFlags.gritGateEnabled && payload.complexityRank !== 3) {
 		throw new Error('GRIT_NOT_ELIGIBLE');
 	}
 
-	// ── Pre-flight 2: daily cap ───────────────────────────────────────────
-	const db = getActiveDb();
-	const todayStartMs = Date.UTC(
-		new Date().getUTCFullYear(),
-		new Date().getUTCMonth(),
-		new Date().getUTCDate(),
-	);
-	const todayStartTs = Timestamp.fromMillis(todayStartMs);
-
-	const capSnap = await getDocs(
-		query(
-			collection(db, PATHS.gritAwards),
-			where('playerUid', '==', payload.playerUid),
-			where('loggedAt', '>=', todayStartTs),
-		),
-	);
-	if (capSnap.size >= vanguardFlags.gritDailyCap) {
-		throw new Error('GRIT_DAILY_CAP');
-	}
-
-	// ── Batch write ───────────────────────────────────────────────────────
 	const batchId = nextBatchId('grit');
-	const batch = writeBatch(db);
 
-	const gritRef = doc(collection(db, PATHS.gritAwards));
-	const userRef = doc(db, PATHS.users, payload.userKey);
-	const historyRef = doc(collection(db, PATHS.userXpHistory(payload.userKey)));
+	try {
+		const result = await triggerGritAwardUpdateFn({ ...payload, batchId });
+		const data = result.data ?? {};
+		return {
+			committed: data.committed ?? true,
+			batchId: data.batchId ?? batchId,
+			offlineQueued: data.offlineQueued ?? false,
+		};
+	} catch (err: unknown) {
+		const code =
+			typeof err === 'object' && err !== null && 'code' in err
+				? String((err as { code?: string }).code)
+				: '';
+		const message =
+			typeof err === 'object' && err !== null && 'message' in err
+				? String((err as { message?: string }).message)
+				: err instanceof Error
+					? err.message
+					: String(err);
 
-	batch.set(gritRef, {
-		batchId,
-		playerUid: payload.playerUid,
-		userKey: payload.userKey,
-		clubId: payload.clubId,
-		drillId: payload.drillId,
-		complexityRank: payload.complexityRank,
-		xpAwarded: GRIT_XP,
-		type: 'failed_attempt_grit',
-		loggedAt: serverTimestamp(),
-	});
-
-	batch.set(
-		userRef,
-		{
-			armory: {
-				totalXP: increment(GRIT_XP),
-			},
-		},
-		{ merge: true },
-	);
-
-	batch.set(historyRef, {
-		batchId,
-		date: new Date().toISOString(),
-		amount: GRIT_XP,
-		reason: 'Grit — failed attempt rewarded',
-		source: 'grit_award',
-		drillId: payload.drillId,
-		complexityRank: payload.complexityRank,
-		loggedAt: serverTimestamp(),
-	});
-
-	return runBatch(batch, batchId);
+		if (code === 'functions/resource-exhausted' || message.includes('GRIT_DAILY_CAP')) {
+			throw new Error('GRIT_DAILY_CAP');
+		}
+		if (code === 'functions/failed-precondition' || message.includes('GRIT_NOT_ELIGIBLE')) {
+			throw new Error('GRIT_NOT_ELIGIBLE');
+		}
+		throw err;
+	}
 }
 
 // ── commitWorkoutCompletion ──────────────────────────────────────────────────

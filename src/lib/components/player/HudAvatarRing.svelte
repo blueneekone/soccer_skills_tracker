@@ -1,0 +1,130 @@
+<script lang="ts">
+	import UidAvatar from '$lib/components/player/UidAvatar.svelte';
+
+	let {
+		seed = 'player',
+		size = 72,
+		level = 1,
+		/** 0..1 progress toward next level within current tier */
+		xpFill = 0,
+		strokeColor = 'var(--color-structural, #60a5fa)',
+		embedded = false,
+	}: {
+		seed?: string;
+		size?: number;
+		level?: number;
+		xpFill?: number;
+		strokeColor?: string;
+		embedded?: boolean;
+	} = $props();
+
+	const R = 34;
+	const strokeW = 4;
+	const view = 80;
+	const c = 2 * Math.PI * R;
+	const fill = $derived(Math.min(1, Math.max(0, Number(xpFill) || 0)));
+	const dashOffset = $derived(c * (1 - fill));
+	const innerAvatar = $derived(Math.round(size * 0.68));
+</script>
+
+<div
+	class="hud-avatar-ring"
+	style="--har-size: {size}px; --har-stroke: {strokeColor};"
+	role="img"
+	aria-label="Level {level}, {Math.round(fill * 100)} percent to next level"
+>
+	<svg class="hud-avatar-ring__svg" viewBox="0 0 {view} {view}" width={size} height={size} aria-hidden="true">
+		<circle class="hud-avatar-ring__track" cx="40" cy="40" r={R} fill="none" stroke-width={strokeW} />
+		<circle
+			class="hud-avatar-ring__fill"
+			cx="40"
+			cy="40"
+			r={R}
+			fill="none"
+			stroke-width={strokeW}
+			stroke-linecap="round"
+			stroke-dasharray={c}
+			stroke-dashoffset={dashOffset}
+			transform="rotate(-90 40 40)"
+		/>
+	</svg>
+	<div class="hud-avatar-ring__avatar-wrap">
+		<UidAvatar seed={seed} size={innerAvatar} alt="" />
+	</div>
+	<span class="hud-avatar-ring__badge">LVL {level}</span>
+</div>
+
+<style>
+	.hud-avatar-ring {
+		position: relative;
+		width: var(--har-size, 72px);
+		height: var(--har-size, 72px);
+		flex-shrink: 0;
+	}
+
+	.hud-avatar-ring__svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--har-stroke, #60a5fa) 45%, transparent));
+	}
+
+	.hud-avatar-ring__track {
+		stroke: color-mix(in srgb, var(--har-stroke, #60a5fa) 22%, #1e293b);
+	}
+
+	.hud-avatar-ring__fill {
+		stroke: var(--har-stroke, #60a5fa);
+		transition: stroke-dashoffset 0.65s cubic-bezier(0.33, 1, 0.68, 1);
+	}
+
+	.hud-avatar-ring__avatar-wrap {
+		position: absolute;
+		inset: 50%;
+		transform: translate(-50%, -50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.hud-avatar-ring__avatar-wrap :global(.uid-avatar) {
+		border-radius: 20px;
+	}
+
+	.hud-avatar-ring--embedded :global(.uid-avatar) {
+		border: none !important;
+		border-radius: 0 !important;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
+
+	.hud-avatar-ring__badge {
+		position: absolute;
+		left: 50%;
+		bottom: -2px;
+		transform: translateX(-50%);
+		padding: 0.2rem 0.45rem;
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--har-stroke, #60a5fa) 55%, transparent);
+		background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, #1e293b);
+		box-shadow:
+			0 0 12px color-mix(in srgb, var(--har-stroke, #60a5fa) 35%, transparent),
+			inset 0 1px 0 rgba(255, 255, 255, 0.08);
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.48rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #ffffff;
+		white-space: nowrap;
+		z-index: 2;
+	}
+
+	.hud-avatar-ring--embedded .hud-avatar-ring__badge {
+		background: transparent !important;
+		border: none !important;
+		border-radius: 0 !important;
+		box-shadow: none !important;
+		padding: 0;
+	}
+</style>

@@ -640,6 +640,33 @@ body {
 	}
 
 	/**
+	 * Sprint 1.1 — fluid interior spacing inside bento cells.
+	 * Prefer these over tw-mb-4 / tw-gap-4 hardcoded scale inside bento wrappers.
+	 */
+	.bento-mt-xs { margin-top: var(--bento-gap-xs); }
+	.bento-mt-sm { margin-top: var(--bento-gap-sm); }
+	.bento-mt-md { margin-top: var(--bento-gap-md); }
+	.bento-mt-lg { margin-top: var(--bento-gap-lg); }
+	.bento-mb-xs { margin-bottom: var(--bento-gap-xs); }
+	.bento-mb-sm { margin-bottom: var(--bento-gap-sm); }
+	.bento-mb-md { margin-bottom: var(--bento-gap-md); }
+	.bento-mb-lg { margin-bottom: var(--bento-gap-lg); }
+	.bento-gap-xs { gap: var(--bento-gap-xs); }
+	.bento-gap-sm { gap: var(--bento-gap-sm); }
+	.bento-gap-md { gap: var(--bento-gap-md); }
+	.bento-gap-lg { gap: var(--bento-gap-lg); }
+	.bento-stack-sm {
+		display: flex;
+		flex-direction: column;
+		gap: var(--bento-gap-sm);
+	}
+	.bento-stack-md {
+		display: flex;
+		flex-direction: column;
+		gap: var(--bento-gap-md);
+	}
+
+	/**
 	 * .vanguard-surface--liquid
 	 * Opaque data-card modifier for Sprint 1.1 Liquid Glass aesthetic.
 	 * Composes on .vanguard-card / .vanguard-surface — adds the tactile

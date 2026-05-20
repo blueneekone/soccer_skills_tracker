@@ -1,11 +1,10 @@
 <script lang="ts">
-	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
-	import HudMiniRing from '$lib/components/player/HudMiniRing.svelte';
-	import UidAvatar from '$lib/components/player/UidAvatar.svelte';
-	import { formatCompactXp, streakRingFill } from '$lib/player/dashboard/playerHudMetrics.js';
+	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
+	import { formatCompactXp } from '$lib/player/dashboard/playerHudMetrics.js';
 	import '$lib/styles/player-dashboard-hud.css';
 
 	let {
+		embedded = false,
 		uid = '',
 		displayName = 'Athlete',
 		teamLabel = '',
@@ -19,6 +18,7 @@
 		profileIncomplete = false,
 		onProfileSetup,
 	}: {
+		embedded?: boolean;
 		uid?: string;
 		displayName?: string;
 		teamLabel?: string;
@@ -34,22 +34,48 @@
 	} = $props();
 
 	const xpLabel = $derived(formatCompactXp(totalXp));
-	const streakFill = $derived(streakRingFill(currentStreak));
-	const tierFill = $derived.by(() => {
+
+	const levelXpFill = $derived.by(() => {
 		const d = xpInTier + xpToNextRank;
-		if (d <= 0) return 0;
+		if (d <= 0) return 1;
 		return Math.min(1, Math.max(0, xpInTier / d));
 	});
 </script>
 
-<header class="player-hud-root player-hud-header" aria-label="Player combat HUD">
+<header
+	class="player-hud-header"
+	class:player-hud-header--standalone={!embedded}
+	class:player-hud-header--embedded={embedded}
+	aria-label="Player combat HUD"
+>
 	<div class="player-hud-header__lead">
-		<UidAvatar seed={uid || displayName} size={64} alt="" class="player-hud-header__avatar" />
+		<HudAvatarRing
+			seed={uid || displayName}
+			size={72}
+			level={level}
+			xpFill={levelXpFill}
+			strokeColor="var(--color-structural, #60a5fa)"
+			{embedded}
+		/>
 		<div class="player-hud-header__identity">
-			<p class="player-hud-header__name" title={displayName}>{displayName}</p>
-			<p class="player-hud-header__meta" title={teamLabel || 'No team'}>
-				{teamLabel || 'No team'} · {rankName}
-			</p>
+			<div class="player-hud-header__title-row">
+				<div class="player-hud-header__title-block">
+					<p class="player-hud-header__name" title={displayName}>{displayName}</p>
+					<p class="player-hud-header__meta" title={teamLabel || 'No team'}>
+						{teamLabel || 'No team'} · {rankName}
+					</p>
+				</div>
+				<div class="player-hud-header__pills" aria-label="Streak and career XP">
+					<span class="player-hud-pill player-hud-pill--streak" title="Best {longestStreak} day streak">
+						<span class="player-hud-pill__label">Streak</span>
+						<span class="player-hud-pill__value">{currentStreak}d</span>
+					</span>
+					<span class="player-hud-pill player-hud-pill--xp" title="Career XP">
+						<span class="player-hud-pill__label">XP</span>
+						<span class="player-hud-pill__value">{xpLabel}</span>
+					</span>
+				</div>
+			</div>
 			{#if profileIncomplete && onProfileSetup}
 				<button type="button" class="player-hud-header__setup" onclick={onProfileSetup}>
 					Finish profile setup
@@ -57,37 +83,143 @@
 			{/if}
 		</div>
 	</div>
-	<div class="player-hud-header__rings" aria-label="XP and streak progress">
-		<div class="player-hud-header__ring-wrap" aria-label="Level and XP">
-			<LevelProgressRing
-				currentXp={xpInTier}
-				nextRankXp={xpToNextRank}
-				rankName={rankName}
-				totalXp={totalXp}
-				level={level}
-				size="md"
-				variant="dark"
-			/>
-		</div>
-		<HudMiniRing
-			fill={streakFill}
-			label="Streak"
-			value="{currentStreak}d"
-			subLabel="Best {longestStreak}d"
-			strokeColor="var(--color-accent, #fbbf24)"
-			size={56}
-		/>
-		<HudMiniRing
-			fill={tierFill}
-			label="Tier"
-			value={xpLabel}
-			subLabel="Career XP"
-			size={56}
-		/>
-	</div>
 </header>
 
 <style>
+	/* Standalone card chrome — disabled inside OperativeHub */
+	.player-hud-header--standalone {
+		display: flex;
+		align-items: center;
+		gap: clamp(12px, 3vw, 20px);
+		width: 100%;
+		max-width: 72rem;
+		margin-inline: auto;
+		padding: clamp(12px, 2.5vw, 20px);
+		box-sizing: border-box;
+		background: rgba(5, 10, 16, 0.95);
+		clip-path: polygon(
+			0 16px,
+			16px 0,
+			calc(100% - 16px) 0,
+			100% 16px,
+			100% calc(100% - 16px),
+			calc(100% - 16px) 100%,
+			16px 100%,
+			0 calc(100% - 16px)
+		);
+		border: 1px solid rgba(0, 255, 255, 0.15);
+	}
+
+	.player-hud-header--embedded {
+		display: flex;
+		align-items: flex-start;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		background: transparent !important;
+		border: none !important;
+		border-radius: 0 !important;
+		box-shadow: none !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+	}
+
+	.player-hud-header--embedded .player-hud-pill {
+		background: transparent !important;
+		border: none !important;
+		border-radius: 0 !important;
+		box-shadow: none !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		padding: 0;
+		gap: 0.25rem;
+	}
+
+	.player-hud-header--embedded .player-hud-header__lead {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	.player-hud-header--embedded :global(.player-hud-header__name),
+	.player-hud-header--embedded :global(.player-hud-header__meta),
+	.player-hud-header--embedded .player-hud-pill__label,
+	.player-hud-header--embedded .player-hud-pill__value {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.player-hud-header__title-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: clamp(8px, 2vw, 14px);
+		min-width: 0;
+	}
+
+	.player-hud-header__title-block {
+		min-width: 0;
+		flex: 1 1 8rem;
+	}
+
+	.player-hud-header__pills {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		flex-shrink: 0;
+	}
+
+	.player-hud-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.35rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 28%, transparent);
+		background: color-mix(in srgb, var(--color-dominant, #0f172a) 55%, transparent);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 4px 16px rgba(0, 0, 0, 0.25);
+	}
+
+	.player-hud-pill--streak {
+		border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent);
+	}
+
+	.player-hud-pill--xp {
+		border-color: color-mix(in srgb, #22d3ee 35%, transparent);
+	}
+
+	.player-hud-pill__label {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.48rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--color-structural, #3b82f6) 70%, #94a3b8);
+	}
+
+	.player-hud-pill--streak .player-hud-pill__label {
+		color: color-mix(in srgb, var(--color-accent, #fbbf24) 80%, #fde68a);
+	}
+
+	.player-hud-pill--xp .player-hud-pill__label {
+		color: color-mix(in srgb, #22d3ee 80%, #a5f3fc);
+	}
+
+	.player-hud-pill__value {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.72rem;
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		color: #ffffff;
+		white-space: nowrap;
+	}
+
 	.player-hud-header__setup {
 		margin: 0.35rem 0 0;
 		padding: 0;
@@ -113,40 +245,10 @@
 		border-radius: 2px;
 	}
 
-	.player-hud-header__ring-wrap {
-		width: 52px;
-		height: 52px;
-		overflow: visible;
-		flex-shrink: 0;
-	}
-
-	.player-hud-header__ring-wrap :global(.lp-ring) {
-		transform: scale(0.375);
-		transform-origin: top left;
-		width: 128px;
-		height: 128px;
-	}
-
-	@media (min-width: 640px) {
-		.player-hud-header__ring-wrap {
-			width: 58px;
-			height: 58px;
-		}
-
-		.player-hud-header__ring-wrap :global(.lp-ring) {
-			transform: scale(0.453125);
-		}
-	}
-
-	@media (max-width: 480px) {
-		.player-hud-header {
-			flex-wrap: wrap;
-		}
-
-		.player-hud-header__rings {
-			width: 100%;
-			justify-content: flex-start;
-			padding-inline-end: 0;
+	@media (max-width: 520px) {
+		.player-hud-header__title-row {
+			flex-direction: column;
+			align-items: flex-start;
 		}
 	}
 </style>

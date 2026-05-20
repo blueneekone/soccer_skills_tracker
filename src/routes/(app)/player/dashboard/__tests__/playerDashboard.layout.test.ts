@@ -20,8 +20,9 @@ describe('/player/dashboard — Liquid Bento (Slice 3)', () => {
 		expect(src).toMatch(/bento-grid--liquid/);
 	});
 
-	it('retains bento-grid--12col for the 12-column layout', () => {
-		expect(src).toMatch(/bento-grid--12col/);
+	it('Vanguard protocol spans 8 columns with stats snapshot at 4', () => {
+		expect(src).toMatch(/bento-span-8/);
+		expect(src).toMatch(/bento-span-4/);
 	});
 
 	it('.bento-card local CSS uses var(--shadow-liquid)', () => {

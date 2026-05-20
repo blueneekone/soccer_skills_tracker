@@ -33,6 +33,7 @@
 		onclick={onScrimClick}
 	>
 		<aside
+			id="player-command-center"
 			class="pcc-drawer"
 			role="dialog"
 			aria-modal="true"

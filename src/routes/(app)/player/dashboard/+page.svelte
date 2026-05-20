@@ -5,6 +5,8 @@
 	import type { IconName } from '$lib/icons/registry.js';
 	import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import ActiveBounties from '$lib/components/player/dashboard/ActiveBounties.svelte';
+	import OperativeHub from '$lib/components/player/dashboard/OperativeHub.svelte';
 	import PlayerHudHeader from '$lib/components/player/dashboard/PlayerHudHeader.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
@@ -186,7 +188,7 @@
 	</div>
 {:else if !activePlayer}
 	<div
-		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
+		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center bento-gap-md tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
 		role="alert"
 	>
 		<Icon name="status.warning-circle" class="tw-text-4xl tw-text-amber-400" />
@@ -205,36 +207,72 @@
 {:else}
 <div
 	class="lobby-page player-hud-root tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
-	style="background: var(--color-dominant, #0f172a);"
+	style="background: var(--color-dominant, #0f172a); padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	data-region="player-lobby"
 >
-	<div class="tw-mx-auto tw-w-full tw-max-w-6xl tw-min-w-0 tw-px-3 tw-pt-2 sm:tw-px-5">
-		<PlayerHudHeader
-			uid={uid}
-			displayName={callsign}
-			teamLabel={teamAssignmentLabel}
-			rankName={rankProgress.rank}
-			level={osLevel}
-			totalXp={totalXpHud}
-			currentStreak={streak}
-			longestStreak={longestStreak}
-			xpInTier={rankProgress.xpInCurrentTier}
-			xpToNextRank={rankProgress.xpToNextRank}
-			profileIncomplete={!hasArmoryProfile}
-			onProfileSetup={() => (showInitModal = true)}
-		/>
-	</div>
-
-	<!-- Sprint 1.4: 12-col asymmetric bento grid -->
 	<div
-		class="lobby-root bento-grid bento-grid--12col bento-grid--liquid tw-relative tw-z-30 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-6xl tw-overflow-x-hidden tw-px-3 tw-pb-28 tw-pt-3 sm:tw-px-5"
+		class="lobby-root bento-grid bento-grid--12col bento-grid--liquid tw-relative tw-z-30 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-6xl tw-overflow-x-hidden"
 	>
+		<div class="bento-span-12 tw-min-w-0">
+			<OperativeHub>
+				{#snippet profile()}
+					<PlayerHudHeader
+						embedded
+						uid={uid}
+						displayName={callsign}
+						teamLabel={teamAssignmentLabel}
+						rankName={rankProgress.rank}
+						level={osLevel}
+						totalXp={totalXpHud}
+						currentStreak={streak}
+						longestStreak={longestStreak}
+						xpInTier={rankProgress.xpInCurrentTier}
+						xpToNextRank={rankProgress.xpToNextRank}
+						profileIncomplete={!hasArmoryProfile}
+						onProfileSetup={() => (showInitModal = true)}
+					/>
+				{/snippet}
+				{#snippet quests()}
+					<ActiveBounties embedded />
+				{/snippet}
+			</OperativeHub>
+		</div>
+
 	<section
-		class="bento-span-12 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
+		class="bento-span-8 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
 		aria-label="Vanguard Protocol telemetry"
 	>
 		<VanguardProtocolPanel prismValues={attrRadarValues} statsRaw={statsRaw} />
 	</section>
+
+	<aside
+		class="bento-span-4 bento-card tw-relative tw-z-30 tw-flex tw-min-w-0 tw-flex-col tw-justify-between tw-p-4 md:tw-p-5"
+		aria-label="Operative stats snapshot"
+	>
+		<div>
+			<p class="lobby-eyebrow tw-mb-2 tw-text-slate-400">Telemetry snapshot</p>
+			<p class="tw-m-0 tw-font-mono tw-text-3xl tw-font-black tw-tabular-nums tw-text-teal-400">
+				LVL.{String(osLevel).padStart(2, '0')}
+			</p>
+			<p class="tw-mt-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-wider tw-text-slate-500">
+				{rankProgress.rank}
+			</p>
+		</div>
+		<dl class="tw-m-0 bento-stack-sm tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-wider">
+			<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-800/80 tw-pb-2">
+				<dt class="tw-text-slate-500">Total XP</dt>
+				<dd class="tw-tabular-nums tw-text-slate-200">{totalXpHud.toLocaleString()}</dd>
+			</div>
+			<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-800/80 tw-pb-2">
+				<dt class="tw-text-slate-500">Streak</dt>
+				<dd class="tw-tabular-nums tw-text-amber-400">{streak}d</dd>
+			</div>
+			<div class="tw-flex tw-justify-between tw-gap-2">
+				<dt class="tw-text-slate-500">Best</dt>
+				<dd class="tw-tabular-nums tw-text-slate-300">{longestStreak}d</dd>
+			</div>
+		</dl>
+	</aside>
 
 	<section
 		class="bento-span-12 bento-card lobby-capsules-section tw-relative tw-z-30 tw-flex tw-flex-col tw-p-4 md:tw-p-5"
@@ -294,7 +332,7 @@
 			<Icon name="sys.close" size={14} />
 		</button>
 
-		<div class="tw-mb-4 tw-border-b tw-border-slate-800 tw-pb-3">
+		<div class="bento-mb-md tw-border-b tw-border-slate-800 tw-pb-3">
 			<p class="tw-m-0 tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">
 				One-time setup · SOAR
 			</p>
@@ -311,7 +349,7 @@
 			to unlock the full Player OS.
 		</p>
 
-		<ul class="tw-mt-4 tw-list-none tw-m-0 tw-p-0 tw-space-y-1.5">
+		<ul class="bento-mt-md tw-list-none tw-m-0 tw-p-0 tw-space-y-1.5">
 			{#each ['Choose your player avatar', 'Set your position and sport', 'Review your gear unlocks'] as step, i}
 				<li class="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5 tw-font-mono tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-[0.12em] tw-text-slate-500">
 					<span class="tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-sm tw-border tw-border-teal-700/60 tw-bg-teal-600/10 tw-text-[0.5rem] tw-font-black tw-text-teal-500">{i + 1}</span>
@@ -320,7 +358,7 @@
 			{/each}
 		</ul>
 
-		<div class="tw-mt-6 tw-flex tw-flex-wrap tw-items-center tw-gap-3">
+		<div class="bento-mt-lg tw-flex tw-flex-wrap tw-items-center tw-gap-3">
 			<a
 				href={resolve('/player/armory')}
 				class="tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-border tw-border-teal-600/70 tw-bg-teal-600/10 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-400 tw-no-underline tw-transition-all tw-duration-150 hover:tw-bg-teal-600/20 active:tw-scale-[0.98]"

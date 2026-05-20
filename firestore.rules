@@ -796,6 +796,76 @@ service cloud.firestore {
         && tokenTenant() == tenantId;
     }
 
+    // ── Sprint 1.3 — Access Token Partitioning ─────────────────────────────
+    // Infrastructure-level club isolation via JWT custom claims (syncUserClaims).
+    // UI masking is NOT a security boundary — every tenant-scoped read must pass
+    // tokenClub() == document clubId (or derived team → club).
+
+    function docClubId(data) {
+      return data.get('clubId', data.get('tenantId', ''));
+    }
+
+    function tokenClubMatchesDoc(data) {
+      return tokenClub() != null
+        && docClubId(data) != ''
+        && docClubId(data) == tokenClub();
+    }
+
+    function workoutInTokenClub(data) {
+      return tokenClub() != null && (
+        (data.keys().hasAll(['clubId']) && data.clubId == tokenClub())
+        || (data.keys().hasAll(['teamId'])
+            && data.teamId != null
+            && exists(/databases/$(database)/documents/teams/$(data.teamId))
+            && teamClubId(data.teamId) == tokenClub())
+      );
+    }
+
+    function canReadUsersDocument(userId) {
+      return authed() && (
+        emailKey() == userId.lower()
+        || isPlatformAdmin()
+        || parentHouseholdAllowsChildEmail(userId.lower())
+        || (isDirector() && tokenClubMatchesDoc(resource.data))
+        || (isRegistrar() && tokenClubMatchesDoc(resource.data))
+        || (isCoach() && tokenClub() != null
+            && resource.data.get('teamId', null) == tokenTeam()
+            && tokenClubMatchesDoc(resource.data))
+      );
+    }
+
+    function canReadWorkoutDocument(data) {
+      return playerVpcAllowed() && (
+        isPlatformAdmin()
+        || (data.get('userId', data.get('userUid', '')) == request.auth.uid
+            && workoutInTokenClub(data))
+        || (directorScopedToTeam(data.teamId) && workoutInTokenClub(data))
+        || (coachStaffCanAccessTeam(data.teamId) && workoutInTokenClub(data))
+        || (sameTeam(data.teamId) && workoutInTokenClub(data))
+        || (data.keys().hasAll(['player'])
+            && parentCanSeePlayerName(data.player)
+            && workoutInTokenClub(data))
+      );
+    }
+
+    function canReadNestedUserWorkout(userId) {
+      return playerVpcAllowed() && (
+        isPlatformAdmin()
+        || emailKey() == userId.lower()
+        || parentHouseholdAllowsChildEmail(userId.lower())
+        || (directorScopedToTeam(resource.data.teamId)
+            && workoutInTokenClub(resource.data))
+        || (isCoach() && sameTeam(resource.data.teamId)
+            && workoutInTokenClub(resource.data))
+      );
+    }
+
+    function canReadOrganization(tenantId) {
+      return isPlatformAdmin()
+        || (isAuthorized(tenantId)
+            && resource.data.get('clubId', tenantId) == tenantId);
+    }
+
     // Platform Admin (God Mode) alias — strictly separated from isDirector().
     // Wraps isGlobalAdmin() to satisfy the Epic 5 naming contract.
     function isPlatformAdmin() {
@@ -839,14 +909,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if authed() && (
-        emailKey() == userId.lower()
-        || isSuper()
-        || (isDirector() && resource.data.clubId == tokenClub())
-        || (isRegistrar() && resource.data.clubId == tokenClub())
-        || (isCoach() && resource.data.teamId == tokenTeam())
-        || parentHouseholdAllowsChildEmail(userId.lower())
-      );
+      allow read: if canReadUsersDocument(userId);
 
       allow create: if isSuper()
         || (authed() && emailKey() == userId.lower()
@@ -928,13 +991,7 @@ service cloud.firestore {
 
       // Project Phoenix / Player OS: client-written execution mirror (server owns XP in player_stats).
       match /workouts/{workoutId} {
-        allow read: if authed() && playerVpcAllowed() && (
-          isSuper()
-          || emailKey() == userId.lower()
-          || parentHouseholdAllowsChildEmail(userId.lower())
-          || directorScopedToTeam(resource.data.teamId)
-          || (isCoach() && sameTeam(resource.data.teamId))
-        );
+        allow read: if canReadNestedUserWorkout(userId);
         allow create: if authed() && playerVpcAllowed()
           && request.resource.data.keys().hasAll([
             'focus', 'drill', 'durationMinutes', 'intensityRpe', 'earnedXp',
@@ -1032,7 +1089,7 @@ service cloud.firestore {
     }
 
     match /clubs/{clubId} {
-      allow read: if authed();
+      allow read: if isPlatformAdmin() || isAuthorized(clubId);
       allow create, delete: if isSuper();
       allow update: if isSuper()
         || (isDirector() && tokenClub() == clubId && clubMarketingUpdateOk());
@@ -1628,14 +1685,7 @@ service cloud.firestore {
     // nobody other than the owner (or a Global Admin) may mutate an existing
     // workout row.
     match /workouts/{docId} {
-      allow read: if authed() && playerVpcAllowed() && (
-        isSuper()
-        || resource.data.userId == request.auth.uid
-        || directorScopedToTeam(resource.data.teamId)
-        || coachStaffCanAccessTeam(resource.data.teamId)
-        || sameTeam(resource.data.teamId)
-        || parentCanSeePlayerName(resource.data.player)
-      );
+      allow read: if authed() && canReadWorkoutDocument(resource.data);
       allow create: if authed()
         && request.resource.data.keys().hasAll(['userId', 'teamId'])
         && request.resource.data.userId is string
@@ -2130,8 +2180,7 @@ service cloud.firestore {
     // This collection may hold organisation-level metadata distinct from
     // the clubs/* billing/marketing data.
     match /organizations/{tenantId} {
-      allow read: if isPlatformAdmin()
-        || isAuthorized(tenantId);
+      allow read: if canReadOrganization(tenantId);
       allow create: if isPlatformAdmin()
         || (isDirector() && isAuthorized(tenantId));
       allow update: if (isPlatformAdmin() || isDirector())

@@ -154,7 +154,7 @@
 		</div>
 		<!-- Text overlay — deep backdrop-blur-md per Vanguard spec -->
 		<div
-			class="vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end tw-gap-4 tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
+			class="vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end bento-gap-md tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 		>
 			<div
 				class="tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-[#14b8a6]/40 tw-bg-[rgba(0,24,32,0.6)] tw-shadow-[0_0_18px_rgba(20, 184, 166,0.35)] md:tw-h-14 md:tw-w-14"
@@ -176,30 +176,34 @@
 		</div>
 	</header>
 
-	<!-- ── BODY ─────────────────────────────────────────────────────────────── -->
-	<main class="tw-relative tw-z-10 tw-mx-auto tw-w-full tw-max-w-7xl tw-px-3 tw-pb-16 tw-pt-6 sm:tw-px-5">
-		<!-- Media Hub trigger — floating pill button top-right -->
-		<div class="tw-flex tw-justify-end tw-mb-4">
+	<!-- ── BODY — Sprint 1.1: 12-col liquid bento (padding on wrapper, not shell canvas) -->
+	<main
+		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-7xl"
+		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
+	>
+		<div
+			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full"
+			aria-label="Nexus Command workspace"
+		>
+			<div class="bento-span-12 tw-flex tw-justify-end">
+				<button
+					type="button"
+					class="media-hub-btn"
+					onclick={() => { mediaOpen = true; }}
+					aria-label="Open Media Hub — news and podcasts"
+				>
+					<span class="media-hub-btn__icon" aria-hidden="true">▶</span>
+					MEDIA HUB
+				</button>
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
+			</div>
+
 			<button
 				type="button"
-				class="media-hub-btn"
-				onclick={() => { mediaOpen = true; }}
-				aria-label="Open Media Hub — news and podcasts"
-			>
-				<span class="media-hub-btn__icon" aria-hidden="true">▶</span>
-				MEDIA HUB
-			</button>
-		</div>
-
-		<!-- Squad Readiness Matrix (mounted at top, primary content) -->
-		<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
-
-		<!-- ── MISSION CONTROL GRID ──────────────────────────────────────────── -->
-		<section class="bento-grid bento-grid--3col tw-mt-6" aria-label="Mission Control">
-			<!-- WAR ROOM — Holographic, pulsing cyan border, primary gateway -->
-			<button
-				type="button"
-				class="war-room-card bento-span-2 tw-group tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-2xl tw-border-2 tw-border-[#14b8a6]/55 tw-bg-[#020202]/80 tw-p-6 tw-text-left tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_40px_rgba(20, 184, 166,0.18)] tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#14b8a6]"
+				class="war-room-card vanguard-surface--hero-liquid bento-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-vanguard tw-border-2 tw-border-[#14b8a6]/55 tw-p-6 tw-text-left tw-transition-transform hover:tw-scale-[1.01] active:tw-scale-[0.99] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#14b8a6]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>
@@ -268,12 +272,12 @@
 				</div>
 			</button>
 
-			<!-- FACILITY OPS & STAGING — glassmorphic, mono coordinates -->
+			<!-- FACILITY OPS & STAGING — secondary ops (4 cols @ 64rem+) -->
 			<article
-				class="tw-relative tw-flex tw-min-h-[320px] tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-5 tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]"
+				class="vanguard-surface--liquid bento-span-4 bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-rounded-vanguard tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-5"
 				aria-label="Facility Ops & Staging"
 			>
-				<header class="tw-mb-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
+				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
 					<Icon name="comm.broadcast" class="tw-text-base tw-text-[#14b8a6]" />
 					<h2 class="tw-m-0 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
 						Facility Ops &amp; Staging
@@ -325,9 +329,9 @@
 				</div>
 			</article>
 
-		<!-- WEATHER MONITORING — AEGIS live widget (lg col 3) -->
+		<!-- WEATHER MONITORING — AEGIS live widget (full-width row) -->
 		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="lg:tw-col-span-3">
+		<div class="bento-span-12 tw-min-w-0">
 			{#if vanguardFlags.weatherEnabled}
 				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 			{:else}
@@ -340,7 +344,7 @@
 				</div>
 			{/if}
 		</div>
-		</section>
+		</div>
 	</main>
 </div>
 

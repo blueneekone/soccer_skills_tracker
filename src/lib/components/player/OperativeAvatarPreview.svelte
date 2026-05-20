@@ -1,5 +1,4 @@
 <script>
-	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { renderOperativeAvatarSvg, parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -26,29 +25,25 @@
 		return parseOperativeAvatar(authStore.userProfile?.operativeAvatar);
 	});
 
-	let svgMarkup = $state('');
-
-	$effect(() => {
-		if (!browser) {
-			svgMarkup = '';
-			return;
-		}
+	/**
+	 * Sprint 9.3: `renderBauhausAvatarSvg` is pure JS — no browser APIs — so this
+	 * runs identically on server (SSR) and client. We never fall back to a static
+	 * PNG placeholder: a deterministic Bauhaus SVG is always returned.
+	 *
+	 * Priority:  config seed > player UID > generic 'operative' seed (SSR/no-auth)
+	 */
+	const svgMarkup = $derived.by(() => {
 		const cfg = resolvedConfig;
-		if (cfg) {
-			svgMarkup = renderOperativeAvatarSvg(cfg.seed, size);
-		} else {
-			// Fall back to a deterministic Bauhaus avatar keyed to the player's UID
-			// so every operative has a unique visual identity before they customise.
-			const uid = authStore.user?.uid;
-			svgMarkup = uid ? renderOperativeAvatarSvg(uid, size) : '';
-		}
+		if (cfg) return renderOperativeAvatarSvg(cfg.seed, size);
+		const uid = authStore.user?.uid;
+		return renderOperativeAvatarSvg(uid || 'operative', size);
 	});
 </script>
 
 <div
-	class={`operative-avatar-preview tw-relative tw-aspect-square tw-h-full tw-w-full tw-shrink-0 tw-overflow-hidden ${className}`}
+	class={`operative-avatar-preview tw-relative tw-aspect-square tw-h-full tw-w-full tw-shrink-0 tw-overflow-hidden tw-rounded-full ${className}`}
 	style={size ? `max-width: ${size}px` : undefined}
-	aria-hidden={svgMarkup ? 'true' : undefined}
+	aria-hidden="true"
 >
 	{#if !vpc_approved}
 		<!-- COPPA lock — parental consent required -->
@@ -73,8 +68,8 @@
 				style="font-size: {Math.max(7, Math.round(size * 0.065))}px; line-height: 1.2;"
 			>PARENTAL<br>CONSENT<br>REQUIRED</span>
 		</div>
-	{:else if svgMarkup}
-		<!-- Bauhaus SVG — either config seed or UID-keyed fallback. -->
+	{:else}
+		<!-- Sprint 9.3: deterministic Bauhaus SVG — always rendered (no static PNG fallback). -->
 		{@html svgMarkup}
 		{#if showInitializeCta && !resolvedConfig}
 			<!-- Overlay CTA when rendering the auto-generated (non-customised) avatar. -->
@@ -86,19 +81,6 @@
 				Customize operative
 			</a>
 		{/if}
-	{:else}
-		<!-- SSR skeleton or no-UID state. -->
-		<div
-			class="oap-ghost tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700/80 tw-bg-slate-950"
-			role="img"
-			aria-label="Operative not initialized"
-		>
-			<img
-				src="/cards/placeholder.svg"
-				alt=""
-				class="oap-placeholder tw-h-[72%] tw-w-[72%] tw-object-contain tw-opacity-70"
-			/>
-		</div>
 	{/if}
 </div>
 
@@ -110,9 +92,5 @@
 		aspect-ratio: 1 / 1;
 		object-fit: cover;
 		border-radius: 9999px;
-	}
-
-	.oap-placeholder {
-		filter: grayscale(1) brightness(1.15);
 	}
 </style>

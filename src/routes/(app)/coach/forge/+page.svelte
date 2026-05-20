@@ -154,12 +154,12 @@
 	}
 </script>
 
-<!-- Vanguard Forge — bg-[#020202] root, glassmorphic cards, mono telemetry. -->
-<div class="forge-route tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-px-3 tw-py-6 sm:tw-px-5">
+<!-- Vanguard Forge — Sprint 1.1: 12-col liquid bento -->
+<div class="forge-route tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202]" style="padding: var(--bento-pad-liquid);">
 	<div
-		class="vanguard-surface tw-p-6 md:tw-p-8"
+		class="vanguard-surface vanguard-surface--liquid bento-grid bento-grid--12col bento-grid--liquid tw-p-6 md:tw-p-8"
 	>
-		<header class="tw-mb-10 tw-text-center md:tw-text-left">
+		<header class="bento-span-12 tw-mb-2 tw-text-center md:tw-text-left">
 			<p class="tw-mb-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.35em] tw-text-cyan-400/80">
 				Coach OS · Workout Architect
 			</p>
@@ -174,8 +174,8 @@
 		</header>
 
 		<!-- Armory -->
-		<section class="tw-mb-12" aria-labelledby="forge-armory-heading">
-			<div class="tw-mb-6 tw-flex tw-flex-col tw-gap-2 md:tw-flex-row md:tw-items-end md:tw-justify-between">
+		<section class="bento-span-8 tw-min-w-0" aria-labelledby="forge-armory-heading">
+			<div class="bento-mb-lg tw-flex tw-flex-col tw-gap-2 md:tw-flex-row md:tw-items-end md:tw-justify-between">
 				<div>
 					<h2 id="forge-armory-heading" class="tw-text-lg tw-font-black tw-uppercase tw-tracking-wide tw-text-white">
 						The Armory
@@ -189,10 +189,10 @@
 				</span>
 			</div>
 
-		<div class="bento-grid bento-grid--3col">
-				{#each ARMORY_DRILLS as drill (drill.id)}
+		<div class="bento-grid bento-grid--12col bento-grid--liquid">
+			{#each ARMORY_DRILLS as drill (drill.id)}
 					<article
-						class="tw-group tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-backdrop-blur-3xl tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]"
+						class="bento-span-6 tw-group tw-relative tw-flex tw-min-w-0 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/10 tw-bg-[#020202]/80 tw-p-4 tw-transition hover:tw-border-cyan-500/25 hover:tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]"
 					>
 						<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-3">
 							<div class="tw-min-w-0">
@@ -201,7 +201,7 @@
 							</div>
 						</div>
 
-						<div class="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+						<div class="bento-mb-md tw-flex tw-flex-wrap tw-items-center tw-gap-2">
 							<span
 								class="tw-rounded-md tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-black tw-uppercase tw-tracking-wide tw-ring-1 tw-ring-inset {drill.bountyTone ===
 								'emerald'
@@ -226,7 +226,7 @@
 		</section>
 
 		<!-- Payload -->
-		<section aria-labelledby="forge-payload-heading">
+		<section class="bento-span-4 tw-min-w-0" aria-labelledby="forge-payload-heading">
 			<div
 				class="tw-rounded-2xl tw-border-2 tw-border-dashed tw-border-cyan-500/20 tw-bg-[#020202]/80 tw-p-5 tw-shadow-inner md:tw-p-8"
 			>
@@ -238,7 +238,7 @@
 						Active mission timeline
 					</p>
 					<p
-						class="forge-bounty-total tw-mt-6 tw-font-black tw-tabular-nums tw-text-cyan-400 tw-text-4xl tw-tracking-tight tw-shadow-[0_0_15px_rgba(20, 184, 166,0.5)] md:tw-text-5xl"
+						class="forge-bounty-total bento-mt-lg tw-font-black tw-tabular-nums tw-text-cyan-400 tw-text-4xl tw-tracking-tight tw-shadow-[0_0_15px_rgba(20, 184, 166,0.5)] md:tw-text-5xl"
 					>
 						{totalMissionBounty.toLocaleString()}
 						<span class="tw-text-lg tw-font-bold tw-text-cyan-200/80 md:tw-text-xl">XP</span>
@@ -248,12 +248,12 @@
 					</p>
 				</div>
 
-				<ul class="tw-mb-10 tw-space-y-4 tw-p-0">
+				<ul class="tw-mb-10 bento-stack-md tw-p-0">
 					{#each payload as row (row.key)}
 						<li
 							class="tw-rounded-xl tw-border tw-border-white/10 tw-bg-slate-900/80 tw-p-4 tw-ring-1 tw-ring-inset tw-ring-cyan-500/10"
 						>
-							<div class="tw-mb-4 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
+							<div class="bento-mb-md tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
 								<div class="tw-min-w-0">
 									<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500">
 										Locked module
@@ -267,8 +267,8 @@
 								</span>
 							</div>
 
-							<div class="bento-grid bento-grid--2col">
-								<label class="tw-flex tw-flex-col tw-gap-1.5">
+						<div class="bento-grid bento-grid--2col bento-grid--liquid">
+							<label class="tw-flex tw-flex-col tw-gap-1.5">
 									<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-500">
 										Target reps
 									</span>

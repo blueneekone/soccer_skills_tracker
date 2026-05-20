@@ -249,6 +249,10 @@ exports.getPublicClubLanding          = trainingOps.getPublicClubLanding;
 exports.logPlayerActivity             = trainingOps.logPlayerActivity;
 exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;
+
+const gritHandlers = require('./lib/grit');
+exports.triggerGritAwardUpdate = gritHandlers.triggerGritAwardUpdate;
+
 // Epic 8 — Intent-Based Homework Triggers
 exports.secureDeployIntent   = trainingOps.secureDeployIntent;
 exports.secureCancelIntent   = trainingOps.secureCancelIntent;
@@ -526,9 +530,8 @@ exports.getMemoryCapsule          = trajectoryPlateauHandlers.getMemoryCapsule;
 
 // ── Phase 4, Epic 7 — Grit XP Daily-Cap Backstop ─────────────────────────────
 //
-// Client-side pre-flight in commitGritAward() blocks most over-cap writes, but
-// a stale service worker or tampered client could bypass it.  This Cloud
-// Function acts as the authoritative server-side safety net:
+// Primary path: `triggerGritAwardUpdate` callable (transaction + daily_grit_count).
+// This trigger remains as a safety net for any legacy direct grit_awards writes.
 //
 //   1.  Counts today's grit_awards for the same playerUid (UTC day boundary).
 //   2.  If count > GRIT_DAILY_CAP (default 3), voids the doc by setting

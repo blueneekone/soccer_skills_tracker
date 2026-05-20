@@ -1,0 +1,225 @@
+import {
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	limit,
+	orderBy,
+	query,
+	type Firestore,
+} from 'firebase/firestore';
+import type {
+	OverviewAuditEvent,
+	OverviewChartPoint,
+	OverviewHydrateResult,
+} from '$lib/types/adminOverview.js';
+
+const MOCK_MAU = [1200, 1400, 1650, 1820, 2140, 2380];
+
+const MOCK_REVENUE_BY_TIER: Record<string, number> = {
+	starter: 4500,
+	pro: 12000,
+	club: 24000,
+	enterprise: 8000,
+};
+
+const MOCK_BY_SPORT: Record<string, number> = {
+	soccer: 1450,
+	basketball: 820,
+	volleyball: 340,
+	baseball: 290,
+	other: 120,
+};
+
+const TIER_DEFS = [
+	{ key: 'starter', label: 'Starter' },
+	{ key: 'pro', label: 'Pro' },
+	{ key: 'club', label: 'Club' },
+	{ key: 'enterprise', label: 'Enterprise' },
+	{ key: 'legacy', label: 'Legacy' },
+] as const;
+
+export function prettySportLabel(raw: unknown): string {
+	const s = String(raw || '')
+		.replace(/_/g, ' ')
+		.trim();
+	if (!s) return 'Unknown';
+	return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+export function buildMauLabels(): { key: string; label: string }[] {
+	const now = new Date();
+	const out: { key: string; label: string }[] = [];
+	for (let i = 5; i >= 0; i--) {
+		const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+		const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+		out.push({ key, label: d.toLocaleString(undefined, { month: 'short' }) });
+	}
+	return out;
+}
+
+function hydrateMauSeries(totals: Record<string, unknown> | null): {
+	series: OverviewChartPoint[];
+	source: 'live' | 'mock';
+} {
+	const labels = buildMauLabels();
+	let values: number[] = [];
+	const raw = totals?.mau;
+
+	if (Array.isArray(raw)) {
+		const trimmed = raw.slice(-6);
+		values = labels.map((_, i) => {
+			const row = trimmed[i];
+			if (row == null) return 0;
+			const n = typeof row === 'number' ? row : Number((row as { value?: number })?.value);
+			return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
+		});
+	} else if (raw && typeof raw === 'object') {
+		const map = raw as Record<string, unknown>;
+		values = labels.map(({ key }) => {
+			const n = Number(map[key]);
+			return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
+		});
+	}
+
+	const hasSignal = values.some((v) => v > 0);
+	if (!hasSignal) values = [...MOCK_MAU];
+
+	return {
+		series: labels.map(({ label }, i) => ({ label, value: values[i] ?? 0 })),
+		source: hasSignal ? 'live' : 'mock',
+	};
+}
+
+function hydrateRevenueByTier(totals: Record<string, unknown> | null): {
+	series: OverviewChartPoint[];
+	source: 'live' | 'mock';
+} {
+	const revenue: Record<string, number> = {};
+	const raw = totals && (totals.revenueByTier || totals.revenue);
+	if (raw && typeof raw === 'object') {
+		for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+			const n = Number(value);
+			if (!Number.isFinite(n) || n < 0) continue;
+			revenue[String(key).toLowerCase()] = (revenue[String(key).toLowerCase()] || 0) + Math.round(n);
+		}
+	}
+
+	const hasSignal = Object.values(revenue).some((v) => v > 0);
+	const source = hasSignal ? revenue : { ...MOCK_REVENUE_BY_TIER };
+
+	const ordered = TIER_DEFS.map(({ key, label }) => ({
+		label,
+		value: Math.round(source[key] || 0),
+	})).filter((s) => s.value > 0);
+
+	return {
+		series:
+			ordered.length ?
+				ordered
+			:	TIER_DEFS.map(({ key, label }) => ({
+					label,
+					value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
+				})).filter((s) => s.value > 0),
+		source: hasSignal ? 'live' : 'mock',
+	};
+}
+
+function hydratePlayersBySport(totals: Record<string, unknown> | null): {
+	series: OverviewChartPoint[];
+	source: 'live' | 'mock';
+} {
+	const bySport: Record<string, number> = {};
+	const rawSport = totals?.bySport;
+	if (rawSport && typeof rawSport === 'object') {
+		for (const [key, value] of Object.entries(rawSport as Record<string, unknown>)) {
+			const n = Number(value);
+			if (!Number.isFinite(n) || n < 0) continue;
+			const k = String(key).toLowerCase();
+			bySport[k] = (bySport[k] || 0) + Math.round(n);
+		}
+	}
+
+	const hasSignal = Object.values(bySport).some((v) => v > 0);
+	const sourceMap = hasSignal ? bySport : { ...MOCK_BY_SPORT };
+
+	const ordered = Object.entries(sourceMap)
+		.map(([k, value]) => ({ label: prettySportLabel(k), value }))
+		.filter((s) => s.value > 0)
+		.sort((a, b) => b.value - a.value);
+
+	return {
+		series:
+			ordered.length ?
+				ordered
+			:	Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
+					label: prettySportLabel(k),
+					value: Math.round(v),
+				})),
+		source: hasSignal ? 'live' : 'mock',
+	};
+}
+
+export async function loadSecurityAuditFeed(db: Firestore): Promise<{
+	rows: OverviewAuditEvent[];
+	err: string;
+}> {
+	try {
+		const feedQ = query(collection(db, 'security_audit'), orderBy('createdAt', 'desc'), limit(120));
+		const snap = await getDocs(feedQ).catch(async () =>
+			getDocs(query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), limit(120))),
+		);
+		if (!snap) return { rows: [], err: '' };
+
+		const rows: OverviewAuditEvent[] = [];
+		snap.forEach((d) => {
+			const data = d.data();
+			const ts =
+				data?.createdAt?.toDate?.() ||
+				data?.timestamp?.toDate?.() ||
+				(data?.createdAt instanceof Date ? data.createdAt : null) ||
+				null;
+			rows.push({
+				id: d.id,
+				action: String(data?.action || 'EVENT'),
+				targetEmail: String(data?.targetEmail || data?.target || data?.actorEmail || ''),
+				details: String(data?.details || data?.message || ''),
+				createdAt: ts instanceof Date ? ts : null,
+			});
+		});
+		return { rows, err: '' };
+	} catch (e) {
+		console.warn('[overview] security_audit load failed', e);
+		return {
+			rows: [],
+			err: e instanceof Error ? e.message : 'Could not load audit log.',
+		};
+	}
+}
+
+/** Loads platform_totals + security_audit for the admin overview command center. */
+export async function hydrateAdminOverview(db: Firestore): Promise<OverviewHydrateResult> {
+	let totals: Record<string, unknown> | null = null;
+	try {
+		const totalsSnap = await getDoc(doc(db, 'analytics', 'platform_totals'));
+		if (totalsSnap.exists()) totals = totalsSnap.data() || {};
+	} catch (e) {
+		console.warn('[overview] analytics/platform_totals read failed — using defaults', e);
+	}
+
+	const mau = hydrateMauSeries(totals);
+	const revenue = hydrateRevenueByTier(totals);
+	const sport = hydratePlayersBySport(totals);
+	const feed = await loadSecurityAuditFeed(db);
+
+	return {
+		mauSeries: mau.series,
+		mauSource: mau.source,
+		revenueByTier: revenue.series,
+		revenueSource: revenue.source,
+		playersBySport: sport.series,
+		sportSource: sport.source,
+		liveFeed: feed.rows,
+		feedErr: feed.err,
+	};
+}

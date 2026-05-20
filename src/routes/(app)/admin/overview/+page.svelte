@@ -1,16 +1,15 @@
 ﻿<script lang="ts">
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
-	import {
-		collection,
-		doc,
-		getDoc,
-		query,
-		orderBy,
-		limit as fbLimit,
-		getDocs,
-	} from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { hydrateAdminOverview } from '$lib/admin/overviewHydrate.js';
+	import {
+		mountMauLineChart,
+		mountRevenueDoughnutChart,
+		mountSportBarChart,
+		readOverviewCssVar,
+	} from '$lib/admin/overviewCharts.js';
+	import { actionIcon, actionTone, prettyAction, relativeTime } from '$lib/admin/overviewFeed.js';
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -164,225 +163,26 @@
 		feedLoading = true;
 		feedErr = '';
 
-		const MOCK_MAU = [1200, 1400, 1650, 1820, 2140, 2380];
-		const MOCK_REVENUE_BY_TIER = {
-			starter: 4500,
-			pro: 12000,
-			club: 24000,
-			enterprise: 8000,
-		};
-		const MOCK_BY_SPORT = {
-			soccer: 1450,
-			basketball: 820,
-			volleyball: 340,
-			baseball: 290,
-			other: 120,
-		};
-
-		function prettySportLabel(raw) {
-			const s = String(raw || '')
-				.replace(/_/g, ' ')
-				.trim();
-			if (!s) return 'Unknown';
-			return s.replace(/\b\w/g, (c) => c.toUpperCase());
-		}
-
-		const TIER_DEFS = /** @type {const} */ ([
-			{ key: 'starter', label: 'Starter' },
-			{ key: 'pro', label: 'Pro' },
-			{ key: 'club', label: 'Club' },
-			{ key: 'enterprise', label: 'Enterprise' },
-			{ key: 'legacy', label: 'Legacy' },
-		]);
-
-		function buildMauLabels() {
-			const now = new Date();
-			const out = /** @type {{ key: string, label: string }[]} */ ([]);
-			for (let i = 5; i >= 0; i--) {
-				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-				const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-				out.push({ key, label: d.toLocaleString(undefined, { month: 'short' }) });
-			}
-			return out;
-		}
-
-		(async () => {
-			/** @type {Record<string, unknown> | null} */
-			let totals = null;
-			try {
-				const totalsRef = doc(db, 'analytics', 'platform_totals');
-				const totalsSnap = await getDoc(totalsRef);
-				if (totalsSnap.exists()) totals = totalsSnap.data() || {};
-			} catch (e) {
-				console.warn('[overview] analytics/platform_totals read failed â€” using defaults', e);
-				totals = null;
-			}
-
-			try {
-				const labels = buildMauLabels();
-				let values = /** @type {number[]} */ ([]);
-				const raw = totals && totals.mau;
-
-				if (Array.isArray(raw)) {
-					const trimmed = raw.slice(-6);
-					values = labels.map((_, i) => {
-						const row = trimmed[i];
-						if (row == null) return 0;
-						const n = typeof row === 'number' ? row : Number(row?.value);
-						return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
-					});
-				} else if (raw && typeof raw === 'object') {
-					const map = /** @type {Record<string, unknown>} */ (raw);
-					values = labels.map(({ key }) => {
-						const n = Number(map[key]);
-						return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
-					});
-				}
-
-				const hasSignal = values.some((v) => v > 0);
-				if (!hasSignal) values = [...MOCK_MAU];
-
+		hydrateAdminOverview(db)
+			.then((result) => {
+				if (destroyed) return;
+				mauSeries = result.mauSeries;
+				mauSource = result.mauSource;
+				revenueByTier = result.revenueByTier;
+				revenueSource = result.revenueSource;
+				playersBySport = result.playersBySport;
+				sportSource = result.sportSource;
+				liveFeed = result.liveFeed;
+				feedErr = result.feedErr;
+				feedLoading = false;
+			})
+			.catch((e) => {
+				console.warn('[overview] hydrate failed', e);
 				if (!destroyed) {
-					mauSeries = labels.map(({ label }, i) => ({
-						label,
-						value: values[i] ?? 0,
-					}));
-					mauSource = hasSignal ? 'live' : 'mock';
+					feedErr = e instanceof Error ? e.message : 'Could not load overview data.';
+					feedLoading = false;
 				}
-			} catch (e) {
-				console.warn('[overview] MAU hydrate failed', e);
-				if (!destroyed) {
-					const labels = buildMauLabels();
-					mauSeries = labels.map(({ label }, i) => ({
-						label,
-						value: MOCK_MAU[i] ?? 0,
-					}));
-					mauSource = 'mock';
-				}
-			}
-
-			try {
-				const revenue = /** @type {Record<string, number>} */ ({});
-				const raw = totals && (totals.revenueByTier || totals.revenue);
-				if (raw && typeof raw === 'object') {
-					for (const [key, value] of Object.entries(raw)) {
-						const n = Number(value);
-						if (!Number.isFinite(n) || n < 0) continue;
-						revenue[String(key).toLowerCase()] =
-							(revenue[String(key).toLowerCase()] || 0) + Math.round(n);
-					}
-				}
-
-				const hasSignal = Object.values(revenue).some((v) => v > 0);
-				const source = hasSignal ? revenue : { ...MOCK_REVENUE_BY_TIER };
-
-				const ordered = TIER_DEFS.map(({ key, label }) => ({
-					label,
-					value: Math.round(source[key] || 0),
-				})).filter((s) => s.value > 0);
-
-				if (!destroyed) {
-					revenueByTier = ordered.length
-						? ordered
-						: TIER_DEFS.map(({ key, label }) => ({
-								label,
-								value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
-							})).filter((s) => s.value > 0);
-					revenueSource = hasSignal ? 'live' : 'mock';
-				}
-			} catch (e) {
-				console.warn('[overview] Revenue hydrate failed', e);
-				if (!destroyed) {
-					revenueByTier = TIER_DEFS.map(({ key, label }) => ({
-						label,
-						value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
-					})).filter((s) => s.value > 0);
-					revenueSource = 'mock';
-				}
-			}
-
-			try {
-				const bySport = /** @type {Record<string, number>} */ ({});
-				const rawSport = totals && totals.bySport;
-				if (rawSport && typeof rawSport === 'object') {
-					for (const [key, value] of Object.entries(rawSport)) {
-						const n = Number(value);
-						if (!Number.isFinite(n) || n < 0) continue;
-						const k = String(key).toLowerCase();
-						bySport[k] = (bySport[k] || 0) + Math.round(n);
-					}
-				}
-
-				const hasSignal = Object.values(bySport).some((v) => v > 0);
-				const sourceMap = hasSignal ? bySport : { ...MOCK_BY_SPORT };
-
-				const ordered = Object.entries(sourceMap)
-					.map(([k, value]) => ({ label: prettySportLabel(k), value }))
-					.filter((s) => s.value > 0)
-					.sort((a, b) => b.value - a.value);
-
-				if (!destroyed) {
-					playersBySport = ordered.length
-						? ordered
-						: Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
-								label: prettySportLabel(k),
-								value: Math.round(v),
-							}));
-					sportSource = hasSignal ? 'live' : 'mock';
-				}
-			} catch (e) {
-				console.warn('[overview] bySport hydrate failed', e);
-				if (!destroyed) {
-					playersBySport = Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
-						label: prettySportLabel(k),
-						value: Math.round(v),
-					}));
-					sportSource = 'mock';
-				}
-			}
-
-			try {
-				const feedQ = query(
-					collection(db, 'security_audit'),
-					orderBy('createdAt', 'desc'),
-					fbLimit(120),
-				);
-				const snap = await getDocs(feedQ).catch(async () => {
-					return getDocs(
-						query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), fbLimit(120)),
-					).catch(() => null);
-				});
-				if (!snap) {
-					if (!destroyed) liveFeed = [];
-				} else {
-					const rows = [];
-					snap.forEach((d) => {
-						const data = d.data();
-						const ts =
-							data?.createdAt?.toDate?.() ||
-							data?.timestamp?.toDate?.() ||
-							(data?.createdAt instanceof Date ? data.createdAt : null) ||
-							null;
-						rows.push({
-							id: d.id,
-							action: String(data?.action || 'EVENT'),
-							targetEmail: String(data?.targetEmail || data?.target || data?.actorEmail || ''),
-							details: String(data?.details || data?.message || ''),
-							createdAt: ts instanceof Date ? ts : null,
-						});
-					});
-					if (!destroyed) liveFeed = rows;
-				}
-			} catch (e) {
-				console.warn('[overview] security_audit load failed', e);
-				if (!destroyed) {
-					feedErr = e instanceof Error ? e.message : 'Could not load audit log.';
-					liveFeed = [];
-				}
-			}
-
-			if (!destroyed) feedLoading = false;
-		})();
+			});
 
 		return () => {
 			destroyed = true;
@@ -393,87 +193,28 @@
 	let revenueCanvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 	let sportCanvasEl = $state(/** @type {HTMLCanvasElement | undefined} */ (undefined));
 
-	function cssVar(/** @type {string} */ name, /** @type {string} */ fallback) {
-		if (!browser) return fallback;
-		const v = getComputedStyle(document.documentElement).getPropertyValue(name);
-		return (v || '').trim() || fallback;
-	}
-
 	$effect(() => {
 		if (!browser || !mauCanvasEl) return;
 		const target = mauCanvasEl;
 		const series = mauSeries;
 		let destroyed = false;
-		/** @type {import('chart.js').Chart | null} */
-		let chart = null;
+		/** @type {(() => void) | null} */
+		let destroyChart = null;
 
-		(async () => {
-			try {
-				const mod = await import('chart.js');
-				if (destroyed || !target.isConnected) return;
-				mod.Chart.register(...mod.registerables);
-				const text = cssVar('--text-primary', '#0f172a');
-				const muted = cssVar('--text-secondary', '#475569');
-				const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
-				chart = new mod.Chart(target, {
-					type: 'line',
-					data: {
-						labels: series.map((p) => p.label),
-						datasets: [
-							{
-								label: 'Monthly active users',
-								data: series.map((p) => p.value),
-								borderColor: '#14b8a6',
-								backgroundColor: 'rgba(20, 184, 166,0.14)',
-								borderWidth: 2.5,
-								tension: 0.35,
-								fill: true,
-								pointRadius: 3,
-								pointHoverRadius: 5,
-								pointBackgroundColor: '#14b8a6',
-								pointBorderColor: '#ffffff',
-								pointBorderWidth: 1.5,
-							},
-						],
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						animation: { duration: 420 },
-						plugins: {
-							legend: { display: false },
-							tooltip: {
-								backgroundColor: 'rgba(9,9,11,0.92)',
-								titleColor: '#fafafa',
-								bodyColor: '#d4d4d8',
-								padding: 10,
-								cornerRadius: 8,
-								displayColors: false,
-							},
-						},
-						scales: {
-							x: {
-								ticks: { color: muted, font: { size: 11, weight: 600 } },
-								grid: { color: 'transparent' },
-							},
-							y: {
-								beginAtZero: true,
-								ticks: { color: muted, font: { size: 11 }, precision: 0 },
-								grid: { color: grid, drawBorder: false },
-							},
-						},
-					},
-				});
-				void text;
-			} catch (e) {
-				console.warn('[overview] MAU chart init failed', e);
-			}
-		})();
+		mountMauLineChart(target, series, readOverviewCssVar)
+			.then((destroy) => {
+				if (destroyed) {
+					destroy();
+					return;
+				}
+				destroyChart = destroy;
+			})
+			.catch((e) => console.warn('[overview] MAU chart init failed', e));
 
 		return () => {
 			destroyed = true;
-			chart?.destroy();
-			chart = null;
+			destroyChart?.();
+			destroyChart = null;
 		};
 	});
 
@@ -482,76 +223,23 @@
 		const target = revenueCanvasEl;
 		const series = revenueByTier;
 		let destroyed = false;
-		/** @type {import('chart.js').Chart | null} */
-		let chart = null;
+		/** @type {(() => void) | null} */
+		let destroyChart = null;
 
-		(async () => {
-			try {
-				const mod = await import('chart.js');
-				if (destroyed || !target.isConnected) return;
-				mod.Chart.register(...mod.registerables);
-				const muted = cssVar('--text-secondary', '#475569');
-				const palette = ['#14b8a6', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
-				chart = new mod.Chart(target, {
-					type: 'doughnut',
-					data: {
-						labels: series.map((p) => p.label),
-						datasets: [
-							{
-								data: series.map((p) => p.value),
-								backgroundColor: series.map((_, i) => palette[i % palette.length]),
-								borderColor: 'rgba(0,0,0,0)',
-								borderWidth: 2,
-								hoverOffset: 6,
-							},
-						],
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						cutout: '64%',
-						animation: { duration: 480 },
-						plugins: {
-							legend: {
-								position: 'bottom',
-								labels: {
-									color: muted,
-									font: { size: 10, weight: 600 },
-									boxWidth: 10,
-									boxHeight: 10,
-									padding: 8,
-									usePointStyle: true,
-								},
-							},
-							tooltip: {
-								backgroundColor: 'rgba(9,9,11,0.92)',
-								titleColor: '#fafafa',
-								bodyColor: '#d4d4d8',
-								padding: 10,
-								cornerRadius: 8,
-								callbacks: {
-									label: (ctx) => {
-										const total = ctx.dataset.data.reduce(
-											(a, b) => Number(a) + Number(b),
-											0,
-										);
-										const pct = total > 0 ? Math.round((Number(ctx.parsed) / total) * 100) : 0;
-										return ` $${Number(ctx.parsed).toLocaleString()} Â· ${pct}%`;
-									},
-								},
-							},
-						},
-					},
-				});
-			} catch (e) {
-				console.warn('[overview] Revenue chart init failed', e);
-			}
-		})();
+		mountRevenueDoughnutChart(target, series, readOverviewCssVar)
+			.then((destroy) => {
+				if (destroyed) {
+					destroy();
+					return;
+				}
+				destroyChart = destroy;
+			})
+			.catch((e) => console.warn('[overview] Revenue chart init failed', e));
 
 		return () => {
 			destroyed = true;
-			chart?.destroy();
-			chart = null;
+			destroyChart?.();
+			destroyChart = null;
 		};
 	});
 
@@ -560,116 +248,30 @@
 		const target = sportCanvasEl;
 		const series = playersBySport;
 		let destroyed = false;
-		/** @type {import('chart.js').Chart | null} */
-		let chart = null;
+		/** @type {(() => void) | null} */
+		let destroyChart = null;
 
-		(async () => {
-			try {
-				const mod = await import('chart.js');
-				if (destroyed || !target.isConnected) return;
-				mod.Chart.register(...mod.registerables);
-				const text = cssVar('--text-primary', '#0f172a');
-				const muted = cssVar('--text-secondary', '#475569');
-				const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
-				chart = new mod.Chart(target, {
-					type: 'bar',
-					data: {
-						labels: series.map((p) => p.label),
-						datasets: [
-							{
-								label: 'Players',
-								data: series.map((p) => p.value),
-								backgroundColor: 'rgba(20, 184, 166, 0.45)',
-								borderColor: 'rgba(20, 184, 166, 0.9)',
-								borderWidth: 1,
-								borderRadius: 4,
-								maxBarThickness: 28,
-							},
-						],
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						animation: { duration: 400 },
-						plugins: {
-							legend: { display: false },
-							tooltip: {
-								backgroundColor: 'rgba(9,9,11,0.92)',
-								titleColor: '#fafafa',
-								bodyColor: '#d4d4d8',
-								padding: 8,
-								cornerRadius: 8,
-								displayColors: false,
-							},
-						},
-						scales: {
-							x: {
-								ticks: {
-									color: muted,
-									font: { size: 10, weight: 600 },
-									maxRotation: 45,
-									minRotation: 0,
-								},
-								grid: { color: 'transparent', drawBorder: false },
-							},
-							y: {
-								beginAtZero: true,
-								ticks: { color: muted, font: { size: 10 }, precision: 0 },
-								grid: { color: grid, drawBorder: false },
-							},
-						},
-					},
-				});
-				void text;
-			} catch (e) {
-				console.warn('[overview] Sport chart init failed', e);
-			}
-		})();
+		mountSportBarChart(target, series, readOverviewCssVar)
+			.then((destroy) => {
+				if (destroyed) {
+					destroy();
+					return;
+				}
+				destroyChart = destroy;
+			})
+			.catch((e) => console.warn('[overview] Sport chart init failed', e));
 
 		return () => {
 			destroyed = true;
-			chart?.destroy();
-			chart = null;
+			destroyChart?.();
+			destroyChart = null;
 		};
 	});
-
-	function relativeTime(d) {
-		if (!(d instanceof Date)) return 'â€”';
-		const diff = Date.now() - d.getTime();
-		if (diff < 60_000) return `${Math.max(1, Math.round(diff / 1000))}s ago`;
-		if (diff < 3_600_000) return `${Math.round(diff / 60_000)}m ago`;
-		if (diff < 86_400_000) return `${Math.round(diff / 3_600_000)}h ago`;
-		return `${Math.round(diff / 86_400_000)}d ago`;
-	}
-
-	function actionTone(action) {
-		const a = String(action || '').toUpperCase();
-		if (a.includes('REVOKE') || a.includes('REJECT') || a.includes('DELETE') || a.includes('FAILED'))
-			return 'danger';
-		if (a.includes('GRANT') || a.includes('APPROVE') || a.includes('VERIFY') || a.includes('CREATE'))
-			return 'success';
-		if (a.includes('BG_CHECK') || a.includes('IMPERSONAT')) return 'warn';
-		return 'info';
-	}
-
-	function actionIcon(action: string): IconName {
-		const t = actionTone(action);
-		if (t === 'danger') return 'status.warning-circle' as IconName;
-		if (t === 'success') return 'status.verified' as IconName;
-		if (t === 'warn') return 'status.warning' as IconName;
-		return 'status.info' as IconName;
-	}
-
-	function prettyAction(action) {
-		return String(action || '')
-			.replace(/_/g, ' ')
-			.toLowerCase()
-			.replace(/(^|\s)\S/g, (c) => c.toUpperCase());
-	}
 </script>
 
 <div
-	class="cc-root tw-box-border tw-mx-auto tw-flex tw-w-full tw-max-w-[1680px] tw-flex-col tw-px-5 tw-pt-4"
+	class="cc-root tw-box-border tw-mx-auto tw-flex tw-w-full tw-max-w-[1680px] tw-flex-col"
+	style="padding: var(--bento-pad-liquid);"
 	data-admin-shell="true"
 >
 	{#snippet socMetric(kpi)}
@@ -770,18 +372,18 @@
 
 		{#if activeTab === 'executive'}
 			<section
-				class="cc-panel"
+				class="cc-panel bento-grid bento-grid--12col bento-grid--liquid"
 				id="cc-panel-executive"
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
 			>
-			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
-				{#each strike13Executive as kpi (kpi.label)}
+			{#each strike13Executive as kpi (kpi.label)}
+				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
-				{/each}
-			</div>
+				</div>
+			{/each}
 
-				<article class="cc-chart-card cc-chart-card--soc">
+				<article class="cc-chart-card cc-chart-card--soc bento-span-12 tw-min-w-0">
 					<header class="cc-chart-card__head">
 					<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
 						<Icon name={"data.trending" as IconName} />
@@ -808,15 +410,15 @@
 				</article>
 			</section>
 		{:else if activeTab === 'growth'}
-			<section class="cc-panel" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
-			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
-				{#each GROWTH_TILES as kpi (kpi.label)}
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+			{#each GROWTH_TILES as kpi (kpi.label)}
+				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
-				{/each}
-			</div>
+				</div>
+			{/each}
 
-				<div class="cc-chart-row tw-min-w-0">
-					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
+				<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0">
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
 						<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
 							<Icon name={"data.chart-pie" as IconName} />
@@ -842,7 +444,7 @@
 						</div>
 					</article>
 
-					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc">
+					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
 						<header class="cc-chart-card__head">
 							<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
 							<Icon name={"sport.soccer" as IconName} />
@@ -870,14 +472,13 @@
 				</div>
 			</section>
 		{:else if activeTab === 'security'}
-			<section class="cc-panel" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
-				<div class="cc-soc-split">
-				<div class="cc-soc-grid bento-grid bento-grid--3col">
-					{#each strike13Security as kpi (kpi.label)}
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+				{#each strike13Security as kpi (kpi.label)}
+					<div class="bento-span-3 tw-min-w-0">
 						{@render socMetric(kpi)}
-					{/each}
-				</div>
-					<aside class="cc-soc-aside" aria-label="Automation and orchestration">
+					</div>
+				{/each}
+					<aside class="cc-soc-aside bento-span-4 tw-min-w-0" aria-label="Automation and orchestration">
 						<div class="cc-soc-aside__head">
 							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 							<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
@@ -906,9 +507,8 @@
 							</li>
 						</ul>
 					</aside>
-				</div>
 
-				<article class="cc-feed-shell cc-feed-shell--soc">
+				<article class="cc-feed-shell cc-feed-shell--soc bento-span-12 tw-min-w-0">
 					<header class="cc-feed-shell__head">
 						<h2 class="cc-feed-shell__title">Live event stream</h2>
 						<p class="cc-feed-shell__sub">
@@ -955,14 +555,14 @@
 				</article>
 			</section>
 		{:else}
-			<section class="cc-panel" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
-			<div class="cc-soc-grid bento-grid bento-grid--4col tw-mb-bento-lg">
-				{#each PLATFORM_TILES as kpi (kpi.label)}
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+			{#each PLATFORM_TILES as kpi (kpi.label)}
+				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
-				{/each}
-			</div>
+				</div>
+			{/each}
 
-				<div class="cc-platform-note">
+				<div class="cc-platform-note bento-span-12 tw-min-w-0">
 					<p>
 					<Icon name={"status.info" as IconName} aria-hidden="true" />
 					KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
@@ -1178,7 +778,7 @@
 		background: #14b8a6;
 	}
 
-	/* Severity-banded metric tiles */
+	/* Severity-banded metric tiles — Sprint 1.1: liquid shadow + inner highlight */
 	.cc-soc-card {
 		display: flex;
 		flex-direction: column;
@@ -1186,8 +786,13 @@
 		padding: 16px 18px;
 		border-radius: 14px;
 		background: linear-gradient(180deg, rgba(12, 12, 14, 0.98), rgba(9, 9, 11, 0.99));
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+		background-image: linear-gradient(
+			160deg,
+			rgba(255, 255, 255, 0.035) 0%,
+			rgba(255, 255, 255, 0) 60%
+		);
+		border: 1px solid rgba(148, 163, 184, 0.14);
+		box-shadow: var(--shadow-liquid);
 		border-left: 3px solid rgba(113, 113, 122, 0.6);
 		min-width: 0;
 	}

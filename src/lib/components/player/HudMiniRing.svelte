@@ -8,6 +8,7 @@
 		subLabel = '',
 		strokeColor = 'var(--color-structural, #3b82f6)',
 		size = 56,
+		prominent = false,
 	}: {
 		fill?: number;
 		label?: string;
@@ -15,6 +16,7 @@
 		subLabel?: string;
 		strokeColor?: string;
 		size?: number;
+		prominent?: boolean;
 	} = $props();
 
 	const R = 22;
@@ -39,6 +41,7 @@
 
 <div
 	class="hud-mini-ring"
+	class:hud-mini-ring--prominent={prominent}
 	style="--hud-ring-size: {size}px; --hud-ring-stroke: {strokeColor};"
 	aria-label={a11y}
 >
@@ -76,6 +79,14 @@
 		flex-shrink: 0;
 	}
 
+	.hud-mini-ring--prominent {
+		border-radius: 50%;
+		background: color-mix(in srgb, #1e293b 88%, var(--color-dominant, #0f172a));
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+			0 0 0 1px rgba(255, 255, 255, 0.06);
+	}
+
 	.hud-mini-ring__svg {
 		display: block;
 	}
@@ -84,9 +95,14 @@
 		stroke: color-mix(in srgb, var(--color-structural, #3b82f6) 22%, transparent);
 	}
 
+	.hud-mini-ring--prominent .hud-mini-ring__track {
+		stroke: rgba(255, 255, 255, 0.38);
+	}
+
 	.hud-mini-ring__fill {
 		stroke: var(--hud-ring-stroke, var(--color-structural, #3b82f6));
 		transition: stroke-dashoffset 0.65s cubic-bezier(0.33, 1, 0.68, 1);
+		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--hud-ring-stroke, #3b82f6) 45%, transparent));
 	}
 
 	.hud-mini-ring__center {
@@ -111,6 +127,10 @@
 		color: color-mix(in srgb, var(--color-structural, #3b82f6) 65%, #94a3b8);
 	}
 
+	.hud-mini-ring--prominent .hud-mini-ring__label {
+		color: rgba(255, 255, 255, 0.82);
+	}
+
 	.hud-mini-ring__value {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: clamp(0.65rem, 2.2cqw, 0.8rem);
@@ -120,6 +140,10 @@
 		line-height: 1.1;
 	}
 
+	.hud-mini-ring--prominent .hud-mini-ring__value {
+		color: #ffffff;
+	}
+
 	.hud-mini-ring__sub {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.38rem;
@@ -127,5 +151,9 @@
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: #64748b;
+	}
+
+	.hud-mini-ring--prominent .hud-mini-ring__sub {
+		color: rgba(255, 255, 255, 0.72);
 	}
 </style>

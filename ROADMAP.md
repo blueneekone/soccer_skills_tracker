@@ -1,98 +1,41 @@
-MASTER BUILD ROADMAP: NEXUS COMMAND & PLAYER OS
-Architecture Philosophy: Zero-Liability PII, Exception-Only Administration, Dynamic Multi-Sport Scaling, Uncompromised RPG Gamification, and Deep Emotional Intelligence (EQ) Protections.
+EPIC 1: Foundational Architecture, Low-Latency Polish & RBAC Refactoring
+Sprint 1.1: Bento Grid Migration & Caching Overhaul: Transition all primary viewport layouts to the unified 12-column Bento Grid system within Svelte layout shells. Implement dynamic fluid spacing variables to eliminate structural layout squishing. Transition build pipelines completely to file-hash generation to permanently resolve PWA Service Worker caching conflicts.
 
-PHASE 1: FOUNDATIONAL STABILIZATION & ENTERPRISE SCALABILITY
-Objective: Eradicate legacy technical debt, secure database boundaries, and establish an un-squished, ultra-premium visual baseline capable of enterprise scale.
+Sprint 1.2: Low-Latency HUD & Ingestion Refactoring: Eradicate dead space from dashboard environments using vertical flex-grow distributions. Replace fragmented operative avatar circles with unique geometric patterns generated procedurally via cryptographic user UID seeds, masking them with strict boundary constraints. Compile real-time components natively in SvelteKit 5 to eliminate UI lag during high-frequency data ingestion.
 
-Epic 1: The Tactical SIEM Architecture & Strategic Minimalism
+Sprint 1.3: Access Token Partitioning & Semantic Isolation: Enforce absolute server-side token isolation within Firebase Security Rules, validating request.auth.token.role natively rather than relying on client-side visual masking. Restructure database schemas into strict isolated role tiers (Super Admin, Director, Coach, Player, Parent), ensuring administrative commands remain entirely invisible to player accounts.
 
-Transition all dashboard layouts to a responsive CSS Bento Grid utilizing clamp() spacing functions to prevent mobile squishing, allocating spatial weight to critical KPIs.
+EPIC 2: Impenetrable 2026 Compliance Shield & Data Vaulting
+Sprint 2.1: COPPA 2026 Multi-Step Age Gating: Build progressive, unbundled onboarding consent check flows. Automatically lock down all biometric uploads and AI processing nodes behind an explicit gating token, remaining paused until an adult's VPC token is validated via secure webhooks.
 
-Execute a global aesthetic overhaul: purge all neon gradients, pure black backgrounds, and heavy glassmorphism on data cards. Replace with deep slate/navy backgrounds and thin, precise borders to ensure text legibility.
+Sprint 2.2: Automated Data Retention & Self-Actualized Purging: Deploy database-level TTL automated cloud functions to instantly anonymize or hard-purge historical minor tracking profiles upon club separation. Construct the secure Data Vault interface for one-click comprehensive data exports.
 
-Integrate the Geist Mono typeface for all metrics, tables, and numerical readouts to establish a highly technical, mission-control environment.
+Sprint 2.3: SafeSport Communication Barriers: Programmatically block all unsupervised 1-on-1 communication channels by forcing automated backend rules that duplicate and CC linked parental accounts onto all data exchanges.
 
-Standardize all UI micro-interactions (buttons, hovers, state changes) to a strict 150-250ms duration to project a lightning-fast, premium feel.
+EPIC 3: AI Coaching Curricula & Spatial Pitch Reconstruction
+Sprint 3.1: Drag-and-Drop Lifecycle Builder: Integrate highly performant orchestration modules (e.g., SortableJS) to build interactive curriculum calendars, allowing coaches to visually map sequential exercise nodes into standardized Macrocycles and Microcycles.
 
-Implement Cloud Firestore atomic batch writes and increment operators to guarantee offline synchronization.
+Sprint 3.2: Retrieval-Augmented Generation (RAG) Coaching Assistant: Deploy a secure vector database to ingest thousands of source pages from elite coaching manuals (USSF, KNVB, Spanish RFEF). Map natural language inputs directly to semantic database embeddings to generate context-accurate, age-appropriate practice blueprints autonomously.
 
-Cell-Based Routing: Architect the backend API gateways to support routing ultra-large state governing bodies to isolated, dedicated database cells to prevent "noisy neighbor" throttling.
+Sprint 3.3: Spatial Drill Reconstructor Canvas: Deploy a low-latency HTML5 Canvas rendering block that allows coaches to digitally arrange cones, balls, and operational vectors, instantly reversing field mathematics to deliver interactive spatial homework directly to athlete dashboards.
 
-Epic 2: Embedded Finance and Ancillary Revenue
+EPIC 4: College Recruiting Portfolios & Unbiased Analytics
+Sprint 4.1: Edge Computer Vision Verification: Engineer client-side video ingestion pipelines that utilize lightweight computer vision edge scripts to autonomously verify repetition counts for short athletic drill clips.
 
-Transition the core platform pricing to a transaction-based model (0$ platform fee, micro-percentage on volume) to eliminate off-season financial friction for clubs.
+Sprint 4.2: Wearable HealthKit Integrations: Launch bi-directional API pipelines with Apple HealthKit, Whoop, and Garmin to pull resting heart rate and sleep indices, dynamically triggering SOAR playbooks to adjust training loads if injury markers spike.
 
-Integrate API endpoints for digital ticketing and housing/hotel block rebates to turn the management software into a profit center for the NGBs.
+Sprint 4.3: Longitudinal Fairness Auditing Pipelines: Refactor background processing models to evaluate tracking profiles through Linear Mixed Effects Models (LMM) and Lambda-Mu-Sigma (LMS) percentile scoring to map true growth while safely handling incomplete regional datasets, maintaining algorithmic fairness.
 
-Epic 3: Context-Aware COPPA 2.0 & Household Engine
+Sprint 4.4: The B2B Scouting Portal: Launch dynamic, tokenized web links for exportable Digital Pro Player Cards. Build a premium filtering terminal allowing collegiate recruiters to issue complex compound search vectors based on verified Vanguard telemetry, unlocking a massive subscription monetization layer.
 
-Establish passwordless Magic Uplinks exclusively via Email using single-use, time-locked invite tokens to eliminate SMS costs and prevent SIM-swapping vulnerabilities.
+EPIC 5: Blue-Ocean Omnichannel Integration & State API Ecosystem
+Sprint 5.1: State Association API Pipeline Integration: Establish secure OAuth communication channels connecting directly to state registrar infrastructures (such as Affinity Sports APIs). Map structural payload identifiers (SIDCODE, SeasonID) to automatically generate verified club rosters and eradicate manual CSV spreadsheet uploads.
 
-Integrate native Firebase Phone Number Verification for a frictionless, one-tap mobile login experience that verifies the number directly with the carrier, completely bypassing SMS.
+Sprint 5.2: Compliance-Enforced Digital Match-Day Operations: Engineer real-time mobile match-card builders that fetch active eligibility tokens directly from the state registry. Instantly render restricted athlete profiles (e.g., active concussion holds or SafeSport violations) with high-contrast block flags.
 
-Integrate native WebAuthn Biometric Enclave Attestation (navigator.credentials.create()) to bind legally mandated COPPA consent directly to on-device hardware biometrics.
+Sprint 5.3: Blue-Ocean Marketing Analytics Engine: Integrate Unified Advertising APIs linking Meta, Google, and TikTok ad channels directly into the Director’s dashboard to track local tryout client acquisition funnels. Piping successful registration webhooks back to server-side APIs bypasses browser privacy gaps and drastically lowers user acquisition costs.
 
-[IMPLEMENTED — Phase 1, Epic 3 / Phase 2 Epic 3] Passwordless WebAuthn (passkey) + Magic Link auth fully shipped. Password form permanently removed from /login. Four Cloud Functions deployed (webauthnRegisterStart/Finish, webauthnLoginStart/Finish, us-east1). LoginEngine.svelte.ts (Vanguard Trinity Brain) wires @simplewebauthn/browser to Firebase custom token pattern. Magic link callback at /auth/magic-link/callback. Passkey credentials stored in users/{uid}/passkeys/{credentialId} (Admin SDK write-only; Firestore rules: client read-only). Operative OTP flow (kids) preserved alongside new passwordless surface. Login card: Strategic Minimalism — slate-900 bg, 1px vanguard-border, Geist Mono, 150ms transitions, zero glassmorphism.
+EPIC 6: Behavioral Economics & The Exit Valuation Engine
+Sprint 6.1: Habit Retention Loops: Attach the asynchronous confetti thread directly to database logs to enforce touch reward habituation. Embed loss-aversion streak mechanics and virtual milestones directly into the Player OS HUD.
 
-Enforce COPPA 2.0 Compliance (2026): Implement strict opt-in consent architectures for teens aged 13-16 and hard-code database interceptors to explicitly block individual-specific targeted advertising data sharing.  
-
-PHASE 3: MULTI-SPORT INFRASTRUCTURE & OCTALYSIS RPG ENGINE
-Objective: Decouple rigid sport schemas and launch an addictive, consequence-driven real-life leveling loop fueled by behavioral economics.
-
-Epic 4: AI-Driven Dynamic Workouts
-
-Initialize dynamic configuration trees (sports_configs) allowing the OS to scale instantly to basketball, lacrosse, volleyball, etc.
-
-Implement Reinforcement Learning (RL) Algorithms: Transition from static training plans to dynamic engines that adjust the volume and difficulty of daily prescribed workouts based on continuous physiological feedback and historical adherence.
-
-Epic 5: The Octalysis Progression Loop
-
-Activate Core Drive 2 (Accomplishment): Construct multi-attribute hex trees using a Composite Snowflake visual layout branching outward from a central core to support the "Fog of War" masking.
-
-Implement a Hybrid Data Model for the skill tree. The frontend UI must strictly render Synthetic Authored Nodes (abstract action abstractions like "Pace" or "Vision") to prevent cognitive overload. The Firestore backend must utilize a competency knowledge graph to map these synthetic nodes to the raw "Drill-as-Node" curriculum. Operating in the space of action abstractions rather than primitive actions is mathematically required for the Reinforcement Learning algorithms to efficiently calculate and converge on the optimal training paths.
-
-Activate Core Drive 8 (Loss Avoidance): Deploy rigorous daily habit streaks; program automated Skill Decay algorithms that drain fractions of inactive XP after consecutive missed days, triggering urgent re-engagement alerts.
-
-	[IMPLEMENTED — Phase 3, Epic 5.4] Integrate Parent Co-Op mechanics, empowering parents to fund real-world rewards via automated escrow Bounties (Tremendous API, pay-as-you-go) alongside one-tap telemetry XP boosts (1.5×/2×/3×). Objective-only verification via automated CF triggers on existing reps/workout/streak/mastery/GPA telemetry collections. CV biomechanics criterion (cv_verified_drill) schema-slotted and deferred behind feature_cv_bounty_enabled Remote Config flag.
-
-Epic 6: Vertical Comparison & Trajectory Tracking
-
-Deploy Time-Lapse Memory Capsules that autonomously surface historical baselines during plateaus to prove personal capability.
-
-Implement the Growth Velocity Index to heavily celebrate rapid month-over-month learning rates for beginners over raw lifetime volume.
-
-Epic 7: Psychological Safety & Scaffolding
-
-Implement an asymmetric UI Fog of War masking intermediate/advanced skill trees to prevent cognitive overload for complete beginners.
-
-Introduce Grit XP explicitly rewarding failed attempts on highly complex moves to permanently eliminate the shame of dropping the ball.
-
-Hook the Dopamine Engine (visual particle explosions) directly to verified database commits to permanently reinforce the habit loop of logging difficult training sessions.
-
-Epic 8: Adult EQ Interceptors
-
-Build intent-based homework triggers allowing coaches to assign single macro-goals while the backend autonomously serves individualized, RL-optimized drills per player.
-
-Engineer "The Car Ride Home" Protocol firing mandatory push notifications to parents 15 minutes post-match, locking metrics behind an attestation to prioritize emotional safety and providing highly empathetic conversation anchors.
-
-PHASE 5: ALPHA REMEDIATION & SIEM POLISH
-Objective: Eradicate "AI Slop" aesthetics, fix CSS boundary blowouts, eliminate wasted space, and enforce progressive disclosure to establish an ultra-premium enterprise feel.
-
-Epic 9: The Tactical SIEM UI/UX Overhaul
-
-Sprint 9.1 (High-Density Spatial Weighting): Restructure the Player OS into a true asymmetric 12-column Bento Grid. Eliminate wasted whitespace. Apply min-w-0 to all flex/grid children to permanently fix boundary blowouts. Move "Quick View Stats" (XP, Level, Streak) to the very top left/center.
-
-Sprint 9.2 (Routing & Redundancy Fix): Fix the routing collision between "Today's Quests" and "Initialize Operative." Build "Initialize Operative" as a distinct one-time setup modal. Delete the redundant "Active Missions / Alerts" card to free up grid space, moving alerts to the top-nav notification bell.
-
-Sprint 9.3 (Deterministic Avatars): Install bauhaus-avatar-generator. Replace all abstract profile image placeholders with deterministic SVGs seeded by the player's UID. Constrain the avatar wrapper with aspect-square, object-cover, and rounded-full within a strict maximum width.
-
-Sprint 9.4 (Strategic Minimalism & Typography): Audit the entire dashboard to purge any remaining neon glows. Enforce deep slate backgrounds (#0B0F19) with border-slate-800 1px borders. Apply Geist Mono exclusively to all data points. Constrain all buttons with w-fit inline-flex (44x44px minimum tap target).
-
-PHASE 6: THE AI TRAINING ENGINE
-Objective: Replace static, template-based workout loggers with an intelligent, adaptive Execution Terminal.
-
-Epic 10: The RL Execution Terminal
-
-Sprint 10.1 (Terminal UI Construction): Delete the legacy workout selection interface. Build the "Execution Terminal" UI, styled like a SIEM command prompt. It must feature sliders/inputs for Time on Task and Rate of Perceived Exertion (RPE intensity 1-10).
-
-Sprint 10.2 (Adaptive Logic Scaffolding): Wire the UI to support dynamic workout parameters (volume, intensity, rest). Frame the data payload so the backend Reinforcement Learning (RL) Markov Decision Process can autonomously adjust tomorrow's recommended drills based on today's RPE and completion metrics.
+Sprint 6.2: Automated Parent ROI Engines: Configure server crons to scrape club analytics weekly, automatically dispatching push notifications detailing exact percentile rankings to parents, thereby establishing maximum switching costs and securing the ultimate Private Equity valuation.

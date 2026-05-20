@@ -1,40 +1,25 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => ({
 	plugins: [
 		sveltekit(),
-
-		VitePWA({
-			/**
-			 * `injectManifest` strategy: we supply our own sw.js so it can share
-			 * the FCM service worker scope without conflicting.  Workbox precaches
-			 * the app-shell assets; runtime caching handles API and image requests.
-			 */
-			strategies: 'injectManifest',
-			srcDir: 'src',
-			filename: 'sw.js',
-
-			/** Path of the web-app manifest already in /static */
-			manifest: false, // We manage static/manifest.json manually
-
-			/**
-			 * Registration is handled by our own InstallPrompt.svelte so we can
-			 * show the custom Vanguard-themed banner before prompting.
-			 */
-			registerType: 'prompt',
-			injectRegister: null, // handled by InstallPrompt.svelte
-
-			devOptions: {
-				enabled: false, // Disable SW in dev to avoid interfering with HMR
-			},
-
-			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-			},
-		}),
 	],
+
+	/**
+	 * Sprint 1.1 — content-hash asset versioning (.cursorrules asset_versioning).
+	 * Paths align with SvelteKit's _app/immutable/ layout so adapter-static and
+	 * service-worker.ts precache remain valid. Query-string cache-busting (?v=) is banned.
+	 */
+	build: {
+		rollupOptions: {
+			output: {
+				entryFileNames: '_app/immutable/entry/[name].[hash].js',
+				chunkFileNames: '_app/immutable/chunks/[name].[hash].js',
+				assetFileNames: '_app/immutable/assets/[name].[hash][extname]',
+			},
+		},
+	},
 
 	/**
 	 * Strip console.* and debugger statements from production builds.

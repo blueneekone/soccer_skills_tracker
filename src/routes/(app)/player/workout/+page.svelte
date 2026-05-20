@@ -12,6 +12,14 @@
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
   import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
+  import {
+    buildWorkoutDrillType,
+    executePlayerWorkoutLog,
+    expectedWorkoutXp,
+    intensityApiFromStep,
+    validatePlayerWorkoutLog,
+    workoutLogErrorMessage,
+  } from '$lib/player/workoutLog.js';
   import Swal from 'sweetalert2';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
@@ -25,13 +33,6 @@
   };
 
   const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
-
-  /** @param {number} step */
-  function intensityApiFromStep(step) {
-    if (step <= 3) return /** @type {const} */ ('low');
-    if (step <= 7) return /** @type {const} */ ('medium');
-    return /** @type {const} */ ('high');
-  }
 
   const profile = $derived(authStore.userProfile);
   const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
@@ -318,98 +319,62 @@
   });
 
   async function logWorkout() {
-    if (!selectedFocus || !selectedDrill || logSubmitting) return;
-    if (authStore.role !== 'player') {
-      return Swal.fire({ title: 'Players only', text: 'Use the parent workout log for your player.', icon: 'info' });
+    const gate = validatePlayerWorkoutLog({
+      selectedFocus,
+      selectedDrill,
+      logSubmitting,
+      role: authStore.role,
+      profile,
+    });
+    if (!gate.ok) {
+      if (gate.title) {
+        await Swal.fire({ title: gate.title, text: gate.text, icon: gate.icon });
+      }
+      return;
     }
-    if (!profile?.teamId || !profile?.playerName) {
-      return Swal.fire({ title: 'Profile incomplete', text: 'Team and player name are required.', icon: 'warning' });
-    }
-    const drillType = `[${focusLabel}] ${selectedDrill} (Player workout)`.slice(0, 200);
+    if (!selectedDrill) return;
+
+    const drillType = buildWorkoutDrillType(focusLabel, selectedDrill);
     const dMin = Math.max(0, Math.floor(Number(duration) || 0));
     const intensityCall = intensityApiFromStep(intensity);
-    const expectedXp = calculateTrainingSessionEarnedXp({
-      duration: dMin,
-      reps: 0,
-      intensity: intensityCall,
-    });
+    const expectedXp = expectedWorkoutXp(dMin, intensity);
     const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
+    const user = authStore.user;
+    if (!user) return;
+
     logSubmitting = true;
     playerEngine.bumpBy(expectedXp);
     try {
-      const res = await logTrainingSession({
+      const result = await executePlayerWorkoutLog({
         drillType,
-        duration: dMin,
-        reps: 0,
-        intensity: intensityCall,
+        durationMin: dMin,
+        intensityCall,
+        focusLabel,
+        selectedDrill,
+        activeMissionId,
+        totalXpHud,
+        oldLevel,
+        intensityStep: intensity,
+        authUser: { uid: user.uid, email: user.email },
+        profile,
+        logTrainingSession,
+        writePlayerOsWorkout,
+        commitWorkoutCompletion,
+        dopamineOnCommit,
       });
-      const payload = res.data;
-      const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
-      const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : totalXpHud + earned;
-      const em = authStore.user?.email;
-      if (em && profile?.teamId) {
-        try {
-          await writePlayerOsWorkout({
-            emailKey: em.toLowerCase(),
-            userUid: authStore.user.uid,
-            teamId: String(profile.teamId),
-            focus: focusLabel,
-            drill: String(selectedDrill),
-            duration: Math.max(0, Math.floor(Number(duration) || 0)),
-            intensityRpe: intensity,
-            earnedXp: earned,
-          });
-        } catch (we) {
-          console.error('[Player OS] users/', em.toLowerCase(), '/workouts', we);
-        }
-      }
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem(
-          'elite_xp_pulse',
-          JSON.stringify({ fromTotal: Math.max(0, newTotal - earned), toTotal: newTotal }),
+      if (result.clearMission) activeMissionId = null;
+      if (result.levelUpFrom != null && result.levelUpTo != null) {
+        window.dispatchEvent(
+          new CustomEvent('phoenix:level-up', {
+            detail: { from: result.levelUpFrom, to: result.levelUpTo, earnedXp: result.earned },
+          }),
         );
-      }
-      let missionCloseNote = '';
-      // Mission close + xpHistory timeline entry in a single atomic batch.
-      // `incrementXp: false` — the `logTrainingSession` Cloud Function above
-      // already credited `earned` XP server-side; double-incrementing here
-      // would inflate `armory.totalXP`.  We still record the history entry
-      // so the Vanguard Card timeline shows the workout event.
-      const playerUid = authStore.user?.uid;
-      const userKey = (authStore.user?.email ?? '').toLowerCase();
-      if (playerUid && userKey) {
-        try {
-          await dopamineOnCommit(
-            commitWorkoutCompletion({
-              playerUid,
-              userKey,
-              missionId: activeMissionId ?? undefined,
-              xpAwarded: earned,
-              reason: `Workout — ${focusLabel} · ${selectedDrill}`,
-              incrementXp: false,
-            }),
-            { kind: 'drill' },
-          );
-          if (activeMissionId) activeMissionId = null;
-          if (typeof payload?.level === 'number' && payload.level > oldLevel) {
-            window.dispatchEvent(
-              new CustomEvent('phoenix:level-up', {
-                detail: { from: oldLevel, to: payload.level, earnedXp: earned },
-              }),
-            );
-          }
-        } catch (me) {
-          console.error('[Player OS] workout completion batch failed', me);
-          if (activeMissionId) {
-            missionCloseNote = ' | Directive not cleared in Firestore (retry or ask staff).';
-          }
-        }
       }
       await Swal.fire({
         title: 'Command executed',
-        text: `+${earned} XP · Level ${payload?.level ?? '—'}${missionCloseNote}`,
+        text: `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
         icon: 'success',
-        confirmButtonColor: '#00d4ff',
+        confirmButtonColor: '#14b8a6',
         confirmButtonText: 'Acknowledge',
         customClass: { popup: 'card' },
       });
@@ -417,8 +382,7 @@
     } catch (e) {
       playerEngine.bumpBy(-expectedXp);
       console.error(e);
-      const msg = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */(e).message) : 'Could not log workout.';
-      await Swal.fire({ title: 'Execution failed', text: msg, icon: 'error' });
+      await Swal.fire({ title: 'Execution failed', text: workoutLogErrorMessage(e), icon: 'error' });
     } finally {
       logSubmitting = false;
     }
@@ -451,9 +415,9 @@
     </div>
   </header>
 
-  <div class="pw-grid">
+  <div class="pw-grid bento-grid bento-grid--12col bento-grid--liquid">
     <!-- Active threats / daily quests -->
-    <aside class="pw-panel pw-panel--threat" aria-labelledby="pw-threats-heading">
+    <aside class="pw-panel pw-panel--threat bento-span-4 tw-min-w-0" aria-labelledby="pw-threats-heading">
       <div class="pw-panel__head">
         <span class="pw-eyebrow">Active threats / daily quests</span>
         <h2 id="pw-threats-heading" class="pw-title">Ingest queue</h2>
@@ -510,7 +474,7 @@
     </aside>
 
     <!-- Execution terminal -->
-    <section class="pw-panel pw-panel--term" aria-labelledby="pw-exec-heading">
+    <section class="pw-panel pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
       <div class="pw-panel__head pw-panel__head--row">
         <div>
           <span class="pw-eyebrow">Execution terminal</span>
@@ -644,19 +608,20 @@
 </div>
 
 <style>
-  /* Mobile: grow with content — single scroll on .ps-canvas (no nested scroll trap). */
+  /* Sprint 10.1: SIEM Execution Terminal — no neon glows, no pure black. */
   .pw-cmd {
     min-height: 0;
     height: auto;
     overflow: visible;
     box-sizing: border-box;
-    background: var(--vanguard-bg);
-    color: #fafafa;
-    padding: var(--bento-pad);
-    --cyber: #00d4ff;
-    --toxic: #2dd4bf;
-    --threat: #ff6b00;
-    --border: rgba(255, 255, 255, 0.1);
+    background: var(--vanguard-bg, #0B0F19);
+    color: #f8fafc;
+    padding: var(--bento-pad-liquid);
+    /* Palette: teal accent only — amber for RPE/danger — NO neon */
+    --cyber: #14b8a6;
+    --toxic: #14b8a6;
+    --threat: #f59e0b;
+    --border: rgba(255, 255, 255, 0.08);
   }
 
   @media (min-width: 768px) {
@@ -667,10 +632,12 @@
 
   .pw-eyebrow {
     display: block;
-    font-size: 0.6875rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.22em;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
   }
 
   .pw-title {
@@ -682,7 +649,7 @@
   }
 
   .pw-mono {
-    font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-feature-settings: 'tnum' 1;
   }
 
@@ -704,38 +671,30 @@
 
   .pw-hint {
     margin: 0.5rem 0 1.25rem;
-    font-size: 0.75rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.7rem;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.38);
   }
 
   .pw-err {
-    font-size: 0.7rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.65rem;
     color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.4);
+    border: 1px solid rgba(248, 113, 113, 0.35);
     padding: 0.5rem 0.65rem;
     margin: 0 0 0.75rem;
-    background: #0a0000;
+    background: rgb(20 8 8);
   }
 
   .pw-tx-eyebrow {
-    font-size: 0.6rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.55rem;
     font-weight: 800;
     letter-spacing: 0.28em;
-    color: #2dd4bf;
+    color: var(--cyber);
     margin: 0 0 0.6rem;
-    text-shadow: 0 0 12px rgba(57, 255, 20, 0.45);
-    animation: pw-pulse-ops 2.2s ease-in-out infinite;
-  }
-
-  @keyframes pw-pulse-ops {
-    0%,
-    100% {
-      opacity: 0.85;
-    }
-    50% {
-      opacity: 1;
-    }
+    text-transform: uppercase;
   }
 
   .pw-txlist {
@@ -752,14 +711,10 @@
     width: 100%;
     text-align: left;
     padding: 0.65rem 0.7rem 0.75rem;
-    background: #000;
-    color: #e5e5e5;
-    border: 1px solid rgba(0, 212, 255, 0.45);
-    box-shadow:
-      0 0 0 1px rgba(57, 255, 20, 0.15),
-      0 0 20px rgba(0, 212, 255, 0.12);
-    animation: pw-tx-breathe 2.4s ease-in-out infinite;
-    transition: border-color 0.15s ease, box-shadow 0.2s ease;
+    background: #0B0F19;
+    color: #e2e8f0;
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    transition: border-color 0.15s ease;
   }
 
   .pw-tx__hint {
@@ -771,28 +726,12 @@
     color: rgba(255, 255, 255, 0.3);
   }
 
-  @keyframes pw-tx-breathe {
-    0%,
-    100% {
-      box-shadow:
-        0 0 0 1px rgba(0, 212, 255, 0.2),
-        0 0 16px rgba(0, 212, 255, 0.1);
-    }
-    50% {
-      box-shadow:
-        0 0 0 1px rgba(57, 255, 20, 0.35),
-        0 0 24px rgba(0, 212, 255, 0.28);
-    }
-  }
-
   .pw-tx:hover {
-    border-color: rgba(57, 255, 20, 0.55);
+    border-color: rgba(20, 184, 166, 0.55);
   }
 
   .pw-tx--active {
-    border-color: #2dd4bf;
-    box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.5), 0 0 28px rgba(57, 255, 20, 0.25);
-    animation: none;
+    border-color: var(--cyber);
   }
 
   .pw-tx__grid {
@@ -822,24 +761,26 @@
   .pw-divider {
     height: 1px;
     margin: 0.85rem 0 1rem;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(20, 184, 166, 0.2), transparent);
     border: 0;
   }
 
   .pw-subq-eyebrow {
-    font-size: 0.6rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.55rem;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.32);
     margin: 0 0 0.65rem;
   }
 
   .pw-armed {
+    font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: 0.6rem;
     letter-spacing: 0.12em;
-    color: #2dd4bf;
-    border: 1px solid rgba(57, 255, 20, 0.25);
-    background: #000;
+    color: var(--cyber);
+    border: 1px solid rgba(20, 184, 166, 0.22);
+    background: #0B0F19;
     padding: 0.45rem 0.6rem;
     margin: 0 0 0.9rem;
   }
@@ -864,8 +805,8 @@
     min-height: 6.5rem;
     padding: 1rem 1.25rem;
     margin-bottom: var(--bento-gap-md);
-    border: 1px solid var(--border);
-    background: #05050a;
+    border: 1px solid rgb(30 41 59);
+    background: rgb(15 23 42);
   }
 
   .pw-hud__cell {
@@ -881,7 +822,7 @@
   }
 
   .pw-hud__cell--level {
-    border-right: 1px solid var(--border);
+    border-right: 1px solid rgb(30 41 59);
     padding-right: 1rem;
   }
 
@@ -905,22 +846,22 @@
     position: relative;
     height: 0.5rem;
     width: 100%;
-    background: #000;
-    border: 1px solid var(--border);
+    background: rgb(15 23 42);
+    border: 1px solid rgb(30 41 59);
     overflow: hidden;
   }
 
   .pw-loadbar__fill {
     height: 100%;
     width: var(--fill);
-    background: linear-gradient(90deg, #0a3a45 0%, var(--cyber) 55%, var(--toxic) 100%);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+    background: var(--cyber);
+    transition: width 0.4s ease;
   }
 
   .pw-loadbar__scan {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
     animation: pw-scan 2.5s linear infinite;
     pointer-events: none;
   }
@@ -936,7 +877,7 @@
 
   .pw-hud__cell--streak {
     text-align: right;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid rgb(30 41 59);
     padding-left: 1rem;
   }
 
@@ -953,7 +894,6 @@
 
   :global(.pw-ico--orange) {
     color: var(--threat);
-    filter: drop-shadow(0 0 6px rgba(255, 107, 0, 0.8));
   }
 
   @media (max-width: 900px) {
@@ -973,22 +913,13 @@
   }
 
   .pw-grid {
-    display: grid;
-    grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
-    gap: var(--bento-gap-md);
     align-items: start;
     overflow: visible;
   }
 
-  @media (max-width: 1024px) {
-    .pw-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .pw-panel {
-    border: 1px solid var(--border);
-    background: #05050a;
+    border: 1px solid rgb(30 41 59);
+    background: rgb(15 23 42);
     padding: 1.25rem;
     min-width: 0;
     overflow: visible;
@@ -1053,23 +984,19 @@
     width: 100%;
     text-align: left;
     padding: 0.85rem 0.9rem;
-    background: #000;
-    border: 1px solid var(--border);
-    color: #e5e5e5;
+    background: #0B0F19;
+    border: 1px solid rgb(30 41 59);
+    color: #e2e8f0;
     cursor: pointer;
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
+    transition: border-color 0.15s ease;
   }
 
   .pw-quest:hover {
-    border-color: rgba(0, 212, 255, 0.4);
-    box-shadow: 0 0 18px rgba(0, 212, 255, 0.12);
+    border-color: rgba(20, 184, 166, 0.4);
   }
 
   .pw-quest--active {
-    border-color: var(--toxic);
-    box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+    border-color: var(--cyber);
   }
 
   .pw-quest__top {
@@ -1090,13 +1017,13 @@
   }
 
   .pw-quest__threat--L2 {
-    color: var(--toxic);
-    border-color: rgba(57, 255, 20, 0.4);
+    color: var(--cyber);
+    border-color: rgba(20, 184, 166, 0.4);
   }
 
   .pw-quest__threat--L3 {
     color: var(--threat);
-    border-color: rgba(255, 107, 0, 0.4);
+    border-color: rgba(245, 158, 11, 0.4);
   }
 
   .pw-quest__threat--L4 {
@@ -1115,9 +1042,10 @@
 
   .pw-quest__proto {
     margin: 0;
-    font-size: 0.7rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.65rem;
     line-height: 1.4;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.38);
   }
 
   .pw-section {
@@ -1138,33 +1066,37 @@
 
   .pw-focus__btn {
     padding: 0.6rem 0.5rem;
-    background: #000;
-    border: 1px solid var(--border);
-    color: #ccc;
+    background: #0B0F19;
+    border: 1px solid rgb(30 41 59);
+    color: #94a3b8;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
-    transition: border-color 0.12s, box-shadow 0.12s;
+    min-height: 44px;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
 
   .pw-focus__btn:hover {
-    border-color: rgba(0, 212, 255, 0.35);
+    border-color: rgba(20, 184, 166, 0.35);
+    color: #e2e8f0;
   }
 
   .pw-focus__btn--on {
     border-color: var(--cyber);
-    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+    color: #f8fafc;
   }
 
   .pw-focus__op {
-    font-size: 0.6rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.55rem;
     color: var(--cyber);
   }
 
   .pw-focus__lab {
-    font-size: 0.7rem;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -1178,23 +1110,24 @@
 
   .pw-chip {
     padding: 0.4rem 0.7rem;
-    background: #000;
-    border: 1px solid var(--border);
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.75rem;
+    background: #0B0F19;
+    border: 1px solid rgb(30 41 59);
+    color: rgba(255, 255, 255, 0.52);
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.7rem;
     cursor: pointer;
-    transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
+    min-height: 44px;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
 
   .pw-chip:hover {
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    border-color: rgba(20, 184, 166, 0.3);
   }
 
   .pw-chip--on {
-    border-color: var(--toxic);
-    color: #fff;
-    box-shadow: 0 0 12px rgba(57, 255, 20, 0.18);
+    border-color: var(--cyber);
+    color: #f8fafc;
   }
 
   .pw-gauges {
@@ -1224,28 +1157,28 @@
     --gauge: 0%;
     height: 0.35rem;
     width: 100%;
-    background: #000;
-    border: 1px solid var(--border);
+    background: rgb(15 23 42);
+    border: 1px solid rgb(30 41 59);
     margin-bottom: 0.2rem;
+    overflow: hidden;
   }
 
   .pw-gauge__bar--rpe {
-    border-color: rgba(255, 107, 0, 0.3);
+    border-color: rgba(245, 158, 11, 0.25);
   }
 
   .pw-gauge__bar-fill {
     height: 100%;
     width: var(--gauge);
+    transition: width 0.2s ease;
   }
 
   .pw-gauge:first-child .pw-gauge__bar-fill {
-    background: linear-gradient(90deg, #0a1e22, var(--cyber));
-    box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+    background: var(--cyber);
   }
 
   .pw-gauge:last-child .pw-gauge__bar-fill {
-    background: linear-gradient(90deg, #2a1a0a, var(--threat));
-    box-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
+    background: var(--threat);
   }
 
   .pw-range {
@@ -1259,14 +1192,14 @@
   }
 
   .pw-range:focus {
-    outline: 1px solid var(--cyber);
+    outline: 1px solid rgba(20, 184, 166, 0.55);
     outline-offset: 2px;
   }
 
   .pw-range::-webkit-slider-runnable-track {
     height: 4px;
-    background: #111;
-    border: 1px solid var(--border);
+    background: rgb(15 23 42);
+    border: 1px solid rgb(30 41 59);
   }
 
   .pw-range::-webkit-slider-thumb {
@@ -1275,33 +1208,29 @@
     width: 14px;
     height: 14px;
     margin-top: -6px;
-    background: #000;
+    background: #0B0F19;
     border: 2px solid var(--cyber);
-    box-shadow: 0 0 8px var(--cyber);
   }
 
   .pw-gauge:last-child .pw-range::-webkit-slider-thumb {
     border-color: var(--threat);
-    box-shadow: 0 0 8px var(--threat);
   }
 
   .pw-range::-moz-range-track {
     height: 4px;
-    background: #111;
-    border: 1px solid var(--border);
+    background: rgb(15 23 42);
+    border: 1px solid rgb(30 41 59);
   }
 
   .pw-range::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    background: #000;
+    background: #0B0F19;
     border: 2px solid var(--cyber);
-    box-shadow: 0 0 8px var(--cyber);
   }
 
   .pw-gauge:last-child .pw-range::-moz-range-thumb {
     border-color: var(--threat);
-    box-shadow: 0 0 8px var(--threat);
   }
 
   .pw-execrow {
@@ -1312,34 +1241,36 @@
   }
 
   .pw-exec {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     min-height: 3.5rem;
     padding: 0.75rem 1rem;
-    background: #000;
-    border: 1px solid rgba(0, 212, 255, 0.4);
-    color: #fff;
-    font-size: 0.85rem;
+    background: #0B0F19;
+    border: 1px solid rgba(20, 184, 166, 0.4);
+    color: #f8fafc;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     cursor: pointer;
-    transition:
-      box-shadow 0.2s ease,
-      border-color 0.2s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
 
   .pw-exec:hover:not(:disabled) {
-    border-color: var(--toxic);
-    box-shadow: 0 0 32px rgba(57, 255, 20, 0.35), 0 0 18px rgba(0, 212, 255, 0.3);
+    border-color: var(--cyber);
+    background: rgba(20, 184, 166, 0.06);
+  }
+
+  .pw-exec:active:not(:disabled) {
+    transform: scale(0.99);
   }
 
   .pw-exec:disabled {
     cursor: not-allowed;
-    opacity: 0.4;
-    box-shadow: none;
+    opacity: 0.38;
   }
 
   .pw-exec__xp {

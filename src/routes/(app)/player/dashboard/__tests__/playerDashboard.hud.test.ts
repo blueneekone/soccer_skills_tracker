@@ -24,6 +24,26 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 		expect(src).not.toMatch(/lobby-hud-bar/);
 	});
 
+	it('wraps profile and quest log in OperativeHub above Vanguard Protocol', () => {
+		const hubIdx = src.indexOf('<OperativeHub');
+		const vppIdx = src.indexOf('<VanguardProtocolPanel');
+		expect(hubIdx).toBeGreaterThan(-1);
+		expect(src).toMatch(/embedded/);
+		expect(vppIdx).toBeGreaterThan(hubIdx);
+	});
+
+	it('uses terminal bracket commands in quest log (not rounded CTAs)', () => {
+		const bounties = readFileSync(
+			join(__dirname, '../../../../../lib/components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(bounties).toMatch(/questTerminalCmd/);
+		expect(bounties).toMatch(/quest-row__cmd/);
+		expect(bounties).toMatch(/ACTIVE DIRECTIVES/);
+		expect(bounties).toMatch(/quest-row__status/);
+		expect(bounties).not.toMatch(/quest-row__cta/);
+	});
+
 	it('uses UID-seeded UidAvatar via PlayerHudHeader (not OperativeAvatarPreview circles)', () => {
 		expect(src).toMatch(/PlayerHudHeader/);
 		expect(src).not.toMatch(/OperativeAvatarPreview/);
@@ -57,17 +77,53 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 		expect(src).toMatch(/bento-span-12[^"]*lobby-capsules-section|lobby-capsules-section[^"]*bento-span-12/);
 	});
 
-	it('removes inline quick-nav from combat card (Command Center owns secondary links)', () => {
+	it('removes inline quick-nav from combat card (rail owns global navigation)', () => {
 		expect(src).not.toMatch(/lobby-quick-nav/);
 	});
 });
 
-describe('PlayerShell — redundant HUD ring removed (Sprint 1.4)', () => {
-	it('does not scale a duplicate LevelProgressRing in the top bar', () => {
-		expect(shellSrc).not.toMatch(/transform:\s*scale\(0\.375\)/);
+describe('PlayerShell — rail-only navigation', () => {
+	it('renders icon-only 80px rail as single nav source', () => {
+		expect(shellSrc).toMatch(/<nav class="ps-rail"/);
+		expect(shellSrc).toMatch(/label: 'HQ'/);
+		expect(shellSrc).not.toMatch(/ps-bottom-nav__label/);
 	});
 
-	it('exposes Command Center drawer trigger', () => {
-		expect(shellSrc).toMatch(/PlayerCommandCenter/);
+	it('does not render duplicate global top bar (avatar, bell, disconnect)', () => {
+		expect(shellSrc).not.toMatch(/ps-topbar/);
+		expect(shellSrc).not.toMatch(/DISCONNECT/);
+		expect(shellSrc).not.toMatch(/comm\.bell/);
+	});
+
+	it('marks HQ with hub-active state on dashboard routes', () => {
+		expect(shellSrc).toMatch(/ps-rail__link--hub-active/);
+		expect(shellSrc).toMatch(/isHubActive/);
+	});
+});
+
+describe('PlayerHudHeader — identity badge layout', () => {
+	const headerSrc = readFileSync(
+		join(__dirname, '../../../../../lib/components/player/dashboard/PlayerHudHeader.svelte'),
+		'utf-8',
+	);
+
+	it('uses avatar ring with glass pills instead of three mini rings', () => {
+		expect(headerSrc).toMatch(/HudAvatarRing/);
+		expect(headerSrc).toMatch(/player-hud-pill/);
+		expect(headerSrc).not.toMatch(/HudMiniRing/);
+	});
+
+	it('flattens embedded profile chrome for OperativeHub (Rule 2)', () => {
+		expect(headerSrc).toMatch(/player-hud-header--embedded/);
+		expect(headerSrc).toMatch(/background:\s*transparent\s*!important/);
+		const hub = readFileSync(
+			join(__dirname, '../../../../../lib/components/player/dashboard/OperativeHub.svelte'),
+			'utf-8',
+		);
+		expect(hub).toMatch(/padding:\s*24px/);
+		expect(hub).toMatch(/rgba\(5,\s*10,\s*16,\s*0\.95\)/);
+		expect(hub).not.toMatch(/backdrop-filter:\s*blur/);
+		expect(hub).toMatch(/clip-path:\s*polygon/);
+		expect(hub).toMatch(/border-right:\s*1px solid rgba\(0,\s*255,\s*255,\s*0\.15\)/);
 	});
 });
