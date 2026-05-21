@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	deriveIsCleared,
+	deriveIsConsented,
 	deriveNeedsOnboarding,
 	deriveRequiresConsent,
 	deriveRoleFlags,
@@ -52,6 +53,94 @@ describe('auth/roleDerivations', () => {
 				userProfile: { isMinor: true, coppaStatus: 'granted' },
 			}),
 		).toBe(false);
+	});
+
+	describe('deriveIsConsented (Sprint 2.1)', () => {
+		const base = {
+			isAuthenticated: true,
+			isLoading: false,
+			role: 'player' as const,
+		};
+
+		it('returns false while loading or unauthenticated', () => {
+			expect(
+				deriveIsConsented({
+					isAuthenticated: false,
+					isLoading: false,
+					role: 'player',
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'verified' },
+				}),
+			).toBe(false);
+			expect(
+				deriveIsConsented({
+					isAuthenticated: true,
+					isLoading: true,
+					role: 'player',
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'verified' },
+				}),
+			).toBe(false);
+		});
+
+		it('non-players and non-minors always pass', () => {
+			expect(
+				deriveIsConsented({
+					...base,
+					role: 'coach',
+					userProfile: { isMinor: true, coppaStatus: 'pending' },
+				}),
+			).toBe(true);
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: false, coppaStatus: 'pending', vpcStatus: 'pending' },
+				}),
+			).toBe(true);
+		});
+
+		it('minor player requires granted COPPA and verified VPC', () => {
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'verified' },
+				}),
+			).toBe(true);
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'not_required' },
+				}),
+			).toBe(true);
+		});
+
+		it('blocks when COPPA is denied or pending even if VPC is verified', () => {
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'denied', vpcStatus: 'verified' },
+				}),
+			).toBe(false);
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'pending', vpcStatus: 'verified' },
+				}),
+			).toBe(false);
+		});
+
+		it('blocks when VPC is pending even if COPPA is granted', () => {
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'pending' },
+				}),
+			).toBe(false);
+			expect(
+				deriveIsConsented({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'granted', vpcStatus: 'parent_consented' },
+				}),
+			).toBe(false);
+		});
 	});
 
 	it('deriveIsCleared exempts non-coach roles and validates clearance expiry', () => {

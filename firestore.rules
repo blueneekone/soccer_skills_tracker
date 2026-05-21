@@ -1686,7 +1686,7 @@ service cloud.firestore {
     // workout row.
     match /workouts/{docId} {
       allow read: if authed() && canReadWorkoutDocument(resource.data);
-      allow create: if authed()
+      allow create: if authed() && playerVpcAllowed()
         && request.resource.data.keys().hasAll(['userId', 'teamId'])
         && request.resource.data.userId is string
         && request.resource.data.userId == request.auth.uid
@@ -2476,6 +2476,31 @@ service cloud.firestore {
       // List: restricted to platform admins (PII gate — parent IP is in the doc).
       allow list: if authed() && isPlatformAdmin();
       // Writes: Admin SDK only (no client path).
+      allow create, update, delete: if false;
+    }
+
+    // consents/{consentId} — Sprint 2.1 canonical consent vault (Admin SDK writes only).
+    // DO NOT PURGE: Consents are legal attestations required for multi-year compliance retention.
+    match /consents/{consentId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || (isParent() && resource.data.parentId == emailKey())
+        || (isDirector() && resource.data.get('clubId', '') == tokenClub())
+        || (tokenRole() == 'player' && resource.data.childId == request.auth.uid)
+      );
+      allow list: if authed() && isPlatformAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // pii_vault/{sealId} — Sprint 2.2 encrypted PII envelopes (Admin SDK writes only).
+    match /pii_vault/{sealId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || resource.data.ownerUid == request.auth.uid
+        || (resource.data.ownerEmailKey == emailKey())
+        || (isDirector() && resource.data.get('clubId', '') == tokenClub())
+      );
+      allow list: if authed() && isPlatformAdmin();
       allow create, update, delete: if false;
     }
 

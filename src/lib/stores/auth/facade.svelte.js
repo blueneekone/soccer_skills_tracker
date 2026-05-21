@@ -137,6 +137,9 @@ export function createAuthFacade() {
 		get requiresConsent() {
 			return gates.requiresConsent;
 		},
+		get isConsented() {
+			return gates.isConsented;
+		},
 		get isAuthenticated() {
 			return sessionState.isAuthenticated;
 		},

@@ -16,7 +16,7 @@
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
-	import { isRouteAllowedForRole } from '$lib/auth/route-policies.js';
+	import { isDataCollectionRoute, isRouteAllowedForRole } from '$lib/auth/route-policies.js';
 	import { PASSKEY_ENROLL_ROUTE, requiresPasskeyEnrollmentBeforeApp, userHasLegacyEmailProvider } from '$lib/auth/passkeyGate.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
@@ -196,8 +196,11 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 
+		routeGuardResolved = false;
+
 		if (!authStore.isAuthenticated) {
 			passkeyEligibilityConfirmed = true;
+			routeGuardResolved = true;
 			untrack(() => goto('/login', { replaceState: true }));
 			return;
 		}
@@ -251,6 +254,18 @@ import Icon from '$lib/components/ui/Icon.svelte';
 					return;
 				}
 
+				// Sprint 2.1 — block data-collection routes until COPPA + VPC consent complete.
+				const pathConsent = untrack(() => page.url.pathname);
+				if (
+					authStore.role === 'player' &&
+					!authStore.isConsented &&
+					isDataCollectionRoute(pathConsent) &&
+					!pathConsent.startsWith('/vpc-pending')
+				) {
+					untrack(() => goto('/vpc-pending', { replaceState: true }));
+					return;
+				}
+
 				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 				const pathClr = untrack(() => page.url.pathname);
 				if (
@@ -270,8 +285,11 @@ import Icon from '$lib/components/ui/Icon.svelte';
 					untrack(() => goto(dest, { replaceState: true }));
 				}
 			} finally {
-				if (!cancelled && !requiresPasskey) {
-					passkeyEligibilityConfirmed = true;
+				if (!cancelled) {
+					routeGuardResolved = true;
+					if (!requiresPasskey) {
+						passkeyEligibilityConfirmed = true;
+					}
 				}
 			}
 		})();
@@ -452,6 +470,15 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	 * has a passkey or is being redirected to enrolment (avoids dashboard flash).
 	 */
 	let passkeyEligibilityConfirmed = $state(true);
+
+	/** Hide shell until auth guard (passkey, VPC, consent) async checks finish. */
+	let routeGuardResolved = $state(false);
+
+	const holdShellForConsent = $derived(
+		authStore.role === 'player' &&
+			!authStore.isConsented &&
+			isDataCollectionRoute(page.url.pathname),
+	);
 </script>
 
 <!-- Global Vanguard SVG filter defs — referenced by url(#neonBloom) / url(#aresBloom) across every portal. -->
@@ -473,7 +500,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
-{:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed}
+{:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
 	{#if impersonationStore.active}
 		<ImpersonationBanner />
 	{/if}

@@ -76,6 +76,34 @@ export interface ConsentTokenDoc {
   createdAt: FirestoreTimestamp | Date;
 }
 
+// ── Schema: consents/{autoId} ───────────────────────────────────────────────
+
+/**
+ * Canonical parental consent record for compliance reporting (Sprint 2.1 vault).
+ * Written exclusively by Cloud Functions inside verifyParentalConsent /
+ * attestParentalConsent transactions (Admin SDK).
+ */
+export interface ConsentRecord {
+	/** Parent email (FK to users/{email}). */
+	parentId: string;
+	/** Child Firebase Auth UID. */
+	childId: string;
+	/** Server timestamp when consent was granted or denied. */
+	consentDate: FirestoreTimestamp | Date;
+	/** IP address of the consenting parent (server-captured). */
+	ipAddress: string;
+	/** Ceremony that produced this record. */
+	consentMethod: 'email_token' | 'webauthn' | 'household_wizard' | 'director_outofband';
+	/** Outcome of the consent action. */
+	coppaStatus: 'granted' | 'denied';
+	/** Tenant (club) for director-scoped reads. */
+	clubId: string;
+	/** consent_tokens document ID when applicable. */
+	tokenRef?: string;
+	/** Server timestamp when this vault record was created. */
+	createdAt: FirestoreTimestamp | Date;
+}
+
 // ── Schema: consent_logs/{autoId} ───────────────────────────────────────────
 
 /**

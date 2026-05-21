@@ -36,3 +36,24 @@ export function isRouteAllowedForRole(pathname, role) {
 	}
 	return true;
 }
+
+/** Sprint 2.1 — routes that collect or display player training / performance PII. */
+export const DATA_COLLECTION_ROUTES = [
+	'/tracker',
+	'/stats',
+	'/operative',
+	'/challenges',
+	'/passport',
+	'/player/workout',
+	'/player/armory',
+	'/player/skill-tree',
+	'/player/tracker',
+];
+
+/**
+ * @param {string} pathname
+ * @returns {boolean}
+ */
+export function isDataCollectionRoute(pathname) {
+	return DATA_COLLECTION_ROUTES.some((route) => pathname.startsWith(route));
+}

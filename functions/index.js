@@ -293,6 +293,13 @@ exports.enqueueMinorRetentionPurge  = complianceOps.enqueueMinorRetentionPurge;
 exports.processMinorRetentionQueue  = complianceOps.processMinorRetentionQueue;
 exports.purgeExpiredMinorData       = complianceOps.purgeExpiredMinorData;
 
+const vaultOps = require('./src/domains/vaultOps');
+exports.vaultSealPii                = vaultOps.vaultSealPii;
+exports.vaultUnsealPii              = vaultOps.vaultUnsealPii;
+
+const shredOps = require('./src/domains/shredOps');
+exports.shredSensitiveData          = shredOps.shredSensitiveData;
+
 // ── Deconstruction Sprint 5: Operative & Identity Domain ─────────────────────
 // Custom proxy enclaves, COPPA operatives, SafeSport comms, impersonation,
 // and GDPR wipes have been extracted to src/domains/operativeOps.js.

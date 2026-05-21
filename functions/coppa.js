@@ -86,14 +86,36 @@ const CONSENT_EVENT = Object.freeze({
 });
 
 /**
+ * Sprint 2.1 — write canonical consent record inside an existing transaction.
+ *
+ * @param {import('firebase-admin/firestore').Transaction} txn
+ * @param {import('firebase-admin/firestore').Firestore} firestore
+ * @param {{ parentId: string, childId: string, ipAddress: string, consentMethod: string, coppaStatus: string, clubId: string, tokenRef?: string }} vault
+ */
+function writeConsentVault(txn, firestore, vault) {
+  const consentRef = firestore.collection('consents').doc();
+  txn.set(consentRef, {
+    parentId: vault.parentId,
+    childId: vault.childId,
+    consentDate: admin.firestore.FieldValue.serverTimestamp(),
+    ipAddress: vault.ipAddress,
+    consentMethod: vault.consentMethod,
+    coppaStatus: vault.coppaStatus,
+    clubId: vault.clubId,
+    tokenRef: vault.tokenRef || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+/**
  * Write to the COPPA-specific `consent_logs` collection AND to the global
  * `audit_logs` collection via logActivity().
  *
  * Two-collection strategy:
- *   consent_logs  â€” COPPA-specific with parentEmail, consentToken, userAgent
- *   audit_logs    â€” Unified platform audit trail (read by platform admins)
+ *   consent_logs  — COPPA-specific with parentEmail, consentToken, userAgent
+ *   audit_logs    — Unified platform audit trail (read by platform admins)
  *
- * @param {string} action â€” CONSENT_EVENT constant
+ * @param {string} action — CONSENT_EVENT constant
  * @param {{ childUid: string, childEmail: string, parentEmail: string, tenantId: string, consentToken: string, ipAddress: string, userAgent?: string }} data
  */
 function logConsentEvent(action, data) {
@@ -489,6 +511,16 @@ exports.verifyParentalConsent = onCall(
               consentDate: admin.firestore.FieldValue.serverTimestamp(),
             });
           }
+
+          writeConsentVault(txn, firestore, {
+            parentId: tokenData.parentEmail || '',
+            childId: tokenData.childUid || '',
+            ipAddress: parentIp,
+            consentMethod: 'email_token',
+            coppaStatus: action,
+            clubId: tokenData.tenantId || '',
+            tokenRef: tokenStr,
+          });
         });
       } catch (err) {
         if (err instanceof HttpsError) throw err;
@@ -1190,6 +1222,16 @@ exports.attestParentalConsent = onCall(
               consentDate: admin.firestore.FieldValue.serverTimestamp(),
             });
           }
+
+          writeConsentVault(txn, firestore, {
+            parentId: tokenDataFinal.parentEmail || '',
+            childId: tokenDataFinal.childUid || '',
+            ipAddress: parentIp,
+            consentMethod: 'webauthn',
+            coppaStatus: action,
+            clubId: tokenDataFinal.tenantId || '',
+            tokenRef: tokenStr,
+          });
 
           // Write immutable attestation record.
           let rpIdForRecord;

@@ -1,5 +1,6 @@
 import {
 	deriveIsCleared,
+	deriveIsConsented,
 	deriveNeedsOnboarding,
 	deriveRequiresConsent,
 } from '$lib/stores/auth/roleDerivations.js';
@@ -24,6 +25,15 @@ export function createAuthGates(userState, sessionState, tenantState) {
 		}),
 	);
 
+	const isConsented = $derived(
+		deriveIsConsented({
+			isAuthenticated: sessionState.isAuthenticated,
+			isLoading: sessionState.isLoading,
+			role: sessionState.role,
+			userProfile: userState.userProfile,
+		}),
+	);
+
 	const isCleared = $derived(deriveIsCleared(sessionState.role, userState.userProfile));
 
 	return {
@@ -32,6 +42,9 @@ export function createAuthGates(userState, sessionState, tenantState) {
 		},
 		get requiresConsent() {
 			return requiresConsent;
+		},
+		get isConsented() {
+			return isConsented;
 		},
 		get isCleared() {
 			return isCleared;
