@@ -16,7 +16,7 @@ alwaysApply: false
 | Metrics | `bento-span-8` | `HudMetricsPanel` |
 | Quests / missions | `bento-span-12` | `ActiveBounties` |
 
-Below the hub row: `VanguardProtocolPanel` and memory capsules as documented in [`docs/vision/PLAYER_OS.md`](../../docs/vision/PLAYER_OS.md).
+Below the hub row: single **analytics deck** (`player-analytics-deck`) = `VanguardProtocolPanel` + compact capsules strip — see [`docs/vision/PLAYER_OS.md`](../../docs/vision/PLAYER_OS.md).
 
 **Route shell:** `src/routes/(app)/player/dashboard/+page.svelte`
 
@@ -42,4 +42,4 @@ When changing this area, extend (never delete):
 - `playerDashboard.layout.test.ts`
 - `playerDashboard.hud.test.ts`
 
-Current planned sprint: **2.3** — see `ROADMAP.md`.
+Current planned sprint: **2.4** — see `ROADMAP.md`.

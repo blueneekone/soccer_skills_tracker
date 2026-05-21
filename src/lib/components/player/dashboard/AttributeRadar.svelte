@@ -114,15 +114,15 @@
 
 		<polygon
 			points={skillPolygonPoints}
-			fill="color-mix(in srgb, var(--color-structural, #3b82f6) 16%, transparent)"
-			stroke="var(--color-structural, #3b82f6)"
+			fill="color-mix(in srgb, var(--color-accent, #fbbf24) 18%, transparent)"
+			stroke="var(--color-accent, #fbbf24)"
 			stroke-width="1.4"
 			stroke-linejoin="round"
 			vector-effect="non-scaling-stroke"
 		/>
 
 		{#each skillVertices as v, vi (`vtx-${vi}`)}
-			<circle cx={v.x} cy={v.y} r="2.5" fill="var(--color-structural, #3b82f6)" />
+			<circle cx={v.x} cy={v.y} r="2.5" fill="var(--color-accent, #fbbf24)" />
 		{/each}
 
 		{#each labelVertices as lv, li (`lbl-${li}`)}

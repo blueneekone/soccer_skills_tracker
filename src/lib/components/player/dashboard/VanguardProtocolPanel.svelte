@@ -95,7 +95,7 @@
 		font-weight: 900;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: color-mix(in srgb, var(--color-structural, #3b82f6) 70%, #94a3b8);
+		color: color-mix(in srgb, #64748b 85%, #94a3b8);
 	}
 
 	.vpp-title {
@@ -245,7 +245,7 @@
 		height: 100%;
 		width: var(--vpp-fill, 0%);
 		border-radius: inherit;
-		background: var(--color-structural, #3b82f6);
+		background: var(--color-accent, #fbbf24);
 		transition: width 0.45s cubic-bezier(0.33, 1, 0.68, 1);
 	}
 

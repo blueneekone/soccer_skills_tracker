@@ -251,41 +251,29 @@
 		</div>
 
 	<section
-		class="bento-span-12 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
-		aria-label="Vanguard Protocol telemetry"
+		class="bento-span-12 bento-card player-analytics-deck tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
+		aria-label="Player analytics deck"
 	>
 		<VanguardProtocolPanel prismValues={attrRadarValues} bind:selectedAxis={selectedVanguardAxis} />
-	</section>
-
-	<section
-		class="bento-span-12 bento-card lobby-capsules-section tw-relative tw-z-30 tw-flex tw-flex-col tw-p-4 md:tw-p-5"
-		aria-labelledby="lobby-capsules-h"
-	>
-		<header class="lobby-capsules-intro">
-			<p class="lobby-eyebrow tw-mb-1 tw-font-mono tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-400">
-				Self comparison
-			</p>
-			<h2
-				id="lobby-capsules-h"
-				class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-tight tw-text-slate-100"
-			>
-				Time-Lapse Memory Capsules
-			</h2>
-			<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500">
-				Compare against your past self · unlocks each training cycle
-			</p>
-		</header>
-		{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
-			<MemoryCapsuleArena
-				capsule={trajectoryEngine.activeCapsule}
-				baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-				capsuleHeadline={trajectoryEngine.capsuleHeadline}
-			/>
-		{:else}
-			<p class="lobby-capsule-ghost" role="status">
-				GHOST PROFILE · AWAITING FIRST CAPSULE
-			</p>
-		{/if}
+		<footer class="player-capsules-strip" aria-labelledby="lobby-capsules-h">
+			<div class="player-capsules-strip__head">
+				<p class="player-capsules-strip__eyebrow lobby-eyebrow tw-font-mono">Self comparison</p>
+				<h2 id="lobby-capsules-h" class="player-capsules-strip__title tw-font-mono">
+					Time-Lapse Memory Capsules
+				</h2>
+			</div>
+			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
+				<MemoryCapsuleArena
+					capsule={trajectoryEngine.activeCapsule}
+					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+					capsuleHeadline={trajectoryEngine.capsuleHeadline}
+				/>
+			{:else}
+				<p class="lobby-capsule-ghost" role="status">
+					GHOST PROFILE · AWAITING FIRST CAPSULE
+				</p>
+			{/if}
+		</footer>
 	</section>
 
 	</HUDContainer>
@@ -369,12 +357,10 @@
 		color: var(--vanguard-text-1, #f8fafc);
 	}
 
-	/* Opaque data cards — Sprint 1.1: liquid shadow + inner highlight added. */
-	.bento-card {
-		border-radius: 24px;
+	/* Opaque data cards — chamfer + slate border under .player-hud-root (player-dashboard-hud.css) */
+	:global(.player-hud-root) .bento-card {
 		overflow: hidden;
 		min-width: 0;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 18%, transparent);
 		background: var(--color-dominant, #0f172a);
 		box-shadow: var(--shadow-liquid);
 		background-image: linear-gradient(
@@ -382,34 +368,5 @@
 			rgba(255, 255, 255, 0.035) 0%,
 			rgba(255, 255, 255, 0) 60%
 		);
-	}
-
-	.lobby-eyebrow {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.65rem;
-		font-weight: 900;
-		letter-spacing: 0.28em;
-		text-transform: uppercase;
-		color: rgb(148 163 184);
-	}
-
-	.lobby-capsules-intro {
-		min-width: min(100%, 280px);
-		max-width: none;
-		margin-bottom: 0.75rem;
-	}
-
-	.lobby-capsules-section {
-		min-width: 0;
-	}
-
-	.lobby-capsule-ghost {
-		margin: 0;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: #475569;
 	}
 </style>

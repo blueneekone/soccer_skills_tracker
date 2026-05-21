@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.3** — Player OS visual system unification
+**Current sprint:** **2.4** — Gold Command palette + analytics deck layout
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -40,7 +40,8 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.1 | Done | Identity metric chips, chamfer CTAs, palette + mono header pass | `playerHudSprint21.test.ts` |
 | 2.1.1 | Done | CMD removed; shell nav only | `playerHudSprint14.test.ts` (no PlayerCommandCenter on page) |
 | 2.2 | Done | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
-| 2.3 | **Current** | Gold Command HUD unification — ringless stat cells, no cyan telemetry | `playerHudSprint23.test.ts` |
+| 2.3 | Done | Gold Command HUD unification — ringless stat cells, kill cyan scanlines, embedded mission chrome | `playerHudSprint23.test.ts` |
+| 2.4 | **Current** | Gold Command palette + analytics deck layout | `playerHudSprint24.test.ts` |
 
 ---
 
@@ -140,6 +141,43 @@ npm run build
 - svelte-check 362 errors
 - Compliance Epic 2.2 / vault / shred
 - Renaming IdentityBentoModule, OperativeHub, HudMetricsPanel, ActiveBounties, VanguardProtocolPanel
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+node scripts/check-no-phosphor.mjs
+npm run build
+```
+
+---
+
+## Sprint 2.4 scope — Gold Command palette + analytics deck layout
+
+**Goal:** Make the player dashboard *look* unified and premium. Remap structural blue to slate/gold under `.player-hud-root`, retint radar/telemetry, fix avatar ring readability, collapse telemetry + capsules into one analytics band, chamfer bottom cards to match OperativeHub.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (extend Design System: structural token remap, two-band layout)
+- `src/lib/styles/player-dashboard-hud.css` (player-hud-root token overrides, bento-card chamfer, radar/telemetry scoped colors)
+- `src/lib/components/player/HudAvatarRing.svelte` (stronger track contrast if needed)
+- `src/lib/components/player/dashboard/AttributeRadar.svelte` (gold data polygon; slate grid; selected axis gold)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (eyebrow/inspector bar → gold/slate, not #3b82f6)
+- `src/lib/components/player/dashboard/HudMetricsPanel.svelte` (hide AWAITING TELEMETRY when embedded)
+- `src/routes/(app)/player/dashboard/+page.svelte` (two-band layout: merge telemetry + capsules into player-analytics-deck)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint24.test.ts` (create)
+- `src/routes/(app)/player/dashboard/__tests__/playerDashboard.hud.test.ts` (update layout assertions if capsule section moves)
+
+**Out of scope:**
+
+- OperativeHub grid structure (4/8/12) — keep as-is
+- selectedVanguardAxis wiring behavior (keep bind/sync)
+- ActiveBounties mission row changes (2.3 done)
+- IdentityBentoModule / HudStatCell refactor
+- Coach/parent routes
+- svelte-check 361 errors
+- Renaming canonical components
 
 **Verify commands:**
 

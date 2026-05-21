@@ -51,7 +51,7 @@
 		</dl>
 	</section>
 
-	{#if !telemetryReady}
+	{#if !telemetryReady && !embedded}
 		<p class="hmp-awaiting" role="status">AWAITING TELEMETRY</p>
 	{/if}
 

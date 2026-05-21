@@ -70,7 +70,7 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 			'utf-8',
 		);
 		expect(src).toMatch(/var\(--color-dominant/);
-		expect(src).toMatch(/var\(--color-structural/);
+		expect(hudCssSrc).toMatch(/--color-structural:\s*#64748b/);
 		expect(vpp).toMatch(/var\(--color-accent/);
 	});
 
@@ -78,9 +78,16 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 		expect(containerSrc + hudCssSrc + src).toMatch(/var\(--bento-gap-liquid/);
 	});
 
-	it('Self comparison section spans full bento width', () => {
-		expect(src).toMatch(/lobby-capsules-section/);
-		expect(src).toMatch(/bento-span-12[^"]*lobby-capsules-section|lobby-capsules-section[^"]*bento-span-12/);
+	it('memory capsules live inside player-analytics-deck (Sprint 2.4)', () => {
+		expect(src).toMatch(/player-analytics-deck/);
+		expect(src).toMatch(/player-capsules-strip/);
+		expect(src).toMatch(/lobby-capsules-h|lobby-capsule-ghost|MemoryCapsuleArena/);
+		const deckIdx = src.indexOf('player-analytics-deck');
+		const vppIdx = src.indexOf('<VanguardProtocolPanel');
+		const capsulesIdx = src.indexOf('player-capsules-strip');
+		expect(deckIdx).toBeGreaterThan(-1);
+		expect(vppIdx).toBeGreaterThan(deckIdx);
+		expect(capsulesIdx).toBeGreaterThan(vppIdx);
 	});
 
 	it('removes inline quick-nav from combat card (rail owns global navigation)', () => {

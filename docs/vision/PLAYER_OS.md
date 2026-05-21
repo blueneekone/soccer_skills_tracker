@@ -81,20 +81,32 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 
 **Tokens:** dominant `#0f172a`, structural border `#334155`, accent gold `#fbbf24`, muted slate `#64748b` / `#94a3b8`, Geist Mono labels, tabular nums for values.
 
+**Structural remap (Sprint 2.4):** Inside `.player-hud-root`, `--color-structural` is slate `#64748b` (not global blue `#3b82f6`). Borders use `#334155`. Gold `#fbbf24` is reserved for **live accent** only — radar data polygon, inspector bar fill, selected axis labels, vector strip selection.
+
+**Two-band layout (Sprint 2.4):**
+
+1. **Command band** — `OperativeHub` (identity 4 / metrics 8 / missions 12).
+2. **Analytics band** — single `player-analytics-deck` bento card: `VanguardProtocolPanel` (radar + inspector) + compact `player-capsules-strip` footer. No standalone third slab for capsules when empty (ghost line only).
+
+**Radar:** gold data polygon and vertices (`--color-accent`); slate grid spokes and tier rings (`rgba(148,163,184,…)`). Selected axis label `#fbbf24`; unselected `#94a3b8` / `#cbd5e1`.
+
 **Do:**
 
 - Chamfer clip-path on modules (no `border-radius` on Player OS shells)
 - Avatar level ring only — one ring vocabulary under `.player-hud-root`
-- Gold accents and structural borders for all player HUD chrome
+- Gold accents and slate structural borders for all player HUD chrome
 - Identity streak/XP as ringless stat cells (`HudStatCell`), not mini canvas rings
+- Embedded `HudMetricsPanel`: vector strip with `00` when empty; no `AWAITING TELEMETRY` (empty copy in VPP inspector ghost)
 
 **Don't:**
 
 - Cyan/teal (`#22d3ee`, `rgba(0,255,255,…)`) on the player dashboard
+- Structural blue `#3b82f6` on player dashboard chrome (eyebrows, radar fill, bento borders)
 - `hud-telemetry-root` on embedded missions inside OperativeHub
 - Mini rings on streak/XP metrics (avatar level ring is the sole progress ring)
 - Double mission eyebrows (`// MISSION DECK` + `ACTIVE MISSIONS`)
 - `border-radius` on Player OS modules (avatar interior exception OK)
+- Separate top-level bento cards for telemetry and capsules (one analytics deck only)
 
 **Home screen zones (updated):** Identity streak/XP = stat cells, not rings. Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
 
@@ -111,6 +123,6 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 2.3](../ROADMAP.md) — Player OS visual system unification (`playerHudSprint23.test.ts`).
+**Current sprint:** [ROADMAP Sprint 2.4](../ROADMAP.md) — Gold Command palette + analytics deck layout (`playerHudSprint24.test.ts`).
 
 **Completed foundation:** Sprints 1.1–2.2 (bento, RBAC, HUD baseline, IdentityBentoModule / OperativeHub, Gold Command palette).

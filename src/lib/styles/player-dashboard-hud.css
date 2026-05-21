@@ -4,10 +4,85 @@
  */
 
 .player-hud-root {
+	--color-structural: #64748b; /* muted slate — overrides global #3b82f6 inside player HUD */
+	--player-hud-border: #334155;
+	--player-hud-accent: #fbbf24;
 	--player-hud-gap: clamp(4px, 1vw, 8px);
 	--player-hud-pad: clamp(8px, 1.8vw, 12px);
 	--player-hud-radius: 24px;
 	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
+}
+
+/* Sprint 2.4 — chamfer bento cards; slate borders (no rounded blue structural mix) */
+.player-hud-root .bento-card {
+	border-radius: 0;
+	border: 1px solid #334155;
+	clip-path: polygon(
+		0 12px,
+		12px 0,
+		calc(100% - 12px) 0,
+		100% 12px,
+		100% calc(100% - 12px),
+		calc(100% - 12px) 100%,
+		12px 100%,
+		0 calc(100% - 12px)
+	);
+}
+
+.player-hud-root .ibm-meta {
+	color: color-mix(in srgb, var(--color-structural, #64748b) 70%, #94a3b8);
+}
+
+/* Sprint 2.4 — analytics deck layout */
+.player-hud-root .player-analytics-deck {
+	display: flex;
+	flex-direction: column;
+	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+}
+
+.player-hud-root .player-capsules-strip {
+	border-top: 1px solid #334155;
+	padding-top: clamp(8px, 1.5vw, 12px);
+	padding-inline: clamp(4px, 0.8vw, 8px);
+	min-width: 0;
+}
+
+.player-hud-root .player-capsules-strip__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.35rem 0.75rem;
+	margin-bottom: clamp(6px, 1.2vw, 10px);
+}
+
+.player-hud-root .player-capsules-strip__eyebrow {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.6rem;
+	font-weight: 900;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+.player-hud-root .player-capsules-strip__title {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.7rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--vanguard-text-1, #f8fafc);
+}
+
+.player-hud-root .player-capsules-strip .lobby-capsule-ghost {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: #475569;
 }
 
 /* Sprint 1.7 — streak-at-risk: subtle gold pulse on avatar when currentStreak > 0 */
@@ -140,9 +215,9 @@
 	border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent);
 }
 
-/* Sprint 2.3 — mute Bauhaus avatar so gold level ring reads clearly */
+/* Sprint 2.4 — mute Bauhaus avatar so gold level ring reads clearly */
 .player-hud-root .hud-avatar-ring__avatar-wrap :global(.uid-avatar svg) {
-	filter: saturate(0.65) brightness(0.92);
+	filter: saturate(0.45) brightness(0.88);
 }
 
 /* Sprint 2.3 — identity stat cells (ringless streak/XP) */
