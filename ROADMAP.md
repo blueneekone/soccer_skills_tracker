@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.5** — Command strip layout v2
+**Current sprint:** **2.6** — HQ content loop
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -42,7 +42,46 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.2 | Done | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
 | 2.3 | Done | Gold Command HUD unification — ringless stat cells, kill cyan scanlines, embedded mission chrome | `playerHudSprint23.test.ts` |
 | 2.4 | Done | Gold Command palette, analytics deck, chamfer cards | `playerHudSprint24.test.ts` |
-| 2.5 | **Current** | Command strip layout v2 — mission rail + conditional avatar | `playerHudSprint25.test.ts` |
+| 2.5 | Done | Command strip layout v2 — 8+4, mission rail, conditional avatar, flat surface, no hub match data | `playerHudSprint25.test.ts` |
+| 2.6 | **Current** | HQ content loop — hero mission, rank progress, last session | `playerHudSprint26.test.ts` |
+
+---
+
+## Sprint 2.6 scope — HQ content loop (hero mission + rank progress + last session)
+
+**Goal:** Make `/player/dashboard` actionable in ~3 seconds: (1) what to do now, (2) how close to next rank, (3) what happened last training. Three content blocks only — no layout rearchitecture.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (HQ content loop section)
+- `.cursor/rules/sst-player-dashboard.mdc` (sprint pointer 2.6)
+- `src/lib/player/dashboard/playerHudMetrics.ts` (`formatLastTrainingLabel`)
+- `src/lib/player/dashboard/__tests__/playerHudMetrics.test.ts`
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (rank bar + last session)
+- `src/lib/components/hud/ActiveBounties.svelte` (embedded hero card + deduped list)
+- `src/routes/(app)/player/dashboard/+page.svelte` (rank + `last_training_utc` props)
+- `src/lib/styles/player-dashboard-hud.css` (hero card, rank bar, last-session)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint26.test.ts` (create)
+
+**Out of scope:**
+
+- OperativeHub 8+4 layout changes (2.5 frozen)
+- Next event / schedule chip (2.7)
+- Coach pulse / status badges / messages (2.7)
+- PlayerShell gradient pass (2.9)
+- Match data / assists in hub
+- New Firestore queries (use existing `statsRaw` on +page only)
+- Renaming canonical components
+- `teamsStore` refactor
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+node scripts/check-no-phosphor.mjs
+npm run build
+```
 
 ---
 

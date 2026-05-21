@@ -22,7 +22,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 
 | Zone | Layout | Component | Content |
 |------|--------|-----------|---------|
-| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + `HudMetricsPanel` | Operative identity, streak/XP stat cells, PAC–AGI vector strip (no match data) |
+| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + `HudMetricsPanel` | Operative identity, streak/XP stat cells, rank XP bar, last-trained line, PAC–AGI vector strip (no match data) |
 | Mission rail | 4-col (`bento-span-12 md:bento-span-4`) | `ActiveBounties` embedded | Active missions / coach bounties — vertical stack in right column (dedup via `deduplicateById`) |
 | Analytics deck | 12-col below hub | `VanguardProtocolPanel` + capsules strip | Radar always visible; inspector + memory capsules |
 
@@ -114,7 +114,21 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 - `border-radius` on Player OS modules (avatar interior exception OK)
 - Separate top-level bento cards for telemetry and capsules (one analytics deck only)
 
-**Home screen zones (updated):** Identity streak/XP = stat cells, not rings. Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
+**Home screen zones (updated):** Identity streak/XP = stat cells in `IdentityBentoModule` (not `HudMetricsPanel`). Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
+
+---
+
+## HQ content loop (Sprint 2.6)
+
+Three blocks answer the 3-second clarity test on `/player/dashboard`:
+
+| Block | Location | Source |
+|-------|----------|--------|
+| **Hero mission** | Top of mission rail (`ActiveBounties` embedded) | `selectPrimaryBounty` on deduped quests — one gold chamfer CTA; hero excluded from compact list below |
+| **Rank progress** | `IdentityBentoModule` under team/rank meta | `getCurrentRank(totalXp)` — thin gold XP bar + `{n} XP TO {nextRank}` (or max-tier copy) |
+| **Last session** | `IdentityBentoModule` one line | `player_stats.last_training_utc` via existing `statsRaw` on +page — `formatLastTrainingLabel` (Today / Yesterday / compact date) |
+
+**North star:** Do now (hero CTA) · progress (rank bar) · last activity (last trained).
 
 ---
 
@@ -129,6 +143,6 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 2.5](../ROADMAP.md) — Command strip layout v2 (`playerHudSprint25.test.ts`).
+**Current sprint:** [ROADMAP Sprint 2.6](../ROADMAP.md) — HQ content loop (`playerHudSprint26.test.ts`).
 
 **Completed foundation:** Sprints 1.1–2.2 (bento, RBAC, HUD baseline, IdentityBentoModule / OperativeHub, Gold Command palette).

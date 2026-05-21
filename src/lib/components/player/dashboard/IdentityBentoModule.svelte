@@ -1,7 +1,10 @@
 <script lang="ts">
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
 	import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
-	import { formatCompactXp } from '$lib/player/dashboard/playerHudMetrics.js';
+	import {
+		formatCompactXp,
+		formatLastTrainingLabel,
+	} from '$lib/player/dashboard/playerHudMetrics.js';
 	import '$lib/styles/player-dashboard-hud.css';
 
 	let {
@@ -16,6 +19,10 @@
 		longestStreak = 0,
 		xpInTier = 0,
 		xpToNextRank = 0,
+		nextRank = null,
+		rankProgressPercent = 0,
+		atMaxRank = false,
+		lastTrainingUtc = null,
 		profileIncomplete = false,
 		onProfileSetup,
 	}: {
@@ -30,6 +37,10 @@
 		longestStreak?: number;
 		xpInTier?: number;
 		xpToNextRank?: number;
+		nextRank?: string | null;
+		rankProgressPercent?: number;
+		atMaxRank?: boolean;
+		lastTrainingUtc?: string | null;
 		profileIncomplete?: boolean;
 		onProfileSetup?: () => void;
 	} = $props();
@@ -40,6 +51,20 @@
 		const d = xpInTier + xpToNextRank;
 		if (d <= 0) return 1;
 		return Math.min(1, Math.max(0, xpInTier / d));
+	});
+
+	const rankBarPercent = $derived(
+		Math.min(100, Math.max(0, Math.floor(Number(rankProgressPercent) || 0))),
+	);
+	const lastSessionLabel = $derived(formatLastTrainingLabel(lastTrainingUtc));
+	const rankProgressLabel = $derived.by(() => {
+		if (atMaxRank) {
+			return rankName ? `${rankName} · MAX TIER` : 'MAX RANK';
+		}
+		if (nextRank) {
+			return `${formatCompactXp(xpToNextRank)} XP TO ${nextRank}`;
+		}
+		return `${formatCompactXp(xpToNextRank)} XP TO NEXT RANK`;
 	});
 
 	const initials = $derived.by(() => {
@@ -87,6 +112,15 @@
 				<p class="ibm-name" title={displayName}>{displayName}</p>
 			</div>
 			<p class="ibm-meta">{teamLabel || 'No team'} · {rankName}</p>
+
+			<div class="ibm-rank-progress" aria-label="Rank progress">
+				<p class="ibm-rank-progress__label">{rankProgressLabel}</p>
+				<div class="ibm-rank-progress__bar" role="progressbar" aria-valuenow={rankBarPercent} aria-valuemin="0" aria-valuemax="100">
+					<div class="ibm-rank-progress__fill" style:width="{rankBarPercent}%"></div>
+				</div>
+			</div>
+
+			<p class="ibm-last-session">LAST TRAINED · {lastSessionLabel}</p>
 		</div>
 
 		<div class="ibm-metrics">

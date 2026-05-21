@@ -29,6 +29,7 @@
 		questHudCtaShort,
 		questTerminalCmd,
 		resolveQuestLifecycle,
+		selectPrimaryBounty,
 		sortQuestLog,
 		type QuestTask,
 	} from '$lib/player/dashboard/activeBounties.js';
@@ -58,6 +59,10 @@
 	);
 	const hiddenCount = $derived(Math.max(0, dedupedQuests.length - maxVisibleQuests()));
 	const showEmpty = $derived(!loading && dedupedQuests.length === 0);
+	const heroQuest = $derived(embedded && dedupedQuests.length > 0 ? selectPrimaryBounty(dedupedQuests) : null);
+	const railQuests = $derived(
+		heroQuest ? visibleQuests.filter((q) => q.id !== heroQuest.id) : visibleQuests,
+	);
 	const visibleBounties = $derived(visibleQuests.filter((q) => q.tier === 'bounty'));
 	const visibleDailies = $derived(visibleQuests.filter((q) => q.tier === 'daily'));
 
@@ -352,11 +357,33 @@
 				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
 			</header>
 
+			{#if heroQuest}
+				<article class="quest-hero" aria-label="Primary mission">
+					{#if heroQuest.senderLabel}
+						<p class="quest-hero__sender">{heroQuest.senderLabel}</p>
+					{/if}
+					<h3 class="quest-hero__title">{heroQuest.title}</h3>
+					{#if heroQuest.xpReward > 0}
+						<p class="quest-hero__reward">+{heroQuest.xpReward.toLocaleString()} XP</p>
+					{:else if heroQuest.rewardLabel}
+						<p class="quest-hero__reward">{heroQuest.rewardLabel}</p>
+					{/if}
+					<button
+						type="button"
+						class="quest-hero__cta ibm-cta ibm-cta--setup"
+						aria-label={questCtaLabel(heroQuest.lifecycle)}
+						onclick={() => handleQuestAction(heroQuest)}
+					>
+						{questHudCtaShort(heroQuest.lifecycle)}
+					</button>
+				</article>
+			{/if}
+
 			<div
 				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
 				aria-label="Active mission deck"
 			>
-				{#each visibleQuests as quest (quest.id)}
+				{#each railQuests as quest (quest.id)}
 					<div
 						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
 						class:quest-terminal-row--habit={quest.tier === 'daily'}

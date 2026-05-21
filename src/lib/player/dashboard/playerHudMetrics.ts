@@ -25,3 +25,58 @@ export function streakRingFill(currentStreak: number, goalDays = STREAK_RING_GOA
 	const streak = Math.max(0, Math.floor(Number(currentStreak) || 0));
 	return Math.min(1, streak / goal);
 }
+
+const LAST_TRAINING_MONTHS = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec',
+] as const;
+
+function parseLastTrainingUtcDate(lastTrainingUtc: string): Date | null {
+	const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(lastTrainingUtc.trim());
+	if (!match) return null;
+	const year = Number(match[1]);
+	const month = Number(match[2]) - 1;
+	const day = Number(match[3]);
+	if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+	const d = new Date(Date.UTC(year, month, day));
+	if (Number.isNaN(d.getTime())) return null;
+	return d;
+}
+
+function utcCalendarDayStart(d: Date): number {
+	return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+/** Format player_stats.last_training_utc (YYYY-MM-DD) for HUD. */
+export function formatLastTrainingLabel(
+	lastTrainingUtc: string | null | undefined,
+	now: Date = new Date(),
+): string {
+	if (!lastTrainingUtc || typeof lastTrainingUtc !== 'string') {
+		return 'No sessions logged yet';
+	}
+
+	const training = parseLastTrainingUtcDate(lastTrainingUtc);
+	if (!training) return 'No sessions logged yet';
+
+	const todayStart = utcCalendarDayStart(now);
+	const trainingStart = utcCalendarDayStart(training);
+	const diffDays = Math.floor((todayStart - trainingStart) / 86_400_000);
+
+	if (diffDays === 0) return 'Today';
+	if (diffDays === 1) return 'Yesterday';
+
+	const month = training.getUTCMonth();
+	const day = training.getUTCDate();
+	return `${LAST_TRAINING_MONTHS[month]} ${day}`;
+}

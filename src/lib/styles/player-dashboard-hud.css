@@ -509,6 +509,126 @@
 	min-width: 0;
 }
 
+/* Sprint 2.6 — rank progress + last session (IdentityBentoModule) */
+.player-hud-root .ibm-rank-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: clamp(4px, 0.8vw, 6px);
+	min-width: 0;
+}
+
+.player-hud-root .ibm-rank-progress__label {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #64748b 85%, #94a3b8);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-hud-root .ibm-rank-progress__bar {
+	height: 3px;
+	width: 100%;
+	background: #334155;
+	clip-path: polygon(
+		0 1px,
+		1px 0,
+		calc(100% - 1px) 0,
+		100% 1px,
+		100% calc(100% - 1px),
+		calc(100% - 1px) 100%,
+		1px 100%,
+		0 calc(100% - 1px)
+	);
+	overflow: hidden;
+}
+
+.player-hud-root .ibm-rank-progress__fill {
+	height: 100%;
+	background: #fbbf24;
+	transition: width 0.2s ease;
+}
+
+.player-hud-root .ibm-last-session {
+	margin: clamp(2px, 0.5vw, 4px) 0 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #64748b 80%, #94a3b8);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Sprint 2.6 — embedded mission rail hero card */
+.player-hud-root .quest-hero {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(4px, 0.8vw, 6px);
+	margin-bottom: clamp(8px, 1.2vw, 10px);
+	padding: clamp(8px, 1.4vw, 10px);
+	border: 1px solid #334155;
+	background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
+	min-width: 0;
+	clip-path: polygon(
+		0 8px,
+		8px 0,
+		calc(100% - 8px) 0,
+		100% 8px,
+		100% calc(100% - 8px),
+		calc(100% - 8px) 100%,
+		8px 100%,
+		0 calc(100% - 8px)
+	);
+}
+
+.player-hud-root .quest-hero__sender {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 8px;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #fbbf24 75%, #94a3b8);
+}
+
+.player-hud-root .quest-hero__title {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.68rem, 1.5vw, 0.78rem);
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--vanguard-text-1, #f8fafc);
+	line-height: 1.25;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+.player-hud-root .quest-hero__reward {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+	font-weight: 900;
+	font-variant-numeric: tabular-nums;
+	color: #fbbf24;
+}
+
+.player-hud-root .quest-hero__cta {
+	align-self: flex-start;
+	width: 100%;
+	max-width: 100%;
+}
+
 /* Sprint 2.2 — respect prefers-reduced-motion for HUD pulses */
 @media (prefers-reduced-motion: reduce) {
 	.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg) {

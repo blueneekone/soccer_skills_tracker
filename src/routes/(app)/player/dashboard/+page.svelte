@@ -232,6 +232,14 @@
 						longestStreak={longestStreak}
 						xpInTier={rankProgress.xpInCurrentTier}
 						xpToNextRank={rankProgress.xpToNextRank}
+						nextRank={rankProgress.nextRank}
+						rankProgressPercent={rankProgress.progressPercent}
+						atMaxRank={rankProgress.atMaxRank}
+						lastTrainingUtc={
+							statsRaw && typeof statsRaw === 'object' && typeof statsRaw.last_training_utc === 'string'
+								? statsRaw.last_training_utc
+								: null
+						}
 						profileIncomplete={!hasArmoryProfile}
 						onProfileSetup={() => (showInitModal = true)}
 					/>

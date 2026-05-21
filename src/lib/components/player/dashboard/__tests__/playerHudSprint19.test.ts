@@ -63,9 +63,10 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 		expect(embeddedTemplateBlock).not.toMatch(/quest-log__title">Active missions</i);
 	});
 
-	it('embedded feed renders continuous visibleQuests list (no tier section tags)', () => {
+	it('embedded feed renders continuous rail list without hero duplicate (no tier section tags)', () => {
 		expect(bountiesSrc).toMatch(/quest-log__feed--embedded/);
-		expect(bountiesSrc).toMatch(/\{#each visibleQuests as quest/);
+		expect(bountiesSrc).toMatch(/\{#each railQuests as quest/);
+		expect(bountiesSrc).toMatch(/heroQuest\.id|q\.id !== heroQuest\.id/);
 	});
 
 	it('quest-row__title-text retains ellipsis + nowrap in embedded line', () => {

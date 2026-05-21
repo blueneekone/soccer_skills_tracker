@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	formatCompactXp,
+	formatLastTrainingLabel,
 	streakRingFill,
 	STREAK_RING_GOAL_DAYS,
 } from '../playerHudMetrics.js';
@@ -36,5 +37,27 @@ describe('playerHudMetrics — streakRingFill', () => {
 
 	it('clamps negative streaks to zero fill', () => {
 		expect(streakRingFill(-2)).toBe(0);
+	});
+});
+
+describe('playerHudMetrics — formatLastTrainingLabel', () => {
+	const now = new Date(Date.UTC(2026, 4, 21, 15, 0, 0)); // 2026-05-21 UTC
+
+	it('returns placeholder when missing or invalid', () => {
+		expect(formatLastTrainingLabel(null, now)).toBe('No sessions logged yet');
+		expect(formatLastTrainingLabel('', now)).toBe('No sessions logged yet');
+		expect(formatLastTrainingLabel('not-a-date', now)).toBe('No sessions logged yet');
+	});
+
+	it('returns Today for same UTC calendar day', () => {
+		expect(formatLastTrainingLabel('2026-05-21', now)).toBe('Today');
+	});
+
+	it('returns Yesterday for previous UTC calendar day', () => {
+		expect(formatLastTrainingLabel('2026-05-20', now)).toBe('Yesterday');
+	});
+
+	it('returns compact month-day for older dates', () => {
+		expect(formatLastTrainingLabel('2026-05-12', now)).toBe('May 12');
 	});
 });

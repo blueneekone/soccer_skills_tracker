@@ -22,7 +22,7 @@ Below the hub row: single **analytics deck** (`player-analytics-deck`) = `Vangua
 ## Components (do not rename)
 
 - `IdentityBentoModule` — operative identity, avatar, rank
-- `HudMetricsPanel` — streak, XP, telemetry readouts
+- `HudMetricsPanel` — PAC–AGI vector strip (embedded); streak/XP live in `IdentityBentoModule`
 - `ActiveBounties` — mission list (use `deduplicateById` for dedup)
 - `VanguardProtocolPanel` — protocol / compliance capsule
 - `HUDContainer` — shared HUD chrome from `src/lib/components/hud/HUDContainer.svelte`
@@ -43,4 +43,4 @@ When changing this area, extend (never delete):
 - `playerDashboard.layout.test.ts`
 - `playerDashboard.hud.test.ts`
 
-Current planned sprint: **2.5** — see `ROADMAP.md`.
+Current planned sprint: **2.6** — see `ROADMAP.md`.
