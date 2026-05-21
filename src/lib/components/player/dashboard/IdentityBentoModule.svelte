@@ -1,7 +1,6 @@
 <script lang="ts">
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
 	import HudMetricChip from '$lib/components/player/dashboard/HudMetricChip.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import { formatCompactXp, streakRingFill } from '$lib/player/dashboard/playerHudMetrics.js';
 	import '$lib/styles/player-dashboard-hud.css';
 
@@ -19,7 +18,6 @@
 		xpToNextRank = 0,
 		profileIncomplete = false,
 		onProfileSetup,
-		onOpenCommandCenter,
 	}: {
 		embedded?: boolean;
 		uid?: string;
@@ -34,7 +32,6 @@
 		xpToNextRank?: number;
 		profileIncomplete?: boolean;
 		onProfileSetup?: () => void;
-		onOpenCommandCenter?: () => void;
 	} = $props();
 
 	const xpLabel = $derived(formatCompactXp(totalXp));
@@ -92,25 +89,11 @@
 			/>
 		</div>
 
-		{#if (profileIncomplete && onProfileSetup) || onOpenCommandCenter}
+		{#if profileIncomplete && onProfileSetup}
 			<div class="ibm-actions">
-				{#if profileIncomplete && onProfileSetup}
-					<button type="button" class="ibm-cta ibm-cta--setup" onclick={onProfileSetup}>
-						FINISH PROFILE SETUP
-					</button>
-				{/if}
-
-				{#if onOpenCommandCenter}
-					<button
-						type="button"
-						class="cmd-center-trigger cmd-center-trigger--labeled"
-						onclick={onOpenCommandCenter}
-						aria-label="Open command center"
-					>
-						<Icon name="sys.grid" size={16} />
-						<span class="cmd-center-trigger__label">CMD</span>
-					</button>
-				{/if}
+				<button type="button" class="ibm-cta ibm-cta--setup" onclick={onProfileSetup}>
+					FINISH PROFILE SETUP
+				</button>
 			</div>
 		{/if}
 	</div>

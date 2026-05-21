@@ -59,9 +59,9 @@ describe('Sprint 2.1 — IdentityBentoModule metric chips', () => {
 		expect(ibmSrc).not.toMatch(/class="ibm-setup"/);
 	});
 
-	it('command center trigger has visible label text and labeled class', () => {
-		expect(ibmSrc).toMatch(/cmd-center-trigger--labeled/);
-		expect(ibmSrc).toMatch(/CMD|COMMAND/);
+	it('embedded identity must NOT contain cmd-center-trigger (shell nav only)', () => {
+		expect(ibmSrc).not.toMatch(/cmd-center-trigger/);
+		expect(ibmSrc).not.toMatch(/onOpenCommandCenter/);
 	});
 });
 
@@ -80,10 +80,6 @@ describe('Sprint 2.1 — player-dashboard-hud.css palette', () => {
 
 	it('defines ibm-cta chamfer button styles', () => {
 		expect(hudCssSrc).toMatch(/\.ibm-cta/);
-	});
-
-	it('defines cmd-center-trigger--labeled styling', () => {
-		expect(hudCssSrc).toMatch(/\.cmd-center-trigger--labeled/);
 	});
 });
 

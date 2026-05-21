@@ -11,7 +11,6 @@
 	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
 	import HudMetricsPanel from '$lib/components/player/dashboard/HudMetricsPanel.svelte';
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
-	import PlayerCommandCenter from '$lib/components/player/dashboard/PlayerCommandCenter.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
@@ -44,7 +43,6 @@
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 	const uid = $derived(authStore.user?.uid || '');
 
-	let commandCenterOpen = $state(false);
 	let selectedVanguardAxis = $state<VanguardAxisId | null>(null);
 
 	// ── Trajectory Engine (memory capsules) ──────────────────────────────────
@@ -236,7 +234,6 @@
 						xpToNextRank={rankProgress.xpToNextRank}
 						profileIncomplete={!hasArmoryProfile}
 						onProfileSetup={() => (showInitModal = true)}
-						onOpenCommandCenter={() => (commandCenterOpen = true)}
 					/>
 				{/snippet}
 				{#snippet metrics()}
@@ -293,8 +290,6 @@
 
 	</HUDContainer>
 </div>
-
-<PlayerCommandCenter bind:open={commandCenterOpen} />
 
 <!-- Sprint 9.2: Initialize Operative — distinct one-time setup modal -->
 {#if showInitModal}

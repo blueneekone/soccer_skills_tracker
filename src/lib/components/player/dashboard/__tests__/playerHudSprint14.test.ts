@@ -47,9 +47,9 @@ describe('Sprint 1.4 — PlayerHudHeader & HudAvatarRing', () => {
 });
 
 describe('Sprint 1.4 — Dashboard page & dead CSS', () => {
-	it('dashboard imports and renders PlayerCommandCenter overlay', () => {
-		expect(pageSrc).toMatch(/PlayerCommandCenter/);
-		expect(pageSrc).toMatch(/commandCenterOpen/);
+	it('dashboard does not mount PlayerCommandCenter overlay (shell nav only)', () => {
+		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc).not.toMatch(/commandCenterOpen/);
 		expect(headerSrc).toMatch(/cmd-center-trigger/);
 		expect(headerSrc).toMatch(/onOpenCommandCenter/);
 	});

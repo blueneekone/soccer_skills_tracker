@@ -89,6 +89,8 @@ npm run build
 
 **Note:** Test file is `playerHudSprint21.test.ts` under `player/dashboard/__tests__/` — NOT `firestoreRulesSprint21.test.ts` (compliance epic).
 
+**Follow-up (Sprint 2.1.1):** Command center trigger removed from identity; shell nav only.
+
 **Out of scope:**
 
 - HudMetricsPanel / VanguardProtocolPanel / ActiveBounties layout changes

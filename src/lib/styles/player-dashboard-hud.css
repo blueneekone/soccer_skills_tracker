@@ -124,31 +124,9 @@
 	);
 }
 
-.cmd-center-trigger--labeled {
-	gap: clamp(4px, 0.8vw, 6px);
-	min-width: auto;
-	min-height: 32px;
-	padding: clamp(5px, 1vw, 7px) clamp(8px, 1.5vw, 12px);
-	margin-top: 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 9px;
-	font-weight: 800;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-}
-
-.cmd-center-trigger__label {
-	line-height: 1;
-	color: var(--vanguard-text-1, #f8fafc);
-}
-
 .cmd-center-trigger:hover {
 	border-color: #fbbf24;
 	background: color-mix(in srgb, #fbbf24 8%, transparent);
-	color: #fbbf24;
-}
-
-.cmd-center-trigger:hover .cmd-center-trigger__label {
 	color: #fbbf24;
 }
 
