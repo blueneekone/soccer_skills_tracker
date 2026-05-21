@@ -13,6 +13,7 @@
 	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
 	import { routeByFirestoreRole } from '$lib/auth/authRouter.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	type LoginView = 'command' | 'operative';
 	type OperativeMode = 'otp' | 'dispatch';
@@ -137,10 +138,7 @@
 			<div class="tw-mb-6 tw-flex tw-w-full tw-min-w-0 tw-items-center tw-justify-between tw-gap-2">
 				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5">
 					<div class="tw-flex tw-h-7 tw-w-7 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-teal-500/30 tw-bg-teal-500/10">
-						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tw-text-teal-400" aria-hidden="true">
-							<polyline points="4 17 10 11 4 5"/>
-							<line x1="12" y1="19" x2="20" y2="19"/>
-						</svg>
+						<Icon name="nav.sign-in" size={13} class="tw-text-teal-400" />
 					</div>
 					<div class="tw-min-w-0">
 						<p class="tw-m-0 tw-truncate tw-font-mono tw-text-[0.5rem] tw-font-semibold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">COPPA-SECURE GATE</p>
@@ -359,9 +357,7 @@
 				disabled={navigating}
 				class="tw-mt-6 tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2 tw-border-none tw-bg-transparent tw-py-2 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-text-slate-500 tw-transition-colors tw-duration-200 hover:tw-text-teal-400 disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none"
 			>
-				<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-				</svg>
+				<Icon name="nav.sign-in" size={10} />
 				Initialize Operative
 			</button>
 

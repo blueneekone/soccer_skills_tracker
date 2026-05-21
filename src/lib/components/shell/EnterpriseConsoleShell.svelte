@@ -294,9 +294,7 @@
 					<span class="tw-max-w-[7rem] tw-truncate">
 						{workspaceContextStore.activeContext || authStore.role || 'workspace'}
 					</span>
-					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-						<path d="M6 9l6 6 6-6"/>
-					</svg>
+					<Icon name="nav.chevron-down" size={10} />
 				</button>
 				<!-- User identity: avatar + name + disconnect -->
 				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2 tw-pl-1">
@@ -318,11 +316,7 @@
 						aria-label="Disconnect — sign out"
 						title="Disconnect"
 					>
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-							<polyline points="16 17 21 12 16 7"/>
-							<line x1="21" y1="12" x2="9" y2="12"/>
-						</svg>
+						<Icon name="nav.sign-out" size={14} />
 					</button>
 				</div>
 			</div>
