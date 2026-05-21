@@ -43,4 +43,4 @@ When changing this area, extend (never delete):
 - `playerDashboard.layout.test.ts`
 - `playerDashboard.hud.test.ts`
 
-Current planned sprint: **2.6** — see `ROADMAP.md`.
+Current planned sprint: **2.7** — see `ROADMAP.md`.

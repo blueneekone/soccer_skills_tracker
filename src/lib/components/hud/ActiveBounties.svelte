@@ -29,6 +29,7 @@
 		questHudCtaShort,
 		questTerminalCmd,
 		resolveQuestLifecycle,
+		resolveHeroQuest,
 		selectPrimaryBounty,
 		sortQuestLog,
 		type QuestTask,
@@ -38,10 +39,12 @@
 		embedded = false,
 		quests: questsProp = undefined,
 		loading: loadingProp = undefined,
+		lastTrainingUtc = null,
 	}: {
 		embedded?: boolean;
 		quests?: QuestTask[];
 		loading?: boolean;
+		lastTrainingUtc?: string | null;
 	} = $props();
 
 	let internalQuests = $state<QuestTask[]>([]);
@@ -59,7 +62,11 @@
 	);
 	const hiddenCount = $derived(Math.max(0, dedupedQuests.length - maxVisibleQuests()));
 	const showEmpty = $derived(!loading && dedupedQuests.length === 0);
-	const heroQuest = $derived(embedded && dedupedQuests.length > 0 ? selectPrimaryBounty(dedupedQuests) : null);
+	const heroQuest = $derived(
+		embedded && dedupedQuests.length > 0 ?
+			resolveHeroQuest(dedupedQuests, { lastTrainingUtc })
+		:	null,
+	);
 	const railQuests = $derived(
 		heroQuest ? visibleQuests.filter((q) => q.id !== heroQuest.id) : visibleQuests,
 	);
@@ -557,8 +564,8 @@
 	}
 
 	.quest-terminal-row--embedded {
-		padding: clamp(6px, 1vw, 8px) 0;
-		min-height: 44px;
+		padding: clamp(4px, 0.8vw, 6px) 0;
+		min-height: 0;
 	}
 
 	.quest-row--embedded .quest-row__line {

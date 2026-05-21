@@ -8,9 +8,11 @@
 	let {
 		prismValues = [],
 		selectedAxis = $bindable<VanguardAxisId | null>(null),
+		compact = false,
 	}: {
 		prismValues?: number[];
 		selectedAxis?: VanguardAxisId | null;
+		compact?: boolean;
 	} = $props();
 
 	const rows = $derived(buildVanguardProtocolRows(prismValues));
@@ -21,14 +23,16 @@
 	}
 </script>
 
-<section class="vpp-root" aria-labelledby="vpp-heading">
+<section class="vpp-root" class:vpp-root--compact={compact} aria-labelledby="vpp-heading">
 	<header class="vpp-head">
 		<div class="vpp-head__copy">
 			<p class="vpp-eyebrow">Vanguard Protocol</p>
 			<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
-			<p class="vpp-lede">
-				Tap a vector in the hub or radar to inspect.
-			</p>
+			{#if !compact}
+				<p class="vpp-lede">
+					Tap a vector in the hub or radar to inspect.
+				</p>
+			{/if}
 		</div>
 	</header>
 

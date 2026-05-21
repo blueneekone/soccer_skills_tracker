@@ -8,6 +8,7 @@ import {
 	questHudCtaShort,
 	questTerminalCmd,
 	resolveQuestLifecycle,
+	resolveHeroQuest,
 	maxVisibleQuests,
 	type QuestTask,
 } from '../activeBounties.js';
@@ -76,5 +77,71 @@ describe('activeBounties', () => {
 
 	it('caps visible quest log at 3', () => {
 		expect(maxVisibleQuests()).toBe(3);
+	});
+
+	it('resolveHeroQuest picks daily-training-log when not trained today', () => {
+		const trainingLog: QuestTask = {
+			id: 'daily-training-log',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: "Log today's training session",
+			axisId: 'STM',
+			xpReward: 35,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 0,
+		};
+		const streakCheck: QuestTask = {
+			id: 'daily-streak-check',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: 'Protect your 5-day streak',
+			axisId: 'PAC',
+			xpReward: 20,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		const now = new Date(Date.UTC(2026, 4, 21));
+		const hero = resolveHeroQuest([streakCheck, trainingLog], {
+			lastTrainingUtc: '2026-05-20',
+			now,
+		});
+		expect(hero?.id).toBe('daily-training-log');
+	});
+
+	it('resolveHeroQuest prefers streak quest when trained today', () => {
+		const trainingLog: QuestTask = {
+			id: 'daily-training-log',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: "Log today's training session",
+			axisId: 'STM',
+			xpReward: 35,
+			lifecycle: 'complete',
+			actionHref: '/player/workout',
+			sortKey: 0,
+		};
+		const streakCheck: QuestTask = {
+			id: 'daily-streak-check',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: 'Protect your 5-day streak',
+			axisId: 'PAC',
+			xpReward: 20,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		const now = new Date(Date.UTC(2026, 4, 21));
+		const hero = resolveHeroQuest([trainingLog, streakCheck], {
+			lastTrainingUtc: '2026-05-21',
+			now,
+		});
+		expect(hero?.id).toBe('daily-streak-check');
 	});
 });

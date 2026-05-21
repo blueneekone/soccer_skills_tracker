@@ -2,6 +2,7 @@
  * Quest log model — dailies + coach/parent bounties for Player OS dashboard.
  */
 
+import { isTrainingToday } from './playerHudMetrics.js';
 import type { VanguardAxisId } from './vanguardProtocol.js';
 
 export type QuestTier = 'daily' | 'bounty';
@@ -251,6 +252,40 @@ export function sortQuestLog(items: readonly QuestTask[]): QuestTask[] {
 export function selectPrimaryBounty(items: readonly QuestTask[]): QuestTask | null {
 	const sorted = sortQuestLog(items);
 	return sorted[0] ?? null;
+}
+
+const DAILY_TRAINING_LOG_ID = 'daily-training-log';
+const DAILY_STREAK_CHECK_ID = 'daily-streak-check';
+
+/**
+ * Resolve the embedded hero mission — training log when not trained today;
+ * streak protect when trained today + streak active; else primary bounty sort.
+ */
+export function resolveHeroQuest(
+	items: readonly QuestTask[],
+	opts: { lastTrainingUtc?: string | null; now?: Date } = {},
+): QuestTask | null {
+	if (items.length === 0) return null;
+
+	const { lastTrainingUtc, now } = opts;
+	const trainedToday = isTrainingToday(lastTrainingUtc, now);
+
+	if (!trainedToday) {
+		const trainingLog = items.find((q) => q.id === DAILY_TRAINING_LOG_ID);
+		if (trainingLog) return trainingLog;
+	}
+
+	if (trainedToday) {
+		const streakQuest = items.find((q) => q.id === DAILY_STREAK_CHECK_ID);
+		if (
+			streakQuest &&
+			(streakQuest.lifecycle === 'accept' || streakQuest.lifecycle === 'complete')
+		) {
+			return streakQuest;
+		}
+	}
+
+	return selectPrimaryBounty(items);
 }
 
 export function buildDailyQuests(

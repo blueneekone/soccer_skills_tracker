@@ -24,6 +24,7 @@
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
+	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -76,6 +77,12 @@
 
 	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
 	const longestStreak = $derived(Number(activePlayer?.longestStreak) || streak);
+	const telemetryReady = $derived(hasVanguardTelemetry(attrRadarValues));
+	const lastTrainingUtc = $derived(
+		statsRaw && typeof statsRaw === 'object' && typeof statsRaw.last_training_utc === 'string' ?
+			statsRaw.last_training_utc
+		:	null,
+	);
 
 	/** Controls the one-time profile setup modal. */
 	let showInitModal = $state(false);
@@ -235,11 +242,7 @@
 						nextRank={rankProgress.nextRank}
 						rankProgressPercent={rankProgress.progressPercent}
 						atMaxRank={rankProgress.atMaxRank}
-						lastTrainingUtc={
-							statsRaw && typeof statsRaw === 'object' && typeof statsRaw.last_training_utc === 'string'
-								? statsRaw.last_training_utc
-								: null
-						}
+						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
 						onProfileSetup={() => (showInitModal = true)}
 					/>
@@ -252,16 +255,21 @@
 					/>
 				{/snippet}
 				{#snippet quests()}
-					<ActiveBounties embedded />
+					<ActiveBounties embedded lastTrainingUtc={lastTrainingUtc} />
 				{/snippet}
 			</OperativeHub>
 		</div>
 
 	<section
 		class="bento-span-12 bento-card player-analytics-deck tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
+		class:player-analytics-deck--compact={!telemetryReady}
 		aria-label="Player analytics deck"
 	>
-		<VanguardProtocolPanel prismValues={attrRadarValues} bind:selectedAxis={selectedVanguardAxis} />
+		<VanguardProtocolPanel
+			prismValues={attrRadarValues}
+			bind:selectedAxis={selectedVanguardAxis}
+			compact={!telemetryReady}
+		/>
 		<footer class="player-capsules-strip" aria-labelledby="lobby-capsules-h">
 			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
 				<div class="player-capsules-strip__head">

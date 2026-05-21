@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.6** — HQ content loop
+**Current sprint:** **2.7** — Presence & hierarchy
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -43,7 +43,47 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.3 | Done | Gold Command HUD unification — ringless stat cells, kill cyan scanlines, embedded mission chrome | `playerHudSprint23.test.ts` |
 | 2.4 | Done | Gold Command palette, analytics deck, chamfer cards | `playerHudSprint24.test.ts` |
 | 2.5 | Done | Command strip layout v2 — 8+4, mission rail, conditional avatar, flat surface, no hub match data | `playerHudSprint25.test.ts` |
-| 2.6 | **Current** | HQ content loop — hero mission, rank progress, last session | `playerHudSprint26.test.ts` |
+| 2.6 | Done | HQ content loop — hero mission, rank progress, last session | `playerHudSprint26.test.ts` |
+| 2.7 | **Current** | Presence & hierarchy — hero logic, compact telemetry, typography | `playerHudSprint27.test.ts` |
+
+---
+
+## Sprint 2.7 scope — Presence & hierarchy (feel pass)
+
+**Goal:** Make HQ feel intentional in ~3 seconds — correct hero when not trained today, typography hierarchy, compact empty telemetry, collapsed hub vectors, slim profile banner, one gold focal (hero CTA only).
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (Presence & hierarchy section)
+- `.cursor/rules/sst-player-dashboard.mdc` (sprint pointer 2.7)
+- `src/lib/player/dashboard/playerHudMetrics.ts` (`isTrainingToday` helper + tests)
+- `src/lib/player/dashboard/activeBounties.ts` (`resolveHeroQuest` + tests in `activeBounties.test.ts`)
+- `src/lib/components/hud/ActiveBounties.svelte` (use `resolveHeroQuest`; pass `lastTrainingUtc`)
+- `src/routes/(app)/player/dashboard/+page.svelte` (pass `lastTrainingUtc`; compact analytics class when !telemetry)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (profile banner; remove full-width setup button)
+- `src/lib/components/player/dashboard/HudMetricsPanel.svelte` (collapsed vectors when !telemetryReady && embedded)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (compact mode when !telemetryReady)
+- `src/lib/styles/player-dashboard-hud.css` (typography hierarchy, compact deck, banner, hero gold-only CTA, slate meta)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint27.test.ts` (create)
+
+**Out of scope:**
+
+- OperativeHub 8+4 grid changes
+- Next event / coach pulse / status badges (2.8)
+- PlayerShell gradient (2.9)
+- Hiding radar entirely
+- New Firestore listeners
+- Renaming canonical components
+- `teamsStore` refactor
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+node scripts/check-no-phosphor.mjs
+npm run build
+```
 
 ---
 

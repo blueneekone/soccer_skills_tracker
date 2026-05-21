@@ -57,6 +57,14 @@ function utcCalendarDayStart(d: Date): number {
 	return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
+/** True when last_training_utc is the same UTC calendar day as `now`. */
+export function isTrainingToday(
+	lastTrainingUtc: string | null | undefined,
+	now: Date = new Date(),
+): boolean {
+	return formatLastTrainingLabel(lastTrainingUtc, now) === 'Today';
+}
+
 /** Format player_stats.last_training_utc (YYYY-MM-DD) for HUD. */
 export function formatLastTrainingLabel(
 	lastTrainingUtc: string | null | undefined,

@@ -132,6 +132,23 @@ Three blocks answer the 3-second clarity test on `/player/dashboard`:
 
 ---
 
+## Presence & hierarchy (Sprint 2.7)
+
+Feel pass — no layout rearchitecture. HQ should read intentional in ~3 seconds.
+
+| Rule | Implementation |
+|------|----------------|
+| **Correct hero** | `resolveHeroQuest(items, { lastTrainingUtc })` — if not trained today → `daily-training-log`; if trained today + streak active → `daily-streak-check`; else `selectPrimaryBounty` |
+| **One gold focal** | Only `.quest-hero__cta` is full gold chamfer in the command viewport; title white, reward muted |
+| **Hub vectors empty** | Embedded `HudMetricsPanel`: one `.hmp-vectors-collapsed` line instead of six `00` cells when `!telemetryReady` |
+| **Radar always on** | `VanguardProtocolPanel` never hidden; `.player-analytics-deck--compact` + `compact` prop when `!hasVanguardTelemetry` (~40% shorter band) |
+| **Profile incomplete** | Slim `.ibm-profile-banner` at top of identity — not full-width gold setup CTA |
+| **Typography** | Name dominant (`.ibm-name`); team · rank slate (`.ibm-meta` `#64748b`); labels whisper (9px slate) |
+
+**Locked:** OperativeHub 8+4 frozen. Schedule/coach pulse deferred to Sprint 2.8.
+
+---
+
 ## Out of scope (Player OS)
 
 - Renaming `IdentityBentoModule`, `OperativeHub`, `HudMetricsPanel`, `ActiveBounties`, `VanguardProtocolPanel`
@@ -143,6 +160,6 @@ Three blocks answer the 3-second clarity test on `/player/dashboard`:
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 2.6](../ROADMAP.md) — HQ content loop (`playerHudSprint26.test.ts`).
+**Current sprint:** [ROADMAP Sprint 2.7](../ROADMAP.md) — Presence & hierarchy (`playerHudSprint27.test.ts`).
 
 **Completed foundation:** Sprints 1.1–2.2 (bento, RBAC, HUD baseline, IdentityBentoModule / OperativeHub, Gold Command palette).

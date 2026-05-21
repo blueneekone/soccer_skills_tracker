@@ -102,6 +102,11 @@
 	{/if}
 
 	<div class="ibm-rings">
+		{#if profileIncomplete && onProfileSetup}
+			<button type="button" class="ibm-profile-banner" onclick={onProfileSetup}>
+				Complete operative profile →
+			</button>
+		{/if}
 		<div class="ibm-identity">
 			<div class="ibm-identity__head">
 				{#if profileIncomplete}
@@ -132,14 +137,6 @@
 			/>
 			<HudStatCell label="XP" value={xpLabel} variant="xp" title="Career XP" />
 		</div>
-
-		{#if profileIncomplete && onProfileSetup}
-			<div class="ibm-actions">
-				<button type="button" class="ibm-cta ibm-cta--setup" onclick={onProfileSetup}>
-					FINISH PROFILE SETUP
-				</button>
-			</div>
-		{/if}
 	</div>
 </div>
 
@@ -208,7 +205,7 @@
 	.ibm-name {
 		margin: 0;
 		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: clamp(0.82rem, 2vw, 1rem);
+		font-size: clamp(0.95rem, 2.2vw, 1.15rem);
 		font-weight: 800;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
@@ -227,7 +224,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: color-mix(in srgb, var(--color-structural) 70%, #94a3b8);
+		color: #64748b;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -238,13 +235,6 @@
 		grid-template-columns: 1fr 1fr;
 		gap: clamp(6px, 1.2vw, 10px);
 		align-items: stretch;
-	}
-
-	.ibm-actions {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: clamp(6px, 1.2vw, 10px);
 	}
 
 	@media (max-width: 480px) {

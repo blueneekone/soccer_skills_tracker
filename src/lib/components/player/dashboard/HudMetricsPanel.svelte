@@ -33,22 +33,28 @@
 	aria-label="HUD metrics panel"
 >
 	<section class="hmp-vectors" aria-label="Vanguard vectors">
-		<dl class="hmp-grid hmp-grid--vectors">
-			{#each vectorRows as row (row.id)}
-				<div class="hmp-cell hmp-cell--selectable" class:hmp-cell--selected={selectedAxis === row.id}>
-					<button
-						type="button"
-						class="hmp-cell__btn"
-						aria-pressed={selectedAxis === row.id}
-						aria-label="{row.label} {row.display}"
-						onclick={() => toggleAxis(row.id)}
-					>
-						<span class="hmp-label">{row.label}</span>
-						<span class="hmp-value">{row.display}</span>
-					</button>
-				</div>
-			{/each}
-		</dl>
+		{#if embedded && !telemetryReady}
+			<p class="hmp-vectors-collapsed" role="status">
+				Vectors unlock when coach telemetry arrives · tap radar below to explore
+			</p>
+		{:else}
+			<dl class="hmp-grid hmp-grid--vectors">
+				{#each vectorRows as row (row.id)}
+					<div class="hmp-cell hmp-cell--selectable" class:hmp-cell--selected={selectedAxis === row.id}>
+						<button
+							type="button"
+							class="hmp-cell__btn"
+							aria-pressed={selectedAxis === row.id}
+							aria-label="{row.label} {row.display}"
+							onclick={() => toggleAxis(row.id)}
+						>
+							<span class="hmp-label">{row.label}</span>
+							<span class="hmp-value">{row.display}</span>
+						</button>
+					</div>
+				{/each}
+			</dl>
+		{/if}
 	</section>
 
 	{#if !telemetryReady && !embedded}
@@ -190,5 +196,15 @@
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		color: #475569;
+	}
+
+	.hmp-vectors-collapsed {
+		margin: 0;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		line-height: 1.35;
+		text-transform: uppercase;
+		color: #64748b;
 	}
 </style>

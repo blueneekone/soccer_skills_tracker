@@ -32,7 +32,13 @@
 }
 
 .player-hud-root .ibm-meta {
-	color: color-mix(in srgb, var(--color-structural, #64748b) 70%, #94a3b8);
+	color: #64748b;
+}
+
+.player-hud-root .ibm-name {
+	font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+	font-weight: 800;
+	color: var(--vanguard-text-1, #f8fafc);
 }
 
 /* Sprint 2.4 — analytics deck layout */
@@ -40,6 +46,35 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+}
+
+/* Sprint 2.7 — compact analytics deck when no coach telemetry */
+.player-hud-root .player-analytics-deck--compact {
+	gap: clamp(4px, 0.8vw, 8px);
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-chart {
+	max-width: 220px;
+	padding: clamp(4px, 1vw, 8px);
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-body {
+	gap: clamp(8px, 1.2vw, 10px);
+	align-items: flex-start;
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-inspector {
+	min-height: auto;
+	padding: clamp(4px, 0.8vw, 8px);
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-inspector__ghost {
+	font-size: 9px;
+	line-height: 1.3;
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-head {
+	margin-bottom: 0;
 }
 
 .player-hud-root .player-capsules-strip {
@@ -194,7 +229,8 @@
 .player-hud-root .operative-hub .quest-log-panel--rail {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
+	height: auto;
+	min-height: 0;
 	gap: clamp(4px, 0.8vw, 8px);
 }
 
@@ -486,6 +522,61 @@
 	box-shadow: 0 0 8px color-mix(in srgb, #fbbf24 35%, transparent);
 }
 
+/* Sprint 2.7 — collapsed hub vectors when empty (embedded) */
+.player-hud-root .hmp-vectors-collapsed {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	line-height: 1.35;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+/* Sprint 2.7 — slim profile incomplete banner (not competing with hero CTA) */
+.player-hud-root .ibm-profile-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	min-height: 28px;
+	margin: 0 0 clamp(4px, 0.8vw, 6px);
+	padding: 0 clamp(8px, 1.2vw, 10px);
+	border: 1px solid #334155;
+	background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #94a3b8;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		color 0.15s ease;
+	clip-path: polygon(
+		0 4px,
+		4px 0,
+		calc(100% - 4px) 0,
+		100% 4px,
+		100% calc(100% - 4px),
+		calc(100% - 4px) 100%,
+		4px 100%,
+		0 calc(100% - 4px)
+	);
+}
+
+.player-hud-root .ibm-profile-banner:hover {
+	border-color: color-mix(in srgb, #fbbf24 35%, #334155);
+	color: #fbbf24;
+}
+
+.player-hud-root .ibm-profile-banner:focus-visible {
+	outline: 2px solid color-mix(in srgb, #fbbf24 45%, transparent);
+	outline-offset: 2px;
+}
+
 /* Sprint 2.2 — embedded mission row hover */
 .player-hud-root .quest-row--embedded {
 	transition: background 0.15s ease;
@@ -596,7 +687,7 @@
 	font-weight: 800;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: color-mix(in srgb, #fbbf24 75%, #94a3b8);
+	color: #64748b;
 }
 
 .player-hud-root .quest-hero__title {
@@ -618,15 +709,17 @@
 	margin: 0;
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
-	font-weight: 900;
+	font-weight: 700;
 	font-variant-numeric: tabular-nums;
-	color: #fbbf24;
+	color: color-mix(in srgb, #64748b 55%, #fbbf24);
 }
 
 .player-hud-root .quest-hero__cta {
 	align-self: flex-start;
 	width: 100%;
 	max-width: 100%;
+	border-color: #fbbf24;
+	color: #fbbf24;
 }
 
 /* Sprint 2.2 — respect prefers-reduced-motion for HUD pulses */

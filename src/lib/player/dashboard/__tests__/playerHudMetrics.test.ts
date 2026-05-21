@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
 	formatCompactXp,
 	formatLastTrainingLabel,
-	streakRingFill,
+	isTrainingToday,
 	STREAK_RING_GOAL_DAYS,
+	streakRingFill,
 } from '../playerHudMetrics.js';
 
 describe('playerHudMetrics — formatCompactXp', () => {
@@ -59,5 +60,25 @@ describe('playerHudMetrics — formatLastTrainingLabel', () => {
 
 	it('returns compact month-day for older dates', () => {
 		expect(formatLastTrainingLabel('2026-05-12', now)).toBe('May 12');
+	});
+});
+
+describe('playerHudMetrics — isTrainingToday', () => {
+	const now = new Date(Date.UTC(2026, 4, 21, 15, 0, 0)); // 2026-05-21 UTC
+
+	it('returns true when last training is today', () => {
+		expect(isTrainingToday('2026-05-21', now)).toBe(true);
+	});
+
+	it('returns false when last training is not today', () => {
+		expect(isTrainingToday('2026-05-20', now)).toBe(false);
+		expect(isTrainingToday('2026-05-12', now)).toBe(false);
+	});
+
+	it('returns false when missing or invalid', () => {
+		expect(isTrainingToday(null, now)).toBe(false);
+		expect(isTrainingToday(undefined, now)).toBe(false);
+		expect(isTrainingToday('', now)).toBe(false);
+		expect(isTrainingToday('not-a-date', now)).toBe(false);
 	});
 });

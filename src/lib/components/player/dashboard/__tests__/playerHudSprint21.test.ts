@@ -55,9 +55,10 @@ describe('Sprint 2.1 — IdentityBentoModule metric chips', () => {
 		expect(ibmSrc).toMatch(/variant="xp"/);
 	});
 
-	it('has chamfer CTA for profile setup (ibm-cta, not underline-only link)', () => {
-		expect(ibmSrc).toMatch(/ibm-cta/);
-		expect(ibmSrc).toMatch(/ibm-cta--setup/);
+	it('has profile setup affordance (Sprint 2.7: slim ibm-profile-banner supersedes ibm-cta--setup)', () => {
+		const hasBanner = /ibm-profile-banner/.test(ibmSrc);
+		const hasLegacyCta = /ibm-cta--setup/.test(ibmSrc);
+		expect(hasBanner || hasLegacyCta).toBe(true);
 		expect(ibmSrc).not.toMatch(/class="ibm-setup"/);
 	});
 
