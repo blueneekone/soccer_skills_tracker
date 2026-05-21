@@ -265,16 +265,17 @@
 		aria-labelledby="lobby-capsules-h"
 	>
 		<header class="lobby-capsules-intro">
-			<p class="lobby-eyebrow tw-mb-1 tw-text-slate-400">Self comparison</p>
+			<p class="lobby-eyebrow tw-mb-1 tw-font-mono tw-text-[0.65rem] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-400">
+				Self comparison
+			</p>
 			<h2
 				id="lobby-capsules-h"
-				class="tw-m-0 tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100"
+				class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-tight tw-text-slate-100"
 			>
 				Time-Lapse Memory Capsules
 			</h2>
-			<p class="tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-slate-500">
-				Compare your performance only against your past self. Capsules unlock at the end of each
-				training cycle.
+			<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-slate-500">
+				Compare against your past self · unlocks each training cycle
 			</p>
 		</header>
 		{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}

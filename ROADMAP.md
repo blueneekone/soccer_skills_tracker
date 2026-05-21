@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.0** — Telemetry deck (no duplicate vectors)
+**Current sprint:** **2.1** — Identity metric chips + palette pass
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -36,7 +36,8 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 1.7 | Done | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` — Engineering pass (padding, ellipsis, streak pulse) — visual remediation continues in 1.8. |
 | 1.8 | Done | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` — Unified hub shell + vector strip — mission deck continues in 1.9. |
 | 1.9 | Done | Mission deck density — single-line embedded rows, compact CTAs, no bracket UI | `playerHudSprint19.test.ts` |
-| 2.0 | **Current** | Telemetry deck — hub vector strip sync, radar + inspector, remove duplicate grid | `playerHudSprint20.test.ts` |
+| 2.0 | Done | Telemetry deck — hub vector strip sync, radar + inspector, remove duplicate grid | `playerHudSprint20.test.ts` |
+| 2.1 | **Current** | Identity metric chips, chamfer CTAs, palette + mono header pass | `playerHudSprint21.test.ts` |
 
 ---
 
@@ -72,21 +73,56 @@ npm run build
 
 ---
 
-## Sprint 2.1 scope — Identity metric chips + palette pass (planned)
+## Sprint 2.1 scope — Identity metric chips + palette pass
 
-**Goal:** Refine IdentityBentoModule ring/chip typography and align accent palette across hub modules — document only until Sprint 2.0 ships.
+**Goal:** Fix tacky ring/center-text overlap in identity column. Rings show progress only; labels and values live in adjacent chips. Premium chamfer CTAs for profile setup and command center. Gold-forward palette under `.player-hud-root`. Mono typography lock for dashboard section headers.
 
-**In scope (when started):**
+**In scope:**
 
-- `IdentityBentoModule.svelte` — ring/chip typography
-- `player-dashboard-hud.css` — palette pass for identity + metrics accents
-- `playerHudSprint21.test.ts` (create)
+- `ROADMAP.md` (this update)
+- `src/lib/components/player/dashboard/HudMetricChip.svelte` (new)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte`
+- `src/lib/components/hud/HudSeededRingCanvas.svelte` (small-ring center text guard)
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/routes/(app)/player/dashboard/+page.svelte` (capsule section header mono pass only)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint21.test.ts` (create)
+
+**Note:** Test file is `playerHudSprint21.test.ts` under `player/dashboard/__tests__/` — NOT `firestoreRulesSprint21.test.ts` (compliance epic).
 
 **Out of scope:**
 
-- Telemetry deck layout (Sprint 2.0)
-- ActiveBounties / mission deck changes
+- HudMetricsPanel / VanguardProtocolPanel / ActiveBounties layout changes
+- Telemetry selectedAxis behavior
 - Coach/parent routes
+- svelte-check / phosphor prebuild fixes
+- Full PLAYER_OS.md rewrite
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.2 scope — Motion polish + mono cleanup (planned)
+
+**Goal:** Optional motion polish and remaining sans→mono cleanup on marketing copy blocks within the player dashboard shell.
+
+**In scope (when started):**
+
+- Subtle hover/focus transitions on identity metric chips and chamfer CTAs
+- Remaining sans-serif marketing copy blocks → Geist Mono where appropriate
+- `playerHudSprint22.test.ts` (create)
+
+**Out of scope:**
+
+- Identity chip layout (Sprint 2.1)
+- Telemetry deck / mission deck changes
+- Coach/parent routes
+- Full PLAYER_OS.md rewrite
 
 ---
 

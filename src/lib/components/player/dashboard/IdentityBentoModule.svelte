@@ -1,6 +1,6 @@
 <script lang="ts">
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
-	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
+	import HudMetricChip from '$lib/components/player/dashboard/HudMetricChip.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { formatCompactXp, streakRingFill } from '$lib/player/dashboard/playerHudMetrics.js';
 	import '$lib/styles/player-dashboard-hud.css';
@@ -71,57 +71,47 @@
 			<p class="ibm-meta">{teamLabel || 'No team'} · {rankName}</p>
 		</div>
 
-		<div class="ibm-pills">
-			<span
-				class="ibm-pill ibm-pill--streak"
-				class:ibm-pill--streak-active={currentStreak > 0}
+		<div class="ibm-metrics">
+			<HudMetricChip
+				label="STREAK"
+				value="{currentStreak}d"
+				fill={streakFill}
+				strokeColor="var(--color-accent, #fbbf24)"
+				variant="streak"
+				uid="{ringSeed}-streak"
 				title="Best {longestStreak}d streak"
-			>
-				<HudSeededRingCanvas
-					uid={ringSeed}
-					size={28}
-					fill={streakFill}
-					strokeColor="var(--color-accent, #fbbf24)"
-					value={String(currentStreak)}
-					showCenter={true}
-				/>
-				<span class="ibm-pill__stack">
-					<span class="ibm-pill__label">Streak</span>
-					<span class="ibm-pill__value">{currentStreak}d</span>
-				</span>
-			</span>
-
-			<span class="ibm-pill ibm-pill--xp" title="Career XP">
-				<HudSeededRingCanvas
-					uid={ringSeed}
-					size={28}
-					fill={levelXpFill}
-					strokeColor="var(--color-structural, #3b82f6)"
-					value={xpLabel}
-					showCenter={true}
-				/>
-				<span class="ibm-pill__stack">
-					<span class="ibm-pill__label">XP</span>
-					<span class="ibm-pill__value">{xpLabel}</span>
-				</span>
-			</span>
+			/>
+			<HudMetricChip
+				label="XP"
+				value={xpLabel}
+				fill={levelXpFill}
+				strokeColor="#334155"
+				variant="xp"
+				uid="{ringSeed}-xp"
+				title="Career XP"
+			/>
 		</div>
 
-		{#if profileIncomplete && onProfileSetup}
-			<button type="button" class="ibm-setup" onclick={onProfileSetup}>
-				Finish profile setup
-			</button>
-		{/if}
+		{#if (profileIncomplete && onProfileSetup) || onOpenCommandCenter}
+			<div class="ibm-actions">
+				{#if profileIncomplete && onProfileSetup}
+					<button type="button" class="ibm-cta ibm-cta--setup" onclick={onProfileSetup}>
+						FINISH PROFILE SETUP
+					</button>
+				{/if}
 
-		{#if onOpenCommandCenter}
-			<button
-				type="button"
-				class="cmd-center-trigger"
-				onclick={onOpenCommandCenter}
-				aria-label="Open command center"
-			>
-				<Icon name="sys.grid" size={18} />
-			</button>
+				{#if onOpenCommandCenter}
+					<button
+						type="button"
+						class="cmd-center-trigger cmd-center-trigger--labeled"
+						onclick={onOpenCommandCenter}
+						aria-label="Open command center"
+					>
+						<Icon name="sys.grid" size={16} />
+						<span class="cmd-center-trigger__label">CMD</span>
+					</button>
+				{/if}
+			</div>
 		{/if}
 	</div>
 </div>
@@ -203,65 +193,18 @@
 		white-space: nowrap;
 	}
 
-	.ibm-pills {
+	.ibm-metrics {
 		display: flex;
 		flex-wrap: wrap;
 		gap: clamp(6px, 1.2vw, 10px);
 		align-items: center;
 	}
 
-	.ibm-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: clamp(4px, 0.8vw, 6px);
-	}
-
-	.ibm-pill__stack {
+	.ibm-actions {
 		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		min-width: 0;
-	}
-
-	.ibm-pill__label {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.46rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: color-mix(in srgb, var(--color-structural, #3b82f6) 70%, #94a3b8);
-	}
-
-	.ibm-pill--streak .ibm-pill__label {
-		color: color-mix(in srgb, var(--color-accent, #fbbf24) 80%, #fde68a);
-	}
-
-	.ibm-pill__value {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.7rem;
-		font-weight: 900;
-		font-variant-numeric: tabular-nums;
-		color: #ffffff;
-		white-space: nowrap;
-	}
-
-	.ibm-setup {
-		margin: 0;
-		padding: 0;
-		border: none;
-		background: none;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.5rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--color-accent, #fbbf24);
-		cursor: pointer;
-		text-align: left;
-	}
-
-	.ibm-setup:hover {
-		text-decoration: underline;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: clamp(6px, 1.2vw, 10px);
 	}
 
 	@media (max-width: 480px) {

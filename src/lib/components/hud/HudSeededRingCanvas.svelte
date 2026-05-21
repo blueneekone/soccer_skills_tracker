@@ -31,6 +31,7 @@
 	let canvasEl = $state<HTMLCanvasElement | null>(null);
 
 	const clampedFill = $derived(Math.min(1, Math.max(0, Number(fill) || 0)));
+	const effectiveShowCenter = $derived(showCenter && size >= 40);
 
 	function paint(timeMs: number) {
 		if (!canvasEl) return;
@@ -90,7 +91,7 @@
 			<span class="hud-seeded-ring__initials">{avatarSeed.slice(0, 2).toUpperCase()}</span>
 		</div>
 	{/if}
-	{#if showCenter && (label || value || subLabel)}
+	{#if effectiveShowCenter && (label || value || subLabel)}
 		<div class="hud-seeded-ring__center">
 			{#if label}<span class="hud-seeded-ring__label">{label}</span>{/if}
 			{#if value}<span class="hud-seeded-ring__value">{value}</span>{/if}
