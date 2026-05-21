@@ -56,10 +56,10 @@
 		z-index: 0;
 		grid-column: 1 / -1;
 		background-image:
-			linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+			linear-gradient(color-mix(in srgb, #fbbf24 4%, transparent) 1px, transparent 1px),
+			linear-gradient(90deg, color-mix(in srgb, #fbbf24 4%, transparent) 1px, transparent 1px);
 		background-size: 22px 22px;
-		opacity: 0.35;
+		opacity: 0.12;
 	}
 
 	.operative-hub__identity,

@@ -334,7 +334,8 @@
 {/snippet}
 
 <section
-	class="quest-log quest-log-panel hud-telemetry-root"
+	class="quest-log quest-log-panel"
+	class:hud-telemetry-root={!embedded}
 	class:quest-log-panel--embedded={embedded}
 	class:quest-log--empty={showEmpty}
 	aria-label="Quest log"
@@ -347,7 +348,6 @@
 	{:else if sortedQuests.length > 0}
 		{#if embedded}
 			<header class="quest-log__head quest-log__head--embedded">
-				<p class="quest-log__eyebrow quest-log__eyebrow--deck">// MISSION DECK</p>
 				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
 			</header>
 
@@ -446,6 +446,10 @@
 
 	.quest-log__head--embedded {
 		margin-bottom: clamp(6px, 1vw, 8px);
+	}
+
+	.quest-row--embedded.quest-row--habit .quest-row__xp {
+		color: color-mix(in srgb, var(--color-accent, #fbbf24) 65%, #94a3b8);
 	}
 
 	.quest-log__eyebrow--deck {

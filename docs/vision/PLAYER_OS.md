@@ -22,7 +22,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 
 | Zone | Grid | Component | Content |
 |------|------|-----------|---------|
-| Identity | 4-col (`bento-span-4`) | `IdentityBentoModule` | UID-derived avatar, operative name, rank/tier |
+| Identity | 4-col (`bento-span-4`) | `IdentityBentoModule` | UID-derived avatar, operative name, rank/tier, streak/XP stat cells |
 | Metrics | 8-col (`bento-span-8`) | `HudMetricsPanel` | Streak, XP, session telemetry, readiness |
 | Missions | 12-col (`bento-span-12`) | `ActiveBounties` | Active missions / coach bounties (dedup via `deduplicateById`) |
 
@@ -31,7 +31,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 - `VanguardProtocolPanel` — protocol status, compliance capsule
 - Memory capsules / archive modules (when enabled)
 
-Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, skill tree) live in the **Command Center drawer** — not clutter on the main HUD.
+Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, skill tree) live in the **shell rail / Command Center drawer** — not clutter on the main HUD.
 
 ---
 
@@ -77,6 +77,29 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 
 ---
 
+## Player OS Design System
+
+**Tokens:** dominant `#0f172a`, structural border `#334155`, accent gold `#fbbf24`, muted slate `#64748b` / `#94a3b8`, Geist Mono labels, tabular nums for values.
+
+**Do:**
+
+- Chamfer clip-path on modules (no `border-radius` on Player OS shells)
+- Avatar level ring only — one ring vocabulary under `.player-hud-root`
+- Gold accents and structural borders for all player HUD chrome
+- Identity streak/XP as ringless stat cells (`HudStatCell`), not mini canvas rings
+
+**Don't:**
+
+- Cyan/teal (`#22d3ee`, `rgba(0,255,255,…)`) on the player dashboard
+- `hud-telemetry-root` on embedded missions inside OperativeHub
+- Mini rings on streak/XP metrics (avatar level ring is the sole progress ring)
+- Double mission eyebrows (`// MISSION DECK` + `ACTIVE MISSIONS`)
+- `border-radius` on Player OS modules (avatar interior exception OK)
+
+**Home screen zones (updated):** Identity streak/XP = stat cells, not rings. Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
+
+---
+
 ## Out of scope (Player OS)
 
 - Renaming `IdentityBentoModule`, `OperativeHub`, `HudMetricsPanel`, `ActiveBounties`, `VanguardProtocolPanel`
@@ -88,6 +111,6 @@ Stylesheet: `src/lib/styles/player-dashboard-hud.css`
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 1.7](../ROADMAP.md) — HUD density, mission ellipsis, streak UX (`playerHudSprint17.test.ts` — future code sprint).
+**Current sprint:** [ROADMAP Sprint 2.3](../ROADMAP.md) — Player OS visual system unification (`playerHudSprint23.test.ts`).
 
-**Completed foundation:** Sprints 1.1–1.6 (bento, RBAC, HUD baseline, IdentityBentoModule / OperativeHub).
+**Completed foundation:** Sprints 1.1–2.2 (bento, RBAC, HUD baseline, IdentityBentoModule / OperativeHub, Gold Command palette).

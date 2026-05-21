@@ -24,21 +24,23 @@ describe('Sprint 2.1 — HudMetricChip component', () => {
 		expect(existsSync(CHIP)).toBe(true);
 	});
 
-	it('renders ring arc without center text (showCenter false)', () => {
-		expect(chipSrc).toMatch(/HudSeededRingCanvas/);
-		expect(chipSrc).toMatch(/showCenter=\{false\}/);
+	it('delegates to HudStatCell (Sprint 2.3 — ringless compat wrapper)', () => {
+		expect(chipSrc).toMatch(/HudStatCell/);
+		expect(chipSrc).not.toMatch(/HudSeededRingCanvas/);
 	});
 
-	it('uses ibm-metric-chip class and chamfer clip-path', () => {
-		expect(chipSrc).toMatch(/ibm-metric-chip/);
-		expect(chipSrc).toMatch(/clip-path:\s*polygon/);
+	it('HudStatCell uses hud-stat-cell class and chamfer clip-path', () => {
+		const statCell = join(ROOT, 'lib/components/player/dashboard/HudStatCell.svelte');
+		const statCellSrc = existsSync(statCell) ? readFileSync(statCell, 'utf-8') : '';
+		expect(statCellSrc).toMatch(/hud-stat-cell/);
+		expect(statCellSrc).toMatch(/clip-path:\s*polygon/);
 	});
 });
 
 describe('Sprint 2.1 — IdentityBentoModule metric chips', () => {
-	it('imports and uses HudMetricChip for streak/XP metrics', () => {
-		expect(ibmSrc).toMatch(/import HudMetricChip/);
-		expect(ibmSrc).toMatch(/<HudMetricChip/);
+	it('imports HudStatCell for streak/XP metrics (Sprint 2.3 supersedes direct HudMetricChip)', () => {
+		expect(ibmSrc).toMatch(/import HudStatCell/);
+		expect(ibmSrc).toMatch(/<HudStatCell/);
 	});
 
 	it('does NOT pass showCenter={true} to HudSeededRingCanvas for streak/XP pills', () => {

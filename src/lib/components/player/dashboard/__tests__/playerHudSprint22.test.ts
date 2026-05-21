@@ -45,9 +45,14 @@ describe('Sprint 2.2 — reduced-motion guards', () => {
 });
 
 describe('Sprint 2.2 — subtle motion micro-interactions', () => {
-	it('ibm-metric-chip has border-color transition on hover', () => {
-		expect(hudCssSrc).toMatch(/\.ibm-metric-chip[\s\S]*?transition:\s*border-color\s+0\.15s/);
-		expect(hudCssSrc).toMatch(/\.ibm-metric-chip:hover/);
+	it('hud-stat-cell or ibm-metric-chip has border-color transition on hover', () => {
+		const hasStatCellHover =
+			/\.hud-stat-cell[\s\S]*?transition:\s*border-color\s+0\.15s/.test(hudCssSrc) &&
+			/\.hud-stat-cell:hover/.test(hudCssSrc);
+		const hasChipHover =
+			/\.ibm-metric-chip[\s\S]*?transition:\s*border-color\s+0\.15s/.test(hudCssSrc) &&
+			/\.ibm-metric-chip:hover/.test(hudCssSrc);
+		expect(hasStatCellHover || hasChipHover).toBe(true);
 	});
 
 	it('hmp-cell--selectable has hover/selection transition', () => {

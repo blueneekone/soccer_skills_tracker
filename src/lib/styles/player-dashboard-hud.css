@@ -140,7 +140,69 @@
 	border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent);
 }
 
-/* Sprint 2.1 — identity metric chips */
+/* Sprint 2.3 — mute Bauhaus avatar so gold level ring reads clearly */
+.player-hud-root .hud-avatar-ring__avatar-wrap :global(.uid-avatar svg) {
+	filter: saturate(0.65) brightness(0.92);
+}
+
+/* Sprint 2.3 — identity stat cells (ringless streak/XP) */
+.player-hud-root .hud-stat-cell {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: clamp(4px, 0.8vw, 6px) clamp(6px, 1.2vw, 8px);
+	border: 1px solid #334155;
+	background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
+	min-width: 0;
+	transition: border-color 0.15s ease;
+	clip-path: polygon(
+		0 5px,
+		5px 0,
+		calc(100% - 5px) 0,
+		100% 5px,
+		100% calc(100% - 5px),
+		calc(100% - 5px) 100%,
+		5px 100%,
+		0 calc(100% - 5px)
+	);
+}
+
+.player-hud-root .hud-stat-cell__label {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #334155 50%, #94a3b8);
+}
+
+.player-hud-root .hud-stat-cell--streak .hud-stat-cell__label {
+	color: color-mix(in srgb, #fbbf24 80%, #fde68a);
+}
+
+.player-hud-root .hud-stat-cell--xp .hud-stat-cell__label {
+	color: color-mix(in srgb, #334155 70%, #94a3b8);
+}
+
+.player-hud-root .hud-stat-cell__value {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.7rem;
+	font-weight: 900;
+	font-variant-numeric: tabular-nums;
+	color: #ffffff;
+	white-space: nowrap;
+}
+
+.player-hud-root .hud-stat-cell:hover {
+	border-color: color-mix(in srgb, #fbbf24 28%, #334155);
+}
+
+.player-hud-root .hud-stat-cell--streak:hover,
+.player-hud-root .ibm-streak-at-risk .hud-stat-cell--streak {
+	border-color: color-mix(in srgb, #fbbf24 45%, #334155);
+}
+
+/* Sprint 2.1 — identity metric chips (compat wrapper; superseded by hud-stat-cell in 2.3) */
 .player-hud-root .ibm-metric-chip {
 	display: inline-flex;
 	align-items: center;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
-	import HudMetricChip from '$lib/components/player/dashboard/HudMetricChip.svelte';
-	import { formatCompactXp, streakRingFill } from '$lib/player/dashboard/playerHudMetrics.js';
+	import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
+	import { formatCompactXp } from '$lib/player/dashboard/playerHudMetrics.js';
 	import '$lib/styles/player-dashboard-hud.css';
 
 	let {
@@ -35,7 +35,6 @@
 	} = $props();
 
 	const xpLabel = $derived(formatCompactXp(totalXp));
-	const streakFill = $derived(streakRingFill(currentStreak));
 	const ringSeed = $derived(uid || displayName || 'player');
 	const levelXpFill = $derived.by(() => {
 		const d = xpInTier + xpToNextRank;
@@ -69,24 +68,13 @@
 		</div>
 
 		<div class="ibm-metrics">
-			<HudMetricChip
+			<HudStatCell
 				label="STREAK"
 				value="{currentStreak}d"
-				fill={streakFill}
-				strokeColor="var(--color-accent, #fbbf24)"
 				variant="streak"
-				uid="{ringSeed}-streak"
 				title="Best {longestStreak}d streak"
 			/>
-			<HudMetricChip
-				label="XP"
-				value={xpLabel}
-				fill={levelXpFill}
-				strokeColor="#334155"
-				variant="xp"
-				uid="{ringSeed}-xp"
-				title="Career XP"
-			/>
+			<HudStatCell label="XP" value={xpLabel} variant="xp" title="Career XP" />
 		</div>
 
 		{#if profileIncomplete && onProfileSetup}
@@ -177,10 +165,10 @@
 	}
 
 	.ibm-metrics {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: clamp(6px, 1.2vw, 10px);
-		align-items: center;
+		align-items: stretch;
 	}
 
 	.ibm-actions {

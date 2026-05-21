@@ -108,9 +108,9 @@ describe('PlayerShell — rail-only navigation', () => {
 });
 
 describe('IdentityBentoModule — identity badge layout', () => {
-	it('uses avatar ring with streak/XP metric chips instead of three mini rings', () => {
+	it('uses avatar ring with streak/XP stat cells instead of three mini rings', () => {
 		expect(identitySrc).toMatch(/HudAvatarRing/);
-		expect(identitySrc).toMatch(/HudMetricChip|ibm-metrics/);
+		expect(identitySrc).toMatch(/HudStatCell|HudMetricChip|ibm-metrics/);
 		expect(identitySrc).not.toMatch(/HudMiniRing/);
 	});
 

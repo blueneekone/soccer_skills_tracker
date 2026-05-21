@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.2** — Motion polish + mono/palette finish
+**Current sprint:** **2.3** — Player OS visual system unification
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -39,7 +39,8 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.0 | Done | Telemetry deck — hub vector strip sync, radar + inspector, remove duplicate grid | `playerHudSprint20.test.ts` |
 | 2.1 | Done | Identity metric chips, chamfer CTAs, palette + mono header pass | `playerHudSprint21.test.ts` |
 | 2.1.1 | Done | CMD removed; shell nav only | `playerHudSprint14.test.ts` (no PlayerCommandCenter on page) |
-| 2.2 | **Current** | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
+| 2.2 | Done | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
+| 2.3 | **Current** | Gold Command HUD unification — ringless stat cells, no cyan telemetry | `playerHudSprint23.test.ts` |
 
 ---
 
@@ -106,6 +107,45 @@ npm run build
 ```bash
 npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard
 npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.3 scope — Player OS visual system unification
+
+**Goal:** One cohesive Gold Command HUD on `/player/dashboard`. Fix XP/streak text overlap by removing mini-rings from identity stats. Kill cyan/teal decorative language inside the player HUD shell. Document the design system in PLAYER_OS.md. No layout rearchitecture.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (add Player OS Design System section; fix ROADMAP link footer)
+- `src/lib/components/player/dashboard/HudStatCell.svelte` (new — ringless stat cell)
+- `src/lib/components/player/dashboard/HudMetricChip.svelte` (refactor to thin wrapper delegating to HudStatCell; remove HudSeededRingCanvas)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (use HudStatCell; grid layout for stats)
+- `src/lib/components/player/dashboard/OperativeHub.svelte` (replace cyan scanlines with gold-tint or remove)
+- `src/lib/components/hud/ActiveBounties.svelte` (embedded path only: no hud-telemetry-root, single mission header, no #22d3ee)
+- `src/lib/styles/player-dashboard-hud.css` (hud-stat-cell styles, optional avatar desaturate, preserve 2.2 hovers + reduced-motion)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint23.test.ts` (create)
+- `src/routes/(app)/player/dashboard/__tests__/playerDashboard.hud.test.ts` (extend identity assertion)
+
+**Out of scope:**
+
+- `+page.svelte` layout / slab count changes
+- HudMetricsPanel vector strip or selectedAxis behavior
+- VanguardProtocolPanel / radar / inspector structure (2.0 done)
+- Non-embedded ActiveBounties standalone panel (other routes)
+- Re-adding PlayerCommandCenter
+- teamsStore refactor (keep deduplicateById)
+- svelte-check 362 errors
+- Compliance Epic 2.2 / vault / shred
+- Renaming IdentityBentoModule, OperativeHub, HudMetricsPanel, ActiveBounties, VanguardProtocolPanel
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+node scripts/check-no-phosphor.mjs
 npm run build
 ```
 
