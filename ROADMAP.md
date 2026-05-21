@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.7** — Presence & hierarchy
+**Current sprint:** **3.0** — Operative Loadout v2 schema + renderer
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -23,7 +23,7 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 
 ---
 
-## Sprint status — Epic 1: Foundation & Player HUD
+## Sprint status — Epic 1: Foundation & Player HUD *(aesthetic complete)*
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -44,7 +44,134 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.4 | Done | Gold Command palette, analytics deck, chamfer cards | `playerHudSprint24.test.ts` |
 | 2.5 | Done | Command strip layout v2 — 8+4, mission rail, conditional avatar, flat surface, no hub match data | `playerHudSprint25.test.ts` |
 | 2.6 | Done | HQ content loop — hero mission, rank progress, last session | `playerHudSprint26.test.ts` |
-| 2.7 | **Current** | Presence & hierarchy — hero logic, compact telemetry, typography | `playerHudSprint27.test.ts` |
+| 2.7 | Done | Presence & hierarchy — hero logic, compact telemetry, typography | `playerHudSprint27.test.ts` |
+| 2.7.1 | Done | Operative avatar / armory portrait persistence | `armoryAvatar.test.ts` |
+| 2.8 | Done | Player Dossier unification — black canvas, dual accent, shared tokens | `playerHudSprint28.test.ts` |
+| 2.8.1 | Done | Dossier polish — hero/training sync, profile banner, strap dedupe, compact telemetry | `playerHudSprint281.test.ts` |
+| 2.8.2 | Done | Compact radar sizing — hero-readable telemetry in compact deck | `playerHudSprint282.test.ts` |
+| 2.9 | Done | Player shell dossier alignment — rail + ambient on all player routes | `playerHudSprint29.test.ts` |
+| 2.10 | Done | HQ world context — next event, coach pulse, status chips | `playerHudSprint210.test.ts` |
+| 2.10.1 | Done | Inline strap context + mission CTA colors | `playerHudSprint2101.test.ts` |
+| 2.10.2 | Done | Inline strap schedule meta always visible (ghost + deduped chips) | `playerHudSprint2102.test.ts` |
+
+**Epic 1 aesthetic complete through 2.10.2.** Operative loadout (gear slots, album bonuses, unlock ceremonies) continues in **Epic 3** — see [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md).
+
+---
+
+## Sprint status — Epic 3: Operative Loadout v2
+
+| Sprint | Status | Summary | Proof |
+|--------|--------|---------|-------|
+| 3.0 | **Current** | Schema + renderer — loadout slots, Firestore shape, dossier-safe preview | `playerLoadoutSprint30.test.ts` (planned) |
+| 3.1 | Planned | Armory studio — equip UX on `/player/armory`, slot picker, portrait sync | — |
+| 3.2 | Planned | Art pipeline — sticker variants, asset hashing, catalog ingestion | — |
+| 3.3 | Planned | Unlock ceremonies — server-verified drops, confetti gate, minor-safe copy | — |
+| 3.4 | Planned | Album set bonuses — set completion perks, dossier chip rewards | — |
+
+Vision: [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md)
+
+---
+
+## Sprint 3.0 scope — Operative Loadout v2 (schema + renderer)
+
+**Goal:** Define the canonical `operativeLoadout` schema, pure render helpers, and a read-only preview component that composes vector portrait + equipped digital slots. No Armory studio UX yet (3.1).
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/OPERATIVE_LOADOUT.md` (create — slots, earn paths, COPPA)
+- `docs/vision/PLAYER_OS.md` (defer loadout to Epic 3; mark Epic 1 aesthetic complete)
+- `src/lib/gamification/loadoutSchema.ts` (create — slot keys, catalog refs, validation)
+- `src/lib/gamification/__tests__/loadoutSchema.test.ts` (create)
+- `src/lib/components/player/OperativeLoadoutPreview.svelte` (create — dossier-safe renderer)
+- `src/lib/types/user.types.ts` (optional `operativeLoadout` field on profile)
+
+**Out of scope:**
+
+- Armory studio equip flows (3.1)
+- Sticker art ingestion pipeline (3.2)
+- Unlock ceremony UI (3.3)
+- Album set bonus logic (3.4)
+- Coach / parent / director shells
+- Renaming canonical dashboard components
+
+**Verify commands:**
+
+```bash
+npm test -- src/lib/gamification/__tests__/loadoutSchema.test.ts
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.9 scope — Player shell dossier alignment
+
+**Goal:** Left/bottom nav rail and ambient feel match Player Dossier on all player shell routes (HQ, Stats, Armory, Workout). Extend 2.8 dashboard-only ambient soften to full player shell.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (Shell alignment section)
+- `src/lib/styles/player-shell.css` (dossier rail tokens, ambient via `.ps-root--dossier`, scrollbar gold/teal)
+- `src/lib/components/shell/PlayerShell.svelte` (`ps-root--dossier`, `ps-canvas-bg`)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint29.test.ts` (create)
+
+**Out of scope:**
+
+- World context strip, hero logic (2.8.1)
+- Loadout, coach/director shells
+- OperativeHub layout changes
+
+**Verify commands:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint29.test.ts
+npm run build
+```
+
+---
+
+## Sprint 2.8 scope — Player Dossier unification
+
+**Goal:** Unify `/player/dashboard` aesthetics with Armory (`qa-*`) and Stats (`dossier-*`): black canvas, lifted panels, gold action + teal data accents. No layout rearchitecture, no renames, no Coach/Parent/Director changes.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (Player Dossier visual tone + dual accent)
+- `.cursor/rules/sst-player-dashboard.mdc` (sprint pointer 2.8 + `player-dossier.css`)
+- `src/lib/styles/player-dossier.css` (create — canonical `--pd-*` tokens)
+- `src/lib/styles/player-dashboard-hud.css` (remap surfaces, dual accent, remove scanlines rule)
+- `src/lib/styles/player-shell.css` (dashboard-only ambient soften via `:has(.player-dossier-root)`)
+- `src/routes/(app)/player/dashboard/+page.svelte` (import tokens, `player-dossier-root`, `pd-strap`, black bg)
+- `src/lib/components/player/dashboard/OperativeHub.svelte` (dossier panel/border; remove scanlines)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (inset `ibm-root--inset` panel)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (teal radar/inspector data)
+- `src/lib/components/player/dashboard/AttributeRadar.svelte` (teal polygon)
+- `src/lib/components/hud/ActiveBounties.svelte` (embedded rail inherits dossier via hud css — optional)
+- `src/routes/(app)/player/armory/+page.svelte` (optional: import + `--pd-*` alias on `.qa-root`)
+- `src/routes/(app)/stats/+page.svelte` (optional: `player-dossier-root` + `--d-*` aliases)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint28.test.ts` (create)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint24.test.ts` (update conflicting color assertions)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint25.test.ts` (update conflicting surface assertions)
+
+**Out of scope:**
+
+- OperativeHub 8+4 layout changes
+- Hero quest logic / new Firestore listeners
+- Coach / parent / director pages
+- Renaming canonical components
+- `teamsStore` refactor
+
+**Verify commands:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint28.test.ts \
+  src/lib/components/player/dashboard/__tests__/playerHudSprint27.test.ts \
+  src/routes/(app)/player/armory/__tests__/armoryAvatar.test.ts
+npm run build
+```
 
 ---
 
@@ -421,6 +548,8 @@ npm run build
 | 2.1 | Done | COPPA consent gates, PII route blocking | `firestoreRulesSprint21.test.ts`, `route-policies.js` |
 | 2.2 | Partial | PII vault, shredder, retention rules | `vaultOps.js`, `shredOps.test.js`, `firestoreRulesSprint22.test.ts` |
 | 2.3 | Planned | SafeSport messaging CC | `docs/FCM_AND_MESSAGING_MATRIX.md` |
+
+**Parallel track:** Epic 2 runs alongside Epic 3 — finish **2.2** (vault/shredder) while **2.3** (SafeSport parent CC) stays planned. Player HUD delivery (Epic 1) does not block compliance work.
 
 ---
 
