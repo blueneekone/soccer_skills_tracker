@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-20  
-**Current sprint:** **1.7** — Player HUD density & persona polish (planned; test file not yet created)
+**Current sprint:** **1.8** — Premium HUD shell remediation
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -33,29 +33,37 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 1.4 | Done | Gaming HUD baseline | `playerHudSprint14.test.ts`, `playerDashboard.hud.test.ts` |
 | 1.5 | Done | Mission dedup, avatar precision | `playerHudSprint15.test.ts`, `deduplicateMissions.ts` |
 | 1.6 | Done | IdentityBentoModule, OperativeHub, HUDContainer | `playerHudSprint16.test.ts` |
-| 1.7 | **Current** | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` (to be created in a future code sprint) |
+| 1.7 | Done | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` — Engineering pass (padding, ellipsis, streak pulse) — visual remediation continues in 1.8. |
+| 1.8 | **Current** | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` |
 
 ---
 
-## Sprint 1.7 scope (planned — document only)
+## Sprint 1.8 scope — Premium HUD shell remediation
 
-**Goal:** Enterprise-density player HUD without renaming existing components.
+**Goal:** One unified tactical HUD shell — eliminate box-in-box prototype feel, remove duplicate identity/metrics data, repurpose 8-col metrics to Vanguard vectors only.
 
-**In scope (future code sprint):**
+**In scope:**
 
+- `ROADMAP.md` (this update)
+- `src/lib/components/player/dashboard/OperativeHub.svelte`
 - `src/lib/components/player/dashboard/IdentityBentoModule.svelte`
 - `src/lib/components/player/dashboard/HudMetricsPanel.svelte`
-- `src/lib/components/player/dashboard/OperativeHub.svelte`
 - `src/lib/styles/player-dashboard-hud.css`
-- `src/lib/components/player/dashboard/__tests__/playerHudSprint17.test.ts`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint18.test.ts` (create)
 
-**Out of scope:**
+**Out of scope (defer to Sprint 1.9):**
 
-- Renaming to IdentityModule, TelemetryPanel, or BentoGrid
-- Refactoring `teamsStore` for mission dedup (use `deduplicateById` in ActiveBounties)
-- Coach or parent routes
+- ActiveBounties mission row / bracket button redesign
+- VanguardProtocolPanel + page layout bento restructure
+- Memory capsule empty states
+- Coach/parent routes
 
-**Verify commands (for future sprint):**
+**Planned follow-ups (document only — do not implement):**
+
+- Sprint 1.9 — Mission log density (ActiveBounties row redesign)
+- Sprint 2.0 — Telemetry bento integration + empty state compression
+
+**Verify commands:**
 
 ```bash
 npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard

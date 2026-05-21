@@ -5,7 +5,7 @@
 
 .player-hud-root {
 	--player-hud-gap: clamp(4px, 1vw, 8px);
-	--player-hud-pad: clamp(10px, 2vw, 14px);
+	--player-hud-pad: clamp(8px, 1.8vw, 12px);
 	--player-hud-radius: 24px;
 	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
 }
@@ -29,10 +29,25 @@
 	}
 }
 
+/* Sprint 1.8 — unified OperativeHub shell: embedded children flush (no double borders) */
+.player-hud-root .operative-hub .ibm-root--embedded,
+.player-hud-root .operative-hub .hmp-root--embedded {
+	border: none;
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
 /* Sprint 1.7 — tighter in-hub density without squishing bento cells */
-.player-hud-root .operative-hub .ibm-root,
-.player-hud-root .operative-hub .hmp-root {
+.player-hud-root .operative-hub .ibm-root:not(.ibm-root--embedded),
+.player-hud-root .operative-hub .hmp-root:not(.hmp-root--embedded) {
 	padding: var(--player-hud-pad);
+}
+
+.player-hud-root .operative-hub .ibm-root--embedded,
+.player-hud-root .operative-hub .hmp-root--embedded {
+	padding: var(--player-hud-pad);
+	min-width: 0;
 }
 
 .player-hud-root .operative-hub .quest-log-panel--embedded {

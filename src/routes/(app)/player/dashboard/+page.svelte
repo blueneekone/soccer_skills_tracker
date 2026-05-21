@@ -221,6 +221,7 @@
 			<OperativeHub>
 				{#snippet identity()}
 					<IdentityBentoModule
+						embedded={true}
 						uid={uid}
 						displayName={callsign}
 						teamLabel={teamAssignmentLabel}
@@ -238,12 +239,9 @@
 				{/snippet}
 				{#snippet metrics()}
 					<HudMetricsPanel
+						embedded={true}
+						prismValues={attrRadarValues}
 						statsRaw={statsRaw}
-						level={osLevel}
-						rankName={rankProgress.rank}
-						totalXp={totalXpHud}
-						streak={streak}
-						longestStreak={longestStreak}
 					/>
 				{/snippet}
 				{#snippet quests()}

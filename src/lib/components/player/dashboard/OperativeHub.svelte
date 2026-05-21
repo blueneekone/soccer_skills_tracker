@@ -35,8 +35,18 @@
 		backdrop-filter: blur(16px);
 		-webkit-backdrop-filter: blur(16px);
 		border: 1px solid #334155;
-		box-shadow: none;
+		box-shadow: var(--shadow-liquid);
 		overflow: hidden;
+		clip-path: polygon(
+			0 12px,
+			12px 0,
+			calc(100% - 12px) 0,
+			100% 12px,
+			100% calc(100% - 12px),
+			calc(100% - 12px) 100%,
+			12px 100%,
+			0 calc(100% - 12px)
+		);
 	}
 
 	.operative-hub__scanlines {
