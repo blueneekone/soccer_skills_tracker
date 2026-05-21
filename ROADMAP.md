@@ -1,8 +1,8 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-20  
-**Current sprint:** **1.9** — Mission deck density
+**Last updated:** 2026-05-21  
+**Current sprint:** **2.0** — Telemetry deck (no duplicate vectors)
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -35,7 +35,58 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 1.6 | Done | IdentityBentoModule, OperativeHub, HUDContainer | `playerHudSprint16.test.ts` |
 | 1.7 | Done | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` — Engineering pass (padding, ellipsis, streak pulse) — visual remediation continues in 1.8. |
 | 1.8 | Done | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` — Unified hub shell + vector strip — mission deck continues in 1.9. |
-| 1.9 | **Current** | Mission deck density — single-line embedded rows, compact CTAs, no bracket UI | `playerHudSprint19.test.ts` |
+| 1.9 | Done | Mission deck density — single-line embedded rows, compact CTAs, no bracket UI | `playerHudSprint19.test.ts` |
+| 2.0 | **Current** | Telemetry deck — hub vector strip sync, radar + inspector, remove duplicate grid | `playerHudSprint20.test.ts` |
+
+---
+
+## Sprint 2.0 scope — Telemetry deck (no duplicate vectors)
+
+**Goal:** Eliminate duplicate PAC–AGI telemetry on the page. Hub strip = read-only summary (clickable). Lower panel = radar + detail inspector only — no second 6-card grid. Shared selected-axis state links hub, radar, and inspector.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `src/routes/(app)/player/dashboard/+page.svelte` (shared selectedAxis state, wire bindings, compress capsule ghost)
+- `src/lib/components/player/dashboard/HudMetricsPanel.svelte` (clickable vector strip)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (radar + inspector; remove vpp-grid)
+- `src/lib/components/player/dashboard/AttributeRadar.svelte` (optional axis selection + highlight)
+- `src/lib/styles/player-dashboard-hud.css` (strip selection highlight, telemetry deck layout)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint20.test.ts` (create)
+
+**Out of scope (Sprint 2.1+):**
+
+- IdentityBentoModule ring/chip typography refactor
+- ActiveBounties further changes
+- Full page bento re-layout (moving telemetry into OperativeHub row)
+- Coach/parent routes
+- svelte-check / phosphor prebuild fixes
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.1 scope — Identity metric chips + palette pass (planned)
+
+**Goal:** Refine IdentityBentoModule ring/chip typography and align accent palette across hub modules — document only until Sprint 2.0 ships.
+
+**In scope (when started):**
+
+- `IdentityBentoModule.svelte` — ring/chip typography
+- `player-dashboard-hud.css` — palette pass for identity + metrics accents
+- `playerHudSprint21.test.ts` (create)
+
+**Out of scope:**
+
+- Telemetry deck layout (Sprint 2.0)
+- ActiveBounties / mission deck changes
+- Coach/parent routes
 
 ---
 

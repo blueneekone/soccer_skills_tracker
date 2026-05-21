@@ -8,17 +8,18 @@
 
 	let {
 		prismValues = [],
+		selectedAxis = $bindable<VanguardAxisId | null>(null),
 	}: {
 		prismValues?: number[];
+		selectedAxis?: VanguardAxisId | null;
 	} = $props();
 
 	const rows = $derived(buildVanguardProtocolRows(prismValues));
 	const telemetryReady = $derived(hasVanguardTelemetry(prismValues));
+	const selectedRow = $derived(rows.find((r) => r.id === selectedAxis) ?? null);
 
-	let expandedAxis = $state<VanguardAxisId | null>(null);
-
-	function toggleAxis(id: VanguardAxisId) {
-		expandedAxis = expandedAxis === id ? null : id;
+	function handleAxisSelect(id: VanguardAxisId) {
+		selectedAxis = selectedAxis === id ? null : id;
 	}
 </script>
 
@@ -28,50 +29,45 @@
 			<p class="vpp-eyebrow">Vanguard Protocol</p>
 			<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
 			<p class="vpp-lede">
-				PAC · ACC · POW · COMP · STM · AGI — synced from live coach telemetry. Tap a card for detail.
+				Tap a vector in the hub or radar to inspect.
 			</p>
 		</div>
 	</header>
 
 	<div class="vpp-body">
-		<div class="vpp-attributes">
-			<ul class="vpp-grid" aria-label="Vanguard Protocol attribute cards">
-				{#each rows as row (row.id)}
-					<li class="vpp-grid__cell">
-						<button
-							type="button"
-							class="vpp-card"
-							class:vpp-card--open={expandedAxis === row.id}
-							aria-expanded={expandedAxis === row.id}
-							onclick={() => toggleAxis(row.id)}
-						>
-							<span class="vpp-card__code">{row.label}</span>
-							<span class="vpp-card__score">{row.display}</span>
-							<span class="vpp-card__name">{row.fullName}</span>
-							<span
-								class="vpp-card__bar"
-								role="presentation"
-								style={`--vpp-fill: ${row.pct}%;`}
-							></span>
-							{#if expandedAxis === row.id}
-								<span class="vpp-card__detail">
-									{row.fullName} rating {row.display} / 99 — {row.pct}% of peak.
-								</span>
-							{/if}
-						</button>
-					</li>
-				{/each}
-			</ul>
+		<div class="vpp-chart" aria-label="Attribute radar">
+			<AttributeRadar
+				values={prismValues}
+				{selectedAxis}
+				onAxisSelect={handleAxisSelect}
+			/>
 		</div>
 
-		<div class="vpp-chart" aria-label="Attribute radar">
-			<AttributeRadar values={prismValues} />
+		<div class="vpp-inspector" aria-label="Vector detail inspector">
+			{#if selectedRow}
+				<div class="vpp-inspector__detail">
+					<span class="vpp-inspector__code">{selectedRow.label}</span>
+					<h3 class="vpp-inspector__name">{selectedRow.fullName}</h3>
+					<p class="vpp-inspector__score">
+						<span class="vpp-inspector__score-val">{selectedRow.display}</span>
+						<span class="vpp-inspector__score-max">/99</span>
+					</p>
+					<span
+						class="vpp-inspector__bar"
+						role="presentation"
+						style={`--vpp-fill: ${selectedRow.pct}%;`}
+					></span>
+					<p class="vpp-inspector__detail-text">
+						{selectedRow.fullName} rating {selectedRow.display} / 99 — {selectedRow.pct}% of peak.
+					</p>
+				</div>
+			{:else if !telemetryReady}
+				<p class="vpp-inspector__ghost" role="status">Awaiting coach telemetry</p>
+			{:else}
+				<p class="vpp-inspector__ghost">Select a vector to inspect</p>
+			{/if}
 		</div>
 	</div>
-
-	{#if !telemetryReady}
-		<p class="vpp-awaiting" role="status">Awaiting coach telemetry — your prism will populate after verification.</p>
-	{/if}
 </section>
 
 <style>
@@ -120,7 +116,6 @@
 		max-width: 36rem;
 	}
 
-	/* Two-column shell: attribute cards (left) + radar (right); stacks on mobile */
 	.vpp-body {
 		display: grid;
 		grid-template-columns: 1fr;
@@ -132,107 +127,9 @@
 
 	@media (min-width: 768px) {
 		.vpp-body {
-			grid-template-columns: minmax(0, 1fr) minmax(0, clamp(220px, 38vw, 360px));
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
 			align-items: center;
 		}
-	}
-
-	.vpp-attributes {
-		width: 100%;
-		min-width: 0;
-	}
-
-	.vpp-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 16px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.vpp-grid__cell {
-		min-width: 0;
-	}
-
-	.vpp-card {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.15rem;
-		width: 100%;
-		min-height: 72px;
-		padding: clamp(10px, 2vw, 14px);
-		border-radius: 16px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 16%, transparent);
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 90%, transparent);
-		text-align: left;
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease,
-			transform 0.12s ease;
-	}
-
-	.vpp-card:hover,
-	.vpp-card--open {
-		border-color: color-mix(in srgb, var(--color-structural, #3b82f6) 45%, transparent);
-		background: color-mix(in srgb, var(--color-structural, #3b82f6) 10%, var(--color-dominant, #0f172a));
-	}
-
-	.vpp-card:active {
-		transform: scale(0.98);
-	}
-
-	.vpp-card__code {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.62rem;
-		font-weight: 800;
-		letter-spacing: 0.14em;
-		color: var(--color-accent, #fbbf24);
-	}
-
-	.vpp-card__score {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: clamp(1.1rem, 3vw, 1.35rem);
-		font-weight: 900;
-		font-variant-numeric: tabular-nums;
-		color: var(--vanguard-text-1, #f8fafc);
-		line-height: 1;
-	}
-
-	.vpp-card__name {
-		font-size: 0.65rem;
-		font-weight: 600;
-		color: #94a3b8;
-	}
-
-	.vpp-card__bar {
-		display: block;
-		width: 100%;
-		height: 4px;
-		margin-top: 0.35rem;
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 40%, #1e293b);
-		overflow: hidden;
-	}
-
-	.vpp-card__bar::after {
-		content: '';
-		display: block;
-		height: 100%;
-		width: var(--vpp-fill, 0%);
-		border-radius: inherit;
-		background: var(--color-structural, #3b82f6);
-		transition: width 0.45s cubic-bezier(0.33, 1, 0.68, 1);
-	}
-
-	.vpp-card__detail {
-		margin-top: 0.35rem;
-		font-size: 0.62rem;
-		line-height: 1.35;
-		color: #cbd5e1;
 	}
 
 	.vpp-chart {
@@ -242,10 +139,20 @@
 		width: 100%;
 		min-width: 0;
 		padding: clamp(8px, 2vw, 16px);
-		border-radius: 20px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 14%, transparent);
+		border-radius: 0;
+		border: 1px solid #334155;
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 95%, #000);
 		box-sizing: border-box;
+		clip-path: polygon(
+			0 8px,
+			8px 0,
+			calc(100% - 8px) 0,
+			100% 8px,
+			100% calc(100% - 8px),
+			calc(100% - 8px) 100%,
+			8px 100%,
+			0 calc(100% - 8px)
+		);
 	}
 
 	.vpp-chart :global(.ar-root) {
@@ -254,12 +161,104 @@
 		margin-inline: auto;
 	}
 
-	.vpp-awaiting {
+	.vpp-inspector {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-height: 120px;
+		padding: clamp(12px, 2.5vw, 18px);
+		border: 1px solid #334155;
+		background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
+		clip-path: polygon(
+			0 8px,
+			8px 0,
+			calc(100% - 8px) 0,
+			100% 8px,
+			100% calc(100% - 8px),
+			calc(100% - 8px) 100%,
+			8px 100%,
+			0 calc(100% - 8px)
+		);
+	}
+
+	.vpp-inspector__detail {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.vpp-inspector__code {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		color: var(--color-accent, #fbbf24);
+	}
+
+	.vpp-inspector__name {
 		margin: 0;
-		font-size: 0.65rem;
-		font-weight: 600;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: clamp(0.9rem, 2vw, 1.05rem);
+		font-weight: 800;
+		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		letter-spacing: 0.12em;
+		color: var(--vanguard-text-1, #f8fafc);
+	}
+
+	.vpp-inspector__score {
+		margin: 0.15rem 0 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		line-height: 1;
+	}
+
+	.vpp-inspector__score-val {
+		font-size: clamp(1.25rem, 3.5vw, 1.6rem);
+		font-weight: 900;
+		font-variant-numeric: tabular-nums;
+		color: var(--vanguard-text-1, #f8fafc);
+	}
+
+	.vpp-inspector__score-max {
+		font-size: 0.75rem;
+		font-weight: 700;
 		color: #64748b;
+		margin-left: 0.15rem;
+	}
+
+	.vpp-inspector__bar {
+		display: block;
+		width: 100%;
+		height: 4px;
+		margin-top: 0.5rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-dominant, #0f172a) 40%, #1e293b);
+		overflow: hidden;
+	}
+
+	.vpp-inspector__bar::after {
+		content: '';
+		display: block;
+		height: 100%;
+		width: var(--vpp-fill, 0%);
+		border-radius: inherit;
+		background: var(--color-structural, #3b82f6);
+		transition: width 0.45s cubic-bezier(0.33, 1, 0.68, 1);
+	}
+
+	.vpp-inspector__detail-text {
+		margin: 0.5rem 0 0;
+		font-size: 0.7rem;
+		line-height: 1.4;
+		color: #cbd5e1;
+	}
+
+	.vpp-inspector__ghost {
+		margin: 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #475569;
 	}
 </style>

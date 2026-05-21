@@ -123,3 +123,18 @@
 	outline: 2px solid color-mix(in srgb, var(--color-structural) 55%, transparent);
 	outline-offset: 2px;
 }
+
+/* Sprint 2.0 — hub vector strip selection highlight */
+.player-hud-root .hmp-cell--selected {
+	border-color: #fbbf24;
+	box-shadow: 0 0 8px color-mix(in srgb, #fbbf24 35%, transparent);
+}
+
+/* Sprint 2.0 — telemetry deck inspector (shared with VanguardProtocolPanel) */
+.player-hud-root .vpp-inspector {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+.player-hud-root .vpp-body {
+	min-width: 0;
+}

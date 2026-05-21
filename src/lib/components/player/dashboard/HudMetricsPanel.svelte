@@ -3,21 +3,28 @@
 		buildVanguardProtocolRows,
 		extractPowerMetrics,
 		hasVanguardTelemetry,
+		type VanguardAxisId,
 	} from '$lib/player/dashboard/vanguardProtocol.js';
 
 	let {
 		embedded = false,
 		prismValues = [],
 		statsRaw = null,
+		selectedAxis = $bindable<VanguardAxisId | null>(null),
 	}: {
 		embedded?: boolean;
 		prismValues?: number[];
 		statsRaw?: Record<string, unknown> | null;
+		selectedAxis?: VanguardAxisId | null;
 	} = $props();
 
 	const vectorRows = $derived(buildVanguardProtocolRows(prismValues));
 	const telemetryReady = $derived(hasVanguardTelemetry(prismValues));
 	const powerMetrics = $derived(extractPowerMetrics(statsRaw ?? null));
+
+	function toggleAxis(id: VanguardAxisId) {
+		selectedAxis = selectedAxis === id ? null : id;
+	}
 </script>
 
 <div
@@ -28,9 +35,17 @@
 	<section class="hmp-vectors" aria-label="Vanguard vectors">
 		<dl class="hmp-grid hmp-grid--vectors">
 			{#each vectorRows as row (row.id)}
-				<div class="hmp-cell">
-					<dt class="hmp-label">{row.label}</dt>
-					<dd class="hmp-value">{row.display}</dd>
+				<div class="hmp-cell hmp-cell--selectable" class:hmp-cell--selected={selectedAxis === row.id}>
+					<button
+						type="button"
+						class="hmp-cell__btn"
+						aria-pressed={selectedAxis === row.id}
+						aria-label="{row.label} {row.display}"
+						onclick={() => toggleAxis(row.id)}
+					>
+						<span class="hmp-label">{row.label}</span>
+						<span class="hmp-value">{row.display}</span>
+					</button>
 				</div>
 			{/each}
 		</dl>
@@ -97,7 +112,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		padding: clamp(5px, 1vw, 7px) clamp(4px, 0.8vw, 6px);
+		padding: 0;
 		border-radius: 0;
 		border: 1px solid #334155;
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
@@ -114,7 +129,31 @@
 		);
 	}
 
+	.hmp-cell--selectable {
+		padding: 0;
+	}
+
+	.hmp-cell__btn {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		width: 100%;
+		padding: clamp(5px, 1vw, 7px) clamp(4px, 0.8vw, 6px);
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		color: inherit;
+	}
+
+	.hmp-cell__btn:focus-visible {
+		outline: 2px solid color-mix(in srgb, var(--color-accent, #fbbf24) 55%, transparent);
+		outline-offset: -2px;
+	}
+
 	.hmp-cell--secondary {
+		padding: clamp(5px, 1vw, 7px) clamp(4px, 0.8vw, 6px);
 		border-color: color-mix(in srgb, #334155 80%, transparent);
 	}
 

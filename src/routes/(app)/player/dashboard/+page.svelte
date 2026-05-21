@@ -24,6 +24,7 @@
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
+	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -44,6 +45,7 @@
 	const uid = $derived(authStore.user?.uid || '');
 
 	let commandCenterOpen = $state(false);
+	let selectedVanguardAxis = $state<VanguardAxisId | null>(null);
 
 	// ── Trajectory Engine (memory capsules) ──────────────────────────────────
 	const trajectoryEngine = new TrajectoryEngine();
@@ -242,6 +244,7 @@
 						embedded={true}
 						prismValues={attrRadarValues}
 						statsRaw={statsRaw}
+						bind:selectedAxis={selectedVanguardAxis}
 					/>
 				{/snippet}
 				{#snippet quests()}
@@ -254,7 +257,7 @@
 		class="bento-span-12 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
 		aria-label="Vanguard Protocol telemetry"
 	>
-		<VanguardProtocolPanel prismValues={attrRadarValues} />
+		<VanguardProtocolPanel prismValues={attrRadarValues} bind:selectedAxis={selectedVanguardAxis} />
 	</section>
 
 	<section
@@ -281,11 +284,9 @@
 				capsuleHeadline={trajectoryEngine.capsuleHeadline}
 			/>
 		{:else}
-			<div
-				class="tw-flex tw-min-h-[140px] tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-800 tw-bg-slate-950 tw-p-6 tw-text-center tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-[0.2em] tw-text-slate-500"
-			>
-				Ghost profile · awaiting first capsule
-			</div>
+			<p class="lobby-capsule-ghost" role="status">
+				GHOST PROFILE · AWAITING FIRST CAPSULE
+			</p>
 		{/if}
 	</section>
 
@@ -404,5 +405,15 @@
 
 	.lobby-capsules-section {
 		min-width: 0;
+	}
+
+	.lobby-capsule-ghost {
+		margin: 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #475569;
 	}
 </style>
