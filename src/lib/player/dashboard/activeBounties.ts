@@ -85,6 +85,18 @@ export function questCtaLabel(lifecycle: QuestLifecycle): string {
 	}
 }
 
+/** Compact HUD CTA for embedded mission deck (no brackets). */
+export function questHudCtaShort(lifecycle: QuestLifecycle): string {
+	switch (lifecycle) {
+		case 'accept':
+			return 'Accept →';
+		case 'complete':
+			return 'Complete →';
+		case 'claim':
+			return 'Claim →';
+	}
+}
+
 /** Bracketed terminal command label for Player OS SIEM HUD. */
 export function questTerminalCmd(lifecycle: QuestLifecycle): string {
 	switch (lifecycle) {

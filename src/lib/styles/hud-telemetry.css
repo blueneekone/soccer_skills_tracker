@@ -154,3 +154,49 @@
 		grid-column: span 2;
 	}
 }
+
+/* Sprint 1.9 — embedded mission deck: single-line rows inside OperativeHub */
+.quest-log-panel--embedded .hud-bounty-row {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	gap: clamp(6px, 1vw, 10px);
+	align-items: center;
+	padding: clamp(6px, 1vw, 8px) 0;
+	min-height: 44px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quest-log-panel--embedded .hud-bounty-row__copy,
+.quest-log-panel--embedded .hud-bounty-row__reward,
+.quest-log-panel--embedded .hud-bounty-row__cmd {
+	grid-column: auto;
+	justify-self: stretch;
+	text-align: inherit;
+}
+
+.quest-log-panel--embedded .hud-bounty-row__ring {
+	display: none;
+}
+
+.quest-log-panel--embedded .quest-row__reward--embedded {
+	justify-self: end;
+	text-align: right;
+}
+
+.quest-log-panel--embedded .quest-row__cmd {
+	flex-shrink: 0;
+	justify-self: end;
+	color: #fbbf24;
+	text-transform: none;
+	letter-spacing: 0.04em;
+	transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+.quest-log-panel--embedded .quest-row__cmd:hover {
+	color: #fcd34d;
+	text-shadow: 0 0 10px rgb(251 191 36 / 0.55);
+}
+
+.quest-log-panel--embedded .quest-row__xp {
+	color: #fbbf24;
+}

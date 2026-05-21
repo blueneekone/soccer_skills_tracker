@@ -26,6 +26,7 @@
 		markQuestCompleted,
 		maxVisibleQuests,
 		questCtaLabel,
+		questHudCtaShort,
 		questTerminalCmd,
 		resolveQuestLifecycle,
 		sortQuestLog,
@@ -242,6 +243,47 @@
 	}
 </script>
 
+{#snippet questRowEmbedded(quest: QuestTask)}
+	<div
+		class="hud-bounty-row quest-row quest-row--embedded"
+		class:quest-row--habit={quest.tier === 'daily'}
+	>
+		{#if quest.lifecycle === 'accept'}
+			<span class="quest-row__status" aria-hidden="true"></span>
+		{:else}
+			<span class="quest-row__status quest-row__status--idle" aria-hidden="true"></span>
+		{/if}
+
+		<div class="hud-bounty-row__copy quest-row__copy quest-row__copy--embedded">
+			<p class="quest-row__line" title={quest.title}>
+				<span class="quest-row__sender">{quest.senderLabel}</span>
+				<span class="quest-row__sep" aria-hidden="true">·</span>
+				<span class="quest-row__title-text">{quest.title}</span>
+			</p>
+		</div>
+
+		<div class="hud-bounty-row__reward quest-row__reward quest-row__reward--embedded" aria-label="Reward">
+			{#if quest.xpReward > 0}
+				<span class="quest-row__xp">+{quest.xpReward.toLocaleString()} XP</span>
+			{:else if quest.rewardLabel}
+				<span class="quest-row__xp quest-row__xp--cash">{quest.rewardLabel}</span>
+			{/if}
+		</div>
+
+		<button
+			type="button"
+			class="hud-bounty-row__cmd quest-row__cmd quest-row__cmd--embedded"
+			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
+			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
+			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
+			aria-label={questCtaLabel(quest.lifecycle)}
+			onclick={() => handleQuestAction(quest)}
+		>
+			{questHudCtaShort(quest.lifecycle)}
+		</button>
+	</div>
+{/snippet}
+
 {#snippet questRow(quest: QuestTask, variant: 'bounty' | 'habit')}
 	<div class="hud-bounty-row quest-row" class:quest-row--habit={variant === 'habit'}>
 		<div class="hud-bounty-row__copy quest-row__copy">
@@ -299,36 +341,64 @@
 	aria-busy={loading}
 >
 	{#if loading}
-		<p class="quest-log__status" role="status">SCANNING MISSION QUEUE…</p>
+		<p class="quest-log__status" role="status">
+			{embedded ? 'SCANNING…' : 'SCANNING MISSION QUEUE…'}
+		</p>
 	{:else if sortedQuests.length > 0}
-		<header class="quest-log__head">
-			<p class="quest-log__eyebrow">Mission queue</p>
-			<h2 class="quest-log__title">Active missions</h2>
-		</header>
+		{#if embedded}
+			<header class="quest-log__head quest-log__head--embedded">
+				<p class="quest-log__eyebrow quest-log__eyebrow--deck">// MISSION DECK</p>
+				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
+			</header>
 
-		<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid" aria-label="Active mission queue">
-			{#if visibleBounties.length > 0}
-				<p class="quest-log__section-tag">// PRIORITY DIRECTIVES</p>
-				{#each visibleBounties as quest (quest.id)}
-					<div class="bento-span-12 quest-terminal-row quest-terminal-row--bounty">
-						{@render questRow(quest, 'bounty')}
+			<div
+				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
+				aria-label="Active mission deck"
+			>
+				{#each visibleQuests as quest (quest.id)}
+					<div
+						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
+						class:quest-terminal-row--habit={quest.tier === 'daily'}
+						class:quest-terminal-row--bounty={quest.tier === 'bounty'}
+					>
+						{@render questRowEmbedded(quest)}
 					</div>
 				{/each}
-			{/if}
+			</div>
+		{:else}
+			<header class="quest-log__head">
+				<p class="quest-log__eyebrow">Mission queue</p>
+				<h2 class="quest-log__title">Active missions</h2>
+			</header>
 
-			{#if visibleDailies.length > 0}
-				<p class="quest-log__section-tag">// ACTIVE DIRECTIVES</p>
-				{#each visibleDailies as quest (quest.id)}
-					<div class="bento-span-12 quest-terminal-row quest-terminal-row--habit">
-						{@render questRow(quest, 'habit')}
-					</div>
-				{/each}
-			{/if}
-		</div>
+			<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid" aria-label="Active mission queue">
+				{#if visibleBounties.length > 0}
+					<p class="quest-log__section-tag">// PRIORITY DIRECTIVES</p>
+					{#each visibleBounties as quest (quest.id)}
+						<div class="bento-span-12 quest-terminal-row quest-terminal-row--bounty">
+							{@render questRow(quest, 'bounty')}
+						</div>
+					{/each}
+				{/if}
+
+				{#if visibleDailies.length > 0}
+					<p class="quest-log__section-tag">// ACTIVE DIRECTIVES</p>
+					{#each visibleDailies as quest (quest.id)}
+						<div class="bento-span-12 quest-terminal-row quest-terminal-row--habit">
+							{@render questRow(quest, 'habit')}
+						</div>
+					{/each}
+				{/if}
+			</div>
+		{/if}
 
 		{#if hiddenCount > 0 && !showAllQuests}
-			<button type="button" class="quest-log__more" onclick={() => (showAllQuests = true)}>
-				[ VIEW ALL ({sortedQuests.length}) ]
+			<button type="button" class="quest-log__more" class:quest-log__more--embedded={embedded} onclick={() => (showAllQuests = true)}>
+				{#if embedded}
+					View all missions ({sortedQuests.length})
+				{:else}
+					[ VIEW ALL ({sortedQuests.length}) ]
+				{/if}
 			</button>
 		{/if}
 	{:else}
@@ -372,6 +442,21 @@
 
 	.quest-log__head {
 		margin-bottom: clamp(8px, 1.5vw, 12px);
+	}
+
+	.quest-log__head--embedded {
+		margin-bottom: clamp(6px, 1vw, 8px);
+	}
+
+	.quest-log__eyebrow--deck {
+		margin: 0 0 0.15rem;
+		font-size: 0.48rem;
+		color: rgb(148 163 184 / 0.55);
+	}
+
+	.quest-log__title--embedded {
+		font-size: clamp(0.62rem, 1.4vw, 0.72rem);
+		letter-spacing: 0.14em;
 	}
 
 	.quest-log__eyebrow {
@@ -437,6 +522,83 @@
 
 	.quest-log__section-tag:first-child {
 		margin-top: 0;
+	}
+
+	.quest-terminal-row--embedded {
+		padding: clamp(6px, 1vw, 8px) 0;
+		min-height: 44px;
+	}
+
+	.quest-row--embedded .quest-row__line {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin: 0;
+		min-width: 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: clamp(0.62rem, 1.4vw, 0.72rem);
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--vanguard-text-1, #f8fafc);
+	}
+
+	.quest-row--embedded .quest-row__sender {
+		margin: 0;
+		flex-shrink: 0;
+		font-size: 0.48rem;
+		color: color-mix(in srgb, var(--color-accent, #fbbf24) 85%, #94a3b8);
+	}
+
+	.quest-row--embedded .quest-row__sep {
+		flex-shrink: 0;
+		color: rgb(148 163 184 / 0.45);
+	}
+
+	.quest-row--embedded .quest-row__title-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.quest-row__status--idle {
+		background: rgb(148 163 184 / 0.25);
+		box-shadow: none;
+		animation: none;
+	}
+
+	.quest-row__cmd--embedded {
+		color: var(--color-accent, #fbbf24);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.quest-row__cmd--embedded.quest-row__cmd--complete,
+	.quest-row__cmd--embedded.quest-row__cmd--claim {
+		color: var(--color-accent, #fbbf24);
+	}
+
+	.quest-row--embedded .quest-row__xp {
+		font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+		color: var(--color-accent, #fbbf24);
+	}
+
+	.quest-row--embedded .quest-row__xp--habit {
+		color: color-mix(in srgb, var(--color-accent, #fbbf24) 75%, #94a3b8);
+	}
+
+	.quest-log__more--embedded {
+		font-size: 0.52rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: none;
+		color: color-mix(in srgb, var(--color-accent, #fbbf24) 70%, #94a3b8);
+	}
+
+	.quest-log__more--embedded:hover {
+		color: var(--color-accent, #fbbf24);
+		text-shadow: 0 0 8px rgb(251 191 36 / 0.45);
 	}
 
 	.quest-terminal-row {

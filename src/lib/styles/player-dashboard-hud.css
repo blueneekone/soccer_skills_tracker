@@ -52,6 +52,7 @@
 
 .player-hud-root .operative-hub .quest-log-panel--embedded {
 	padding: var(--player-hud-pad) !important;
+	border-top: 1px solid #334155;
 }
 
 .player-hud-header__lead {

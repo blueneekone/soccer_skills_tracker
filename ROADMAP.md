@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-20  
-**Current sprint:** **1.8** — Premium HUD shell remediation
+**Current sprint:** **1.9** — Mission deck density
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -34,7 +34,39 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 1.5 | Done | Mission dedup, avatar precision | `playerHudSprint15.test.ts`, `deduplicateMissions.ts` |
 | 1.6 | Done | IdentityBentoModule, OperativeHub, HUDContainer | `playerHudSprint16.test.ts` |
 | 1.7 | Done | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` — Engineering pass (padding, ellipsis, streak pulse) — visual remediation continues in 1.8. |
-| 1.8 | **Current** | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` |
+| 1.8 | Done | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` — Unified hub shell + vector strip — mission deck continues in 1.9. |
+| 1.9 | **Current** | Mission deck density — single-line embedded rows, compact CTAs, no bracket UI | `playerHudSprint19.test.ts` |
+
+---
+
+## Sprint 1.9 scope — Mission deck density
+
+**Goal:** Make the mission region inside OperativeHub feel like a premium gaming HUD deck — dense single-line rows, one header, no bracket terminal CTAs, no oversized per-row rings.
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `src/lib/components/hud/ActiveBounties.svelte`
+- `src/lib/styles/hud-telemetry.css`
+- `src/lib/styles/player-dashboard-hud.css` (embedded quest overrides only)
+- `src/lib/player/dashboard/activeBounties.ts` (compact CTA labels if needed)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint19.test.ts` (create)
+
+**Out of scope (Sprint 2.0+):**
+
+- VanguardProtocolPanel / telemetry dedup / radar layout
+- HudMetricsPanel / IdentityBentoModule ring chip refactor
+- `+page.svelte` layout changes beyond existing `<ActiveBounties embedded />`
+- Coach/parent routes
+- Fixing repo-wide svelte-check or phosphor prebuild errors
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+npm run check
+npm run build
+```
 
 ---
 

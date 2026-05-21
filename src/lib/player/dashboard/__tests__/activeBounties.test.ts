@@ -5,6 +5,7 @@ import {
 	bountyFromCoachIntent,
 	buildDailyQuests,
 	questCtaLabel,
+	questHudCtaShort,
 	questTerminalCmd,
 	resolveQuestLifecycle,
 	maxVisibleQuests,
@@ -45,6 +46,12 @@ describe('activeBounties', () => {
 		expect(questCtaLabel('claim')).toBe('Claim Reward');
 		expect(questTerminalCmd('accept')).toBe('[ ACCEPT MISSION ]');
 		expect(questTerminalCmd('claim')).toBe('[ CLAIM REWARD ]');
+	});
+
+	it('maps lifecycle to compact embedded HUD CTAs', () => {
+		expect(questHudCtaShort('accept')).toBe('Accept →');
+		expect(questHudCtaShort('complete')).toBe('Complete →');
+		expect(questHudCtaShort('claim')).toBe('Claim →');
 	});
 
 	it('progresses accept → complete → claim', () => {
