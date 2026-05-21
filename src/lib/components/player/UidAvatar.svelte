@@ -6,25 +6,40 @@
 		size = 56,
 		class: klass = '',
 		alt = '',
+		skeleton = false,
 	}: {
 		seed?: string;
 		size?: number;
 		class?: string;
 		alt?: string;
+		skeleton?: boolean;
 	} = $props();
 
 	const svgMarkup = $derived(renderBauhausAvatarSvg(seed || 'player', size));
+	const initials = $derived((seed || '??').slice(0, 2).toUpperCase());
+	const showSkeleton = $derived(skeleton || !seed);
 </script>
 
-<div
-	class="uid-avatar {klass}"
-	style="--uid-avatar-size: {size}px;"
-	role={alt ? 'img' : undefined}
-	aria-label={alt || undefined}
->
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html svgMarkup}
-</div>
+{#if showSkeleton}
+	<div
+		class="uid-avatar uid-avatar--skeleton {klass}"
+		style="--uid-avatar-size: {size}px;"
+		role={alt ? 'img' : undefined}
+		aria-label={alt || undefined}
+	>
+		<span class="uid-avatar__initials">{initials}</span>
+	</div>
+{:else}
+	<div
+		class="uid-avatar {klass}"
+		style="--uid-avatar-size: {size}px;"
+		role={alt ? 'img' : undefined}
+		aria-label={alt || undefined}
+	>
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html svgMarkup}
+	</div>
+{/if}
 
 <style>
 	.uid-avatar {
@@ -43,6 +58,21 @@
 		width: 100%;
 		height: 100%;
 	}
+
+	.uid-avatar--skeleton {
+		background: rgba(251, 191, 36, 0.08);
+		border-color: rgba(251, 191, 36, 0.25);
+		display: grid;
+		place-items: center;
+	}
+
+	.uid-avatar__initials {
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.72rem;
+		font-weight: 900;
+		color: #fbbf24;
+		opacity: 0.5;
+		letter-spacing: 0.08em;
+		line-height: 1;
+	}
 </style>
-
-

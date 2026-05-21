@@ -13,16 +13,20 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const PAGE = join(__dirname, '..', '+page.svelte');
+const OPERATIVE = join(__dirname, '../../../../../lib/components/player/dashboard/OperativeHub.svelte');
+const HUD_CONTAINER = join(__dirname, '../../../../../lib/components/hud/HUDContainer.svelte');
 const src = readFileSync(PAGE, 'utf-8');
+const operativeSrc = readFileSync(OPERATIVE, 'utf-8');
+const containerSrc = readFileSync(HUD_CONTAINER, 'utf-8');
 
 describe('/player/dashboard — Liquid Bento (Slice 3)', () => {
 	it('adds bento-grid--liquid to the lobby grid', () => {
-		expect(src).toMatch(/bento-grid--liquid/);
+		expect(src + containerSrc + operativeSrc).toMatch(/bento-grid--liquid/);
 	});
 
 	it('Vanguard protocol spans 8 columns with stats snapshot at 4', () => {
-		expect(src).toMatch(/bento-span-8/);
-		expect(src).toMatch(/bento-span-4/);
+		expect(operativeSrc).toMatch(/bento-span-8/);
+		expect(operativeSrc).toMatch(/bento-span-4/);
 	});
 
 	it('.bento-card local CSS uses var(--shadow-liquid)', () => {

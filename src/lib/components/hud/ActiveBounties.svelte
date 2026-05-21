@@ -14,6 +14,7 @@
 	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import '$lib/styles/hud-telemetry.css';
+	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
 		buildDailyQuests,
 		bountyFromCoachIntent,
@@ -50,11 +51,12 @@
 	const loading = $derived(loadingProp ?? internalLoading);
 
 	const sortedQuests = $derived(sortQuestLog(quests));
+	const dedupedQuests = $derived(deduplicateById(sortedQuests));
 	const visibleQuests = $derived(
-		showAllQuests ? sortedQuests : sortedQuests.slice(0, maxVisibleQuests()),
+		showAllQuests ? dedupedQuests : dedupedQuests.slice(0, maxVisibleQuests()),
 	);
-	const hiddenCount = $derived(Math.max(0, sortedQuests.length - maxVisibleQuests()));
-	const showEmpty = $derived(!loading && sortedQuests.length === 0);
+	const hiddenCount = $derived(Math.max(0, dedupedQuests.length - maxVisibleQuests()));
+	const showEmpty = $derived(!loading && dedupedQuests.length === 0);
 	const visibleBounties = $derived(visibleQuests.filter((q) => q.tier === 'bounty'));
 	const visibleDailies = $derived(visibleQuests.filter((q) => q.tier === 'daily'));
 
@@ -123,7 +125,8 @@
 					intentQ,
 					(snap) => {
 						const progress = loadQuestProgress();
-						intents = snap.docs
+						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+						intents = uniqueDocs
 							.map((d) => ({ id: d.id, ...d.data() }))
 							.filter((row) => {
 								if (!row.scope || row.scope === 'team') return true;
@@ -151,7 +154,8 @@
 				hwQ,
 				(snap) => {
 					const progress = loadQuestProgress();
-					homework = snap.docs
+					const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+					homework = uniqueDocs
 						.map((d) => bountyFromHomeworkAssignment(d.id, d.data(), progress))
 						.filter((b): b is QuestTask => b != null);
 					merge();
@@ -174,7 +178,8 @@
 					bountyQ,
 					(snap) => {
 						const progress = loadQuestProgress();
-						parentRows = snap.docs
+						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+						parentRows = uniqueDocs
 							.map((d) => bountyFromParentBounty(d.id, d.data(), progress))
 							.filter((b): b is QuestTask => b != null);
 						merge();
@@ -241,11 +246,11 @@
 	<div class="hud-bounty-row quest-row" class:quest-row--habit={variant === 'habit'}>
 		<div class="hud-bounty-row__copy quest-row__copy">
 			<p class="quest-row__sender">{quest.senderLabel}</p>
-			<h3 class="quest-row__title">
+			<h3 class="quest-row__title" title={quest.title}>
 				{#if quest.lifecycle === 'accept'}
 					<span class="quest-row__status" aria-hidden="true"></span>
 				{/if}
-				{quest.title}
+				<span class="quest-row__title-text">{quest.title}</span>
 			</h3>
 		</div>
 
@@ -366,7 +371,7 @@
 	}
 
 	.quest-log__head {
-		margin-bottom: 14px;
+		margin-bottom: clamp(8px, 1.5vw, 12px);
 	}
 
 	.quest-log__eyebrow {
@@ -435,7 +440,7 @@
 	}
 
 	.quest-terminal-row {
-		padding: clamp(8px, 1.5vw, 12px) 0;
+		padding: clamp(6px, 1.2vw, 10px) 0;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 		background: transparent !important;
 		border-radius: 0 !important;
@@ -491,10 +496,11 @@
 
 	.quest-row__title {
 		display: grid;
-		grid-template-columns: auto 1fr;
+		grid-template-columns: auto minmax(0, 1fr);
 		align-items: center;
 		gap: 0.5rem;
 		margin: 0;
+		min-width: 0;
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: clamp(0.78rem, 1.8vw, 0.9rem);
 		font-weight: 800;
@@ -502,6 +508,13 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--vanguard-text-1, #f8fafc);
+	}
+
+	.quest-row__title-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.quest-row__status {

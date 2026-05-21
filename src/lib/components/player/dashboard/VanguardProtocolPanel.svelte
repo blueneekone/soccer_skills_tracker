@@ -2,29 +2,20 @@
 	import AttributeRadar from '$lib/components/player/dashboard/AttributeRadar.svelte';
 	import {
 		buildVanguardProtocolRows,
-		extractPowerMetrics,
 		hasVanguardTelemetry,
 		type VanguardAxisId,
 	} from '$lib/player/dashboard/vanguardProtocol.js';
 
 	let {
 		prismValues = [],
-		statsRaw = null,
 	}: {
 		prismValues?: number[];
-		statsRaw?: Record<string, unknown> | null;
 	} = $props();
 
 	const rows = $derived(buildVanguardProtocolRows(prismValues));
 	const telemetryReady = $derived(hasVanguardTelemetry(prismValues));
-	const powerMetrics = $derived(
-		extractPowerMetrics(
-			statsRaw && typeof statsRaw === 'object' ? statsRaw : null,
-		),
-	);
 
 	let expandedAxis = $state<VanguardAxisId | null>(null);
-	let showAdvanced = $state(false);
 
 	function toggleAxis(id: VanguardAxisId) {
 		expandedAxis = expandedAxis === id ? null : id;
@@ -40,16 +31,6 @@
 				PAC · ACC · POW · COMP · STM · AGI — synced from live coach telemetry. Tap a card for detail.
 			</p>
 		</div>
-		{#if powerMetrics.length > 0}
-			<button
-				type="button"
-				class="vpp-advanced-toggle"
-				aria-expanded={showAdvanced}
-				onclick={() => (showAdvanced = !showAdvanced)}
-			>
-				{showAdvanced ? 'Hide' : 'Show'} advanced
-			</button>
-		{/if}
 	</header>
 
 	<div class="vpp-body">
@@ -87,20 +68,6 @@
 			<AttributeRadar values={prismValues} />
 		</div>
 	</div>
-
-	{#if showAdvanced && powerMetrics.length > 0}
-		<div class="vpp-advanced" role="region" aria-label="Advanced match metrics">
-			<p class="vpp-advanced__label">Power-user metrics</p>
-			<ul class="vpp-advanced__list">
-				{#each powerMetrics as m (m.key)}
-					<li class="vpp-advanced__item">
-						<span class="vpp-advanced__k">{m.label}</span>
-						<span class="vpp-advanced__v">{m.display}</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
 
 	{#if !telemetryReady}
 		<p class="vpp-awaiting" role="status">Awaiting coach telemetry — your prism will populate after verification.</p>
@@ -151,21 +118,6 @@
 		line-height: 1.4;
 		color: #94a3b8;
 		max-width: 36rem;
-	}
-
-	.vpp-advanced-toggle {
-		min-height: 44px;
-		padding: 0.5rem 0.85rem;
-		border-radius: 12px;
-		border: 1px solid color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent);
-		background: color-mix(in srgb, var(--color-accent, #fbbf24) 8%, transparent);
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.62rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.12em;
-		color: var(--color-accent, #fbbf24);
-		cursor: pointer;
 	}
 
 	/* Two-column shell: attribute cards (left) + radar (right); stacks on mobile */
@@ -300,57 +252,6 @@
 		width: min(100%, 320px);
 		max-width: 100%;
 		margin-inline: auto;
-	}
-
-	.vpp-advanced {
-		padding: clamp(10px, 2vw, 14px);
-		border-radius: 16px;
-		border: 1px dashed color-mix(in srgb, var(--color-accent, #fbbf24) 30%, transparent);
-		background: color-mix(in srgb, var(--color-accent, #fbbf24) 5%, transparent);
-	}
-
-	.vpp-advanced__label {
-		margin: 0 0 0.5rem;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.55rem;
-		font-weight: 800;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--color-accent, #fbbf24);
-	}
-
-	.vpp-advanced__list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: clamp(8px, 2vw, 12px);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.vpp-advanced__item {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 5.5rem;
-		padding: 0.4rem 0.55rem;
-		border-radius: 10px;
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 80%, transparent);
-	}
-
-	.vpp-advanced__k {
-		font-size: 0.55rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #64748b;
-	}
-
-	.vpp-advanced__v {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.8rem;
-		font-weight: 800;
-		color: #f1f5f9;
 	}
 
 	.vpp-awaiting {

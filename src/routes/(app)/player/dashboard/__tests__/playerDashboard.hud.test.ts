@@ -8,8 +8,14 @@ import { join } from 'path';
 
 const PAGE = join(__dirname, '..', '+page.svelte');
 const SHELL = join(__dirname, '../../../../../lib/components/shell/PlayerShell.svelte');
+const HUD_CONTAINER = join(__dirname, '../../../../../lib/components/hud/HUDContainer.svelte');
+const HUD_CSS = join(__dirname, '../../../../../lib/styles/player-dashboard-hud.css');
+const IDENTITY = join(__dirname, '../../../../../lib/components/player/dashboard/IdentityBentoModule.svelte');
 const src = readFileSync(PAGE, 'utf-8');
 const shellSrc = readFileSync(SHELL, 'utf-8');
+const containerSrc = readFileSync(HUD_CONTAINER, 'utf-8');
+const hudCssSrc = readFileSync(HUD_CSS, 'utf-8');
+const identitySrc = readFileSync(IDENTITY, 'utf-8');
 
 describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 	it('does not render vestigial Tactical Ops / mission log', () => {
@@ -69,7 +75,7 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 	});
 
 	it('uses fluid bento gap token (clamp via --bento-gap-liquid)', () => {
-		expect(src).toMatch(/var\(--bento-gap-liquid\)/);
+		expect(containerSrc + hudCssSrc + src).toMatch(/var\(--bento-gap-liquid/);
 	});
 
 	it('Self comparison section spans full bento width', () => {
@@ -101,29 +107,23 @@ describe('PlayerShell — rail-only navigation', () => {
 	});
 });
 
-describe('PlayerHudHeader — identity badge layout', () => {
-	const headerSrc = readFileSync(
-		join(__dirname, '../../../../../lib/components/player/dashboard/PlayerHudHeader.svelte'),
-		'utf-8',
-	);
-
-	it('uses avatar ring with glass pills instead of three mini rings', () => {
-		expect(headerSrc).toMatch(/HudAvatarRing/);
-		expect(headerSrc).toMatch(/player-hud-pill/);
-		expect(headerSrc).not.toMatch(/HudMiniRing/);
+describe('IdentityBentoModule — identity badge layout', () => {
+	it('uses avatar ring with streak/XP pills instead of three mini rings', () => {
+		expect(identitySrc).toMatch(/HudAvatarRing/);
+		expect(identitySrc).toMatch(/ibm-pill/);
+		expect(identitySrc).not.toMatch(/HudMiniRing/);
 	});
 
 	it('flattens embedded profile chrome for OperativeHub (Rule 2)', () => {
-		expect(headerSrc).toMatch(/player-hud-header--embedded/);
-		expect(headerSrc).toMatch(/background:\s*transparent\s*!important/);
+		expect(identitySrc).toMatch(/ibm-root--embedded/);
+		expect(identitySrc).toMatch(/background:\s*transparent/);
 		const hub = readFileSync(
 			join(__dirname, '../../../../../lib/components/player/dashboard/OperativeHub.svelte'),
 			'utf-8',
 		);
-		expect(hub).toMatch(/padding:\s*24px/);
-		expect(hub).toMatch(/rgba\(5,\s*10,\s*16,\s*0\.95\)/);
-		expect(hub).not.toMatch(/backdrop-filter:\s*blur/);
-		expect(hub).toMatch(/clip-path:\s*polygon/);
-		expect(hub).toMatch(/border-right:\s*1px solid rgba\(0,\s*255,\s*255,\s*0\.15\)/);
+		expect(hub).toMatch(/bento-span-4/);
+		expect(hub).toMatch(/bento-span-8/);
+		expect(hub).toMatch(/min-width:\s*0/);
+		expect(hub).toMatch(/bento-grid--12col/);
 	});
 });

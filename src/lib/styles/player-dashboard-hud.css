@@ -4,10 +4,39 @@
  */
 
 .player-hud-root {
-	--player-hud-gap: var(--bento-gap-liquid);
-	--player-hud-pad: clamp(12px, 2.5vw, 20px);
+	--player-hud-gap: clamp(4px, 1vw, 8px);
+	--player-hud-pad: clamp(10px, 2vw, 14px);
 	--player-hud-radius: 24px;
 	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
+}
+
+/* Sprint 1.7 — streak-at-risk: subtle gold pulse on avatar when currentStreak > 0 */
+.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg) {
+	animation: ibm-streak-ring-pulse 2.4s ease-in-out infinite;
+}
+
+.player-hud-root .ibm-pill--streak-active :global(.hud-seeded-ring) {
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent, #fbbf24) 55%, transparent));
+}
+
+@keyframes ibm-streak-ring-pulse {
+	0%,
+	100% {
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent));
+	}
+	50% {
+		filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-accent, #fbbf24) 60%, transparent));
+	}
+}
+
+/* Sprint 1.7 — tighter in-hub density without squishing bento cells */
+.player-hud-root .operative-hub .ibm-root,
+.player-hud-root .operative-hub .hmp-root {
+	padding: var(--player-hud-pad);
+}
+
+.player-hud-root .operative-hub .quest-log-panel--embedded {
+	padding: var(--player-hud-pad) !important;
 }
 
 .player-hud-header__lead {
@@ -51,54 +80,30 @@
 	white-space: nowrap;
 }
 
-.player-hud-casefile {
-	display: flex;
-	flex-direction: column;
-	flex: 1 1 auto;
-	min-height: 0;
-	gap: var(--player-hud-gap);
+.cmd-center-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: clamp(36px, 8vw, 44px);
+	min-height: clamp(36px, 8vw, 44px);
+	margin-top: clamp(6px, 1.5vw, 10px);
+	padding: clamp(6px, 1.2vw, 8px);
+	border-radius: var(--player-hud-radius, 24px);
+	border: 1px solid color-mix(in srgb, var(--color-structural) 35%, transparent);
+	background: color-mix(in srgb, var(--color-dominant) 75%, transparent);
+	color: var(--color-structural);
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
 }
 
-.player-hud-casefile__body {
-	display: flex;
-	flex: 1 1 auto;
-	min-height: 0;
-	align-items: flex-start;
-	gap: var(--player-hud-gap);
+.cmd-center-trigger:hover {
+	border-color: color-mix(in srgb, var(--color-structural) 55%, transparent);
+	background: color-mix(in srgb, var(--color-structural) 12%, transparent);
 }
 
-.player-hud-casefile__meta {
-	display: flex;
-	flex: 1 1 auto;
-	flex-direction: column;
-	min-width: 0;
-	gap: clamp(4px, 1vw, 8px);
-}
-
-.player-hud-tile {
-	padding: clamp(6px, 1.2vw, 10px);
-	border-radius: 8px;
-	border: 1px solid color-mix(in srgb, var(--color-structural) 18%, transparent);
-	background: color-mix(in srgb, var(--color-dominant) 88%, #000);
-}
-
-.player-hud-tile__k {
-	display: block;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 0.45rem;
-	font-weight: 800;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--color-structural) 55%, #64748b);
-}
-
-.player-hud-tile__v {
-	display: block;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 0.72rem;
-	font-weight: 700;
-	color: var(--vanguard-text-1, #f1f5f9);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.cmd-center-trigger:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-structural) 55%, transparent);
+	outline-offset: 2px;
 }

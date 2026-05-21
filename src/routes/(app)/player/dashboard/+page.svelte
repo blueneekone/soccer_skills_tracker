@@ -7,7 +7,11 @@
 	import { db } from '$lib/firebase.js';
 	import ActiveBounties from '$lib/components/player/dashboard/ActiveBounties.svelte';
 	import OperativeHub from '$lib/components/player/dashboard/OperativeHub.svelte';
-	import PlayerHudHeader from '$lib/components/player/dashboard/PlayerHudHeader.svelte';
+	// PlayerHudHeader deprecated in Sprint 1.6 — replaced by IdentityBentoModule
+	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
+	import HudMetricsPanel from '$lib/components/player/dashboard/HudMetricsPanel.svelte';
+	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
+	import PlayerCommandCenter from '$lib/components/player/dashboard/PlayerCommandCenter.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
@@ -38,6 +42,8 @@
 	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 	const uid = $derived(authStore.user?.uid || '');
+
+	let commandCenterOpen = $state(false);
 
 	// ── Trajectory Engine (memory capsules) ──────────────────────────────────
 	const trajectoryEngine = new TrajectoryEngine();
@@ -210,14 +216,11 @@
 	style="background: var(--color-dominant, #0f172a); padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	data-region="player-lobby"
 >
-	<div
-		class="lobby-root bento-grid bento-grid--12col bento-grid--liquid tw-relative tw-z-30 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-6xl tw-overflow-x-hidden"
-	>
+	<HUDContainer ariaLabel="Player operations HUD">
 		<div class="bento-span-12 tw-min-w-0">
 			<OperativeHub>
-				{#snippet profile()}
-					<PlayerHudHeader
-						embedded
+				{#snippet identity()}
+					<IdentityBentoModule
 						uid={uid}
 						displayName={callsign}
 						teamLabel={teamAssignmentLabel}
@@ -230,6 +233,17 @@
 						xpToNextRank={rankProgress.xpToNextRank}
 						profileIncomplete={!hasArmoryProfile}
 						onProfileSetup={() => (showInitModal = true)}
+						onOpenCommandCenter={() => (commandCenterOpen = true)}
+					/>
+				{/snippet}
+				{#snippet metrics()}
+					<HudMetricsPanel
+						statsRaw={statsRaw}
+						level={osLevel}
+						rankName={rankProgress.rank}
+						totalXp={totalXpHud}
+						streak={streak}
+						longestStreak={longestStreak}
 					/>
 				{/snippet}
 				{#snippet quests()}
@@ -239,40 +253,11 @@
 		</div>
 
 	<section
-		class="bento-span-8 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
+		class="bento-span-12 bento-card tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
 		aria-label="Vanguard Protocol telemetry"
 	>
-		<VanguardProtocolPanel prismValues={attrRadarValues} statsRaw={statsRaw} />
+		<VanguardProtocolPanel prismValues={attrRadarValues} />
 	</section>
-
-	<aside
-		class="bento-span-4 bento-card tw-relative tw-z-30 tw-flex tw-min-w-0 tw-flex-col tw-justify-between tw-p-4 md:tw-p-5"
-		aria-label="Operative stats snapshot"
-	>
-		<div>
-			<p class="lobby-eyebrow tw-mb-2 tw-text-slate-400">Telemetry snapshot</p>
-			<p class="tw-m-0 tw-font-mono tw-text-3xl tw-font-black tw-tabular-nums tw-text-teal-400">
-				LVL.{String(osLevel).padStart(2, '0')}
-			</p>
-			<p class="tw-mt-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-wider tw-text-slate-500">
-				{rankProgress.rank}
-			</p>
-		</div>
-		<dl class="tw-m-0 bento-stack-sm tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-wider">
-			<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-800/80 tw-pb-2">
-				<dt class="tw-text-slate-500">Total XP</dt>
-				<dd class="tw-tabular-nums tw-text-slate-200">{totalXpHud.toLocaleString()}</dd>
-			</div>
-			<div class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-800/80 tw-pb-2">
-				<dt class="tw-text-slate-500">Streak</dt>
-				<dd class="tw-tabular-nums tw-text-amber-400">{streak}d</dd>
-			</div>
-			<div class="tw-flex tw-justify-between tw-gap-2">
-				<dt class="tw-text-slate-500">Best</dt>
-				<dd class="tw-tabular-nums tw-text-slate-300">{longestStreak}d</dd>
-			</div>
-		</dl>
-	</aside>
 
 	<section
 		class="bento-span-12 bento-card lobby-capsules-section tw-relative tw-z-30 tw-flex tw-flex-col tw-p-4 md:tw-p-5"
@@ -306,8 +291,10 @@
 		{/if}
 	</section>
 
-	</div>
+	</HUDContainer>
 </div>
+
+<PlayerCommandCenter bind:open={commandCenterOpen} />
 
 <!-- Sprint 9.2: Initialize Operative — distinct one-time setup modal -->
 {#if showInitModal}
@@ -383,17 +370,8 @@
 {/if}
 
 <style>
-	.lobby-root {
+	.lobby-page {
 		color: var(--vanguard-text-1, #f8fafc);
-		gap: var(--bento-gap-liquid);
-	}
-
-	/* lobby-glass retained ONLY for the sticky top HUD bar (a floating chrome strip). */
-	.lobby-glass {
-		border-radius: 0;
-		background: rgb(15 23 42 / 0.85);
-		backdrop-filter: blur(24px);
-		-webkit-backdrop-filter: blur(24px);
 	}
 
 	/* Opaque data cards — Sprint 1.1: liquid shadow + inner highlight added. */
@@ -411,10 +389,6 @@
 		);
 	}
 
-	.combat-hud-shell {
-		box-sizing: border-box;
-	}
-
 	.lobby-eyebrow {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.65rem;
@@ -422,104 +396,6 @@
 		letter-spacing: 0.28em;
 		text-transform: uppercase;
 		color: rgb(148 163 184);
-	}
-
-	.combat-attributes-heading {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: clamp(0.75rem, 1.4vw, 0.875rem);
-		font-weight: 800;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: rgb(148 163 184);
-		line-height: 1.2;
-		padding-bottom: 0.25rem;
-		border-bottom: 1px solid rgb(51 65 85 / 0.55);
-		margin: 0 0 clamp(0.6rem, 0.45rem + 0.75vw, 1rem) 0;
-	}
-
-	.operative-casefile {
-		position: relative;
-		box-sizing: border-box;
-		padding: clamp(0.65rem, 0.45rem + 0.9vw, 0.95rem);
-		border-radius: 2px;
-		border: 1px solid rgb(51 65 85 / 0.85);
-		background: linear-gradient(
-			168deg,
-			rgb(15 23 42 / 0.97) 0%,
-			rgb(15 23 42 / 0.92) 45%,
-			rgb(15 23 42 / 0.98) 100%
-		);
-		box-shadow:
-			inset 0 0 0 1px rgb(15 23 42 / 0.5),
-			inset 0 1px 0 rgb(255 255 255 / 0.04);
-	}
-
-	.operative-casefile--siem {
-		background: rgb(15 23 42);
-		min-height: 0;
-	}
-
-	.operative-casefile::before,
-	.operative-casefile::after {
-		content: '';
-		position: absolute;
-		width: 6px;
-		height: 6px;
-		border-color: rgb(100 116 139 / 0.75);
-		border-style: solid;
-		pointer-events: none;
-	}
-
-	.operative-casefile::before {
-		top: 5px;
-		left: 5px;
-		border-width: 1px 0 0 1px;
-	}
-
-	.operative-casefile::after {
-		bottom: 5px;
-		right: 5px;
-		border-width: 0 1px 1px 0;
-	}
-
-	.operative-casefile__rail {
-		border-bottom-color: rgb(51 65 85 / 0.75);
-	}
-
-	.operative-siem-tile {
-		box-sizing: border-box;
-		min-width: 0;
-		padding: 0.35rem 0.45rem 0.45rem;
-		border-radius: 2px;
-		border: 1px solid rgb(30 41 59);
-		background: rgb(2 6 23 / 0.45);
-		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
-	}
-
-	.operative-siem-tile__k {
-		display: block;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.45rem;
-		font-weight: 800;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: rgb(100 116 139);
-		margin-bottom: 0.1rem;
-	}
-
-	.operative-siem-tile__v {
-		display: block;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.7rem;
-		font-weight: 700;
-		color: rgb(241 245 249);
-		line-height: 1.15;
-	}
-
-	.operative-siem-tile__v--truncate {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.lobby-capsules-intro {
@@ -531,15 +407,4 @@
 	.lobby-capsules-section {
 		min-width: 0;
 	}
-
-	.lobby-radar-canvas {
-		position: relative;
-		min-height: 240px;
-	}
-
-
-	.tabular-num {
-		font-variant-numeric: tabular-nums;
-	}
-
 </style>

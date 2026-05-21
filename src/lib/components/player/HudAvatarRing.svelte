@@ -29,7 +29,8 @@
 
 <div
 	class="hud-avatar-ring"
-	style="--har-size: {size}px; --har-stroke: {strokeColor};"
+	class:hud-avatar-ring--embedded={embedded}
+	style="--har-size: var(--player-hud-avatar-size, {size}px); --har-stroke: {strokeColor};"
 	role="img"
 	aria-label="Level {level}, {Math.round(fill * 100)} percent to next level"
 >
@@ -49,7 +50,7 @@
 		/>
 	</svg>
 	<div class="hud-avatar-ring__avatar-wrap">
-		<UidAvatar seed={seed} size={innerAvatar} alt="" />
+		<UidAvatar seed={seed} size={innerAvatar} alt="" skeleton={!seed} />
 	</div>
 	<span class="hud-avatar-ring__badge">LVL {level}</span>
 </div>
@@ -85,15 +86,18 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		overflow: hidden;
+		border-radius: 24px;
 	}
 
 	.hud-avatar-ring__avatar-wrap :global(.uid-avatar) {
-		border-radius: 20px;
+		border-radius: 24px;
+		overflow: hidden;
 	}
 
 	.hud-avatar-ring--embedded :global(.uid-avatar) {
 		border: none !important;
-		border-radius: 0 !important;
+		border-radius: 24px !important;
 		background: transparent !important;
 		box-shadow: none !important;
 	}
@@ -117,7 +121,6 @@
 		text-transform: uppercase;
 		color: #ffffff;
 		white-space: nowrap;
-		z-index: 2;
 	}
 
 	.hud-avatar-ring--embedded .hud-avatar-ring__badge {

@@ -90,12 +90,18 @@
 		z-index: 520;
 		display: flex;
 		justify-content: flex-end;
+		pointer-events: auto;
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 55%, transparent);
 		backdrop-filter: blur(6px);
 		-webkit-backdrop-filter: blur(6px);
 	}
 
 	.pcc-drawer {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: auto;
 		display: flex;
 		flex-direction: column;
 		width: min(100%, 22rem);
