@@ -115,8 +115,9 @@ describe('PlayerShell — rail-only navigation', () => {
 });
 
 describe('IdentityBentoModule — identity badge layout', () => {
-	it('uses avatar ring with streak/XP stat cells instead of three mini rings', () => {
+	it('uses avatar ring or inline badge with streak/XP stat cells', () => {
 		expect(identitySrc).toMatch(/HudAvatarRing/);
+		expect(identitySrc).toMatch(/ibm-inline-badge/);
 		expect(identitySrc).toMatch(/HudStatCell|HudMetricChip|ibm-metrics/);
 		expect(identitySrc).not.toMatch(/HudMiniRing/);
 	});
@@ -128,8 +129,9 @@ describe('IdentityBentoModule — identity badge layout', () => {
 			join(__dirname, '../../../../../lib/components/player/dashboard/OperativeHub.svelte'),
 			'utf-8',
 		);
-		expect(hub).toMatch(/bento-span-4/);
-		expect(hub).toMatch(/bento-span-8/);
+		expect(hub).toMatch(/operative-hub__main[\s\S]*?bento-span-8/);
+		expect(hub).toMatch(/operative-hub__missions[\s\S]*?bento-span-4/);
+		expect(hub).not.toMatch(/operative-hub__quests/);
 		expect(hub).toMatch(/min-width:\s*0/);
 		expect(hub).toMatch(/bento-grid--12col/);
 	});

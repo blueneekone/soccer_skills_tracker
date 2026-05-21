@@ -55,7 +55,7 @@
 		<p class="hmp-awaiting" role="status">AWAITING TELEMETRY</p>
 	{/if}
 
-	{#if powerMetrics.length > 0}
+	{#if !embedded && powerMetrics.length > 0}
 		<section class="hmp-power" aria-label="Match data">
 			<p class="hmp-section-label">Match Data</p>
 			<dl class="hmp-grid">

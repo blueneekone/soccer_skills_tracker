@@ -2,7 +2,6 @@
 	import AttributeRadar from '$lib/components/player/dashboard/AttributeRadar.svelte';
 	import {
 		buildVanguardProtocolRows,
-		hasVanguardTelemetry,
 		type VanguardAxisId,
 	} from '$lib/player/dashboard/vanguardProtocol.js';
 
@@ -15,7 +14,6 @@
 	} = $props();
 
 	const rows = $derived(buildVanguardProtocolRows(prismValues));
-	const telemetryReady = $derived(hasVanguardTelemetry(prismValues));
 	const selectedRow = $derived(rows.find((r) => r.id === selectedAxis) ?? null);
 
 	function handleAxisSelect(id: VanguardAxisId) {
@@ -61,10 +59,10 @@
 						{selectedRow.fullName} rating {selectedRow.display} / 99 — {selectedRow.pct}% of peak.
 					</p>
 				</div>
-			{:else if !telemetryReady}
-				<p class="vpp-inspector__ghost" role="status">Awaiting coach telemetry</p>
 			{:else}
-				<p class="vpp-inspector__ghost">Select a vector to inspect</p>
+				<p class="vpp-inspector__ghost" role="status">
+					SELECT A VECTOR · OR AWAIT COACH TELEMETRY
+				</p>
 			{/if}
 		</div>
 	</div>
@@ -169,8 +167,8 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		min-height: 120px;
-		padding: clamp(12px, 2.5vw, 18px);
+		min-height: auto;
+		padding: clamp(8px, 1.5vw, 12px);
 		border: 1px solid #334155;
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
 		clip-path: polygon(

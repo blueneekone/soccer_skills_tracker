@@ -240,7 +240,6 @@
 					<HudMetricsPanel
 						embedded={true}
 						prismValues={attrRadarValues}
-						statsRaw={statsRaw}
 						bind:selectedAxis={selectedVanguardAxis}
 					/>
 				{/snippet}
@@ -256,21 +255,21 @@
 	>
 		<VanguardProtocolPanel prismValues={attrRadarValues} bind:selectedAxis={selectedVanguardAxis} />
 		<footer class="player-capsules-strip" aria-labelledby="lobby-capsules-h">
-			<div class="player-capsules-strip__head">
-				<p class="player-capsules-strip__eyebrow lobby-eyebrow tw-font-mono">Self comparison</p>
-				<h2 id="lobby-capsules-h" class="player-capsules-strip__title tw-font-mono">
-					Time-Lapse Memory Capsules
-				</h2>
-			</div>
 			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
+				<div class="player-capsules-strip__head">
+					<p class="player-capsules-strip__eyebrow lobby-eyebrow tw-font-mono">Self comparison</p>
+					<h2 id="lobby-capsules-h" class="player-capsules-strip__title tw-font-mono">
+						Time-Lapse Memory Capsules
+					</h2>
+				</div>
 				<MemoryCapsuleArena
 					capsule={trajectoryEngine.activeCapsule}
 					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
 				/>
 			{:else}
-				<p class="lobby-capsule-ghost" role="status">
-					GHOST PROFILE · AWAITING FIRST CAPSULE
+				<p id="lobby-capsules-h" class="lobby-capsule-ghost lobby-capsule-ghost--compact" role="status">
+					SELF COMPARISON · MEMORY CAPSULES · GHOST PROFILE · AWAITING FIRST CAPSULE
 				</p>
 			{/if}
 		</footer>

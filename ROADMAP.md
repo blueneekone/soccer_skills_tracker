@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.4** — Gold Command palette + analytics deck layout
+**Current sprint:** **2.5** — Command strip layout v2
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -41,7 +41,53 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.1.1 | Done | CMD removed; shell nav only | `playerHudSprint14.test.ts` (no PlayerCommandCenter on page) |
 | 2.2 | Done | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
 | 2.3 | Done | Gold Command HUD unification — ringless stat cells, kill cyan scanlines, embedded mission chrome | `playerHudSprint23.test.ts` |
-| 2.4 | **Current** | Gold Command palette + analytics deck layout | `playerHudSprint24.test.ts` |
+| 2.4 | Done | Gold Command palette, analytics deck, chamfer cards | `playerHudSprint24.test.ts` |
+| 2.5 | **Current** | Command strip layout v2 — mission rail + conditional avatar | `playerHudSprint25.test.ts` |
+
+---
+
+## Sprint 2.5 scope — Command strip layout v2 (mission rail + conditional avatar)
+
+**Goal:** Replace the broken 4/8/12 OperativeHub composition with a tactical command strip: identity + vectors on the left (8 col), missions in a right rail (4 col), one flat surface (no clashing glass/card layers). Avatar column only when armory profile is complete; else inline initials badge. Remove orphan match-data (assists) from hub. Always show radar in analytics deck. Collapse dead space.
+
+**Layout decisions (locked):**
+
+- Missions: **right side column** (4 col desktop), not full-width 12-col rows
+- Avatar: **HudAvatarRing column only when profile complete** (`operativeAvatar` set); else **inline badge** (initials) beside name — no empty 72px slot
+- Telemetry: **always show radar** in analytics deck (never hide VPP/radar band when data empty)
+
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `docs/vision/PLAYER_OS.md` (replace home screen zones with command strip + mission rail + analytics deck)
+- `.cursor/rules/sst-player-dashboard.mdc` (sprint pointer 2.5, layout table update)
+- `src/lib/components/player/dashboard/OperativeHub.svelte` (refactor grid: 8+4 command + missions rail; single flat surface)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (conditional avatar column vs inline badge; remove over-desaturate when badge mode)
+- `src/lib/components/player/dashboard/HudMetricsPanel.svelte` (embedded: vectors only — remove Match Data / extractPowerMetrics from hub)
+- `src/lib/components/hud/ActiveBounties.svelte` (embedded rail mode: vertical stack, narrow column styling)
+- `src/lib/components/player/dashboard/AttributeRadar.svelte` (zero-data: faint gold hex outline at min radius so chart never looks “broken”)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (compact inspector ghost — no large empty slab)
+- `src/routes/(app)/player/dashboard/+page.svelte` (wire profileComplete to identity; stop passing statsRaw to embedded HudMetricsPanel if unused)
+- `src/lib/styles/player-dashboard-hud.css` (single-surface tokens, command shell, mission rail, badge styles; kill nested cell fill clash)
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint25.test.ts` (create)
+- `src/routes/(app)/player/dashboard/__tests__/playerDashboard.hud.test.ts` (update layout assertions)
+
+**Out of scope:**
+
+- Renaming IdentityBentoModule, OperativeHub, HudMetricsPanel, ActiveBounties, VanguardProtocolPanel, HUDContainer
+- selectedVanguardAxis wiring behavior
+- teamsStore / deduplicateById
+- Coach/parent routes, vault/compliance
+- svelte-check errors
+- New JWT roles
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard src/lib/player/dashboard
+node scripts/check-no-phosphor.mjs
+npm run build
+```
 
 ---
 

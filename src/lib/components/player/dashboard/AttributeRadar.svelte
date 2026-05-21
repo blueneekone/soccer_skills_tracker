@@ -71,6 +71,10 @@
 		skillVertices.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' '),
 	);
 
+	const allZero = $derived(safeValues.every((v) => v === 0));
+
+	const ZERO_TRACK_RADIUS = 0.18;
+
 	const labelVertices = $derived(
 		ATTRS.map((label, i) => ({
 			...pt(i, LABEL_R),
@@ -111,6 +115,17 @@
 				vector-effect="non-scaling-stroke"
 			/>
 		{/each}
+
+		{#if allZero}
+			<polygon
+				points={polygonPoints(R * ZERO_TRACK_RADIUS)}
+				fill="none"
+				stroke="color-mix(in srgb, var(--color-accent, #fbbf24) 28%, transparent)"
+				stroke-width="0.8"
+				vector-effect="non-scaling-stroke"
+				class="ar-zero-track"
+			/>
+		{/if}
 
 		<polygon
 			points={skillPolygonPoints}

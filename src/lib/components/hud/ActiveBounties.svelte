@@ -337,6 +337,7 @@
 	class="quest-log quest-log-panel"
 	class:hud-telemetry-root={!embedded}
 	class:quest-log-panel--embedded={embedded}
+	class:quest-log-panel--rail={embedded}
 	class:quest-log--empty={showEmpty}
 	aria-label="Quest log"
 	aria-busy={loading}

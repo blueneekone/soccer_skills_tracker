@@ -41,29 +41,51 @@
 		if (d <= 0) return 1;
 		return Math.min(1, Math.max(0, xpInTier / d));
 	});
+
+	const initials = $derived.by(() => {
+		const name = displayName.trim();
+		if (name && name !== '—' && name !== 'Athlete') {
+			const parts = name.split(/\s+/).filter(Boolean);
+			if (parts.length >= 2) {
+				return (parts[0][0] + parts[1][0]).toUpperCase();
+			}
+			return name.slice(0, 2).toUpperCase();
+		}
+		return (uid || '??').slice(0, 2).toUpperCase();
+	});
 </script>
 
 <div
 	class="ibm-root"
 	class:ibm-root--embedded={embedded}
+	class:ibm-root--badge-only={profileIncomplete}
 	class:ibm-streak-at-risk={currentStreak > 0}
 	data-streak-active={currentStreak > 0 ? 'true' : undefined}
 	aria-label="Player identity"
 >
-	<div class="ibm-avatar">
-		<HudAvatarRing
-			seed={ringSeed}
-			size={72}
-			{level}
-			xpFill={levelXpFill}
-			strokeColor="var(--color-accent, #fbbf24)"
-			{embedded}
-		/>
-	</div>
+	{#if !profileIncomplete}
+		<div class="ibm-avatar">
+			<HudAvatarRing
+				seed={ringSeed}
+				size={72}
+				{level}
+				xpFill={levelXpFill}
+				strokeColor="var(--color-accent, #fbbf24)"
+				{embedded}
+			/>
+		</div>
+	{/if}
 
 	<div class="ibm-rings">
 		<div class="ibm-identity">
-			<p class="ibm-name" title={displayName}>{displayName}</p>
+			<div class="ibm-identity__head">
+				{#if profileIncomplete}
+					<span class="ibm-inline-badge" aria-hidden="true">
+						<span class="ibm-inline-badge__initials">{initials}</span>
+					</span>
+				{/if}
+				<p class="ibm-name" title={displayName}>{displayName}</p>
+			</div>
 			<p class="ibm-meta">{teamLabel || 'No team'} · {rankName}</p>
 		</div>
 
@@ -112,6 +134,10 @@
 		padding: 0;
 	}
 
+	.ibm-root--badge-only {
+		grid-template-columns: 1fr;
+	}
+
 	.ibm-avatar {
 		aspect-ratio: 1 / 1;
 		position: relative;
@@ -138,6 +164,13 @@
 		min-width: 0;
 	}
 
+	.ibm-identity__head {
+		display: flex;
+		align-items: center;
+		gap: clamp(6px, 1.2vw, 10px);
+		min-width: 0;
+	}
+
 	.ibm-name {
 		margin: 0;
 		font-family: 'Geist Mono', ui-monospace, monospace;
@@ -149,6 +182,8 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		min-width: 0;
+		flex: 1 1 auto;
 	}
 
 	.ibm-meta {
@@ -179,7 +214,7 @@
 	}
 
 	@media (max-width: 480px) {
-		.ibm-root {
+		.ibm-root:not(.ibm-root--badge-only) {
 			grid-template-columns: 1fr;
 		}
 	}

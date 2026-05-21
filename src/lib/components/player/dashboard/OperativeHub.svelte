@@ -14,13 +14,15 @@
 
 <div class="operative-hub bento-grid bento-grid--12col bento-grid--liquid" data-region="operative-hub">
 	<div class="operative-hub__scanlines" aria-hidden="true"></div>
-	<div class="operative-hub__identity bento-span-4">
-		{@render identity()}
+	<div class="operative-hub__main bento-span-12 md:bento-span-8">
+		<div class="operative-hub__identity">
+			{@render identity()}
+		</div>
+		<div class="operative-hub__metrics">
+			{@render metrics()}
+		</div>
 	</div>
-	<div class="operative-hub__metrics bento-span-8">
-		{@render metrics()}
-	</div>
-	<div class="operative-hub__quests bento-span-12">
+	<div class="operative-hub__missions bento-span-12 md:bento-span-4">
 		{@render quests()}
 	</div>
 </div>
@@ -31,9 +33,7 @@
 		width: 100%;
 		min-width: 0;
 		box-sizing: border-box;
-		background: rgba(2, 2, 2, 0.7);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
+		background: var(--color-dominant, #0f172a);
 		border: 1px solid #334155;
 		box-shadow: var(--shadow-liquid);
 		overflow: hidden;
@@ -59,34 +59,31 @@
 			linear-gradient(color-mix(in srgb, #fbbf24 4%, transparent) 1px, transparent 1px),
 			linear-gradient(90deg, color-mix(in srgb, #fbbf24 4%, transparent) 1px, transparent 1px);
 		background-size: 22px 22px;
-		opacity: 0.12;
+		opacity: 0.08;
 	}
 
+	.operative-hub__main,
+	.operative-hub__missions,
 	.operative-hub__identity,
-	.operative-hub__metrics,
-	.operative-hub__quests {
+	.operative-hub__metrics {
 		position: relative;
 		z-index: 1;
 		min-width: 0;
 		box-sizing: border-box;
 	}
 
-	.operative-hub__identity {
-		border-bottom: 1px solid #334155;
+	.operative-hub__main {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.operative-hub__metrics {
-		border-bottom: 1px solid #334155;
+		border-top: 1px solid #334155;
 	}
 
 	@media (min-width: 768px) {
-		.operative-hub__identity {
-			border-bottom: none;
-			border-right: 1px solid #334155;
-		}
-
-		.operative-hub__metrics {
-			border-bottom: 1px solid #334155;
+		.operative-hub__missions {
+			border-left: 1px solid #334155;
 		}
 	}
 </style>

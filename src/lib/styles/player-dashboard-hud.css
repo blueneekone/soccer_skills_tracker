@@ -5,6 +5,7 @@
 
 .player-hud-root {
 	--color-structural: #64748b; /* muted slate — overrides global #3b82f6 inside player HUD */
+	--player-hud-surface: #0f172a;
 	--player-hud-border: #334155;
 	--player-hud-accent: #fbbf24;
 	--player-hud-gap: clamp(4px, 1vw, 8px);
@@ -17,6 +18,7 @@
 .player-hud-root .bento-card {
 	border-radius: 0;
 	border: 1px solid #334155;
+	background: var(--player-hud-surface, #0f172a);
 	clip-path: polygon(
 		0 12px,
 		12px 0,
@@ -85,6 +87,64 @@
 	color: #475569;
 }
 
+.player-hud-root .player-capsules-strip .lobby-capsule-ghost--compact {
+	font-size: 9px;
+	letter-spacing: 0.12em;
+}
+
+/* Sprint 2.5 — single flat command shell surface */
+.player-hud-root .operative-hub {
+	background: var(--player-hud-surface, #0f172a);
+}
+
+/* Sprint 2.5 — inline initials badge (incomplete profile) */
+.player-hud-root .ibm-inline-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: clamp(28px, 6vw, 32px);
+	height: clamp(28px, 6vw, 32px);
+	border: 1px solid #334155;
+	background: transparent;
+	clip-path: polygon(
+		0 5px,
+		5px 0,
+		calc(100% - 5px) 0,
+		100% 5px,
+		100% calc(100% - 5px),
+		calc(100% - 5px) 100%,
+		5px 100%,
+		0 calc(100% - 5px)
+	);
+}
+
+.player-hud-root .ibm-inline-badge__initials {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.55rem, 1.2vw, 0.65rem);
+	font-weight: 900;
+	letter-spacing: 0.06em;
+	color: var(--color-accent, #fbbf24);
+}
+
+.player-hud-root .ibm-root--badge-only .ibm-identity__head {
+	min-width: 0;
+}
+
+/* Sprint 2.5 — badge mode: no Bauhaus desaturate (no avatar slot) */
+.player-hud-root .ibm-root--badge-only :global(.uid-avatar svg) {
+	filter: none;
+}
+
+/* Sprint 2.5 — embedded vector cells: border only, no nested fill clash */
+.player-hud-root .hmp-cell {
+	background: transparent;
+}
+
+.player-hud-root .hmp-cell--secondary {
+	background: transparent;
+}
+
 /* Sprint 1.7 — streak-at-risk: subtle gold pulse on avatar when currentStreak > 0 */
 .player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg) {
 	animation: ibm-streak-ring-pulse 2.4s ease-in-out infinite;
@@ -127,7 +187,30 @@
 
 .player-hud-root .operative-hub .quest-log-panel--embedded {
 	padding: var(--player-hud-pad) !important;
-	border-top: 1px solid #334155;
+	min-width: 0;
+}
+
+/* Sprint 2.5 — mission rail column (md+ left border on missions lives in OperativeHub) */
+.player-hud-root .operative-hub .quest-log-panel--rail {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	gap: clamp(4px, 0.8vw, 8px);
+}
+
+.player-hud-root .operative-hub .quest-log-panel--rail .quest-log__feed--embedded {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(2px, 0.5vw, 4px);
+}
+
+.player-hud-root .operative-hub .quest-log-panel--rail .quest-terminal-row--embedded {
+	max-width: 100%;
+	padding-inline: 0;
+}
+
+.player-hud-root .operative-hub .quest-log-panel--rail .quest-row--embedded {
+	max-width: 100%;
 }
 
 .player-hud-header__lead {
@@ -415,6 +498,11 @@
 /* Sprint 2.0 — telemetry deck inspector (shared with VanguardProtocolPanel) */
 .player-hud-root .vpp-inspector {
 	font-family: 'Geist Mono', ui-monospace, monospace;
+	min-height: auto;
+}
+
+.player-hud-root .vpp-inspector__ghost {
+	padding: 0;
 }
 
 .player-hud-root .vpp-body {
