@@ -135,6 +135,11 @@
 	outline-offset: 2px;
 }
 
+/* Sprint 2.2 — player HUD avatar: gold border (override UidAvatar structural blue) */
+.player-hud-root .hud-avatar-ring__avatar-wrap :global(.uid-avatar) {
+	border-color: color-mix(in srgb, var(--color-accent, #fbbf24) 35%, transparent);
+}
+
 /* Sprint 2.1 — identity metric chips */
 .player-hud-root .ibm-metric-chip {
 	display: inline-flex;
@@ -144,6 +149,7 @@
 	border: 1px solid #334155;
 	background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
 	min-width: 0;
+	transition: border-color 0.15s ease;
 	clip-path: polygon(
 		0 5px,
 		5px 0,
@@ -187,6 +193,10 @@
 	font-variant-numeric: tabular-nums;
 	color: #ffffff;
 	white-space: nowrap;
+}
+
+.player-hud-root .ibm-metric-chip:hover {
+	border-color: color-mix(in srgb, #fbbf24 28%, #334155);
 }
 
 .player-hud-root .ibm-metric-chip--streak-active {
@@ -239,10 +249,30 @@
 	outline-offset: 2px;
 }
 
+/* Sprint 2.2 — hub vector strip hover + selection motion */
+.player-hud-root .hmp-cell--selectable {
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.2s ease;
+}
+
+.player-hud-root .hmp-cell--selectable:hover {
+	border-color: color-mix(in srgb, #fbbf24 25%, #334155);
+}
+
 /* Sprint 2.0 — hub vector strip selection highlight */
 .player-hud-root .hmp-cell--selected {
 	border-color: #fbbf24;
 	box-shadow: 0 0 8px color-mix(in srgb, #fbbf24 35%, transparent);
+}
+
+/* Sprint 2.2 — embedded mission row hover */
+.player-hud-root .quest-row--embedded {
+	transition: background 0.15s ease;
+}
+
+.player-hud-root .quest-row--embedded:hover {
+	background: color-mix(in srgb, #fbbf24 4%, var(--color-dominant, #0f172a));
 }
 
 /* Sprint 2.0 — telemetry deck inspector (shared with VanguardProtocolPanel) */
@@ -252,4 +282,15 @@
 
 .player-hud-root .vpp-body {
 	min-width: 0;
+}
+
+/* Sprint 2.2 — respect prefers-reduced-motion for HUD pulses */
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg) {
+		animation: none !important;
+	}
+
+	.player-hud-root :global(.quest-row__status) {
+		animation: none !important;
+	}
 }

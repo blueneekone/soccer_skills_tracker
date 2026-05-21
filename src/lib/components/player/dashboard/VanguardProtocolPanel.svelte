@@ -110,9 +110,13 @@
 
 	.vpp-lede {
 		margin: 0.35rem 0 0;
-		font-size: 0.75rem;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 10px;
+		font-weight: 700;
 		line-height: 1.4;
-		color: #94a3b8;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #64748b;
 		max-width: 36rem;
 	}
 

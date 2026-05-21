@@ -7,7 +7,7 @@
 		level = 1,
 		/** 0..1 progress toward next level within current tier */
 		xpFill = 0,
-		strokeColor = 'var(--color-structural, #60a5fa)',
+		strokeColor = 'var(--color-accent, #fbbf24)',
 		embedded = false,
 	}: {
 		seed?: string;
@@ -67,15 +67,15 @@
 		display: block;
 		width: 100%;
 		height: 100%;
-		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--har-stroke, #60a5fa) 45%, transparent));
+		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--har-stroke, #fbbf24) 45%, transparent));
 	}
 
 	.hud-avatar-ring__track {
-		stroke: color-mix(in srgb, var(--har-stroke, #60a5fa) 22%, #1e293b);
+		stroke: color-mix(in srgb, var(--har-stroke, #fbbf24) 22%, #1e293b);
 	}
 
 	.hud-avatar-ring__fill {
-		stroke: var(--har-stroke, #60a5fa);
+		stroke: var(--har-stroke, #fbbf24);
 		transition: stroke-dashoffset 0.65s cubic-bezier(0.33, 1, 0.68, 1);
 	}
 
@@ -109,10 +109,10 @@
 		transform: translateX(-50%);
 		padding: 0.2rem 0.45rem;
 		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, var(--har-stroke, #60a5fa) 55%, transparent);
+		border: 1px solid color-mix(in srgb, var(--har-stroke, #fbbf24) 55%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, #1e293b);
 		box-shadow:
-			0 0 12px color-mix(in srgb, var(--har-stroke, #60a5fa) 35%, transparent),
+			0 0 12px color-mix(in srgb, var(--har-stroke, #fbbf24) 35%, transparent),
 			inset 0 1px 0 rgba(255, 255, 255, 0.08);
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.48rem;

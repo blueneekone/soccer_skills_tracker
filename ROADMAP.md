@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-21  
-**Current sprint:** **2.1** — Identity metric chips + palette pass
+**Current sprint:** **2.2** — Motion polish + mono/palette finish
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -37,7 +37,9 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 1.8 | Done | Unified tactical HUD shell, flush embedded panels, Vanguard vectors in metrics column | `playerHudSprint18.test.ts` — Unified hub shell + vector strip — mission deck continues in 1.9. |
 | 1.9 | Done | Mission deck density — single-line embedded rows, compact CTAs, no bracket UI | `playerHudSprint19.test.ts` |
 | 2.0 | Done | Telemetry deck — hub vector strip sync, radar + inspector, remove duplicate grid | `playerHudSprint20.test.ts` |
-| 2.1 | **Current** | Identity metric chips, chamfer CTAs, palette + mono header pass | `playerHudSprint21.test.ts` |
+| 2.1 | Done | Identity metric chips, chamfer CTAs, palette + mono header pass | `playerHudSprint21.test.ts` |
+| 2.1.1 | Done | CMD removed; shell nav only | `playerHudSprint14.test.ts` (no PlayerCommandCenter on page) |
+| 2.2 | **Current** | Motion polish, gold avatar palette, mono typography lock | `playerHudSprint22.test.ts` |
 
 ---
 
@@ -109,22 +111,37 @@ npm run build
 
 ---
 
-## Sprint 2.2 scope — Motion polish + mono cleanup (planned)
+## Sprint 2.2 scope — Motion polish + mono/palette finish
 
-**Goal:** Optional motion polish and remaining sans→mono cleanup on marketing copy blocks within the player dashboard shell.
+**Goal:** Final craft pass on player dashboard — gold-forward avatar ring, subtle motion, Geist Mono lock on remaining sans blocks. No layout rearchitecture.
 
-**In scope (when started):**
+**Note:** Prebuild phosphor fix is a separate commit — do not re-touch unless `npm run build` still fails.
 
-- Subtle hover/focus transitions on identity metric chips and chamfer CTAs
-- Remaining sans-serif marketing copy blocks → Geist Mono where appropriate
-- `playerHudSprint22.test.ts` (create)
+**In scope:**
+
+- `ROADMAP.md` (this update)
+- `src/lib/components/player/HudAvatarRing.svelte`
+- `src/lib/components/player/UidAvatar.svelte` (if avatar inner glow is off-palette green)
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` (typography only)
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte` (minor motion only if needed)
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint22.test.ts` (create)
 
 **Out of scope:**
 
-- Identity chip layout (Sprint 2.1)
-- Telemetry deck / mission deck changes
+- Telemetry layout / selectedAxis / radar inspector structure (2.0 done)
+- ActiveBounties mission rows (1.9 done)
+- Re-adding Command Center
 - Coach/parent routes
-- Full PLAYER_OS.md rewrite
+- svelte-check 362 errors
+
+**Verify commands:**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard
+node scripts/check-no-phosphor.mjs
+npm run build
+```
 
 ---
 
