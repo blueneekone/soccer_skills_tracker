@@ -1,4 +1,7 @@
 # VANGUARD PROTOCOL: MASTER DEVELOPMENT ROADMAP
+
+> ⚠️ **SUPERSEDED** — see [`ROADMAP.md`](../../ROADMAP.md) and [`docs/PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md). Archived for history only.
+
 **Project:** Nexus Command (Soccer Skills Tracker SaaS)
 **Architecture:** Svelte 5 (Strict), Firebase (Auth, Firestore, Storage), Tailwind CSS
 **Design Language:** SIEM / Tron / Cyberpunk (Dark mode, glassmorphism, mono-fonts)

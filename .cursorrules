@@ -1,41 +1,30 @@
 {
   "project_context": {
-    "name": "SSTracker Enterprise Ecosystem",
-    "framework": "SvelteKit 5",
-    "database": "Firebase Cloud Firestore",
-    "architecture_goal": "A multi-tenant youth sports SaaS integrating high-density tactical SIEM HUD interfaces with ultra-premium Liquid Glassmorphism and Bento Grid layouts.",
-    "role": "Chief Software Architect and Chief Design Officer. Prioritize mathematical optimization, rigorous architectural boundaries, and premium aesthetic tokens."
+    "name": "SSTracker",
+    "framework": "SvelteKit 5 + Firebase",
+    "canonical_docs": [
+      "ROADMAP.md",
+      "docs/ARCHITECTURE.md",
+      "docs/PERSONA_ECOSYSTEM.md",
+      ".cursor/rules/"
+    ]
   },
-  "development_standards": {
-    "single_responsibility": "Every function and Svelte component must execute precisely one logical operation. Extract complex transformations into helper utilities.",
-    "function_length_limit": "Function bodies are mathematically capped at a maximum of 80 lines. Strict adherence required.",
-    "type_centralization": "Enforce strict TypeScript interface extraction via the centralized 'types/' directory. Prevent duplicate interface definitions globally.",
-    "asset_versioning": "Implement strict file-hash asset versioning for all scripts (e.g., auth.a1b2c3d4.js). Completely ban query-string cache-busting (?v=4.0) to prevent PWA Service Worker desynchronization."
-  },
-  "database_and_telemetry_rules": {
-    "client_immutability": "Directly mutating client-side data arrays in browser memory is strictly prohibited. State must map to immutable server responses via Svelte's reactive stores.",
-    "firestore_atomic_batches": "All session telemetry logging must execute via server-managed Cloud Firestore 'writeBatch' transactions.",
-    "batch_operation_counters": "Integrate explicit mathematical operation counters into all batch arrays. Cap at exactly 500 operations. Force immediate commit and memory reset upon reaching the boundary.",
-    "concurrency_protections": "Standard read-modify-write loops for cumulative metrics are banned. Exclusively utilize the native 'FieldValue.increment()' operator.",
-    "query_optimization": "Client-side collection filtering is strictly banned. Execute server-side indexed queries utilizing Firestore Timestamp objects. Legacy string dates must be migrated."
-  },
-  "ui_ux_paradigm_constraints": {
-    "bento_grid_topology": "Utilize a 12-column CSS Grid with dense auto-flow. Compartmentalize panels asymmetrically. Strict scale hierarchy: primary elements demand 2x2 blocks.",
-    "anti_squishing_protocols": "Deprecate hardcoded margins (e.g.,.mt-4). Utilize fluid clamp functions exclusively, structured as 'gap: clamp(20px, 4vw, 32px)'.",
-    "liquid_glassmorphism": "Deploy backdrop blurs ('blur(20px)') over semi-transparent backgrounds. Apply the custom '--shadow-liquid' specular highlight composite. Enforce a uniform 24px border radius for analytical modules.",
-    "player_os_hud_exception": "Traditional border-radius is banned on Player OS modules. Use 'clip-path: polygon(...)' to generate 45-degree chamfered military corners. Eradicate generic web terms; utilize 'ACTIVE MISSIONS' and 'VANGUARD PROTOCOL'.",
-    "typography_engine": "Utilize Geist Mono for data terminals, forcing uppercase and tight letter spacing (0.05em). Utilize Switzer for high data-density analytical tables.",
-    "color_palette_tokens": "Enforce the 60-30-10 rule. 60% Dominant Aggie Blue (#0f172a), 30% Structural Light Blue (#3b82f6), 10% Accent Gold (#fbbf24). High-saturation warm consumer colors are banned."
-  },
-  "behavioral_and_compliance_gates": {
-    "gamification_isolation": "Restrict gamification strictly to the Player OS. The Coach Sideline OS must remain a high-density, flat analytical environment.",
-    "dopamine_engine_threads": "Canvas-confetti visual feedback must trigger asynchronously on an isolated thread, completely decoupled from the main DOM renderer, executing only after a verified database commit.",
-    "coppa_2026_compliance": "Onboarding routines must pause all biometric telemetry and AI processing until a Verifiable Parental Consent (VPC) token is secured via webhook validation.",
-    "safesport_isolation": "Programmatically route all messaging to duplicate and CC a linked parental account. Ban unsupervised 1-on-1 adult-to-minor digital communication."
-  },
-  "cursor_composer_directives": {
-    "workflow": "Operate via incremental Edit-Test loops. Break down complex tasks, write a failing unit test, and generate isolated code until the test passes.",
-    "hooks_validation": "Respect local project hooks. Ensure code passes TypeScript assertions and linting during the onPreCommit phase before staging.",
-    "effort_calibration": "Utilize deep context scanning across the entire directory structure before modifying critical state managers or database schemas."
+  "invariants_enforced_by_tests": [
+    "12-column bento-grid--12col bento-grid--liquid on primary dashboards",
+    "Player OS gamification isolated from Coach OS flat analytics",
+    "Content-hash asset filenames (vite.config.js)",
+    "COPPA/VPC gates before training PII routes"
+  ],
+  "invariants_guidelines_not_fully_enforced": [
+    "Prefer bento gap tokens over tw-mb-4/tw-gap-4 on migrated routes (see tokenCompliance.test.ts)",
+    "Prefer server-side Firestore queries where indexed",
+    "80-line function guideline for new code"
+  ],
+  "ui_tokens": {
+    "dominant": "#0f172a",
+    "structural_border": "#334155",
+    "accent_gold": "#fbbf24",
+    "player_os_corners": "clip-path chamfer — not border-radius",
+    "coach_os": "flat analytical — no gamification chrome"
   }
 }

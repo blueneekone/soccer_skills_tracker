@@ -1,6 +1,8 @@
 # Epic 5 — Enterprise Logistics Engine — Status Audit
 
-Concise sprint-by-sprint checkpoint against roadmap intent (**Epic 5** in [`roadmap.md`](../roadmap.md)). Evidence is grounded in repo search (April 2026).
+> **Naming note:** Epic 5 **in this doc** = Enterprise Logistics (Director OS). This is **not** the same as lettered Product Epic E in [`ROADMAP.md`](../ROADMAP.md) or the old ROADMAP Epic 5 (State Association APIs).
+
+Concise sprint-by-sprint checkpoint against roadmap intent. Evidence is grounded in repo search (April 2026).
 
 | Sprint | Roadmap intent | Status | Evidence |
 |--------|----------------|--------|-----------|
@@ -14,7 +16,7 @@ Concise sprint-by-sprint checkpoint against roadmap intent (**Epic 5** in [`road
 **Notes**
 
 - Canonical workout logging for XP remains in **`workout_logs`** and callable flows ([`functions/index.js`](../functions/index.js), `logTrainingSession` creates `workout_logs` docs ~4354+)—relevant background for Epic 5 telemetry bus and downstream Phase 9 specs.
-- This document is descriptive, not scope approval; align priorities with [`roadmap.md`](../roadmap.md).
+- This document is descriptive, not scope approval; align priorities with [`ROADMAP.md`](../ROADMAP.md).
 
 ---
 

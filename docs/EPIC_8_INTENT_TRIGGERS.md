@@ -2,7 +2,7 @@
 
 **Phase**: Phase 3 – Adult EQ Interceptors  
 **Epic**: 8 – Intent-Based Homework Triggers  
-**Status**: Implemented (see `MASTER_BUILD_ROADMAP.md`)  
+**Status**: Implemented (see `ROADMAP.md`)  
 **Linked Plan**: `.cursor/plans/epic_8_intent_triggers_cc00e612.plan.md`
 
 ---

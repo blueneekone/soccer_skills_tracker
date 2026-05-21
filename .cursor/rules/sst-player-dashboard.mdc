@@ -1,0 +1,45 @@
+---
+description: Player OS dashboard conventions
+globs: src/**/player/dashboard/**,src/routes/(app)/player/dashboard/**
+alwaysApply: false
+---
+
+# Player OS dashboard
+
+## Layout (OperativeHub)
+
+`HUDContainer` wraps the dashboard shell. Inside `OperativeHub`:
+
+| Zone | Grid span | Component |
+|------|-----------|-----------|
+| Identity | `bento-span-4` | `IdentityBentoModule` |
+| Metrics | `bento-span-8` | `HudMetricsPanel` |
+| Quests / missions | `bento-span-12` | `ActiveBounties` |
+
+Below the hub row: `VanguardProtocolPanel` and memory capsules as documented in [`docs/vision/PLAYER_OS.md`](../../docs/vision/PLAYER_OS.md).
+
+**Route shell:** `src/routes/(app)/player/dashboard/+page.svelte`
+
+## Components (do not rename)
+
+- `IdentityBentoModule` — operative identity, avatar, rank
+- `HudMetricsPanel` — streak, XP, telemetry readouts
+- `ActiveBounties` — mission list (use `deduplicateById` for dedup)
+- `VanguardProtocolPanel` — protocol / compliance capsule
+- `HUDContainer` — shared HUD chrome from `src/lib/components/hud/HUDContainer.svelte`
+
+## CSS
+
+Primary stylesheet: `src/lib/styles/player-dashboard-hud.css`
+
+Player OS uses **chamfered corners** (`clip-path`), not `border-radius`. Tokens: see `.cursorrules` (`#0f172a`, `#334155`, `#fbbf24`).
+
+## Tests to extend
+
+When changing this area, extend (never delete):
+
+- `playerHudSprint*.test.ts`
+- `playerDashboard.layout.test.ts`
+- `playerDashboard.hud.test.ts`
+
+Current planned sprint: **1.7** — see `ROADMAP.md`.

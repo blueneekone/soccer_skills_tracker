@@ -1,0 +1,47 @@
+---
+description: How Cursor agents execute SSTracker sprints
+alwaysApply: true
+---
+
+# SSTracker agent workflow
+
+## Before coding
+
+- Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
+- Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
+
+## Scope discipline
+
+- **One slice per session** — touch 5 or fewer files unless the sprint doc explicitly lists more.
+- **Extend sprint test files** — add guards to `playerHudSprint*.test.ts`, `firestoreRulesSprint*.test.ts`, etc. Never delete prior sprint regression tests.
+- **Do not create** duplicate roadmap files or `MASTER_BUILD_ROADMAP.md`. `ROADMAP.md` is canonical.
+
+## Canonical player dashboard names
+
+Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
+
+- `IdentityBentoModule`
+- `OperativeHub`
+- `HudMetricsPanel`
+- `ActiveBounties`
+- `VanguardProtocolPanel`
+- `HUDContainer`
+
+## Known anti-patterns
+
+- Do **not** refactor `teamsStore` for mission dedup — use `deduplicateById` in `ActiveBounties`.
+- Do **not** add gamification chrome to Coach OS routes.
+- Do **not** implement planned roles (`team_manager`, etc.) in JWT/route code unless a sprint explicitly says so.
+
+## Mode split
+
+- **Design** → Ask mode → vision docs under `docs/vision/`.
+- **Build** → Agent mode → ROADMAP sprint ticket with explicit file list.
+
+## Verify before done
+
+```bash
+npm test -- <paths from ROADMAP sprint>
+npm run check
+npm run build
+```

@@ -1,41 +1,119 @@
-EPIC 1: Foundational Architecture, Low-Latency Polish & RBAC Refactoring
-Sprint 1.1: Bento Grid Migration & Caching Overhaul: Transition all primary viewport layouts to the unified 12-column Bento Grid system within Svelte layout shells. Implement dynamic fluid spacing variables to eliminate structural layout squishing. Transition build pipelines completely to file-hash generation to permanently resolve PWA Service Worker caching conflicts.
+# SSTracker — Delivery Roadmap
 
-Sprint 1.2: Low-Latency HUD & Ingestion Refactoring: Eradicate dead space from dashboard environments using vertical flex-grow distributions. Replace fragmented operative avatar circles with unique geometric patterns generated procedurally via cryptographic user UID seeds, masking them with strict boundary constraints. Compile real-time components natively in SvelteKit 5 to eliminate UI lag during high-frequency data ingestion.
+**Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
+**Last updated:** 2026-05-20  
+**Current sprint:** **1.7** — Player HUD density & persona polish (planned; test file not yet created)
 
-Sprint 1.3: Access Token Partitioning & Semantic Isolation: Enforce absolute server-side token isolation within Firebase Security Rules, validating request.auth.token.role natively rather than relying on client-side visual masking. Restructure database schemas into strict isolated role tiers (Super Admin, Director, Coach, Player, Parent), ensuring administrative commands remain entirely invisible to player accounts.
+This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
-EPIC 2: Impenetrable 2026 Compliance Shield & Data Vaulting
-Sprint 2.1: COPPA 2026 Multi-Step Age Gating: Build progressive, unbundled onboarding consent check flows. Automatically lock down all biometric uploads and AI processing nodes behind an explicit gating token, remaining paused until an adult's VPC token is validated via secure webhooks.
+---
 
-Sprint 2.2: Automated Data Retention & Self-Actualized Purging: Deploy database-level TTL automated cloud functions to instantly anonymize or hard-purge historical minor tracking profiles upon club separation. Construct the secure Data Vault interface for one-click comprehensive data exports.
+## How to work a sprint (Cursor)
 
-Sprint 2.3: SafeSport Communication Barriers: Programmatically block all unsupervised 1-on-1 communication channels by forcing automated backend rules that duplicate and CC linked parental accounts onto all data exchanges.
+1. **Design** → Ask mode → update or read vision docs under `docs/vision/`.
+2. **Build** → Agent mode → one slice per session; use the explicit file list from the sprint section below.
+3. **Verify** before marking done:
+   ```bash
+   npm test -- <paths from sprint>
+   npm run check
+   npm run build
+   ```
 
-EPIC 3: AI Coaching Curricula & Spatial Pitch Reconstruction
-Sprint 3.1: Drag-and-Drop Lifecycle Builder: Integrate highly performant orchestration modules (e.g., SortableJS) to build interactive curriculum calendars, allowing coaches to visually map sequential exercise nodes into standardized Macrocycles and Microcycles.
+Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst-agent-workflow.mdc)
 
-Sprint 3.2: Retrieval-Augmented Generation (RAG) Coaching Assistant: Deploy a secure vector database to ingest thousands of source pages from elite coaching manuals (USSF, KNVB, Spanish RFEF). Map natural language inputs directly to semantic database embeddings to generate context-accurate, age-appropriate practice blueprints autonomously.
+---
 
-Sprint 3.3: Spatial Drill Reconstructor Canvas: Deploy a low-latency HTML5 Canvas rendering block that allows coaches to digitally arrange cones, balls, and operational vectors, instantly reversing field mathematics to deliver interactive spatial homework directly to athlete dashboards.
+## Sprint status — Epic 1: Foundation & Player HUD
 
-EPIC 4: College Recruiting Portfolios & Unbiased Analytics
-Sprint 4.1: Edge Computer Vision Verification: Engineer client-side video ingestion pipelines that utilize lightweight computer vision edge scripts to autonomously verify repetition counts for short athletic drill clips.
+| Sprint | Status | Summary | Proof |
+|--------|--------|---------|-------|
+| 1.1 | Done | 12-col liquid bento, content-hash assets | `liquidBento.css.test.ts`, `tokenCompliance.test.ts`, layout tests |
+| 1.2 | Done | UID avatars, COPPA backend hooks | `complianceOps.js`, `user.types.ts` |
+| 1.3 | Done | JWT RBAC, tenant isolation | `firestoreRulesSprint13.test.ts`, `roleDerivations.test.ts` |
+| 1.4 | Done | Gaming HUD baseline | `playerHudSprint14.test.ts`, `playerDashboard.hud.test.ts` |
+| 1.5 | Done | Mission dedup, avatar precision | `playerHudSprint15.test.ts`, `deduplicateMissions.ts` |
+| 1.6 | Done | IdentityBentoModule, OperativeHub, HUDContainer | `playerHudSprint16.test.ts` |
+| 1.7 | **Current** | HUD density, mission ellipsis, streak UX | `playerHudSprint17.test.ts` (to be created in a future code sprint) |
 
-Sprint 4.2: Wearable HealthKit Integrations: Launch bi-directional API pipelines with Apple HealthKit, Whoop, and Garmin to pull resting heart rate and sleep indices, dynamically triggering SOAR playbooks to adjust training loads if injury markers spike.
+---
 
-Sprint 4.3: Longitudinal Fairness Auditing Pipelines: Refactor background processing models to evaluate tracking profiles through Linear Mixed Effects Models (LMM) and Lambda-Mu-Sigma (LMS) percentile scoring to map true growth while safely handling incomplete regional datasets, maintaining algorithmic fairness.
+## Sprint 1.7 scope (planned — document only)
 
-Sprint 4.4: The B2B Scouting Portal: Launch dynamic, tokenized web links for exportable Digital Pro Player Cards. Build a premium filtering terminal allowing collegiate recruiters to issue complex compound search vectors based on verified Vanguard telemetry, unlocking a massive subscription monetization layer.
+**Goal:** Enterprise-density player HUD without renaming existing components.
 
-EPIC 5: Blue-Ocean Omnichannel Integration & State API Ecosystem
-Sprint 5.1: State Association API Pipeline Integration: Establish secure OAuth communication channels connecting directly to state registrar infrastructures (such as Affinity Sports APIs). Map structural payload identifiers (SIDCODE, SeasonID) to automatically generate verified club rosters and eradicate manual CSV spreadsheet uploads.
+**In scope (future code sprint):**
 
-Sprint 5.2: Compliance-Enforced Digital Match-Day Operations: Engineer real-time mobile match-card builders that fetch active eligibility tokens directly from the state registry. Instantly render restricted athlete profiles (e.g., active concussion holds or SafeSport violations) with high-contrast block flags.
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte`
+- `src/lib/components/player/dashboard/HudMetricsPanel.svelte`
+- `src/lib/components/player/dashboard/OperativeHub.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint17.test.ts`
 
-Sprint 5.3: Blue-Ocean Marketing Analytics Engine: Integrate Unified Advertising APIs linking Meta, Google, and TikTok ad channels directly into the Director’s dashboard to track local tryout client acquisition funnels. Piping successful registration webhooks back to server-side APIs bypasses browser privacy gaps and drastically lowers user acquisition costs.
+**Out of scope:**
 
-EPIC 6: Behavioral Economics & The Exit Valuation Engine
-Sprint 6.1: Habit Retention Loops: Attach the asynchronous confetti thread directly to database logs to enforce touch reward habituation. Embed loss-aversion streak mechanics and virtual milestones directly into the Player OS HUD.
+- Renaming to IdentityModule, TelemetryPanel, or BentoGrid
+- Refactoring `teamsStore` for mission dedup (use `deduplicateById` in ActiveBounties)
+- Coach or parent routes
 
-Sprint 6.2: Automated Parent ROI Engines: Configure server crons to scrape club analytics weekly, automatically dispatching push notifications detailing exact percentile rankings to parents, thereby establishing maximum switching costs and securing the ultimate Private Equity valuation.
+**Verify commands (for future sprint):**
+
+```bash
+npm test -- src/routes/(app)/player/dashboard src/lib/components/player/dashboard
+npm run check
+npm run build
+```
+
+---
+
+## Sprint status — Epic 2: Compliance & Data Vault
+
+| Sprint | Status | Summary | Proof |
+|--------|--------|---------|-------|
+| 2.1 | Done | COPPA consent gates, PII route blocking | `firestoreRulesSprint21.test.ts`, `route-policies.js` |
+| 2.2 | Partial | PII vault, shredder, retention rules | `vaultOps.js`, `shredOps.test.js`, `firestoreRulesSprint22.test.ts` |
+| 2.3 | Planned | SafeSport messaging CC | `docs/FCM_AND_MESSAGING_MATRIX.md` |
+
+---
+
+## Product epics (vision — NOT sprint numbers)
+
+Lettered epics avoid collision with **Epic 5** in [`docs/EPIC5_STATUS.md`](docs/EPIC5_STATUS.md) (enterprise logistics / Director OS) and the old ROADMAP "Epic 5" (state association APIs).
+
+| Epic | Theme | Doc |
+|------|-------|-----|
+| A | Player training/gaming HUD | [`docs/vision/PLAYER_OS.md`](docs/vision/PLAYER_OS.md) |
+| B | Parent co-op | [`docs/vision/PARENT_OS.md`](docs/vision/PARENT_OS.md) |
+| C | Coach sideline OS | [`docs/vision/COACH_OS.md`](docs/vision/COACH_OS.md) |
+| D | Team Manager ops OS | [`docs/vision/TEAM_MANAGER_OS.md`](docs/vision/TEAM_MANAGER_OS.md) |
+| E | Director club ops (+ Registrar) | [`docs/vision/DIRECTOR_OS.md`](docs/vision/DIRECTOR_OS.md) |
+| F | Platform admin | [`docs/vision/ADMIN_OS.md`](docs/vision/ADMIN_OS.md) |
+| G | Recruiter (future) | [`docs/vision/RECRUITER_OS.md`](docs/vision/RECRUITER_OS.md) |
+| H | Tutor (future) | [`docs/vision/TUTOR_OS.md`](docs/vision/TUTOR_OS.md) |
+| — | Director logistics build status | [`docs/EPIC5_STATUS.md`](docs/EPIC5_STATUS.md) |
+
+---
+
+## Repo map (quick reference)
+
+| Persona | Route | Key components |
+|---------|-------|----------------|
+| Player | `/player/dashboard` | OperativeHub, IdentityBentoModule, HudMetricsPanel, ActiveBounties, VanguardProtocolPanel |
+| Player | `/player/workout`, `/player/tracker`, `/player/armory` | Command Center drawer links |
+| Parent | `/parent/dashboard` | CoOpArena, CarRideArena, BountyTerminal |
+| Coach | `/coach` | SquadTelemetryView, assignments, drills, match-day |
+| Director | `/director` | Compliance, Field Ops, teams, registrars tab |
+| Admin | `/admin` | Organizations, users, system settings |
+
+---
+
+## Deprecated / archived
+
+- [`docs/archive/VANGUARD_ROADMAP.md`](docs/archive/VANGUARD_ROADMAP.md) — superseded by this file
+- Do **not** create or reference `MASTER_BUILD_ROADMAP.md` (removed; use this file)
+
+---
+
+## Planned roles (document only — not in code yet)
+
+- **`team_manager`** — separate JWT role for audit; background clearance required; team-scoped like coach; narrower ops permissions. See [`docs/vision/TEAM_MANAGER_OS.md`](docs/vision/TEAM_MANAGER_OS.md).
+- **`recruiter`**, **`tutor`** — future separate roles. See vision stubs.

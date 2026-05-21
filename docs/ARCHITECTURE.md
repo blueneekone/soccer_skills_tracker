@@ -1,7 +1,7 @@
 # NEXUS COMMAND — Master Software Architecture
 
 **Status:** Canonical / Source of Truth
-**Companion documents:** [`MASTER_BUILD_ROADMAP.md`](../MASTER_BUILD_ROADMAP.md), [`.cursorrules`](../.cursorrules), [`CELLS.md`](./CELLS.md), [`CELL_ROUTING.md`](./CELL_ROUTING.md), [`RL_ADAPTIVE_WORKOUTS.md`](./RL_ADAPTIVE_WORKOUTS.md), [`SPORTS_CONFIGS.md`](./SPORTS_CONFIGS.md)
+**Companion documents:** [`ROADMAP.md`](../ROADMAP.md), [`PERSONA_ECOSYSTEM.md`](./PERSONA_ECOSYSTEM.md), [`.cursorrules`](../.cursorrules), [`CELLS.md`](./CELLS.md), [`CELL_ROUTING.md`](./CELL_ROUTING.md), [`RL_ADAPTIVE_WORKOUTS.md`](./RL_ADAPTIVE_WORKOUTS.md), [`SPORTS_CONFIGS.md`](./SPORTS_CONFIGS.md)
 
 > This document defines the immutable architectural perimeter for the Nexus Command platform. Any feature, refactor, or new module must conform to the boundaries described here. Drift away from these contracts is treated as a defect, not a deviation.
 

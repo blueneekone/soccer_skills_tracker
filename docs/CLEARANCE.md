@@ -7,8 +7,10 @@ directors and tutors in addition to coaches and recruiters.
 ## Roles in scope
 
 ```
-coach · recruiter · director · tutor
+coach · recruiter · director · tutor · team_manager (planned)
 ```
+
+- **`team_manager`** — **planned role**; add to JWT clearance gate when the role ships. Rationale: team managers touch minor PII for roster and scheduling (same SafeSport bar as coach).
 
 Players + parents are **not** in scope; they manage their own data.
 
@@ -68,15 +70,16 @@ sets the boolean `isCleared` custom claim, used by:
   the user's refresh tokens, and writes an `audit_logs` entry with action
   `clearance_expired`.
 
-## Why these four roles
+## Why these roles
 
 The U.S. Center for SafeSport requires background-screened adults for any
-contact-level role.  All four roles meet that bar:
+contact-level role.  All scoped adult roles meet that bar:
 
 - **Coach** — direct contact with minor athletes.
 - **Recruiter** — receives detailed contact info on minors via exports.
 - **Director** — administrates household linkages and clearance overrides.
 - **Tutor** — runs 1-to-1 training sessions logged against minor profiles.
+- **Team Manager** (planned) — roster and scheduling access to minor PII.
 
 ## Routing
 
