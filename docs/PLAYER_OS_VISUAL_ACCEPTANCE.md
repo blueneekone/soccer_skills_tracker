@@ -21,8 +21,12 @@ Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Tick 
 | Criterion | Pass criteria | 1280px | 390px |
 |-----------|---------------|:------:|:-----:|
 | Z-layer depth | Can you perceive ≥3 distinct Z-layers on HQ at rest? (canvas, recessed well, raised hero, floating strap) | ☐ | ☐ |
+
+_Automated token guards: `playerHudSprint217.test.ts` asserts Z1–Z4 tokens wired to selectors; manual sign-off on this row still required._
 | Emissive edges | Visible on active mission hero + rank bar + rail active tab | ☐ | ☐ |
 | Holographic radar | Radar reads as inset well + bloom; **same VPP frame on Stats and HQ** | ☐ | ☐ |
+
+_Automated guards: `playerHudSprint218.test.ts` asserts `pdDataBloom`, spatial canvas restore, scanline scope, emissive tokens, glass well boundaries._
 | Identity stage | Recessed inside hub — not transparent flat (`ibm-root--premium` regression) | ☐ | ☐ |
 | Debug / prototype chrome | No debug strings or prototype badges in player-facing builds | ☐ | ☐ |
 | Diegetic Settings | Settings controls match diegetic kit (document pass/fail vs HQ chamfer CTAs) | ☐ | ☐ |

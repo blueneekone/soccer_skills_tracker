@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-22  
-**Current sprint:** **2.16** — Layout & alignment constitution (planned)
+**Current sprint:** **2.19** — Diegetic UI kit + energy motion (planned).
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -69,9 +69,11 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.13 | Done | Player OS Chrome — `pd-surface-premium` on all player routes via shared shell | `playerHudSprint213.test.ts` |
 | 2.14 | Done | Component premium — VPP, capsules, Armory/Workout/Tracker/SkillTree panels | `playerHudSprint214.test.ts` |
 | 2.15 | Done | Gamification motion layer + visual acceptance checklist | `playerHudSprint215.test.ts` |
-| 2.16 | Planned | Layout & alignment constitution — max-width, header grammar, HQ composition fixes, debug-chrome policy | `playerHudSprint216.test.ts` |
-| 2.17 | Planned | Z-depth & layering system — Z0–Z4 tokens, recessed/raised/floating surfaces | `playerHudSprint217.test.ts` |
-| 2.18 | Planned | Material orchestration — promote Tier A techniques to HQ (bloom, glass wells, spatial grid, emissive edges) | `playerHudSprint218.test.ts` |
+| 2.16 | Done | Layout & alignment constitution — max-width, header grammar, HQ composition fixes, debug-chrome policy | `playerHudSprint216.test.ts` |
+| 2.16a | Done | HQ bento grid hotfix — pd-content-wrap outside HUDContainer; width reconciliation | `playerHudSprint216a.test.ts` |
+| 2.16.1 | Done | Player Settings cohesion — /player/settings route, PlayerSettingsPanel, Armory Studio avatar boundary | `playerHudSprint2161.test.ts` |
+| 2.17 | Done | Z-depth & layering system — Z0–Z4 tokens, recessed/raised/floating surfaces | `playerHudSprint217.test.ts` |
+| 2.18 | Done | Material orchestration — pdDataBloom radar, emissive edges, spatial grid restore, canvas scanlines | `playerHudSprint218.test.ts` |
 | 2.19 | Planned | Diegetic UI kit + energy motion — conduit progress, hero identity scale, route spatial continuity; lifts gate | `playerHudSprint219.test.ts` |
 
 **Epic 1 premium ecosystem track 2.12.1–2.19** supersedes “HQ complete at 2.12” and “premium-complete at 2.15.” Operative loadout (gear slots, album bonuses, unlock ceremonies) continues in **Epic 3** after **2.19 Done** — see [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md).
@@ -239,79 +241,156 @@ npm run check:file-budget && npm run build
 
 ---
 
-## Sprint 2.16 scope — Layout & alignment constitution — **Planned**
+## Sprint 2.16 scope — Layout & alignment constitution — **Done**
 
 **Goal:** One layout grammar across all player routes before material work (2.17–2.18).
 
-**Deliverables (document now; implement in build sprint):**
+**Delivered:**
 
-- **Content max-width constitution** — e.g. 1280–1440px; Armory full-bleed exceptions documented
-- **Unified header pattern** — when `pd-strap` vs `PlayerOsPageStrap` vs route-specific (Armory workspace)
-- **HQ fixes:** remove duplicate daily habit row; left hub fill balance; dead bands
-- **Stats/HQ radar component parity** — same VPP frame and inspector chrome
-- **Hide debug/prototype chrome** in player builds — metadata strings (`RDR_S6_generic`), `ALPHA` policy
-- **Settings → diegetic button language** — target HQ chamfer/energy CTAs (not bracket buttons)
-- **Empty states:** compact + CTA, not warehouse voids (Ceremonies, insufficient TC)
-- **Tests:** layout/composition guards, not only source scans — `playerHudSprint216.test.ts`
+- **Layout constitution:** `--pd-content-max` (`min(100%, 90rem)`) + `.pd-content-wrap` — `player-dossier.css`; subsection in `PLAYER_OS_MATERIAL_SPATIAL.md`
+- **Route pass:** HQ `pd-content-wrap` wraps `HUDContainer` (fixed in 2.16a — was incorrectly nested inside grid); Stats, Workout, Tracker, Skill Tree, Settings (player); Armory inner tabs (full-bleed QM workspace preserved)
+- **Header grammar:** HQ `pd-strap`; secondary routes `PlayerOsPageStrap`; Stats player strap
+- **HQ composition:** `excludeHeroFromRailQuests` wired for embedded rail; hub identity/metrics fill balance (1280px + 390px)
+- **Stats/HQ radar frame parity:** player Stats uses `VanguardProtocolPanel` (`vpp-root--premium`); debug `RDR_S6` / `radarTag` / `SRC=PLAYER_STATS` gated off player path
+- **Debug chrome policy:** `ReportAnomaly` hidden when `authStore.role === 'player'`
+- **Settings diegetic CTAs:** chamfer `clip-path` on player settings buttons (2.16.1 — `/player/settings`); legacy `/settings` terminal unchanged for coach/parent/director
+- **Empty states:** `OperativeCeremoniesPanel` compact + CTA; Armory insufficient TC → links to HQ / workout
+- **Mobile 390px:** strap/context wrap, hub/analytics spacing, mission rail padding, route overflow guards
+- **Tests:** `playerHudSprint216.test.ts`, `activeBounties.test.ts` hero dedupe guard
 
 **Visual acceptance states:** profile incomplete · no telemetry · full telemetry · mobile 390px
 
-**Out of scope:** new features, Epic 3.4/4.1 implementation (gate blocked until 2.19 Done)
+**Manual QA nits (defer to 2.17 material):** void ratio, Z-layer reads, bloom parity. HQ desktop grid collapse — fixed 2.16a.
+
+**Files:** `player-dossier.css`, `player-dashboard-hud.css`, `ActiveBounties.svelte`, `dashboard/+page.svelte`, `stats/+page.svelte`, `settings/+page.svelte`, `workout/+page.svelte`, `tracker/+page.svelte`, `skill-tree/+page.svelte`, `armory/+page.svelte`, `OperativeCeremoniesPanel.svelte`, `+layout.svelte`, `playerHudSprint216.test.ts`, `activeBounties.test.ts`, `PLAYER_OS_MATERIAL_SPATIAL.md`, `ROADMAP.md`
 
 **Verify:**
 
 ```bash
-npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint216.test.ts
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint216.test.ts src/lib/player/dashboard/__tests__/activeBounties.test.ts
 npm run check:file-budget && npm run check && npm run build
 ```
 
+**Out of scope:** Z0–Z4 tokens, bloom, glass wells, spatial grid restoration, energy conduit motion (2.17–2.19)
+
 ---
 
-## Sprint 2.17 scope — Z-depth & layering system — **Planned**
+## Sprint 2.16a scope — HQ bento grid hotfix — **Done**
+
+**Bug:** HQ (`/player/dashboard`) rendered as a narrow left column (~1/12 viewport) with a large black void on the right; strap rank text overlapped callsign.
+
+**Root cause:** Sprint 2.16 placed `.pd-content-wrap` inside `HUDContainer`. `HUDContainer` is a `.bento-grid.bento-grid--12col` — only direct children with `bento-span-*` participate in the grid. The wrapper was the sole direct child without a span, so on desktop it occupied 1 column; nested `bento-span-12` on strap/hub/analytics was ignored.
+
+**Fix (Option B):** Move `pd-content-wrap` outside `HUDContainer` so strap, hub wrapper, and analytics deck are direct grid children again. Single max-width source via `pd-content-wrap`; `HUDContainer` fills the wrap at 100% width (72rem cap neutralized when nested).
+
+**Files touched:** `dashboard/+page.svelte`, `player-dossier.css`, `playerHudSprint216a.test.ts`, `playerHudSprint216.test.ts`, `ROADMAP.md`, `PLAYER_OS_MATERIAL_SPATIAL.md`
+
+**Manual QA checklist:**
+
+- Desktop ≥1280px: HQ strap, 8+4 OperativeHub, analytics deck span full content width — no 1-col left strip
+- No rank/callsign text overlap on pd-strap at 1280px
+- 390px: no horizontal scroll; hub stacks correctly
+- Mission rail visible on desktop (4-col column present)
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint216a.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint216.test.ts
+npm run check:file-budget && npm run check && npm run build
+```
+
+**Out of scope:** Settings cohesion (2.16.1 — Done), Z-depth tokens (2.17), material/bloom (2.18)
+
+---
+
+## Sprint 2.16.1 scope — Player Settings cohesion — **Done**
+
+**Goal:** Player settings must feel like a Player OS route (same width, strap, panel grammar, tabs as Armory/Workout) — not the legacy 740px Vanguard Settings Terminal admin column.
+
+**Delivered:**
+
+- **Dedicated route:** `/player/settings` inside Player OS shell with `PlayerOsPageStrap` + `pd-content-wrap` (90rem max, no 740px cap)
+- **PlayerSettingsPanel:** profile / notifications / danger tabs only; dossier `pd-panel-section` grammar; Armory Studio link for avatar (no inline `OperativeAvatarDesigner`)
+- **Shared handlers:** `playerSettingsHandlers.ts` — `saveProfile`, notification prefs, password reset
+- **Legacy redirect:** `/settings` → `/player/settings` for `role === 'player'`; coach/parent/director terminal unchanged
+- **Nav updates:** `PlayerShell` rail + billing gate → `/player/settings`; `playerCommandCenterLinks.ts`
+- **CSS:** `ps-settings-*` utilities in `player-dossier.css`
+- **Tests:** `playerHudSprint2161.test.ts`
+
+**Files:** `player/settings/+page.svelte`, `PlayerSettingsPanel.svelte`, `playerSettingsHandlers.ts`, `settings/+page.svelte`, `PlayerShell.svelte`, `playerCommandCenterLinks.ts`, `player-dossier.css`, `loginRouting.js`, `playerHudSprint2161.test.ts`, `ROADMAP.md`, `PLAYER_OS_MATERIAL_SPATIAL.md`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint2161.test.ts
+npm run check:file-budget && npm run check && npm run build
+```
+
+**Out of scope:** Full diegetic control kit (2.19), Z-depth/bloom (2.17–2.18), coach/parent settings route split
+
+---
+
+## Sprint 2.17 scope — Z-depth & layering system — **Done**
 
 **Goal:** Replace single-plane panels with explicit Z-stack.
 
-**Token spec (document in [`PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md); implement in `player-dossier.css` in build sprint):**
+**Delivered:**
 
-- **Z0 Canvas** — black, grain, vignette
-- **Z1 Recessed** — inset wells (radar, inputs, ghost states)
-- **Z2 Base panel** — `pd-surface-premium` evolution
-- **Z3 Raised** — mission hero, QM cards, dossier card
-- **Z4 Floating** — strap, rail active, modals
+- **Z-depth tokens:** `--pd-z0-canvas` through `--pd-z4-float-shadow`, `--pd-z-highlight-top`, `--pd-z-glow-br` — `player-dossier.css`
+- **Utility classes:** `.pd-z1-recessed`, `.pd-z2-panel`, `.pd-z3-raised`, `.pd-z4-float` — scoped under `.player-dossier-root`
+- **Z2 migration:** `pd-surface-premium`, `pd-page-panel` compose `--pd-z2-panel-shadow`
+- **HQ layering:** strap Z4, hub Z2, identity stage Z1 well, mission hero Z3, analytics deck Z2 + radar Z1 — `player-dashboard-hud.css`, `player-missions.css`
+- **IBM regression fix:** stage recessed well; `ibm-root--premium` transparent on top
+- **Secondary routes:** `pd-route-strap` Z4, `pd-empty-state` Z1, settings inputs/info wells Z1, workout sections Z1
+- **Shell:** `ps-ambient` = Z0 comment; dossier vignette opacity bump; rail active Z4 float — `player-shell.css`
+- **Tests:** `playerHudSprint217.test.ts`; `playerHudSprint2121.test.ts` identity stage guard updated
 
-**Per-route layering map:** HQ — strap Z4, identity stage Z1 inside hub Z2, mission hero Z3, analytics deck Z2 with radar Z1 well.
+**Manual QA:** ≥3 distinct Z-layers visible on HQ at rest (canvas Z0, identity well Z1, hub/deck Z2, hero Z3, strap Z4). Nits defer to 2.18 (bloom, spatial grid).
 
-**Light source:** top-left highlight, bottom-right glow (document in MATERIAL_SPATIAL).
+**Files:** `player-dossier.css`, `player-dashboard-hud.css`, `player-missions.css`, `player-shell.css`, `playerHudSprint217.test.ts`, `playerHudSprint2121.test.ts`, `ROADMAP.md`, `docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`, `docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`
 
-**Fix:** `ibm-root--premium` transparent regression vs inset identity stage.
+**Verify:**
 
-**Tests:** `playerHudSprint217.test.ts`
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint217.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint2121.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint216a.test.ts
+npm run check:file-budget
+npm run check
+npm run build
+```
 
-**Out of scope:** Epic 3.4/4.1
+**Out of scope:** Epic 3.4/4.1; bloom SVG, spatial grid, glass expansion (2.18)
 
 ---
 
-## Sprint 2.18 scope — Material orchestration (Tier A → HQ) — **Planned**
+## Sprint 2.18 scope — Material orchestration (Tier A → HQ) — **Done**
 
-**Goal:** HQ and secondary routes inherit cinematic material from existing premium components.
+**Goal:** HQ and secondary routes inherit cinematic material from existing premium components — light-in-space, not shadow-only Z-layers.
 
-**Reference implementations:** `VanguardCard.svelte`, `SkillTreeArena.svelte` (SVG bloom filters), `StickerVariantShell.svelte`
+**Delivered:**
 
-**Material ratios target:** void > emissive edges > glass > matte fill (guidance percentages in MATERIAL_SPATIAL)
+- **Shared SVG bloom:** `pdDataBloom` filter in `VanguardVFX.svelte`; `AttributeRadar.svelte` applies `url(#pdDataBloom)` to polygon, vertices, zero-track — Stats/HQ parity via single component
+- **Emissive edges:** `--pd-emissive-teal`, `--pd-emissive-gold`, `--pd-edge-teal/gold` tokens; quest hero gold rim, strap/route teal hairline, hub teal border, rank bar + avatar ring glow, mission row hover, rail active rim
+- **Spatial canvas:** dossier ambient grid opacity 0.40, teal glow restored on `ps-ambient__glow--a`; Z0 persists all player routes
+- **Canvas scanlines:** `ps-ambient::after` repeating-linear-gradient on atmosphere layer only — not on mission text
+- **Glass wells (Z1):** `vpp-chart--premium` + selected inspector subtle backdrop-filter; hub shell stays matte
+- **Void ratio:** Z2 panel gradient mid-stop darkened ~3% toward black; vignette exposes Z0 at viewport edges
+- **Armory:** QM card hover emissive teal edge; active tab emissive underline (Settings tabs match)
+- **Tests:** `playerHudSprint218.test.ts`
 
-**Spatial canvas:** persistent perspective grid; shell ambient restored judiciously in dossier mode — not zeroed to flat black
+**Manual QA nits (log during review):** holographic radar at 1280/390, void ratio at edges, scanlines subtle on canvas not text, prefers-reduced-motion ambient float off
 
-**Shared SVG filter defs** for radar/VPP bloom — Stats/HQ parity with skill tree
+**Files:** `VanguardVFX.svelte`, `AttributeRadar.svelte`, `player-dashboard-hud.css`, `player-dossier.css`, `player-missions.css`, `player-shell.css`, `playerHudSprint218.test.ts`, `ROADMAP.md`, `docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`, `docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`
 
-**Subtle canvas scanlines/noise on HQ only** — reconcile with PLAYER_OS.md: not on mission text
+**Verify:**
 
-**Youth-safe Tron adjacency:** cyan/teal data glow + gold action; avoid Ares aggression palette dominance
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint218.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint217.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint216a.test.ts
+npm run check:file-budget
+npm run check
+npm run build
+```
 
-**Do NOT require WebGL in 2.18** — document optional shader lane for future
-
-**Tests:** `playerHudSprint218.test.ts`
-
-**Out of scope:** Epic 3.4/4.1
+**Out of scope:** Epic 3.4/4.1; diegetic kit (2.19); WebGL/shader pass
 
 ---
 

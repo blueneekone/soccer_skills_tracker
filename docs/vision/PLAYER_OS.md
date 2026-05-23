@@ -37,7 +37,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 
 Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, skill tree) live in the **shell rail / Command Center drawer** — not clutter on the main HUD.
 
-**Billing read-only gate (Sprint 3.1.2):** When tenant billing blocks athlete mode, **Train** (`/player/workout`) redirects to Settings from the shell rail. **Armory** stays always reachable so operatives can finish portrait/profile setup in Studio.
+**Billing read-only gate (Sprint 3.1.2):** When tenant billing blocks athlete mode, **Train** (`/player/workout`) redirects to `/player/settings` from the shell rail. **Armory** stays always reachable so operatives can finish portrait/profile setup in Studio.
 
 ---
 
@@ -140,7 +140,7 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 - ~~“no nested glass stacks”~~ → allow **one** depth stack (canvas → hub → inset identity), not multiple competing cards
 - ~~“Single flat surface”~~ → **single cohesive command surface** with **internal depth**, not one flat grey box
 
-**Sprint 2.18+ (planned):** Controlled bloom, glass inset wells, emissive edges, persistent perspective grid — see [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md).
+**Sprint 2.18 (Done):** Controlled bloom (`pdDataBloom`), glass inset wells (Z1 radar/inspector), emissive edges, persistent spatial grid + canvas scanlines — see [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md). **Sprint 2.19 (planned):** diegetic kit + energy motion.
 
 **Home screen zones (updated):** Identity streak/XP = stat cells in `IdentityBentoModule` (not `HudMetricsPanel`). Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
 
@@ -218,7 +218,7 @@ Player shell (`PlayerShell`) applies `ps-root--dossier` on all player-role route
 | **Scrollbar** | Gold-to-teal thumb gradient on `.ps-canvas` |
 | **Canvas gradient** | `.ps-canvas-bg` softened under dossier shell |
 
-Page roots: HQ, Stats, Armory, Workout, Tracker, Skill Tree, and player Settings (`player-dossier-root` when `role === 'player'`) declare in-page `--pd-*` tokens; shell class covers nav alignment on all player routes.
+Page roots: HQ, Stats, Armory, Workout, Tracker, Skill Tree, and `/player/settings` declare in-page `--pd-*` tokens; shell class covers nav alignment on all player routes.
 
 Stylesheet: `src/lib/styles/player-shell.css`
 
@@ -236,9 +236,9 @@ Secondary and in-nav player routes now match HQ / Armory / Stats dossier vocabul
 | `/player/workout` | `player-dossier-root` | `Train / Log session` |
 | `/player/tracker` | `player-dossier-root` | `Progress / Training tracker` |
 | `/player/skill-tree` | `player-dossier-root` | `Progress / Skill tree` |
-| `/settings` (player) | `player-dossier-root` | `Profile / Settings` |
+| `/player/settings` | `player-dossier-root ps-settings-root` | `Profile / Settings` |
 
-Shared patterns: black `--pd-bg` canvas, lifted `--pd-panel` cells, `--pd-line` borders, teal primary CTAs (`qa-btn--ready`), gold only on XP/progress fills. Coach/Parent/Director settings retain the legacy terminal shell.
+Shared patterns: black `--pd-bg` canvas, lifted `--pd-panel` cells, `--pd-line` borders, teal primary CTAs (`qa-btn--ready`), gold only on XP/progress fills. Coach/Parent/Director use legacy `/settings` terminal shell (players redirect to `/player/settings` — Sprint 2.16.1).
 
 **Epic 1 route parity complete** through Sprint 2.11. **2.11.1** remaps shared components (ActiveBounties rail, Armory trajectory/album, IntelModal, ProPlayerCard) onto dossier tokens and tightens HQ density.
 

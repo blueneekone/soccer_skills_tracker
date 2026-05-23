@@ -36,7 +36,7 @@
 	color: var(--pp-text-primary);
 }
 
-/* ─── Ambient (decorative) ───────────────────────────────────── */
+/* ─── Ambient (decorative) — Z0 canvas layer; spatial canvas persists all player routes (2.18) ─ */
 .ps-ambient {
 	position: absolute;
 	inset: 0;
@@ -83,6 +83,53 @@
 	right: -10%;
 	background: radial-gradient(circle, rgba(51, 65, 85, 0.22), transparent 65%);
 	animation-delay: -9s;
+}
+
+/* Sprint 2.8 / 2.9 — dossier canvas: soften ambient so lifted panels read clearly */
+.ps-root:has(.player-dossier-root),
+.ps-root.ps-root--dossier {
+	--pp-bg: #000000;
+	--pp-border: rgba(255, 255, 255, 0.1);
+	--pp-accent: #fbbf24;
+	--pp-accent-cool: #14b8a6;
+}
+
+.ps-root:has(.player-dossier-root) .ps-ambient__grid,
+.ps-root.ps-root--dossier .ps-ambient__grid {
+	opacity: 0.4;
+}
+
+.ps-root:has(.player-dossier-root) .ps-ambient__glow,
+.ps-root.ps-root--dossier .ps-ambient__glow {
+	opacity: 0.28;
+}
+
+.ps-root:has(.player-dossier-root) .ps-ambient__glow--a,
+.ps-root.ps-root--dossier .ps-ambient__glow--a {
+	background: radial-gradient(circle, rgba(20, 184, 166, 0.08), transparent 70%);
+}
+
+.ps-root:has(.player-dossier-root) .ps-ambient__glow--b,
+.ps-root.ps-root--dossier .ps-ambient__glow--b {
+	background: radial-gradient(circle, rgba(15, 23, 42, 0.14), transparent 65%);
+}
+
+/* Sprint 2.18 — canvas scanlines on atmosphere layer only (not on readable text) */
+.ps-root:has(.player-dossier-root) .ps-ambient::after,
+.ps-root.ps-root--dossier .ps-ambient::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+	opacity: 0.055;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(255, 255, 255, 0.015) 2px,
+		rgba(255, 255, 255, 0.015) 3px
+	);
 }
 
 @keyframes ps-float {
@@ -140,6 +187,63 @@
 .ps-canvas::-webkit-scrollbar-thumb {
 	background: rgba(245, 158, 11, 0.35);
 	border-radius: 999px;
+}
+
+/* Sprint 2.9 — dossier scrollbar: gold + teal blend (not amber-only) */
+.ps-root:has(.player-dossier-root) .ps-canvas,
+.ps-root:has(.player-dossier-root) .ps-scroll-shell,
+.ps-root.ps-root--dossier .ps-canvas,
+.ps-root.ps-root--dossier .ps-scroll-shell {
+	scrollbar-color: color-mix(in srgb, #14b8a6 35%, #fbbf24 25%) rgba(255, 255, 255, 0.04);
+}
+
+.ps-root:has(.player-dossier-root) .ps-canvas::-webkit-scrollbar-thumb,
+.ps-root:has(.player-dossier-root) .ps-scroll-shell::-webkit-scrollbar-thumb,
+.ps-root.ps-root--dossier .ps-canvas::-webkit-scrollbar-thumb,
+.ps-root.ps-root--dossier .ps-scroll-shell::-webkit-scrollbar-thumb {
+	background: linear-gradient(
+		180deg,
+		rgba(251, 191, 36, 0.48),
+		rgba(20, 184, 166, 0.38)
+	);
+	box-shadow: 0 0 8px color-mix(in srgb, #14b8a6 22%, #fbbf24 18%);
+}
+
+/* Sprint 2.9 — canvas gradient soften under dossier shell */
+.ps-canvas-bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background: linear-gradient(to bottom right, rgb(15 23 42), #000000);
+}
+
+.ps-root:has(.player-dossier-root) .ps-canvas-bg,
+.ps-root.ps-root--dossier .ps-canvas-bg {
+	opacity: 0.22;
+	background: linear-gradient(to bottom right, rgba(5, 5, 10, 0.85), transparent 72%);
+}
+
+/* Sprint 2.12 / 2.17 — dossier canvas vignette (Z0 atmosphere; not spatial grid — 2.18) */
+.ps-root.ps-root--dossier::after,
+.ps-root:has(.player-dossier-root)::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 2;
+	background: radial-gradient(
+		ellipse 85% 75% at 50% 45%,
+		transparent 38%,
+		rgba(0, 0, 0, 0.62) 100%
+	);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ps-root.ps-root--dossier::after,
+	.ps-root:has(.player-dossier-root)::after {
+		opacity: 0.85;
+	}
 }
 
 /* ─── Icon rail (mobile: bottom dock) ────────────────────────── */
@@ -247,6 +351,58 @@
 	color: var(--pp-accent-cool);
 }
 
+/* Sprint 2.9 — dossier rail: dark panel, pd-line borders, Armory-tab active language */
+.ps-root:has(.player-dossier-root) .ps-rail,
+.ps-root.ps-root--dossier .ps-rail {
+	background: rgba(5, 5, 10, 0.94);
+	border-color: rgba(255, 255, 255, 0.1);
+	-webkit-backdrop-filter: blur(14px) saturate(1.35);
+	backdrop-filter: blur(14px) saturate(1.35);
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+		0 20px 40px -18px rgba(0, 0, 0, 0.88);
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--hub-active,
+.ps-root.ps-root--dossier .ps-rail__link--hub-active {
+	background: linear-gradient(165deg, rgba(251, 191, 36, 0.18) 0%, rgba(0, 0, 0, 0.42) 100%);
+	border-color: rgba(251, 191, 36, 0.52);
+	box-shadow:
+		0 16px 36px rgba(0, 0, 0, 0.55),
+		0 8px 20px -6px rgba(251, 191, 36, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		0 0 22px rgba(251, 191, 36, 0.22),
+		0 0 14px color-mix(in srgb, #fbbf24 32%, transparent);
+	position: relative;
+	z-index: 2;
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--hub-active .ps-rail__icon,
+.ps-root.ps-root--dossier .ps-rail__link--hub-active .ps-rail__icon {
+	color: #fbbf24;
+	filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.65));
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--active,
+.ps-root.ps-root--dossier .ps-rail__link--active {
+	background: linear-gradient(165deg, rgba(20, 184, 166, 0.16) 0%, rgba(0, 0, 0, 0.42) 100%);
+	border-color: rgba(20, 184, 166, 0.52);
+	box-shadow:
+		0 16px 36px rgba(0, 0, 0, 0.55),
+		0 8px 20px -6px rgba(20, 184, 166, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		0 0 22px rgba(20, 184, 166, 0.2),
+		0 0 12px color-mix(in srgb, #14b8a6 35%, transparent);
+	position: relative;
+	z-index: 2;
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--active .ps-rail__icon,
+.ps-root.ps-root--dossier .ps-rail__link--active .ps-rail__icon {
+	color: #14b8a6;
+	filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.55));
+}
+
 /* ─── Tablet+: fixed 80px left rail ──────────────────────────── */
 @media (min-width: 768px) {
 	.ps-root {
@@ -295,6 +451,19 @@
 
 	.ps-rail__divider {
 		display: block;
+	}
+
+	/* Sprint 2.9 — desktop dossier rail tokens */
+	.ps-root:has(.player-dossier-root) .ps-rail,
+	.ps-root.ps-root--dossier .ps-rail {
+		background: rgba(5, 5, 10, 0.98);
+		border-right: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 4px 0 32px -14px rgba(0, 0, 0, 0.85);
+	}
+
+	.ps-root:has(.player-dossier-root) .ps-rail__divider,
+	.ps-root.ps-root--dossier .ps-rail__divider {
+		background: rgba(255, 255, 255, 0.1);
 	}
 }
 

@@ -1,44 +1,134 @@
 /**
- * Player OS dashboard HUD — Sprint 1.4 gaming density tokens.
- * Scoped under .player-hud-root to avoid leaking into other workspaces.
+ * Player OS dashboard HUD — scoped under .player-hud-root / .player-dossier-root.
+ * Sprint 2.8 — Player Dossier surfaces (black canvas, lifted panels, dual accent).
  */
 
-.player-hud-root {
+@import './player-missions.css';
+
+.player-hud-root,
+.player-dossier-root {
+	--bento-gap-liquid: clamp(12px, 1.5vw, 20px);
 	--color-structural: #64748b; /* muted slate — overrides global #3b82f6 inside player HUD */
-	--player-hud-surface: #0f172a;
-	--player-hud-border: #334155;
-	--player-hud-accent: #fbbf24;
+	--player-hud-surface: var(--pd-panel, #05050a);
+	--player-hud-border: var(--pd-line, rgba(255, 255, 255, 0.1));
+	--player-hud-accent: var(--pd-accent-action, #fbbf24);
+	--player-hud-data: var(--pd-accent-data, #14b8a6);
 	--player-hud-gap: clamp(4px, 1vw, 8px);
 	--player-hud-pad: clamp(8px, 1.8vw, 12px);
 	--player-hud-radius: 24px;
 	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
 }
 
-/* Sprint 2.4 — chamfer bento cards; slate borders (no rounded blue structural mix) */
-.player-hud-root .bento-card {
+/* Sprint 2.8 — lifted dossier bento cards (no outer chamfer) */
+.player-hud-root .bento-card,
+.player-dossier-root .bento-card {
 	border-radius: 0;
-	border: 1px solid #334155;
-	background: var(--player-hud-surface, #0f172a);
-	clip-path: polygon(
-		0 12px,
-		12px 0,
-		calc(100% - 12px) 0,
-		100% 12px,
-		100% calc(100% - 12px),
-		calc(100% - 12px) 100%,
-		12px 100%,
-		0 calc(100% - 12px)
-	);
+	border: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	background: var(--player-hud-surface, var(--pd-panel, #05050a));
 }
 
 .player-hud-root .ibm-meta {
 	color: #64748b;
 }
 
+/* Sprint 2.10 — HQ world context presence strip */
+.player-hud-root .hq-world-context,
+.player-dossier-root .hq-world-context {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	gap: clamp(0.35rem, 1vw, 0.5rem);
+	margin-bottom: clamp(0.65rem, 1.5vw, 1rem);
+	padding: 0.65rem 0.85rem;
+	border: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	background: color-mix(in srgb, var(--player-hud-surface, var(--pd-panel, #05050a)) 88%, #000);
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+/* Sprint 2.10.1 — inline world context inside pd-strap (no extra bordered panel) */
+.player-hud-root .hq-world-context--inline,
+.player-dossier-root .hq-world-context--inline {
+	flex-direction: row;
+	align-items: center;
+	margin-block: 0;
+	margin-bottom: 0;
+	padding: 0;
+	border: none;
+	background: transparent;
+}
+
+.player-dossier-root .pd-strap__context {
+	padding: 0 1.15rem 0.85rem;
+	min-width: 0;
+}
+
+.player-dossier-root .pd-strap__context:empty {
+	display: none;
+	padding: 0;
+}
+
+.player-hud-root .hq-world-context__row,
+.player-dossier-root .hq-world-context__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: clamp(0.35rem, 1vw, 0.5rem);
+	min-width: 0;
+}
+
+.player-hud-root .hq-world-context__event-tag,
+.player-dossier-root .hq-world-context__event-tag {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	padding: 0.2rem 0.55rem;
+	border: 1px solid color-mix(in srgb, var(--player-hud-data, #14b8a6) 45%, transparent);
+	background: color-mix(in srgb, var(--player-hud-data, #14b8a6) 12%, var(--player-hud-surface, #05050a));
+	font-size: 0.5625rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 85%, var(--pd-text, #f4f4f5));
+	line-height: 1.3;
+}
+
+.player-hud-root .hq-world-context__ghost,
+.player-dossier-root .hq-world-context__ghost {
+	margin: 0;
+	font-size: 0.5625rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	line-height: 1.3;
+}
+
+.player-hud-root .hq-world-context__chips,
+.player-dossier-root .hq-world-context__chips {
+	gap: clamp(0.4rem, 1.2vw, 0.65rem);
+}
+
+.player-hud-root .hq-world-context__chip,
+.player-dossier-root .hq-world-context__chip {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	padding: 0.15rem 0.45rem;
+	border: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	background: color-mix(in srgb, var(--player-hud-surface, #05050a) 92%, transparent);
+	font-size: 0.5625rem;
+	line-height: 1.25;
+	color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 55%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
+}
+
 .player-hud-root .ibm-name {
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
 	font-size: clamp(0.95rem, 2.2vw, 1.15rem);
 	font-weight: 800;
-	color: var(--vanguard-text-1, #f8fafc);
+	letter-spacing: 0.02em;
+	text-transform: none;
+	color: var(--pd-text, #f4f4f5);
 }
 
 /* Sprint 2.4 — analytics deck layout */
@@ -46,39 +136,159 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+	margin-top: clamp(4px, 0.8vw, 8px);
 }
 
-/* Sprint 2.7 — compact analytics deck when no coach telemetry */
+.player-hud-root .player-analytics-deck.pd-surface-premium {
+	padding: clamp(12px, 2vw, 20px) !important;
+}
+
+/* Sprint 2.7 / 2.8.1 — compact analytics deck when no coach telemetry */
 .player-hud-root .player-analytics-deck--compact {
-	gap: clamp(4px, 0.8vw, 8px);
+	gap: clamp(2px, 0.5vw, 4px);
+	min-height: 0;
+	padding-block: clamp(6px, 1vw, 10px) !important;
 }
 
+.player-hud-root .player-analytics-deck--compact .lobby-capsule-ghost--compact {
+	margin: 0;
+	padding: clamp(2px, 0.5vw, 4px) 0;
+}
+
+/* Sprint 2.8.2 — compact shrinks inspector/padding; radar stays hero-readable */
 .player-hud-root .player-analytics-deck--compact .vpp-chart {
-	max-width: 220px;
-	padding: clamp(4px, 1vw, 8px);
+	width: 100%;
+	max-width: min(100%, 220px);
+	margin-inline: auto;
+	padding: clamp(2px, 0.6vw, 6px);
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-chart :global(.ar-root) {
+	width: min(100%, 220px);
+	max-width: 100%;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .player-analytics-deck--compact .vpp-chart {
+		max-width: min(100%, 260px);
+		margin-inline: 0;
+	}
+
+	.player-hud-root .player-analytics-deck--compact .vpp-chart :global(.ar-root) {
+		width: min(100%, 320px);
+	}
 }
 
 .player-hud-root .player-analytics-deck--compact .vpp-body {
-	gap: clamp(8px, 1.2vw, 10px);
+	gap: clamp(6px, 1vw, 8px);
 	align-items: flex-start;
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .player-analytics-deck--compact .vpp-body {
+		grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+		align-items: center;
+	}
 }
 
 .player-hud-root .player-analytics-deck--compact .vpp-inspector {
-	min-height: auto;
-	padding: clamp(4px, 0.8vw, 8px);
+	min-height: 0;
+	max-width: min(100%, 160px);
+	padding: clamp(3px, 0.6vw, 6px);
 }
 
 .player-hud-root .player-analytics-deck--compact .vpp-inspector__ghost {
-	font-size: 9px;
-	line-height: 1.3;
+	margin: 0;
+	font-size: 8px;
+	line-height: 1.25;
+	letter-spacing: 0.06em;
 }
 
 .player-hud-root .player-analytics-deck--compact .vpp-head {
 	margin-bottom: 0;
 }
 
+/* Sprint 2.12.1 — VPP premium frame inside analytics deck */
+.player-hud-root .vpp-head--premium {
+	padding: clamp(6px, 1vw, 10px) clamp(8px, 1.5vw, 12px);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 92%, #000);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.player-hud-root .vpp-chart--premium {
+	box-shadow:
+		var(--pd-z1-inset-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	-webkit-backdrop-filter: blur(4px) saturate(140%);
+	backdrop-filter: blur(4px) saturate(140%);
+}
+
+.player-hud-root .vpp-chart--premium::before {
+	content: '';
+	position: absolute;
+	inset: clamp(6px, 1.2vw, 10px);
+	border-radius: 50%;
+	pointer-events: none;
+	box-shadow: 0 0 24px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, transparent);
+}
+
+.player-hud-root .vpp-chart--premium {
+	position: relative;
+}
+
+.player-hud-root .vpp-inspector--premium {
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-hud-root .vpp-inspector__empty--compact {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: clamp(4px, 0.8vw, 6px);
+	padding: clamp(4px, 0.8vw, 8px) 0;
+	max-width: 100%;
+}
+
+.player-hud-root .vpp-inspector__empty-icon {
+	width: clamp(28px, 6vw, 36px);
+	height: clamp(28px, 6vw, 36px);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
+	border-radius: 50%;
+	background:
+		radial-gradient(
+			circle at 50% 35%,
+			color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+			transparent 65%
+		);
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+.player-hud-root .vpp-inspector__empty-title {
+	margin: 0;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+	font-weight: 800;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .vpp-inspector__empty-copy {
+	margin: 0;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: clamp(0.5rem, 1vw, 0.58rem);
+	font-weight: 700;
+	line-height: 1.35;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	max-width: 16rem;
+}
+
 .player-hud-root .player-capsules-strip {
-	border-top: 1px solid #334155;
+	border-top: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
 	padding-top: clamp(8px, 1.5vw, 12px);
 	padding-inline: clamp(4px, 0.8vw, 8px);
 	min-width: 0;
@@ -94,12 +304,12 @@
 
 .player-hud-root .player-capsules-strip__eyebrow {
 	margin: 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
 	font-size: 0.6rem;
 	font-weight: 900;
 	letter-spacing: 0.22em;
 	text-transform: uppercase;
-	color: #64748b;
+	color: var(--pd-accent-data-bright, rgba(0, 212, 255, 0.55));
 }
 
 .player-hud-root .player-capsules-strip__title {
@@ -127,9 +337,331 @@
 	letter-spacing: 0.12em;
 }
 
-/* Sprint 2.5 — single flat command shell surface */
-.player-hud-root .operative-hub {
-	background: var(--player-hud-surface, #0f172a);
+/* Sprint 2.14 — analytics deck internal divider glow */
+.player-hud-root .player-analytics-deck.pd-surface-premium {
+	gap: clamp(10px, 1.8vw, 14px);
+}
+
+.player-hud-root .player-analytics-deck.pd-surface-premium .player-capsules-strip--premium {
+	margin-top: clamp(4px, 0.8vw, 6px);
+	padding: clamp(8px, 1.5vw, 12px);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	border-radius: 0;
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 24px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 4%, transparent);
+}
+
+.player-hud-root .player-analytics-deck.pd-surface-premium .player-capsules-strip--premium::before {
+	content: '';
+	display: block;
+	height: 1px;
+	margin: calc(-1 * clamp(8px, 1.5vw, 12px)) calc(-1 * clamp(8px, 1.5vw, 12px)) clamp(8px, 1.5vw, 12px);
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) 50%,
+		transparent
+	);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent);
+}
+
+.player-hud-root .player-capsules-strip--premium .lobby-capsule-ghost-card {
+	margin: 0;
+	width: 100%;
+}
+
+/* Sprint 2.14 — VPP root premium complete */
+.player-hud-root .vpp-root--premium {
+	min-width: 0;
+}
+
+.player-hud-root .vpp-root--premium .vpp-chart--premium {
+	background: var(--pd-z1-well-bg);
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line));
+	box-shadow:
+		var(--pd-z1-inset-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent),
+		inset 0 0 32px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, transparent);
+}
+
+.player-hud-root .vpp-root--premium .vpp-chart--premium::after {
+	content: '';
+	position: absolute;
+	inset: clamp(4px, 1vw, 8px);
+	border-radius: 50%;
+	pointer-events: none;
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 20%, transparent);
+	box-shadow:
+		0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent),
+		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent));
+}
+
+.player-hud-root .vpp-chart--premium :global(.ar-svg line) {
+	stroke: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, rgba(148, 163, 184, 0.18)) !important;
+}
+
+.player-hud-root .vpp-chart--premium :global(.ar-svg polygon[fill='none']) {
+	stroke: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, rgba(148, 163, 184, 0.16)) !important;
+}
+
+.player-hud-root .vpp-inspector--premium {
+	background: var(--pd-z1-well-bg);
+	border-color: var(--pd-line, rgba(255, 255, 255, 0.1));
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-hud-root .vpp-inspector--premium.vpp-inspector--selected {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
+	box-shadow:
+		var(--pd-shadow-elev-1),
+		inset 3px 0 0 var(--pd-accent-action, #fbbf24),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	-webkit-backdrop-filter: blur(3px) saturate(120%);
+	backdrop-filter: blur(3px) saturate(120%);
+}
+
+.player-hud-root .vpp-inspector--premium.vpp-inspector--selected::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: clamp(8px, 1.5vw, 12px);
+	bottom: clamp(8px, 1.5vw, 12px);
+	width: 3px;
+	background: linear-gradient(
+		180deg,
+		var(--pd-accent-action, #fbbf24),
+		var(--pd-accent-data, #14b8a6)
+	);
+	box-shadow:
+		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent)),
+		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+}
+
+.player-hud-root .vpp-inspector--premium {
+	position: relative;
+}
+
+.player-hud-root .vpp-inspector__empty--dossier {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(6px, 1.2vw, 10px);
+	padding: clamp(10px, 2vw, 16px);
+	max-height: clamp(100px, 20vw, 140px);
+	text-align: center;
+}
+
+.player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-icon {
+	clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+	border-radius: 0;
+}
+
+.player-hud-root .player-analytics-deck--compact .vpp-inspector__empty--dossier {
+	flex-direction: row;
+	align-items: flex-start;
+	text-align: left;
+	max-height: clamp(88px, 18vw, 110px);
+}
+
+.player-hud-root .vpp-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(6px, 1.2vw, 10px);
+	padding: clamp(8px, 1.5vw, 12px);
+	max-height: clamp(88px, 18vw, 120px);
+	min-height: clamp(64px, 14vw, 88px);
+	border: 1px dashed color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, var(--pd-line));
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+/* Sprint 2.17 — hub shell inherits Z2 via pd-surface-premium; explicit shadow guard */
+.player-hud-root .operative-hub.pd-surface-premium {
+	box-shadow: var(--pd-z2-panel-shadow);
+	border: var(--pd-edge-teal, 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, var(--pd-line)));
+}
+
+.player-hud-root .operative-hub__scanlines {
+	display: none !important;
+}
+
+/* Sprint 2.12 — identity inset panel inside hub (2.12.1: stage owns inset; IBM premium layers on top) */
+.player-hud-root .ibm-root--embedded.ibm-root--inset {
+	padding: 0;
+	background: transparent;
+	border: none;
+}
+
+/* Sprint 2.12 — premium HQ identity hero stage */
+.player-hud-root .ibm-root--premium {
+	--player-hud-avatar-size: clamp(72px, 14vw, 88px);
+	border: none;
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	padding: 0;
+	box-shadow: none;
+}
+
+.player-hud-root .ibm-root--premium .ibm-avatar {
+	width: var(--player-hud-avatar-size);
+}
+
+/* Sprint 2.12.1 — incomplete profile keeps rank bar + metrics (no badge-only collapse) */
+.player-hud-root .ibm-root--premium.ibm-root--incomplete {
+	grid-template-columns: auto 1fr;
+	gap: clamp(8px, 1.5vw, 12px);
+}
+
+.player-hud-root .ibm-root--premium.ibm-root--incomplete .ibm-rings {
+	gap: clamp(4px, 0.8vw, 8px);
+}
+
+.player-hud-root .ibm-silhouette-ring {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	border: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, #334155);
+	border-radius: 50%;
+	background:
+		radial-gradient(
+			circle at 50% 38%,
+			color-mix(in srgb, var(--pd-panel, #05050a) 70%, #1a1a24),
+			var(--pd-panel, #05050a) 72%
+		);
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+		var(--pd-depth-glow-gold);
+}
+
+.player-hud-root .ibm-silhouette-ring__initials {
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: clamp(0.85rem, 2vw, 1rem);
+	font-weight: 900;
+	letter-spacing: 0.08em;
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 75%, #94a3b8);
+}
+
+.player-hud-root .ibm-profile-setup-card {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: clamp(4px, 0.8vw, 6px);
+	padding: clamp(8px, 1.5vw, 12px);
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, var(--pd-line));
+	background: var(--pd-depth-panel-gradient, var(--pd-panel, #05050a));
+	box-shadow: var(--pd-shadow-elev-1);
+}
+
+.player-hud-root .ibm-profile-setup-card__cta {
+	font-size: clamp(0.62rem, 1.3vw, 0.72rem);
+	font-weight: 800;
+	color: var(--pd-accent-action, #fbbf24);
+	text-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, transparent);
+}
+
+.player-hud-root .ibm-profile-setup-card:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, var(--pd-line));
+	box-shadow: var(--pd-shadow-elev-1), var(--pd-depth-glow-gold);
+}
+
+.player-hud-root .ibm-root--premium .hud-stat-cell {
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.player-hud-root .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak {
+	animation: ibm-streak-cell-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes ibm-streak-cell-pulse {
+	0%,
+	100% {
+		border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, var(--pd-line));
+	}
+	50% {
+		border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 48%, var(--pd-line));
+		box-shadow: var(--pd-depth-glow-gold);
+	}
+}
+
+.player-hud-root .ibm-rank-bar--premium {
+	background: color-mix(in srgb, #334155 70%, #000);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.player-hud-root .ibm-rank-bar--premium .ibm-rank-progress__fill {
+	background: var(--pd-accent-action, #fbbf24);
+	box-shadow: var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+	transition: width 600ms ease-out;
+}
+
+.player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill {
+	position: relative;
+	overflow: hidden;
+}
+
+.player-hud-root .ibm-rank-bar--has-xp .ibm-avatar :global(.hud-avatar-ring__svg circle:last-of-type) {
+	filter: drop-shadow(var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .ibm-rank-bar--has-xp .ibm-avatar :global(.hud-avatar-ring__svg circle:last-of-type) {
+		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent));
+	}
+}
+
+.player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		105deg,
+		transparent 38%,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, #fff) 50%,
+		transparent 62%
+	);
+	animation: ibm-rank-fill-shimmer 2.8s ease-in-out infinite;
+}
+
+@keyframes ibm-rank-fill-shimmer {
+	0%,
+	100% {
+		transform: translateX(-120%);
+		opacity: 0;
+	}
+	45%,
+	55% {
+		opacity: 0.45;
+	}
+	50% {
+		transform: translateX(120%);
+		opacity: 0.6;
+	}
+}
+
+/* Sprint 2.14 — premium stat cells stronger inset + desktop hover lift */
+@media (min-width: 768px) {
+	.player-hud-root .ibm-root--premium .hud-stat-cell {
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.player-hud-root .ibm-root--premium .hud-stat-cell:hover {
+		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line));
+		box-shadow:
+			var(--pd-shadow-elev-1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		transform: translateY(-1px);
+	}
 }
 
 /* Sprint 2.5 — inline initials badge (incomplete profile) */
@@ -226,6 +758,10 @@
 }
 
 /* Sprint 2.5 — mission rail column (md+ left border on missions lives in OperativeHub) */
+.player-hud-root .operative-hub .operative-hub__missions {
+	align-self: start;
+}
+
 .player-hud-root .operative-hub .quest-log-panel--rail {
 	display: flex;
 	flex-direction: column;
@@ -247,6 +783,66 @@
 
 .player-hud-root .operative-hub .quest-log-panel--rail .quest-row--embedded {
 	max-width: 100%;
+}
+
+/* Sprint 2.16 — HQ hub fill balance (identity + metrics column) */
+.player-hud-root .operative-hub__main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage {
+	flex: 1 1 auto;
+	min-height: clamp(120px, 22vw, 200px);
+}
+
+.player-hud-root .operative-hub__metrics:not(:empty) {
+	flex-shrink: 0;
+}
+
+.player-hud-root .operative-hub .quest-log-panel--rail {
+	padding-bottom: clamp(6px, 1.2vw, 10px);
+}
+
+@media (max-width: 390px) {
+	.player-hud-root .pd-strap--premium .pd-strap__grid {
+		padding-inline: clamp(0.65rem, 2vw, 0.85rem);
+	}
+
+	.player-hud-root .player-analytics-deck {
+		margin-top: clamp(0.35rem, 1vw, 0.5rem);
+	}
+
+	.player-hud-root .operative-hub .quest-log-panel--rail {
+		padding-bottom: clamp(8px, 2vw, 12px);
+	}
+
+	.player-hud-root .hmp-vectors-collapsed--premium {
+		padding-block: clamp(6px, 1.2vw, 8px);
+		font-size: clamp(7px, 1.8vw, 8px);
+		line-height: 1.25;
+	}
+}
+
+@media (min-width: 1280px) {
+	.player-hud-root .operative-hub__identity-stage {
+		min-height: clamp(140px, 18vw, 180px);
+	}
+}
+
+/* Sprint 2.12 / 2.17 — identity stage Z1 recessed well inside hub Z2 */
+.player-hud-root .operative-hub__identity-stage {
+	position: relative;
+	min-width: 0;
+	background: var(--pd-z1-well-bg);
+	border: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, #000);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-hud-root .operative-hub__identity-stage .operative-hub__identity {
+	min-width: 0;
 }
 
 .player-hud-header__lead {
@@ -319,13 +915,13 @@
 }
 
 .cmd-center-trigger:hover {
-	border-color: #fbbf24;
-	background: color-mix(in srgb, #fbbf24 8%, transparent);
-	color: #fbbf24;
+	border-color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 45%, var(--pd-line));
+	background: color-mix(in srgb, var(--player-hud-data, #14b8a6) 8%, transparent);
+	color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 85%, var(--pd-text));
 }
 
 .cmd-center-trigger:focus-visible {
-	outline: 2px solid color-mix(in srgb, #fbbf24 55%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--player-hud-data, #14b8a6) 55%, transparent);
 	outline-offset: 2px;
 }
 
@@ -340,13 +936,15 @@
 }
 
 /* Sprint 2.3 — identity stat cells (ringless streak/XP) */
-.player-hud-root .hud-stat-cell {
+/* Sprint 3.1 — dossier panel tokens (no blue-grey #0f172a / #334155 slabs) */
+.player-hud-root .hud-stat-cell,
+.player-dossier-root .hud-stat-cell {
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
 	padding: clamp(4px, 0.8vw, 6px) clamp(6px, 1.2vw, 8px);
-	border: 1px solid #334155;
-	background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: var(--pd-panel, #05050a);
 	min-width: 0;
 	transition: border-color 0.15s ease;
 	clip-path: polygon(
@@ -361,39 +959,46 @@
 	);
 }
 
-.player-hud-root .hud-stat-cell__label {
+.player-hud-root .hud-stat-cell__label,
+.player-dossier-root .hud-stat-cell__label {
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: 9px;
 	font-weight: 800;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: color-mix(in srgb, #334155 50%, #94a3b8);
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 }
 
-.player-hud-root .hud-stat-cell--streak .hud-stat-cell__label {
-	color: color-mix(in srgb, #fbbf24 80%, #fde68a);
+.player-hud-root .hud-stat-cell--streak .hud-stat-cell__label,
+.player-dossier-root .hud-stat-cell--streak .hud-stat-cell__label {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 }
 
-.player-hud-root .hud-stat-cell--xp .hud-stat-cell__label {
-	color: color-mix(in srgb, #334155 70%, #94a3b8);
+.player-hud-root .hud-stat-cell--xp .hud-stat-cell__label,
+.player-dossier-root .hud-stat-cell--xp .hud-stat-cell__label {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 }
 
-.player-hud-root .hud-stat-cell__value {
+.player-hud-root .hud-stat-cell__value,
+.player-dossier-root .hud-stat-cell__value {
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: 0.7rem;
 	font-weight: 900;
 	font-variant-numeric: tabular-nums;
-	color: #ffffff;
+	color: var(--pd-text, #f4f4f5);
 	white-space: nowrap;
 }
 
-.player-hud-root .hud-stat-cell:hover {
-	border-color: color-mix(in srgb, #fbbf24 28%, #334155);
+.player-hud-root .hud-stat-cell:hover,
+.player-dossier-root .hud-stat-cell:hover {
+	border-color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 22%, var(--pd-line, rgba(255, 255, 255, 0.1)));
 }
 
 .player-hud-root .hud-stat-cell--streak:hover,
-.player-hud-root .ibm-streak-at-risk .hud-stat-cell--streak {
-	border-color: color-mix(in srgb, #fbbf24 45%, #334155);
+.player-hud-root .ibm-streak-at-risk .hud-stat-cell--streak,
+.player-dossier-root .hud-stat-cell--streak:hover,
+.player-dossier-root .ibm-streak-at-risk .hud-stat-cell--streak {
+	border-color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 35%, var(--pd-line, rgba(255, 255, 255, 0.1)));
 }
 
 /* Sprint 2.1 — identity metric chips (compat wrapper; superseded by hud-stat-cell in 2.3) */
@@ -460,20 +1065,21 @@
 }
 
 /* Sprint 2.1 — chamfer CTAs (profile setup + command center) */
-.player-hud-root .ibm-cta {
+.player-hud-root .ibm-cta,
+.player-dossier-root .ibm-cta {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	min-height: 32px;
 	padding: clamp(5px, 1vw, 7px) clamp(10px, 2vw, 14px);
-	border: 1px solid #334155;
-	background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: var(--pd-panel, #05050a);
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: 9px;
 	font-weight: 800;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: var(--vanguard-text-1, #f8fafc);
+	color: var(--pd-text, #f4f4f5);
 	cursor: pointer;
 	transition:
 		border-color 0.15s ease,
@@ -491,18 +1097,40 @@
 	);
 }
 
-.player-hud-root .ibm-cta--setup {
-	border-color: #fbbf24;
-	color: #fbbf24;
+.player-hud-root .ibm-cta--setup,
+.player-dossier-root .ibm-cta--setup {
+	border-color: var(--pd-accent-action, #fbbf24);
+	color: var(--pd-accent-action, #fbbf24);
 }
 
-.player-hud-root .ibm-cta--setup:hover {
-	background: color-mix(in srgb, #fbbf24 10%, transparent);
+.player-hud-root .ibm-cta--setup:hover,
+.player-dossier-root .ibm-cta--setup:hover {
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 10%, transparent);
 }
 
-.player-hud-root .ibm-cta:focus-visible {
-	outline: 2px solid color-mix(in srgb, #fbbf24 55%, transparent);
+.player-hud-root .ibm-cta:hover,
+.player-dossier-root .ibm-cta:hover {
+	border-color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 45%, var(--pd-line));
+	color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 85%, var(--pd-text));
+}
+
+/* Sprint 3.1.2 — mission hero + profile setup CTAs stay gold on hover (not teal ibm-cta) */
+.player-hud-root .ibm-cta--setup:hover,
+.player-hud-root .quest-hero__cta:hover {
+	border-color: var(--pd-accent-action, #fbbf24);
+	color: var(--pd-accent-action, #fbbf24);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 10%, transparent);
+}
+
+.player-hud-root .ibm-cta:focus-visible,
+.player-dossier-root .ibm-cta:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--player-hud-data, #14b8a6) 55%, transparent);
 	outline-offset: 2px;
+}
+
+.player-hud-root .ibm-cta--setup:focus-visible,
+.player-dossier-root .ibm-cta--setup:focus-visible {
+	outline-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
 }
 
 /* Sprint 2.2 — hub vector strip hover + selection motion */
@@ -512,19 +1140,20 @@
 		box-shadow 0.2s ease;
 }
 
+/* Sprint 2.8 — hub vector strip selection (teal data accent) */
 .player-hud-root .hmp-cell--selectable:hover {
-	border-color: color-mix(in srgb, #fbbf24 25%, #334155);
+	border-color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 25%, var(--player-hud-border, rgba(255, 255, 255, 0.1)));
 }
 
-/* Sprint 2.0 — hub vector strip selection highlight */
 .player-hud-root .hmp-cell--selected {
-	border-color: #fbbf24;
-	box-shadow: 0 0 8px color-mix(in srgb, #fbbf24 35%, transparent);
+	border-color: var(--player-hud-data, #14b8a6);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--player-hud-data, #14b8a6) 35%, transparent);
 }
 
 /* Sprint 2.7 — collapsed hub vectors when empty (embedded) */
 .player-hud-root .hmp-vectors-collapsed {
 	margin: 0;
+	padding: var(--player-hud-pad);
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: 9px;
 	font-weight: 700;
@@ -534,47 +1163,68 @@
 	color: #64748b;
 }
 
-/* Sprint 2.7 — slim profile incomplete banner (not competing with hero CTA) */
+.player-hud-root .hmp-vectors-collapsed--premium {
+	border-top: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, #64748b);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+/* Sprint 2.7 / 2.8.1 — dossier profile incomplete banner (slim inline bar) */
 .player-hud-root .ibm-profile-banner {
 	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
-	justify-content: space-between;
+	gap: 0.35rem 0.65rem;
 	width: 100%;
-	min-height: 28px;
-	margin: 0 0 clamp(4px, 0.8vw, 6px);
-	padding: 0 clamp(8px, 1.2vw, 10px);
-	border: 1px solid #334155;
-	background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
-	font-family: 'Geist Mono', ui-monospace, monospace;
+	min-height: 0;
+	margin: 0 0 clamp(2px, 0.5vw, 4px);
+	padding: clamp(4px, 0.8vw, 6px) clamp(6px, 1vw, 8px);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: var(--pd-panel, #05050a);
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+
+.player-hud-root .ibm-profile-banner__eyebrow {
+	font-size: 8px;
+	font-weight: 800;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pd-accent-data-bright, rgba(0, 212, 255, 0.55));
+}
+
+.player-hud-root .ibm-profile-banner__action {
 	font-size: 9px;
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: #94a3b8;
-	cursor: pointer;
-	transition:
-		border-color 0.15s ease,
-		color 0.15s ease;
-	clip-path: polygon(
-		0 4px,
-		4px 0,
-		calc(100% - 4px) 0,
-		100% 4px,
-		100% calc(100% - 4px),
-		calc(100% - 4px) 100%,
-		4px 100%,
-		0 calc(100% - 4px)
-	);
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	transition: color 0.15s ease;
 }
 
 .player-hud-root .ibm-profile-banner:hover {
-	border-color: color-mix(in srgb, #fbbf24 35%, #334155);
-	color: #fbbf24;
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+}
+
+.player-hud-root .ibm-profile-banner:hover .ibm-profile-banner__action {
+	color: var(--pd-accent-action, #fbbf24);
 }
 
 .player-hud-root .ibm-profile-banner:focus-visible {
-	outline: 2px solid color-mix(in srgb, #fbbf24 45%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, transparent);
 	outline-offset: 2px;
+}
+
+.player-hud-root .ibm-meta--strap {
+	margin-top: 0;
+	font-size: clamp(0.52rem, 1.1vw, 0.62rem);
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, #64748b);
 }
 
 /* Sprint 2.2 — embedded mission row hover */
@@ -583,7 +1233,17 @@
 }
 
 .player-hud-root .quest-row--embedded:hover {
-	background: color-mix(in srgb, #fbbf24 4%, var(--color-dominant, #0f172a));
+	background: color-mix(in srgb, var(--player-hud-data, #14b8a6) 4%, var(--pd-panel, #05050a));
+}
+
+/* Sprint 2.10.1 — embedded rail CTAs use dossier gold, not legacy cyan/green */
+.player-hud-root .quest-row__cmd--embedded.quest-row__cmd--accept {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.player-hud-root .quest-row__cmd--embedded.quest-row__cmd--complete,
+.player-hud-root .quest-row__cmd--embedded.quest-row__cmd--claim {
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 82%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
 }
 
 /* Sprint 2.0 — telemetry deck inspector (shared with VanguardProtocolPanel) */
@@ -642,7 +1302,6 @@
 .player-hud-root .ibm-rank-progress__fill {
 	height: 100%;
 	background: #fbbf24;
-	transition: width 0.2s ease;
 }
 
 .player-hud-root .ibm-last-session {
@@ -665,8 +1324,8 @@
 	gap: clamp(4px, 0.8vw, 6px);
 	margin-bottom: clamp(8px, 1.2vw, 10px);
 	padding: clamp(8px, 1.4vw, 10px);
-	border: 1px solid #334155;
-	background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
+	border: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	background: var(--pd-panel, #05050a);
 	min-width: 0;
 	clip-path: polygon(
 		0 8px,
@@ -714,21 +1373,189 @@
 	color: color-mix(in srgb, #64748b 55%, #fbbf24);
 }
 
+/* Sprint 3.1.3 — self-contained gold hero CTA (no .ibm-cta dependency) */
 .player-hud-root .quest-hero__cta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	align-self: flex-start;
+	min-height: 32px;
 	width: 100%;
 	max-width: 100%;
-	border-color: #fbbf24;
-	color: #fbbf24;
+	padding: clamp(5px, 1vw, 7px) clamp(10px, 2vw, 14px);
+	border: 1px solid var(--pd-accent-action, #fbbf24);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 6%, var(--pd-panel, #05050a));
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 9px;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-accent-action, #fbbf24);
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		color 0.15s ease;
+	clip-path: polygon(
+		0 6px,
+		6px 0,
+		calc(100% - 6px) 0,
+		100% 6px,
+		100% calc(100% - 6px),
+		calc(100% - 6px) 100%,
+		6px 100%,
+		0 calc(100% - 6px)
+	);
 }
 
-/* Sprint 2.2 — respect prefers-reduced-motion for HUD pulses */
+.player-hud-root .quest-hero__cta:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	outline-offset: 2px;
+}
+
+/* Sprint 2.15 — HQ staggered enter (strap → hub → analytics deck) */
+@keyframes pd-enter-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.player-hud-root .hud-container > .pd-strap {
+	animation: pd-enter-rise 0.48s ease-out both;
+	animation-delay: 0ms;
+}
+
+.player-hud-root .hud-container > .bento-span-12:has(.operative-hub) {
+	animation: pd-enter-rise 0.48s ease-out both;
+	animation-delay: 80ms;
+}
+
+.player-hud-root .player-analytics-deck {
+	animation: pd-enter-rise 0.48s ease-out both;
+	animation-delay: 160ms;
+}
+
+/* Sprint 2.15 — consolidated decorative motion gates (reduced-motion + dopamine off) */
 @media (prefers-reduced-motion: reduce) {
-	.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg) {
+	.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
+	.player-hud-root .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+	.player-hud-root :global(.quest-row__status),
+	.player-hud-root .quest-hero--premium::before,
+	.player-hud-root .quest-hero--premium .quest-hero__cta::after,
+	.player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after,
+	.player-hud-root .hud-container > .pd-strap,
+	.player-hud-root .hud-container > .bento-span-12:has(.operative-hub),
+	.player-hud-root .player-analytics-deck,
+	.player-hud-root .quest-hero--premium {
 		animation: none !important;
 	}
 
-	.player-hud-root :global(.quest-row__status) {
-		animation: none !important;
+	.player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after {
+		opacity: 0 !important;
 	}
+
+	.player-hud-root .ibm-root--premium .hud-stat-cell:hover,
+	.player-hud-root .quest-row--premium:hover,
+	.player-hud-root .quest-row--premium:focus-within {
+		transform: none;
+	}
+
+	.player-hud-root .ibm-rank-bar--premium .ibm-rank-progress__fill {
+		transition: none;
+	}
+}
+
+.player-hud-root[data-dopamine='off'] .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
+.player-hud-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+.player-hud-root[data-dopamine='off'] .quest-hero--premium::before,
+.player-hud-root[data-dopamine='off'] .quest-hero--premium .quest-hero__cta::after,
+.player-hud-root[data-dopamine='off'] .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after,
+.player-hud-root[data-dopamine='off'] .hud-container > .pd-strap,
+.player-hud-root[data-dopamine='off'] .hud-container > .bento-span-12:has(.operative-hub),
+.player-hud-root[data-dopamine='off'] .player-analytics-deck,
+.player-hud-root[data-dopamine='off'] .quest-hero--premium,
+.pd-chrome-root[data-dopamine='off'] .pd-page-root > *,
+.pd-chrome-root[data-dopamine='off'] .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
+.pd-chrome-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+.pd-chrome-root[data-dopamine='off'] .quest-hero--premium::before,
+.pd-chrome-root[data-dopamine='off'] .quest-hero--premium .quest-hero__cta::after,
+.pd-chrome-root[data-dopamine='off'] .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after {
+	animation: none !important;
+}
+
+/* Sprint 3.1.3 — init modal global overlay (renders outside .player-dossier-root) */
+.init-modal {
+	border-radius: 1rem;
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: var(--pd-panel, #05050a);
+	color: var(--pd-text, #f4f4f5);
+}
+
+.init-modal__head {
+	border-bottom: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+}
+
+.init-modal__body {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.init-modal__step {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.init-modal__step-num {
+	border: 1px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, var(--pd-line));
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 8%, transparent);
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.init-modal__close {
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: var(--pd-panel, #05050a);
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	transition:
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.init-modal__close:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, var(--pd-line));
+	color: var(--pd-text, #f4f4f5);
+}
+
+.init-modal__cta {
+	border-radius: 0.5rem;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		color 0.15s ease;
+}
+
+.init-modal__cta--primary {
+	border: 1px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 80%, white);
+	background: var(--pd-accent-action, #fbbf24);
+	color: #05050a;
+	text-decoration: none;
+}
+
+.init-modal__cta--primary:hover {
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 92%, white);
+	color: #0f172a;
+}
+
+.init-modal__cta--secondary {
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	background: transparent;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.init-modal__cta--secondary:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 25%, var(--pd-line));
+	color: var(--pd-text, #f4f4f5);
 }

@@ -120,24 +120,36 @@
 			<polygon
 				points={polygonPoints(R * ZERO_TRACK_RADIUS)}
 				fill="none"
-				stroke="color-mix(in srgb, var(--color-accent, #fbbf24) 28%, transparent)"
+				stroke="color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent)"
 				stroke-width="0.8"
 				vector-effect="non-scaling-stroke"
 				class="ar-zero-track"
+				filter="url(#pdDataBloom)"
 			/>
 		{/if}
 
-		<polygon
-			points={skillPolygonPoints}
-			fill="color-mix(in srgb, var(--color-accent, #fbbf24) 18%, transparent)"
-			stroke="var(--color-accent, #fbbf24)"
-			stroke-width="1.4"
-			stroke-linejoin="round"
-			vector-effect="non-scaling-stroke"
-		/>
+		{#if !allZero}
+			<polygon
+				points={skillPolygonPoints}
+				fill="color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent)"
+				stroke="var(--pd-accent-data, #14b8a6)"
+				stroke-width="1.4"
+				stroke-linejoin="round"
+				vector-effect="non-scaling-stroke"
+				filter="url(#pdDataBloom)"
+			/>
+		{/if}
 
 		{#each skillVertices as v, vi (`vtx-${vi}`)}
-			<circle cx={v.x} cy={v.y} r="2.5" fill="var(--color-accent, #fbbf24)" />
+			{#if safeValues[vi] > 0}
+				<circle
+					cx={v.x}
+					cy={v.y}
+					r="2.5"
+					fill="var(--pd-accent-data, #14b8a6)"
+					filter="url(#pdDataBloom)"
+				/>
+			{/if}
 		{/each}
 
 		{#each labelVertices as lv, li (`lbl-${li}`)}
@@ -163,7 +175,9 @@
 				letter-spacing="0.5"
 				text-anchor={anchorFor(li)}
 				dominant-baseline="middle"
-				fill={selectedAxis === lv.id ? '#fbbf24' : '#cbd5e1'}
+				fill={selectedAxis === lv.id
+					? 'color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff)'
+					: 'var(--pd-text-muted, rgba(255, 255, 255, 0.5))'}
 				class="ar-label"
 				class:ar-label--selected={selectedAxis === lv.id}
 				pointer-events="none"
@@ -193,10 +207,10 @@
 		outline: none;
 	}
 	.ar-hit:focus-visible + .ar-label {
-		fill: #fbbf24;
+		fill: var(--pd-accent-data, #14b8a6);
 	}
 	.ar-label--selected {
 		text-decoration: underline;
-		text-decoration-color: #fbbf24;
+		text-decoration-color: var(--pd-accent-data, #14b8a6);
 	}
 </style>

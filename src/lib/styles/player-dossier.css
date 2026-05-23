@@ -1,0 +1,1137 @@
+/**
+ * Player Dossier — canonical tokens for HQ, Armory, and Stats player surfaces.
+ * Scoped under .player-dossier-root (.player-hud-root is an alias on dashboard).
+ */
+
+.player-dossier-root,
+.player-hud-root.player-dossier-root {
+	--pd-bg: #000000;
+	--pd-panel: #05050a;
+	--pd-line: rgba(255, 255, 255, 0.1);
+	--pd-text: #f4f4f5;
+	--pd-text-muted: rgba(255, 255, 255, 0.5);
+	--pd-accent-action: #fbbf24;
+	--pd-accent-data: #14b8a6;
+	--pd-accent-data-bright: rgba(0, 212, 255, 0.55);
+	/* Sprint 2.18 — emissive edge tokens (void > edges > glass > matte) */
+	--pd-emissive-teal: 0 0 12px color-mix(in srgb, var(--pd-accent-data) 35%, transparent);
+	--pd-emissive-gold: 0 0 14px color-mix(in srgb, var(--pd-accent-action) 32%, transparent);
+	--pd-edge-teal: 1px solid color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line));
+	--pd-edge-gold: 1px solid color-mix(in srgb, var(--pd-accent-action) 50%, var(--pd-line));
+	--pd-font-mono: ui-monospace, 'Geist Mono', monospace;
+	--pd-font-display: 'Geist', ui-sans-serif, system-ui, sans-serif;
+	/* Sprint 2.12 — depth system */
+	--pd-depth-panel-gradient: radial-gradient(
+		ellipse 120% 80% at 50% 0%,
+		color-mix(in srgb, #0e0e16 92%, #000) 0%,
+		#04040a 42%,
+		#030308 100%
+	);
+	--pd-depth-glow-gold: 0 0 28px color-mix(in srgb, var(--pd-accent-action) 22%, transparent);
+	--pd-depth-glow-teal: 0 0 24px color-mix(in srgb, var(--pd-accent-data) 18%, transparent);
+	--pd-shadow-elev-1: 0 3px 10px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	--pd-shadow-elev-2: 0 10px 28px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+	/* Sprint 2.17 — Z-depth stack (Z0–Z4); legacy elev-1/2 retained for gradual migration */
+	--pd-z0-canvas: #000000;
+	--pd-z1-inset-shadow:
+		inset 0 2px 10px rgba(0, 0, 0, 0.65),
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		0 0 0 1px rgba(0, 0, 0, 0.35);
+	--pd-z1-well-bg:
+		radial-gradient(ellipse 100% 80% at 50% 0%, #040408 0%, #020204 55%, #000 100%);
+	--pd-z2-panel-shadow:
+		0 4px 14px rgba(0, 0, 0, 0.55),
+		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+	--pd-z3-raised-shadow:
+		0 12px 32px rgba(0, 0, 0, 0.62),
+		0 0 24px color-mix(in srgb, var(--pd-accent-action) 14%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.09);
+	--pd-z4-float-shadow:
+		0 16px 40px rgba(0, 0, 0, 0.68),
+		0 8px 20px -6px color-mix(in srgb, var(--pd-accent-data) 12%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.1);
+	--pd-z-highlight-top:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 32%);
+	--pd-z-glow-br:
+		radial-gradient(
+			ellipse 80% 60% at 100% 100%,
+			color-mix(in srgb, var(--pd-accent-data) 8%, transparent),
+			transparent 70%
+		);
+	/* Sprint 2.16 — layout constitution (90rem / 1440px max content width) */
+	--pd-content-max: min(100%, 90rem);
+}
+
+/* Sprint 2.16 — shared content column (HQ + secondary player routes) */
+.player-dossier-root .pd-content-wrap,
+.player-hud-root .pd-content-wrap {
+	width: 100%;
+	max-width: var(--pd-content-max);
+	margin-inline: auto;
+	box-sizing: border-box;
+	min-width: 0;
+}
+
+/* Sprint 2.16a — HUDContainer fills pd-content-wrap; no competing 72rem cap */
+.player-dossier-root .pd-content-wrap > .hud-container,
+.player-hud-root .pd-content-wrap > .hud-container {
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+}
+
+/* Sprint 2.17 — Z-layer utility classes */
+.player-dossier-root .pd-z1-recessed {
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	position: relative;
+}
+
+.player-dossier-root .pd-z2-panel {
+	background: var(--pd-depth-panel-gradient, var(--pd-panel));
+	border: 1px solid var(--pd-line);
+	box-shadow: var(--pd-z2-panel-shadow);
+	position: relative;
+}
+
+.player-dossier-root .pd-z2-panel::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: var(--pd-z-highlight-top);
+}
+
+.player-dossier-root .pd-z3-raised {
+	box-shadow: var(--pd-z3-raised-shadow);
+	transform: translateZ(0);
+}
+
+.player-dossier-root .pd-z4-float {
+	box-shadow: var(--pd-z4-float-shadow);
+	position: relative;
+	z-index: 2;
+}
+
+/* Sprint 2.12 / 2.17 — premium lifted surface (Z2 base panel) */
+.player-dossier-root .pd-surface-premium,
+.player-dossier-root .pd-page-panel {
+	background: var(--pd-depth-panel-gradient, var(--pd-panel));
+	border: 1px solid var(--pd-line);
+	box-shadow: var(--pd-z2-panel-shadow);
+	position: relative;
+}
+
+.player-dossier-root .pd-surface-premium::after,
+.player-dossier-root .pd-page-panel::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: var(--pd-z-highlight-top);
+}
+
+/* Sprint 2.13 — shell-level chrome root (PlayerShell canvas) */
+.player-dossier-root.pd-chrome-root {
+	--bento-gap-liquid: clamp(12px, 1.5vw, 20px);
+	min-height: 100%;
+	isolation: isolate;
+	position: relative;
+}
+
+/* Sprint 2.13 — standard route page inset */
+.player-dossier-root .pd-page-root {
+	padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px));
+	padding-bottom: calc(
+		var(--bento-pad-liquid, clamp(20px, 4vw, 32px)) + env(safe-area-inset-bottom, 0px)
+	);
+	min-height: 0;
+	box-sizing: border-box;
+	color: var(--pd-text);
+}
+
+/* Sprint 2.13 / 2.17 — compact route header (Z4 floating chrome) */
+.player-dossier-root .pd-route-strap {
+	margin-bottom: clamp(0.75rem, 1.8vw, 1.25rem);
+	border: 1px solid var(--pd-line);
+	background: var(--pd-depth-panel-gradient, var(--pd-panel));
+	box-shadow: var(--pd-z4-float-shadow);
+	position: relative;
+	z-index: 2;
+}
+
+.player-dossier-root .pd-route-strap::after {
+	content: '';
+	position: absolute;
+	left: clamp(0.85rem, 1.8vw, 1.1rem);
+	right: clamp(0.85rem, 1.8vw, 1.1rem);
+	bottom: 0;
+	height: 1px;
+	pointer-events: none;
+	background: color-mix(in srgb, var(--pd-accent-data) 50%, transparent);
+	box-shadow: var(--pd-emissive-teal);
+}
+
+.player-dossier-root .pd-route-strap__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 0.75rem 1rem;
+	align-items: end;
+	padding: clamp(0.75rem, 1.6vw, 0.95rem) clamp(0.85rem, 1.8vw, 1.1rem);
+}
+
+@media (max-width: 640px) {
+	.player-dossier-root .pd-route-strap__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.player-dossier-root .pd-route-strap__title {
+	margin: 0.2rem 0 0;
+	font-family: var(--pd-font-display);
+	font-size: clamp(1rem, 2.4vw, 1.25rem);
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	color: var(--pd-text);
+	line-height: 1.15;
+}
+
+.player-dossier-root .pd-route-strap__status {
+	text-align: right;
+	min-width: 0;
+}
+
+/* Sprint 2.12 — optional grain overlay on player canvas (shell + HQ) */
+.player-dossier-root.pd-grain::before,
+.player-hud-root.player-dossier-root.pd-grain::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	opacity: 0.07;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	background-size: 180px 180px;
+}
+
+/* Sprint 2.12 / 2.17 — premium strap floats above hub (Z4) */
+.player-dossier-root .pd-strap--premium {
+	padding-bottom: 0;
+	margin-bottom: clamp(0.5rem, 1.2vw, 0.85rem);
+	box-shadow: var(--pd-z4-float-shadow);
+	position: relative;
+	z-index: 2;
+}
+
+.player-dossier-root .pd-strap--premium::after {
+	content: '';
+	position: absolute;
+	left: clamp(0.85rem, 2vw, 1.15rem);
+	right: clamp(0.85rem, 2vw, 1.15rem);
+	bottom: 0;
+	height: 1px;
+	pointer-events: none;
+	background: color-mix(in srgb, var(--pd-accent-data) 55%, transparent);
+	box-shadow: var(--pd-emissive-teal);
+}
+
+.player-dossier-root .pd-strap--premium .pd-strap__grid {
+	padding: clamp(0.75rem, 1.8vw, 0.95rem) clamp(0.85rem, 2vw, 1.15rem) clamp(0.55rem, 1.2vw, 0.75rem);
+}
+
+.player-dossier-root .pd-strap--premium .pd-strap__context {
+	padding-bottom: clamp(0.55rem, 1.2vw, 0.75rem);
+}
+
+/* Sprint 2.12 — active world-context chip teal glow */
+.player-dossier-root .hq-world-context__chip--relevant,
+.player-dossier-root .hq-world-context__event-tag {
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+/* ─── Utility classes (Armory / Stats / HQ strap) ─────────────────────────── */
+
+.player-dossier-root .pd-strap,
+.player-dossier-root.pd-strap {
+	margin-bottom: clamp(1rem, 2vw, 1.5rem);
+	border: 1px solid var(--pd-line);
+	background: var(--pd-panel);
+}
+
+.player-dossier-root .pd-strap__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 1rem 1.25rem;
+	align-items: end;
+	padding: 1rem 1.15rem;
+}
+
+@media (max-width: 640px) {
+	.player-dossier-root .pd-strap__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.player-dossier-root .pd-eyebrow {
+	margin: 0;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.62rem, 1.2vw, 0.65rem);
+	font-weight: 800;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--pd-accent-data-bright);
+}
+
+.player-dossier-root .pd-strap__title {
+	margin: 0.2rem 0 0;
+	font-family: var(--pd-font-display);
+	font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	color: var(--pd-text);
+	line-height: 1.15;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.player-dossier-root .pd-strap__status {
+	text-align: right;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.player-dossier-root .pd-strap__status .pd-label {
+	margin: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--pd-accent-data) 75%, var(--pd-text-muted));
+}
+
+.player-dossier-root .pd-panel {
+	background: var(--pd-panel);
+	border: 1px solid var(--pd-line);
+	color: var(--pd-text);
+}
+
+/* Sprint 2.11.1 — shared lifted panel utility (Armory / trajectory / album) */
+.player-dossier-root .pd-glass-panel {
+	background: var(--pd-panel);
+	border: 1px solid var(--pd-line);
+}
+
+.player-dossier-root .pd-mono {
+	font-family: var(--pd-font-mono);
+	font-feature-settings: 'tnum' 1;
+}
+
+.player-dossier-root .pd-label {
+	display: block;
+	font-family: var(--pd-font-mono);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted);
+}
+
+/* Sprint 2.11 — shared stat row (Workout / Tracker secondary routes) */
+.player-dossier-root .pd-stat-row {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: clamp(0.5rem, 1.5vw, 0.75rem);
+	padding: clamp(0.75rem, 2vw, 1rem) clamp(0.85rem, 2vw, 1.15rem);
+	margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+@media (max-width: 640px) {
+	.player-dossier-root .pd-stat-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Sprint 2.11.1 — ProPlayerCard dossier frame (Stats / Armory) */
+.player-dossier-root .ppc-face--front,
+.player-dossier-root .ppc-face--back {
+	background: var(--pd-panel, #05050a);
+	border-color: var(--pd-line, rgba(255, 255, 255, 0.1));
+}
+
+.player-dossier-root .ppc-flip-hint {
+	color: var(--pd-accent-data, #14b8a6) !important;
+}
+
+/* Sprint 2.11.1 — Armory album + pathway dossier chrome */
+.player-dossier-root .qa-pathway-shell {
+	background: var(--pd-panel, #05050a);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+}
+
+.player-dossier-root .album-progress-track {
+	background: var(--pd-panel, #05050a);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+}
+
+.player-dossier-root .album-progress-fill {
+	background: var(--pd-accent-data, #14b8a6);
+}
+
+.player-dossier-root .album-slot-owned {
+	background: var(--pd-panel, #05050a);
+	border-top: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+}
+
+.player-dossier-root .album-slot-empty {
+	border-color: var(--pd-line, rgba(255, 255, 255, 0.1)) !important;
+	background: var(--pd-panel, #05050a) !important;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-dossier-root .album-slot-empty svg,
+.player-dossier-root .album-slot-empty p {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5)) !important;
+}
+
+/* Sprint 2.14 — shared internal panel utilities (secondary routes + HQ embeds) */
+.player-dossier-root .pd-panel-section {
+	position: relative;
+	padding: clamp(0.65rem, 1.4vw, 0.85rem) clamp(0.75rem, 1.6vw, 1rem);
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-dossier-root .pd-panel-eyebrow {
+	display: block;
+	margin: 0 0 0.35rem;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.55rem, 1.1vw, 0.58rem);
+	font-weight: 800;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pd-accent-data-bright);
+}
+
+.player-dossier-root .pd-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(6px, 1.2vw, 10px);
+	padding: clamp(10px, 2vw, 16px);
+	max-height: clamp(88px, 18vw, 120px);
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	text-align: center;
+}
+
+.player-dossier-root .pd-empty-state--compact {
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	text-align: left;
+	max-height: none;
+	padding: clamp(8px, 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
+}
+
+.player-dossier-root .pd-empty-state__icon {
+	width: clamp(32px, 7vw, 40px);
+	height: clamp(32px, 7vw, 40px);
+	flex-shrink: 0;
+	clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+	background:
+		radial-gradient(
+			circle at 50% 35%,
+			color-mix(in srgb, var(--pd-accent-data) 22%, transparent),
+			transparent 68%
+		);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 35%, var(--pd-line));
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+.player-dossier-root .pd-empty-state__title {
+	margin: 0;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+	font-weight: 800;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-text);
+}
+
+.player-dossier-root .pd-empty-state__lede {
+	margin: 0;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.5rem, 1vw, 0.58rem);
+	font-weight: 700;
+	line-height: 1.35;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted);
+	max-width: 18rem;
+}
+
+/* Sprint 2.14 — stat row cells match HQ premium inset */
+.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell {
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 768px) {
+	.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell:hover {
+		border-color: color-mix(in srgb, var(--pd-accent-data) 28%, var(--pd-line));
+		box-shadow:
+			var(--pd-shadow-elev-1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		transform: translateY(-1px);
+	}
+}
+
+/* Sprint 2.14 — Armory workspace tab premium active state */
+.player-dossier-root .qa-workspace--premium .qa-workspace__tab--active {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--pd-accent-data) 14%, transparent) 0%,
+		color-mix(in srgb, var(--pd-panel) 96%, #000) 100%
+	);
+	box-shadow:
+		var(--pd-emissive-teal),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	border-bottom: var(--pd-edge-teal);
+}
+
+/* Sprint 2.14 — Quartermaster card grid depth */
+.player-dossier-root .qa-card.pd-page-panel {
+	box-shadow: var(--pd-z2-panel-shadow);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease,
+		transform 0.15s ease;
+}
+
+@media (min-width: 768px) {
+	.player-dossier-root .qa-card.pd-page-panel:hover {
+		border: var(--pd-edge-teal);
+		box-shadow:
+			var(--pd-z3-raised-shadow),
+			var(--pd-emissive-teal);
+		transform: translateY(-2px);
+	}
+}
+
+/* Sprint 2.14 — Album owned slot glow */
+.player-dossier-root .album-slot-owned {
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data) 18%, transparent),
+		var(--pd-depth-glow-teal);
+}
+
+/* Sprint 2.14 — Studio preview stage inset glow */
+.player-dossier-root .ols-preview-stage {
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data) 14%, transparent),
+		inset 0 0 28px color-mix(in srgb, var(--pd-accent-data) 8%, transparent);
+}
+
+/* Sprint 2.14 — Workout threat + exec terminal internal sections */
+.player-dossier-root .pw-panel--premium .pw-section {
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	padding: clamp(0.65rem, 1.4vw, 0.85rem);
+}
+
+.player-dossier-root .pw-panel--premium .pw-focus__btn,
+.player-dossier-root .pw-panel--premium .pw-chip {
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.player-dossier-root .pw-panel--premium .pw-exec.qa-btn--ready {
+	box-shadow: var(--pd-depth-glow-gold);
+}
+
+/* Sprint 2.14 — Skill tree arena + side cards */
+.player-dossier-root .st-arena--premium {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line)) !important;
+	box-shadow:
+		var(--pd-shadow-elev-1),
+		inset 0 0 32px color-mix(in srgb, var(--pd-accent-data) 6%, transparent);
+}
+
+.player-dossier-root .st-side-card.pd-page-panel {
+	box-shadow: var(--pd-shadow-elev-1);
+}
+
+.player-dossier-root .st-node--selected {
+	filter: drop-shadow(0 0 8px color-mix(in srgb, var(--pd-accent-data) 55%, transparent));
+}
+
+/* Sprint 2.14 — Settings player tab strip + form wells */
+.player-dossier-root .st-tabs--premium {
+	border: 1px solid var(--pd-line);
+	background: color-mix(in srgb, var(--pd-panel) 94%, #000);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.player-dossier-root .st-tabs--premium .st-tab--active {
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+.player-dossier-root .st-panel.pd-page-panel .st-field {
+	border-color: color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+/* Sprint 2.14 — Stats dossier panels match VPP premium frames */
+.player-dossier-root .dossier-panel.pd-page-panel {
+	box-shadow: var(--pd-shadow-elev-1);
+}
+
+.player-dossier-root .dossier-radar.pd-page-panel .dossier-radar__chart {
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow:
+		var(--pd-z1-inset-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data) 10%, transparent),
+		inset 0 0 24px color-mix(in srgb, var(--pd-accent-data) 6%, transparent);
+}
+
+.player-dossier-root .dossier-panel.pd-page-panel .dossier-radar__head,
+.player-dossier-root .dossier-panel.pd-page-panel .dossier-workout__seg {
+	border-bottom: 1px solid color-mix(in srgb, var(--pd-accent-data) 18%, var(--pd-line));
+}
+
+/* Sprint 2.14 — Memory capsule dossier premium frame */
+.player-dossier-root .mc-arena--dossier-premium {
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line)) !important;
+	background: var(--pd-depth-panel-gradient, var(--pd-panel)) !important;
+	box-shadow:
+		var(--pd-shadow-elev-1),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data) 10%, transparent) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell:hover,
+	.player-dossier-root .qa-card.pd-page-panel:hover {
+		transform: none;
+	}
+}
+
+/* Sprint 2.12 — respect reduced motion for grain / decorative overlays */
+@media (prefers-reduced-motion: reduce) {
+	.player-dossier-root.pd-grain::before,
+	.player-hud-root.player-dossier-root.pd-grain::before {
+		opacity: 0.02;
+	}
+
+	.player-dossier-root.pd-chrome-root .pd-page-root > * {
+		animation: none !important;
+	}
+}
+
+/* Sprint 2.15 — secondary route stagger (strap + first panel) */
+@keyframes pd-enter-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.player-dossier-root.pd-chrome-root .pd-page-root > *:nth-child(1) {
+	animation: pd-enter-rise 0.48s ease-out both;
+	animation-delay: 0ms;
+}
+
+.player-dossier-root.pd-chrome-root .pd-page-root > *:nth-child(2) {
+	animation: pd-enter-rise 0.48s ease-out both;
+	animation-delay: 80ms;
+}
+
+.pd-chrome-root[data-dopamine='off'] .pd-page-root > * {
+	animation: none !important;
+}
+
+/* Sprint 2.16 — diegetic settings CTAs (player dossier mode) */
+.player-dossier-root .st-action-btn,
+.player-dossier-root .st-danger-btn,
+.player-dossier-root .st-ghost-btn {
+	clip-path: polygon(
+		0 6px,
+		6px 0,
+		calc(100% - 6px) 0,
+		100% 6px,
+		100% calc(100% - 6px),
+		calc(100% - 6px) 100%,
+		6px 100%,
+		0 calc(100% - 6px)
+	);
+	font-family: var(--pd-font-mono);
+	text-transform: none;
+	letter-spacing: 0.06em;
+}
+
+.player-dossier-root .st-danger-btn {
+	border-color: color-mix(in srgb, #ef4444 55%, var(--pd-line));
+	color: #fca5a5;
+}
+
+/* Sprint 2.16.1 — player settings route (/player/settings) */
+.player-dossier-root.ps-settings-root {
+	width: 100%;
+	max-width: none;
+}
+
+.player-dossier-root.ps-settings-root .pd-content-wrap {
+	max-width: var(--pd-content-max);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: clamp(1rem, 2vw, 1.35rem);
+	padding: 0.35rem;
+	border-radius: 0.35rem;
+	border: 1px solid var(--pd-line);
+	background: color-mix(in srgb, var(--pd-panel) 88%, #000);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data) 6%, transparent);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-tabs__tab {
+	flex: 1 1 auto;
+	min-width: 7.5rem;
+	padding: 0.65rem 1rem;
+	font-family: var(--pd-font-mono);
+	font-size: 0.68rem;
+	font-weight: 900;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	cursor: pointer;
+	border: 1px solid transparent;
+	border-radius: 0.2rem;
+	color: var(--pd-text-muted);
+	background: transparent;
+	transition:
+		color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		background 0.2s ease;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-tabs__tab:hover {
+	color: var(--pd-text);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 25%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-tabs__tab.qa-workspace__tab--active {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--pd-accent-data) 14%, transparent) 0%,
+		color-mix(in srgb, var(--pd-panel) 96%, #000) 100%
+	);
+	box-shadow:
+		var(--pd-emissive-teal),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	border-bottom: var(--pd-edge-teal);
+	color: var(--pd-accent-data);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-tabs__tab--danger:hover {
+	color: color-mix(in srgb, var(--pd-accent-action) 85%, #fff);
+	border-color: color-mix(in srgb, var(--pd-accent-action) 35%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-panel {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(0.65rem, 1.4vw, 0.85rem);
+	padding: clamp(0.65rem, 1.4vw, 0.85rem);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-row {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	padding: 0.2rem 0;
+	border-bottom: 1px solid color-mix(in srgb, var(--pd-line) 65%, transparent);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-row:last-child {
+	border-bottom: none;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-row__label {
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.52rem, 1vw, 0.58rem);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted);
+	min-width: 4.5rem;
+	flex-shrink: 0;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-row__value {
+	font-size: clamp(0.72rem, 1.4vw, 0.82rem);
+	color: var(--pd-text);
+	word-break: break-all;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-info-row__value--accent {
+	color: var(--pd-accent-data);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-input {
+	width: 100%;
+	padding: 0.55rem 0.65rem;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.72rem, 1.4vw, 0.82rem);
+	background: var(--pd-z1-well-bg);
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	box-shadow: var(--pd-z1-inset-shadow);
+	color: var(--pd-text);
+	outline: none;
+	box-sizing: border-box;
+	color-scheme: dark;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-input:focus {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-hint {
+	margin: 0 0 0.5rem;
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	line-height: 1.45;
+	color: var(--pd-text-muted);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-hint--amber {
+	color: color-mix(in srgb, var(--pd-accent-action) 75%, #fff);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-link {
+	color: var(--pd-accent-data);
+	text-decoration: underline;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: clamp(0.68rem, 1.3vw, 0.78rem);
+	color: var(--pd-text);
+	cursor: pointer;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-checkbox input {
+	accent-color: var(--pd-accent-data);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-avatar-summary {
+	display: flex;
+	align-items: center;
+	gap: clamp(0.75rem, 2vw, 1rem);
+	flex-wrap: wrap;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-avatar-preview {
+	width: 72px;
+	height: 72px;
+	flex-shrink: 0;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-theme-row {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-theme-btn {
+	flex: 1 1 5rem;
+	padding: 0.45rem 0.55rem;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	letter-spacing: 0.04em;
+	background: transparent;
+	border: 1px solid var(--pd-line);
+	color: var(--pd-text-muted);
+	cursor: pointer;
+	transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-theme-btn--active {
+	background: color-mix(in srgb, var(--pd-accent-data) 10%, transparent);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 50%, var(--pd-line));
+	color: var(--pd-accent-data);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.55rem 1rem;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-decoration: none;
+	color: var(--pd-text);
+	background: color-mix(in srgb, var(--pd-accent-data) 8%, var(--pd-bg));
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+	clip-path: polygon(
+		0 6px,
+		6px 0,
+		calc(100% - 6px) 0,
+		100% 6px,
+		100% calc(100% - 6px),
+		calc(100% - 6px) 100%,
+		6px 100%,
+		0 calc(100% - 6px)
+	);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-btn:hover:not(:disabled) {
+	border-color: var(--pd-accent-data);
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-btn--ghost {
+	color: var(--pd-text-muted);
+	background: transparent;
+	border-color: var(--pd-line);
+	box-shadow: none;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-btn--danger {
+	color: #fca5a5;
+	background: color-mix(in srgb, #ef4444 6%, var(--pd-bg));
+	border-color: color-mix(in srgb, #ef4444 55%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-actions {
+	padding-top: 0.25rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-phone-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+	padding: 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-phone-verified {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-phone-badge {
+	font-family: var(--pd-font-mono);
+	font-size: 0.55rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #34d399 90%, #fff);
+	border: 1px solid color-mix(in srgb, #34d399 35%, var(--pd-line));
+	padding: 0.15rem 0.45rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-phone-ending {
+	font-family: var(--pd-font-mono);
+	font-size: 0.65rem;
+	color: var(--pd-text-muted);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-error,
+.player-dossier-root.ps-settings-root .ps-settings-success {
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	padding: 0.45rem 0.65rem;
+	border: 1px solid var(--pd-line);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-error {
+	color: #fca5a5;
+	background: color-mix(in srgb, #ef4444 8%, transparent);
+	border-color: color-mix(in srgb, #ef4444 35%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-success {
+	color: #86efac;
+	background: color-mix(in srgb, #22c55e 8%, transparent);
+	border-color: color-mix(in srgb, #22c55e 35%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-permission {
+	padding: 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	margin-bottom: 0.65rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-permission--active {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 35%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-permission--denied {
+	border-color: color-mix(in srgb, #ef4444 35%, var(--pd-line));
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-permission__title {
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-text);
+	margin-bottom: 0.25rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-permission__sub {
+	margin: 0;
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	line-height: 1.45;
+	color: var(--pd-text-muted);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-context {
+	padding: 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	margin-top: 0.5rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-context__list {
+	margin: 0.35rem 0 0.5rem;
+	padding-left: 1.1rem;
+	font-size: clamp(0.62rem, 1.2vw, 0.72rem);
+	color: var(--pd-text-muted);
+	line-height: 1.6;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-context__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-matrix {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin-top: 0.35rem;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.55rem 0.65rem;
+	border: 1px solid color-mix(in srgb, var(--pd-line) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay-row--disabled {
+	opacity: 0.45;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay-row__label {
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.58rem, 1.1vw, 0.68rem);
+	font-weight: 800;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-text);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay-row__desc {
+	font-size: clamp(0.58rem, 1.1vw, 0.66rem);
+	color: var(--pd-text-muted);
+	line-height: 1.35;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay {
+	position: relative;
+	min-width: 3.25rem;
+	padding: 0.35rem 0.45rem;
+	font-family: var(--pd-font-mono);
+	font-size: 0.58rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted);
+	background: var(--pd-bg);
+	border: 1px solid var(--pd-line);
+	cursor: pointer;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay--on {
+	color: var(--pd-accent-data);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	box-shadow: var(--pd-depth-glow-teal);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-relay--disabled {
+	cursor: not-allowed;
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-sync {
+	margin-top: 0.5rem;
+	font-family: var(--pd-font-mono);
+	font-size: clamp(0.58rem, 1.1vw, 0.66rem);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-accent-data);
+}
+
+.player-dossier-root.ps-settings-root .ps-settings-eyebrow--danger {
+	color: color-mix(in srgb, #ef4444 75%, var(--pd-text-muted));
+}
+
+/* Sprint 2.16 — mobile layout pass (390px player routes) */
+@media (max-width: 390px) {
+	.player-dossier-root .pd-page-root {
+		padding-inline: clamp(12px, 3.5vw, 16px);
+	}
+
+	.player-dossier-root .pd-strap__context,
+	.player-dossier-root .pd-strap--premium .pd-strap__context {
+		padding-inline: clamp(0.65rem, 2vw, 0.85rem);
+	}
+
+	.player-dossier-root .pd-content-wrap {
+		overflow-x: hidden;
+	}
+}

@@ -62,7 +62,17 @@ Replace single-plane panels (`--pd-shadow-elev-1/2` only) with an explicit Z-sta
 | Analytics deck | Z2; radar polygon in Z1 well |
 | `pd-strap` / world context | Z4 |
 
-**Known regression to fix (2.17):** `ibm-root--premium` transparent override vs inset identity stage — stage must read recessed inside hub, not flat transparent.
+**Known regression to fix (2.17):** ~~`ibm-root--premium` transparent override vs inset identity stage~~ — **fixed 2.17:** stage uses `--pd-z1-well-bg` + `--pd-z1-inset-shadow`; IBM premium layers transparent on top.
+
+**Implemented tokens (2.17)** in `player-dossier.css`:
+
+- `--pd-z0-canvas` (alias `--pd-bg`)
+- `--pd-z1-inset-shadow`, `--pd-z1-well-bg`
+- `--pd-z2-panel-shadow`
+- `--pd-z3-raised-shadow`
+- `--pd-z4-float-shadow`
+- `--pd-z-highlight-top`, `--pd-z-glow-br`
+- Utilities: `.pd-z1-recessed`, `.pd-z2-panel`, `.pd-z3-raised`, `.pd-z4-float`
 
 ---
 
@@ -79,9 +89,16 @@ Target material ratios (guidance, not pixel math): **void > emissive edges > gla
 
 **Bloom / SVG patterns:** Reuse Tier A implementations — `SkillTreeArena.svelte` SVG filter defs, `VanguardCard.svelte` foil/bloom. Shared filter defs for radar/VPP bloom (Stats/HQ parity).
 
+**Implemented (2.18):**
+
+- `pdDataBloom` global SVG filter in `VanguardVFX.svelte` — teal-tuned, youth-safe; referenced by `AttributeRadar.svelte` via `url(#pdDataBloom)`
+- Emissive edge tokens: `--pd-emissive-teal`, `--pd-emissive-gold`, `--pd-edge-teal`, `--pd-edge-gold`
+- Glass wells limited to Z1 radar/inspector inset — hub command shell stays matte
+- Z2 panel gradient softened for void ratio without shrinking panels
+
 **Youth-safe Tron adjacency:** Cyan/teal data glow + gold action accents. Avoid Ares-aggression palette dominance (blood red, harsh orange wash).
 
-**Optional future lane:** WebGL/shader pass documented but **not required** for 2.18.
+**Optional future lane:** WebGL/shader pass for volumetric grid or foil parallax — documented but **not implemented** in 2.18. CSS/SVG bloom + emissive edges remain the canonical Player OS material stack until a future sprint explicitly scopes shader work.
 
 ---
 
@@ -93,6 +110,12 @@ Target material ratios (guidance, not pixel math): **void > emissive edges > gla
 | **Vignette** | Shell vignette judiciously restored in dossier mode — not zeroed to flat black |
 | **Route continuity** | Shared canvas layers persist across player nav — one world, not separate dashboards |
 | **Scanlines / noise** | OK on **canvas/atmosphere** (HQ shell); **never** on readable mission text or body copy |
+
+**Implemented (2.18):**
+
+- Dossier ambient grid opacity restored (~0.40); teal radial on `ps-ambient__glow--a` replaces black wash
+- Canvas scanlines via `ps-ambient::after` on shell atmosphere layer — persists all player routes
+- Scanline policy: canvas/atmosphere OK; readable text and command panel interiors NO
 
 Reconcile with [`PLAYER_OS.md`](./PLAYER_OS.md): scanline policy refined from “no scanlines on command shell” → “no scanlines on readable text; canvas/atmosphere OK.”
 
@@ -161,13 +184,39 @@ Identity reads as **projection into the Grid**, not an avatar widget on a form.
 |--------------|--------------|
 | Filled grey boxes as primary layout | Reads admin, not void + light |
 | Duplicate headers / habit rows | Breaks diegetic trust (e.g. duplicate daily habit on HQ) |
-| Debug / prototype chrome in player builds | `RDR_S6_generic`, `ALPHA` badges — hide in player-facing builds |
+| Debug / prototype chrome in player builds | `RDR_S6_generic`, `ALPHA` / Report Anomaly — hide in player-facing builds (Sprint 2.16) |
 | Source-scan-only QA | Tests that enforce flatness (e.g. scanlines removed) false-green against cinematic bar |
 | Suppressing **all** atmosphere | HQ zeroing shell ambient → flat black admin |
 | Competing glass stacks on command shell | Box-in-box prototype feel |
 | Mixed header grammars without rules | `pd-strap` vs `PlayerOsPageStrap` vs route-custom |
 | Empty warehouse voids | Ceremonies tab, insufficient TC — use compact CTA states |
 | Stats/HQ radar parity break | Different VPP frame/bloom between routes |
+
+---
+
+## Layout constitution (Sprint 2.16)
+
+One shared content column before material work (2.17–2.18). Implement in `player-dossier.css`; guard in `playerHudSprint216.test.ts`.
+
+### Max-width rule
+
+| Token / class | Value | Apply |
+|---------------|-------|-------|
+| `--pd-content-max` | `min(100%, 90rem)` (1440px cap) | Under `.player-dossier-root` |
+| `.pd-content-wrap` | `width: 100%; max-width: var(--pd-content-max); margin-inline: auto` | Page-level wrap on HQ (parent of `HUDContainer`); Stats, Workout, Tracker, Skill Tree, **Settings (`/player/settings`)**. **HQ:** `pd-content-wrap` is page-level; `HUDContainer` children use `bento-span-*` directly — never wrap grid children inside `pd-content-wrap`. |
+
+**Armory exception:** Quartermaster workspace (`qa-root`) may remain **full-bleed** for catalog grid and workspace chrome. Inner tab panels (Studio, Ceremonies, Album) may use `.pd-content-wrap` where a readable column helps.
+
+### Header grammar
+
+| Header | Route | Mandatory when |
+|--------|-------|----------------|
+| `.pd-strap` / `.pd-strap--premium` | `/player/dashboard` (HQ only) | Player HQ — operative callsign + world context |
+| `PlayerOsPageStrap` | Workout, Tracker, Skill Tree, **Settings (`/player/settings`)**, Stats (player) | All secondary player routes |
+| Settings (player) | `/player/settings` — `PlayerOsPageStrap` + dossier panels; **not** legacy `st-header` VANGUARD SETTINGS TERMINAL on `/settings` | Player profile/account deck; avatar editing in Armory Studio only |
+| Armory workspace header | `/player/armory` | Armory only — QM tabs + balance strip; not duplicated on secondary routes |
+
+Do not mix HQ strap on secondary routes or custom one-off headers without updating this table.
 
 ---
 
