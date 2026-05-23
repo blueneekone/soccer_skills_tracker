@@ -17,7 +17,7 @@
 
 | Role | Status | Scope | UX skin | Primary route |
 |------|--------|-------|---------|---------------|
-| **Player** | Shipped | Training HUD, missions, XP, armory, capsules | Gaming HUD — chamfered Player OS | `/player/dashboard` |
+| **Player** | Shipped | Training HUD, missions, XP, armory, capsules | Operative command deck — cinematic void + emissive HUD (not flat dossier admin) | `/player/dashboard` |
 | **Parent** | Shipped | VPC, household, co-op logging, bounties, payments | Flat co-op partner — not a game UI | `/parent/dashboard` |
 | **Coach** | Shipped | Development, drills, assignments, match-day, scouting | Flat sideline analytics — no gamification | `/coach` |
 | **Team Manager** | Planned | Roster ops, scheduling, registration coordination, attendance | Flat ops dashboard (coach-like density) | `/team-manager` (future) |
@@ -35,8 +35,8 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 
 ### Player
 
-- **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties.
-- **UX:** 12-column liquid bento inside `OperativeHub`; secondary nav via Command Center drawer (`/player/workout`, `/player/tracker`, `/player/armory`).
+- **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout equip layer → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)).
+- **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. Premium cinematic track **2.12.1–2.19** gates Epic 3.4 / 4.1 until **2.19 Done**. Player OS target = operative command deck, not flat dossier admin.
 - **Vision:** [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md)
 
 ### Parent
@@ -53,7 +53,7 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 
 ### Team Manager (planned)
 
-- **Scope:** Roster operations, practice/event scheduling, registration coordination, attendance, logistics messaging — **not** drill/XP assignment or tactical tools.
+- **Scope:** Roster operations, practice/event scheduling, registration coordination, attendance, logistics messaging — **not** drill/XP assignment or tactical tools. Comms delivery absorbed into **Epic 4** ([`COMMS_HUB.md`](./vision/COMMS_HUB.md) Sprint 4.7).
 - **UX:** Ops dashboard; audit trail with `actorRole: team_manager`.
 - **Clearance:** Background check required (minor PII for roster/scheduling).
 - **Vision:** [`docs/vision/TEAM_MANAGER_OS.md`](./vision/TEAM_MANAGER_OS.md)
@@ -116,6 +116,8 @@ flowchart LR
 | Doc | Persona |
 |-----|---------|
 | [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md) | Player |
+| [`docs/vision/OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md) | Player — loadout & Armory (Epic 3) |
+| [`docs/vision/COMMS_HUB.md`](./vision/COMMS_HUB.md) | Comms hub — all personas (Epic 4) |
 | [`docs/vision/PARENT_OS.md`](./vision/PARENT_OS.md) | Parent |
 | [`docs/vision/COACH_OS.md`](./vision/COACH_OS.md) | Coach |
 | [`docs/vision/TEAM_MANAGER_OS.md`](./vision/TEAM_MANAGER_OS.md) | Team Manager |
@@ -131,7 +133,9 @@ flowchart LR
 | Spec | Topic |
 |------|-------|
 | [`docs/COPPA_SIGNUP_MATRIX.md`](./COPPA_SIGNUP_MATRIX.md) | Age gating, VPC, operative login |
-| [`docs/FCM_AND_MESSAGING_MATRIX.md`](./FCM_AND_MESSAGING_MATRIX.md) | Push, SafeSport parent CC |
+| [`docs/FCM_AND_MESSAGING_MATRIX.md`](./FCM_AND_MESSAGING_MATRIX.md) | Push inventory; full product → Epic 4 |
+| [`docs/vision/COMMS_HUB.md`](./vision/COMMS_HUB.md) | Comms hub north star (Epic 4) |
+| [`docs/SAFESPORT_COMMS_MATRIX.md`](./SAFESPORT_COMMS_MATRIX.md) | SafeSport control map (Epic 4) |
 | [`docs/EPIC5_STATUS.md`](./EPIC5_STATUS.md) | Director logistics build audit |
 | [`docs/CLEARANCE.md`](./CLEARANCE.md) | Background check roles & JWT gate |
 | [`docs/REGISTRAR_DIRECTOR_MIGRATION.md`](./REGISTRAR_DIRECTOR_MIGRATION.md) | Registrar → Director consolidation |

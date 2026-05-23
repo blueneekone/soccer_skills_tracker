@@ -29,11 +29,16 @@ Below the hub row: single **analytics deck** (`player-analytics-deck`) = `Vangua
 
 ## CSS
 
-Primary stylesheet: `src/lib/styles/player-dashboard-hud.css`
+**Sprint 2.8 — Player Dossier:** `src/lib/styles/player-dossier.css` (canonical `--pd-*` tokens under `.player-dossier-root`) + `src/lib/styles/player-dashboard-hud.css`.
 
-Player OS uses **chamfered corners** (`clip-path`), not `border-radius`. Tokens: see `.cursorrules` (`#0f172a`, `#334155`, `#fbbf24`).
+Dual accent: gold action (`--pd-accent-action`), teal data (`--pd-accent-data`). Black canvas `--pd-bg`; lifted panels `--pd-panel`. Chamfer on hero CTA + avatar ring only.
 
-Single flat surface under `.player-hud-root` — no nested glass stacks on command shell.
+**Z-depth constitution** per [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](../../docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md):
+
+- Canvas/atmosphere scanlines OK; **no scanlines on mission text**
+- Glass/inset wells allowed in identity stage, radar well, inputs — not competing glass stacks on command shell
+
+**Premium track 2.16–2.19** (cinematic orchestration) — current planned sprint: **2.16** — see `ROADMAP.md`.
 
 ## Tests to extend
 
@@ -42,5 +47,3 @@ When changing this area, extend (never delete):
 - `playerHudSprint*.test.ts`
 - `playerDashboard.layout.test.ts`
 - `playerDashboard.hud.test.ts`
-
-Current planned sprint: **2.7** — see `ROADMAP.md`.

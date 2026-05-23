@@ -6,7 +6,7 @@
 
 ## North star
 
-Deliver an addictive, fluid training/gaming HUD that works for all ages with age-appropriate tone and rewards. The home screen should feel like a mission control terminal: immediate status, clear next action, and satisfying progress — without exploitative mechanics for minors.
+Deliver an addictive, fluid training/gaming HUD that works for all ages with age-appropriate tone and rewards. HQ must feel like **mission control in the Grid** — sparse void, emissive geometry, glass holographic data, layered depth, hero operative identity — **justifying subscription price**. Material and spatial constitution: [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md). Flat audit-ui is insufficient for Player OS; Coach OS stays flat. The home screen should feel like a cinematic operative command deck: clear next action and satisfying progress — without exploitative mechanics for minors.
 
 ---
 
@@ -28,7 +28,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 
 **Conditional avatar:** When `operativeAvatar` is not set (`profileIncomplete`), `IdentityBentoModule` shows an inline initials badge beside the name — no empty 72px avatar column. When profile is complete, `HudAvatarRing` column returns.
 
-**Single flat surface:** Command shell and analytics deck share `#0f172a` under `.player-hud-root` — no nested glass stacks or competing card fills. Cells use borders only.
+**Single cohesive command surface:** Command shell and analytics deck share `--pd-panel` under `.player-hud-root` — one depth stack (canvas → hub → inset identity), not multiple competing card fills. Internal depth via gradients, hairlines, and controlled glow — not one flat grey box.
 
 **Below the hub row:**
 
@@ -37,6 +37,8 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 
 Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, skill tree) live in the **shell rail / Command Center drawer** — not clutter on the main HUD.
 
+**Billing read-only gate (Sprint 3.1.2):** When tenant billing blocks athlete mode, **Train** (`/player/workout`) redirects to Settings from the shell rail. **Armory** stays always reachable so operatives can finish portrait/profile setup in Studio.
+
 ---
 
 ## Core loops
@@ -44,7 +46,7 @@ Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, 
 1. **Daily mission** — open HUD → see top bounty → log workout or complete criterion → XP/streak update.
 2. **Streak** — visible in `HudMetricsPanel`; loss-aversion tuned for engagement, not anxiety in U13 flows.
 3. **XP & unlocks** — feed armory and skill-tree projections; confetti only after verified server commit.
-4. **Armory** — gear/cosmetic unlocks tied to milestones (secondary route). **Operative loadout slots** (equip layer on portrait + album) → Epic 3 — [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
+4. **Armory** — gear/cosmetic unlocks tied to milestones (secondary route). **Operative loadout** preview (`OperativeLoadoutPreview`) + **Studio** equip tab ship in Epic 3.0–3.1; HQ avatar ring reflects equipped **border** when set — [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
 5. **Memory capsules** — celebratory replay of highlights; parent can co-view.
 
 ---
@@ -69,15 +71,25 @@ Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, 
 
 ---
 
-## Visual tone — Player Dossier (Sprint 2.8)
+## Visual tone — Premium Player Dossier (Sprint 2.12 supersedes flat-only 2.8 rules for HQ feel)
+
+**Retained from Sprint 2.8:**
 
 - **Canvas:** black `#000000` (`--pd-bg`) — supersedes Sprint 2.4 flat slate `#0f172a` page surface on HQ.
 - **Panels:** lifted `#05050a` (`--pd-panel`) with hairline `rgba(255,255,255,0.1)` borders (`--pd-line`).
-- **Dual accent:** gold `#fbbf24` (`--pd-accent-action`) = missions, streak, rank bar, hero CTA, avatar ring; teal `#14b8a6` (`--pd-accent-data`) = radar polygon, telemetry tags, vector selection, inspector data chrome.
+- **Dual accent:** gold `#fbbf24` (`--pd-accent-action`) = hero mission CTA, rank XP bar fill, avatar level ring, streak-at-risk pulse, init modal primary only; teal `#14b8a6` (`--pd-accent-data`) = radar polygon, telemetry tags, vector selection, inspector data chrome, primary interactive borders on non-hero controls.
 - **Typography:** Geist display for operative name; Geist Mono for labels, values, and status tags only.
-- **Corners:** chamfer retained on hero CTA and avatar ring; outer hub/analytics shells use flat dossier panels (no decorative scanlines).
+- **Corners:** chamfer retained on hero CTA and avatar ring.
 - **Grid:** `bento-grid--12col bento-grid--liquid` with fluid gap tokens.
-- **Isolation:** No coach-style flat glass panels or gamification chrome on Coach OS (and vice versa).
+- **Isolation:** No coach-style flat glass panels or gamification chrome on Coach OS (and vice versa). No pay-to-win / minor exploitation.
+
+**Sprint 2.12 direction (shipped):**
+
+- **Depth layers:** panel gradient fills, hairline + inner highlight, optional subtle film grain on `.player-dossier-root` (CSS only, no heavy assets)
+- **Gamified hierarchy:** one gold focal (hero mission); rank XP as “level energy”; streak as live status — not equal-weight flat boxes
+- **Identity as hero:** `HudAvatarRing` + equipped loadout border/badge always prominent when profile complete; incomplete state still compact
+- **Motion:** staggered panel enter, XP bar fill, streak pulse — gated by `prefers-reduced-motion` and remote config
+- **Ambient:** controlled glow on active mission card + rank bar; no arcade clutter on Coach/Parent surfaces
 
 Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/player-dashboard-hud.css` (HQ layout)
 
@@ -93,7 +105,7 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 
 **Two-band layout (Sprint 2.4–2.5, surfaces 2.8):**
 
-1. **Command band** — `OperativeHub` command strip: main column (identity inset panel + vector strip, 8 col) + mission rail (4 col). Single `--pd-panel` surface — no glass stacks, no gold scanlines.
+1. **Command band** — `OperativeHub` command strip: main column (identity inset panel + vector strip, 8 col) + mission rail (4 col). Single `--pd-panel` surface with internal depth — not glass stacks or competing card fills.
 2. **Analytics band** — single `player-analytics-deck` bento card: `VanguardProtocolPanel` (radar always visible + inspector) + compact `player-capsules-strip` footer. No standalone third slab for capsules when empty (one-line ghost only).
 
 **Radar:** teal data polygon and vertices (`--pd-accent-data`); slate grid spokes and tier rings (`rgba(148,163,184,…)`). Selected axis label teal; unselected `#94a3b8` / `#cbd5e1`.
@@ -103,8 +115,10 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 - Dossier lifted panels on black canvas (Armory / Stats / HQ aligned)
 - Chamfer on hero CTA and avatar ring only
 - Avatar level ring only — one ring vocabulary under `.player-hud-root`
-- Gold (`--pd-accent-action`) for missions, streak, rank fill, hero CTA
-- Teal (`--pd-accent-data`) for radar, vector selection, telemetry eyebrows/tags
+- Gold (`--pd-accent-action`) for hero mission CTA, rank XP bar fill, avatar level ring, streak-at-risk pulse, init modal primary only
+- Teal (`--pd-accent-data`) for strap eyebrows, radar, inspector, world-context chips, primary interactive borders on non-hero controls
+- Stat cell labels + values neutral (`--pd-text` / `--pd-text-muted`); panel borders `--pd-line`
+- Armory **Studio** = unified identity editor (portrait designer + loadout equip + dossier card preview)
 - Identity streak/XP as ringless stat cells (`HudStatCell`), not mini canvas rings
 - Embedded `HudMetricsPanel`: collapsed line when empty; no Match Data in hub
 - Conditional avatar: inline initials badge until `operativeAvatar` set; then `HudAvatarRing` column
@@ -118,6 +132,15 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 - Double mission eyebrows (`// MISSION DECK` + `ACTIVE MISSIONS`)
 - `border-radius` on Player OS modules (avatar interior exception OK)
 - Separate top-level bento cards for telemetry and capsules (one analytics deck only)
+- Coach gamification bleed — no arcade HUD chrome on Coach/Parent surfaces
+
+**Superseded by Sprint 2.12 (HQ only):**
+
+- ~~“outer hub shells use flat dossier panels (no decorative scanlines)”~~ → **no scanlines on readable text**; canvas/atmosphere scanlines and noise OK on HQ shell
+- ~~“no nested glass stacks”~~ → allow **one** depth stack (canvas → hub → inset identity), not multiple competing cards
+- ~~“Single flat surface”~~ → **single cohesive command surface** with **internal depth**, not one flat grey box
+
+**Sprint 2.18+ (planned):** Controlled bloom, glass inset wells, emissive edges, persistent perspective grid — see [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md).
 
 **Home screen zones (updated):** Identity streak/XP = stat cells in `IdentityBentoModule` (not `HudMetricsPanel`). Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
 
@@ -195,9 +218,46 @@ Player shell (`PlayerShell`) applies `ps-root--dossier` on all player-role route
 | **Scrollbar** | Gold-to-teal thumb gradient on `.ps-canvas` |
 | **Canvas gradient** | `.ps-canvas-bg` softened under dossier shell |
 
-Page roots: HQ, Stats, and Armory keep `player-dossier-root` for in-page `--pd-*` tokens; shell class covers Workout and Settings without duplicating page wrappers.
+Page roots: HQ, Stats, Armory, Workout, Tracker, Skill Tree, and player Settings (`player-dossier-root` when `role === 'player'`) declare in-page `--pd-*` tokens; shell class covers nav alignment on all player routes.
 
 Stylesheet: `src/lib/styles/player-shell.css`
+
+---
+
+## Route parity (Sprint 2.11)
+
+Secondary and in-nav player routes now match HQ / Armory / Stats dossier vocabulary:
+
+| Route | Root | Strap / header |
+|-------|------|----------------|
+| `/player/dashboard` | `player-dossier-root` | `Command / HQ` |
+| `/stats` | `player-dossier-root` | Operative Analytics |
+| `/player/armory` | `player-dossier-root` | Armory workspace |
+| `/player/workout` | `player-dossier-root` | `Train / Log session` |
+| `/player/tracker` | `player-dossier-root` | `Progress / Training tracker` |
+| `/player/skill-tree` | `player-dossier-root` | `Progress / Skill tree` |
+| `/settings` (player) | `player-dossier-root` | `Profile / Settings` |
+
+Shared patterns: black `--pd-bg` canvas, lifted `--pd-panel` cells, `--pd-line` borders, teal primary CTAs (`qa-btn--ready`), gold only on XP/progress fills. Coach/Parent/Director settings retain the legacy terminal shell.
+
+**Epic 1 route parity complete** through Sprint 2.11. **2.11.1** remaps shared components (ActiveBounties rail, Armory trajectory/album, IntelModal, ProPlayerCard) onto dossier tokens and tightens HQ density.
+
+---
+
+## Shared components (2.11.1)
+
+Components embedded on player routes but authored outside page roots were leaking legacy SIEM / hud-telemetry / slate-glass chrome. Sprint 2.11.1 consolidates overrides under `.player-dossier-root` and `player-missions.css`.
+
+| Accent | Use on dossier surfaces |
+|--------|-------------------------|
+| **Gold** (`--pd-accent-action`) | HQ hero mission CTA, rank XP fill, current pathway level ring |
+| **Teal** (`--pd-accent-data`) | Primary buttons, data labels, radar polygon, Armory active tab, progress fills |
+
+**Avoid on player dossier surfaces:** `#22d3ee`, `#3b82f6`, `tw-bg-slate-900/*` glass stacks, `backdrop-blur` on panel shells.
+
+Stylesheets: `player-dossier.css` (`.pd-glass-panel`), `player-missions.css` (embedded mission rail under `.player-hud-root`).
+
+HQ density (2.11.1): when `!telemetryReady`, hide embedded `HudMetricsPanel` vectors — single `VanguardProtocolPanel` radar in analytics deck; missions column `align-self: start`; tighter `--bento-gap-liquid` in `.player-hud-root`.
 
 ---
 
@@ -217,11 +277,83 @@ Component: `HqWorldContextStrip.svelte` with `inline` prop + `.hq-world-context-
 
 ---
 
-## Epic 1 aesthetic — complete (Sprints 1.1–2.10.2)
+## HQ Premium composition (Sprint 2.12)
 
-Player HUD visual system is **shipped**: Player Dossier black canvas, dual gold/teal accent, shell rail alignment (2.9), HQ world context inline in `pd-strap` (2.10.1), schedule meta always visible in strap (2.10.2). No further palette or layout rearchitecture planned on `/player/dashboard` until loadout slots consume the identity column (Epic 3).
+Target layout for the premium HQ pass — depth, gamification, and hierarchy without renaming canonical components.
 
-**Deferred to Epic 3:** operative loadout schema, Armory studio equip UX, unlock ceremonies, album set bonuses — see [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
+| Layer | Treatment |
+|-------|-----------|
+| **Strap** | Command eyebrow + world context + callsign — tighter, integrated with hero |
+| **Command hub** | 8+4 with **inset identity stage** (portrait ring + loadout + rank bar glow) |
+| **Mission rail** | Card-like rows, progress shimmer, gold hero CTA |
+| **Analytics** | One deck — radar + inspector unified; aggressive compact empty state |
+| **Capsules** | Footer strip only; no third empty slab |
+
+**3-second clarity test (retained from 2.6/2.7):** Can the player answer (1) what to do now, (2) how close to next rank, (3) when they last trained — within ~3 seconds of landing on HQ?
+
+---
+
+## Premium vs flat (explicit)
+
+| Phase | Scope |
+|-------|-------|
+| **Sprints 1.1–2.11.1** | Parity / tokens — Player Dossier canvas, dual accent, shell alignment, route parity, shared component pass |
+| **Sprints 2.12–2.15** | Tier B foundation (Done, insufficient alone) — matte dossier panels, token parity, component premium, motion + checklist |
+| **Sprints 2.16–2.19** | Cinematic orchestration (planned) — layout constitution, Z-depth, material orchestration, diegetic UI + energy motion |
+| **Epic 3** | Identity cosmetics — loadout borders/badges, unlock ceremonies, album set bonuses *(3.4 blocked until 2.19 Done)* |
+| **Epic 4** | Comms — messaging, notifications, parent inbox *(4.1+ blocked until 2.19 Done)* |
+
+Token parity alone does not make HQ premium. Epic 3 loadout art feeds the identity column but does not replace 2.16–2.19 cinematic orchestration.
+
+---
+
+## Premium track retcon (post-2.15 review)
+
+Sprints 2.12–2.15 shipped a cohesive **Tier B** Player Dossier — not the cinematic operative OS north star.
+
+| Tier | Surfaces | Bar |
+|------|----------|-----|
+| **Tier A (cinematic)** | `VanguardCard`, `SkillTreeArena`, `StickerVariantShell`, Proving Grounds | Parallax, holographic foil, SVG bloom, glass — ~4–5/5 cinematic |
+| **Tier B (dossier admin)** | HQ hub, Stats, Settings | `#05050a` fills, hairlines, grain; HQ suppresses ambient — ~2–2.5/5 cinematic |
+
+**2.15 Done** = motion + checklist shipped; **does not** lift Epic 3.4 / 4.1 gate. Full constitution: [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md).
+
+---
+
+## Epic 1 — Premium Ecosystem Track 2.12.1–2.19
+
+**Why 2.12 failed acceptance:** subtle CSS deltas only; HQ-only scope; profile-incomplete left an empty 8-col void; analytics deck stayed flat `bento-card`; tests were source-scan only (no visual acceptance states).
+
+**Why 2.12–2.15 still insufficient:** Tier A/Tier B split; flat HQ orchestration; source-scan QA false-green; acceptance doc lacked material/spatial bar.
+
+| Sprint | Focus | Acceptance states |
+|--------|-------|-------------------|
+| **2.12.1** | HQ hotfix — incomplete profile hero, analytics premium, inset fix, stronger depth | profile incomplete · no telemetry · full telemetry · mobile 390px |
+| **2.13** | Player OS Chrome — `pd-surface-premium` on all player routes via shared shell (**shipped**) | same four states |
+| **2.14** | Component premium — VPP, capsules, Armory/Workout/Tracker/SkillTree panels (**shipped**) | same four states |
+| **2.15** | Gamification motion layer + visual acceptance checklist (**shipped** — gate **not** lifted alone) | same four states + motion · see [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) |
+| **2.16** | Layout & alignment constitution — max-width, header grammar, HQ fixes, debug-chrome policy (**planned**) | layout/composition guards |
+| **2.17** | Z-depth & layering — Z0–Z4 tokens, per-route map (**planned**) | ≥3 Z-layers visible on HQ |
+| **2.18** | Material orchestration — Tier A techniques on HQ/secondary routes (**planned**) | bloom, glass wells, spatial grid |
+| **2.19** | Diegetic UI kit + energy motion; **lifts gate** for Epic 3.4 / 4.1 (**planned**) | full acceptance sign-off |
+
+**Epic 1 premium track IN PROGRESS through 2.19.** Tier B foundation 2.12–2.15 Done — cinematic orchestration 2.16–2.19 pending.
+
+**Shipped through 2.12 (foundation only):** depth tokens (`--pd-depth-*`), premium hub shell, mission card faces, single telemetry surface, strap vignette. Insufficient alone — superseded by 2.12.1–2.19 track.
+
+**Epic 3 handoff:** Resume album set bonuses (3.4) after **2.19 Done** + full visual acceptance sign-off. Loadout schema + Armory studio **shipped** (3.0–3.3) — [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
+
+**Epic 4 handoff:** Resume comms wiring (4.1+) after **2.19 Done** + full visual acceptance sign-off — [`COMMS_HUB.md`](./COMMS_HUB.md).
+
+---
+
+## Epic 1 — premium HQ foundation (Sprint 2.12 — superseded by 2.12.1–2.19)
+
+**Epic 1 premium track IN PROGRESS through 2.19.** Token parity (2.11.1) plus Tier B depth tokens on `/player/dashboard` — cinematic orchestration continues in **2.16–2.19**.
+
+Shipped through 2.12: Player Dossier depth tokens (`--pd-depth-*`), premium hub shell, inset identity stage, mission card faces, single telemetry surface (VPP owns radar when ready), strap/shell vignette, and compact profile-incomplete band.
+
+**Epic 3 (in progress):** operative loadout schema + Armory studio equip UX **shipped** (3.0–3.3). HQ ring shows equipped border via `HudAvatarRing` + `renderLoadoutBorderLayer`. Remaining: album set bonuses (3.4) — see [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
 
 ---
 
@@ -236,6 +368,8 @@ Player HUD visual system is **shipped**: Player Dossier black canvas, dual gold/
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 3.0 — Operative Loadout v2](../../ROADMAP.md) (`docs/vision/OPERATIVE_LOADOUT.md`).
+**Shipped premium pass:** [ROADMAP Sprint 2.12 — HQ Premium](../../ROADMAP.md#sprint-212-scope--hq-premium--done)
 
-**Completed:** Epic 1 Player HUD aesthetic — Sprints 1.1–2.10.2 (bento, RBAC, Player Dossier, shell alignment, inline strap world context, schedule always visible).
+**Current build sprint:** [ROADMAP Sprint 2.16 — Layout & alignment constitution](../../ROADMAP.md#sprint-216-scope--layout--alignment-constitution--planned) · Material constitution: [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) · Visual acceptance: [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) · [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md)
+
+**Completed token parity:** Epic 1 Sprints 1.1–2.11.1 (bento, RBAC, Player Dossier, shell alignment, inline strap world context, schedule always visible, secondary route parity, shared component dossier pass).
