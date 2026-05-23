@@ -22,6 +22,9 @@
   } from '$lib/player/workoutLog.js';
   import Swal from 'sweetalert2';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
+  import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
+  import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+  import '$lib/styles/player-dashboard-hud.css';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
@@ -389,35 +392,31 @@
   }
 </script>
 
-<div class="pw-cmd" data-region="phoenix-siem-workout">
-  <!-- Telemetry HUD -->
-  <header class="pw-hud" aria-label="Command telemetry">
-    <div class="pw-hud__cell pw-hud__cell--level">
-      <span class="pw-eyebrow">Clearance / Level</span>
-      <p class="pw-mono pw-hud__level" aria-live="polite">LVL.{String(level).padStart(2, '0')}</p>
-    </div>
+<div class="pd-page-root player-dossier-root pw-page tw-min-w-0 tw-overflow-x-hidden" data-region="player-workout-log">
+  <div class="pd-content-wrap">
+  <PlayerOsPageStrap eyebrow="Train / Log session" title="Workout logger">
+    {#snippet status()}
+      <span class="pd-label">LVL {String(level).padStart(2, '0')}</span>
+    {/snippet}
+  </PlayerOsPageStrap>
+
+  <section class="pd-stat-row pd-page-panel" aria-label="Session telemetry">
+    <HudStatCell label="Level" value={`LVL ${String(level).padStart(2, '0')}`} />
     <div class="pw-hud__cell pw-hud__cell--load">
       <div class="pw-hud__row">
-        <span class="pw-eyebrow">System load (XP to next rank)</span>
-        <span class="pw-mono pw-cyber">{currentXp}<span class="pw-dim"> / </span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'}</span>
+        <span class="pd-label">XP to next rank</span>
+        <span class="pw-mono pw-data">{currentXp}<span class="pw-dim"> / </span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'}</span>
       </div>
       <div class="pw-loadbar" bind:this={xpTrackEl} role="progressbar" aria-valuenow={Math.round(xpLoadPct)} aria-valuemin="0" aria-valuemax="100" aria-label="XP progress">
         <div class="pw-loadbar__fill"></div>
-        <div class="pw-loadbar__scan" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="pw-hud__cell pw-hud__cell--streak">
-      <span class="pw-eyebrow">Uptime (day streak)</span>
-      <p class="pw-mono pw-hud__streak">
-        <Icon name="game.zap" class="pw-ico pw-ico--orange" />
-        <span>{streak}D</span>
-      </p>
-    </div>
-  </header>
+    <HudStatCell label="Day streak" value={`${streak}D`} variant="streak" />
+  </section>
 
   <div class="pw-grid bento-grid bento-grid--12col bento-grid--liquid">
     <!-- Active threats / daily quests -->
-    <aside class="pw-panel pw-panel--threat bento-span-4 tw-min-w-0" aria-labelledby="pw-threats-heading">
+    <aside class="pw-panel pd-page-panel pw-panel--premium pw-panel--threat bento-span-4 tw-min-w-0" aria-labelledby="pw-threats-heading">
       <div class="pw-panel__head">
         <span class="pw-eyebrow">Active threats / daily quests</span>
         <h2 id="pw-threats-heading" class="pw-title">Ingest queue</h2>
@@ -474,20 +473,20 @@
     </aside>
 
     <!-- Execution terminal -->
-    <section class="pw-panel pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
+    <section class="pw-panel pd-page-panel pw-panel--premium pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
       <div class="pw-panel__head pw-panel__head--row">
         <div>
           <span class="pw-eyebrow">Execution terminal</span>
           <h2 id="pw-exec-heading" class="pw-title">Workout logger</h2>
         </div>
         <div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
-          <IntelModal title={TELEMETRY_INTEL.title} instructions={TELEMETRY_INTEL.instructions} />
+          <IntelModal dossierMode title={TELEMETRY_INTEL.title} instructions={TELEMETRY_INTEL.instructions} />
           <div class="pw-mono pw-est">
             <span class="pw-dim">EST. YIELD (MODEL)</span>
             <span class="pw-green">+{estimatedLogXp} XP</span>
             {#if missionBounty != null}
               <span class="pw-dim pw-est__bounty">DIRECTIVE CAP</span>
-              <span class="pw-mono" style="color: var(--toxic)">{missionBounty} XP</span>
+              <span class="pw-mono pw-action">{missionBounty} XP</span>
             {/if}
           </div>
         </div>
@@ -502,8 +501,8 @@
         </p>
       {/if}
 
-      <div class="pw-section">
-        <span class="pw-eyebrow">1 · Focus area</span>
+      <div class="pw-section pd-panel-section">
+        <span class="pw-eyebrow pd-panel-eyebrow">1 · Focus area</span>
         <div class="pw-focus" role="group" aria-label="Focus area">
           {#each focusAreas as focus}
             <button
@@ -519,8 +518,8 @@
         </div>
       </div>
 
-      <div class="pw-section">
-        <span class="pw-eyebrow">2 · Sub-drill (dynamic)</span>
+      <div class="pw-section pd-panel-section">
+        <span class="pw-eyebrow pd-panel-eyebrow">2 · Sub-drill (dynamic)</span>
         <div class="pw-subdrill" role="list">
           {#each availableDrills as drill}
             <button
@@ -540,7 +539,7 @@
         {#if selectedDrill && !availableDrills.includes(selectedDrill)}
           <p class="pw-ghostline">
             <span class="pw-eyebrow">Off-catalog transmit</span>
-            <span class="pw-mono pw-cyber">{selectedDrill}</span>
+            <span class="pw-mono pw-data">{selectedDrill}</span>
           </p>
         {/if}
       </div>
@@ -549,7 +548,7 @@
         <div class="pw-gauge">
           <div class="pw-gauge__head">
             <span class="pw-eyebrow">Time on task (min)</span>
-            <span class="pw-mono pw-cyber">{duration}</span>
+            <span class="pw-mono pw-data">{duration}</span>
           </div>
           <div class="pw-gauge__bar" bind:this={durGaugeEl} aria-label="Duration">
             <div class="pw-gauge__bar-fill"></div>
@@ -587,16 +586,16 @@
       <div class="pw-execrow">
         <button
           type="button"
-          class="pw-exec"
+          class="pw-exec qa-btn qa-btn--ready"
           disabled={!selectedDrill || logSubmitting}
           onclick={logWorkout}
         >
           {#if logSubmitting}
-            <span class="pw-mono">TRANSMITTING…</span>
+            <span class="pw-mono">Logging…</span>
           {:else}
             <Icon name="game.zap" />
-            <span>EXECUTE & CLAIM XP</span>
-            <span class="pw-mono pw-exec__xp">+{estimatedLogXp}</span>
+            <span>Log session</span>
+            <span class="pw-mono pw-exec__xp">+{estimatedLogXp} XP</span>
           {/if}
         </button>
         {#if !selectedDrill}
@@ -605,39 +604,35 @@
       </div>
     </section>
   </div>
+  </div>
 </div>
 
 <style>
-  /* Sprint 10.1: SIEM Execution Terminal — no neon glows, no pure black. */
-  .pw-cmd {
+  /* Sprint 2.11 — Player Dossier workout log (replaces SIEM #0B0F19 canvas) */
+  .pw-page {
     min-height: 0;
     height: auto;
     overflow: visible;
     box-sizing: border-box;
-    background: var(--vanguard-bg, #0B0F19);
-    color: #f8fafc;
-    padding: var(--bento-pad-liquid);
-    /* Palette: teal accent only — amber for RPE/danger — NO neon */
-    --cyber: #14b8a6;
-    --toxic: #14b8a6;
-    --threat: #f59e0b;
-    --border: rgba(255, 255, 255, 0.08);
+    background: var(--pd-bg);
+    color: var(--pd-text);
   }
 
   @media (min-width: 768px) {
-    .pw-cmd {
+    .pw-page {
       min-height: calc(100vh - 5rem);
     }
   }
 
-  .pw-eyebrow {
+  .pw-eyebrow,
+  .pd-label {
     display: block;
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: var(--pd-font-mono);
     font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.22em;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--pd-text-muted);
   }
 
   .pw-title {
@@ -649,24 +644,28 @@
   }
 
   .pw-mono {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: var(--pd-font-mono);
     font-feature-settings: 'tnum' 1;
   }
 
   .pw-dim {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--pd-text-muted);
   }
 
-  .pw-cyber {
-    color: var(--cyber);
+  .pw-data {
+    color: var(--pd-accent-data);
+  }
+
+  .pw-action {
+    color: var(--pd-accent-action);
   }
 
   .pw-green {
-    color: var(--toxic);
+    color: var(--pd-accent-data);
   }
 
   .pw-orange {
-    color: var(--threat);
+    color: #f59e0b;
   }
 
   .pw-hint {
@@ -688,11 +687,11 @@
   }
 
   .pw-tx-eyebrow {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: var(--pd-font-mono);
     font-size: 0.55rem;
     font-weight: 800;
     letter-spacing: 0.28em;
-    color: var(--cyber);
+    color: var(--pd-accent-data);
     margin: 0 0 0.6rem;
     text-transform: uppercase;
   }
@@ -711,9 +710,9 @@
     width: 100%;
     text-align: left;
     padding: 0.65rem 0.7rem 0.75rem;
-    background: #0B0F19;
-    color: #e2e8f0;
-    border: 1px solid rgba(20, 184, 166, 0.3);
+    background: var(--pd-bg);
+    color: var(--pd-text);
+    border: 1px solid color-mix(in srgb, var(--pd-accent-data) 30%, var(--pd-line));
     transition: border-color 0.15s ease;
   }
 
@@ -727,11 +726,11 @@
   }
 
   .pw-tx:hover {
-    border-color: rgba(20, 184, 166, 0.55);
+    border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
   }
 
   .pw-tx--active {
-    border-color: var(--cyber);
+    border-color: var(--pd-accent-data);
   }
 
   .pw-tx__grid {
@@ -775,12 +774,12 @@
   }
 
   .pw-armed {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: var(--pd-font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.12em;
-    color: var(--cyber);
-    border: 1px solid rgba(20, 184, 166, 0.22);
-    background: #0B0F19;
+    color: var(--pd-accent-data);
+    border: 1px solid color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line));
+    background: var(--pd-bg);
     padding: 0.45rem 0.6rem;
     margin: 0 0 0.9rem;
   }
@@ -797,41 +796,12 @@
     margin-top: 0.2rem;
   }
 
-  .pw-hud {
-    display: grid;
-    grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 8rem);
-    gap: var(--bento-gap-sm);
-    align-items: stretch;
-    min-height: 6.5rem;
-    padding: 1rem 1.25rem;
-    margin-bottom: var(--bento-gap-md);
-    border: 1px solid rgb(30 41 59);
-    background: rgb(15 23 42);
-  }
-
-  .pw-hud__cell {
+  .pw-hud__cell--load {
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 0.5rem;
     min-width: 0;
-  }
-
-  .pw-hud__cell--load {
-    min-width: 0;
-  }
-
-  .pw-hud__cell--level {
-    border-right: 1px solid rgb(30 41 59);
-    padding-right: 1rem;
-  }
-
-  .pw-hud__level {
-    margin: 0;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 800;
-    color: var(--cyber);
-    line-height: 1;
   }
 
   .pw-hud__row {
@@ -846,70 +816,16 @@
     position: relative;
     height: 0.5rem;
     width: 100%;
-    background: rgb(15 23 42);
-    border: 1px solid rgb(30 41 59);
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
     overflow: hidden;
   }
 
   .pw-loadbar__fill {
     height: 100%;
     width: var(--fill);
-    background: var(--cyber);
+    background: var(--pd-accent-action);
     transition: width 0.4s ease;
-  }
-
-  .pw-loadbar__scan {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
-    animation: pw-scan 2.5s linear infinite;
-    pointer-events: none;
-  }
-
-  @keyframes pw-scan {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(200%);
-    }
-  }
-
-  .pw-hud__cell--streak {
-    text-align: right;
-    border-left: 1px solid rgb(30 41 59);
-    padding-left: 1rem;
-  }
-
-  .pw-hud__streak {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.35rem;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--threat);
-  }
-
-  :global(.pw-ico--orange) {
-    color: var(--threat);
-  }
-
-  @media (max-width: 900px) {
-    .pw-hud {
-      grid-template-columns: 1fr;
-      min-height: 0;
-    }
-    .pw-hud__cell--level,
-    .pw-hud__cell--streak {
-      border: none;
-      padding: 0;
-      text-align: left;
-    }
-    .pw-hud__streak {
-      justify-content: flex-start;
-    }
   }
 
   .pw-grid {
@@ -918,8 +834,6 @@
   }
 
   .pw-panel {
-    border: 1px solid rgb(30 41 59);
-    background: rgb(15 23 42);
     padding: 1.25rem;
     min-width: 0;
     overflow: visible;
@@ -940,13 +854,11 @@
   }
 
   @media (min-width: 768px) {
+    /* Sprint 2.20a: removed max-height + overflow-y: auto — Foundation §4 Train must-feel forbids inner panel scroll */
     .pw-panel--threat {
       position: sticky;
       top: 0.5rem;
       align-self: start;
-      max-height: calc(100vh - 6.5rem);
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
     }
   }
 
@@ -984,19 +896,19 @@
     width: 100%;
     text-align: left;
     padding: 0.85rem 0.9rem;
-    background: #0B0F19;
-    border: 1px solid rgb(30 41 59);
-    color: #e2e8f0;
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
+    color: var(--pd-text);
     cursor: pointer;
     transition: border-color 0.15s ease;
   }
 
   .pw-quest:hover {
-    border-color: rgba(20, 184, 166, 0.4);
+    border-color: color-mix(in srgb, var(--pd-accent-data) 40%, var(--pd-line));
   }
 
   .pw-quest--active {
-    border-color: var(--cyber);
+    border-color: var(--pd-accent-data);
   }
 
   .pw-quest__top {
@@ -1007,22 +919,22 @@
 
   .pw-quest__code {
     font-size: 0.65rem;
-    color: var(--cyber);
+    color: var(--pd-accent-data);
   }
 
   .pw-quest__threat {
     font-size: 0.65rem;
     padding: 0.1rem 0.4rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--pd-line);
   }
 
   .pw-quest__threat--L2 {
-    color: var(--cyber);
-    border-color: rgba(20, 184, 166, 0.4);
+    color: var(--pd-accent-data);
+    border-color: color-mix(in srgb, var(--pd-accent-data) 40%, var(--pd-line));
   }
 
   .pw-quest__threat--L3 {
-    color: var(--threat);
+    color: #f59e0b;
     border-color: rgba(245, 158, 11, 0.4);
   }
 
@@ -1066,9 +978,9 @@
 
   .pw-focus__btn {
     padding: 0.6rem 0.5rem;
-    background: #0B0F19;
-    border: 1px solid rgb(30 41 59);
-    color: #94a3b8;
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
+    color: var(--pd-text-muted);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -1079,19 +991,19 @@
   }
 
   .pw-focus__btn:hover {
-    border-color: rgba(20, 184, 166, 0.35);
-    color: #e2e8f0;
+    border-color: color-mix(in srgb, var(--pd-accent-data) 35%, var(--pd-line));
+    color: var(--pd-text);
   }
 
   .pw-focus__btn--on {
-    border-color: var(--cyber);
-    color: #f8fafc;
+    border-color: var(--pd-accent-data);
+    color: var(--pd-text);
   }
 
   .pw-focus__op {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: var(--pd-font-mono);
     font-size: 0.55rem;
-    color: var(--cyber);
+    color: var(--pd-accent-data);
   }
 
   .pw-focus__lab {
@@ -1110,10 +1022,10 @@
 
   .pw-chip {
     padding: 0.4rem 0.7rem;
-    background: #0B0F19;
-    border: 1px solid rgb(30 41 59);
-    color: rgba(255, 255, 255, 0.52);
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
+    color: var(--pd-text-muted);
+    font-family: var(--pd-font-mono);
     font-size: 0.7rem;
     cursor: pointer;
     min-height: 44px;
@@ -1121,13 +1033,13 @@
   }
 
   .pw-chip:hover {
-    color: #f8fafc;
-    border-color: rgba(20, 184, 166, 0.3);
+    color: var(--pd-text);
+    border-color: color-mix(in srgb, var(--pd-accent-data) 30%, var(--pd-line));
   }
 
   .pw-chip--on {
-    border-color: var(--cyber);
-    color: #f8fafc;
+    border-color: var(--pd-accent-data);
+    color: var(--pd-text);
   }
 
   .pw-gauges {
@@ -1157,8 +1069,8 @@
     --gauge: 0%;
     height: 0.35rem;
     width: 100%;
-    background: rgb(15 23 42);
-    border: 1px solid rgb(30 41 59);
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
     margin-bottom: 0.2rem;
     overflow: hidden;
   }
@@ -1174,11 +1086,11 @@
   }
 
   .pw-gauge:first-child .pw-gauge__bar-fill {
-    background: var(--cyber);
+    background: var(--pd-accent-data);
   }
 
   .pw-gauge:last-child .pw-gauge__bar-fill {
-    background: var(--threat);
+    background: #f59e0b;
   }
 
   .pw-range {
@@ -1192,14 +1104,14 @@
   }
 
   .pw-range:focus {
-    outline: 1px solid rgba(20, 184, 166, 0.55);
+    outline: 1px solid color-mix(in srgb, var(--pd-accent-data) 55%, transparent);
     outline-offset: 2px;
   }
 
   .pw-range::-webkit-slider-runnable-track {
     height: 4px;
-    background: rgb(15 23 42);
-    border: 1px solid rgb(30 41 59);
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
   }
 
   .pw-range::-webkit-slider-thumb {
@@ -1208,29 +1120,29 @@
     width: 14px;
     height: 14px;
     margin-top: -6px;
-    background: #0B0F19;
-    border: 2px solid var(--cyber);
+    background: var(--pd-bg);
+    border: 2px solid var(--pd-accent-data);
   }
 
   .pw-gauge:last-child .pw-range::-webkit-slider-thumb {
-    border-color: var(--threat);
+    border-color: #f59e0b;
   }
 
   .pw-range::-moz-range-track {
     height: 4px;
-    background: rgb(15 23 42);
-    border: 1px solid rgb(30 41 59);
+    background: var(--pd-bg);
+    border: 1px solid var(--pd-line);
   }
 
   .pw-range::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    background: #0B0F19;
-    border: 2px solid var(--cyber);
+    background: var(--pd-bg);
+    border: 2px solid var(--pd-accent-data);
   }
 
   .pw-gauge:last-child .pw-range::-moz-range-thumb {
-    border-color: var(--threat);
+    border-color: #f59e0b;
   }
 
   .pw-execrow {
@@ -1246,26 +1158,13 @@
     justify-content: center;
     gap: 0.5rem;
     min-height: 3.5rem;
-    padding: 0.75rem 1rem;
-    background: #0B0F19;
-    border: 1px solid rgba(20, 184, 166, 0.4);
-    color: #f8fafc;
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    width: 100%;
+    font-family: var(--pd-font-mono);
     font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-
-  .pw-exec:hover:not(:disabled) {
-    border-color: var(--cyber);
-    background: rgba(20, 184, 166, 0.06);
-  }
-
-  .pw-exec:active:not(:disabled) {
-    transform: scale(0.99);
   }
 
   .pw-exec:disabled {
@@ -1274,7 +1173,20 @@
   }
 
   .pw-exec__xp {
-    color: var(--toxic);
+    color: var(--pd-accent-action);
+  }
+
+  .qa-btn--ready {
+    border: 1px solid color-mix(in srgb, var(--pd-accent-data) 60%, var(--pd-line));
+    background: var(--pd-bg);
+    color: var(--pd-text);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--pd-accent-data) 25%, transparent);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .qa-btn--ready:hover:not(:disabled) {
+    border-color: var(--pd-accent-data);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--pd-accent-data) 35%, transparent);
   }
 
   .pw-locked {

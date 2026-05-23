@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
 	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
 	import PlayerReadOnlyBillingBanner from '$lib/components/shell/PlayerReadOnlyBillingBanner.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
+	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import '$lib/styles/player-shell.css';
+	import '$lib/styles/player-dossier.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -33,7 +36,7 @@
 		{ href: '/stats', icon: 'data.chart-bar', label: 'Stats' },
 		{ href: '/player/workout', icon: 'content.checks', label: 'Train' },
 		{ href: '/player/armory', icon: 'status.shield-check', label: 'Armory' },
-		{ href: '/settings', icon: 'sys.settings', label: 'Settings' },
+		{ href: '/player/settings', icon: 'sys.settings', label: 'Settings' },
 	];
 
 	function isHubActive(path: string) {
@@ -49,18 +52,21 @@
 		return path.startsWith(`${href}/`);
 	}
 
-	const PRIMARY_LOCK_HREFS = new Set(['/player/workout', '/player/armory']);
+	/** Train only — Armory stays reachable for profile completion when billing is read-only */
+	const PRIMARY_LOCK_HREFS = new Set(['/player/workout']);
 
 	function onNavClick(href: string, e: MouseEvent) {
 		if (!playerOsGate.blocked || !PRIMARY_LOCK_HREFS.has(href)) return;
 		e.preventDefault();
-		void goto('/settings');
+		void goto('/player/settings');
 	}
+
+
 </script>
 
 <AlertsDrawer />
 
-<div class="ps-root tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
+<div class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
@@ -103,16 +109,17 @@
 			<PlayerReadOnlyBillingBanner
 				reasons={playerOsGate.reasons}
 				onPricing={async () => await goto('/upgrade')}
-				onSettings={async () => await goto('/settings')}
+				onSettings={async () => await goto('/player/settings')}
 			/>
 		{/if}
 
-		<div class="ps-scroll-shell tw-relative tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
-			<div
-				class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-bg-gradient-to-br tw-from-slate-900 tw-to-black"
-				aria-hidden="true"
-			></div>
-			<main class="ps-canvas ps-canvas--scroll-inner tw-relative tw-z-[1]">
+		<!-- Sprint 2.20a: tw-flex-1/tw-min-h-0 removed — flex-basis 0% was locking intrinsic height to 0; block flow lets ps-scroll-shell grow with content for native document scroll -->
+		<div class="ps-scroll-shell tw-relative">
+			<div class="ps-canvas-bg" aria-hidden="true"></div>
+			<main
+				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1]"
+				data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
+			>
 				{@render children?.()}
 			</main>
 		</div>

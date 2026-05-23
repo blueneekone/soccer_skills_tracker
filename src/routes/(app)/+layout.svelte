@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
@@ -32,6 +32,12 @@
 import Icon from '$lib/components/ui/Icon.svelte';
 	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
+	import LoadoutUnlockCeremony from '$lib/components/player/LoadoutUnlockCeremony.svelte';
+	import {
+		connectLoadoutUnlockListener,
+		disconnectLoadoutUnlockListener,
+		resetLoadoutUnlockQueue,
+	} from '$lib/services/loadoutUnlocks.svelte.js';
 
 	/**
 	 * Fallback accent colors per sport — used when sports_configs Firestore
@@ -77,77 +83,6 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	}
 
 	let { children } = $props();
-
-	// #region agent log
-	const DEBUG_ENDPOINT = 'http://127.0.0.1:7844/ingest/e11fbf9d-f584-42e4-bc6d-8ed178d35a24';
-	/** @param {string} location @param {string} message @param {Record<string, unknown>} data @param {string} hypothesisId */
-	function debugLog(location, message, data, hypothesisId) {
-		fetch(DEBUG_ENDPOINT, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'ed51bc' },
-			body: JSON.stringify({
-				sessionId: 'ed51bc',
-				runId: 'pre-fix',
-				hypothesisId,
-				location,
-				message,
-				data,
-				timestamp: Date.now(),
-			}),
-		}).catch(() => {});
-	}
-
-	$effect(() => {
-		if (!browser || !('serviceWorker' in navigator)) return;
-		(async () => {
-			const controller = navigator.serviceWorker.controller;
-			const registrations = await navigator.serviceWorker.getRegistrations();
-			debugLog(
-				'(app)/+layout.svelte:sw-audit',
-				'Service worker controller audit',
-				{
-					controllerScriptUrl: controller?.scriptURL ?? null,
-					registrations: registrations.map((r) => ({
-						scope: r.scope,
-						activeScriptUrl: r.active?.scriptURL ?? null,
-						waitingScriptUrl: r.waiting?.scriptURL ?? null,
-					})),
-				},
-				'H1',
-			);
-		})();
-	});
-
-	beforeNavigate((nav) => {
-		if (!browser) return;
-		debugLog(
-			'(app)/+layout.svelte:beforeNavigate',
-			'Client navigation starting',
-			{
-				from: nav.from?.url?.pathname ?? null,
-				to: nav.to?.url?.pathname ?? null,
-				willUnload: nav.willUnload,
-				type: nav.type,
-				cancelled: nav.cancel,
-			},
-			'H5',
-		);
-	});
-
-	afterNavigate((nav) => {
-		if (!browser) return;
-		debugLog(
-			'(app)/+layout.svelte:afterNavigate',
-			'Client navigation completed',
-			{
-				from: nav.from?.url?.pathname ?? null,
-				to: nav.to?.url?.pathname ?? null,
-				type: nav.type,
-			},
-			'H5',
-		);
-	});
-	// #endregion
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
@@ -441,7 +376,14 @@ import Icon from '$lib/components/ui/Icon.svelte';
 
 	$effect(() => {
 		if (typeof document === 'undefined') return;
-		document.documentElement.classList.add('enterprise-console-active');
+		// Sprint 2.20a — enterprise-console-active locks html/body to 100dvh + overflow:hidden
+		// (enterprise-console.css:935–944). Player OS uses native document scroll, so the class
+		// must not be present on player routes; remove it reactively on role change.
+		if (authStore.role === 'player') {
+			document.documentElement.classList.remove('enterprise-console-active');
+		} else {
+			document.documentElement.classList.add('enterprise-console-active');
+		}
 	});
 
 	// Phase 4, Epic 7 — gold supernova fired on every server-confirmed level-up.
@@ -452,6 +394,23 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		const handler = () => void dopamineExplosion('levelUp');
 		window.addEventListener('phoenix:level-up', handler);
 		return () => window.removeEventListener('phoenix:level-up', handler);
+	});
+
+	// Sprint 3.3 — server-verified loadout unlock ceremonies (player only).
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		if (authStore.role !== 'player') {
+			disconnectLoadoutUnlockListener();
+			resetLoadoutUnlockQueue();
+			return;
+		}
+		const email = (authStore.user?.email ?? '').trim().toLowerCase();
+		if (!email || !authStore.isProfileComplete) {
+			disconnectLoadoutUnlockListener();
+			return;
+		}
+		connectLoadoutUnlockListener(email);
+		return () => disconnectLoadoutUnlockListener();
 	});
 
 	// Sprint 2.7 — Global Kill Switch: block rendering for every role except
@@ -509,8 +468,10 @@ import Icon from '$lib/components/ui/Icon.svelte';
 	     navigations are no-ops thanks to the internal init guard. -->
 	<OfflineBanner />
 	<ParentFcmPrompt />
-	<!-- Alpha-phase feedback receptacle — visible to all authenticated users. -->
-	<ReportAnomaly />
+	<!-- Alpha-phase feedback receptacle — hidden on Player OS (Sprint 2.16). -->
+	{#if authStore.role !== 'player'}
+		<ReportAnomaly />
+	{/if}
 	<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
 	     or when iOS Safari is detected and app is not in standalone mode. -->
 	<InstallPrompt />
@@ -532,6 +493,14 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		{#if authStore.requiresConsent}
 			<ConsentOverlay />
 		{/if}
+		<LoadoutUnlockCeremony
+			playerEmail={(authStore.user?.email ?? '').toLowerCase()}
+			operativeAvatar={authStore.userProfile?.operativeAvatar}
+			operativeLoadout={authStore.userProfile?.operativeLoadout}
+			ownedCosmetics={Array.isArray(authStore.userProfile?.ownedCosmetics) ?
+				authStore.userProfile.ownedCosmetics.filter((id) => typeof id === 'string')
+			:	[]}
+		/>
 	{:else}
 		<!-- Enterprise shell: admin, director, coach, registrar, recruiter, parent -->
 		<EnterpriseConsoleShell>

@@ -22,14 +22,15 @@
 
 .ps-root {
 	position: relative;
-	display: flex;
-	flex-direction: column;
+	/* Sprint 2.20a — block (not flex column): block height = content height ≥ min-height.
+	   Flex column resolves height via flex algorithm (layout heights, not overflow),
+	   so ps-stack's flex-grow would lock ps-root at 100dvh even on long pages. */
+	display: block;
 	width: 100%;
 	max-width: 100vw;
-	height: 100dvh;
-	max-height: 100dvh;
+	min-height: 100dvh;
 	overflow-x: hidden;
-	overflow-y: hidden;
+	overflow-y: visible;
 	box-sizing: border-box;
 	font-family: var(--pp-font-display);
 	background: var(--pp-bg);
@@ -37,8 +38,9 @@
 }
 
 /* ─── Ambient (decorative) — Z0 canvas layer; spatial canvas persists all player routes (2.18) ─ */
+/* Sprint 2.20a — fixed so atmosphere covers viewport even as root grows beyond 100dvh */
 .ps-ambient {
-	position: absolute;
+	position: fixed;
 	inset: 0;
 	pointer-events: none;
 	z-index: 0;
@@ -143,70 +145,29 @@
 }
 
 /* ─── Main column (topbar + canvas) ──────────────────────────── */
+/* Sprint 2.20a — ps-root is now display: block; ps-stack is a block child, grows with content */
 .ps-stack {
 	position: relative;
 	z-index: 1;
-	display: flex;
-	flex-direction: column;
-	flex: 1 1 auto;
-	min-height: 0;
-	min-width: 0;
-}
-
-.ps-stack .ps-scroll-shell {
-	-webkit-overflow-scrolling: touch;
 }
 
 /* ─── Canvas ─────────────────────────────────────────────────── */
+/* Sprint 2.20a — block flow only; ps-scroll-shell is not a flex container so flex-item
+   properties were dead code. No overflow-y: document scroll handles pagination. */
 .ps-canvas {
-	flex: 1 1 auto;
-	min-width: 0;
-	min-height: 0;
 	max-width: 100%;
-	overflow-y: auto;
 	overflow-x: hidden;
-	-webkit-overflow-scrolling: touch;
 	/* Sprint 1.1 — zero inset; bento wrappers own --bento-pad-liquid */
 	padding: 0;
 	padding-bottom: calc(var(--pp-bottomnav-height) + env(safe-area-inset-bottom, 0px));
 	box-sizing: border-box;
 	background: transparent;
-	scrollbar-color: rgba(245, 158, 11, 0.35) rgba(255, 255, 255, 0.04);
 }
 
-/* Scroll lives on parent (.tw-overflow-y-auto); inner sits above gradient — no double scrollbars */
+/* Sprint 2.20a — ps-canvas--scroll-inner retained as selector for any explicit inner-scroll opt-in */
 .ps-canvas.ps-canvas--scroll-inner {
 	overflow-y: visible;
 	overflow-x: hidden;
-}
-
-.ps-canvas::-webkit-scrollbar {
-	width: 8px;
-}
-
-.ps-canvas::-webkit-scrollbar-thumb {
-	background: rgba(245, 158, 11, 0.35);
-	border-radius: 999px;
-}
-
-/* Sprint 2.9 — dossier scrollbar: gold + teal blend (not amber-only) */
-.ps-root:has(.player-dossier-root) .ps-canvas,
-.ps-root:has(.player-dossier-root) .ps-scroll-shell,
-.ps-root.ps-root--dossier .ps-canvas,
-.ps-root.ps-root--dossier .ps-scroll-shell {
-	scrollbar-color: color-mix(in srgb, #14b8a6 35%, #fbbf24 25%) rgba(255, 255, 255, 0.04);
-}
-
-.ps-root:has(.player-dossier-root) .ps-canvas::-webkit-scrollbar-thumb,
-.ps-root:has(.player-dossier-root) .ps-scroll-shell::-webkit-scrollbar-thumb,
-.ps-root.ps-root--dossier .ps-canvas::-webkit-scrollbar-thumb,
-.ps-root.ps-root--dossier .ps-scroll-shell::-webkit-scrollbar-thumb {
-	background: linear-gradient(
-		180deg,
-		rgba(251, 191, 36, 0.48),
-		rgba(20, 184, 166, 0.38)
-	);
-	box-shadow: 0 0 8px color-mix(in srgb, #14b8a6 22%, #fbbf24 18%);
 }
 
 /* Sprint 2.9 — canvas gradient soften under dossier shell */
@@ -434,8 +395,6 @@
 
 	.ps-stack {
 		margin-left: var(--pp-rail-width);
-		flex: 1 1 auto;
-		min-width: 0;
 		width: calc(100% - var(--pp-rail-width));
 	}
 
