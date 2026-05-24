@@ -2689,3 +2689,156 @@
 		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
 	}
 }
+
+/* Sprint 2.22 slice 6g — Stats investigation workspace */
+
+.player-hud-root .stats-analytics-void {
+	display: flex;
+	flex-direction: column;
+	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+	margin-top: clamp(4px, 0.8vw, 8px);
+	padding: clamp(12px, 2vw, 20px) 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.player-hud-root .stats-analytics-void--compact {
+	gap: clamp(2px, 0.5vw, 4px);
+	min-height: 0;
+	padding-block: clamp(6px, 1vw, 10px);
+}
+
+.player-hud-root .stats-analytics-void .vpp-head--premium {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: clamp(4px, 0.8vw, 8px) 0;
+}
+
+.player-hud-root .stats-analytics-void .vpp-body {
+	align-items: start;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .stats-analytics-void .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
+		align-items: start;
+	}
+
+	.player-hud-root .stats-analytics-void .vpp-body:has(.vpp-inspector--selected) {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		align-items: center;
+	}
+}
+
+.player-hud-root .stats-analytics-void .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root .stats-analytics-void .vpp-inspector--premium.vpp-inspector--idle {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	padding: clamp(4px, 0.8vw, 8px);
+	max-width: min(100%, 200px);
+}
+
+.player-hud-root .stats-analytics-void .vpp-inspector--premium.vpp-inspector--selected {
+	max-width: none;
+}
+
+.player-hud-root .stats-analytics-void--compact .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root .stats-analytics-void--compact .vpp-inspector--premium.vpp-inspector--idle {
+	max-width: min(100%, 140px);
+	padding: clamp(2px, 0.5vw, 4px);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .stats-analytics-void--compact .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
+	}
+}
+
+.player-hud-root .stats-analytics-void--compact .vpp-chart,
+.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
+	min-height: clamp(180px, 28vw, 240px);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .stats-analytics-void--compact .vpp-chart,
+	.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
+		min-height: clamp(200px, 24vw, 260px);
+	}
+}
+
+.player-hud-root .stats-analytics-void--compact .vpp-body,
+.player-hud-root .stats-analytics-void--compact .vpp-inspector,
+.player-hud-root .stats-analytics-void--compact .vpp-inspector__ghost,
+.player-hud-root .stats-analytics-void--compact .vpp-head {
+	min-height: 0;
+}
+
+/* Workout timeline band — transparent outer, Z1 well on chart only */
+.player-hud-root .stats-workout-band {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: clamp(12px, 2vw, 20px) 0;
+	min-width: 0;
+}
+
+.player-hud-root .stats-workout-band::before {
+	content: '';
+	display: block;
+	height: 1px;
+	margin: 0 0 clamp(8px, 1.5vw, 12px);
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) 50%,
+		transparent
+	);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent);
+}
+
+.player-hud-root .stats-workout-band__head {
+	margin-bottom: clamp(4px, 0.8vw, 8px);
+}
+
+.player-hud-root .stats-workout-band__titles {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.player-hud-root .stats-workout-band__title {
+	margin: 0;
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
+	font-size: var(--pd-hud-title-l2);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .stats-workout-band__hint {
+	margin-bottom: clamp(6px, 1vw, 10px);
+	font-size: var(--pd-hud-eyebrow-l3);
+}
+
+.player-hud-root .stats-workout-band .dossier-workout__chart {
+	width: 100%;
+	min-height: 300px;
+	border: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, #000);
+	background: var(--pd-z1-well-bg);
+	box-shadow:
+		var(--pd-z1-inset-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	-webkit-backdrop-filter: blur(4px) saturate(140%);
+	backdrop-filter: blur(4px) saturate(140%);
+	border-radius: 0;
+}
+
+@media (min-width: 60rem) {
+	.player-hud-root .stats-workout-band {
+		grid-column: 1 / -1;
+	}
+}

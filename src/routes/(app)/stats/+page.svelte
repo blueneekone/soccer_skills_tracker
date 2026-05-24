@@ -562,6 +562,7 @@
 
 <div
 	class="ec-page ec-player-stats view-section dossier-page player-dossier-root pd-page-root"
+	class:player-hud-root={isPlayerRole}
 	class:pos-stats={isPlayerRole}
 >
 	<div class="pd-content-wrap">
@@ -582,7 +583,9 @@
 	>
 		{#if isPlayerRole}
 			<section
-				class="dossier-panel dossier-radar pd-page-panel pd-panel-section bento-span-12"
+				class="stats-analytics-void bento-span-12"
+				class:stats-analytics-void--compact={!telemetryReady}
+				data-region="stats-analytics-void"
 				aria-label="Vanguard protocol telemetry"
 			>
 				<VanguardProtocolPanel
@@ -617,12 +620,23 @@
 		{/if}
 
 		<section
-			class="dossier-panel dossier-workout pd-page-panel pd-panel-section"
+			class="dossier-workout pd-panel-section"
+			class:stats-workout-void={isPlayerRole}
+			class:stats-workout-band={isPlayerRole}
 			class:bento-span-12={isPlayerRole}
+			class:dossier-panel={!isPlayerRole}
+			class:pd-page-panel={!isPlayerRole}
 			aria-label="Workout telemetry"
 		>
-			<div class="dossier-radar__head">
-				<span class="dossier-label">Workout telemetry</span>
+			<div class="dossier-radar__head" class:stats-workout-band__head={isPlayerRole}>
+				<div class:stats-workout-band__titles={isPlayerRole}>
+					{#if isPlayerRole}
+						<span class="dossier-label pd-label">Training</span>
+						<h2 class="stats-workout-band__title">Workout telemetry</h2>
+					{:else}
+						<span class="dossier-label">Workout telemetry</span>
+					{/if}
+				</div>
 				{#if !isPlayerRole}
 				<span class="dossier-mono dossier-tx-tag">
 					{workoutViewMode === 'daily' ?
@@ -659,7 +673,7 @@
 					Monthly
 				</button>
 			</div>
-			<p class="dossier-radar__hint no-print">
+			<p class="dossier-radar__hint no-print" class:stats-workout-band__hint={isPlayerRole}>
 				Training XP from workout logs — UTC day / Monday-week / calendar-month buckets (toggle above)
 			</p>
 			<div class="dossier-workout__chart tw-min-w-0 tw-h-[300px] tw-relative">

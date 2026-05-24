@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-23  
-**Current sprint:** **Sprint 2.22 Phase 6 · slice 6f-b HQ header + VPP whisper — Done**
+**Current sprint:** **Sprint 2.22 Phase 6 · slice 6g Stats investigation workspace (in progress)**
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -514,12 +514,12 @@ npm run build
 | **6f** | Armory Studio full dossier in `HologramCardShell` | **Done** |
 | **6f-b** | HQ header ladder + VPP empty inspector whisper | **Done** |
 | **6f-c** | HQ identity telemetry bezel — interactive streak/XP on hologram card (replaces stat chips) | **Done** |
-| **6g** | Stats investigation workspace parity | Planned |
+| **6g** | Stats investigation workspace parity | **In progress** |
 | **6h** | Train / Tracker terminal chrome pass | Planned |
 | **6j** | Player OS Z2 depth + edge-lit interactivity pass | **Planned** |
 | **6i** | Reference matrix sign-off + void contract re-measure | Planned |
 
-**Current:** **6f-b Done** — next: **6g** Stats. **6j** documents cross-route depth (do not start 6j before 6g unless merged).
+**Current:** **6g In progress** — Stats investigation workspace parity. **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
 
 ---
 
@@ -643,6 +643,47 @@ npx playwright test e2e/player-hq-slice-6f-b.visual.spec.ts
 
 ---
 
+## Sprint 2.22 slice 6g scope — Stats investigation workspace parity — **In progress**
+
+**Goal:** Lift `/stats` (player role) to match HQ analytics void + Foundation investigation workspace — VPP radar/inspector floats in void (no matte box-in-box), workout chart as full-width timeline band below, shared VPP material tokens with HQ.
+
+**Root cause:** Stats player route uses `player-dossier-root` only — NOT `player-hud-root`. HQ VPP premium CSS is gated under `.player-hud-root` and does not apply on Stats. VPP sits inside `dossier-panel pd-page-panel` — matte Z2 slab around Tier A radar.
+
+**Pass criteria (1280px + 390px):**
+
+| Check | Pass |
+|-------|------|
+| VPP void | No grey slab around VPP; inspector whisper when empty (6f-b parity) |
+| Workout band | Full-width Z1 well chart band below VPP |
+| Coach path | Unchanged (no `player-hud-root`, Chart.js radar) |
+| HQ regression | Analytics void unchanged |
+
+**Files (≤ 8):**
+
+- `ROADMAP.md`
+- `src/routes/(app)/stats/+page.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint236.test.ts` *(new)*
+- `e2e/player-stats-slice-6g.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6g/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint236.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint225.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint216.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint233.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-stats-slice-6g.visual.spec.ts
+```
+
+**Out of scope:** HQ changes, Chart.js → SVG migration, achievement matrix redesign, 6j global panel depth (6j-a HQ batch separate), Epic 3.5 character studio.
+
+**Note:** **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
+
+**Run after:** 6f-b Done, 6f-c Done. **Run before:** 6h.
+
+---
+
 ## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **Planned**
 
 **Goal:** Reduce flat matte-panel dominance across Player OS routes. Promote **edge-lit Z2** surfaces (top highlight + teal/gold hairline + reduced fill opacity) and **light interactivity** (hover border brighten, focus-visible, subtle translate — gated by `prefers-reduced-motion` and `data-dopamine="off"`). Align with `PLAYER_OS_FOUNDATION.md` §2 — void > emissive edges > glass > matte fill.
@@ -655,7 +696,7 @@ npx playwright test e2e/player-hq-slice-6f-b.visual.spec.ts
 |-------|----------|---------------|
 | **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` |
 | **6j-b Routes** | Train `pw-panel`, Armory `qa-card` / `ols-*` panels (not Studio holo), Tracker, Settings | `player-dossier.css`, route pages, proving grounds CSS |
-| **6j-c Stats** | Stats investigation panels (coordinate with 6g — run 6g first or merge if overlap) | `stats/+page.svelte`, dossier CSS |
+| **6j-c Stats** | Stats investigation panels (**merged into 6g** — do not duplicate) | `stats/+page.svelte`, dossier CSS |
 
 **Material rules (lock):**
 - Replace solid `#05050a` panel fills with `--pd-depth-panel-gradient` at **lower opacity** or transparent center + edge-only frame where void allows

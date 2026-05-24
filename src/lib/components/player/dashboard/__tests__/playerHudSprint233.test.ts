@@ -101,6 +101,8 @@ describe('Sprint 2.22 slice 6f-b — visual acceptance + ROADMAP', () => {
 	it('ROADMAP marks 6f-c Done and 6f-b Done', () => {
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6f-c\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6f-b\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
-		expect(roadmapSrc).toMatch(/slice 6f-b HQ header \+ VPP whisper — Done/);
+		expect(roadmapSrc).toMatch(
+			/slice 6f-b scope — HQ header ladder \+ VPP inspector whisper — \*\*Done\*\*/,
+		);
 	});
 });

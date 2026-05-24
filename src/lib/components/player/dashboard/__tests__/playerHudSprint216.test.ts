@@ -71,11 +71,11 @@ describe('Sprint 2.16 — Stats player VPP parity', () => {
 });
 
 describe('Sprint 2.16 — ActiveBounties hero dedupe', () => {
-	it('embedded rail feed uses railQuests, not raw visibleDailies', () => {
+	it('embedded rail feed uses visibleQuests rail rows (6b-revise), not tier-split loops', () => {
 		const embedded = embeddedBountiesBlock(bountiesSrc);
-		expect(embedded).toMatch(/\{#each railQuests as quest/);
-		expect(embedded).not.toMatch(/visibleDailies/);
-		expect(bountiesSrc).toMatch(/excludeHeroFromRailQuests\(visibleQuests,\s*heroQuest\)/);
+		expect(embedded).toMatch(/\{#each visibleQuests as quest/);
+		expect(embedded).not.toMatch(/\{#each visibleDailies as quest/);
+		expect(embedded).not.toMatch(/\{#each visibleBounties as quest/);
 		expect(activeBountiesTsSrc).toMatch(/export function excludeHeroFromRailQuests/);
 	});
 });
