@@ -28,9 +28,10 @@ describe('Sprint 2.22 slice 6c — analytics void island', () => {
 		expect(voidSection![0]).not.toMatch(/pd-surface-premium/);
 	});
 
-	it('player-dashboard-hud.css contains Sprint 2.22 slice 6c block', () => {
-		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6c — analytics void island/);
-		expect(hudCssSrc).toMatch(/\.player-analytics-void\s*\{[\s\S]*?background:\s*transparent/);
+	it('player-dashboard-hud.css contains Sprint 2.22 slice 6c block with pd-os-deck recessed analytics', () => {
+		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6c — analytics layout inside pd-os-deck--recessed/);
+		expect(hudCssSrc).toMatch(/\.player-analytics-void\.pd-os-deck--recessed/);
+		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 	});
 
 	it('.vpp-chart--premium still references --pd-z1-well-bg', () => {

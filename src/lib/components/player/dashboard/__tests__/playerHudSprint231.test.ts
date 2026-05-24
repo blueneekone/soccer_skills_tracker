@@ -16,9 +16,11 @@ const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 6e — pathway Tier A edge treatment', () => {
-	it('OperativePathwayPreview uses opp-preview--void and not pd-page-panel', () => {
+	it('OperativePathwayPreview uses opp-preview--void with pd-os-deck well', () => {
 		expect(previewSrc).toMatch(/opp-preview--void/);
-		expect(previewSrc).not.toMatch(/pd-page-panel/);
+		expect(previewSrc).toMatch(/pd-os-deck/);
+		expect(previewSrc).toMatch(/pd-os-deck__well/);
+		expect(previewSrc).not.toMatch(/pd-page-panel|pg-bracket/);
 	});
 
 	it('OperativePathway uses gap connectors in hud css — no through-well rail', () => {

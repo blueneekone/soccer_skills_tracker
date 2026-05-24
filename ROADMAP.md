@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-23  
-**Current sprint:** **Sprint 2.22 Phase 6 · slice 6h Train / Tracker terminal chrome (in progress)**
+**Current sprint:** **Sprint 2.22 Phase 6 · slice 6j-a HQ panel depth (in progress)**
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -515,11 +515,12 @@ npm run build
 | **6f-b** | HQ header ladder + VPP empty inspector whisper | **Done** |
 | **6f-c** | HQ identity telemetry bezel — interactive streak/XP on hologram card (replaces stat chips) | **Done** |
 | **6g** | Stats investigation workspace parity | **Done** |
-| **6h** | Train / Tracker terminal chrome pass | **In progress** |
-| **6j** | Player OS Z2 depth + edge-lit interactivity pass | **Planned** |
+| **6h** | Train / Tracker terminal chrome pass | **Done** |
+| **6j** | Player OS Z2 depth + edge-lit interactivity pass | **In progress** |
+| **6j-a** | HQ panel depth — Quick Ops, OperativeHub, mission rail, capsules ghost | **In progress** |
 | **6i** | Reference matrix sign-off + void contract re-measure | Planned |
 
-**Current:** **6h In progress** — Train / Tracker terminal chrome pass. **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
+**Current:** **6j-a In progress** — HQ Z2 depth + edge-lit interactivity (Quick Ops deck, OperativeHub shell, mission rail, capsules ghost). **6j-b Routes** and **6j-c Stats** (merged into 6g) follow after 6j-a. **6i** reference matrix sign-off after full 6j.
 
 ---
 
@@ -684,7 +685,7 @@ npx playwright test e2e/player-stats-slice-6g.visual.spec.ts
 
 ---
 
-## Sprint 2.22 slice 6h scope — Train / Tracker terminal chrome — **In progress**
+## Sprint 2.22 slice 6h scope — Train / Tracker terminal chrome — **Done**
 
 **Goal:** Bring `/player/workout` and `/player/tracker` to Foundation **diegetic terminal** bar — execution column gets ProvingGrounds-style corner brackets + scanline + state copy; threat column reads as tail-log playbook; Tracker gets Tier A capsule + stat-row parity. **Material/chrome only** — no logic, no Chart.js, no 6j global depth batch.
 
@@ -722,11 +723,60 @@ npx playwright test e2e/player-train-tracker-slice-6h.visual.spec.ts
 
 **Out of scope:** HQ dashboard, Stats (6g), Armory, Settings, Skill Tree, Epic 3.5, Coach OS routes, `ProvingGrounds.svelte` drill catalogue/logic, global 6j edge-lit panel pass.
 
-**Run after:** 6g Done. **Run before:** 6j.
+**Run after:** 6g Done. **Run before:** 6j-a.
 
 ---
 
-## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **Planned**
+## Sprint 2.22 slice 6j-a scope — HQ Z2 depth + edge-lit interactivity — **In progress**
+
+**Goal:** Reduce flat matte-panel dominance on HQ command deck surfaces — Quick Ops deck, OperativeHub shell, mission rail panel, capsules ghost strip. Promote **edge-lit Z2** (emissive hairline + transparent/low-opacity center + hover/focus lift). **HQ only** — batch 1 of 6j.
+
+**Root cause:**
+
+| Surface | Problem |
+|---------|---------|
+| Quick Ops | Deck wrapper still `pd-page-panel` — grey Z2 slab around 6d gold tiles = box-in-box |
+| OperativeHub | Shell radial fill still reads ~35% matte |
+| Mission rail | `.quest-log-panel--premium` solid fill + idle rows lack edge-lit default |
+| Capsules strip | `lobby-capsule-ghost-card` empty state is flat compact panel |
+
+**Pass criteria (1280px + 390px):**
+
+| Check | Pass |
+|-------|------|
+| Quick Ops | No outer grey slab; tiles edge-lit; icon badges visible |
+| OperativeHub | Void-forward shell; mission column separator preserved |
+| Mission rail | Edge-lit panel; idle rows visible without hover; promoted gold focal |
+| Capsules ghost | Edge-lit whisper under analytics void |
+| Regressions | 6c analytics void, 6e pathway, 6a/6f-c hologram unchanged |
+
+**Files (≤ 8):**
+
+- `ROADMAP.md`
+- `src/lib/components/player/dashboard/OperativeQuickOps.svelte`
+- `src/lib/components/player/dashboard/OperativeHub.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/styles/player-missions.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint234.test.ts` *(new)*
+- `e2e/player-hq-slice-6j-a.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6j-a/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint234.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint228.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint229.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint231.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint233.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6j-a.visual.spec.ts
+```
+
+**Out of scope:** Train/Tracker/Armory/Settings routes → **6j-b**; analytics void (6c), pathway (6e), hologram bezel (6a/6f-c), VPP internals, atmosphere-only opacity bumps.
+
+**Run after:** 6h Done. **Run before:** 6j-b.
+
+---
+
+## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **In progress**
 
 **Goal:** Reduce flat matte-panel dominance across Player OS routes. Promote **edge-lit Z2** surfaces (top highlight + teal/gold hairline + reduced fill opacity) and **light interactivity** (hover border brighten, focus-visible, subtle translate — gated by `prefers-reduced-motion` and `data-dopamine="off"`). Align with `PLAYER_OS_FOUNDATION.md` §2 — void > emissive edges > glass > matte fill.
 
@@ -736,7 +786,7 @@ npx playwright test e2e/player-train-tracker-slice-6h.visual.spec.ts
 
 | Batch | Surfaces | Primary files |
 |-------|----------|---------------|
-| **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` |
+| **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` | **In progress** |
 | **6j-b Routes** | Train `pw-panel`, Armory `qa-card` / `ols-*` panels (not Studio holo), Tracker, Settings | `player-dossier.css`, route pages, proving grounds CSS |
 | **6j-c Stats** | Stats investigation panels (**merged into 6g** — do not duplicate) | `stats/+page.svelte`, dossier CSS |
 

@@ -8,7 +8,7 @@
 </script>
 
 <section
-	class="opp-preview opp-preview--void bento-span-12"
+	class="opp-preview opp-preview--void pd-os-deck bento-span-12"
 	aria-label="Mission rewards pathway"
 	data-region="operative-pathway-preview"
 >
@@ -22,12 +22,14 @@
 		</div>
 	</header>
 
-	<OperativePathway
-		level={level}
-		dossierMode={true}
-		compact={false}
-		hideScrollHud={true}
-		scrollToCurrent={true}
-		hqTealCurrent={true}
-	/>
+	<div class="pd-os-deck__well opp-preview__track-well">
+		<OperativePathway
+			level={level}
+			dossierMode={true}
+			compact={false}
+			hideScrollHud={true}
+			scrollToCurrent={true}
+			hqTealCurrent={true}
+		/>
+	</div>
 </section>

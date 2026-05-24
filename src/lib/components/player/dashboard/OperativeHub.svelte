@@ -12,7 +12,10 @@
 	} = $props();
 </script>
 
-<div class="operative-hub pd-surface-premium bento-grid bento-grid--12col bento-grid--liquid" data-region="operative-hub">
+<div
+	class="operative-hub pd-os-deck pd-os-deck--hero bento-grid bento-grid--12col bento-grid--liquid"
+	data-region="operative-hub"
+>
 	<div class="operative-hub__main bento-span-12 md:bento-span-8">
 		<div class="operative-hub__identity-stage">
 			<div class="operative-hub__identity">
@@ -34,21 +37,7 @@
 		width: 100%;
 		min-width: 0;
 		box-sizing: border-box;
-		overflow: visible;
-	}
-
-	.operative-hub::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 0;
-		background: radial-gradient(
-			ellipse 90% 60% at 18% 12%,
-			color-mix(in srgb, var(--pd-accent-data, #14b8a6) 4%, transparent),
-			transparent 68%
-		);
-		opacity: 0.65;
+		overflow: hidden;
 	}
 
 	.operative-hub__main,
@@ -101,7 +90,8 @@
 
 	@media (min-width: 768px) {
 		.operative-hub__missions {
-			border-left: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+			border-left: none;
+			box-shadow: none;
 		}
 	}
 </style>

@@ -73,14 +73,13 @@ describe('Sprint 2.22 slice 6b-revise — HQ mission rail overview (no hero card
 		expect(missionsCssSrc).toMatch(/\.quest-row__xp--inline/);
 	});
 
-	it('player-dashboard-hud.css retains Sprint 2.22 slice 6b hub edge frame', () => {
+	it('player-dashboard-hud.css retains hub missions column + pd-os-deck lighting', () => {
 		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6b/);
-		expect(hudCssSrc).toMatch(/\.operative-hub\.pd-surface-premium::after/);
 		expect(hudCssSrc).toMatch(/operative-hub__missions[\s\S]*?background:\s*transparent/);
 	});
 
-	it('ROADMAP.md marks 6b-revise in progress and 6b superseded', () => {
-		expect(roadmapSrc).toMatch(/slice 6b-revise HQ mission rail \(in progress\)/);
+	it('ROADMAP.md marks 6b-revise Done and 6b superseded', () => {
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6b-revise\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/Sprint 2\.22 slice 6b-revise scope/);
 		expect(roadmapSrc).toMatch(/6b.*Superseded by 6b-revise/);
 	});

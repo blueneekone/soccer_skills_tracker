@@ -33,7 +33,7 @@
 </script>
 
 <section
-	class="oqo-deck bento-span-12 pd-page-panel"
+	class="oqo-deck pd-os-deck bento-span-12"
 	aria-label="Quick operations"
 	data-region="operative-quick-ops"
 >

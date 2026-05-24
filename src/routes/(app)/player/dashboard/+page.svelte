@@ -300,7 +300,7 @@
 	</div>
 {:else}
 <div
-	class="lobby-page player-hud-root pd-page-root tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
+	class="lobby-page player-hud-root pd-page-root pd-grain tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
 	style="background: var(--pd-bg, #000);"
 	data-region="player-lobby"
 	data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
@@ -379,7 +379,7 @@
 		<OperativePathwayPreview level={osLevel} />
 
 	<section
-		class="bento-span-12 player-analytics-void tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col"
+		class="bento-span-12 player-analytics-void pd-os-deck pd-os-deck--recessed tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col"
 		class:player-analytics-void--compact={!telemetryReady}
 		aria-label="Player analytics deck"
 		data-region="player-analytics-void"
@@ -404,15 +404,21 @@
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
 				/>
 			{:else}
-				<div
-					id="lobby-capsules-h"
-					class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
-					role="status"
-				>
-					<div class="pd-empty-state__icon" aria-hidden="true"></div>
-					<div class="pd-empty-state__copy">
-						<p class="pd-empty-state__title">Ghost profile</p>
-						<p class="pd-empty-state__lede">Self comparison · awaiting first memory capsule</p>
+				<div class="player-capsules-strip__head">
+					<p class="player-capsules-strip__eyebrow pd-label">Self comparison</p>
+					<h2 id="lobby-capsules-h" class="player-capsules-strip__title">Memory capsules</h2>
+				</div>
+				<div class="lobby-capsule-ghost-wrap">
+					<div
+						class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
+						role="status"
+						aria-labelledby="lobby-capsules-h"
+					>
+						<div class="pd-empty-state__icon" aria-hidden="true"></div>
+						<div class="pd-empty-state__copy">
+							<p class="pd-empty-state__title">Ghost profile</p>
+							<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
+						</div>
 					</div>
 				</div>
 			{/if}

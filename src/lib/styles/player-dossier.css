@@ -27,6 +27,9 @@
 		color-mix(in srgb, #030308 62%, #000) 42%,
 		#000000 100%
 	);
+	--pd-os-deck-fill:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 24%),
+		var(--pd-depth-panel-gradient);
 	--pd-depth-glow-gold: 0 0 28px color-mix(in srgb, var(--pd-accent-action) 22%, transparent);
 	--pd-depth-glow-teal: 0 0 24px color-mix(in srgb, var(--pd-accent-data) 18%, transparent);
 	--pd-shadow-elev-1: 0 3px 10px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -40,12 +43,11 @@
 	--pd-z1-well-bg:
 		radial-gradient(ellipse 100% 80% at 50% 0%, #040408 0%, #020204 55%, #000 100%);
 	--pd-z2-panel-shadow:
-		0 4px 14px rgba(0, 0, 0, 0.55),
-		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		0 6px 20px rgba(0, 0, 0, 0.52),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	--pd-z3-raised-shadow:
-		0 12px 32px rgba(0, 0, 0, 0.62),
-		0 0 24px color-mix(in srgb, var(--pd-accent-action) 14%, transparent),
-		inset 0 1px 0 rgba(255, 255, 255, 0.09);
+		0 10px 28px rgba(0, 0, 0, 0.58),
+		inset 0 1px 0 rgba(255, 255, 255, 0.07);
 	--pd-z4-float-shadow:
 		0 16px 40px rgba(0, 0, 0, 0.68),
 		0 8px 20px -6px color-mix(in srgb, var(--pd-accent-data) 12%, transparent),
@@ -112,6 +114,56 @@
 	box-shadow: var(--pd-z4-float-shadow);
 	position: relative;
 	z-index: 2;
+}
+
+/* Sprint 2.22 slice 6j-a — Player OS deck depth kit (Foundation §2 Z2: fill + shadow, no pseudo stacks) */
+.player-dossier-root .pd-os-deck,
+.player-hud-root .pd-os-deck {
+	position: relative;
+	box-sizing: border-box;
+	min-width: 0;
+	max-width: 100%;
+	background: var(--pd-os-deck-fill, var(--pd-depth-panel-gradient, var(--pd-panel)));
+	border: 1px solid var(--pd-line);
+	box-shadow: var(--pd-z2-panel-shadow);
+	padding: clamp(1rem, 2.1vw, 1.4rem);
+}
+
+.player-dossier-root .pd-os-deck--hero,
+.player-hud-root .pd-os-deck--hero {
+	border-left: 2px solid color-mix(in srgb, var(--pd-accent-data) 42%, transparent);
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		0 12px 28px rgba(0, 0, 0, 0.48);
+	padding: clamp(1.05rem, 2.2vw, 1.5rem);
+}
+
+.player-dossier-root .pd-os-deck--recessed,
+.player-hud-root .pd-os-deck--recessed {
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--pd-panel) 34%, #000) 0%,
+			color-mix(in srgb, #000 94%, var(--pd-panel)) 100%
+		);
+	border-color: color-mix(in srgb, var(--pd-line) 78%, transparent);
+	box-shadow:
+		inset 0 12px 28px rgba(0, 0, 0, 0.44),
+		inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.player-dossier-root .pd-os-deck__well,
+.player-hud-root .pd-os-deck__well {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	overflow: hidden;
+	margin-top: clamp(0.65rem, 1.25vw, 0.9rem);
+	padding: clamp(0.85rem, 1.5vw, 1.1rem) clamp(0.75rem, 1.35vw, 1rem);
+	background: var(--pd-z1-well-bg);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 14%, var(--pd-line));
+	box-shadow: var(--pd-z1-inset-shadow);
 }
 
 /* Sprint 2.12 / 2.17 — premium lifted surface (Z2 base panel) */
