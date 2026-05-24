@@ -16,6 +16,7 @@
 	import { SkillTreeEngine } from '$lib/components/player/skill-tree/SkillTreeEngine.svelte.js';
 	import SkillTreeArena from '$lib/components/player/skill-tree/SkillTreeArena.svelte';
 	import SkillTreeHUD from '$lib/components/player/skill-tree/SkillTreeHUD.svelte';
+	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
 
 	// ── Engine instantiation (module-level — correct for Svelte 5 rune classes) ──
 
@@ -34,28 +35,22 @@
 
 	// ── Derived values for Arena / HUD props ──────────────────────────────────
 
-	const tierAccent  = $derived(armory.currentTier.accent);
+	const tierAccent = $derived(armory.currentTier.accent);
 	const armoryStats = $derived(armory.playerStats);
 </script>
 
 <svelte:head>
-	<title>Skill Tree · Physical Progression · NEXUS COMMAND</title>
+	<title>Skill Tree · Physical Progression · SSTRACKER</title>
 </svelte:head>
 
-<div class="st-shell tw-min-h-screen tw-bg-[#020202] tw-text-white">
+<div class="pd-page-root player-dossier-root st-page tw-min-h-screen tw-min-w-0 tw-overflow-x-hidden tw-text-white" style="background: var(--pd-bg);">
 
-	<!-- ── Page header bezel ──────────────────────────────────────────────── -->
-	<header class="tw-mb-[clamp(1rem,2.5vw,1.75rem)]">
-		<p class="tw-text-[10px] tw-font-black tw-tracking-[0.3em] tw-uppercase tw-font-mono tw-text-cyan-400/60">
-			[ NEXUS COMMAND · PLAYER OS ]
-		</p>
-		<h1 class="tw-text-[clamp(1.2rem,3vw,2rem)] tw-font-black tw-tracking-widest tw-uppercase tw-text-white tw-leading-tight">
-			Physical Skill Tree
-		</h1>
-		<p class="tw-text-[11px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
-			Composite Snowflake · Sprint 5.1
-		</p>
-	</header>
+	<div class="pd-content-wrap">
+	<PlayerOsPageStrap eyebrow="Progress / Skill tree" title="Physical progression">
+		{#snippet status()}
+			<span class="pd-label">{armory.currentTier.label}</span>
+		{/snippet}
+	</PlayerOsPageStrap>
 
 	<!-- ── Main bento grid ───────────────────────────────────────────────── -->
 	<div class="st-bento">
@@ -70,49 +65,45 @@
 		<div class="st-cell-secondary tw-flex tw-flex-col tw-gap-[clamp(0.75rem,2vw,1.25rem)]">
 
 			<!-- Tier card -->
-			<div class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-slate-900/50 tw-backdrop-blur-md tw-p-4 tw-flex tw-flex-col tw-gap-3">
+			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-3 tw-p-4">
 
-				<p class="tw-text-[10px] tw-font-black tw-tracking-[0.3em] tw-uppercase tw-font-mono tw-text-cyan-400/60">
-					Current Tier
-				</p>
+				<p class="pd-label">Current tier</p>
 
 				<p
-					class="tw-text-[clamp(1.1rem,2.5vw,1.5rem)] tw-font-black tw-tracking-widest tw-uppercase tw-font-mono tw-leading-none"
+					class="pd-mono tw-text-[clamp(1.1rem,2.5vw,1.5rem)] tw-font-black tw-tracking-widest tw-uppercase tw-leading-none"
 					style:color={tierAccent}
 				>
 					{armory.currentTier.label}
 				</p>
 
 				<!-- XP progress bar -->
-				<div class="tw-h-1 tw-rounded-full tw-bg-white/10 tw-overflow-hidden">
+				<div class="st-xp-track tw-h-1 tw-overflow-hidden" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
 					<div
-						class="tw-h-full tw-rounded-full tw-transition-[width] tw-duration-700"
+						class="tw-h-full tw-transition-[width] tw-duration-700"
 						style:width="{armory.progressToNextTier}%"
-						style:background={tierAccent}
+						style:background="var(--pd-accent-action)"
 					></div>
 				</div>
 
-				<p class="tw-text-[11px] tw-font-mono tw-text-slate-300 tw-tabular-nums">
+				<p class="pd-mono tw-text-[11px] tw-tabular-nums" style="color: var(--pd-text);">
 					{armory.totalXP.toLocaleString()} XP
 				</p>
 
 				{#if armory.nextTier}
-					<p class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-wide">
+					<p class="pd-mono tw-text-[10px] tw-tracking-wide" style="color: var(--pd-text-muted);">
 						{armory.xpRequired.toLocaleString()} XP to
-						<span class="tw-text-cyan-400/80">{armory.nextTier.label}</span>
+						<span style="color: var(--pd-accent-data);">{armory.nextTier.label}</span>
 					</p>
 				{/if}
 			</div>
 
 			<!-- Branch progress summary -->
-			<div class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-slate-900/50 tw-backdrop-blur-md tw-p-4 tw-flex tw-flex-col tw-gap-2">
+			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-2 tw-p-4">
 
-				<p class="tw-text-[10px] tw-font-black tw-tracking-[0.3em] tw-uppercase tw-font-mono tw-text-cyan-400/60 tw-mb-1">
-					Branch Progress
-				</p>
+				<p class="pd-label tw-mb-1">Branch progress</p>
 
 				{#each skillTree.branchSummaries as s (s.attr)}
-					<div class="tw-flex tw-items-center tw-gap-2 tw-text-[10px] tw-font-mono">
+					<div class="tw-flex tw-items-center tw-gap-2 tw-text-[10px] pd-mono">
 
 						<!-- Attr label -->
 						<span
@@ -123,17 +114,17 @@
 						</span>
 
 						<!-- Progress bar -->
-						<div class="tw-flex-1 tw-h-[3px] tw-rounded-full tw-bg-white/10 tw-overflow-hidden">
+						<div class="tw-flex-1 tw-h-[3px] tw-overflow-hidden" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
 							<div
-								class="tw-h-full tw-rounded-full tw-transition-[width] tw-duration-700"
+								class="tw-h-full tw-transition-[width] tw-duration-700"
 								style:width="{Math.round(s.progress * 100)}%"
 								style:background={s.accent}
 							></div>
 						</div>
 
 						<!-- Unlocked / total -->
-						<span class="tw-text-slate-500 tw-tabular-nums tw-shrink-0">
-							{s.unlocked}<span class="tw-text-slate-700">/</span>{s.total}
+						<span class="tw-tabular-nums tw-shrink-0" style="color: var(--pd-text-muted);">
+							{s.unlocked}<span style="color: var(--pd-line);">/</span>{s.total}
 						</span>
 					</div>
 				{/each}
@@ -145,14 +136,11 @@
 	</div>
 	<!-- /st-bento -->
 
+	</div>
 </div>
-<!-- /st-shell -->
+<!-- /player-dossier-root -->
 
 <style>
-	.st-shell {
-		padding: clamp(1rem, 3vw, 2rem);
-	}
-
 	.st-bento {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, clamp(14rem, 22vw, 22rem));
@@ -166,5 +154,7 @@
 		}
 	}
 
-	/* .st-cell-primary: tw-relative on the element handles the HUD stacking context */
+	.st-side-card {
+		min-width: 0;
+	}
 </style>

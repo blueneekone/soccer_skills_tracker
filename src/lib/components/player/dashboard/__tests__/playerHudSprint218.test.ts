@@ -107,9 +107,9 @@ describe('Sprint 2.18 — Stats/HQ VPP parity', () => {
 });
 
 describe('Sprint 2.18 — ROADMAP sprint pointer', () => {
-	it('marks 2.18 Done and current sprint 2.19', () => {
+	it('marks 2.18 Done and premium track complete through 2.19', () => {
 		expect(roadmapSrc).toMatch(/\|\s*2\.18\s*\|\s*Done\s*\|/);
-		expect(roadmapSrc).toMatch(/\*\*Current sprint:\*\*\s*\*\*2\.19\*\*/);
+		expect(roadmapSrc).toMatch(/\|\s*2\.19\s*\|\s*Done/i);
 		expect(roadmapSrc).toMatch(/playerHudSprint218\.test\.ts/);
 	});
 });

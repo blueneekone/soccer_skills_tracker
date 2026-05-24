@@ -1,0 +1,42 @@
+[
+	{
+		"id": "digi_border_neon",
+		"slot": "border",
+		"label": "Neon Operative Border",
+		"renderKey": "border-neon",
+		"assetPath": "/cosmetics/border-neon.svg",
+		"contentHash": "a810a300d9a5d41949fe439174850393932760b30573e806d6ac6873e495bb05"
+	},
+	{
+		"id": "album_border_street_kings_holo",
+		"slot": "border",
+		"label": "Street Kings Holo Border",
+		"renderKey": "border-holo",
+		"assetPath": "/cosmetics/border-holo.svg",
+		"contentHash": "ccbc0f58b810634896ee081e5b82a6656a7c418a8286fed31550dd34f453ae2e"
+	},
+	{
+		"id": "album_badge_street_kings",
+		"slot": "badge",
+		"label": "Street Kings Badge",
+		"renderKey": "badge-hex",
+		"assetPath": "/cosmetics/badge-street-kings.svg",
+		"contentHash": "fbecd00043f66156a4685e72f78b5390c21cdb29c6461701bdb7204709a79e94"
+	},
+	{
+		"id": "album_banner_vanguard",
+		"slot": "banner",
+		"label": "Vanguard Banner",
+		"renderKey": "banner-stripe",
+		"assetPath": "/cosmetics/banner-vanguard-stripe.svg",
+		"contentHash": "d5ebca51386cc98c4661755fa12239e2d9382c348008e60744924fbb5f1c5ef7"
+	},
+	{
+		"id": "title_rank_operative",
+		"slot": "title",
+		"label": "Operative Rank Title",
+		"renderKey": "title-default",
+		"assetPath": "/cosmetics/title-operative-flair.svg",
+		"contentHash": "514fab4cbd51121551518b14588f4c50ae6a78ceb8fcefc4fb4ef3d3b1892f2f"
+	}
+]

@@ -1,8 +1,10 @@
 # Player OS — Visual Acceptance Checklist
 
-**Living doc for Epic 1 premium track 2.12.1–2.19** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Material constitution:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
+> **Sign-off blocks Epic 3.4 / 4.1 launch** even though the delivery gate is technically open after Sprint 2.19 Done.
 
-Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Tick each row after manual QA. Sprint 2.15 shipped motion + baseline states; **Epic 3.4 / 4.1 remain blocked** until material/spatial rows pass and track **2.19 Done**.
+**Living doc for Epic 1 premium track 2.12.1–2.20** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Canonical material:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) · **Spatial history:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
+
+Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Sprint 2.19 shipped diegetic kit + energy motion; **Epic 3.4 / 4.1** require full sign-off below before shipping features.
 
 ## Core acceptance states
 
@@ -16,25 +18,44 @@ Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Tick 
 | Reduced motion | HQ | No stagger / shimmer / streak pulse (`prefers-reduced-motion: reduce`) | ☐ | ☐ |
 | Dopamine off | HQ + shell routes | `data-dopamine='off'` disables decorative motion | ☐ | ☐ |
 
-## Material & spatial acceptance (2.16–2.19)
+## Reference matrix (Sprint 2.20 sign-off)
 
-| Criterion | Pass criteria | 1280px | 390px |
-|-----------|---------------|:------:|:-----:|
-| Z-layer depth | Can you perceive ≥3 distinct Z-layers on HQ at rest? (canvas, recessed well, raised hero, floating strap) | ☐ | ☐ |
+Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screenshot + must-feel rule at both viewports.
 
-_Automated token guards: `playerHudSprint217.test.ts` asserts Z1–Z4 tokens wired to selectors; manual sign-off on this row still required._
-| Emissive edges | Visible on active mission hero + rank bar + rail active tab | ☐ | ☐ |
-| Holographic radar | Radar reads as inset well + bloom; **same VPP frame on Stats and HQ** | ☐ | ☐ |
+| Route | SIEM/SOAR anchor | Tron/Ares anchor | Game HUD anchor | Must-feel rule | 1280px | 390px |
+|-------|------------------|------------------|-----------------|----------------|:------:|:-----:|
+| **HQ** (`/player/dashboard`) | Incident overview (severity-lane mission feed) | Grid ops floor (operative spotlight in void) | Mission select screen (one gold “do this now”) | Identity Z3 hero; ≥40% void; one gold focal; mission rail flows with document | ☐ | ☐ |
+| **Stats** (`/stats`) | Investigation workspace (artifact left, inspector right, timeline below) | Vector analysis terminal | Character sheet | Radar full-width band; workout chart full-width band; no nested borders on radar well | ☐ | ☐ |
+| **Train** (`/player/workout`) | Playbook editor + tail logs | Program upload terminal | Helldivers stratagem input | Diegetic terminal (corner brackets + scanline + state copy); equal-height columns; no inner panel scroll | ☐ | ☐ |
+| **Armory** (`/player/armory`) | Asset registry + threat-intel feed | Loadout bay / identity disc | Destiny vault | Dossier card preview Z3 standalone; album covers match sticker aspect; command deck tabs unchanged | ☐ | ☐ |
+| **Settings** (`/player/settings`) | Configuration deck | Identity calibration terminal | Pause menu config | All controls use diegetic kit; no browser-default toggles | ☐ | ☐ |
+| **Tracker** (`/player/tracker`) | Trend dashboard | Memory archive | Co-op replay log | Matching stat row primitive; capsule arena Tier A; not a “log list” | ☐ | ☐ |
+| **Skill tree** (`/player/skill-tree`) | Capability matrix | The Grid root | Talent tree | Already Tier A — defends as reference benchmark | ☐ | ☐ |
 
-_Automated guards: `playerHudSprint218.test.ts` asserts `pdDataBloom`, spatial canvas restore, scanline scope, emissive tokens, glass well boundaries._
-| Identity stage | Recessed inside hub — not transparent flat (`ibm-root--premium` regression) | ☐ | ☐ |
-| Debug / prototype chrome | No debug strings or prototype badges in player-facing builds | ☐ | ☐ |
-| Diegetic Settings | Settings controls match diegetic kit (document pass/fail vs HQ chamfer CTAs) | ☐ | ☐ |
-| Void ratio | ≥40% of HQ viewport reads as black canvas, not grey fill (guidance) | ☐ | ☐ |
+## Void contract measurement
+
+Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §3 — _automated in Sprint 2.20_.
+
+| Metric | Threshold | Pass |
+|--------|-----------|:----:|
+| Black canvas pixels at viewport rest | ≥ 40% (HQ 1280×900) | ☐ |
+| Visible matte panel fill ratio | ≤ 35% | ☐ |
+| Emissive edges + bloom + light | ≥ 15% | ☐ |
+| Largest Z2 panel | ≤ 60% viewport width (desktop) | ☐ |
+| Hero identity (Z3) min footprint | ≥ 280px ring + 1.5× rank bar height | ☐ |
+
+## Tier A primitive parity (replaces subjective tier check)
+
+| Criterion | Pass criteria | Sign-off |
+|-----------|---------------|:--------:|
+| HQ identity hero | `HologramCardShell` tilt + foil + edge-glow at **1280** and **390**; display callsign on card face; void-visible identity stage (no grey inset well) | ☐ |
+| Radar (HQ + Stats) | Matches `AttributeRadar` + `url(#pdDataBloom)` — **no** extra `::before` / `::after` frame | ☐ |
+| Workout terminal | Matches `ProvingGrounds` (corner brackets + scanline scoped to terminal) | ☐ |
+| Studio dossier preview | Z3 standalone — not nested inside matte admin panel | ☐ |
 
 ## Cinematic reference states (manual QA)
 
-Sign off each route at 1280px + 390px against the cinematic bar in [`PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md):
+Supplemental states for edge QA (profile incomplete / full telemetry / Studio):
 
 | Reference state | Route | 1280px | 390px |
 |-----------------|-------|:------:|:-----:|
@@ -42,13 +63,7 @@ Sign off each route at 1280px + 390px against the cinematic bar in [`PLAYER_OS_M
 | HQ full telemetry | `/player/dashboard` | ☐ | ☐ |
 | Armory Studio | `/player/armory` (Studio tab) | ☐ | ☐ |
 | Workout terminal | `/player/workout` | ☐ | ☐ |
-| Settings (player) | `/settings` | ☐ | ☐ |
-
-## Tier parity check
-
-| Criterion | Pass criteria | Sign-off |
-|-----------|---------------|:--------:|
-| HQ material quality | HQ material quality ≥ Skill Tree arena / VanguardCard studio preview (subjective) | ☐ |
+| Settings (player) | `/player/settings` | ☐ | ☐ |
 
 ## Player nav routes (390px sweep)
 
@@ -58,7 +73,7 @@ Sign off each route at 1280px + 390px against the cinematic bar in [`PLAYER_OS_M
 | `/stats` | Stats | ☐ |
 | `/player/workout` | Train | ☐ |
 | `/player/armory` | Armory | ☐ |
-| `/settings` | Settings | ☐ |
+| `/player/settings` | Settings | ☐ |
 
 ## Motion acceptance
 
@@ -74,6 +89,8 @@ Sign off each route at 1280px + 390px against the cinematic bar in [`PLAYER_OS_M
 
 ### Sprint 2.19 — layer-enter criteria
 
+_Automated guards: `playerHudSprint219.test.ts` asserts diegetic kit, `pd-layer-enter-z4` / `pd-layer-enter-z2`, conduit shimmer, hero identity scale, route continuity, and gate-lift docs._
+
 | Effect | Location | Expected | Pass |
 |--------|----------|----------|:----:|
 | Layer enter (Z4→Z2→Z2) | HQ strap → hub → analytics deck | Spatial layer motion — not fade-only stagger | ☐ |
@@ -82,7 +99,7 @@ Sign off each route at 1280px + 390px against the cinematic bar in [`PLAYER_OS_M
 
 ## Sign-off gate
 
-**Epic 3.4+ and Epic 4.1+ blocked** until all rows above are signed at 1280px + 390px and ROADMAP marks **2.19 Done**.
+**Epic 3.4+ and Epic 4.1+** — gate open after 2.19 Done; **launch blocked** until reference matrix, void contract, and primitive parity rows above are signed at 1280px + 390px per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md).
 
 | Reviewer | Date | Notes |
 |----------|------|-------|

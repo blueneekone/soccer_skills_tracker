@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" aria-hidden="true">
+  <defs>
+    <linearGradient id="holo-a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="45%" stop-color="#14b8a6" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.75"/>
+    </linearGradient>
+    <linearGradient id="holo-b" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="none" stroke="url(#holo-a)" stroke-width="5"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="url(#holo-b)" stroke-width="2" opacity="0.7"/>
+  <circle cx="64" cy="64" r="50" fill="none" stroke="#05050a" stroke-width="1" opacity="0.25"/>
+</svg>

@@ -35,11 +35,12 @@ describe('Sprint 2.5 — OperativeHub 8+4 command strip', () => {
 		expect(hubSrc).not.toMatch(/operative-hub__quests[\s\S]*?bento-span-12/);
 	});
 
-	it('background is flat dominant surface (NOT rgba(2, 2, 2, 0.7) glass)', () => {
+	it('background is flat dossier panel surface (NOT rgba(2, 2, 2, 0.7) glass)', () => {
 		const hubBlock = hubSrc.match(/\.operative-hub\s*\{[\s\S]*?\}/)?.[0] ?? '';
 		expect(hubBlock).not.toMatch(/rgba\(2,\s*2,\s*2,\s*0\.7\)/);
 		expect(hubBlock).not.toMatch(/backdrop-filter:\s*blur/);
-		expect(hubBlock).toMatch(/var\(--color-dominant|#0f172a/);
+		// superseded by 2.8 Player Dossier
+		expect(hubBlock).toMatch(/var\(--pd-panel|#05050a/);
 	});
 });
 

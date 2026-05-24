@@ -6,7 +6,7 @@
   import type { IconName } from '$lib/icons/registry.js';
   import { httpsCallable } from 'firebase/functions';
   import { db, functions } from '$lib/firebase.js';
-  import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+  import { collection, doc, onSnapshot, orderBy, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
@@ -23,8 +23,15 @@
   import Swal from 'sweetalert2';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
+  import TrainMissionBrief from '$lib/components/player/workout/TrainMissionBrief.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+  import {
+    buildDailyQuests,
+    loadQuestProgress,
+    resolveHeroQuest,
+  } from '$lib/player/dashboard/activeBounties.js';
   import '$lib/styles/player-dashboard-hud.css';
+  import '$lib/styles/player-missions.css';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
@@ -71,6 +78,28 @@
     }
     playerEngine.detach();
   });
+
+  /** @type {Record<string, unknown> | null} */
+  let statsRaw = $state(null);
+  const lastTrainingUtc = $derived(
+    typeof statsRaw?.last_training_utc === 'string' ? statsRaw.last_training_utc : null,
+  );
+  $effect(() => {
+    if (!browser) return;
+    const uid = authStore.user?.uid;
+    if (authStore.role !== 'player' || !uid) { statsRaw = null; return; }
+    return onSnapshot(
+      doc(db, 'player_stats', uid),
+      (snap) => { statsRaw = snap.exists() ? snap.data() : null; },
+      (e) => { console.error('[player workout] player_stats', e); statsRaw = null; },
+    );
+  });
+  const briefingQuest = $derived(
+    resolveHeroQuest(
+      buildDailyQuests(profile ? /** @type {Record<string, unknown>} */ (profile) : null, loadQuestProgress()),
+      { lastTrainingUtc },
+    ),
+  );
 
   let xpTrackEl = $state(/** @type {HTMLDivElement | null} */ (null));
   $effect(() => {
@@ -402,7 +431,7 @@
 
   <section class="pd-stat-row pd-page-panel" aria-label="Session telemetry">
     <HudStatCell label="Level" value={`LVL ${String(level).padStart(2, '0')}`} />
-    <div class="pw-hud__cell pw-hud__cell--load">
+    <div class="pw-hud__cell pw-hud__cell--load hud-stat-cell hud-stat-cell--xp">
       <div class="pw-hud__row">
         <span class="pd-label">XP to next rank</span>
         <span class="pw-mono pw-data">{currentXp}<span class="pw-dim"> / </span>{nextLevelXp > 0 ? nextLevelXp : 'MAX'}</span>
@@ -474,6 +503,7 @@
 
     <!-- Execution terminal -->
     <section class="pw-panel pd-page-panel pw-panel--premium pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
+      <TrainMissionBrief quest={briefingQuest} />
       <div class="pw-panel__head pw-panel__head--row">
         <div>
           <span class="pw-eyebrow">Execution terminal</span>
@@ -796,6 +826,8 @@
     margin-top: 0.2rem;
   }
 
+  /* Sprint 2.20c — XP cell uses hud-stat-cell chrome (clip-path, border, padding) for height
+     parity with Level + Day streak cells; internal layout preserved via scoped override */
   .pw-hud__cell--load {
     display: flex;
     flex-direction: column;
@@ -829,8 +861,15 @@
   }
 
   .pw-grid {
-    align-items: start;
     overflow: visible;
+  }
+
+  @media (min-width: 768px) {
+    /* Sprint 2.20c — stretch both panels to the same row height; threat panel keeps align-self:start
+       for sticky positioning which overrides this at the item level */
+    .pw-grid {
+      align-items: stretch;
+    }
   }
 
   .pw-panel {
@@ -1104,8 +1143,16 @@
   }
 
   .pw-range:focus {
+    outline: none;
+  }
+
+  .pw-range:focus-visible {
     outline: 1px solid color-mix(in srgb, var(--pd-accent-data) 55%, transparent);
     outline-offset: 2px;
+  }
+
+  .pw-gauge:last-child .pw-range:focus-visible {
+    outline-color: color-mix(in srgb, #f59e0b 55%, transparent);
   }
 
   .pw-range::-webkit-slider-runnable-track {

@@ -10,10 +10,20 @@
 		lastMonthXp: number;
 		monthsActive: number;
 		loading: boolean;
+		dossierMode?: boolean;
 	}
 
-	let { gvi, gviTier, gviLabel, gviFormatted, currentMonthXp, lastMonthXp, monthsActive, loading }: Props =
-		$props();
+	let {
+		gvi,
+		gviTier,
+		gviLabel,
+		gviFormatted,
+		currentMonthXp,
+		lastMonthXp,
+		monthsActive,
+		loading,
+		dossierMode = false,
+	}: Props = $props();
 
 	// Sparkline bar calculations
 	const totalXp = $derived(currentMonthXp + lastMonthXp);
@@ -56,27 +66,31 @@
 			case 'IGNITING':
 			default:
 				return {
-					badgeBg: 'tw-bg-slate-700/30',
-					badgeBorder: 'tw-border-slate-600/30',
-					badgeText: 'tw-text-slate-400',
+					badgeBg: dossierMode ? 'tw-bg-[color-mix(in_srgb,var(--pd-panel,#05050a)_92%,#fff)]' : 'tw-bg-slate-700/30',
+					badgeBorder: dossierMode ? 'tw-border-[color-mix(in_srgb,var(--pd-line,rgba(255,255,255,0.1))_100%,transparent)]' : 'tw-border-slate-600/30',
+					badgeText: dossierMode ? 'tw-text-[var(--pd-text-muted,rgba(255,255,255,0.5))]' : 'tw-text-slate-400',
 					glow: '',
-					barCurrent: 'tw-bg-slate-500',
+					barCurrent: dossierMode ? 'tw-bg-[var(--pd-text-muted,rgba(255,255,255,0.35))]' : 'tw-bg-slate-500',
 					barCurrentGlow: '',
-					valueColor: 'tw-text-slate-300',
+					valueColor: dossierMode ? 'tw-text-[var(--pd-text-muted,rgba(255,255,255,0.5))]' : 'tw-text-slate-300',
 				};
 		}
 	});
 </script>
 
 <div
-	class="tw-relative tw-flex tw-flex-col tw-rounded-2xl tw-border tw-border-[#14b8a6]/15 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)] tw-overflow-hidden {tierConfig.glow}"
+	class="gvi-root tw-relative tw-flex tw-flex-col tw-rounded-2xl tw-overflow-hidden {dossierMode
+		? 'pd-glass-panel'
+		: 'tw-border tw-border-[#14b8a6]/15 tw-bg-[linear-gradient(165deg,rgba(20, 184, 166,0.06)_0%,rgba(5,5,10,0.92)_45%,rgba(0,0,0,0.55)_100%)]'} {tierConfig.glow}"
 	style="padding: clamp(0.75rem, 2vw, 1.25rem); gap: clamp(0.5rem, 1.5vw, 0.75rem);"
 >
 	<!-- Ambient top glow -->
+	{#if !dossierMode}
 	<div
 		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_70%_35%_at_50%_0%,rgba(20, 184, 166,0.04)_0%,transparent_70%)]"
 		aria-hidden="true"
 	></div>
+	{/if}
 
 	{#if loading}
 		<!-- Loading skeleton state -->
@@ -93,7 +107,9 @@
 		<!-- Eyebrow -->
 		<div class="tw-relative tw-flex tw-items-center tw-justify-between">
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-uppercase {dossierMode
+					? 'tw-text-[var(--pd-accent-data-bright,rgba(0,212,255,0.55))]'
+					: 'tw-text-[#14b8a6]/60'}"
 				style="font-size: clamp(7px, 0.9vw, 10px);"
 			>
 				[ GROWTH VELOCITY INDEX ]

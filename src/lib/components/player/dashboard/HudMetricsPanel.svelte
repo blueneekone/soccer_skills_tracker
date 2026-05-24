@@ -33,11 +33,7 @@
 	aria-label="HUD metrics panel"
 >
 	<section class="hmp-vectors" aria-label="Vanguard vectors">
-		{#if embedded && !telemetryReady}
-			<p class="hmp-vectors-collapsed" role="status">
-				Vectors unlock when coach telemetry arrives · tap radar below to explore
-			</p>
-		{:else}
+		{#if !embedded || telemetryReady}
 			<dl class="hmp-grid hmp-grid--vectors">
 				{#each vectorRows as row (row.id)}
 					<div class="hmp-cell hmp-cell--selectable" class:hmp-cell--selected={selectedAxis === row.id}>

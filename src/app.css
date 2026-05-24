@@ -538,10 +538,26 @@ body {
 	/* Sprint 9.2 extended span helpers for 12-col asymmetric grid */
 	.bento-span-3  { grid-column: span 3; }
 	.bento-span-4  { grid-column: span 4; }
+	.bento-span-5  { grid-column: span 5; }
 	.bento-span-6  { grid-column: span 6; }
 	.bento-span-8  { grid-column: span 8; }
 	.bento-span-9  { grid-column: span 9; }
 	.bento-span-12 { grid-column: span 12; }
+
+	/** Sprint 3.1.2 — collapse asymmetric spans on single-track mobile 12-col */
+	@media (max-width: 63.99rem) {
+		.bento-grid.bento-grid--12col > :where(
+			.bento-span-2,
+			.bento-span-3,
+			.bento-span-4,
+			.bento-span-5,
+			.bento-span-6,
+			.bento-span-8,
+			.bento-span-9
+		) {
+			grid-column: 1 / -1;
+		}
+	}
 
 	/**
 	 * .bento-cell

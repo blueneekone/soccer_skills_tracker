@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" aria-hidden="true">
+  <defs>
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="none" stroke="#14b8a6" stroke-width="5" opacity="0.95" filter="url(#neon-glow)"/>
+  <circle cx="64" cy="64" r="52" fill="none" stroke="#5eead4" stroke-width="1.5" opacity="0.35"/>
+</svg>

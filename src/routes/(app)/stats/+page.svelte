@@ -6,9 +6,16 @@
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import { dossierRadarFromPlayerStats } from '$lib/utils/sport-attributes.js';
+	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
+	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
 	import '$lib/styles/director-os.css';
+	import '$lib/styles/player-dossier.css';
+	import '$lib/styles/player-dashboard-hud.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
 
 	const isPlayerRole = $derived(authStore.role === 'player');
 
@@ -26,6 +33,7 @@
 	let skillsVector = $state(/** @type {number[]} */ ([10, 10, 10, 10, 10, 10]));
 	let radarLabels = $state(/** @type {string[]} */ (['PACE', 'SKILL', 'PASS', 'DEF', 'PHY', 'TECH']));
 	let radarTag = $state('RDR_S6_generic');
+	let selectedVanguardAxis = $state<VanguardAxisId | null>(null);
 
 	/** @type {Array<{ month: string; xp: number }>} */
 	let monthlyPerformance = $state([]);
@@ -204,6 +212,16 @@
 	/** @type {Record<string, unknown> | null} */
 	let playerStatsSnapshot = $state(null);
 
+	const attrRadarValues = $derived(
+		deriveVanguardPrism(
+			playerStatsSnapshot,
+			/** @type {import('$lib/utils/vanguard-prism.js').ArmoryStats} */ (
+				authStore.userProfile?.armory?.stats ?? {}
+			),
+		),
+	);
+	const telemetryReady = $derived(hasVanguardTelemetry(attrRadarValues));
+
 	function resolveTeamSportRaw() {
 		const tid =
 			typeof authStore.userProfile?.teamId === 'string' ?
@@ -337,6 +355,7 @@
 		radarCanvas;
 		ChartCtor;
 		radarLabels;
+		if (isPlayerRole) return;
 		const values = skillsVector;
 		if (!chartOk || !ChartCtor || !radarCanvas || !browser) return;
 
@@ -402,58 +421,33 @@
 	/** @type {import('chart.js').Chart | null} */
 	let workoutChartInst = null;
 
+	// Effect 1 — chart lifecycle: create (with cinematic intro) when canvas, constructor, or view
+	// mode changes. Teardown destroys on unmount or when these structural deps change.
 	$effect(() => {
 		chartOk;
 		workoutCanvas;
 		ChartCtor;
 		workoutViewMode;
-		monthlyPerformance;
-		dailyPerformance;
-		weeklyPerformance;
 		if (!chartOk || !ChartCtor || !workoutCanvas || !browser) return;
-
-		/** @type {string[]} */
-		let labels = [];
-		/** @type {number[]} */
-		let data = [];
-		let dsLabel = 'MONTHLY_XP';
-
-		if (workoutViewMode === 'daily') {
-			const rows = dailyPerformance;
-			labels = rows.map((r) => String(r.day ?? '').slice(5));
-			data = rows.map((r) =>
-				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
-			);
-			dsLabel = 'DAILY_XP';
-		} else if (workoutViewMode === 'weekly') {
-			const rows = weeklyPerformance;
-			labels = rows.map((r) => String(r.week ?? '').slice(5));
-			data = rows.map((r) =>
-				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
-			);
-			dsLabel = 'WEEKLY_XP';
-		} else {
-			const rows = monthlyPerformance;
-			labels = rows.map((r) => String(r.month ?? ''));
-			data = rows.map((r) =>
-				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
-			);
-			dsLabel = 'MONTHLY_XP';
-		}
 
 		if (workoutChartInst) {
 			workoutChartInst.destroy();
 			workoutChartInst = null;
 		}
 
+		const dsLabel =
+			workoutViewMode === 'daily' ? 'DAILY_XP' :
+			workoutViewMode === 'weekly' ? 'WEEKLY_XP' :
+			'MONTHLY_XP';
+
 		workoutChartInst = new ChartCtor(workoutCanvas, {
 			type: 'line',
 			data: {
-				labels,
+				labels: [],
 				datasets: [
 					{
 						label: dsLabel,
-						data,
+						data: [],
 						borderColor: 'rgba(0, 255, 200, 0.92)',
 						backgroundColor: 'rgba(20, 184, 166, 0.14)',
 						fill: true,
@@ -468,10 +462,14 @@
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				layout: {
+					padding: { top: 8, bottom: 4, left: 4, right: 8 },
+				},
 				animation: { duration: 380 },
 				plugins: {
 					legend: {
 						display: true,
+						position: 'bottom',
 						labels: {
 							color: 'rgba(226, 232, 240, 0.85)',
 							font: { family: 'ui-monospace, monospace', size: 10 },
@@ -510,6 +508,51 @@
 		};
 	});
 
+	// Effect 2 — data-only updates: patch existing chart instance without re-animating.
+	// Runs on every Firestore snapshot (performance data change) without destroying the chart.
+	$effect(() => {
+		workoutViewMode;
+		monthlyPerformance;
+		dailyPerformance;
+		weeklyPerformance;
+		if (!workoutChartInst || !browser) return;
+
+		/** @type {string[]} */
+		let labels = [];
+		/** @type {number[]} */
+		let data = [];
+		let dsLabel = 'MONTHLY_XP';
+
+		if (workoutViewMode === 'daily') {
+			const rows = dailyPerformance;
+			labels = rows.map((r) => String(r.day ?? '').slice(5));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'DAILY_XP';
+		} else if (workoutViewMode === 'weekly') {
+			const rows = weeklyPerformance;
+			labels = rows.map((r) => String(r.week ?? '').slice(5));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'WEEKLY_XP';
+		} else {
+			const rows = monthlyPerformance;
+			labels = rows.map((r) => String(r.month ?? ''));
+			data = rows.map((r) =>
+				typeof r.xp === 'number' && !Number.isNaN(r.xp) ? r.xp : 0,
+			);
+			dsLabel = 'MONTHLY_XP';
+		}
+
+		workoutChartInst.data.labels = labels;
+		workoutChartInst.data.datasets[0].data = data;
+		workoutChartInst.data.datasets[0].label = dsLabel;
+		workoutChartInst.update('none');
+		workoutChartInst.resize();
+	});
+
 	/** @param {BadgeDef} b @param {number} i */
 	function lockedLine(b, i) {
 		if (b.unlocked) return b.title;
@@ -518,18 +561,39 @@
 </script>
 
 <div
-	class="ec-page ec-player-stats view-section dossier-page"
+	class="ec-page ec-player-stats view-section dossier-page player-dossier-root pd-page-root"
 	class:pos-stats={isPlayerRole}
 >
+	<div class="pd-content-wrap">
+	{#if isPlayerRole}
+		<PlayerOsPageStrap eyebrow="Progress / Analytics" title="Operative analytics">
+			{#snippet status()}
+				<span class="pd-label">LV {dossierLevel}</span>
+			{/snippet}
+		</PlayerOsPageStrap>
+	{:else}
 	<h1 class="tw-text-2xl tw-font-bold tw-text-white tw-mb-6">Operative Analytics</h1>
+	{/if}
 
 	<div
 		class="dossier-grid"
 		role="region"
 		aria-label="Skill radar and analytics"
 	>
+		{#if isPlayerRole}
+			<section
+				class="dossier-panel dossier-radar pd-page-panel pd-panel-section bento-span-12"
+				aria-label="Vanguard protocol telemetry"
+			>
+				<VanguardProtocolPanel
+					prismValues={attrRadarValues}
+					bind:selectedAxis={selectedVanguardAxis}
+					compact={!telemetryReady}
+				/>
+			</section>
+		{:else}
 		<section
-			class="dossier-panel dossier-radar"
+			class="dossier-panel dossier-radar pd-page-panel pd-panel-section"
 			aria-label="Skill radar telemetry matrix"
 		>
 			<div class="dossier-radar__head">
@@ -550,13 +614,16 @@
 				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · {radarTag} · SRC=PLAYER_STATS
 			</div>
 		</section>
+		{/if}
 
 		<section
-			class="dossier-panel dossier-workout"
+			class="dossier-panel dossier-workout pd-page-panel pd-panel-section"
+			class:bento-span-12={isPlayerRole}
 			aria-label="Workout telemetry"
 		>
 			<div class="dossier-radar__head">
-				<span class="dossier-label">Workout Telemetry</span>
+				<span class="dossier-label">Workout telemetry</span>
+				{#if !isPlayerRole}
 				<span class="dossier-mono dossier-tx-tag">
 					{workoutViewMode === 'daily' ?
 						'WX_DAILY_14' :
@@ -564,6 +631,7 @@
 							'WX_WEEK_8' :
 							'WX_MONTHLY'}
 				</span>
+				{/if}
 			</div>
 			<div class="dossier-workout__seg" role="group" aria-label="Workout aggregation window">
 				<button
@@ -594,13 +662,14 @@
 			<p class="dossier-radar__hint no-print">
 				Training XP from workout logs — UTC day / Monday-week / calendar-month buckets (toggle above)
 			</p>
-			<div class="dossier-workout__chart tw-min-w-0 tw-h-[260px] tw-relative">
+			<div class="dossier-workout__chart tw-min-w-0 tw-h-[300px] tw-relative">
 				<canvas
 					bind:this={workoutCanvas}
 					class="dossier-canvas"
 					aria-label="Training XP trend by selected period"
 				></canvas>
 			</div>
+			{#if !isPlayerRole}
 			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
 				{#if workoutViewMode === 'daily'}
 					SERIES=DAILY · N={dailyPerformance.length} · UTC · XP
@@ -610,12 +679,13 @@
 					SERIES=MONTHLY · N={monthlyPerformance.length} · YYYY-MM · XP
 				{/if}
 			</div>
+			{/if}
 		</section>
 	</div>
 
 	<!-- Trophy matrix -->
 	<section
-		class="dossier-panel dossier-badges"
+		class="dossier-panel dossier-badges pd-page-panel pd-panel-section"
 		id="trophy-room"
 		aria-label="Achievement matrix"
 	>
@@ -658,17 +728,18 @@
 			{/each}
 		</div>
 	</section>
+	</div>
 </div>
 
 <style>
-	:global(:where(.dossier-page)) {
-		--d-bg: #000000;
-		--d-panel: #05050a;
-		--d-line: rgba(255, 255, 255, 0.1);
-		--d-cyber: #14b8a6;
+	:global(:where(.dossier-page.player-dossier-root)) {
+		--d-bg: var(--pd-bg, #000000);
+		--d-panel: var(--pd-panel, #05050a);
+		--d-line: var(--pd-line, rgba(255, 255, 255, 0.1));
+		--d-cyber: var(--pd-accent-data, #14b8a6);
 		--d-iso: #4ade80;
 		background: var(--d-bg);
-		color: #f4f4f5;
+		color: var(--pd-text, #f4f4f5);
 		padding-bottom: clamp(1.25rem, 3vw, 2rem);
 	}
 
@@ -692,10 +763,14 @@
 		.dossier-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
+
+		/* Sprint 2.20c — workout chart spans full grid width below VPP radar */
+		.dossier-workout {
+			grid-column: 1 / -1;
+		}
 	}
 
 	.dossier-panel {
-		background: var(--d-panel);
 		border: 1px solid var(--d-line);
 		border-radius: 0;
 		padding: var(--bento-pad-sm);
@@ -882,11 +957,20 @@
 	.tw-h-\[300px\] {
 		height: 300px;
 	}
-	.tw-h-\[260px\] {
-		height: 260px;
-	}
 	.tw-relative {
 		position: relative;
+	}
+
+	/* Sprint 2.22 slice 4e — workout chart full-width parity with VPP radar */
+	.dossier-workout__chart,
+	.dossier-radar__chart {
+		width: 100%;
+		min-height: 300px;
+	}
+
+	.dossier-workout .dossier-canvas {
+		width: 100% !important;
+		height: 100% !important;
 	}
 
 	/* Team leaderboard strip — readable on Operative Analytics dark shell */

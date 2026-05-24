@@ -40,7 +40,7 @@ export const PLAYER_COMMAND_CENTER_LINKS: readonly PlayerCommandCenterLink[] = O
 		description: 'Team and household threads',
 	},
 	{
-		href: '/settings',
+		href: '/player/settings',
 		label: 'Settings',
 		icon: 'sys.settings',
 		description: 'Account, privacy, and billing',

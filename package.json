@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "prebuild": "node scripts/check-no-phosphor.mjs",
+    "generate:cosmetics": "node scripts/generate-cosmetics-manifest.mjs",
+    "check:file-budget": "node scripts/check-file-budget.mjs",
+    "prebuild": "node scripts/check-no-phosphor.mjs && node scripts/check-file-budget.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./jsconfig.json",
@@ -58,7 +60,6 @@
     "pdfjs-dist": "^5.6.205",
     "qrcode": "^1.5.4",
     "sweetalert2": "^11.26.24",
-    "three": "^0.184.0",
     "xlsx": "npm:@e965/xlsx@^0.20.3"
   }
 }

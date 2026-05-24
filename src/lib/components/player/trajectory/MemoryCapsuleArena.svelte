@@ -5,9 +5,10 @@
 		capsule: MemoryCapsuleDoc;
 		baselineDaysAgo: number;
 		capsuleHeadline: string;
+		dossierMode?: boolean;
 	}
 
-	let { capsule, baselineDaysAgo, capsuleHeadline }: Props = $props();
+	let { capsule, baselineDaysAgo, capsuleHeadline, dossierMode = false }: Props = $props();
 
 	const SCOUTS_SIX_KEYS = ['PAC', 'ACC', 'AGI', 'STM', 'POW', 'VAN'] as const;
 	type MetricKey = (typeof SCOUTS_SIX_KEYS)[number];
@@ -43,14 +44,18 @@
 </script>
 
 <article
-	class="tw-relative tw-w-full tw-bg-[#020202]/80 tw-backdrop-blur-xl tw-rounded-3xl tw-border tw-border-[#14b8a6]/20 tw-shadow-[0_0_60px_rgba(20, 184, 166,0.08),inset_0_1px_0_rgba(255,255,255,0.04)] tw-overflow-hidden"
+	class="mc-arena tw-relative tw-w-full tw-rounded-3xl tw-overflow-hidden {dossierMode
+		? 'mc-arena--dossier-premium pd-glass-panel'
+		: 'tw-bg-[#020202]/80 tw-backdrop-blur-xl tw-border tw-border-[#14b8a6]/20 tw-shadow-[0_0_60px_rgba(20, 184, 166,0.08),inset_0_1px_0_rgba(255,255,255,0.04)]'}"
 	style="padding: clamp(1rem, 3vw, 2rem);"
 >
 	<!-- Ambient glow layer -->
+	{#if !dossierMode}
 	<div
 		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(20, 184, 166,0.05)_0%,transparent_70%)]"
 		aria-hidden="true"
 	></div>
+	{/if}
 
 	<!-- Header -->
 	<header class="tw-relative tw-mb-6 tw-flex tw-flex-col tw-gap-2">

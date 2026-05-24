@@ -36,7 +36,7 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 ### Player
 
 - **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout equip layer → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)).
-- **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. Premium cinematic track **2.12.1–2.19** gates Epic 3.4 / 4.1 until **2.19 Done**. Player OS target = operative command deck, not flat dossier admin.
+- **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. Premium cinematic track **2.12.1–2.19 Done** — Epic 3.4 / 4.1 **unblocked after 2.19 Done** (sign-off still required). Player OS target = operative command deck, not flat dossier admin.
 - **Vision:** [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md)
 
 ### Parent

@@ -28,24 +28,25 @@ describe('Sprint 2.4 — player-hud-root structural token remap', () => {
 		expect(rootBlock).not.toMatch(/--color-structural:\s*#3b82f6/);
 	});
 
-	it('.player-hud-root .bento-card uses chamfer clip-path and #334155 border', () => {
-		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.bento-card[\s\S]*?clip-path:\s*polygon/);
-		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.bento-card[\s\S]*?#334155/);
+	it('.player-hud-root .bento-card uses dossier panel border (superseded by 2.8 Player Dossier)', () => {
+		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.bento-card[\s\S]*?var\(--pd-panel|--player-hud-surface/);
+		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.bento-card[\s\S]*?var\(--pd-line|--player-hud-border/);
 		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.bento-card[\s\S]*?border-radius:\s*0/);
 	});
 });
 
-describe('Sprint 2.4 — AttributeRadar gold data polygon', () => {
+describe('Sprint 2.4 — AttributeRadar data polygon (teal in 2.8 Player Dossier)', () => {
 	it('skill polygon does NOT use #3b82f6 or structural blue fallback for fill/stroke', () => {
 		const skillPoly = radarSrc.match(/points=\{skillPolygonPoints\}[\s\S]*?\/\>/)?.[0] ?? radarSrc;
 		expect(skillPoly).not.toMatch(/#3b82f6/);
 		expect(skillPoly).not.toMatch(/var\(--color-structural,\s*#3b82f6\)/);
-		expect(skillPoly).toMatch(/var\(--color-accent|#fbbf24/);
+		// superseded by 2.8 Player Dossier — teal data accent
+		expect(skillPoly).toMatch(/var\(--pd-accent-data|#14b8a6/);
 	});
 
-	it('vertex circles use gold accent', () => {
+	it('vertex circles use teal data accent (superseded by 2.8 Player Dossier)', () => {
 		const vtxBlock = radarSrc.match(/\{#each skillVertices[\s\S]*?\{\/each\}/)?.[0] ?? '';
-		expect(vtxBlock).toMatch(/var\(--color-accent|#fbbf24/);
+		expect(vtxBlock).toMatch(/var\(--pd-accent-data|#14b8a6/);
 		expect(vtxBlock).not.toMatch(/#3b82f6/);
 	});
 });
@@ -57,9 +58,9 @@ describe('Sprint 2.4 — VanguardProtocolPanel palette', () => {
 		expect(eyebrow).not.toMatch(/var\(--color-structural,\s*#3b82f6\)/);
 	});
 
-	it('.vpp-inspector__bar::after uses gold accent, not structural blue', () => {
+	it('.vpp-inspector__bar::after uses teal data accent, not structural blue (superseded by 2.8 Player Dossier)', () => {
 		const barAfter = vppSrc.match(/\.vpp-inspector__bar::after\s*\{[\s\S]*?\}/)?.[0] ?? '';
-		expect(barAfter).toMatch(/var\(--color-accent|#fbbf24/);
+		expect(barAfter).toMatch(/var\(--pd-accent-data|#14b8a6/);
 		expect(barAfter).not.toMatch(/#3b82f6/);
 		expect(barAfter).not.toMatch(/var\(--color-structural,\s*#3b82f6\)/);
 	});
@@ -108,8 +109,8 @@ describe('Sprint 2.4 — PLAYER_OS design system docs', () => {
 		expect(playerOsSrc).toMatch(/OperativeHub|analytics/i);
 	});
 
-	it('PLAYER_OS.md documents gold radar data polygon', () => {
-		expect(playerOsSrc).toMatch(/gold.*radar|radar.*gold/i);
+	it('PLAYER_OS.md documents dossier radar data accent (superseded by 2.8 Player Dossier)', () => {
+		expect(playerOsSrc).toMatch(/teal.*radar|radar.*teal|--pd-accent-data/i);
 	});
 });
 

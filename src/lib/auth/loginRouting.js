@@ -129,7 +129,7 @@ export function getContextFromHref(href) {
 		if (path === '/home' || path.startsWith('/home/')) return 'household';
 		if (path.startsWith('/stats')) return 'household';
 		if (path.startsWith('/trophies')) return 'household';
-		if (path.startsWith('/settings')) return 'household';
+		if (path.startsWith('/settings') || path.startsWith('/player/settings')) return 'household';
 		return '';
 	} catch {
 		return '';

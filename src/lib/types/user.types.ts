@@ -35,6 +35,12 @@ import type { User } from 'firebase/auth';
 // Re-exports — these remain the single definition in their home files.
 export type { UserRole } from './index';
 export type { VanguardClaims, TenantUser, TenantRole } from './tenant';
+export type {
+	OperativeLoadoutV1,
+	EquippedLoadout,
+	LoadoutSlotId,
+	OwnedCosmeticsList,
+} from '$lib/gamification/loadoutSchema.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // § 1  RBAC Role Surface

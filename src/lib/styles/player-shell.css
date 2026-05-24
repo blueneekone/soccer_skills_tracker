@@ -96,19 +96,20 @@
 	--pp-accent-cool: #14b8a6;
 }
 
+/* Sprint 2.22 slice 5 — atmosphere / void amplification */
 .ps-root:has(.player-dossier-root) .ps-ambient__grid,
 .ps-root.ps-root--dossier .ps-ambient__grid {
-	opacity: 0.4;
+	opacity: 0.5;
 }
 
 .ps-root:has(.player-dossier-root) .ps-ambient__glow,
 .ps-root.ps-root--dossier .ps-ambient__glow {
-	opacity: 0.28;
+	opacity: 0.34;
 }
 
 .ps-root:has(.player-dossier-root) .ps-ambient__glow--a,
 .ps-root.ps-root--dossier .ps-ambient__glow--a {
-	background: radial-gradient(circle, rgba(20, 184, 166, 0.08), transparent 70%);
+	background: radial-gradient(circle, rgba(20, 184, 166, 0.12), transparent 70%);
 }
 
 .ps-root:has(.player-dossier-root) .ps-ambient__glow--b,
@@ -124,7 +125,7 @@
 	inset: 0;
 	pointer-events: none;
 	z-index: 1;
-	opacity: 0.055;
+	opacity: 0.09;
 	background: repeating-linear-gradient(
 		0deg,
 		transparent,
@@ -181,7 +182,7 @@
 
 .ps-root:has(.player-dossier-root) .ps-canvas-bg,
 .ps-root.ps-root--dossier .ps-canvas-bg {
-	opacity: 0.22;
+	opacity: 0.14;
 	background: linear-gradient(to bottom right, rgba(5, 5, 10, 0.85), transparent 72%);
 }
 
@@ -195,8 +196,8 @@
 	z-index: 2;
 	background: radial-gradient(
 		ellipse 85% 75% at 50% 45%,
-		transparent 38%,
-		rgba(0, 0, 0, 0.62) 100%
+		transparent 32%,
+		rgba(0, 0, 0, 0.72) 100%
 	);
 }
 

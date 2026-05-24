@@ -1,0 +1,90 @@
+/**
+ * playerHudSprint230.test.ts — Sprint 2.22 slice 6d Train hero + HQ chrome
+ */
+
+import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const ROOT = join(__dirname, '..', '..', '..', '..', '..');
+const MISSIONS_CSS = join(ROOT, 'lib/styles/player-missions.css');
+const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
+const TRAIN_BRIEF = join(ROOT, 'lib/components/player/workout/TrainMissionBrief.svelte');
+const WORKOUT_PAGE = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
+const HUD_STAT = join(ROOT, 'lib/components/player/dashboard/HudStatCell.svelte');
+const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
+
+const missionsCss = existsSync(MISSIONS_CSS) ? readFileSync(MISSIONS_CSS, 'utf-8') : '';
+const hudCss = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
+const trainBriefSrc = existsSync(TRAIN_BRIEF) ? readFileSync(TRAIN_BRIEF, 'utf-8') : '';
+const workoutSrc = existsSync(WORKOUT_PAGE) ? readFileSync(WORKOUT_PAGE, 'utf-8') : '';
+const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
+const hudStatSrc = existsSync(HUD_STAT) ? readFileSync(HUD_STAT, 'utf-8') : '';
+const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
+
+describe('Sprint 2.22 slice 6d — Train mission briefing hero', () => {
+	it('TrainMissionBrief.svelte exists with briefing markup', () => {
+		expect(existsSync(TRAIN_BRIEF)).toBe(true);
+		expect(trainBriefSrc).toMatch(/quest-hero--train/);
+		expect(trainBriefSrc).toMatch(/Mission briefing/);
+	});
+
+	it('workout/+page.svelte imports and renders TrainMissionBrief', () => {
+		expect(workoutSrc).toMatch(/TrainMissionBrief/);
+		expect(workoutSrc).toMatch(/<TrainMissionBrief quest=\{briefingQuest\} \/>/);
+		expect(workoutSrc).toMatch(/resolveHeroQuest/);
+		expect(workoutSrc).toMatch(/buildDailyQuests/);
+		expect(workoutSrc).toMatch(/player-missions\.css/);
+	});
+
+	it('TrainMissionBrief has no quest-hero__cta or Accept button', () => {
+		expect(trainBriefSrc).not.toMatch(/quest-hero__cta/);
+		expect(trainBriefSrc).not.toMatch(/Accept/i);
+	});
+
+	it('player-missions.css contains quest-hero--train and Sprint 2.22 slice 6d', () => {
+		expect(missionsCss).toMatch(/Sprint 2\.22 slice 6d — Train mission briefing hero/);
+		expect(missionsCss).toMatch(/\.quest-hero--train/);
+		expect(missionsCss).toMatch(/\.quest-hero__brief-hint/);
+	});
+});
+
+describe('Sprint 2.22 slice 6d — Quick Ops icon badges', () => {
+	it('OperativeQuickOps applies unified action icon styling via CSS', () => {
+		expect(quickOpsSrc).not.toMatch(/data-oqo-accent/);
+		expect(quickOpsSrc).not.toMatch(/accent:\s*'(data|neutral)'/);
+	});
+
+	it('player-dashboard-hud.css applies amber depth + hover glow to Quick Ops tiles', () => {
+		expect(hudCss).toMatch(/Sprint 2\.22 slice 6d — Quick Ops icon badges/);
+		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op__icon[\s\S]*--pd-accent-action/);
+		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op:hover[\s\S]*--pd-accent-action/);
+		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op[\s\S]*--pd-emissive-gold/);
+	});
+});
+
+describe('Sprint 2.22 slice 6d — identity stat badges + ultrawide density', () => {
+	it('HudStatCell renders icons for streak and xp variants', () => {
+		expect(hudStatSrc).toMatch(/game\.flame/);
+		expect(hudStatSrc).toMatch(/game\.zap/);
+		expect(hudStatSrc).toMatch(/hud-stat-cell__icon-badge/);
+	});
+
+	it('player-dashboard-hud.css contains filled badge rules for streak and xp', () => {
+		expect(hudCss).toMatch(/\.hud-stat-cell--streak \.hud-stat-cell__icon-badge/);
+		expect(hudCss).toMatch(/\.hud-stat-cell--xp \.hud-stat-cell__icon-badge/);
+	});
+
+	it('ultrawide media query targets ibm-metrics inline row', () => {
+		expect(hudCss).toMatch(/@media \(min-width: 1920px\)[\s\S]*?\.ibm-metrics/);
+	});
+});
+
+describe('Sprint 2.22 slice 6d — ROADMAP sprint pointer', () => {
+	it('marks 6d In progress and 6c Done', () => {
+		expect(roadmapSrc).toMatch(/slice 6d Train hero \+ HQ chrome \(in progress\)/i);
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6d\*\*\s*\|[^|]*\|\s*\*\*In progress\*\*\s*\|/);
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6c\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
+	});
+});

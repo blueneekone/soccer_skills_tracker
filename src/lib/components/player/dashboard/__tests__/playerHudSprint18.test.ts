@@ -85,8 +85,8 @@ describe('Sprint 1.8 — HudMetricsPanel embedded flush + Vanguard vectors only'
 });
 
 describe('Sprint 1.8 — OperativeHub unified glass shell', () => {
-	it('OperativeHub uses structural border #334155 and liquid shadow token', () => {
-		expect(operativeSrc).toMatch(/#334155/);
+	it('OperativeHub uses dossier line border and liquid shadow token (superseded by 2.8 Player Dossier)', () => {
+		expect(operativeSrc).toMatch(/var\(--pd-line|--pd-panel/);
 		expect(operativeSrc).toMatch(/var\(--shadow-liquid\)/);
 	});
 

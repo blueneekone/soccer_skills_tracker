@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
+
 	let {
 		label,
 		value,
@@ -10,6 +13,10 @@
 		variant?: 'streak' | 'xp' | 'default';
 		title?: string;
 	} = $props();
+
+	const iconName = $derived(
+		variant === 'streak' ? ('game.flame' as IconName) : variant === 'xp' ? ('game.zap' as IconName) : null,
+	);
 </script>
 
 <span
@@ -18,8 +25,18 @@
 	class:hud-stat-cell--xp={variant === 'xp'}
 	{title}
 >
-	<span class="hud-stat-cell__label">{label}</span>
-	<span class="hud-stat-cell__value">{value}</span>
+	{#if iconName}
+		<span class="hud-stat-cell__icon-badge" aria-hidden="true">
+			<Icon name={iconName} size={14} />
+		</span>
+		<span class="hud-stat-cell__text">
+			<span class="hud-stat-cell__label">{label}</span>
+			<span class="hud-stat-cell__value">{value}</span>
+		</span>
+	{:else}
+		<span class="hud-stat-cell__label">{label}</span>
+		<span class="hud-stat-cell__value">{value}</span>
+	{/if}
 </span>
 
 <style>

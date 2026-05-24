@@ -7,6 +7,7 @@
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
+	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 
 	const PRO_CARD_INTEL = {
 		title: 'PRO PLAYER CARD',
@@ -24,6 +25,9 @@
 		prefetchedSeasons = undefined,
 		/** Optional DiceBear seed bundle from `users.operativeAvatar` (JSON only). */
 		operativeAvatar = undefined,
+		/** Sprint 3.1 — equipped loadout for border frame on portrait ring. */
+		operativeLoadout = undefined,
+		ownedCosmetics = undefined,
 		/** Shown on the 3D card front (default matches Quartermaster / tier copy). */
 		rankLabel = 'Recruit',
 		/** Back-face header. */
@@ -37,9 +41,20 @@
 		 * @type {'base' | 'holo' | 'radiant' | 'alt-art'}
 		 */
 		variant = 'base',
+		/** Armory Studio dossier row — flip ID card only, no stats / radar workspace. */
+		dossierPreview = false,
 	} = $props();
 
 	const avatarDesign = $derived(parseOperativeAvatar(operativeAvatar));
+
+	const portraitLayers = $derived(
+		composeOperativePortrait({
+			operativeAvatar,
+			loadout: operativeLoadout,
+			size: 96,
+			ownedIds: ownedCosmetics,
+		}),
+	);
 
 	/** 3D Operative ID card */
 	let isFlipped = $state(false);
@@ -72,6 +87,13 @@
 	});
 
 	$effect(() => {
+		if (dossierPreview) {
+			seasons = [];
+			selectedId = '';
+			loading = false;
+			return;
+		}
+
 		if (Array.isArray(prefetchedSeasons)) {
 			const list = prefetchedSeasons.map((s) => ({ ...s }));
 			list.sort((a, b) =>
@@ -220,12 +242,11 @@
 </script>
 
 {#if playerEmailKey}
-	<StickerVariantShell
-		{variant}
-		class="tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-backdrop-blur-md"
+	{#snippet operativeCardBody()}
+	<div
+		class="pro-card-outer bento-section"
+		class:pro-card-outer--dossier-preview={dossierPreview}
 	>
-		{#snippet children()}
-	<div class="pro-card-outer bento-section">
 		<div class="ppc-id-wrap">
 			<p
 				class="ppc-flip-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-500/80"
@@ -247,13 +268,22 @@
 					style="transform-style: preserve-3d;{isFlipped ? ' transform: rotateY(180deg);' : ''}"
 				>
 					<div
-						class="ppc-face ppc-face--front tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-700 tw-bg-slate-800 tw-p-6"
+						class="ppc-face ppc-face--front tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-2xl tw-border tw-p-6"
 						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<div
-							class="tw-mx-auto tw-mb-4 tw-flex tw-h-24 tw-w-24 tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
+							class="ppc-avatar-ring tw-relative tw-mx-auto tw-mb-4 tw-flex tw-h-24 tw-w-24 tw-items-center tw-justify-center tw-overflow-visible tw-rounded-full {portraitLayers.frameClass}"
 						>
-							<OperativeAvatarPreview config={avatarDesign} size={96} class="tw-rounded-full" />
+							<div
+								class="tw-flex tw-h-[96px] tw-w-[96px] tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
+							>
+								<OperativeAvatarPreview config={avatarDesign} size={96} class="tw-rounded-full" />
+							</div>
+							{#if portraitLayers.borderSvg}
+								<div class="ppc-loadout-border tw-pointer-events-none tw-absolute tw-inset-0" aria-hidden="true">
+									{@html portraitLayers.borderSvg}
+								</div>
+							{/if}
 						</div>
 						<h2
 							class="tw-m-0 tw-mb-2 tw-w-full tw-text-center tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere] tw-break-words"
@@ -267,7 +297,7 @@
 						</p>
 					</div>
 					<div
-						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-border-cyan-500 tw-bg-slate-900 tw-p-5 tw-text-left"
+						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-text-left"
 						style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<p
@@ -318,6 +348,7 @@
 			</div>
 		</div>
 
+		{#if !dossierPreview}
 			<div class="card pro-card-shell">
 				<div class="pro-card-header-row">
 					<div class="pro-card-title-row">
@@ -416,14 +447,41 @@
 				</div>
 			{/if}
 		</div>
+		{/if}
 	</div>
+	{/snippet}
+
+	{#if dossierPreview}
+		{@render operativeCardBody()}
+	{:else}
+	<StickerVariantShell
+		{variant}
+		class="pro-card-shell pd-glass-panel tw-rounded-2xl"
+	>
+		{#snippet children()}
+			{@render operativeCardBody()}
 		{/snippet}
 	</StickerVariantShell>
+	{/if}
 {/if}
 
 <style>
 	.ppc-id-wrap {
 		margin-bottom: clamp(16px, 3vw, 24px);
+	}
+
+	.ppc-loadout-border :global(svg) {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+
+	.loadout-frame--neon.ppc-avatar-ring {
+		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.35));
+	}
+
+	.loadout-frame--neon.ppc-avatar-ring > div:first-child {
+		box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.35);
 	}
 
 	.ppc-flip-scene {
@@ -435,6 +493,15 @@
 		grid-template-columns: 1fr;
 		gap: clamp(16px, 3vw, 24px);
 		margin-bottom: clamp(16px, 3vw, 24px);
+	}
+
+	.pro-card-outer--dossier-preview {
+		margin-bottom: 0;
+		gap: 0;
+	}
+
+	.pro-card-outer--dossier-preview .ppc-id-wrap {
+		margin-bottom: 0;
 	}
 
 	.pro-card-shell {

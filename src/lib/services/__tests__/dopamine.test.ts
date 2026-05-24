@@ -37,6 +37,7 @@ import {
 	dopamineExplosion,
 	dopamineOnCommit,
 	dopamineOnCallable,
+	ceremonyOnCosmeticUnlock,
 } from '$lib/services/dopamine.svelte.js';
 import type { BatchWriteResult } from '$lib/services/writes.types';
 
@@ -245,6 +246,23 @@ describe('Dopamine Engine', () => {
 			await flushAsync();
 			const callArg = mockConfetti.mock.calls[0][0] as Record<string, unknown>;
 			expect((callArg.colors as string[]).some((c) => c.includes('10b981') || c.includes('34d399'))).toBe(true);
+		});
+
+		it('loadoutUnlock preset uses gold + teal palette', async () => {
+			await dopamineExplosion('loadoutUnlock');
+			await flushAsync();
+			const callArg = mockConfetti.mock.calls[0][0] as Record<string, unknown>;
+			expect((callArg.colors as string[]).some((c) => c.includes('f0a500') || c.includes('14b8a6'))).toBe(
+				true,
+			);
+		});
+	});
+
+	describe('ceremonyOnCosmeticUnlock', () => {
+		it('fires loadoutUnlock confetti when enabled', async () => {
+			await ceremonyOnCosmeticUnlock();
+			await flushAsync();
+			expect(mockConfetti).toHaveBeenCalledTimes(1);
 		});
 	});
 });

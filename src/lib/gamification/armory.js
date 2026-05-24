@@ -1,5 +1,6 @@
 import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import { db } from '$lib/firebase.js';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '$lib/firebase.js';
 
 /**
  * Quartermaster gamification — **The Ledger** (Path B).
@@ -155,6 +156,17 @@ export async function processDeploymentRequest(user, item, clubId) {
 		requestedAt: serverTimestamp(),
 	};
 
+	// Lazy import breaks armory ↔ loadoutSchema circular dependency at module init.
+	const { getLoadoutCatalog } = await import('./loadoutSchema.js');
+	const LOADOUT_CATALOG_IDS = new Set(getLoadoutCatalog().map((row) => row.id));
+	const isDigitalLoadoutSku = itemType === 'digital' && LOADOUT_CATALOG_IDS.has(itemId);
+
+	if (isDigitalLoadoutSku) {
+		const redeemFn = httpsCallable(functions, 'redeemQuartermasterDigital');
+		const result = await redeemFn({ itemId, clubId: club });
+		return /** @type {{ data?: { fulfillmentId?: string } }} */ (result).data?.fulfillmentId ?? '';
+	}
+
 	try {
 		const fulfillmentId = await runTransaction(db, async (transaction) => {
 			const userSnap = await transaction.get(userRef);
@@ -166,7 +178,9 @@ export async function processDeploymentRequest(user, item, clubId) {
 			if (credits < cost) {
 				throw new Error('Insufficient Tactical Credits.');
 			}
-			transaction.update(userRef, { tacticalCredits: credits - cost });
+			/** @type {Record<string, unknown>} */
+			const userPatch = { tacticalCredits: credits - cost };
+			transaction.update(userRef, userPatch);
 			transaction.set(fulfillmentRef, fulfillmentPayload);
 			return fulfillmentRef.id;
 		});

@@ -1,5 +1,7 @@
 # FCM & messaging inventory (Epic 5.5)
 
+> **Note:** Full messaging **product** delivery is tracked in **ROADMAP Epic 4** ([`docs/vision/COMMS_HUB.md`](./vision/COMMS_HUB.md)). This doc remains an **infra audit** for Epic 5.5.
+
 Summary of **`admin.messaging().sendMulticast`** usages in `functions/index.js` (grep `sendMulticast`, April 2026).
 
 | Approx. lines | Trigger | Audience | Purpose |

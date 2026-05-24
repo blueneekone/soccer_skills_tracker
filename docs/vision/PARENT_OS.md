@@ -46,7 +46,8 @@ Route: `/parent/dashboard` (12-col bento where migrated)
 |-----------|------|
 | Parent → Player | VPC unlock; co-op logs count toward player XP where configured |
 | Player → Parent | Progress notifications, capsule sharing |
-| Coach → Parent | Assignment visibility (not direct unsupervised DM — SafeSport CC) |
+| Coach → Parent | Announcements, Parent Lounge — **not** direct unsupervised DM to minors |
+| Parent → Player (household) | Household threads only — same `householdId` gate (Epic 4.11) |
 | Director → Parent | Billing, compliance, household linkage |
 | Parent → Director | Payment, dispute, compliance questions |
 
@@ -71,4 +72,4 @@ Route: `/parent/dashboard` (12-col bento where migrated)
 
 ## ROADMAP link
 
-Parent flows intersect **Epic 2** (COPPA/VPC — Sprint 2.1 done) and **Epic 5 logistics** (household — see [`docs/EPIC5_STATUS.md`](../EPIC5_STATUS.md)). Dedicated Parent OS sprint: **TBD**.
+Parent flows intersect **Epic 2** (COPPA/VPC — Sprint 2.1 done), **Epic 4** (comms hub — [`COMMS_HUB.md`](./COMMS_HUB.md)), and **Epic 5 logistics** (household — see [`docs/EPIC5_STATUS.md`](../EPIC5_STATUS.md)).

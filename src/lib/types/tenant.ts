@@ -134,6 +134,12 @@ export interface TenantUser {
 	status?: 'active' | 'suspended';
 	/** YYYY-MM-DD string or Firestore Timestamp. */
 	lastActivityDate?: string | FirestoreTimestamp;
+	/** Bauhaus vector portrait seed bundle (`{ v: 1, seed }`). */
+	operativeAvatar?: { v: number; seed: string };
+	/** Versioned equip layer — digital slots on portrait (Epic 3). */
+	operativeLoadout?: { v: number; equipped: Record<string, string | null> };
+	/** Catalog ids the player may equip (granted server-side in Sprint 3.1+). */
+	ownedCosmetics?: string[];
 	/** Vanguard Armory sub-document written by ArmoryEngine. */
 	armory?: {
 		totalXP?: number;

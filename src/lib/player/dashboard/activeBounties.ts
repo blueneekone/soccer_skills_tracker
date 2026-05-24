@@ -114,6 +114,54 @@ export function maxVisibleQuests(): number {
 	return MAX_QUEST_LOG_VISIBLE;
 }
 
+/** Lifecycle-aware reward copy — accept state must not imply XP already earned. */
+export function formatQuestRewardLabel(quest: QuestTask): string {
+	if (quest.xpReward <= 0) {
+		if (!quest.rewardLabel) return '';
+		if (quest.lifecycle === 'accept') {
+			return `Earn ${quest.rewardLabel} on completion`;
+		}
+		return quest.rewardLabel;
+	}
+
+	const xp = quest.xpReward.toLocaleString();
+	switch (quest.lifecycle) {
+		case 'accept':
+			return `Earn +${xp} XP on completion`;
+		case 'complete':
+			if (quest.source === 'daily_habit' && quest.actionHref.includes('/player/workout')) {
+				return `+${xp} XP ready — log session to finish`;
+			}
+			return `+${xp} XP`;
+		case 'claim':
+			return `+${xp} XP`;
+	}
+}
+
+/** @deprecated Slice 6b-revise — embedded UI uses rail-only feed; retained for tests. */
+export function splitEmbeddedMissionDeck(deck: readonly QuestTask[]) {
+	return { primary: deck[0] ?? null, secondary: deck.slice(1) };
+}
+
+/** Coach/parent bounty or tier bounty — gold rail accent on HQ overview. */
+export function isPromotedQuest(quest: QuestTask): boolean {
+	if (quest.tier === 'bounty') return true;
+	return (
+		quest.source === 'coach_intent' ||
+		quest.source === 'coach_homework' ||
+		quest.source === 'parent_bounty'
+	);
+}
+
+/** @deprecated Slice 6b — embedded primary hero is always gold; retained for non-embedded/tests. */
+export function pickHeroCardAccent(
+	quest: QuestTask,
+	deck: readonly QuestTask[],
+): 'gold' | 'teal' {
+	const firstAccept = deck.find((q) => q.lifecycle === 'accept');
+	return firstAccept?.id === quest.id ? 'gold' : 'teal';
+}
+
 export function loadQuestProgress(): QuestProgressStore {
 	if (typeof sessionStorage === 'undefined') {
 		return emptyProgress();
@@ -257,6 +305,22 @@ export function selectPrimaryBounty(items: readonly QuestTask[]): QuestTask | nu
 const DAILY_TRAINING_LOG_ID = 'daily-training-log';
 const DAILY_STREAK_CHECK_ID = 'daily-streak-check';
 
+/** Hero-only training quest when daily list filtered out claimed dailies but stats say not trained today. */
+function synthesizeTrainingHeroQuest(): QuestTask {
+	return {
+		id: DAILY_TRAINING_LOG_ID,
+		tier: 'daily',
+		source: 'daily_habit',
+		senderLabel: 'Daily Habit',
+		title: "Log today's training session",
+		axisId: 'STM',
+		xpReward: 35,
+		lifecycle: 'accept',
+		actionHref: '/player/workout',
+		sortKey: 0,
+	};
+}
+
 /**
  * Resolve the embedded hero mission — training log when not trained today;
  * streak protect when trained today + streak active; else primary bounty sort.
@@ -265,15 +329,16 @@ export function resolveHeroQuest(
 	items: readonly QuestTask[],
 	opts: { lastTrainingUtc?: string | null; now?: Date } = {},
 ): QuestTask | null {
-	if (items.length === 0) return null;
-
 	const { lastTrainingUtc, now } = opts;
 	const trainedToday = isTrainingToday(lastTrainingUtc, now);
 
 	if (!trainedToday) {
 		const trainingLog = items.find((q) => q.id === DAILY_TRAINING_LOG_ID);
 		if (trainingLog) return trainingLog;
+		return synthesizeTrainingHeroQuest();
 	}
+
+	if (items.length === 0) return null;
 
 	if (trainedToday) {
 		const streakQuest = items.find((q) => q.id === DAILY_STREAK_CHECK_ID);
@@ -286,6 +351,15 @@ export function resolveHeroQuest(
 	}
 
 	return selectPrimaryBounty(items);
+}
+
+/** Exclude hero mission from embedded rail feed (dedupe daily-training-log hero row). */
+export function excludeHeroFromRailQuests(
+	quests: readonly QuestTask[],
+	hero: QuestTask | null,
+): QuestTask[] {
+	if (!hero) return [...quests];
+	return quests.filter((q) => q.id !== hero.id);
 }
 
 export function buildDailyQuests(

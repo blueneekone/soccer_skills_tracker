@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { tick } from 'svelte';
+	import { browser } from '$app/environment';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -7,14 +9,46 @@
 
 	/**
 	 * Player's current operative level (from XP curve).
-	 * @type {{ level?: number }}
+	 * @type {{ level?: number; dossierMode?: boolean; compact?: boolean; maxVisible?: number; hideScrollHud?: boolean; scrollToCurrent?: boolean; hqTealCurrent?: boolean }}
 	 */
-	let { level = 1 } = $props();
+	let {
+		level = 1,
+		dossierMode = false,
+		compact = false,
+		maxVisible = 3,
+		hideScrollHud = false,
+		scrollToCurrent = false,
+		hqTealCurrent = false,
+	} = $props();
 
 	const playerLevel = $derived(Math.max(1, Math.floor(Number(level) || 1)));
+	const tealCurrent = $derived(compact || hqTealCurrent);
+
+	let trackEl: HTMLUListElement | undefined = $state();
+
+	/**
+	 * Returns the tier window for compact HQ preview (default 3 tiers).
+	 * @param {number} L
+	 */
+	function compactTierWindow(L: number) {
+		const span = Math.max(1, Math.floor(Number(maxVisible) || 3));
+		if (span >= PATHWAY_MAX) {
+			return Array.from({ length: PATHWAY_MAX }, (_, i) => i + 1);
+		}
+		if (L <= 1) {
+			return Array.from({ length: span }, (_, i) => i + 1);
+		}
+		if (L >= PATHWAY_MAX - 1) {
+			return Array.from({ length: span }, (_, i) => PATHWAY_MAX - span + 1 + i);
+		}
+		const start = L - Math.floor(span / 2);
+		return Array.from({ length: span }, (_, i) => start + i);
+	}
 
 	const tiers = $derived(
-		Array.from({ length: PATHWAY_MAX }, (_, i) => i + 1),
+		compact ?
+			compactTierWindow(playerLevel)
+		:	Array.from({ length: PATHWAY_MAX }, (_, i) => i + 1),
 	);
 
 	/**
@@ -51,53 +85,114 @@
 		if (s === 'current') return `Level ${tier}, current objective`;
 		return `Level ${tier}, locked`;
 	}
+
+	/** Milestone tiers — gold edge accent on node ring (5, 10, 25, 50 + trophy tiers). */
+	function isMilestoneTier(tier: number) {
+		return tier === 5 || tier === 10 || tier === 25 || tier === 50 || tier % 15 === 0;
+	}
+
+	function centerCurrentTier() {
+		if (!scrollToCurrent || !trackEl) return;
+
+		const current = trackEl.querySelector<HTMLElement>('[data-opp-current="true"]');
+		if (!current) return;
+
+		const trackRect = trackEl.getBoundingClientRect();
+		const nodeRect = current.getBoundingClientRect();
+		const delta = nodeRect.left - trackRect.left - (trackRect.width - nodeRect.width) / 2;
+		trackEl.scrollLeft += delta;
+	}
+
+	$effect(() => {
+		if (!browser || !trackEl) return;
+
+		void playerLevel;
+		void tiers.length;
+
+		tick().then(() => {
+			requestAnimationFrame(() => {
+				centerCurrentTier();
+			});
+		});
+	});
 </script>
 
-<div class="opp-root tw-w-full tw-min-w-0" data-region="operative-pathway">
-	<p class="opp-hud opp-mono tw-mb-3 tw-text-[0.65rem] tw-text-slate-500">
-		Scroll · <span class="tw-text-cyan-400/90">LV {String(playerLevel).padStart(2, '0')}</span> /
-		{PATHWAY_MAX}
-	</p>
-	<ul
-		class="opp-track tw-m-0 tw-flex tw-list-none tw-gap-4 tw-overflow-x-auto tw-pb-4 tw-pl-1 tw-pr-6 tw-snap-x tw-snap-mandatory [-webkit-overflow-scrolling:touch] tw-scroll-pl-1 sm:tw-scroll-pl-2 sm:tw-pl-2"
-		aria-label={`Mission rewards pathway, levels 1 through ${PATHWAY_MAX}`}
-	>
-		{#each tiers as tier (tier)}
-			{@const state = tierState(tier)}
-			<li
-				class="opp-node opp-mono tw-flex tw-min-w-[120px] tw-snap-start tw-flex-col tw-items-center tw-rounded-xl tw-border tw-p-4 tw-transition-[transform,box-shadow,opacity,border-color] tw-duration-200 tw-shrink-0 {state ===
-				'unlocked' ?
-					'tw-bg-slate-800 tw-border-emerald-500/30 tw-opacity-50'
-				: state === 'current' ?
-					'tw-relative tw-z-[2] tw-scale-110 tw-bg-slate-900 tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(20, 184, 166,0.4)]'
-				:	'tw-bg-slate-900/40 tw-border-white/5 tw-opacity-80'}"
-				aria-label={tierLabel(tier)}
-			>
-				<span class="tw-mb-2 tw-text-[0.62rem] tw-font-black tw-tabular-nums tw-tracking-wider tw-text-slate-400">
-					LVL {tier}
-				</span>
-
-				<div
-					class="tw-mb-3 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-white/10 tw-bg-black/30"
-					aria-hidden="true"
+<div
+	class="opp-root tw-w-full tw-min-w-0"
+	class:opp-root--compact={compact}
+	class:opp-root--hq-current={hqTealCurrent}
+	data-region="operative-pathway"
+>
+	{#if !compact && !hideScrollHud}
+		<p class="opp-hud opp-mono tw-mb-3 tw-text-[0.65rem]" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));">
+			Scroll · <span style="color: var(--pd-accent-data, #14b8a6);">LV {String(playerLevel).padStart(2, '0')}</span> /
+			{PATHWAY_MAX}
+		</p>
+	{/if}
+	<div class="opp-track-shell">
+		<ul
+			bind:this={trackEl}
+			class="opp-track tw-m-0 tw-list-none tw-py-2 {compact ?
+				'tw-overflow-visible tw-pb-2 tw-pl-0 tw-pr-0'
+			:	'tw-flex tw-gap-4 tw-overflow-x-auto tw-pb-4 tw-pl-1 tw-pr-6 tw-snap-x tw-snap-mandatory [-webkit-overflow-scrolling:touch] tw-scroll-pl-1 sm:tw-scroll-pl-2 sm:tw-pl-2'}"
+			aria-label={compact ?
+				`Pathway preview, levels ${tiers[0]} through ${tiers[tiers.length - 1]}`
+			:	`Mission rewards pathway, levels 1 through ${PATHWAY_MAX}`}
+		>
+			{#each tiers as tier (tier)}
+				{@const state = tierState(tier)}
+				<li
+					class="opp-node opp-node--edge opp-mono tw-flex tw-flex-col tw-items-center tw-border tw-transition-[box-shadow,opacity,border-color] tw-duration-200 {compact ?
+						'tw-min-w-0 tw-w-full tw-p-3'
+					:	'tw-min-w-[120px] tw-snap-start tw-shrink-0 tw-p-4 tw-relative tw-z-[1]'} {state ===
+					'unlocked' ?
+						dossierMode ?
+							'opp-node--unlocked-dossier tw-opacity-50'
+						:	'tw-bg-slate-800 tw-border-emerald-500/30 tw-opacity-50'
+					: state === 'current' ?
+						dossierMode ?
+							'opp-node--current-dossier tw-relative tw-z-[2] tw-opacity-100'
+						:	'tw-relative tw-z-[2] tw-bg-slate-900 tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(20, 184, 166,0.4)]'
+					: dossierMode ?
+						'opp-node--locked-dossier tw-opacity-80'
+					:	'tw-bg-slate-900/40 tw-border-white/5 tw-opacity-80'}"
+					class:opp-node--milestone={isMilestoneTier(tier)}
+					aria-label={tierLabel(tier)}
+					data-opp-current={state === 'current' ? 'true' : undefined}
 				>
-				<Icon name={rewardIconClass(tier)} size={24} class="tw-text-cyan-300/85" aria-hidden="true" />
-				</div>
-
-				{#if state === 'unlocked'}
-					<Icon name={"status.verified" as IconName} size={20} class="tw-text-emerald-400/90" aria-hidden="true" />
-					<span class="tw-sr-only">Cleared</span>
-				{:else if state === 'current'}
-					<span class="tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-300">
-						NOW
+					<span class="tw-mb-2 tw-text-[0.62rem] tw-font-black tw-tabular-nums tw-tracking-wider" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));">
+						LVL {tier}
 					</span>
-				{:else}
-					<Icon name={"sys.lock-simple" as IconName} size={20} class="tw-text-slate-600" aria-hidden="true" />
-					<span class="tw-sr-only">Locked</span>
-				{/if}
-			</li>
-		{/each}
-	</ul>
+
+					<div
+						class="opp-node__reward-well tw-mb-3 tw-flex tw-items-center tw-justify-center {compact ?
+							'tw-h-10 tw-w-10'
+						:	'tw-h-12 tw-w-12'}"
+						aria-hidden="true"
+					>
+						<Icon name={rewardIconClass(tier)} size={compact ? 20 : 24} style="color: var(--pd-accent-data, #14b8a6);" aria-hidden="true" />
+					</div>
+
+					{#if state === 'unlocked'}
+						<Icon name={"status.verified" as IconName} size={20} class="tw-text-emerald-400/90" aria-hidden="true" />
+						<span class="tw-sr-only">Cleared</span>
+					{:else if state === 'current'}
+						<span
+							class="opp-active-label tw-text-[0.55rem] tw-font-bold tw-uppercase tw-tracking-[0.2em]"
+							style="color: {tealCurrent ?
+								'var(--pd-accent-data, #14b8a6)'
+							:	'var(--pd-accent-action, #fbbf24)'};"
+						>
+							{tealCurrent ? 'ACTIVE' : 'NOW'}
+						</span>
+					{:else}
+						<Icon name={"sys.lock-simple" as IconName} size={20} style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));" aria-hidden="true" />
+						<span class="tw-sr-only">Locked</span>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	</div>
 </div>
 
 <style>
@@ -106,10 +201,11 @@
 		font-feature-settings: 'tnum' 1;
 	}
 
-	/* Thin scrollbar — Chromium / Firefox */
+	/* Thin scrollbar — Chromium / Firefox (void context overrides track in player-dashboard-hud.css) */
 	.opp-track {
+		position: relative;
 		scrollbar-width: thin;
-		scrollbar-color: rgba(20, 184, 166, 0.35) rgba(15, 23, 42, 0.6);
+		scrollbar-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) transparent;
 	}
 
 	.opp-track::-webkit-scrollbar {
@@ -117,12 +213,12 @@
 	}
 
 	.opp-track::-webkit-scrollbar-track {
-		background: rgba(15, 23, 42, 0.65);
+		background: transparent;
 		border-radius: 999px;
 	}
 
 	.opp-track::-webkit-scrollbar-thumb {
-		background: rgba(20, 184, 166, 0.35);
+		background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent);
 		border-radius: 999px;
 	}
 </style>

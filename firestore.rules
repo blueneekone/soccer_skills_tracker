@@ -165,10 +165,24 @@ service cloud.firestore {
              ]);
     }
 
-    // Sprint 3.3: XP / streaks are server-only (Cloud Functions / Admin SDK).
+    // Sprint 3.3: XP / streaks / ownedCosmetics are server-only (Cloud Functions / Admin SDK).
     function userGamificationFieldsUnchanged() {
       return !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['xp', 'currentStreak', 'longestStreak', 'lastActivityDate']);
+          .hasAny(['xp', 'currentStreak', 'longestStreak', 'lastActivityDate', 'ownedCosmetics']);
+    }
+
+    function canReadPlayerCosmeticUnlocks(playerEmail) {
+      return isSuper()
+        || emailKey() == playerEmail
+        || parentHouseholdAllowsChildEmail(playerEmail)
+        || (exists(/databases/$(database)/documents/users/$(playerEmail))
+            && isDirector()
+            && tokenClubMatchesDoc(get(/databases/$(database)/documents/users/$(playerEmail)).data))
+        || (exists(/databases/$(database)/documents/users/$(playerEmail))
+            && isCoach()
+            && tokenTeam() != null
+            && get(/databases/$(database)/documents/users/$(playerEmail)).data.get('teamId', null) == tokenTeam()
+            && tokenClubMatchesDoc(get(/databases/$(database)/documents/users/$(playerEmail)).data));
     }
 
     function userDoc() {
@@ -3415,6 +3429,15 @@ service cloud.firestore {
             && resource.data.householdId == tokenHousehold())
       );
       allow list: if authed() && isSuper();
+      allow create, update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // users/{playerEmail}/cosmetic_unlocks/{unlockId}
+    // Sprint 3.3 — server-written unlock audit; client read-only.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /users/{playerEmail}/cosmetic_unlocks/{unlockId} {
+      allow get, list: if canReadPlayerCosmeticUnlocks(playerEmail);
       allow create, update, delete: if false;
     }
 

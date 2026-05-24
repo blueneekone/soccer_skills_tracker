@@ -155,8 +155,8 @@
 	}
 }
 
-/* Sprint 1.9 — embedded mission deck: single-line rows inside OperativeHub */
-.quest-log-panel--embedded .hud-bounty-row {
+/* Sprint 1.9 — embedded mission deck (coach/standalone telemetry root only — not player HUD) */
+.hud-telemetry-root .quest-log-panel--embedded .hud-bounty-row {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr) auto auto;
 	gap: clamp(6px, 1vw, 10px);
@@ -166,24 +166,24 @@
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.quest-log-panel--embedded .hud-bounty-row__copy,
-.quest-log-panel--embedded .hud-bounty-row__reward,
-.quest-log-panel--embedded .hud-bounty-row__cmd {
+.hud-telemetry-root .quest-log-panel--embedded .hud-bounty-row__copy,
+.hud-telemetry-root .quest-log-panel--embedded .hud-bounty-row__reward,
+.hud-telemetry-root .quest-log-panel--embedded .hud-bounty-row__cmd {
 	grid-column: auto;
 	justify-self: stretch;
 	text-align: inherit;
 }
 
-.quest-log-panel--embedded .hud-bounty-row__ring {
+.hud-telemetry-root .quest-log-panel--embedded .hud-bounty-row__ring {
 	display: none;
 }
 
-.quest-log-panel--embedded .quest-row__reward--embedded {
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__reward--embedded {
 	justify-self: end;
 	text-align: right;
 }
 
-.quest-log-panel--embedded .quest-row__cmd {
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__cmd {
 	flex-shrink: 0;
 	justify-self: end;
 	color: #fbbf24;
@@ -192,11 +192,17 @@
 	transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
-.quest-log-panel--embedded .quest-row__cmd:hover {
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__cmd--accept,
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__cmd--accept:hover {
+	color: #fbbf24;
+	text-shadow: 0 0 10px rgb(251 191 36 / 0.55);
+}
+
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__cmd:hover {
 	color: #fcd34d;
 	text-shadow: 0 0 10px rgb(251 191 36 / 0.55);
 }
 
-.quest-log-panel--embedded .quest-row__xp {
+.hud-telemetry-root .quest-log-panel--embedded .quest-row__xp {
 	color: #fbbf24;
 }

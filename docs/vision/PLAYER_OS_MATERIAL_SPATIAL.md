@@ -1,6 +1,8 @@
 # Player OS — Material & Spatial Constitution
 
-**Canonical reference for Epic 1 premium track Sprints 2.16–2.19** · Vision: [`PLAYER_OS.md`](./PLAYER_OS.md) · Acceptance: [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) · Delivery: [`ROADMAP.md`](../../ROADMAP.md)
+> **Sections 9–11 superseded by [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) as of Sprint 2.20 planning. Use Foundation doc for material/anti-pattern guidance.**
+
+**Canonical reference for Epic 1 premium track Sprints 2.16–2.19** · Foundation: [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) · Vision: [`PLAYER_OS.md`](./PLAYER_OS.md) · Acceptance: [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) · Delivery: [`ROADMAP.md`](../../ROADMAP.md)
 
 ---
 
@@ -117,6 +119,8 @@ Target material ratios (guidance, not pixel math): **void > emissive edges > gla
 - Canvas scanlines via `ps-ambient::after` on shell atmosphere layer — persists all player routes
 - Scanline policy: canvas/atmosphere OK; readable text and command panel interiors NO
 
+**Implemented (2.19 — route continuity):** Persistent `PlayerShell` Z0 (`ps-ambient` grid/glow/scanlines) + subtle `pd-route-enter` on `.pd-page-root` (opacity 0.96→1, 180ms) — content inset only; shell rail and ambient do not remount on nav.
+
 Reconcile with [`PLAYER_OS.md`](./PLAYER_OS.md): scanline policy refined from “no scanlines on command shell” → “no scanlines on readable text; canvas/atmosphere OK.”
 
 ---
@@ -162,7 +166,17 @@ Builds on Sprint 2.15 motion layer — evolves from SaaS fade-in stagger to **en
 
 Gated by `prefers-reduced-motion` and `data-dopamine='off'` (retained from 2.15).
 
-**Out of scope for 2.19 impl:** Optional UI audio/haptics — document as future Epic 1.x sensory lane.
+**Implemented motion tokens (2.19):**
+
+| Token / keyframe | Use |
+|------------------|-----|
+| `pd-layer-enter-z4` | Strap / floating chrome — drops from above with slight scale |
+| `pd-layer-enter-z2` | Hub panels + analytics deck — rise from below |
+| `pd-route-enter` | Subtle page-root opacity on player nav (180ms) |
+| `pd-conduit-shimmer` | Rank XP bar energy conduction (1.2s one-shot when XP > 0) |
+| `pd-os-toggle-pulse` / `pd-os-tab-trail` | Selection trails on toggles + tab rail (200ms) |
+
+**Out of scope for 2.19 impl:** Optional UI audio/haptics — document as future Epic 1.x sensory lane (see ROADMAP post-2.19 note).
 
 ---
 
@@ -229,7 +243,7 @@ Full premium track sign-off lives in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYE
 - Tier parity check vs Skill Tree / VanguardCard
 - Layer-enter motion criteria (2.19)
 
-**Gate:** Epic 3.4+ and Epic 4.1+ implementation **blocked** until this doc’s sprint mapping (2.16–2.19) is Done and visual acceptance fully signed.
+**Gate:** Epic 3.4+ and Epic 4.1+ implementation **unblocked after 2.19 Done** — visual acceptance fully signed before shipping features.
 
 ---
 
@@ -240,7 +254,9 @@ Full premium track sign-off lives in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYE
 | **2.16** | Layout & alignment constitution | Max-width, unified header grammar, HQ composition fixes, debug-chrome policy, Stats/HQ radar parity frame, diegetic Settings alignment |
 | **2.17** | Z-depth & layering system | Z0–Z4 tokens, per-route layering map, inset stage regression fix |
 | **2.18** | Material orchestration | Tier A → HQ/secondary routes; bloom, glass wells, spatial grid, emissive edges |
-| **2.19** | Diegetic UI kit + energy motion | Conduit progress, hero identity scale, route spatial continuity; **lifts gate** for Epic 3.4 / 4.1 |
+| **2.19** | Diegetic UI kit + energy motion (**Done**) | Conduit progress, hero identity scale, route spatial continuity; **gate lifted** for Epic 3.4 / 4.1 |
+| **2.20** | Foundation spec + composition lock + scroll contract (**planned**) | [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md); Tier A lift on HQ/VPP/Workout; void contract tests; reference matrix sign-off |
+| **2.21** | Atmosphere amplification (**conditional**) | Void/light bump **only if** 2.20 void-contract measurement fails — driven by 2.20 pixel samples, not guesswork |
 
 **Retcon:** Sprint 2.15 Done = motion + checklist shipped; **does not** mean premium-complete or gate-lift alone.
 
@@ -248,4 +264,4 @@ Full premium track sign-off lives in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYE
 
 ## ROADMAP link
 
-**Current build sprint:** [ROADMAP Sprint 2.16 — Layout & alignment constitution](../../ROADMAP.md#sprint-216-scope--layout--alignment-constitution--planned)
+**Current build sprint:** [ROADMAP Sprint 2.20 — Premium foundation lock & composition hotfix](../../ROADMAP.md#sprint-220-scope--premium-foundation-lock--composition-hotfix--planned)

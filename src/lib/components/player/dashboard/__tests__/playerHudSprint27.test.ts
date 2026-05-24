@@ -64,9 +64,9 @@ describe('Sprint 2.7 — IdentityBentoModule profile banner', () => {
 });
 
 describe('Sprint 2.7 — HudMetricsPanel collapsed vectors', () => {
-	it('has collapsed empty vectors path when embedded && !telemetryReady', () => {
-		expect(hmpSrc).toMatch(/hmp-vectors-collapsed/);
-		expect(hmpSrc).toMatch(/embedded && !telemetryReady/);
+	it('embedded empty vectors hidden when !telemetryReady (Sprint 2.11.1 — single VPP surface)', () => {
+		expect(hmpSrc).toMatch(/\{#if !embedded \|\| telemetryReady\}/);
+		expect(pageSrc).toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
 	});
 });
 

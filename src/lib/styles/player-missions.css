@@ -34,25 +34,28 @@
 .player-hud-root .quest-log-panel--embedded .quest-row__cmd {
 	flex-shrink: 0;
 	justify-self: end;
-	color: var(--pd-accent-action, #fbbf24);
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 72%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
 	text-transform: none;
 	letter-spacing: 0.04em;
+	text-decoration: underline;
+	text-underline-offset: 2px;
 	transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
 .player-hud-root .quest-log-panel--embedded .quest-row__cmd--accept,
 .player-hud-root .quest-log-panel--embedded .quest-row__cmd--accept:hover {
-	color: var(--pd-accent-action, #fbbf24);
-	text-shadow: 0 0 10px rgb(251 191 36 / 0.55);
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 72%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
+	text-shadow: none;
 }
 
 .player-hud-root .quest-log-panel--embedded .quest-row__cmd:hover {
-	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 88%, #fff);
-	text-shadow: 0 0 10px rgb(251 191 36 / 0.55);
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 88%, #fff);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent);
 }
 
 .player-hud-root .quest-log-panel--embedded .quest-row__xp {
 	color: var(--pd-accent-action, #fbbf24);
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
 }
 
 .player-hud-root .quest-log-panel--embedded .quest-row--habit .quest-row__xp {
@@ -106,6 +109,7 @@
 .player-hud-root .quest-log__title--embedded {
 	font-weight: 900;
 	letter-spacing: 0.16em;
+	font-size: clamp(0.72rem, 1.4vw, 0.82rem);
 }
 
 /* Sprint 2.12 — hero mission premium glow + shimmer */
@@ -231,11 +235,13 @@
 	);
 }
 
+/* Sprint 2.20c — center "ACTIVE MISSIONS" label over the mission deck */
 .player-hud-root .quest-log-panel--premium .quest-log__head--embedded {
 	position: relative;
 	z-index: 1;
 	padding-bottom: clamp(4px, 0.8vw, 6px);
 	border-bottom: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, var(--pd-line));
+	text-align: center;
 }
 
 /* Sprint 2.14 / 2.17 — hero mission Z3 raised vs compact rows Z2 flush */
@@ -281,4 +287,646 @@
 .player-hud-root .quest-log-panel--premium .quest-row--premium {
 	border-bottom: none;
 	margin-bottom: clamp(3px, 0.6vw, 5px);
+}
+
+/* Sprint 2.20c — habit rows in embedded rail must not spill outside panel width */
+.player-hud-root .quest-log-panel--embedded .quest-terminal-row--habit {
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.player-hud-root .quest-log-panel--embedded .quest-terminal-row--habit .quest-row__title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+}
+
+.player-hud-root .quest-log-panel--embedded .quest-terminal-row--habit .quest-row__copy {
+	min-width: 0;
+	overflow: hidden;
+}
+
+/* Sprint 2.22 slice 4d-fix — dual hero cards: gold primary + teal secondary */
+.player-hud-root .quest-hero--gold.quest-hero--premium {
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 12%, transparent),
+		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+}
+
+.player-hud-root .quest-hero--teal.quest-hero--premium {
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent));
+}
+
+.player-hud-root .quest-hero--teal.quest-hero--premium::before {
+	background: radial-gradient(
+		ellipse 60% 80% at 50% 100%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+		transparent 65%
+	);
+}
+
+.player-hud-root .quest-hero--teal .quest-hero__cta {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 10%, var(--pd-panel, #05050a));
+	color: var(--pd-accent-data, #14b8a6);
+	box-shadow: var(--pd-emissive-teal, 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent));
+}
+
+.player-hud-root .quest-hero--teal .quest-hero__cta:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, white);
+	color: var(--pd-accent-data, #14b8a6);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, var(--pd-panel, #05050a));
+}
+
+.player-hud-root .quest-hero--teal .quest-hero__cta::after {
+	background: linear-gradient(
+		105deg,
+		transparent 42%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent) 50%,
+		transparent 58%
+	);
+}
+
+.player-hud-root .quest-hero__reward {
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+	line-height: 1.35;
+}
+
+/* Sprint 2.22 slice 4d-revert — rail row polish (overflow missions only) */
+.player-hud-root .quest-row--rail.quest-row--embedded {
+	min-height: 44px;
+}
+
+.player-hud-root .quest-row--rail .quest-row__sender {
+	flex-shrink: 0;
+	min-width: fit-content;
+}
+
+.player-hud-root .quest-row--rail .quest-row__title-text {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.35;
+}
+
+.player-hud-root .quest-row--rail .quest-row__line {
+	align-items: center;
+}
+
+/* Optional — unused after 4d-revert (hero uses quest-hero--premium, not quest-row--primary) */
+.player-hud-root .quest-row--premium.quest-row--primary {
+	border-left: 3px solid var(--pd-accent-action, #fbbf24);
+}
+
+/* Sprint 2.22 slice 6b — mission theater: one gold primary + compact teal secondary */
+.player-hud-root .quest-hero--primary.quest-hero--gold.quest-hero--premium {
+	padding: clamp(10px, 1.6vw, 14px);
+	transform: translateY(-1px);
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 16%, transparent),
+		var(--pd-emissive-gold, 0 0 18px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent));
+}
+
+.player-hud-root .quest-hero--primary .quest-hero__title {
+	font-size: clamp(0.76rem, 1.65vw, 0.88rem);
+	font-weight: 900;
+}
+
+.player-hud-root .quest-hero--compact.quest-hero--teal {
+	padding: clamp(4px, 0.75vw, 6px);
+	margin-bottom: clamp(3px, 0.6vw, 5px);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line));
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
+	box-shadow: var(--pd-z2-panel-shadow);
+	animation: none;
+}
+
+.player-hud-root .quest-hero--compact .quest-hero__sender {
+	font-size: clamp(0.44rem, 0.95vw, 0.5rem);
+	letter-spacing: 0.14em;
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, #64748b);
+}
+
+.player-hud-root .quest-hero--compact .quest-hero__title {
+	font-size: clamp(0.58rem, 1.25vw, 0.68rem);
+	font-weight: 800;
+	-webkit-line-clamp: 2;
+}
+
+.player-hud-root .quest-hero--compact .quest-hero__reward {
+	font-size: clamp(0.5rem, 1.05vw, 0.58rem);
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, #64748b);
+}
+
+.player-hud-root .quest-hero--compact .quest-hero__cta {
+	min-height: 28px;
+	padding: clamp(4px, 0.85vw, 6px) clamp(8px, 1.6vw, 12px);
+	font-size: clamp(0.48rem, 1vw, 0.52rem);
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail {
+	gap: clamp(3px, 0.65vw, 6px);
+	border-top: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-hero--primary {
+	margin-bottom: clamp(4px, 0.8vw, 6px);
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-hero--compact {
+	margin-bottom: clamp(2px, 0.5vw, 4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .quest-hero--primary.quest-hero--gold.quest-hero--premium {
+		transform: none;
+	}
+}
+
+.player-hud-root .quest-log-panel--embedded .quest-row__cmd--primary {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+/* Sprint 2.22 slice 6b-revise — HQ mission rail overview (rows only, no hero cards) */
+.player-hud-root .quest-row--rail.quest-row--embedded {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) minmax(0, max-content);
+	gap: clamp(4px, 0.65vw, 6px);
+	align-items: center;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	overflow: visible;
+	border-left: 2px solid var(--pd-accent-data, #14b8a6);
+	padding: clamp(8px, 1.1vw, 10px) clamp(10px, 1.25vw, 13px) clamp(8px, 1.1vw, 10px)
+		clamp(6px, 1vw, 8px) !important;
+	min-height: 44px;
+	transition:
+		background 0.18s ease,
+		border-color 0.18s ease,
+		border-left-color 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease;
+}
+
+.player-hud-root .quest-row--rail .quest-row__reward--embedded {
+	display: none;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted):hover,
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted):focus-within {
+	background:
+		linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--pd-accent-data, #14b8a6) 7%, var(--pd-panel, #05050a)) 0%,
+			color-mix(in srgb, var(--pd-panel, #05050a) 90%, #101018) 38%,
+			color-mix(in srgb, var(--pd-panel, #05050a) 94%, #000) 100%
+		);
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 32%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, transparent),
+		0 5px 16px rgba(0, 0, 0, 0.48),
+		0 0 18px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 24%, transparent);
+	transform: translateY(-1px);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted:hover,
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted:focus-within {
+	background:
+		linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--pd-accent-action, #fbbf24) 8%, var(--pd-panel, #05050a)) 0%,
+			color-mix(in srgb, var(--pd-panel, #05050a) 90%, #101018) 38%,
+			color-mix(in srgb, var(--pd-panel, #05050a) 94%, #000) 100%
+		);
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 34%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 95%, #fff);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, transparent),
+		inset 3px 0 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 42%, transparent),
+		0 5px 16px rgba(0, 0, 0, 0.48),
+		var(--pd-emissive-gold, 0 0 18px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 34%, transparent));
+	transform: translateY(-1px);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	align-self: center;
+	justify-self: center;
+	margin-right: clamp(6px, 1vw, 10px);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status--idle {
+	border-radius: 50%;
+	background: rgb(148 163 184 / 0.35);
+	box-shadow: none;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__status:not(.quest-row__status--idle) {
+	background: var(--pd-accent-data, #14b8a6);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 65%, transparent);
+	animation: quest-rail-dot-pulse-teal 1.35s ease-in-out infinite;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__status:not(.quest-row__status--idle) {
+	background: var(--pd-accent-action, #fbbf24);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 65%, transparent);
+	animation: quest-rail-dot-pulse-gold 1.35s ease-in-out infinite;
+}
+
+@keyframes quest-rail-dot-pulse-teal {
+	0%,
+	100% {
+		opacity: 1;
+		box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+	}
+	50% {
+		opacity: 0.55;
+		box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, transparent);
+	}
+}
+
+@keyframes quest-rail-dot-pulse-gold {
+	0%,
+	100% {
+		opacity: 1;
+		box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	}
+	50% {
+		opacity: 0.55;
+		box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 75%, transparent);
+	}
+}
+
+.player-hud-root .quest-row--rail .quest-row__copy--embedded {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-self: center;
+	justify-self: start;
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.player-hud-root .quest-row--rail .quest-row__line {
+	gap: 0.2rem;
+	font-size: clamp(0.52rem, 1.05vw, 0.6rem);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	justify-content: flex-start;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.player-hud-root .quest-row--rail .quest-row__title-text {
+	flex: 0 1 auto;
+	min-width: 0;
+	font-size: clamp(0.5rem, 1vw, 0.58rem);
+	font-weight: 700;
+}
+
+.player-hud-root .quest-row--rail .quest-row__sep--reward {
+	flex-shrink: 0;
+	margin-inline: 0.05rem;
+	color: rgb(148 163 184 / 0.35);
+}
+
+.player-hud-root .quest-row--rail .quest-row__xp--inline {
+	flex-shrink: 0;
+	white-space: nowrap;
+	font-size: clamp(0.48rem, 0.95vw, 0.54rem);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.player-hud-root .quest-row--rail .quest-row__cmd--rail-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
+	justify-self: end;
+	flex-shrink: 0;
+	min-height: 26px;
+	max-width: 100%;
+	margin-left: clamp(4px, 0.55vw, 6px);
+	margin-right: clamp(2px, 0.35vw, 4px);
+	padding: clamp(4px, 0.7vw, 6px) clamp(7px, 1vw, 10px);
+	border: 1px solid transparent;
+	background: transparent;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.44rem, 0.85vw, 0.5rem);
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		color 0.15s ease,
+		box-shadow 0.15s ease;
+	clip-path: polygon(
+		0 3px,
+		3px 0,
+		calc(100% - 3px) 0,
+		100% 3px,
+		100% calc(100% - 3px),
+		calc(100% - 3px) 100%,
+		3px 100%,
+		0 calc(100% - 3px)
+	);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__sender {
+	color: var(--pd-accent-action, #fbbf24);
+	font-size: clamp(0.48rem, 1vw, 0.52rem);
+	letter-spacing: 0.12em;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__title-text {
+	color: var(--vanguard-text-1, #f8fafc);
+	font-weight: 800;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__xp--inline {
+	color: color-mix(in srgb, #94a3b8 88%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__sender {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__title-text {
+	color: var(--vanguard-text-1, #f8fafc);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__xp--inline {
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 82%, #fde68a);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted {
+	border-left-width: 3px;
+	border-left-color: var(--pd-accent-action, #fbbf24);
+	box-shadow:
+		inset 3px 0 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, transparent),
+		var(--pd-emissive-gold, 0 0 10px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent));
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__cmd--rail-chip {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 50%, transparent);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 7%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff);
+	text-shadow: none;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__cmd--rail-chip:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, #fff);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, var(--pd-panel, #05050a));
+	color: #fff;
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent),
+		0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
+	text-shadow: none;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__cmd--rail-chip {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 8%, var(--pd-panel, #05050a));
+	color: var(--pd-accent-action, #fbbf24);
+	text-shadow: none;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, transparent);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__cmd--rail-chip:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 90%, #fff);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 95%, #fff);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent),
+		0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 26%, transparent);
+	text-shadow: none;
+}
+
+.player-hud-root .quest-row--rail .quest-row__cmd--rail-chip:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, transparent);
+	outline-offset: 2px;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__cmd--rail-chip:focus-visible {
+	outline-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, transparent);
+}
+
+/* Wide desktop / full screen — stack reward under title so copy breathes (identity column unchanged) */
+.player-hud-root .quest-row__lede--rail-wide {
+	display: none;
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.46rem, 0.9vw, 0.52rem);
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0.03em;
+	color: color-mix(in srgb, #64748b 90%, #94a3b8);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (min-width: 1280px) {
+	.player-hud-root .quest-row--rail .quest-row__sep--reward,
+	.player-hud-root .quest-row--rail .quest-row__xp--inline {
+		display: none;
+	}
+
+	.player-hud-root .quest-row__lede--rail-wide {
+		display: block;
+		margin-top: 0.12rem;
+	}
+
+	.player-hud-root .quest-row--rail .quest-row__copy--embedded {
+		gap: 0;
+	}
+
+	.player-hud-root .quest-row--rail .quest-row__line {
+		align-items: flex-start;
+	}
+
+	.player-hud-root .quest-row--rail .quest-row__title-text {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+		white-space: normal;
+		line-height: 1.35;
+		flex: 1 1 auto;
+	}
+
+	.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__lede--rail-wide {
+		color: color-mix(in srgb, #94a3b8 88%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
+	}
+
+	.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__lede--rail-wide {
+		color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 78%, #fde68a);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status {
+		animation: none !important;
+	}
+
+	.player-hud-root .quest-row--rail.quest-row--embedded:hover,
+	.player-hud-root .quest-row--rail.quest-row--embedded:focus-within {
+		transform: none;
+	}
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail {
+	gap: clamp(2px, 0.45vw, 4px);
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-log__feed--embedded {
+	gap: 0;
+}
+
+.player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-terminal-row--embedded {
+	padding: clamp(4px, 0.75vw, 6px) 0;
+}
+
+/* Sprint 2.22 slice 6d — Train mission briefing hero (+ dossier route parity) */
+.player-hud-root .quest-hero--train,
+.player-dossier-root .quest-hero--train {
+	max-width: min(100%, 420px);
+	padding: clamp(8px, 1.35vw, 12px);
+	margin-bottom: clamp(8px, 1.4vw, 12px);
+}
+
+.player-hud-root .quest-hero--train .quest-hero__brief-hint,
+.player-dossier-root .quest-hero--train .quest-hero__brief-hint {
+	margin: clamp(4px, 0.8vw, 6px) 0 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.48rem, 1vw, 0.54rem);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.5)) 88%, transparent);
+}
+
+.player-hud-root .quest-hero--train .quest-hero__brief-empty,
+.player-dossier-root .quest-hero--train .quest-hero__brief-empty {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.52rem, 1.05vw, 0.6rem);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-dossier-root .quest-hero--premium {
+	position: relative;
+	overflow: hidden;
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 12%, transparent),
+		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+	transform: translateZ(0);
+	animation: quest-hero-scale-in 0.42s ease-out both;
+}
+
+.player-dossier-root .quest-hero--premium::before {
+	content: '';
+	position: absolute;
+	inset: -20%;
+	pointer-events: none;
+	background: radial-gradient(
+		ellipse 60% 80% at 50% 100%,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent),
+		transparent 65%
+	);
+	opacity: 0.75;
+	z-index: 0;
+}
+
+.player-dossier-root .quest-hero--premium > * {
+	position: relative;
+	z-index: 1;
+}
+
+.player-dossier-root .quest-hero--gold.quest-hero--premium {
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 12%, transparent),
+		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+}
+
+.player-dossier-root .quest-hero--teal.quest-hero--premium {
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent));
+}
+
+.player-dossier-root .quest-hero--teal.quest-hero--premium::before {
+	background: radial-gradient(
+		ellipse 60% 80% at 50% 100%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+		transparent 65%
+	);
+}
+
+.player-dossier-root .quest-hero__sender {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 8px;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+.player-dossier-root .quest-hero__title {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.68rem, 1.5vw, 0.78rem);
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--vanguard-text-1, #f8fafc);
+	line-height: 1.25;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+.player-dossier-root .quest-hero__reward {
+	margin: 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, #64748b 55%, #fbbf24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-dossier-root .quest-hero--premium {
+		animation: none;
+	}
 }

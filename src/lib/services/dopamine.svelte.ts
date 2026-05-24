@@ -46,7 +46,7 @@ import type confetti from 'canvas-confetti';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type DopamineKind = 'drill' | 'grit' | 'levelUp' | 'matchWin';
+export type DopamineKind = 'drill' | 'grit' | 'levelUp' | 'matchWin' | 'loadoutUnlock';
 
 export interface DopamineOpts {
 	kind: DopamineKind;
@@ -103,6 +103,15 @@ const PRESETS: Record<DopamineKind, ConfettiOptions> = {
 		gravity: 0.85,
 		scalar: 1.0,
 		ticks: 300,
+	},
+	loadoutUnlock: {
+		particleCount: 120,
+		spread: 100,
+		colors: ['#f0a500', '#14b8a6', '#fde68a', '#00d4ff', '#ffffff'],
+		startVelocity: 38,
+		gravity: 0.85,
+		scalar: 1.0,
+		ticks: 280,
 	},
 };
 
@@ -180,4 +189,14 @@ export async function dopamineOnCallable<T>(
 	const result = await callablePromise;
 	void dopamineExplosion(opts.kind, opts.origin);
 	return result;
+}
+
+/**
+ * Fire loadout unlock confetti after verified ownership (Firestore snapshot
+ * or successful grant callable). No-op when dopamine kill switches are active.
+ */
+export async function ceremonyOnCosmeticUnlock(
+	origin: { x: number; y: number } = { x: 0.5, y: 0.55 },
+): Promise<void> {
+	await dopamineExplosion('loadoutUnlock', origin);
 }

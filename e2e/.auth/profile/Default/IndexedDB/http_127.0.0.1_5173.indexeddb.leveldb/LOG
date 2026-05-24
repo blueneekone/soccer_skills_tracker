@@ -1,0 +1,21 @@
+2026/05/23-22:08:49.996 6bd4 Creating DB C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb since it was missing.
+2026/05/23-22:08:50.005 6bd4 Reusing MANIFEST C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/MANIFEST-000001
+2026/05/23-22:08:50.499 6bd4 Level-0 table #5: started
+2026/05/23-22:08:50.509 6bd4 Level-0 table #5: 1774 bytes OK
+2026/05/23-22:08:50.511 6bd4 Delete type=0 #3
+2026/05/23-22:08:50.511 6bd4 Manual compaction at level-0 from '\x00\x01\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x02\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/23-22:08:50.531 4060 Level-0 table #7: started
+2026/05/23-22:08:50.537 4060 Level-0 table #7: 1491 bytes OK
+2026/05/23-22:08:50.539 4060 Delete type=0 #4
+2026/05/23-22:08:50.540 6bd4 Manual compaction at level-0 from '\x00\x05\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x06\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/23-22:08:51.122 2984 Manual compaction at level-0 from '\x00\x08\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x09\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/23-22:08:51.146 da6c Level-0 table #9: started
+2026/05/23-22:08:51.154 da6c Level-0 table #9: 19985 bytes OK
+2026/05/23-22:08:51.156 da6c Delete type=0 #6
+2026/05/23-22:08:51.156 4060 Manual compaction at level-0 from '\x00\x09\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0a\x00\x00\x00' @ 0 : 0; will stop at '\x00\x09\x00\x00\x05' @ 1280 : 1
+2026/05/23-22:08:51.157 4060 Compacting 1@0 + 1@1 files
+2026/05/23-22:08:51.162 4060 Generated table #10@0: 646 keys, 9142 bytes
+2026/05/23-22:08:51.162 4060 Compacted 1@0 + 1@1 files => 9142 bytes
+2026/05/23-22:08:51.163 4060 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/23-22:08:51.163 4060 Delete type=2 #9
+2026/05/23-22:08:51.164 6bd4 Manual compaction at level-0 from '\x00\x09\x00\x00\x05' @ 1280 : 1 .. '\x00\x0a\x00\x00\x00' @ 0 : 0; will stop at (end)

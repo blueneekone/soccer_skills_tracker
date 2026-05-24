@@ -36,7 +36,7 @@ Club volunteers or paid staff who run logistics for one or more teams (travel, r
 - Registration coordination with state/club registrar workflows
 - Practice and event scheduling
 - Attendance tracking
-- Logistics messaging — SafeSport-compliant, parent CC on minor-facing threads ([`docs/FCM_AND_MESSAGING_MATRIX.md`](../FCM_AND_MESSAGING_MATRIX.md))
+- Logistics messaging — parent-targeted announcements and Parent Lounge ([`docs/vision/COMMS_HUB.md`](./COMMS_HUB.md) Epic 4.7)
 
 ---
 
@@ -98,4 +98,4 @@ Club volunteers or paid staff who run logistics for one or more teams (travel, r
 
 ## ROADMAP link
 
-Role and route: **TBD sprint** after Epic 1 Player HUD and Epic 2 vault stabilization. See [`ROADMAP.md`](../../ROADMAP.md) planned roles section.
+Role and route: **Epic 4 Sprint 4.7** (team ops mode) after Epic 1 Player HUD and Epic 2 vault stabilization. See [`ROADMAP.md`](../../ROADMAP.md) Epic 4 table and planned roles section.

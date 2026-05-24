@@ -1,0 +1,244 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/lib/components/ui/PwaInstallPrompt.svelte");import "/node_modules/.vite/deps/svelte_internal_disclose-version.js?v=c164ed14";
+
+PwaInstallPrompt[$.FILENAME] = 'src/lib/components/ui/PwaInstallPrompt.svelte';
+
+import * as $ from "/node_modules/.vite/deps/svelte_internal_client.js?v=c164ed14";
+import { browser } from "/node_modules/@sveltejs/kit/src/runtime/app/environment/index.js?v=c164ed14";
+import Icon from "/src/lib/components/ui/Icon.svelte";
+
+var root_2 = $.add_locations($.from_html(`<div class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border-2 tw-border-cyan-400/45 tw-bg-[#05050a] tw-px-4 tw-py-4 tw-text-cyan-100 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.16)]"><p class="tw-m-0 tw-text-center tw-text-[0.8rem] tw-font-semibold tw-leading-relaxed tw-tracking-wide tw-text-cyan-50/95">To install on iOS: Tap the Share button below, then select Add to Home Screen.</p> <div class="tw-flex tw-items-center tw-justify-center tw-gap-2" aria-hidden="true"><span class="tw-inline-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-cyan-500/50 tw-bg-black/50 tw-text-cyan-300"><!></span> <span class="tw-text-[0.65rem] tw-font-mono tw-uppercase tw-tracking-widest tw-text-cyan-500/80">Share</span> <span class="tw-text-cyan-600">→</span> <span class="tw-text-[0.65rem] tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-text-cyan-300">Add to Home Screen</span></div> <div class="tw-flex tw-justify-end"><button type="button" class="tw-min-h-10 tw-rounded tw-border tw-border-cyan-500/40 tw-bg-cyan-950/40 tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-300 tw-transition hover:tw-border-cyan-400/60 hover:tw-text-cyan-200">Dismiss</button></div></div>`), PwaInstallPrompt[$.FILENAME], [
+	[
+		128,
+		3,
+		[
+			[131, 4],
+			[136, 4, [[137, 5], [142, 5], [145, 5], [146, 5]]],
+			[151, 4, [[152, 5]]]
+		]
+	]
+]);
+
+var root_3 = $.add_locations($.from_html(`<div class="tw-flex tw-w-full tw-max-w-lg tw-flex-col tw-gap-3 tw-rounded-lg tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-4 tw-py-3 tw-text-cyan-200 tw-shadow-[0_0_24px_rgba(20, 184, 166,0.12)]"><p class="tw-m-0 tw-text-center tw-font-mono tw-text-[0.7rem] tw-font-bold tw-uppercase tw-tracking-[0.12em] tw-text-cyan-100/90">Install SSTRACKER for faster access</p> <div class="tw-flex tw-flex-wrap tw-justify-end tw-gap-2"><button type="button" class="tw-min-h-11 tw-rounded tw-border-2 tw-border-cyan-400/60 tw-bg-cyan-500/10 tw-px-5 tw-font-mono tw-text-[0.7rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-200 tw-shadow-[0_0_18px_rgba(20, 184, 166,0.2)] tw-transition hover:tw-border-cyan-300 hover:tw-bg-cyan-500/20">INSTALL APP</button> <button type="button" class="tw-min-h-11 tw-rounded tw-border tw-border-cyan-500/35 tw-bg-transparent tw-px-4 tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-widest tw-text-cyan-400/80 tw-transition hover:tw-text-cyan-200">Not now</button></div></div>`), PwaInstallPrompt[$.FILENAME], [[162, 3, [[165, 4], [170, 4, [[171, 5], [178, 5]]]]]]);
+var root_1 = $.add_locations($.from_html(`<div class="pwa-boost tw-pointer-events-auto tw-fixed tw-inset-x-0 tw-bottom-0 tw-z-[200] tw-flex tw-justify-center tw-p-3 sm:tw-p-4" role="status" aria-live="polite"><!></div>`), PwaInstallPrompt[$.FILENAME], [[122, 1]]);
+
+function PwaInstallPrompt($$anchor, $$props) {
+	$.check_target(new.target);
+	$.push($$props, true, PwaInstallPrompt);
+
+	const STORAGE_KEY = 'pwa_install_banner_dismissed_v1';
+
+	/** @type {boolean} */
+	let runningStandalone = $.tag($.state(true), 'runningStandalone');
+
+	/** @type {boolean} */
+	let sessionDismissed = $.tag($.state(false), 'sessionDismissed');
+
+	/** 'ios' = manual (Safari), 'native' = deferred beforeinstallprompt */
+	/** @type {'ios' | 'native' | null} */
+	let installVariant = $.tag($.state(null), 'installVariant');
+
+	/** @type {BeforeInstallPromptEvent | null} */
+	let deferredInstall = $.tag($.state(null), 'deferredInstall');
+
+	/**
+	 * PWA is already open as installed / standalone: hide the prompt completely.
+	 */
+	function isRunningStandalonePwa() {
+		if ($.strict_equals(typeof window, 'undefined')) return true;
+
+		try {
+			if (window.matchMedia('(display-mode: standalone)').matches) return true;
+		} catch {
+			/* ignore */
+		}
+
+		const nav = window.navigator;
+
+		if (nav && 'standalone' in nav && $.strict_equals(/** @type {Navigator & { standalone?: boolean }} */ nav.standalone, true)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * iOS Safari (or WebKit) — no reliable beforeinstallprompt; user must use Share → Add to Home Screen.
+	 * Includes iPadOS desktop UA (Macintosh + touch).
+	 */
+	function isIOSUserAgent() {
+		if ($.strict_equals(typeof navigator, 'undefined')) return false;
+
+		const ua = navigator.userAgent;
+
+		if ((/iPad|iPhone|iPod/).test(ua)) return true;
+
+		return (/Macintosh/).test(ua) && $.strict_equals(typeof document, 'undefined', false) && 'ontouchend' in document;
+	}
+
+	/**
+	 * iOS PWA path: on iOS, not already in standalone (see Mission: !navigator.standalone pattern + display-mode).
+	 */
+	function shouldShowIOSManualPath() {
+		if (!browser) return false;
+		if (isRunningStandalonePwa()) return false;
+
+		return isIOSUserAgent();
+	}
+
+	function readDismissed() {
+		try {
+			return $.strict_equals(sessionStorage.getItem(STORAGE_KEY), '1');
+		} catch {
+			return false;
+		}
+	}
+
+	function dismiss() {
+		try {
+			sessionStorage.setItem(STORAGE_KEY, '1');
+		} catch {
+			/* ignore */
+		}
+
+		$.set(sessionDismissed, true);
+		$.set(installVariant, null);
+	}
+
+	/**
+	 * @param {Event} e
+	 */
+	function onBeforeInstallPrompt(e) {
+		e.preventDefault();
+
+		// iOS: manual “Add to Home Screen” only; do not take over with native flow.
+		if (shouldShowIOSManualPath()) return;
+
+		const bip = /** @type {BeforeInstallPromptEvent} */ e;
+
+		$.set(deferredInstall, bip, true);
+		$.set(installVariant, 'native');
+	}
+
+	async function runNativeInstall() {
+		const ev = $.get(deferredInstall);
+
+		if (!ev) return;
+
+		try {
+			(await $.track_reactivity_loss(ev.prompt()))();
+			(await $.track_reactivity_loss(ev.userChoice))();
+		} catch {
+			/* ignore */
+		} finally {
+			$.set(deferredInstall, null);
+			dismiss();
+		}
+	}
+
+	const showPrompt = $.tag($.derived(() => !$.get(runningStandalone) && !$.get(sessionDismissed) && ($.strict_equals($.get(installVariant), 'ios') || $.strict_equals($.get(installVariant), 'native'))), 'showPrompt');
+
+	$.user_effect(() => {
+		if (!browser) return;
+
+		$.set(runningStandalone, isRunningStandalonePwa(), true);
+		$.set(sessionDismissed, readDismissed(), true);
+
+		if ($.get(runningStandalone) || $.get(sessionDismissed)) {
+			return;
+		}
+
+		if (shouldShowIOSManualPath()) {
+			$.set(installVariant, 'ios');
+		}
+
+		window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+
+		return () => window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+	});
+
+	var $$exports = { ...$.legacy_api() };
+	var fragment = $.comment();
+	var node = $.first_child(fragment);
+
+	{
+		var consequent_2 = ($$anchor) => {
+			var div = root_1();
+			var node_1 = $.child(div);
+
+			{
+				var consequent = ($$anchor) => {
+					var div_1 = root_2();
+					var div_2 = $.sibling($.child(div_1), 2);
+					var span = $.child(div_2);
+					var node_2 = $.child(span);
+
+					$.add_svelte_meta(() => Icon(node_2, { name: "comm.share", size: 16 }), 'component', PwaInstallPrompt, 140, 6, { componentTag: 'Icon' });
+					$.reset(span);
+					$.next(6);
+					$.reset(div_2);
+
+					var div_3 = $.sibling(div_2, 2);
+					var button = $.child(div_3);
+
+					$.reset(div_3);
+					$.reset(div_1);
+					$.delegated('click', button, dismiss);
+					$.append($$anchor, div_1);
+				};
+
+				var consequent_1 = ($$anchor) => {
+					var div_4 = root_3();
+					var div_5 = $.sibling($.child(div_4), 2);
+					var button_1 = $.child(div_5);
+					var button_2 = $.sibling(button_1, 2);
+
+					$.reset(div_5);
+					$.reset(div_4);
+					$.delegated('click', button_1, runNativeInstall);
+					$.delegated('click', button_2, dismiss);
+					$.append($$anchor, div_4);
+				};
+
+				$.add_svelte_meta(
+					() => $.if(node_1, ($$render) => {
+						if ($.strict_equals($.get(installVariant), 'ios')) $$render(consequent); else if ($.strict_equals($.get(installVariant), 'native')) $$render(consequent_1, 1);
+					}),
+					'if',
+					PwaInstallPrompt,
+					127,
+					2
+				);
+			}
+
+			$.reset(div);
+			$.append($$anchor, div);
+		};
+
+		$.add_svelte_meta(
+			() => $.if(node, ($$render) => {
+				if ($.get(showPrompt)) $$render(consequent_2);
+			}),
+			'if',
+			PwaInstallPrompt,
+			121,
+			0
+		);
+	}
+
+	$.append($$anchor, fragment);
+
+	return $.pop($$exports);
+}
+
+if (import.meta.hot) {
+	PwaInstallPrompt = $.hmr(PwaInstallPrompt);
+
+	import.meta.hot.acceptExports(["default"],(module) => {
+		PwaInstallPrompt[$.HMR].update(module.default);
+	});
+}
+
+export default PwaInstallPrompt;
+
+$.delegate(['click']);
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiUHdhSW5zdGFsbFByb21wdC5zdmVsdGUiXSwic291cmNlc0NvbnRlbnQiOlsiPHNjcmlwdCBsYW5nPVwidHNcIj5cclxuXHRpbXBvcnQgeyBicm93c2VyIH0gZnJvbSAnJGFwcC9lbnZpcm9ubWVudCc7XHJcblx0aW1wb3J0IEljb24gZnJvbSAnJGxpYi9jb21wb25lbnRzL3VpL0ljb24uc3ZlbHRlJztcclxuXHRpbXBvcnQgdHlwZSB7IEljb25OYW1lIH0gZnJvbSAnJGxpYi9pY29ucy9yZWdpc3RyeS5qcyc7XHJcblxyXG5cdGNvbnN0IFNUT1JBR0VfS0VZID0gJ3B3YV9pbnN0YWxsX2Jhbm5lcl9kaXNtaXNzZWRfdjEnO1xyXG5cclxuXHQvKiogQHR5cGUge2Jvb2xlYW59ICovXHJcblx0bGV0IHJ1bm5pbmdTdGFuZGFsb25lID0gJHN0YXRlKHRydWUpO1xyXG5cdC8qKiBAdHlwZSB7Ym9vbGVhbn0gKi9cclxuXHRsZXQgc2Vzc2lvbkRpc21pc3NlZCA9ICRzdGF0ZShmYWxzZSk7XHJcblx0LyoqICdpb3MnID0gbWFudWFsIChTYWZhcmkpLCAnbmF0aXZlJyA9IGRlZmVycmVkIGJlZm9yZWluc3RhbGxwcm9tcHQgKi9cclxuXHQvKiogQHR5cGUgeydpb3MnIHwgJ25hdGl2ZScgfCBudWxsfSAqL1xyXG5cdGxldCBpbnN0YWxsVmFyaWFudCA9ICRzdGF0ZShudWxsKTtcclxuXHQvKiogQHR5cGUge0JlZm9yZUluc3RhbGxQcm9tcHRFdmVudCB8IG51bGx9ICovXHJcblx0bGV0IGRlZmVycmVkSW5zdGFsbCA9ICRzdGF0ZShudWxsKTtcclxuXHJcblx0LyoqXHJcblx0ICogUFdBIGlzIGFscmVhZHkgb3BlbiBhcyBpbnN0YWxsZWQgLyBzdGFuZGFsb25lOiBoaWRlIHRoZSBwcm9tcHQgY29tcGxldGVseS5cclxuXHQgKi9cclxuXHRmdW5jdGlvbiBpc1J1bm5pbmdTdGFuZGFsb25lUHdhKCkge1xyXG5cdFx0aWYgKHR5cGVvZiB3aW5kb3cgPT09ICd1bmRlZmluZWQnKSByZXR1cm4gdHJ1ZTtcclxuXHRcdHRyeSB7XHJcblx0XHRcdGlmICh3aW5kb3cubWF0Y2hNZWRpYSgnKGRpc3BsYXktbW9kZTogc3RhbmRhbG9uZSknKS5tYXRjaGVzKSByZXR1cm4gdHJ1ZTtcclxuXHRcdH0gY2F0Y2gge1xyXG5cdFx0XHQvKiBpZ25vcmUgKi9cclxuXHRcdH1cclxuXHRcdGNvbnN0IG5hdiA9IHdpbmRvdy5uYXZpZ2F0b3I7XHJcblx0XHRpZiAobmF2ICYmICdzdGFuZGFsb25lJyBpbiBuYXYgJiYgLyoqIEB0eXBlIHtOYXZpZ2F0b3IgJiB7IHN0YW5kYWxvbmU/OiBib29sZWFuIH19ICovIChuYXYpLnN0YW5kYWxvbmUgPT09IHRydWUpIHtcclxuXHRcdFx0cmV0dXJuIHRydWU7XHJcblx0XHR9XHJcblx0XHRyZXR1cm4gZmFsc2U7XHJcblx0fVxyXG5cclxuXHQvKipcclxuXHQgKiBpT1MgU2FmYXJpIChvciBXZWJLaXQpIOKAlCBubyByZWxpYWJsZSBiZWZvcmVpbnN0YWxscHJvbXB0OyB1c2VyIG11c3QgdXNlIFNoYXJlIOKGkiBBZGQgdG8gSG9tZSBTY3JlZW4uXHJcblx0ICogSW5jbHVkZXMgaVBhZE9TIGRlc2t0b3AgVUEgKE1hY2ludG9zaCArIHRvdWNoKS5cclxuXHQgKi9cclxuXHRmdW5jdGlvbiBpc0lPU1VzZXJBZ2VudCgpIHtcclxuXHRcdGlmICh0eXBlb2YgbmF2aWdhdG9yID09PSAndW5kZWZpbmVkJykgcmV0dXJuIGZhbHNlO1xyXG5cdFx0Y29uc3QgdWEgPSBuYXZpZ2F0b3IudXNlckFnZW50O1xyXG5cdFx0aWYgKC9pUGFkfGlQaG9uZXxpUG9kLy50ZXN0KHVhKSkgcmV0dXJuIHRydWU7XHJcblx0XHRyZXR1cm4gL01hY2ludG9zaC8udGVzdCh1YSkgJiYgdHlwZW9mIGRvY3VtZW50ICE9PSAndW5kZWZpbmVkJyAmJiAnb250b3VjaGVuZCcgaW4gZG9jdW1lbnQ7XHJcblx0fVxyXG5cclxuXHQvKipcclxuXHQgKiBpT1MgUFdBIHBhdGg6IG9uIGlPUywgbm90IGFscmVhZHkgaW4gc3RhbmRhbG9uZSAoc2VlIE1pc3Npb246ICFuYXZpZ2F0b3Iuc3RhbmRhbG9uZSBwYXR0ZXJuICsgZGlzcGxheS1tb2RlKS5cclxuXHQgKi9cclxuXHRmdW5jdGlvbiBzaG91bGRTaG93SU9TTWFudWFsUGF0aCgpIHtcclxuXHRcdGlmICghYnJvd3NlcikgcmV0dXJuIGZhbHNlO1xyXG5cdFx0aWYgKGlzUnVubmluZ1N0YW5kYWxvbmVQd2EoKSkgcmV0dXJuIGZhbHNlO1xyXG5cdFx0cmV0dXJuIGlzSU9TVXNlckFnZW50KCk7XHJcblx0fVxyXG5cclxuXHRmdW5jdGlvbiByZWFkRGlzbWlzc2VkKCkge1xyXG5cdFx0dHJ5IHtcclxuXHRcdFx0cmV0dXJuIHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oU1RPUkFHRV9LRVkpID09PSAnMSc7XHJcblx0XHR9IGNhdGNoIHtcclxuXHRcdFx0cmV0dXJuIGZhbHNlO1xyXG5cdFx0fVxyXG5cdH1cclxuXHJcblx0ZnVuY3Rpb24gZGlzbWlzcygpIHtcclxuXHRcdHRyeSB7XHJcblx0XHRcdHNlc3Npb25TdG9yYWdlLnNldEl0ZW0oU1RPUkFHRV9LRVksICcxJyk7XHJcblx0XHR9IGNhdGNoIHtcclxuXHRcdFx0LyogaWdub3JlICovXHJcblx0XHR9XHJcblx0XHRzZXNzaW9uRGlzbWlzc2VkID0gdHJ1ZTtcclxuXHRcdGluc3RhbGxWYXJpYW50ID0gbnVsbDtcclxuXHR9XHJcblxyXG5cdC8qKlxyXG5cdCAqIEBwYXJhbSB7RXZlbnR9IGVcclxuXHQgKi9cclxuXHRmdW5jdGlvbiBvbkJlZm9yZUluc3RhbGxQcm9tcHQoZSkge1xyXG5cdFx0ZS5wcmV2ZW50RGVmYXVsdCgpO1xyXG5cdFx0Ly8gaU9TOiBtYW51YWwg4oCcQWRkIHRvIEhvbWUgU2NyZWVu4oCdIG9ubHk7IGRvIG5vdCB0YWtlIG92ZXIgd2l0aCBuYXRpdmUgZmxvdy5cclxuXHRcdGlmIChzaG91bGRTaG93SU9TTWFudWFsUGF0aCgpKSByZXR1cm47XHJcblx0XHRjb25zdCBiaXAgPSAvKiogQHR5cGUge0JlZm9yZUluc3RhbGxQcm9tcHRFdmVudH0gKi8gKGUpO1xyXG5cdFx0ZGVmZXJyZWRJbnN0YWxsID0gYmlwO1xyXG5cdFx0aW5zdGFsbFZhcmlhbnQgPSAnbmF0aXZlJztcclxuXHR9XHJcblxyXG5cdGFzeW5jIGZ1bmN0aW9uIHJ1bk5hdGl2ZUluc3RhbGwoKSB7XHJcblx0XHRjb25zdCBldiA9IGRlZmVycmVkSW5zdGFsbDtcclxuXHRcdGlmICghZXYpIHJldHVybjtcclxuXHRcdHRyeSB7XHJcblx0XHRcdGF3YWl0IGV2LnByb21wdCgpO1xyXG5cdFx0XHRhd2FpdCBldi51c2VyQ2hvaWNlO1xyXG5cdFx0fSBjYXRjaCB7XHJcblx0XHRcdC8qIGlnbm9yZSAqL1xyXG5cdFx0fSBmaW5hbGx5IHtcclxuXHRcdFx0ZGVmZXJyZWRJbnN0YWxsID0gbnVsbDtcclxuXHRcdFx0ZGlzbWlzcygpO1xyXG5cdFx0fVxyXG5cdH1cclxuXHJcblx0Y29uc3Qgc2hvd1Byb21wdCA9ICRkZXJpdmVkKFxyXG5cdFx0IXJ1bm5pbmdTdGFuZGFsb25lICYmICFzZXNzaW9uRGlzbWlzc2VkICYmIChpbnN0YWxsVmFyaWFudCA9PT0gJ2lvcycgfHwgaW5zdGFsbFZhcmlhbnQgPT09ICduYXRpdmUnKSxcclxuXHQpO1xyXG5cclxuXHQkZWZmZWN0KCgpID0+IHtcclxuXHRcdGlmICghYnJvd3NlcikgcmV0dXJuO1xyXG5cdFx0cnVubmluZ1N0YW5kYWxvbmUgPSBpc1J1bm5pbmdTdGFuZGFsb25lUHdhKCk7XHJcblx0XHRzZXNzaW9uRGlzbWlzc2VkID0gcmVhZERpc21pc3NlZCgpO1xyXG5cclxuXHRcdGlmIChydW5uaW5nU3RhbmRhbG9uZSB8fCBzZXNzaW9uRGlzbWlzc2VkKSB7XHJcblx0XHRcdHJldHVybjtcclxuXHRcdH1cclxuXHJcblx0XHRpZiAoc2hvdWxkU2hvd0lPU01hbnVhbFBhdGgoKSkge1xyXG5cdFx0XHRpbnN0YWxsVmFyaWFudCA9ICdpb3MnO1xyXG5cdFx0fVxyXG5cclxuXHRcdHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdiZWZvcmVpbnN0YWxscHJvbXB0Jywgb25CZWZvcmVJbnN0YWxsUHJvbXB0KTtcclxuXHRcdHJldHVybiAoKSA9PiB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcignYmVmb3JlaW5zdGFsbHByb21wdCcsIG9uQmVmb3JlSW5zdGFsbFByb21wdCk7XHJcblx0fSk7XHJcbjwvc2NyaXB0PlxyXG5cclxueyNpZiBzaG93UHJvbXB0fVxyXG5cdDxkaXZcclxuXHRcdGNsYXNzPVwicHdhLWJvb3N0IHR3LXBvaW50ZXItZXZlbnRzLWF1dG8gdHctZml4ZWQgdHctaW5zZXQteC0wIHR3LWJvdHRvbS0wIHR3LXotWzIwMF0gdHctZmxleCB0dy1qdXN0aWZ5LWNlbnRlciB0dy1wLTMgc206dHctcC00XCJcclxuXHRcdHJvbGU9XCJzdGF0dXNcIlxyXG5cdFx0YXJpYS1saXZlPVwicG9saXRlXCJcclxuXHQ+XHJcblx0XHR7I2lmIGluc3RhbGxWYXJpYW50ID09PSAnaW9zJ31cclxuXHRcdFx0PGRpdlxyXG5cdFx0XHRcdGNsYXNzPVwidHctZmxleCB0dy13LWZ1bGwgdHctbWF4LXctbGcgdHctZmxleC1jb2wgdHctZ2FwLTMgdHctcm91bmRlZC1sZyB0dy1ib3JkZXItMiB0dy1ib3JkZXItY3lhbi00MDAvNDUgdHctYmctWyMwNTA1MGFdIHR3LXB4LTQgdHctcHktNCB0dy10ZXh0LWN5YW4tMTAwIHR3LXNoYWRvdy1bMF8wXzI4cHhfcmdiYSgyMCwgMTg0LCAxNjYsMC4xNildXCJcclxuXHRcdFx0PlxyXG5cdFx0XHRcdDxwXHJcblx0XHRcdFx0XHRjbGFzcz1cInR3LW0tMCB0dy10ZXh0LWNlbnRlciB0dy10ZXh0LVswLjhyZW1dIHR3LWZvbnQtc2VtaWJvbGQgdHctbGVhZGluZy1yZWxheGVkIHR3LXRyYWNraW5nLXdpZGUgdHctdGV4dC1jeWFuLTUwLzk1XCJcclxuXHRcdFx0XHQ+XHJcblx0XHRcdFx0XHRUbyBpbnN0YWxsIG9uIGlPUzogVGFwIHRoZSBTaGFyZSBidXR0b24gYmVsb3csIHRoZW4gc2VsZWN0IEFkZCB0byBIb21lIFNjcmVlbi5cclxuXHRcdFx0XHQ8L3A+XHJcblx0XHRcdFx0PGRpdiBjbGFzcz1cInR3LWZsZXggdHctaXRlbXMtY2VudGVyIHR3LWp1c3RpZnktY2VudGVyIHR3LWdhcC0yXCIgYXJpYS1oaWRkZW49XCJ0cnVlXCI+XHJcblx0XHRcdFx0XHQ8c3BhblxyXG5cdFx0XHRcdFx0XHRjbGFzcz1cInR3LWlubGluZS1mbGV4IHR3LWgtNyB0dy13LTcgdHctaXRlbXMtY2VudGVyIHR3LWp1c3RpZnktY2VudGVyIHR3LXJvdW5kZWQtbWQgdHctYm9yZGVyIHR3LWJvcmRlci1jeWFuLTUwMC81MCB0dy1iZy1ibGFjay81MCB0dy10ZXh0LWN5YW4tMzAwXCJcclxuXHRcdFx0XHRcdD5cclxuXHRcdFx0XHRcdFx0PEljb24gbmFtZT17XCJjb21tLnNoYXJlXCIgYXMgSWNvbk5hbWV9IHNpemU9ezE2fSAvPlxyXG5cdFx0XHRcdFx0PC9zcGFuPlxyXG5cdFx0XHRcdFx0PHNwYW4gY2xhc3M9XCJ0dy10ZXh0LVswLjY1cmVtXSB0dy1mb250LW1vbm8gdHctdXBwZXJjYXNlIHR3LXRyYWNraW5nLXdpZGVzdCB0dy10ZXh0LWN5YW4tNTAwLzgwXCJcclxuXHRcdFx0XHRcdFx0PlNoYXJlPC9zcGFuXHJcblx0XHRcdFx0XHQ+XHJcblx0XHRcdFx0XHQ8c3BhbiBjbGFzcz1cInR3LXRleHQtY3lhbi02MDBcIj7ihpI8L3NwYW4+XHJcblx0XHRcdFx0XHQ8c3BhblxyXG5cdFx0XHRcdFx0XHRjbGFzcz1cInR3LXRleHQtWzAuNjVyZW1dIHR3LWZvbnQtbW9ubyB0dy1mb250LWJvbGQgdHctdXBwZXJjYXNlIHR3LXRyYWNraW5nLXdpZGVyIHR3LXRleHQtY3lhbi0zMDBcIlxyXG5cdFx0XHRcdFx0XHQ+QWRkIHRvIEhvbWUgU2NyZWVuPC9zcGFuXHJcblx0XHRcdFx0XHQ+XHJcblx0XHRcdFx0PC9kaXY+XHJcblx0XHRcdFx0PGRpdiBjbGFzcz1cInR3LWZsZXggdHctanVzdGlmeS1lbmRcIj5cclxuXHRcdFx0XHRcdDxidXR0b25cclxuXHRcdFx0XHRcdFx0dHlwZT1cImJ1dHRvblwiXHJcblx0XHRcdFx0XHRcdGNsYXNzPVwidHctbWluLWgtMTAgdHctcm91bmRlZCB0dy1ib3JkZXIgdHctYm9yZGVyLWN5YW4tNTAwLzQwIHR3LWJnLWN5YW4tOTUwLzQwIHR3LXB4LTQgdHctZm9udC1tb25vIHR3LXRleHQtWzAuNjVyZW1dIHR3LWZvbnQtZXh0cmFib2xkIHR3LXVwcGVyY2FzZSB0dy10cmFja2luZy13aWRlc3QgdHctdGV4dC1jeWFuLTMwMCB0dy10cmFuc2l0aW9uIGhvdmVyOnR3LWJvcmRlci1jeWFuLTQwMC82MCBob3Zlcjp0dy10ZXh0LWN5YW4tMjAwXCJcclxuXHRcdFx0XHRcdFx0b25jbGljaz17ZGlzbWlzc31cclxuXHRcdFx0XHRcdD5cclxuXHRcdFx0XHRcdFx0RGlzbWlzc1xyXG5cdFx0XHRcdFx0PC9idXR0b24+XHJcblx0XHRcdFx0PC9kaXY+XHJcblx0XHRcdDwvZGl2PlxyXG5cdFx0ezplbHNlIGlmIGluc3RhbGxWYXJpYW50ID09PSAnbmF0aXZlJ31cclxuXHRcdFx0PGRpdlxyXG5cdFx0XHRcdGNsYXNzPVwidHctZmxleCB0dy13LWZ1bGwgdHctbWF4LXctbGcgdHctZmxleC1jb2wgdHctZ2FwLTMgdHctcm91bmRlZC1sZyB0dy1ib3JkZXIgdHctYm9yZGVyLWN5YW4tNTAwLzQwIHR3LWJnLVsjMDUwNTBhXSB0dy1weC00IHR3LXB5LTMgdHctdGV4dC1jeWFuLTIwMCB0dy1zaGFkb3ctWzBfMF8yNHB4X3JnYmEoMjAsIDE4NCwgMTY2LDAuMTIpXVwiXHJcblx0XHRcdD5cclxuXHRcdFx0XHQ8cFxyXG5cdFx0XHRcdFx0Y2xhc3M9XCJ0dy1tLTAgdHctdGV4dC1jZW50ZXIgdHctZm9udC1tb25vIHR3LXRleHQtWzAuN3JlbV0gdHctZm9udC1ib2xkIHR3LXVwcGVyY2FzZSB0dy10cmFja2luZy1bMC4xMmVtXSB0dy10ZXh0LWN5YW4tMTAwLzkwXCJcclxuXHRcdFx0XHQ+XHJcblx0XHRcdFx0XHRJbnN0YWxsIFNTVFJBQ0tFUiBmb3IgZmFzdGVyIGFjY2Vzc1xyXG5cdFx0XHRcdDwvcD5cclxuXHRcdFx0XHQ8ZGl2IGNsYXNzPVwidHctZmxleCB0dy1mbGV4LXdyYXAgdHctanVzdGlmeS1lbmQgdHctZ2FwLTJcIj5cclxuXHRcdFx0XHRcdDxidXR0b25cclxuXHRcdFx0XHRcdFx0dHlwZT1cImJ1dHRvblwiXHJcblx0XHRcdFx0XHRcdGNsYXNzPVwidHctbWluLWgtMTEgdHctcm91bmRlZCB0dy1ib3JkZXItMiB0dy1ib3JkZXItY3lhbi00MDAvNjAgdHctYmctY3lhbi01MDAvMTAgdHctcHgtNSB0dy1mb250LW1vbm8gdHctdGV4dC1bMC43cmVtXSB0dy1mb250LWV4dHJhYm9sZCB0dy11cHBlcmNhc2UgdHctdHJhY2tpbmctWzAuMmVtXSB0dy10ZXh0LWN5YW4tMjAwIHR3LXNoYWRvdy1bMF8wXzE4cHhfcmdiYSgyMCwgMTg0LCAxNjYsMC4yKV0gdHctdHJhbnNpdGlvbiBob3Zlcjp0dy1ib3JkZXItY3lhbi0zMDAgaG92ZXI6dHctYmctY3lhbi01MDAvMjBcIlxyXG5cdFx0XHRcdFx0XHRvbmNsaWNrPXtydW5OYXRpdmVJbnN0YWxsfVxyXG5cdFx0XHRcdFx0PlxyXG5cdFx0XHRcdFx0XHRJTlNUQUxMIEFQUFxyXG5cdFx0XHRcdFx0PC9idXR0b24+XHJcblx0XHRcdFx0XHQ8YnV0dG9uXHJcblx0XHRcdFx0XHRcdHR5cGU9XCJidXR0b25cIlxyXG5cdFx0XHRcdFx0XHRjbGFzcz1cInR3LW1pbi1oLTExIHR3LXJvdW5kZWQgdHctYm9yZGVyIHR3LWJvcmRlci1jeWFuLTUwMC8zNSB0dy1iZy10cmFuc3BhcmVudCB0dy1weC00IHR3LWZvbnQtbW9ubyB0dy10ZXh0LVswLjY1cmVtXSB0dy1mb250LWV4dHJhYm9sZCB0dy11cHBlcmNhc2UgdHctdHJhY2tpbmctd2lkZXN0IHR3LXRleHQtY3lhbi00MDAvODAgdHctdHJhbnNpdGlvbiBob3Zlcjp0dy10ZXh0LWN5YW4tMjAwXCJcclxuXHRcdFx0XHRcdFx0b25jbGljaz17ZGlzbWlzc31cclxuXHRcdFx0XHRcdD5cclxuXHRcdFx0XHRcdFx0Tm90IG5vd1xyXG5cdFx0XHRcdFx0PC9idXR0b24+XHJcblx0XHRcdFx0PC9kaXY+XHJcblx0XHRcdDwvZGl2PlxyXG5cdFx0ey9pZn1cclxuXHQ8L2Rpdj5cclxuey9pZn1cclxuXHJcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7U0FDVSxPQUFPLFFBQVEsa0JBQWtCO09BQ25DLElBQUksTUFBTSxnQ0FBZ0M7Ozs7Ozs7Ozs7Ozs7Ozs7OzZDQUZsRCxDQUFDOzs7O09BS00sV0FBVyxHQUFHLGlDQUFpQzs7O0tBR2pELGlCQUFpQixTQUFHLE9BQU0sQ0FBQyxJQUFJOzs7S0FFL0IsZ0JBQWdCLFNBQUcsT0FBTSxDQUFDLEtBQUs7Ozs7S0FHL0IsY0FBYyxTQUFHLE9BQU0sQ0FBQyxJQUFJOzs7S0FFNUIsZUFBZSxTQUFHLE9BQU0sQ0FBQyxJQUFJOzs7OztVQUt4QixzQkFBc0IsR0FBRyxDQUFDOzZCQUN2QixNQUFNLEVBQUssV0FBVyxVQUFTLElBQUk7O01BQzFDLENBQUM7T0FDQSxNQUFNLENBQUMsVUFBVSxDQUFDLDRCQUE0QixFQUFFLE9BQU8sU0FBUyxJQUFJO0VBQ3pFLENBQUMsT0FBTyxDQUFDOztFQUVULENBQUM7O1FBQ0ssR0FBRyxHQUFHLE1BQU0sQ0FBQyxTQUFTOztNQUN4QixHQUFHLElBQUksWUFBWSxJQUFJLEdBQUcsd0VBQXlELEdBQUcsQ0FBRSxVQUFVLEVBQUssSUFBSSxHQUFFLENBQUM7VUFDMUcsSUFBSTtFQUNaLENBQUM7O1NBQ00sS0FBSztDQUNiLENBQUM7Ozs7OztVQU1RLGNBQWMsR0FBRyxDQUFDOzZCQUNmLFNBQVMsRUFBSyxXQUFXLFVBQVMsS0FBSzs7UUFDNUMsRUFBRSxHQUFHLFNBQVMsQ0FBQyxTQUFTOztPQUMxQixrQkFBa0IsRUFBQyxJQUFJLENBQUMs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

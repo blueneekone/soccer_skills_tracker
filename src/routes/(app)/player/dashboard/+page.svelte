@@ -3,13 +3,15 @@
 	import { resolve } from '$app/paths';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-	import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import ActiveBounties from '$lib/components/player/dashboard/ActiveBounties.svelte';
 	import OperativeHub from '$lib/components/player/dashboard/OperativeHub.svelte';
+	import OperativeQuickOps from '$lib/components/player/dashboard/OperativeQuickOps.svelte';
+	import OperativePathwayPreview from '$lib/components/player/dashboard/OperativePathwayPreview.svelte';
+	import HqWorldContextStrip from '$lib/components/player/dashboard/HqWorldContextStrip.svelte';
 	// PlayerHudHeader deprecated in Sprint 1.6 — replaced by IdentityBentoModule
 	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
-	import HudMetricsPanel from '$lib/components/player/dashboard/HudMetricsPanel.svelte';
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
@@ -25,6 +27,13 @@
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
 	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
+	import {
+		mapScheduleDoc,
+		pickNextScheduleEvent,
+		resolveHqStatusBadges,
+		resolveNextEventLabel,
+		type HqScheduleEventLike,
+	} from '$lib/player/dashboard/hqWorldContext.js';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -87,8 +96,10 @@
 	/** Controls the one-time profile setup modal. */
 	let showInitModal = $state(false);
 
-	/** @type {string} */
-	let teamAssignmentLabel = $state('');
+	let coachBountyCount = $state(0);
+	let heroQuestId = $state<string | null>(null);
+	/** @type {HqScheduleEventLike | null} */
+	let nextScheduleEvent = $state(null);
 
 	const callsign = $derived(
 		(activePlayer?.playerName && String(activePlayer.playerName).trim()) ||
@@ -97,6 +108,21 @@
 	);
 
 	const hasArmoryProfile = $derived(Boolean(activePlayer?.operativeAvatar));
+
+	const nextEventLabel = $derived(resolveNextEventLabel(nextScheduleEvent));
+	const hqStatusBadges = $derived(
+		resolveHqStatusBadges({
+			profileIncomplete: !hasArmoryProfile,
+			streak,
+			lastTrainingUtc,
+			coachBountyCount,
+			heroQuestId,
+			suppressProfileIncompleteBadge: !hasArmoryProfile,
+		}),
+	);
+
+	/** @type {string} */
+	let teamAssignmentLabel = $state('');
 
 	$effect(() => {
 		if (!browser) return;
@@ -172,6 +198,60 @@
 		};
 	});
 
+	async function loadLegacyScheduleFallback(tid: string, now: Date) {
+		const fallbackQ = query(collection(db, 'schedules'), where('teamId', '==', tid));
+		const snap = await getDocs(fallbackQ);
+		const events = snap.docs.map((d) => mapScheduleDoc(d.id, d.data()));
+		nextScheduleEvent = pickNextScheduleEvent(events, now);
+	}
+
+	$effect(() => {
+		if (!browser) return;
+		const tid =
+			typeof activePlayer?.teamId === 'string' ? activePlayer.teamId.trim() : '';
+		if (!tid || tid === 'admin') {
+			nextScheduleEvent = null;
+			return;
+		}
+
+		const now = new Date();
+		const scheduleQ = query(
+			collection(db, 'schedules'),
+			where('teamId', '==', tid),
+			where('startAt', '>=', Timestamp.fromDate(now)),
+			orderBy('startAt', 'asc'),
+			limit(1),
+		);
+
+		let cancelled = false;
+
+		const unsub = onSnapshot(
+			scheduleQ,
+			(snap) => {
+				if (cancelled) return;
+				if (!snap.empty) {
+					const docSnap = snap.docs[0];
+					nextScheduleEvent = mapScheduleDoc(docSnap.id, docSnap.data());
+					return;
+				}
+				void loadLegacyScheduleFallback(tid, now).catch(() => {
+					if (!cancelled) nextScheduleEvent = null;
+				});
+			},
+			(e) => {
+				console.warn('[player dashboard] schedules', e);
+				void loadLegacyScheduleFallback(tid, now).catch(() => {
+					if (!cancelled) nextScheduleEvent = null;
+				});
+			},
+		);
+
+		return () => {
+			cancelled = true;
+			unsub();
+		};
+	});
+
 	// Read-Repair: silently stamp sportId = 'soccer' on user profiles missing it.
 	$effect(() => {
 		if (!browser || !email || authStore.isLoading) return;
@@ -191,12 +271,13 @@
 
 {#if authStore.isLoading}
 	<div
-		class="tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#0B0F19] tw-py-16 tw-text-slate-400"
+		class="player-dossier-root tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-py-16"
+		style="background: var(--pd-bg, #000); color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));"
 		role="status"
 		aria-live="polite"
 		aria-busy="true"
 	>
-		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-slate-400" />
+		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));" />
 		<span class="tw-sr-only">Loading player dashboard</span>
 	</div>
 {:else if !activePlayer}
@@ -219,17 +300,45 @@
 	</div>
 {:else}
 <div
-	class="lobby-page player-hud-root tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
-	style="background: var(--color-dominant, #0f172a); padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
+	class="lobby-page player-hud-root pd-page-root tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
+	style="background: var(--pd-bg, #000);"
 	data-region="player-lobby"
+	data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 >
+	<div class="pd-content-wrap">
 	<HUDContainer ariaLabel="Player operations HUD">
+		<header class="pd-strap pd-strap--premium bento-span-12" aria-label="Operative headquarters">
+			<div class="pd-strap__grid">
+				<div class="pd-strap__id">
+					<p class="pd-eyebrow">Command / HQ</p>
+					<h1 class="pd-strap__title">{callsign || 'Operative HQ'}</h1>
+				</div>
+				<div class="pd-strap__status" role="status">
+					<p class="pd-label pd-mono">
+						{rankProgress.rank} · LVL {String(osLevel).padStart(2, '0')}
+					</p>
+				</div>
+			</div>
+			<div class="pd-strap__context">
+				<HqWorldContextStrip
+					inline
+					nextEventLabel={nextEventLabel}
+					badges={hqStatusBadges}
+				/>
+			</div>
+		</header>
 		<div class="bento-span-12 tw-min-w-0">
 			<OperativeHub>
 				{#snippet identity()}
 					<IdentityBentoModule
 						embedded={true}
+						hideDisplayName={true}
 						uid={uid}
+						operativeAvatar={activePlayer?.operativeAvatar}
+						operativeLoadout={activePlayer?.operativeLoadout}
+						ownedCosmetics={Array.isArray(activePlayer?.ownedCosmetics) ?
+							activePlayer.ownedCosmetics.filter((id) => typeof id === 'string')
+						:	[]}
 						displayName={callsign}
 						teamLabel={teamAssignmentLabel}
 						rankName={rankProgress.rank}
@@ -248,29 +357,39 @@
 					/>
 				{/snippet}
 				{#snippet metrics()}
-					<HudMetricsPanel
-						embedded={true}
-						prismValues={attrRadarValues}
-						bind:selectedAxis={selectedVanguardAxis}
-					/>
+					{#if !telemetryReady}
+						<p class="hmp-vectors-collapsed hmp-vectors-collapsed--premium" role="status">
+							AWAITING TELEMETRY · LOG A SESSION TO UNLOCK VECTORS
+						</p>
+					{/if}
 				{/snippet}
 				{#snippet quests()}
-					<ActiveBounties embedded lastTrainingUtc={lastTrainingUtc} />
+					<ActiveBounties
+						embedded
+						lastTrainingUtc={lastTrainingUtc}
+						onCoachBountyCount={(count) => (coachBountyCount = count)}
+						onHeroQuestId={(id) => (heroQuestId = id)}
+					/>
 				{/snippet}
 			</OperativeHub>
 		</div>
 
+		<OperativeQuickOps />
+
+		<OperativePathwayPreview level={osLevel} />
+
 	<section
-		class="bento-span-12 bento-card player-analytics-deck tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-p-4 md:tw-p-5"
-		class:player-analytics-deck--compact={!telemetryReady}
+		class="bento-span-12 player-analytics-void tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col"
+		class:player-analytics-void--compact={!telemetryReady}
 		aria-label="Player analytics deck"
+		data-region="player-analytics-void"
 	>
 		<VanguardProtocolPanel
 			prismValues={attrRadarValues}
 			bind:selectedAxis={selectedVanguardAxis}
 			compact={!telemetryReady}
 		/>
-		<footer class="player-capsules-strip" aria-labelledby="lobby-capsules-h">
+		<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
 			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
 				<div class="player-capsules-strip__head">
 					<p class="player-capsules-strip__eyebrow lobby-eyebrow tw-font-mono">Self comparison</p>
@@ -279,19 +398,28 @@
 					</h2>
 				</div>
 				<MemoryCapsuleArena
+					dossierMode={true}
 					capsule={trajectoryEngine.activeCapsule}
 					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
 				/>
 			{:else}
-				<p id="lobby-capsules-h" class="lobby-capsule-ghost lobby-capsule-ghost--compact" role="status">
-					SELF COMPARISON · MEMORY CAPSULES · GHOST PROFILE · AWAITING FIRST CAPSULE
-				</p>
+				<div
+					id="lobby-capsules-h"
+					class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
+					role="status"
+				>
+					<div class="pd-empty-state__icon" aria-hidden="true"></div>
+					<div class="pd-empty-state__copy">
+						<p class="pd-empty-state__title">Ghost profile</p>
+						<p class="pd-empty-state__lede">Self comparison · awaiting first memory capsule</p>
+					</div>
+				</div>
 			{/if}
 		</footer>
 	</section>
-
 	</HUDContainer>
+	</div>
 </div>
 
 <!-- Sprint 9.2: Initialize Operative — distinct one-time setup modal -->
@@ -303,41 +431,41 @@
 	onclick={(e) => { if (e.target === e.currentTarget) showInitModal = false; }}
 >
 	<div
-		class="init-modal tw-relative tw-w-full tw-max-w-md tw-rounded-2xl tw-border tw-border-slate-700 tw-bg-slate-900 tw-p-6 tw-shadow-2xl"
+		class="init-modal pd-panel tw-relative tw-w-full tw-max-w-md tw-p-6 tw-shadow-2xl"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="init-modal-h"
 	>
 		<button
 			type="button"
-			class="tw-absolute tw-right-3 tw-top-3 tw-flex tw-min-h-[44px] tw-min-w-[44px] tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-slate-800 tw-text-slate-400 tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-text-slate-200"
+			class="init-modal__close tw-absolute tw-right-3 tw-top-3 tw-flex tw-min-h-[44px] tw-min-w-[44px] tw-items-center tw-justify-center tw-rounded-lg"
 			onclick={() => (showInitModal = false)}
 			aria-label="Close"
 		>
 			<Icon name="sys.close" size={14} />
 		</button>
 
-		<div class="bento-mb-md tw-border-b tw-border-slate-800 tw-pb-3">
-			<p class="tw-m-0 tw-font-mono tw-text-[0.5rem] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">
+		<div class="init-modal__head bento-mb-md tw-pb-3">
+			<p class="pd-eyebrow tw-m-0">
 				One-time setup · SOAR
 			</p>
 			<h2
 				id="init-modal-h"
-				class="tw-m-0 tw-mt-1.5 tw-font-mono tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-50"
+				class="pd-strap__title tw-m-0 tw-mt-1.5 tw-text-lg"
 			>
 				Finish your profile
 			</h2>
 		</div>
 
-		<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-slate-400">
+		<p class="init-modal__body tw-m-0 tw-text-sm tw-leading-relaxed">
 			Your player profile is not complete yet. Set your avatar, position, and sport in the Armory
 			to unlock the full Player OS.
 		</p>
 
-		<ul class="bento-mt-md tw-list-none tw-m-0 tw-p-0 tw-space-y-1.5">
+		<ul class="init-modal__steps bento-mt-md tw-list-none tw-m-0 tw-p-0 tw-space-y-1.5">
 			{#each ['Choose your player avatar', 'Set your position and sport', 'Review your gear unlocks'] as step, i}
-				<li class="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5 tw-font-mono tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-[0.12em] tw-text-slate-500">
-					<span class="tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-sm tw-border tw-border-teal-700/60 tw-bg-teal-600/10 tw-text-[0.5rem] tw-font-black tw-text-teal-500">{i + 1}</span>
+				<li class="init-modal__step tw-flex tw-min-w-0 tw-items-center tw-gap-2.5 tw-font-mono tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-[0.12em]">
+					<span class="init-modal__step-num tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-sm tw-text-[0.5rem] tw-font-black">{i + 1}</span>
 					{step}
 				</li>
 			{/each}
@@ -346,7 +474,7 @@
 		<div class="bento-mt-lg tw-flex tw-flex-wrap tw-items-center tw-gap-3">
 			<a
 				href={resolve('/player/armory')}
-				class="tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-border tw-border-teal-600/70 tw-bg-teal-600/10 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-400 tw-no-underline tw-transition-all tw-duration-150 hover:tw-bg-teal-600/20 active:tw-scale-[0.98]"
+				class="init-modal__cta init-modal__cta--primary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-no-underline tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 				data-sveltekit-preload-data="hover"
 				onclick={() => (showInitModal = false)}
 			>
@@ -355,7 +483,7 @@
 			</a>
 			<button
 				type="button"
-				class="tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-transition-all tw-duration-150 hover:tw-border-slate-600 hover:tw-text-slate-300 active:tw-scale-[0.98]"
+				class="init-modal__cta init-modal__cta--secondary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-px-4 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 				onclick={() => (showInitModal = false)}
 			>
 				Later
@@ -372,16 +500,12 @@
 		color: var(--vanguard-text-1, #f8fafc);
 	}
 
-	/* Opaque data cards — chamfer + slate border under .player-hud-root (player-dashboard-hud.css) */
-	:global(.player-hud-root) .bento-card {
+	/* Lifted dossier panels — player-dashboard-hud.css */
+	:global(.player-dossier-root) .bento-card {
 		overflow: hidden;
 		min-width: 0;
-		background: var(--color-dominant, #0f172a);
+		background: var(--pd-panel, #05050a);
+		border-color: var(--pd-line, rgba(255, 255, 255, 0.1));
 		box-shadow: var(--shadow-liquid);
-		background-image: linear-gradient(
-			160deg,
-			rgba(255, 255, 255, 0.035) 0%,
-			rgba(255, 255, 255, 0) 60%
-		);
 	}
 </style>

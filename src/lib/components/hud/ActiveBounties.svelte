@@ -13,7 +13,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
-	import '$lib/styles/hud-telemetry.css';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
 		buildDailyQuests,
@@ -25,6 +24,8 @@
 		markQuestClaimed,
 		markQuestCompleted,
 		maxVisibleQuests,
+		formatQuestRewardLabel,
+		isPromotedQuest,
 		questCtaLabel,
 		questHudCtaShort,
 		questTerminalCmd,
@@ -40,11 +41,15 @@
 		quests: questsProp = undefined,
 		loading: loadingProp = undefined,
 		lastTrainingUtc = null,
+		onCoachBountyCount = undefined,
+		onHeroQuestId = undefined,
 	}: {
 		embedded?: boolean;
 		quests?: QuestTask[];
 		loading?: boolean;
 		lastTrainingUtc?: string | null;
+		onCoachBountyCount?: (count: number) => void;
+		onHeroQuestId?: (id: string | null) => void;
 	} = $props();
 
 	let internalQuests = $state<QuestTask[]>([]);
@@ -63,15 +68,24 @@
 	const hiddenCount = $derived(Math.max(0, dedupedQuests.length - maxVisibleQuests()));
 	const showEmpty = $derived(!loading && dedupedQuests.length === 0);
 	const heroQuest = $derived(
-		embedded && dedupedQuests.length > 0 ?
-			resolveHeroQuest(dedupedQuests, { lastTrainingUtc })
-		:	null,
-	);
-	const railQuests = $derived(
-		heroQuest ? visibleQuests.filter((q) => q.id !== heroQuest.id) : visibleQuests,
+		embedded ? resolveHeroQuest(dedupedQuests, { lastTrainingUtc }) : null,
 	);
 	const visibleBounties = $derived(visibleQuests.filter((q) => q.tier === 'bounty'));
 	const visibleDailies = $derived(visibleQuests.filter((q) => q.tier === 'daily'));
+
+	const coachBountyCount = $derived(
+		dedupedQuests.filter(
+			(q) => q.tier === 'bounty' && (q.source === 'coach_intent' || q.source === 'coach_homework'),
+		).length,
+	);
+
+	$effect(() => {
+		onCoachBountyCount?.(coachBountyCount);
+	});
+
+	$effect(() => {
+		onHeroQuestId?.(heroQuest?.id ?? visibleQuests[0]?.id ?? null);
+	});
 
 	const playerUid = $derived(authStore.user?.uid ?? '');
 	const playerEmail = $derived((authStore.user?.email || '').toLowerCase());
@@ -255,10 +269,49 @@
 	}
 </script>
 
+{#snippet questCardContent(quest: QuestTask)}
+	{#if quest.senderLabel}
+		<p class="quest-hero__sender">{quest.senderLabel}</p>
+	{/if}
+	<h3 class="quest-hero__title">{quest.title}</h3>
+	{#if formatQuestRewardLabel(quest)}
+		<p class="quest-hero__reward">{formatQuestRewardLabel(quest)}</p>
+	{/if}
+	<button
+		type="button"
+		class="quest-hero__cta"
+		aria-label={questCtaLabel(quest.lifecycle)}
+		onclick={() => handleQuestAction(quest)}
+	>
+		{questHudCtaShort(quest.lifecycle)}
+	</button>
+{/snippet}
+
+{#snippet questHeroCard(quest: QuestTask, accent: 'gold' | 'teal', primary = false)}
+	<article
+		class="quest-hero quest-hero--premium"
+		class:quest-hero--primary={primary}
+		class:quest-hero--gold={accent === 'gold'}
+		class:quest-hero--teal={accent === 'teal'}
+		data-partial={quest.lifecycle === 'complete' ? 'true' : undefined}
+		aria-label="Mission"
+	>{@render questCardContent(quest)}</article>
+{/snippet}
+
+{#snippet questSecondaryCard(quest: QuestTask)}
+	<article
+		class="quest-hero quest-hero--compact quest-hero--teal"
+		data-partial={quest.lifecycle === 'complete' ? 'true' : undefined}
+		aria-label="Secondary mission"
+	>{@render questCardContent(quest)}</article>
+{/snippet}
+
 {#snippet questRowEmbedded(quest: QuestTask)}
 	<div
-		class="hud-bounty-row quest-row quest-row--embedded"
+		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
+		class:quest-row--bounty={quest.tier === 'bounty'}
+		class:quest-row--promoted={isPromotedQuest(quest)}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -271,20 +324,24 @@
 				<span class="quest-row__sender">{quest.senderLabel}</span>
 				<span class="quest-row__sep" aria-hidden="true">·</span>
 				<span class="quest-row__title-text">{quest.title}</span>
+				{#if formatQuestRewardLabel(quest)}
+					<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
+					<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
+				{/if}
 			</p>
-		</div>
-
-		<div class="hud-bounty-row__reward quest-row__reward quest-row__reward--embedded" aria-label="Reward">
-			{#if quest.xpReward > 0}
-				<span class="quest-row__xp">+{quest.xpReward.toLocaleString()} XP</span>
-			{:else if quest.rewardLabel}
-				<span class="quest-row__xp quest-row__xp--cash">{quest.rewardLabel}</span>
+			{#if formatQuestRewardLabel(quest)}
+				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
 			{/if}
 		</div>
 
+		<div
+			class="hud-bounty-row__reward quest-row__reward quest-row__reward--embedded"
+			aria-hidden="true"
+		></div>
+
 		<button
 			type="button"
-			class="hud-bounty-row__cmd quest-row__cmd quest-row__cmd--embedded"
+			class="hud-bounty-row__cmd quest-row__cmd quest-row__cmd--embedded quest-row__cmd--rail-chip"
 			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
 			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
 			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
@@ -313,7 +370,7 @@
 				uid={quest.id}
 				size={48}
 				fill={Math.min(1, quest.xpReward / 500)}
-				strokeColor={variant === 'bounty' ? 'var(--color-accent, #fbbf24)' : '#22d3ee'}
+				strokeColor={variant === 'bounty' ? 'var(--color-accent, #fbbf24)' : 'var(--pd-accent-data, #14b8a6)'}
 				showCenter={false}
 			/>
 		</div>
@@ -350,6 +407,7 @@
 	class:hud-telemetry-root={!embedded}
 	class:quest-log-panel--embedded={embedded}
 	class:quest-log-panel--rail={embedded}
+	class:quest-log-panel--premium={embedded}
 	class:quest-log--empty={showEmpty}
 	aria-label="Quest log"
 	aria-busy={loading}
@@ -364,33 +422,11 @@
 				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
 			</header>
 
-			{#if heroQuest}
-				<article class="quest-hero" aria-label="Primary mission">
-					{#if heroQuest.senderLabel}
-						<p class="quest-hero__sender">{heroQuest.senderLabel}</p>
-					{/if}
-					<h3 class="quest-hero__title">{heroQuest.title}</h3>
-					{#if heroQuest.xpReward > 0}
-						<p class="quest-hero__reward">+{heroQuest.xpReward.toLocaleString()} XP</p>
-					{:else if heroQuest.rewardLabel}
-						<p class="quest-hero__reward">{heroQuest.rewardLabel}</p>
-					{/if}
-					<button
-						type="button"
-						class="quest-hero__cta ibm-cta ibm-cta--setup"
-						aria-label={questCtaLabel(heroQuest.lifecycle)}
-						onclick={() => handleQuestAction(heroQuest)}
-					>
-						{questHudCtaShort(heroQuest.lifecycle)}
-					</button>
-				</article>
-			{/if}
-
 			<div
 				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
-				aria-label="Active mission deck"
+				aria-label="Active missions"
 			>
-				{#each railQuests as quest (quest.id)}
+				{#each visibleQuests as quest (quest.id)}
 					<div
 						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
 						class:quest-terminal-row--habit={quest.tier === 'daily'}
@@ -483,16 +519,6 @@
 		margin-bottom: clamp(6px, 1vw, 8px);
 	}
 
-	.quest-row--embedded.quest-row--habit .quest-row__xp {
-		color: color-mix(in srgb, var(--color-accent, #fbbf24) 65%, #94a3b8);
-	}
-
-	.quest-log__eyebrow--deck {
-		margin: 0 0 0.15rem;
-		font-size: 0.48rem;
-		color: rgb(148 163 184 / 0.55);
-	}
-
 	.quest-log__title--embedded {
 		font-size: clamp(0.62rem, 1.4vw, 0.72rem);
 		letter-spacing: 0.14em;
@@ -564,7 +590,7 @@
 	}
 
 	.quest-terminal-row--embedded {
-		padding: clamp(4px, 0.8vw, 6px) 0;
+		padding: clamp(5px, 1vw, 8px) 0;
 		min-height: 0;
 	}
 
@@ -602,29 +628,10 @@
 	}
 
 	.quest-row__status--idle {
-		background: rgb(148 163 184 / 0.25);
+		border-radius: 50%;
+		background: rgb(148 163 184 / 0.35);
 		box-shadow: none;
 		animation: none;
-	}
-
-	.quest-row__cmd--embedded {
-		color: var(--color-accent, #fbbf24);
-		text-decoration: underline;
-		text-underline-offset: 2px;
-	}
-
-	.quest-row__cmd--embedded.quest-row__cmd--complete,
-	.quest-row__cmd--embedded.quest-row__cmd--claim {
-		color: var(--color-accent, #fbbf24);
-	}
-
-	.quest-row--embedded .quest-row__xp {
-		font-size: clamp(0.58rem, 1.2vw, 0.68rem);
-		color: var(--color-accent, #fbbf24);
-	}
-
-	.quest-row--embedded .quest-row__xp--habit {
-		color: color-mix(in srgb, var(--color-accent, #fbbf24) 75%, #94a3b8);
 	}
 
 	.quest-log__more--embedded {
@@ -720,9 +727,10 @@
 
 	.quest-row__status {
 		display: inline-block;
-		width: 6px;
-		height: 6px;
+		width: 7px;
+		height: 7px;
 		flex-shrink: 0;
+		border-radius: 50%;
 		background: var(--color-accent, #fbbf24);
 		box-shadow: 0 0 8px var(--color-accent, #fbbf24);
 		animation: quest-status-pulse 1.35s ease-in-out infinite;
@@ -771,14 +779,14 @@
 	}
 
 	.quest-row__xp--habit {
-		color: #22d3ee;
+		color: var(--pd-accent-data, #14b8a6);
 	}
 
 	.quest-row__xp--cash {
 		color: var(--color-accent, #fbbf24);
 	}
 
-	.quest-row__cmd {
+	.quest-row__cmd:not(.quest-row__cmd--rail-chip) {
 		flex-shrink: 0;
 		margin: 0;
 		padding: 0;
@@ -795,8 +803,14 @@
 		transition: text-shadow 0.15s ease, color 0.15s ease;
 	}
 
+	.quest-row__cmd--rail-chip {
+		flex-shrink: 0;
+		margin: 0;
+		cursor: pointer;
+	}
+
 	.quest-row__cmd--accept {
-		color: #22d3ee;
+		color: var(--color-accent, #fbbf24);
 	}
 
 	.quest-row__cmd--complete {
@@ -807,11 +821,11 @@
 		color: #2dff9a;
 	}
 
-	.quest-row__cmd:hover {
+	.quest-row__cmd:not(.quest-row__cmd--rail-chip):hover {
 		text-shadow: 0 0 8px currentColor;
 	}
 
-	.quest-row__cmd:focus-visible {
+	.quest-row__cmd:not(.quest-row__cmd--rail-chip):focus-visible {
 		outline: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 50%, transparent);
 		outline-offset: 3px;
 	}
@@ -822,7 +836,7 @@
 			align-items: flex-start;
 		}
 
-		.quest-row__cmd {
+		.quest-row__cmd:not(.quest-row__cmd--rail-chip) {
 			width: 100%;
 			text-align: left;
 		}

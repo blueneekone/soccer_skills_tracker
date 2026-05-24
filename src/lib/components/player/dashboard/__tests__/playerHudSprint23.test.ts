@@ -57,11 +57,9 @@ describe('Sprint 2.3 — IdentityBentoModule stat grid', () => {
 	});
 });
 
-describe('Sprint 2.3 — OperativeHub scanlines (no cyan)', () => {
-	it('operative-hub__scanlines does not use rgba(0, 255, 255) or #00ffff', () => {
-		const scanlineBlock = hubSrc.match(/\.operative-hub__scanlines[\s\S]*?\}/)?.[0] ?? hubSrc;
-		expect(scanlineBlock).not.toMatch(/rgba\(\s*0\s*,\s*255\s*,\s*255/);
-		expect(scanlineBlock).not.toMatch(/#00ffff/i);
+describe('Sprint 2.3 — OperativeHub scanlines (removed in 2.8 Player Dossier)', () => {
+	it('operative-hub__scanlines element removed from OperativeHub markup', () => {
+		expect(hubSrc).not.toMatch(/operative-hub__scanlines/);
 	});
 });
 

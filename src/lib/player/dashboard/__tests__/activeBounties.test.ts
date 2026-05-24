@@ -7,8 +7,10 @@ import {
 	questCtaLabel,
 	questHudCtaShort,
 	questTerminalCmd,
+	formatQuestRewardLabel,
 	resolveQuestLifecycle,
 	resolveHeroQuest,
+	excludeHeroFromRailQuests,
 	maxVisibleQuests,
 	type QuestTask,
 } from '../activeBounties.js';
@@ -112,6 +114,40 @@ describe('activeBounties', () => {
 		expect(hero?.id).toBe('daily-training-log');
 	});
 
+	it('resolveHeroQuest still picks daily-training-log when claimed but last_training_utc is stale', () => {
+		const streakCheck: QuestTask = {
+			id: 'daily-streak-check',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: 'Protect your 5-day streak',
+			axisId: 'PAC',
+			xpReward: 20,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		const bounty: QuestTask = {
+			id: 'coach-intent-1',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach Challenge',
+			title: 'Pace · 200 XP goal',
+			axisId: 'PAC',
+			xpReward: 200,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 10,
+		};
+		const now = new Date(Date.UTC(2026, 4, 21));
+		// daily-training-log absent — filtered by buildDailyQuests claimedIds
+		const hero = resolveHeroQuest([bounty, streakCheck], {
+			lastTrainingUtc: '2026-05-20',
+			now,
+		});
+		expect(hero?.id).toBe('daily-training-log');
+	});
+
 	it('resolveHeroQuest prefers streak quest when trained today', () => {
 		const trainingLog: QuestTask = {
 			id: 'daily-training-log',
@@ -143,5 +179,54 @@ describe('activeBounties', () => {
 			now,
 		});
 		expect(hero?.id).toBe('daily-streak-check');
+	});
+
+	it('excludeHeroFromRailQuests removes hero id from embedded rail feed', () => {
+		const trainingLog: QuestTask = {
+			id: 'daily-training-log',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: "Log today's training session",
+			axisId: 'STM',
+			xpReward: 35,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 0,
+		};
+		const streakCheck: QuestTask = {
+			id: 'daily-streak-check',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: 'Protect your 5-day streak',
+			axisId: 'PAC',
+			xpReward: 20,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		const hero = trainingLog;
+		const rail = excludeHeroFromRailQuests([trainingLog, streakCheck], hero);
+		expect(rail.some((q) => q.id === 'daily-training-log')).toBe(false);
+		expect(rail.some((q) => q.id === 'daily-streak-check')).toBe(true);
+	});
+
+	it('formatQuestRewardLabel uses earn-on-completion copy for accept state', () => {
+		const quest: QuestTask = {
+			id: 'daily-training-log',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: "Log today's training session",
+			axisId: 'STM',
+			xpReward: 35,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 0,
+		};
+		expect(formatQuestRewardLabel(quest)).toBe('Earn +35 XP on completion');
+		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'claim' })).toBe('+35 XP');
+		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'complete' })).toMatch(/\+35 XP/);
 	});
 });

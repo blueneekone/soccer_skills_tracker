@@ -1,0 +1,37 @@
+[
+	{
+		"id": "digi_border_neon",
+		"slot": "border",
+		"label": "Neon Operative Border",
+		"renderKey": "border-neon",
+		"file": "border-neon.svg"
+	},
+	{
+		"id": "album_border_street_kings_holo",
+		"slot": "border",
+		"label": "Street Kings Holo Border",
+		"renderKey": "border-holo",
+		"file": "border-holo.svg"
+	},
+	{
+		"id": "album_badge_street_kings",
+		"slot": "badge",
+		"label": "Street Kings Badge",
+		"renderKey": "badge-hex",
+		"file": "badge-street-kings.svg"
+	},
+	{
+		"id": "album_banner_vanguard",
+		"slot": "banner",
+		"label": "Vanguard Banner",
+		"renderKey": "banner-stripe",
+		"file": "banner-vanguard-stripe.svg"
+	},
+	{
+		"id": "title_rank_operative",
+		"slot": "title",
+		"label": "Operative Rank Title",
+		"renderKey": "title-default",
+		"file": "title-operative-flair.svg"
+	}
+]

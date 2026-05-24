@@ -63,10 +63,10 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 		expect(embeddedTemplateBlock).not.toMatch(/quest-log__title">Active missions</i);
 	});
 
-	it('embedded feed renders continuous rail list without hero duplicate (no tier section tags)', () => {
+	it('embedded feed renders continuous rail deck via visibleQuests', () => {
 		expect(bountiesSrc).toMatch(/quest-log__feed--embedded/);
-		expect(bountiesSrc).toMatch(/\{#each railQuests as quest/);
-		expect(bountiesSrc).toMatch(/heroQuest\.id|q\.id !== heroQuest\.id/);
+		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+		expect(bountiesSrc).toMatch(/resolveHeroQuest/);
 	});
 
 	it('quest-row__title-text retains ellipsis + nowrap in embedded line', () => {
@@ -86,21 +86,21 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 });
 
 describe('Sprint 1.9 — embedded mission deck CSS', () => {
-	it('hud-telemetry.css defines single-line grid for embedded hud-bounty-row', () => {
-		expect(telemetryCssSrc).toMatch(/\.quest-log-panel--embedded\s+\.hud-bounty-row/);
+	it('hud-telemetry.css defines single-line grid for embedded hud-bounty-row under telemetry root', () => {
+		expect(telemetryCssSrc).toMatch(/\.hud-telemetry-root \.quest-log-panel--embedded\s+\.hud-bounty-row/);
 		expect(telemetryCssSrc).toMatch(
-			/\.quest-log-panel--embedded\s+\.hud-bounty-row[\s\S]*?grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)\s+auto\s+auto/,
+			/\.hud-telemetry-root \.quest-log-panel--embedded\s+\.hud-bounty-row[\s\S]*?grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)\s+auto\s+auto/,
 		);
 	});
 
-	it('hud-telemetry.css styles embedded CTA without bracket aesthetic', () => {
-		expect(telemetryCssSrc).toMatch(/\.quest-log-panel--embedded\s+\.quest-row__cmd/);
+	it('hud-telemetry.css styles embedded CTA without bracket aesthetic under telemetry root', () => {
+		expect(telemetryCssSrc).toMatch(/\.hud-telemetry-root \.quest-log-panel--embedded\s+\.quest-row__cmd/);
 		expect(telemetryCssSrc).toMatch(/#fbbf24/);
 	});
 
 	it('player-dashboard-hud.css adds operative-hub embedded quest separator', () => {
 		expect(hudCssSrc).toMatch(/\.player-hud-root\s+\.operative-hub\s+\.quest-log-panel--embedded/);
-		expect(hudCssSrc).toMatch(/border-top:\s*1px\s+solid\s+#334155/);
+		expect(hudCssSrc).toMatch(/border-bottom:\s*1px\s+solid\s+var\(--pd-line|--pd-line/);
 	});
 });
 
@@ -110,5 +110,21 @@ describe('Sprint 1.9 — activeBounties compact CTA helper', () => {
 		expect(activeBountiesTsSrc).toMatch(/Accept →/);
 		expect(activeBountiesTsSrc).toMatch(/Complete →/);
 		expect(activeBountiesTsSrc).toMatch(/Claim →/);
+	});
+});
+
+describe('Sprint 2.22 slice 6b-revise — mission rail overview on embedded HQ', () => {
+	it('embedded block uses rail-only visibleQuests feed — no hero cards', () => {
+		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);
+		expect(embeddedTemplateBlock).not.toMatch(/\{@render questHeroCard/);
+		expect(embeddedTemplateBlock).not.toMatch(/\{@render questSecondaryCard/);
+		expect(embeddedTemplateBlock).not.toMatch(/\{#if primaryHeroQuest\}/);
+	});
+
+	it('rail rows show reward copy and promoted class for bounties', () => {
+		expect(embeddedSnippet).toMatch(/formatQuestRewardLabel/);
+		expect(embeddedSnippet).toMatch(/quest-row--promoted/);
+		expect(bountiesSrc).toMatch(/isPromotedQuest/);
 	});
 });

@@ -5,9 +5,10 @@
 		capsule: MemoryCapsuleDoc;
 		baselineDaysAgo: number;
 		onDismiss: () => void;
+		dossierMode?: boolean;
 	}
 
-	let { capsule, baselineDaysAgo, onDismiss }: Props = $props();
+	let { capsule, baselineDaysAgo, onDismiss, dossierMode = false }: Props = $props();
 
 	let visible = $state(true);
 
@@ -27,12 +28,16 @@
 	>
 		<!-- Notification strip -->
 		<div
-			class="tw-pointer-events-none tw-relative tw-w-full tw-max-w-2xl tw-flex tw-items-stretch tw-overflow-hidden tw-rounded-2xl tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-shadow-[0_0_40px_rgba(20, 184, 166,0.12),0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]"
+			class="tw-pointer-events-none tw-relative tw-w-full tw-max-w-2xl tw-flex tw-items-stretch tw-overflow-hidden tw-rounded-2xl {dossierMode
+				? 'pd-glass-panel'
+				: 'tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]/90 tw-backdrop-blur-xl tw-shadow-[0_0_40px_rgba(20, 184, 166,0.12),0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.04)]'}"
 			style="padding: clamp(0.75rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.25rem);"
 		>
 			<!-- Neon cyan left border accent -->
 			<div
-				class="tw-pointer-events-none tw-absolute tw-left-0 tw-inset-y-0 tw-w-[3px] tw-rounded-l-2xl tw-bg-[#14b8a6] tw-shadow-[0_0_12px_rgba(20, 184, 166,0.8)]"
+				class="tw-pointer-events-none tw-absolute tw-left-0 tw-inset-y-0 tw-w-[3px] tw-rounded-l-2xl {dossierMode
+					? 'tw-bg-[var(--pd-accent-data,#14b8a6)]'
+					: 'tw-bg-[#14b8a6] tw-shadow-[0_0_12px_rgba(20, 184, 166,0.8)]'}"
 				aria-hidden="true"
 			></div>
 

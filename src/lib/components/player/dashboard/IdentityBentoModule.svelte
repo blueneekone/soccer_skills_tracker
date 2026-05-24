@@ -1,5 +1,8 @@
 <script lang="ts">
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
+	import HologramCardShell from '$lib/components/player/HologramCardShell.svelte';
+	import IdentityTelemetryBezel from '$lib/components/player/dashboard/IdentityTelemetryBezel.svelte';
+	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
 	import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
 	import {
 		formatCompactXp,
@@ -9,7 +12,11 @@
 
 	let {
 		embedded = false,
+		hideDisplayName = false,
 		uid = '',
+		operativeAvatar = undefined,
+		operativeLoadout = undefined,
+		ownedCosmetics = undefined,
 		displayName = 'Athlete',
 		teamLabel = '',
 		rankName = '',
@@ -27,7 +34,11 @@
 		onProfileSetup,
 	}: {
 		embedded?: boolean;
+		hideDisplayName?: boolean;
 		uid?: string;
+		operativeAvatar?: unknown;
+		operativeLoadout?: unknown;
+		ownedCosmetics?: string[];
 		displayName?: string;
 		teamLabel?: string;
 		rankName?: string;
@@ -78,49 +89,157 @@
 		}
 		return (uid || '??').slice(0, 2).toUpperCase();
 	});
+
+	const holoAccent = $derived(
+		currentStreak > 0 || (embedded && totalXp > 0)
+			? 'var(--pd-accent-action, #fbbf24)'
+			: 'var(--pd-accent-data, #14b8a6)',
+	);
+
+	const holoPortraitSize = $derived(embedded ? 120 : 96);
 </script>
 
 <div
 	class="ibm-root"
 	class:ibm-root--embedded={embedded}
-	class:ibm-root--badge-only={profileIncomplete}
+	class:ibm-root--inset={embedded}
+	class:ibm-root--premium={embedded}
+	class:ibm-root--incomplete={profileIncomplete}
 	class:ibm-streak-at-risk={currentStreak > 0}
 	data-streak-active={currentStreak > 0 ? 'true' : undefined}
 	aria-label="Player identity"
 >
-	{#if !profileIncomplete}
-		<div class="ibm-avatar">
+	{#if embedded && profileIncomplete && onProfileSetup}
+		<button
+			type="button"
+			class="ibm-profile-banner ibm-profile-setup-card ibm-profile-banner--hub-span"
+			onclick={onProfileSetup}
+		>
+			<span class="ibm-profile-banner__eyebrow">Operative onboarding</span>
+			<span class="ibm-profile-banner__action ibm-profile-setup-card__cta">
+				Complete operative profile →
+			</span>
+		</button>
+	{/if}
+
+	{#if embedded}
+		<div class="ibm-body--hub-span">
+			<HologramCardShell accent={holoAccent} compact ariaLabel="Operative identity card">
+				<div class="ibm-holo-face">
+					{#if profileIncomplete}
+						<div class="ibm-holo-face__portrait ibm-holo-face__portrait--placeholder" aria-hidden="true">
+							<span class="ibm-holo-face__initials">{initials}</span>
+						</div>
+					{:else}
+						<div class="ibm-holo-face__portrait">
+							<OperativeLoadoutPreview
+								{operativeAvatar}
+								{operativeLoadout}
+								{ownedCosmetics}
+								size={holoPortraitSize}
+								class="ibm-holo-face__loadout"
+							/>
+						</div>
+					{/if}
+					<p class="ibm-holo-face__name" title={displayName}>{displayName}</p>
+					<p class="ibm-holo-face__rank">{rankName || 'UNRANKED'} · LVL {level}</p>
+				</div>
+				{#snippet telemetry()}
+					<IdentityTelemetryBezel
+						{currentStreak}
+						{longestStreak}
+						{totalXp}
+						{xpLabel}
+						streakAtRisk={currentStreak > 0}
+					/>
+				{/snippet}
+			</HologramCardShell>
+
+			<div class="ibm-rings">
+				<div class="ibm-identity">
+					<div class="ibm-identity__head">
+						{#if !hideDisplayName}
+							<p class="ibm-name" title={displayName}>{displayName}</p>
+						{/if}
+					</div>
+					<p class="ibm-meta" class:ibm-meta--strap={hideDisplayName}>
+						{teamLabel || 'No team'} · {rankName}
+					</p>
+
+					<div class="ibm-rank-progress" aria-label="Rank progress">
+						<p class="ibm-rank-progress__label">{rankProgressLabel}</p>
+						<div
+							class="ibm-rank-progress__bar"
+							class:ibm-rank-bar--premium={embedded}
+							class:ibm-rank-bar--has-xp={embedded && totalXp > 0}
+							role="progressbar"
+							aria-valuenow={rankBarPercent}
+							aria-valuemin="0"
+							aria-valuemax="100"
+						>
+							<div class="ibm-rank-progress__fill" style:width="{rankBarPercent}%"></div>
+						</div>
+					</div>
+
+					<p class="ibm-last-session">LAST TRAINED · {lastSessionLabel}</p>
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="ibm-avatar" class:ibm-avatar--placeholder={profileIncomplete}>
+		{#if profileIncomplete}
+			<div class="ibm-silhouette-ring" aria-hidden="true">
+				<span class="ibm-silhouette-ring__initials">{initials}</span>
+			</div>
+		{:else}
 			<HudAvatarRing
+				{operativeAvatar}
+				{operativeLoadout}
+				{ownedCosmetics}
 				seed={ringSeed}
-				size={72}
+				size={embedded ? 88 : 72}
 				{level}
 				xpFill={levelXpFill}
 				strokeColor="var(--color-accent, #fbbf24)"
 				{embedded}
 			/>
-		</div>
-	{/if}
+		{/if}
+	</div>
 
 	<div class="ibm-rings">
-		{#if profileIncomplete && onProfileSetup}
-			<button type="button" class="ibm-profile-banner" onclick={onProfileSetup}>
-				Complete operative profile →
+		{#if !embedded && profileIncomplete && onProfileSetup}
+			<button
+				type="button"
+				class="ibm-profile-banner ibm-profile-setup-card"
+				onclick={onProfileSetup}
+			>
+				<span class="ibm-profile-banner__eyebrow">Operative onboarding</span>
+				<span class="ibm-profile-banner__action ibm-profile-setup-card__cta">
+					Complete operative profile →
+				</span>
 			</button>
 		{/if}
 		<div class="ibm-identity">
 			<div class="ibm-identity__head">
-				{#if profileIncomplete}
-					<span class="ibm-inline-badge" aria-hidden="true">
-						<span class="ibm-inline-badge__initials">{initials}</span>
-					</span>
+				{#if !hideDisplayName}
+					<p class="ibm-name" title={displayName}>{displayName}</p>
 				{/if}
-				<p class="ibm-name" title={displayName}>{displayName}</p>
 			</div>
-			<p class="ibm-meta">{teamLabel || 'No team'} · {rankName}</p>
+			<p class="ibm-meta" class:ibm-meta--strap={hideDisplayName}>
+				{teamLabel || 'No team'} · {rankName}
+			</p>
 
 			<div class="ibm-rank-progress" aria-label="Rank progress">
 				<p class="ibm-rank-progress__label">{rankProgressLabel}</p>
-				<div class="ibm-rank-progress__bar" role="progressbar" aria-valuenow={rankBarPercent} aria-valuemin="0" aria-valuemax="100">
+				<div
+					class="ibm-rank-progress__bar"
+					class:ibm-rank-bar--premium={embedded}
+					class:ibm-rank-bar--has-xp={embedded && totalXp > 0}
+					role="progressbar"
+					aria-valuenow={rankBarPercent}
+					aria-valuemin="0"
+					aria-valuemax="100"
+				>
 					<div class="ibm-rank-progress__fill" style:width="{rankBarPercent}%"></div>
 				</div>
 			</div>
@@ -138,6 +257,7 @@
 			<HudStatCell label="XP" value={xpLabel} variant="xp" title="Career XP" />
 		</div>
 	</div>
+	{/if}
 </div>
 
 <style>
@@ -167,6 +287,10 @@
 
 	.ibm-root--badge-only {
 		grid-template-columns: 1fr;
+	}
+
+	.ibm-avatar--placeholder {
+		--player-hud-avatar-size: clamp(72px, 14vw, 88px);
 	}
 
 	.ibm-avatar {

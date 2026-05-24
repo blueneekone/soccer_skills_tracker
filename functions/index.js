@@ -314,6 +314,10 @@ exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.generatePlayerOTP           = operativeOps.generatePlayerOTP;
 exports.validatePlayerOTP           = operativeOps.validatePlayerOTP;
 
+// ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
+const loadoutOps = require('./src/domains/loadoutOps');
+exports.grantLoadoutCosmetic        = loadoutOps.grantLoadoutCosmetic;
+exports.redeemQuartermasterDigital  = loadoutOps.redeemQuartermasterDigital;
 
 // -- Deconstruction Sprint 6: Webhooks & Integrations Domain ----------------
 // Affinity eligibility ingestion, Stripe billing, facility weather alerts,

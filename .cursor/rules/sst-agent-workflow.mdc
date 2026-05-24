@@ -8,6 +8,7 @@ alwaysApply: true
 ## Before coding
 
 - Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
+- Check **`docs/vision/PLAYER_OS_FOUNDATION.md`** for material primitive canon before any premium-surface change.
 - Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
 
 ## Scope discipline
@@ -15,7 +16,7 @@ alwaysApply: true
 - **One slice per session** — touch 5 or fewer files unless the sprint doc explicitly lists more.
 - **Extend sprint test files** — add guards to `playerHudSprint*.test.ts`, `firestoreRulesSprint*.test.ts`, etc. Never delete prior sprint regression tests.
 - **Do not create** duplicate roadmap files or `MASTER_BUILD_ROADMAP.md`. `ROADMAP.md` is canonical.
-- **Player OS gate:** Do not start Epic 3.4+ or Epic 4.1+ until ROADMAP marks **2.19 Done** (Player OS cinematic premium track). Tier B foundation 2.12–2.15 alone is insufficient.
+- **Player OS gate:** Epic 3.4+ / 4.1+ **may proceed** after ROADMAP marks **2.19 Done** (Player OS cinematic premium track). Tier B foundation 2.12–2.15 alone is insufficient.
 - Premium sprints require **visual acceptance states** in sprint scope (not CSS string scans alone).
 
 ## Canonical player dashboard names
@@ -34,6 +35,8 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 - Do **not** refactor `teamsStore` for mission dedup — use `deduplicateById` in `ActiveBounties`.
 - Do **not** add gamification chrome to Coach OS routes.
 - Do **not** implement planned roles (`team_manager`, etc.) in JWT/route code unless a sprint explicitly says so.
+- Do **not** wrap Tier A primitives (VanguardCard / SkillTreeArena / pdDataBloom / ProvingGrounds) in Tier B matte panels with multiple decorative borders.
+- Do **not** introduce inner `overflow: auto` regions on Player OS routes (use native document scroll).
 
 ## Mode split
 

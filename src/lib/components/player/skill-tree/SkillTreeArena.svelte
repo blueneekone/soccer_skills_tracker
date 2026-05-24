@@ -143,7 +143,7 @@
 
 <!-- ─── Glassmorphism wrapper ──────────────────────────────────────────────── -->
 <div
-	class="st-arena tw-relative tw-w-full tw-rounded-xl tw-border tw-overflow-visible"
+	class="st-arena st-arena--premium tw-relative tw-w-full tw-rounded-xl tw-border tw-overflow-visible"
 	style:background="rgba(2,2,2,0.85)"
 	style:backdrop-filter="blur(12px)"
 	style:border-color="rgba(20, 184, 166,0.12)"
@@ -252,7 +252,7 @@
 				stroke={nodeStroke(node.state)}
 				stroke-width={nodeStrokeWidth(isHovered)}
 				filter={bloomFilter(node.state)}
-				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} {isRevealed ? 'st-node-revealed' : ''} tw-cursor-pointer"
+				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} {isRevealed ? 'st-node-revealed' : ''} {isSelected ? 'st-node--selected' : ''} tw-cursor-pointer"
 				role="button"
 				aria-label="Skill: {node.label} ({node.state})"
 				tabindex="0"

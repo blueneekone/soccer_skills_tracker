@@ -19,20 +19,25 @@
 	 * No manual "Save" button for notifications.
 	 */
 
-	import { auth, db, functions } from '$lib/firebase.js';
-	import { doc, updateDoc, getDoc } from 'firebase/firestore';
-	import { sendPasswordResetEmail } from 'firebase/auth';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { UnlinkPhoneVerificationInput, UnlinkPhoneVerificationResult } from '$lib/types/phoneVerification.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { fcmService } from '$lib/services/messaging.svelte.js';
-	import OperativeAvatarDesigner from '$lib/components/player/OperativeAvatarDesigner.svelte';
 	import {
-		OPERATIVE_AVATAR_VERSION,
-		parseOperativeAvatar,
-	} from '$lib/avatars/operativeAvatar.js';
+		computeIsMinorAccount,
+		computeIsOperativeProxy,
+		getPrefsDefaults,
+		loadUserPreferences,
+		saveProfile as saveProfileHandler,
+		saveUserPreferences,
+		sendPasswordReset as sendPasswordResetHandler,
+		type UserPreferences,
+	} from '$lib/settings/playerSettingsHandlers.js';
 
 	// ── Tab state ─────────────────────────────────────────────────────────────
 
@@ -54,7 +59,6 @@
 	const uid = $derived(authStore.user?.uid ?? '');
 	const tenantId = $derived(authStore.tenantId ?? profile?.clubId ?? '');
 
-	const isPlayer    = $derived(role === 'player');
 	const isCoach     = $derived(role === 'coach');
 	const isDirector  = $derived(role === 'director' || role === 'super_admin' || role === 'global_admin');
 	const isParent    = $derived(role === 'parent');
@@ -70,25 +74,14 @@
 		{ key: 'danger',        label: 'DANGER ZONE',   show: true       },
 	]);
 
-	const isOperativeProxy = $derived(
-		email.endsWith('@operative.local') && isPlayer,
-	);
+	const isOperativeProxy = $derived(computeIsOperativeProxy(email, role));
+	const isMinorAccount = $derived(computeIsMinorAccount(profile));
 
-	const isMinorAccount = $derived.by(() => {
-		const p = profile;
-		if (!p) return false;
-		if (p.isMinor === true) return true;
-		if (p.isMinor === false) return false;
-		const dob = p.dateOfBirth;
-		if (dob && typeof dob.toDate === 'function') {
-			const d = dob.toDate();
-			const now = new Date();
-			let age = now.getFullYear() - d.getFullYear();
-			const m = now.getMonth() - d.getMonth();
-			if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-			return age < 13;
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		if (role === 'player') {
+			void goto('/player/settings', { replaceState: true });
 		}
-		return false;
 	});
 
 	// ── Profile tab state ─────────────────────────────────────────────────────
@@ -123,11 +116,6 @@
 			phoneUnlinking = false;
 		}
 	}
-	let operativeAvatar = $state({
-		v: OPERATIVE_AVATAR_VERSION,
-		seed: `v${OPERATIVE_AVATAR_VERSION}|22|55|38|71`,
-	});
-
 	const clubLabel = $derived.by(() => {
 		const cid = profile?.clubId;
 		if (!cid) return '—';
@@ -151,58 +139,36 @@
 		privacyProfile = String(profile.privacyProfile ?? 'strict_minor_defaults');
 		telemetryOptIn = Boolean(profile.telemetryOptIn);
 		if (isMinorAccount) { privacyProfile = 'strict_minor_defaults'; telemetryOptIn = false; }
-		const av = parseOperativeAvatar(profile.operativeAvatar);
-		if (av) operativeAvatar = av;
 	});
 
 	async function saveProfile() {
 		profileError = '';
 		profileSaveMsg = '';
-		const trimmed = playerName.trim();
-		if (!trimmed && !isDirector && role !== 'super_admin' && role !== 'global_admin') {
-			profileError = 'Display name is required.';
+		profileSaving = true;
+		const result = await saveProfileHandler({
+			playerName,
+			privacyProfile,
+			telemetryOptIn,
+			isMinorAccount,
+			profile,
+			email,
+			role,
+		});
+		profileSaving = false;
+		if (result.error) {
+			profileError = result.error;
 			return;
 		}
-		if (!auth.currentUser?.email) { profileError = 'Not signed in.'; return; }
-		if (isOperativeProxy) { profileError = 'Use the Operative Call Sign screen.'; return; }
-		profileSaving = true;
-		try {
-			const userRef = doc(db, 'users', auth.currentUser.email.toLowerCase());
-			await updateDoc(userRef, {
-				playerName: trimmed || profile?.playerName || email.split('@')[0],
-				privacyProfile: isMinorAccount ? 'strict_minor_defaults' : privacyProfile,
-				telemetryOptIn: isMinorAccount ? false : telemetryOptIn,
-				settingsUpdatedAt: new Date(),
-				...(isPlayer && !isOperativeProxy ? { operativeAvatar } : {}),
-			});
-			await authStore.refresh({ silent: true });
-			profileSaveMsg = 'PROFILE UPDATED';
-		} catch (err: unknown) {
-			profileError = err instanceof Error ? err.message : 'Save failed.';
-		} finally {
-			profileSaving = false;
-		}
+		await authStore.refresh({ silent: true });
+		profileSaveMsg = 'PROFILE UPDATED';
 	}
 
 	// ── Notifications tab state ────────────────────────────────────────────────
 
-	interface UserPreferences {
-		push_weatherAlerts: boolean;
-		push_gameReminders: boolean;
-		push_messages: boolean;
-		email_weeklyReport: boolean;
-	}
-
-	// Role-based defaults
-	const prefsDefaults = $derived<UserPreferences>({
-		push_weatherAlerts: isCoach || isDirector,
-		push_gameReminders: true,
-		push_messages: true,
-		email_weeklyReport: false,
-	});
+	const prefsDefaults = $derived(getPrefsDefaults(role));
 
 	let prefs = $state<UserPreferences>({
-		push_weatherAlerts: isCoach || isDirector,
+		push_weatherAlerts: false,
 		push_gameReminders: true,
 		push_messages: true,
 		email_weeklyReport: false,
@@ -213,34 +179,23 @@
 	let prefsLoaded = $state(false);
 	let prefsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-	// Load preferences from Firestore once on mount
 	$effect(() => {
 		fcmService.init();
 		if (!email) return;
 		(async () => {
-			try {
-				const snap = await getDoc(doc(db, 'users', email));
-				if (snap.exists()) {
-					const data = snap.data();
-					if (data.preferences) {
-						prefs = { ...prefsDefaults, ...data.preferences };
-					}
-				}
-			} catch { /* silent — use defaults */ }
+			prefs = await loadUserPreferences(email, prefsDefaults);
 			prefsLoaded = true;
 		})();
 	});
 
-	// Auto-save preferences: debounced 800ms after any change
 	$effect(() => {
-		// Capture all prefs fields to track them
 		const snapshot = { ...prefs };
 		if (!prefsLoaded || !email) return;
 
 		if (prefsDebounceTimer) clearTimeout(prefsDebounceTimer);
 		prefsDebounceTimer = setTimeout(async () => {
 			try {
-				await updateDoc(doc(db, 'users', email), { preferences: snapshot });
+				await saveUserPreferences(email, snapshot);
 				prefsSyncMsg = '⚡ SETTINGS SYNCED';
 				if (prefsSyncTimer) clearTimeout(prefsSyncTimer);
 				prefsSyncTimer = setTimeout(() => (prefsSyncMsg = ''), 2500);
@@ -264,19 +219,22 @@
 
 	async function sendPasswordReset() {
 		resetError = '';
-		if (!email) return;
-		try {
-			await sendPasswordResetEmail(auth, email);
-			resetSent = true;
-		} catch (err: unknown) {
-			resetError = err instanceof Error ? err.message : 'Reset failed.';
+		const result = await sendPasswordResetHandler(email);
+		if (result.error) {
+			resetError = result.error;
+			return;
 		}
+		resetSent = true;
 	}
 </script>
 
 <!-- ── PAGE ROOT ──────────────────────────────────────────────────────────── -->
+{#if role === 'player'}
+	<!-- Redirecting to /player/settings -->
+{:else}
 <div class="st-root">
 
+	<div class="pd-content-wrap">
 	<!-- Terminal header -->
 	<div class="st-header">
 		<div class="st-header-left">
@@ -352,14 +310,6 @@
 					<div class="st-hint st-hint--amber">
 						⚠ Minor account — privacy is locked to strict defaults.
 					</div>
-				</div>
-			{/if}
-
-			{#if isPlayer && !isOperativeProxy}
-				<div class="st-section">
-					<div class="st-section-label">OPERATIVE AVATAR</div>
-					<p class="st-hint">Vector portrait — only a compact seed is stored (no photo uploads).</p>
-					<OperativeAvatarDesigner bind:operativeAvatar />
 				</div>
 			{/if}
 
@@ -664,7 +614,9 @@
 			</div>
 		</div>
 	{/if}
+	</div>
 </div>
+{/if}
 
 <!-- ── Circuit Breaker Relay Row ──────────────────────────────────────────── -->
 {#snippet relayRow(

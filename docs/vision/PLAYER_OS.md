@@ -140,7 +140,7 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 - ~~“no nested glass stacks”~~ → allow **one** depth stack (canvas → hub → inset identity), not multiple competing cards
 - ~~“Single flat surface”~~ → **single cohesive command surface** with **internal depth**, not one flat grey box
 
-**Sprint 2.18 (Done):** Controlled bloom (`pdDataBloom`), glass inset wells (Z1 radar/inspector), emissive edges, persistent spatial grid + canvas scanlines — see [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md). **Sprint 2.19 (planned):** diegetic kit + energy motion.
+**Sprint 2.18 (Done):** Controlled bloom (`pdDataBloom`), glass inset wells (Z1 radar/inspector), emissive edges, persistent spatial grid + canvas scanlines — see [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md). **Sprint 2.19 (Done):** diegetic UI kit + energy motion; gate lifted for Epic 3.4 / 4.1.
 
 **Home screen zones (updated):** Identity streak/XP = stat cells in `IdentityBentoModule` (not `HudMetricsPanel`). Command Center = shell nav only (Sprint 2.1.1 — no in-panel CMD trigger).
 
@@ -299,9 +299,9 @@ Target layout for the premium HQ pass — depth, gamification, and hierarchy wit
 |-------|-------|
 | **Sprints 1.1–2.11.1** | Parity / tokens — Player Dossier canvas, dual accent, shell alignment, route parity, shared component pass |
 | **Sprints 2.12–2.15** | Tier B foundation (Done, insufficient alone) — matte dossier panels, token parity, component premium, motion + checklist |
-| **Sprints 2.16–2.19** | Cinematic orchestration (planned) — layout constitution, Z-depth, material orchestration, diegetic UI + energy motion |
-| **Epic 3** | Identity cosmetics — loadout borders/badges, unlock ceremonies, album set bonuses *(3.4 blocked until 2.19 Done)* |
-| **Epic 4** | Comms — messaging, notifications, parent inbox *(4.1+ blocked until 2.19 Done)* |
+| **Sprints 2.16–2.19** | Cinematic orchestration (**Done**) — layout constitution, Z-depth, material orchestration, diegetic UI + energy motion |
+| **Epic 3** | Identity cosmetics — loadout borders/badges, unlock ceremonies, album set bonuses *(3.4 unblocked after 2.19 Done + sign-off)* |
+| **Epic 4** | Comms — messaging, notifications, parent inbox *(4.1+ unblocked after 2.19 Done + sign-off)* |
 
 Token parity alone does not make HQ premium. Epic 3 loadout art feeds the identity column but does not replace 2.16–2.19 cinematic orchestration.
 
@@ -335,21 +335,21 @@ Sprints 2.12–2.15 shipped a cohesive **Tier B** Player Dossier — not the cin
 | **2.16** | Layout & alignment constitution — max-width, header grammar, HQ fixes, debug-chrome policy (**planned**) | layout/composition guards |
 | **2.17** | Z-depth & layering — Z0–Z4 tokens, per-route map (**planned**) | ≥3 Z-layers visible on HQ |
 | **2.18** | Material orchestration — Tier A techniques on HQ/secondary routes (**planned**) | bloom, glass wells, spatial grid |
-| **2.19** | Diegetic UI kit + energy motion; **lifts gate** for Epic 3.4 / 4.1 (**planned**) | full acceptance sign-off |
+| **2.19** | Diegetic UI kit + energy motion; **lifts gate** for Epic 3.4 / 4.1 (**Done**) | full acceptance sign-off |
 
-**Epic 1 premium track IN PROGRESS through 2.19.** Tier B foundation 2.12–2.15 Done — cinematic orchestration 2.16–2.19 pending.
+**Epic 1 premium track 2.12.1–2.19 Done.** Tier B foundation 2.12–2.15 + cinematic orchestration 2.16–2.19 complete.
 
 **Shipped through 2.12 (foundation only):** depth tokens (`--pd-depth-*`), premium hub shell, mission card faces, single telemetry surface, strap vignette. Insufficient alone — superseded by 2.12.1–2.19 track.
 
-**Epic 3 handoff:** Resume album set bonuses (3.4) after **2.19 Done** + full visual acceptance sign-off. Loadout schema + Armory studio **shipped** (3.0–3.3) — [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
+**Epic 3 handoff:** Album set bonuses (3.4) **open** after **2.19 Done** — pending full visual acceptance sign-off. Loadout schema + Armory studio **shipped** (3.0–3.3) — [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md).
 
-**Epic 4 handoff:** Resume comms wiring (4.1+) after **2.19 Done** + full visual acceptance sign-off — [`COMMS_HUB.md`](./COMMS_HUB.md).
+**Epic 4 handoff:** Comms wiring (4.1+) **open** after **2.19 Done** — pending full visual acceptance sign-off — [`COMMS_HUB.md`](./COMMS_HUB.md).
 
 ---
 
 ## Epic 1 — premium HQ foundation (Sprint 2.12 — superseded by 2.12.1–2.19)
 
-**Epic 1 premium track IN PROGRESS through 2.19.** Token parity (2.11.1) plus Tier B depth tokens on `/player/dashboard` — cinematic orchestration continues in **2.16–2.19**.
+**Epic 1 premium track Done through 2.19.** Token parity (2.11.1) plus Tier B depth tokens on `/player/dashboard` — cinematic orchestration **2.16–2.19 complete**.
 
 Shipped through 2.12: Player Dossier depth tokens (`--pd-depth-*`), premium hub shell, inset identity stage, mission card faces, single telemetry surface (VPP owns radar when ready), strap/shell vignette, and compact profile-incomplete band.
 
