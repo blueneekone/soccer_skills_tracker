@@ -1,8 +1,8 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-22  
-**Current sprint:** **2.19** — Diegetic UI kit + energy motion (planned).
+**Last updated:** 2026-05-23  
+**Current sprint:** **Sprint 2.22 Phase 6 · slice 6f-b HQ header + VPP whisper — Done**
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -25,14 +25,14 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 
 ## Delivery gate (Player OS cinematic premium)
 
-- **Blocked until 2.19 Done:** Epic 3.4+, Epic 4.1+ implementation
+- **Unblocked after 2.19 Done:** Epic 3.4+, Epic 4.1+ implementation (requires full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off + [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix before shipping)
 - **Allowed parallel:** Epic 3.0–3.3 (Done), Epic 4.0 docs, unrelated bugfixes
 - **North star:** Player OS must pass cinematic material/spatial acceptance (see [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md) + [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md)) before comms or album bonuses
 - **Retcon:** Sprint 2.15 shipped motion + checklist; visual review found Tier A/Tier B split — gate re-closed for Epic 3.4 / 4.1
 
 ---
 
-## Sprint status — Epic 1: Foundation & Player HUD *(premium ecosystem IN PROGRESS — track 2.16–2.19; Tier B foundation shipped 2.12–2.15; cinematic orchestration pending)*
+## Sprint status — Epic 1: Foundation & Player HUD *(premium ecosystem track 2.16–2.19 **Done**; Tier B foundation shipped 2.12–2.15)*
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -74,7 +74,7 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 | 2.16.1 | Done | Player Settings cohesion — /player/settings route, PlayerSettingsPanel, Armory Studio avatar boundary | `playerHudSprint2161.test.ts` |
 | 2.17 | Done | Z-depth & layering system — Z0–Z4 tokens, recessed/raised/floating surfaces | `playerHudSprint217.test.ts` |
 | 2.18 | Done | Material orchestration — pdDataBloom radar, emissive edges, spatial grid restore, canvas scanlines | `playerHudSprint218.test.ts` |
-| 2.19 | Planned | Diegetic UI kit + energy motion — conduit progress, hero identity scale, route spatial continuity; lifts gate | `playerHudSprint219.test.ts` |
+| 2.19 | Done | Diegetic UI kit + energy motion — conduit progress, hero identity scale, route spatial continuity; lifts gate | `playerHudSprint219.test.ts` |
 
 **Epic 1 premium ecosystem track 2.12.1–2.19** supersedes “HQ complete at 2.12” and “premium-complete at 2.15.” Operative loadout (gear slots, album bonuses, unlock ceremonies) continues in **Epic 3** after **2.19 Done** — see [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md).
 
@@ -394,7 +394,7 @@ npm run build
 
 ---
 
-## Sprint 2.19 scope — Diegetic UI kit + energy motion + gate lift — **Planned**
+## Sprint 2.19 scope — Diegetic UI kit + energy motion + gate lift — **Done**
 
 **Goal:** Close premium track; re-open Epic 3.4 / 4.1.
 
@@ -412,13 +412,542 @@ npm run build
 
 **Tests:** `playerHudSprint219.test.ts`
 
-**Gate lift:** Epic 3.4+ and Epic 4.1+ unblocked after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off
+**Gate lift:** Epic 3.4+ and Epic 4.1+ **unblocked** after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though gate is open from 2.19.
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint219.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint218.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint217.test.ts
+npm run check:file-budget
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.20 scope — Premium foundation lock & composition hotfix — **Planned**
+
+**Goal:** Lock canonical material vocabulary from Tier A reference components; eliminate nested-scroll anti-pattern; lift Tier B surfaces to Tier A primitives; fix the 14 composition bugs flagged in design review.
+
+**Scope (≤ 5 implementation files + tests):**
+
+- `src/lib/styles/player-shell.css`
+- `src/lib/styles/player-dossier.css`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/OperativeHub.svelte`
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte`
+- Extend `src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts`
+
+**Docs (this planning slice — Done when merged):** [`docs/vision/PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md), [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md), [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md), `ROADMAP.md`, `.cursor/rules/sst-agent-workflow.mdc`
+
+**Acceptance:**
+
+- Reference matrix passes at **1280px** + **390px** (all seven routes) per Foundation §10
+- Void contract automated pixel-sample test green
+- No `overflow: auto` on `ps-root` / `ps-scroll-shell`
+- VPP radar shows **single Z1 inset** only (no double-border / `::before` / `::after` stack around `pdDataBloom`)
+
+**Out of scope:** Atmosphere bump (shell ambient opacity, vignette, panel fill reduction) — deferred to **2.21** if void-contract measurement fails
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts
+npm run check:file-budget
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.21 scope — Atmosphere amplification (conditional) — **Done (via 2.22 slice 5)**
+
+**Goal:** Raise void/light ratios on Player OS shell and panels when Sprint 2.20 pixel samples fail void contract thresholds — atmosphere-only pass (ambient grid/glow/vignette/scanline opacity, panel fill reduction).
+
+**Superseded:** Atmosphere bump shipped in **Sprint 2.22 slice 5** (`playerHudSprint226.test.ts`). Do **not** re-run atmosphere-only pass.
+
+---
+
+## Sprint 2.22 — HQ utility & consolidation — **Done**
+
+**Goal:** Consolidate HQ layout, scroll, pathway, missions, stats, Armory deck, and atmosphere tokens into a cohesive command deck before Tier A material lift (Phase 6).
+
+**Delivered slices:**
+
+| Slice | Summary | Proof |
+|-------|---------|-------|
+| **3** | Quick Ops deck (`OperativeQuickOps`) | `playerHudSprint222.test.ts` |
+| **4b–4c** | Pathway consolidation on HQ only; native document scroll | `playerHudSprint223.test.ts`, visual 4b/4c |
+| **4d–4d-fix-b** | Dual hero missions, identity layout, typography | `playerHudSprint224.test.ts` |
+| **4e** | Stats chart + workout focus | `playerHudSprint225.test.ts` |
+| **4f** | Armory command deck | `armoryCommandDeck.test.ts` |
+| **5** | Atmosphere / void tokens (Z0 canvas + Z2 fill) — supersedes conditional 2.21 atmosphere bump | `playerHudSprint226.test.ts` |
+
+**Verify (regression bundle):**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint222.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint223.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint225.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint226.test.ts
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 2.22 Phase 6 — Material lift (Tier A orchestration)
+
+**Goal:** Lift Tier B HQ surfaces to Tier A material primitives — holographic identity, mission chrome, analytics deck, and route parity — without nested matte frames or inner scroll regressions.
+
+> Slice **6d** stat icon chips are **superseded by 6f-c** for embedded HQ identity (bezel telemetry on `HologramCardShell`).
+
+**Remaining Tier B debt:** Quick Ops tiles, mission rail shell, Train/Armory/Stats/Settings `pd-page-panel` slabs, and VPP inspector chrome still read flat despite Tier A islands. **6f-b** fixes HQ typography + inspector density; **6j** addresses panel depth site-wide.
+
+**Planned slices:**
+
+| Slice | Scope | Status |
+|-------|-------|--------|
+| **6a** | HQ identity hologram artifact (`HologramCardShell` + operative portrait) | **Done** |
+| **6b** | Mission theater — one gold hero + compact secondary + hub edge frame | **Superseded by 6b-revise** |
+| **6b-revise** | HQ mission rail — scannable rail rows only (no hero cards) + coach gold accent | **Done** |
+| **6c** | Analytics void island — VPP + capsules float in void (no matte deck slab) | **Done** |
+| **6d** | Train mission hero + Quick Ops contrast + identity stat badges | **Done** |
+| **6e** | Pathway timeline Tier A edge treatment | **Done** |
+| **6f** | Armory Studio full dossier in `HologramCardShell` | **Done** |
+| **6f-b** | HQ header ladder + VPP empty inspector whisper | **Done** |
+| **6f-c** | HQ identity telemetry bezel — interactive streak/XP on hologram card (replaces stat chips) | **Done** |
+| **6g** | Stats investigation workspace parity | Planned |
+| **6h** | Train / Tracker terminal chrome pass | Planned |
+| **6j** | Player OS Z2 depth + edge-lit interactivity pass | **Planned** |
+| **6i** | Reference matrix sign-off + void contract re-measure | Planned |
+
+**Current:** **6f-b Done** — next: **6g** Stats. **6j** documents cross-route depth (do not start 6j before 6g unless merged).
+
+---
+
+## Sprint 2.22 slice 6f scope — Armory Studio dossier hologram — **In progress**
+
+**Goal:** Wrap the **Dossier Card Preview** in Armory Studio with `HologramCardShell` so the operative card reads as a **Tier A Z3 collectible** — same material language as HQ identity (6a), at full Studio scale.
+
+**Delivered (in progress):**
+
+- **`HologramCardShell`** wraps `ProPlayerCard` in `OperativeLoadoutStudio` (`compact={false}` full scale)
+- **Void-friendly dossier row** — demote matte `ols-dossier-panel` slab; holo shell carries visual weight
+- **Portrait + workshop panels** unchanged
+- **Tests:** `playerHudSprint232.test.ts`
+- **Visual acceptance:** `docs/visual-acceptance/sprint-2.22-slice-6f/`
+
+**Pass criteria (1280px + 390px):**
+
+- Dossier preview in **`HologramCardShell`** with tilt/foil/edge-glow on hover
+- Outer panel **not** a competing grey matte box around holo shell
+- Mobile — card centered, no overflow
+- HQ regression unchanged
+
+**Files (≤ 8):**
+
+- `ROADMAP.md`
+- `src/lib/components/player/OperativeLoadoutStudio.svelte`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint232.test.ts` *(new)*
+- `e2e/player-armory-slice-6f.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6f/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint232.test.ts src/routes/(app)/player/armory/__tests__/armoryLoadoutStudio.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-armory-slice-6f.visual.spec.ts
+```
+
+**Out of scope:** HQ identity telemetry bezel → slice **6f-c**; HQ header typography + VPP inspector whisper → slice **6f-b**; global panel depth → slice **6j** (planned). Stats route parity (6g), Quartermaster card edge treatment.
+
+---
+
+## Sprint 2.22 slice 6f-c scope — HQ identity telemetry bezel — **Done**
+
+**Goal:** Move streak + XP off `HudStatCell` chips onto the **6a hologram card** as emissive, **interactive** bezel telemetry. Player taps streak/XP to act (workout / pathway / stats).
+
+**Pass criteria (1280px + 390px):**
+
+- No separate flame/zap stat chip row under holo card in embedded HQ mode
+- Streak visible on card bezel (amber emissive; at-risk state when streak active + not trained)
+- XP visible as conduit/meter on card (ties to rank/XP progress)
+- Tap/click targets ≥44px; keyboard focus-visible
+- Hover/tap feedback on card bezel (not whole dashboard)
+- Train page `HudStatCell` unchanged (non-embedded)
+
+**Files (≤ 8, implementation session):**
+
+- `HologramCardShell.svelte` and/or new `IdentityTelemetryBezel.svelte`
+- `IdentityBentoModule.svelte`
+- `player-dashboard-hud.css`
+- `playerHudSprint235.test.ts` *(new)*
+- `e2e/player-hq-slice-6f-c.visual.spec.ts`
+- `docs/visual-acceptance/sprint-2.22-slice-6f-c/README.md`
+
+**Verify (implementation session):**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint235.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint227.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6f-c.visual.spec.ts
+```
+
+**Out of scope:** Bauhaus/character art (Epic 3.5), VPP/header (6f-b), Armory Studio sliders (3.5c).
+
+**Run after:** 6f Done. **Run before:** 6f-b.
+
+---
+
+## Sprint 2.22 slice 6f-b scope — HQ header ladder + VPP inspector whisper — **Done**
+
+**Goal:** Fix HQ hierarchy and analytics sidebar density without changing void architecture from 6c.
+
+**Problems addressed:**
+- Section titles compete with route strap (`TELEMETRY` too large vs Quick ops / Pathway)
+- Duplicate/conflicting `.oqo-deck__title` rules in `player-dashboard-hud.css`
+- "Awaiting coach telemetry" inspector box too tall/wide beside radar — reads as second panel
+
+**Pass criteria (1280px + 390px):**
+
+| Check | Pass |
+|-------|------|
+| **L1** | Only `.pd-strap__title` reads as route hero (~1.15–1.25rem display) |
+| **L2** | Section titles unified (~0.82–0.92rem): Quick ops, Pathway, TELEMETRY, capsules, mission rail |
+| **L3** | Eyebrows whisper (~0.55–0.62rem muted mono) |
+| **VPP empty** | Inspector whisper ≤ ~64px tall; radar remains hero; vector-select still expands inspector |
+
+**Header ladder tokens (add to CSS in implementation slice):**
+- `--pd-hud-title-l1`, `--pd-hud-title-l2`, `--pd-hud-eyebrow-l3` on `.player-hud-root`
+
+**Files (≤ 8, implementation session):**
+- `ROADMAP.md` (Step 0 — this session)
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte` *(minimal — only if CSS insufficient)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint233.test.ts` *(new)*
+- `e2e/player-hq-slice-6f-b.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6f-b/README.md` *(new)*
+
+**Verify (implementation session):**
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint233.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint229.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6f-b.visual.spec.ts
+```
+
+**Out of scope:** HQ identity telemetry bezel → slice **6f-c**; Armory Studio (6f), Stats (6g), global panel depth (6j), pathway/missions/analytics void structure, atmosphere-only opacity tweaks.
+
+**Run after:** 6f-c Done. **Run before:** 6g (Stats).
+
+---
+
+## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **Planned**
+
+**Goal:** Reduce flat matte-panel dominance across Player OS routes. Promote **edge-lit Z2** surfaces (top highlight + teal/gold hairline + reduced fill opacity) and **light interactivity** (hover border brighten, focus-visible, subtle translate — gated by `prefers-reduced-motion` and `data-dopamine="off"`). Align with `PLAYER_OS_FOUNDATION.md` §2 — void > emissive edges > glass > matte fill.
+
+**Not in scope for 6j:** New features, Coach OS routes, atmosphere opacity-only passes, nested box-in-box around bloom filters.
+
+**Target surfaces (batch order — one implementation session per batch max):**
+
+| Batch | Surfaces | Primary files |
+|-------|----------|---------------|
+| **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` |
+| **6j-b Routes** | Train `pw-panel`, Armory `qa-card` / `ols-*` panels (not Studio holo), Tracker, Settings | `player-dossier.css`, route pages, proving grounds CSS |
+| **6j-c Stats** | Stats investigation panels (coordinate with 6g — run 6g first or merge if overlap) | `stats/+page.svelte`, dossier CSS |
+
+**Material rules (lock):**
+- Replace solid `#05050a` panel fills with `--pd-depth-panel-gradient` at **lower opacity** or transparent center + edge-only frame where void allows
+- One emissive edge treatment per panel (`--pd-edge-teal` or gold for action surfaces)
+- Interactive tiles: hover `border-color` + `box-shadow` lift; **no** scale-110 on stat cells
+- Max **two** decorative layers per surface (Foundation §2 lock)
+- Preserve 6c void / 6e pathway / 6a hologram — do not re-matte those regions
+
+**Pass criteria (visual, per batch):**
+- Side-by-side vs pre-6j: panels read **edge-lit in void**, not grey config boxes
+- At 1280px: matte fill ratio trend down (Foundation ≤35% target — qualitative OK for slice sign-off)
+- Hover/focus visible on Quick Ops, mission rows, route panels
+- 390px: no overflow; touch targets ≥44px
+
+**Tests:** `playerHudSprint234.test.ts` (6j-a), extend per batch; visual PNGs under `docs/visual-acceptance/sprint-2.22-slice-6j-a/` etc.
+
+**Run after:** 6f-b Done, 6g Done (or 6j-c merged into 6g if agent finds overlap). **Before:** 6i reference matrix sign-off.
+
+**Explicit anti-pattern:** Do not ship another global opacity bump expecting premium feel (Slice 5 lesson).
+
+---
+
+## Sprint 2.22 slice 6e scope — HQ pathway timeline Tier A edge — **Done**
+
+*(Shipped 2026-05-23 — see `docs/visual-acceptance/sprint-2.22-slice-6e/`.)*
+
+**Goal:** Lift the **Mission rewards pathway** from a matte `pd-page-panel` slab to a **Tier A horizontal timeline** — emissive edge-lit nodes, gap connectors between tiers, Z1 reward icon wells, milestone gold accents. Pathway floats in void between Quick Ops and analytics void (6c).
+
+**Delivered:**
+
+- **`opp-preview--void`** — transparent shell; no matte Z2 slab
+- **Gap-only tier connectors** — teal segments between nodes only (never through reward wells)
+- **Chamfer edge-lit nodes** + Z1 reward wells + milestone gold ring accents
+- **`hqTealCurrent`** ACTIVE glow preserved; scroll-to-current on load preserved
+- **Header hierarchy** — title matches Quick Ops scale; `LV xx / 50` on compact mono meta line
+- **Tests:** `playerHudSprint231.test.ts`; guards extended in `playerHudSprint223.test.ts`
+- **Visual acceptance:** five PNGs in `docs/visual-acceptance/sprint-2.22-slice-6e/`
+
+**Pass criteria (1280px + 390px):**
+
+- Outer wrapper **not** a matte Z2 slab — `opp-preview--void` (transparent / edge-lit frame only)
+- Horizontal **gap connectors** between cleared tiers — teal emissive segments (not a through-well rail)
+- **Nodes:** chamfer/clip-path edge-lit treatment (not `rounded-xl` admin cards)
+- **Reward icon:** Z1 inset well (`--pd-z1-well-bg`) inside each node
+- **Current node (`ACTIVE`):** strongest teal emissive edge + glow (`hqTealCurrent`)
+- **Milestone tiers** (5, 10, 25, 50 + trophy tiers): subtle **gold edge accent** on node ring
+- Unlocked / locked states preserved; scroll-to-current on load preserved
+- Compact mode (`opp-root--compact`) CSS preserved — HQ preview stays `compact={false}`
+
+**Files (≤ 8):**
+
+- `ROADMAP.md`
+- `src/lib/components/player/dashboard/OperativePathwayPreview.svelte`
+- `src/lib/components/player/OperativePathway.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint231.test.ts` *(new)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint223.test.ts` *(update)*
+- `e2e/player-hq-slice-6e.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6e/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint231.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint223.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6e.visual.spec.ts
+```
+
+**Out of scope:** ActiveBounties, HologramCardShell, IdentityBentoModule, OperativeHub, OperativeQuickOps, analytics void CSS, Train page, Armory routes, atmosphere/shell tokens, pathway expand/collapse UX, `scrollToCurrent` behavior changes, slice 6f Armory Studio hologram.
+
+---
+
+## Sprint 2.22 slice 6d scope — Train hero + HQ chrome — **Done**
+
+*(Shipped 2026-05-23 — see `docs/visual-acceptance/sprint-2.22-slice-6d/`.)*
+
+**Goal:** Three polish passes — medium mission briefing hero on Train execution theater, per-tile Quick Ops icon accent contrast on HQ, filled identity stat badges + ultrawide identity density fix.
+
+**Pass criteria:**
+
+- **Train:** `TrainMissionBrief` above execution terminal head — teal/gold briefing, no Accept CTA on hero
+- **Quick Ops:** three distinct icon accent colors (`action` / `data` / `neutral`) — icon-led contrast, soft tile border
+- **Identity:** streak + XP `HudStatCell` filled icon badges (`game.flame` / `game.zap`)
+- **Ultrawide (1920px+):** identity stage metrics inline row; capped stage min-height — no warehouse dead space
+- **Regression:** 6b mission rail + 6c analytics void unchanged
+
+**Files (≤ 10):**
+
+- `ROADMAP.md`
+- `src/lib/components/player/workout/TrainMissionBrief.svelte` *(new)*
+- `src/routes/(app)/player/workout/+page.svelte`
+- `src/lib/styles/player-missions.css`
+- `src/lib/components/player/dashboard/HudStatCell.svelte`
+- `src/lib/components/player/dashboard/OperativeQuickOps.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts` *(new)*
+- `e2e/player-train-slice-6d.visual.spec.ts` *(new)*
+- `e2e/player-hq-slice-6d-chrome.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6d/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts src/routes/(app)/player/workout/__tests__/workout.layout.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint229.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-train-slice-6d.visual.spec.ts e2e/player-hq-slice-6d-chrome.visual.spec.ts
+```
+
+**Out of scope:** ActiveBounties embedded rail layout, HologramCardShell, analytics void CSS, OperativePathwayPreview, atmosphere/shell tokens, AttributeRadar SVG internals, ingest queue removal, execution terminal submit logic, slice 6e pathway.
+
+---
+
+## Sprint 2.22 slice 6a scope — HQ identity hologram artifact — **Done**
+
+*(Shipped 2026-05-23 — see `docs/visual-acceptance/sprint-2.22-slice-6a/`.)*
+
+---
+
+## Sprint 2.22 slice 6c scope — HQ analytics void island — **Done**
+
+*(Shipped 2026-05-23 — see `docs/visual-acceptance/sprint-2.22-slice-6c/`.)*
+
+**Goal:** Remove the grey **analytics deck slab** on HQ. VPP radar + inspector float as **Z1 islands in void**; capsules strip is a **separate lightweight footer** — not one matte `bento-card` wrapper.
+
+**Pass criteria (1280px + 390px):**
+
+- **No** outer matte `bento-card pd-surface-premium` on the analytics region
+- Wrapper: `player-analytics-void bento-span-12` — transparent, void shows through
+- VPP = standalone region; `vpp-chart--premium` stays **Z1 inset well** (`--pd-z1-well-bg`)
+- `vpp-head--premium` demoted in void context — transparent bg, no matte box
+- Capsules ghost/arena = separate strip below — transparent + teal hairline divider only
+- Compact mode (`!telemetryReady`) preserved — smaller radar, compact inspector ghost
+- Void visible between pathway preview and telemetry band
+
+**Files (≤ 8):**
+
+- `ROADMAP.md` (Step 0)
+- `src/routes/(app)/player/dashboard/+page.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint229.test.ts` *(new)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint2121.test.ts` *(update)*
+- `e2e/player-hq-slice-6c.visual.spec.ts` + `docs/visual-acceptance/sprint-2.22-slice-6c/README.md`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint229.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint2121.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6c.visual.spec.ts
+```
+
+**Out of scope:** ActiveBounties, HologramCardShell, IdentityBentoModule, OperativeHub, OperativeQuickOps, OperativePathwayPreview, Train page, atmosphere/shell tokens, AttributeRadar SVG internals, `handleQuestAction` logic, slice 6d Train hero briefing.
+
+---
+
+## Sprint 2.22 slice 6b-revise scope — HQ mission rail (overview, no hero cards) — **Done**
+
+*(Shipped 2026-05-23 — see `docs/visual-acceptance/sprint-2.22-slice-6b-revise/`.)*
+
+**Product decision:** HQ is **command overview** — scannable mission queue with brief context. **No hero cards** on the dashboard. Full/medium hero treatment moves to Train (slice 6d). Coach/parent bounties get **gold accent on the rail row**, not an oversized card.
+
+**Goal:** Mission rail = **rail rows only** (up to 3 visible) — sender · title · reward line · CTA. Teal CTAs for daily habits; gold left border + gold CTA for bounties / coach / parent sources.
+
+**Pass criteria (1280px):**
+
+| Visible missions | Layout |
+|------------------|--------|
+| **1–3** | Rail rows only — no `quest-hero--premium` in embedded HQ mode |
+| **Coach bounty** | Gold 3px left border + gold CTA on promoted row |
+
+- Hub shell: transparent missions column + operative-hub edge-lit frame (6b hub CSS retained)
+- Identity hologram (6a) unchanged
+
+**Files (≤ 8):**
+
+- `ROADMAP.md` (Step 0)
+- `src/lib/components/hud/ActiveBounties.svelte`
+- `src/lib/player/dashboard/activeBounties.ts`
+- `src/lib/styles/player-missions.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint228.test.ts` *(update)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts` *(update)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint19.test.ts` *(update)*
+- `e2e/player-hq-slice-6b-revise.visual.spec.ts` + `docs/visual-acceptance/sprint-2.22-slice-6b-revise/README.md`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint228.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint19.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6b-revise.visual.spec.ts
+```
+
+**Out of scope:** `HologramCardShell` (6a), analytics deck (6c), Train page (6d), Quick Ops, pathway, atmosphere, `handleQuestAction` logic, slice 6b hub edge frame CSS deletion.
+
+---
+
+## Sprint 2.22 slice 6b scope — HQ mission theater — **Superseded by 6b-revise**
+
+**Goal:** Mission rail reads as **game mission select** — one dominant **gold** primary hero (Z3 focal) + secondary missions as **compact teal** cards or rail rows. `OperativeHub` reads as an **edge-lit frame in void**, not a grey box.
+
+**Pass criteria (1280px):**
+
+| Visible missions | Layout |
+|------------------|--------|
+| **1** | Single **gold** hero card (full `quest-hero--premium`) |
+| **2** | **Gold** primary hero + **one compact teal** secondary (NOT second full hero) |
+| **3** | **Gold** primary hero + **compact teal** secondary + **1 rail row** for third |
+
+- Exactly **one** gold-accent mission CTA above the fold in the rail
+- Hub shell: transparent center + teal edge border + subtle emissive hairline
+- Identity hologram (6a) unchanged
+
+**Files (≤ 8):**
+
+- `ROADMAP.md` (Step 0)
+- `src/lib/components/hud/ActiveBounties.svelte`
+- `src/lib/player/dashboard/activeBounties.ts`
+- `src/lib/styles/player-missions.css`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint228.test.ts` *(new)*
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts` *(update)*
+- `e2e/player-hq-slice-6b.visual.spec.ts` + `docs/visual-acceptance/sprint-2.22-slice-6b/README.md`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint228.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint227.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6b.visual.spec.ts
+```
+
+**Out of scope:** Identity / `HologramCardShell` (6a), analytics deck (6c), atmosphere tokens, pathway, Quick Ops, Armory, Train, Stats, `PlayerShell`, `handleQuestAction` logic.
+
+---
+
+## Sprint 2.22 slice 6a scope — HQ identity hologram artifact — **Done** *(archive)*
+
+**Goal:** HQ identity reads as a Z3 holographic operative artifact — pointer tilt + foil + edge-glow + scanlines — not a widget in a grey inset well.
+
+**Pass criteria:**
+
+- Hologram card (~clamp 200–280px) left with operative portrait, display callsign on card face, rank whisper
+- Rank progress bar + last trained + streak/XP stat cells preserved beside/below card
+- Identity stage background **transparent** — void shows through
+- Profile incomplete: silhouette/initials inside same hologram shell
+- No raw `VanguardCard` / Scout's Six on HQ
+- Visual acceptance PNGs at 1280 + 390
+
+**Files (≤ 8):**
+
+- `ROADMAP.md` (Step 0)
+- `docs/vision/PLAYER_OS_FOUNDATION.md` (Step 0)
+- `docs/PLAYER_OS_VISUAL_ACCEPTANCE.md` (Step 0)
+- `src/lib/components/player/HologramCardShell.svelte` *(new)*
+- `src/lib/components/player/dashboard/IdentityBentoModule.svelte`
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint227.test.ts` *(new)*
+- `e2e/player-hq-slice-6a.visual.spec.ts` + `docs/visual-acceptance/sprint-2.22-slice-6a/README.md`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint227.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint224.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint226.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-hq-slice-6a.visual.spec.ts
+```
+
+**Out of scope:** Missions (6b), analytics deck (6c), atmosphere tokens, pathway, Quick Ops, Armory, Train, Stats, PlayerShell scroll.
+
+---
+
+## Post-2.19 troubleshooting backlog
+
+Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint. Do **not** expand gate-lift scope ad-hoc — triage after manual sign-off.
+
+**Future Epic 1.x sensory lane (document only):** Optional UI audio cues (tab relay click, rank conduit fill) and haptic feedback on mobile — gated by `prefers-reduced-motion`, COPPA/minor-safe defaults, and `data-dopamine='off'`. Out of scope for 2.19; scope in a dedicated sprint if product prioritizes.
+
+| Issue | Route | Severity | Sprint target |
+|-------|-------|----------|---------------|
+| | | | |
 
 ---
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ blocked until Sprint 2.19 Done** — Player OS cinematic premium track (2.16–2.19) must complete before album set bonuses.
+> **Epic 3.4+ unblocked after Sprint 2.19 Done** — album set bonuses may proceed after visual acceptance sign-off.
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -431,6 +960,10 @@ npm run build
 | 3.2 | Done | Art pipeline — content-hashed cosmetics manifest, SVG assets, catalog ingestion | `playerLoadoutSprint32.test.ts`, `loadoutSchema.test.ts` |
 | 3.3 | Done | Unlock ceremonies — server-verified drops, confetti gate, minor-safe copy | `playerLoadoutSprint33.test.ts`, `loadoutOps.test.js`, `dopamine.test.ts` |
 | 3.4 | Planned | Album set bonuses — set completion perks, dossier chip rewards | — |
+| 3.5a | Planned | Portrait v2 schema + layered character SVG renderer | — |
+| 3.5b | Planned | Portrait part catalog (manifest) — starter editable character set | — |
+| 3.5c | Planned | Armory Studio v2 — ultra-premium part picker in `HologramCardShell`; remove Bauhaus slider UX | — |
+| 3.5d | Planned | HQ + recruit card wiring; avatar v2 migration/read-repair | — |
 
 Vision: [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md)
 
@@ -438,9 +971,32 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 ---
 
+## Epic 3.5 — Operative portrait v2 & Studio (planned)
+
+**Goal:** Replace Bauhaus geometric default with a **modular character SVG** portrait system — COPPA-safe, seed/catalog IDs, no photo upload.
+
+**Scope:**
+
+- **3.5a** — Portrait v2 schema + layered character SVG renderer (extend loadout slot model for face / hair / kit parts)
+- **3.5b** — Portrait part catalog (manifest) — starter editable character set ingested like 3.2 cosmetics pipeline
+- **3.5c** — Armory Studio v2 — ultra-premium **visual part picker** inside `HologramCardShell`; remove opaque Bauhaus slider UX
+- **3.5d** — HQ + recruit card wiring; avatar v2 migration/read-repair for existing `operativeAvatar` / loadout rows
+
+**Design principles:**
+
+- Reuse Epic 3.2 cosmetics manifest + loadout equip UX for **face / hair / kit** parts
+- Studio = game-like **visual picker** + holo dossier hero, not opaque sliders
+- Portrait renders inside `HologramCardShell` on HQ and Armory Studio (6a / 6f material language)
+
+**Vision pointer:** Extend [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md) portrait slot row in implementation sprint **3.5a**.
+
+**Runs after:** 3.4 (or parallel once album bonuses schema stable). **Coordinates with:** Phase 6 **6f-c** (bezel telemetry) and **6f** (Studio holo shell) — character art is Epic 3.5, not 6f-c.
+
+---
+
 ## Sprint status — Epic 4: Comms & Team Operations Hub
 
-> **Epic 4.1+ blocked until Sprint 2.19 Done** — Player OS cinematic premium track (2.16–2.19) must complete before comms wiring.
+> **Epic 4.1+ unblocked after Sprint 2.19 Done** — comms wiring may proceed after visual acceptance sign-off. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though gate is open from 2.19.
 
 > **Naming note:** ROADMAP **Epic 4 = Comms Hub**. Unrelated legacy comments (e.g. Firestore "Epic 4.3 LeagueManager") are a different numbering scheme — do not renumber.
 

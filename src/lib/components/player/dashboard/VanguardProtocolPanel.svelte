@@ -23,8 +23,8 @@
 	}
 </script>
 
-<section class="vpp-root" class:vpp-root--compact={compact} aria-labelledby="vpp-heading">
-	<header class="vpp-head">
+<section class="vpp-root vpp-root--premium" class:vpp-root--compact={compact} aria-labelledby="vpp-heading">
+	<header class="vpp-head vpp-head--premium">
 		<div class="vpp-head__copy">
 			<p class="vpp-eyebrow">Vanguard Protocol</p>
 			<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
@@ -37,7 +37,7 @@
 	</header>
 
 	<div class="vpp-body">
-		<div class="vpp-chart" aria-label="Attribute radar">
+		<div class="vpp-chart vpp-chart--premium" aria-label="Attribute radar">
 			<AttributeRadar
 				values={prismValues}
 				{selectedAxis}
@@ -45,7 +45,12 @@
 			/>
 		</div>
 
-		<div class="vpp-inspector" aria-label="Vector detail inspector">
+		<div
+			class="vpp-inspector vpp-inspector--premium"
+			class:vpp-inspector--selected={!!selectedRow}
+			class:vpp-inspector--idle={!selectedRow}
+			aria-label="Vector detail inspector"
+		>
 			{#if selectedRow}
 				<div class="vpp-inspector__detail">
 					<span class="vpp-inspector__code">{selectedRow.label}</span>
@@ -64,9 +69,17 @@
 					</p>
 				</div>
 			{:else}
-				<p class="vpp-inspector__ghost" role="status">
-					SELECT A VECTOR · OR AWAIT COACH TELEMETRY
-				</p>
+				<div
+					class="vpp-inspector__empty vpp-inspector__empty--dossier"
+					class:vpp-inspector__empty--compact={compact}
+					role="status"
+				>
+					<div class="vpp-inspector__empty-icon" aria-hidden="true"></div>
+					<div class="vpp-empty-state__copy">
+						<p class="vpp-inspector__empty-title">Awaiting coach telemetry</p>
+						<p class="vpp-inspector__empty-copy">Log a session to unlock vector detail.</p>
+					</div>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -97,7 +110,7 @@
 		font-weight: 900;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: color-mix(in srgb, #64748b 85%, #94a3b8);
+		color: var(--pd-accent-data-bright, rgba(0, 212, 255, 0.55));
 	}
 
 	.vpp-title {
@@ -118,7 +131,7 @@
 		line-height: 1.4;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: #64748b;
+		color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 		max-width: 36rem;
 	}
 
@@ -146,19 +159,7 @@
 		min-width: 0;
 		padding: clamp(8px, 2vw, 16px);
 		border-radius: 0;
-		border: 1px solid #334155;
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 95%, #000);
 		box-sizing: border-box;
-		clip-path: polygon(
-			0 8px,
-			8px 0,
-			calc(100% - 8px) 0,
-			100% 8px,
-			100% calc(100% - 8px),
-			calc(100% - 8px) 100%,
-			8px 100%,
-			0 calc(100% - 8px)
-		);
 	}
 
 	.vpp-chart :global(.ar-root) {
@@ -173,18 +174,8 @@
 		justify-content: center;
 		min-height: auto;
 		padding: clamp(8px, 1.5vw, 12px);
-		border: 1px solid #334155;
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 92%, transparent);
-		clip-path: polygon(
-			0 8px,
-			8px 0,
-			calc(100% - 8px) 0,
-			100% 8px,
-			100% calc(100% - 8px),
-			calc(100% - 8px) 100%,
-			8px 100%,
-			0 calc(100% - 8px)
-		);
+		border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+		background: var(--pd-panel, #05050a);
 	}
 
 	.vpp-inspector__detail {
@@ -198,7 +189,7 @@
 		font-size: 0.62rem;
 		font-weight: 800;
 		letter-spacing: 0.14em;
-		color: var(--color-accent, #fbbf24);
+		color: var(--pd-accent-data, #14b8a6);
 	}
 
 	.vpp-inspector__name {
@@ -227,7 +218,7 @@
 	.vpp-inspector__score-max {
 		font-size: 0.75rem;
 		font-weight: 700;
-		color: #64748b;
+		color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 		margin-left: 0.15rem;
 	}
 
@@ -237,7 +228,7 @@
 		height: 4px;
 		margin-top: 0.5rem;
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-dominant, #0f172a) 40%, #1e293b);
+		background: color-mix(in srgb, var(--pd-panel, #05050a) 60%, transparent);
 		overflow: hidden;
 	}
 
@@ -247,7 +238,7 @@
 		height: 100%;
 		width: var(--vpp-fill, 0%);
 		border-radius: inherit;
-		background: var(--color-accent, #fbbf24);
+		background: var(--pd-accent-data, #14b8a6);
 		transition: width 0.45s cubic-bezier(0.33, 1, 0.68, 1);
 	}
 

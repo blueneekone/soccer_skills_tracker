@@ -7,6 +7,9 @@
 
 .player-hud-root,
 .player-dossier-root {
+	--pd-hud-title-l1: clamp(1.15rem, 2.4vw, 1.25rem);
+	--pd-hud-title-l2: clamp(0.82rem, 1.5vw, 0.92rem);
+	--pd-hud-eyebrow-l3: clamp(0.55rem, 1.1vw, 0.62rem);
 	--bento-gap-liquid: clamp(12px, 1.5vw, 20px);
 	--color-structural: #64748b; /* muted slate — overrides global #3b82f6 inside player HUD */
 	--player-hud-surface: var(--pd-panel, #05050a);
@@ -144,18 +147,21 @@
 }
 
 /* Sprint 2.7 / 2.8.1 — compact analytics deck when no coach telemetry */
-.player-hud-root .player-analytics-deck--compact {
+.player-hud-root .player-analytics-deck--compact,
+.player-hud-root .player-analytics-void--compact {
 	gap: clamp(2px, 0.5vw, 4px);
 	min-height: 0;
 	padding-block: clamp(6px, 1vw, 10px) !important;
 }
 
+.player-hud-root .player-analytics-void--compact .lobby-capsule-ghost--compact,
 .player-hud-root .player-analytics-deck--compact .lobby-capsule-ghost--compact {
 	margin: 0;
 	padding: clamp(2px, 0.5vw, 4px) 0;
 }
 
 /* Sprint 2.8.2 — compact shrinks inspector/padding; radar stays hero-readable */
+.player-hud-root .player-analytics-void--compact .vpp-chart,
 .player-hud-root .player-analytics-deck--compact .vpp-chart {
 	width: 100%;
 	max-width: min(100%, 220px);
@@ -163,22 +169,26 @@
 	padding: clamp(2px, 0.6vw, 6px);
 }
 
+.player-hud-root .player-analytics-void--compact .vpp-chart :global(.ar-root),
 .player-hud-root .player-analytics-deck--compact .vpp-chart :global(.ar-root) {
 	width: min(100%, 220px);
 	max-width: 100%;
 }
 
 @media (min-width: 768px) {
-	.player-hud-root .player-analytics-deck--compact .vpp-chart {
+	.player-hud-root .player-analytics-void--compact .vpp-chart,
+.player-hud-root .player-analytics-deck--compact .vpp-chart {
 		max-width: min(100%, 260px);
 		margin-inline: 0;
 	}
 
-	.player-hud-root .player-analytics-deck--compact .vpp-chart :global(.ar-root) {
+	.player-hud-root .player-analytics-void--compact .vpp-chart :global(.ar-root),
+.player-hud-root .player-analytics-deck--compact .vpp-chart :global(.ar-root) {
 		width: min(100%, 320px);
 	}
 }
 
+.player-hud-root .player-analytics-void--compact .vpp-body,
 .player-hud-root .player-analytics-deck--compact .vpp-body {
 	gap: clamp(6px, 1vw, 8px);
 	align-items: flex-start;
@@ -186,18 +196,21 @@
 }
 
 @media (min-width: 768px) {
-	.player-hud-root .player-analytics-deck--compact .vpp-body {
+	.player-hud-root .player-analytics-void--compact .vpp-body,
+.player-hud-root .player-analytics-deck--compact .vpp-body {
 		grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
 		align-items: center;
 	}
 }
 
+.player-hud-root .player-analytics-void--compact .vpp-inspector,
 .player-hud-root .player-analytics-deck--compact .vpp-inspector {
 	min-height: 0;
 	max-width: min(100%, 160px);
 	padding: clamp(3px, 0.6vw, 6px);
 }
 
+.player-hud-root .player-analytics-void--compact .vpp-inspector__ghost,
 .player-hud-root .player-analytics-deck--compact .vpp-inspector__ghost {
 	margin: 0;
 	font-size: 8px;
@@ -205,6 +218,7 @@
 	letter-spacing: 0.06em;
 }
 
+.player-hud-root .player-analytics-void--compact .vpp-head,
 .player-hud-root .player-analytics-deck--compact .vpp-head {
 	margin-bottom: 0;
 }
@@ -217,25 +231,14 @@
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+/* Sprint 2.20b — single Z1 recessed well; ::before circle-glow pseudo removed (Foundation §2 lock, §9) */
 .player-hud-root .vpp-chart--premium {
+	background: var(--pd-z1-well-bg);
 	box-shadow:
 		var(--pd-z1-inset-shadow),
 		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
 	-webkit-backdrop-filter: blur(4px) saturate(140%);
 	backdrop-filter: blur(4px) saturate(140%);
-}
-
-.player-hud-root .vpp-chart--premium::before {
-	content: '';
-	position: absolute;
-	inset: clamp(6px, 1.2vw, 10px);
-	border-radius: 50%;
-	pointer-events: none;
-	box-shadow: 0 0 24px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, transparent);
-}
-
-.player-hud-root .vpp-chart--premium {
-	position: relative;
 }
 
 .player-hud-root .vpp-inspector--premium {
@@ -347,7 +350,7 @@
 	padding: clamp(8px, 1.5vw, 12px);
 	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
 	border-radius: 0;
-	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 72%, #000);
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.04),
 		inset 0 0 24px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 4%, transparent);
@@ -377,25 +380,9 @@
 	min-width: 0;
 }
 
+/* Sprint 2.20b — border-color tint only; background + shadow already set in base .vpp-chart--premium rule; ::after circle-ring pseudo removed */
 .player-hud-root .vpp-root--premium .vpp-chart--premium {
-	background: var(--pd-z1-well-bg);
 	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line));
-	box-shadow:
-		var(--pd-z1-inset-shadow),
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent),
-		inset 0 0 32px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, transparent);
-}
-
-.player-hud-root .vpp-root--premium .vpp-chart--premium::after {
-	content: '';
-	position: absolute;
-	inset: clamp(4px, 1vw, 8px);
-	border-radius: 50%;
-	pointer-events: none;
-	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 20%, transparent);
-	box-shadow:
-		0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent),
-		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent));
 }
 
 .player-hud-root .vpp-chart--premium :global(.ar-svg line) {
@@ -445,25 +432,52 @@
 
 .player-hud-root .vpp-inspector__empty--dossier {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	align-items: center;
-	justify-content: center;
-	gap: clamp(6px, 1.2vw, 10px);
-	padding: clamp(10px, 2vw, 16px);
-	max-height: clamp(100px, 20vw, 140px);
-	text-align: center;
+	justify-content: flex-start;
+	gap: clamp(6px, 1.1vw, 8px);
+	padding: clamp(4px, 0.8vw, 8px);
+	max-height: 64px;
+	text-align: left;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-icon {
+	width: clamp(20px, 4vw, 24px);
+	height: clamp(20px, 4vw, 24px);
+	flex-shrink: 0;
 	clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
 	border-radius: 0;
 }
 
+.player-hud-root .vpp-inspector__empty--dossier .vpp-empty-state__copy {
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
+}
+
+.player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-title {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-copy {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+.player-hud-root .player-analytics-void--compact .vpp-inspector__empty--dossier,
 .player-hud-root .player-analytics-deck--compact .vpp-inspector__empty--dossier {
-	flex-direction: row;
-	align-items: flex-start;
-	text-align: left;
-	max-height: clamp(88px, 18vw, 110px);
+	max-height: 56px;
+	padding: clamp(2px, 0.5vw, 4px);
+	gap: clamp(4px, 0.8vw, 6px);
 }
 
 .player-hud-root .vpp-empty-state {
@@ -481,13 +495,109 @@
 }
 
 /* Sprint 2.17 — hub shell inherits Z2 via pd-surface-premium; explicit shadow guard */
+/* Sprint 2.22 slice 5 — Z2 fill reduction: edge-lit glass in void */
+/* Sprint 2.22 slice 6b — further void center; bottom emissive hairline via ::after */
 .player-hud-root .operative-hub.pd-surface-premium {
+	position: relative;
+	background: radial-gradient(
+		ellipse 115% 75% at 50% 0%,
+		color-mix(in srgb, var(--pd-panel, #05050a) 35%, transparent) 0%,
+		color-mix(in srgb, #020204 28%, transparent) 48%,
+		transparent 70%
+	);
 	box-shadow: var(--pd-z2-panel-shadow);
 	border: var(--pd-edge-teal, 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, var(--pd-line)));
 }
 
+.player-hud-root .operative-hub.pd-surface-premium::after {
+	content: '';
+	position: absolute;
+	inset: auto 0 0 0;
+	height: 1px;
+	pointer-events: none;
+	z-index: 0;
+	background: linear-gradient(
+		90deg,
+		transparent 8%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent) 50%,
+		transparent 92%
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent);
+}
+
+.player-hud-root .player-analytics-deck.pd-surface-premium {
+	background: radial-gradient(
+		ellipse 115% 75% at 50% 0%,
+		color-mix(in srgb, var(--pd-panel, #05050a) 48%, transparent) 0%,
+		color-mix(in srgb, #020204 32%, transparent) 50%,
+		transparent 85%
+	);
+}
+
 .player-hud-root .operative-hub__scanlines {
 	display: none !important;
+}
+
+/* Sprint 2.22 slice 6c — analytics void island */
+.player-hud-root .player-analytics-void {
+	display: flex;
+	flex-direction: column;
+	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+	margin-top: clamp(4px, 0.8vw, 8px);
+	padding: clamp(12px, 2vw, 20px) 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.player-hud-root .player-analytics-void--compact {
+	gap: clamp(2px, 0.5vw, 4px);
+	min-height: 0;
+	padding-block: clamp(6px, 1vw, 10px);
+}
+
+.player-hud-root .player-analytics-void .vpp-head--premium {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: clamp(4px, 0.8vw, 8px) 0;
+}
+
+.player-hud-root .player-capsules-strip--void {
+	margin-top: clamp(4px, 0.8vw, 6px);
+	padding: clamp(8px, 1.5vw, 12px) 0 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.player-hud-root .player-capsules-strip--void::before {
+	content: '';
+	display: block;
+	height: 1px;
+	margin: 0 0 clamp(8px, 1.5vw, 12px);
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) 50%,
+		transparent
+	);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent);
+}
+
+/* Legacy shim — deprecated deck class stays transparent if referenced */
+.player-hud-root .player-analytics-deck,
+.player-hud-root .player-analytics-deck.pd-surface-premium {
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+}
+
+.player-hud-root .player-analytics-deck.pd-surface-premium .player-capsules-strip--premium {
+	background: transparent;
+	border: none;
+	box-shadow: none;
 }
 
 /* Sprint 2.12 — identity inset panel inside hub (2.12.1: stage owns inset; IBM premium layers on top) */
@@ -497,9 +607,9 @@
 	border: none;
 }
 
-/* Sprint 2.12 — premium HQ identity hero stage */
+/* Sprint 2.12 / 2.19 — premium HQ identity hero stage */
 .player-hud-root .ibm-root--premium {
-	--player-hud-avatar-size: clamp(72px, 14vw, 88px);
+	--player-hud-avatar-size: clamp(88px, 16vw, 112px);
 	border: none;
 	background: transparent;
 	backdrop-filter: none;
@@ -622,27 +732,27 @@
 	position: absolute;
 	inset: 0;
 	background: linear-gradient(
-		105deg,
-		transparent 38%,
-		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, #fff) 50%,
-		transparent 62%
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, var(--pd-accent-data, #14b8a6)) 42%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, #fff) 50%,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, var(--pd-accent-data, #14b8a6)) 58%,
+		transparent 100%
 	);
-	animation: ibm-rank-fill-shimmer 2.8s ease-in-out infinite;
+	animation: pd-conduit-shimmer 1.2s ease-in-out 1 both;
 }
 
-@keyframes ibm-rank-fill-shimmer {
-	0%,
+@keyframes pd-conduit-shimmer {
+	0% {
+		transform: translateX(-100%);
+		opacity: 0.35;
+	}
+	45% {
+		opacity: 0.85;
+	}
 	100% {
-		transform: translateX(-120%);
-		opacity: 0;
-	}
-	45%,
-	55% {
-		opacity: 0.45;
-	}
-	50% {
-		transform: translateX(120%);
-		opacity: 0.6;
+		transform: translateX(100%);
+		opacity: 0.35;
 	}
 }
 
@@ -757,9 +867,20 @@
 	min-width: 0;
 }
 
-/* Sprint 2.5 — mission rail column (md+ left border on missions lives in OperativeHub) */
+/* Sprint 2.5 / 2.20c — mission rail column stretches to match main column height on md+ */
+/* Sprint 2.22 slice 6b — missions column transparent; teal emissive left separator */
 .player-hud-root .operative-hub .operative-hub__missions {
-	align-self: start;
+	align-self: stretch;
+	background: transparent;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .operative-hub .operative-hub__missions {
+		border-left: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 32%, var(--pd-line));
+		box-shadow:
+			inset 1px 0 0 color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+			-4px 0 18px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, transparent);
+	}
 }
 
 .player-hud-root .operative-hub .quest-log-panel--rail {
@@ -779,10 +900,13 @@
 .player-hud-root .operative-hub .quest-log-panel--rail .quest-terminal-row--embedded {
 	max-width: 100%;
 	padding-inline: 0;
+	overflow: visible;
 }
 
 .player-hud-root .operative-hub .quest-log-panel--rail .quest-row--embedded {
 	max-width: 100%;
+	box-sizing: border-box;
+	overflow: visible;
 }
 
 /* Sprint 2.16 — HQ hub fill balance (identity + metrics column) */
@@ -793,9 +917,76 @@
 	min-height: 0;
 }
 
+/* Sprint 2.22 slice 2b — compact horizontal identity; slice 6a — transparent void stage */
 .player-hud-root .operative-hub__identity-stage {
 	flex: 1 1 auto;
-	min-height: clamp(120px, 22vw, 200px);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	min-height: clamp(140px, 18vw, 180px);
+	padding: clamp(12px, 2vw, 16px);
+	box-sizing: border-box;
+	position: relative;
+	min-width: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.player-hud-root .operative-hub__identity-stage .operative-hub__identity {
+	width: 100%;
+	min-width: 0;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-root.ibm-root--embedded {
+	grid-template-columns: auto 1fr;
+	justify-items: start;
+	text-align: left;
+	align-items: center;
+	gap: clamp(10px, 2vw, 16px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-avatar {
+	--player-hud-avatar-size: clamp(72px, 12vw, 96px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-rings {
+	align-items: stretch;
+	width: auto;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-identity {
+	max-width: none;
+	width: 100%;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-identity__head {
+	justify-content: flex-start;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-metrics {
+	max-width: none;
+	margin-inline: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-profile-banner,
+.player-hud-root .operative-hub__identity-stage .ibm-profile-setup-card {
+	max-width: 100%;
+	box-sizing: border-box;
+	text-align: left;
+}
+
+@media (max-width: 480px) {
+	.player-hud-root .operative-hub__identity-stage .ibm-root.ibm-root--embedded {
+		grid-template-columns: 1fr;
+		justify-items: center;
+		text-align: center;
+	}
 }
 
 .player-hud-root .operative-hub__metrics:not(:empty) {
@@ -811,6 +1002,7 @@
 		padding-inline: clamp(0.65rem, 2vw, 0.85rem);
 	}
 
+	.player-hud-root .player-analytics-void,
 	.player-hud-root .player-analytics-deck {
 		margin-top: clamp(0.35rem, 1vw, 0.5rem);
 	}
@@ -828,21 +1020,14 @@
 
 @media (min-width: 1280px) {
 	.player-hud-root .operative-hub__identity-stage {
-		min-height: clamp(140px, 18vw, 180px);
+		min-height: clamp(150px, 16vw, 190px);
 	}
 }
 
-/* Sprint 2.12 / 2.17 — identity stage Z1 recessed well inside hub Z2 */
-.player-hud-root .operative-hub__identity-stage {
-	position: relative;
-	min-width: 0;
-	background: var(--pd-z1-well-bg);
-	border: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, #000);
-	box-shadow: var(--pd-z1-inset-shadow);
-}
-
-.player-hud-root .operative-hub__identity-stage .operative-hub__identity {
-	min-width: 0;
+@media (max-width: 390px) {
+	.player-hud-root .ibm-root--premium {
+		gap: clamp(6px, 1.2vw, 10px);
+	}
 }
 
 .player-hud-header__lead {
@@ -977,6 +1162,18 @@
 .player-hud-root .hud-stat-cell--xp .hud-stat-cell__label,
 .player-dossier-root .hud-stat-cell--xp .hud-stat-cell__label {
 	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+/* Sprint 2.20b — XP cell data-accent emissive border (matches streak/at-risk intensity) */
+.player-hud-root .hud-stat-cell--xp,
+.player-dossier-root .hud-stat-cell--xp {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 10%, transparent);
+}
+
+.player-hud-root .hud-stat-cell--xp .hud-stat-cell__value,
+.player-dossier-root .hud-stat-cell--xp .hud-stat-cell__value {
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, var(--pd-text, #f4f4f5));
 }
 
 .player-hud-root .hud-stat-cell__value,
@@ -1114,12 +1311,19 @@
 	color: color-mix(in srgb, var(--player-hud-data, #14b8a6) 85%, var(--pd-text));
 }
 
-/* Sprint 3.1.2 — mission hero + profile setup CTAs stay gold on hover (not teal ibm-cta) */
+/* Sprint 3.1.2 — profile setup + gold hero CTAs stay gold on hover (not teal ibm-cta) */
 .player-hud-root .ibm-cta--setup:hover,
-.player-hud-root .quest-hero__cta:hover {
+.player-hud-root .quest-hero--gold .quest-hero__cta:hover {
 	border-color: var(--pd-accent-action, #fbbf24);
 	color: var(--pd-accent-action, #fbbf24);
 	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 10%, transparent);
+}
+
+/* Sprint 2.22 slice 4d-fix-b — teal secondary hero CTA stays teal on hover */
+.player-hud-root .quest-hero--teal .quest-hero__cta:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, white);
+	color: var(--pd-accent-data, #14b8a6);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, var(--pd-panel, #05050a));
 }
 
 .player-hud-root .ibm-cta:focus-visible,
@@ -1408,16 +1612,32 @@
 	);
 }
 
-.player-hud-root .quest-hero__cta:focus-visible {
+.player-hud-root .quest-hero--gold .quest-hero__cta:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
 	outline-offset: 2px;
 }
 
-/* Sprint 2.15 — HQ staggered enter (strap → hub → analytics deck) */
-@keyframes pd-enter-rise {
+.player-hud-root .quest-hero--teal .quest-hero__cta:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+	outline-offset: 2px;
+}
+
+/* Sprint 2.15 / 2.19 — HQ spatial layer enter (strap Z4 → hub/deck Z2); supersedes equal pd-enter-rise stagger */
+@keyframes pd-layer-enter-z4 {
 	from {
 		opacity: 0;
-		transform: translateY(8px);
+		transform: translateY(-10px) scale(0.992);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes pd-layer-enter-z2 {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
 	}
 	to {
 		opacity: 1;
@@ -1426,30 +1646,34 @@
 }
 
 .player-hud-root .hud-container > .pd-strap {
-	animation: pd-enter-rise 0.48s ease-out both;
+	animation: pd-layer-enter-z4 0.48s ease-out both;
 	animation-delay: 0ms;
 }
 
 .player-hud-root .hud-container > .bento-span-12:has(.operative-hub) {
-	animation: pd-enter-rise 0.48s ease-out both;
+	animation: pd-layer-enter-z2 0.48s ease-out both;
 	animation-delay: 80ms;
 }
 
+.player-hud-root .player-analytics-void,
 .player-hud-root .player-analytics-deck {
-	animation: pd-enter-rise 0.48s ease-out both;
+	animation: pd-layer-enter-z2 0.48s ease-out both;
 	animation-delay: 160ms;
 }
 
 /* Sprint 2.15 — consolidated decorative motion gates (reduced-motion + dopamine off) */
 @media (prefers-reduced-motion: reduce) {
 	.player-hud-root .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
+	.player-hud-root .ibm-rank-bar--has-xp .ibm-avatar :global(.hud-avatar-ring--has-xp .hud-avatar-ring__fill),
 	.player-hud-root .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+	.player-hud-root .ibm-root--premium.ibm-streak-at-risk .ibm-holo-bezel__streak--at-risk .ibm-holo-bezel__streak-flame,
 	.player-hud-root :global(.quest-row__status),
 	.player-hud-root .quest-hero--premium::before,
 	.player-hud-root .quest-hero--premium .quest-hero__cta::after,
 	.player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after,
 	.player-hud-root .hud-container > .pd-strap,
 	.player-hud-root .hud-container > .bento-span-12:has(.operative-hub),
+	.player-hud-root .player-analytics-void,
 	.player-hud-root .player-analytics-deck,
 	.player-hud-root .quest-hero--premium {
 		animation: none !important;
@@ -1471,17 +1695,21 @@
 }
 
 .player-hud-root[data-dopamine='off'] .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
+.player-hud-root[data-dopamine='off'] .ibm-rank-bar--has-xp .ibm-avatar :global(.hud-avatar-ring--has-xp .hud-avatar-ring__fill),
 .player-hud-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+.player-hud-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .ibm-holo-bezel__streak--at-risk .ibm-holo-bezel__streak-flame,
 .player-hud-root[data-dopamine='off'] .quest-hero--premium::before,
 .player-hud-root[data-dopamine='off'] .quest-hero--premium .quest-hero__cta::after,
 .player-hud-root[data-dopamine='off'] .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after,
 .player-hud-root[data-dopamine='off'] .hud-container > .pd-strap,
 .player-hud-root[data-dopamine='off'] .hud-container > .bento-span-12:has(.operative-hub),
+.player-hud-root[data-dopamine='off'] .player-analytics-void,
 .player-hud-root[data-dopamine='off'] .player-analytics-deck,
 .player-hud-root[data-dopamine='off'] .quest-hero--premium,
 .pd-chrome-root[data-dopamine='off'] .pd-page-root > *,
 .pd-chrome-root[data-dopamine='off'] .ibm-streak-at-risk .ibm-avatar :global(.hud-avatar-ring__svg),
 .pd-chrome-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .hud-stat-cell--streak,
+.pd-chrome-root[data-dopamine='off'] .ibm-root--premium.ibm-streak-at-risk .ibm-holo-bezel__streak--at-risk .ibm-holo-bezel__streak-flame,
 .pd-chrome-root[data-dopamine='off'] .quest-hero--premium::before,
 .pd-chrome-root[data-dopamine='off'] .quest-hero--premium .quest-hero__cta::after,
 .pd-chrome-root[data-dopamine='off'] .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after {
@@ -1558,4 +1786,906 @@
 .init-modal__cta--secondary:hover {
 	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 25%, var(--pd-line));
 	color: var(--pd-text, #f4f4f5);
+}
+
+/* Sprint 2.22 slice 3 — Quick Ops deck */
+.player-hud-root .oqo-deck,
+.player-dossier-root .oqo-deck {
+	margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+	padding: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.player-hud-root .oqo-deck__head,
+.player-dossier-root .oqo-deck__head {
+	margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+.player-hud-root .oqo-deck__eyebrow,
+.player-dossier-root .oqo-deck__eyebrow {
+	margin: 0 0 0.25rem;
+}
+
+.player-dossier-root .oqo-deck__title {
+	margin: 0;
+	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+	font-size: var(--pd-hud-title-l2);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: var(--pd-text, #f4f4f5);
+}
+
+/* Sprint 2.22 slice 4d — Quick ops: 3 equal columns at all breakpoints */
+.player-hud-root .oqo-deck__grid,
+.player-dossier-root .oqo-deck__grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: clamp(0.35rem, 1vw, 0.75rem);
+}
+
+@media (max-width: 479px) {
+	.player-hud-root .oqo-op,
+	.player-dossier-root .oqo-op {
+		min-height: 44px;
+		padding: clamp(0.45rem, 2vw, 0.55rem) clamp(0.4rem, 1.8vw, 0.55rem);
+		gap: 0.2rem;
+	}
+
+	.player-hud-root .oqo-op__icon,
+	.player-dossier-root .oqo-op__icon {
+		transform: scale(0.92);
+		transform-origin: top left;
+	}
+
+	.player-hud-root .oqo-op__label,
+	.player-dossier-root .oqo-op__label {
+		font-size: 0.52rem;
+		letter-spacing: 0.08em;
+		line-height: 1.2;
+	}
+
+	.player-hud-root .oqo-op__sub,
+	.player-dossier-root .oqo-op__sub {
+		font-size: 0.48rem;
+		line-height: 1.25;
+	}
+}
+
+/* Sprint 2.22 slice 4d-revert — HQ onboarding banner full-width row */
+.player-hud-root .operative-hub__identity-stage {
+	overflow: visible;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-root.ibm-root--embedded .ibm-profile-banner--hub-span {
+	grid-column: 1 / -1;
+	width: 100%;
+	flex-wrap: wrap;
+	white-space: normal;
+	margin-bottom: clamp(4px, 0.8vw, 6px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-profile-banner--hub-span .ibm-profile-banner__action {
+	overflow: visible;
+	text-overflow: unset;
+	white-space: normal;
+}
+
+/* Sprint 2.22 slice 4d-fix — identity full-width body row below banner */
+.player-hud-root .operative-hub__identity-stage .ibm-root.ibm-root--embedded.ibm-root--premium {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto;
+	width: 100%;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: clamp(10px, 2vw, 16px);
+	align-items: center;
+	grid-column: 1 / -1;
+	width: 100%;
+	min-width: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-rings {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(6px, 1.2vw, 10px);
+	width: 100%;
+	min-width: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-identity {
+	width: 100%;
+	min-width: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-metrics {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: clamp(6px, 1.2vw, 10px);
+	width: 100%;
+	margin-top: clamp(4px, 0.8vw, 8px);
+	padding-top: clamp(4px, 0.8vw, 8px);
+	border-top: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 70%, transparent);
+	align-self: stretch;
+}
+
+/* Sprint 2.22 slice 4d-fix-b — HUD eyebrow/title hierarchy (L2/L3 tokens: slice 6f-b) */
+.player-hud-root .pd-label,
+.player-hud-root .oqo-deck__eyebrow,
+.player-hud-root .opp-preview__eyebrow,
+.player-hud-root .vpp-eyebrow,
+.player-hud-root .player-capsules-strip__eyebrow {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: var(--pd-hud-eyebrow-l3);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	line-height: 1.3;
+}
+
+.player-hud-root .oqo-deck__title,
+.player-hud-root .opp-preview__title,
+.player-hud-root .player-capsules-strip__title,
+.player-hud-root .quest-log__title--embedded,
+.player-hud-root .vpp-root--premium .vpp-title {
+	font-size: var(--pd-hud-title-l2);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+
+.player-hud-root .oqo-op,
+.player-dossier-root .oqo-op {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 0.35rem;
+	min-height: 44px;
+	padding: clamp(0.65rem, 1.2vw, 0.85rem) clamp(0.75rem, 1.5vw, 1rem);
+	border: 1px solid var(--pd-accent-data, #14b8a6);
+	background: var(--pd-panel, #05050a);
+	text-decoration: none;
+	color: var(--pd-text, #f4f4f5);
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		box-shadow 0.15s ease,
+		color 0.15s ease;
+	clip-path: polygon(
+		0 6px,
+		6px 0,
+		calc(100% - 6px) 0,
+		100% 6px,
+		100% calc(100% - 6px),
+		calc(100% - 6px) 100%,
+		6px 100%,
+		0 calc(100% - 6px)
+	);
+}
+
+.player-hud-root .oqo-op:hover,
+.player-dossier-root .oqo-op:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, white);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, var(--pd-panel, #05050a));
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
+}
+
+.player-hud-root .oqo-op:focus-visible,
+.player-dossier-root .oqo-op:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+	outline-offset: 2px;
+}
+
+.player-hud-root .oqo-op__icon,
+.player-dossier-root .oqo-op__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+.player-hud-root .oqo-op__label,
+.player-dossier-root .oqo-op__label {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.62rem;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .oqo-op__sub,
+.player-dossier-root .oqo-op__sub {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.58rem;
+	line-height: 1.35;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+/* Sprint 2.22 slice 4 — Pathway preview */
+.player-hud-root .opp-preview,
+.player-dossier-root .opp-preview {
+	margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+	padding: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.player-hud-root .opp-preview__head,
+.player-dossier-root .opp-preview__head {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+.player-hud-root .opp-preview__title-block,
+.player-dossier-root .opp-preview__title-block {
+	min-width: 0;
+}
+
+.player-hud-root .opp-preview__eyebrow,
+.player-dossier-root .opp-preview__eyebrow {
+	margin: 0 0 0.25rem;
+}
+
+.player-hud-root .opp-preview__title,
+.player-dossier-root .opp-preview__title {
+	margin: 0;
+	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+	font-size: var(--pd-hud-title-l2);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .opp-preview__meta,
+.player-dossier-root .opp-preview__meta {
+	margin: 0.2rem 0 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.58rem, 1.1vw, 0.65rem);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	line-height: 1.3;
+}
+
+.player-hud-root .opp-preview__lv,
+.player-dossier-root .opp-preview__lv {
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+/* Sprint 2.22 slice 4c — HQ native pathway scroll (no expand/collapse) */
+.player-hud-root .opp-preview .opp-track,
+.player-dossier-root .opp-preview .opp-track {
+	overflow-x: auto;
+	max-height: none;
+}
+
+.player-hud-root .opp-root--hq-current .opp-node--current-dossier,
+.player-dossier-root .opp-root--hq-current .opp-node--current-dossier {
+	border-color: var(--pd-accent-data, #14b8a6);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent);
+}
+
+.player-hud-root .opp-root--hq-current .opp-active-label,
+.player-dossier-root .opp-root--hq-current .opp-active-label {
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+.player-hud-root .opp-root--compact .opp-track,
+.player-dossier-root .opp-root--compact .opp-track {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: clamp(0.5rem, 1.2vw, 0.75rem);
+	overflow: visible;
+}
+
+.player-hud-root .opp-root--compact .opp-node,
+.player-dossier-root .opp-root--compact .opp-node {
+	min-width: 0;
+	width: 100%;
+	padding: clamp(0.65rem, 1.2vw, 0.85rem);
+}
+
+.player-hud-root .opp-root--compact .opp-node--current-dossier,
+.player-dossier-root .opp-root--compact .opp-node--current-dossier {
+	border-color: var(--pd-accent-data, #14b8a6);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent);
+}
+
+.player-hud-root .opp-root--compact .opp-active-label,
+.player-dossier-root .opp-root--compact .opp-active-label {
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+/* Sprint 2.22 slice 6e — pathway Tier A edge treatment */
+.player-hud-root .opp-preview--void,
+.player-dossier-root .opp-preview--void {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.player-hud-root .opp-track-shell,
+.player-dossier-root .opp-track-shell {
+	position: relative;
+}
+
+/* Gap-only connectors — never through reward wells (6e fix) */
+.player-hud-root .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after,
+.player-dossier-root .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	top: calc(1rem + 0.72rem + 0.5rem + 1.5rem);
+	left: 100%;
+	width: 1rem;
+	height: 2px;
+	margin-top: -1px;
+	border-radius: 999px;
+	pointer-events: none;
+	z-index: 0;
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent);
+}
+
+.player-hud-root .opp-node--unlocked-dossier:not(:last-child)::after,
+.player-dossier-root .opp-node--unlocked-dossier:not(:last-child)::after {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, transparent),
+		var(--pd-accent-data, #14b8a6)
+	);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent);
+}
+
+.player-hud-root .opp-node__reward-well,
+.player-dossier-root .opp-node__reward-well {
+	position: relative;
+	z-index: 1;
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 24%, transparent);
+	border-radius: 0;
+	clip-path: polygon(
+		0 4px,
+		4px 0,
+		calc(100% - 4px) 0,
+		100% 4px,
+		100% calc(100% - 4px),
+		calc(100% - 4px) 100%,
+		4px 100%,
+		0 calc(100% - 4px)
+	);
+}
+
+.player-hud-root .opp-preview .opp-track,
+.player-dossier-root .opp-preview .opp-track {
+	position: relative;
+	z-index: 1;
+}
+
+.player-hud-root .opp-root--compact .opp-node:not(:last-child)::after,
+.player-dossier-root .opp-root--compact .opp-node:not(:last-child)::after {
+	display: none;
+}
+
+.player-hud-root .opp-node--edge,
+.player-dossier-root .opp-node--edge {
+	border-radius: 0;
+	clip-path: polygon(
+		0 6px,
+		6px 0,
+		calc(100% - 6px) 0,
+		100% 6px,
+		100% calc(100% - 6px),
+		calc(100% - 6px) 100%,
+		6px 100%,
+		0 calc(100% - 6px)
+	);
+}
+
+.player-hud-root .opp-node--unlocked-dossier,
+.player-dossier-root .opp-node--unlocked-dossier {
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 42%, transparent);
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent);
+}
+
+.player-hud-root .opp-node--locked-dossier,
+.player-dossier-root .opp-node--locked-dossier {
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 28%, transparent);
+	border-color: color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 10%, transparent);
+}
+
+.player-hud-root .opp-node--current-dossier,
+.player-dossier-root .opp-node--current-dossier {
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 52%, transparent);
+	border-color: var(--pd-accent-data, #14b8a6);
+	box-shadow:
+		0 0 14px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 32%, transparent),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 42%, transparent);
+}
+
+.player-hud-root .opp-node--milestone:not(.opp-node--current-dossier),
+.player-dossier-root .opp-node--milestone:not(.opp-node--current-dossier) {
+	border-color: color-mix(
+		in srgb,
+		var(--pd-accent-action, #fbbf24) 38%,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line, rgba(255, 255, 255, 0.1)))
+	);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent);
+}
+
+.player-hud-root .opp-root--hq-current .opp-node--current-dossier,
+.player-dossier-root .opp-root--hq-current .opp-node--current-dossier {
+	border-color: var(--pd-accent-data, #14b8a6);
+	box-shadow:
+		0 0 18px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 42%, transparent),
+		0 0 32px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, transparent),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+}
+
+.player-hud-root .opp-preview--void .opp-track,
+.player-dossier-root .opp-preview--void .opp-track {
+	scrollbar-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) transparent;
+}
+
+.player-hud-root .opp-preview--void .opp-track::-webkit-scrollbar-track,
+.player-dossier-root .opp-preview--void .opp-track::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Sprint 2.22 slice 6a — HQ identity hologram artifact */
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span {
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: clamp(12px, 2.4vw, 20px);
+}
+
+.player-hud-root .operative-hub__identity-stage .hcs-wrapper {
+	width: clamp(200px, 22vw, 280px);
+	max-width: clamp(200px, 22vw, 280px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(4px, 0.8vw, 8px);
+	width: 100%;
+	min-width: 0;
+	text-align: center;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__portrait {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: clamp(88px, 12vw, 120px);
+	height: clamp(88px, 12vw, 120px);
+	flex-shrink: 0;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__portrait--placeholder {
+	border-radius: 50%;
+	border: 1px dashed color-mix(in srgb, var(--hcs-accent, var(--pd-accent-data, #14b8a6)) 45%, transparent);
+	background: color-mix(in srgb, var(--hcs-accent, var(--pd-accent-data, #14b8a6)) 8%, transparent);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__initials {
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
+	font-size: clamp(1.25rem, 3vw, 1.75rem);
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	color: color-mix(in srgb, var(--hcs-accent, var(--pd-accent-data, #14b8a6)) 70%, #fff);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__loadout :global(.olp-title) {
+	display: none;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__name {
+	margin: 0;
+	width: 100%;
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
+	font-size: clamp(0.95rem, 2vw, 1.15rem);
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-text, #f4f4f5);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face__rank {
+	margin: 0;
+	width: 100%;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.48rem, 1vw, 0.58rem);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (min-width: 1280px) {
+	.player-hud-root .operative-hub__identity-stage {
+		min-height: clamp(150px, 16vw, 190px);
+	}
+}
+
+@media (max-width: 480px) {
+	.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span {
+		grid-template-columns: 1fr;
+		justify-items: center;
+		text-align: center;
+	}
+
+	.player-hud-root .operative-hub__identity-stage .hcs-wrapper {
+		width: min(100%, 280px);
+		max-width: 100%;
+	}
+
+	.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-metrics :global(.hud-stat-cell) {
+		min-height: 44px;
+	}
+}
+
+/* Sprint 2.22 slice 6d — Quick Ops icon badges + identity stat badges + ultrawide density */
+
+.player-hud-root .oqo-deck .oqo-op,
+.player-dossier-root .oqo-deck .oqo-op {
+	position: relative;
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 7%, var(--pd-panel, #05050a)),
+		var(--pd-panel, #05050a) 58%
+	);
+	box-shadow:
+		var(--pd-z3-raised-shadow, 0 4px 14px rgba(0, 0, 0, 0.45)),
+		inset 0 1px 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 16%, transparent),
+		inset 0 -1px 0 color-mix(in srgb, #000 35%, transparent),
+		var(--pd-emissive-gold, 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 20%, transparent));
+	transform: translateZ(0);
+	transition:
+		border-color 0.18s ease,
+		background 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease;
+}
+
+.player-hud-root .oqo-deck .oqo-op:hover,
+.player-dossier-root .oqo-deck .oqo-op:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 58%, white);
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, var(--pd-panel, #05050a)),
+		var(--pd-panel, #05050a) 62%
+	);
+	box-shadow:
+		var(--pd-z3-raised-shadow, 0 6px 18px rgba(0, 0, 0, 0.52)),
+		inset 0 1px 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 26%, transparent),
+		0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 34%, transparent),
+		0 0 26px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 16%, transparent);
+	transform: translateY(-1px);
+}
+
+.player-hud-root .oqo-deck .oqo-op:focus-visible,
+.player-dossier-root .oqo-deck .oqo-op:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	outline-offset: 2px;
+}
+
+.player-hud-root .oqo-deck .oqo-op__icon,
+.player-dossier-root .oqo-deck .oqo-op__icon {
+	color: var(--pd-accent-action, #fbbf24);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent),
+		0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent);
+	border-radius: 6px;
+	padding: clamp(6px, 1vw, 8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .oqo-deck .oqo-op:hover,
+	.player-dossier-root .oqo-deck .oqo-op:hover {
+		transform: none;
+	}
+}
+
+.player-hud-root .hud-stat-cell--streak,
+.player-dossier-root .hud-stat-cell--streak,
+.player-hud-root .hud-stat-cell--xp,
+.player-dossier-root .hud-stat-cell--xp {
+	flex-direction: row;
+	align-items: center;
+	gap: clamp(6px, 1vw, 8px);
+}
+
+.player-hud-root .hud-stat-cell__text,
+.player-dossier-root .hud-stat-cell__text {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+
+.player-hud-root .hud-stat-cell__icon-badge,
+.player-dossier-root .hud-stat-cell__icon-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: clamp(24px, 3vw, 28px);
+	height: clamp(24px, 3vw, 28px);
+	padding: 6px;
+	border-radius: 6px;
+	box-sizing: border-box;
+}
+
+.player-hud-root .hud-stat-cell--streak .hud-stat-cell__icon-badge,
+.player-dossier-root .hud-stat-cell--streak .hud-stat-cell__icon-badge {
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 82%, #b45309);
+	color: #fff;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, transparent);
+}
+
+.player-hud-root .hud-stat-cell--xp .hud-stat-cell__icon-badge,
+.player-dossier-root .hud-stat-cell--xp .hud-stat-cell__icon-badge {
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 78%, #0d9488);
+	color: #fff;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent);
+}
+
+@media (min-width: 1920px) {
+	.player-hud-root .operative-hub__identity-stage {
+		min-height: clamp(150px, 10vw, 200px);
+	}
+
+	.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span {
+		gap: clamp(16px, 2.8vw, 28px);
+	}
+
+	.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-rings {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: clamp(12px, 2vw, 20px);
+	}
+
+	.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-metrics {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: flex-end;
+		gap: clamp(8px, 1.2vw, 12px);
+		width: auto;
+		max-width: none;
+		margin-top: 0;
+		padding-top: 0;
+		border-top: none;
+		align-self: center;
+	}
+}
+
+/* Sprint 2.22 slice 6f-c — HQ identity telemetry bezel (interactive streak + XP on holo card) */
+
+.player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-metrics {
+	display: none;
+}
+
+.player-hud-root .operative-hub__identity-stage .hcs-card--has-telemetry .ibm-holo-face__name,
+.player-hud-root .operative-hub__identity-stage .hcs-card--has-telemetry .ibm-holo-face__rank {
+	max-width: 100%;
+	padding-inline: clamp(4px, 0.8vw, 6px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel {
+	width: 100%;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__rail {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: clamp(10px, 1.6vw, 14px);
+	min-height: 44px;
+	padding: clamp(7px, 1.2vw, 9px) clamp(10px, 1.6vw, 12px);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak,
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp {
+	display: inline-flex;
+	align-items: center;
+	gap: clamp(4px, 0.8vw, 6px);
+	min-height: 44px;
+	padding: 0 clamp(2px, 0.4vw, 4px);
+	border: none;
+	background: transparent;
+	text-decoration: none;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak-flame {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	color: color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.5)) 75%, transparent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.5)) 25%, transparent));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak--active {
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak--active .ibm-holo-bezel__streak-flame {
+	color: var(--pd-accent-action, #fbbf24);
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 50%, transparent));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak--at-risk .ibm-holo-bezel__streak-flame {
+	animation: ibm-streak-cell-pulse 2.8s ease-in-out infinite;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak-value {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.58rem, 1.1vw, 0.68rem);
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	letter-spacing: 0.04em;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak-tag {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 7px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	opacity: 0.62;
+	line-height: 1;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak:hover,
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak:focus-visible {
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 78%, #fff);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__streak:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp {
+	justify-content: flex-end;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp--filled {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp-value {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.58rem, 1.1vw, 0.68rem);
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	letter-spacing: 0.02em;
+	color: inherit;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp--filled .ibm-holo-bezel__xp-value {
+	color: var(--pd-accent-data, #14b8a6);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 48%, transparent);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp-tag {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 7px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	opacity: 0.62;
+	line-height: 1;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp:hover,
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp:focus-visible {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp--filled:hover .ibm-holo-bezel__xp-value,
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp--filled:focus-visible .ibm-holo-bezel__xp-value {
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 82%, #fff);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 58%, transparent);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__xp:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+@media (max-width: 480px) {
+	.player-hud-root .operative-hub__identity-stage .ibm-holo-bezel__rail {
+		min-height: 44px;
+		padding-inline: clamp(8px, 2.4vw, 10px);
+	}
+}
+
+/* Sprint 2.22 slice 6f-b — HQ header ladder + VPP inspector whisper */
+
+.player-hud-root .pd-strap__title {
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
+	font-size: var(--pd-hud-title-l1);
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	line-height: 1.15;
+}
+
+.player-hud-root .player-analytics-void .vpp-body {
+	align-items: start;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .player-analytics-void .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
+		align-items: start;
+	}
+
+	.player-hud-root .player-analytics-void .vpp-body:has(.vpp-inspector--selected) {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		align-items: center;
+	}
+}
+
+.player-hud-root .player-analytics-void .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root .player-analytics-void .vpp-inspector--premium.vpp-inspector--idle {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	padding: clamp(4px, 0.8vw, 8px);
+	max-width: min(100%, 200px);
+}
+
+.player-hud-root .player-analytics-void .vpp-inspector--premium.vpp-inspector--selected {
+	max-width: none;
+}
+
+.player-hud-root .player-analytics-void--compact .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root .player-analytics-void--compact .vpp-inspector--premium.vpp-inspector--idle {
+	max-width: min(100%, 140px);
+	padding: clamp(2px, 0.5vw, 4px);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .player-analytics-void--compact .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
+	}
 }
