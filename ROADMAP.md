@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-23  
-**Current sprint:** **Sprint 2.22 Phase 6 · slice 6g Stats investigation workspace (in progress)**
+**Current sprint:** **Sprint 2.22 Phase 6 · slice 6h Train / Tracker terminal chrome (in progress)**
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -514,12 +514,12 @@ npm run build
 | **6f** | Armory Studio full dossier in `HologramCardShell` | **Done** |
 | **6f-b** | HQ header ladder + VPP empty inspector whisper | **Done** |
 | **6f-c** | HQ identity telemetry bezel — interactive streak/XP on hologram card (replaces stat chips) | **Done** |
-| **6g** | Stats investigation workspace parity | **In progress** |
-| **6h** | Train / Tracker terminal chrome pass | Planned |
+| **6g** | Stats investigation workspace parity | **Done** |
+| **6h** | Train / Tracker terminal chrome pass | **In progress** |
 | **6j** | Player OS Z2 depth + edge-lit interactivity pass | **Planned** |
 | **6i** | Reference matrix sign-off + void contract re-measure | Planned |
 
-**Current:** **6g In progress** — Stats investigation workspace parity. **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
+**Current:** **6h In progress** — Train / Tracker terminal chrome pass. **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
 
 ---
 
@@ -643,7 +643,7 @@ npx playwright test e2e/player-hq-slice-6f-b.visual.spec.ts
 
 ---
 
-## Sprint 2.22 slice 6g scope — Stats investigation workspace parity — **In progress**
+## Sprint 2.22 slice 6g scope — Stats investigation workspace parity — **Done**
 
 **Goal:** Lift `/stats` (player role) to match HQ analytics void + Foundation investigation workspace — VPP radar/inspector floats in void (no matte box-in-box), workout chart as full-width timeline band below, shared VPP material tokens with HQ.
 
@@ -681,6 +681,48 @@ npx playwright test e2e/player-stats-slice-6g.visual.spec.ts
 **Note:** **6j-c Stats** panel depth deferred/merged into **6g** where overlap — do not duplicate in **6j**.
 
 **Run after:** 6f-b Done, 6f-c Done. **Run before:** 6h.
+
+---
+
+## Sprint 2.22 slice 6h scope — Train / Tracker terminal chrome — **In progress**
+
+**Goal:** Bring `/player/workout` and `/player/tracker` to Foundation **diegetic terminal** bar — execution column gets ProvingGrounds-style corner brackets + scanline + state copy; threat column reads as tail-log playbook; Tracker gets Tier A capsule + stat-row parity. **Material/chrome only** — no logic, no Chart.js, no 6j global depth batch.
+
+**Root cause:** Train exec terminal is matte `pd-page-panel` slab with no corner brackets, scanline, or terminal state copy; local `.pw-title` ~1.125rem fights strap L1 hierarchy. Tracker stat row + ghost state are flat matte slabs; capsule lacks `dossierMode`.
+
+**Pass criteria (1280px + 390px):**
+
+| Check | Pass |
+|-------|------|
+| Train exec | Corner brackets + scanline + state copy; **no grey matte box** around terminal |
+| Train threat | Tail-log column with left teal rail; no inner scroll trap |
+| Tracker capsule | `dossierMode` premium capsule arena (Tier A frame) |
+| Tracker ghost | Compact whisper empty state (not large matte panel) |
+| Stats regression | 6g void unchanged |
+
+**Files (≤ 8):**
+
+- `ROADMAP.md`
+- `src/lib/styles/player-terminal.css` *(new)*
+- `src/lib/styles/player-dashboard-hud.css`
+- `src/routes/(app)/player/workout/+page.svelte`
+- `src/routes/(app)/player/tracker/+page.svelte`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint237.test.ts` *(new)*
+- `e2e/player-train-tracker-slice-6h.visual.spec.ts` *(new)*
+- `docs/visual-acceptance/sprint-2.22-slice-6h/README.md` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint237.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint225.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint235.test.ts src/routes/(app)/player/workout/__tests__/workout.layout.test.ts
+npm run check
+npm run build
+npx playwright test e2e/player-train-tracker-slice-6h.visual.spec.ts
+```
+
+**Out of scope:** HQ dashboard, Stats (6g), Armory, Settings, Skill Tree, Epic 3.5, Coach OS routes, `ProvingGrounds.svelte` drill catalogue/logic, global 6j edge-lit panel pass.
+
+**Run after:** 6g Done. **Run before:** 6j.
 
 ---
 

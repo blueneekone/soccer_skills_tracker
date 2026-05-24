@@ -39,7 +39,7 @@
 </svelte:head>
 
 <div
-	class="pd-page-root player-dossier-root pt-root tw-min-w-0 tw-overflow-x-hidden"
+	class="pd-page-root player-dossier-root player-hud-root pt-root tw-min-w-0 tw-overflow-x-hidden"
 >
 	<div class="pd-content-wrap">
 	<PlayerOsPageStrap eyebrow="Progress / Training tracker" title="Training pulse">
@@ -48,7 +48,7 @@
 		{/snippet}
 	</PlayerOsPageStrap>
 
-	<section class="pd-stat-row pd-page-panel" aria-label="Training pulse">
+	<section class="pt-stat-void" aria-label="Training pulse">
 		<HudStatCell label="Current level" value={`Lv. ${levelHud.level}`} />
 		<HudStatCell label="XP to next level" value={xpToNextLabel} variant="xp" />
 		<HudStatCell label="Day streak" value={`${streakDays}d`} variant="streak" />
@@ -58,6 +58,7 @@
 		{#if trajectoryEngine.activeCapsule}
 			<section class="pt-lb tw-min-w-0" aria-label="Time-Lapse Memory Capsule">
 				<MemoryCapsuleArena
+					dossierMode={true}
 					capsule={trajectoryEngine.activeCapsule}
 					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
@@ -65,13 +66,12 @@
 			</section>
 		{:else if !trajectoryEngine.loading}
 			<section
-				class="pt-lb pt-ghost pd-page-panel pd-empty-state tw-min-w-0"
+				class="pt-lb pt-ghost pt-ghost--whisper tw-min-w-0"
 				aria-label="No memory capsule available"
 			>
-				<div class="pd-empty-state__icon" aria-hidden="true"></div>
-				<div class="pd-empty-state__copy">
-					<p class="pd-empty-state__title">Ghost profile</p>
-					<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
+				<div class="pt-ghost__copy">
+					<p class="pt-ghost__title">Ghost profile</p>
+					<p class="pt-ghost__lede">Awaiting first memory capsule</p>
 				</div>
 			</section>
 		{/if}

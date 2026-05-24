@@ -32,6 +32,7 @@
   } from '$lib/player/dashboard/activeBounties.js';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-missions.css';
+  import '$lib/styles/player-terminal.css';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
@@ -421,7 +422,7 @@
   }
 </script>
 
-<div class="pd-page-root player-dossier-root pw-page tw-min-w-0 tw-overflow-x-hidden" data-region="player-workout-log">
+<div class="pd-page-root player-dossier-root player-hud-root pw-page tw-min-w-0 tw-overflow-x-hidden" data-region="player-workout-log">
   <div class="pd-content-wrap">
   <PlayerOsPageStrap eyebrow="Train / Log session" title="Workout logger">
     {#snippet status()}
@@ -445,7 +446,7 @@
 
   <div class="pw-grid bento-grid bento-grid--12col bento-grid--liquid">
     <!-- Active threats / daily quests -->
-    <aside class="pw-panel pd-page-panel pw-panel--premium pw-panel--threat bento-span-4 tw-min-w-0" aria-labelledby="pw-threats-heading">
+    <aside class="pw-panel pw-panel--premium pw-panel--threat bento-span-4 tw-min-w-0" aria-labelledby="pw-threats-heading">
       <div class="pw-panel__head">
         <span class="pw-eyebrow">Active threats / daily quests</span>
         <h2 id="pw-threats-heading" class="pw-title">Ingest queue</h2>
@@ -502,7 +503,7 @@
     </aside>
 
     <!-- Execution terminal -->
-    <section class="pw-panel pd-page-panel pw-panel--premium pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
+    <section class="pw-panel pw-panel--premium pw-panel--term bento-span-8 tw-min-w-0" aria-labelledby="pw-exec-heading">
       <TrainMissionBrief quest={briefingQuest} />
       <div class="pw-panel__head pw-panel__head--row">
         <div>
@@ -521,15 +522,31 @@
           </div>
         </div>
       </div>
-      {#if activeMissionId}
-        <p class="pw-mono pw-armed" role="status">
-          ARMED: MISSION
+      <p
+        class="pw-terminal-state pw-mono"
+        class:pw-terminal-state--armed={!!activeMissionId && !logSubmitting}
+        class:pw-terminal-state--transmitting={logSubmitting}
+        role="status"
+      >
+        {#if logSubmitting}
+          ◉ TRANSMITTING…
+        {:else if activeMissionId}
+          ◉ ARMED: MISSION
           {String(incomingMissions.find((r) => r.id === activeMissionId)?.batchId || '—').slice(0, 8)}<span
             class="pw-dim"
-            >· EXECUTION SYNCS TO FILE ON TRANSMIT</span
+            > · EXECUTION SYNCS TO FILE ON TRANSMIT</span
           >
-        </p>
-      {/if}
+        {:else}
+          ◉ READY TO TRANSMIT
+        {/if}
+      </p>
+
+      <div class="pg-terminal-chrome">
+        <div class="pg-scanline" aria-hidden="true"></div>
+        <span class="pg-bracket pg-bracket--tl" aria-hidden="true"></span>
+        <span class="pg-bracket pg-bracket--tr" aria-hidden="true"></span>
+        <span class="pg-bracket pg-bracket--bl" aria-hidden="true"></span>
+        <span class="pg-bracket pg-bracket--br" aria-hidden="true"></span>
 
       <div class="pw-section pd-panel-section">
         <span class="pw-eyebrow pd-panel-eyebrow">1 · Focus area</span>
@@ -632,13 +649,15 @@
           <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
         {/if}
       </div>
+      </div>
     </section>
   </div>
   </div>
 </div>
 
 <style>
-  /* Sprint 2.11 — Player Dossier workout log (replaces SIEM #0B0F19 canvas) */
+  /* Sprint 2.11 — Player Dossier workout log (replaces SIEM #0B0F19 canvas)
+     Shell inset: pd-content-wrap supplies var(--bento-pad-liquid) */
   .pw-page {
     min-height: 0;
     height: auto;
@@ -654,7 +673,6 @@
     }
   }
 
-  .pw-eyebrow,
   .pd-label {
     display: block;
     font-family: var(--pd-font-mono);
@@ -663,14 +681,6 @@
     letter-spacing: 0.22em;
     font-weight: 800;
     color: var(--pd-text-muted);
-  }
-
-  .pw-title {
-    margin: 0.25rem 0 0;
-    font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .pw-mono {
@@ -801,17 +811,6 @@
     letter-spacing: 0.2em;
     color: rgba(255, 255, 255, 0.32);
     margin: 0 0 0.65rem;
-  }
-
-  .pw-armed {
-    font-family: var(--pd-font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    color: var(--pd-accent-data);
-    border: 1px solid color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line));
-    background: var(--pd-bg);
-    padding: 0.45rem 0.6rem;
-    margin: 0 0 0.9rem;
   }
 
   .pw-ghostline {

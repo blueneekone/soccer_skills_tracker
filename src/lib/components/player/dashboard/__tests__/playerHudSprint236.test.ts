@@ -110,8 +110,7 @@ describe('Sprint 2.22 slice 6g — visual acceptance + ROADMAP', () => {
 		expect(e2eSpecSrc).toMatch(/stats-workout-band|Workout telemetry/);
 	});
 
-	it('ROADMAP marks 6g In progress', () => {
-		expect(roadmapSrc).toMatch(/\|\s*\*\*6g\*\*\s*\|[^|]*\|\s*\*\*In progress\*\*\s*\|/);
-		expect(roadmapSrc).toMatch(/slice 6g Stats investigation workspace \(in progress\)/);
+	it('ROADMAP marks 6g Done', () => {
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6g\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 	});
 });

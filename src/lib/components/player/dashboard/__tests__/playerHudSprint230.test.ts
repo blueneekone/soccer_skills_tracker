@@ -82,9 +82,8 @@ describe('Sprint 2.22 slice 6d — identity stat badges + ultrawide density', ()
 });
 
 describe('Sprint 2.22 slice 6d — ROADMAP sprint pointer', () => {
-	it('marks 6d In progress and 6c Done', () => {
-		expect(roadmapSrc).toMatch(/slice 6d Train hero \+ HQ chrome \(in progress\)/i);
-		expect(roadmapSrc).toMatch(/\|\s*\*\*6d\*\*\s*\|[^|]*\|\s*\*\*In progress\*\*\s*\|/);
+	it('marks 6d Done and 6c Done', () => {
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6d\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6c\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 	});
 });
