@@ -8,6 +8,10 @@
 
 This document is the **single source of truth** for what “ultra-premium” means across every future Player OS epic. The bar fuses **enterprise SIEM/SOAR** observability (severity lanes, investigation workspaces, configuration decks), **Tron Legacy / Tron: Ares** cinematic sci-fi (void, emissive geometry, holographic data in space), and **AAA game command HUDs** (one gold focal, hero identity, diegetic terminals). Every sprint that changes Player OS pixels must check against this doc first; no parallel material vocabulary may ship without amending this file. **Supersedes** [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) **sections 9–11** (Energy motion, Hero identity scale, Anti-patterns) — those sections remain in place for history only.
 
+### 0.1 Experience criteria vs material vocabulary
+
+**Platform-wide experience pass/fail criteria** (psychology, interaction, copy, performance, trust) live in [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md). That rubric is the experience bar **above** this file. **This file remains material vocabulary only** — Z-depth, void %, Tier A primitives, diegetic kit, and Player-specific `--pd-*` tokens. Player sign-off still requires both: rubric §5 universal + Player row, plus this doc and [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md).
+
 ---
 
 ## 1. Tier A material primitive table

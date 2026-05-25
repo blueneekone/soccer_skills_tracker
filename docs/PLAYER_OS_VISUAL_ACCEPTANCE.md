@@ -2,7 +2,9 @@
 
 > **Sign-off blocks Epic 3.4 / 4.1 launch** even though the delivery gate is technically open after Sprint 2.19 Done.
 
-**Living doc for Epic 1 premium track 2.12.1–2.20** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Canonical material:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) · **Spatial history:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
+**Living doc for Epic 1 premium track 2.12.1–2.20** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Platform criteria:** [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) · **Canonical material:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) · **Spatial history:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
+
+- **Sign-off gate:** Must pass [`PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) §5 universal checks **and** the Player row, in addition to the checklist below.
 
 Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Sprint 2.19 shipped diegetic kit + energy motion; **Epic 3.4 / 4.1** require full sign-off below before shipping features.
 

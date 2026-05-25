@@ -58,6 +58,16 @@ Route: `/coach` and sub-routes
 - Liquid glass acceptable on **coach** surfaces; **no** chamfered Player OS military corners.
 - 12-col bento on primary coach dashboard where migrated.
 
+## Design criteria
+
+Platform bar: [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §2 — **Coach row**.
+
+- Premium = sideline clarity at speed — density and legibility, not flash.
+- 3-second judgment: roster/readiness scannable; first action obvious on squad hub.
+- **No** gamification chrome — XP/streak/loot UI stays on Player routes only.
+- Mono tables and flat charts; instant feedback on assignments and match-day actions.
+- See rubric §5 before shipping Coach UX changes.
+
 ---
 
 ## Boundary vs Team Manager

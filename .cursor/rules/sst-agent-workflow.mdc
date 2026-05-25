@@ -8,7 +8,8 @@ alwaysApply: true
 ## Before coding
 
 - Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
-- Check **`docs/vision/PLAYER_OS_FOUNDATION.md`** for material primitive canon before any premium-surface change.
+- For any **UX / pixel / copy** work: read [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](../../docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md) first, then the persona vision doc from [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md).
+- Check **`docs/vision/PLAYER_OS_FOUNDATION.md`** for material primitive canon before any **Player** premium-surface change.
 - Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
 
 ## Scope discipline

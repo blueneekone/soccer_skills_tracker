@@ -59,6 +59,16 @@ Route: `/parent/dashboard` (12-col bento where migrated)
 - Clear compliance copy for COPPA/VPC steps.
 - Bento spacing tokens aligned with platform grid; no arcade chrome.
 
+## Design criteria
+
+Platform bar: [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §2 — **Parent row**.
+
+- User feels **valuable** as a co-op partner — calm, personal, trustworthy (not impressed by decoration).
+- 3-second first impression: clear hierarchy, generous spacing, obvious first action on dashboard.
+- No Player operative chrome, streak rings, or gamification vocabulary.
+- Instant feedback on co-op logs, VPC steps, and bounty approvals; plain-language errors.
+- See rubric §5 before shipping Parent UX changes.
+
 ---
 
 ## Out of scope

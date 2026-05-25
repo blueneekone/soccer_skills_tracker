@@ -71,6 +71,16 @@ Legacy `/registrar` redirects to `/director?tab=registrars` for eligible roles.
 - No Player OS gamification.
 - Clear read-only / billing banners when entitlements block downstream personas.
 
+## Design criteria
+
+Platform bar: [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §2 — **Director row**.
+
+- Premium = authority and clarity at org scale — consistency beats decoration.
+- 3-second judgment: tab IA obvious; compliance status legible on first paint.
+- Dense tables and map modules; restrained palette; no Player or Coach gamification leakage.
+- Transparent holds, billing gates, and registrar flows — trust via plain-language detail.
+- See rubric §5 before shipping Director UX changes.
+
 ---
 
 ## Out of scope

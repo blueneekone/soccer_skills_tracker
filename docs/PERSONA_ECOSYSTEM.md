@@ -6,6 +6,7 @@
 
 | Doc | Purpose |
 |-----|---------|
+| [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) | **Platform pass/fail criteria** — universal premium experience bar (all personas) |
 | [`ROADMAP.md`](../ROADMAP.md) | **When** to build — sprint status, proof tests, file lists |
 | [`docs/vision/`](./vision/) | **Why / how it should feel** — persona UX north stars |
 | [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) | **System design** — cells, Trinity pattern, data model |
@@ -38,18 +39,21 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 - **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout equip layer → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)).
 - **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. Premium cinematic track **2.12.1–2.19 Done** — Epic 3.4 / 4.1 **unblocked after 2.19 Done** (sign-off still required). Player OS target = operative command deck, not flat dossier admin.
 - **Vision:** [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Player row
 
 ### Parent
 
 - **Scope:** Verifiable Parental Consent (VPC), household provisioning, co-op workout logging, Car Ride debrief, bounty terminal, billing visibility.
 - **UX:** Partner/coach-in-the-car — supportive, not gamified.
 - **Vision:** [`docs/vision/PARENT_OS.md`](./vision/PARENT_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Parent row
 
 ### Coach
 
 - **Scope:** Squad telemetry, drill assignment, tactical board, Forge, match-day, scouting evaluations — **development and tactics**.
 - **UX:** High-density flat analytics (`SquadTelemetryView`, mono tables).
 - **Vision:** [`docs/vision/COACH_OS.md`](./vision/COACH_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Coach row
 
 ### Team Manager (planned)
 
@@ -57,6 +61,7 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 - **UX:** Ops dashboard; audit trail with `actorRole: team_manager`.
 - **Clearance:** Background check required (minor PII for roster/scheduling).
 - **Vision:** [`docs/vision/TEAM_MANAGER_OS.md`](./vision/TEAM_MANAGER_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Team Manager row
 
 ### Registrar → Director
 
@@ -69,16 +74,19 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 
 - **Scope:** Multi-team club ops, field ops, licenses, household compliance, deployment calendar (in progress).
 - **Build status:** [`docs/EPIC5_STATUS.md`](./EPIC5_STATUS.md) — **Epic 5 here = Enterprise Logistics**, not lettered Product Epic E in ROADMAP.
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Director row
 
 ### Admin
 
 - **Scope:** Organizations, users, impersonation, system settings, sports configs.
 - **Vision:** [`docs/vision/ADMIN_OS.md`](./vision/ADMIN_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Admin row
 
 ### Recruiter / Tutor (future)
 
 - **Scope:** External scouting and supplemental instruction; clearance-gated per [`docs/CLEARANCE.md`](./CLEARANCE.md).
 - **Vision:** [`docs/vision/RECRUITER_OS.md`](./vision/RECRUITER_OS.md), [`docs/vision/TUTOR_OS.md`](./vision/TUTOR_OS.md)
+- **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Recruiter / Tutor row
 
 ---
 
