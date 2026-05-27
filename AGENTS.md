@@ -34,10 +34,6 @@ Runs ESLint on Cloud Functions code only. There is no lint for the frontend (van
 
 There are no automated tests in this repository.
 
-### Known issues
-
-- `app.js` imports `initSpatialScheduler` from `modules/coach.js`, but that function is not exported from `coach.js`. This causes a JavaScript module error preventing frontend JS from loading in the browser. The static HTML/CSS renders correctly regardless.
-
 ### Node.js version
 
 The project requires Node.js 24 (specified in `functions/package.json` engines). The PATH must prioritize the nvm-installed Node.js 24 binary over the system default:
