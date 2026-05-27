@@ -54,36 +54,37 @@ describe('Sprint 2.22 slice 6g — Stats void + workout band CSS', () => {
 		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6g — Stats investigation workspace/);
 	});
 
-	it('.player-hud-root .stats-analytics-void uses transparent background', () => {
+	it('.player-hud-root .stats-analytics-void.pd-os-deck--recessed uses recessed void island', () => {
 		const block =
-			hudCssSrc.match(/\.player-hud-root \.stats-analytics-void\s*\{[\s\S]*?\}/)?.[0] ?? '';
-		expect(block).toMatch(/background:\s*transparent/);
-		expect(block).toMatch(/border:\s*none/);
+			hudCssSrc.match(/\.player-hud-root \.stats-analytics-void\.pd-os-deck--recessed\s*\{[\s\S]*?\}/)?.[0] ??
+			'';
+		expect(block).toMatch(/overflow:\s*hidden/);
+		expect(statsSrc).toMatch(/stats-analytics-void[\s\S]*?pd-os-deck--recessed/);
 	});
 
-	it('workout chart container uses --pd-z1-well-bg', () => {
+	it('workout chart well uses pd-os-deck__well with Z1 inset (Wave C hero band)', () => {
 		const block =
 			hudCssSrc.match(
-				/\.player-hud-root \.stats-workout-band \.dossier-workout__chart\s*\{[\s\S]*?\}/,
+				/\.player-hud-root \.stats-workout-band \.pd-os-deck__well\.dossier-workout__chart\s*\{[\s\S]*?\}/,
 			)?.[0] ?? '';
-		expect(block).toMatch(/background:\s*var\(--pd-z1-well-bg\)/);
 		expect(block).toMatch(/min-height:\s*300px/);
-		expect(block).toMatch(/var\(--pd-z1-inset-shadow\)/);
+		expect(statsSrc).toMatch(/class:pd-os-deck__well=\{isPlayerRole\}/);
 	});
 
-	it('stats analytics void mirrors 6f-b inspector whisper rules', () => {
+	it('stats analytics void mirrors 6f-b inspector whisper rules (Wave C Z1 wells)', () => {
 		const block6g = hudCssSrc.match(/Sprint 2\.22 slice 6g[\s\S]*$/)?.[0] ?? '';
 		expect(block6g).toMatch(/\.stats-analytics-void \.vpp-body:has\(\.vpp-inspector--idle\)/);
 		expect(block6g).toMatch(/minmax\(120px,\s*200px\)/);
 		expect(block6g).toMatch(
-			/\.stats-analytics-void \.vpp-inspector--premium:not\(\.vpp-inspector--selected\)[\s\S]*?background:\s*transparent/,
+			/\.stats-analytics-void \.vpp-inspector--premium[\s\S]*?--pd-z1-well-bg/,
 		);
 	});
 });
 
 describe('Sprint 2.22 slice 6g — workout band markup', () => {
-	it('player workout section uses stats-workout-band without pd-page-panel when player role', () => {
+	it('player workout section uses stats-workout-band hero deck without pd-page-panel when player role', () => {
 		expect(statsSrc).toMatch(/class:stats-workout-band=\{isPlayerRole\}/);
+		expect(statsSrc).toMatch(/class:pd-os-deck--hero=\{isPlayerRole\}/);
 		expect(statsSrc).toMatch(/class:pd-page-panel=\{!isPlayerRole\}/);
 		expect(statsSrc).toMatch(/stats-workout-band__title/);
 	});

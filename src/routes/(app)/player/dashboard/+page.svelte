@@ -327,8 +327,7 @@
 				/>
 			</div>
 		</header>
-		<div class="bento-span-12 tw-min-w-0">
-			<OperativeHub>
+		<OperativeHub>
 				{#snippet identity()}
 					<IdentityBentoModule
 						embedded={true}
@@ -371,8 +370,7 @@
 						onHeroQuestId={(id) => (heroQuestId = id)}
 					/>
 				{/snippet}
-			</OperativeHub>
-		</div>
+		</OperativeHub>
 
 		<OperativeQuickOps />
 
@@ -384,19 +382,24 @@
 		aria-label="Player analytics deck"
 		data-region="player-analytics-void"
 	>
+		<header class="pd-hq-section-head player-analytics-void__head">
+			<h2 class="pd-hq-section-head__title player-analytics-void__title">Vanguard telemetry</h2>
+			<p class="pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow">Performance</p>
+		</header>
 		<VanguardProtocolPanel
 			prismValues={attrRadarValues}
 			bind:selectedAxis={selectedVanguardAxis}
 			compact={!telemetryReady}
+			hideHeadTitle={true}
 		/>
 		<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
 			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
-				<div class="player-capsules-strip__head">
-					<p class="player-capsules-strip__eyebrow lobby-eyebrow tw-font-mono">Self comparison</p>
-					<h2 id="lobby-capsules-h" class="player-capsules-strip__title tw-font-mono">
-						Time-Lapse Memory Capsules
+				<header class="pd-hq-section-head player-capsules-strip__head">
+					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+						Time-lapse memory capsules
 					</h2>
-				</div>
+					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+				</header>
 				<MemoryCapsuleArena
 					dossierMode={true}
 					capsule={trajectoryEngine.activeCapsule}
@@ -404,10 +407,12 @@
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
 				/>
 			{:else}
-				<div class="player-capsules-strip__head">
-					<p class="player-capsules-strip__eyebrow pd-label">Self comparison</p>
-					<h2 id="lobby-capsules-h" class="player-capsules-strip__title">Memory capsules</h2>
-				</div>
+				<header class="pd-hq-section-head player-capsules-strip__head">
+					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+						Memory capsules
+					</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+				</header>
 				<div class="lobby-capsule-ghost-wrap">
 					<div
 						class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"

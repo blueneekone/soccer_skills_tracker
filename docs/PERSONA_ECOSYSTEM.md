@@ -6,6 +6,9 @@
 
 | Doc | Purpose |
 |-----|---------|
+| [`docs/vision/PLATFORM_BUILD_MANDATES.md`](./vision/PLATFORM_BUILD_MANDATES.md) | **Build contract** — accepted vs rejected UX mandates (supersedes enterprise PDF visuals for Player OS) |
+| [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) | **Player instrument types** — cohesion (shared frame) vs differentiation (inner primitive) |
+| [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) | **Player UX sprint procedure** — mandatory fields + build prompt |
 | [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) | **Platform pass/fail criteria** — universal premium experience bar (all personas) |
 | [`ROADMAP.md`](../ROADMAP.md) | **When** to build — sprint status, proof tests, file lists |
 | [`docs/vision/`](./vision/) | **Why / how it should feel** — persona UX north stars |
@@ -37,21 +40,21 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 ### Player
 
 - **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout equip layer → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)).
-- **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. Premium cinematic track **2.12.1–2.19 Done** — Epic 3.4 / 4.1 **unblocked after 2.19 Done** (sign-off still required). Player OS target = operative command deck, not flat dossier admin.
+- **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. HQ bands are classified **instruments** (Identity, Directive, Navigation, Progression, Telemetry, Execute) with one shared `pd-os-deck` frame — see [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md). Premium cinematic track **2.12.1–2.19 Done** — Epic 3.4 / 4.1 **unblocked after 2.19 Done** (sign-off still required). Player OS target = operative command deck, not flat dossier admin. **Enterprise PDF visuals ≠ Player void canon** — see [`PLATFORM_BUILD_MANDATES.md`](./vision/PLATFORM_BUILD_MANDATES.md).
 - **Vision:** [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md)
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Player row
 
 ### Parent
 
 - **Scope:** Verifiable Parental Consent (VPC), household provisioning, co-op workout logging, Car Ride debrief, bounty terminal, billing visibility.
-- **UX:** Partner/coach-in-the-car — supportive, not gamified.
+- **UX:** Partner/coach-in-the-car — supportive, not gamified. Uses flat **Directive + Telemetry** instrument subset only (no Player `pd-os-deck` frame or gamification chrome).
 - **Vision:** [`docs/vision/PARENT_OS.md`](./vision/PARENT_OS.md)
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Parent row
 
 ### Coach
 
 - **Scope:** Squad telemetry, drill assignment, tactical board, Forge, match-day, scouting evaluations — **development and tactics**.
-- **UX:** High-density flat analytics (`SquadTelemetryView`, mono tables).
+- **UX:** High-density flat analytics (`SquadTelemetryView`, mono tables). **Telemetry + Execute** instrument subset — flat sideline skin; no Player navigation tiles or void deck frame.
 - **Vision:** [`docs/vision/COACH_OS.md`](./vision/COACH_OS.md)
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Coach row
 

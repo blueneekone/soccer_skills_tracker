@@ -41,7 +41,7 @@ async function clipScreenshot(
 	});
 }
 
-test.describe('Sprint 2.22 slice 6d — Train mission briefing hero visual reference', () => {
+test.describe('Sprint 2.22 slice 6d — Train execution terminal visual reference', () => {
 	test.use(storageState ? { storageState } : {});
 
 	test.beforeEach(async ({ page }, testInfo) => {
@@ -63,20 +63,21 @@ test.describe('Sprint 2.22 slice 6d — Train mission briefing hero visual refer
 		await page.waitForURL(/\/player\/dashboard/, { timeout: 60_000 });
 	});
 
-	test('captures Train mission briefing above execution terminal', async ({ page }) => {
+	test('captures execution terminal with inset well (no mission briefing card)', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await ensurePlayerWorkout(page);
 
-		const briefing = page.locator('.quest-hero--train').first();
-		await expect(briefing).toBeVisible();
-		await expect(briefing.locator('.quest-hero__cta')).toHaveCount(0);
+		await expect(page.locator('.quest-hero--train')).toHaveCount(0);
 
-		const terminal = page.locator('.pw-panel--term').first();
-		await clipScreenshot(page, terminal, 'train-1280-mission-hero-briefing.png', 1280, 12);
+		const theater = page.locator('.pw-theater.pd-os-deck--hero').first();
+		await expect(theater).toBeVisible();
+		await expect(page.locator('.pw-terminal-well .pg-terminal-chrome').first()).toBeVisible();
+
+		await clipScreenshot(page, theater, 'train-1280-mission-hero-briefing.png', 1280, 12);
 
 		await page.setViewportSize({ width: 390, height: 844 });
 		await ensurePlayerWorkout(page);
-		await terminal.scrollIntoViewIfNeeded();
-		await clipScreenshot(page, terminal, 'train-390-mission-hero.png', 390, 4);
+		await theater.scrollIntoViewIfNeeded();
+		await clipScreenshot(page, theater, 'train-390-mission-hero.png', 390, 4);
 	});
 });

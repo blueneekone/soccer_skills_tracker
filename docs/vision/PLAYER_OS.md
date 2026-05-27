@@ -18,13 +18,18 @@ Youth athletes (and teen/adult players in club programs) who log training, compl
 
 ## Home screen zones
 
+HQ is an **instrument stack** — shared `pd-os-deck` frame, differentiated inner primitives. Full taxonomy: [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./PLAYER_OS_INSTRUMENT_TAXONOMY.md).
+
 Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dashboard`:
 
-| Zone | Layout | Component | Content |
-|------|--------|-----------|---------|
-| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + `HudMetricsPanel` | Operative identity, streak/XP stat cells, rank XP bar, last-trained line, PAC–AGI vector strip (no match data) |
-| Mission rail | 4-col (`bento-span-12 md:bento-span-4`) | `ActiveBounties` embedded | Active missions / coach bounties — vertical stack in right column (dedup via `deduplicateById`) |
-| Analytics deck | 12-col below hub | `VanguardProtocolPanel` + capsules strip | Radar always visible; inspector + memory capsules |
+| Zone | Layout | Component | Instrument | Content |
+|------|--------|-----------|------------|---------|
+| Route header | 12-col | `pd-strap` | Navigation | Callsign, rank · level, world context strip |
+| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + metrics snippet | Identity + Telemetry (compact) | Operative identity, streak/XP stat cells, rank XP bar, last-trained line; collapsed vectors when `!telemetryReady` |
+| Mission rail | 4-col (`bento-span-12 md:bento-span-4`) | `ActiveBounties` embedded | Directive | Active missions — **one gold focal** hero CTA; dedup via `deduplicateById` |
+| Quick transit | 12-col below hub | `OperativeQuickOps` | Navigation | Route jump tiles on shared deck |
+| Pathway preview | 12-col | `OperativePathwayPreview` | Progression | Season track in `pd-os-deck__well` |
+| Analytics deck | 12-col below | `VanguardProtocolPanel` + capsules strip | Telemetry | Radar always visible; inspector + memory capsules in recessed void |
 
 **Conditional avatar:** When `operativeAvatar` is not set (`profileIncomplete`), `IdentityBentoModule` shows an inline initials badge beside the name — no empty 72px avatar column. When profile is complete, `HudAvatarRing` column returns.
 
@@ -56,6 +61,21 @@ Secondary destinations (`/player/workout`, `/player/tracker`, `/player/armory`, 
 - Streaks, XP bars, and unlocks reinforce **habit and mastery**, not pay-to-win or dark patterns.
 - Minors: no loot-box randomness; rewards tied to logged activity and coach-assigned goals.
 - Parent visibility into progress without duplicating the game chrome.
+
+---
+
+## Engagement engine
+
+Player engagement is **youth-safe SDT**, not dark-pattern hooks — see [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) §1 + §4.
+
+- **Autonomy:** pathway preview, loadout equip, mission choice where product allows — player picks the next meaningful action.
+- **Competence:** rank XP bar, streak stat cells, skill-tree projections — progress is legible without anxiety copy.
+- **Relatedness:** coach bounties and club missions surface in `ActiveBounties`; parent co-view on capsules, not duplicate game chrome.
+- **Verified-commit ceremony:** confetti and celebration fire only after successful Firestore batch — async, non-blocking diegetic overlay ([§1 Verified-commit ceremony](./PLATFORM_BUILD_MANDATES.md#§1--accepted-mandates-build-these)).
+- **Diegetic trust:** Train/Settings commit paths use in-world terminal grammar — no SweetAlert2 on Player routes (Wave D).
+- **Streak visibility:** `HudMetricsPanel` streak + rank-at-risk gold — tuned for engagement, not minor-targeted FOMO.
+- **Motion gates:** `prefers-reduced-motion` and `data-dopamine='off'` honored on all celebration and idle motion.
+- **Reject:** Hook-model scarcity loops, random loot-box timing, and “do X for Y” controlling copy for minors ([§4 Psychology](./PLATFORM_BUILD_MANDATES.md#§4--psychology-youth-safe-subset)).
 
 ---
 

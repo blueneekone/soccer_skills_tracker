@@ -45,7 +45,7 @@ describe('Sprint 2.22 slice 4d — Quick ops three-column grid', () => {
 describe('Sprint 2.22 slice 4d-fix — rail-only embedded mission deck + identity + XP copy', () => {
 	it('embedded deck renders rail rows only — no hero cards in embedded path', () => {
 		expect(bountiesSrc).toMatch(/\{#snippet questHeroCard/);
-		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+		expect(embeddedTemplateBlock).toMatch(/\{#each (visibleQuests|embeddedFeed) as quest/);
 		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);
 		expect(embeddedTemplateBlock).not.toMatch(/\{@render questHeroCard/);
 		expect(embeddedTemplateBlock).not.toMatch(/\{@render questSecondaryCard/);

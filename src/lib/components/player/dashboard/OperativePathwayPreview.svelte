@@ -12,13 +12,13 @@
 	aria-label="Mission rewards pathway"
 	data-region="operative-pathway-preview"
 >
-	<header class="opp-preview__head">
-		<div class="opp-preview__title-block">
-			<p class="opp-preview__eyebrow pd-label">Progression</p>
-			<h2 class="opp-preview__title">Mission rewards pathway</h2>
-			<p class="opp-preview__meta">
-				LV <span class="opp-preview__lv">{paddedLevel}</span> / 50
-			</p>
+	<header class="pd-hq-section-head opp-preview__head">
+		<div class="opp-preview__id">
+			<h2 class="pd-hq-section-head__title opp-preview__title">Mission rewards pathway</h2>
+			<p class="pd-hq-section-head__eyebrow pd-label opp-preview__eyebrow">Progression</p>
+		</div>
+		<div class="opp-preview__status" role="status">
+			<p class="pd-label pd-mono">LVL {paddedLevel} / 50</p>
 		</div>
 	</header>
 

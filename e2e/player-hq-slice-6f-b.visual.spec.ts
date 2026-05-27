@@ -101,7 +101,8 @@ test.describe('Sprint 2.22 slice 6f-b — HQ header ladder + VPP inspector whisp
 		await ensurePlayerDashboard(page);
 
 		const strap = page.locator('.pd-strap').first();
-		const telemetryHeading = page.getByRole('heading', { name: 'TELEMETRY' });
+		// G9/G10: telemetry band title is "Vanguard telemetry" (caps via CSS), not legacy "TELEMETRY"
+		const telemetryHeading = page.getByRole('heading', { name: /Vanguard telemetry/i });
 		await expect(strap).toBeVisible();
 		await expect(telemetryHeading).toBeVisible();
 		await clipRegionBetween(page, strap, telemetryHeading, 'hq-1280-header-ladder.png', 1280, 12);

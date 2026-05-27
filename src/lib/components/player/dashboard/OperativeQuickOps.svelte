@@ -37,9 +37,9 @@
 	aria-label="Quick operations"
 	data-region="operative-quick-ops"
 >
-	<header class="oqo-deck__head">
-		<p class="oqo-deck__eyebrow pd-label">Operative actions</p>
-		<h2 class="oqo-deck__title">Quick ops</h2>
+	<header class="pd-hq-section-head oqo-deck__head">
+		<h2 class="pd-hq-section-head__title oqo-deck__title">Quick ops</h2>
+		<p class="pd-hq-section-head__eyebrow pd-label oqo-deck__eyebrow">Operative actions</p>
 	</header>
 	<nav class="oqo-deck__grid" aria-label="Player quick destinations">
 		{#each QUICK_OPS as op (`${op.label}-${op.href}`)}

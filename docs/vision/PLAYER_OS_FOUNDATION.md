@@ -6,7 +6,7 @@
 
 ## 0. Purpose
 
-This document is the **single source of truth** for what “ultra-premium” means across every future Player OS epic. The bar fuses **enterprise SIEM/SOAR** observability (severity lanes, investigation workspaces, configuration decks), **Tron Legacy / Tron: Ares** cinematic sci-fi (void, emissive geometry, holographic data in space), and **AAA game command HUDs** (one gold focal, hero identity, diegetic terminals). Every sprint that changes Player OS pixels must check against this doc first; no parallel material vocabulary may ship without amending this file. **Supersedes** [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) **sections 9–11** (Energy motion, Hero identity scale, Anti-patterns) — those sections remain in place for history only.
+This document is the **single source of truth** for what “ultra-premium” means across every future Player OS epic. The bar fuses **enterprise SIEM/SOAR** observability (severity lanes, investigation workspaces, configuration decks), **Tron Legacy / Tron: Ares** cinematic sci-fi (void, emissive geometry, holographic data in space), and **AAA game command HUDs** (one gold focal, hero identity, diegetic terminals). Every sprint that changes Player OS pixels must check against this doc first; no parallel material vocabulary may ship without amending this file. **Instrument classification** (Identity, Directive, Navigation, Progression, Telemetry, Execute) and the shared-frame vs inner-primitive split live in [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./PLAYER_OS_INSTRUMENT_TAXONOMY.md) — read that doc before layout sprints. **Supersedes** [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) **sections 9–11** (Energy motion, Hero identity scale, Anti-patterns) — those sections remain in place for history only.
 
 ### 0.1 Experience criteria vs material vocabulary
 
@@ -139,7 +139,7 @@ Sign-off = screenshot at **1280px** and **390px** plus “must-feel rule” tick
 |-------|------------------|------------------|-----------------|----------------|:------:|:-----:|
 | **HQ** (`/player/dashboard`) | Incident overview (severity-lane mission feed) | Grid ops floor (operative spotlight in void) | Mission select screen (one gold “do this now”) | Identity Z3 hero; ≥40% void; one gold focal; mission rail flows with document | ☐ | ☐ |
 | **Stats** (`/stats`) | Investigation workspace (artifact left, inspector right, timeline below) | Vector analysis terminal | Character sheet | Radar full-width band; workout chart full-width band; no nested borders on radar well | ☐ | ☐ |
-| **Train** (`/player/workout`) | Playbook editor + tail logs | Program upload terminal | Helldivers stratagem input | Diegetic terminal (corner brackets + scanline + state copy); equal-height columns; no inner panel scroll | ☐ | ☐ |
+| **Train** (`/player/workout`) | Playbook editor + tail logs | Program upload terminal | Helldivers stratagem input | Shared `pd-os-deck` hero frame; corner brackets + diegetic state copy OK; **NO `pg-scanline`** on Player OS routes (`ps-ambient` Z0 decorative scanlines exempt); equal-height columns; no inner panel scroll | ☐ | ☐ |
 | **Armory** (`/player/armory`) | Asset registry + threat-intel feed | Loadout bay / identity disc | Destiny vault | Pathway timeline (horizontal scroll OK with affordance); dossier card preview Z3 standalone; album covers match sticker aspect | ☐ | ☐ |
 | **Settings** (`/player/settings`) | Configuration deck | Identity calibration terminal | Pause menu config | All controls use diegetic kit; no browser-default toggles | ☐ | ☐ |
 | **Tracker** (`/player/tracker`) | Trend dashboard | Memory archive | Co-op replay log | Matching stat row primitive; capsule arena Tier A; not a “log list” | ☐ | ☐ |
@@ -160,6 +160,8 @@ Sign-off = screenshot at **1280px** and **390px** plus “must-feel rule” tick
 
 | Doc | Role |
 |-----|------|
+| [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./PLAYER_OS_INSTRUMENT_TAXONOMY.md) | Instrument types; shared frame contract |
+| [`AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) | Sprint procedure + build prompt |
 | [`PLAYER_OS.md`](./PLAYER_OS.md) | Product north star, zones, loops |
 | [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) | Z0–Z4 history, layout constitution; §§9–11 superseded by this file |
 | [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) | Sign-off checklist + reference matrix mirror |

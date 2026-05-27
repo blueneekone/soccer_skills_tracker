@@ -1,8 +1,9 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-23  
-**Current sprint:** **Sprint 2.22 Phase 6 · slice 6j-a HQ panel depth (in progress)**
+**Last updated:** 2026-05-26  
+**Current sprint:** **Phase 7 · G10 — Player OS formal sign-off (Done)**
+*Phase 7 · G1–G10 Done; instrument cohesion track complete — Wave F Done — see [`docs/vision/PLATFORM_BUILD_MANDATES.md`](docs/vision/PLATFORM_BUILD_MANDATES.md) §3*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -12,7 +13,8 @@ This document is the **canonical delivery tracker** for test-driven sprints. Pro
 
 1. **Design** → Ask mode → update or read vision docs under `docs/vision/`.
 2. **Build** → Agent mode → one slice per session; use the explicit file list from the sprint section below.
-3. **Verify** before marking done:
+3. **Player UX sprints** → follow [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) — instrument classification required before pixel work.
+4. **Verify** before marking done:
    ```bash
    npm test -- <paths from sprint>
    npm run check
@@ -23,9 +25,111 @@ Agent workflow rules: [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst
 
 ---
 
+## Player OS rubric redesign (active)
+
+**Goal:** Full Player OS pass against [`PLATFORM_EXPERIENCE_RUBRIC.md`](docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md) + [`PLATFORM_BUILD_MANDATES.md`](docs/vision/PLATFORM_BUILD_MANDATES.md). Skill tree = Tier A benchmark only (do not modify).
+
+**Authority:** [`docs/vision/PLATFORM_BUILD_MANDATES.md`](docs/vision/PLATFORM_BUILD_MANDATES.md) §3
+
+| Wave | Status | Scope | Proof |
+|------|--------|-------|-------|
+| A | **Done** | Foundation + shell | `playerHudSprint241.test.ts` |
+| B | **Done** | HQ command deck | `playerHudSprint242.test.ts` |
+| C | **Done** | Stats + Tracker | `playerHudSprint243.test.ts` (absorbs **6l**) |
+| D | **Done** | Train + Settings | `playerHudSprint244.test.ts` (absorbs **6h** commit UX) |
+| D′ | **Done** | Train layout + visual cohesion | `playerHudSprint245.test.ts` |
+| B′ | **Done** | HQ cohesion follow-up | `playerHudSprint246.test.ts` (extends Wave B) |
+| E | **Done** | Armory | absorbs **6f** strap/accent — `playerHudSprint252.test.ts` |
+| F | **Done** | VA sign-off | absorbs **6i** — `playerHudSprint258.test.ts` |
+
+*Historical sprint note: slice 6j-b Routes pd-os-deck depth (in progress) → **Done** (Wave B).*
+
+**Do not start** Epic 3.4 / 4.1 feature work until Wave F sign-off unless ROADMAP explicitly excepts.
+
+---
+
+## Phase 7 — Instrument cohesion (**complete**)
+
+**Goal:** One shared frame across HQ bands; differentiation via inner primitives only. Authority: [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) · Procedure: [`AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md)
+
+| Sprint | Status | Instrument(s) | Cohesion scope | Scope | Proof |
+|--------|--------|---------------|----------------|-------|-------|
+| **G1** | **Done** | Navigation, Identity, Directive, Progression, Telemetry (HQ stack) | Frame | HQ scroll order — shared `pd-os-deck` frame on all bands; strap + hub + Quick Ops + pathway + analytics void | `playerHudSprint247.test.ts` |
+| **G2** | **Done** | Navigation, Progression | Inner | `OperativeQuickOps` vs `OperativePathwayPreview` — no pathway well chrome on nav tiles | `playerHudSprint248.test.ts` |
+| **G3** | **Done** | Telemetry | Inner | VPP + Stats — calm telemetry; no Navigation tile lift on radar bands | `playerHudSprint249.test.ts` |
+| **G4** | **Done** | Execute | Both | Train `pw-theater` — Execute instrument; bracket/scanline scoped; diegetic commit | `playerHudSprint250.test.ts` |
+| **G5** | **Done** | All (frame) | Frame | Cross-route `pd-os-deck` token parity — HQ dedup + Stats/Settings/Tracker; outer telemetry void match | `playerHudSprint251.test.ts` |
+| **G6** | **Done** | Identity, Directive, Telemetry (HQ bands 2 + 5) | Band rhythm | `pd-hq-section-head` on hub + analytics void; hub hero rim-light; VPP head dedup; identity trench soften | `playerHudSprint253.test.ts` |
+| **G6′** | **Done** | Telemetry (HQ band 5) | Band structure | `pd-hq-section-head` inside recessed void (attached to radar); VPP head fully suppressed when `hideHeadTitle` | `playerHudSprint254.test.ts` |
+| **G6″** | **Done** | Telemetry (HQ band 5) | Band spacing | Telemetry head/radar spacing fix — gap 0 on void flex; divider attach; capsules margin only below VPP | `playerHudSprint255.test.ts` |
+| **G7** | **Done** | Telemetry (HQ band 5) | Band head typography + void integration | Restore VPP native head on HQ; teal/mono telemetry voice; Stats parity | `playerHudSprint256.test.ts` |
+| **G8** | **Done** | Telemetry (HQ band 5) | Band banner parity | Revert G7 — `pd-hq-section-head` on HQ void matches Quick Ops / Pathway; `hideHeadTitle` on VPP | `playerHudSprint257.test.ts` |
+| **G9** | **Done** | Cohesion (HQ + routes + Execute) | Frame + band heads | L2 caps-first titles; L3 eyebrow below; pathway LVL rail; telemetry void top fade; **NO pg-scanline** on Player OS routes | `playerOsCohesion.test.ts` · `playerHudSprint259.test.ts` |
+| **G10** | **Done** | All Player OS routes | Formal sign-off | Reference matrix MCP VA + doc sync; absorbs **6i**; Epic 3.4 gate | `playerOsCohesion.test.ts` (G10 block) · [`g10-manifest.json`](docs/vision/va-screenshots/g10-manifest.json) · `playerHudSprint260.test.ts` |
+| **Wave F** | **Done** | Cohesion / Navigation headers + Telemetry band rhythm | Header typography + void layout caps + capsules sub-head parity — *typography superseded by G9; `playerOsCohesion.test.ts` is canonical cross-route gate* | Wave F · Player OS header VA — screenshot-gated band head parity + capsules sub-head alignment | `playerHudSprint258.test.ts` |
+
+**Phase 7 · G10 verify (Player OS formal sign-off — use for G1–G10 regression):**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerOsCohesion.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint260.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint259.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts
+npm run check
+npm run build
+```
+
+**G10 VA checklist** (`docs/vision/va-screenshots/` — mark ☑ only after PNGs + human confirm):
+
+- ☑ `g10-manifest.json` valid (`playerOsCohesion.test.ts` G10 block)
+- ☑ Reference matrix 1280 — all 7 routes captured
+- ☑ Mobile 390 — HQ, Stats, Train, Armory, Settings
+- ☑ `PLAYER_OS_VISUAL_ACCEPTANCE.md` updated (no Train scanline)
+- ☑ `playerOsCohesion` G10 block green
+- ☑ Delivery gate note: Epic 3.4+ unblocked for implementation after human sign-off on reference matrix
+
+**Phase 7 · G9 verify (Player OS cohesion — use for all G1–G9 regression):**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerOsCohesion.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint259.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint258.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint257.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint250.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint237.test.ts
+npm run check
+npm run build
+```
+
+**G9 VA checklist** (`docs/vision/va-screenshots/` — mark ☑ only after screenshots saved):
+
+- ☑ `g9-manifest.json` valid (`playerOsCohesion.test.ts` size gate)
+- ☑ `g9-dashboard-1280.png` — 1280×800 HQ; telemetry void top fade vs Quick Ops
+- ☑ `g9-stats-1280.png` — route strap title-first caps; status rail
+- ☑ `g9-workout-1280.png` — zero scanline; shared hero frame
+- ☑ `g9-armory-1280.png` — route strap hierarchy
+- ☑ `g9-tracker-1280.png` — route strap hierarchy
+- ☑ `g9-settings-1280.png` — route strap hierarchy
+- ☑ `g9-dashboard-390.png` — 390×844 mobile band heads
+- ☑ `g9-workout-390.png` — 390×844 Train cohesion
+- ☑ Detail/density/cohesion pass — black canvas unchanged; pathway LVL / 50 right rail
+
+**Wave F VA checklist** (`docs/vision/va-screenshots/` — mark ☑ only after screenshots saved):
+
+- ☑ `wave-f-dashboard-1280-full.png` — 1280×800 dashboard head comparison
+- ☑ `wave-f-dashboard-1280-heads.png` — strap + all band heads crop
+- ☑ `wave-f-dashboard-390-full.png` — 390×844 dashboard mobile
+- ☑ Tier A band heads match (Hub, Quick Ops, Pathway, Telemetry)
+- ☑ Capsules sub-head no longer second banner voice (Tier A tokens, not teal mono)
+- ☑ `wave-f-stats-1280.png` — Stats route strap
+- ☑ `wave-f-workout-1280.png` — Train route strap
+- ☑ `wave-f-armory-1280.png` — Armory route strap
+- ☑ `wave-f-tracker-1280.png` — Tracker route strap
+- ☑ `wave-f-settings-1280.png` — Settings route strap
+
+**G1 cold-start files (≤5):** `player-dossier.css`, `OperativeHub.svelte`, `OperativeQuickOps.svelte`, `OperativePathwayPreview.svelte`, `player/dashboard/+page.svelte`
+
+**Visual acceptance states (G1):** profile incomplete · no telemetry · full telemetry · mobile 390px
+
+Runs parallel-safe with **Wave E (Armory)** when file lists do not overlap.
+
+---
+
 ## Delivery gate (Player OS cinematic premium)
 
-- **Unblocked after 2.19 Done:** Epic 3.4+, Epic 4.1+ implementation (requires full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off + [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix before shipping)
+- **Unblocked after 2.19 Done + G10 sign-off:** Epic 3.4+, Epic 4.1+ implementation (requires full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) reference matrix human sign-off + [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) void contract before shipping)
 - **Allowed parallel:** Epic 3.0–3.3 (Done), Epic 4.0 docs, unrelated bugfixes
 - **North star:** Player OS must pass cinematic material/spatial acceptance (see [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md) + [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md)) before comms or album bonuses
 - **Retcon:** Sprint 2.15 shipped motion + checklist; visual review found Tier A/Tier B split — gate re-closed for Epic 3.4 / 4.1
@@ -517,10 +621,13 @@ npm run build
 | **6g** | Stats investigation workspace parity | **Done** |
 | **6h** | Train / Tracker terminal chrome pass | **Done** |
 | **6j** | Player OS Z2 depth + edge-lit interactivity pass | **In progress** |
-| **6j-a** | HQ panel depth — Quick Ops, OperativeHub, mission rail, capsules ghost | **In progress** |
+| **6j-a** | HQ panel depth — Quick Ops, OperativeHub, mission rail, capsules ghost | **Done** |
+| **6j-b** | Routes pd-os-deck depth — Train, Tracker, Armory, Settings | **Done** |
+| **6k** | Coach mission HQ → Train handoff hardening | **Done** |
+| **6l** | Stats investigation workspace depth (plan → build) | **Done** (absorbed by Wave C) |
 | **6i** | Reference matrix sign-off + void contract re-measure | Planned |
 
-**Current:** **6j-a In progress** — HQ Z2 depth + edge-lit interactivity (Quick Ops deck, OperativeHub shell, mission rail, capsules ghost). **6j-b Routes** and **6j-c Stats** (merged into 6g) follow after 6j-a. **6i** reference matrix sign-off after full 6j.
+**Current:** **Wave C Done** — Stats investigation workspace + Tracker archive hierarchy (`playerHudSprint243.test.ts`). **6i** sign-off after Wave F.
 
 ---
 
@@ -727,9 +834,9 @@ npx playwright test e2e/player-train-tracker-slice-6h.visual.spec.ts
 
 ---
 
-## Sprint 2.22 slice 6j-a scope — HQ Z2 depth + edge-lit interactivity — **In progress**
+## Sprint 2.22 slice 6j-a scope — HQ Z2 depth + edge-lit interactivity — **Done**
 
-**Goal:** Reduce flat matte-panel dominance on HQ command deck surfaces — Quick Ops deck, OperativeHub shell, mission rail panel, capsules ghost strip. Promote **edge-lit Z2** (emissive hairline + transparent/low-opacity center + hover/focus lift). **HQ only** — batch 1 of 6j.
+**Goal:** Reduce flat matte-panel dominance on HQ command deck surfaces — Quick Ops deck, OperativeHub shell, mission rail panel, capsules ghost strip. Promote **pd-os-deck** raised plates (fill + cast shadow; emissive glow hover-only). **HQ only** — batch 1 of 6j.
 
 **Root cause:**
 
@@ -776,6 +883,150 @@ npx playwright test e2e/player-hq-slice-6j-a.visual.spec.ts
 
 ---
 
+## Sprint 2.22 slice 6j-b scope — Routes pd-os-deck depth (6j-a parity) — **Done**
+
+**Goal:** Apply the **same page-level Z-stack** established in **6j-a** to secondary Player OS routes: Train, Armory (player tabs — not Studio holo), Tracker, Settings (player). Each route reads as **stacked deck plates** (Z2 raise → Z1 recess → Z3 focal), not flat matte slabs or teal hairlines on black.
+
+**Follow-on (not 6j-b):** Coach mission HQ → Train handoff shipped in **6k** (armed banner, drill preview on HQ, session handoff). Train no longer duplicates coach intent sidebar.
+
+**Reuse (not original hairline 6j spec):** `pd-os-deck` kit in `player-dossier.css` — translatable, no pseudo glow stacks on deck root; mission-rail flush children; Quick Ops row physics for quest/QM cards; terminal chrome (`pg-bracket` / `pg-scanline`) **Train exec terminal only**.
+
+**Pass criteria (1280px + 390px):**
+
+| Route | Pass |
+|-------|------|
+| Train | Single `pw-theater pd-os-deck--hero`; exec keeps `pg-terminal-chrome`; full-width logger (coach intents on HQ only) |
+| Tracker | Stat band + capsule hero deck + ghost in `pd-os-deck__well` |
+| Armory | QM cards `qa-card pd-os-deck`; tab panels `pd-os-deck` (not Studio holo) |
+| Settings | Player panels `ps-settings-panel pd-os-deck`; `pd-route-stack` rhythm |
+| HQ regression | 6j-a depth unchanged |
+
+**Files:**
+
+- `ROADMAP.md`
+- `src/lib/styles/player-dossier.css` — route stack + train theater + QM card deck rules
+- `src/lib/styles/player-dashboard-hud.css` — Tracker ghost well + theater terminal hook
+- `src/routes/(app)/player/workout/+page.svelte`
+- `src/routes/(app)/player/tracker/+page.svelte`
+- `src/routes/(app)/player/armory/+page.svelte`
+- `src/lib/components/player/PlayerSettingsPanel.svelte`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint238.test.ts`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint239.test.ts` *(handoff)*
+
+**Visual acceptance:** `docs/visual-acceptance/sprint-2.22-slice-6j-b/` + `e2e/player-routes-slice-6j-b.visual.spec.ts`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint238.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint239.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint234.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint237.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint230.test.ts
+npm run build
+```
+
+**Out of scope:** HQ (6j-a locked), Stats (**6l**), Studio `HologramCardShell`, Skill Tree, Coach OS, 6i sign-off.
+
+**Run after:** 6j-a Done. **Run before:** 6k (handoff), then 6l.
+
+---
+
+## Sprint 2.22 slice 6k scope — Coach mission HQ → Train handoff hardening — **Done**
+
+**Goal:** Close the coach assignment loop without re-cluttering Train. HQ owns discovery + drill preview; Train owns execution; lifecycle completes **after** log, not on navigation.
+
+**Shipped:**
+
+| Layer | Behavior |
+|-------|----------|
+| HQ `ActiveBounties` | Drill preview line on coach intents; **Start session →** stashes `player_mission_handoff_v1` |
+| Train | Reads handoff; armed mission banner; pre-filled focus/drill/duration/RPE; HQ link when unarmed |
+| Lifecycle | `shouldDeferQuestCompletionUntilWorkoutLog` — no premature Claim before log |
+| Homework | `logTrainingSession({ assignmentId })` closes `assignments/{id}` server-side |
+| Intents | Epic 8 fulfillment via `xpByAttribute` trigger (no bogus `assigned_missions` write) |
+| Stale guard | 24h handoff TTL; drop armed state if intent cancelled |
+
+**Files:**
+
+- `src/lib/player/workout/coachMissionFlow.ts` *(new)*
+- `src/lib/player/dashboard/activeBounties.ts`
+- `src/lib/components/hud/ActiveBounties.svelte`
+- `src/lib/player/workoutLog.ts`
+- `src/routes/(app)/player/workout/+page.svelte`
+- `src/lib/styles/player-dashboard-hud.css`, `player-missions.css`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint239.test.ts`
+- `src/lib/components/player/dashboard/__tests__/playerHudSprint240.test.ts` *(new)*
+
+**Verify:**
+
+```bash
+npm test -- src/lib/player/workout/__tests__/coachMissionFlow.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint239.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint240.test.ts
+npm run build
+```
+
+**Train logger — remaining optional polish (not blocking):**
+
+- Replace hardcoded `drillsByFocus` chips with `global_drills` catalog picker (coach policy drill stays suggested default)
+- Single-click **Accept + Start session** on HQ if playtest shows two taps is friction
+- Mount tactical SVG preview from `AdaptiveHomework` logic on HQ cards only (no third surface)
+
+**Run after:** 6j-b Done. **Run before:** 6l.
+
+---
+
+## Sprint 2.22 slice 6l scope — Stats investigation workspace (plan of attack) — **Done (Wave C)**
+
+*Superseded for execution order by Player OS rubric redesign Wave C (6l). Scope retained as reference; build proof: `playerHudSprint243.test.ts`.*
+
+**Problem statement:** Player Stats still reads **flat / admin-form** vs HQ and Train after 6g functional parity. User deferred Stats depth during Train cleanup; **6g merged panel CSS** but did not achieve cinematic **investigation workspace** feel.
+
+**North star:** Stats = **telemetry investigation deck** in the Player OS void — same material language as HQ analytics void (6c) + Train terminal readability, not a separate admin dashboard.
+
+**Do not duplicate:** 6g chart resize guards, `VanguardProtocolPanel` wiring, player role gating, debug chrome removal.
+
+### Phase A — Audit (1 session, read-only)
+
+1. Capture 1280 + 390 PNGs: HQ analytics void vs Stats route side-by-side
+2. List every `pd-page-panel` / matte slab still on Stats player path
+3. Confirm `player-dossier-root` vs `player-hud-root` gating (6g root cause doc)
+4. Map scroll model — native document scroll only (Foundation §4)
+
+### Phase B — Composition (build slice 6l-a)
+
+| Zone | Target treatment |
+|------|------------------|
+| Strap | `PlayerOsPageStrap` + inline context (match HQ grammar) |
+| VPP radar deck | Recessed `pd-os-deck--recessed` void; bloom polygon unchanged |
+| Workout telemetry band | Hero `pd-os-deck--hero`; chart in `pd-os-deck__well` (6g height guards kept) |
+| Achievement / matrix rows | Edge-lit Z2 rows, not grey config boxes |
+| Capsules strip | Match HQ `player-capsules-strip--void` recession |
+
+**Files (estimate ≤ 8):** `stats/+page.svelte`, `player-dossier.css`, `player-dashboard-hud.css`, `playerHudSprint236.test.ts` extend, visual README + e2e clip.
+
+### Phase C — Material parity (build slice 6l-b)
+
+- Apply 6j idle/hover physics to Stats interactive chips (not stat-cell scale gimmicks)
+- Inspector / whisper copy density match 6f-b VPP inspector
+- Remove remaining debug metadata from player path if any regressed
+
+### Phase D — Sign-off
+
+- Extend `docs/PLAYER_OS_VISUAL_ACCEPTANCE.md` Stats row
+- Run 6i reference matrix row for Stats after 6l-b
+
+**Explicitly out of scope for 6l:** Chart.js → SVG migration, new gamification features, Coach OS Stats, Skill Tree.
+
+**Run after:** 6k Done. **Run before:** 6i premium sign-off.
+
+---
+
+## Sprint 2.22 slice 6i scope — Reference matrix sign-off + void contract re-measure — **Planned**
+
+*Superseded for execution order by Player OS rubric redesign Wave F (6i). Scope retained as reference.*
+
+**Goal:** Screenshot sign-off at 1280px / 390px per [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md); void contract re-measure (≥40% black canvas, ≤35% matte, ≥15% emissive per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) §3).
+
+**Run after:** Wave C (6l) build. **Absorbed by:** Player OS rubric redesign Wave F.
+
+---
+
 ## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **In progress**
 
 **Goal:** Reduce flat matte-panel dominance across Player OS routes. Promote **edge-lit Z2** surfaces (top highlight + teal/gold hairline + reduced fill opacity) and **light interactivity** (hover border brighten, focus-visible, subtle translate — gated by `prefers-reduced-motion` and `data-dopamine="off"`). Align with `PLAYER_OS_FOUNDATION.md` §2 — void > emissive edges > glass > matte fill.
@@ -786,8 +1037,8 @@ npx playwright test e2e/player-hq-slice-6j-a.visual.spec.ts
 
 | Batch | Surfaces | Primary files |
 |-------|----------|---------------|
-| **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` | **In progress** |
-| **6j-b Routes** | Train `pw-panel`, Armory `qa-card` / `ols-*` panels (not Studio holo), Tracker, Settings | `player-dossier.css`, route pages, proving grounds CSS |
+| **6j-a HQ** | Quick Ops tiles, OperativeHub frame polish, mission rail panel, capsules strip | `player-dashboard-hud.css`, `player-missions.css`, `OperativeQuickOps.svelte` | **Done** |
+| **6j-b Routes** | Train `pw-theater`, Armory `qa-card` / tab panels (not Studio holo), Tracker, Settings | `player-dossier.css`, route pages, proving grounds CSS | **Done** |
 | **6j-c Stats** | Stats investigation panels (**merged into 6g** — do not duplicate) | `stats/+page.svelte`, dossier CSS |
 
 **Material rules (lock):**

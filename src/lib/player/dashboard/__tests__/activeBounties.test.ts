@@ -6,6 +6,7 @@ import {
 	buildDailyQuests,
 	questCtaLabel,
 	questHudCtaShort,
+	questHudCtaFor,
 	questTerminalCmd,
 	formatQuestRewardLabel,
 	resolveQuestLifecycle,
@@ -55,6 +56,23 @@ describe('activeBounties', () => {
 		expect(questHudCtaShort('accept')).toBe('Accept →');
 		expect(questHudCtaShort('complete')).toBe('Complete →');
 		expect(questHudCtaShort('claim')).toBe('Claim →');
+	});
+
+	it('uses Start session CTA for Train-bound coach missions in complete state', () => {
+		const coachIntent: QuestTask = {
+			id: 'i1',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach Challenge',
+			title: 'Ball Mastery · 500 XP goal',
+			axisId: 'ACC',
+			xpReward: 500,
+			lifecycle: 'complete',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		expect(questHudCtaFor(coachIntent)).toBe('Start session →');
+		expect(questHudCtaFor({ ...coachIntent, lifecycle: 'accept' })).toBe('Accept →');
 	});
 
 	it('progresses accept → complete → claim', () => {

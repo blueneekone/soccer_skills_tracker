@@ -13,7 +13,7 @@
 </svelte:head>
 
 <div class="pd-page-root player-dossier-root ps-settings-root tw-min-w-0 tw-overflow-x-hidden">
-	<div class="pd-content-wrap">
+	<div class="pd-content-wrap pd-route-stack">
 		<PlayerOsPageStrap
 			eyebrow="Profile / Settings"
 			title={callsign || 'Operative settings'}

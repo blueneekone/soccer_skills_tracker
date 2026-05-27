@@ -397,9 +397,12 @@
     },
     {
       "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "lastActiveAt", "order": "ASCENDING" }
+      "fieldPath": "lastActiveAt",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        }
       ]
     }
   ]

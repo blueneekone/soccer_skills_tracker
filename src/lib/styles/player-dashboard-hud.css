@@ -199,7 +199,7 @@
 	.player-hud-root .player-analytics-void--compact .vpp-body,
 .player-hud-root .player-analytics-deck--compact .vpp-body {
 		grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
-		align-items: center;
+		align-items: flex-start;
 	}
 }
 
@@ -297,32 +297,13 @@
 	min-width: 0;
 }
 
+/* Phase 7 · Wave F — capsules sub-head uses Tier A pd-hq-section-head tokens (layout only here) */
 .player-hud-root .player-capsules-strip__head {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 0.35rem 0.75rem;
-	margin-bottom: clamp(6px, 1.2vw, 10px);
-}
-
-.player-hud-root .player-capsules-strip__eyebrow {
-	margin: 0;
-	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
-	font-size: 0.6rem;
-	font-weight: 900;
-	letter-spacing: 0.22em;
-	text-transform: uppercase;
-	color: var(--pd-accent-data-bright, rgba(0, 212, 255, 0.55));
-}
-
-.player-hud-root .player-capsules-strip__title {
-	margin: 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 0.7rem;
-	font-weight: 800;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--vanguard-text-1, #f8fafc);
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--pd-hq-section-eyebrow-gap);
+	margin: 0 0 clamp(6px, 1.2vw, 10px);
 }
 
 .player-hud-root .player-capsules-strip .lobby-capsule-ghost {
@@ -478,31 +459,17 @@
 	box-shadow: var(--pd-z1-inset-shadow);
 }
 
+/* Phase 7 · G3 — telemetry selected: inset teal data bar + Z1 rim (no hero gold / elev cast) */
 .player-hud-root .vpp-inspector--premium.vpp-inspector--selected {
 	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
 	box-shadow:
-		var(--pd-shadow-elev-1),
-		inset 3px 0 0 var(--pd-accent-action, #fbbf24),
+		var(--pd-z1-inset-shadow),
+		inset 3px 0 0 var(--pd-accent-data, #14b8a6),
 		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
-	-webkit-backdrop-filter: blur(3px) saturate(120%);
-	backdrop-filter: blur(3px) saturate(120%);
 }
 
 .player-hud-root .vpp-inspector--premium.vpp-inspector--selected::before {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: clamp(8px, 1.5vw, 12px);
-	bottom: clamp(8px, 1.5vw, 12px);
-	width: 3px;
-	background: linear-gradient(
-		180deg,
-		var(--pd-accent-action, #fbbf24),
-		var(--pd-accent-data, #14b8a6)
-	);
-	box-shadow:
-		var(--pd-emissive-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent)),
-		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent));
+	display: none;
 }
 
 .player-hud-root .vpp-inspector--premium {
@@ -574,12 +541,50 @@
 }
 
 /* Sprint 2.22 slice 6j-a — HQ spatial composition (section gap + cast shadow separation; shell owns atmosphere) */
+/* Phase 7 · G1 — HQ band rhythm uses dossier --pd-hq-deck-gap (strap → analytics void) */
 .player-hud-root .hud-container {
-	--pd-hq-deck-gap: clamp(1.25rem, 2.4vw, 1.85rem);
 	gap: var(--pd-hq-deck-gap);
 }
 
-.player-hud-root .hud-container > :is(.pd-strap, .bento-span-12, .oqo-deck, [data-region='operative-pathway-preview'], [data-region='player-analytics-void']) {
+/* Player OS Wave B — HQ command deck: lighter hero slab + void-friendly hub (FOUNDATION §3) */
+/* Phase 7 · G5 — OperativeHub hero: documented Z3 variant of shared frame tokens (--pd-os-hero-fill) */
+/* Phase 7 · G6 — HQ band rhythm: hub hero rim-light (--pd-os-frame-highlight on --pd-os-hero-fill) */
+.player-hud-root .operative-hub.pd-os-deck--hero {
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-hero-fill);
+	border-color: color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 68%, transparent);
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		0 14px 32px rgba(0, 0, 0, 0.42);
+	overflow: visible;
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-head-gap, clamp(0.5rem, 1vw, 0.75rem));
+	padding: clamp(1rem, 2.1vw, 1.4rem);
+}
+
+/* Wave B — single gold focal: hero mission CTA wins; demote rank bar + streak rim */
+.player-hud-root .operative-hub:has(.quest-row--hero) .ibm-rank-bar--premium .ibm-rank-progress__fill {
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 36%, #475569);
+	box-shadow: none;
+}
+
+.player-hud-root .operative-hub:has(.quest-row--hero) .ibm-rank-bar--has-xp .ibm-rank-progress__fill::after {
+	display: none;
+}
+
+.player-hud-root .operative-hub:has(.quest-row--hero) .ibm-holo-bezel__streak--active,
+.player-hud-root .operative-hub:has(.quest-row--hero) .ibm-holo-bezel__streak--active .ibm-holo-bezel__streak-value {
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 78%, #94a3b8);
+}
+
+.player-hud-root .operative-hub:has(.quest-row--hero) .ibm-holo-bezel__streak--at-risk .ibm-holo-bezel__streak-flame {
+	animation: none;
+	filter: none;
+}
+
+.player-hud-root .hud-container > :is(.pd-strap, .bento-span-12, .oqo-deck, [data-region='operative-hub'], [data-region='operative-pathway-preview'], [data-region='player-analytics-void']) {
 	position: relative;
 	z-index: 1;
 }
@@ -617,51 +622,180 @@
 }
 
 /* Sprint 2.22 slice 6c — analytics layout inside pd-os-deck--recessed */
+/* Phase 7 · G1 — recessed analytics shares HQ rim + highlight family (calmer Z1 read, same deck grammar) */
+/* Phase 7 · G5 — Telemetry void outer frame parity (HQ + Stats; G3 inner wells frozen) */
+/* Phase 7 · G9 — Telemetry void top rim-light: stack --pd-os-frame-highlight above recessed fill (outer plate only) */
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void).pd-os-deck--recessed,
+.player-hud-root .player-analytics-void.pd-os-deck--recessed {
+	overflow: hidden;
+	min-width: 0;
+	max-width: 100%;
+	border: var(--pd-os-frame-rim, var(--pd-hq-deck-rim));
+	box-shadow:
+		inset 0 12px 28px rgba(0, 0, 0, 0.44),
+		inset 0 1px 0 rgba(255, 255, 255, 0.04);
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-recessed-highlight),
+		var(--pd-os-frame-recessed-fill);
+}
+
 .player-hud-root .player-analytics-void.pd-os-deck--recessed {
 	display: flex;
 	flex-direction: column;
-	gap: clamp(10px, 1.4vw, 14px);
-	overflow: hidden;
+	gap: 0;
+	row-gap: 0;
+	padding: clamp(1rem, 2.1vw, 1.35rem);
+}
+
+/* Phase 7 · G6′ — HQ telemetry band structure (G8: pd-hq-section-head band banner restored in void) */
+/* Phase 7 · G6″ — HQ telemetry head attached to radar (spacing fix) — G8: gap:0; shared band head margin */
+/* Phase 7 · G8 — HQ telemetry banner parity (reverts G7 native vpp-head band label)
+ * Instrument: Telemetry — pd-hq-section-head matches Quick Ops / Pathway; inner wells unchanged (G3).
+ * Cohesion: shared HQ band head frame; hideHeadTitle suppresses vpp-head on HQ; Stats keeps native head.
+ */
+.player-hud-root .player-analytics-void.pd-os-deck--recessed > .vpp-root--premium {
+	margin-top: 0;
+	padding-top: 0;
+	min-width: 0;
+}
+
+.player-hud-root .player-analytics-void.pd-os-deck--recessed > .player-capsules-strip--void {
+	margin-top: clamp(0.85rem, 1.5vw, 1.1rem);
+}
+
+/* Phase 7 · G3 — Telemetry inner: calm void (HQ + Stats parity)
+ * Instrument: Telemetry — VPP chart well + inspector Z1 inset inside analytics voids.
+ * Cohesion scope: Inner only — G1 outer frame + G2 nav/pathway inners frozen.
+ * Mental model: holographic data in recessed Z1 wells; read-heavy, low chrome motion.
+ * Accent: teal data polygon + inset inspector bar — no hero gold on telemetry bands.
+ * Rejects: .oqo-op cast stack (0 4px 0 rgba…), translateY hover lift, idle --pd-emissive-*,
+ *           vpp-chart--premium ::before/::after decorative frames inside analytics voids.
+ */
+
+/* Stats analytics void — route shell layout */
+.player-hud-root .stats-analytics-void {
+	display: flex;
+	flex-direction: column;
+	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
+	margin-top: 0;
 	min-width: 0;
 	max-width: 100%;
 }
 
-/* Sprint 2.22 slice 6j-a — VPP telemetry Z1 wells inside recessed analytics deck */
-.player-hud-root .player-analytics-void .vpp-root--premium {
+.player-hud-root .stats-analytics-void.pd-os-deck--recessed {
+	overflow: hidden;
+	padding: clamp(1rem, 2.1vw, 1.35rem);
+}
+
+.player-hud-root .stats-analytics-void--compact {
+	gap: clamp(2px, 0.5vw, 4px);
+	min-height: 0;
+}
+
+/* Unified telemetry inner — VPP root / body / chart / inspector / head */
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-root--premium {
 	display: flex;
 	flex-direction: column;
 	gap: clamp(8px, 1.2vw, 12px);
 	min-width: 0;
 }
 
-.player-hud-root .player-analytics-void .vpp-body {
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-body {
 	gap: clamp(8px, 1.2vw, 12px);
+	align-items: start;
 }
 
-.player-hud-root .player-analytics-void .vpp-chart--premium {
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-chart--premium {
 	background: var(--pd-z1-well-bg);
 	box-shadow:
 		var(--pd-z1-inset-shadow),
 		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
 }
 
-.player-hud-root .player-analytics-void .vpp-inspector--premium,
-.player-hud-root .player-analytics-void .vpp-inspector--premium.vpp-inspector--idle {
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector--premium,
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector--premium.vpp-inspector--idle {
 	background: var(--pd-z1-well-bg);
 	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, var(--pd-line));
 	box-shadow: var(--pd-z1-inset-shadow);
 	padding: clamp(8px, 1.2vw, 12px);
 }
 
-.player-hud-root .player-analytics-void .vpp-inspector__empty-icon {
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector--premium.vpp-inspector--selected {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
+	box-shadow:
+		var(--pd-z1-inset-shadow),
+		inset 3px 0 0 var(--pd-accent-data, #14b8a6),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	max-width: none;
+	background: var(--pd-z1-well-bg);
+}
+
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector__empty-icon {
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
 }
 
-.player-hud-root .player-analytics-void .vpp-head--premium {
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-head--premium {
 	background: transparent;
 	border: none;
 	box-shadow: none;
 	padding: clamp(4px, 0.8vw, 8px) 0;
+}
+
+/* Phase 7 · G6 — HQ band rhythm: VPP head dedup (G8: hideHeadTitle + pd-hq-section-head on HQ void) */
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-root--band-head-hidden .vpp-head--premium {
+	padding: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
+		align-items: start;
+	}
+
+	.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-body:has(.vpp-inspector--selected) {
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		align-items: center;
+	}
+}
+
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root :is(.player-analytics-void, .stats-analytics-void) .vpp-inspector--premium.vpp-inspector--idle {
+	max-width: min(100%, 200px);
+}
+
+.player-hud-root :is(.player-analytics-void--compact, .stats-analytics-void--compact) .vpp-inspector--premium:not(.vpp-inspector--selected),
+.player-hud-root :is(.player-analytics-void--compact, .stats-analytics-void--compact) .vpp-inspector--premium.vpp-inspector--idle {
+	max-width: min(100%, 140px);
+	padding: clamp(2px, 0.5vw, 4px);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root :is(.player-analytics-void--compact, .stats-analytics-void--compact) .vpp-body:has(.vpp-inspector--idle) {
+		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
+	}
+}
+
+.player-hud-root .stats-analytics-void--compact .vpp-chart,
+.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
+	min-height: clamp(180px, 28vw, 240px);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .stats-analytics-void--compact .vpp-chart,
+	.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
+		min-height: clamp(200px, 24vw, 260px);
+	}
+}
+
+.player-hud-root .stats-analytics-void--compact .vpp-body,
+.player-hud-root .stats-analytics-void--compact .vpp-inspector,
+.player-hud-root .stats-analytics-void--compact .vpp-inspector__ghost,
+.player-hud-root .stats-analytics-void--compact .vpp-head {
+	min-height: 0;
 }
 
 .player-hud-root .player-capsules-strip--void {
@@ -978,9 +1112,9 @@
 
 @media (min-width: 768px) {
 	.player-hud-root .operative-hub .operative-hub__missions {
-		border-left: 1px solid color-mix(in srgb, var(--pd-line) 72%, transparent);
-		box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.035);
-		padding-left: clamp(10px, 1.5vw, 14px);
+		border-left: none;
+		box-shadow: none;
+		padding-left: clamp(12px, 1.8vw, 18px);
 	}
 }
 
@@ -1020,6 +1154,8 @@
 }
 
 /* Sprint 2.22 slice 6j-a — identity Z1 trench inside hero deck (shadow inset, no double border) */
+/* Wave B — lighter void trench so Z3 holo shell reads in atmosphere (not grey inset well) */
+/* Phase 7 · G6 — HQ band rhythm: soften identity trench; holo reads on hero plate (reduce box-in-box) */
 .player-hud-root .operative-hub__identity-stage {
 	flex: 1 1 auto;
 	display: flex;
@@ -1027,28 +1163,19 @@
 	align-items: center;
 	justify-content: flex-start;
 	min-height: clamp(140px, 18vw, 180px);
-	padding: clamp(12px, 2vw, 16px);
+	padding: clamp(8px, 1.5vw, 12px);
 	box-sizing: border-box;
 	position: relative;
 	min-width: 0;
-	background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.72) 100%);
+	background: transparent;
 	border: none;
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.045),
-		inset 0 -1px 0 rgba(0, 0, 0, 0.55),
-		inset 0 14px 28px rgba(0, 0, 0, 0.5);
+	box-shadow: none;
 }
 
 /* Sprint 2.22 slice 6j-a — identity trench vignette + holo Z3 focal lift (subtle, no glow stacks) */
+/* Phase 7 · G6 — vignette removed; HologramCardShell is inner primitive on hero plate */
 .player-hud-root .operative-hub__identity-stage::before {
-	content: '';
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	z-index: 0;
-	background:
-		radial-gradient(ellipse 85% 75% at 22% 48%, rgba(20, 184, 166, 0.035) 0%, transparent 52%),
-		radial-gradient(ellipse 110% 95% at 50% 50%, transparent 38%, rgba(0, 0, 0, 0.48) 100%);
+	display: none;
 }
 
 .player-hud-root .operative-hub__identity-stage .operative-hub__identity {
@@ -1517,7 +1644,7 @@
 	outline-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
 }
 
-/* Sprint 2.2 — hub vector strip hover + selection motion */
+/* Phase 7 · G3 — hub vector strip: teal border select only (no .oqo-op cast lift stack) */
 .player-hud-root .hmp-cell--selectable {
 	transition:
 		border-color 0.15s ease,
@@ -1970,19 +2097,34 @@
 
 /* Sprint 2.22 slice 3 — Quick Ops deck */
 .player-hud-root .oqo-deck,
+.player-hud-root .opp-preview {
+	margin-bottom: 0;
+}
+
 .player-dossier-root .oqo-deck {
 	margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
 	padding: clamp(0.75rem, 1.5vw, 1rem);
 }
 
-.player-hud-root .oqo-deck__head,
-.player-dossier-root .oqo-deck__head {
-	margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+.player-hud-root .oqo-deck.pd-os-deck,
+.player-hud-root .opp-preview.pd-os-deck {
+	padding: clamp(1rem, 2.1vw, 1.4rem);
+}
+
+.player-hud-root .pd-hq-section-head.oqo-deck__head,
+.player-dossier-root .pd-hq-section-head.oqo-deck__head,
+.player-hud-root .pd-hq-section-head.opp-preview__head,
+.player-dossier-root .pd-hq-section-head.opp-preview__head,
+.player-hud-root .pd-hq-section-head.operative-hub__head,
+.player-dossier-root .pd-hq-section-head.operative-hub__head,
+.player-hud-root .pd-hq-section-head.player-analytics-void__head,
+.player-dossier-root .pd-hq-section-head.player-analytics-void__head {
+	margin-bottom: var(--pd-hq-section-head-gap);
 }
 
 .player-hud-root .oqo-deck__eyebrow,
 .player-dossier-root .oqo-deck__eyebrow {
-	margin: 0 0 0.25rem;
+	margin: 0;
 }
 
 .player-dossier-root .oqo-deck__title {
@@ -2003,28 +2145,28 @@
 }
 
 @media (max-width: 479px) {
-	.player-hud-root .oqo-op,
-	.player-dossier-root .oqo-op {
+	.player-hud-root .oqo-deck .oqo-op,
+	.player-dossier-root .oqo-deck .oqo-op {
 		min-height: 44px;
 		padding: clamp(0.45rem, 2vw, 0.55rem) clamp(0.4rem, 1.8vw, 0.55rem);
 		gap: 0.2rem;
 	}
 
-	.player-hud-root .oqo-op__icon,
-	.player-dossier-root .oqo-op__icon {
+	.player-hud-root .oqo-deck .oqo-op__icon,
+	.player-dossier-root .oqo-deck .oqo-op__icon {
 		transform: scale(0.92);
 		transform-origin: top left;
 	}
 
-	.player-hud-root .oqo-op__label,
-	.player-dossier-root .oqo-op__label {
+	.player-hud-root .oqo-deck .oqo-op__label,
+	.player-dossier-root .oqo-deck .oqo-op__label {
 		font-size: 0.52rem;
 		letter-spacing: 0.08em;
 		line-height: 1.2;
 	}
 
-	.player-hud-root .oqo-op__sub,
-	.player-dossier-root .oqo-op__sub {
+	.player-hud-root .oqo-deck .oqo-op__sub,
+	.player-dossier-root .oqo-deck .oqo-op__sub {
 		font-size: 0.48rem;
 		line-height: 1.25;
 	}
@@ -2074,11 +2216,11 @@
 	width: 100%;
 	min-width: 0;
 	padding: clamp(10px, 1.4vw, 14px);
-	background: linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.52) 100%);
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.36) 100%);
 	border: none;
 	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.035),
-		inset 0 6px 14px rgba(0, 0, 0, 0.38);
+		inset 0 1px 0 rgba(255, 255, 255, 0.03),
+		inset 0 6px 14px rgba(0, 0, 0, 0.32);
 }
 
 .player-hud-root .operative-hub__identity-stage .ibm-body--hub-span .ibm-identity {
@@ -2098,10 +2240,26 @@
 }
 
 /* Sprint 2.22 slice 4d-fix-b — HUD eyebrow/title hierarchy (L2/L3 tokens: slice 6f-b) */
+/* Phase 7 · G9 — HQ band head hierarchy: L2 title-first (caps via CSS), L3 eyebrow below */
+.player-hud-root .pd-hq-section-head.operative-hub__head,
+.player-dossier-root .pd-hq-section-head.operative-hub__head,
+.player-hud-root .pd-hq-section-head.oqo-deck__head,
+.player-dossier-root .pd-hq-section-head.oqo-deck__head,
+.player-hud-root .pd-hq-section-head.player-analytics-void__head,
+.player-dossier-root .pd-hq-section-head.player-analytics-void__head,
+.player-hud-root .pd-hq-section-head.stats-analytics-void__head,
+.player-dossier-root .pd-hq-section-head.stats-analytics-void__head,
+.player-hud-root .pd-hq-section-head.stats-workout-band__head,
+.player-dossier-root .pd-hq-section-head.stats-workout-band__head {
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-eyebrow-gap);
+}
+
 .player-hud-root .pd-label,
+.player-hud-root .pd-hq-section-head__eyebrow,
 .player-hud-root .oqo-deck__eyebrow,
 .player-hud-root .opp-preview__eyebrow,
-.player-hud-root .vpp-eyebrow,
 .player-hud-root .player-capsules-strip__eyebrow {
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: var(--pd-hud-eyebrow-l3);
@@ -2112,140 +2270,76 @@
 	line-height: 1.3;
 }
 
+.player-hud-root .pd-hq-section-head__eyebrow {
+	margin: 0;
+}
+
+.player-hud-root .pd-hq-section-head__title,
 .player-hud-root .oqo-deck__title,
 .player-hud-root .opp-preview__title,
 .player-hud-root .player-capsules-strip__title,
-.player-hud-root .quest-log__title--embedded,
-.player-hud-root .vpp-root--premium .vpp-title {
+.player-hud-root .stats-analytics-void__title,
+.player-hud-root .stats-workout-band__title,
+.player-hud-root .stats-achievement-deck__title,
+.player-hud-root .quest-log__title--embedded {
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
 	font-size: var(--pd-hud-title-l2);
 	font-weight: 800;
-	letter-spacing: -0.01em;
-}
-
-.player-hud-root .oqo-op,
-.player-dossier-root .oqo-op {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: flex-start;
-	gap: 0.35rem;
-	min-height: 44px;
-	padding: clamp(0.65rem, 1.2vw, 0.85rem) clamp(0.75rem, 1.5vw, 1rem);
-	border: 1px solid var(--pd-accent-data, #14b8a6);
-	background: var(--pd-panel, #05050a);
-	text-decoration: none;
-	color: var(--pd-text, #f4f4f5);
-	cursor: pointer;
-	transition:
-		border-color 0.15s ease,
-		background 0.15s ease,
-		box-shadow 0.15s ease,
-		color 0.15s ease;
-	clip-path: polygon(
-		0 6px,
-		6px 0,
-		calc(100% - 6px) 0,
-		100% 6px,
-		100% calc(100% - 6px),
-		calc(100% - 6px) 100%,
-		6px 100%,
-		0 calc(100% - 6px)
-	);
-}
-
-.player-hud-root .oqo-op:hover,
-.player-dossier-root .oqo-op:hover {
-	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, white);
-	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, var(--pd-panel, #05050a));
-	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
-}
-
-.player-hud-root .oqo-op:focus-visible,
-.player-dossier-root .oqo-op:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
-	outline-offset: 2px;
-}
-
-.player-hud-root .oqo-op__icon,
-.player-dossier-root .oqo-op__icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--pd-accent-data, #14b8a6);
-}
-
-.player-hud-root .oqo-op__label,
-.player-dossier-root .oqo-op__label {
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 0.62rem;
-	font-weight: 800;
-	letter-spacing: 0.12em;
+	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	color: var(--pd-text, #f4f4f5);
 }
 
-.player-hud-root .oqo-op__sub,
-.player-dossier-root .oqo-op__sub {
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: 0.58rem;
-	line-height: 1.35;
-	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
-}
-
-/* Sprint 2.22 slice 4 — Pathway preview */
-.player-hud-root .opp-preview,
+/* Sprint 2.22 slice 4 — Pathway preview (Phase 7 · G2 — Progression inner scoped under .opp-preview) */
 .player-dossier-root .opp-preview {
 	margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
 	padding: clamp(0.75rem, 1.5vw, 1rem);
 }
 
-.player-hud-root .opp-preview__head,
-.player-dossier-root .opp-preview__head {
+.player-hud-root .pd-hq-section-head.opp-preview__head,
+.player-dossier-root .pd-hq-section-head.opp-preview__head {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 0.75rem;
 	flex-wrap: wrap;
-	margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
 }
 
-.player-hud-root .opp-preview__title-block,
-.player-dossier-root .opp-preview__title-block {
+.player-hud-root .opp-preview__id,
+.player-dossier-root .opp-preview__id {
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-eyebrow-gap);
 	min-width: 0;
 }
 
 .player-hud-root .opp-preview__eyebrow,
 .player-dossier-root .opp-preview__eyebrow {
-	margin: 0 0 0.25rem;
+	margin: 0;
 }
 
 .player-hud-root .opp-preview__title,
 .player-dossier-root .opp-preview__title {
 	margin: 0;
-	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-	font-size: var(--pd-hud-title-l2);
-	font-weight: 800;
-	letter-spacing: -0.01em;
 	line-height: 1.25;
-	color: var(--pd-text, #f4f4f5);
 }
 
-.player-hud-root .opp-preview__meta,
-.player-dossier-root .opp-preview__meta {
-	margin: 0.2rem 0 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: clamp(0.58rem, 1.1vw, 0.65rem);
+.player-hud-root .opp-preview__status,
+.player-dossier-root .opp-preview__status {
+	text-align: right;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.player-hud-root .opp-preview__status .pd-label,
+.player-dossier-root .opp-preview__status .pd-label {
+	margin: 0;
+	font-size: 0.72rem;
 	font-weight: 700;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
-	line-height: 1.3;
-}
-
-.player-hud-root .opp-preview__lv,
-.player-dossier-root .opp-preview__lv {
-	color: var(--pd-accent-data, #14b8a6);
+	color: color-mix(in srgb, var(--pd-accent-data) 75%, var(--pd-text-muted));
 }
 
 /* Sprint 2.22 slice 4c — HQ native pathway scroll (no expand/collapse) */
@@ -2255,40 +2349,40 @@
 	max-height: none;
 }
 
-.player-hud-root .opp-root--hq-current .opp-node--current-dossier,
-.player-dossier-root .opp-root--hq-current .opp-node--current-dossier {
+.player-hud-root .opp-preview .opp-root--hq-current .opp-node--current-dossier,
+.player-dossier-root .opp-preview .opp-root--hq-current .opp-node--current-dossier {
 	border-color: var(--pd-accent-data, #14b8a6);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
 }
 
-.player-hud-root .opp-root--hq-current .opp-active-label,
-.player-dossier-root .opp-root--hq-current .opp-active-label {
+.player-hud-root .opp-preview .opp-root--hq-current .opp-active-label,
+.player-dossier-root .opp-preview .opp-root--hq-current .opp-active-label {
 	color: var(--pd-accent-data, #14b8a6);
 }
 
-.player-hud-root .opp-root--compact .opp-track,
-.player-dossier-root .opp-root--compact .opp-track {
+.player-hud-root .opp-preview .opp-root--compact .opp-track,
+.player-dossier-root .opp-preview .opp-root--compact .opp-track {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: clamp(0.5rem, 1.2vw, 0.75rem);
 	overflow: visible;
 }
 
-.player-hud-root .opp-root--compact .opp-node,
-.player-dossier-root .opp-root--compact .opp-node {
+.player-hud-root .opp-preview .opp-root--compact .opp-node,
+.player-dossier-root .opp-preview .opp-root--compact .opp-node {
 	min-width: 0;
 	width: 100%;
 	padding: clamp(0.65rem, 1.2vw, 0.85rem);
 }
 
-.player-hud-root .opp-root--compact .opp-node--current-dossier,
-.player-dossier-root .opp-root--compact .opp-node--current-dossier {
+.player-hud-root .opp-preview .opp-root--compact .opp-node--current-dossier,
+.player-dossier-root .opp-preview .opp-root--compact .opp-node--current-dossier {
 	border-color: var(--pd-accent-data, #14b8a6);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 42%, transparent);
 }
 
-.player-hud-root .opp-root--compact .opp-active-label,
-.player-dossier-root .opp-root--compact .opp-active-label {
+.player-hud-root .opp-preview .opp-root--compact .opp-active-label,
+.player-dossier-root .opp-preview .opp-root--compact .opp-active-label {
 	color: var(--pd-accent-data, #14b8a6);
 }
 
@@ -2305,51 +2399,15 @@
 }
 
 /* Sprint 2.22 slice 6j-a — pathway deck frame + carved track trench (Z2 rim → Z1 void) */
-.player-hud-root .opp-preview.pd-os-deck,
-.player-dossier-root .opp-preview.pd-os-deck {
-	padding-bottom: clamp(1rem, 1.85vw, 1.35rem);
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 22%),
-		var(--pd-os-deck-fill);
-}
-
+/* Player OS Wave B′ — pathway track well uses shared Z1 tokens (analytics void parity) */
 .player-hud-root .opp-preview.pd-os-deck .pd-os-deck__well.opp-preview__track-well,
 .player-dossier-root .opp-preview.pd-os-deck .pd-os-deck__well.opp-preview__track-well {
 	margin-inline: clamp(0.4rem, 0.85vw, 0.65rem);
 	margin-bottom: clamp(0.15rem, 0.35vw, 0.25rem);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, #0c0c14 82%, #000) 0%,
-		color-mix(in srgb, #050508 94%, #000) 52%,
-		#020204 100%
-	);
-	border: 1px solid color-mix(in srgb, var(--pd-line) 92%, transparent);
-	border-top-color: color-mix(in srgb, #fff 11%, var(--pd-line));
-	border-bottom-color: color-mix(in srgb, #000 68%, var(--pd-line));
-	box-shadow:
-		inset 0 2px 5px rgba(0, 0, 0, 0.88),
-		inset 0 18px 36px rgba(0, 0, 0, 0.58),
-		inset 0 1px 0 rgba(255, 255, 255, 0.06),
-		inset 0 -1px 0 rgba(255, 255, 255, 0.035);
+	background: var(--pd-z1-well-bg);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	box-shadow: var(--pd-z1-inset-shadow);
 	padding: clamp(0.75rem, 1.35vw, 1rem) clamp(0.65rem, 1.2vw, 0.9rem);
-}
-
-.player-hud-root .opp-preview.pd-os-deck .pd-os-deck__well.opp-preview__track-well::after,
-.player-dossier-root .opp-preview.pd-os-deck .pd-os-deck__well.opp-preview__track-well::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
-}
-
-.player-hud-root .opp-preview__track-well .opp-node__reward-well,
-.player-dossier-root .opp-preview__track-well .opp-node__reward-well {
-	background: linear-gradient(180deg, #030306 0%, #000 100%);
-	box-shadow:
-		inset 0 2px 6px rgba(0, 0, 0, 0.78),
-		inset 0 1px 0 rgba(0, 0, 0, 0.55),
-		inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .player-hud-root .opp-preview__track-well .opp-track,
@@ -2357,14 +2415,14 @@
 	padding-bottom: 0.15rem;
 }
 
-.player-hud-root .opp-track-shell,
-.player-dossier-root .opp-track-shell {
+.player-hud-root .opp-preview .opp-track-shell,
+.player-dossier-root .opp-preview .opp-track-shell {
 	position: relative;
 }
 
-/* Gap-only connectors — never through reward wells (6e fix) */
-.player-hud-root .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after,
-.player-dossier-root .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after {
+/* Phase 7 · G2 — Progression connectors (timeline only — never on .oqo-op nav tiles) */
+.player-hud-root .opp-preview .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after,
+.player-dossier-root .opp-preview .opp-root:not(.opp-root--compact) .opp-node:not(:last-child)::after {
 	content: '';
 	position: absolute;
 	top: calc(1rem + 0.72rem + 0.5rem + 1.5rem);
@@ -2378,8 +2436,8 @@
 	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent);
 }
 
-.player-hud-root .opp-node--unlocked-dossier:not(:last-child)::after,
-.player-dossier-root .opp-node--unlocked-dossier:not(:last-child)::after {
+.player-hud-root .opp-preview .opp-node--unlocked-dossier:not(:last-child)::after,
+.player-dossier-root .opp-preview .opp-node--unlocked-dossier:not(:last-child)::after {
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, transparent),
@@ -2388,8 +2446,8 @@
 	box-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent);
 }
 
-.player-hud-root .opp-node__reward-well,
-.player-dossier-root .opp-node__reward-well {
+.player-hud-root .opp-preview .opp-node__reward-well,
+.player-dossier-root .opp-preview .opp-node__reward-well {
 	position: relative;
 	z-index: 1;
 	background: var(--pd-z1-well-bg);
@@ -2414,13 +2472,13 @@
 	z-index: 1;
 }
 
-.player-hud-root .opp-root--compact .opp-node:not(:last-child)::after,
-.player-dossier-root .opp-root--compact .opp-node:not(:last-child)::after {
+.player-hud-root .opp-preview .opp-root--compact .opp-node:not(:last-child)::after,
+.player-dossier-root .opp-preview .opp-root--compact .opp-node:not(:last-child)::after {
 	display: none;
 }
 
-.player-hud-root .opp-node--edge,
-.player-dossier-root .opp-node--edge {
+.player-hud-root .opp-preview .opp-node--edge,
+.player-dossier-root .opp-preview .opp-node--edge {
 	border-radius: 0;
 	clip-path: polygon(
 		0 6px,
@@ -2434,29 +2492,29 @@
 	);
 }
 
-.player-hud-root .opp-node--unlocked-dossier,
-.player-dossier-root .opp-node--unlocked-dossier {
+.player-hud-root .opp-preview .opp-node--unlocked-dossier,
+.player-dossier-root .opp-preview .opp-node--unlocked-dossier {
 	background: color-mix(in srgb, var(--pd-panel, #05050a) 42%, transparent);
 	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line, rgba(255, 255, 255, 0.1)));
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent);
 }
 
-.player-hud-root .opp-node--locked-dossier,
-.player-dossier-root .opp-node--locked-dossier {
+.player-hud-root .opp-preview .opp-node--locked-dossier,
+.player-dossier-root .opp-preview .opp-node--locked-dossier {
 	background: color-mix(in srgb, var(--pd-panel, #05050a) 28%, transparent);
 	border-color: color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, transparent);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 10%, transparent);
 }
 
-.player-hud-root .opp-node--current-dossier,
-.player-dossier-root .opp-node--current-dossier {
+.player-hud-root .opp-preview .opp-node--current-dossier,
+.player-dossier-root .opp-preview .opp-node--current-dossier {
 	background: color-mix(in srgb, var(--pd-panel, #05050a) 52%, transparent);
 	border-color: var(--pd-accent-data, #14b8a6);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 42%, transparent);
 }
 
-.player-hud-root .opp-node--milestone:not(.opp-node--current-dossier),
-.player-dossier-root .opp-node--milestone:not(.opp-node--current-dossier) {
+.player-hud-root .opp-preview .opp-node--milestone:not(.opp-node--current-dossier),
+.player-dossier-root .opp-preview .opp-node--milestone:not(.opp-node--current-dossier) {
 	border-color: color-mix(
 		in srgb,
 		var(--pd-accent-action, #fbbf24) 38%,
@@ -2577,17 +2635,18 @@
 }
 
 /* Sprint 2.22 slice 6j-a — Quick Ops Z3 physical lift (cast shadow shelf, not emissive glow) */
-
+/* Player OS Wave B′ — HQ Z2 deck parity */
+/* Phase 7 · G1 — HQ shared frame: raised Z2 decks (Quick Ops + pathway outer plate) */
+/* Phase 7 · G5 — single highlight layer (frame highlight + base fill; no duplicate rgba stack) */
 .player-hud-root .oqo-deck.pd-os-deck,
-.player-dossier-root .oqo-deck.pd-os-deck {
-	padding: clamp(1rem, 2.1vw, 1.4rem);
+.player-hud-root .opp-preview.pd-os-deck,
+.player-dossier-root .oqo-deck.pd-os-deck,
+.player-dossier-root .opp-preview.pd-os-deck {
 	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--pd-panel, #05050a) 38%, #000) 0%,
-			color-mix(in srgb, #000 92%, var(--pd-panel, #05050a)) 100%
-		);
+		var(--pd-os-frame-highlight, var(--pd-hq-deck-highlight-top)),
+		var(--pd-os-frame-fill, var(--pd-hq-deck-fill));
+	border: var(--pd-os-frame-rim, var(--pd-hq-deck-rim));
+	box-shadow: var(--pd-os-frame-shadow, var(--pd-hq-deck-shadow));
 }
 
 .player-hud-root .opp-preview.pd-os-deck,
@@ -2595,16 +2654,32 @@
 	min-width: 0;
 }
 
+/* Player OS Wave B′ — HQ section rhythm (Phase 7 · G1 — --pd-hq-deck-gap on hud-container) */
+.player-hud-root .hud-container > :is(.oqo-deck, [data-region='operative-pathway-preview'], [data-region='player-analytics-void']) {
+	margin-block: 0;
+}
+
+/* Phase 7 · G2 — Navigation inner: transit tiles (.oqo-deck .oqo-op — no pathway clip-path / wells / connectors) */
 .player-hud-root .oqo-deck .oqo-op,
 .player-dossier-root .oqo-deck .oqo-op {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 0.35rem;
 	position: relative;
 	z-index: 1;
-	border: 1px solid color-mix(in srgb, var(--pd-line) 82%, var(--pd-accent-action, #fbbf24));
+	min-height: 44px;
+	padding: clamp(0.65rem, 1.2vw, 0.85rem) clamp(0.75rem, 1.5vw, 1rem);
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 48%, var(--pd-line));
 	background: linear-gradient(
 		180deg,
 		color-mix(in srgb, var(--pd-panel, #05050a) 82%, #14141c) 0%,
 		color-mix(in srgb, var(--pd-panel, #05050a) 62%, #060608) 100%
 	);
+	text-decoration: none;
+	color: var(--pd-text, #f4f4f5);
+	cursor: pointer;
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.07),
 		0 4px 0 rgba(0, 0, 0, 0.42),
@@ -2614,59 +2689,94 @@
 		border-color 0.18s ease,
 		background 0.18s ease,
 		box-shadow 0.18s ease,
-		transform 0.18s ease;
+		transform 0.18s ease,
+		color 0.18s ease;
 }
 
 .player-hud-root .oqo-deck .oqo-op:hover,
 .player-dossier-root .oqo-deck .oqo-op:hover {
-	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 48%, var(--pd-line));
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 72%, white);
 	background: linear-gradient(
 		180deg,
-		color-mix(in srgb, var(--pd-panel, #05050a) 76%, #181820) 0%,
+		color-mix(in srgb, var(--pd-panel, #05050a) 76%, #141820) 0%,
 		color-mix(in srgb, var(--pd-panel, #05050a) 54%, #08080c) 100%
 	);
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.09),
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 24%, transparent),
-		inset 0 0 20px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, transparent),
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 24%, transparent),
+		inset 0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent),
 		0 5px 0 rgba(0, 0, 0, 0.38),
 		0 12px 22px rgba(0, 0, 0, 0.46),
-		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent));
+		var(--pd-emissive-teal, 0 0 14px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent));
 	transform: translateY(-3px);
+}
+
+.player-hud-root .oqo-deck .oqo-op:active,
+.player-dossier-root .oqo-deck .oqo-op:active {
+	transform: translateY(0);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		0 1px 0 rgba(0, 0, 0, 0.48),
+		0 3px 8px rgba(0, 0, 0, 0.35);
+	transition-duration: 0.05s;
 }
 
 .player-hud-root .oqo-deck .oqo-op:hover .oqo-op__icon,
 .player-dossier-root .oqo-deck .oqo-op:hover .oqo-op__icon {
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 42%, transparent),
-		inset 0 0 14px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, transparent);
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 42%, transparent),
+		inset 0 0 14px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent);
 }
 
 .player-hud-root .oqo-deck .oqo-op:focus-visible,
 .player-dossier-root .oqo-deck .oqo-op:focus-visible {
-	outline: 2px solid color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
 	outline-offset: 2px;
 }
 
-/* Sprint 2.22 slice 6d — Quick Ops icon badges (6j-a: hover-only emissive glow) */
 .player-hud-root .oqo-deck .oqo-op__icon,
 .player-dossier-root .oqo-deck .oqo-op__icon {
-	color: var(--pd-accent-action, #fbbf24);
-	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 16%, transparent);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--pd-accent-data, #14b8a6);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 32%, transparent);
 	border-radius: 6px;
 	padding: clamp(6px, 1vw, 8px);
 }
 
+.player-hud-root .oqo-deck .oqo-op__label,
+.player-dossier-root .oqo-deck .oqo-op__label {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.62rem;
+	font-weight: 800;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .oqo-deck .oqo-op__sub,
+.player-dossier-root .oqo-deck .oqo-op__sub {
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.58rem;
+	line-height: 1.35;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.player-hud-root .oqo-deck .oqo-op:hover,
-	.player-dossier-root .oqo-deck .oqo-op:hover {
+	.player-dossier-root .oqo-deck .oqo-op:hover,
+	.player-hud-root .oqo-deck .oqo-op:active,
+	.player-dossier-root .oqo-deck .oqo-op:active {
 		transform: none;
 	}
 }
 
 .player-hud-root[data-dopamine='off'] .oqo-deck .oqo-op:hover,
-.player-dossier-root[data-dopamine='off'] .oqo-deck .oqo-op:hover {
+.player-dossier-root[data-dopamine='off'] .oqo-deck .oqo-op:hover,
+.player-hud-root[data-dopamine='off'] .oqo-deck .oqo-op:active,
+.player-dossier-root[data-dopamine='off'] .oqo-deck .oqo-op:active {
 	transform: none;
 }
 
@@ -2909,170 +3019,26 @@
 	line-height: 1.15;
 }
 
-.player-hud-root .player-analytics-void .vpp-body {
-	align-items: start;
-}
-
-@media (min-width: 768px) {
-	.player-hud-root .player-analytics-void .vpp-body:has(.vpp-inspector--idle) {
-		grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
-		align-items: start;
-	}
-
-	.player-hud-root .player-analytics-void .vpp-body:has(.vpp-inspector--selected) {
-		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-		align-items: center;
-	}
-}
-
-.player-hud-root .player-analytics-void .vpp-inspector--premium:not(.vpp-inspector--selected),
-.player-hud-root .player-analytics-void .vpp-inspector--premium.vpp-inspector--idle {
-	max-width: min(100%, 200px);
-}
-
-.player-hud-root .player-analytics-void .vpp-inspector--premium.vpp-inspector--selected {
-	max-width: none;
-}
-
-.player-hud-root .player-analytics-void--compact .vpp-inspector--premium:not(.vpp-inspector--selected),
-.player-hud-root .player-analytics-void--compact .vpp-inspector--premium.vpp-inspector--idle {
-	max-width: min(100%, 140px);
-	padding: clamp(2px, 0.5vw, 4px);
-}
-
-@media (min-width: 768px) {
-	.player-hud-root .player-analytics-void--compact .vpp-body:has(.vpp-inspector--idle) {
-		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
-	}
-}
-
-/* Sprint 2.22 slice 6g — Stats investigation workspace */
-
-.player-hud-root .stats-analytics-void {
-	display: flex;
-	flex-direction: column;
-	gap: var(--player-hud-gap, clamp(8px, 1.5vw, 12px));
-	margin-top: clamp(4px, 0.8vw, 8px);
-	padding: clamp(12px, 2vw, 20px) 0;
-	background: transparent;
-	border: none;
-	box-shadow: none;
-}
-
-.player-hud-root .stats-analytics-void--compact {
-	gap: clamp(2px, 0.5vw, 4px);
-	min-height: 0;
-	padding-block: clamp(6px, 1vw, 10px);
-}
-
-.player-hud-root .stats-analytics-void .vpp-head--premium {
-	background: transparent;
-	border: none;
-	box-shadow: none;
-	padding: clamp(4px, 0.8vw, 8px) 0;
-}
-
-.player-hud-root .stats-analytics-void .vpp-body {
-	align-items: start;
-}
-
-@media (min-width: 768px) {
-	.player-hud-root .stats-analytics-void .vpp-body:has(.vpp-inspector--idle) {
-		grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
-		align-items: start;
-	}
-
-	.player-hud-root .stats-analytics-void .vpp-body:has(.vpp-inspector--selected) {
-		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-		align-items: center;
-	}
-}
-
-.player-hud-root .stats-analytics-void .vpp-inspector--premium:not(.vpp-inspector--selected),
-.player-hud-root .stats-analytics-void .vpp-inspector--premium.vpp-inspector--idle {
-	background: transparent;
-	border-color: transparent;
-	box-shadow: none;
-	padding: clamp(4px, 0.8vw, 8px);
-	max-width: min(100%, 200px);
-}
-
-.player-hud-root .stats-analytics-void .vpp-inspector--premium.vpp-inspector--selected {
-	max-width: none;
-}
-
-.player-hud-root .stats-analytics-void--compact .vpp-inspector--premium:not(.vpp-inspector--selected),
-.player-hud-root .stats-analytics-void--compact .vpp-inspector--premium.vpp-inspector--idle {
-	max-width: min(100%, 140px);
-	padding: clamp(2px, 0.5vw, 4px);
-}
-
-@media (min-width: 768px) {
-	.player-hud-root .stats-analytics-void--compact .vpp-body:has(.vpp-inspector--idle) {
-		grid-template-columns: minmax(220px, 320px) minmax(96px, 140px);
-	}
-}
-
-.player-hud-root .stats-analytics-void--compact .vpp-chart,
-.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
-	min-height: clamp(180px, 28vw, 240px);
-}
-
-@media (min-width: 768px) {
-	.player-hud-root .stats-analytics-void--compact .vpp-chart,
-	.player-hud-root .stats-analytics-void--compact .vpp-chart :global(.ar-root) {
-		min-height: clamp(200px, 24vw, 260px);
-	}
-}
-
-.player-hud-root .stats-analytics-void--compact .vpp-body,
-.player-hud-root .stats-analytics-void--compact .vpp-inspector,
-.player-hud-root .stats-analytics-void--compact .vpp-inspector__ghost,
-.player-hud-root .stats-analytics-void--compact .vpp-head {
-	min-height: 0;
-}
-
-/* Workout timeline band — transparent outer, Z1 well on chart only */
-.player-hud-root .stats-workout-band {
-	background: transparent;
-	border: none;
-	box-shadow: none;
-	padding: clamp(12px, 2vw, 20px) 0;
+/* Workout telemetry hero band — shared G5 hero frame tokens on Z2 plate */
+.player-hud-root .stats-workout-band.pd-os-deck--hero {
 	min-width: 0;
-}
-
-.player-hud-root .stats-workout-band::before {
-	content: '';
-	display: block;
-	height: 1px;
-	margin: 0 0 clamp(8px, 1.5vw, 12px);
-	background: linear-gradient(
-		90deg,
-		transparent,
-		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) 50%,
-		transparent
-	);
-	box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent);
+	margin-top: 0;
+	padding: clamp(1.05rem, 2.2vw, 1.5rem);
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	border: var(--pd-os-frame-rim);
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		0 12px 28px rgba(0, 0, 0, 0.48);
 }
 
 .player-hud-root .stats-workout-band__head {
-	margin-bottom: clamp(4px, 0.8vw, 8px);
+	margin-bottom: var(--pd-hq-section-head-gap, clamp(0.5rem, 1vw, 0.75rem));
 }
 
-.player-hud-root .stats-workout-band__titles {
-	display: flex;
-	flex-direction: column;
-	gap: 0.2rem;
-}
-
-.player-hud-root .stats-workout-band__title {
+.player-hud-root .stats-workout-band__eyebrow {
 	margin: 0;
-	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
-	font-size: var(--pd-hud-title-l2);
-	font-weight: 800;
-	letter-spacing: -0.01em;
-	line-height: 1.2;
-	color: var(--pd-text, #f4f4f5);
 }
 
 .player-hud-root .stats-workout-band__hint {
@@ -3080,23 +3046,227 @@
 	font-size: var(--pd-hud-eyebrow-l3);
 }
 
-.player-hud-root .stats-workout-band .dossier-workout__chart {
+.player-hud-root .stats-workout-band .pd-os-deck__well.dossier-workout__chart {
+	position: relative;
 	width: 100%;
 	min-height: 300px;
-	border: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 85%, #000);
-	background: var(--pd-z1-well-bg);
+	height: 300px;
+	margin-top: clamp(0.65rem, 1.25vw, 0.9rem);
+	padding: clamp(0.65rem, 1.2vw, 0.9rem);
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.player-hud-root .stats-workout-band .dossier-workout__chart .dossier-canvas {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	max-width: 100%;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+/* Diegetic workout window chips — Train tile physics (teal data accent) */
+.player-hud-root .stats-chip-rail {
+	display: flex;
+	flex-wrap: wrap;
+	gap: clamp(6px, 1vw, 8px);
+	margin: 0 0 clamp(8px, 1.2vw, 12px);
+}
+
+.player-hud-root .stats-chip {
+	min-height: 44px;
+	padding: 0.45rem 0.85rem;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.55));
+	border: 1px solid color-mix(in srgb, var(--pd-line) 82%, var(--pd-accent-data));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--pd-panel) 82%, #14141c) 0%,
+		color-mix(in srgb, var(--pd-panel) 62%, #060608) 100%
+	);
 	box-shadow:
-		var(--pd-z1-inset-shadow),
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
-	-webkit-backdrop-filter: blur(4px) saturate(140%);
-	backdrop-filter: blur(4px) saturate(140%);
+		inset 0 1px 0 rgba(255, 255, 255, 0.07),
+		0 3px 0 rgba(0, 0, 0, 0.4),
+		0 6px 14px rgba(0, 0, 0, 0.38);
+	cursor: pointer;
 	border-radius: 0;
+	transition:
+		border-color 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease,
+		color 0.18s ease;
+}
+
+.player-hud-root .stats-chip:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 48%, var(--pd-line));
+	color: var(--pd-text);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.09),
+		inset 0 0 18px color-mix(in srgb, var(--pd-accent-data) 12%, transparent),
+		0 4px 0 rgba(0, 0, 0, 0.36),
+		0 10px 20px rgba(0, 0, 0, 0.44),
+		var(--pd-emissive-teal);
+	transform: translateY(-1px);
+}
+
+.player-hud-root .stats-chip--on {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	color: var(--pd-text);
+}
+
+/* Achievement matrix — edge-lit Z2 rows */
+.player-hud-root .stats-achievement-deck {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: 0;
+	min-width: 0;
+}
+
+.player-hud-root .pd-hq-section-head.stats-achievement-deck__head {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: clamp(0.65rem, 1.2vw, 0.85rem);
+}
+
+.player-hud-root .stats-achievement-deck__id {
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-eyebrow-gap);
+	min-width: 0;
+}
+
+.player-hud-root .stats-achievement-deck__eyebrow {
+	margin: 0;
+}
+
+.player-hud-root .stats-achievement-deck__status {
+	text-align: right;
+	min-width: 0;
+}
+
+.player-hud-root .stats-achievement-deck__status .pd-label {
+	margin: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--pd-accent-data) 75%, var(--pd-text-muted));
+}
+
+.player-hud-root .stats-achievement-deck__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: clamp(8px, 1.2vw, 12px);
+}
+
+@media (min-width: 40rem) {
+	.player-hud-root .stats-achievement-deck__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 69rem) {
+	.player-hud-root .stats-achievement-deck__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.player-hud-root .stats-achievement-row.pd-os-deck {
+	padding: clamp(0.55rem, 1vw, 0.75rem) clamp(0.5rem, 0.9vw, 0.65rem);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.2rem;
+	text-align: center;
+	border: var(--pd-os-frame-rim);
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	box-shadow: var(--pd-os-frame-shadow);
+	border-left: 1px solid color-mix(in srgb, var(--pd-line) 88%, transparent);
+}
+
+.player-hud-root .stats-achievement-row--unlocked {
+	border-left-color: color-mix(in srgb, var(--pd-accent-data) 42%, var(--pd-line));
+	box-shadow:
+		var(--pd-z2-panel-shadow),
+		inset 3px 0 12px color-mix(in srgb, var(--pd-accent-data) 8%, transparent);
+}
+
+.player-hud-root .stats-achievement-row--elite {
+	border-left-width: 2px;
+	border-left-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	box-shadow:
+		var(--pd-z2-panel-shadow),
+		inset 4px 0 16px color-mix(in srgb, var(--pd-accent-data) 12%, transparent);
 }
 
 @media (min-width: 60rem) {
-	.player-hud-root .stats-workout-band {
+	.player-hud-root .stats-workout-band.pd-os-deck--hero,
+	.player-hud-root.pos-stats .dossier-grid > .stats-analytics-void {
 		grid-column: 1 / -1;
 	}
+}
+
+.player-hud-root.pos-stats .dossier-grid {
+	grid-template-columns: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .stats-chip:hover {
+		transform: none;
+	}
+}
+
+.player-hud-root[data-dopamine='off'] .stats-chip:hover {
+	transform: none;
+}
+
+/* Player OS Wave C — Tracker memory archive deck hierarchy */
+.player-hud-root .pt-archive-section {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(0.55rem, 1vw, 0.75rem);
+	min-width: 0;
+}
+
+.player-hud-root .pt-archive-section__head {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.player-hud-root .pt-archive-section__title {
+	margin: 0;
+	font-family: var(--pd-font-display, 'Geist', ui-sans-serif, system-ui, sans-serif);
+	font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	line-height: 1.25;
+	color: var(--pd-text, #f4f4f5);
+}
+
+.player-hud-root .pt-archive-section--capsule {
+	margin-top: clamp(0.15rem, 0.4vw, 0.35rem);
+}
+
+.player-hud-root .pt-archive-section .pd-stat-row.pd-os-deck {
+	margin-bottom: 0;
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	border: var(--pd-os-frame-rim);
+	box-shadow: var(--pd-os-frame-shadow);
 }
 
 /* Sprint 2.22 slice 6h — Train / Tracker terminal chrome */
@@ -3121,71 +3291,326 @@
 	color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
 }
 
-.player-hud-root .pw-panel--term {
-	background: transparent;
-	border: var(--pd-edge-teal, 1px solid color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line)));
+/* Phase 7 · G4/G9 — Train theater: shared HQ hero frame (no brackets / scanline; cohesion with OperativeHub) */
+.player-hud-root .pw-theater.pd-os-deck--hero {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-head-gap, clamp(0.5rem, 1vw, 0.75rem));
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-hero-fill, var(--pd-os-frame-fill));
+	border-color: color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 68%, transparent);
 	box-shadow:
-		inset 0 1px 0 color-mix(in srgb, var(--pd-accent-data) 12%, transparent),
-		0 0 24px color-mix(in srgb, var(--pd-accent-data) 8%, transparent);
+		var(--pd-z3-raised-shadow),
+		0 14px 32px rgba(0, 0, 0, 0.42);
+	overflow: visible;
+	padding: clamp(1rem, 2.1vw, 1.4rem);
 }
 
-.player-hud-root .pw-panel--term .pg-terminal-chrome {
-	margin-top: 0.25rem;
-	border: 1px solid color-mix(in srgb, var(--pd-line) 70%, transparent);
+.player-hud-root .pw-theater.pd-os-deck--hero .pw-exec__command {
+	position: relative;
+	z-index: 1;
+	margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+	padding-bottom: 0;
+	border-bottom: none;
 }
 
-.player-hud-root .pw-panel--threat {
-	background: color-mix(in srgb, var(--pd-bg, #000) 72%, transparent);
-	border: none;
-	border-left: var(--pd-edge-teal, 1px solid color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line)));
-	box-shadow: inset 3px 0 12px color-mix(in srgb, var(--pd-accent-data) 6%, transparent);
-}
-
-.player-hud-root .pt-stat-void {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: clamp(0.5rem, 1.2vw, 0.75rem);
-	background: transparent;
-	border: none;
-	box-shadow: none;
-	padding: clamp(0.35rem, 0.8vw, 0.5rem) 0 clamp(0.75rem, 1.4vw, 1rem);
+.player-hud-root .pw-theater .pw-exec__head-copy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-hq-section-eyebrow-gap, 0.2rem);
 	min-width: 0;
 }
 
-.player-hud-root .pt-stat-void::before {
-	content: '';
-	display: block;
-	grid-column: 1 / -1;
-	height: 1px;
-	margin-bottom: clamp(0.25rem, 0.6vw, 0.4rem);
-	background: linear-gradient(
-		90deg,
-		transparent,
-		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent) 50%,
-		transparent
-	);
+.player-hud-root .pw-theater .pw-exec__head-copy .pw-title {
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 }
 
-@media (max-width: 639px) {
-	.player-hud-root .pt-stat-void {
-		grid-template-columns: 1fr;
+.player-hud-root .pw-theater .pw-exec__head-copy .pw-eyebrow {
+	margin: 0;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.player-hud-root .pw-theater .pw-terminal-state {
+	position: relative;
+	z-index: 1;
+}
+
+/* Wave D′ — Train theater grid: configure (7/12) · execute (5/12) · transmit dock */
+.player-hud-root.pw-page {
+	min-height: 0;
+	height: auto;
+	overflow: visible;
+	box-sizing: border-box;
+	background: var(--pd-bg);
+	color: var(--pd-text);
+}
+
+@media (min-width: 768px) {
+	.player-hud-root.pw-page {
+		min-height: calc(100vh - 5rem);
 	}
 }
 
-.player-hud-root .pt-ghost--whisper {
+.player-hud-root .pw-theater__body {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(0.85rem, 1.5vw, 1.1rem);
+	min-width: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+}
+
+.player-hud-root .pw-theater__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: clamp(0.85rem, 1.5vw, 1.1rem);
+	align-items: start;
+	position: relative;
+	z-index: 0;
+}
+
+@media (min-width: 768px) {
+	.player-hud-root .pw-theater__grid {
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+	}
+}
+
+.player-hud-root .pw-theater__configure.pd-os-deck__well,
+.player-hud-root .pw-theater__execute.pd-os-deck__well {
+	margin-top: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	position: relative;
+	z-index: 0;
+}
+
+.player-hud-root .pw-theater .pw-exec__status {
+	text-align: right;
+	min-width: 0;
+}
+
+.player-hud-root .pw-theater .pw-exec__status .pw-est {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: flex-end;
+	gap: 0.35rem;
+	margin: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--pd-accent-data) 75%, var(--pd-text-muted));
+}
+
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-green,
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-action {
+	color: inherit;
+}
+
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-green {
+	color: color-mix(in srgb, var(--pd-accent-data) 88%, var(--pd-text));
+}
+
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-action {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.player-hud-root .pw-theater__transmit {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5rem;
+	position: relative;
+	z-index: 2;
+	flex-shrink: 0;
+	margin-top: clamp(0.5rem, 1vw, 0.75rem);
+	padding-top: 0;
+	border-top: none;
+}
+
+.player-hud-root .pw-theater.pd-os-deck--hero .pw-section {
+	margin-bottom: clamp(0.85rem, 1.5vw, 1.1rem);
+}
+
+.player-hud-root .pw-theater.pd-os-deck--hero .pw-section:last-child {
+	margin-bottom: 0;
+}
+
+/* Train logger tiles — Quick Ops Z3 lift physics (teal data accent) */
+.player-hud-root .pw-theater .pw-focus__btn,
+.player-hud-root .pw-theater .pw-chip {
+	border: 1px solid color-mix(in srgb, var(--pd-line) 82%, var(--pd-accent-data));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--pd-panel) 82%, #14141c) 0%,
+		color-mix(in srgb, var(--pd-panel) 62%, #060608) 100%
+	);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.07),
+		0 3px 0 rgba(0, 0, 0, 0.4),
+		0 6px 14px rgba(0, 0, 0, 0.38);
+	transition:
+		border-color 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease,
+		color 0.18s ease;
+}
+
+.player-hud-root .pw-theater .pw-focus__btn:hover,
+.player-hud-root .pw-theater .pw-chip:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 48%, var(--pd-line));
+	color: var(--pd-text);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.09),
+		inset 0 0 18px color-mix(in srgb, var(--pd-accent-data) 12%, transparent),
+		0 4px 0 rgba(0, 0, 0, 0.36),
+		0 10px 20px rgba(0, 0, 0, 0.44),
+		var(--pd-emissive-teal);
+	transform: translateY(-1px);
+}
+
+.player-hud-root .pw-theater .pw-focus__btn--on,
+.player-hud-root .pw-theater .pw-chip--on {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 55%, var(--pd-line));
+	color: var(--pd-text);
+}
+
+.player-hud-root .pw-theater .pw-gauges {
+	padding: 0;
+	margin-bottom: 1.5rem;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 3.5rem;
+	width: 100%;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.8rem;
+	font-weight: 800;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	cursor: pointer;
+	border: 1px solid color-mix(in srgb, var(--pd-accent-action) 55%, var(--pd-line));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--pd-panel) 78%, #1a1408) 0%,
+		color-mix(in srgb, var(--pd-panel) 58%, #060504) 100%
+	);
+	color: var(--pd-text);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 2px 0 rgba(0, 0, 0, 0.34),
+		0 6px 14px rgba(0, 0, 0, 0.34);
+	transition:
+		border-color 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease,
+		color 0.18s ease;
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:hover:not(:disabled) {
+	border-color: color-mix(in srgb, var(--pd-accent-action) 72%, var(--pd-line));
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		inset 0 0 22px color-mix(in srgb, var(--pd-accent-action) 16%, transparent),
+		0 5px 0 rgba(0, 0, 0, 0.38),
+		0 12px 22px rgba(0, 0, 0, 0.46),
+		var(--pd-emissive-gold, 0 0 18px color-mix(in srgb, var(--pd-accent-action) 28%, transparent));
+	transform: translateY(-1px);
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:active:not(:disabled) {
+	transform: translateY(2px);
+	box-shadow:
+		inset 0 2px 6px rgba(0, 0, 0, 0.55),
+		0 1px 0 rgba(0, 0, 0, 0.35),
+		inset 0 0 14px color-mix(in srgb, var(--pd-accent-action) 22%, transparent);
+	border-color: color-mix(in srgb, var(--pd-accent-action) 78%, var(--pd-line));
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:disabled {
+	cursor: not-allowed;
+	opacity: 0.38;
+}
+
+.player-hud-root .pw-theater .pw-exec__xp {
+	color: var(--pd-accent-action);
+}
+
+.player-hud-root .pw-theater .pw-focus__btn:active,
+.player-hud-root .pw-theater .pw-chip:active {
+	transform: translateY(1px);
+	box-shadow:
+		inset 0 2px 5px rgba(0, 0, 0, 0.5),
+		0 1px 0 rgba(0, 0, 0, 0.32);
+}
+
+.player-hud-root .pw-theater .pw-tx {
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 18%, var(--pd-line));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .pw-theater .pw-focus__btn:hover,
+	.player-hud-root .pw-theater .pw-chip:hover,
+	.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:hover:not(:disabled) {
+		transform: none;
+	}
+}
+
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-focus__btn:hover,
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-chip:hover,
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-exec.pw-exec--transmit:hover:not(:disabled) {
+	transform: none;
+}
+
+/* Sprint 2.22 slice 6j-b — Tracker route deck stack (no hairline stat void) */
+/* Phase 7 · G5 — Tracker bands consume shared frame token kit */
+.player-hud-root .pd-stat-row.pd-os-deck {
+	margin-bottom: 0;
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	border: var(--pd-os-frame-rim);
+	box-shadow: var(--pd-os-frame-shadow);
+}
+
+.player-hud-root .pt-lb.pd-os-deck--hero {
+	margin-bottom: 0;
+	min-width: 0;
+	background: var(--pd-os-hero-fill);
+	border: var(--pd-os-frame-rim);
+	border-left: 2px solid color-mix(in srgb, var(--pd-accent-data) 42%, transparent);
+	box-shadow:
+		var(--pd-z3-raised-shadow),
+		0 12px 28px rgba(0, 0, 0, 0.48);
+}
+
+.player-hud-root .pt-ghost--whisper.pd-os-deck__well {
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
 	max-height: 80px;
-	padding: 0.65rem 0.85rem;
 	margin-top: 0;
-	background: transparent;
-	border: 1px solid color-mix(in srgb, var(--pd-line) 55%, transparent);
-	border-left: var(--pd-edge-teal, 1px solid color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line)));
-	box-shadow: none;
+	padding: clamp(0.65rem, 1.2vw, 0.85rem) clamp(0.75rem, 1.35vw, 1rem);
 }
 
-.player-hud-root .pt-ghost--whisper .pt-ghost__title {
+.player-hud-root .pt-ghost--whisper.pd-os-deck__well .pt-ghost__title {
 	margin: 0;
 	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
 	font-size: var(--pd-hud-eyebrow-l3);
@@ -3201,4 +3626,82 @@
 	font-size: 0.62rem;
 	letter-spacing: 0.08em;
 	color: color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.45)) 85%, transparent);
+}
+
+/* Train — HQ link + armed mission banner (coach intent handoff) */
+.player-hud-root .pw-hq-link {
+	margin: 0 0 clamp(0.65rem, 1.2vw, 0.85rem);
+	font-size: 0.62rem;
+	letter-spacing: 0.06em;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
+}
+
+.player-hud-root .pw-hq-link a {
+	color: var(--pd-accent-data, #14b8a6);
+	text-decoration: none;
+	font-weight: 700;
+}
+
+.player-hud-root .pw-hq-link a:hover {
+	text-decoration: underline;
+}
+
+.player-hud-root .pw-mission-armed.pd-os-deck__well {
+	margin-top: 0;
+	margin-bottom: clamp(0.75rem, 1.35vw, 1rem);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line));
+	background: var(--pd-z1-well-bg);
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+.player-hud-root .pw-mission-armed__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 0.35rem;
+}
+
+.player-hud-root .pw-mission-armed__clear {
+	border: none;
+	background: transparent;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
+	font-size: 0.58rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: pointer;
+	padding: 0;
+}
+
+.player-hud-root .pw-mission-armed__clear:hover {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.player-hud-root .pw-mission-armed__hint {
+	margin: 0 0 0.35rem;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.58rem;
+	line-height: 1.45;
+	color: color-mix(in srgb, var(--pd-text-muted) 92%, transparent);
+}
+
+.player-hud-root .pw-mission-armed__title {
+	margin: 0 0 0.35rem;
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: clamp(0.85rem, 1.6vw, 1rem);
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-text, rgba(255, 255, 255, 0.92));
+}
+
+.player-hud-root .pw-mission-armed__xp {
+	font-weight: 600;
+}
+
+.player-hud-root .pw-mission-armed__drill {
+	margin: 0;
+	font-size: 0.62rem;
+	letter-spacing: 0.05em;
+	color: var(--pd-accent-data, #14b8a6);
 }

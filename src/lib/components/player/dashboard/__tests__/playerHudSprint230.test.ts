@@ -7,7 +7,6 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
-const MISSIONS_CSS = join(ROOT, 'lib/styles/player-missions.css');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const TRAIN_BRIEF = join(ROOT, 'lib/components/player/workout/TrainMissionBrief.svelte');
 const WORKOUT_PAGE = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
@@ -15,38 +14,22 @@ const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.
 const HUD_STAT = join(ROOT, 'lib/components/player/dashboard/HudStatCell.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 
-const missionsCss = existsSync(MISSIONS_CSS) ? readFileSync(MISSIONS_CSS, 'utf-8') : '';
 const hudCss = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
-const trainBriefSrc = existsSync(TRAIN_BRIEF) ? readFileSync(TRAIN_BRIEF, 'utf-8') : '';
 const workoutSrc = existsSync(WORKOUT_PAGE) ? readFileSync(WORKOUT_PAGE, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const hudStatSrc = existsSync(HUD_STAT) ? readFileSync(HUD_STAT, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
-describe('Sprint 2.22 slice 6d — Train mission briefing hero', () => {
-	it('TrainMissionBrief.svelte exists with briefing markup', () => {
-		expect(existsSync(TRAIN_BRIEF)).toBe(true);
-		expect(trainBriefSrc).toMatch(/quest-hero--train/);
-		expect(trainBriefSrc).toMatch(/Mission briefing/);
+describe('Sprint 2.22 slice 6d — Train logger (briefing removed; HQ owns missions)', () => {
+	it('TrainMissionBrief.svelte is deleted — no duplicate mission hero on logger', () => {
+		expect(existsSync(TRAIN_BRIEF)).toBe(false);
 	});
 
-	it('workout/+page.svelte imports and renders TrainMissionBrief', () => {
-		expect(workoutSrc).toMatch(/TrainMissionBrief/);
-		expect(workoutSrc).toMatch(/<TrainMissionBrief quest=\{briefingQuest\} \/>/);
-		expect(workoutSrc).toMatch(/resolveHeroQuest/);
-		expect(workoutSrc).toMatch(/buildDailyQuests/);
-		expect(workoutSrc).toMatch(/player-missions\.css/);
-	});
-
-	it('TrainMissionBrief has no quest-hero__cta or Accept button', () => {
-		expect(trainBriefSrc).not.toMatch(/quest-hero__cta/);
-		expect(trainBriefSrc).not.toMatch(/Accept/i);
-	});
-
-	it('player-missions.css contains quest-hero--train and Sprint 2.22 slice 6d', () => {
-		expect(missionsCss).toMatch(/Sprint 2\.22 slice 6d — Train mission briefing hero/);
-		expect(missionsCss).toMatch(/\.quest-hero--train/);
-		expect(missionsCss).toMatch(/\.quest-hero__brief-hint/);
+	it('workout/+page.svelte is execution-focused on single hero deck', () => {
+		expect(workoutSrc).not.toMatch(/TrainMissionBrief/);
+		expect(workoutSrc).not.toMatch(/briefingQuest|dailyQuests|pw-quest/);
+		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero/);
+		expect(workoutSrc).not.toMatch(/pw-terminal-well/);
 	});
 });
 

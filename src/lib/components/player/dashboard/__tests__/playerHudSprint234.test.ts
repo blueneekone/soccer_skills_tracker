@@ -88,13 +88,17 @@ describe('Sprint 2.22 slice 6j-a — pd-os-deck depth kit (translatable)', () =>
 		expect(hudCss).toMatch(/\.operative-hub__identity-stage \.hcs-card[\s\S]*?0 10px 24px/);
 	});
 
-	it('pathway track trench uses visible deck rim + lit well lip (not black-on-black)', () => {
+	it('pathway track well uses shared Z1 tokens (Wave B′ normalized heavy 6j-a trench)', () => {
 		expect(hudCss).toMatch(/pathway deck frame \+ carved track trench/);
+		expect(hudCss).toMatch(/Player OS Wave B′ — pathway track well uses shared Z1 tokens/);
 		expect(hudCss).toMatch(
-			/\.opp-preview\.pd-os-deck \.pd-os-deck__well\.opp-preview__track-well[\s\S]*?border-top-color: color-mix\(in srgb, #fff 11%/,
+			/\.opp-preview\.pd-os-deck \.pd-os-deck__well\.opp-preview__track-well[\s\S]*?background:\s*var\(--pd-z1-well-bg\)/,
 		);
 		expect(hudCss).toMatch(
-			/\.opp-preview\.pd-os-deck \.pd-os-deck__well\.opp-preview__track-well::after[\s\S]*?rgba\(255, 255, 255, 0\.09\)/,
+			/\.opp-preview\.pd-os-deck \.pd-os-deck__well\.opp-preview__track-well[\s\S]*?box-shadow:\s*var\(--pd-z1-inset-shadow\)/,
+		);
+		expect(hudCss).not.toMatch(
+			/\.opp-preview\.pd-os-deck \.pd-os-deck__well\.opp-preview__track-well::after/,
 		);
 	});
 
@@ -150,9 +154,10 @@ describe('Sprint 2.22 slice 6j-a — visual acceptance + ROADMAP', () => {
 		expect(visualReadmeSrc).toMatch(/hq-1280-quick-ops-edge\.png/);
 	});
 
-	it('ROADMAP marks 6h Done and 6j-a in progress', () => {
+	it('ROADMAP marks 6j-a Done and 6j-b Done', () => {
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6h\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
-		expect(roadmapSrc).toMatch(/slice 6j-a HQ panel depth \(in progress\)/);
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6j-a\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
+		expect(roadmapSrc).toMatch(/\|\s*\*\*6j-b\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/Sprint 2\.22 slice 6j-a scope/);
 	});
 });

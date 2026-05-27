@@ -1,0 +1,270 @@
+/**
+ * Coach intent → Train handoff: drill resolution, focus mapping, session storage.
+ */
+
+import {
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	query,
+	where,
+	type Firestore,
+} from 'firebase/firestore';
+
+export type WorkoutFocus = 'technical' | 'physical' | 'tactical' | 'recovery';
+
+export type MissionHandoffSource = 'coach_intent' | 'coach_homework';
+
+export type MissionHandoff = {
+	missionId: string;
+	source: MissionHandoffSource;
+	targetAttributeId?: string;
+	requiredXp?: number;
+	drillId?: string;
+	drillTitle?: string;
+	durationMinutes?: number;
+	targetRpe?: number;
+	focusArea?: WorkoutFocus;
+	/** UTC ms when HQ stashed this handoff (for stale guard). */
+	stashedAt?: number;
+};
+
+/** Handoffs older than this are cleared on Train mount. */
+export const MISSION_HANDOFF_MAX_AGE_MS = 86_400_000;
+
+export type SuggestedDrill = {
+	id: string;
+	title: string;
+	attributeId: string;
+	tier?: string;
+	mediaType?: string;
+};
+
+export const MISSION_HANDOFF_KEY = 'player_mission_handoff_v1';
+export const LEGACY_MISSION_ID_KEY = 'player_active_mission_id';
+export const LEGACY_ASSIGNMENT_ID_KEY = 'player_active_assignment_id';
+
+export const COACH_INTENT_HINT =
+	'Coach sets the goal — we suggest a drill from team focus.';
+
+const ATTRIBUTE_FOCUS: Record<string, WorkoutFocus> = {
+	ball_mastery: 'technical',
+	dribbling: 'technical',
+	first_touch: 'technical',
+	technical: 'technical',
+	striking: 'technical',
+	pace: 'physical',
+	physical: 'physical',
+	strength: 'physical',
+	grit: 'physical',
+	stamina: 'physical',
+	scanning: 'tactical',
+	tactical: 'tactical',
+	vision: 'tactical',
+	recovery: 'recovery',
+};
+
+export function attributeIdToWorkoutFocus(attributeId: string): WorkoutFocus {
+	const key = String(attributeId || '')
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9_]/g, '');
+	return ATTRIBUTE_FOCUS[key] ?? 'technical';
+}
+
+export function formatSuggestedDrillLine(
+	drillTitle: string,
+	opts: { durationMinutes?: number | null; targetRpe?: number | null } = {},
+): string {
+	const duration =
+		opts.durationMinutes != null && opts.durationMinutes > 0 ?
+			`${opts.durationMinutes} min`
+		:	'~30 min';
+	const rpe =
+		opts.targetRpe != null && opts.targetRpe > 0 ? ` · RPE ${opts.targetRpe}` : '';
+	return `Suggested: ${drillTitle} · ${duration}${rpe}`;
+}
+
+export function isMissionHandoffStale(handoff: MissionHandoff): boolean {
+	const stashedAt = Number(handoff.stashedAt);
+	if (!Number.isFinite(stashedAt) || stashedAt <= 0) return false;
+	return Date.now() - stashedAt > MISSION_HANDOFF_MAX_AGE_MS;
+}
+
+export function stashMissionHandoff(handoff: MissionHandoff): void {
+	if (typeof sessionStorage === 'undefined') return;
+	const payload: MissionHandoff = {
+		...handoff,
+		stashedAt: handoff.stashedAt ?? Date.now(),
+	};
+	sessionStorage.setItem(MISSION_HANDOFF_KEY, JSON.stringify(payload));
+	if (handoff.source === 'coach_intent') {
+		sessionStorage.setItem(LEGACY_MISSION_ID_KEY, handoff.missionId);
+		sessionStorage.removeItem(LEGACY_ASSIGNMENT_ID_KEY);
+	} else {
+		sessionStorage.setItem(LEGACY_ASSIGNMENT_ID_KEY, handoff.missionId);
+		sessionStorage.removeItem(LEGACY_MISSION_ID_KEY);
+	}
+}
+
+export function readMissionHandoff(): MissionHandoff | null {
+	if (typeof sessionStorage === 'undefined') return null;
+	try {
+		const raw = sessionStorage.getItem(MISSION_HANDOFF_KEY);
+		if (raw) {
+			const parsed = JSON.parse(raw) as Partial<MissionHandoff>;
+			if (typeof parsed.missionId === 'string' && parsed.missionId.trim()) {
+				return {
+					missionId: parsed.missionId.trim(),
+					source: parsed.source === 'coach_homework' ? 'coach_homework' : 'coach_intent',
+					targetAttributeId:
+						typeof parsed.targetAttributeId === 'string' ?
+							parsed.targetAttributeId
+						:	undefined,
+					requiredXp:
+						Number.isFinite(Number(parsed.requiredXp)) ?
+							Math.max(0, Math.floor(Number(parsed.requiredXp)))
+						:	undefined,
+					drillId: typeof parsed.drillId === 'string' ? parsed.drillId : undefined,
+					drillTitle:
+						typeof parsed.drillTitle === 'string' ? parsed.drillTitle : undefined,
+					durationMinutes:
+						Number.isFinite(Number(parsed.durationMinutes)) ?
+							Math.max(1, Math.floor(Number(parsed.durationMinutes)))
+						:	undefined,
+					targetRpe:
+						Number.isFinite(Number(parsed.targetRpe)) ?
+							Math.max(1, Math.min(10, Math.floor(Number(parsed.targetRpe))))
+						:	undefined,
+					focusArea:
+						parsed.focusArea === 'physical' ||
+						parsed.focusArea === 'tactical' ||
+						parsed.focusArea === 'recovery' ||
+						parsed.focusArea === 'technical' ?
+							parsed.focusArea
+						:	undefined,
+					stashedAt:
+						Number.isFinite(Number(parsed.stashedAt)) ?
+							Math.floor(Number(parsed.stashedAt))
+						:	undefined,
+				};
+			}
+		}
+	} catch {
+		/* fall through to legacy keys */
+	}
+	const legacyMissionId = sessionStorage.getItem(LEGACY_MISSION_ID_KEY);
+	if (legacyMissionId?.trim()) {
+		return { missionId: legacyMissionId.trim(), source: 'coach_intent' };
+	}
+	const legacyAssignmentId = sessionStorage.getItem(LEGACY_ASSIGNMENT_ID_KEY);
+	if (legacyAssignmentId?.trim()) {
+		return { missionId: legacyAssignmentId.trim(), source: 'coach_homework' };
+	}
+	return null;
+}
+
+export function clearMissionHandoff(): void {
+	if (typeof sessionStorage === 'undefined') return;
+	sessionStorage.removeItem(MISSION_HANDOFF_KEY);
+	sessionStorage.removeItem(LEGACY_MISSION_ID_KEY);
+	sessionStorage.removeItem(LEGACY_ASSIGNMENT_ID_KEY);
+}
+
+export function buildCoachIntentHandoff(input: {
+	missionId: string;
+	targetAttributeId: string;
+	requiredXp?: number;
+	drill?: Pick<SuggestedDrill, 'id' | 'title'> | null;
+	durationMinutes?: number | null;
+	targetRpe?: number | null;
+}): MissionHandoff {
+	const focusArea = attributeIdToWorkoutFocus(input.targetAttributeId);
+	return {
+		missionId: input.missionId,
+		source: 'coach_intent',
+		targetAttributeId: input.targetAttributeId,
+		requiredXp: input.requiredXp,
+		drillId: input.drill?.id,
+		drillTitle: input.drill?.title,
+		durationMinutes: input.durationMinutes ?? 30,
+		targetRpe: input.targetRpe ?? 5,
+		focusArea,
+	};
+}
+
+export function buildCoachHomeworkHandoff(input: {
+	missionId: string;
+	drillTitle: string;
+	targetAttributeId?: string;
+	durationMinutes?: number | null;
+	targetRpe?: number | null;
+}): MissionHandoff {
+	const focusArea = attributeIdToWorkoutFocus(input.targetAttributeId ?? 'technical');
+	return {
+		missionId: input.missionId,
+		source: 'coach_homework',
+		targetAttributeId: input.targetAttributeId,
+		drillTitle: input.drillTitle,
+		durationMinutes: input.durationMinutes ?? 30,
+		targetRpe: input.targetRpe ?? 5,
+		focusArea,
+	};
+}
+
+export async function resolveHeuristicDrill(
+	firestore: Firestore,
+	targetAttributeId: string,
+	recentFrustration = 'low',
+): Promise<SuggestedDrill | null> {
+	const attr = String(targetAttributeId || '').trim();
+	if (!attr) return null;
+	try {
+		const constraints = [where('attributeId', '==', attr)];
+		if (recentFrustration === 'high') {
+			constraints.push(where('tier', '==', 'beginner'));
+		}
+		const snap = await getDocs(query(collection(firestore, 'global_drills'), ...constraints));
+		const drills = snap.docs.map((d) => {
+			const data = d.data();
+			return {
+				id: d.id,
+				title: typeof data.title === 'string' ? data.title : 'Suggested drill',
+				attributeId: typeof data.attributeId === 'string' ? data.attributeId : attr,
+				tier: typeof data.tier === 'string' ? data.tier : undefined,
+				mediaType: typeof data.mediaType === 'string' ? data.mediaType : undefined,
+			} satisfies SuggestedDrill;
+		});
+		drills.sort((a, b) => {
+			if (a.mediaType === 'tactical_svg' && b.mediaType !== 'tactical_svg') return -1;
+			if (b.mediaType === 'tactical_svg' && a.mediaType !== 'tactical_svg') return 1;
+			return 0;
+		});
+		return drills[0] ?? null;
+	} catch {
+		return null;
+	}
+}
+
+export async function resolveDrillById(
+	firestore: Firestore,
+	drillId: string,
+): Promise<SuggestedDrill | null> {
+	const id = String(drillId || '').trim();
+	if (!id) return null;
+	try {
+		const snap = await getDoc(doc(firestore, 'global_drills', id));
+		if (!snap.exists()) return null;
+		const data = snap.data();
+		return {
+			id: snap.id,
+			title: typeof data.title === 'string' ? data.title : 'Suggested drill',
+			attributeId: typeof data.attributeId === 'string' ? data.attributeId : '',
+			tier: typeof data.tier === 'string' ? data.tier : undefined,
+			mediaType: typeof data.mediaType === 'string' ? data.mediaType : undefined,
+		};
+	} catch {
+		return null;
+	}
+}

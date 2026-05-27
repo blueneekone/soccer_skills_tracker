@@ -8,7 +8,8 @@ alwaysApply: true
 ## Before coding
 
 - Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
-- For any **UX / pixel / copy** work: read [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](../../docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md) first, then the persona vision doc from [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md).
+- For any **Player UX / layout / pixel** work: read [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](../../docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) and [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](../../docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) **before** coding — classify instrument(s) and cohesion scope (Frame | Inner | Both).
+- For any **UX / pixel / copy** work: read [`docs/vision/PLATFORM_BUILD_MANDATES.md`](../../docs/vision/PLATFORM_BUILD_MANDATES.md) (what to build / reject), then [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](../../docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md), then the persona vision doc from [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md).
 - Check **`docs/vision/PLAYER_OS_FOUNDATION.md`** for material primitive canon before any **Player** premium-surface change.
 - Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
 
@@ -38,6 +39,8 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 - Do **not** implement planned roles (`team_manager`, etc.) in JWT/route code unless a sprint explicitly says so.
 - Do **not** wrap Tier A primitives (VanguardCard / SkillTreeArena / pdDataBloom / ProvingGrounds) in Tier B matte panels with multiple decorative borders.
 - Do **not** introduce inner `overflow: auto` regions on Player OS routes (use native document scroll).
+- Do **not** ship route-only UX without instrument type classification per [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](../../docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md).
+- Do **not** apply Navigation tile chrome (Z3 lift tiles, nav accent frames) on Telemetry surfaces (`VanguardProtocolPanel`, Stats investigation bands).
 
 ## Mode split
 

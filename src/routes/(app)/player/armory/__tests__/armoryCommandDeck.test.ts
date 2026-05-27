@@ -28,14 +28,14 @@ describe('/player/armory — Sprint 2.22 slice 4f Armory command deck', () => {
 		expect(deckExists).toBe(true);
 	});
 
-	it('+page.svelte imports and renders ArmoryCommandDeck after qa-workspace', () => {
+	it('+page.svelte imports and renders ArmoryCommandDeck after workspace tabs', () => {
 		expect(pageSrc).toMatch(/import ArmoryCommandDeck from '\$lib\/components\/player\/ArmoryCommandDeck\.svelte'/);
 		expect(pageSrc).toMatch(/<ArmoryCommandDeck/);
 
-		const workspaceIdx = pageSrc.indexOf('class="qa-workspace');
+		const tabRailIdx = pageSrc.indexOf('PlayerOsTabRail');
 		const deckIdx = pageSrc.indexOf('<ArmoryCommandDeck');
-		expect(workspaceIdx).toBeGreaterThan(-1);
-		expect(deckIdx).toBeGreaterThan(workspaceIdx);
+		expect(tabRailIdx).toBeGreaterThan(-1);
+		expect(deckIdx).toBeGreaterThan(tabRailIdx);
 	});
 
 	it('+page.svelte does NOT contain OperativePathway or qa-pathway-shell', () => {

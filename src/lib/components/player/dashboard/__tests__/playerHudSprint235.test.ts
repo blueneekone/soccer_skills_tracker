@@ -116,9 +116,9 @@ describe('Sprint 2.22 slice 6f-c — identity bezel CSS', () => {
 });
 
 describe('Sprint 2.22 slice 6f-c — Train page regression', () => {
-	it('workout route still renders HudStatCell streak variant', () => {
-		expect(workoutSrc).toMatch(/HudStatCell/);
-		expect(workoutSrc).toMatch(/variant="streak"/);
+	it('workout logger does not duplicate streak HudStatCell (HQ hologram bezel owns streak)', () => {
+		expect(workoutSrc).not.toMatch(/HudStatCell/);
+		expect(workoutSrc).not.toMatch(/variant="streak"/);
 	});
 });
 

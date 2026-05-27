@@ -102,7 +102,6 @@
 <div
 	class="ibm-root"
 	class:ibm-root--embedded={embedded}
-	class:ibm-root--inset={embedded}
 	class:ibm-root--premium={embedded}
 	class:ibm-root--incomplete={profileIncomplete}
 	class:ibm-streak-at-risk={currentStreak > 0}

@@ -12,7 +12,8 @@
 	--pd-text-muted: rgba(255, 255, 255, 0.5);
 	--pd-accent-action: #fbbf24;
 	--pd-accent-data: #14b8a6;
-	--pd-accent-data-bright: rgba(0, 212, 255, 0.55);
+	/* Wave A — teal-derived bright data accent (retired legacy cyan) */
+	--pd-accent-data-bright: color-mix(in srgb, var(--pd-accent-data) 78%, #fff 22%);
 	/* Sprint 2.18 — emissive edge tokens (void > edges > glass > matte) */
 	--pd-emissive-teal: 0 0 12px color-mix(in srgb, var(--pd-accent-data) 35%, transparent);
 	--pd-emissive-gold: 0 0 14px color-mix(in srgb, var(--pd-accent-action) 32%, transparent);
@@ -27,9 +28,35 @@
 		color-mix(in srgb, #030308 62%, #000) 42%,
 		#000000 100%
 	);
-	--pd-os-deck-fill:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 24%),
-		var(--pd-depth-panel-gradient);
+	/* Phase 7 · G5 — Cross-route frame token kit (Z2 plate + hero/recessed variants) */
+	--pd-os-frame-fill: var(--pd-depth-panel-gradient);
+	--pd-os-frame-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 24%);
+	--pd-os-frame-rim: 1px solid var(--pd-line);
+	--pd-os-frame-shadow: var(--pd-z2-panel-shadow);
+	--pd-os-hero-fill: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--pd-panel) 48%, transparent) 0%,
+		color-mix(in srgb, var(--pd-panel) 32%, #000) 100%
+	);
+	--pd-os-frame-recessed-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+	--pd-os-frame-recessed-fill: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--pd-panel) 34%, #000) 0%,
+		color-mix(in srgb, #000 94%, var(--pd-panel)) 100%
+	);
+	--pd-os-deck-fill: var(--pd-os-frame-fill);
+	/* Phase 7 · G1 — HQ shared frame tokens (aliases → G5 kit) */
+	--pd-hq-deck-gap: clamp(1.25rem, 2.4vw, 1.85rem);
+	--pd-hq-deck-fill: var(--pd-os-frame-fill);
+	--pd-hq-deck-shadow: var(--pd-os-frame-shadow);
+	--pd-hq-deck-highlight-top: var(--pd-os-frame-highlight);
+	--pd-hq-deck-rim: var(--pd-os-frame-rim);
+	/* Phase 7 · G4 — Execute hero frame aliases (shared dossier family) */
+	--pd-exec-deck-fill: var(--pd-hq-deck-fill);
+	--pd-exec-deck-rim: var(--pd-hq-deck-rim);
+	--pd-exec-deck-shadow: var(--pd-hq-deck-shadow);
+	--pd-hq-section-head-gap: clamp(0.5rem, 1vw, 0.75rem);
+	--pd-hq-section-eyebrow-gap: 0.25rem;
 	--pd-depth-glow-gold: 0 0 28px color-mix(in srgb, var(--pd-accent-action) 22%, transparent);
 	--pd-depth-glow-teal: 0 0 24px color-mix(in srgb, var(--pd-accent-data) 18%, transparent);
 	--pd-shadow-elev-1: 0 3px 10px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -123,9 +150,11 @@
 	box-sizing: border-box;
 	min-width: 0;
 	max-width: 100%;
-	background: var(--pd-os-deck-fill, var(--pd-depth-panel-gradient, var(--pd-panel)));
-	border: 1px solid var(--pd-line);
-	box-shadow: var(--pd-z2-panel-shadow);
+	background:
+		var(--pd-os-frame-highlight, var(--pd-hq-deck-highlight-top)),
+		var(--pd-os-frame-fill, var(--pd-hq-deck-fill, var(--pd-os-deck-fill, var(--pd-depth-panel-gradient, var(--pd-panel)))));
+	border: var(--pd-os-frame-rim, var(--pd-hq-deck-rim, 1px solid var(--pd-line)));
+	box-shadow: var(--pd-os-frame-shadow, var(--pd-hq-deck-shadow, var(--pd-z2-panel-shadow)));
 	padding: clamp(1rem, 2.1vw, 1.4rem);
 }
 
@@ -141,12 +170,9 @@
 .player-dossier-root .pd-os-deck--recessed,
 .player-hud-root .pd-os-deck--recessed {
 	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--pd-panel) 34%, #000) 0%,
-			color-mix(in srgb, #000 94%, var(--pd-panel)) 100%
-		);
+		var(--pd-os-frame-recessed-highlight),
+		var(--pd-os-frame-recessed-fill);
+	border: var(--pd-os-frame-rim);
 	border-color: color-mix(in srgb, var(--pd-line) 78%, transparent);
 	box-shadow:
 		inset 0 12px 28px rgba(0, 0, 0, 0.44),
@@ -164,6 +190,122 @@
 	background: var(--pd-z1-well-bg);
 	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 14%, var(--pd-line));
 	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+/* Phase 7 · G1 — HQ section header (eyebrow + title parity across Quick Ops, pathway, telemetry bands) */
+.player-dossier-root .pd-hq-section-head,
+.player-hud-root .pd-hq-section-head {
+	margin: 0 0 var(--pd-hq-section-head-gap);
+	min-width: 0;
+}
+
+.player-dossier-root .pd-hq-section-head__eyebrow,
+.player-hud-root .pd-hq-section-head__eyebrow {
+	margin: 0 0 var(--pd-hq-section-eyebrow-gap);
+}
+
+.player-dossier-root .pd-hq-section-head__title,
+.player-hud-root .pd-hq-section-head__title {
+	margin: 0;
+	font-family: var(--pd-font-display);
+	font-size: var(--pd-hud-title-l2, clamp(0.82rem, 1.5vw, 0.92rem));
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
+	color: var(--pd-text);
+}
+
+/* Sprint 2.22 slice 6j-b — route spatial composition */
+.player-dossier-root .pd-content-wrap.pd-route-stack,
+.player-hud-root .pd-content-wrap.pd-route-stack {
+	--pd-route-deck-gap: clamp(1rem, 2vw, 1.55rem);
+	display: flex;
+	flex-direction: column;
+	gap: var(--pd-route-deck-gap);
+}
+
+.player-dossier-root .pd-route-stack > .pd-stat-row.pd-os-deck,
+.player-hud-root .pd-route-stack > .pd-stat-row.pd-os-deck {
+	margin-bottom: 0;
+}
+
+/* Sprint 2.22 slice 6j-b — Train execution theater hero deck */
+.player-dossier-root .pw-theater.pd-os-deck--hero,
+.player-hud-root .pw-theater.pd-os-deck--hero {
+	padding: clamp(1rem, 2.1vw, 1.35rem);
+}
+
+.player-dossier-root .pw-theater .pw-panel--threat,
+.player-hud-root .pw-theater .pw-panel--threat,
+.player-dossier-root .pw-theater .pw-exec,
+.player-hud-root .pw-theater .pw-exec {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+@media (min-width: 768px) {
+	.player-dossier-root .pw-theater .pw-panel--threat,
+	.player-hud-root .pw-theater .pw-panel--threat {
+		border-left: var(
+			--pd-edge-teal,
+			1px solid color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line))
+		);
+		box-shadow: inset 3px 0 12px color-mix(in srgb, var(--pd-accent-data) 6%, transparent);
+	}
+}
+
+/* Sprint 2.22 slice 6j-b — Train threat quest row physics (matte idle; emissive hover only) */
+.player-dossier-root .pw-quest,
+.player-hud-root .pw-quest {
+	background: color-mix(in srgb, var(--pd-panel) 88%, #000);
+	border: 1px solid var(--pd-line);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		0 2px 6px rgba(0, 0, 0, 0.32);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.player-dossier-root .pw-quest:hover,
+.player-hud-root .pw-quest:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 45%, var(--pd-line));
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.06),
+		var(--pd-emissive-teal),
+		0 2px 8px rgba(0, 0, 0, 0.38);
+}
+
+.player-dossier-root .pw-quest--active,
+.player-hud-root .pw-quest--active {
+	border-color: var(--pd-accent-data);
+}
+
+/* Player OS Wave C — Stats achievement edge-lit rows (Z2 deck grammar) */
+.player-dossier-root .stats-achievement-row.pd-os-deck,
+.player-hud-root .stats-achievement-row.pd-os-deck {
+	background: color-mix(in srgb, var(--pd-panel) 88%, #000);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.player-dossier-root .stats-achievement-row.pd-os-deck:hover,
+.player-hud-root .stats-achievement-row.pd-os-deck:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 38%, var(--pd-line));
+}
+
+.player-dossier-root .stats-achievement-row--unlocked .dossier-badge__label,
+.player-hud-root .stats-achievement-row--unlocked .dossier-badge__label {
+	color: #e0f2fe;
+	text-shadow: 0 0 8px color-mix(in srgb, var(--pd-accent-data) 35%, transparent);
+}
+
+.player-dossier-root .stats-achievement-row--elite .dossier-badge__icon,
+.player-hud-root .stats-achievement-row--elite .dossier-badge__icon {
+	color: color-mix(in srgb, var(--pd-accent-data) 78%, #5eead4);
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pd-accent-data) 55%, transparent));
 }
 
 /* Sprint 2.12 / 2.17 — premium lifted surface (Z2 base panel) */
@@ -239,14 +381,33 @@
 	}
 }
 
+.player-dossier-root .pd-route-strap__id {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 0;
+}
+
+/* Phase 7 · G9 — route strap L2 title-first (caps via CSS), L3 eyebrow below */
 .player-dossier-root .pd-route-strap__title {
-	margin: 0.2rem 0 0;
+	margin: 0;
 	font-family: var(--pd-font-display);
 	font-size: clamp(1rem, 2.4vw, 1.25rem);
 	font-weight: 800;
 	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	color: var(--pd-text);
 	line-height: 1.15;
+}
+
+.player-dossier-root .pd-route-strap .pd-eyebrow {
+	margin: 0;
+	font-family: var(--pd-font-mono);
+	font-size: var(--pd-hud-eyebrow-l3, 0.62rem);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 }
 
 .player-dossier-root .pd-route-strap__status {
@@ -527,15 +688,17 @@
 	max-width: 18rem;
 }
 
-/* Sprint 2.14 — stat row cells match HQ premium inset */
-.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell {
+/* Sprint 2.14 / 6j-b — stat row cells on deck surface */
+.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell,
+.player-dossier-root .pd-stat-row.pd-os-deck .hud-stat-cell {
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.05),
 		inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
 @media (min-width: 768px) {
-	.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell:hover {
+	.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell:hover,
+	.player-dossier-root .pd-stat-row.pd-os-deck .hud-stat-cell:hover {
 		border-color: color-mix(in srgb, var(--pd-accent-data) 28%, var(--pd-line));
 		box-shadow:
 			var(--pd-shadow-elev-1),
@@ -558,8 +721,9 @@
 	border-bottom: var(--pd-edge-teal);
 }
 
-/* Sprint 2.14 — Quartermaster card grid depth */
-.player-dossier-root .qa-card.pd-page-panel {
+/* Sprint 2.14 / 6j-b — Quartermaster card raised deck slots */
+.player-dossier-root .qa-card.pd-page-panel,
+.player-dossier-root .qa-card.pd-os-deck {
 	box-shadow: var(--pd-z2-panel-shadow);
 	transition:
 		border-color 0.15s ease,
@@ -567,13 +731,20 @@
 		transform 0.15s ease;
 }
 
+.player-dossier-root .qa-card.pd-os-deck .qa-card__icon {
+	background: var(--pd-z1-well-bg);
+	border-color: color-mix(in srgb, var(--pd-accent-data) 22%, var(--pd-line));
+	box-shadow: var(--pd-z1-inset-shadow);
+}
+
 @media (min-width: 768px) {
-	.player-dossier-root .qa-card.pd-page-panel:hover {
-		border: var(--pd-edge-teal);
+	.player-dossier-root .qa-card.pd-page-panel:hover,
+	.player-dossier-root .qa-card.pd-os-deck:hover {
+		border-color: color-mix(in srgb, var(--pd-accent-data) 48%, var(--pd-line));
 		box-shadow:
 			var(--pd-z3-raised-shadow),
 			var(--pd-emissive-teal);
-		transform: translateY(-2px);
+		transform: translateY(-1px);
 	}
 }
 
@@ -635,10 +806,22 @@
 	box-shadow: var(--pd-depth-glow-teal);
 }
 
-.player-dossier-root .st-panel.pd-page-panel .st-field {
+.player-dossier-root .st-panel.pd-page-panel .st-field,
+.player-dossier-root .st-panel.pd-os-deck .st-field {
 	border-color: color-mix(in srgb, var(--pd-line) 85%, #000);
 	background: var(--pd-z1-well-bg);
 	box-shadow: var(--pd-z1-inset-shadow);
+}
+
+/* Sprint 2.22 slice 6j-b — player settings panels as raised decks */
+/* Phase 7 · G5 — Settings route consumes shared frame token kit */
+.player-dossier-root.ps-settings-root .ps-settings-panel.pd-os-deck,
+.player-hud-root.ps-settings-root .ps-settings-panel.pd-os-deck {
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	border: var(--pd-os-frame-rim);
+	box-shadow: var(--pd-os-frame-shadow);
 }
 
 /* Sprint 2.14 — Stats dossier panels match VPP premium frames */
@@ -671,9 +854,16 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.player-dossier-root .pd-stat-row.pd-page-panel .hud-stat-cell:hover,
-	.player-dossier-root .qa-card.pd-page-panel:hover {
+	.player-dossier-root .pd-stat-row.pd-os-deck .hud-stat-cell:hover,
+	.player-dossier-root .qa-card.pd-page-panel:hover,
+	.player-dossier-root .qa-card.pd-os-deck:hover {
 		transform: none;
 	}
+}
+
+.player-dossier-root[data-dopamine='off'] .qa-card.pd-os-deck:hover,
+.player-hud-root[data-dopamine='off'] .qa-card.pd-os-deck:hover {
+	transform: none;
 }
 
 /* Sprint 2.12 — respect reduced motion for grain / decorative overlays */
@@ -1548,7 +1738,7 @@
 .player-dossier-root .armory-deck__mono {
 	font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 	font-feature-settings: 'tnum' 1;
-	color: color-mix(in srgb, var(--pd-accent-data-bright, #00d4ff) 88%, #fff);
+	color: color-mix(in srgb, var(--pd-accent-data-bright) 88%, #fff);
 }
 
 .player-dossier-root .armory-deck__mono--muted {
@@ -1583,7 +1773,7 @@
 }
 
 .player-dossier-root .armory-deck__link:hover {
-	color: var(--pd-accent-data-bright, #00d4ff);
+	color: var(--pd-accent-data-bright);
 }
 
 .player-dossier-root .armory-deck__inline-link {
@@ -1593,7 +1783,7 @@
 }
 
 .player-dossier-root .armory-deck__inline-link:hover {
-	color: var(--pd-accent-data-bright, #00d4ff);
+	color: var(--pd-accent-data-bright);
 }
 
 .player-dossier-root .armory-deck__progress.album-progress-track {
@@ -1618,6 +1808,151 @@
 	.player-dossier-root .qa-grid .qa-card.bento-span-6 {
 		grid-column: span 6;
 	}
+}
+
+/* Wave E — Armory Player OS cohesion */
+.player-hud-root[data-region='quartermaster-armory'] {
+	min-height: 0;
+	box-sizing: border-box;
+	color: var(--pd-text);
+	background: var(--pd-bg);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-strap__sub {
+	margin: 0;
+	padding: 0 clamp(0.85rem, 1.8vw, 1.1rem) clamp(0.75rem, 1.6vw, 0.95rem);
+	font-size: 0.78rem;
+	line-height: 1.5;
+	color: var(--pd-text-muted);
+	max-width: 40rem;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-strap__sub strong {
+	color: color-mix(in srgb, var(--pd-accent-data) 90%, var(--pd-text));
+	font-weight: 800;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-balance {
+	margin: 0.35rem 0 0;
+	font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+	font-weight: 800;
+	color: var(--pd-accent-data-bright, var(--pd-accent-data));
+	text-shadow: 0 0 18px color-mix(in srgb, var(--pd-accent-data) 45%, transparent);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-balance__unit {
+	font-size: 0.75em;
+	opacity: 0.8;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-grid {
+	align-items: stretch;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 1.1rem 1.1rem 1.15rem;
+	background:
+		var(--pd-os-frame-highlight),
+		var(--pd-os-frame-fill);
+	border: var(--pd-os-frame-rim);
+	box-shadow: var(--pd-os-frame-shadow);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck .qa-card__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 3.25rem;
+	height: 3.25rem;
+	margin-bottom: 0.75rem;
+	font-size: 1.5rem;
+	color: var(--pd-accent-data-bright, var(--pd-accent-data));
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill {
+	display: inline-block;
+	align-self: flex-start;
+	margin-bottom: 0.5rem;
+	padding: 0.15rem 0.4rem;
+	font-size: 0.58rem;
+	font-weight: 900;
+	letter-spacing: 0.16em;
+	border: 1px solid var(--pd-line);
+	color: color-mix(in srgb, var(--pd-text) 70%, transparent);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill--phys {
+	border-color: color-mix(in srgb, var(--pd-accent-action) 35%, var(--pd-line));
+	color: color-mix(in srgb, var(--pd-accent-action) 75%, #fff);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill--dig {
+	border-color: color-mix(in srgb, var(--pd-accent-data) 35%, var(--pd-line));
+	color: color-mix(in srgb, var(--pd-accent-data) 75%, #fff);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card__title {
+	margin: 0 0 0.45rem;
+	font-size: 0.95rem;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	line-height: 1.25;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card__desc {
+	margin: 0 0 0.85rem;
+	flex: 1 1 auto;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--pd-text-muted);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card__cost {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	margin: 0 0 0.9rem;
+	font-size: 1.05rem;
+	font-weight: 800;
+	color: var(--pd-text);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-deploy-btn {
+	width: 100%;
+	margin-top: auto;
+	min-height: 44px;
+	font-size: 0.68rem;
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-deploy-btn:active:not(:disabled) {
+	transform: translateY(1px);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-empty {
+	grid-column: 1 / -1;
+	margin: 0;
+	padding: 2rem 1rem;
+	text-align: center;
+	font-size: 0.85rem;
+	color: var(--pd-text-muted);
+	border: 1px dashed var(--pd-line);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-insufficient {
+	margin-top: 0.65rem;
+	align-items: flex-start;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-insufficient__link {
+	color: var(--pd-accent-data);
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 
 /* Sprint 2.16 — mobile layout pass (390px player routes) */

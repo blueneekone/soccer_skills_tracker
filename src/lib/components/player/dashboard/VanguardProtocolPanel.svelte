@@ -9,12 +9,15 @@
 		prismValues = [],
 		selectedAxis = $bindable<VanguardAxisId | null>(null),
 		compact = false,
+		hideHeadTitle = false,
 	}: {
 		prismValues?: number[];
 		selectedAxis?: VanguardAxisId | null;
 		compact?: boolean;
+		hideHeadTitle?: boolean;
 	} = $props();
 
+	/* hideHeadTitle: optional — suppress vpp-head when a parent band already owns the title (HQ uses native head). */
 	const rows = $derived(buildVanguardProtocolRows(prismValues));
 	const selectedRow = $derived(rows.find((r) => r.id === selectedAxis) ?? null);
 
@@ -23,18 +26,26 @@
 	}
 </script>
 
-<section class="vpp-root vpp-root--premium" class:vpp-root--compact={compact} aria-labelledby="vpp-heading">
-	<header class="vpp-head vpp-head--premium">
-		<div class="vpp-head__copy">
-			<p class="vpp-eyebrow">Vanguard Protocol</p>
-			<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
-			{#if !compact}
-				<p class="vpp-lede">
-					Tap a vector in the hub or radar to inspect.
-				</p>
-			{/if}
-		</div>
-	</header>
+<section
+	class="vpp-root vpp-root--premium"
+	class:vpp-root--compact={compact}
+	class:vpp-root--band-head-hidden={hideHeadTitle}
+	aria-labelledby={hideHeadTitle ? undefined : 'vpp-heading'}
+	aria-label={hideHeadTitle ? 'Vanguard protocol telemetry detail' : undefined}
+>
+	{#if !hideHeadTitle}
+		<header class="vpp-head vpp-head--premium">
+			<div class="vpp-head__copy">
+				<p class="vpp-eyebrow">Vanguard Protocol</p>
+				<h2 id="vpp-heading" class="vpp-title">TELEMETRY</h2>
+				{#if !compact}
+					<p class="vpp-lede">
+						Tap a vector in the hub or radar to inspect.
+					</p>
+				{/if}
+			</div>
+		</header>
+	{/if}
 
 	<div class="vpp-body">
 		<div class="vpp-chart vpp-chart--premium" aria-label="Attribute radar">

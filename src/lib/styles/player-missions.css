@@ -451,8 +451,8 @@
 
 .player-hud-root .quest-log-panel--embedded.quest-log-panel--rail {
 	gap: clamp(3px, 0.65vw, 6px);
-	border-top: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
-	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	border-top: none;
+	box-shadow: none;
 }
 
 .player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-hero--primary {
@@ -713,7 +713,50 @@
 		0 2px 6px rgba(0, 0, 0, 0.28);
 }
 
-.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__cmd--rail-chip {
+/* Player OS Wave B — single gold hero mission row (SDT competence focal; idle CTA owns gold) */
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero {
+	border-left-width: 3px;
+	border-left-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 92%, #fff);
+	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		inset 3px 0 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent),
+		0 4px 10px rgba(0, 0, 0, 0.32);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__sender,
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__title-text {
+	color: var(--vanguard-text-1, #f8fafc);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__xp--inline {
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 88%, #fde68a);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__cmd--rail-chip {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 72%, transparent);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, var(--pd-panel, #05050a));
+	color: var(--pd-accent-action, #fbbf24);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent),
+		var(--pd-emissive-gold, 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent));
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__cmd--rail-chip:hover {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 92%, #fff);
+	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 96%, #fff);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent),
+		var(--pd-emissive-gold, 0 0 18px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent));
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__status:not(.quest-row__status--idle) {
+	background: var(--pd-accent-action, #fbbf24);
+	box-shadow: var(--pd-emissive-gold, 0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, transparent));
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted):not(.quest-row--hero) .quest-row__cmd--rail-chip {
 	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 50%, transparent);
 	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 7%, var(--pd-panel, #05050a));
 	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff);
@@ -773,6 +816,27 @@
 	white-space: nowrap;
 }
 
+.player-hud-root .quest-row__hint,
+.player-hud-root .quest-row__drill {
+	display: none;
+	margin: 0.12rem 0 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.44rem, 0.85vw, 0.5rem);
+	line-height: 1.35;
+	letter-spacing: 0.04em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-hud-root .quest-row__hint {
+	color: color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.45)) 95%, transparent);
+}
+
+.player-hud-root .quest-row__drill {
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 88%, #94a3b8);
+}
+
 @media (min-width: 1280px) {
 	.player-hud-root .quest-row--rail .quest-row__sep--reward,
 	.player-hud-root .quest-row--rail .quest-row__xp--inline {
@@ -782,6 +846,11 @@
 	.player-hud-root .quest-row__lede--rail-wide {
 		display: block;
 		margin-top: 0.12rem;
+	}
+
+	.player-hud-root .quest-row__hint,
+	.player-hud-root .quest-row__drill {
+		display: block;
 	}
 
 	.player-hud-root .quest-row--rail .quest-row__copy--embedded {
@@ -837,36 +906,6 @@
 
 .player-hud-root .quest-log-panel--embedded.quest-log-panel--rail .quest-terminal-row--embedded {
 	padding: clamp(4px, 0.75vw, 6px) 0;
-}
-
-/* Sprint 2.22 slice 6d — Train mission briefing hero (+ dossier route parity) */
-.player-hud-root .quest-hero--train,
-.player-dossier-root .quest-hero--train {
-	max-width: min(100%, 420px);
-	padding: clamp(8px, 1.35vw, 12px);
-	margin-bottom: clamp(8px, 1.4vw, 12px);
-}
-
-.player-hud-root .quest-hero--train .quest-hero__brief-hint,
-.player-dossier-root .quest-hero--train .quest-hero__brief-hint {
-	margin: clamp(4px, 0.8vw, 6px) 0 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: clamp(0.48rem, 1vw, 0.54rem);
-	font-weight: 700;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--pd-text-muted, rgba(255, 255, 255, 0.5)) 88%, transparent);
-}
-
-.player-hud-root .quest-hero--train .quest-hero__brief-empty,
-.player-dossier-root .quest-hero--train .quest-hero__brief-empty {
-	margin: 0;
-	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: clamp(0.52rem, 1.05vw, 0.6rem);
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 }
 
 .player-dossier-root .quest-hero--premium {

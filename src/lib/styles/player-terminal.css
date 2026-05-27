@@ -1,5 +1,7 @@
 /* Sprint 2.22 slice 6h — Train / Tracker terminal chrome (diegetic primitives) */
 
+/* Phase 7 · G9 — Train diegetic primitives (no pg-scanline / corner brackets on Player OS routes) */
+
 .pg-terminal-chrome {
 	position: relative;
 	overflow: hidden;
@@ -20,49 +22,6 @@
 .pg-terminal-chrome > * {
 	position: relative;
 	z-index: 1;
-}
-
-.pg-scanline {
-	position: absolute;
-	left: 0;
-	right: 0;
-	height: 2px;
-	background: linear-gradient(
-		to right,
-		transparent 0%,
-		rgba(20, 184, 166, 0.12) 30%,
-		rgba(20, 184, 166, 0.25) 50%,
-		rgba(20, 184, 166, 0.12) 70%,
-		transparent 100%
-	);
-	animation: pg-scan 4s linear infinite;
-	pointer-events: none;
-	z-index: 2;
-}
-
-@keyframes pg-scan {
-	0% {
-		top: -2px;
-		opacity: 0;
-	}
-	5% {
-		opacity: 1;
-	}
-	95% {
-		opacity: 1;
-	}
-	100% {
-		top: 100%;
-		opacity: 0;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.pg-scanline {
-		animation: none;
-		opacity: 0.35;
-		top: 50%;
-	}
 }
 
 .pg-bracket {
@@ -137,4 +96,263 @@
 	.pw-terminal-state--transmitting {
 		animation: none;
 	}
+}
+
+/* Wave D — Train diegetic range sliders (conduit track + terminal thumb) */
+.player-hud-root .pw-range {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 1.5rem;
+	background: transparent;
+	cursor: pointer;
+	margin: 0;
+}
+
+.player-hud-root .pw-range:focus {
+	outline: none;
+}
+
+.player-hud-root .pw-range:focus-visible {
+	outline: 1px solid color-mix(in srgb, var(--pd-accent-data) 55%, transparent);
+	outline-offset: 2px;
+}
+
+.player-hud-root .pw-range--rpe:focus-visible {
+	outline-color: color-mix(in srgb, var(--pd-accent-action) 55%, transparent);
+}
+
+.player-hud-root .pw-range:active::-webkit-slider-thumb {
+	transform: scale(1.12);
+	border-color: var(--pd-accent-data);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data) 45%, transparent);
+}
+
+.player-hud-root .pw-gauge--rpe .pw-range:active::-webkit-slider-thumb {
+	border-color: var(--pd-accent-action);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-action) 45%, transparent);
+}
+
+.player-hud-root .pw-range--rpe::-webkit-slider-thumb {
+	border-color: var(--pd-accent-action);
+}
+
+.player-hud-root .pw-range--rpe::-moz-range-thumb {
+	border-color: var(--pd-accent-action);
+}
+
+.player-hud-root .pw-range:active::-moz-range-thumb {
+	transform: scale(1.12);
+}
+
+/* Wave D′ — Train layout: configure/execute wells, gauges, utilities */
+.player-hud-root .pw-mono {
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-feature-settings: 'tnum' 1;
+}
+
+.player-hud-root .pw-dim {
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
+}
+
+.player-hud-root .pw-data {
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+.player-hud-root .pw-action {
+	color: var(--pd-accent-action, #fbbf24);
+}
+
+.player-hud-root .pw-green {
+	color: var(--pd-accent-data, #14b8a6);
+}
+
+.player-hud-root .pw-ghostline {
+	margin: 0.4rem 0 0.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.player-hud-root .pw-est__bounty {
+	font-size: 0.6rem;
+	margin-top: 0.2rem;
+}
+
+.player-hud-root .pw-panel__head {
+	margin-bottom: 0.25rem;
+}
+
+.player-hud-root .pw-panel__head--row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.player-hud-root .pw-est {
+	font-size: 0.72rem;
+}
+
+.player-hud-root .pw-configure-step + .pw-configure-step {
+	margin-top: clamp(0.85rem, 1.5vw, 1.1rem);
+	padding-top: clamp(0.75rem, 1.35vw, 1rem);
+	border-top: 1px solid color-mix(in srgb, var(--pd-line) 72%, transparent);
+}
+
+.player-hud-root .pw-focus {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.5rem;
+	margin-top: 0.45rem;
+}
+
+@media (min-width: 640px) {
+	.player-hud-root .pw-focus {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.player-hud-root .pw-focus__btn {
+	padding: 0.6rem 0.5rem;
+	color: var(--pd-text-muted);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
+	min-height: 44px;
+}
+
+.player-hud-root .pw-focus__op {
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.55rem;
+	color: var(--pd-accent-data);
+}
+
+.player-hud-root .pw-focus__lab {
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.player-hud-root .pw-subdrill {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin-top: 0.45rem;
+}
+
+.player-hud-root .pw-chip {
+	padding: 0.4rem 0.7rem;
+	color: var(--pd-text-muted);
+	font-family: var(--pd-font-mono, 'Geist Mono', ui-monospace, monospace);
+	font-size: 0.7rem;
+	cursor: pointer;
+	min-height: 44px;
+}
+
+.player-hud-root .pw-theater__execute .pw-gauges {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(0.85rem, 1.5vw, 1.1rem);
+	margin-top: 0.45rem;
+	margin-bottom: 0;
+	padding: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+}
+
+.player-hud-root .pw-gauge {
+	min-width: 0;
+}
+
+.player-hud-root .pw-gauge__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 0.4rem;
+	gap: 0.5rem;
+}
+
+.player-hud-root .pw-gauge__bar {
+	--gauge: 0%;
+	height: 0.35rem;
+	width: 100%;
+	background: var(--pd-bg);
+	border: 1px solid var(--pd-line);
+	margin-bottom: 0.2rem;
+	overflow: hidden;
+}
+
+.player-hud-root .pw-gauge__bar-fill {
+	height: 100%;
+	width: var(--gauge);
+	transition: width 0.2s ease;
+	background: var(--pd-accent-data);
+}
+
+.player-hud-root .pw-gauge--rpe .pw-gauge__bar,
+.player-hud-root .pw-gauge__bar--rpe {
+	border-color: color-mix(in srgb, var(--pd-accent-action) 28%, var(--pd-line));
+}
+
+.player-hud-root .pw-gauge--rpe .pw-gauge__bar-fill {
+	background: var(--pd-accent-action);
+}
+
+.player-hud-root .pw-locked {
+	font-size: 0.65rem;
+	text-align: center;
+	color: color-mix(in srgb, var(--pd-text-muted) 78%, transparent);
+	margin: 0;
+}
+
+.player-hud-root .pw-range::-webkit-slider-runnable-track {
+	height: 4px;
+	background: var(--pd-bg);
+	border: 1px solid var(--pd-line);
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.55);
+}
+
+.player-hud-root .pw-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 14px;
+	height: 14px;
+	margin-top: -6px;
+	background: var(--pd-bg);
+	border: 2px solid var(--pd-accent-data);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 2px 0 rgba(0, 0, 0, 0.45);
+	transition:
+		transform 0.12s ease,
+		border-color 0.12s ease,
+		box-shadow 0.12s ease;
+}
+
+.player-hud-root .pw-range::-moz-range-track {
+	height: 4px;
+	background: var(--pd-bg);
+	border: 1px solid var(--pd-line);
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.55);
+}
+
+.player-hud-root .pw-range::-moz-range-thumb {
+	width: 14px;
+	height: 14px;
+	background: var(--pd-bg);
+	border: 2px solid var(--pd-accent-data);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 2px 0 rgba(0, 0, 0, 0.45);
+	transition:
+		transform 0.12s ease,
+		border-color 0.12s ease,
+		box-shadow 0.12s ease;
 }

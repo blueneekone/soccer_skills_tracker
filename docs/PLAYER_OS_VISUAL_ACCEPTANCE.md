@@ -4,6 +4,9 @@
 
 **Living doc for Epic 1 premium track 2.12.1–2.20** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Platform criteria:** [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) · **Canonical material:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) · **Spatial history:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
 
+- **Automated gate (G9):** [`playerOsCohesion.test.ts`](../src/lib/components/player/dashboard/__tests__/playerOsCohesion.test.ts) — cohesion/density/detail guards + `g9-manifest.json` size proof.
+- **Human sign-off (G10):** MCP screenshots at 1280×800 and 390×844 — artifacts in [`docs/vision/va-screenshots/g10-manifest.json`](vision/va-screenshots/g10-manifest.json). Checkboxes below marked ☑ only after PNG capture + visual confirm this sprint.
+
 - **Sign-off gate:** Must pass [`PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) §5 universal checks **and** the Player row, in addition to the checklist below.
 
 Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Sprint 2.19 shipped diegetic kit + energy motion; **Epic 3.4 / 4.1** require full sign-off below before shipping features.
@@ -13,26 +16,26 @@ Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Sprin
 | State | Routes | Pass criteria | 1280px | 390px |
 |-------|--------|---------------|:------:|:-----:|
 | Profile incomplete + no telemetry | HQ (`/player/dashboard`) | Onboarding hero filled; VPP hex empty; mission rail premium | ☐ | ☐ |
-| Profile complete + no telemetry | HQ | Hero ring + rank shimmer; no duplicate radar | ☐ | ☐ |
+| Profile complete + no telemetry | HQ | Hero ring + rank shimmer; no duplicate radar | ☑ | ☐ |
 | Full telemetry | HQ, Stats (`/stats`) | Radar + inspector accent; capsules nested strip | ☐ | ☐ |
-| Capsule ghost | HQ | Compact ghost card not void | ☐ | ☐ |
-| Mobile layout | All player nav routes | No horizontal scroll; panels readable | — | ☐ |
+| Capsule ghost | HQ | Compact ghost card not void | ☑ | ☐ |
+| Mobile layout | All player nav routes | No horizontal scroll; panels readable | — | ☑ |
 | Reduced motion | HQ | No stagger / shimmer / streak pulse (`prefers-reduced-motion: reduce`) | ☐ | ☐ |
 | Dopamine off | HQ + shell routes | `data-dopamine='off'` disables decorative motion | ☐ | ☐ |
 
 ## Reference matrix (Sprint 2.20 sign-off)
 
-Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screenshot + must-feel rule at both viewports.
+Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screenshot + must-feel rule at both viewports. Instrument types: [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md).
 
-| Route | SIEM/SOAR anchor | Tron/Ares anchor | Game HUD anchor | Must-feel rule | 1280px | 390px |
-|-------|------------------|------------------|-----------------|----------------|:------:|:-----:|
-| **HQ** (`/player/dashboard`) | Incident overview (severity-lane mission feed) | Grid ops floor (operative spotlight in void) | Mission select screen (one gold “do this now”) | Identity Z3 hero; ≥40% void; one gold focal; mission rail flows with document | ☐ | ☐ |
-| **Stats** (`/stats`) | Investigation workspace (artifact left, inspector right, timeline below) | Vector analysis terminal | Character sheet | Radar full-width band; workout chart full-width band; no nested borders on radar well | ☐ | ☐ |
-| **Train** (`/player/workout`) | Playbook editor + tail logs | Program upload terminal | Helldivers stratagem input | Diegetic terminal (corner brackets + scanline + state copy); equal-height columns; no inner panel scroll | ☐ | ☐ |
-| **Armory** (`/player/armory`) | Asset registry + threat-intel feed | Loadout bay / identity disc | Destiny vault | Dossier card preview Z3 standalone; album covers match sticker aspect; command deck tabs unchanged | ☐ | ☐ |
-| **Settings** (`/player/settings`) | Configuration deck | Identity calibration terminal | Pause menu config | All controls use diegetic kit; no browser-default toggles | ☐ | ☐ |
-| **Tracker** (`/player/tracker`) | Trend dashboard | Memory archive | Co-op replay log | Matching stat row primitive; capsule arena Tier A; not a “log list” | ☐ | ☐ |
-| **Skill tree** (`/player/skill-tree`) | Capability matrix | The Grid root | Talent tree | Already Tier A — defends as reference benchmark | ☐ | ☐ |
+| Route | Instrument | SIEM/SOAR anchor | Tron/Ares anchor | Game HUD anchor | Must-feel rule | 1280px | 390px |
+|-------|------------|------------------|------------------|-----------------|----------------|:------:|:-----:|
+| **HQ** (`/player/dashboard`) | Identity + Directive + Nav + Progression + Telemetry stack | Incident overview (severity-lane mission feed) | Grid ops floor (operative spotlight in void) | Mission select screen (one gold “do this now”) | Identity Z3 hero; ≥40% void; one gold focal; shared frame all bands | ☑ | ☑ |
+| **Stats** (`/stats`) | Telemetry | Investigation workspace (artifact left, inspector right, timeline below) | Vector analysis terminal | Character sheet | Radar full-width band; workout chart full-width band; no nested borders on radar well | ☑ | ☑ |
+| **Train** (`/player/workout`) | Execute | Playbook editor + tail logs | Program upload terminal | Helldivers stratagem input | Shared `pd-os-deck` hero frame; corner brackets + diegetic state copy OK; **NO `pg-scanline`**; title-first route strap matches Player OS; equal-height columns; no inner panel scroll | ☑ | ☑ |
+| **Armory** (`/player/armory`) | Identity + Progression | Asset registry + threat-intel feed | Loadout bay / identity disc | Destiny vault | Dossier card preview Z3 standalone; album covers match sticker aspect; command deck tabs unchanged | ☑ | ☑ |
+| **Settings** (`/player/settings`) | Execute + Navigation | Configuration deck | Identity calibration terminal | Pause menu config | All controls use diegetic kit; no browser-default toggles | ☑ | ☑ |
+| **Tracker** (`/player/tracker`) | Telemetry | Trend dashboard | Memory archive | Co-op replay log | Matching stat row primitive; capsule arena Tier A; not a “log list” | ☑ | ☐ |
+| **Skill tree** (`/player/skill-tree`) | Progression (Tier A) | Capability matrix | The Grid root | Talent tree | Already Tier A — defends as reference benchmark | ☑ | ☐ |
 
 ## Void contract measurement
 
@@ -52,7 +55,7 @@ Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §3 — _automat
 |-----------|---------------|:--------:|
 | HQ identity hero | `HologramCardShell` tilt + foil + edge-glow at **1280** and **390**; display callsign on card face; void-visible identity stage (no grey inset well) | ☐ |
 | Radar (HQ + Stats) | Matches `AttributeRadar` + `url(#pdDataBloom)` — **no** extra `::before` / `::after` frame | ☐ |
-| Workout terminal | Matches `ProvingGrounds` (corner brackets + scanline scoped to terminal) | ☐ |
+| Workout terminal | Matches G9 Execute frame cohesion — shared `pd-os-deck--hero` tokens; corner brackets + terminal chrome optional; **no animated scan bar** (`pg-scanline` banned on Player OS routes) | ☑ |
 | Studio dossier preview | Z3 standalone — not nested inside matte admin panel | ☐ |
 
 ## Cinematic reference states (manual QA)
@@ -71,11 +74,11 @@ Supplemental states for edge QA (profile incomplete / full telemetry / Studio):
 
 | Route | Label | 390px |
 |-------|-------|:-----:|
-| `/player/dashboard` | HQ | ☐ |
-| `/stats` | Stats | ☐ |
-| `/player/workout` | Train | ☐ |
-| `/player/armory` | Armory | ☐ |
-| `/player/settings` | Settings | ☐ |
+| `/player/dashboard` | HQ | ☑ |
+| `/stats` | Stats | ☑ |
+| `/player/workout` | Train | ☑ |
+| `/player/armory` | Armory | ☑ |
+| `/player/settings` | Settings | ☑ |
 
 ## Motion acceptance
 

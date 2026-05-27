@@ -27,6 +27,8 @@
 		formatQuestRewardLabel,
 		isPromotedQuest,
 		questCtaLabel,
+		shouldDeferQuestCompletionUntilWorkoutLog,
+		questHudCtaFor,
 		questHudCtaShort,
 		questTerminalCmd,
 		resolveQuestLifecycle,
@@ -35,6 +37,14 @@
 		sortQuestLog,
 		type QuestTask,
 	} from '$lib/player/dashboard/activeBounties.js';
+	import {
+		buildCoachHomeworkHandoff,
+		buildCoachIntentHandoff,
+		COACH_INTENT_HINT,
+		formatSuggestedDrillLine,
+		resolveHeuristicDrill,
+		stashMissionHandoff,
+	} from '$lib/player/workout/coachMissionFlow.js';
 
 	let {
 		embedded = false,
@@ -56,6 +66,11 @@
 	let internalLoading = $state(true);
 	let questProgress = $state(loadQuestProgress());
 	let showAllQuests = $state(false);
+	let intentDataById = $state<Record<string, Record<string, unknown>>>({});
+	let homeworkDataById = $state<Record<string, Record<string, unknown>>>({});
+	let drillPreviewByQuestId = $state<
+		Record<string, { id: string; title: string; line: string }>
+	>({});
 
 	const quests = $derived(questsProp ?? internalQuests);
 	const loading = $derived(loadingProp ?? internalLoading);
@@ -72,12 +87,57 @@
 	);
 	const visibleBounties = $derived(visibleQuests.filter((q) => q.tier === 'bounty'));
 	const visibleDailies = $derived(visibleQuests.filter((q) => q.tier === 'daily'));
+	const embeddedFeed = $derived(
+		heroQuest ?
+			[heroQuest, ...visibleQuests.filter((q) => q.id !== heroQuest.id)]
+		:	visibleQuests,
+	);
 
 	const coachBountyCount = $derived(
 		dedupedQuests.filter(
 			(q) => q.tier === 'bounty' && (q.source === 'coach_intent' || q.source === 'coach_homework'),
 		).length,
 	);
+
+	const recentFrustration = $derived(
+		String(authStore.userProfile?.recentFrustration ?? 'low'),
+	);
+
+	$effect(() => {
+		const coachIntents = dedupedQuests.filter((q) => q.source === 'coach_intent');
+		const frustration = recentFrustration;
+		const rows = intentDataById;
+		let cancelled = false;
+
+		async function loadPreviews() {
+			if (coachIntents.length === 0) {
+				if (!cancelled) drillPreviewByQuestId = {};
+				return;
+			}
+			const next: Record<string, { id: string; title: string; line: string }> = {};
+			await Promise.all(
+				coachIntents.map(async (quest) => {
+					const row = rows[quest.id] ?? {};
+					const targetAttributeId =
+						typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+					if (!targetAttributeId) return;
+					const drill = await resolveHeuristicDrill(db, targetAttributeId, frustration);
+					if (!drill) return;
+					next[quest.id] = {
+						id: drill.id,
+						title: drill.title,
+						line: formatSuggestedDrillLine(drill.title),
+					};
+				}),
+			);
+			if (!cancelled) drillPreviewByQuestId = next;
+		}
+
+		void loadPreviews();
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	$effect(() => {
 		onCoachBountyCount?.(coachBountyCount);
@@ -153,18 +213,23 @@
 					(snap) => {
 						const progress = loadQuestProgress();
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-						intents = uniqueDocs
+						const scopedRows = uniqueDocs
 							.map((d) => ({ id: d.id, ...d.data() }))
 							.filter((row) => {
 								if (!row.scope || row.scope === 'team') return true;
 								return Array.isArray(row.targetUids) && row.targetUids.includes(uid);
-							})
+							});
+						intentDataById = Object.fromEntries(
+							scopedRows.map((row) => [row.id, row as Record<string, unknown>]),
+						);
+						intents = scopedRows
 							.map((row) => bountyFromCoachIntent(row.id, row, progress, uid))
 							.filter((b): b is QuestTask => b != null);
 						merge();
 					},
 					() => {
 						intents = [];
+						intentDataById = {};
 						merge();
 					},
 				),
@@ -182,13 +247,18 @@
 				(snap) => {
 					const progress = loadQuestProgress();
 					const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-					homework = uniqueDocs
-						.map((d) => bountyFromHomeworkAssignment(d.id, d.data(), progress))
+					const rows = uniqueDocs.map((d) => ({ id: d.id, ...d.data() }));
+					homeworkDataById = Object.fromEntries(
+						rows.map((row) => [row.id, row as Record<string, unknown>]),
+					);
+					homework = rows
+						.map((row) => bountyFromHomeworkAssignment(row.id, row, progress))
 						.filter((b): b is QuestTask => b != null);
 					merge();
 				},
 				() => {
 					homework = [];
+					homeworkDataById = {};
 					merge();
 				},
 			),
@@ -233,15 +303,42 @@
 		}));
 	}
 
+	function stashQuestHandoff(quest: QuestTask) {
+		if (quest.source === 'coach_intent') {
+			const row = intentDataById[quest.id] ?? {};
+			const targetAttributeId =
+				typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
+			const preview = drillPreviewByQuestId[quest.id];
+			stashMissionHandoff(
+				buildCoachIntentHandoff({
+					missionId: quest.id,
+					targetAttributeId,
+					requiredXp,
+					drill: preview ? { id: preview.id, title: preview.title } : null,
+				}),
+			);
+			return;
+		}
+		if (quest.source === 'coach_homework') {
+			const row = homeworkDataById[quest.id] ?? {};
+			stashMissionHandoff(
+				buildCoachHomeworkHandoff({
+					missionId: quest.id,
+					drillTitle: quest.title,
+					targetAttributeId:
+						typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
+				}),
+			);
+		}
+	}
+
 	/** @param {QuestTask} quest */
 	function handleQuestAction(quest: QuestTask) {
 		if (quest.lifecycle === 'accept') {
 			questProgress = markQuestAccepted(quest.id, questProgress);
-			if (quest.source === 'coach_intent' && typeof sessionStorage !== 'undefined') {
-				sessionStorage.setItem('player_active_mission_id', quest.id);
-			}
-			if (quest.source === 'coach_homework' && typeof sessionStorage !== 'undefined') {
-				sessionStorage.setItem('player_active_assignment_id', quest.id);
+			if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
+				stashQuestHandoff(quest);
 			}
 			if (questsProp === undefined) {
 				internalQuests = patchQuestLifecycle(internalQuests);
@@ -250,14 +347,17 @@
 		}
 
 		if (quest.lifecycle === 'complete') {
-			questProgress = markQuestCompleted(quest.id, questProgress);
-			if (quest.source === 'coach_intent' && typeof sessionStorage !== 'undefined') {
-				sessionStorage.setItem('player_active_mission_id', quest.id);
+			const deferUntilLog = shouldDeferQuestCompletionUntilWorkoutLog(quest);
+			if (!deferUntilLog) {
+				questProgress = markQuestCompleted(quest.id, questProgress);
 			}
-			if (quest.source === 'coach_homework' && typeof sessionStorage !== 'undefined') {
-				sessionStorage.setItem('player_active_assignment_id', quest.id);
+			if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
+				stashQuestHandoff(quest);
 			}
 			goto(resolve(quest.actionHref));
+			if (!deferUntilLog && questsProp === undefined) {
+				internalQuests = patchQuestLifecycle(internalQuests);
+			}
 			return;
 		}
 
@@ -283,7 +383,7 @@
 		aria-label={questCtaLabel(quest.lifecycle)}
 		onclick={() => handleQuestAction(quest)}
 	>
-		{questHudCtaShort(quest.lifecycle)}
+		{questHudCtaFor(quest)}
 	</button>
 {/snippet}
 
@@ -311,7 +411,8 @@
 		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
 		class:quest-row--bounty={quest.tier === 'bounty'}
-		class:quest-row--promoted={isPromotedQuest(quest)}
+		class:quest-row--hero={heroQuest?.id === quest.id}
+		class:quest-row--promoted={!heroQuest && isPromotedQuest(quest)}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -332,6 +433,14 @@
 			{#if formatQuestRewardLabel(quest)}
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
 			{/if}
+			{#if quest.source === 'coach_intent'}
+				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
+				{#if drillPreviewByQuestId[quest.id]?.line}
+					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
+				{/if}
+			{:else if quest.source === 'coach_homework'}
+				<p class="quest-row__drill">Assigned drill: {quest.title}</p>
+			{/if}
 		</div>
 
 		<div
@@ -348,7 +457,7 @@
 			aria-label={questCtaLabel(quest.lifecycle)}
 			onclick={() => handleQuestAction(quest)}
 		>
-			{questHudCtaShort(quest.lifecycle)}
+			{questHudCtaFor(quest)}
 		</button>
 	</div>
 {/snippet}
@@ -426,7 +535,7 @@
 				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
 				aria-label="Active missions"
 			>
-				{#each visibleQuests as quest (quest.id)}
+				{#each embeddedFeed as quest (quest.id)}
 					<div
 						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
 						class:quest-terminal-row--habit={quest.tier === 'daily'}

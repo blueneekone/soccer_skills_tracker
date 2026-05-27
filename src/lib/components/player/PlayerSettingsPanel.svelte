@@ -11,6 +11,7 @@
 	import PlayerOsSelect from '$lib/components/player/os/PlayerOsSelect.svelte';
 	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
 	import PlayerOsToggle from '$lib/components/player/os/PlayerOsToggle.svelte';
+	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
 	import type { UnlinkPhoneVerificationInput, UnlinkPhoneVerificationResult } from '$lib/types/phoneVerification.js';
 	import {
 		computeIsMinorAccount,
@@ -104,13 +105,22 @@
 
 	let phoneUnlinking = $state(false);
 	let phoneUnlinkError = $state('');
+	let unlinkConfirmOpen = $state(false);
 	const unlinkPhoneFn = httpsCallable<UnlinkPhoneVerificationInput, UnlinkPhoneVerificationResult>(
 		functions,
 		'unlinkPhoneVerification',
 	);
 
-	async function handleUnlinkPhone() {
-		if (!confirm('Remove your verified phone number from this account?')) return;
+	function requestUnlinkPhone() {
+		unlinkConfirmOpen = true;
+	}
+
+	function cancelUnlinkPhone() {
+		unlinkConfirmOpen = false;
+	}
+
+	async function confirmUnlinkPhone() {
+		unlinkConfirmOpen = false;
 		phoneUnlinking = true;
 		phoneUnlinkError = '';
 		try {
@@ -192,7 +202,7 @@
 />
 
 {#if activeTab === 'profile'}
-	<div class="ps-settings-panel pd-page-panel">
+	<div class="ps-settings-panel pd-os-deck">
 		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow">Account</span>
 			<div class="ps-settings-info-grid">
@@ -305,7 +315,7 @@
 						</div>
 						<PlayerOsButton
 							variant="danger"
-							onclick={handleUnlinkPhone}
+							onclick={requestUnlinkPhone}
 							disabled={phoneUnlinking}
 						>
 							{phoneUnlinking ? 'Unlinking…' : 'Unlink phone'}
@@ -341,7 +351,7 @@
 	</div>
 
 {:else if activeTab === 'notifications'}
-	<div class="ps-settings-panel pd-page-panel">
+	<div class="ps-settings-panel pd-os-deck">
 		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow">Push notifications</span>
 
@@ -451,7 +461,7 @@
 	</div>
 
 {:else if activeTab === 'danger'}
-	<div class="ps-settings-panel pd-page-panel">
+	<div class="ps-settings-panel pd-os-deck">
 		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow ps-settings-eyebrow--danger">Password reset</span>
 			<p class="ps-settings-hint">Send a password reset link to {email}.</p>
@@ -490,6 +500,18 @@
 		</section>
 	</div>
 {/if}
+
+<PlayerDiegeticOverlay
+	open={unlinkConfirmOpen}
+	variant="confirm"
+	title="Unlink verified phone"
+	message="Remove your verified phone number from this account? Two-factor recovery for your operative profile will be disabled until you link a new number."
+	confirmLabel="UNLINK"
+	cancelLabel="KEEP NUMBER"
+	onConfirm={confirmUnlinkPhone}
+	onCancel={cancelUnlinkPhone}
+	onClose={cancelUnlinkPhone}
+/>
 
 {#snippet relayRow(
 	label: string,

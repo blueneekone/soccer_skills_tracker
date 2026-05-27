@@ -219,23 +219,16 @@ describe('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
 		}
 	});
 
-	it('workout/+page.svelte .pw-grid uses align-items: stretch at md+ OR both panels share equal min-height', () => {
-		// Bug 8: execution terminal must match ingest queue panel height on desktop
-		const hasStretchAtMd =
-			/@media[^{]*min-width:\s*768px[^{]*\{[\s\S]*?pw-grid[\s\S]*?align-items:\s*stretch/.test(workoutSrc);
-		const hasStretchGlobal = /\.pw-grid\s*\{[^}]*align-items:\s*stretch/.test(workoutSrc);
-		const hasEqualMinHeight =
-			/\.pw-panel\s*\{[\s\S]*?min-height:\s*18rem/.test(workoutSrc) ||
-			/\.pw-panel--threat\s*\{[^}]*min-height/.test(workoutSrc);
-		expect(hasStretchAtMd || hasStretchGlobal || hasEqualMinHeight).toBe(true);
+	it('workout/+page.svelte uses full-width exec theater (no duplicate coach sidebar grid)', () => {
+		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero bento-span-12/);
+		expect(workoutSrc).toMatch(/pw-theater__body tw-min-w-0 bento-span-12/);
+		expect(workoutSrc).not.toMatch(/pw-panel--threat/);
+		expect(workoutSrc).not.toMatch(/class:bento-span-8=\{hasCoachIntents\}/);
 	});
 
-	it('workout/+page.svelte .pw-hud__cell--load includes hud-stat-cell class in element class attribute', () => {
-		// Bug 7: XP progress row must share HudStatCell chrome (clip-path, border, padding)
-		// so its height matches the Level and Day streak HudStatCell siblings
-		expect(workoutSrc).toMatch(
-			/class="[^"]*pw-hud__cell--load[^"]*hud-stat-cell|class="[^"]*hud-stat-cell[^"]*pw-hud__cell--load/
-		);
+	it('workout/+page.svelte does not duplicate HQ stat telemetry (streak/xp row removed from logger)', () => {
+		expect(workoutSrc).not.toMatch(/HudStatCell/);
+		expect(workoutSrc).not.toMatch(/pw-hud__cell--load/);
 	});
 });
 

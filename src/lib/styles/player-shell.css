@@ -249,7 +249,9 @@
 	color: var(--pp-text-secondary);
 	transition:
 		background 0.15s ease,
-		border-color 0.15s ease;
+		border-color 0.15s ease,
+		transform 0.05s ease,
+		box-shadow 0.05s ease;
 	border-radius: 12px;
 	border: 1px solid transparent;
 	box-sizing: border-box;
@@ -257,6 +259,27 @@
 
 .ps-rail__link:hover {
 	background: rgba(255, 255, 255, 0.07);
+}
+
+/* Wave A — rubric §1.4 instant press feedback on every rail link */
+.ps-rail__link:active {
+	transform: scale(0.94);
+	transition:
+		background 0.05s ease,
+		border-color 0.05s ease,
+		transform 0.05s ease,
+		box-shadow 0.05s ease;
+}
+
+.ps-rail__link--hub-active:active,
+.ps-rail__link--active:active {
+	transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ps-rail__link:active {
+		transform: none;
+	}
 }
 
 .ps-rail__link--hub-active {
@@ -365,6 +388,58 @@
 	filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.55));
 }
 
+/* Wave A — dossier rail instant press (rubric §1.4) */
+.ps-root:has(.player-dossier-root) .ps-rail__link:active,
+.ps-root.ps-root--dossier .ps-rail__link:active {
+	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--hub-active:active,
+.ps-root.ps-root--dossier .ps-rail__link--hub-active:active {
+	border-color: rgba(251, 191, 36, 0.72);
+	box-shadow:
+		inset 0 2px 10px rgba(0, 0, 0, 0.5),
+		0 0 16px rgba(251, 191, 36, 0.28);
+}
+
+.ps-root:has(.player-dossier-root) .ps-rail__link--active:active,
+.ps-root.ps-root--dossier .ps-rail__link--active:active {
+	border-color: rgba(20, 184, 166, 0.72);
+	box-shadow:
+		inset 0 2px 10px rgba(0, 0, 0, 0.5),
+		0 0 14px rgba(20, 184, 166, 0.24);
+}
+
+/* Wave A — billing banner: compact dossier tone; must not dominate 3-second hierarchy */
+.ps-root.ps-root--dossier .prob-banner,
+.ps-root:has(.player-dossier-root) .prob-banner {
+	margin: 0 0 clamp(8px, 1.5vw, 12px);
+}
+
+.ps-root.ps-root--dossier .prob-banner__strip,
+.ps-root:has(.player-dossier-root) .prob-banner__strip {
+	padding: 0.5rem 0.85rem;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--pp-accent-cool, #14b8a6) 32%, rgba(255, 255, 255, 0.1));
+	background: color-mix(in srgb, #05050a 92%, transparent);
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+		0 8px 20px -12px rgba(0, 0, 0, 0.75);
+}
+
+.ps-root.ps-root--dossier .prob-banner__title,
+.ps-root:has(.player-dossier-root) .prob-banner__title {
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+}
+
+.ps-root.ps-root--dossier .prob-banner__btn--primary,
+.ps-root:has(.player-dossier-root) .prob-banner__btn--primary {
+	background: linear-gradient(135deg, var(--pp-accent-cool, #14b8a6), var(--pp-accent, #fbbf24));
+	border-color: color-mix(in srgb, var(--pp-accent-cool, #14b8a6) 45%, transparent);
+	box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--pp-accent-cool, #14b8a6) 45%, transparent);
+}
+
 /* ─── Tablet+: fixed 80px left rail ──────────────────────────── */
 @media (min-width: 768px) {
 	.ps-root {
@@ -428,9 +503,10 @@
 }
 
 /* ─── In-shell content: modern cards ─────────────────────────── */
-.ps-root :global(.bento-card),
-.ps-root :global(.card),
-.ps-root :global(.ec-panel) {
+/* Wave A — Player OS dossier routes own material; skip generic pp-card chrome injection */
+.ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.bento-card),
+.ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.card),
+.ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.ec-panel) {
 	background: var(--pp-card);
 	border: 1px solid var(--pp-border);
 	color: var(--pp-text-primary);

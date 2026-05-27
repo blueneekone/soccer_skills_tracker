@@ -98,6 +98,31 @@ export function questHudCtaShort(lifecycle: QuestLifecycle): string {
 	}
 }
 
+/** True when Complete should navigate to Train without marking quest completed yet. */
+export function shouldDeferQuestCompletionUntilWorkoutLog(quest: QuestTask): boolean {
+	return (
+		quest.lifecycle === 'complete' &&
+		quest.actionHref.includes('/player/workout') &&
+		(quest.source === 'coach_intent' ||
+			quest.source === 'coach_homework' ||
+			quest.source === 'daily_habit')
+	);
+}
+
+/** Lifecycle + route-aware CTA (Train-bound missions use Start session). */
+export function questHudCtaFor(quest: QuestTask): string {
+	if (
+		quest.lifecycle === 'complete' &&
+		quest.actionHref.includes('/player/workout') &&
+		(quest.source === 'coach_intent' ||
+			quest.source === 'coach_homework' ||
+			quest.source === 'daily_habit')
+	) {
+		return 'Start session →';
+	}
+	return questHudCtaShort(quest.lifecycle);
+}
+
 /** Bracketed terminal command label for Player OS SIEM HUD. */
 export function questTerminalCmd(lifecycle: QuestLifecycle): string {
 	switch (lifecycle) {
@@ -212,6 +237,19 @@ export function markQuestCompleted(id: string, store: QuestProgressStore): Quest
 	};
 	saveQuestProgress(next);
 	return next;
+}
+
+/**
+ * After a successful workout log — mark coach homework / daily habit ready to claim.
+ * Coach intents use backend fulfilledByUids; do not call for those.
+ */
+export function markQuestCompletedAfterWorkoutLog(
+	id: string,
+	source: ActiveBountySource,
+	store: QuestProgressStore,
+): QuestProgressStore {
+	if (source === 'coach_intent') return store;
+	return markQuestCompleted(id, store);
 }
 
 export function markQuestClaimed(id: string, store: QuestProgressStore): QuestProgressStore {

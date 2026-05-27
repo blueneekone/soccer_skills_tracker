@@ -18,8 +18,8 @@
 <header class="pd-route-strap" aria-label={ariaLabel}>
 	<div class="pd-route-strap__grid">
 		<div class="pd-route-strap__id">
-			<p class="pd-eyebrow">{eyebrow}</p>
 			<h1 class="pd-route-strap__title">{title}</h1>
+			<p class="pd-eyebrow">{eyebrow}</p>
 		</div>
 		{#if status}
 			<div class="pd-route-strap__status" role="status">

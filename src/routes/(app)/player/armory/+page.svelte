@@ -14,6 +14,10 @@
 	} from '$lib/gamification/seasonOneData.js';
 	import ArmoryAlbumWorkspace from '$lib/components/player/ArmoryAlbumWorkspace.svelte';
 	import ArmoryCommandDeck from '$lib/components/player/ArmoryCommandDeck.svelte';
+	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
+	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+	import PlayerOsButton from '$lib/components/player/os/PlayerOsButton.svelte';
+	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
 	import type { LoadoutSlotId } from '$lib/gamification/loadoutSchema.js';
 	import {
 		OPERATIVE_AVATAR_VERSION,
@@ -23,8 +27,6 @@
 		defaultOperativeLoadout,
 		parseOperativeLoadout,
 	} from '$lib/gamification/loadoutSchema.js';
-	import Swal from 'sweetalert2';
-
 	// ── Phase 3, Epic 6 — Trajectory Tracking ───────────────────────────────
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
@@ -190,6 +192,52 @@
 
 	let armoryBusy = $state(false);
 
+	/** Diegetic overlay state (Wave E — replaces legacy deployment toasts). */
+	let overlayOpen = $state(false);
+	let overlayVariant = $state(/** @type {'success' | 'error' | 'confirm'} */ ('error'));
+	let overlayTitle = $state('');
+	let overlayMessage = $state('');
+	let overlayAutoDismissMs = $state(0);
+
+	const armoryTabs = [
+		{ key: 'quartermaster', label: 'Quartermaster' },
+		{ key: 'album', label: 'Sticker Album' },
+		{ key: 'studio', label: 'Studio' },
+		{ key: 'ceremonies', label: 'Ceremonies' },
+	];
+
+	function closeOverlay() {
+		overlayOpen = false;
+	}
+
+	function showDiegeticError(title: string, message: string) {
+		overlayVariant = 'error';
+		overlayTitle = title;
+		overlayMessage = message;
+		overlayAutoDismissMs = 0;
+		overlayOpen = true;
+	}
+
+	function showDiegeticSuccess(title: string, message: string, autoDismissMs = 4500) {
+		overlayVariant = 'success';
+		overlayTitle = title;
+		overlayMessage = message;
+		overlayAutoDismissMs = autoDismissMs;
+		overlayOpen = true;
+	}
+
+	/** @param {string} key */
+	function selectArmoryWorkspace(key: string) {
+		if (
+			key === 'quartermaster' ||
+			key === 'album' ||
+			key === 'studio' ||
+			key === 'ceremonies'
+		) {
+			armoryWorkspace = key;
+		}
+	}
+
 	$effect(() => {
 		if (!browser) return;
 		const u = authStore.user;
@@ -227,21 +275,14 @@
 		const prof = profile;
 		const clubId = typeof prof?.clubId === 'string' && prof.clubId.trim() ? prof.clubId.trim() : '';
 		if (!u) {
-			void Swal.fire({
-				text: 'You must be signed in to request deployment.',
-				icon: 'error',
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError('Sign-in required', 'You must be signed in to request deployment.');
 			return;
 		}
 		if (!clubId) {
-			void Swal.fire({
-				text: 'Missing club context. Complete team setup or contact Command.',
-				icon: 'error',
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError(
+				'Missing club context',
+				'Complete team setup or contact Command.',
+			);
 			return;
 		}
 		armoryBusy = true;
@@ -253,30 +294,13 @@
 				const prev = Math.max(0, Math.floor(Number(o.tacticalCredits) || 0));
 				authStore.setProfile({ ...o, tacticalCredits: Math.max(0, prev - item.cost) });
 			}
-			void Swal.fire({
-				text: `DEPLOYMENT CONFIRMED: ${item.title} requested. Credits deducted.`,
-				icon: 'success',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 4500,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticSuccess(
+				'Deployment confirmed',
+				`DEPLOYMENT CONFIRMED: ${item.title} requested. Credits deducted.`,
+			);
 		} catch (e) {
 			const msg = e instanceof Error ? e.message : 'Deployment could not be completed.';
-			void Swal.fire({
-				text: msg,
-				icon: 'error',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 5000,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError('Deployment failed', msg);
 		} finally {
 			armoryBusy = false;
 		}
@@ -287,7 +311,10 @@
 	<title>Armory · Quartermaster &amp; Sticker Album · SSTRACKER</title>
 </svelte:head>
 
-<div class="qa-root pd-page-root player-dossier-root" data-region="quartermaster-armory">
+<div
+	class="pd-page-root player-dossier-root player-hud-root tw-min-w-0 tw-overflow-x-hidden"
+	data-region="quartermaster-armory"
+>
 
 	<!-- ── Phase 3, Epic 6 · Memory Capsule fixed overlay ──────────────────── -->
 	{#if !trajectoryEngine.error && vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
@@ -338,63 +365,33 @@
 		</section>
 	{/if}
 
-	<header class="qa-strap" aria-label="Tactical credit balance">
-		<div class="qa-strap__grid">
-			<div class="qa-strap__id">
-				<p class="qa-eyebrow">Quartermaster / SIEM store</p>
-				<h1 class="qa-title">Armory</h1>
-				<p class="qa-sub">
-					Clearance <span class="qa-mono">LVL {String(operativeLevel).padStart(2, '0')}</span> · line items
-					priced in <strong>Tactical Credits</strong>
+	<div class="pd-content-wrap pd-route-stack">
+		<PlayerOsPageStrap
+			eyebrow="Quartermaster / SIEM store"
+			title="Armory"
+			ariaLabel="Tactical credit balance"
+		>
+			{#snippet status()}
+				<p class="pd-eyebrow">Tactical credit balance</p>
+				<p class="pd-mono armory-balance" aria-live="polite">
+					{Number(tacticalCredits).toLocaleString()}
+					<span class="armory-balance__unit">TC</span>
 				</p>
-			</div>
-			<div class="qa-strap__bal" role="status">
-				<p class="qa-eyebrow">Tactical credit balance</p>
-				<p class="qa-mono qa-balance" aria-live="polite">
-					{Number(tacticalCredits).toLocaleString()} <span class="qa-balance__unit">TC</span>
+			{/snippet}
+			{#snippet children()}
+				<p class="armory-strap__sub">
+					Clearance <span class="pd-mono">LVL {String(operativeLevel).padStart(2, '0')}</span> · line
+					items priced in <strong>Tactical Credits</strong>
 				</p>
-			</div>
-		</div>
-	</header>
+			{/snippet}
+		</PlayerOsPageStrap>
 
-	<nav class="qa-workspace qa-workspace--premium" aria-label="Armory workspace">
-		<button
-			type="button"
-			class="qa-workspace__tab"
-			class:qa-workspace__tab--active={armoryWorkspace === 'quartermaster'}
-			onclick={() => (armoryWorkspace = 'quartermaster')}
-			aria-pressed={armoryWorkspace === 'quartermaster'}
-		>
-			Quartermaster
-		</button>
-		<button
-			type="button"
-			class="qa-workspace__tab"
-			class:qa-workspace__tab--active={armoryWorkspace === 'album'}
-			onclick={() => (armoryWorkspace = 'album')}
-			aria-pressed={armoryWorkspace === 'album'}
-		>
-			Sticker Album
-		</button>
-		<button
-			type="button"
-			class="qa-workspace__tab"
-			class:qa-workspace__tab--active={armoryWorkspace === 'studio'}
-			onclick={() => (armoryWorkspace = 'studio')}
-			aria-pressed={armoryWorkspace === 'studio'}
-		>
-			Studio
-		</button>
-		<button
-			type="button"
-			class="qa-workspace__tab"
-			class:qa-workspace__tab--active={armoryWorkspace === 'ceremonies'}
-			onclick={() => (armoryWorkspace = 'ceremonies')}
-			aria-pressed={armoryWorkspace === 'ceremonies'}
-		>
-			Ceremonies
-		</button>
-	</nav>
+		<PlayerOsTabRail
+			tabs={armoryTabs}
+			active={armoryWorkspace}
+			onSelect={selectArmoryWorkspace}
+			ariaLabel="Armory workspace"
+		/>
 
 	<ArmoryCommandDeck
 		{operativeAvatar}
@@ -415,7 +412,7 @@
 			aria-label="Available armory line items"
 		>
 			{#each lineItems as item (item.id)}
-				<article class="qa-card pd-page-panel {qaCardSpanClass} tw-min-w-0">
+				<article class="qa-card pd-os-deck {qaCardSpanClass} tw-min-w-0">
 					<div class="qa-card__icon" aria-hidden="true">
 						<Icon name={item.icon as IconName} />
 					</div>
@@ -429,22 +426,22 @@
 					<h2 class="qa-card__title">{item.title}</h2>
 					<p class="qa-card__desc">{item.description}</p>
 					<p class="qa-card__cost">
-						<span class="qa-eyebrow">List price</span>
-						<span class="qa-mono"
-							>{item.cost.toLocaleString()} <span class="qa-balance__unit">TC</span></span
+						<span class="pd-eyebrow">List price</span>
+						<span class="pd-mono"
+							>{item.cost.toLocaleString()} <span class="armory-balance__unit">TC</span></span
 						>
 					</p>
 					{#if tacticalCredits >= item.cost}
-						<button
-							type="button"
-							class="qa-btn qa-btn--ready"
+						<PlayerOsButton
+							variant="primary"
+							class="armory-deploy-btn"
 							disabled={armoryBusy}
 							onclick={async () => {
 								await requestDeployment(item);
 							}}
 						>
 							REQUEST DEPLOYMENT
-						</button>
+						</PlayerOsButton>
 					{:else}
 						<div class="pd-empty-state pd-empty-state--compact qa-insufficient" role="status">
 							<div class="pd-empty-state__copy">
@@ -460,13 +457,13 @@
 					{/if}
 				</article>
 			{:else}
-				<p class="qa-empty qa-mono">
+				<p class="qa-empty pd-mono">
 					No line items at your clearance. Increase Operative level to reveal SKUs.
 				</p>
 			{/each}
 		</section>
 	{:else if armoryWorkspace === 'studio'}
-		<div class="pd-page-panel pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
+		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
 		{#await import('$lib/components/player/OperativeLoadoutStudio.svelte') then { default: OperativeLoadoutStudio }}
 			<OperativeLoadoutStudio
 				bind:operativeAvatar
@@ -479,292 +476,35 @@
 				initialSlot={studioInitialSlot}
 			/>
 		{:catch err}
-			<p class="qa-empty qa-mono" role="alert">
+			<p class="qa-empty pd-mono" role="alert">
 				Studio unavailable — {err instanceof Error ? err.message : 'load failed'}
 			</p>
 		{/await}
 		</div>
 	{:else if armoryWorkspace === 'ceremonies'}
-		<div class="pd-page-panel pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
+		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
 		{#await import('$lib/components/player/OperativeCeremoniesPanel.svelte') then { default: OperativeCeremoniesPanel }}
 			<OperativeCeremoniesPanel playerEmail={playerEmailKey} />
 		{:catch err}
-			<p class="qa-empty qa-mono" role="alert">
+			<p class="qa-empty pd-mono" role="alert">
 				Ceremonies unavailable — {err instanceof Error ? err.message : 'load failed'}
 			</p>
 		{/await}
 		</div>
 	{:else}
-		<div class="pd-page-panel pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
+		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
 		<ArmoryAlbumWorkspace bind:selectedAlbumSetId {ownedSeasonOneCardIds} />
 		</div>
 	{/if}
+	</div>
+
+	<PlayerDiegeticOverlay
+		open={overlayOpen}
+		variant={overlayVariant}
+		title={overlayTitle}
+		message={overlayMessage}
+		autoDismissMs={overlayAutoDismissMs}
+		onConfirm={closeOverlay}
+		onCancel={closeOverlay}
+	/>
 </div>
-
-<style>
-	/* Quartermaster — SIEM storefront (Path B) */
-	.qa-root {
-		--cyber: var(--pd-accent-data-bright, #00d4ff);
-		--toxic: var(--pd-accent-data, #14b8a6);
-		--border: var(--pd-line, rgba(255, 255, 255, 0.1));
-		min-height: 0;
-		box-sizing: border-box;
-		color: var(--pd-text, #f4f4f5);
-		background: var(--pd-bg, #000);
-	}
-
-	.qa-eyebrow {
-		margin: 0;
-		font-size: 0.65rem;
-		font-weight: 800;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: rgba(0, 212, 255, 0.55);
-	}
-
-	.qa-mono {
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
-		font-feature-settings: 'tnum' 1;
-	}
-
-	.qa-workspace {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		margin-bottom: clamp(1.1rem, 2.2vw, 1.5rem);
-		padding: 0.35rem;
-		border-radius: 0.35rem;
-		border: 1px solid var(--border);
-		background: rgba(5, 5, 10, 0.85);
-		box-shadow: inset 0 0 0 1px rgba(0, 212, 255, 0.06);
-	}
-
-	.qa-workspace__tab {
-		flex: 1 1 auto;
-		min-width: 8rem;
-		padding: 0.65rem 1rem;
-		font-size: 0.68rem;
-		font-weight: 900;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		cursor: pointer;
-		border: 1px solid transparent;
-		border-radius: 0.2rem;
-		color: rgba(255, 255, 255, 0.45);
-		background: transparent;
-		transition:
-			color 0.2s ease,
-			border-color 0.2s ease,
-			box-shadow 0.2s ease,
-			background 0.2s ease;
-	}
-
-	.qa-workspace__tab:hover {
-		color: rgba(236, 254, 255, 0.85);
-		border-color: rgba(0, 212, 255, 0.25);
-	}
-
-	.qa-workspace__tab--active {
-		color: #ecfeff;
-		border-color: rgba(0, 212, 255, 0.45);
-		background: linear-gradient(165deg, rgba(0, 212, 255, 0.12) 0%, rgba(0, 0, 0, 0.4) 100%);
-		box-shadow:
-			0 0 20px rgba(0, 212, 255, 0.15),
-			inset 0 0 0 1px rgba(57, 255, 20, 0.12);
-	}
-
-	.qa-strap {
-		margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
-		border: 1px solid var(--border);
-		background: var(--pd-panel, #05050a);
-	}
-
-	.qa-strap__grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 1.25rem;
-		align-items: end;
-		padding: 1.1rem 1.25rem;
-	}
-
-	@media (max-width: 640px) {
-		.qa-strap__grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.qa-title {
-		margin: 0.2rem 0 0.35rem;
-		font-size: 1.35rem;
-		font-weight: 900;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: #ecfeff;
-	}
-
-	.qa-sub {
-		margin: 0;
-		font-size: 0.78rem;
-		line-height: 1.5;
-		color: rgba(255, 255, 255, 0.5);
-		max-width: 40rem;
-	}
-
-	.qa-sub strong {
-		color: rgba(0, 212, 255, 0.9);
-		font-weight: 800;
-	}
-
-	.qa-strap__bal {
-		text-align: right;
-		min-width: 9rem;
-	}
-
-	.qa-balance {
-		margin: 0.35rem 0 0;
-		font-size: clamp(1.4rem, 3.5vw, 1.9rem);
-		font-weight: 800;
-		color: var(--cyber);
-		text-shadow: 0 0 18px rgba(0, 212, 255, 0.45);
-	}
-
-	.qa-balance__unit {
-		font-size: 0.75em;
-		opacity: 0.8;
-	}
-
-	.qa-grid {
-		align-items: stretch;
-	}
-
-	.qa-card {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-		padding: 1.1rem 1.1rem 1.15rem;
-		border: 1px solid var(--border);
-	}
-
-	.qa-card__icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 3.25rem;
-		height: 3.25rem;
-		margin-bottom: 0.75rem;
-		border: 1px solid rgba(0, 212, 255, 0.28);
-		background: #000;
-		font-size: 1.5rem;
-		color: var(--cyber);
-	}
-
-	.qa-pill {
-		display: inline-block;
-		align-self: flex-start;
-		margin-bottom: 0.5rem;
-		padding: 0.15rem 0.4rem;
-		font-size: 0.58rem;
-		font-weight: 900;
-		letter-spacing: 0.16em;
-		border: 1px solid var(--border);
-		color: rgba(255, 255, 255, 0.7);
-	}
-
-	.qa-pill--phys {
-		border-color: rgba(57, 255, 20, 0.35);
-		color: #86efac;
-	}
-
-	.qa-pill--dig {
-		border-color: rgba(0, 212, 255, 0.35);
-		color: #a5f3fc;
-	}
-
-	.qa-card__title {
-		margin: 0 0 0.45rem;
-		font-size: 0.95rem;
-		font-weight: 800;
-		letter-spacing: 0.04em;
-		line-height: 1.25;
-	}
-
-	.qa-card__desc {
-		margin: 0 0 0.85rem;
-		flex: 1 1 auto;
-		font-size: 0.8rem;
-		line-height: 1.5;
-		color: rgba(255, 255, 255, 0.6);
-	}
-
-	.qa-card__cost {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		margin: 0 0 0.9rem;
-		font-size: 1.05rem;
-		font-weight: 800;
-		color: #fff;
-	}
-
-	.qa-btn {
-		width: 100%;
-		margin-top: auto;
-		padding: 0.7rem 0.75rem;
-		font-size: 0.68rem;
-		font-weight: 900;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		cursor: pointer;
-		border-radius: 0.15rem;
-		transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.15s ease;
-	}
-
-	.qa-btn--ready {
-		border: 1px solid rgba(0, 212, 255, 0.6);
-		background: #000;
-		color: #ecfeff;
-		box-shadow:
-			0 0 0 1px rgba(57, 255, 20, 0.2),
-			0 0 24px rgba(0, 212, 255, 0.35);
-	}
-
-	.qa-btn--ready:hover {
-		border-color: var(--toxic);
-		box-shadow:
-			0 0 32px rgba(57, 255, 20, 0.45),
-			0 0 18px rgba(0, 212, 255, 0.4);
-	}
-
-	.qa-btn--ready:active {
-		transform: translateY(1px);
-	}
-
-	.qa-btn--locked {
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		background: #0a0a0a;
-		color: rgba(255, 255, 255, 0.28);
-		cursor: not-allowed;
-		box-shadow: none;
-	}
-
-	.qa-empty {
-		grid-column: 1 / -1;
-		margin: 0;
-		padding: 2rem 1rem;
-		text-align: center;
-		font-size: 0.85rem;
-		color: rgba(255, 255, 255, 0.45);
-		border: 1px dashed var(--border);
-	}
-
-	.qa-insufficient {
-		margin-top: 0.65rem;
-		align-items: flex-start;
-	}
-
-	.qa-insufficient__link {
-		color: var(--pd-accent-data, #14b8a6);
-		text-decoration: underline;
-		text-underline-offset: 2px;
-	}
-</style>

@@ -12,6 +12,7 @@ This document is the **why / pass-fail criteria** for every persona in SSTracker
 
 | Layer | Doc | Role |
 |-------|-----|------|
+| **Build contract** | [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) | What to build / what to never build (accepted vs rejected mandates) |
 | **Platform criteria** | **This file** | Universal experience bar — psychology, interaction, copy, performance, trust |
 | **Who / routes** | [`docs/PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) | Roles, handoffs, route ownership |
 | **Player material vocabulary** | [`docs/vision/PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) | Z-depth, void %, diegetic kit, Tier A primitives — **Player only** |

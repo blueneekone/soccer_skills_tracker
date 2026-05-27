@@ -1,0 +1,71 @@
+{
+  "sprint": "Phase 7 · G9",
+  "description": "Player OS workspace cohesion — MCP visual acceptance (authenticated local dev)",
+  "minBytesDefault": 8000,
+  "entries": [
+    {
+      "route": "/player/dashboard",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-dashboard-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/dashboard",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-dashboard-1280-heads.png",
+      "crop": "strap + band heads + pathway status",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/stats",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-stats-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/workout",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-workout-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/armory",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-armory-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/tracker",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-tracker-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/settings",
+      "viewport": { "width": 1280, "height": 800 },
+      "filename": "g9-settings-1280.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/dashboard",
+      "viewport": { "width": 390, "height": 844 },
+      "filename": "g9-dashboard-390.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    },
+    {
+      "route": "/player/workout",
+      "viewport": { "width": 390, "height": 844 },
+      "filename": "g9-workout-390.png",
+      "capturedAt": "2026-05-26T22:00:00.000Z",
+      "minBytes": 8000
+    }
+  ]
+}

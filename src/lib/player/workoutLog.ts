@@ -1,5 +1,6 @@
 import type { HttpsCallableResult } from 'firebase/functions';
 import { calculateTrainingSessionEarnedXp } from '$lib/gamification/level.js';
+import type { MissionHandoffSource } from '$lib/player/workout/coachMissionFlow.js';
 
 export type WorkoutIntensityApi = 'low' | 'medium' | 'high';
 
@@ -110,6 +111,7 @@ async function finalizeWorkoutMission(input: {
 	playerUid: string;
 	userKey: string;
 	activeMissionId: string | null;
+	missionSource: MissionHandoffSource | null;
 	earned: number;
 	focusLabel: string;
 	selectedDrill: string;
@@ -129,6 +131,30 @@ async function finalizeWorkoutMission(input: {
 	let clearMission = false;
 	let levelUpFrom: number | null = null;
 	let levelUpTo: number | null = null;
+
+	if (!input.activeMissionId) {
+		return { missionCloseNote, clearMission, levelUpFrom, levelUpTo };
+	}
+
+	// Epic 8 intents: fulfillment is server-side via xpByAttribute → team_assignments.
+	if (input.missionSource === 'coach_intent') {
+		clearMission = true;
+		if (typeof input.payloadLevel === 'number' && input.payloadLevel > input.oldLevel) {
+			levelUpFrom = input.oldLevel;
+			levelUpTo = input.payloadLevel;
+		}
+		return { missionCloseNote, clearMission, levelUpFrom, levelUpTo };
+	}
+
+	// Named homework: logTrainingSession closes assignments/{id} when assignmentId is passed.
+	if (input.missionSource === 'coach_homework') {
+		clearMission = true;
+		if (typeof input.payloadLevel === 'number' && input.payloadLevel > input.oldLevel) {
+			levelUpFrom = input.oldLevel;
+			levelUpTo = input.payloadLevel;
+		}
+		return { missionCloseNote, clearMission, levelUpFrom, levelUpTo };
+	}
 
 	try {
 		await input.dopamineOnCommit(
@@ -165,6 +191,7 @@ export async function executePlayerWorkoutLog(deps: {
 	focusLabel: string;
 	selectedDrill: string;
 	activeMissionId: string | null;
+	missionSource: MissionHandoffSource | null;
 	totalXpHud: number;
 	oldLevel: number;
 	intensityStep: number;
@@ -175,6 +202,7 @@ export async function executePlayerWorkoutLog(deps: {
 		duration: number;
 		reps: number;
 		intensity: WorkoutIntensityApi;
+		assignmentId?: string;
 	}) => Promise<HttpsCallableResult<WorkoutSessionPayload>>;
 	writePlayerOsWorkout: (args: {
 		emailKey: string;
@@ -196,11 +224,16 @@ export async function executePlayerWorkoutLog(deps: {
 	}) => Promise<unknown>;
 	dopamineOnCommit: (promise: Promise<unknown>, meta: { kind: string }) => Promise<unknown>;
 }): Promise<WorkoutLogSuccess> {
+	const assignmentId =
+		deps.missionSource === 'coach_homework' && deps.activeMissionId ?
+			deps.activeMissionId
+		:	undefined;
 	const res = await deps.logTrainingSession({
 		drillType: deps.drillType,
 		duration: deps.durationMin,
 		reps: 0,
 		intensity: deps.intensityCall,
+		...(assignmentId ? { assignmentId } : {}),
 	});
 	const payload = res.data;
 	const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
@@ -236,6 +269,7 @@ export async function executePlayerWorkoutLog(deps: {
 			playerUid,
 			userKey,
 			activeMissionId: deps.activeMissionId,
+			missionSource: deps.missionSource,
 			earned,
 			focusLabel: deps.focusLabel,
 			selectedDrill: deps.selectedDrill,

@@ -463,16 +463,19 @@
 				responsive: true,
 				maintainAspectRatio: false,
 				layout: {
-					padding: { top: 8, bottom: 4, left: 4, right: 8 },
+					padding: { top: 12, bottom: 28, left: 16, right: 16 },
 				},
 				animation: { duration: 380 },
 				plugins: {
 					legend: {
 						display: true,
 						position: 'bottom',
+						align: 'center',
 						labels: {
 							color: 'rgba(226, 232, 240, 0.85)',
 							font: { family: 'ui-monospace, monospace', size: 10 },
+							boxWidth: 10,
+							padding: 10,
 						},
 					},
 					tooltip: {
@@ -565,7 +568,7 @@
 	class:player-hud-root={isPlayerRole}
 	class:pos-stats={isPlayerRole}
 >
-	<div class="pd-content-wrap">
+	<div class="pd-content-wrap" class:pd-route-stack={isPlayerRole}>
 	{#if isPlayerRole}
 		<PlayerOsPageStrap eyebrow="Progress / Analytics" title="Operative analytics">
 			{#snippet status()}
@@ -583,15 +586,20 @@
 	>
 		{#if isPlayerRole}
 			<section
-				class="stats-analytics-void bento-span-12"
+				class="stats-analytics-void pd-os-deck pd-os-deck--recessed bento-span-12"
 				class:stats-analytics-void--compact={!telemetryReady}
 				data-region="stats-analytics-void"
 				aria-label="Vanguard protocol telemetry"
 			>
+				<header class="pd-hq-section-head stats-analytics-void__head">
+					<h2 class="pd-hq-section-head__title stats-analytics-void__title">Vanguard telemetry</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label stats-analytics-void__eyebrow">Performance</p>
+				</header>
 				<VanguardProtocolPanel
 					prismValues={attrRadarValues}
 					bind:selectedAxis={selectedVanguardAxis}
 					compact={!telemetryReady}
+					hideHeadTitle={true}
 				/>
 			</section>
 		{:else}
@@ -621,23 +629,22 @@
 
 		<section
 			class="dossier-workout pd-panel-section"
-			class:stats-workout-void={isPlayerRole}
 			class:stats-workout-band={isPlayerRole}
+			class:pd-os-deck={isPlayerRole}
+			class:pd-os-deck--hero={isPlayerRole}
 			class:bento-span-12={isPlayerRole}
 			class:dossier-panel={!isPlayerRole}
 			class:pd-page-panel={!isPlayerRole}
 			aria-label="Workout telemetry"
 		>
-			<div class="dossier-radar__head" class:stats-workout-band__head={isPlayerRole}>
-				<div class:stats-workout-band__titles={isPlayerRole}>
-					{#if isPlayerRole}
-						<span class="dossier-label pd-label">Training</span>
-						<h2 class="stats-workout-band__title">Workout telemetry</h2>
-					{:else}
-						<span class="dossier-label">Workout telemetry</span>
-					{/if}
-				</div>
-				{#if !isPlayerRole}
+			{#if isPlayerRole}
+				<header class="pd-hq-section-head stats-workout-band__head">
+					<h2 class="pd-hq-section-head__title stats-workout-band__title">Workout telemetry</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label stats-workout-band__eyebrow">Training</p>
+				</header>
+			{:else}
+			<div class="dossier-radar__head">
+				<span class="dossier-label">Workout telemetry</span>
 				<span class="dossier-mono dossier-tx-tag">
 					{workoutViewMode === 'daily' ?
 						'WX_DAILY_14' :
@@ -645,29 +652,40 @@
 							'WX_WEEK_8' :
 							'WX_MONTHLY'}
 				</span>
-				{/if}
 			</div>
-			<div class="dossier-workout__seg" role="group" aria-label="Workout aggregation window">
+			{/if}
+			<div
+				class="dossier-workout__seg"
+				class:stats-chip-rail={isPlayerRole}
+				role="group"
+				aria-label="Workout aggregation window"
+			>
 				<button
 					type="button"
-					class="dossier-seg"
-					class:dossier-seg--on={workoutViewMode === 'daily'}
+					class:dossier-seg={!isPlayerRole}
+					class:dossier-seg--on={!isPlayerRole && workoutViewMode === 'daily'}
+					class:stats-chip={isPlayerRole}
+					class:stats-chip--on={isPlayerRole && workoutViewMode === 'daily'}
 					onclick={() => (workoutViewMode = 'daily')}
 				>
 					Daily
 				</button>
 				<button
 					type="button"
-					class="dossier-seg"
-					class:dossier-seg--on={workoutViewMode === 'weekly'}
+					class:dossier-seg={!isPlayerRole}
+					class:dossier-seg--on={!isPlayerRole && workoutViewMode === 'weekly'}
+					class:stats-chip={isPlayerRole}
+					class:stats-chip--on={isPlayerRole && workoutViewMode === 'weekly'}
 					onclick={() => (workoutViewMode = 'weekly')}
 				>
 					Weekly
 				</button>
 				<button
 					type="button"
-					class="dossier-seg"
-					class:dossier-seg--on={workoutViewMode === 'monthly'}
+					class:dossier-seg={!isPlayerRole}
+					class:dossier-seg--on={!isPlayerRole && workoutViewMode === 'monthly'}
+					class:stats-chip={isPlayerRole}
+					class:stats-chip--on={isPlayerRole && workoutViewMode === 'monthly'}
 					onclick={() => (workoutViewMode = 'monthly')}
 				>
 					Monthly
@@ -676,7 +694,10 @@
 			<p class="dossier-radar__hint no-print" class:stats-workout-band__hint={isPlayerRole}>
 				Training XP from workout logs — UTC day / Monday-week / calendar-month buckets (toggle above)
 			</p>
-			<div class="dossier-workout__chart tw-min-w-0 tw-h-[300px] tw-relative">
+			<div
+				class="dossier-workout__chart tw-min-w-0 tw-h-[300px] tw-relative"
+				class:pd-os-deck__well={isPlayerRole}
+			>
 				<canvas
 					bind:this={workoutCanvas}
 					class="dossier-canvas"
@@ -699,26 +720,51 @@
 
 	<!-- Trophy matrix -->
 	<section
-		class="dossier-panel dossier-badges pd-page-panel pd-panel-section"
+		class="pd-panel-section bento-span-12"
+		class:stats-achievement-deck={isPlayerRole}
+		class:dossier-panel={!isPlayerRole}
+		class:dossier-badges={!isPlayerRole}
+		class:pd-page-panel={!isPlayerRole}
 		id="trophy-room"
 		aria-label="Achievement matrix"
 	>
+		{#if isPlayerRole}
+			<header class="pd-hq-section-head stats-achievement-deck__head">
+				<div class="stats-achievement-deck__id">
+					<h2 class="pd-hq-section-head__title stats-achievement-deck__title">Achievement matrix</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label stats-achievement-deck__eyebrow">Asset registry</p>
+				</div>
+				<div class="stats-achievement-deck__status" role="status">
+					<p class="pd-label pd-mono">
+						UNL={badges.filter((b) => b.unlocked).length} · LCK={badges.filter((b) => !b.unlocked).length}
+					</p>
+				</div>
+			</header>
+		{:else}
 		<div class="dossier-badges__head">
 			<div>
 				<span class="dossier-label">Asset registry</span>
 				<h3 class="dossier-badges__title">ACHIEVEMENT_MATRIX</h3>
 			</div>
 			<div class="dossier-badges__stat font-mono dossier-statline">
-				UNL={badges.filter((b) => b.unlocked).length} · LCK={badges.filter((b) => !b.unlocked)
-					.length}
+				UNL={badges.filter((b) => b.unlocked).length} · LCK={badges.filter((b) => !b.unlocked).length}
 			</div>
 		</div>
-		<div class="dossier-badges__grid" role="list">
+		{/if}
+		<div
+			class="dossier-badges__grid"
+			class:stats-achievement-deck__grid={isPlayerRole}
+			role="list"
+		>
 			{#each badges as b, i (b.id)}
 				<div
 					class="dossier-badge"
-					class:dossier-badge--unlocked={b.unlocked}
-					class:dossier-badge--elite={b.unlocked && b.tier === 'elite'}
+					class:pd-os-deck={isPlayerRole}
+					class:stats-achievement-row={isPlayerRole}
+					class:stats-achievement-row--unlocked={isPlayerRole && b.unlocked}
+					class:stats-achievement-row--elite={isPlayerRole && b.unlocked && b.tier === 'elite'}
+					class:dossier-badge--unlocked={!isPlayerRole && b.unlocked}
+					class:dossier-badge--elite={!isPlayerRole && b.unlocked && b.tier === 'elite'}
 					role="listitem"
 				>
 					<div
@@ -773,6 +819,17 @@
 		margin-bottom: var(--bento-gap-sm);
 	}
 
+	/* Player OS — single-column stack; VPP + workout bands span full route width (HQ parity) */
+	:global(.player-hud-root.pos-stats) .dossier-grid {
+		grid-template-columns: 1fr;
+	}
+
+	:global(.player-hud-root.pos-stats) .dossier-grid > :is(.stats-analytics-void, .dossier-workout) {
+		grid-column: 1 / -1;
+		min-width: 0;
+		width: 100%;
+	}
+
 	@media (min-width: 60rem) {
 		.dossier-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -781,6 +838,10 @@
 		/* Sprint 2.20c — workout chart spans full grid width below VPP radar */
 		.dossier-workout {
 			grid-column: 1 / -1;
+		}
+
+		:global(.player-hud-root.pos-stats) .dossier-grid {
+			grid-template-columns: 1fr;
 		}
 	}
 

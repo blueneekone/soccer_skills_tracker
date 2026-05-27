@@ -1,0 +1,134 @@
+{
+  "sprint": "Phase 7 · G10",
+  "description": "Player OS formal sign-off — reference matrix MCP VA (authenticated local dev)",
+  "capturedAt": "2026-05-26T23:30:00.000Z",
+  "minBytesDefault": 8000,
+  "viewports": [
+    { "width": 1280, "height": 800, "label": "desktop reference matrix" },
+    { "width": 390, "height": 844, "label": "mobile nav sweep" }
+  ],
+  "routes": [
+    {
+      "path": "/player/dashboard",
+      "file": "g10-hq-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/dashboard",
+      "file": "g10-hq-heads-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000,
+      "crop": "strap + band heads + pathway LVL rail"
+    },
+    {
+      "path": "/player/dashboard",
+      "file": "g10-hq-no-telemetry-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000,
+      "state": "profile-complete-no-telemetry"
+    },
+    {
+      "path": "/stats",
+      "file": "g10-stats-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/workout",
+      "file": "g10-train-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/armory",
+      "file": "g10-armory-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/settings",
+      "file": "g10-settings-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/tracker",
+      "file": "g10-tracker-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/skill-tree",
+      "file": "g10-skill-tree-1280.png",
+      "width": 1280,
+      "height": 800,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/dashboard",
+      "file": "g10-hq-390.png",
+      "width": 390,
+      "height": 844,
+      "minBytes": 8000
+    },
+    {
+      "path": "/stats",
+      "file": "g10-stats-390.png",
+      "width": 390,
+      "height": 844,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/workout",
+      "file": "g10-train-390.png",
+      "width": 390,
+      "height": 844,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/armory",
+      "file": "g10-armory-390.png",
+      "width": 390,
+      "height": 844,
+      "minBytes": 8000
+    },
+    {
+      "path": "/player/settings",
+      "file": "g10-settings-390.png",
+      "width": 390,
+      "height": 844,
+      "minBytes": 8000
+    }
+  ],
+  "skippedStates": [
+    {
+      "state": "hq-profile-incomplete-1280",
+      "reason": "Test user Cordell Waechtler has complete operative profile (onboarding banner present but profile filled)"
+    },
+    {
+      "state": "hq-full-telemetry-1280",
+      "reason": "Test account has no coach telemetry vectors — AWAITING TELEMETRY state captured as g10-hq-no-telemetry-1280.png"
+    },
+    {
+      "state": "hq-capsule-ghost-1280",
+      "reason": "Capsule ghost strip visible on HQ capture (Ghost profile / Awaiting first memory capsule) — covered by g10-hq-1280.png scroll region"
+    },
+    {
+      "state": "reduced-motion",
+      "reason": "Manual QA — prefers-reduced-motion not toggled in MCP session"
+    },
+    {
+      "state": "dopamine-off",
+      "reason": "Manual QA — data-dopamine=off not toggled in MCP session"
+    }
+  ]
+}

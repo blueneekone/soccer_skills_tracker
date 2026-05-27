@@ -20,9 +20,9 @@ describe('/player/armory — Liquid aesthetic (Slice 3)', () => {
 		expect(src).toMatch(/qa-grid bento-grid bento-grid--12col bento-grid--liquid/);
 	});
 
-	it('.qa-card uses var(--shadow-liquid) or dossier panel shadow token', () => {
+	it('.qa-card uses dossier deck shadow token', () => {
 		const hasPageShadow = /var\(--shadow-liquid\)/.test(src);
-		const hasDossierCardShadow = /\.qa-card\.pd-page-panel[\s\S]*?box-shadow:/.test(dossierCss);
+		const hasDossierCardShadow = /\.qa-card\.pd-os-deck[\s\S]*?box-shadow:/.test(dossierCss);
 		expect(hasPageShadow || hasDossierCardShadow).toBe(true);
 	});
 
