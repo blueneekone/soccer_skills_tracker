@@ -20,13 +20,19 @@
 	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
 	import type { LoadoutSlotId } from '$lib/gamification/loadoutSchema.js';
 	import {
-		OPERATIVE_AVATAR_VERSION,
-		parseOperativeAvatar,
-	} from '$lib/avatars/operativeAvatar.js';
+		defaultOwnedPortraitParts,
+		defaultPortraitV2,
+		type PortraitPartSlot,
+	} from '$lib/avatars/portraitV2Schema.js';
+	import {
+		readRepairOperativeAvatar,
+		queuePortraitReadRepairWrite,
+	} from '$lib/avatars/portraitReadRepair.js';
 	import {
 		defaultOperativeLoadout,
 		parseOperativeLoadout,
 	} from '$lib/gamification/loadoutSchema.js';
+	import { grantPendingAlbumSetBonuses } from '$lib/gamification/albumSetBonuses.js';
 	// ── Phase 3, Epic 6 — Trajectory Tracking ───────────────────────────────
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
@@ -34,14 +40,16 @@
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
 	import MemoryCapsuleHUD from '$lib/components/player/trajectory/MemoryCapsuleHUD.svelte';
 	import { onDestroy } from 'svelte';
+	import { db } from '$lib/firebase.js';
+	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
 
 	const trajectoryEngine = new TrajectoryEngine();
 
-	/** Bauhaus vector portrait — persisted to Firestore `users/{email}.operativeAvatar`. */
-	let operativeAvatar = $state({
-		v: OPERATIVE_AVATAR_VERSION,
-		seed: `v${OPERATIVE_AVATAR_VERSION}|22|55|38|71`,
-	});
+	/** Operative portrait — v1 Bauhaus seed or v2 layered parts; persisted to Firestore `users/{email}.operativeAvatar`. */
+	let operativeAvatar = $state<unknown>(defaultPortraitV2());
+
+	/** Catalog portrait part ids the player may equip in Studio (read-only hydrate; no Firestore write until save). */
+	let ownedPortraitParts = $state(defaultOwnedPortraitParts());
 
 	/** @type {'quartermaster' | 'album' | 'studio' | 'ceremonies'} */
 	let armoryWorkspace = $state('quartermaster');
@@ -49,7 +57,6 @@
 	let operativeLoadout = $state(defaultOperativeLoadout());
 	let ownedCosmetics = $state(/** @type {string[]} */ ([]));
 
-	/** Phase 1: replace with Firestore / profile sticker ids when drops ship. */
 	let ownedSeasonOneCardIds = $state(/** @type {Set<string>} */ (new Set()));
 
 	let selectedAlbumSetId = $state(
@@ -58,10 +65,17 @@
 
 	const armoryTabParam = $derived(page.url.searchParams.get('tab'));
 	const studioSlotParam = $derived(page.url.searchParams.get('slot'));
+	const studioPartParam = $derived(page.url.searchParams.get('part'));
 
 	const studioInitialSlot = $derived.by((): LoadoutSlotId | undefined => {
 		const raw = studioSlotParam?.trim();
 		if (raw === 'border' || raw === 'badge' || raw === 'banner' || raw === 'title') return raw;
+		return undefined;
+	});
+
+	const studioInitialPart = $derived.by((): PortraitPartSlot | undefined => {
+		const raw = studioPartParam?.trim();
+		if (raw === 'face' || raw === 'hair' || raw === 'kit') return raw;
 		return undefined;
 	});
 
@@ -84,20 +98,15 @@
 	const profileAvatarHydrateSig = $derived.by(() => {
 		const emailKey = (authStore.user?.email || '').toLowerCase();
 		const oa = profile?.operativeAvatar;
-		const normalized =
-			oa && typeof oa === 'object' ?
-				JSON.stringify({
-					v: /** @type {Record<string, unknown>} */ (oa).v,
-					seed: typeof /** @type {Record<string, unknown>} */ (oa).seed === 'string' ?
-						/** @type {Record<string, unknown>} */ (oa).seed
-					:	'',
-				})
-			:	'{}';
-		return `${emailKey}:${normalized}`;
+		const opp = profile?.ownedPortraitParts;
+		const normalized = oa && typeof oa === 'object' ? JSON.stringify(oa) : '{}';
+		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '[]';
+		return `${emailKey}:${normalized}:${oppNorm}`;
 	});
 
 	let lastAvatarHydrateSig = '';
 	let lastLoadoutHydrateSig = '';
+	let lastPortraitRepairQueuedSig = '';
 
 	/** Sync local portrait + loadout when signed-in profile changes. */
 	const profileLoadoutHydrateSig = $derived.by(() => {
@@ -126,8 +135,20 @@
 		if (profileAvatarHydrateSig === lastAvatarHydrateSig) return;
 		lastAvatarHydrateSig = profileAvatarHydrateSig;
 
-		const av = parseOperativeAvatar(profile?.operativeAvatar);
-		if (av) operativeAvatar = av;
+		const { operativeAvatar: repairedAvatar, ownedPortraitParts: repairedOwned, didMigrate } =
+			readRepairOperativeAvatar(profile?.operativeAvatar, profile?.ownedPortraitParts);
+		operativeAvatar = repairedAvatar;
+		ownedPortraitParts = repairedOwned.filter((id): id is string => typeof id === 'string');
+		if (didMigrate) {
+			const repairSig = `${emailKey}:${JSON.stringify(repairedAvatar)}`;
+			if (lastPortraitRepairQueuedSig !== repairSig) {
+				lastPortraitRepairQueuedSig = repairSig;
+				void queuePortraitReadRepairWrite(emailKey, {
+					operativeAvatar: repairedAvatar,
+					ownedPortraitParts: ownedPortraitParts,
+				});
+			}
+		}
 	});
 
 	$effect(() => {
@@ -138,6 +159,8 @@
 			lastLoadoutHydrateSig = '';
 			operativeLoadout = defaultOperativeLoadout();
 			ownedCosmetics = [];
+			ownedPortraitParts = defaultOwnedPortraitParts();
+			ownedSeasonOneCardIds = new Set();
 			return;
 		}
 		if (profileLoadoutHydrateSig === lastLoadoutHydrateSig) return;
@@ -148,6 +171,40 @@
 		ownedCosmetics = Array.isArray(profile?.ownedCosmetics) ?
 			profile.ownedCosmetics.filter((id) => typeof id === 'string')
 		:	[];
+		const cardIds = Array.isArray(profile?.ownedSeasonOneCards) ?
+			profile.ownedSeasonOneCards.filter((id): id is string => typeof id === 'string')
+		:	[];
+		ownedSeasonOneCardIds = new Set<string>(cardIds);
+	});
+
+	let albumGrantDebounce: ReturnType<typeof setTimeout> | undefined;
+	let albumGrantBusy = false;
+
+	/** Debounced server grant when a folder completes (3.4 — no client self-grant). */
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		const emailKey = (authStore.user?.email || '').toLowerCase();
+		if (!emailKey) return;
+
+		const cardSig = [...ownedSeasonOneCardIds].sort().join(',');
+		const cosmSig = [...ownedCosmetics].sort().join(',');
+		void cardSig;
+		void cosmSig;
+
+		clearTimeout(albumGrantDebounce);
+		albumGrantDebounce = setTimeout(() => {
+			if (albumGrantBusy) return;
+			albumGrantBusy = true;
+			void grantPendingAlbumSetBonuses(ownedSeasonOneCardIds, ownedCosmetics)
+				.catch((err) => {
+					console.warn('[armory] album set bonus grant failed:', err);
+				})
+				.finally(() => {
+					albumGrantBusy = false;
+				});
+		}, 600);
+
+		return () => clearTimeout(albumGrantDebounce);
 	});
 
 	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
@@ -156,6 +213,20 @@
 	);
 	const operativeLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
 	const rankLabel = $derived(getCurrentRank(totalXpHud).rank);
+	let clubDisplayName = $state('');
+
+	$effect(() => {
+		if (!browser) return;
+		let cancelled = false;
+		(async () => {
+			const name = await fetchClubDisplayName(db, profile);
+			if (!cancelled) clubDisplayName = name;
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
 
 	const email = $derived((authStore.user?.email || '').toLowerCase());
 	const playerEmailKey = $derived(email);
@@ -469,11 +540,15 @@
 				bind:operativeAvatar
 				bind:operativeLoadout
 				bind:ownedCosmetics
+				{ownedPortraitParts}
 				playerEmailKey={playerEmailKey}
 				playerDisplayName={vaultDisplayName}
 				{rankLabel}
+				{operativeLevel}
+				clubName={clubDisplayName}
 				telemetryTotalXp={totalXpHud.toLocaleString()}
 				initialSlot={studioInitialSlot}
+				initialPortraitPart={studioInitialPart}
 			/>
 		{:catch err}
 			<p class="qa-empty pd-mono" role="alert">

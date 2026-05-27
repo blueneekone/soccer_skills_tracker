@@ -28,6 +28,20 @@
 		"file": "banner-vanguard-stripe.svg"
 	},
 	{
+		"id": "album_banner_snipers",
+		"slot": "banner",
+		"label": "Snipers Set Banner",
+		"renderKey": "banner-stripe",
+		"file": "banner-vanguard-stripe.svg"
+	},
+	{
+		"id": "album_banner_dark_arts",
+		"slot": "banner",
+		"label": "Dark Arts Set Banner",
+		"renderKey": "banner-stripe",
+		"file": "banner-vanguard-stripe.svg"
+	},
+	{
 		"id": "title_rank_operative",
 		"slot": "title",
 		"label": "Operative Rank Title",

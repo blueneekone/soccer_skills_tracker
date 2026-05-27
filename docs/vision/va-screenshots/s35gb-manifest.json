@@ -1,0 +1,39 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5g-b",
+	"description": "Z2 club org label from resolveClubDisplayName — HQ holo, Armory dossier, optional recruit front (no Phoenixes stub)",
+	"capturedAt": "2026-05-27T23:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"skippedStates": ["s35gb-recruit-front-1280.png — no public recruit user in seed"],
+	"routes": [
+		{
+			"path": "/player/dashboard",
+			"file": "s35gb-hq-holo-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "HQ holo Z2 — clubs/{clubId}.name org label, not team roster"
+		},
+		{
+			"path": "/player/armory?tab=studio",
+			"file": "s35gb-studio-dossier-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Armory dossier Z2 — real club org; no PHOENIXES hardcode unless seed has club"
+		},
+		{
+			"path": "/recruit/[playerKey]",
+			"file": "s35gb-recruit-front-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"optional": true,
+			"note": "Recruit ProPlayerCard Z2 — clubName from getPublicRecruitProfile callable"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

@@ -5,9 +5,19 @@
   "minBytesDefault": 8000,
   "viewports": [
     { "width": 1280, "height": 800, "label": "desktop reference matrix" },
+    { "width": 1280, "height": 900, "label": "Foundation void contract (§3)" },
     { "width": 390, "height": 844, "label": "mobile nav sweep" }
   ],
   "routes": [
+    {
+      "path": "/player/dashboard",
+      "file": "g10-hq-void-1280x900.png",
+      "width": 1280,
+      "height": 900,
+      "minBytes": 8000,
+      "voidContract": true,
+      "note": "Sprint 2.20e — FOUNDATION §3 pixel sample; MCP viewport crop at 1280×900"
+    },
     {
       "path": "/player/dashboard",
       "file": "g10-hq-1280.png",

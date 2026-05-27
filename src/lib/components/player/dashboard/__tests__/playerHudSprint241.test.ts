@@ -112,6 +112,17 @@ describe('Wave A — void contract measurement (HQ baseline)', () => {
 		expect(result.mattePanelPass).toBe(false);
 		expect(result.allPixelRatiosPass).toBe(false);
 	});
+
+	it('evaluateVoidContract fails when emissive share of lit pixels is below 15%', () => {
+		const result = evaluateVoidContract({
+			blackCanvasRatio: 0.5,
+			mattePanelRatio: 0.3,
+			emissiveRatio: 0.05,
+		});
+		expect(result.emissiveOfLitRatio).toBeCloseTo(0.1, 5);
+		expect(result.emissivePass).toBe(false);
+		expect(result.allPixelRatiosPass).toBe(false);
+	});
 });
 
 describe('Wave A — shared material consistency (player-dossier.css)', () => {

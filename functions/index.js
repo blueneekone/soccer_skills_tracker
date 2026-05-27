@@ -318,6 +318,7 @@ exports.validatePlayerOTP           = operativeOps.validatePlayerOTP;
 const loadoutOps = require('./src/domains/loadoutOps');
 exports.grantLoadoutCosmetic        = loadoutOps.grantLoadoutCosmetic;
 exports.redeemQuartermasterDigital  = loadoutOps.redeemQuartermasterDigital;
+exports.grantAlbumSetBonus          = loadoutOps.grantAlbumSetBonus;
 
 // -- Deconstruction Sprint 6: Webhooks & Integrations Domain ----------------
 // Affinity eligibility ingestion, Stripe billing, facility weather alerts,

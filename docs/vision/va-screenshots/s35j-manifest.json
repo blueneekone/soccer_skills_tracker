@@ -1,0 +1,39 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5j-a/b",
+	"description": "Identity Studio cohesion — SYNC IDENTITY, unified picker, Armory read-repair, HQ deep links (MCP VA)",
+	"capturedAt": "2026-05-27T23:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"skippedStates": [],
+	"routes": [
+		{
+			"path": "/player/armory?tab=studio",
+			"file": "s35j-studio-unified-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Studio — dossier hero + unified Face–Title tabs + single SYNC IDENTITY"
+		},
+		{
+			"path": "/player/dashboard",
+			"file": "s35j-hq-after-sync-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "HQ holo matches Studio dossier grammar after identity sync (same seed)"
+		},
+		{
+			"path": "/player/dashboard",
+			"file": "s35j-deep-link-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"optional": true,
+			"note": "Onboarding path landing on ?tab=studio from HQ profile setup CTA"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

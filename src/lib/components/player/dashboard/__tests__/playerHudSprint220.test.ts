@@ -1,16 +1,28 @@
 /**
- * playerHudSprint220.test.ts — Sprint 2.20a/b/c Player OS scroll, VPP material, composition hotfix
+ * playerHudSprint220.test.ts — Sprint 2.20a/b/c/d/e Player OS scroll, VPP material, composition hotfix, void contract
  *
  * 2.20a — PLAYER_OS_FOUNDATION.md §4: One native document scroll on all Player OS routes.
  * 2.20b — VPP material lift: Z1 well bg, remove ::before circle-glow, XP emissive border.
  * 2.20c — Composition hotfix: HQ overflow, identity centering, mission rail, stats chart, Train parity.
+ * 2.20d — Armory composition.
+ * 2.20e — FOUNDATION §3 void contract pixel sample on G10 HQ MCP capture.
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { PNG } from 'pngjs';
+import {
+	VOID_CONTRACT_HQ_VIEWPORT,
+	sampleVoidContractRatios,
+	evaluateVoidContract,
+} from '$lib/player/visual/voidContract.js';
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
+const REPO = join(ROOT, '..');
+const VA_DIR = join(REPO, 'docs/vision/va-screenshots');
+const VOID_CAPTURE_PRIMARY = join(VA_DIR, 'g10-hq-void-1280x900.png');
+const VOID_CAPTURE_FALLBACK = join(VA_DIR, 'g10-hq-1280.png');
 const SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
 const SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
@@ -253,4 +265,45 @@ describe('Sprint 2.20d — Armory composition', () => {
 	it('player-dossier.css qa-pathway-shell does NOT clip pathway overflow', () => {
 		expect(dossierCssSrc).toMatch(/\.player-dossier-root \.qa-pathway-shell[\s\S]*?overflow:\s*visible/);
 	});
+});
+
+describe('Sprint 2.20e — void contract pixel sample (FOUNDATION §3)', () => {
+	const voidCapturePath = existsSync(VOID_CAPTURE_PRIMARY)
+		? VOID_CAPTURE_PRIMARY
+		: existsSync(VOID_CAPTURE_FALLBACK)
+			? VOID_CAPTURE_FALLBACK
+			: null;
+
+	it('G10 HQ void-contract PNG exists under docs/vision/va-screenshots/', () => {
+		expect(voidCapturePath, 'g10-hq-void-1280x900.png or g10-hq-1280.png').not.toBeNull();
+	});
+
+	it('sampleVoidContractRatios + evaluateVoidContract pass on G10 HQ viewport crop', () => {
+		expect(voidCapturePath).not.toBeNull();
+		const png = PNG.sync.read(readFileSync(voidCapturePath!));
+		// Crop to Foundation reference viewport (1280×900); tolerate MCP device-pixel-ratio scaling.
+		const cropHeight = Math.round(VOID_CONTRACT_HQ_VIEWPORT.height * (png.width / VOID_CONTRACT_HQ_VIEWPORT.width));
+		const cropped = new PNG({ width: png.width, height: Math.min(cropHeight, png.height) });
+		for (let y = 0; y < cropped.height; y++) {
+			png.data.copy(cropped.data, y * png.width * 4, y * png.width * 4, (y + 1) * png.width * 4);
+		}
+
+		const sample = sampleVoidContractRatios({
+			data: cropped.data,
+			width: cropped.width,
+			height: cropped.height,
+		});
+		const result = evaluateVoidContract(sample);
+
+		expect(result.blackCanvasPass, `black ${(sample.blackCanvasRatio * 100).toFixed(1)}%`).toBe(true);
+		expect(result.mattePanelPass, `matte ${(sample.mattePanelRatio * 100).toFixed(1)}%`).toBe(true);
+		expect(
+			result.emissivePass,
+			`emissive-of-lit ${(result.emissiveOfLitRatio * 100).toFixed(1)}%`,
+		).toBe(true);
+		expect(result.allPixelRatiosPass).toBe(true);
+	});
+
+	// Layout guards (largest Z2 ≤ 60% viewport, hero ring ≥ 280px) remain Wave F / manual QA —
+	// not blocking 2.20 Done when pixel ratios pass per ROADMAP Sprint 2.20e scope.
 });

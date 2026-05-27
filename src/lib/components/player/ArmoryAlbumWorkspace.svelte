@@ -7,6 +7,11 @@
 		getSeasonOneCardsForSet,
 		seasonOneSets,
 	} from '$lib/gamification/seasonOneData.js';
+	import {
+		ALBUM_SET_BONUS_REWARDS,
+		isAlbumSetComplete,
+		type AlbumSetId,
+	} from '$lib/gamification/albumSetBonuses.js';
 
 	let {
 		ownedSeasonOneCardIds = /** @type {Set<string>} */ (new Set()),
@@ -57,9 +62,16 @@
 			{#each seasonOneSets as set (set.id)}
 				{@const setCards = getSeasonOneCardsForSet(set.id)}
 				{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}
+				{@const setComplete = isAlbumSetComplete(set.id, ownedSeasonOneCardIds)}
+				{@const setPerk =
+					setComplete && set.id in ALBUM_SET_BONUS_REWARDS ?
+						ALBUM_SET_BONUS_REWARDS[set.id as AlbumSetId]
+					:	null}
 				<button
 					type="button"
-					class="album-folder bento-span-4 tw-min-w-0 tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-p-4 tw-text-left tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {selectedAlbumSetId ===
+					class="album-folder bento-span-4 tw-min-w-0 tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-p-4 tw-text-left tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {setComplete ?
+						'album-folder--complete'
+					:	''} {selectedAlbumSetId ===
 					set.id ?
 						'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]'
 					:	'tw-border-white/5 hover:tw-border-white/15'}"
@@ -79,6 +91,11 @@
 						{setCards.length}
 						<span class="tw-text-slate-500"> in set</span>
 					</span>
+					{#if setComplete && setPerk}
+						<p class="album-folder__complete qa-mono tw-mt-2 tw-m-0 tw-text-[0.62rem] tw-font-bold tw-tracking-wider">
+							SET COMPLETE · {setPerk.chipLabel} banner
+						</p>
+					{/if}
 				</button>
 			{/each}
 		</div>
@@ -93,6 +110,12 @@
 				<p class="tw-m-0 tw-mt-1 tw-max-w-prose tw-text-sm tw-text-slate-400">
 					{selectedAlbumSetMeta?.tagline ?? ''}
 				</p>
+				{#if isAlbumSetComplete(selectedAlbumSetId, ownedSeasonOneCardIds)}
+					{@const perk = ALBUM_SET_BONUS_REWARDS[selectedAlbumSetId as AlbumSetId]}
+					<p class="album-set-panel__complete qa-mono tw-m-0 tw-mt-2 tw-text-[0.65rem] tw-font-bold tw-tracking-wider">
+						SET COMPLETE · {perk?.chipLabel ?? 'Folder'} dossier banner unlocked
+					</p>
+				{/if}
 			</div>
 			<p class="qa-mono tw-m-0 tw-text-xs tw-text-slate-500">
 				Set progress:
@@ -175,6 +198,21 @@
 		min-height: 14rem;
 		border-color: var(--pd-line, rgba(255, 255, 255, 0.1));
 		background: var(--pd-panel, #05050a);
+	}
+
+	.album-folder--complete {
+		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+		box-shadow:
+			inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, transparent),
+			0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 10%, transparent);
+	}
+
+	.album-folder__complete {
+		color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 88%, var(--pd-accent-data, #14b8a6));
+	}
+
+	.album-set-panel__complete {
+		color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 90%, var(--pd-accent-action, #fbbf24));
 	}
 
 	.album-folder__stack {

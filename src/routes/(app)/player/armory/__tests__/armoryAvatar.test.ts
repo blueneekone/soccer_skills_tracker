@@ -47,12 +47,14 @@ describe('/player/armory — Sprint 2.7.1 vector avatar studio', () => {
 		expect(src).not.toMatch(/from ['"]three['"]|import\(['"]three/);
 	});
 
-	it('uses OperativeAvatarDesigner via Studio (not Album-only)', () => {
+	it('uses OperativePortraitPartPicker via Studio (not Album-only)', () => {
 		expect(src).toMatch(/OperativeLoadoutStudio/);
 		expect(src).toMatch(/bind:operativeAvatar/);
 		expect(src).toMatch(/operativeAvatar/);
+		expect(src).toMatch(/ownedPortraitParts/);
 		const albumBranch = src.slice(src.indexOf("{:else}"));
 		expect(albumBranch).not.toMatch(/OperativeAvatarDesigner/);
+		expect(albumBranch).not.toMatch(/OperativePortraitPartPicker/);
 		expect(albumBranch).not.toMatch(/UPDATE OPERATIVE/);
 	});
 
@@ -65,8 +67,8 @@ describe('/player/armory — Sprint 2.7.1 vector avatar studio', () => {
 		expect(studioSrc).toMatch(/UPDATE OPERATIVE/);
 	});
 
-	it('copy describes vector portrait seed-only studio (no 3D / GLB)', () => {
-		expect(studioSrc).toMatch(/VECTOR STUDIO|vector portrait/i);
+	it('copy describes layered portrait part picker studio (no 3D / GLB)', () => {
+		expect(studioSrc).toMatch(/PART PICKER|part picker/i);
 		expect(studioSrc).not.toMatch(/3D PREVIEW|base_alpha\.glb|base_bravo\.glb|Drag to orbit/i);
 	});
 });

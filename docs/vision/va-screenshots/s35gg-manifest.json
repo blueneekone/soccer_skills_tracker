@@ -1,0 +1,39 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5g-g",
+	"description": "Art well SIR scale, banner watermark, arc flourish off — HQ holo + Studio dossier (MCP VA)",
+	"capturedAt": "2026-05-27T23:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"skippedStates": ["s35gg-recruit-front-1280.png — no test recruit user in seed"],
+	"routes": [
+		{
+			"path": "/player/dashboard",
+			"file": "s35gg-hq-holo-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "HQ holo — Z1 flat callsign only; no arc on portrait; SIR art well dominant"
+		},
+		{
+			"path": "/player/armory?tab=studio",
+			"file": "s35gg-studio-dossier-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Armory dossier — larger art well, thin banner watermark"
+		},
+		{
+			"path": "/recruit/[playerKey]",
+			"file": "s35gg-recruit-front-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"optional": true,
+			"note": "Public recruit ProPlayerCard front — Z1–Z4, arc off"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

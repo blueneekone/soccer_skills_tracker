@@ -12,8 +12,27 @@ const {
   assertActorCanAccessTeam,
   assertPlayer,
 } = require('../middleware/authBouncers');
+const {
+  getSeasonOneCardsForSet,
+} = require('../../../src/lib/gamification/seasonOneData.js');
 
 const REGION = 'us-east1';
+
+/** Album folder completion → banner cosmetic + HQ chip (Sprint 3.4). */
+const ALBUM_SET_BONUS_REWARDS = Object.freeze({
+  street_kings: {
+    bannerCosmeticId: 'album_banner_vanguard',
+    chipLabel: 'STREET KINGS SET',
+  },
+  snipers: {
+    bannerCosmeticId: 'album_banner_snipers',
+    chipLabel: 'SNIPERS SET',
+  },
+  dark_arts: {
+    bannerCosmeticId: 'album_banner_dark_arts',
+    chipLabel: 'DARK ARTS SET',
+  },
+});
 
 /** Lazy Firestore accessor — defers init until first call. */
 const db = () => admin.firestore();
@@ -264,6 +283,64 @@ exports.redeemQuartermasterDigital = onCall({region: REGION}, async (request) =>
 });
 
 /**
+ * @param {string} setId
+ * @param {string[]} ownedCardIds
+ * @return {boolean}
+ */
+function isAlbumSetCompleteOnServer(setId, ownedCardIds) {
+  const cards = getSeasonOneCardsForSet(setId);
+  if (!cards.length) return false;
+  const owned = new Set(ownedCardIds.map(String));
+  return cards.every((c) => owned.has(c.id));
+}
+
+/**
+ * Player-initiated set bonus grant after full folder ownership.
+ * Input: { setId }
+ */
+exports.grantAlbumSetBonus = onCall({region: REGION}, async (request) => {
+  const playerEmail = assertPlayer(request);
+  const data = request.data || {};
+  const setId = typeof data.setId === 'string' ? data.setId.trim() : '';
+
+  if (!setId || !Object.prototype.hasOwnProperty.call(ALBUM_SET_BONUS_REWARDS, setId)) {
+    throw new HttpsError('invalid-argument', 'Valid setId is required.');
+  }
+
+  const reward = ALBUM_SET_BONUS_REWARDS[setId];
+  const allowlist = loadCosmeticAllowlist();
+  assertCosmeticAllowed(reward.bannerCosmeticId, allowlist);
+
+  const userRef = db().collection('users').doc(playerEmail);
+  const uSnap = await userRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'Player profile not found.');
+  }
+
+  const u = uSnap.data() || {};
+  const ownedCards = Array.isArray(u.ownedSeasonOneCards) ?
+    u.ownedSeasonOneCards.map(String) :
+    [];
+
+  if (!isAlbumSetCompleteOnServer(setId, ownedCards)) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Album set is not complete.',
+    );
+  }
+
+  const result = await grantCosmeticToPlayer(
+      playerEmail,
+      reward.bannerCosmeticId,
+      'album_set_complete',
+      playerEmail,
+      setId,
+  );
+
+  return {ok: true, setId, cosmeticId: reward.bannerCosmeticId, ...result};
+});
+
+/**
  * @param {string} role
  * @param {string} playerEmail
  * @param {string} actorEmail
@@ -278,4 +355,6 @@ exports._test = {
   assertCosmeticAllowed,
   isLoadoutSelfGrantDenied,
   QM_DIGITAL_LOADOUT,
+  ALBUM_SET_BONUS_REWARDS,
+  isAlbumSetCompleteOnServer,
 };

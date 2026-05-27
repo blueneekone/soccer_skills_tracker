@@ -2553,7 +2553,30 @@
 	gap: clamp(4px, 0.8vw, 8px);
 	width: 100%;
 	min-width: 0;
+	max-width: 100%;
 	text-align: center;
+	overflow: hidden;
+}
+
+/* Sprint 3.5g-f — HQ holo identity: OperativeIdCardFrame holo variant fits HologramCardShell */
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face :global(.oicf-root--holo) {
+	width: 100%;
+	max-width: min(168px, 100%);
+	margin-inline: auto;
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face :global(.oicf-root--holo .oicf-art-well) {
+	min-height: clamp(7rem, 55%, 65%);
+}
+
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face :global(.oicf-root--holo .oicf-title-bar),
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face :global(.oicf-root--holo .oicf-type-line),
+.player-hud-root .operative-hub__identity-stage .ibm-holo-face :global(.oicf-root--holo .oicf-rank-strip) {
+	max-width: 100%;
+}
+
+.player-hud-root .operative-hub__identity-stage .hcs-card {
+	min-height: clamp(180px, 22vw, 220px);
 }
 
 .player-hud-root .operative-hub__identity-stage .ibm-holo-face__portrait {

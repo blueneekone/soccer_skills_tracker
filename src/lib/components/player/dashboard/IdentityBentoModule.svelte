@@ -2,7 +2,8 @@
 	import HudAvatarRing from '$lib/components/player/HudAvatarRing.svelte';
 	import HologramCardShell from '$lib/components/player/HologramCardShell.svelte';
 	import IdentityTelemetryBezel from '$lib/components/player/dashboard/IdentityTelemetryBezel.svelte';
-	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
+	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';
+	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 	import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
 	import {
 		formatCompactXp,
@@ -18,6 +19,8 @@
 		operativeLoadout = undefined,
 		ownedCosmetics = undefined,
 		displayName = 'Athlete',
+		/** Organization/club on emblem — not team assignment. */
+		clubName = '',
 		teamLabel = '',
 		rankName = '',
 		level = 1,
@@ -40,6 +43,7 @@
 		operativeLoadout?: unknown;
 		ownedCosmetics?: string[];
 		displayName?: string;
+		clubName?: string;
 		teamLabel?: string;
 		rankName?: string;
 		level?: number;
@@ -96,7 +100,16 @@
 			: 'var(--pd-accent-data, #14b8a6)',
 	);
 
-	const holoPortraitSize = $derived(embedded ? 120 : 96);
+	const holoPortraitLayers = $derived(
+		composeOperativePortrait({
+			operativeAvatar,
+			loadout: operativeLoadout,
+			size: 96,
+			ownedIds: ownedCosmetics,
+		}),
+	);
+
+	const emblemOwnsIdentity = $derived(embedded && !profileIncomplete);
 </script>
 
 <div
@@ -130,18 +143,18 @@
 							<span class="ibm-holo-face__initials">{initials}</span>
 						</div>
 					{:else}
-						<div class="ibm-holo-face__portrait">
-							<OperativeLoadoutPreview
-								{operativeAvatar}
-								{operativeLoadout}
-								{ownedCosmetics}
-								size={holoPortraitSize}
-								class="ibm-holo-face__loadout"
-							/>
-						</div>
+						<OperativeIdCardFrame
+							variant="holo"
+							portraitSvg={holoPortraitLayers.portraitSvg}
+							borderSvg={holoPortraitLayers.borderSvg}
+							bannerSvg={holoPortraitLayers.bannerSvg}
+							frameClass={holoPortraitLayers.frameClass}
+							displayName={displayName}
+							clubName={clubName || undefined}
+							rankName={rankName || 'UNRANKED'}
+							operativeLevel={level}
+						/>
 					{/if}
-					<p class="ibm-holo-face__name" title={displayName}>{displayName}</p>
-					<p class="ibm-holo-face__rank">{rankName || 'UNRANKED'} · LVL {level}</p>
 				</div>
 				{#snippet telemetry()}
 					<IdentityTelemetryBezel
@@ -157,12 +170,20 @@
 			<div class="ibm-rings">
 				<div class="ibm-identity">
 					<div class="ibm-identity__head">
-						{#if !hideDisplayName}
+						{#if !hideDisplayName && !emblemOwnsIdentity}
 							<p class="ibm-name" title={displayName}>{displayName}</p>
 						{/if}
 					</div>
-					<p class="ibm-meta" class:ibm-meta--strap={hideDisplayName}>
-						{teamLabel || 'No team'} · {rankName}
+					<p
+						class="ibm-meta"
+						class:ibm-meta--strap={hideDisplayName}
+						aria-hidden={emblemOwnsIdentity ? true : undefined}
+					>
+						{#if emblemOwnsIdentity}
+							{rankProgressLabel}
+						{:else}
+							{teamLabel || 'No team'} · {rankName}
+						{/if}
 					</p>
 
 					<div class="ibm-rank-progress" aria-label="Rank progress">

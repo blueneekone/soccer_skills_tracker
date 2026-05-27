@@ -10,9 +10,11 @@
 
 	let status = $state(/** @type {'loading' | 'ok' | 'unavailable'} */ ('loading'));
 	let displayName = $state('');
+	let clubName = $state('');
+	let operativeLevel = $state<number | undefined>(undefined);
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
 	let seasons = $state([]);
-	/** @type {{ v: number; seed: string } | undefined} */
+	/** @type {import('$lib/avatars/portraitV2Schema.js').OperativePortrait | { v: number; seed: string } | undefined} */
 	let operativeAvatarDesign = $state(undefined);
 
 	$effect(() => {
@@ -25,29 +27,48 @@
 		let cancelled = false;
 		status = 'loading';
 		displayName = '';
+		clubName = '';
+		operativeLevel = undefined;
 		seasons = [];
 		operativeAvatarDesign = undefined;
 		(async () => {
 			try {
 				const fn = httpsCallable(functions, 'getPublicRecruitProfile');
 				const res = await fn({ playerKey: key });
-				/** @type {{ ok?: boolean, displayName?: string | null, seasons?: unknown, playerKey?: string, operativeAvatar?: { v?: unknown, seed?: unknown } }} */
-				const payload = res.data;
+				const payload = /** @type {{ ok?: boolean, displayName?: string | null, clubName?: string | null, seasons?: unknown, playerKey?: string, operativeAvatar?: { v?: unknown, seed?: unknown, parts?: unknown } } | undefined} */ (
+					res.data
+				);
 				if (cancelled) return;
 				if (payload?.ok === true && typeof payload.playerKey === 'string') {
 					displayName = typeof payload.displayName === 'string' ? payload.displayName : '';
+					clubName =
+						typeof payload.clubName === 'string' ? payload.clubName.trim() : '';
 					const oa = payload.operativeAvatar;
-					if (
-						oa &&
-						typeof oa === 'object' &&
-						oa.v === 1 &&
-						typeof oa.seed === 'string' &&
-						oa.seed.trim()
-					) {
-						operativeAvatarDesign = {
-							v: 1,
-							seed: String(oa.seed).trim().slice(0, 128),
-						};
+					if (oa && typeof oa === 'object') {
+						if (oa.v === 2 && oa.parts && typeof oa.parts === 'object' && !Array.isArray(oa.parts)) {
+							/** @type {Record<string, string | null>} */
+							const parts = {};
+							for (const key of ['face', 'hair', 'kit']) {
+								const val = /** @type {Record<string, unknown>} */ (oa.parts)[key];
+								if (typeof val === 'string' && val.trim()) {
+									parts[key] = String(val).trim().slice(0, 64);
+								} else if (val === null) {
+									parts[key] = null;
+								}
+							}
+							operativeAvatarDesign = { v: 2, parts };
+						} else if (
+							oa.v === 1 &&
+							typeof oa.seed === 'string' &&
+							oa.seed.trim()
+						) {
+							operativeAvatarDesign = {
+								v: 1,
+								seed: String(oa.seed).trim().slice(0, 128),
+							};
+						} else {
+							operativeAvatarDesign = undefined;
+						}
 					} else {
 						operativeAvatarDesign = undefined;
 					}
@@ -100,6 +121,8 @@
 		playerDisplayName={displayName || ''}
 		prefetchedSeasons={seasons}
 		operativeAvatar={operativeAvatarDesign}
+		clubName={clubName || undefined}
+		{operativeLevel}
 	/>
 {:else}
 	<section class="recruit-panel recruit-panel--unavailable glass-panel">

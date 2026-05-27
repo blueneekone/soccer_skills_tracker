@@ -16,39 +16,40 @@ const ROADMAP = join(ROOT_DIR, '..', 'ROADMAP.md');
 const studioSrc = existsSync(STUDIO) ? readFileSync(STUDIO, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY_PAGE) ? readFileSync(ARMORY_PAGE, 'utf-8') : '';
 
-/** Album branch: content between `{:else}` after studio and closing `{/if}` */
+/** Album branch: ArmoryAlbumWorkspace mount region */
 function albumBranchSrc(page: string): string {
-	const studioEnd = page.indexOf("{:else}");
-	if (studioEnd < 0) return '';
-	return page.slice(studioEnd);
+	const idx = page.indexOf('ArmoryAlbumWorkspace');
+	if (idx < 0) return '';
+	return page.slice(Math.max(0, idx - 800), idx + 400);
 }
 
 describe('Sprint 3.1.1 Part B — Studio contains portrait + loadout save actions', () => {
-	it('OperativeLoadoutStudio imports OperativeAvatarDesigner', () => {
-		expect(studioSrc).toMatch(/import OperativeAvatarDesigner/);
-		expect(studioSrc).toMatch(/<OperativeAvatarDesigner/);
+	it('OperativeLoadoutStudio imports OperativePortraitPartPicker', () => {
+		expect(studioSrc).toMatch(/import OperativePortraitPartPicker/);
+		expect(studioSrc).toMatch(/<OperativePortraitPartPicker/);
 	});
 
-	it('Studio has UPDATE OPERATIVE + SYNC LOADOUT with Firestore writes', () => {
-		expect(studioSrc).toMatch(/UPDATE OPERATIVE/);
-		expect(studioSrc).toMatch(/SYNC LOADOUT/);
-		expect(studioSrc).toMatch(/updateDoc[\s\S]*operativeAvatar/);
-		expect(studioSrc).toMatch(/updateDoc[\s\S]*operativeLoadout/);
+	it('Studio has SYNC IDENTITY with unified sync helper', () => {
+		expect(studioSrc).toMatch(/SYNC IDENTITY/);
+		expect(studioSrc).toMatch(/syncOperativeIdentityToFirestore/);
+		expect(studioSrc).not.toMatch(/UPDATE OPERATIVE/);
+		expect(studioSrc).not.toMatch(/SYNC LOADOUT/);
 	});
 
-	it('Studio portrait panel uses dossier tokens (--pd-panel), not slate glass', () => {
-		expect(studioSrc).toMatch(/ols-portrait-panel[\s\S]*?var\(--pd-panel,\s*#05050a\)/);
-		expect(studioSrc).not.toMatch(/ols-portrait[\s\S]{0,400}tw-bg-slate-900/);
+	it('Studio picker panel uses dossier tokens (--pd-panel), not slate glass', () => {
+		expect(studioSrc).toMatch(/ols-picker-panel[\s\S]*?--pd-accent-data,\s*#14b8a6/);
+		expect(studioSrc).not.toMatch(/ols-picker[\s\S]{0,400}tw-bg-slate-900/);
 	});
 
-	it('UPDATE OPERATIVE button uses teal data accent (not emerald cyber gradient)', () => {
-		expect(studioSrc).toMatch(/ols-save-portrait[\s\S]*?--pd-accent-data,\s*#14b8a6/);
-		expect(studioSrc).not.toMatch(/ols-save-portrait[\s\S]{0,200}emerald/);
+	it('SYNC IDENTITY button uses teal data accent (not emerald cyber gradient)', () => {
+		expect(studioSrc).toMatch(/ols-sync-identity[\s\S]*?--pd-accent-data,\s*#14b8a6/);
+		expect(studioSrc).not.toMatch(/ols-sync-identity[\s\S]{0,200}emerald/);
 	});
 
-	it('Studio includes ProPlayerCard dossier preview', () => {
-		expect(studioSrc).toMatch(/ProPlayerCard/);
+	it('Studio includes OperativeIdCardFrame dossier preview inside HologramCardShell', () => {
+		expect(studioSrc).toMatch(/OperativeIdCardFrame/);
 		expect(studioSrc).toMatch(/DOSSIER CARD PREVIEW/);
+		expect(studioSrc).toMatch(/HologramCardShell/);
 	});
 });
 
@@ -67,9 +68,18 @@ describe('Sprint 3.1.1 Part B — Album tab is stickers only', () => {
 	});
 
 	it('Album branch keeps season progress HUD + folder grid', () => {
-		expect(albumSrc).toMatch(/Season 1 · Sticker album/);
-		expect(albumSrc).toMatch(/Sticker sets/);
-		expect(albumSrc).toMatch(/StickerVariantShell/);
+		expect(albumSrc).toMatch(/ArmoryAlbumWorkspace/);
+		expect(armorySrc).toMatch(/ArmoryAlbumWorkspace/);
+		const albumWorkspacePath = join(
+			ROOT_DIR,
+			'lib/components/player/ArmoryAlbumWorkspace.svelte',
+		);
+		const albumWorkspaceSrc = existsSync(albumWorkspacePath) ?
+			readFileSync(albumWorkspacePath, 'utf-8')
+		:	'';
+		expect(albumWorkspaceSrc).toMatch(/Season 1 · Sticker album/);
+		expect(albumWorkspaceSrc).toMatch(/Sticker sets/);
+		expect(albumWorkspaceSrc).toMatch(/StickerVariantShell/);
 	});
 
 	it('armory page binds operativeAvatar to Studio, not Album-only save', () => {

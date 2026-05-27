@@ -1,9 +1,9 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-26  
-**Current sprint:** **Phase 7 · G10 — Player OS formal sign-off (Done)**
-*Phase 7 · G1–G10 Done; instrument cohesion track complete — Wave F Done — see [`docs/vision/PLATFORM_BUILD_MANDATES.md`](docs/vision/PLATFORM_BUILD_MANDATES.md) §3*
+**Last updated:** 2026-05-27  
+**Current sprint:** **3.5j-a Done** · **3.5j-b Done** (`syncOperativeIdentity` + Armory read-repair) · **Next: 3.5h** Bauhaus retirement OR **3.5i** age-band · **3.5g-b Done** (`resolveClubDisplayName` + recruit `clubName`) · **3.5g-g Done** · **3.5g-f Done** · **3.5g-vision Done** · **3.5f Done**  
+*Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
 
@@ -129,14 +129,14 @@ Runs parallel-safe with **Wave E (Armory)** when file lists do not overlap.
 
 ## Delivery gate (Player OS cinematic premium)
 
-- **Unblocked after 2.19 Done + G10 sign-off:** Epic 3.4+, Epic 4.1+ implementation (requires full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) reference matrix human sign-off + [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) void contract before shipping)
+- **Unblocked after 2.20 Done + G10 sign-off:** Epic 3.4+, Epic 4.1+ **implementation** (shipping still requires Tier A primitive parity sign-off in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md))
 - **Allowed parallel:** Epic 3.0–3.3 (Done), Epic 4.0 docs, unrelated bugfixes
 - **North star:** Player OS must pass cinematic material/spatial acceptance (see [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md) + [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md)) before comms or album bonuses
 - **Retcon:** Sprint 2.15 shipped motion + checklist; visual review found Tier A/Tier B split — gate re-closed for Epic 3.4 / 4.1
 
 ---
 
-## Sprint status — Epic 1: Foundation & Player HUD *(premium ecosystem track 2.16–2.19 **Done**; Tier B foundation shipped 2.12–2.15)*
+## Sprint status — Epic 1: Foundation & Player HUD *(premium ecosystem track 2.12.1–2.20 **Done**; Tier B foundation shipped 2.12–2.15)*
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -179,8 +179,9 @@ Runs parallel-safe with **Wave E (Armory)** when file lists do not overlap.
 | 2.17 | Done | Z-depth & layering system — Z0–Z4 tokens, recessed/raised/floating surfaces | `playerHudSprint217.test.ts` |
 | 2.18 | Done | Material orchestration — pdDataBloom radar, emissive edges, spatial grid restore, canvas scanlines | `playerHudSprint218.test.ts` |
 | 2.19 | Done | Diegetic UI kit + energy motion — conduit progress, hero identity scale, route spatial continuity; lifts gate | `playerHudSprint219.test.ts` |
+| 2.20 | Done | Premium foundation lock — scroll/VPP/composition hotfix + void contract pixel gate (2.20e) | `playerHudSprint220.test.ts` (2.20a–e) · `voidContract.ts` · [`g10-hq-void-1280x900.png`](docs/vision/va-screenshots/g10-hq-void-1280x900.png) |
 
-**Epic 1 premium ecosystem track 2.12.1–2.19** supersedes “HQ complete at 2.12” and “premium-complete at 2.15.” Operative loadout (gear slots, album bonuses, unlock ceremonies) continues in **Epic 3** after **2.19 Done** — see [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md).
+**Epic 1 premium track 2.12.1–2.20 Done** — G10 reference matrix + 2.20e void sample = Player OS launch sign-off for Epic 3.4 implementation.
 
 ---
 
@@ -529,9 +530,23 @@ npm run build
 
 ---
 
-## Sprint 2.20 scope — Premium foundation lock & composition hotfix — **Planned**
+## Sprint 2.20 scope — Premium foundation lock & composition hotfix — **Done**
 
-**Goal:** Lock canonical material vocabulary from Tier A reference components; eliminate nested-scroll anti-pattern; lift Tier B surfaces to Tier A primitives; fix the 14 composition bugs flagged in design review.
+**Goal:** Lock canonical material vocabulary from Tier A reference components; eliminate nested-scroll anti-pattern; lift Tier B surfaces to Tier A primitives; fix the 14 composition bugs flagged in design review; automate FOUNDATION §3 void contract pixel sample.
+
+**Proof:** `playerHudSprint220.test.ts` (2.20a–e) · `src/lib/player/visual/voidContract.ts` · [`g10-hq-void-1280x900.png`](docs/vision/va-screenshots/g10-hq-void-1280x900.png) · [`g10-manifest.json`](docs/vision/va-screenshots/g10-manifest.json) (`voidContract: true`)
+
+**Note:** Phase 6 slice **6i** (void contract measurement) absorbed by G10 reference matrix + Sprint 2.20e automated pixel sample.
+
+**Delivered slices:**
+
+| Slice | Summary | Proof |
+|-------|---------|-------|
+| **2.20a** | One native document scroll — `ps-root` overflow visible | `playerHudSprint220.test.ts` |
+| **2.20b** | VPP Z1 well — no `::before`/`::after` double-border around `pdDataBloom` | `playerHudSprint220.test.ts` |
+| **2.20c** | HQ / Stats / Train composition hotfix | `playerHudSprint220.test.ts` |
+| **2.20d** | Armory composition | `playerHudSprint220.test.ts` |
+| **2.20e** | Void contract pixel sample on G10 HQ MCP capture at 1280×900 | `playerHudSprint220.test.ts` · `voidContract.ts` |
 
 **Scope (≤ 5 implementation files + tests):**
 
@@ -540,18 +555,18 @@ npm run build
 - `src/lib/styles/player-dashboard-hud.css`
 - `src/lib/components/player/dashboard/OperativeHub.svelte`
 - `src/lib/components/player/dashboard/VanguardProtocolPanel.svelte`
-- Extend `src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts`
+- Extend `src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts` (2.20a–e)
 
-**Docs (this planning slice — Done when merged):** [`docs/vision/PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md), [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md), [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md), `ROADMAP.md`, `.cursor/rules/sst-agent-workflow.mdc`
+**Docs:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md), [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md), [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md), `ROADMAP.md`, `.cursor/rules/sst-agent-workflow.mdc`
 
 **Acceptance:**
 
-- Reference matrix passes at **1280px** + **390px** (all seven routes) per Foundation §10
-- Void contract automated pixel-sample test green
+- Reference matrix passes at **1280px** + **390px** (all seven routes) per Foundation §10 — G10 MCP sign-off
+- Void contract automated pixel-sample test green (`2.20e` on `g10-hq-void-1280x900.png`)
 - No `overflow: auto` on `ps-root` / `ps-scroll-shell`
 - VPP radar shows **single Z1 inset** only (no double-border / `::before` / `::after` stack around `pdDataBloom`)
 
-**Out of scope:** Atmosphere bump (shell ambient opacity, vignette, panel fill reduction) — deferred to **2.21** if void-contract measurement fails
+**Out of scope:** Heavy atmosphere pass — deferred to **2.21** revisit only if future captures fail void sample after UI changes
 
 **Verify:**
 
@@ -1331,7 +1346,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.19 Done** — album set bonuses may proceed after visual acceptance sign-off.
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.4 closed 2026-05-27** · **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5g-vision through 3.5g-b closed 2026-05-27** · **Sprint 3.5j-a/b closed 2026-05-27.** **Next: 3.5h** Bauhaus retirement OR **3.5i** age-band. Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1343,38 +1358,62 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 | 3.1.4 | Done | Armory 500 fix — break `armory.js` ↔ `loadoutSchema` circular import; lazy Studio; TrajectoryEngine guards | `armoryRouteGuards.test.ts`, `armoryLoadoutStudio.test.ts` |
 | 3.2 | Done | Art pipeline — content-hashed cosmetics manifest, SVG assets, catalog ingestion | `playerLoadoutSprint32.test.ts`, `loadoutSchema.test.ts` |
 | 3.3 | Done | Unlock ceremonies — server-verified drops, confetti gate, minor-safe copy | `playerLoadoutSprint33.test.ts`, `loadoutOps.test.js`, `dopamine.test.ts` |
-| 3.4 | Planned | Album set bonuses — set completion perks, dossier chip rewards | — |
-| 3.5a | Planned | Portrait v2 schema + layered character SVG renderer | — |
-| 3.5b | Planned | Portrait part catalog (manifest) — starter editable character set | — |
-| 3.5c | Planned | Armory Studio v2 — ultra-premium part picker in `HologramCardShell`; remove Bauhaus slider UX | — |
-| 3.5d | Planned | HQ + recruit card wiring; avatar v2 migration/read-repair | — |
+| 3.4 | **Done** | Album set bonuses — `ownedSeasonOneCards`, `grantAlbumSetBonus`, Armory SET COMPLETE, HQ dossier chip, banner render | `playerLoadoutSprint34.test.ts`, `loadoutOps.test.js`, [`s34-manifest.json`](docs/vision/va-screenshots/s34-manifest.json) |
+| 3.5a | **Done** | Portrait v2 schema + layered character SVG renderer | `playerLoadoutSprint35a.test.ts` |
+| 3.5b | **Done** | Portrait part catalog (manifest) — starter editable character set | `playerLoadoutSprint35b.test.ts` |
+| 3.5c | **Done** | Armory Studio v2 — ultra-premium part picker in `HologramCardShell`; remove Bauhaus slider UX | `playerLoadoutSprint35c.test.ts`, [`s35c-manifest.json`](docs/vision/va-screenshots/s35c-manifest.json) |
+| 3.5d | **Done** | HQ + recruit card wiring; avatar v2 lazy read-repair | `playerLoadoutSprint35d.test.ts`, [`s35d-manifest.json`](docs/vision/va-screenshots/s35d-manifest.json) |
+| 3.5e | **Done** | Portrait art direction vision (Bitmoji-era 2D + age spectrum + coach/staff) | [`PORTRAIT_ART_DIRECTION.md`](docs/vision/PORTRAIT_ART_DIRECTION.md), `playerLoadoutSprint35e.test.ts` |
+| 3.5f | **Done** | Starter catalog Phoenix cartoon SVG art swap (9 parts · face/hair/kit) | `playerLoadoutSprint35f.test.ts`, [`s35f-manifest.json`](docs/vision/va-screenshots/s35f-manifest.json) |
+| 3.5g-vision | **Done** | Operative ID card authority — TCG zones, club vs team, phased roadmap | [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md), `playerLoadoutSprint35gVision.test.ts` |
 
-Vision: [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md)
+Vision: [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md) · Art direction: [`docs/vision/PORTRAIT_ART_DIRECTION.md`](docs/vision/PORTRAIT_ART_DIRECTION.md) · **Card layout:** [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md)
 
 Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 ---
 
-## Epic 3.5 — Operative portrait v2 & Studio (planned)
+## Epic 3.5 — Operative portrait v2, ID card frame & Studio
 
-**Goal:** Replace Bauhaus geometric default with a **modular character SVG** portrait system — COPPA-safe, seed/catalog IDs, no photo upload.
+**Goal:** Replace Bauhaus geometric default with a **modular character SVG** portrait system and a **single TCG card frame** (`OperativeIdCardFrame`) shared across HQ holo, Armory dossier, `ProPlayerCard`, and recruit — COPPA-safe, catalog IDs only.
 
-**Scope:**
+**Authority chain:** [`PORTRAIT_ART_DIRECTION.md`](docs/vision/PORTRAIT_ART_DIRECTION.md) → [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md) → [`OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md)
 
-- **3.5a** — Portrait v2 schema + layered character SVG renderer (extend loadout slot model for face / hair / kit parts)
-- **3.5b** — Portrait part catalog (manifest) — starter editable character set ingested like 3.2 cosmetics pipeline
-- **3.5c** — Armory Studio v2 — ultra-premium **visual part picker** inside `HologramCardShell`; remove opaque Bauhaus slider UX
-- **3.5d** — HQ + recruit card wiring; avatar v2 migration/read-repair for existing `operativeAvatar` / loadout rows
+**Scope (phased — see [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md) §11):**
+
+| Sprint | Status | Deliverable |
+|--------|--------|-------------|
+| **3.5a** | ✓ | Portrait v2 schema + layered SVG renderer |
+| **3.5b** | ✓ | Portrait part catalog (manifest) |
+| **3.5c** | ✓ | Armory Studio v2 — visual part picker in `HologramCardShell` |
+| **3.5d** | ✓ | HQ + recruit v2 wiring; lazy read-repair |
+| **3.5e** | ✓ | Portrait art direction vision |
+| **3.5f** | ✓ | Starter catalog Phoenix SVG art swap |
+| **3.5g-vision** | ✓ | [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md) — TCG zones, club vs team, roadmap |
+| **3.5g-c** | Done/planned | Emblem parity — rank formatter, club stub, dedupe `ibm-meta` |
+| **3.5g-d/e** | Superseded | Arc/level stamp experiments → folded into **3.5g-f** |
+| **3.5g-f** | **Done** | `OperativeIdCardFrame` — Z1–Z4; level Z1 chip; HQ holo + Studio dossier + `ProPlayerCard` front | [`s35gf-manifest.json`](docs/vision/va-screenshots/s35gf-manifest.json), `playerLoadoutSprint35g.test.ts` |
+| **3.5g-g** | **Done** | Art well SIR scale, banner watermark, arc flourish off (upper ring when enabled) | [`s35gg-manifest.json`](docs/vision/va-screenshots/s35gg-manifest.json), `playerLoadoutSprint35g.test.ts` |
+| **3.5g-b** | **Done** | `resolveClubDisplayName` + `fetchClubDisplayName` team→club; recruit `clubName`; no Phoenixes stub | [`s35gb-manifest.json`](docs/vision/va-screenshots/s35gb-manifest.json), `resolveClubDisplayName.test.ts`, `playerLoadoutSprint35g.test.ts` |
+| **3.5j-a** | **Done** | Studio SYNC IDENTITY + unified picker + `?tab=studio` deep links | `playerLoadoutSprint35j.test.ts`, [`s35j-manifest.json`](docs/vision/va-screenshots/s35j-manifest.json) |
+| **3.5j-b** | **Done** | Armory read-repair hydrate parity with HQ; sync merges `ownedPortraitParts` when changed | `playerLoadoutSprint35j.test.ts` |
+| **3.5j** | **Done** | Identity Studio cohesion umbrella (3.5j-a + 3.5j-b) | `playerLoadoutSprint35j.test.ts` |
+| **3.5h** | Planned (next code) | Bauhaus v1 generator retirement |
+| **3.5i** | Planned | Age-band catalog + `bodyScale` |
+| **3.5i-pose** | Planned | `portrait_pose_*` catalog + Studio pose tab |
+| **3.5k** | Future | Collectible metadata — set #, rarity, card back, flavor text |
+
+**Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only.
 
 **Design principles:**
 
-- Reuse Epic 3.2 cosmetics manifest + loadout equip UX for **face / hair / kit** parts
-- Studio = game-like **visual picker** + holo dossier hero, not opaque sliders
-- Portrait renders inside `HologramCardShell` on HQ and Armory Studio (6a / 6f material language)
+- Reuse Epic 3.2 cosmetics manifest + loadout equip UX for **face / hair / kit** (and future **pose**)
+- One card zone grammar on every surface — variant `card` \| `holo` is CSS scale only
+- **Club org on Z2** — team roster name never on collectible front
+- Z5 streak/XP = `IdentityTelemetryBezel` on HQ holo only
+- Studio = game-like **visual picker** + holo dossier hero; **3.5j** requires **3.5g-f** frame prerequisite
 
-**Vision pointer:** Extend [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md) portrait slot row in implementation sprint **3.5a**.
-
-**Runs after:** 3.4 (or parallel once album bonuses schema stable). **Coordinates with:** Phase 6 **6f-c** (bezel telemetry) and **6f** (Studio holo shell) — character art is Epic 3.5, not 6f-c.
+**Runs after:** 3.4. **Coordinates with:** Phase 6 **6f-c** (bezel telemetry) and **6f** (Studio holo shell).
 
 ---
 

@@ -91,6 +91,20 @@ describe('hqWorldContext — resolveHqStatusBadges', () => {
 		expect(badges.some((b) => b.id === 'profile-incomplete')).toBe(true);
 	});
 
+	it('includes album set completion dossier chips (Sprint 3.4)', () => {
+		const badges = resolveHqStatusBadges({
+			profileIncomplete: false,
+			streak: 0,
+			lastTrainingUtc: '2026-05-21',
+			coachBountyCount: 0,
+			completedAlbumSetChips: [{ setId: 'street_kings', label: 'STREET KINGS SET' }],
+			now,
+		});
+		expect(badges.some((b) => b.id === 'album-set-street_kings' && b.label === 'STREET KINGS SET')).toBe(
+			true,
+		);
+	});
+
 	it('omits profile incomplete chip when hub banner is visible', () => {
 		const badges = resolveHqStatusBadges({
 			profileIncomplete: true,

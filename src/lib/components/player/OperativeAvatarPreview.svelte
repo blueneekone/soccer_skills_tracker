@@ -1,17 +1,19 @@
 <script>
 	import { resolve } from '$app/paths';
-	import { renderOperativeAvatarSvg, parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
+	import { renderOperativeAvatarSvg } from '$lib/avatars/operativeAvatar.js';
+	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
-	 * Parsed `users.operativeAvatar` (`{ v, seed }`) or `null` if unset / invalid.
-	 * Omit to read from `authStore.userProfile` (signed-in player).
+	 * Parsed `users.operativeAvatar` (v1 or v2) or `null` if unset / invalid.
+	 * Omit both props to read from `authStore.userProfile` (signed-in player).
 	 *
 	 * @type {{ v: number; seed: string } | null | undefined}
 	 */
 	let {
 		config: configProp = undefined,
+		operativeAvatar: operativeAvatarProp = undefined,
 		size = 96,
 		class: className = '',
 		/** When there is no config, show CTA to open the armory (player dashboard). */
@@ -20,21 +22,18 @@
 		vpc_approved = true,
 	} = $props();
 
-	const resolvedConfig = $derived.by(() => {
-		if (configProp !== undefined) return configProp;
-		return parseOperativeAvatar(authStore.userProfile?.operativeAvatar);
+	const resolvedPortrait = $derived.by(() => {
+		if (operativeAvatarProp !== undefined) {
+			return parseOperativePortrait(operativeAvatarProp);
+		}
+		if (configProp !== undefined) {
+			return parseOperativePortrait(configProp);
+		}
+		return parseOperativePortrait(authStore.userProfile?.operativeAvatar);
 	});
 
-	/**
-	 * Sprint 9.3: `renderBauhausAvatarSvg` is pure JS — no browser APIs — so this
-	 * runs identically on server (SSR) and client. We never fall back to a static
-	 * PNG placeholder: a deterministic Bauhaus SVG is always returned.
-	 *
-	 * Priority:  config seed > player UID > generic 'operative' seed (SSR/no-auth)
-	 */
 	const svgMarkup = $derived.by(() => {
-		const cfg = resolvedConfig;
-		if (cfg) return renderOperativeAvatarSvg(cfg.seed, size);
+		if (resolvedPortrait) return renderOperativeAvatarSvg(resolvedPortrait, size);
 		const uid = authStore.user?.uid;
 		return renderOperativeAvatarSvg(uid || 'operative', size);
 	});
@@ -69,10 +68,8 @@
 			>PARENTAL<br>CONSENT<br>REQUIRED</span>
 		</div>
 	{:else}
-		<!-- Sprint 9.3: deterministic Bauhaus SVG — always rendered (no static PNG fallback). -->
 		{@html svgMarkup}
-		{#if showInitializeCta && !resolvedConfig}
-			<!-- Overlay CTA when rendering the auto-generated (non-customised) avatar. -->
+		{#if showInitializeCta && !resolvedPortrait}
 			<a
 				href={resolve('/player/armory')}
 				class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900/90 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.48rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-200 tw-no-underline tw-backdrop-blur-sm tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem]"

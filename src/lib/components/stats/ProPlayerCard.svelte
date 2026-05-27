@@ -3,10 +3,9 @@
 	import { onMount } from 'svelte';
 	import { collection, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import OperativeAvatarPreview from '$lib/components/player/OperativeAvatarPreview.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
-	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
+	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 
 	const PRO_CARD_INTEL = {
@@ -28,8 +27,11 @@
 		/** Sprint 3.1 — equipped loadout for border frame on portrait ring. */
 		operativeLoadout = undefined,
 		ownedCosmetics = undefined,
-		/** Shown on the 3D card front (default matches Quartermaster / tier copy). */
-		rankLabel = 'Recruit',
+		/** Rank line on emblem front (rank only — level is the upper-right badge). */
+		rankName = 'Recruit',
+		operativeLevel = undefined,
+		/** Z2 org label — clubs/{clubId}.name via resolveClubDisplayName (3.5g-b); not team roster. */
+		clubName = undefined,
 		/** Back-face header. */
 		telemetryTitle = 'OPERATIVE TELEMETRY',
 		/** Optional back-face rows; when blank, a short fallback line is shown. */
@@ -44,8 +46,6 @@
 		/** Armory Studio dossier row — flip ID card only, no stats / radar workspace. */
 		dossierPreview = false,
 	} = $props();
-
-	const avatarDesign = $derived(parseOperativeAvatar(operativeAvatar));
 
 	const portraitLayers = $derived(
 		composeOperativePortrait({
@@ -268,33 +268,20 @@
 					style="transform-style: preserve-3d;{isFlipped ? ' transform: rotateY(180deg);' : ''}"
 				>
 					<div
-						class="ppc-face ppc-face--front tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-2xl tw-border tw-p-6"
+						class="ppc-face ppc-face--front tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-visible tw-rounded-2xl tw-border tw-p-6"
 						style="-webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
-						<div
-							class="ppc-avatar-ring tw-relative tw-mx-auto tw-mb-4 tw-flex tw-h-24 tw-w-24 tw-items-center tw-justify-center tw-overflow-visible tw-rounded-full {portraitLayers.frameClass}"
-						>
-							<div
-								class="tw-flex tw-h-[96px] tw-w-[96px] tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
-							>
-								<OperativeAvatarPreview config={avatarDesign} size={96} class="tw-rounded-full" />
-							</div>
-							{#if portraitLayers.borderSvg}
-								<div class="ppc-loadout-border tw-pointer-events-none tw-absolute tw-inset-0" aria-hidden="true">
-									{@html portraitLayers.borderSvg}
-								</div>
-							{/if}
-						</div>
-						<h2
-							class="tw-m-0 tw-mb-2 tw-w-full tw-text-center tw-text-2xl tw-font-black tw-leading-tight tw-text-white [overflow-wrap:anywhere] tw-break-words"
-						>
-							{playerDisplayName || 'Operative'}
-						</h2>
-						<p
-							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-cyan-400"
-						>
-							{rankLabel}
-						</p>
+						<OperativeIdCardFrame
+							variant="card"
+							portraitSvg={portraitLayers.portraitSvg}
+							borderSvg={portraitLayers.borderSvg}
+							bannerSvg={portraitLayers.bannerSvg}
+							frameClass={portraitLayers.frameClass}
+							displayName={playerDisplayName || 'Operative'}
+							clubName={clubName}
+							rankName={rankName}
+							{operativeLevel}
+						/>
 					</div>
 					<div
 						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-text-left"
@@ -470,20 +457,6 @@
 		margin-bottom: clamp(16px, 3vw, 24px);
 	}
 
-	.ppc-loadout-border :global(svg) {
-		width: 100%;
-		height: 100%;
-		display: block;
-	}
-
-	.loadout-frame--neon.ppc-avatar-ring {
-		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.35));
-	}
-
-	.loadout-frame--neon.ppc-avatar-ring > div:first-child {
-		box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.35);
-	}
-
 	.ppc-flip-scene {
 		transform: translateZ(0);
 		contain: layout paint;
@@ -502,6 +475,16 @@
 
 	.pro-card-outer--dossier-preview .ppc-id-wrap {
 		margin-bottom: 0;
+	}
+
+	.pro-card-outer--dossier-preview .ppc-flip-scene {
+		height: auto;
+		min-height: clamp(300px, 48vw, 360px);
+		max-height: none;
+	}
+
+	.pro-card-outer--dossier-preview .ppc-flip-hint {
+		display: none;
 	}
 
 	.pro-card-shell {

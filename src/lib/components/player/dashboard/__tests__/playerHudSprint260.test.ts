@@ -18,11 +18,13 @@ const VA_DOC = join(REPO, 'docs/PLAYER_OS_VISUAL_ACCEPTANCE.md');
 const FOUNDATION = join(REPO, 'docs/vision/PLAYER_OS_FOUNDATION.md');
 const G10_MANIFEST = join(REPO, 'docs/vision/va-screenshots/g10-manifest.json');
 const COHESION = join(__dirname, 'playerOsCohesion.test.ts');
+const SPRINT220 = join(__dirname, 'playerHudSprint220.test.ts');
 
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const vaDocSrc = existsSync(VA_DOC) ? readFileSync(VA_DOC, 'utf-8') : '';
 const foundationSrc = existsSync(FOUNDATION) ? readFileSync(FOUNDATION, 'utf-8') : '';
 const cohesionSrc = existsSync(COHESION) ? readFileSync(COHESION, 'utf-8') : '';
+const sprint220Src = existsSync(SPRINT220) ? readFileSync(SPRINT220, 'utf-8') : '';
 
 describe('Phase 7 · G10 — formal sign-off documented', () => {
 	it('documents Phase 7 · G10 — Player OS reference-matrix sign-off', () => {
@@ -68,5 +70,35 @@ describe('Phase 7 · G10 — VA doc sync (G9 scanline policy)', () => {
 	it('PLAYER_OS_VISUAL_ACCEPTANCE notes G9 automated gate + G10 MCP human sign-off', () => {
 		expect(vaDocSrc).toMatch(/Automated gate \(G9\)/);
 		expect(vaDocSrc).toMatch(/Human sign-off \(G10\)/);
+	});
+});
+
+describe('Phase 7 · G10 + Sprint 2.20 — void contract closure', () => {
+	it('ROADMAP marks Sprint 2.20 Done with 2.20e proof paths', () => {
+		expect(roadmapSrc).toMatch(/Sprint 2\.20 scope[\s\S]*?\*\*Done\*\*/);
+		expect(roadmapSrc).toMatch(/2\.20e/);
+		expect(roadmapSrc).toMatch(/g10-hq-void-1280x900\.png/);
+		expect(roadmapSrc).toMatch(/Epic 1 premium track 2\.12\.1–2\.20 Done/);
+	});
+
+	it('ROADMAP current sprint is Epic 3 · Sprint 3.5a', () => {
+		expect(roadmapSrc).toMatch(/Current sprint:\*\* \*\*Epic 3 · Sprint 3\.5a/);
+	});
+
+	it('PLAYER_OS_VISUAL_ACCEPTANCE void contract pixel rows reference 2.20e', () => {
+		expect(vaDocSrc).toMatch(/Sprint 2\.20e/);
+		expect(vaDocSrc).toMatch(/Black canvas pixels at viewport rest[\s\S]*?☑/);
+		expect(vaDocSrc).toMatch(/Visible matte panel fill ratio[\s\S]*?☑/);
+		expect(vaDocSrc).toMatch(/Emissive edges \+ bloom \+ light[\s\S]*?☑/);
+	});
+
+	it('PLAYER_OS_FOUNDATION §3 documents 2.20e automated pixel sample', () => {
+		expect(foundationSrc).toMatch(/Sprint 2\.20e/);
+		expect(foundationSrc).toMatch(/playerHudSprint220\.test\.ts/);
+	});
+
+	it('playerHudSprint220.test.ts contains Sprint 2.20e describe block', () => {
+		expect(sprint220Src).toMatch(/Sprint 2\.20e — void contract pixel sample \(FOUNDATION §3\)/);
+		expect(sprint220Src).toMatch(/evaluateVoidContract/);
 	});
 });

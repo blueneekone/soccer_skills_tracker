@@ -1,0 +1,74 @@
+[
+	{
+		"id": "portrait_face_default",
+		"slot": "face",
+		"label": "Default Face",
+		"renderKey": "face-default",
+		"assetPath": "/portrait/face-default.svg",
+		"contentHash": "33e992cde524be5cd0926b839bd5f1054df04e74272b6e793cfd2b24dc0bda49"
+	},
+	{
+		"id": "portrait_face_round",
+		"slot": "face",
+		"label": "Round Face",
+		"renderKey": "face-round",
+		"assetPath": "/portrait/face-round.svg",
+		"contentHash": "bb8b066a9242a1fb19be73a0276a63e8dc31b65485e041c0a1aab1d48f618d5a"
+	},
+	{
+		"id": "portrait_face_angular",
+		"slot": "face",
+		"label": "Angular Face",
+		"renderKey": "face-angular",
+		"assetPath": "/portrait/face-angular.svg",
+		"contentHash": "931231927c4a697a4719d1e4898be2687e981d75cd2a8f67d6b2136caa175947"
+	},
+	{
+		"id": "portrait_hair_default",
+		"slot": "hair",
+		"label": "Default Hair",
+		"renderKey": "hair-default",
+		"assetPath": "/portrait/hair-default.svg",
+		"contentHash": "2c82f344d485f0486fce8b79bb2cde46fd08d7c72f626259cc94498d3bcd5ac2"
+	},
+	{
+		"id": "portrait_hair_crop",
+		"slot": "hair",
+		"label": "Crop Cut",
+		"renderKey": "hair-crop",
+		"assetPath": "/portrait/hair-crop.svg",
+		"contentHash": "0421c8798050dcb256085f8c41c2a13932383ed3e4c4e928a5be9f5653d333aa"
+	},
+	{
+		"id": "portrait_hair_long",
+		"slot": "hair",
+		"label": "Long Hair",
+		"renderKey": "hair-long",
+		"assetPath": "/portrait/hair-long.svg",
+		"contentHash": "834689d26ef01dcd9fc04d392a8f4c9f73b5190bc9f6425741ccac9614db9be9"
+	},
+	{
+		"id": "portrait_kit_default",
+		"slot": "kit",
+		"label": "Default Kit",
+		"renderKey": "kit-default",
+		"assetPath": "/portrait/kit-default.svg",
+		"contentHash": "133e3d6bd43099cf6ac3fe0791fe6e05fbcf0e35894c264021bbb41e3a16cf91"
+	},
+	{
+		"id": "portrait_kit_home",
+		"slot": "kit",
+		"label": "Home Kit",
+		"renderKey": "kit-home",
+		"assetPath": "/portrait/kit-home.svg",
+		"contentHash": "aed94dc7bfc44380a1358725d66d16f4674c24c75570a42f7bfd38e4963ce72d"
+	},
+	{
+		"id": "portrait_kit_away",
+		"slot": "kit",
+		"label": "Away Kit",
+		"renderKey": "kit-away",
+		"assetPath": "/portrait/kit-away.svg",
+		"contentHash": "b84fea544304d653274424c274c8c5de885cdef8ffc1be25df17c55ca8d1adf0"
+	}
+]

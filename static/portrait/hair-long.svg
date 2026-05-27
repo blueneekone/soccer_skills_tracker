@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" aria-hidden="true">
+  <g fill-rule="evenodd" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M 58 112 Q 48 68 84 44 Q 128 24 172 44 Q 208 68 198 112 Q 204 96 192 68 Q 128 40 64 68 Q 52 96 58 112 Z" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 64 68 Q 128 48 192 68" fill="none" stroke="#f07830" stroke-width="4"/>
+    <path d="M 58 112 Q 52 148 60 178 Q 68 168 64 140" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 198 112 Q 204 148 196 178 Q 188 168 192 140" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 168 108 Q 184 140 176 172 L 168 160 Q 176 132 164 108 Z" fill="#2d1810" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 88 108 Q 72 140 80 172 L 88 160 Q 80 132 92 108 Z" fill="#2d1810" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 118 44 L 128 28 L 138 44" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 92 52 L 100 36 L 108 50 M 148 50 L 156 36 L 164 52" fill="none" stroke="#f07830" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

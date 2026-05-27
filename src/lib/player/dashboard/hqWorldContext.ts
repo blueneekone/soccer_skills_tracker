@@ -177,6 +177,8 @@ export function resolveHqStatusBadges(params: {
 	suppressTrainTodayBadge?: boolean;
 	/** When profile setup banner is visible in the hub, omit PROFILE INCOMPLETE chip. */
 	suppressProfileIncompleteBadge?: boolean;
+	/** Sprint 3.4 — completed album folder dossier chips (setId + display label). */
+	completedAlbumSetChips?: readonly { setId: string; label: string }[];
 	now?: Date;
 }): HqStatusBadge[] {
 	const {
@@ -187,10 +189,16 @@ export function resolveHqStatusBadges(params: {
 		heroQuestId,
 		suppressTrainTodayBadge = false,
 		suppressProfileIncompleteBadge = false,
+		completedAlbumSetChips = [],
 		now = new Date(),
 	} = params;
 	const badges: HqStatusBadge[] = [];
 	const trainedToday = isTrainingToday(lastTrainingUtc, now);
+
+	for (const chip of completedAlbumSetChips) {
+		if (!chip?.setId || !chip.label) continue;
+		badges.push({ id: `album-set-${chip.setId}`, label: chip.label });
+	}
 
 	if (coachBountyCount > 0) {
 		badges.push({

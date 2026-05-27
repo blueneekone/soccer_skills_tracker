@@ -50,6 +50,11 @@
 	aria-label={equippedTitle ? `Operative portrait with ${equippedTitle}` : 'Operative portrait preview'}
 >
 	<div class="olp-stack">
+		{#if layers.bannerSvg}
+			<div class="olp-banner" aria-hidden="true">
+				{@html layers.bannerSvg}
+			</div>
+		{/if}
 		<div class="olp-portrait" aria-hidden="true">
 			{@html layers.portraitSvg}
 		</div>
@@ -87,10 +92,26 @@
 
 	.olp-portrait,
 	.olp-border,
-	.olp-badge {
+	.olp-badge,
+	.olp-banner {
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+	}
+
+	.olp-banner {
+		inset: auto 0 0 0;
+		height: 38%;
+		opacity: 0.92;
+	}
+
+	.olp-banner :global(img),
+	.olp-banner :global(svg) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center bottom;
 	}
 
 	.olp-portrait :global(svg) {

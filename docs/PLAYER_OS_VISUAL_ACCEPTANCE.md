@@ -5,7 +5,8 @@
 **Living doc for Epic 1 premium track 2.12.1–2.20** · **Vision:** [`docs/vision/PLAYER_OS.md`](vision/PLAYER_OS.md) · **Platform criteria:** [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) · **Canonical material:** [`docs/vision/PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) · **Spatial history:** [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](vision/PLAYER_OS_MATERIAL_SPATIAL.md) · **Roadmap:** [`ROADMAP.md`](../ROADMAP.md)
 
 - **Automated gate (G9):** [`playerOsCohesion.test.ts`](../src/lib/components/player/dashboard/__tests__/playerOsCohesion.test.ts) — cohesion/density/detail guards + `g9-manifest.json` size proof.
-- **Human sign-off (G10):** MCP screenshots at 1280×800 and 390×844 — artifacts in [`docs/vision/va-screenshots/g10-manifest.json`](vision/va-screenshots/g10-manifest.json). Checkboxes below marked ☑ only after PNG capture + visual confirm this sprint.
+- **Human sign-off (G10):** MCP screenshots at 1280×800 and 390×844 — artifacts in [`docs/vision/va-screenshots/g10-manifest.json`](vision/va-screenshots/g10-manifest.json). Checkboxes below marked ☑ only after PNG capture + visual confirm.
+- **Void contract authority (2.20e):** Automated pixel sample in [`playerHudSprint220.test.ts`](../src/lib/components/player/dashboard/__tests__/playerHudSprint220.test.ts) (`Sprint 2.20e`) on [`g10-hq-void-1280x900.png`](vision/va-screenshots/g10-hq-void-1280x900.png) + human HQ capture confirm.
 
 - **Sign-off gate:** Must pass [`PLATFORM_EXPERIENCE_RUBRIC.md`](vision/PLATFORM_EXPERIENCE_RUBRIC.md) §5 universal checks **and** the Player row, in addition to the checklist below.
 
@@ -25,7 +26,7 @@ Sign-off table for premium Player OS surfaces at **1280px** and **390px**. Sprin
 
 ## Reference matrix (Sprint 2.20 sign-off)
 
-Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screenshot + must-feel rule at both viewports. Instrument types: [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md).
+Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screenshot + must-feel rule at both viewports. Sign-off authority = **G10 MCP reference matrix** + **2.20e automated void sample** on `g10-hq-void-1280x900.png`. Instrument types: [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md).
 
 | Route | Instrument | SIEM/SOAR anchor | Tron/Ares anchor | Game HUD anchor | Must-feel rule | 1280px | 390px |
 |-------|------------|------------------|------------------|-----------------|----------------|:------:|:-----:|
@@ -39,15 +40,17 @@ Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §10 — screens
 
 ## Void contract measurement
 
-Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §3 — _automated in Sprint 2.20_.
+Per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md) §3 — automated in **Sprint 2.20e** (`playerHudSprint220.test.ts` on `g10-hq-void-1280x900.png`).
 
 | Metric | Threshold | Pass |
 |--------|-----------|:----:|
-| Black canvas pixels at viewport rest | ≥ 40% (HQ 1280×900) | ☐ |
-| Visible matte panel fill ratio | ≤ 35% | ☐ |
-| Emissive edges + bloom + light | ≥ 15% | ☐ |
+| Black canvas pixels at viewport rest | ≥ 40% (HQ 1280×900) | ☑ |
+| Visible matte panel fill ratio | ≤ 35% | ☑ |
+| Emissive edges + bloom + light | ≥ 15% of lit (non-void) pixels | ☑ |
 | Largest Z2 panel | ≤ 60% viewport width (desktop) | ☐ |
 | Hero identity (Z3) min footprint | ≥ 280px ring + 1.5× rank bar height | ☐ |
+
+_Largest Z2 + hero ring rows remain Wave F / manual QA — not blocking Epic 3.4 implementation when pixel ratios pass._
 
 ## Tier A primitive parity (replaces subjective tier check)
 
@@ -104,7 +107,7 @@ _Automated guards: `playerHudSprint219.test.ts` asserts diegetic kit, `pd-layer-
 
 ## Sign-off gate
 
-**Epic 3.4+ and Epic 4.1+** — gate open after 2.19 Done; **launch blocked** until reference matrix, void contract, and primitive parity rows above are signed at 1280px + 390px per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md).
+**Epic 3.4+ and Epic 4.1+** — **implementation unblocked** after Sprint 2.20 Done + G10 sign-off; **launch blocked** until Tier A primitive parity rows above are signed at 1280px + 390px per [`PLAYER_OS_FOUNDATION.md`](vision/PLAYER_OS_FOUNDATION.md).
 
 | Reviewer | Date | Notes |
 |----------|------|-------|

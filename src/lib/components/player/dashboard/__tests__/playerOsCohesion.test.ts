@@ -291,6 +291,7 @@ type G10RouteEntry = {
 	height: number;
 	minBytes?: number;
 	state?: string;
+	voidContract?: boolean;
 };
 
 type G10Manifest = {
@@ -359,6 +360,25 @@ describe('G10 · VA manifest (MCP reference-matrix sign-off)', () => {
 		const train390 = manifest.routes.find((r) => r.file === 'g10-train-390.png');
 		expect(hq390?.width).toBe(390);
 		expect(train390?.width).toBe(390);
+	});
+
+	it('manifest includes void-contract HQ capture for Sprint 2.20e pixel gate', () => {
+		const manifest = loadG10Manifest();
+		const voidEntry = manifest.routes.find(
+			(r) => r.file === 'g10-hq-void-1280x900.png' || r.voidContract === true,
+		);
+		expect(voidEntry, 'g10-hq-void-1280x900.png voidContract entry').toBeDefined();
+		expect(voidEntry?.path).toBe('/player/dashboard');
+		const pngPath = join(VA_DIR, voidEntry!.file);
+		expect(existsSync(pngPath)).toBe(true);
+	});
+
+	it('playerHudSprint220.test.ts documents Sprint 2.20e void contract block (ROADMAP proof chain)', () => {
+		const sprint220 = join(__dirname, 'playerHudSprint220.test.ts');
+		const src = readFileSync(sprint220, 'utf-8');
+		expect(src).toMatch(/Sprint 2\.20e — void contract pixel sample \(FOUNDATION §3\)/);
+		expect(src).toMatch(/sampleVoidContractRatios/);
+		expect(src).toMatch(/g10-hq-void-1280x900\.png/);
 	});
 });
 

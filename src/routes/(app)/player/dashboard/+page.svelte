@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
@@ -34,6 +35,13 @@
 		resolveNextEventLabel,
 		type HqScheduleEventLike,
 	} from '$lib/player/dashboard/hqWorldContext.js';
+	import { getCompletedAlbumSetChipLabels } from '$lib/gamification/albumSetBonuses.js';
+	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
+	import {
+		readRepairOperativeAvatar,
+		queuePortraitReadRepairWrite,
+	} from '$lib/avatars/portraitReadRepair.js';
+	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -107,9 +115,56 @@
 			'—',
 	);
 
-	const hasArmoryProfile = $derived(Boolean(activePlayer?.operativeAvatar));
+	/** Repaired v2 portrait for HQ identity + ring (lazy read-repair from Firestore profile). */
+	let displayOperativeAvatar = $state<unknown>(undefined);
+	let lastPortraitRepairSig = '';
+
+	const profilePortraitRepairSig = $derived.by(() => {
+		const oa = activePlayer?.operativeAvatar;
+		const opp = activePlayer?.ownedPortraitParts;
+		const oaNorm = oa && typeof oa === 'object' ? JSON.stringify(oa) : '';
+		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '';
+		return `${email}:${oaNorm}:${oppNorm}`;
+	});
+
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		void profilePortraitRepairSig;
+		if (!email) {
+			lastPortraitRepairSig = '';
+			displayOperativeAvatar = undefined;
+			return;
+		}
+		if (profilePortraitRepairSig === lastPortraitRepairSig) return;
+		lastPortraitRepairSig = profilePortraitRepairSig;
+
+		const { operativeAvatar, ownedPortraitParts, didMigrate } = readRepairOperativeAvatar(
+			activePlayer?.operativeAvatar,
+			activePlayer?.ownedPortraitParts,
+		);
+		displayOperativeAvatar = operativeAvatar;
+		if (didMigrate) {
+			void queuePortraitReadRepairWrite(email, { operativeAvatar, ownedPortraitParts });
+		}
+	});
+
+	const operativeAvatarForHud = $derived(
+		displayOperativeAvatar ?? activePlayer?.operativeAvatar,
+	);
+
+	const hasArmoryProfile = $derived(
+		parseOperativePortrait(operativeAvatarForHud) !== null,
+	);
 
 	const nextEventLabel = $derived(resolveNextEventLabel(nextScheduleEvent));
+	const ownedSeasonOneCardIds = $derived(
+		Array.isArray(activePlayer?.ownedSeasonOneCards) ?
+			activePlayer.ownedSeasonOneCards.filter((id) => typeof id === 'string')
+		:	[],
+	);
+	const completedAlbumSetChips = $derived(
+		getCompletedAlbumSetChipLabels(ownedSeasonOneCardIds),
+	);
 	const hqStatusBadges = $derived(
 		resolveHqStatusBadges({
 			profileIncomplete: !hasArmoryProfile,
@@ -118,11 +173,13 @@
 			coachBountyCount,
 			heroQuestId,
 			suppressProfileIncompleteBadge: !hasArmoryProfile,
+			completedAlbumSetChips,
 		}),
 	);
 
 	/** @type {string} */
 	let teamAssignmentLabel = $state('');
+	let clubDisplayName = $state('');
 
 	$effect(() => {
 		if (!browser) return;
@@ -192,6 +249,19 @@
 					teamSportFromDoc = null;
 				}
 			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const profile = activePlayer;
+		let cancelled = false;
+		(async () => {
+			const name = await fetchClubDisplayName(db, profile);
+			if (!cancelled) clubDisplayName = name;
 		})();
 		return () => {
 			cancelled = true;
@@ -333,12 +403,13 @@
 						embedded={true}
 						hideDisplayName={true}
 						uid={uid}
-						operativeAvatar={activePlayer?.operativeAvatar}
+						operativeAvatar={operativeAvatarForHud}
 						operativeLoadout={activePlayer?.operativeLoadout}
 						ownedCosmetics={Array.isArray(activePlayer?.ownedCosmetics) ?
 							activePlayer.ownedCosmetics.filter((id) => typeof id === 'string')
 						:	[]}
 						displayName={callsign}
+						clubName={clubDisplayName}
 						teamLabel={teamAssignmentLabel}
 						rankName={rankProgress.rank}
 						level={osLevel}
@@ -352,7 +423,7 @@
 						atMaxRank={rankProgress.atMaxRank}
 						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
-						onProfileSetup={() => (showInitModal = true)}
+						onProfileSetup={() => void goto(resolve('/player/armory?tab=studio'))}
 					/>
 				{/snippet}
 				{#snippet metrics()}
@@ -484,13 +555,13 @@
 
 		<div class="bento-mt-lg tw-flex tw-flex-wrap tw-items-center tw-gap-3">
 			<a
-				href={resolve('/player/armory')}
+				href={resolve('/player/armory?tab=studio')}
 				class="init-modal__cta init-modal__cta--primary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-no-underline tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 				data-sveltekit-preload-data="hover"
 				onclick={() => (showInitModal = false)}
 			>
 				<Icon name="status.shield-check" size={13} />
-				Open Armory
+				Open Identity Studio
 			</a>
 			<button
 				type="button"

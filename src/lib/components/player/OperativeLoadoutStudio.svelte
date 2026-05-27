@@ -1,11 +1,16 @@
 <script lang="ts">
-	import { doc, updateDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import HologramCardShell from '$lib/components/player/HologramCardShell.svelte';
-	import OperativeAvatarDesigner from '$lib/components/player/OperativeAvatarDesigner.svelte';
+	import OperativePortraitPartPicker from '$lib/components/player/OperativePortraitPartPicker.svelte';
 	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
-	import ProPlayerCard from '$lib/components/stats/ProPlayerCard.svelte';
+	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';
+	import { syncOperativeIdentityToFirestore } from '$lib/player/syncOperativeIdentity.js';
+	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
+	import {
+		PORTRAIT_PART_SLOTS,
+		type PortraitPartSlot,
+	} from '$lib/avatars/portraitV2Schema.js';
 	import {
 		LOADOUT_SLOTS,
 		OPERATIVE_LOADOUT_VERSION,
@@ -13,95 +18,177 @@
 		defaultOperativeLoadout,
 		getLoadoutCatalog,
 		getOwnedCatalogForSlot,
-		parseOperativeLoadout,
 		type LoadoutSlotId,
 		type OperativeLoadoutV1,
 	} from '$lib/gamification/loadoutSchema.js';
 	import Swal from 'sweetalert2';
-	const SLOT_LABELS: Record<LoadoutSlotId, string> = {
+
+	type UnifiedTab = PortraitPartSlot | LoadoutSlotId;
+
+	const UNIFIED_TABS: UnifiedTab[] = [...PORTRAIT_PART_SLOTS, ...LOADOUT_SLOTS];
+
+	const TAB_LABELS: Record<UnifiedTab, string> = {
+		face: 'Face',
+		hair: 'Hair',
+		kit: 'Kit',
 		border: 'Border',
 		badge: 'Badge',
 		banner: 'Banner',
 		title: 'Title',
 	};
+
+	function isPortraitTab(tab: UnifiedTab): tab is PortraitPartSlot {
+		return (PORTRAIT_PART_SLOTS as readonly string[]).includes(tab);
+	}
+
 	let {
 		operativeAvatar = $bindable(undefined),
 		operativeLoadout = $bindable(defaultOperativeLoadout()),
 		ownedCosmetics = $bindable(/** @type {string[]} */ ([])),
+		ownedPortraitParts = /** @type {string[]} */ ([]),
 		playerEmailKey = '',
 		playerDisplayName = 'Operative',
 		rankLabel = 'Recruit',
+		clubName = '',
+		operativeLevel = 1,
 		telemetryTotalXp = '',
 		initialSlot = undefined,
+		initialPortraitPart = undefined,
 	}: {
 		operativeAvatar?: unknown;
 		operativeLoadout?: OperativeLoadoutV1;
 		ownedCosmetics?: string[];
+		ownedPortraitParts?: string[];
 		playerEmailKey?: string;
 		playerDisplayName?: string;
 		rankLabel?: string;
+		clubName?: string;
+		operativeLevel?: number;
 		telemetryTotalXp?: string;
 		initialSlot?: LoadoutSlotId;
+		initialPortraitPart?: PortraitPartSlot;
 	} = $props();
-	let selectedSlot = $state<LoadoutSlotId>('border');
-	let syncBusy = $state(false);
-	let avatarSaveBusy = $state(false);
+
+	let selectedTab = $state<UnifiedTab>('face');
+	let portraitSlot = $state<PortraitPartSlot>('face');
+	let identitySyncBusy = $state(false);
 
 	$effect(() => {
-		if (initialSlot && (LOADOUT_SLOTS as readonly string[]).includes(initialSlot)) {
-			selectedSlot = initialSlot;
+		if (initialPortraitPart && isPortraitTab(initialPortraitPart)) {
+			selectedTab = initialPortraitPart;
+			portraitSlot = initialPortraitPart;
+		} else if (initialSlot && (LOADOUT_SLOTS as readonly string[]).includes(initialSlot)) {
+			selectedTab = initialSlot;
 		}
 	});
+
+	$effect(() => {
+		if (isPortraitTab(selectedTab)) {
+			portraitSlot = selectedTab;
+		}
+	});
+
+	const portraitTabActive = $derived(isPortraitTab(selectedTab));
+	const activeLoadoutSlot = $derived(
+		portraitTabActive ? 'border' : (selectedTab as LoadoutSlotId),
+	);
 
 	const catalog = $derived(getLoadoutCatalog());
 	const ownedSet = $derived(new Set(ownedCosmetics));
-	const ownedForSlot = $derived(getOwnedCatalogForSlot(selectedSlot, ownedCosmetics, catalog));
-	const lockedForSlot = $derived(
-		catalog.filter((entry) => entry.slot === selectedSlot && !ownedSet.has(entry.id)),
+	const ownedForSlot = $derived(
+		portraitTabActive ?
+			[]
+		:	getOwnedCatalogForSlot(activeLoadoutSlot, ownedCosmetics, catalog),
 	);
-	const equippedId = $derived(operativeLoadout.equipped[selectedSlot] ?? null);
+	const lockedForSlot = $derived(
+		portraitTabActive ?
+			[]
+		:	catalog.filter((entry) => entry.slot === activeLoadoutSlot && !ownedSet.has(entry.id)),
+	);
+	const equippedId = $derived(
+		portraitTabActive ? null : (operativeLoadout.equipped[activeLoadoutSlot] ?? null),
+	);
 	const equippedLabel = $derived.by(() => {
+		if (portraitTabActive) return 'Portrait parts';
 		if (!equippedId) return 'None equipped';
 		return catalog.find((row) => row.id === equippedId)?.label ?? equippedId;
 	});
+	const dossierPortraitLayers = $derived(
+		composeOperativePortrait({
+			operativeAvatar,
+			loadout: operativeLoadout,
+			size: 96,
+			ownedIds: ownedCosmetics,
+		}),
+	);
+
+	function selectUnifiedTab(tab: UnifiedTab) {
+		selectedTab = tab;
+		if (isPortraitTab(tab)) portraitSlot = tab;
+	}
+
 	function equipItem(itemId: string) {
-		if (!canEquipItem(selectedSlot, itemId, ownedCosmetics, catalog)) return;
+		if (portraitTabActive) return;
+		if (!canEquipItem(activeLoadoutSlot, itemId, ownedCosmetics, catalog)) return;
 		operativeLoadout = {
 			v: OPERATIVE_LOADOUT_VERSION,
-			equipped: { ...operativeLoadout.equipped, [selectedSlot]: itemId },
+			equipped: { ...operativeLoadout.equipped, [activeLoadoutSlot]: itemId },
 		};
 	}
+
 	function unequipSlot() {
+		if (portraitTabActive) return;
 		operativeLoadout = {
 			v: OPERATIVE_LOADOUT_VERSION,
-			equipped: { ...operativeLoadout.equipped, [selectedSlot]: null },
+			equipped: { ...operativeLoadout.equipped, [activeLoadoutSlot]: null },
 		};
 	}
-	async function saveOperativeAvatarConfig() {
-		if (avatarSaveBusy || operativeAvatar == null) return;
+
+	async function syncIdentity() {
+		if (identitySyncBusy) return;
 		const emailKey = playerEmailKey.trim().toLowerCase();
 		if (!emailKey) {
 			void Swal.fire({
-				text: 'Sign in to update your operative.',
+				text: 'Sign in to sync your identity.',
 				icon: 'error',
 				background: '#05050a',
 				color: '#e5e5e5',
 			});
 			return;
 		}
-		avatarSaveBusy = true;
-		try {
-			await updateDoc(doc(db, 'users', emailKey), {
-				operativeAvatar,
-			});
-			const prof = authStore.userProfile;
-			const merged = {
-				...(prof && typeof prof === 'object' ? prof : {}),
-				operativeAvatar,
-			};
-			authStore.setProfile(/** @type {Record<string, unknown>} */ (merged));
+		if (operativeAvatar == null) {
 			void Swal.fire({
-				text: 'Operative profile synced to Command.',
+				text: 'Invalid portrait configuration — select catalog parts before saving.',
+				icon: 'error',
+				background: '#05050a',
+				color: '#e5e5e5',
+			});
+			return;
+		}
+
+		identitySyncBusy = true;
+		try {
+			const prof = authStore.userProfile;
+			const profileOwned = Array.isArray(prof?.ownedPortraitParts) ?
+				prof.ownedPortraitParts.filter((id): id is string => typeof id === 'string')
+			:	undefined;
+
+			await syncOperativeIdentityToFirestore({
+				db,
+				emailKey,
+				operativeAvatar,
+				operativeLoadout,
+				ownedPortraitParts,
+				profileOwnedPortraitParts: profileOwned,
+				setProfile: (merged) => authStore.setProfile(merged),
+				userProfile:
+					prof && typeof prof === 'object' ?
+						/** @type {Record<string, unknown>} */ (prof)
+					:	null,
+			});
+
+			void Swal.fire({
+				text: 'Identity synced to Command.',
 				icon: 'success',
 				toast: true,
 				position: 'top-end',
@@ -112,7 +199,7 @@
 				color: '#e5e5e5',
 			});
 		} catch (e) {
-			const msg = e instanceof Error ? e.message : 'Could not save operative configuration.';
+			const msg = e instanceof Error ? e.message : 'Could not sync identity.';
 			void Swal.fire({
 				text: msg,
 				icon: 'error',
@@ -125,59 +212,7 @@
 				color: '#e5e5e5',
 			});
 		} finally {
-			avatarSaveBusy = false;
-		}
-	}
-	async function syncLoadout() {
-		if (syncBusy) return;
-		const emailKey = playerEmailKey.trim().toLowerCase();
-		if (!emailKey) {
-			void Swal.fire({
-				text: 'Sign in to sync your loadout.',
-				icon: 'error',
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
-			return;
-		}
-		const parsed = parseOperativeLoadout(operativeLoadout) ?? defaultOperativeLoadout();
-		syncBusy = true;
-		try {
-			await updateDoc(doc(db, 'users', emailKey), {
-				operativeLoadout: parsed,
-			});
-			const prof = authStore.userProfile;
-			const merged = {
-				...(prof && typeof prof === 'object' ? prof : {}),
-				operativeLoadout: parsed,
-			};
-			authStore.setProfile(/** @type {Record<string, unknown>} */ (merged));
-			void Swal.fire({
-				text: 'Loadout synced to Command.',
-				icon: 'success',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 4000,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
-		} catch (e) {
-			const msg = e instanceof Error ? e.message : 'Could not sync loadout.';
-			void Swal.fire({
-				text: msg,
-				icon: 'error',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 5000,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
-		} finally {
-			syncBusy = false;
+			identitySyncBusy = false;
 		}
 	}
 </script>
@@ -188,128 +223,128 @@
 			<div class="ols-dossier-panel bento-span-12 tw-min-w-0">
 				<p class="ols-panel-head qa-mono">DOSSIER CARD PREVIEW</p>
 				<div class="ols-dossier-body">
-					<div class="ols-dossier-card">
-						<HologramCardShell
-							accent="var(--pd-accent-data, #14b8a6)"
-							ariaLabel="Operative dossier card"
-						>
-							<ProPlayerCard
-								dossierPreview
-								playerEmailKey={playerEmailKey}
-								playerDisplayName={playerDisplayName}
+					<div class="ols-dossier-stack">
+						<div class="ols-dossier-card">
+							<HologramCardShell
+								accent="var(--pd-accent-data, #14b8a6)"
+								ariaLabel="Operative dossier card"
+							>
+								<OperativeIdCardFrame
+									variant="holo"
+									portraitSvg={dossierPortraitLayers.portraitSvg}
+									borderSvg={dossierPortraitLayers.borderSvg}
+									bannerSvg={dossierPortraitLayers.bannerSvg}
+									frameClass={dossierPortraitLayers.frameClass}
+									displayName={playerDisplayName}
+									clubName={clubName || undefined}
+									rankName={rankLabel}
+									{operativeLevel}
+								/>
+							</HologramCardShell>
+						</div>
+						<div class="ols-ring-token" aria-hidden="true">
+							<OperativeLoadoutPreview
 								{operativeAvatar}
 								{operativeLoadout}
 								{ownedCosmetics}
-								{rankLabel}
-								{telemetryTotalXp}
-								telemetryWorkouts=""
-								telemetryJoinDate=""
+								size={72}
+								class="ols-ring-token__preview"
 							/>
-						</HologramCardShell>
+							<p class="ols-ring-token__caption qa-mono">HQ ring token</p>
+						</div>
 					</div>
 				</div>
 			</div>
 		{/if}
-		<div class="ols-portrait-panel bento-span-6 tw-min-w-0">
-			<p class="ols-panel-head qa-mono">OPERATIVE PORTRAIT · VECTOR STUDIO</p>
-			<div class="ols-portrait-body">
-				<p class="ols-portrait-copy">
-					Design your Bauhaus vector portrait with sliders or randomize. Only a short text seed is saved —
-					no photo upload, no 3D meshes.
+
+		<div class="ols-picker-panel bento-span-12 tw-min-w-0">
+			<p class="ols-panel-head qa-mono">IDENTITY PARTS · UNIFIED PICKER</p>
+			<div class="ols-picker-body">
+				<p class="ols-picker-copy">
+					Equip portrait layers and digital loadout slots from one catalog — live dossier preview
+					updates as you pick. Catalog ids only, no photo upload.
 				</p>
-				{#if operativeAvatar != null}
-					<OperativeAvatarDesigner bind:operativeAvatar />
-				{/if}
-				<button
-					type="button"
-					class="ols-save-portrait qa-mono"
-					disabled={avatarSaveBusy || !playerEmailKey || operativeAvatar == null}
-					onclick={() => void saveOperativeAvatarConfig()}
-				>
-					{avatarSaveBusy ? 'SYNCING…' : 'UPDATE OPERATIVE'}
-				</button>
-				<p class="ols-portrait-hint qa-mono">
-					Writes <span class="ols-portrait-hint__code">operativeAvatar</span> to Firestore and unlocks the HQ
-					profile gate when complete.
-				</p>
-			</div>
-		</div>
-		<div class="ols-workshop-panel bento-span-6 tw-min-w-0">
-			<p class="ols-panel-head qa-mono">LIVE PREVIEW · LOADOUT SLOTS</p>
-			<div class="ols-workshop-body">
-				<div class="ols-preview-row ols-preview-stage">
-					<OperativeLoadoutPreview
-						{operativeAvatar}
-						{operativeLoadout}
-						{ownedCosmetics}
-						size={128}
-						class="ols-preview-ring"
-					/>
-					<p class="ols-preview-hint qa-mono">
-						Portrait from operativeAvatar · equipped digital slots overlay here and on HQ.
-					</p>
-				</div>
-				<div class="ols-slot-tabs" role="tablist" aria-label="Loadout slot picker">
-					{#each LOADOUT_SLOTS as slot (slot)}
+
+				<div class="ols-unified-tabs" role="tablist" aria-label="Identity part and loadout slots">
+					{#each UNIFIED_TABS as tab (tab)}
 						<button
 							type="button"
-							class="ols-slot-tab"
-							class:ols-slot-tab--active={selectedSlot === slot}
+							class="ols-unified-tab"
+							class:ols-unified-tab--active={selectedTab === tab}
 							role="tab"
-							aria-selected={selectedSlot === slot}
-							onclick={() => (selectedSlot = slot)}
+							aria-selected={selectedTab === tab}
+							onclick={() => selectUnifiedTab(tab)}
 						>
-							{SLOT_LABELS[slot]}
+							{TAB_LABELS[tab]}
 						</button>
 					{/each}
 				</div>
-				<p class="ols-equipped qa-mono">
-					Equipped · <span class="ols-equipped__value">{equippedLabel}</span>
-				</p>
-				<div class="ols-catalog" role="tabpanel">
-					{#if ownedForSlot.length === 0 && lockedForSlot.length === 0}
-						<p class="ols-empty qa-mono">No catalog items for this slot yet.</p>
-					{/if}
-					{#each ownedForSlot as entry (entry.id)}
-						<article class="ols-item ols-item--owned">
-							<div class="ols-item__meta">
-								<p class="ols-item__label">{entry.label}</p>
-								<p class="ols-item__status qa-mono">Owned</p>
-							</div>
-							<div class="ols-item__actions">
-								{#if equippedId === entry.id}
-									<button type="button" class="ols-btn ols-btn--ghost" onclick={unequipSlot}>
-										Unequip
-									</button>
-								{:else}
-									<button
-										type="button"
-										class="ols-btn ols-btn--equip"
-										onclick={() => equipItem(entry.id)}
-									>
-										Equip
-									</button>
-								{/if}
-							</div>
-						</article>
-					{/each}
-					{#each lockedForSlot as entry (entry.id)}
-						<article class="ols-item ols-item--locked" aria-label={`${entry.label} — locked`}>
-							<div class="ols-item__meta">
-								<p class="ols-item__label">{entry.label}</p>
-								<p class="ols-item__status qa-mono">Locked · redeem in Quartermaster or earn via album</p>
-							</div>
-						</article>
-					{/each}
-				</div>
+
+				{#if portraitTabActive && operativeAvatar != null}
+					<OperativePortraitPartPicker
+						bind:operativeAvatar
+						bind:selectedSlot={portraitSlot}
+						{ownedPortraitParts}
+						hideTabRail={true}
+						disabled={identitySyncBusy}
+					/>
+				{:else if !portraitTabActive}
+					<p class="ols-equipped qa-mono">
+						Equipped · <span class="ols-equipped__value">{equippedLabel}</span>
+					</p>
+					<div class="ols-catalog" role="tabpanel">
+						{#if ownedForSlot.length === 0 && lockedForSlot.length === 0}
+							<p class="ols-empty qa-mono">No catalog items for this slot yet.</p>
+						{/if}
+						{#each ownedForSlot as entry (entry.id)}
+							<article class="ols-item ols-item--owned">
+								<div class="ols-item__meta">
+									<p class="ols-item__label">{entry.label}</p>
+									<p class="ols-item__status qa-mono">Owned</p>
+								</div>
+								<div class="ols-item__actions">
+									{#if equippedId === entry.id}
+										<button type="button" class="ols-btn ols-btn--ghost" onclick={unequipSlot}>
+											Unequip
+										</button>
+									{:else}
+										<button
+											type="button"
+											class="ols-btn ols-btn--equip"
+											onclick={() => equipItem(entry.id)}
+										>
+											Equip
+										</button>
+									{/if}
+								</div>
+							</article>
+						{/each}
+						{#each lockedForSlot as entry (entry.id)}
+							<article class="ols-item ols-item--locked" aria-label={`${entry.label} — locked`}>
+								<div class="ols-item__meta">
+									<p class="ols-item__label">{entry.label}</p>
+									<p class="ols-item__status qa-mono">
+										Locked · redeem in Quartermaster or earn via album
+									</p>
+								</div>
+							</article>
+						{/each}
+					</div>
+				{/if}
+
 				<button
 					type="button"
-					class="ols-sync qa-mono"
-					disabled={syncBusy || !playerEmailKey}
-					onclick={() => void syncLoadout()}
+					class="ols-sync-identity qa-mono"
+					disabled={identitySyncBusy || !playerEmailKey || operativeAvatar == null}
+					onclick={() => void syncIdentity()}
 				>
-					{syncBusy ? 'SYNCING…' : 'SYNC LOADOUT'}
+					{identitySyncBusy ? 'SYNCING…' : 'SYNC IDENTITY'}
 				</button>
+				<p class="ols-sync-hint qa-mono">
+					Writes <span class="ols-sync-hint__code">operativeAvatar</span> +
+					<span class="ols-sync-hint__code">operativeLoadout</span> to Firestore and unlocks the HQ
+					profile gate when complete.
+				</p>
 			</div>
 		</div>
 	</div>
@@ -322,14 +357,16 @@
 	.ols-grid > :global(*) {
 		min-width: 0;
 	}
-	.ols-portrait-panel,
-	.ols-workshop-panel {
-		border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
-		background: var(--pd-panel, #05050a);
-		overflow: hidden;
+	.ols-picker-panel {
+		border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+		background: transparent;
+		overflow: visible;
+		box-shadow:
+			inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, transparent),
+			0 0 24px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 6%, transparent);
 	}
-	/* Sprint 2.22 slice 6f — Armory Studio dossier hologram */
 	.ols-dossier-panel {
+		/* Sprint 2.22 slice 6f — Armory Studio dossier hologram */
 		border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, var(--pd-line, rgba(255, 255, 255, 0.1)));
 		background: transparent;
 		overflow: visible;
@@ -352,8 +389,7 @@
 			letter-spacing: 0.2em;
 		}
 	}
-	.ols-portrait-body,
-	.ols-workshop-body {
+	.ols-picker-body {
 		padding: 1rem 1.1rem 1.15rem;
 		min-width: 0;
 	}
@@ -364,71 +400,38 @@
 		padding: 1.25rem 1.1rem 1.35rem;
 		min-width: 0;
 	}
-	.ols-portrait-copy {
+	.ols-dossier-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		max-width: min(100%, clamp(20rem, 32vw, 23.75rem));
+	}
+	.ols-picker-copy {
 		margin: 0 0 1rem;
 		font-size: 0.82rem;
 		line-height: 1.5;
 		color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 	}
-	.ols-portrait-hint {
+	.ols-sync-hint {
 		margin: 0.75rem 0 0;
 		font-size: 0.58rem;
 		line-height: 1.5;
 		color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
 	}
-	.ols-portrait-hint__code {
+	.ols-sync-hint__code {
 		color: var(--pd-text, #f4f4f5);
 	}
-	.ols-save-portrait {
-		width: 100%;
-		margin-top: 1rem;
-		padding: 0.75rem 1rem;
-		font-size: 0.68rem;
-		font-weight: 900;
-		letter-spacing: 0.24em;
-		cursor: pointer;
-		border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
-		border-radius: 0.2rem;
-		color: #ecfeff;
-		background: linear-gradient(
-			165deg,
-			color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent) 0%,
-			rgba(0, 0, 0, 0.45) 100%
-		);
-		transition: box-shadow 0.15s ease, border-color 0.15s ease;
-	}
-	.ols-save-portrait:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, transparent);
-		box-shadow: 0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent);
-	}
-	.ols-save-portrait:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-	.ols-preview-row {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.85rem;
-		margin-bottom: 1rem;
-	}
-	.ols-preview-hint {
-		margin: 0;
-		max-width: 16rem;
-		text-align: center;
-		font-size: 0.58rem;
-		line-height: 1.5;
-		color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
-	}
-	.ols-slot-tabs {
+	.ols-unified-tabs {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;
 		margin-bottom: 0.85rem;
 	}
-	.ols-slot-tab {
+	.ols-unified-tab {
 		flex: 1 1 auto;
-		min-width: 5rem;
+		min-width: 4.5rem;
 		padding: 0.55rem 0.75rem;
 		font-size: 0.62rem;
 		font-weight: 900;
@@ -444,11 +447,11 @@
 			border-color 0.15s ease,
 			background 0.15s ease;
 	}
-	.ols-slot-tab:hover {
+	.ols-unified-tab:hover {
 		color: rgba(236, 254, 255, 0.85);
 		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
 	}
-	.ols-slot-tab--active {
+	.ols-unified-tab--active {
 		color: #ecfeff;
 		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, var(--pd-line));
 		background: linear-gradient(
@@ -542,8 +545,9 @@
 		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 30%, var(--pd-line));
 		color: var(--pd-text, #f4f4f5);
 	}
-	.ols-sync {
+	.ols-sync-identity {
 		width: 100%;
+		margin-top: 1rem;
 		padding: 0.75rem 1rem;
 		font-size: 0.68rem;
 		font-weight: 900;
@@ -559,11 +563,11 @@
 		);
 		transition: box-shadow 0.15s ease, border-color 0.15s ease;
 	}
-	.ols-sync:hover:not(:disabled) {
+	.ols-sync-identity:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, transparent);
 		box-shadow: 0 0 20px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent);
 	}
-	.ols-sync:disabled {
+	.ols-sync-identity:disabled {
 		opacity: 0.45;
 		cursor: not-allowed;
 	}
@@ -577,8 +581,7 @@
 	}
 	.ols-dossier-card {
 		width: 100%;
-		max-width: min(100%, clamp(20rem, 32vw, 23.75rem));
-		min-height: 11rem;
+		min-height: 14rem;
 		margin: 0 auto;
 		overflow: visible;
 		pointer-events: auto;
@@ -590,16 +593,40 @@
 	.ols-dossier-card :global(.hcs-card) {
 		min-height: auto;
 	}
-	.ols-dossier-card :global(.pro-card-outer--dossier-preview) {
-		margin-bottom: 0;
-	}
 	.ols-dossier-card :global(.hcs-content) {
 		padding: clamp(8px, 1.5vw, 12px);
-		align-items: stretch;
-		justify-content: flex-start;
+		align-items: center;
+		justify-content: center;
+		width: fit-content;
+		max-width: 100%;
+		margin-inline: auto;
+		background: transparent;
 	}
-	.ols-dossier-card :global(.pro-card-outer) {
-		margin: 0 auto;
+	.ols-dossier-card :global(.oicf-root--holo) {
 		width: 100%;
+		max-width: min(168px, 100%);
+	}
+	.ols-ring-token {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		max-width: 5.5rem;
+		opacity: 0.72;
+	}
+	.ols-ring-token :global(.ols-ring-token__preview) {
+		width: 4.5rem;
+		height: 4.5rem;
+		max-width: 88px;
+		max-height: 88px;
+	}
+	.ols-ring-token__caption {
+		margin: 0;
+		font-size: 0.5rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		text-align: center;
+		color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
 	}
 </style>

@@ -25,7 +25,7 @@ Layout is owned by **`OperativeHub`** inside **`HUDContainer`** on `/player/dash
 | Zone | Layout | Component | Instrument | Content |
 |------|--------|-----------|------------|---------|
 | Route header | 12-col | `pd-strap` | Navigation | Callsign, rank · level, world context strip |
-| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + metrics snippet | Identity + Telemetry (compact) | Operative identity, streak/XP stat cells, rank XP bar, last-trained line; collapsed vectors when `!telemetryReady` |
+| Command main | 8-col (`bento-span-12 md:bento-span-8`) | `IdentityBentoModule` + metrics snippet | Identity + Telemetry (compact) | Operative identity holo card (Z1–Z5 per [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md)), streak/XP in `IdentityTelemetryBezel`, rank XP bar, last-trained line; collapsed vectors when `!telemetryReady` |
 | Mission rail | 4-col (`bento-span-12 md:bento-span-4`) | `ActiveBounties` embedded | Directive | Active missions — **one gold focal** hero CTA; dedup via `deduplicateById` |
 | Quick transit | 12-col below hub | `OperativeQuickOps` | Navigation | Route jump tiles on shared deck |
 | Pathway preview | 12-col | `OperativePathwayPreview` | Progression | Season track in `pd-os-deck__well` |
@@ -138,7 +138,7 @@ Stylesheets: `src/lib/styles/player-dossier.css` (tokens), `src/lib/styles/playe
 - Gold (`--pd-accent-action`) for hero mission CTA, rank XP bar fill, avatar level ring, streak-at-risk pulse, init modal primary only
 - Teal (`--pd-accent-data`) for strap eyebrows, radar, inspector, world-context chips, primary interactive borders on non-hero controls
 - Stat cell labels + values neutral (`--pd-text` / `--pd-text-muted`); panel borders `--pd-line`
-- Armory **Studio** = unified identity editor (portrait designer + loadout equip + dossier card preview)
+- Armory **Studio** = unified identity editor (portrait designer + loadout equip + dossier card preview); portrait art: [`PORTRAIT_ART_DIRECTION.md`](./PORTRAIT_ART_DIRECTION.md); HQ holo card zones: [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md)
 - Identity streak/XP as ringless stat cells (`HudStatCell`), not mini canvas rings
 - Embedded `HudMetricsPanel`: collapsed line when empty; no Match Data in hub
 - Conditional avatar: inline initials badge until `operativeAvatar` set; then `HudAvatarRing` column

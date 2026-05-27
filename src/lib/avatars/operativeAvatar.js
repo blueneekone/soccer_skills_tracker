@@ -1,15 +1,22 @@
 /**
- * Operative Avatar — thin wrapper that routes rendering to the Bauhaus generator.
+ * Operative Avatar — routes rendering to Bauhaus (v1) or layered portrait (v2).
  *
  * Sprint 9.4: replaced DiceBear adventurer with the zero-dependency
- * bauhausAvatar generator. The public API surface (renderOperativeAvatarSvg,
- * parseOperativeAvatar, normalizeOperativeAvatarSeed, OPERATIVE_AVATAR_VERSION)
- * is unchanged so all call-sites continue to work without modification.
+ * bauhausAvatar generator. Sprint 3.5a: v2 layered SVG from catalog part ids.
+ *
+ * Public API: renderOperativeAvatarSvg, parseOperativeAvatar, parseOperativePortrait,
+ * normalizeOperativeAvatarSeed, OPERATIVE_AVATAR_VERSION, OPERATIVE_PORTRAIT_V2_VERSION.
  */
 
 import { renderBauhausAvatarSvg } from './bauhausAvatar.js';
+import { renderLayeredPortraitSvg } from './renderLayeredPortrait.js';
+import {
+	OPERATIVE_PORTRAIT_V2_VERSION,
+	parseOperativePortrait,
+} from './portraitV2Schema.js';
 
 export { renderBauhausAvatarSvg };
+export { parseOperativePortrait, OPERATIVE_PORTRAIT_V2_VERSION };
 
 export const OPERATIVE_AVATAR_VERSION = 1;
 
@@ -28,17 +35,31 @@ export function normalizeOperativeAvatarSeed(seed) {
 }
 
 /**
- * Client-rendered SVG string — never persisted as binary; only `seed` JSON is stored.
+ * Client-rendered SVG string — never persisted as binary; only JSON is stored.
+ * Accepts v1/v2 portrait objects, v1 seed string, or unknown → Bauhaus fallback.
  *
- * @param {unknown} seed
+ * @param {unknown} rawPortraitOrSeed
  * @param {number} [size]
  * @returns {string}
  */
-export function renderOperativeAvatarSvg(seed, size = 128) {
-	return renderBauhausAvatarSvg(normalizeOperativeAvatarSeed(seed), size);
+export function renderOperativeAvatarSvg(rawPortraitOrSeed, size = 128) {
+	if (rawPortraitOrSeed && typeof rawPortraitOrSeed === 'object') {
+		const parsed = parseOperativePortrait(rawPortraitOrSeed);
+		if (parsed?.v === OPERATIVE_PORTRAIT_V2_VERSION) {
+			return renderLayeredPortraitSvg(parsed, size);
+		}
+		if (parsed?.v === OPERATIVE_AVATAR_VERSION) {
+			return renderBauhausAvatarSvg(parsed.seed, size);
+		}
+		return renderBauhausAvatarSvg('operative', size);
+	}
+
+	return renderBauhausAvatarSvg(normalizeOperativeAvatarSeed(rawPortraitOrSeed), size);
 }
 
 /**
+ * Parse v1 operativeAvatar only — Studio and legacy call-sites expect `{ v: 1, seed }`.
+ *
  * @param {unknown} raw
  * @returns {{ v: number, seed: string } | null}
  */

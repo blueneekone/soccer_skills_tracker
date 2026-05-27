@@ -1443,25 +1443,81 @@ exports.getPublicRecruitProfile = onCall(
       });
 
       const rawOa = u.operativeAvatar;
-      /** @type {{ v: number, seed: string } | null} */
+      /** @type {{ v: number, seed: string } | { v: number, parts: Record<string, string | null> } | null} */
       let operativeAvatar = null;
-      if (
-        rawOa &&
-        typeof rawOa === 'object' &&
-        rawOa.v === 1 &&
-        typeof rawOa.seed === 'string' &&
-        rawOa.seed.trim()
-      ) {
-        operativeAvatar = {
-          v: 1,
-          seed: String(rawOa.seed).trim().slice(0, 128),
-        };
+      if (rawOa && typeof rawOa === 'object') {
+        if (
+          rawOa.v === 2 &&
+          rawOa.parts &&
+          typeof rawOa.parts === 'object' &&
+          !Array.isArray(rawOa.parts)
+        ) {
+          /** @type {Record<string, string | null>} */
+          const parts = {};
+          for (const slot of ['face', 'hair', 'kit']) {
+            const val = rawOa.parts[slot];
+            if (typeof val === 'string' && val.trim()) {
+              parts[slot] = String(val).trim().slice(0, 64);
+            } else if (val === null) {
+              parts[slot] = null;
+            }
+          }
+          operativeAvatar = {v: 2, parts};
+        } else if (
+          rawOa.v === 1 &&
+          typeof rawOa.seed === 'string' &&
+          rawOa.seed.trim()
+        ) {
+          operativeAvatar = {
+            v: 1,
+            seed: String(rawOa.seed).trim().slice(0, 128),
+          };
+        }
       }
+
+      // Z2 org label — OPERATIVE_ID_CARD §5; not roster teamName
+      let clubId =
+          typeof u.clubId === 'string' && u.clubId.trim() ?
+            u.clubId.trim() :
+            '';
+      if (!clubId && typeof u.teamId === 'string' && u.teamId.trim()) {
+        const teamSnap = await db().collection('teams').doc(u.teamId.trim()).get();
+        if (teamSnap.exists) {
+          const t = teamSnap.data() || {};
+          const tidClub =
+              typeof t.clubId === 'string' && t.clubId.trim() ?
+                t.clubId.trim() :
+                '';
+          if (tidClub) clubId = tidClub;
+        }
+      }
+      let clubName =
+          typeof u.clubDisplayName === 'string' && u.clubDisplayName.trim() ?
+            u.clubDisplayName.trim() :
+            '';
+      if (clubId) {
+        const clubSnap = await db().collection('clubs').doc(clubId).get();
+        if (clubSnap.exists) {
+          const c = clubSnap.data() || {};
+          const docName = typeof c.name === 'string' ? c.name.trim() : '';
+          if (docName) clubName = docName;
+        }
+      }
+
+      const totalXp =
+          typeof u.totalXp === 'number' && !Number.isNaN(u.totalXp) ?
+            Math.max(0, Math.floor(u.totalXp)) :
+            typeof u.xp === 'number' && !Number.isNaN(u.xp) ?
+              Math.max(0, Math.floor(u.xp)) :
+              0;
+      const operativeLevel = trainingLevelFromTotalXp(totalXp).level;
 
       return {
         ok: true,
         playerKey,
         displayName: typeof u.playerName === 'string' ? u.playerName : null,
+        clubName: clubName || null,
+        operativeLevel,
         seasons,
         operativeAvatar,
       };

@@ -1,21 +1,47 @@
-2026/05/23-22:08:49.996 6bd4 Creating DB C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb since it was missing.
-2026/05/23-22:08:50.005 6bd4 Reusing MANIFEST C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/MANIFEST-000001
-2026/05/23-22:08:50.499 6bd4 Level-0 table #5: started
-2026/05/23-22:08:50.509 6bd4 Level-0 table #5: 1774 bytes OK
-2026/05/23-22:08:50.511 6bd4 Delete type=0 #3
-2026/05/23-22:08:50.511 6bd4 Manual compaction at level-0 from '\x00\x01\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x02\x00\x00\x00' @ 0 : 0; will stop at (end)
-2026/05/23-22:08:50.531 4060 Level-0 table #7: started
-2026/05/23-22:08:50.537 4060 Level-0 table #7: 1491 bytes OK
-2026/05/23-22:08:50.539 4060 Delete type=0 #4
-2026/05/23-22:08:50.540 6bd4 Manual compaction at level-0 from '\x00\x05\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x06\x00\x00\x00' @ 0 : 0; will stop at (end)
-2026/05/23-22:08:51.122 2984 Manual compaction at level-0 from '\x00\x08\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x09\x00\x00\x00' @ 0 : 0; will stop at (end)
-2026/05/23-22:08:51.146 da6c Level-0 table #9: started
-2026/05/23-22:08:51.154 da6c Level-0 table #9: 19985 bytes OK
-2026/05/23-22:08:51.156 da6c Delete type=0 #6
-2026/05/23-22:08:51.156 4060 Manual compaction at level-0 from '\x00\x09\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0a\x00\x00\x00' @ 0 : 0; will stop at '\x00\x09\x00\x00\x05' @ 1280 : 1
-2026/05/23-22:08:51.157 4060 Compacting 1@0 + 1@1 files
-2026/05/23-22:08:51.162 4060 Generated table #10@0: 646 keys, 9142 bytes
-2026/05/23-22:08:51.162 4060 Compacted 1@0 + 1@1 files => 9142 bytes
-2026/05/23-22:08:51.163 4060 compacted to: files[ 0 1 1 0 0 0 0 ]
-2026/05/23-22:08:51.163 4060 Delete type=2 #9
-2026/05/23-22:08:51.164 6bd4 Manual compaction at level-0 from '\x00\x09\x00\x00\x05' @ 1280 : 1 .. '\x00\x0a\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/27-15:55:47.521 48c0 Reusing MANIFEST C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/MANIFEST-000001
+2026/05/27-15:55:47.521 48c0 Recovering log #67
+2026/05/27-15:55:47.522 48c0 Reusing old log C:\Users\ewaec\Documents\Soccer Skills Developent Tracker\soccer_skills_tracker\e2e\.auth\profile\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/000067.log 
+2026/05/27-15:55:47.523 48c0 Delete type=2 #66
+2026/05/27-15:55:47.573 927c Level-0 table #72: started
+2026/05/27-15:55:47.588 927c Level-0 table #72: 10688 bytes OK
+2026/05/27-15:55:47.590 927c Delete type=0 #67
+2026/05/27-15:55:47.591 91a0 Manual compaction at level-0 from '\x00\x1e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1f\x00\x00\x00' @ 0 : 0; will stop at '\x00\x1e\x00\x00\x05' @ 4203 : 1
+2026/05/27-15:55:47.592 91a0 Compacting 1@0 + 1@1 files
+2026/05/27-15:55:47.611 91a0 Generated table #73@0: 1138 keys, 14498 bytes
+2026/05/27-15:55:47.611 91a0 Compacted 1@0 + 1@1 files => 14498 bytes
+2026/05/27-15:55:47.612 91a0 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/27-15:55:47.613 91a0 Delete type=2 #72
+2026/05/27-15:55:47.613 5ca8 Manual compaction at level-0 from '\x00\x1e\x00\x00\x05' @ 4203 : 1 .. '\x00\x1f\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/27-15:55:47.629 5ca8 Level-0 table #75: started
+2026/05/27-15:55:47.636 5ca8 Level-0 table #75: 2928 bytes OK
+2026/05/27-15:55:47.638 5ca8 Delete type=2 #69
+2026/05/27-15:55:47.638 5ca8 Delete type=0 #71
+2026/05/27-15:55:47.639 5ca8 Manual compaction at level-0 from '\x00\x1f\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00 \x00\x00\x00' @ 0 : 0; will stop at '\x00\x1f\x00\x00\x05' @ 4232 : 1
+2026/05/27-15:55:47.640 5ca8 Compacting 1@0 + 1@1 files
+2026/05/27-15:55:47.647 5ca8 Generated table #76@0: 1138 keys, 16406 bytes
+2026/05/27-15:55:47.647 5ca8 Compacted 1@0 + 1@1 files => 16406 bytes
+2026/05/27-15:55:47.647 5ca8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/27-15:55:47.648 5ca8 Delete type=2 #75
+2026/05/27-15:55:47.648 5ca8 Manual compaction at level-0 from '\x00\x1f\x00\x00\x05' @ 4232 : 1 .. '\x00 \x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/27-15:55:48.949 7290 Level-0 table #78: started
+2026/05/27-15:55:48.958 7290 Level-0 table #78: 1497 bytes OK
+2026/05/27-15:55:48.959 7290 Delete type=2 #73
+2026/05/27-15:55:48.959 7290 Delete type=0 #74
+2026/05/27-15:55:48.960 5ca8 Manual compaction at level-0 from '\x00 \x00\x00\x00' @ 72057594037927935 : 1 .. '\x00!\x00\x00\x00' @ 0 : 0; will stop at '\x00 \x00\x00\x05' @ 4324 : 1
+2026/05/27-15:55:48.961 5ca8 Compacting 1@0 + 1@1 files
+2026/05/27-15:55:48.970 5ca8 Generated table #79@0: 1140 keys, 14588 bytes
+2026/05/27-15:55:48.970 5ca8 Compacted 1@0 + 1@1 files => 14588 bytes
+2026/05/27-15:55:48.971 5ca8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/27-15:55:48.972 5ca8 Delete type=2 #78
+2026/05/27-15:55:48.972 5ca8 Manual compaction at level-0 from '\x00 \x00\x00\x05' @ 4324 : 1 .. '\x00!\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/27-15:55:48.978 5ca8 Level-0 table #81: started
+2026/05/27-15:55:48.984 5ca8 Level-0 table #81: 2932 bytes OK
+2026/05/27-15:55:48.985 5ca8 Delete type=2 #76
+2026/05/27-15:55:48.985 5ca8 Delete type=0 #77
+2026/05/27-15:55:48.986 5ca8 Manual compaction at level-0 from '\x00!\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00"\x00\x00\x00' @ 0 : 0; will stop at '\x00!\x00\x00\x05' @ 4341 : 1
+2026/05/27-15:55:48.987 5ca8 Compacting 1@0 + 1@1 files
+2026/05/27-15:55:48.994 5ca8 Generated table #82@0: 1140 keys, 16431 bytes
+2026/05/27-15:55:48.994 5ca8 Compacted 1@0 + 1@1 files => 16431 bytes
+2026/05/27-15:55:48.995 5ca8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/27-15:55:48.996 5ca8 Delete type=2 #81
+2026/05/27-15:55:48.997 5ca8 Manual compaction at level-0 from '\x00!\x00\x00\x05' @ 4341 : 1 .. '\x00"\x00\x00\x00' @ 0 : 0; will stop at (end)

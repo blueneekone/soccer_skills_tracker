@@ -31,7 +31,7 @@ Route: `/recruiter` (future)
 ## Core loops
 
 1. **Discover** — search squad/club scoped vectors.
-2. **Evaluate** — open tokenized player card (redacted per COPPA/age).
+2. **Evaluate** — open tokenized player card (redacted per COPPA/age). Public recruit front uses the same TCG zones as Player HQ ([`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md)) — club org on type line; **team roster name excluded** from collectible front.
 3. **Export** — audited download; `recordRecruiterExport` defense in depth.
 
 ---

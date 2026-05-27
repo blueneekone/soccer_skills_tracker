@@ -1,0 +1,65 @@
+[
+	{
+		"id": "portrait_face_default",
+		"slot": "face",
+		"label": "Default Face",
+		"renderKey": "face-default",
+		"file": "face-default.svg"
+	},
+	{
+		"id": "portrait_face_round",
+		"slot": "face",
+		"label": "Round Face",
+		"renderKey": "face-round",
+		"file": "face-round.svg"
+	},
+	{
+		"id": "portrait_face_angular",
+		"slot": "face",
+		"label": "Angular Face",
+		"renderKey": "face-angular",
+		"file": "face-angular.svg"
+	},
+	{
+		"id": "portrait_hair_default",
+		"slot": "hair",
+		"label": "Default Hair",
+		"renderKey": "hair-default",
+		"file": "hair-default.svg"
+	},
+	{
+		"id": "portrait_hair_crop",
+		"slot": "hair",
+		"label": "Crop Cut",
+		"renderKey": "hair-crop",
+		"file": "hair-crop.svg"
+	},
+	{
+		"id": "portrait_hair_long",
+		"slot": "hair",
+		"label": "Long Hair",
+		"renderKey": "hair-long",
+		"file": "hair-long.svg"
+	},
+	{
+		"id": "portrait_kit_default",
+		"slot": "kit",
+		"label": "Default Kit",
+		"renderKey": "kit-default",
+		"file": "kit-default.svg"
+	},
+	{
+		"id": "portrait_kit_home",
+		"slot": "kit",
+		"label": "Home Kit",
+		"renderKey": "kit-home",
+		"file": "kit-home.svg"
+	},
+	{
+		"id": "portrait_kit_away",
+		"slot": "kit",
+		"label": "Away Kit",
+		"renderKey": "kit-away",
+		"file": "kit-away.svg"
+	}
+]

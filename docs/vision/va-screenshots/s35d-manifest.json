@@ -1,0 +1,21 @@
+{
+	"sprint": "3.5d",
+	"minBytesDefault": 8000,
+	"routes": [
+		{
+			"route": "/player/dashboard",
+			"file": "s35d-hq-identity-v2-1280.png",
+			"viewport": "1280x900",
+			"minBytes": 12000,
+			"note": "HQ embedded holo + HudAvatarRing show layered v2 portrait after read-repair"
+		},
+		{
+			"route": "/recruit/[playerKey]",
+			"file": "s35d-recruit-v2-1280.png",
+			"viewport": "1280x900",
+			"minBytes": 12000,
+			"note": "Public recruit ProPlayerCard v2 portrait — skip if no recruitProfilePublic test user"
+		}
+	],
+	"skippedStates": ["recruitProfilePublic not enabled on test user"]
+}

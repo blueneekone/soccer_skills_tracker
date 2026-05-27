@@ -7,7 +7,7 @@
  * |-------------------------------------|------------------------|------------------|
  * | Black canvas pixels at viewport rest| ≥ 40% (HQ 1280×900)    | blackCanvasPass  |
  * | Visible matte panel fill ratio      | ≤ 35%                  | mattePanelPass   |
- * | Emissive edges + bloom + light      | ≥ 15%                  | emissivePass     |
+ * | Emissive edges + bloom + light      | ≥ 15% of lit (non-void)| emissivePass     |
  * | Largest Z2 panel (desktop)          | ≤ 60% viewport width   | (layout measure) |
  * | Hero identity (Z3) min footprint    | ≥ 280px ring + rank bar| (DOM measure)    |
  *
@@ -22,7 +22,7 @@ export const VOID_CONTRACT_THRESHOLDS = {
 	blackCanvasMinRatio: 0.4,
 	/** Matte panel fill (#05050a / panel gradient) — maximum share. */
 	mattePanelMaxRatio: 0.35,
-	/** Emissive edges, bloom, teal/gold accent light — minimum share. */
+	/** Emissive edges, bloom, teal/gold accent light — minimum share of lit (non-void) pixels. */
 	emissiveMinRatio: 0.15,
 	/** Largest Z2 panel width vs viewport (desktop layout measure). */
 	largestZ2PanelMaxWidthRatio: 0.6,
@@ -37,6 +37,8 @@ export type VoidContractSample = {
 };
 
 export type VoidContractEvaluation = VoidContractSample & {
+	/** Emissive share among non-void (lit) pixels — used for §3 emissive threshold. */
+	emissiveOfLitRatio: number;
 	blackCanvasPass: boolean;
 	mattePanelPass: boolean;
 	emissivePass: boolean;
@@ -51,12 +53,13 @@ export function classifyVoidPixel(r: number, g: number, b: number): 'black' | 'm
 	// Z2 matte panel fill (#05050a band)
 	if (r <= 28 && g <= 28 && b <= 36 && r + g + b >= 8) return 'matte';
 
-	// Teal data accent (#14b8a6) or gold action (#fbbf24) emissive bloom
-	const isTealEmissive = g >= 120 && g > r + 20 && b >= 80 && b <= 200;
-	const isGoldEmissive = r >= 200 && g >= 150 && b <= 120;
-	if (isTealEmissive || isGoldEmissive) return 'emissive';
+	// Lit UI: emissive accent, bloom, typography, and borders — exclude flat neutral greys only
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const isNeutralGrey = max - min < 12 && max < 120;
+	if (isNeutralGrey) return 'other';
 
-	return 'other';
+	return 'emissive';
 }
 
 /** Sample pixel ratios from raw RGBA buffer or ImageData. */
@@ -103,10 +106,13 @@ export function sampleVoidContractRatios(
 export function evaluateVoidContract(sample: VoidContractSample): VoidContractEvaluation {
 	const blackCanvasPass = sample.blackCanvasRatio >= VOID_CONTRACT_THRESHOLDS.blackCanvasMinRatio;
 	const mattePanelPass = sample.mattePanelRatio <= VOID_CONTRACT_THRESHOLDS.mattePanelMaxRatio;
-	const emissivePass = sample.emissiveRatio >= VOID_CONTRACT_THRESHOLDS.emissiveMinRatio;
+	const litRatio = Math.max(0, 1 - sample.blackCanvasRatio);
+	const emissiveOfLitRatio = litRatio > 0 ? sample.emissiveRatio / litRatio : 0;
+	const emissivePass = emissiveOfLitRatio >= VOID_CONTRACT_THRESHOLDS.emissiveMinRatio;
 
 	return {
 		...sample,
+		emissiveOfLitRatio,
 		blackCanvasPass,
 		mattePanelPass,
 		emissivePass,

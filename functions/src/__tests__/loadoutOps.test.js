@@ -15,12 +15,15 @@ const {
   _test,
   grantLoadoutCosmetic,
   redeemQuartermasterDigital,
+  grantAlbumSetBonus,
 } = require('../domains/loadoutOps');
 
 const {
   loadCosmeticAllowlist,
   assertCosmeticAllowed,
   isLoadoutSelfGrantDenied,
+  ALBUM_SET_BONUS_REWARDS,
+  isAlbumSetCompleteOnServer,
 } = _test;
 
 describe('loadoutOps allowlist', () => {
@@ -68,6 +71,7 @@ describe('grantLoadoutCosmetic idempotent contract', () => {
   it('exports callable handlers', () => {
     assert.equal(typeof grantLoadoutCosmetic, 'function');
     assert.equal(typeof redeemQuartermasterDigital, 'function');
+    assert.equal(typeof grantAlbumSetBonus, 'function');
   });
 
   it('catalog config path resolves from functions domain', () => {
@@ -76,7 +80,24 @@ describe('grantLoadoutCosmetic idempotent contract', () => {
         '../../../static/cosmetics/catalog.config.json',
     );
     const allowlist = loadCosmeticAllowlist();
-    assert.ok(allowlist.size >= 5, 'expected committed cosmetics manifest rows');
+    assert.ok(allowlist.size >= 7, 'expected committed cosmetics manifest rows');
     assert.ok(configPath.includes('catalog.config.json'));
+    assert.ok(allowlist.has('album_banner_snipers'));
+    assert.ok(allowlist.has('album_banner_dark_arts'));
+  });
+});
+
+describe('grantAlbumSetBonus set validation', () => {
+  it('ALBUM_SET_BONUS_REWARDS covers three Season 1 folders', () => {
+    assert.ok(ALBUM_SET_BONUS_REWARDS.street_kings);
+    assert.ok(ALBUM_SET_BONUS_REWARDS.snipers);
+    assert.ok(ALBUM_SET_BONUS_REWARDS.dark_arts);
+  });
+
+  it('isAlbumSetCompleteOnServer requires full ownedSeasonOneCards set', () => {
+    const {getSeasonOneCardsForSet} = require('../../../src/lib/gamification/seasonOneData.js');
+    const ids = getSeasonOneCardsForSet('dark_arts').map((c) => c.id);
+    assert.equal(isAlbumSetCompleteOnServer('dark_arts', ids.slice(0, 2)), false);
+    assert.equal(isAlbumSetCompleteOnServer('dark_arts', ids), true);
   });
 });

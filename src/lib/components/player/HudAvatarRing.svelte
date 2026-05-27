@@ -1,6 +1,6 @@
 <script lang="ts">
-	import UidAvatar from '$lib/components/player/UidAvatar.svelte';
-	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
+	import { renderOperativeAvatarSvg } from '$lib/avatars/operativeAvatar.js';
+	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 
 	let {
@@ -26,20 +26,22 @@
 		embedded?: boolean;
 	} = $props();
 
-	const avatarSeed = $derived.by(() => {
-		const parsed = parseOperativeAvatar(operativeAvatar);
-		if (parsed?.seed) return parsed.seed;
-		return seed || 'player';
-	});
+	const innerAvatar = $derived(Math.round(size * 0.68));
 
-	const loadoutBorder = $derived.by(() => {
-		const innerAvatar = Math.round(size * 0.68);
-		return composeOperativePortrait({
+	const hasOperativePortrait = $derived(parseOperativePortrait(operativeAvatar) !== null);
+
+	const portraitLayers = $derived.by(() =>
+		composeOperativePortrait({
 			operativeAvatar,
 			loadout: operativeLoadout,
 			size: innerAvatar,
 			ownedIds: ownedCosmetics,
-		}).borderSvg;
+		}),
+	);
+
+	const innerPortraitSvg = $derived.by(() => {
+		if (hasOperativePortrait) return portraitLayers.portraitSvg;
+		return renderOperativeAvatarSvg(seed || 'player', innerAvatar);
 	});
 
 	const R = 34;
@@ -48,7 +50,6 @@
 	const c = 2 * Math.PI * R;
 	const fill = $derived(Math.min(1, Math.max(0, Number(xpFill) || 0)));
 	const dashOffset = $derived(c * (1 - fill));
-	const innerAvatar = $derived(Math.round(size * 0.68));
 </script>
 
 <div
@@ -75,10 +76,12 @@
 		/>
 	</svg>
 	<div class="hud-avatar-ring__avatar-wrap">
-		<UidAvatar seed={avatarSeed} size={innerAvatar} alt="" skeleton={!avatarSeed} />
-		{#if loadoutBorder}
+		<div class="hud-avatar-ring__portrait" aria-hidden="true">
+			{@html innerPortraitSvg}
+		</div>
+		{#if portraitLayers.borderSvg}
 			<div class="hud-avatar-ring__loadout-border" aria-hidden="true">
-				{@html loadoutBorder}
+				{@html portraitLayers.borderSvg}
 			</div>
 		{/if}
 	</div>
@@ -141,9 +144,21 @@
 		border-radius: 24px;
 	}
 
-	.hud-avatar-ring__avatar-wrap :global(.uid-avatar) {
-		border-radius: 24px;
+	.hud-avatar-ring__portrait {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		overflow: hidden;
+		border-radius: 24px;
+	}
+
+	.hud-avatar-ring__portrait :global(svg) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border-radius: 24px;
 	}
 
 	.hud-avatar-ring__loadout-border {
@@ -161,13 +176,6 @@
 		height: 100%;
 		display: block;
 		object-fit: contain;
-	}
-
-	.hud-avatar-ring--embedded :global(.uid-avatar) {
-		border: none !important;
-		border-radius: 24px !important;
-		background: transparent !important;
-		box-shadow: none !important;
 	}
 
 	.hud-avatar-ring__badge {

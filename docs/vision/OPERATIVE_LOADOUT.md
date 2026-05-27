@@ -22,7 +22,7 @@ Canonical Firestore field: `users/{email}.operativeLoadout` (versioned object, p
 
 | Slot | Layer | Source catalog | Visible on |
 |------|-------|----------------|------------|
-| **portrait** | Base | `operativeAvatar` seed (Bauhaus vector) | HQ ring, Armory dossier card, recruit card |
+| **portrait** | Base | `operativeAvatar` — v1 Bauhaus seed **or** v2 layered parts (face / hair / kit catalog ids) | HQ ring, Armory dossier card, recruit card — see [**Operative ID card zones**](./OPERATIVE_ID_CARD.md) |
 | **border** | Frame | Quartermaster digital SKUs + album holo variants | `ProPlayerCard`, HQ avatar ring |
 | **badge** | Overlay | Album Legendary drops, rank milestones | Dossier strap, stats card |
 | **banner** | Background | Set-completion rewards (3.4) | Armory studio, shared capsule previews |
@@ -35,6 +35,63 @@ Canonical Firestore field: `users/{email}.operativeLoadout` (versioned object, p
 - Catalog references use stable ids (`QuartermasterItem.id`, `SeasonOneCard.id`) — not image URLs.
 - Renderer is pure: given profile + catalog, produce SVG/CSS layers under `.player-dossier-root`.
 - Schema validation rejects unknown slot keys and ids not in the player's **owned** set.
+- **Portrait parts live in `operativeAvatar`**, not loadout slots — do not add face/hair/kit to `LOADOUT_SLOTS`.
+
+### Portrait v2 (`operativeAvatar` v2)
+
+Sprint **3.5a** introduces a versioned portrait schema parallel to loadout cosmetics:
+
+| Field | Shape | Notes |
+|-------|-------|-------|
+| `v` | `2` | Distinguishes from v1 Bauhaus `{ v: 1, seed }` |
+| `parts.face` | catalog id \| `null` | COPPA-safe catalog reference — no photo upload |
+| `parts.hair` | catalog id \| `null` | Starter catalog in **3.5b** — see portrait part table below |
+| `parts.kit` | catalog id \| `null` | Jersey / kit silhouette layer |
+
+Sprint **3.5b** expands the 3.5a stub into a content-hashed catalog pipeline (mirrors Epic 3.2 cosmetics).
+
+**Portrait part catalog (3.5b):** Content-hashed manifest pipeline mirrors Epic 3.2 cosmetics. Run `npm run generate:portraits` after editing `static/portrait/catalog.config.json` or SVG assets — emits `src/lib/avatars/portraitParts.manifest.json`.
+
+| Slot | Starter catalog ids |
+|------|---------------------|
+| face | `portrait_face_default`, `portrait_face_round`, `portrait_face_angular` |
+| hair | `portrait_hair_default`, `portrait_hair_crop`, `portrait_hair_long` |
+| kit | `portrait_kit_default`, `portrait_kit_home`, `portrait_kit_away` |
+
+**Ownership (prep for 3.5c):** `users/{email}.ownedPortraitParts: string[]` — optional Firestore field listing catalog ids the player may equip. When absent, treat as `defaultOwnedPortraitParts()` (3.5b: entire starter catalog). Do **not** add portrait parts to `ownedCosmetics` or `LOADOUT_SLOTS`.
+
+**Rendering:** `renderLayeredPortraitSvg` stacks kit → face → hair inside a square viewBox. Missing or unknown part ids fall back to slot defaults or skip. Pass `ownedIds` to strip unowned ids before compose.
+
+**Backward compatibility:** `renderOperativeAvatarSvg` still falls back to Bauhaus for corrupt/unknown rows until **3.5h** deletion. Armory Studio (**3.5c**) writes v2 layered parts via visual part picker; v1 profiles auto-upgrade to `defaultPortraitV2()` when opened in Studio — Bauhaus sliders removed from Studio.
+
+**Lazy read-repair (3.5d):** On HQ dashboard hydrate (browser), `readRepairOperativeAvatar` normalizes Firestore `operativeAvatar` + `ownedPortraitParts` in memory: valid v2 → strip to catalog/owned ids; v1 seed → deterministic `upgradeV1SeedToPortraitV2(seed)` (hash picks catalog part per slot); missing → `defaultPortraitV2()`. When `didMigrate`, `queuePortraitReadRepairWrite` merges `{ operativeAvatar, ownedPortraitParts }` to `users/{email}` once per session sig (non-blocking, best-effort — same pattern as sportId read-repair in `ARCHITECTURE.md`). **HQ wiring:** `HudAvatarRing` + embedded holo (`OperativeLoadoutPreview` / `IdentityBentoModule`) render v2 via `composeOperativePortrait` / `portraitSvg` — not `UidAvatar` or v1-only `parseOperativeAvatar`. **Recruit:** `getPublicRecruitProfile` returns v2 `{ v: 2, parts }` when stored; v1 seed passthrough until client repair; `ProPlayerCard` front face uses `portraitLayers.portraitSvg`. Bauhaus may still display briefly on unrepaired v1 rows until dashboard hydrate completes.
+
+**Art direction (3.5e):** Canonical illustration authority — pre-3D Bitmoji **structure** (layer swaps, flat ink), Phoenix / club mascot anchor, and **age spectrum ~5 → adult coach** in one cartoon family. Coach avatars use the same catalog system but **flat staff presentation** on Coach OS (no Player HQ gamification chrome). See [`PORTRAIT_ART_DIRECTION.md`](./PORTRAIT_ART_DIRECTION.md). Sprint **3.5f** swaps SVG art under existing catalog ids per that doc.
+
+**Operative ID card (3.5g-vision):** Collectible front/back anatomy — TCG zones Z1–Z5, surface matrix, phased sprints — [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md). **Authority chain:** `PORTRAIT_ART_DIRECTION.md` → `OPERATIVE_ID_CARD.md` → this doc → `ROADMAP.md`.
+
+### Club vs team on card front
+
+| Field | Source | ID card front |
+|-------|--------|---------------|
+| `clubName` / `clubDisplayName` | `clubs/{clubId}.name` or profile fallback | **Z2 type line** — org identity |
+| `teamName` / `teamAssignmentLabel` | `teams/{teamId}.teamName` | **Never** on collectible front — HQ strap / `ibm-meta` / schedule only |
+| `displayName` | `playerName` | **Z1** callsign |
+| `operativeLevel` | XP progress | **Z1** chip only |
+| `rankName` | career tier | **Z4** rank strip only |
+
+`getPublicRecruitProfile` (**3.5g-b**) must return **club org** for Z2, not roster team name.
+
+### Dossier & recruit surfaces
+
+| Surface | Frame | Front | Back / context |
+|---------|-------|-------|----------------|
+| **HQ holo** | `HologramCardShell` | Z1–Z4 + Z5 (`IdentityTelemetryBezel`) | n/a |
+| **Armory Studio dossier preview** | Same frame as HQ holo | Z1–Z4 (Z5 optional mini) | Equip tabs — not a second card grammar |
+| **Recruit** `/recruit/[playerKey]` | `ProPlayerCard` | portrait + border + Z1–Z4; **club on Z2**; **no Z5** | verified stats / season workspace on flip |
+| **Stats `ProPlayerCard`** | Flip | Z1–Z4; no Z5 unless holo shell | telemetry / radar |
+
+**Identity Studio (3.5j Done):** One SYNC IDENTITY commit, unified Face–Title picker, dossier holo hero matches HQ; Armory read-repair parity with dashboard.
 
 ---
 
@@ -57,7 +114,7 @@ Canonical Firestore field: `users/{email}.operativeLoadout` (versioned object, p
 - **No randomized paid entitlements** for U13 operatives — album pulls (when shipped) are activity-gated and parent-visible.
 - **Physical SKUs** (patches, armbands) create a fulfillment record; minors require household admin acknowledgment before ship (reuse VPC household linkage).
 - **Parent read-only mirror:** Parent OS shows equipped loadout + recent unlocks without game chrome — flat co-op partner tone per [`PARENT_OS.md`](./PARENT_OS.md).
-- **Recruit card:** Public `/recruit/[playerKey]` exposes only portrait + border + rank — no PII, no messaging handles.
+- **Recruit card:** Public `/recruit/[playerKey]` — same front zones as [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md): portrait + border + Z1–Z4; **club org on Z2** (not team roster); stats on flip/back. No PII, messaging handles, or address.
 - **Confetti / ceremony (3.3):** Animation fires only after Firestore commit confirms ownership; no optimistic unlock UI for minors.
 
 See also: [`docs/COPPA_SIGNUP_MATRIX.md`](../COPPA_SIGNUP_MATRIX.md)
@@ -72,7 +129,7 @@ Route: `/player/armory` (existing `qa-root player-dossier-root`)
 |-----|--------|---------|
 | **Quartermaster** | Shipped (Ledger) | TC catalog, physical/digital SKUs — redeem only |
 | **Album** | Shipped (Season 1 UI) | Sticker folders, ownership grid, set progress |
-| **Studio** | **3.1** ✓ · **3.1.1** ✓ | Portrait designer + slot picker, equip/unequip, live preview, SYNC LOADOUT → Firestore |
+| **Studio** | **3.1** ✓ · **3.1.1** ✓ · **3.5c** ✓ | v2 visual part picker (face / hair / kit thumbnails) + slot equip, live holo dossier preview, SYNC LOADOUT → Firestore — Bauhaus sliders removed from Studio |
 | **Ceremonies** | **3.3** ✓ | Post-unlock replay, share-to-capsule |
 
 Loadout schema + renderer (**3.0**) land before Studio UX so Armory can adopt slots without another palette pass.
@@ -88,7 +145,9 @@ Loadout schema + renderer (**3.0**) land before Studio UX so Armory can adopt sl
 | **3.1.1** | HQ gold harmonization; relocate portrait designer from Album → Studio (unified identity editor) | **Done** |
 | **3.2** | Art pipeline — content-hashed cosmetics manifest, SVG assets, catalog ingestion | **Done** |
 | **3.3** | Unlock ceremonies — server grants, confetti gate, minor-safe copy | **Done** |
-| **3.4** | Album set bonuses — folder completion perks, HQ chip integration | Planned *(unblocked after Player OS premium track 2.19 Done + sign-off)* |
+| **3.4** | Album set bonuses — folder completion perks, HQ chip integration | **Done** |
+| **3.5c** | Armory Studio v2 — visual part picker; Bauhaus sliders removed from Studio | **Done** |
+| **3.5d** | HQ + recruit v2 wiring; lazy read-repair (`portraitReadRepair.ts`) | **Done** |
 
 ---
 
@@ -120,6 +179,6 @@ Inherit **Player Dossier** tokens (`--pd-*`) — black canvas, gold action accen
 
 ## ROADMAP link
 
-**Current sprint:** [ROADMAP Sprint 3.4 — Album set bonuses](../../ROADMAP.md) *(unblocked after Epic 1 premium track **2.19 Done** + visual sign-off)*. Sprint 3.3 (unlock ceremonies + Ceremonies tab) is **Done**.
+**Current sprint:** [ROADMAP — 3.5g-vision Done · next 3.5g-f OperativeIdCardFrame](../../ROADMAP.md). Card authority: [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md).
 
 **Prerequisite complete:** Epic 1 Player HUD aesthetic (Sprints 1.1–2.10, Player Dossier + shell alignment + HQ world context).

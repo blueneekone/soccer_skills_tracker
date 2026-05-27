@@ -37,15 +37,15 @@ describe('/player/armory — Sprint 3.1 Loadout Studio tab', () => {
 		expect(pageSrc).toMatch(/searchParams\.get\('slot'\)/);
 		expect(pageSrc).toMatch(/OperativeCeremoniesPanel/);
 	});
-	it('OperativeLoadoutStudio component file exists', () => {
+	it('OperativeLoadoutStudio component file exists with SYNC IDENTITY', () => {
 		expect(studioExists).toBe(true);
-		expect(studioSrc).toMatch(/SYNC LOADOUT/);
+		expect(studioSrc).toMatch(/SYNC IDENTITY/);
 	});
 });
 describe('/player/armory — Sprint 3.1.1 portrait in Studio', () => {
-	it('OperativeLoadoutStudio imports OperativeAvatarDesigner', () => {
-		expect(studioSrc).toMatch(/import OperativeAvatarDesigner/);
-		expect(studioSrc).toMatch(/UPDATE OPERATIVE/);
+	it('OperativeLoadoutStudio imports OperativePortraitPartPicker', () => {
+		expect(studioSrc).toMatch(/import OperativePortraitPartPicker/);
+		expect(studioSrc).toMatch(/hideTabRail/);
 	});
 	it('Album branch on armory page does not import OperativeAvatarDesigner', () => {
 		const albumBranch = pageSrc.slice(pageSrc.indexOf("{:else}"));
@@ -65,19 +65,18 @@ describe('/player/armory — Sprint 3.1.2 Studio + Album layout guards', () => {
 		'ArmoryAlbumWorkspace.svelte',
 	);
 	const albumSrc = existsSync(albumWorkspacePath) ? readFileSync(albumWorkspacePath, 'utf-8') : '';
-	it('OperativeLoadoutStudio uses dossier hero row 1 then portrait+workshop row 2', () => {
+	it('OperativeLoadoutStudio uses dossier hero row 1 then unified picker row 2', () => {
 		expect(studioSrc).toMatch(/ols-dossier-panel bento-span-12/);
-		expect(studioSrc).toMatch(/ols-portrait-panel bento-span-6/);
-		expect(studioSrc).toMatch(/ols-workshop-panel bento-span-6/);
+		expect(studioSrc).toMatch(/ols-picker-panel bento-span-12/);
 		expect(studioSrc).not.toMatch(/ols-dossier-panel bento-span-3/);
 		const gridBlock = studioSrc.slice(
 			studioSrc.indexOf('class="ols-grid'),
 			studioSrc.indexOf('</section>', studioSrc.indexOf('class="ols-grid')),
 		);
 		expect(gridBlock.indexOf('ols-dossier-panel')).toBeGreaterThan(-1);
-		expect(gridBlock.indexOf('ols-portrait-panel')).toBeGreaterThan(-1);
+		expect(gridBlock.indexOf('ols-picker-panel')).toBeGreaterThan(-1);
 		expect(gridBlock.indexOf('ols-dossier-panel')).toBeLessThan(
-			gridBlock.indexOf('ols-portrait-panel'),
+			gridBlock.indexOf('ols-picker-panel'),
 		);
 	});
 	it('OperativeLoadoutStudio ols-grid enforces min-width on panels', () => {

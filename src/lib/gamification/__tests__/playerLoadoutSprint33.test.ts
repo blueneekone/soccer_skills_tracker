@@ -81,10 +81,9 @@ describe('Sprint 3.3 — armory ceremonies tab + deep links', () => {
 });
 
 describe('Sprint 3.3 — ROADMAP handoff to 3.4', () => {
-	it('ROADMAP marks 3.3 Done and 3.4 next', () => {
+	it('ROADMAP marks 3.3 Done (3.4 tracked in sprint34)', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		expect(doc).toMatch(/\|\s*3\.3\s*\|\s*Done/i);
-		expect(doc).toMatch(/\|\s*3\.4\s*\|\s*Planned/i);
 	});
 
 	it('OPERATIVE_LOADOUT.md marks 3.3 Done + Ceremonies tab', () => {

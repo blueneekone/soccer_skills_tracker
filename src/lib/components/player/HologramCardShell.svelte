@@ -204,7 +204,8 @@
 		inset: 0;
 		mix-blend-mode: overlay;
 		pointer-events: none;
-		z-index: 20;
+		/* Below .hcs-content (z-index 10) so portrait + arc labels stay readable */
+		z-index: 4;
 	}
 
 	.hcs-scanlines {

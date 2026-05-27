@@ -1,0 +1,39 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5g-f",
+	"description": "OperativeIdCardFrame TCG zones Z1–Z4 on HQ holo, Armory dossier, ProPlayerCard recruit front (MCP VA)",
+	"capturedAt": "2026-05-27T22:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"skippedStates": ["s35gf-recruit-front-1280.png — no test recruit user in seed"],
+	"routes": [
+		{
+			"path": "/player/dashboard",
+			"file": "s35gf-hq-holo-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "HQ holo — Z1 title + LVL chip, Z2 club type line, Z3 art, Z4 rank, Z5 IdentityTelemetryBezel"
+		},
+		{
+			"path": "/player/armory?tab=studio",
+			"file": "s35gf-studio-dossier-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Armory dossier — Z1–Z4 match HQ grammar inside HologramCardShell"
+		},
+		{
+			"path": "/recruit/[playerKey]",
+			"file": "s35gf-recruit-front-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"optional": true,
+			"note": "Public recruit ProPlayerCard front — Z1–Z4 only, no Z5"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

@@ -39,7 +39,7 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 
 ### Player
 
-- **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout equip layer → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)).
+- **Scope:** Daily missions, streaks, XP, skill tree / armory, memory capsules, coach-assigned bounties. Operative loadout → Epic 3 ([`OPERATIVE_LOADOUT.md`](./vision/OPERATIVE_LOADOUT.md)); collectible ID card zones → [`OPERATIVE_ID_CARD.md`](./vision/OPERATIVE_ID_CARD.md) (recruit/public front matches Player card grammar; no team name on Z2).
 - **UX:** Operative command deck — 12-column liquid bento inside `OperativeHub`; sparse void, emissive geometry, glass data layers; secondary nav via shell rail. HQ bands are classified **instruments** (Identity, Directive, Navigation, Progression, Telemetry, Execute) with one shared `pd-os-deck` frame — see [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md). Premium cinematic track **2.12.1–2.19 Done** — Epic 3.4 / 4.1 **unblocked after 2.19 Done** (sign-off still required). Player OS target = operative command deck, not flat dossier admin. **Enterprise PDF visuals ≠ Player void canon** — see [`PLATFORM_BUILD_MANDATES.md`](./vision/PLATFORM_BUILD_MANDATES.md).
 - **Vision:** [`docs/vision/PLAYER_OS.md`](./vision/PLAYER_OS.md)
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Player row

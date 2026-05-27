@@ -1,0 +1,37 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5f",
+	"description": "Starter catalog Phoenix cartoon SVG art swap — Studio holo, HQ ring, ProPlayerCard dossier (MCP VA)",
+	"capturedAt": "2026-05-27T20:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"routes": [
+		{
+			"path": "/player/armory?tab=studio",
+			"file": "s35f-studio-portrait-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Armory Studio holo — layered v2 portrait with Phoenix cartoon parts"
+		},
+		{
+			"path": "/player/dashboard",
+			"file": "s35f-hq-ring-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "HQ HudAvatarRing — 88px portrait crop readable"
+		},
+		{
+			"path": "/player/dashboard",
+			"file": "s35f-id-card-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 12000,
+			"note": "ProPlayerCard dossier preview — 96px portrait crop on identity column"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

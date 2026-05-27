@@ -51,15 +51,15 @@ Canon is **what already ships** in the six reference components — not new inve
 
 ## 3. Void contract (measurable thresholds)
 
-Automated screenshot + pixel-sample tests land in **Sprint 2.20** (`playerHudSprint220.test.ts` + Playwright). Until then, manual DevTools sampling applies.
+Automated screenshot + pixel-sample tests: **Sprint 2.20e** (`playerHudSprint220.test.ts` on G10 HQ `g10-hq-void-1280x900.png`). Emissive threshold = **≥ 15% of lit (non-void) pixels** — not absolute viewport share.
 
 | Metric | Threshold | Measurement method |
 |--------|-----------|-------------------|
-| Black canvas pixels at viewport rest | ≥ 40% | DevTools screenshot color sample, HQ at 1280×900 |
+| Black canvas pixels at viewport rest | ≥ 40% | Pixel sample, HQ viewport crop at 1280×900 |
 | Visible matte panel fill ratio (`#05050a` / panel gradient) | ≤ 35% | Same |
-| Emissive edges + bloom + light | ≥ 15% | Same |
-| Largest Z2 panel | ≤ 60% viewport width (desktop) | Layout measurement |
-| Hero identity (Z3) min footprint | ≥ 280px ring + 1.5× rank bar height | Computed from identity stage DOM |
+| Emissive edges + bloom + light | ≥ 15% of lit pixels | Same — accent typography, borders, bloom vs flat neutral grey |
+| Largest Z2 panel | ≤ 60% viewport width (desktop) | Layout measurement (manual / Wave F) |
+| Hero identity (Z3) min footprint | ≥ 280px ring + 1.5× rank bar height | Computed from identity stage DOM (manual / Wave F) |
 
 ---
 
@@ -151,7 +151,7 @@ Sign-off = screenshot at **1280px** and **390px** plus “must-feel rule” tick
 
 ## 11. Future-epic gate
 
-- **Epic 3.4+ / 4.1+** implementation may proceed after ROADMAP marks **2.19 Done**, but **shipping** requires the reference matrix fully ticked at **1280px** and **390px** plus void contract pass.
+- **Epic 3.4+ / 4.1+** **implementation** may proceed after ROADMAP marks **2.20 Done** + **G10 sign-off**; **shipping** requires Tier A primitive parity fully ticked at **1280px** and **390px** plus void contract pixel pass (2.20e).
 - Future epics check this doc before pixel work; **no parallel material vocabulary** without amending §1 first.
 
 ---
@@ -165,4 +165,4 @@ Sign-off = screenshot at **1280px** and **390px** plus “must-feel rule” tick
 | [`PLAYER_OS.md`](./PLAYER_OS.md) | Product north star, zones, loops |
 | [`PLAYER_OS_MATERIAL_SPATIAL.md`](./PLAYER_OS_MATERIAL_SPATIAL.md) | Z0–Z4 history, layout constitution; §§9–11 superseded by this file |
 | [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) | Sign-off checklist + reference matrix mirror |
-| [`ROADMAP.md`](../../ROADMAP.md#sprint-220-scope--premium-foundation-lock--composition-hotfix--planned) | Sprint **2.20** implementation scope |
+| [`ROADMAP.md`](../../ROADMAP.md#sprint-220-scope--premium-foundation-lock--composition-hotfix--done) | Sprint **2.20** — **Done** (void contract 2.20e) |

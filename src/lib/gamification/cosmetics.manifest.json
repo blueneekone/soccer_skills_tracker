@@ -32,6 +32,22 @@
 		"contentHash": "d5ebca51386cc98c4661755fa12239e2d9382c348008e60744924fbb5f1c5ef7"
 	},
 	{
+		"id": "album_banner_snipers",
+		"slot": "banner",
+		"label": "Snipers Set Banner",
+		"renderKey": "banner-stripe",
+		"assetPath": "/cosmetics/banner-vanguard-stripe.svg",
+		"contentHash": "d5ebca51386cc98c4661755fa12239e2d9382c348008e60744924fbb5f1c5ef7"
+	},
+	{
+		"id": "album_banner_dark_arts",
+		"slot": "banner",
+		"label": "Dark Arts Set Banner",
+		"renderKey": "banner-stripe",
+		"assetPath": "/cosmetics/banner-vanguard-stripe.svg",
+		"contentHash": "d5ebca51386cc98c4661755fa12239e2d9382c348008e60744924fbb5f1c5ef7"
+	},
+	{
 		"id": "title_rank_operative",
 		"slot": "title",
 		"label": "Operative Rank Title",
