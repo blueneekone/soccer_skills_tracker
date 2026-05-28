@@ -1,5 +1,4 @@
 <script>
-	import { parseOperativeAvatar } from '$lib/avatars/operativeAvatar.js';
 	import { parseOperativeLoadout } from '$lib/gamification/loadoutSchema.js';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 
@@ -23,12 +22,11 @@
 		class: className = '',
 	} = $props();
 
-	const avatarConfig = $derived(parseOperativeAvatar(operativeAvatar));
 	const loadoutConfig = $derived(parseOperativeLoadout(operativeLoadout));
 
 	const layers = $derived.by(() =>
 		composeOperativePortrait({
-			operativeAvatar: avatarConfig ?? operativeAvatar,
+			operativeAvatar,
 			loadout: loadoutConfig ?? operativeLoadout,
 			size,
 			ownedIds: ownedCosmetics,

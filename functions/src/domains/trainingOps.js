@@ -49,6 +49,7 @@ const {
   utcWeekMondayKey,
 } = require('../utils/formatters');
 const {ALPHA_CALLABLE_OPTS} = require('../utils/alphaRunOptions');
+const {resolvePublicOperativeAvatarV2} = require('../utils/portraitV1Upgrade');
 
 const REGION = 'us-east1';
 
@@ -1444,37 +1445,7 @@ exports.getPublicRecruitProfile = onCall(
       });
 
       const rawOa = u.operativeAvatar;
-      /** @type {{ v: number, seed: string } | { v: number, parts: Record<string, string | null> } | null} */
-      let operativeAvatar = null;
-      if (rawOa && typeof rawOa === 'object') {
-        if (
-          rawOa.v === 2 &&
-          rawOa.parts &&
-          typeof rawOa.parts === 'object' &&
-          !Array.isArray(rawOa.parts)
-        ) {
-          /** @type {Record<string, string | null>} */
-          const parts = {};
-          for (const slot of ['face', 'hair', 'kit']) {
-            const val = rawOa.parts[slot];
-            if (typeof val === 'string' && val.trim()) {
-              parts[slot] = String(val).trim().slice(0, 64);
-            } else if (val === null) {
-              parts[slot] = null;
-            }
-          }
-          operativeAvatar = {v: 2, parts};
-        } else if (
-          rawOa.v === 1 &&
-          typeof rawOa.seed === 'string' &&
-          rawOa.seed.trim()
-        ) {
-          operativeAvatar = {
-            v: 1,
-            seed: String(rawOa.seed).trim().slice(0, 128),
-          };
-        }
-      }
+      const operativeAvatar = resolvePublicOperativeAvatarV2(rawOa);
 
       // Z2 org label — OPERATIVE_ID_CARD §5; not roster teamName
       let clubId =

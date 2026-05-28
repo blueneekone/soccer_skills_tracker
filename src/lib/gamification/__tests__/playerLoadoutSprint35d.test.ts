@@ -106,9 +106,9 @@ describe('Sprint 3.5d — wiring guards', () => {
 		expect(recruitSrc).toMatch(/operativeAvatarDesign = \{ v: 2, parts \}/);
 	});
 
-	it('getPublicRecruitProfile includes v2 operativeAvatar branch', () => {
-		expect(trainingOpsSrc).toMatch(/rawOa\.v === 2/);
-		expect(trainingOpsSrc).toMatch(/operativeAvatar = \{v: 2, parts\}/);
+	it('getPublicRecruitProfile returns v2 operativeAvatar only (v1 upgraded server-side)', () => {
+		expect(trainingOpsSrc).toMatch(/resolvePublicOperativeAvatarV2/);
+		expect(trainingOpsSrc).not.toMatch(/operativeAvatar = \{\s*v:\s*1/);
 	});
 
 	it('dashboard references read-repair helpers', () => {

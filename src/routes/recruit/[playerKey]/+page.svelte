@@ -44,31 +44,18 @@
 					clubName =
 						typeof payload.clubName === 'string' ? payload.clubName.trim() : '';
 					const oa = payload.operativeAvatar;
-					if (oa && typeof oa === 'object') {
-						if (oa.v === 2 && oa.parts && typeof oa.parts === 'object' && !Array.isArray(oa.parts)) {
-							/** @type {Record<string, string | null>} */
-							const parts = {};
-							for (const key of ['face', 'hair', 'kit']) {
-								const val = /** @type {Record<string, unknown>} */ (oa.parts)[key];
-								if (typeof val === 'string' && val.trim()) {
-									parts[key] = String(val).trim().slice(0, 64);
-								} else if (val === null) {
-									parts[key] = null;
-								}
+					if (oa && typeof oa === 'object' && oa.v === 2 && oa.parts && typeof oa.parts === 'object' && !Array.isArray(oa.parts)) {
+						/** @type {Record<string, string | null>} */
+						const parts = {};
+						for (const key of ['face', 'hair', 'kit']) {
+							const val = /** @type {Record<string, unknown>} */ (oa.parts)[key];
+							if (typeof val === 'string' && val.trim()) {
+								parts[key] = String(val).trim().slice(0, 64);
+							} else if (val === null) {
+								parts[key] = null;
 							}
-							operativeAvatarDesign = { v: 2, parts };
-						} else if (
-							oa.v === 1 &&
-							typeof oa.seed === 'string' &&
-							oa.seed.trim()
-						) {
-							operativeAvatarDesign = {
-								v: 1,
-								seed: String(oa.seed).trim().slice(0, 128),
-							};
-						} else {
-							operativeAvatarDesign = undefined;
 						}
+						operativeAvatarDesign = { v: 2, parts };
 					} else {
 						operativeAvatarDesign = undefined;
 					}

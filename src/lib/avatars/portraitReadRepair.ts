@@ -9,49 +9,13 @@ import { db } from '$lib/firebase.js';
 import {
 	defaultOwnedPortraitParts,
 	defaultPortraitV2,
-	getPortraitPartsForSlot,
 	normalizePortraitParts,
 	parseOperativePortrait,
 	type OperativePortraitV2,
-	type PortraitPartSlot,
 } from './portraitV2Schema.js';
+import { upgradeV1SeedToPortraitV2 } from './portraitV1Upgrade.js';
 
-/** djb2 string → unsigned 32-bit hash (matches bauhausAvatar.js). */
-function djb2(str: string): number {
-	let h = 5381;
-	for (let i = 0; i < str.length; i++) {
-		h = (Math.imul(h, 33) ^ str.charCodeAt(i)) >>> 0;
-	}
-	return h;
-}
-
-function pickCatalogPartForSlot(seed: string, slot: PortraitPartSlot): string | null {
-	const catalog = getPortraitPartsForSlot(slot);
-	if (!catalog.length) return null;
-	const idx = djb2(`${seed}::${slot}`) % catalog.length;
-	return catalog[idx]?.id ?? null;
-}
-
-/**
- * Deterministic v1 seed → v2 catalog part ids per slot (hash picks within slot catalog).
- */
-export function upgradeV1SeedToPortraitV2(seed: string): OperativePortraitV2 {
-	const normalizedSeed = String(seed ?? '').trim() || 'operative';
-	const parts: Partial<Record<PortraitPartSlot, string | null>> = {};
-
-	for (const slot of ['face', 'hair', 'kit'] as const) {
-		const picked = pickCatalogPartForSlot(normalizedSeed, slot);
-		if (picked) parts[slot] = picked;
-	}
-
-	const hasAnyPart = Object.values(parts).some((v) => typeof v === 'string' && v);
-	if (!hasAnyPart) return defaultPortraitV2();
-
-	return {
-		v: 2,
-		parts: normalizePortraitParts(parts),
-	};
-}
+export { upgradeV1SeedToPortraitV2 };
 
 export type PortraitReadRepairResult = {
 	operativeAvatar: OperativePortraitV2;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { renderBauhausAvatarSvg } from '$lib/avatars/bauhausAvatar.js';
+	import { renderOperativeAvatarSvg } from '$lib/avatars/operativeAvatar.js';
 
 	let {
 		seed = 'player',
@@ -15,7 +15,7 @@
 		skeleton?: boolean;
 	} = $props();
 
-	const svgMarkup = $derived(renderBauhausAvatarSvg(seed || 'player', size));
+	const svgMarkup = $derived(renderOperativeAvatarSvg(seed || 'player', size));
 	const initials = $derived((seed || '??').slice(0, 2).toUpperCase());
 	const showSkeleton = $derived(skeleton || !seed);
 </script>

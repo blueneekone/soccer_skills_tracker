@@ -145,12 +145,12 @@ describe('Sprint 3.5b — layered renderer', () => {
 		expect(alternate).toMatch(/hair-crop\.svg/);
 	});
 
-	it('renderOperativeAvatarSvg v1 Bauhaus path unchanged', () => {
+	it('renderOperativeAvatarSvg v1 seed upgrades to v2 layered SVG', () => {
 		const v1 = { v: 1, seed: 'deterministic-seed-35b' };
 		const a = renderOperativeAvatarSvg(v1, 128);
 		const b = renderOperativeAvatarSvg(v1, 128);
 		expect(a).toBe(b);
-		expect(a).not.toMatch(/data-portrait-version="2"/);
+		expect(a).toMatch(/data-portrait-version="2"/);
 		expect(parseOperativeAvatar(v1)).toEqual(v1);
 	});
 

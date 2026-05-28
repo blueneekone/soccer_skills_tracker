@@ -98,20 +98,20 @@ describe('Sprint 3.5a — layered SVG renderer', () => {
 		expect(layer).toMatch(/data-portrait-layer="face"/);
 	});
 
-	it('renderOperativeAvatarSvg(v1 seed object) still produces deterministic Bauhaus', () => {
+	it('renderOperativeAvatarSvg(v1 seed object) upgrades to deterministic v2 layered SVG', () => {
 		const v1 = { v: 1, seed: 'deterministic-seed-35a' };
 		const a = renderOperativeAvatarSvg(v1, 128);
 		const b = renderOperativeAvatarSvg(v1, 128);
 		expect(a).toBe(b);
 		expect(a).toMatch(/<svg[^>]*viewBox="0 0 128 128"/);
-		expect(a).not.toMatch(/data-portrait-version="2"/);
+		expect(a).toMatch(/data-portrait-version="2"/);
 	});
 
-	it('renderOperativeAvatarSvg(v2 default) differs from v1 Bauhaus at same size', () => {
+	it('renderOperativeAvatarSvg(v2 default) differs from upgraded v1 at same seed', () => {
 		const v1Svg = renderOperativeAvatarSvg({ v: 1, seed: 'operative' }, 128);
 		const v2Svg = renderOperativeAvatarSvg(defaultPortraitV2(), 128);
-		expect(v2Svg).not.toBe(v1Svg);
 		expect(v2Svg).toMatch(/data-portrait-layer="face"/);
+		expect(v1Svg).toMatch(/data-portrait-version="2"/);
 	});
 
 	it('composeOperativePortrait with v2 operativeAvatar yields non-empty portraitSvg', () => {
@@ -148,12 +148,13 @@ describe('Sprint 3.5a — manifest + static assets', () => {
 	});
 });
 
-describe('Sprint 3.5a — wiring (Studio still v1)', () => {
-	it('operativeAvatar.js exports v2 parse + render branches', () => {
+describe('Sprint 3.5a — wiring (v2 render path)', () => {
+	it('operativeAvatar.js exports v2 parse + layered render only', () => {
 		const src = readFileSync(OPERATIVE_AVATAR, 'utf-8');
 		expect(src).toMatch(/parseOperativePortrait/);
 		expect(src).toMatch(/renderLayeredPortraitSvg/);
 		expect(src).toMatch(/OPERATIVE_PORTRAIT_V2_VERSION/);
+		expect(src).not.toMatch(/bauhausAvatar/i);
 	});
 
 	it('renderOperativeLoadout passes full operativeAvatar to renderer', () => {
@@ -180,6 +181,5 @@ describe('Sprint 3.5a — ROADMAP + vision', () => {
 		expect(doc).toMatch(/portrait v2|v2 portrait|Portrait v2/i);
 		expect(doc).toMatch(/\*\*3\.5a\*\*/);
 		expect(doc).toMatch(/face.*hair.*kit|face \/ hair \/ kit/i);
-		expect(doc).toMatch(/Bauhaus|v1/i);
 	});
 });
