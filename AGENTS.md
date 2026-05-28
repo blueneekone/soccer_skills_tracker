@@ -37,6 +37,14 @@ This is the **dev branch** of SSTracker (Nexus Command) — a SvelteKit 5 + Fire
 - `npm run check` — runs `svelte-check` (has pre-existing type errors)
 - `npm run lint:functions` — currently broken (no lint script in functions/)
 
+### Authentication & Credentials
+
+- The app connects to the **production** Firebase project (`soccer-skills-tracker`) when `VITE_USE_PROD=true` is set (needed for test account login).
+- Default dev mode uses `sports-skill-tracker-dev` project.
+- Test credentials (`TEST_COACH_EMAIL`, `TEST_COACH_PASSWORD`) authenticate successfully via Firebase Auth REST API.
+- The login UI on `/login` does NOT expose standard email+password — it uses Passkey, Google OAuth, Magic Link, or "Operative Terminal" (OTP/Dispatch codes). To test standard email/password auth, use the Firebase Auth REST API or browser console with `signInWithEmailAndPassword`.
+- Browser-based Firebase Auth may fail in restricted VM environments (network-request-failed); use curl with `Referer: https://soccer.sstracker.app/` header to validate credentials via REST API.
+
 ### Key Files & Docs
 
 - `.cursorrules` — project invariants and UI token reference
