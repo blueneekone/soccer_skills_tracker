@@ -61,7 +61,7 @@ SVG art: Phoenix family flat ink — variants of existing stubs until 3.5i-b bod
 
 ## Out of scope (3.5i-a)
 
-- `bodyScale` auto from DOB (**3.5i-b**)
+- `bodyScale` auto from DOB (**3.5i-b** — `under13` → `youth`; `teen13to16` → `teen`; `adult` → `adult`)
 - `portrait_pose_*` (**3.5i-pose**)
 - Coach staff kit layer
 - Collectible metadata (**3.5k**)

@@ -9,6 +9,9 @@
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
 	import {
 		PORTRAIT_PART_SLOTS,
+		BODY_SCALE_CHIP_LABELS,
+		parseOperativePortrait,
+		resolveBodyScaleFromAgeBand,
 		type PortraitPartSlot,
 	} from '$lib/avatars/portraitV2Schema.js';
 	import {
@@ -122,6 +125,19 @@
 		}),
 	);
 
+	const profileBodyScale = $derived.by(() => {
+		const prof = authStore.userProfile;
+		const ageBand =
+			prof && typeof prof === 'object' && typeof prof.ageBand === 'string' ?
+				prof.ageBand
+			:	undefined;
+		const parsed = parseOperativePortrait(operativeAvatar);
+		if (parsed?.v === 2 && parsed.bodyScale) return parsed.bodyScale;
+		return resolveBodyScaleFromAgeBand(ageBand);
+	});
+
+	const bodyScaleChipLabel = $derived(BODY_SCALE_CHIP_LABELS[profileBodyScale]);
+
 	function selectUnifiedTab(tab: UnifiedTab) {
 		selectedTab = tab;
 		if (isPortraitTab(tab)) portraitSlot = tab;
@@ -222,6 +238,7 @@
 		{#if playerEmailKey}
 			<div class="ols-dossier-panel bento-span-12 tw-min-w-0">
 				<p class="ols-panel-head qa-mono">DOSSIER CARD PREVIEW</p>
+				<p class="ols-body-scale-chip qa-mono" aria-label="Operative body scale">{bodyScaleChipLabel}</p>
 				<div class="ols-dossier-body">
 					<div class="ols-dossier-stack">
 						<div class="ols-dossier-card">
@@ -284,6 +301,7 @@
 					<OperativePortraitPartPicker
 						bind:operativeAvatar
 						bind:selectedSlot={portraitSlot}
+						bodyScale={profileBodyScale}
 						{ownedPortraitParts}
 						hideTabRail={true}
 						disabled={identitySyncBusy}
@@ -383,6 +401,19 @@
 		letter-spacing: 0.14em;
 		line-height: 1.35;
 		color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, #fff);
+	}
+	.ols-body-scale-chip {
+		display: inline-block;
+		margin: 0.65rem 1rem 0;
+		padding: 0.35rem 0.65rem;
+		font-size: 0.58rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 90%, #fff);
+		border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 8%, transparent);
 	}
 	@media (min-width: 64rem) {
 		.ols-panel-head {

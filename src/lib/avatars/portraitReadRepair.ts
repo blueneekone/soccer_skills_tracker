@@ -11,11 +11,17 @@ import {
 	defaultPortraitV2,
 	normalizePortraitParts,
 	parseOperativePortrait,
+	resolveBodyScaleFromAgeBand,
+	type BodyScale,
 	type OperativePortraitV2,
 } from './portraitV2Schema.js';
 import { upgradeV1SeedToPortraitV2 } from './portraitV1Upgrade.js';
 
 export { upgradeV1SeedToPortraitV2 };
+
+export type PortraitReadRepairProfileSlice = {
+	ageBand?: string;
+};
 
 export type PortraitReadRepairResult = {
 	operativeAvatar: OperativePortraitV2;
@@ -23,37 +29,72 @@ export type PortraitReadRepairResult = {
 	didMigrate: boolean;
 };
 
+function repairV2Portrait(
+	parsed: OperativePortraitV2,
+	ownedPortraitParts: string[],
+	profileBodyScale?: BodyScale,
+): { operativeAvatar: OperativePortraitV2; didMigrate: boolean } {
+	const targetBodyScale = parsed.bodyScale ?? profileBodyScale;
+	const normalizedParts = normalizePortraitParts(
+		parsed.parts,
+		undefined,
+		ownedPortraitParts,
+		targetBodyScale,
+	);
+
+	const operativeAvatar: OperativePortraitV2 = {
+		v: 2,
+		parts: normalizedParts,
+	};
+	if (targetBodyScale) operativeAvatar.bodyScale = targetBodyScale;
+
+	const partsChanged = JSON.stringify(normalizedParts) !== JSON.stringify(parsed.parts);
+	const bodyScaleAdded = targetBodyScale !== undefined && parsed.bodyScale !== targetBodyScale;
+
+	return {
+		operativeAvatar,
+		didMigrate: partsChanged || bodyScaleAdded,
+	};
+}
+
 /**
  * Normalize in-memory portrait state; flag didMigrate when Firestore should be patched.
  */
 export function readRepairOperativeAvatar(
 	raw: unknown,
 	ownedPortraitPartsRaw?: unknown,
+	profileSlice?: PortraitReadRepairProfileSlice,
 ): PortraitReadRepairResult {
 	const ownedPortraitParts =
 		Array.isArray(ownedPortraitPartsRaw) && ownedPortraitPartsRaw.length > 0 ?
 			ownedPortraitPartsRaw.filter((id): id is string => typeof id === 'string')
 		:	defaultOwnedPortraitParts();
 
+	const profileBodyScale = profileSlice?.ageBand ?
+		resolveBodyScaleFromAgeBand(profileSlice.ageBand)
+	:	undefined;
+
 	const parsed = parseOperativePortrait(raw);
 
 	if (parsed?.v === 2) {
-		const operativeAvatar: OperativePortraitV2 = {
-			v: 2,
-			parts: normalizePortraitParts(parsed.parts, undefined, ownedPortraitParts),
-		};
+		const { operativeAvatar, didMigrate } = repairV2Portrait(
+			parsed,
+			ownedPortraitParts,
+			profileBodyScale,
+		);
 		return {
 			operativeAvatar,
 			ownedPortraitParts: ownedPortraitParts.length ?
 				ownedPortraitParts
 			:	defaultOwnedPortraitParts(),
-			didMigrate: false,
+			didMigrate,
 		};
 	}
 
 	if (parsed?.v === 1) {
+		const upgraded = upgradeV1SeedToPortraitV2(parsed.seed, profileBodyScale);
 		return {
-			operativeAvatar: upgradeV1SeedToPortraitV2(parsed.seed),
+			operativeAvatar: upgraded,
 			ownedPortraitParts: ownedPortraitParts.length ?
 				ownedPortraitParts
 			:	defaultOwnedPortraitParts(),
@@ -61,8 +102,9 @@ export function readRepairOperativeAvatar(
 		};
 	}
 
+	const operativeAvatar = defaultPortraitV2(profileBodyScale);
 	return {
-		operativeAvatar: defaultPortraitV2(),
+		operativeAvatar,
 		ownedPortraitParts: defaultOwnedPortraitParts(),
 		didMigrate: true,
 	};

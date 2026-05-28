@@ -122,9 +122,13 @@
 	const profilePortraitRepairSig = $derived.by(() => {
 		const oa = activePlayer?.operativeAvatar;
 		const opp = activePlayer?.ownedPortraitParts;
+		const ageBand =
+			typeof activePlayer?.ageBand === 'string' ? activePlayer.ageBand
+			: typeof authStore.userProfile?.ageBand === 'string' ? authStore.userProfile.ageBand
+			: '';
 		const oaNorm = oa && typeof oa === 'object' ? JSON.stringify(oa) : '';
 		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '';
-		return `${email}:${oaNorm}:${oppNorm}`;
+		return `${email}:${ageBand}:${oaNorm}:${oppNorm}`;
 	});
 
 	$effect(() => {
@@ -141,6 +145,12 @@
 		const { operativeAvatar, ownedPortraitParts, didMigrate } = readRepairOperativeAvatar(
 			activePlayer?.operativeAvatar,
 			activePlayer?.ownedPortraitParts,
+			{
+				ageBand:
+					typeof activePlayer?.ageBand === 'string' ? activePlayer.ageBand
+					: typeof authStore.userProfile?.ageBand === 'string' ? authStore.userProfile.ageBand
+					: undefined,
+			},
 		);
 		displayOperativeAvatar = operativeAvatar;
 		if (didMigrate) {

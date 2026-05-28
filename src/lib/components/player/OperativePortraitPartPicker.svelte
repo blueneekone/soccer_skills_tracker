@@ -2,11 +2,14 @@
 	import {
 		PORTRAIT_PART_SLOTS,
 		OPERATIVE_PORTRAIT_V2_VERSION,
+		BODY_SCALE_CHIP_LABELS,
 		defaultPortraitV2,
 		defaultOwnedPortraitParts,
 		getPortraitPartsForSlot,
 		normalizePortraitParts,
 		parseOperativePortrait,
+		resolveBodyScaleFromAgeBand,
+		type BodyScale,
 		type PortraitPartSlot,
 		type PortraitPartCatalogEntry,
 	} from '$lib/avatars/portraitV2Schema.js';
@@ -38,12 +41,14 @@
 		operativeAvatar = $bindable(undefined),
 		selectedSlot = $bindable<PortraitPartSlot>('face'),
 		ownedPortraitParts = defaultOwnedPortraitParts(),
+		bodyScale = undefined,
 		disabled = false,
 		hideTabRail = false,
 	}: {
 		operativeAvatar?: unknown;
 		selectedSlot?: PortraitPartSlot;
 		ownedPortraitParts?: string[];
+		bodyScale?: BodyScale;
 		disabled?: boolean;
 		hideTabRail?: boolean;
 	} = $props();
@@ -59,7 +64,7 @@
 	$effect(() => {
 		const parsed = parseOperativePortrait(operativeAvatar);
 		if (parsed?.v === 1) {
-			operativeAvatar = defaultPortraitV2();
+			operativeAvatar = defaultPortraitV2(bodyScale);
 			legacyUpgraded = true;
 		}
 	});
@@ -67,12 +72,16 @@
 	const portraitV2 = $derived.by(() => {
 		const parsed = parseOperativePortrait(operativeAvatar);
 		if (parsed?.v === OPERATIVE_PORTRAIT_V2_VERSION) return parsed;
-		return defaultPortraitV2();
+		return defaultPortraitV2(bodyScale);
 	});
+
+	const effectiveBodyScale = $derived(
+		portraitV2.bodyScale ?? bodyScale ?? resolveBodyScaleFromAgeBand(undefined),
+	);
 
 	const equippedPartId = $derived(portraitV2.parts[selectedSlot] ?? null);
 
-	const catalogForSlot = $derived(getPortraitPartsForSlot(selectedSlot, catalog));
+	const catalogForSlot = $derived(getPortraitPartsForSlot(selectedSlot, catalog, effectiveBodyScale));
 	const filteredCatalog = $derived(
 		catalogForSlot.filter((entry) =>
 			matchesPortraitCatalogFilters(entry, portraitFilters, selectedSlot),
@@ -98,13 +107,18 @@
 	function selectPart(partId: string) {
 		if (disabled || !ownedSet.has(partId)) return;
 		const parsed = parseOperativePortrait(operativeAvatar);
-		const base = parsed?.v === OPERATIVE_PORTRAIT_V2_VERSION ? parsed : defaultPortraitV2();
+		const base = parsed?.v === OPERATIVE_PORTRAIT_V2_VERSION ? parsed : defaultPortraitV2(effectiveBodyScale);
 		const parts = normalizePortraitParts(
 			{ ...base.parts, [selectedSlot]: partId },
 			catalog,
 			ownedPortraitParts,
+			effectiveBodyScale,
 		);
-		operativeAvatar = { v: OPERATIVE_PORTRAIT_V2_VERSION, parts };
+		operativeAvatar = {
+			v: OPERATIVE_PORTRAIT_V2_VERSION,
+			parts,
+			...(effectiveBodyScale ? { bodyScale: effectiveBodyScale } : {}),
+		};
 	}
 </script>
 

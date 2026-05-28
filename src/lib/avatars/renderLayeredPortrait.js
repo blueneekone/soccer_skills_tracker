@@ -1,6 +1,7 @@
 import portraitPartsManifest from './portraitParts.manifest.json';
 import {
 	defaultPortraitV2,
+	getPortraitPartsForSlot,
 	normalizePortraitParts,
 } from './portraitV2Schema.js';
 
@@ -59,14 +60,15 @@ export function renderPortraitPartLayer(partId, size = 128) {
  * @param {PortraitPartSlot} slot
  * @returns {string | null}
  */
-function resolvePartId(parts, slot) {
+function resolvePartId(parts, slot, bodyScale) {
 	const equipped = parts[slot];
 	if (typeof equipped === 'string' && equipped) return equipped;
 
-	const slotDefault = getPortraitPartCatalog().find((row) => row.slot === slot && row.renderKey.endsWith('-default'));
+	const bandCatalog = getPortraitPartsForSlot(slot, getPortraitPartCatalog(), bodyScale);
+	const slotDefault = bandCatalog.find((row) => row.renderKey.endsWith('-default'));
 	if (slotDefault) return slotDefault.id;
 
-	const globalDefault = defaultPortraitV2().parts[slot];
+	const globalDefault = defaultPortraitV2(bodyScale).parts[slot];
 	return typeof globalDefault === 'string' ? globalDefault : null;
 }
 
@@ -81,10 +83,11 @@ function resolvePartId(parts, slot) {
 export function renderLayeredPortraitSvg(portrait, size = 128, ownedIds = undefined) {
 	const s = Math.max(1, Math.floor(Number(size) || 128));
 	const catalog = getPortraitPartCatalog();
-	const parts = normalizePortraitParts(portrait.parts ?? {}, catalog, ownedIds);
+	const bodyScale = portrait.bodyScale;
+	const parts = normalizePortraitParts(portrait.parts ?? {}, catalog, ownedIds, bodyScale);
 
 	const layers = LAYER_ORDER.map((slot) => {
-		const partId = resolvePartId(parts, slot);
+		const partId = resolvePartId(parts, slot, bodyScale);
 		return renderPortraitPartLayer(partId, s);
 	})
 		.filter(Boolean)

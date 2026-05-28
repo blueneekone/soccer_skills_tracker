@@ -99,9 +99,10 @@
 		const emailKey = (authStore.user?.email || '').toLowerCase();
 		const oa = profile?.operativeAvatar;
 		const opp = profile?.ownedPortraitParts;
+		const ageBand = typeof profile?.ageBand === 'string' ? profile.ageBand : '';
 		const normalized = oa && typeof oa === 'object' ? JSON.stringify(oa) : '{}';
 		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '[]';
-		return `${emailKey}:${normalized}:${oppNorm}`;
+		return `${emailKey}:${ageBand}:${normalized}:${oppNorm}`;
 	});
 
 	let lastAvatarHydrateSig = '';
@@ -136,7 +137,9 @@
 		lastAvatarHydrateSig = profileAvatarHydrateSig;
 
 		const { operativeAvatar: repairedAvatar, ownedPortraitParts: repairedOwned, didMigrate } =
-			readRepairOperativeAvatar(profile?.operativeAvatar, profile?.ownedPortraitParts);
+			readRepairOperativeAvatar(profile?.operativeAvatar, profile?.ownedPortraitParts, {
+				ageBand: typeof profile?.ageBand === 'string' ? profile.ageBand : undefined,
+			});
 		operativeAvatar = repairedAvatar;
 		ownedPortraitParts = repairedOwned.filter((id): id is string => typeof id === 'string');
 		if (didMigrate) {

@@ -6,7 +6,9 @@
 import {
 	defaultPortraitV2,
 	getPortraitPartsForSlot,
+	isLegacyStarterPortraitPartId,
 	normalizePortraitParts,
+	type BodyScale,
 	type OperativePortraitV2,
 	type PortraitPartSlot,
 } from './portraitV2Schema.js';
@@ -20,8 +22,15 @@ function djb2(str: string): number {
 	return h;
 }
 
-function pickCatalogPartForSlot(seed: string, slot: PortraitPartSlot): string | null {
-	const catalog = getPortraitPartsForSlot(slot);
+function pickCatalogPartForSlot(
+	seed: string,
+	slot: PortraitPartSlot,
+	bodyScale?: BodyScale,
+): string | null {
+	const catalog =
+		bodyScale ?
+			getPortraitPartsForSlot(slot, undefined, bodyScale)
+		:	getPortraitPartsForSlot(slot).filter((row) => isLegacyStarterPortraitPartId(row.id));
 	if (!catalog.length) return null;
 	const idx = djb2(`${seed}::${slot}`) % catalog.length;
 	return catalog[idx]?.id ?? null;
@@ -30,20 +39,25 @@ function pickCatalogPartForSlot(seed: string, slot: PortraitPartSlot): string | 
 /**
  * Deterministic v1 seed → v2 catalog part ids per slot (hash picks within slot catalog).
  */
-export function upgradeV1SeedToPortraitV2(seed: string): OperativePortraitV2 {
+export function upgradeV1SeedToPortraitV2(
+	seed: string,
+	bodyScale?: BodyScale,
+): OperativePortraitV2 {
 	const normalizedSeed = String(seed ?? '').trim() || 'operative';
 	const parts: Partial<Record<PortraitPartSlot, string | null>> = {};
 
 	for (const slot of ['face', 'hair', 'kit'] as const) {
-		const picked = pickCatalogPartForSlot(normalizedSeed, slot);
+		const picked = pickCatalogPartForSlot(normalizedSeed, slot, bodyScale);
 		if (picked) parts[slot] = picked;
 	}
 
 	const hasAnyPart = Object.values(parts).some((v) => typeof v === 'string' && v);
-	if (!hasAnyPart) return defaultPortraitV2();
+	if (!hasAnyPart) return defaultPortraitV2(bodyScale);
 
-	return {
+	const portrait: OperativePortraitV2 = {
 		v: 2,
-		parts: normalizePortraitParts(parts),
+		parts: normalizePortraitParts(parts, undefined, undefined, bodyScale),
 	};
+	if (bodyScale) portrait.bodyScale = bodyScale;
+	return portrait;
 }
