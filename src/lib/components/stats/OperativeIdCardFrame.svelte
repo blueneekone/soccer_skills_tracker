@@ -202,6 +202,11 @@
 		min-height: 10rem;
 	}
 
+	.oicf-root--holo .oicf-art-well {
+		flex: 1 1 auto;
+		align-items: center;
+	}
+
 	.oicf-title-bar {
 		display: flex;
 		align-items: center;
@@ -278,6 +283,7 @@
 	.oicf-portrait-stage {
 		position: relative;
 		display: flex;
+		flex: 1 1 auto;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
@@ -291,6 +297,7 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
+		/* Crown bleed stays inside ring bounds — unified svg clip, not per-layer hair sticker */
 		overflow: visible;
 	}
 
@@ -301,31 +308,40 @@
 		min-height: 96px;
 	}
 
+	.oicf-portrait-ring--holo .oicf-portrait {
+		box-shadow:
+			inset 0 0 22px rgba(0, 0, 0, 0.62),
+			inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 38%, transparent),
+			inset 0 2px 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	}
+
 	.oicf-portrait {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
 		height: 100%;
-		overflow: visible;
+		overflow: hidden;
 		border-radius: 9999px;
 		border: 2px solid var(--pd-accent-data, #14b8a6);
-		background: #1e293b;
+		background: radial-gradient(
+			ellipse 88% 88% at 50% 52%,
+			#243044 0%,
+			#1a2332 55%,
+			#0f172a 100%
+		);
+		box-shadow:
+			inset 0 0 18px rgba(0, 0, 0, 0.55),
+			inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
 	}
 
-	/* Bust circle on kit+face; hair crown bleed per 3.5g-g SIR safe zone */
-	.oicf-portrait :global([data-portrait-layer='kit']),
-	.oicf-portrait :global([data-portrait-layer='face']) {
-		clip-path: circle(46% at 50% 44%);
-	}
-
-	.oicf-portrait :global([data-portrait-layer='hair']) {
-		clip-path: none;
-		overflow: visible;
-	}
-
+	/* 3.5m-frame — one clip on composed stack (no hair blob floating above frame) */
 	.oicf-portrait :global(svg.layered-portrait) {
+		display: block;
+		width: 100%;
+		height: 100%;
 		overflow: visible;
+		clip-path: circle(48% at 50% 50%);
 	}
 
 	.oicf-loadout-border {
@@ -458,8 +474,8 @@
 		width: 100%;
 		height: 100%;
 		overflow: visible;
-		object-fit: cover;
-		object-position: center 35%;
+		object-fit: contain;
+		object-position: center center;
 	}
 
 	.oicf-loadout-border :global(svg),

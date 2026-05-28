@@ -12,7 +12,10 @@ import {
 export const LAYER_ORDER = /** @type {const} */ (['kit', 'face', 'hair']);
 
 /** Master art viewBox — all catalog SVGs export at 256×256. */
-const ART_VIEWBOX = 256;
+export const PORTRAIT_BUST_VIEWBOX = 256;
+
+/** @deprecated alias — use PORTRAIT_BUST_VIEWBOX */
+const ART_VIEWBOX = PORTRAIT_BUST_VIEWBOX;
 
 /**
  * @returns {Array<{ id: string; slot: PortraitPartSlot; label: string; renderKey: string; assetPath?: string; contentHash?: string; svgInner?: string }>}
@@ -95,5 +98,6 @@ export function renderLayeredPortraitSvg(portrait, size = 128, ownedIds = undefi
 		.filter(Boolean)
 		.join('\n\t');
 
-	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" overflow="visible" preserveAspectRatio="xMidYMin meet" class="layered-portrait" data-portrait-version="2" aria-hidden="true">\n\t${layers}\n</svg>`;
+	// xMidYMid meet — bust centers vertically in circular wells (3.5m-frame); YMin pinned hair above collar.
+	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" overflow="visible" preserveAspectRatio="xMidYMid meet" class="layered-portrait" data-portrait-version="2" aria-hidden="true">\n\t${layers}\n</svg>`;
 }

@@ -95,6 +95,7 @@
 	>
 		<div class="hcs-edge" aria-hidden="true"></div>
 		<div class="hcs-scanlines" aria-hidden="true"></div>
+		<!-- Child OperativeIdCardFrame owns Z3 portrait well clip — shell does not double-clip (3.5m-frame) -->
 		<div class="hcs-content">
 			{@render children()}
 		</div>

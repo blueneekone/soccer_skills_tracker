@@ -81,21 +81,21 @@ describe('Sprint 3.5l-a — face-default side ear removal', () => {
 	});
 });
 
-describe('Sprint 3.5l-a — holo portrait well clip guard', () => {
-	it('OperativeIdCardFrame keeps hair unclipped with layered-portrait overflow visible', () => {
+describe('Sprint 3.5l-a — holo portrait well clip guard (extended 3.5m-frame)', () => {
+	it('OperativeIdCardFrame uses unified layered-portrait clip — no per-layer hair sticker clip', () => {
 		const src = readFileSync(OICF, 'utf-8');
-		expect(src).toMatch(/data-portrait-layer='hair'/);
-		expect(src).toMatch(/clip-path:\s*none/);
 		expect(src).toMatch(/svg\.layered-portrait/);
-		expect(src).toMatch(/overflow:\s*visible/);
+		expect(src).toMatch(/clip-path:\s*circle\(48%\s+at\s+50%\s+50%\)/);
+		expect(src).not.toMatch(/data-portrait-layer='hair'[\s\S]*?clip-path:\s*none/);
+		expect(src).not.toMatch(/data-portrait-layer='kit'[\s\S]*?clip-path:\s*circle/);
 	});
 });
 
 describe('Sprint 3.5l-a — ROADMAP handoff', () => {
-	it('ROADMAP marks 3.5l-a Done and next 3.5l-b', () => {
+	it('ROADMAP marks 3.5l-a Done (Phase 3 track supersedes 3.5l-b)', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		expect(doc).toMatch(/\|\s*\*\*3\.5l-a\*\*\s*\|\s*\*\*Done\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint35lA\.test\.ts/);
-		expect(doc).toMatch(/\*\*3\.5l-b\*\*.*Planned|next.*3\.5l-b/i);
+		expect(doc).toMatch(/3\.5m-frame|Phase 3/i);
 	});
 });

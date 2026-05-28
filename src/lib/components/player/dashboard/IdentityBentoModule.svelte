@@ -140,6 +140,7 @@
 	{#if embedded}
 		<div class="ibm-body--hub-span">
 			<HologramCardShell accent={holoAccent} compact ariaLabel="Operative identity card">
+				<!-- Portrait inset/clip owned by OperativeIdCardFrame holo variant (3.5m-frame) — no extra ring clip here -->
 				<div class="ibm-holo-face">
 					{#if profileIncomplete}
 						<div class="ibm-holo-face__portrait ibm-holo-face__portrait--placeholder" aria-hidden="true">

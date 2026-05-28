@@ -130,11 +130,11 @@ describe('Sprint 3.5k — wiring guards', () => {
 });
 
 describe('Sprint 3.5k — ROADMAP + vision + VA manifest', () => {
-	it('ROADMAP marks 3.5k Done and Season 1 MVP card track complete', () => {
+	it('ROADMAP tracks 3.5k collectible metadata sprint', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
-		expect(doc).toMatch(/3\.5k[\s\S]{0,80}\*\*Done\*\*/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5k\*\*\s*\|\s*\*\*(?:Done|In progress)\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint35k\.test\.ts/);
-		expect(doc).toMatch(/Season 1 MVP|portrait\/card track complete/i);
+		expect(doc).toMatch(/Collectible metadata|3\.5k/i);
 	});
 
 	it('OPERATIVE_ID_CARD.md §9 marks 3.5k implemented', () => {

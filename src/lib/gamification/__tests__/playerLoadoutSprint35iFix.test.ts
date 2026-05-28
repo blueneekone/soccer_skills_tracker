@@ -95,11 +95,11 @@ describe('Sprint 3.5i-fix — clip / safe zone CSS', () => {
 		expect(src).toMatch(/clip-path:\s*circle/);
 	});
 
-	it('OperativeIdCardFrame portrait ring overflow visible with bust clip', () => {
+	it('OperativeIdCardFrame portrait ring overflow visible with unified bust clip (3.5m-frame)', () => {
 		const src = readFileSync(OICF, 'utf-8');
-		expect(src).toMatch(/overflow:\s*visible/);
-		expect(src).toMatch(/data-portrait-layer='face'/);
-		expect(src).toMatch(/object-position:\s*center 35%/);
+		expect(src).toMatch(/oicf-portrait-ring[\s\S]*?overflow:\s*visible/);
+		expect(src).toMatch(/svg\.layered-portrait[\s\S]*?clip-path:\s*circle/);
+		expect(src).toMatch(/object-position:\s*center center/);
 	});
 });
 
