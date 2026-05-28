@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" aria-hidden="true">
   <g fill-rule="evenodd" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M 64 108 Q 56 72 88 48 Q 128 28 168 48 Q 200 72 192 108 Q 198 88 184 62 Q 128 36 72 62 Q 58 88 64 108 Z" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
-    <path d="M 72 62 Q 128 40 184 62 L 176 48 Q 128 32 80 48 Z" fill="#f07830" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 88 48 L 96 28 L 108 44 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 128 36 L 136 18 L 148 38 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 160 48 L 172 30 L 180 52 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 68 88 Q 128 72 188 88" fill="none" stroke="#f07830" stroke-width="4"/>
-    <path d="M 76 98 L 84 78 M 180 98 L 172 78" fill="none" stroke="#f5d547" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 52 112 Q 44 64 88 36 Q 128 16 168 36 Q 212 64 204 112 Q 210 88 192 56 Q 128 28 64 56 Q 46 88 52 112 Z" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 64 56 Q 128 32 192 56 L 180 40 Q 128 24 76 40 Z" fill="#f07830" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 80 36 L 92 14 L 108 38 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 120 22 L 132 6 L 144 28 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 152 36 L 168 12 L 182 42 Z" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 60 96 Q 128 76 196 96" fill="none" stroke="#f07830" stroke-width="4"/>
+    <path d="M 68 108 L 78 84 M 188 108 L 178 84" fill="none" stroke="#f5d547" stroke-width="2.5" stroke-linecap="round"/>
   </g>
 </svg>

@@ -5,7 +5,8 @@
 		"label": "Default Face",
 		"renderKey": "face-default",
 		"assetPath": "/portrait/face-default.svg",
-		"contentHash": "33e992cde524be5cd0926b839bd5f1054df04e74272b6e793cfd2b24dc0bda49"
+		"contentHash": "63ccc30c10ab7027be01db84c3e633ee67c17bf79a82a8c9cc840c7b697df678",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 72 118 Q 68 92 88 72 Q 128 48 168 72 Q 188 92 184 118 Q 188 148 168 168 Q 128 188 88 168 Q 68 148 72 118 Z\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 88 148 Q 128 176 168 148 L 164 168 Q 128 182 92 168 Z\" fill=\"#c87848\" stroke=\"none\"/>\n    <path d=\"M 100 168 L 128 188 L 156 168 L 152 198 L 104 198 Z\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 96 108 Q 128 100 160 108\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>\n    <ellipse cx=\"104\" cy=\"118\" rx=\"16\" ry=\"18\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"152\" cy=\"118\" rx=\"16\" ry=\"18\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"106\" cy=\"120\" rx=\"8\" ry=\"10\" fill=\"#1a0f0a\"/>\n    <ellipse cx=\"150\" cy=\"120\" rx=\"8\" ry=\"10\" fill=\"#1a0f0a\"/>\n    <circle cx=\"109\" cy=\"115\" r=\"4\" fill=\"#f8fafc\"/>\n    <circle cx=\"153\" cy=\"115\" r=\"4\" fill=\"#f8fafc\"/>\n    <path d=\"M 120 138 L 128 132 L 136 138\" fill=\"none\" stroke=\"#c87848\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <path d=\"M 108 152 Q 128 168 148 152\" fill=\"none\" stroke=\"#2d1810\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>\n    <path d=\"M 92 98 Q 104 88 116 96\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>\n    <path d=\"M 140 96 Q 152 88 164 98\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>\n    <ellipse cx=\"92\" cy=\"138\" rx=\"8\" ry=\"5\" fill=\"#f07830\" opacity=\"0.35\"/>\n    <ellipse cx=\"164\" cy=\"138\" rx=\"8\" ry=\"5\" fill=\"#f07830\" opacity=\"0.35\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_face_round",
@@ -13,7 +14,8 @@
 		"label": "Round Face",
 		"renderKey": "face-round",
 		"assetPath": "/portrait/face-round.svg",
-		"contentHash": "bb8b066a9242a1fb19be73a0276a63e8dc31b65485e041c0a1aab1d48f618d5a"
+		"contentHash": "bb8b066a9242a1fb19be73a0276a63e8dc31b65485e041c0a1aab1d48f618d5a",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <ellipse cx=\"128\" cy=\"118\" rx=\"58\" ry=\"64\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 90 152 Q 128 180 166 152 Q 158 172 128 178 Q 98 172 90 152 Z\" fill=\"#c87848\" stroke=\"none\"/>\n    <ellipse cx=\"74\" cy=\"122\" rx=\"14\" ry=\"20\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <ellipse cx=\"182\" cy=\"122\" rx=\"14\" ry=\"20\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 104 172 Q 128 192 152 172 L 148 198 L 108 198 Z\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 94 106 Q 128 98 162 106\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <ellipse cx=\"102\" cy=\"118\" rx=\"18\" ry=\"20\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"154\" cy=\"118\" rx=\"18\" ry=\"20\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"104\" cy=\"122\" rx=\"9\" ry=\"11\" fill=\"#1a0f0a\"/>\n    <ellipse cx=\"152\" cy=\"122\" rx=\"9\" ry=\"11\" fill=\"#1a0f0a\"/>\n    <circle cx=\"108\" cy=\"116\" r=\"5\" fill=\"#f8fafc\"/>\n    <circle cx=\"156\" cy=\"116\" r=\"5\" fill=\"#f8fafc\"/>\n    <ellipse cx=\"128\" cy=\"142\" rx=\"6\" ry=\"4\" fill=\"#c87848\" stroke=\"#2d1810\" stroke-width=\"2\"/>\n    <path d=\"M 104 158 Q 128 174 152 158\" fill=\"none\" stroke=\"#2d1810\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>\n    <path d=\"M 88 100 Q 100 92 110 100\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <path d=\"M 146 100 Q 158 92 168 100\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <ellipse cx=\"88\" cy=\"140\" rx=\"10\" ry=\"6\" fill=\"#f07830\" opacity=\"0.3\"/>\n    <ellipse cx=\"168\" cy=\"140\" rx=\"10\" ry=\"6\" fill=\"#f07830\" opacity=\"0.3\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_face_angular",
@@ -21,7 +23,8 @@
 		"label": "Angular Face",
 		"renderKey": "face-angular",
 		"assetPath": "/portrait/face-angular.svg",
-		"contentHash": "931231927c4a697a4719d1e4898be2687e981d75cd2a8f67d6b2136caa175947"
+		"contentHash": "931231927c4a697a4719d1e4898be2687e981d75cd2a8f67d6b2136caa175947",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 82 76 L 128 58 L 174 76 L 186 108 L 178 158 L 148 178 L 128 182 L 108 178 L 78 158 L 70 108 Z\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 96 152 L 128 172 L 160 152 L 156 172 L 100 172 Z\" fill=\"#c87848\" stroke=\"none\"/>\n    <path d=\"M 76 112 L 68 138 L 76 158\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 180 112 L 188 138 L 180 158\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 108 178 L 128 198 L 148 178 L 144 206 L 112 206 Z\" fill=\"#e8a070\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 94 102 L 118 94 L 138 94 L 162 102\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"square\"/>\n    <ellipse cx=\"102\" cy=\"118\" rx=\"14\" ry=\"16\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"154\" cy=\"118\" rx=\"14\" ry=\"16\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <ellipse cx=\"104\" cy=\"120\" rx=\"7\" ry=\"9\" fill=\"#1a0f0a\"/>\n    <ellipse cx=\"152\" cy=\"120\" rx=\"7\" ry=\"9\" fill=\"#1a0f0a\"/>\n    <circle cx=\"107\" cy=\"114\" r=\"3.5\" fill=\"#f8fafc\"/>\n    <circle cx=\"155\" cy=\"114\" r=\"3.5\" fill=\"#f8fafc\"/>\n    <path d=\"M 124 136 L 128 128 L 132 136\" fill=\"none\" stroke=\"#c87848\" stroke-width=\"2.5\" stroke-linecap=\"square\"/>\n    <path d=\"M 112 154 L 128 160 L 144 154\" fill=\"none\" stroke=\"#2d1810\" stroke-width=\"3.5\" stroke-linecap=\"square\"/>\n    <path d=\"M 90 96 L 104 88\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"square\"/>\n    <path d=\"M 152 88 L 166 96\" fill=\"none\" stroke=\"#3d2314\" stroke-width=\"3.5\" stroke-linecap=\"square\"/>\n    <path d=\"M 108 142 L 128 148 L 148 142\" fill=\"none\" stroke=\"#c87848\" stroke-width=\"2\" opacity=\"0.6\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_hair_default",
@@ -29,7 +32,8 @@
 		"label": "Default Hair",
 		"renderKey": "hair-default",
 		"assetPath": "/portrait/hair-default.svg",
-		"contentHash": "2c82f344d485f0486fce8b79bb2cde46fd08d7c72f626259cc94498d3bcd5ac2"
+		"contentHash": "8a669dcc04e6890852c33cd2da17018620c1fdfaf9635102d8b2b40ba7906d38",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 52 112 Q 44 64 88 36 Q 128 16 168 36 Q 212 64 204 112 Q 210 88 192 56 Q 128 28 64 56 Q 46 88 52 112 Z\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 64 56 Q 128 32 192 56 L 180 40 Q 128 24 76 40 Z\" fill=\"#f07830\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 80 36 L 92 14 L 108 38 Z\" fill=\"#f5a830\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 120 22 L 132 6 L 144 28 Z\" fill=\"#f5a830\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 152 36 L 168 12 L 182 42 Z\" fill=\"#f5a830\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 60 96 Q 128 76 196 96\" fill=\"none\" stroke=\"#f07830\" stroke-width=\"4\"/>\n    <path d=\"M 68 108 L 78 84 M 188 108 L 178 84\" fill=\"none\" stroke=\"#f5d547\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_hair_crop",
@@ -37,7 +41,8 @@
 		"label": "Crop Cut",
 		"renderKey": "hair-crop",
 		"assetPath": "/portrait/hair-crop.svg",
-		"contentHash": "0421c8798050dcb256085f8c41c2a13932383ed3e4c4e928a5be9f5653d333aa"
+		"contentHash": "2676d945cee9b4e784191df9e2b9f4e2e364eb4f6cda99e4fbfd38f38efe6c3f",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 64 100 Q 56 56 96 38 Q 128 26 160 38 Q 200 56 192 100 Q 198 76 182 48 Q 128 32 74 48 Q 58 76 64 100 Z\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 74 48 Q 128 34 182 48 L 172 38 Q 128 26 84 38 Z\" fill=\"#2d1810\" stroke=\"none\"/>\n    <rect x=\"66\" y=\"82\" width=\"124\" height=\"16\" rx=\"8\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 78 98 L 88 72 M 178 98 L 168 72\" fill=\"none\" stroke=\"#f07830\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <path d=\"M 92 38 L 102 22 L 112 40 M 144 40 L 154 22 L 164 38\" fill=\"none\" stroke=\"#f5a830\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_hair_long",
@@ -45,7 +50,8 @@
 		"label": "Long Hair",
 		"renderKey": "hair-long",
 		"assetPath": "/portrait/hair-long.svg",
-		"contentHash": "834689d26ef01dcd9fc04d392a8f4c9f73b5190bc9f6425741ccac9614db9be9"
+		"contentHash": "4f838adf85183edeaa79ab52970f87e8930e41c43e72719ca485091a8abce0bf",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 48 116 Q 36 60 84 32 Q 128 12 172 32 Q 220 60 208 116 Q 216 92 196 58 Q 128 28 60 58 Q 40 92 48 116 Z\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 60 58 Q 128 36 196 58\" fill=\"none\" stroke=\"#f07830\" stroke-width=\"4\"/>\n    <path d=\"M 48 116 Q 40 156 52 188 Q 64 176 58 142\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 208 116 Q 216 156 204 188 Q 192 176 198 142\" fill=\"#3d2314\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 168 112 Q 186 148 178 184 L 168 168 Q 178 134 164 112 Z\" fill=\"#2d1810\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 88 112 Q 70 148 78 184 L 88 168 Q 78 134 92 112 Z\" fill=\"#2d1810\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 112 32 L 128 10 L 144 32\" fill=\"#f5a830\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 84 42 L 96 22 L 108 44 M 148 44 L 160 22 L 172 42\" fill=\"none\" stroke=\"#f07830\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_kit_default",
@@ -53,7 +59,8 @@
 		"label": "Default Kit",
 		"renderKey": "kit-default",
 		"assetPath": "/portrait/kit-default.svg",
-		"contentHash": "133e3d6bd43099cf6ac3fe0791fe6e05fbcf0e35894c264021bbb41e3a16cf91"
+		"contentHash": "133e3d6bd43099cf6ac3fe0791fe6e05fbcf0e35894c264021bbb41e3a16cf91",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 24 168 L 52 148 L 128 162 L 204 148 L 232 168 L 232 256 L 24 256 Z\" fill=\"#1a2744\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 52 148 L 128 162 L 204 148 L 192 178 L 128 188 L 64 178 Z\" fill=\"#0f1828\" stroke=\"none\"/>\n    <path d=\"M 88 148 L 128 156 L 168 148 L 168 198 L 128 206 L 88 198 Z\" fill=\"#243a5c\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 108 156 L 128 160 L 148 156 L 148 188 L 128 192 L 108 188 Z\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <text x=\"128\" y=\"184\" text-anchor=\"middle\" font-family=\"Arial Black, sans-serif\" font-size=\"28\" font-weight=\"900\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"1.5\" paint-order=\"stroke\">15</text>\n    <path d=\"M 76 148 Q 128 138 180 148\" fill=\"none\" stroke=\"#d4a017\" stroke-width=\"4\"/>\n    <path d=\"M 64 168 L 64 210 M 192 168 L 192 210\" fill=\"none\" stroke=\"#d4a017\" stroke-width=\"3\"/>\n    <ellipse cx=\"128\" cy=\"152\" rx=\"22\" ry=\"8\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_kit_home",
@@ -61,7 +68,8 @@
 		"label": "Home Kit",
 		"renderKey": "kit-home",
 		"assetPath": "/portrait/kit-home.svg",
-		"contentHash": "aed94dc7bfc44380a1358725d66d16f4674c24c75570a42f7bfd38e4963ce72d"
+		"contentHash": "aed94dc7bfc44380a1358725d66d16f4674c24c75570a42f7bfd38e4963ce72d",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 22 166 L 50 146 L 128 160 L 206 146 L 234 166 L 234 256 L 22 256 Z\" fill=\"#1a2744\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 50 146 L 128 160 L 206 146 L 194 176 L 128 186 L 62 176 Z\" fill=\"#0f1828\" stroke=\"none\"/>\n    <path d=\"M 86 146 L 128 154 L 170 146 L 170 196 L 128 204 L 86 196 Z\" fill=\"#1e3a5f\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 106 154 L 128 158 L 150 154 L 150 186 L 128 190 L 106 186 Z\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <text x=\"128\" y=\"182\" text-anchor=\"middle\" font-family=\"Arial Black, sans-serif\" font-size=\"28\" font-weight=\"900\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"1.5\" paint-order=\"stroke\">15</text>\n    <path d=\"M 74 146 Q 128 134 182 146\" fill=\"none\" stroke=\"#d4a017\" stroke-width=\"5\"/>\n    <path d=\"M 58 166 L 58 214 M 198 166 L 198 214\" fill=\"none\" stroke=\"#d4a017\" stroke-width=\"3.5\"/>\n    <path d=\"M 92 146 L 164 146 L 160 158 L 96 158 Z\" fill=\"#d4a017\" stroke=\"#2d1810\" stroke-width=\"2.5\" opacity=\"0.95\"/>\n    <ellipse cx=\"128\" cy=\"150\" rx=\"24\" ry=\"9\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 118 148 L 128 142 L 138 148 L 136 156 L 120 156 Z\" fill=\"#f07830\" stroke=\"#2d1810\" stroke-width=\"2\"/>\n  </g>"
 	},
 	{
 		"id": "portrait_kit_away",
@@ -69,6 +77,7 @@
 		"label": "Away Kit",
 		"renderKey": "kit-away",
 		"assetPath": "/portrait/kit-away.svg",
-		"contentHash": "b84fea544304d653274424c274c8c5de885cdef8ffc1be25df17c55ca8d1adf0"
+		"contentHash": "b84fea544304d653274424c274c8c5de885cdef8ffc1be25df17c55ca8d1adf0",
+		"svgInner": "<g fill-rule=\"evenodd\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n    <path d=\"M 24 168 L 52 148 L 128 162 L 204 148 L 232 168 L 232 256 L 24 256 Z\" fill=\"#e8eef5\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 52 148 L 128 162 L 204 148 L 192 178 L 128 188 L 64 178 Z\" fill=\"#c5d0e0\" stroke=\"none\"/>\n    <path d=\"M 88 148 L 128 156 L 168 148 L 168 198 L 128 206 L 88 198 Z\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"3.5\"/>\n    <path d=\"M 40 168 L 216 168 L 210 200 L 46 200 Z\" fill=\"#1a2744\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <path d=\"M 108 156 L 128 160 L 148 156 L 148 188 L 128 192 L 108 188 Z\" fill=\"#1a2744\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n    <text x=\"128\" y=\"184\" text-anchor=\"middle\" font-family=\"Arial Black, sans-serif\" font-size=\"28\" font-weight=\"900\" fill=\"#f8fafc\" stroke=\"#2d1810\" stroke-width=\"1.5\" paint-order=\"stroke\">15</text>\n    <path d=\"M 76 148 Q 128 138 180 148\" fill=\"none\" stroke=\"#1a2744\" stroke-width=\"4\"/>\n    <path d=\"M 64 168 L 64 210 M 192 168 L 192 210\" fill=\"none\" stroke=\"#1a2744\" stroke-width=\"3\"/>\n    <ellipse cx=\"128\" cy=\"152\" rx=\"22\" ry=\"8\" fill=\"#1a2744\" stroke=\"#2d1810\" stroke-width=\"3\"/>\n  </g>"
 	}
 ]

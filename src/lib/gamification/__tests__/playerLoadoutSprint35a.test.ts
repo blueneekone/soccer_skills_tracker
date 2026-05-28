@@ -92,10 +92,12 @@ describe('Sprint 3.5a — layered SVG renderer', () => {
 		expect(svg).toMatch(/<svg[^>]*viewBox="0 0 128 128"/);
 	});
 
-	it('renderPortraitPartLayer references /portrait/ asset path', () => {
+	it('renderPortraitPartLayer inlines catalog SVG with asset trace (no external image href)', () => {
 		const layer = renderPortraitPartLayer('portrait_face_default', 96);
-		expect(layer).toMatch(/\/portrait\/face-default\.svg/);
+		expect(layer).toMatch(/data-portrait-asset="\/portrait\/face-default\.svg"/);
 		expect(layer).toMatch(/data-portrait-layer="face"/);
+		expect(layer).toMatch(/<path\b|<ellipse\b/);
+		expect(layer).not.toMatch(/<image\b/);
 	});
 
 	it('renderOperativeAvatarSvg(v1 seed object) upgrades to deterministic v2 layered SVG', () => {

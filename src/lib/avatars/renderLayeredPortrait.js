@@ -10,8 +10,11 @@ import {
 /** Fixed bottom-to-top layer order for character silhouette stack. */
 const LAYER_ORDER = /** @type {const} */ (['kit', 'face', 'hair']);
 
+/** Master art viewBox — all catalog SVGs export at 256×256. */
+const ART_VIEWBOX = 256;
+
 /**
- * @returns {Array<{ id: string; slot: PortraitPartSlot; label: string; renderKey: string; assetPath?: string; contentHash?: string }>}
+ * @returns {Array<{ id: string; slot: PortraitPartSlot; label: string; renderKey: string; assetPath?: string; contentHash?: string; svgInner?: string }>}
  */
 export function getPortraitPartCatalog() {
 	return portraitPartsManifest.map((row) => ({
@@ -21,10 +24,13 @@ export function getPortraitPartCatalog() {
 		renderKey: row.renderKey,
 		assetPath: row.assetPath,
 		contentHash: row.contentHash,
+		svgInner: row.svgInner,
 	}));
 }
 
 /**
+ * Inline catalog SVG part — avoids broken external <image href> when composed SVG is injected via {@html}.
+ *
  * @param {string | null | undefined} partId
  * @param {number} [size]
  * @returns {string}
@@ -32,14 +38,15 @@ export function getPortraitPartCatalog() {
 export function renderPortraitPartLayer(partId, size = 128) {
 	if (!partId) return '';
 	const entry = getPortraitPartCatalog().find((row) => row.id === partId);
-	if (!entry?.assetPath) return '';
+	if (!entry?.svgInner) return '';
 
 	const s = Math.max(1, Math.floor(Number(size) || 128));
-	const hash = typeof entry.contentHash === 'string' ? entry.contentHash.slice(0, 16) : '';
-	const href = hash ? `${entry.assetPath}?v=${hash}` : entry.assetPath;
 	const variant = entry.renderKey.replace(/[^a-z0-9-]/gi, '-');
+	const assetAttr = entry.assetPath ?
+		` data-portrait-asset="${entry.assetPath}"` :
+		'';
 
-	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"><image href="${href}" x="0" y="0" width="${s}" height="${s}" preserveAspectRatio="xMidYMid meet"/></g>`;
+	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"${assetAttr}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_VIEWBOX} ${ART_VIEWBOX}" width="${s}" height="${s}" preserveAspectRatio="xMidYMin meet" aria-hidden="true">${entry.svgInner}</svg></g>`;
 }
 
 /**

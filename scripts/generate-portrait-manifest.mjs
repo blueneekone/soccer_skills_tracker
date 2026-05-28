@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Walk static/portrait/ SVG assets, SHA-256 hash each file, emit portraitParts.manifest.json.
+ * Embeds svgInner (stripped inner markup) for inline compose — external <image href> breaks in {@html}.
  *
  * Usage: node scripts/generate-portrait-manifest.mjs
  */
@@ -26,6 +27,17 @@ function sha256File(filePath) {
 	return createHash('sha256').update(buf).digest('hex');
 }
 
+/** @param {string} filePath @returns {string} */
+function extractSvgInner(filePath) {
+	const raw = readFileSync(filePath, 'utf-8');
+	const match = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
+	if (!match?.[1]) {
+		console.error('[generate-portrait-manifest] Could not parse SVG inner markup:', filePath);
+		process.exit(1);
+	}
+	return match[1].trim();
+}
+
 function main() {
 	if (!existsSync(CONFIG_PATH)) {
 		console.error('[generate-portrait-manifest] Missing catalog.config.json at', CONFIG_PATH);
@@ -35,7 +47,7 @@ function main() {
 	/** @type {CatalogConfigRow[]} */
 	const config = JSON.parse(readFileSync(CONFIG_PATH, 'utf-8'));
 	const seenIds = new Set();
-	/** @type {Array<{ id: string; slot: string; label: string; renderKey: string; assetPath: string; contentHash: string }>} */
+	/** @type {Array<{ id: string; slot: string; label: string; renderKey: string; assetPath: string; contentHash: string; svgInner: string }>} */
 	const manifest = [];
 
 	for (const row of config) {
@@ -61,6 +73,7 @@ function main() {
 
 		const contentHash = sha256File(assetFile);
 		const assetPath = `/portrait/${row.file}`;
+		const svgInner = extractSvgInner(assetFile);
 
 		manifest.push({
 			id: row.id,
@@ -69,6 +82,7 @@ function main() {
 			renderKey: row.renderKey,
 			assetPath,
 			contentHash,
+			svgInner,
 		});
 	}
 

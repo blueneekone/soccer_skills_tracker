@@ -140,8 +140,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		overflow: hidden;
-		border-radius: 24px;
+		overflow: visible;
 	}
 
 	.hud-avatar-ring__portrait {
@@ -150,15 +149,24 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		overflow: hidden;
-		border-radius: 24px;
+		overflow: visible;
 	}
 
-	.hud-avatar-ring__portrait :global(svg) {
+	.hud-avatar-ring__portrait :global(svg.layered-portrait) {
 		display: block;
 		width: 100%;
 		height: 100%;
-		border-radius: 24px;
+		overflow: visible;
+	}
+
+	/* Bust circle clips kit+face only; hair bleeds above crown (3.5g-g SIR / 3.5i-fix) */
+	.hud-avatar-ring__portrait :global([data-portrait-layer='kit']),
+	.hud-avatar-ring__portrait :global([data-portrait-layer='face']) {
+		clip-path: circle(46% at 50% 44%);
+	}
+
+	.hud-avatar-ring__portrait :global([data-portrait-layer='hair']) {
+		clip-path: none;
 	}
 
 	.hud-avatar-ring__loadout-border {

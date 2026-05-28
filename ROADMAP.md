@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-27  
-**Current sprint:** **3.5h Done** (Bauhaus v1 retirement) · **Next: 3.5i-fix** age-band · **3.5j-a Done** · **3.5j-b Done** (`syncOperativeIdentity` + Armory read-repair) · **3.5g-b Done** (`resolveClubDisplayName` + recruit `clubName`) · **3.5g-g Done** · **3.5g-f Done** · **3.5g-vision Done** · **3.5f Done**  
+**Current sprint:** **3.5i-fix Done** (hair visibility + face-default art) · **Next: 3.5i-a** age-band catalog · **3.5h Done** · **3.5j-a Done** · **3.5j-b Done** (`syncOperativeIdentity` + Armory read-repair) · **3.5g-b Done** · **3.5g-g Done** · **3.5g-f Done** · **3.5f Done**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
@@ -1346,7 +1346,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.4 closed 2026-05-27** · **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5g-vision through 3.5g-b closed 2026-05-27** · **Sprint 3.5j-a/b closed 2026-05-27** · **Sprint 3.5h closed 2026-05-28.** **Next: 3.5i-fix** age-band. Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.4 closed 2026-05-27** · **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5g-vision through 3.5g-b closed 2026-05-27** · **Sprint 3.5j-a/b closed 2026-05-27** · **Sprint 3.5h closed 2026-05-28** · **Sprint 3.5i-fix closed 2026-05-28.** **Next: 3.5i-a** age-band catalog. Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1399,8 +1399,9 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5j-b** | **Done** | Armory read-repair hydrate parity with HQ; sync merges `ownedPortraitParts` when changed | `playerLoadoutSprint35j.test.ts` |
 | **3.5j** | **Done** | Identity Studio cohesion umbrella (3.5j-a + 3.5j-b) | `playerLoadoutSprint35j.test.ts` |
 | 3.5h | **Done** | Bauhaus v1 generator retirement — v2-only render + server recruit upgrade | `playerLoadoutSprint35h.test.ts` |
-| **3.5i-fix** | Planned (next code) | Age-band catalog + `bodyScale` follow-up |
-| **3.5i** | Planned | Age-band catalog + `bodyScale` |
+| 3.5i-fix | **Done** | Hair visibility + face-default art pass — inline SVG compose, SIR crown bleed | [`s35ifix-manifest.json`](docs/vision/va-screenshots/s35ifix-manifest.json), `playerLoadoutSprint35iFix.test.ts` |
+| 3.5i-a | Planned (next code) | Age-band catalog + `bodyScale` schema |
+| 3.5i | Planned | Age-band catalog + `bodyScale` |
 | **3.5i-pose** | Planned | `portrait_pose_*` catalog + Studio pose tab |
 | **3.5k** | Future | Collectible metadata — set #, rarity, card back, flavor text |
 

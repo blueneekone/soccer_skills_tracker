@@ -97,6 +97,19 @@
 		pointer-events: none;
 	}
 
+	.olp-portrait {
+		overflow: visible;
+	}
+
+	.olp-portrait :global([data-portrait-layer='kit']),
+	.olp-portrait :global([data-portrait-layer='face']) {
+		clip-path: circle(46% at 50% 44%);
+	}
+
+	.olp-portrait :global([data-portrait-layer='hair']) {
+		clip-path: none;
+	}
+
 	.olp-banner {
 		inset: auto 0 0 0;
 		height: 38%;
@@ -116,7 +129,7 @@
 		display: block;
 		width: 100%;
 		height: 100%;
-		border-radius: 9999px;
+		overflow: visible;
 	}
 
 	.olp-border :global(svg),

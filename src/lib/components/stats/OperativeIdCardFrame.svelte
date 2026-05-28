@@ -283,10 +283,20 @@
 		justify-content: center;
 		width: 100%;
 		height: 100%;
-		overflow: hidden;
+		overflow: visible;
 		border-radius: 9999px;
 		border: 2px solid var(--pd-accent-data, #14b8a6);
 		background: #1e293b;
+	}
+
+	/* Bust circle on kit+face; hair crown bleed per 3.5g-g SIR safe zone */
+	.oicf-portrait :global([data-portrait-layer='kit']),
+	.oicf-portrait :global([data-portrait-layer='face']) {
+		clip-path: circle(46% at 50% 44%);
+	}
+
+	.oicf-portrait :global([data-portrait-layer='hair']) {
+		clip-path: none;
 	}
 
 	.oicf-loadout-border {
@@ -366,7 +376,7 @@
 		display: block;
 		width: 100%;
 		height: 100%;
-		border-radius: 9999px;
+		overflow: visible;
 		object-fit: cover;
 		object-position: center 35%;
 	}
