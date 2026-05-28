@@ -73,4 +73,16 @@ describe('cloudRunCostGuard', () => {
         'ALPHA_CALLABLE_OPTS must set minInstances: 0',
     );
   });
+
+  it('rlOps REGION is us-east1 (aligned with firebase.json hosting rewrites)', () => {
+    const rlOps = fs.readFileSync(
+        path.join(FUNCTIONS_ROOT, 'rlOps.js'),
+        'utf8',
+    );
+    assert.match(
+        rlOps,
+        /const REGION = 'us-east1'/,
+        'rlOps.js REGION must be us-east1',
+    );
+  });
 });

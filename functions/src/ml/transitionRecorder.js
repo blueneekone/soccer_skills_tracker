@@ -28,7 +28,7 @@ const {onDocumentCreated} = require('firebase-functions/v2/firestore');
 const admin = require('firebase-admin');
 const {buildStateVector} = require('./featureBuilder');
 
-const REGION = 'us-central1';
+const REGION = 'us-east1';
 
 /** @returns {import('firebase-admin').firestore.Firestore} */
 const db = () => admin.firestore();

@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "soccer-skills-tracker"
+    "default": "sports-skill-tracker-dev",
+    "prod-legacy": "soccer-skills-tracker"
   }
 }
