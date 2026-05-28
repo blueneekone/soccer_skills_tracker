@@ -71,6 +71,7 @@ const {getAdminDb, getRegistryDb} = require('./cellRouter');
 // Wraps each handler dispatch in egressContext.run() so that teen-tainted
 // requests from any route handler cannot exfiltrate data to ad-tech hosts.
 const {egressContext} = require('./egressGuard');
+const {ALPHA_HTTP_OPTS} = require('./src/utils/alphaRunOptions');
 
 const REGION = 'us-east1';
 
@@ -415,7 +416,7 @@ async function takeRateToken(scope, id, cap) {
  * header intact.
  */
 exports.apiGateway = onRequest(
-    {region: REGION, cors: false},
+    {region: REGION, ...ALPHA_HTTP_OPTS},
     async (req, res) => {
       const start = Date.now();
       try {

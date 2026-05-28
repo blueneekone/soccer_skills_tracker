@@ -57,7 +57,7 @@ Super-Admin ──► /admin/rl-policy
 | Signals | Subjective + behavioral only (RPE, soreness, sleep, mood, adherence) |
 | Algorithm | Double DQN + prioritized experience replay (TF.js) |
 | Training | Nightly Cloud Function (04:00 UTC, `us-east1`, 2GiB, 540s timeout) |
-| Inference | Server-only, `getAdaptiveWorkoutPolicy` onCall, min instances 1 |
+| Inference | Server-only, `getAdaptiveWorkoutPolicy` onCall, `minInstances: 0` (alpha scale-to-zero) |
 | Safety | Hard constraint layer — age-band caps, overtraining override, re-onboarding |
 | Rollout | `rl_policy_state/current.abPercent` (0–100); `frozen: true` = full kill-switch |
 | PII | State vector is pure numerics only. No name, email, DOB, location |

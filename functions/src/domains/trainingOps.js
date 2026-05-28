@@ -48,6 +48,7 @@ const {
   lastActivityToUtcYmd,
   utcWeekMondayKey,
 } = require('../utils/formatters');
+const {ALPHA_CALLABLE_OPTS} = require('../utils/alphaRunOptions');
 
 const REGION = 'us-east1';
 
@@ -1698,6 +1699,7 @@ exports.analyzeTacticWithAI = onCall(
     {
       region: REGION,
       secrets: [GEMINI_API_KEY],
+      ...ALPHA_CALLABLE_OPTS,
     },
     async (request) => {
       const actor = assertCoachMessageSender(request);

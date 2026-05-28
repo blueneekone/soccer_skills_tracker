@@ -15,6 +15,7 @@
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const {ALPHA_CALLABLE_OPTS} = require('./src/utils/alphaRunOptions');
 
 const REGION = 'us-central1';
 
@@ -115,7 +116,9 @@ const {PolicyModel} = require('./src/ml/policyModel');
  * Input: { force?: boolean }
  * Result: { policyVersion, gcsPath }
  */
-exports.initRlPolicy = onCall({region: REGION, timeoutSeconds: 120, memory: '1GiB'}, async (request) => {
+exports.initRlPolicy = onCall(
+    {region: REGION, timeoutSeconds: 120, memory: '1GiB', ...ALPHA_CALLABLE_OPTS},
+    async (request) => {
   assertSuper(request);
   const force = Boolean(request.data?.force);
 
@@ -223,7 +226,7 @@ function bucketToRpe(intensityBucket) {
  * post-Alpha if cold-start latency becomes user-visible.
  */
 exports.getAdaptiveWorkoutPolicy = onCall(
-    {region: REGION, memory: '512MiB'},
+    {region: REGION, memory: '512MiB', ...ALPHA_CALLABLE_OPTS},
     async (request) => {
       if (!request.auth?.uid) {
         throw new HttpsError('unauthenticated', 'Sign in required.');

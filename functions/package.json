@@ -3,6 +3,7 @@
   "description": "Cloud Functions for Firebase",
   "scripts": {
     "build:grit": "npx tsc -p tsconfig.grit.json",
+    "test": "node --test",
     "test:grit": "npm run build:grit && node src/__tests__/grit.test.js",
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
