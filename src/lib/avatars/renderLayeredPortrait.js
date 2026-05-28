@@ -8,8 +8,8 @@ import {
 /** @typedef {import('./portraitV2Schema.js').PortraitPartSlot} PortraitPartSlot */
 /** @typedef {import('./portraitV2Schema.js').OperativePortraitV2} OperativePortraitV2 */
 
-/** Fixed bottom-to-top layer order for character silhouette stack. */
-const LAYER_ORDER = /** @type {const} */ (['kit', 'face', 'hair']);
+/** Fixed bottom-to-top layer order for character silhouette stack (kit → face → hair). */
+export const LAYER_ORDER = /** @type {const} */ (['kit', 'face', 'hair']);
 
 /** Master art viewBox — all catalog SVGs export at 256×256. */
 const ART_VIEWBOX = 256;
@@ -33,7 +33,8 @@ export function getPortraitPartCatalog() {
 }
 
 /**
- * Inline catalog SVG part — avoids broken external <image href> when composed SVG is injected via {@html}.
+ * Inline catalog SVG fragment at master viewBox — no nested {@code <svg>} (default overflow:hidden
+ * clips hair crown) and no external {@code <image href>} (breaks in {@html} injection).
  *
  * @param {string | null | undefined} partId
  * @param {number} [size]
@@ -45,12 +46,13 @@ export function renderPortraitPartLayer(partId, size = 128) {
 	if (!entry?.svgInner) return '';
 
 	const s = Math.max(1, Math.floor(Number(size) || 128));
+	const scale = s / ART_VIEWBOX;
 	const variant = entry.renderKey.replace(/[^a-z0-9-]/gi, '-');
 	const assetAttr = entry.assetPath ?
 		` data-portrait-asset="${entry.assetPath}"` :
 		'';
 
-	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"${assetAttr}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_VIEWBOX} ${ART_VIEWBOX}" width="${s}" height="${s}" preserveAspectRatio="xMidYMin meet" aria-hidden="true">${entry.svgInner}</svg></g>`;
+	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"${assetAttr} transform="scale(${scale})">${entry.svgInner}</g>`;
 }
 
 /**
@@ -93,5 +95,5 @@ export function renderLayeredPortraitSvg(portrait, size = 128, ownedIds = undefi
 		.filter(Boolean)
 		.join('\n\t');
 
-	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" class="layered-portrait" data-portrait-version="2" aria-hidden="true">\n\t${layers}\n</svg>`;
+	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" overflow="visible" preserveAspectRatio="xMidYMin meet" class="layered-portrait" data-portrait-version="2" aria-hidden="true">\n\t${layers}\n</svg>`;
 }

@@ -321,6 +321,11 @@
 
 	.oicf-portrait :global([data-portrait-layer='hair']) {
 		clip-path: none;
+		overflow: visible;
+	}
+
+	.oicf-portrait :global(svg.layered-portrait) {
+		overflow: visible;
 	}
 
 	.oicf-loadout-border {

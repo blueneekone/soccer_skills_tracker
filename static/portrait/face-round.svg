@@ -2,8 +2,6 @@
   <g fill-rule="evenodd" stroke-linejoin="round" stroke-linecap="round">
     <ellipse cx="128" cy="118" rx="58" ry="64" fill="#e8a070" stroke="#2d1810" stroke-width="3.5"/>
     <path d="M 90 152 Q 128 180 166 152 Q 158 172 128 178 Q 98 172 90 152 Z" fill="#c87848" stroke="none"/>
-    <ellipse cx="74" cy="122" rx="14" ry="20" fill="#e8a070" stroke="#2d1810" stroke-width="3.5"/>
-    <ellipse cx="182" cy="122" rx="14" ry="20" fill="#e8a070" stroke="#2d1810" stroke-width="3.5"/>
     <path d="M 104 172 Q 128 192 152 172 L 148 198 L 108 198 Z" fill="#e8a070" stroke="#2d1810" stroke-width="3.5"/>
     <path d="M 94 106 Q 128 98 162 106" fill="none" stroke="#3d2314" stroke-width="3" stroke-linecap="round"/>
     <ellipse cx="102" cy="118" rx="18" ry="20" fill="#f8fafc" stroke="#2d1810" stroke-width="3"/>

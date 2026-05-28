@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-22  
-**Current sprint:** **3.5k In progress** (collectible metadata · cloud) · **3.5h Done** · **Phase 2 next: 3.5l-a** compose fix → **3.5l-b** human cartoon art pass · **Epic 4.1 blocked** until **3.5l-gate** VA ☑ · **3.5j Done** · **3.5g-f Done**  
+**Current sprint:** **3.5l-a Done** (compose/clip fix) · **Phase 2 next: 3.5l-b** human cartoon art pass · **3.5k In progress** (cloud) · **Epic 4.1 blocked** until **3.5l-gate** VA ☑ · **3.5h Done** · **3.5j Done**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
@@ -1346,7 +1346,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **Phase 2 next: 3.5l-a** (portrait quality). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **3.5l-a Done** · **Phase 2 next: 3.5l-b** (human cartoon art pass). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1401,8 +1401,8 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5h** | **Done** | Bauhaus v1 generator retirement; v2-only render path | `playerLoadoutSprint35h.test.ts` |
 | **3.5k** | **In progress** | Collectible metadata — set #, rarity chip, card back, flavor text | `playerLoadoutSprint35k.test.ts`, [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json) |
 | **3.5i** | **Superseded** | Split into **3.5l-a–e** (portrait quality phase) | — |
-| **3.5l-a** | **Next** | Compose/clip fix — hair visibility, face-default ear ellipses, layer alignment | `playerLoadoutSprint35lA.test.ts` |
-| **3.5l-b** | Planned | Human cartoon art pass — matched bust redraw per PORTRAIT_ART_DIRECTION §1–§2.6 | `playerLoadoutSprint35lB.test.ts`, [`s35lb-manifest.json`](docs/vision/va-screenshots/s35lb-manifest.json) |
+| **3.5l-a** | **Done** | Compose/clip fix — hair visibility, face-default ear ellipses, layer alignment | `playerLoadoutSprint35lA.test.ts` |
+| **3.5l-b** | **Next** | Human cartoon art pass — matched bust redraw per PORTRAIT_ART_DIRECTION §1–§2.6 | `playerLoadoutSprint35lB.test.ts`, [`s35lb-manifest.json`](docs/vision/va-screenshots/s35lb-manifest.json) |
 | **3.5l-c** | Planned | Skin tone + teen presentation catalog rows + Studio filters | `playerLoadoutSprint35lC.test.ts` |
 | **3.5l-d** | Planned | `bodyScale` schema + `ageBand` read-repair defaults | `playerLoadoutSprint35lD.test.ts` |
 | **3.5l-e** | Planned | `portrait_pose_*` catalog + Studio pose tab | `playerLoadoutSprint35lE.test.ts` |
@@ -1424,7 +1424,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 **Deploy order (strict):**
 
-1. **3.5l-a** — technical compose (no art redraw)
+1. **3.5l-a** ✓ — technical compose (no art redraw)
 2. **3.5l-b** — matched-set SVG redraw (same 9 catalog ids) + npm run generate:portraits + hosting deploy
 3. **3.5l-c** → **3.5l-d** → **3.5l-e**
 4. **3.5l-gate** — regression + product owner human VA
