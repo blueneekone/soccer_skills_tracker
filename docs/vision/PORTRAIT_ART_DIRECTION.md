@@ -4,46 +4,60 @@
 
 > **Authority clause:** Every future portrait art sprint (3.5f+) must cite: **Authority: PORTRAIT_ART_DIRECTION.md**
 
+**§1 rewritten 2026-05-22** — human cartoon coherence; Phase 2 sprints **3.5l-***.
+
 ---
 
 ## 1. North star & references
 
-Operative portraits are **collectible 2D identity** inside the Player OS void — modular flat cartoon layers that read clearly at HQ ring scale (64–128px), earn trust through mastery tone (not random loot aesthetics), and stay COPPA-safe via catalog IDs only. The portrait is the operative's face in mission control: expressive, athletic, and unmistakably part of the Scintillation / Phoenix club family.
+Operative portraits are **collectible 2D identity** inside the Player OS void — modular flat cartoon layers that read as **one cohesive human** at HQ ring scale (64–128px), earn trust through mastery tone (not random loot aesthetics), and stay COPPA-safe via catalog IDs only. The portrait is the operative's face in mission control: expressive, athletic, and unmistakably part of the Scintillation / Phoenix club family — **as a person, not a mascot sticker stack**.
 
-### Primary reference — Phoenix club mascot
+### Primary reference — human cartoon bust
+
+**Tone anchor:** Mid-century cartoon human anatomy and cohesion — Fallout Vault Boy/Girl *tone* (anatomy, proportion discipline, readable bust crop) **without IP copy**. Classic cel animation and sports-anime bust framing (shoulders-up, forward-facing or slight 3/4).
+
+| Trait | Target read | Portrait application |
+|-------|-------------|----------------------|
+| **Cohesion** | One illustrator drew face, hair, and kit as a single person | Matched outline weight, shared neck/collar join, no floating modular stickers |
+| **Anatomy** | Human teen/adult cartoon head on shoulders | Neck meets collar; chin, eyes, hairline register to registration grid (§2) |
+| **Attitude** | Confident operative athlete — encouraging mastery energy | Faces default to encouraging confidence; no dystopian glare, no baby-chibi for teens |
+| **Eyes** | Large readable cartoon eyes at 88px | White sclera + dark pupil + single highlight dot — expressive, not semi-real |
+| **Line art era** | Old-school flat cel — one shadow tone, pre-3D | All catalog SVGs must look like one matched set |
+
+### Secondary reference — Phoenix palette only
 
 **Asset:** [`static/Images/Phoenixes_Logo_2026.png`](../../static/Images/Phoenixes_Logo_2026.png)
 
-The Phoenix mascot ("Sparky") anchors all portrait art:
+Phoenix club colors inform **fills and trim only** — not mascot proportions or flame-as-default-hair:
 
-| Trait | Mascot read | Portrait application |
-|-------|-------------|----------------------|
-| **Outline** | Bold, consistent dark brown/black stroke on every shape | Single outline family across face, hair, kit — same px weight at export |
-| **Attitude** | Confident operative athlete — wide smile, forward motion, mastery energy | Faces default to encouraging confidence; no dystopian glare, no baby-chibi for teens |
-| **Palette** | Warm fire (yellow/orange), navy kit blocks, white accents, gold spark trail | Kit and skin fills stay in Phoenix-adjacent warm/neutral range; gold sparingly (rank/milestone accents only) |
-| **Proportions** | Rubber-hose limbs, spherical flame head, athletic jersey `#15` | Teen band matches mascot balance; youth scales head up; adult/coach scales shoulders up |
-| **Line art era** | Old-school cartoon — flat fills, one shadow tone, pre-3D | All catalog SVGs must look like one illustrator drew them for the mascot |
+| Slot | Use | Reject |
+|------|-----|--------|
+| Navy kit blocks | Home/away jersey flat fills | Mascot spherical flame head proportions |
+| Warm skin tones | Flat teen/adult skin range | Phoenix-as-face; rubber-hose mascot limbs |
+| Gold trim | Rank/milestone accent sparingly | Full-kit gold; spark trail as default hair on `portrait_hair_default` |
 
-### Structural reference — pre-3D Bitmoji (structure only)
+### Modular pipeline — Bitmoji-era layer architecture only
 
-**Label:** Structure inspiration only — not brand copy, not Meta IP.
-
-Pre-3D Bitmoji (circa 2014–2017 flat era) informs **layer architecture**:
+Pre-3D Bitmoji (circa 2014–2017 flat era) informs **layer swap architecture** only:
 
 - Modular swaps: face shape, hair graphic, kit silhouette
 - Flat ink + bold outline readable at avatar size
-- Expressive eyes (pie-cut / oval cartoon, not realistic iris)
 - Outfit layer behind face; hair on top
+- **Every part must register to the registration grid** (§2 — Registration grid)
 
-We do **not** copy Meta Bitmoji proportions, UI chrome, or 3D shading language.
+We do **not** copy Meta Bitmoji proportions, UI chrome, 3D shading, or detached sticker aesthetics.
 
 ### Anti-references (reject on sight)
 
 | Lane | Why rejected |
 |------|--------------|
-| Post-3D Bitmoji / Meta 3D avatars | Plastic gradients, uncanny semi-real skin, wrong brand |
-| Bauhaus v1 geometric generator | Abstract shapes — not operative identity; retired in **3.5h** |
-| Emoji blobs / generic avatars | No club soul, no age spectrum |
+| Detached modular stickers | Face/hair/kit that do not compose as one person |
+| Phoenix mascot-as-face | Sparky flame head, mascot proportions on operative portrait |
+| Uncanny semi-real | Plastic gradients, realistic iris, photo-reference skin |
+| Side ear ellipses at eye height | `portrait_face_default` ear ovals floating beside eyes — fix in **3.5l-a** |
+| Post-3D Bitmoji / Meta 3D avatars | Wrong brand, wrong shading language |
+| Bauhaus v1 geometric generator | Abstract shapes — retired in **3.5h** |
+| Emoji blobs / generic avatars | No operative identity, no age spectrum |
 | 3D renders / photo upload | COPPA violation, biometric likeness risk |
 | Neon rainbow unrelated to brand | Breaks Player OS void palette discipline |
 
@@ -79,9 +93,35 @@ These rules apply to **every** catalog SVG at every age band. Deviations fail 3.
 
 ### Hair
 
-- **Graphic shapes** — flame points, crop silhouettes, long tail shapes
+- **Graphic shapes** — human cartoon crop silhouettes, long tail shapes, side-part blocks
 - **Not** realistic strand clumps, individual hair lines, or photo-reference curls
+- **Flame / mascot hair** = rare unlock catalog row only — **not** `portrait_hair_default`
 - Hair sits **above** face in stack; must not obscure both eyes below 128px
+
+### Registration grid (3.5l-b — mandatory)
+
+All face × hair × kit combos must align to this 256×256 master viewBox grid:
+
+| Landmark | Y range (px) | Rule |
+|----------|--------------|------|
+| Hairline | 48–72 | Hair base anchors here; no floating crown above grid |
+| Eye line | ~118 | Both eyes center on this line ±6px |
+| Collar | 148–152 | Kit collar meets neck; face jaw ends above |
+| Chin | ~168 | Face outline terminates; neck continues to collar |
+| Shoulders | ~178+ | Kit shoulder blocks extend below collar |
+
+**Combo rule:** Every face × hair × kit export passes §7 portrait stability gate before merge.
+
+### Human coherence (3.5l-b)
+
+| Test | Pass criteria |
+|------|---------------|
+| **One-person test** | Squint at 88px — reads as one cartoon human, not three pasted layers |
+| **Neck continuity** | Face jaw connects to neck shape; neck meets kit collar without gap |
+| **Default hair** | `portrait_hair_default` = human teen graphic hair — **not** phoenix flame |
+| **Ears** | Integrated into face shape **or** omitted — no side ellipses at eye height |
+| **Parent-safe** | Teen roster default passes COPPA tone (§4) |
+| **Upgrade-worthy** | Player would equip this over Bauhaus stub or grey placeholder |
 
 ### Player OS integration
 
@@ -319,18 +359,24 @@ When coach avatar ships:
 
 ---
 
-## 7. Acceptance checklist (3.5f MCP VA)
+## 7. Portrait stability gate (3.5l-gate)
 
-Use this gate when swapping SVG art in **3.5f**:
+Use this gate at **3.5l-gate** after Phase 2 sprints (**3.5l-a** through **3.5l-e**) and full `playerLoadoutSprint35*` regression:
 
-- [ ] Readable at **88px** HQ ring and **128px** Studio holo — eyes and kit block identifiable
+- [ ] **Human coherence** — one cohesive cartoon person at **88px** HQ ring and **128px** Studio holo (one-person squint test)
+- [ ] **Neck meets collar** — no floating head; jaw → neck → kit collar continuous
+- [ ] **Default hair not flame** — `portrait_hair_default` is human graphic hair; flame/mascot hair is rare unlock only
+- [ ] **No ear ellipses** — `portrait_face_default` has integrated ears or none; no side ovals at eye height
 - [ ] All layers **same outline weight** when stacked (kit + face + hair)
+- [ ] **Registration grid** — hairline, eyes, chin, collar, shoulders align per §2 Registration grid
 - [ ] Youth vs teen vs adult side-by-side still reads **one illustrator family**
-- [ ] Coach/staff kit variant reads **staff**, not player operative, on first glance
+- [ ] **Upgrade test** — player would equip over Bauhaus stub or grey placeholder
+- [ ] **Parent-safe** — teen roster default passes COPPA tone (§4); no dystopian/aggressive faces for minors
 - [ ] No Bauhaus geometric stub aesthetic; no placeholder grey boxes
 - [ ] No baked-in HUD ring, deck frame, or gold mission chrome inside SVG
-- [ ] Phoenix palette anchor visible (navy kit, warm skin/fire tones, bold outline)
+- [ ] Phoenix **palette** anchor visible (navy kit, warm skin tones, bold outline) — not mascot proportions
 - [ ] Transparent/void-safe background
+- [ ] Human VA on HQ, Studio, and recruit surfaces — product owner sign-off ☑
 
 ---
 
@@ -339,21 +385,26 @@ Use this gate when swapping SVG art in **3.5f**:
 | Sprint | Deliverable |
 |--------|-------------|
 | **3.5e** ✓ | This document — art authority lock |
-| **3.5f** ✓ | Starter catalog **SVG art swap** under existing 9 ids |
+| **3.5f** ✓ | Starter catalog **SVG art swap** under existing 9 ids — **visual superseded by 3.5l-b** |
 | **3.5g-vision** ✓ | [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md) — TCG zone authority (card layout; portrait safe zones in this doc § Card presentation) |
 | **3.5g-d / 3.5g-e** | **Superseded** by **3.5g-f** frame (arc/level stamp experiments folded in) |
-| **3.5g-f** | `OperativeIdCardFrame` — Z1–Z4; level top-right; same grammar on holo + `ProPlayerCard` |
-| **3.5g-g** | Art well SIR proportions, banner watermark, optional arc flourish |
-| **3.5g-b** | Club resolver + recruit `clubName` (after frame) |
-| **3.5h** | Bauhaus v1 generator retirement |
-| **3.5i** | Age-band catalog rows, coach kit, skin tones, `bodyScale` schema |
-| **3.5i-pose** | `portrait_pose_*` catalog + Studio pose tab |
-| **3.5j** | Identity Studio cohesion — SYNC IDENTITY + unified picker |
-| **3.5k** | Collectible metadata — set #, rarity, card back, flavor text |
+| **3.5g-f** ✓ | `OperativeIdCardFrame` — Z1–Z4; level top-right; same grammar on holo + `ProPlayerCard` |
+| **3.5g-g** ✓ | Art well SIR proportions, banner watermark, optional arc flourish |
+| **3.5g-b** ✓ | Club resolver + recruit `clubName` |
+| **3.5h** ✓ | Bauhaus v1 generator retirement |
+| **3.5k** | **In progress** — collectible metadata — set #, rarity, card back, flavor text |
+| **3.5i** | **Superseded** → split into **3.5l-a** through **3.5l-gate** (portrait quality Phase 2) |
+| **3.5l-a** | Compose/clip fix — hair visibility, ear ellipses, layer alignment |
+| **3.5l-b** | Human cartoon art pass — matched bust redraw (same 9 catalog ids) |
+| **3.5l-c** | Skin tone + teen presentation catalog rows + Studio filters |
+| **3.5l-d** | `bodyScale` schema + `ageBand` read-repair defaults |
+| **3.5l-e** | `portrait_pose_*` catalog + Studio pose tab |
+| **3.5l-gate** | Portrait stability gate — full regression + human VA (§7) |
+| **3.5j** ✓ | Identity Studio cohesion — SYNC IDENTITY + unified picker |
 
-**3.5f Agent prompt template:**
+**3.5l-b Agent prompt template:**
 
-> Implement SVG portrait parts strictly per **Authority: PORTRAIT_ART_DIRECTION.md**. Replace art under existing 3.5b catalog ids only. Attach Phoenix mascot reference. Pass §7 acceptance checklist.
+> Implement matched-set SVG portrait parts strictly per **Authority: PORTRAIT_ART_DIRECTION.md §1–§2.6** and **§7**. Replace art under existing 3.5b catalog ids only (same 9 ids). Human cartoon bust — one cohesive person, not mascot flame default hair. Run `npm run generate:portraits`. Pass §7 portrait stability gate checklist.
 
 ---
 

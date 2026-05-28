@@ -1,8 +1,8 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-27  
-**Current sprint:** **3.5k Done** (collectible ID card metadata) · Epic 3.5 portrait/card track **Season 1 MVP complete** · **3.5i-b Done** · **3.5i-a Done** · **3.5i-fix Done** · **3.5h Done** · **3.5j-a/b Done**  
+**Last updated:** 2026-05-22  
+**Current sprint:** **3.5k In progress** (collectible metadata · cloud) · **3.5h Done** · **Phase 2 next: 3.5l-a** compose fix → **3.5l-b** human cartoon art pass · **Epic 4.1 blocked** until **3.5l-gate** VA ☑ · **3.5j Done** · **3.5g-f Done**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
@@ -129,7 +129,7 @@ Runs parallel-safe with **Wave E (Armory)** when file lists do not overlap.
 
 ## Delivery gate (Player OS cinematic premium)
 
-- **Unblocked after 2.20 Done + G10 sign-off:** Epic 3.4+, Epic 4.1+ **implementation** (shipping still requires Tier A primitive parity sign-off in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md))
+- **Unblocked after 2.20 Done + G10 sign-off:** Epic 3.4+ **implementation** (shipping still requires Tier A primitive parity sign-off in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md)); Epic **4.1+ blocked until 3.5l-gate** portrait VA ☑
 - **Allowed parallel:** Epic 3.0–3.3 (Done), Epic 4.0 docs, unrelated bugfixes
 - **North star:** Player OS must pass cinematic material/spatial acceptance (see [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md) + [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md)) before comms or album bonuses
 - **Retcon:** Sprint 2.15 shipped motion + checklist; visual review found Tier A/Tier B split — gate re-closed for Epic 3.4 / 4.1
@@ -517,7 +517,7 @@ npm run build
 
 **Tests:** `playerHudSprint219.test.ts`
 
-**Gate lift:** Epic 3.4+ and Epic 4.1+ **unblocked** after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though gate is open from 2.19.
+**Gate lift:** Epic 3.4+ **unblocked** after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off. Epic **4.1+ blocked until 3.5l-gate** portrait VA ☑. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19.
 
 **Verify:**
 
@@ -1346,7 +1346,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5h closed 2026-05-28** · **Sprint 3.5i-fix closed 2026-05-28** · **Sprint 3.5i-a closed 2026-05-28** · **Sprint 3.5i-b closed 2026-05-28** · **Sprint 3.5k closed 2026-05-28.** Epic 3.5 portrait/card track **Season 1 MVP complete.** Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **Phase 2 next: 3.5l-a** (portrait quality). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1364,7 +1364,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 | 3.5c | **Done** | Armory Studio v2 — ultra-premium part picker in `HologramCardShell`; remove Bauhaus slider UX | `playerLoadoutSprint35c.test.ts`, [`s35c-manifest.json`](docs/vision/va-screenshots/s35c-manifest.json) |
 | 3.5d | **Done** | HQ + recruit card wiring; avatar v2 lazy read-repair | `playerLoadoutSprint35d.test.ts`, [`s35d-manifest.json`](docs/vision/va-screenshots/s35d-manifest.json) |
 | 3.5e | **Done** | Portrait art direction vision (Bitmoji-era 2D + age spectrum + coach/staff) | [`PORTRAIT_ART_DIRECTION.md`](docs/vision/PORTRAIT_ART_DIRECTION.md), `playerLoadoutSprint35e.test.ts` |
-| 3.5f | **Done** | Starter catalog Phoenix cartoon SVG art swap (9 parts · face/hair/kit) | `playerLoadoutSprint35f.test.ts`, [`s35f-manifest.json`](docs/vision/va-screenshots/s35f-manifest.json) |
+| 3.5f | **Done** | Starter catalog Phoenix cartoon SVG art swap (9 parts · face/hair/kit) — **visual superseded by 3.5l-b** | `playerLoadoutSprint35f.test.ts`, [`s35f-manifest.json`](docs/vision/va-screenshots/s35f-manifest.json) |
 | 3.5g-vision | **Done** | Operative ID card authority — TCG zones, club vs team, phased roadmap | [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md), `playerLoadoutSprint35gVision.test.ts` |
 
 Vision: [`docs/vision/OPERATIVE_LOADOUT.md`](docs/vision/OPERATIVE_LOADOUT.md) · Art direction: [`docs/vision/PORTRAIT_ART_DIRECTION.md`](docs/vision/PORTRAIT_ART_DIRECTION.md) · **Card layout:** [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md)
@@ -1388,7 +1388,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5c** | ✓ | Armory Studio v2 — visual part picker in `HologramCardShell` |
 | **3.5d** | ✓ | HQ + recruit v2 wiring; lazy read-repair |
 | **3.5e** | ✓ | Portrait art direction vision |
-| **3.5f** | ✓ | Starter catalog Phoenix SVG art swap |
+| **3.5f** | ✓ | Starter catalog Phoenix SVG art swap — **visual superseded by 3.5l-b** |
 | **3.5g-vision** | ✓ | [`OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md) — TCG zones, club vs team, roadmap |
 | **3.5g-c** | Done/planned | Emblem parity — rank formatter, club stub, dedupe `ibm-meta` |
 | **3.5g-d/e** | Superseded | Arc/level stamp experiments → folded into **3.5g-f** |
@@ -1398,15 +1398,17 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5j-a** | **Done** | Studio SYNC IDENTITY + unified picker + `?tab=studio` deep links | `playerLoadoutSprint35j.test.ts`, [`s35j-manifest.json`](docs/vision/va-screenshots/s35j-manifest.json) |
 | **3.5j-b** | **Done** | Armory read-repair hydrate parity with HQ; sync merges `ownedPortraitParts` when changed | `playerLoadoutSprint35j.test.ts` |
 | **3.5j** | **Done** | Identity Studio cohesion umbrella (3.5j-a + 3.5j-b) | `playerLoadoutSprint35j.test.ts` |
-| 3.5h | **Done** | Bauhaus v1 generator retirement — v2-only render + server recruit upgrade | `playerLoadoutSprint35h.test.ts` |
-| 3.5i-fix | **Done** | Hair visibility + face-default art pass — inline SVG compose, SIR crown bleed | [`s35ifix-manifest.json`](docs/vision/va-screenshots/s35ifix-manifest.json), `playerLoadoutSprint35iFix.test.ts` |
-| 3.5i-a | **Done** | Teen skin tone + presentation catalog — Studio filter chips, no gender field | [`s35ia-manifest.json`](docs/vision/va-screenshots/s35ia-manifest.json), `playerLoadoutSprint35iA.test.ts`, [`PORTRAIT_REPRESENTATION.md`](docs/vision/PORTRAIT_REPRESENTATION.md) |
-| 3.5i-b | **Done** | `bodyScale` + age-band compose defaults — read-repair from profile `ageBand`, Studio scale chip | `playerLoadoutSprint35iB.test.ts` |
-| 3.5i | Planned | Age-band catalog umbrella |
-| **3.5i-pose** | Planned | `portrait_pose_*` catalog + Studio pose tab |
-| **3.5k** | **Done** | Collectible metadata — S1 set line, rarity chip, card back flavor, foil from rarity | [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json), `playerLoadoutSprint35k.test.ts` |
+| **3.5h** | **Done** | Bauhaus v1 generator retirement; v2-only render path | `playerLoadoutSprint35h.test.ts` |
+| **3.5k** | **In progress** | Collectible metadata — set #, rarity chip, card back, flavor text | `playerLoadoutSprint35k.test.ts`, [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json) |
+| **3.5i** | **Superseded** | Split into **3.5l-a–e** (portrait quality phase) | — |
+| **3.5l-a** | **Next** | Compose/clip fix — hair visibility, face-default ear ellipses, layer alignment | `playerLoadoutSprint35lA.test.ts` |
+| **3.5l-b** | Planned | Human cartoon art pass — matched bust redraw per PORTRAIT_ART_DIRECTION §1–§2.6 | `playerLoadoutSprint35lB.test.ts`, [`s35lb-manifest.json`](docs/vision/va-screenshots/s35lb-manifest.json) |
+| **3.5l-c** | Planned | Skin tone + teen presentation catalog rows + Studio filters | `playerLoadoutSprint35lC.test.ts` |
+| **3.5l-d** | Planned | `bodyScale` schema + `ageBand` read-repair defaults | `playerLoadoutSprint35lD.test.ts` |
+| **3.5l-e** | Planned | `portrait_pose_*` catalog + Studio pose tab | `playerLoadoutSprint35lE.test.ts` |
+| **3.5l-gate** | Planned | Portrait stability gate — full playerLoadoutSprint35* regression + human VA | [`s35l-gate-manifest.json`](docs/vision/va-screenshots/s35l-gate-manifest.json) |
 
-**Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only.
+**Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only. **Epic 4.1 blocked** until **3.5l-gate** VA ☑ (human-coherent portraits on HQ, Studio, recruit).
 
 **Design principles:**
 
@@ -1416,13 +1418,28 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 - Z5 streak/XP = `IdentityTelemetryBezel` on HQ holo only
 - Studio = game-like **visual picker** + holo dossier hero; **3.5j** requires **3.5g-f** frame prerequisite
 
+### Epic 3.5 Phase 2 — Portrait quality (3.5l-*)
+
+**Trigger:** Phase 1 pipeline shipped (3.5j, 3.5h, 3.5k) but starter art reads as disconnected / non-human modular layers. Authority refresh: PORTRAIT_ART_DIRECTION.md §1 rewrite (2026-05-22).
+
+**Deploy order (strict):**
+
+1. **3.5l-a** — technical compose (no art redraw)
+2. **3.5l-b** — matched-set SVG redraw (same 9 catalog ids) + npm run generate:portraits + hosting deploy
+3. **3.5l-c** → **3.5l-d** → **3.5l-e**
+4. **3.5l-gate** — regression + product owner human VA
+
+**Human acceptance bar (3.5l-gate):** One cohesive cartoon person at 88px and 128px; upgrade-worthy; parent-safe for teen roster; no floating head / mascot flame default hair.
+
 **Runs after:** 3.4. **Coordinates with:** Phase 6 **6f-c** (bezel telemetry) and **6f** (Studio holo shell).
 
 ---
 
 ## Sprint status — Epic 4: Comms & Team Operations Hub
 
-> **Epic 4.1+ unblocked after Sprint 2.19 Done** — comms wiring may proceed after visual acceptance sign-off. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though gate is open from 2.19.
+> **Portrait dependency:** Epic **4.1+ implementation blocked** until **3.5l-gate** ☑.
+
+> **Epic 4.1+ unblocked after Sprint 2.19 Done** — comms wiring may proceed after Player OS visual acceptance sign-off **and 3.5l-gate portrait VA**. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19.
 
 > **Naming note:** ROADMAP **Epic 4 = Comms Hub**. Unrelated legacy comments (e.g. Firestore "Epic 4.3 LeagueManager") are a different numbering scheme — do not renumber.
 
