@@ -4,42 +4,115 @@
 		"slot": "face",
 		"label": "Default Face",
 		"renderKey": "face-default",
-		"file": "face-default.svg"
+		"file": "face-default.svg",
+		"presentation": "neutral-presenting"
 	},
 	{
 		"id": "portrait_face_round",
 		"slot": "face",
 		"label": "Round Face",
 		"renderKey": "face-round",
-		"file": "face-round.svg"
+		"file": "face-round.svg",
+		"presentation": "neutral-presenting"
 	},
 	{
 		"id": "portrait_face_angular",
 		"slot": "face",
 		"label": "Angular Face",
 		"renderKey": "face-angular",
-		"file": "face-angular.svg"
+		"file": "face-angular.svg",
+		"presentation": "neutral-presenting"
+	},
+	{
+		"id": "portrait_face_teen_light_default",
+		"slot": "face",
+		"label": "Light · Teen",
+		"renderKey": "face-teen-light-default",
+		"file": "face-teen-light-default.svg",
+		"ageBand": "teen",
+		"tone": "light",
+		"presentation": "neutral-presenting"
+	},
+	{
+		"id": "portrait_face_teen_medium_default",
+		"slot": "face",
+		"label": "Medium · Teen",
+		"renderKey": "face-teen-medium-default",
+		"file": "face-teen-medium-default.svg",
+		"ageBand": "teen",
+		"tone": "medium",
+		"presentation": "neutral-presenting"
+	},
+	{
+		"id": "portrait_face_teen_tan_default",
+		"slot": "face",
+		"label": "Tan · Teen",
+		"renderKey": "face-teen-tan-default",
+		"file": "face-teen-tan-default.svg",
+		"ageBand": "teen",
+		"tone": "tan",
+		"presentation": "neutral-presenting"
+	},
+	{
+		"id": "portrait_face_teen_deep_default",
+		"slot": "face",
+		"label": "Deep · Teen",
+		"renderKey": "face-teen-deep-default",
+		"file": "face-teen-deep-default.svg",
+		"ageBand": "teen",
+		"tone": "deep",
+		"presentation": "neutral-presenting"
 	},
 	{
 		"id": "portrait_hair_default",
 		"slot": "hair",
 		"label": "Default Hair",
 		"renderKey": "hair-default",
-		"file": "hair-default.svg"
+		"file": "hair-default.svg",
+		"presentation": "neutral-presenting"
 	},
 	{
 		"id": "portrait_hair_crop",
 		"slot": "hair",
 		"label": "Crop Cut",
 		"renderKey": "hair-crop",
-		"file": "hair-crop.svg"
+		"file": "hair-crop.svg",
+		"presentation": "neutral-presenting"
 	},
 	{
 		"id": "portrait_hair_long",
 		"slot": "hair",
 		"label": "Long Hair",
 		"renderKey": "hair-long",
-		"file": "hair-long.svg"
+		"file": "hair-long.svg",
+		"presentation": "neutral-presenting"
+	},
+	{
+		"id": "portrait_hair_teen_long",
+		"slot": "hair",
+		"label": "Teen Long",
+		"renderKey": "hair-teen-long",
+		"file": "hair-teen-long.svg",
+		"ageBand": "teen",
+		"presentation": "feminine-presenting"
+	},
+	{
+		"id": "portrait_hair_teen_ponytail",
+		"slot": "hair",
+		"label": "Teen Ponytail",
+		"renderKey": "hair-teen-ponytail",
+		"file": "hair-teen-ponytail.svg",
+		"ageBand": "teen",
+		"presentation": "feminine-presenting"
+	},
+	{
+		"id": "portrait_hair_teen_crop",
+		"slot": "hair",
+		"label": "Teen Crop",
+		"renderKey": "hair-teen-crop",
+		"file": "hair-teen-crop.svg",
+		"ageBand": "teen",
+		"presentation": "feminine-presenting"
 	},
 	{
 		"id": "portrait_kit_default",

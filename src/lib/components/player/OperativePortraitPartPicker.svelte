@@ -14,6 +14,17 @@
 		getPortraitPartCatalog,
 		renderPortraitPartLayer,
 	} from '$lib/avatars/renderLayeredPortrait.js';
+	import {
+		DEFAULT_PORTRAIT_FILTERS,
+		PORTRAIT_PRESENTATIONS,
+		PORTRAIT_TONES,
+		PRESENTATION_CHIP_LABELS,
+		TONE_CHIP_LABELS,
+		matchesPortraitCatalogFilters,
+		type PortraitFilterState,
+		type PortraitPresentation,
+		type PortraitTone,
+	} from '$lib/avatars/portraitRepresentation.js';
 
 	const THUMB_SIZE = 72;
 
@@ -37,9 +48,13 @@
 		hideTabRail?: boolean;
 	} = $props();
 	let legacyUpgraded = $state(false);
+	let portraitFilters = $state<PortraitFilterState>({ ...DEFAULT_PORTRAIT_FILTERS });
 
 	const catalog = getPortraitPartCatalog() as PortraitPartCatalogEntry[];
 	const ownedSet = $derived(new Set(ownedPortraitParts));
+
+	const showToneFilters = $derived(selectedSlot === 'face');
+	const showPresentationFilters = $derived(selectedSlot === 'face' || selectedSlot === 'hair');
 
 	$effect(() => {
 		const parsed = parseOperativePortrait(operativeAvatar);
@@ -58,8 +73,21 @@
 	const equippedPartId = $derived(portraitV2.parts[selectedSlot] ?? null);
 
 	const catalogForSlot = $derived(getPortraitPartsForSlot(selectedSlot, catalog));
-	const ownedForSlot = $derived(catalogForSlot.filter((entry) => ownedSet.has(entry.id)));
-	const lockedForSlot = $derived(catalogForSlot.filter((entry) => !ownedSet.has(entry.id)));
+	const filteredCatalog = $derived(
+		catalogForSlot.filter((entry) =>
+			matchesPortraitCatalogFilters(entry, portraitFilters, selectedSlot),
+		),
+	);
+	const ownedForSlot = $derived(filteredCatalog.filter((entry) => ownedSet.has(entry.id)));
+	const lockedForSlot = $derived(filteredCatalog.filter((entry) => !ownedSet.has(entry.id)));
+
+	function setToneFilter(tone: PortraitTone | 'all') {
+		portraitFilters = { ...portraitFilters, tone };
+	}
+
+	function setPresentationFilter(presentation: PortraitPresentation | 'all') {
+		portraitFilters = { ...portraitFilters, presentation };
+	}
 
 	function thumbSvg(partId: string): string {
 		const layer = renderPortraitPartLayer(partId, THUMB_SIZE);
@@ -111,6 +139,62 @@
 			{catalogForSlot.find((row) => row.id === equippedPartId)?.label ?? 'Default'}
 		</span>
 	</p>
+
+	{#if showToneFilters}
+		<div class="opp-filter-row" role="group" aria-label="Skin tone filter">
+			<span class="opp-filter-label qa-mono">Tone</span>
+			<div class="opp-filter-chips">
+				<button
+					type="button"
+					class="opp-filter-chip"
+					class:opp-filter-chip--active={portraitFilters.tone === 'all'}
+					{disabled}
+					onclick={() => setToneFilter('all')}
+				>
+					All
+				</button>
+				{#each PORTRAIT_TONES as tone (tone)}
+					<button
+						type="button"
+						class="opp-filter-chip"
+						class:opp-filter-chip--active={portraitFilters.tone === tone}
+						{disabled}
+						onclick={() => setToneFilter(tone)}
+					>
+						{TONE_CHIP_LABELS[tone]}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
+	{#if showPresentationFilters}
+		<div class="opp-filter-row" role="group" aria-label="Style presentation filter">
+			<span class="opp-filter-label qa-mono">Style</span>
+			<div class="opp-filter-chips">
+				<button
+					type="button"
+					class="opp-filter-chip"
+					class:opp-filter-chip--active={portraitFilters.presentation === 'all'}
+					{disabled}
+					onclick={() => setPresentationFilter('all')}
+				>
+					All
+				</button>
+				{#each PORTRAIT_PRESENTATIONS as presentation (presentation)}
+					<button
+						type="button"
+						class="opp-filter-chip"
+						class:opp-filter-chip--active={portraitFilters.presentation === presentation}
+						{disabled}
+						onclick={() => setPresentationFilter(presentation)}
+					>
+						{PRESENTATION_CHIP_LABELS[presentation]}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
 
 	<div class="opp-grid" role="tabpanel" aria-label="{SLOT_LABELS[selectedSlot]} parts">
 		{#each ownedForSlot as entry (entry.id)}
@@ -213,6 +297,55 @@
 	}
 	.opp-equipped__value {
 		color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, #fff);
+	}
+	.opp-filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.45rem 0.65rem;
+		margin-bottom: 0.65rem;
+	}
+	.opp-filter-label {
+		font-size: 0.55rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--pd-text-muted, rgba(255, 255, 255, 0.45));
+		min-width: 2.75rem;
+	}
+	.opp-filter-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+	.opp-filter-chip {
+		padding: 0.35rem 0.55rem;
+		font-size: 0.55rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		cursor: pointer;
+		border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.12));
+		border-radius: 999px;
+		color: rgba(255, 255, 255, 0.55);
+		background: rgba(0, 0, 0, 0.25);
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+	.opp-filter-chip:hover:not(:disabled) {
+		color: rgba(236, 254, 255, 0.9);
+		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
+	}
+	.opp-filter-chip--active {
+		color: #ecfeff;
+		border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, var(--pd-line));
+		background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 14%, transparent);
+	}
+	.opp-filter-chip:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
 	}
 	.opp-grid {
 		display: grid;

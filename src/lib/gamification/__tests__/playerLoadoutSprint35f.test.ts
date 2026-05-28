@@ -61,7 +61,7 @@ describe('Sprint 3.5f — manifest starter ids', () => {
 		for (const id of STARTER_PORTRAIT_PART_IDS) {
 			expect(ids).toContain(id);
 		}
-		expect(ids.length).toBe(9);
+		expect(ids.length).toBe(16);
 	});
 
 	it('manifest content hashes updated (non-empty sha256)', () => {

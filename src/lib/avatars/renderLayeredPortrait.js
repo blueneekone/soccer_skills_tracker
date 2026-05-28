@@ -25,6 +25,9 @@ export function getPortraitPartCatalog() {
 		assetPath: row.assetPath,
 		contentHash: row.contentHash,
 		svgInner: row.svgInner,
+		tone: row.tone,
+		presentation: row.presentation,
+		ageBand: row.ageBand,
 	}));
 }
 

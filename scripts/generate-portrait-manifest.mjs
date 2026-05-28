@@ -19,7 +19,7 @@ const OUT_PATH = join(ROOT, 'src', 'lib', 'avatars', 'portraitParts.manifest.jso
 
 const VALID_SLOTS = new Set(['face', 'hair', 'kit']);
 
-/** @typedef {{ id: string; slot: string; label: string; renderKey: string; file: string }} CatalogConfigRow */
+/** @typedef {{ id: string; slot: string; label: string; renderKey: string; file: string; tone?: string; presentation?: string; ageBand?: string }} CatalogConfigRow */
 
 /** @param {string} filePath @returns {string} */
 function sha256File(filePath) {
@@ -47,7 +47,7 @@ function main() {
 	/** @type {CatalogConfigRow[]} */
 	const config = JSON.parse(readFileSync(CONFIG_PATH, 'utf-8'));
 	const seenIds = new Set();
-	/** @type {Array<{ id: string; slot: string; label: string; renderKey: string; assetPath: string; contentHash: string; svgInner: string }>} */
+	/** @type {Array<{ id: string; slot: string; label: string; renderKey: string; assetPath: string; contentHash: string; svgInner: string; tone?: string; presentation?: string; ageBand?: string }>} */
 	const manifest = [];
 
 	for (const row of config) {
@@ -83,6 +83,9 @@ function main() {
 			assetPath,
 			contentHash,
 			svgInner,
+			...(row.tone ? {tone: row.tone} : {}),
+			...(row.presentation ? {presentation: row.presentation} : {}),
+			...(row.ageBand ? {ageBand: row.ageBand} : {}),
 		});
 	}
 

@@ -67,7 +67,7 @@ describe('Sprint 3.5b — manifest pipeline', () => {
 	});
 
 	it('portraitParts.manifest.json has unique ids, valid slots, paths, and hashes', () => {
-		expect(portraitPartsManifest.length).toBe(9);
+		expect(portraitPartsManifest.length).toBe(16);
 		const ids = portraitPartsManifest.map((row) => row.id);
 		expect(new Set(ids).size).toBe(ids.length);
 		for (const row of portraitPartsManifest) {

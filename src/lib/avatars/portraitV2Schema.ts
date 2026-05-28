@@ -1,4 +1,5 @@
 import portraitPartsManifest from './portraitParts.manifest.json';
+import { TEEN_STARTER_PORTRAIT_PART_IDS } from './portraitRepresentation.js';
 
 export const OPERATIVE_PORTRAIT_V2_VERSION = 2;
 
@@ -13,13 +14,17 @@ export type PortraitPartCatalogEntry = {
 	renderKey: string;
 	assetPath: string;
 	contentHash: string;
+	svgInner?: string;
+	tone?: import('./portraitRepresentation.js').PortraitTone;
+	presentation?: import('./portraitRepresentation.js').PortraitPresentation;
+	ageBand?: import('./portraitRepresentation.js').PortraitAgeBand;
 };
 
-/** All catalog ids in the starter editable set (3.5b: entire catalog is starter-owned). */
-export const STARTER_PORTRAIT_PART_IDS = Object.freeze(
-	portraitPartsManifest.map((row) => row.id),
-) as readonly string[];
-
+/**
+ * v2 operativeAvatar.parts — face / hair / kit catalog ids only.
+ * Skin tone is encoded in the face part id (e.g. portrait_face_teen_medium_default).
+ * No separate skinTone or gender field — see docs/vision/PORTRAIT_REPRESENTATION.md.
+ */
 export type OperativePortraitV2 = {
 	v: typeof OPERATIVE_PORTRAIT_V2_VERSION;
 	parts: Partial<Record<PortraitPartSlot, string | null>>;
@@ -31,6 +36,13 @@ export type OperativePortraitV1 = {
 };
 
 export type OperativePortrait = OperativePortraitV1 | OperativePortraitV2;
+
+/** All catalog ids in the manifest (3.5b starters + expansions). */
+export const STARTER_PORTRAIT_PART_IDS = Object.freeze(
+	portraitPartsManifest.map((row) => row.id),
+) as readonly string[];
+
+export { TEEN_STARTER_PORTRAIT_PART_IDS };
 
 const MAX_SEED_LEN = 128;
 
@@ -87,9 +99,11 @@ export function getPortraitPartsForSlot(
 	return cat.filter((row) => row.slot === slot);
 }
 
-/** Starter ownership — all catalog ids until server grants ship in a later sprint. */
+/** Starter ownership — entire catalog for alpha (includes teen starter set 3.5i-a). */
 export function defaultOwnedPortraitParts(): string[] {
-	return [...STARTER_PORTRAIT_PART_IDS];
+	const ids = new Set<string>([...STARTER_PORTRAIT_PART_IDS]);
+	for (const id of TEEN_STARTER_PORTRAIT_PART_IDS) ids.add(id);
+	return [...ids];
 }
 
 /**
