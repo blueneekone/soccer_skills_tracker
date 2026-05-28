@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		RARITY_CHIP_LABELS,
+		type OperativeCardMetadata,
+	} from '$lib/gamification/cardCollectibleMetadata.js';
+
 	const ARC_FLOURISH_MAX_CHARS = 12;
 	const LONG_NAME_THRESHOLD = 16;
 
@@ -24,6 +29,7 @@
 		variant = 'card',
 		roleLabel = 'OPERATIVE',
 		showArcFlourish = false,
+		cardMetadata = undefined,
 	}: {
 		displayName?: string;
 		clubName?: string;
@@ -37,6 +43,7 @@
 		variant?: 'card' | 'holo';
 		roleLabel?: string;
 		showArcFlourish?: boolean;
+		cardMetadata?: OperativeCardMetadata;
 	} = $props();
 
 	const uid = $props.id();
@@ -85,6 +92,14 @@
 	const nameArcSweepDeg = $derived(Math.abs(NAME_ARC_END_DEG - NAME_ARC_START_DEG));
 	const nameArcLength = $derived((NAME_ARC_RADIUS * nameArcSweepDeg * Math.PI) / 180);
 
+	const arcFlourishActive = $derived(
+		cardMetadata?.rarity === 'illustration_rare' ? true : showArcFlourish,
+	);
+
+	const rarityChipLabel = $derived(
+		cardMetadata ? RARITY_CHIP_LABELS[cardMetadata.rarity] : '',
+	);
+
 	const cardLabel = $derived(
 		[callsign, typeLine, rankLine, showLevelChip ? levelChipLabel : ''].filter(Boolean).join(' · ') ||
 			'Operative ID card',
@@ -129,7 +144,7 @@
 					</div>
 				{/if}
 			</div>
-			{#if showArcFlourish}
+			{#if arcFlourishActive}
 				<svg
 					class="oicf-name-arc"
 					viewBox="0 0 200 200"
@@ -161,6 +176,15 @@
 
 	{#if rankLine}
 		<p class="oicf-rank-strip">{rankLine}</p>
+	{/if}
+
+	{#if cardMetadata}
+		<div class="oicf-collectible-footer">
+			<span class="oicf-set-line qa-mono">{cardMetadata.setId} · {cardMetadata.collectorNumber}</span>
+			{#if rarityChipLabel}
+				<span class="oicf-rarity-chip qa-mono" data-rarity={cardMetadata.rarity}>{rarityChipLabel}</span>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -344,6 +368,58 @@
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, transparent);
+	}
+
+	.oicf-collectible-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.45rem;
+		width: 100%;
+		margin-top: 0.35rem;
+		min-width: 0;
+	}
+
+	.oicf-set-line {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgba(148, 163, 184, 0.82);
+	}
+
+	.oicf-rarity-chip {
+		flex-shrink: 0;
+		padding: 2px 5px;
+		font-size: 7px;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		border-radius: 2px;
+		border: 1px solid rgba(148, 163, 184, 0.35);
+		color: rgba(226, 232, 240, 0.88);
+		background: rgba(15, 23, 42, 0.55);
+	}
+
+	.oicf-rarity-chip[data-rarity='rare'] {
+		border-color: color-mix(in srgb, #60a5fa 45%, transparent);
+		color: #bfdbfe;
+	}
+
+	.oicf-rarity-chip[data-rarity='epic'] {
+		border-color: color-mix(in srgb, #a78bfa 45%, transparent);
+		color: #ddd6fe;
+	}
+
+	.oicf-rarity-chip[data-rarity='legendary'],
+	.oicf-rarity-chip[data-rarity='illustration_rare'] {
+		border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
+		color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 90%, #fff);
 	}
 
 	.oicf-root--holo .oicf-callsign {

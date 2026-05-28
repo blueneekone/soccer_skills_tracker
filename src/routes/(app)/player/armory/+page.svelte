@@ -544,6 +544,7 @@
 				bind:operativeLoadout
 				bind:ownedCosmetics
 				{ownedPortraitParts}
+				ownedSeasonOneCards={[...ownedSeasonOneCardIds]}
 				playerEmailKey={playerEmailKey}
 				playerDisplayName={vaultDisplayName}
 				{rankLabel}

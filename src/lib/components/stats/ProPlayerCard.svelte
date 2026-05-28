@@ -6,7 +6,12 @@
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';
+	import ProPlayerCardBack from '$lib/components/stats/ProPlayerCardBack.svelte';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
+	import {
+		resolveOperativeCardMetadata,
+		stickerVariantFromCardRarity,
+	} from '$lib/gamification/cardCollectibleMetadata.js';
 
 	const PRO_CARD_INTEL = {
 		title: 'PRO PLAYER CARD',
@@ -27,7 +32,7 @@
 		/** Sprint 3.1 — equipped loadout for border frame on portrait ring. */
 		operativeLoadout = undefined,
 		ownedCosmetics = undefined,
-		/** Rank line on emblem front (rank only — level is the upper-right badge). */
+		ownedSeasonOneCards = undefined,
 		rankName = 'Recruit',
 		operativeLevel = undefined,
 		/** Z2 org label — clubs/{clubId}.name via resolveClubDisplayName (3.5g-b); not team roster. */
@@ -45,7 +50,23 @@
 		variant = 'base',
 		/** Armory Studio dossier row — flip ID card only, no stats / radar workspace. */
 		dossierPreview = false,
+		/** Public recruit — generic flavor only (no rank-tier copy). */
+		publicRecruit = false,
 	} = $props();
+
+	const cardMetadata = $derived(
+		resolveOperativeCardMetadata({
+			operativeLoadout,
+			ownedSeasonOneCards: Array.isArray(ownedSeasonOneCards) ? ownedSeasonOneCards : [],
+			rankName,
+			emailKey: playerEmailKey,
+			publicRecruit,
+		}),
+	);
+
+	const printVariant = $derived(
+		cardMetadata ? stickerVariantFromCardRarity(cardMetadata.rarity) : variant,
+	);
 
 	const portraitLayers = $derived(
 		composeOperativePortrait({
@@ -281,55 +302,22 @@
 							clubName={clubName}
 							rankName={rankName}
 							{operativeLevel}
+							{cardMetadata}
 						/>
 					</div>
 					<div
 						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-text-left"
 						style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
-						<p
-							class="tw-m-0 tw-mb-2 tw-shrink-0 tw-text-center tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.28em] tw-text-slate-500"
-						>
+						<ProPlayerCardBack
+							{cardMetadata}
 							{telemetryTitle}
-						</p>
-						{#if hasTelemetryDetails}
-							<dl
-								class="tw-m-0 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-2 tw-overflow-y-auto tw-pr-1 tw-text-sm"
-							>
-								{#if telemetryTotalXp !== ''}
-									<div
-										class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2"
-									>
-										<dt class="tw-m-0 tw-text-slate-500">Total XP</dt>
-										<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
-											>{telemetryTotalXp}</dd
-										>
-									</div>
-								{/if}
-								{#if telemetryWorkouts !== ''}
-									<div
-										class="tw-flex tw-justify-between tw-gap-2 tw-border-b tw-border-slate-700/90 tw-pb-2"
-									>
-										<dt class="tw-m-0 tw-text-slate-500">Workouts logged</dt>
-										<dd class="tw-m-0 tw-font-mono tw-tabular-nums tw-text-cyan-300"
-											>{telemetryWorkouts}</dd
-										>
-									</div>
-								{/if}
-								{#if telemetryJoinDate !== ''}
-									<div class="tw-flex tw-justify-between tw-gap-2 tw-pb-2">
-										<dt class="tw-m-0 tw-text-slate-500">Join date</dt>
-										<dd
-											class="tw-m-0 tw-text-right tw-font-mono tw-text-xs tw-text-cyan-200/90 [overflow-wrap:anywhere]"
-										>
-											{telemetryJoinDate}
-										</dd>
-									</div>
-								{/if}
-							</dl>
-						{:else}
-							<p class="tw-m-0 tw-flex-1 tw-text-center tw-font-mono tw-text-[11px] tw-text-slate-600">—</p>
-						{/if}
+							{hasTelemetryDetails}
+							{telemetryTotalXp}
+							{telemetryWorkouts}
+							{telemetryJoinDate}
+							showIllustratorCredit={!publicRecruit}
+						/>
 					</div>
 				</div>
 			</div>
@@ -442,7 +430,7 @@
 		{@render operativeCardBody()}
 	{:else}
 	<StickerVariantShell
-		{variant}
+		variant={printVariant}
 		class="pro-card-shell pd-glass-panel tw-rounded-2xl"
 	>
 		{#snippet children()}

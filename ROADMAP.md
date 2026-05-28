@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-27  
-**Current sprint:** **3.5i-b Done** (bodyScale + age-band portrait defaults) · **Next: 3.5k** collectible metadata · **3.5i-a Done** · **3.5i-fix Done** · **3.5h Done** · **3.5j-a/b Done**  
+**Current sprint:** **3.5k Done** (collectible ID card metadata) · Epic 3.5 portrait/card track **Season 1 MVP complete** · **3.5i-b Done** · **3.5i-a Done** · **3.5i-fix Done** · **3.5h Done** · **3.5j-a/b Done**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
 This document is the **canonical delivery tracker** for test-driven sprints. Product vision and persona UX live in [`docs/PERSONA_ECOSYSTEM.md`](docs/PERSONA_ECOSYSTEM.md) and [`docs/vision/`](docs/vision/).
@@ -1346,7 +1346,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5h closed 2026-05-28** · **Sprint 3.5i-fix closed 2026-05-28** · **Sprint 3.5i-a closed 2026-05-28** · **Sprint 3.5i-b closed 2026-05-28.** **Next: 3.5k** collectible metadata. Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — **Sprint 3.5a–3.5f closed 2026-05-27** · **Sprint 3.5h closed 2026-05-28** · **Sprint 3.5i-fix closed 2026-05-28** · **Sprint 3.5i-a closed 2026-05-28** · **Sprint 3.5i-b closed 2026-05-28** · **Sprint 3.5k closed 2026-05-28.** Epic 3.5 portrait/card track **Season 1 MVP complete.** Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1404,7 +1404,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | 3.5i-b | **Done** | `bodyScale` + age-band compose defaults — read-repair from profile `ageBand`, Studio scale chip | `playerLoadoutSprint35iB.test.ts` |
 | 3.5i | Planned | Age-band catalog umbrella |
 | **3.5i-pose** | Planned | `portrait_pose_*` catalog + Studio pose tab |
-| **3.5k** | Future (next code) | Collectible metadata — set #, rarity, card back, flavor text |
+| **3.5k** | **Done** | Collectible metadata — S1 set line, rarity chip, card back flavor, foil from rarity | [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json), `playerLoadoutSprint35k.test.ts` |
 
 **Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only.
 

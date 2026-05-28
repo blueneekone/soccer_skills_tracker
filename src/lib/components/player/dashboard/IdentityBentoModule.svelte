@@ -4,6 +4,7 @@
 	import IdentityTelemetryBezel from '$lib/components/player/dashboard/IdentityTelemetryBezel.svelte';
 	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
+	import type { OperativeCardMetadata } from '$lib/gamification/cardCollectibleMetadata.js';
 	import HudStatCell from '$lib/components/player/dashboard/HudStatCell.svelte';
 	import {
 		formatCompactXp,
@@ -35,6 +36,7 @@
 		lastTrainingUtc = null,
 		profileIncomplete = false,
 		onProfileSetup,
+		cardMetadata = undefined,
 	}: {
 		embedded?: boolean;
 		hideDisplayName?: boolean;
@@ -58,6 +60,7 @@
 		lastTrainingUtc?: string | null;
 		profileIncomplete?: boolean;
 		onProfileSetup?: () => void;
+		cardMetadata?: OperativeCardMetadata;
 	} = $props();
 
 	const xpLabel = $derived(formatCompactXp(totalXp));
@@ -153,6 +156,7 @@
 							clubName={clubName || undefined}
 							rankName={rankName || 'UNRANKED'}
 							operativeLevel={level}
+							{cardMetadata}
 						/>
 					{/if}
 				</div>

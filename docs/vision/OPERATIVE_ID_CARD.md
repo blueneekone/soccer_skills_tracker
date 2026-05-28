@@ -193,20 +193,19 @@ No pose SVG or Studio tab in vision sprint — document only.
 
 ---
 
-## 9. Collectible metadata roadmap (future sprints — no implementation)
+## 9. Collectible metadata (Sprint 3.5k — **implemented**)
 
-Schedule after **3.5g-f** frame lands (**3.5k**):
+Season 1 TCG chrome on `OperativeIdCardFrame` + `ProPlayerCard` back — resolver: `cardCollectibleMetadata.ts`.
 
 | Metadata | Placement | Notes |
 |----------|-----------|-------|
-| Set symbol + collector number (e.g. `S1 · 047/198`) | Back or bottom corner | Season / album keyed |
-| Rarity mark (common / illustration rare / hyper) | Frame chip | Ties to `StickerVariantShell` `variant` prop |
-| Card back design (club logo reverse) | Unified deck back | Recruit + player flip |
-| Flavor text | Back under stats | COPPA-safe lore line |
-| Artist credit | `Illus.` on back or bottom | Optional |
-| Alt-art / chase illustration | Pose + seasonal set | Links §8 |
-| Promo stamp | Event unlocks | |
-| Foil / texture tier | Driven by **rarity**, not arbitrary holo shell | |
+| Set symbol + collector number (e.g. `S1 · 047/198`) | Frame footer `.oicf-set-line` | Deterministic hash from emailKey; cap **198** |
+| Rarity mark (common / rare / epic / legendary / illustration rare) | `.oicf-rarity-chip` | Album ownership + loadout border/badge floors |
+| Card back design (club-agnostic S1 deck back) | `ProPlayerCardBack` watermark | No new binary assets |
+| Flavor text | Back rules box | COPPA-safe rank tier; recruit uses generic line |
+| Artist credit | `Illus. SSTracker` on back | Hidden on public recruit |
+| Arc flourish | Portrait ring | **Only** when `rarity === illustration_rare` |
+| Foil / texture tier | `StickerVariantShell` `variant` | Driven by rarity — not arbitrary holo shell |
 
 ---
 

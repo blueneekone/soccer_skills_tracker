@@ -36,6 +36,7 @@
 		type HqScheduleEventLike,
 	} from '$lib/player/dashboard/hqWorldContext.js';
 	import { getCompletedAlbumSetChipLabels } from '$lib/gamification/albumSetBonuses.js';
+	import { resolveOperativeCardMetadata } from '$lib/gamification/cardCollectibleMetadata.js';
 	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
 	import {
 		readRepairOperativeAvatar,
@@ -171,6 +172,15 @@
 		Array.isArray(activePlayer?.ownedSeasonOneCards) ?
 			activePlayer.ownedSeasonOneCards.filter((id) => typeof id === 'string')
 		:	[],
+	);
+	const hqCardMetadata = $derived(
+		resolveOperativeCardMetadata({
+			operativeLoadout: activePlayer?.operativeLoadout,
+			ownedSeasonOneCards: ownedSeasonOneCardIds,
+			totalXp: totalXpHud,
+			rankName: rankProgress.rank,
+			emailKey: email,
+		}),
 	);
 	const completedAlbumSetChips = $derived(
 		getCompletedAlbumSetChipLabels(ownedSeasonOneCardIds),
@@ -433,6 +443,7 @@
 						atMaxRank={rankProgress.atMaxRank}
 						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
+						cardMetadata={hqCardMetadata}
 						onProfileSetup={() => void goto(resolve('/player/armory?tab=studio'))}
 					/>
 				{/snippet}

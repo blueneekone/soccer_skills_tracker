@@ -15,6 +15,9 @@
 		type PortraitPartSlot,
 	} from '$lib/avatars/portraitV2Schema.js';
 	import {
+		resolveOperativeCardMetadata,
+	} from '$lib/gamification/cardCollectibleMetadata.js';
+	import {
 		LOADOUT_SLOTS,
 		OPERATIVE_LOADOUT_VERSION,
 		canEquipItem,
@@ -49,6 +52,7 @@
 		operativeLoadout = $bindable(defaultOperativeLoadout()),
 		ownedCosmetics = $bindable(/** @type {string[]} */ ([])),
 		ownedPortraitParts = /** @type {string[]} */ ([]),
+		ownedSeasonOneCards = /** @type {string[]} */ ([]),
 		playerEmailKey = '',
 		playerDisplayName = 'Operative',
 		rankLabel = 'Recruit',
@@ -62,6 +66,7 @@
 		operativeLoadout?: OperativeLoadoutV1;
 		ownedCosmetics?: string[];
 		ownedPortraitParts?: string[];
+		ownedSeasonOneCards?: string[];
 		playerEmailKey?: string;
 		playerDisplayName?: string;
 		rankLabel?: string;
@@ -137,6 +142,15 @@
 	});
 
 	const bodyScaleChipLabel = $derived(BODY_SCALE_CHIP_LABELS[profileBodyScale]);
+
+	const dossierCardMetadata = $derived(
+		resolveOperativeCardMetadata({
+			operativeLoadout,
+			ownedSeasonOneCards,
+			rankName: rankLabel,
+			emailKey: playerEmailKey,
+		}),
+	);
 
 	function selectUnifiedTab(tab: UnifiedTab) {
 		selectedTab = tab;
@@ -256,6 +270,7 @@
 									clubName={clubName || undefined}
 									rankName={rankLabel}
 									{operativeLevel}
+									cardMetadata={dossierCardMetadata}
 								/>
 							</HologramCardShell>
 						</div>

@@ -1,0 +1,51 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5k",
+	"description": "Collectible ID card metadata — S1 set line, rarity chip, card back flavor (MCP VA)",
+	"capturedAt": "2026-05-28T05:00:00.000Z",
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"acceptance": [
+		"HQ holo OperativeIdCardFrame shows oicf-set-line + oicf-rarity-chip",
+		"ProPlayerCard front StickerVariantShell foil tier from rarity",
+		"ProPlayerCard back — flavor text, collector number, S1 deck watermark",
+		"Recruit front — metadata without rank-tier flavor PII"
+	],
+	"routes": [
+		{
+			"path": "/player/dashboard",
+			"file": "s35k-hq-holo-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "HQ holo — Z1–Z4 + S1 collector line + rarity chip"
+		},
+		{
+			"path": "/player/stats",
+			"file": "s35k-pro-card-front-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "ProPlayerCard front — rarity-driven StickerVariantShell"
+		},
+		{
+			"path": "/player/stats",
+			"file": "s35k-pro-card-back-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "ProPlayerCard back — flavor + collector + S1 watermark"
+		},
+		{
+			"path": "/recruit/[playerKey]",
+			"file": "s35k-recruit-front-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Public recruit front — no Z5; generic flavor on back only"
+		}
+	],
+	"seed": {
+		"project": "sports-skill-tracker-dev",
+		"usersDoc": "ragingginger@operative.local"
+	}
+}

@@ -110,6 +110,7 @@
 		operativeAvatar={operativeAvatarDesign}
 		clubName={clubName || undefined}
 		{operativeLevel}
+		publicRecruit={true}
 	/>
 {:else}
 	<section class="recruit-panel recruit-panel--unavailable glass-panel">
