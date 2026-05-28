@@ -4,17 +4,19 @@
 
 > **Authority clause:** Every future portrait art sprint (3.5f+) must cite: **Authority: PORTRAIT_ART_DIRECTION.md**
 
-**§1 rewritten 2026-05-22** — human cartoon coherence; Phase 2 sprints **3.5l-***.
+**§1 rewritten 2026-05-28** — Phase 3 reopen; mandatory reference board for agents.
 
 ---
 
 ## 1. North star & references
 
+> **Mandatory agent read:** [`references/PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md) — **primary visual authority** for portrait art, frame, and hair sprints (**3.5m-frame** onward). Open the board before any SVG or pixel work; cite **Authority: PORTRAIT_REFERENCE_BOARD.md** + this document §1–§2.
+
 Operative portraits are **collectible 2D identity** inside the Player OS void — modular flat cartoon layers that read as **one cohesive human** at HQ ring scale (64–128px), earn trust through mastery tone (not random loot aesthetics), and stay COPPA-safe via catalog IDs only. The portrait is the operative's face in mission control: expressive, athletic, and unmistakably part of the Scintillation / Phoenix club family — **as a person, not a mascot sticker stack**.
 
 ### Primary reference — human cartoon bust
 
-**Tone anchor:** Mid-century cartoon human anatomy and cohesion — Fallout Vault Boy/Girl *tone* (anatomy, proportion discipline, readable bust crop) **without IP copy**. Classic cel animation and sports-anime bust framing (shoulders-up, forward-facing or slight 3/4).
+**Tone anchor:** Mid-century propaganda cartoon bust discipline — Vault Boy/Girl *read* (anatomy cohesion, bust crop, hair as solid graphic shapes) **without Bethesda IP copy**. Full trait table, holo recess grammar, anti-patterns, and human squint tests: **[`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md)**. Classic cel animation and sports-anime bust framing (shoulders-up, forward-facing or slight 3/4).
 
 | Trait | Target read | Portrait application |
 |-------|-------------|----------------------|
@@ -359,9 +361,9 @@ When coach avatar ships:
 
 ---
 
-## 7. Portrait stability gate (3.5l-gate)
+## 7. Portrait stability gate (3.5m-gate)
 
-Use this gate at **3.5l-gate** after Phase 2 sprints (**3.5l-a** through **3.5l-e**) and full `playerLoadoutSprint35*` regression:
+Use this gate at **3.5m-gate** after Phase 3 sprints (**3.5m-frame**, **3.5m-art**, **3.5m-hair**) and full `playerLoadoutSprint35*` regression. Checklist authority: **[`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md) §4** (parent + player squint tests). **Phase 2 (3.5l-gate)** closed with automated regression green but **visual rejected by product owner** — automated tests ≠ human VA.
 
 - [ ] **Human coherence** — one cohesive cartoon person at **88px** HQ ring and **128px** Studio holo (one-person squint test)
 - [ ] **Neck meets collar** — no floating head; jaw → neck → kit collar continuous
@@ -394,22 +396,25 @@ Use this gate at **3.5l-gate** after Phase 2 sprints (**3.5l-a** through **3.5l-
 | **3.5h** ✓ | Bauhaus v1 generator retirement |
 | **3.5k** | **In progress** — collectible metadata — set #, rarity, card back, flavor text |
 | **3.5i** | **Superseded** → split into **3.5l-a** through **3.5l-gate** (portrait quality Phase 2) |
-| **3.5l-a** | Compose/clip fix — hair visibility, ear ellipses, layer alignment |
-| **3.5l-b** | Human cartoon art pass — matched bust redraw (same 9 catalog ids) |
-| **3.5l-c** | Skin tone + teen presentation catalog rows + Studio filters |
-| **3.5l-d** | `bodyScale` schema + `ageBand` read-repair defaults |
-| **3.5l-e** | `portrait_pose_*` catalog + Studio pose tab |
-| **3.5l-gate** | Portrait stability gate — full regression + human VA (§7) |
+| **3.5l-a** ✓ | Compose/clip fix — hair visibility, ear ellipses, layer alignment |
+| **3.5l-b** → **3.5l-e** | Phase 2 art/schema/pose track — **superseded by Phase 3 (3.5m-*)** |
+| **3.5l-gate** | **Shipped — visual rejected by product owner** (automated tests ≠ human VA) |
+| **3.5m-docs** ✓ | Reopen avatar track + [`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md) |
+| **3.5m-frame** | Art-well recess + frame/portrait alignment (no sticker-on-ring) |
+| **3.5m-art** | Matched-set cartoon bust SVG redraw (same 9 catalog ids) |
+| **3.5m-hair** | Human graphic hair pass — retire mascot flame default |
+| **3.5m-gate** | Portrait stability gate — full regression + human VA (§7 + reference board §4) |
 | **3.5j** ✓ | Identity Studio cohesion — SYNC IDENTITY + unified picker |
 
-**3.5l-b Agent prompt template:**
+**3.5m-art Agent prompt template:**
 
-> Implement matched-set SVG portrait parts strictly per **Authority: PORTRAIT_ART_DIRECTION.md §1–§2.6** and **§7**. Replace art under existing 3.5b catalog ids only (same 9 ids). Human cartoon bust — one cohesive person, not mascot flame default hair. Run `npm run generate:portraits`. Pass §7 portrait stability gate checklist.
+> Implement matched-set SVG portrait parts per **Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md)** + **PORTRAIT_ART_DIRECTION.md §1–§2.6** and **§7**. Replace art under existing 3.5b catalog ids only (same 9 ids). Human cartoon bust — one cohesive person, portrait recessed in art well, not mascot flame default hair. Run `npm run generate:portraits`. Pass §7 + reference board §4 checklist.
 
 ---
 
 ## Cross-links
 
+- **Portrait reference board (mandatory agent read):** [`references/PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md)
 - **Operative ID card (layout & zones):** [`OPERATIVE_ID_CARD.md`](./OPERATIVE_ID_CARD.md)
 - Portrait schema & pipeline: [`OPERATIVE_LOADOUT.md`](./OPERATIVE_LOADOUT.md) — Portrait v2
 - Player void & identity column: [`PLAYER_OS.md`](./PLAYER_OS.md)
