@@ -1,12 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" aria-hidden="true">
   <g fill-rule="evenodd" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M 48 116 Q 36 60 84 32 Q 128 12 172 32 Q 220 60 208 116 Q 216 92 196 58 Q 128 28 60 58 Q 40 92 48 116 Z" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
-    <path d="M 60 58 Q 128 36 196 58" fill="none" stroke="#f07830" stroke-width="4"/>
-    <path d="M 48 116 Q 40 156 52 188 Q 64 176 58 142" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
-    <path d="M 208 116 Q 216 156 204 188 Q 192 176 198 142" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
-    <path d="M 168 112 Q 186 148 178 184 L 168 168 Q 178 134 164 112 Z" fill="#2d1810" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 88 112 Q 70 148 78 184 L 88 168 Q 78 134 92 112 Z" fill="#2d1810" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 112 32 L 128 10 L 144 32" fill="#f5a830" stroke="#2d1810" stroke-width="3"/>
-    <path d="M 84 42 L 96 22 L 108 44 M 148 44 L 160 22 L 172 42" fill="none" stroke="#f07830" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 54 112 Q 46 64 92 44 Q 128 32 164 44 Q 210 64 202 112 Q 208 140 188 168 L 68 168 Q 48 140 54 112 Z" fill="#4a3728" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 68 168 L 72 210 Q 128 218 184 210 L 188 168 Z" fill="#4a3728" stroke="#2d1810" stroke-width="3"/>
+    <path d="M 72 56 Q 128 42 184 56" fill="none" stroke="#6b5344" stroke-width="3.5"/>
   </g>
 </svg>

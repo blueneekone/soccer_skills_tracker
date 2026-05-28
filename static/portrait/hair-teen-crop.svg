@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" aria-hidden="true">
   <g fill-rule="evenodd" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M 60 100 Q 52 58 96 40 Q 128 28 160 40 Q 204 58 196 100 Q 202 76 184 50 Q 128 34 72 50 Q 54 76 60 100 Z" fill="#3d2314" stroke="#2d1810" stroke-width="3.5"/>
-    <path d="M 72 50 Q 128 36 184 50 L 174 42 Q 128 30 82 42 Z" fill="#2d1810" stroke="none"/>
-    <path d="M 68 78 Q 128 66 188 78 L 180 88 Q 128 76 76 88 Z" fill="#3d2314" stroke="#2d1810" stroke-width="2.5"/>
-    <path d="M 80 96 L 90 74 M 176 96 L 166 74" fill="none" stroke="#f07830" stroke-width="3" stroke-linecap="round"/>
-    <path d="M 94 40 L 104 26 L 114 42 M 142 42 L 152 26 L 162 40" fill="none" stroke="#f5a830" stroke-width="2.5" stroke-linecap="round"/>
-    <ellipse cx="128" cy="34" rx="6" ry="4" fill="#f5a830" stroke="#2d1810" stroke-width="2"/>
+<path d="M 74 102 Q 70 74 100 56 Q 128 46 156 56 Q 186 74 182 102 Q 184 84 168 68 Q 128 56 88 68 Q 72 84 74 102 Z" fill="#2d2318" stroke="#2d1810" stroke-width="3.5"/>
+    <path d="M 88 68 Q 128 60 168 68" fill="none" stroke="#453528" stroke-width="3"/>
+    <path d="M 78 90 Q 128 84 178 90" fill="none" stroke="#2d1810" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 96 56 L 108 40 L 120 58 M 136 58 L 148 40 L 160 56" fill="none" stroke="#453528" stroke-width="2.5" stroke-linecap="round"/>
   </g>
 </svg>

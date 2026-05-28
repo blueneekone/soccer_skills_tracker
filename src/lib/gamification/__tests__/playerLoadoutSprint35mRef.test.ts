@@ -69,10 +69,9 @@ describe('Sprint 3.5m-ref — board and ROADMAP wiring', () => {
 		expect(board).toMatch(/3\.5m-art|3\.5m-hair/);
 	});
 
-	it('ROADMAP marks 3.5m-ref Done and 3.5m-frame as next', () => {
+	it('ROADMAP marks 3.5m-ref Done (Phase 3 track advances past ref)', () => {
 		expect(roadmap).toMatch(/\|\s*\*\*3\.5m-ref\*\*\s*\|\s*\*\*Done\*\*/i);
-		expect(roadmap).toMatch(/3\.5m-ref Done/i);
-		expect(roadmap).toMatch(/next\s*3\.5m-frame/i);
+		expect(roadmap).toMatch(/3\.5m-ref Done|3\.5m-frame Done|3\.5m-art/i);
 	});
 
 	it('ROADMAP documents playerLoadoutSprint35mRef test', () => {

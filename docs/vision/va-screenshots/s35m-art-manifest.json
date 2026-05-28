@@ -1,0 +1,37 @@
+{
+	"sprint": "Epic 3 · Sprint 3.5m-art",
+	"description": "Cohesive Pip-Boy-tone bust SVG redraw — human VA after deploy (product owner signoff required)",
+	"capturedAt": null,
+	"minBytesDefault": 8000,
+	"viewports": [{ "width": 1280, "height": 900, "label": "desktop VA" }],
+	"acceptance": [
+		"One cohesive cartoon person — Vault Boy/Girl tone, original art (not traced refs)",
+		"Hair reads as human graphic hair at holo scale — not flame/mascot blob",
+		"Portrait recessed inside art well (3.5m-frame) — not sticker on ring",
+		"Parent-safe teen default — Would a parent show this to a 13yo?",
+		"Upgrade-worthy — Would a player want the next unlock?"
+	],
+	"combosToCapture": [
+		"teen medium face + teen ponytail + kit home",
+		"legacy default face + default hair + default kit"
+	],
+	"routes": [
+		{
+			"path": "/player/dashboard",
+			"file": "s35m-art-hq-holo-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "HQ holo — teen ponytail + kit home or default trio; portrait inside recessed well"
+		},
+		{
+			"path": "/player/armory",
+			"query": "tab=studio",
+			"file": "s35m-art-studio-1280.png",
+			"width": 1280,
+			"height": 900,
+			"minBytes": 8000,
+			"note": "Armory Studio dossier — same combo matrix; hair readable at 128px"
+		}
+	]
+}
