@@ -1,12 +1,14 @@
 # Portrait Reference Board — Primary Agent Authority
 
-**Epic 3.5 · Sprint 3.5m-docs** · Pip-Boy / Vault-tone cartoon bust · Player OS holo recess
+**Epic 3.5 · Sprint 3.5m-docs + 3.5m-ref** · Vault Boy/Girl tone · Bert Turtle · UPA · Phoenix palette · Player OS holo recess
 
 > **Mandatory agent read:** Every portrait art, frame, or hair sprint (**3.5m-frame** onward) must open this board **before** pixel or SVG work. Cite: **Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md)** + [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md) §1–§2.
 
 **Authority chain:** **This board (visual north star)** → [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md) (style locks & COPPA) → [`OPERATIVE_ID_CARD.md`](../OPERATIVE_ID_CARD.md) (Z3 art well) → [`OPERATIVE_LOADOUT.md`](../OPERATIVE_LOADOUT.md) (catalog wiring)
 
-**IP boundary:** We borrow **tone and anatomy discipline** from mid-century propaganda cartoon humans (Fallout Vault Boy/Girl *read*) — **never** Bethesda assets, poses, costumes, logos, or copy.
+**IP boundary:** We borrow **tone and anatomy discipline** from mid-century propaganda cartoon humans (Fallout Vault Boy/Girl *read*), **Bert the Turtle** (*Duck and Cover*, PD), and **UPA-era** flat graphic cartoons — **never** Bethesda, Hasbro, or UPA traced characters in shipping SVGs.
+
+**Terminology:** **Pip-Boy** = wrist UI device in Fallout fiction (out of scope). **Vault Boy / Vault Girl** = cartoon mascot **tone** target for operative busts.
 
 ---
 
@@ -23,6 +25,12 @@
 | **Attitude** | Confident, encouraging athlete — mastery energy | No dystopian glare; no baby-chibi for teen roster defaults |
 
 **Reject on sight:** Vault Boy thumbs-up pose copy, vault suit costume, pip-boy device, franchise colors as mandatory kit, any Bethesda trademark silhouette.
+
+**Lineage anchors (also see gallery §6):**
+
+- **Bert the Turtle** (*Duck and Cover*, 1951, PD) — instructional cartoon simplicity; flat friendly shapes that inform Vault Boy readability.
+- **UPA / Gerald McBoing-Boing era** — flat graphic shapes, clean lines, pre-3D cel (logo/still mood board — not character trace).
+- **Phoenix palette** — navy kit, warm skin range, gold trim from club logo only ([`phoenix-palette.png`](./images/phoenix-palette.png)).
 
 ---
 
@@ -88,6 +96,7 @@ Use at **3.5m-gate** after **3.5m-frame**, **3.5m-art**, and **3.5m-hair** — f
 | Sprint | Focus |
 |--------|--------|
 | **3.5m-docs** ✓ | This board + ROADMAP Phase 3 reopen |
+| **3.5m-ref** ✓ | Reference image kit — [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md) + [`images/`](./images/) |
 | **3.5m-frame** | Art-well recess + frame/portrait alignment (no sticker-on-ring) |
 | **3.5m-art** | Matched-set cartoon bust SVG redraw (same 9 catalog ids) |
 | **3.5m-hair** | Human graphic hair pass — retire mascot flame default |
@@ -97,8 +106,35 @@ Use at **3.5m-gate** after **3.5m-frame**, **3.5m-art**, and **3.5m-hair** — f
 
 ---
 
+## 6. Reference images
+
+Download provenance and license notes: [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md). Folder README: [`images/README.md`](./images/README.md).
+
+These files are **internal style mood boards** — **do not** trace into `static/portrait/*.svg`.
+
+### Visual reference gallery
+
+![Vault Boy tone](./images/vault-boy-tone.jpg)
+![Vault Girl tone](./images/vault-girl-tone.jpg)
+![Bert the Turtle — Duck and Cover](./images/bert-turtle-duck-and-cover.jpg)
+![UPA cartoon tone](./images/upa-cartoon-tone.jpg)
+![Monopoly mascot tone](./images/monopoly-pennybags-tone.jpg)
+![Teen comic tone](./images/teen-comic-tone.jpg)
+![Phoenix palette](./images/phoenix-palette.png)
+
+### Agent mandatory read (3.5m-art · 3.5m-hair)
+
+> Before **3.5m-art** or **3.5m-hair**: read **PORTRAIT_REFERENCE_BOARD.md** AND open **every** file in `docs/vision/references/images/`. Match Vault Boy bust cohesion + Bert Turtle simplicity + Phoenix palette. Hair must read as **hair** at 64px — not flame, fur, or mascot element.
+>
+> **Pip-Boy** = wrist device (Fallout UI fiction). **Vault Boy/Girl** = cartoon mascot **tone** target for bust art — not an invitation to copy Bethesda poses or costumes.
+
+---
+
 ## Cross-links
 
+- Image provenance: [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md)
+
+- Image mood boards: [`images/README.md`](./images/README.md)
 - Style locks & COPPA: [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md)
 - Card Z3 art well: [`OPERATIVE_ID_CARD.md`](../OPERATIVE_ID_CARD.md)
 - Catalog & pipeline: [`OPERATIVE_LOADOUT.md`](../OPERATIVE_LOADOUT.md)

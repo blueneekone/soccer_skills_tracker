@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-05-28  
-**Current sprint:** **3.5m-docs Done** (reopen avatar track + reference board) · **next 3.5m-frame** · **3.5k In progress** (cloud) · **Epic 4.1 blocked** until **3.5m-gate** VA ☑ (product owner) · **3.5h Done** · **3.5j Done**  
+**Current sprint:** **3.5m-ref Done** (reference image kit) · **next 3.5m-frame** · **3.5k In progress** (cloud) · **Epic 4.1 blocked** until **3.5m-gate** VA ☑ (product owner) · **3.5h Done** · **3.5j Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1347,7 +1347,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **3.5m-docs Done** · **Phase 3 next: 3.5m-frame**. **3.5l-gate** shipped — visual **rejected by product owner** (automated tests ≠ human VA). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md). Portrait board: [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **3.5m-ref Done** · **Phase 3 next: 3.5m-frame**. **3.5l-gate** shipped — visual **rejected by product owner** (automated tests ≠ human VA). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md). Portrait board: [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) · images: [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1406,6 +1406,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5l-b** → **3.5l-e** | **Superseded** | Phase 2 art/schema/pose track — superseded by **Phase 3 (3.5m-*)** | — |
 | **3.5l-gate** | **Shipped — visual rejected by product owner** | Automated `playerLoadoutSprint35*` regression passed; human VA failed — **automated tests ≠ human VA** | [`s35l-gate-manifest.json`](docs/vision/va-screenshots/s35l-gate-manifest.json) |
 | **3.5m-docs** | **Done** | Reopen avatar track + Pip-Boy reference board (`PORTRAIT_REFERENCE_BOARD.md`) | [`PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) |
+| **3.5m-ref** | **Done** | Reference image kit — `REFERENCE_SOURCES.md` + `references/images/` mood boards | [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md), `playerLoadoutSprint35mRef.test.ts` |
 | **3.5m-frame** | **Next** | Art-well recess + frame/portrait alignment — portrait IN well, not sticker on ring | — |
 | **3.5m-art** | Planned | Matched-set cartoon bust SVG redraw per reference board (same 9 catalog ids) | — |
 | **3.5m-hair** | Planned | Human graphic hair pass — retire mascot flame default | — |
@@ -1436,10 +1437,11 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 **Deploy order (strict):**
 
 1. **3.5m-docs** ✓ — reference board + ROADMAP reopen (docs only)
-2. **3.5m-frame** — art-well recess; portrait inside Z3 well, not sticker on avatar ring
-3. **3.5m-art** — matched-set SVG redraw (same 9 catalog ids) + `npm run generate:portraits` + hosting deploy
-4. **3.5m-hair** — human graphic hair; retire mascot flame default
-5. **3.5m-gate** — full `playerLoadoutSprint35*` regression + **product owner** human VA
+2. **3.5m-ref** ✓ — downloadable mood-board images + provenance table
+3. **3.5m-frame** — art-well recess; portrait inside Z3 well, not sticker on avatar ring
+4. **3.5m-art** — matched-set SVG redraw (same 9 catalog ids) + `npm run generate:portraits` + hosting deploy
+5. **3.5m-hair** — human graphic hair; retire mascot flame default
+6. **3.5m-gate** — full `playerLoadoutSprint35*` regression + **product owner** human VA
 
 **Human acceptance bar (3.5m-gate):** Reference board §4 — *Would a parent show this to a 13yo?* · *Would a player want the next unlock?* · one cohesive cartoon person at 88px and 128px; portrait recessed in art well; no floating head / mascot flame default hair.
 
