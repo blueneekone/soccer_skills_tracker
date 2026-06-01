@@ -1,8 +1,8 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-05-28  
-**Current sprint:** **3.5m-art Pending product owner signoff** (cohesive bust SVG redraw) · **next 3.5m-hair or 3.5m-gate** (owner) · **3.5k In progress** (cloud) · **Epic 4.1 blocked** until **3.5m-gate** VA ☑ (product owner) · **3.5h Done** · **3.5j Done**  
+**Last updated:** 2026-06-01  
+**Current sprint:** **LAUNCH-functional-os** · **next build order:** **XP-verify Done** · **3.5k Done** · **Epic 4.1 Done** · **4.2 Done** · **4.11 Done** → **4.4** → **4.3** · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -130,7 +130,7 @@ Runs parallel-safe with **Wave E (Armory)** when file lists do not overlap.
 
 ## Delivery gate (Player OS cinematic premium)
 
-- **Unblocked after 2.20 Done + G10 sign-off:** Epic 3.4+ **implementation** (shipping still requires Tier A primitive parity sign-off in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md)); Epic **4.1+ blocked until 3.5m-gate** portrait VA ☑ (product owner)
+- **Unblocked after 2.20 Done + G10 sign-off:** Epic 3.4+ **implementation** (shipping still requires Tier A primitive parity sign-off in [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) per [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md)); Epic **4.1+ unblocked** at launch — placeholder portrait OK; **3.5m-gate** portrait VA **deferred post-launch** (product owner)
 - **Allowed parallel:** Epic 3.0–3.3 (Done), Epic 4.0 docs, unrelated bugfixes
 - **North star:** Player OS must pass cinematic material/spatial acceptance (see [`docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md`](docs/vision/PLAYER_OS_MATERIAL_SPATIAL.md) + [`docs/PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md)) before comms or album bonuses
 - **Retcon:** Sprint 2.15 shipped motion + checklist; visual review found Tier A/Tier B split — gate re-closed for Epic 3.4 / 4.1
@@ -518,7 +518,7 @@ npm run build
 
 **Tests:** `playerHudSprint219.test.ts`
 
-**Gate lift:** Epic 3.4+ **unblocked** after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off. Epic **4.1+ blocked until 3.5m-gate** portrait VA ☑ (product owner). **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19.
+**Gate lift:** Epic 3.4+ **unblocked** after 2.19 Done + full [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](docs/PLAYER_OS_VISUAL_ACCEPTANCE.md) sign-off. Epic **4.1+ unblocked** at launch — launch accepts `defaultPortraitV2` SVG + profile initials on holo; **3.5m-gate** human portrait VA **deferred post-launch**. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19.
 
 **Verify:**
 
@@ -1347,7 +1347,7 @@ Log visual/UX issues observed during 2.16–2.18 QA here for a follow-up sprint.
 
 ## Sprint status — Epic 3: Operative Loadout v2
 
-> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k In progress** on cloud). **3.5m-art Pending product owner signoff** (SVG redraw landed — human VA required). **3.5l-gate** shipped — visual **rejected by product owner** (automated tests ≠ human VA). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md). Portrait board: [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) · images: [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md).
+> **Epic 3.4+ unblocked after Sprint 2.20 Done + G10 sign-off** — Phase 1 pipeline shipped (**3.5j Done**, **3.5h Done**, **3.5k Done** on cloud). **3.5m-docs-gemini Done** — owner Gemini art brief + Composer ingest playbook. **3.5m-art Superseded** (agent SVG redraw — human VA failed). **3.5l-gate** shipped — visual **rejected by product owner** (automated tests ≠ human VA). Card authority: [`docs/vision/OPERATIVE_ID_CARD.md`](docs/vision/OPERATIVE_ID_CARD.md). Portrait board: [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) · Gemini brief: [`docs/vision/GEMINI_ART_BRIEF.md`](docs/vision/GEMINI_ART_BRIEF.md) · images: [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md).
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
@@ -1400,19 +1400,50 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5j-b** | **Done** | Armory read-repair hydrate parity with HQ; sync merges `ownedPortraitParts` when changed | `playerLoadoutSprint35j.test.ts` |
 | **3.5j** | **Done** | Identity Studio cohesion umbrella (3.5j-a + 3.5j-b) | `playerLoadoutSprint35j.test.ts` |
 | **3.5h** | **Done** | Bauhaus v1 generator retirement; v2-only render path | `playerLoadoutSprint35h.test.ts` |
-| **3.5k** | **In progress** | Collectible metadata — set #, rarity chip, card back, flavor text | `playerLoadoutSprint35k.test.ts`, [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json) |
+| **3.5k** | **Done** | Collectible metadata — set #, rarity chip, card back, flavor text | `playerLoadoutSprint35k.test.ts`, [`s35k-manifest.json`](docs/vision/va-screenshots/s35k-manifest.json) |
 | **3.5i** | **Superseded** | Split into **3.5l-a–e** (portrait quality phase) | — |
 | **3.5l-a** | **Done** | Compose/clip fix — hair visibility, face-default ear ellipses, layer alignment | `playerLoadoutSprint35lA.test.ts` |
 | **3.5l-b** → **3.5l-e** | **Superseded** | Phase 2 art/schema/pose track — superseded by **Phase 3 (3.5m-*)** | — |
 | **3.5l-gate** | **Shipped — visual rejected by product owner** | Automated `playerLoadoutSprint35*` regression passed; human VA failed — **automated tests ≠ human VA** | [`s35l-gate-manifest.json`](docs/vision/va-screenshots/s35l-gate-manifest.json) |
 | **3.5m-docs** | **Done** | Reopen avatar track + Pip-Boy reference board (`PORTRAIT_REFERENCE_BOARD.md`) | [`PORTRAIT_REFERENCE_BOARD.md`](docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) |
-| **3.5m-ref** | **Done** | Reference image kit — `REFERENCE_SOURCES.md` + `references/images/` mood boards | [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md), `playerLoadoutSprint35mRef.test.ts` |
+| **3.5m-ref** | **Done** | Reference image kit — `REFERENCE_SOURCES.md` + `references/character/` (legacy mood boards trimmed in **3.6a**) | [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md), `playerLoadoutSprint35mRef.test.ts` |
+| **3.6a-ref-organize** | **Done** | Avatar reference rename + dedupe + `character/AVATAR_REFERENCE_INDEX.md` | `playerLoadoutSprint35mRef.test.ts` |
+| **LAUNCH-defer-avatar** | **Done** | Reference hierarchy + avatar builder pause | `playerLaunchDeferAvatar.test.ts` |
+| **LAUNCH-functional-os** | **In progress** | Three-persona functional MVP; table visual research | `personaFunctionalMvp.test.ts` |
+| **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
-| **3.5m-art** | **Pending product owner signoff** | Cohesive Pip-Boy-tone bust SVG redraw (16 catalog files) — **not Done until human VA** | `playerLoadoutSprint35mArt.test.ts`, [`s35m-art-manifest.json`](docs/vision/va-screenshots/s35m-art-manifest.json) |
-| **3.5m-hair** | Planned | Human graphic hair pass — retire mascot flame default | — |
-| **3.5m-gate** | Planned | Portrait stability gate — full regression + **product owner** human VA | [`s35m-gate-manifest.json`](docs/vision/va-screenshots/s35m-gate-manifest.json) |
+| **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
+| **3.5m-docs-gemini** | **Done** | Owner Gemini art brief + Composer ingest playbook (docs/rules only) | [`GEMINI_ART_BRIEF.md`](docs/vision/GEMINI_ART_BRIEF.md), [`COMPOSER_PLAYBOOK.md`](docs/vision/COMPOSER_PLAYBOOK.md), `playerLoadoutSprint35mDocsGemini.test.ts` |
+| **3.5m-gemini-ingest** | **Deferred (post-launch — owner art)** | Wire one owner-approved bust PNG at a time — precomposed holo default | [`ASSET_INGESTION.md`](docs/vision/ASSET_INGESTION.md), [`.cursor/rules/portrait-gemini-ingest.mdc`](.cursor/rules/portrait-gemini-ingest.mdc) |
+| **3.5m-hair** | **Superseded** | Folded into Gemini bust + ingest | — |
+| **3.5m-gate** | **Deferred (post-launch — owner art)** | Portrait stability gate — full regression + **product owner** human VA | [`s35m-gate-manifest.json`](docs/vision/va-screenshots/s35m-gate-manifest.json) |
+| **3.6b+** | **Deferred (post-launch — owner art)** | Avatar Studio PNG layer stack — Photopea slice from `references/character/` | [`character/AVATAR_REFERENCE_INDEX.md`](docs/vision/references/character/AVATAR_REFERENCE_INDEX.md), [`.cursor/rules/avatar-builder-deferred.mdc`](.cursor/rules/avatar-builder-deferred.mdc) |
 
-**Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only. **Epic 4.1 blocked** until **3.5m-gate** VA ☑ (product owner — human-coherent portraits on HQ, Studio, recruit).
+---
+
+## Sprint XP-verify scope — **Done**
+
+**Goal:** Prove XP math is correct and client preview matches server. No UI/visual changes.
+
+**Authority:** `src/lib/gamification/level.js` · `functions/gamificationWorkoutXp.js` · `trainingOps.logTrainingSession`
+
+**Delivered:**
+
+- `src/lib/gamification/__tests__/levelXp.test.ts` — `calculateTrainingSessionEarnedXp`, `xpToAdvanceFromLevel`, `getLevelProgressFromTotalXp`, `getCurrentRank`
+- `functions/__tests__/gamificationWorkoutXp.test.js` — same training-session fixtures (must stay aligned with `level.js`)
+- `functions/src/domains/__tests__/trainingOpsXp.test.js` — `logTrainingSession` earned ≥ 1 guard
+
+**Verify:**
+
+```bash
+npm test -- src/lib/gamification/__tests__/levelXp.test.ts
+node --test functions/__tests__/gamificationWorkoutXp.test.js functions/src/domains/__tests__/trainingOpsXp.test.js
+npm run check
+```
+
+---
+
+**Gate:** **3.5g-f Done** — card surfaces use `OperativeIdCardFrame`; `OperativeIdEmblem` retained for `HudAvatarRing` token path only. **Epic 4.1+ unblocked** at launch — placeholder portrait OK (`defaultPortraitV2` SVG + initials). **3.5m-gate** human VA resumes post-launch when owner reopens character art.
 
 **Design principles:**
 
@@ -1437,11 +1468,13 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 **Deploy order (strict):**
 
 1. **3.5m-docs** ✓ — reference board + ROADMAP reopen (docs only)
-2. **3.5m-ref** ✓ — downloadable mood-board images + provenance table
+2. **3.5m-ref** ✓ — reference provenance table (legacy wiki mood JPEGs removed; **3.6a** Meg/Tom sheets in `references/character/female-meg/` + `male-tom/`)
 3. **3.5m-frame** ✓ — art-well recess; unified clip + holo inset shadow; portrait inside Z3 well
-4. **3.5m-art** — cohesive bust SVG redraw (16 catalog files) + `npm run generate:portraits` + deploy — **Pending product owner signoff** ☑ required before Done
-5. **3.5m-hair** — human graphic hair refinement (only if owner rejects hair after 3.5m-art deploy)
-6. **3.5m-gate** — full `playerLoadoutSprint35*` regression + **product owner** human VA
+4. **3.5m-art** — ~~cohesive bust SVG redraw~~ — **Superseded** (human VA failed)
+5. **3.5m-docs-gemini** ✓ — owner Gemini art brief + Composer ingest playbook (docs/rules only)
+6. **Owner** — create bust PNGs in Gemini Pro Art → `static/portrait/approved/` → log `ASSET_LICENSES.md`
+7. **3.5m-gemini-ingest** — **deferred post-launch** — wire one approved bust at a time + `npm run generate:portraits` + deploy — **Done only after owner holo approve ☑**
+8. **3.5m-gate** — **deferred post-launch** — full `playerLoadoutSprint35*` regression + **product owner** human VA
 
 **Human acceptance bar (3.5m-gate):** Reference board §4 — *Would a parent show this to a 13yo?* · *Would a player want the next unlock?* · one cohesive cartoon person at 88px and 128px; portrait recessed in art well; no floating head / mascot flame default hair.
 
@@ -1451,17 +1484,17 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 ## Sprint status — Epic 4: Comms & Team Operations Hub
 
-> **Portrait dependency:** Epic **4.1+ implementation blocked** until **3.5m-gate** ☑ (product owner).
+> **Portrait at launch:** `defaultPortraitV2` SVG + profile initials on holo — **3.5m-gate** human VA **deferred post-launch** (product owner).
 
-> **Epic 4.1+ unblocked after Sprint 2.19 Done** — comms wiring may proceed after Player OS visual acceptance sign-off **and 3.5m-gate portrait VA** (product owner). **3.5l-gate** automated pass does **not** satisfy this bar. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19.
+> **Epic 4.1+ unblocked** after Sprint 2.19 Done + **LAUNCH-defer-avatar** — comms wiring may proceed after Player OS visual acceptance sign-off; launch placeholder portrait OK. **3.5l-gate** automated pass does **not** satisfy post-launch portrait bar. **Sign-off against [`PLAYER_OS_FOUNDATION.md`](docs/vision/PLAYER_OS_FOUNDATION.md) reference matrix required before launch** even though Player OS gate is open from 2.19. UI refs: [`docs/vision/references/ui/`](docs/vision/references/ui/).
 
 > **Naming note:** ROADMAP **Epic 4 = Comms Hub**. Unrelated legacy comments (e.g. Firestore "Epic 4.3 LeagueManager") are a different numbering scheme — do not renumber.
 
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
 | 4.0 | Done | Messaging policy charter — household-only adult↔minor | [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md), [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md) |
-| 4.1 | Planned | Wire send surfaces — `/coach/logistics`, mount MessagesTab, parent-targeted compose | — |
-| 4.2 | Planned | SafeSport compliance — block coach→minor, `consentComms`, unify monitored channel path | — |
+| 4.1 | **Done** | Wire send surfaces — `/coach/logistics`, mount MessagesTab, parent-targeted compose | `commsSprint41.test.ts` |
+| 4.2 | **Done** | SafeSport compliance — block coach→minor, `consentComms`, unify monitored channel path | `commsSprint42.test.ts` |
 | 4.3 | Planned | Notification bus — single FCM store, push on announcements/messages | — |
 | 4.4 | Planned | Parent comms hub — Parent Lounge, unified inbox, reply UX | — |
 | 4.5 | Planned | Schedule → announce → push (deployment calendar integration) | — |
@@ -1470,7 +1503,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | 4.8 | Planned | Director club broadcast composer | — |
 | 4.9 | Planned | Compliance console + audit export | — |
 | 4.10 | Planned | Report message / incident flow | — |
-| 4.11 | Planned | Household parent↔child threads | — |
+| 4.11 | **Done** | Household parent↔child threads | `commsSprint411.test.ts` |
 | 4.12 | Planned | Firestore rules + callable integration tests | — |
 
 **Epic 4 runs parallel to Epic 3** after **3.2** ships. **Summer MVP:** 4.1–4.4 + 4.11. **Fall season:** 4.5–4.10 + 4.12.
@@ -1500,6 +1533,70 @@ Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map
 
 ```bash
 npm run check
+```
+
+---
+
+## Sprint 4.1 scope — Coach logistics compose — **Done**
+
+**Goal:** Wire coach send surfaces — `/coach/logistics`, mount `MessagesTab`, parent-targeted announcement compose via `safeSportBroadcast`.
+
+**Delivered:**
+
+- `src/routes/(app)/coach/logistics/+page.svelte` — team context, `ParentAnnouncementCompose`, `MessagesTab`
+- `src/lib/components/coach/ParentAnnouncementCompose.svelte` — `CommsEngine` team broadcast (parent-targeted per [`COMMS_HUB.md`](docs/vision/COMMS_HUB.md))
+- `src/lib/services/comms.svelte.ts` — `safeSportBroadcast` region fix (`us-east1`)
+- `src/lib/services/__tests__/commsSprint41.test.ts`
+
+**Out of scope:** Coach→minor DM block (4.2), Parent Lounge (4.4), notification bus (4.3), Player OS visual changes.
+
+**Verify commands:**
+
+```bash
+npm test -- src/lib/services/__tests__/commsSprint41.test.ts
+npm run check
+npm run build
+```
+
+---
+
+## Sprint 4.2 scope — SafeSport compliance — **Done**
+
+**Goal:** Block staff→minor interactive paths; enforce VPC `consentComms` on parent delivery; unify monitored channel sends on `sendChannelMessage`.
+
+**Delivered:**
+
+- `functions/src/domains/commsPolicy.js` — minor/adult guard + `consentComms` filter
+- `sendCoachPlayerMessage` — adult athlete (18+) only; minors rejected server-side
+- `sendChannelMessage` — staff blocked in channels containing minor players; consent-filtered CC repair
+- `safeSportBroadcast` — parent CC filtered by `consent_records.consentItems.comms`
+- `CommsEngine.sendChannelMessage` + `NewMessageModal` minor selection block
+- `commsSprint42.test.ts`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/services/__tests__/commsSprint42.test.ts
+```
+
+---
+
+## Sprint 4.11 scope — Household threads — **Done**
+
+**Goal:** Parent ↔ linked operative messaging gated by shared `householdId` — no staff participation.
+
+**Delivered:**
+
+- `sendHouseholdMessage` callable → `households/{householdId}/thread_messages`
+- Firestore rules — household members read-only; server writes only
+- `HouseholdThreadPanel.svelte` on `/messages` (parent + player)
+- `CommsEngine.sendHouseholdMessage`
+- `commsSprint411.test.ts`
+
+**Verify:**
+
+```bash
+npm test -- src/lib/services/__tests__/commsSprint411.test.ts
 ```
 
 ---
@@ -2149,7 +2246,7 @@ Lettered epics avoid collision with **Epic 5** in [`docs/EPIC5_STATUS.md`](docs/
 | Parent | `/parent/dashboard` | CoOpArena, CarRideArena, BountyTerminal |
 | Parent | `/messages` | CC inbox (today); Parent Lounge *(planned — Epic 4.4)* |
 | Coach | `/coach` | SquadTelemetryView, assignments, drills, match-day |
-| Coach | `/coach/logistics` *(planned — Epic 4.1)* | MessagesTab, announcement compose |
+| Coach | `/coach/logistics` | MessagesTab, parent-targeted announcement compose |
 | Director | `/director` | Compliance, Field Ops, teams, registrars tab |
 | Admin | `/admin` | Organizations, users, system settings |
 

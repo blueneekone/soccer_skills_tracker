@@ -306,6 +306,7 @@ exports.shredSensitiveData          = shredOps.shredSensitiveData;
 const operativeOps = require('./src/domains/operativeOps');
 exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
+exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
 exports.impersonateUserFn           = operativeOps.impersonateUserFn;
 exports.purgeUserDataFn             = operativeOps.purgeUserDataFn;
 exports.parentSignCoppaWaiver       = operativeOps.parentSignCoppaWaiver;

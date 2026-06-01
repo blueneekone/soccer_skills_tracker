@@ -16,7 +16,7 @@
 	import type { IconName } from '$lib/icons/registry.js';
 
 	/**
-	 * @typedef {{ email: string; role: string; label: string }} CandidateUser
+	 * @typedef {{ email: string; role: string; label: string; isMinor?: boolean }} CandidateUser
 	 */
 
 	let {
@@ -87,7 +87,8 @@
 					(typeof data.playerName === 'string' && data.playerName.trim()) ||
 					(typeof data.displayName === 'string' && data.displayName.trim()) ||
 					email.split('@')[0];
-				byEmail.set(email, { email, role, label });
+				const isMinor = data.isMinor === true;
+				byEmail.set(email, { email, role, label, isMinor });
 			};
 
 			if (myRole === 'director' || myRole === 'super_admin' || myRole === 'global_admin') {
@@ -214,6 +215,12 @@
 	 * @param {string} email
 	 */
 	function toggle(email) {
+		const c = candidates.find((x) => x.email === email);
+		if (isStaffShadow && c?.role === 'player' && c?.isMinor) {
+			createErr =
+				'SafeSport: direct chat with minor athletes is blocked. Use Logistics → parent announcements.';
+			return;
+		}
 		const next = new Set(selected);
 		const k = email.toLowerCase();
 		if (next.has(k)) next.delete(k);
@@ -314,6 +321,11 @@
 		if (!clubId || !teamId || !myUid || creating) return;
 		if (selected.size === 0) {
 			createErr = 'Select at least one person.';
+			return;
+		}
+		if (isStaffShadow && selectedList.some((s) => s.role === 'player' && s.isMinor)) {
+			createErr =
+				'SafeSport: remove minor athletes from this chat — use Logistics → parent announcements.';
 			return;
 		}
 		const {

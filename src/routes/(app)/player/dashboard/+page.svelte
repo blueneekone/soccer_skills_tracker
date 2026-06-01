@@ -43,6 +43,7 @@
 		queuePortraitReadRepairWrite,
 	} from '$lib/avatars/portraitReadRepair.js';
 	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
+	import AdaptiveHomework from './AdaptiveHomework.svelte';
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -463,6 +464,10 @@
 					/>
 				{/snippet}
 		</OperativeHub>
+
+		<section class="bento-span-12" aria-label="Adaptive homework">
+			<AdaptiveHomework />
+		</section>
 
 		<OperativeQuickOps />
 

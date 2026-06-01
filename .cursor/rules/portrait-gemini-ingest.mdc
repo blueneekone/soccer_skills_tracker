@@ -1,0 +1,41 @@
+---
+description: Gemini bust ingest — no agent-drawn portrait art
+globs: static/portrait/**,src/lib/avatars/**,docs/vision/**
+alwaysApply: false
+---
+
+# Portrait Gemini ingest
+
+## Mandatory reads (before any portrait art or ingest work)
+
+1. [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](../../docs/vision/references/PORTRAIT_REFERENCE_BOARD.md)
+2. [`docs/vision/GEMINI_ART_BRIEF.md`](../../docs/vision/GEMINI_ART_BRIEF.md)
+3. [`docs/vision/COMPOSER_PLAYBOOK.md`](../../docs/vision/COMPOSER_PLAYBOOK.md)
+4. [`docs/vision/ASSET_INGESTION.md`](../../docs/vision/ASSET_INGESTION.md)
+
+## Hard rules
+
+- **NEVER** draw, redraw, or edit portrait SVG art in agent sessions
+- **NEVER** illustrate bust PNGs — owner creates art in Google Gemini Pro Art mode
+- **Ingest only** from `static/portrait/approved/` — owner-approved PNGs with `ASSET_LICENSES.md` row ☑
+- **One bust per ingest sprint** — sprint id `3.5m-gemini-ingest`
+- Mark ROADMAP sprint **Done** only after owner **holo approved ☑** on `/player/dashboard` — automated tests alone are insufficient (see 3.5l-gate lesson)
+
+## Composer pipeline (agents)
+
+```bash
+firebase use sports-skill-tracker-dev
+npm run generate:portraits
+npm test -- src/lib/gamification/__tests__/playerLoadoutSprint35*.test.ts
+npm run check
+npm run build
+firebase deploy --only hosting
+```
+
+## Superseded
+
+- **3.5m-art** — agent modular SVG bust redraw; human VA failed. Shipping path = Gemini precomposed busts + ingest.
+
+## Epic gate
+
+**LAUNCH-defer-avatar:** Ingest sprint **paused** until post-launch. **Epic 4.1+ implementation unblocked** at launch (placeholder portrait OK). **3.5m-gate** human VA resumes when owner reopens character art. See [`avatar-builder-deferred.mdc`](./avatar-builder-deferred.mdc).

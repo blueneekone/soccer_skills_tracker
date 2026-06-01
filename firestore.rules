@@ -1084,6 +1084,17 @@ service cloud.firestore {
             && resource.data.clubId == teamClubId(tokenTeam()))
       );
       allow create, update, delete: if isSuper();
+
+      // Sprint 4.11 — household parent↔operative thread (server writes only).
+      match /thread_messages/{messageId} {
+        allow read: if authed() && (
+          (tokenHousehold() != null && tokenHousehold() == householdId)
+          || (tokenRole() == 'player'
+              && userDoc().keys().hasAll(['householdId'])
+              && userDoc().householdId == householdId)
+        );
+        allow create, update, delete: if false;
+      }
     }
 
     // Parent reads dispatch code for their household operatives; writes remain server-only.
@@ -1896,9 +1907,8 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Epic 1.4: coach/staff → athlete messages. Client writes forbidden; callable
-    // sendCoachPlayerMessage loads household parentEmails for minors into ccParentEmails
-    // (SafeSport visibility) and batch-writes in_app_messages + messaging_audit.
+    // Epic 1.4 / Sprint 4.2: coach/staff → adult athlete (18+) only; minors blocked server-side.
+    // Client writes forbidden; callable batch-writes in_app_messages + messaging_audit.
     match /in_app_messages/{docId} {
       allow read: if authed() && (
         isSuper()

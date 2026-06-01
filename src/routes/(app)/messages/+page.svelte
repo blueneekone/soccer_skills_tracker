@@ -2,11 +2,16 @@
 	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import HouseholdThreadPanel from '$lib/components/comms/HouseholdThreadPanel.svelte';
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
 	const clubId = $derived(profile?.clubId ? String(profile.clubId) : '');
+	const householdId = $derived(profile?.householdId ? String(profile.householdId) : '');
+	const showHouseholdThread = $derived(
+		(role === 'parent' || role === 'player') && Boolean(householdId),
+	);
 
 	let items = $state(/** @type {Array<Record<string, unknown> & { id: string }>} */ ([]));
 	let loading = $state(true);
@@ -180,6 +185,10 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if showHouseholdThread}
+			<HouseholdThreadPanel householdId={householdId} />
+		{/if}
 	</div>
 </div>
 

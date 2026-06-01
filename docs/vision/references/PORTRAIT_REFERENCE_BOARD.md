@@ -1,8 +1,12 @@
 # Portrait Reference Board — Primary Agent Authority
 
-**Epic 3.5 · Sprint 3.5m-docs + 3.5m-ref** · Vault Boy/Girl tone · Bert Turtle · UPA · Phoenix palette · Player OS holo recess
+**Epic 3.5 · Sprint 3.5m-docs + 3.5m-ref + 3.5m-docs-gemini + 3.6a-ref-organize** · Vault-tone cartoon bust (text) · Avatar Studio sheets · Player OS holo recess
 
-> **Mandatory agent read:** Every portrait art, frame, or hair sprint (**3.5m-frame** onward) must open this board **before** pixel or SVG work. Cite: **Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md)** + [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md) §1–§2.
+> **Mandatory agent read:** Every portrait frame or ingest sprint (**3.5m-frame** onward) must open this board **before** work. Cite: **Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md)** + [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md) §1–§2.
+
+**Launch bar (LAUNCH-defer-avatar):** Ship **`defaultPortraitV2` SVG** + **`profileIncomplete` initials** on holo. Character sheets → [`character/`](./character/) (**paused post-launch**). Player holo **chrome** UI refs → [`ui/player/`](./ui/player/). **Do not** wire PNG avatar layers or Avatar Studio until owner unpause.
+
+**Art creation (post-launch):** Owner generates bust PNGs in Google Gemini Pro Art mode — see **[`GEMINI_ART_BRIEF.md`](../GEMINI_ART_BRIEF.md)**. Composer agents ingest from `static/portrait/approved/` only; **never illustrate**. Sprint **3.5m-art** (agent modular SVG redraw) is **superseded** — human VA failed on agent-drawn layers.
 
 **Authority chain:** **This board (visual north star)** → [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md) (style locks & COPPA) → [`OPERATIVE_ID_CARD.md`](../OPERATIVE_ID_CARD.md) (Z3 art well) → [`OPERATIVE_LOADOUT.md`](../OPERATIVE_LOADOUT.md) (catalog wiring)
 
@@ -30,7 +34,7 @@
 
 - **Bert the Turtle** (*Duck and Cover*, 1951, PD) — instructional cartoon simplicity; flat friendly shapes that inform Vault Boy readability.
 - **UPA / Gerald McBoing-Boing era** — flat graphic shapes, clean lines, pre-3D cel (logo/still mood board — not character trace).
-- **Phoenix palette** — navy kit, warm skin range, gold trim from club logo only ([`phoenix-palette.png`](./images/phoenix-palette.png)).
+- **Phoenix palette** — navy kit, warm skin range, gold trim from club logo ([`static/Images/Phoenixes_Logo_2026.png`](../../../static/Images/Phoenixes_Logo_2026.png)). Sparky mascot = **anti-ref only** ([`mood/ref-mood-sparky-mascot.png`](./mood/ref-mood-sparky-mascot.png) when restored — not operative face).
 
 ---
 
@@ -96,35 +100,51 @@ Use at **3.5m-gate** after **3.5m-frame**, **3.5m-art**, and **3.5m-hair** — f
 | Sprint | Focus |
 |--------|--------|
 | **3.5m-docs** ✓ | This board + ROADMAP Phase 3 reopen |
-| **3.5m-ref** ✓ | Reference image kit — [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md) + [`images/`](./images/) |
+| **3.5m-ref** ✓ | Reference image kit — [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md) + character sheets (legacy mood boards trimmed in **3.6a**) |
+| **3.6a-ref-organize** ✓ | Avatar reference rename + dedupe + [`AVATAR_REFERENCE_INDEX.md`](./character/AVATAR_REFERENCE_INDEX.md) |
+| **LAUNCH-defer-avatar** ✓ | Reference hierarchy + avatar builder pause until post-launch | [`README.md`](./README.md) |
 | **3.5m-frame** | Art-well recess + frame/portrait alignment (no sticker-on-ring) |
-| **3.5m-art** | Matched-set cartoon bust SVG redraw (same 9 catalog ids) |
-| **3.5m-hair** | Human graphic hair pass — retire mascot flame default |
-| **3.5m-gate** | Regression + §4 checklist + **product owner** human VA |
+| **3.5m-art** | ~~Matched-set cartoon bust SVG redraw~~ — **superseded** (human VA failed) |
+| **3.5m-docs-gemini** ✓ | Owner Gemini art brief + Composer ingest playbook (docs/rules only) |
+| **3.5m-gemini-ingest** | **Deferred (post-launch)** — wire owner-approved bust PNGs — [`ASSET_INGESTION.md`](../ASSET_INGESTION.md) |
+| **3.5m-hair** | ~~Human graphic hair pass~~ — folded into Gemini bust + ingest |
+| **3.5m-gate** | **Deferred (post-launch)** — regression + §4 checklist + **product owner** human VA |
 
-**Epic 4.1** remains **blocked** until **3.5m-gate** ☑ (product owner).
+**Epic 4.1+** **unblocked for implementation** at launch — placeholder portrait OK (`defaultPortraitV2` SVG + initials). **3.5m-gate** human VA resumes post-launch when owner reopens character art.
 
 ---
 
 ## 6. Reference images
 
-Download provenance and license notes: [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md). Folder README: [`images/README.md`](./images/README.md).
+Provenance: [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md). Master index: [`README.md`](./README.md). **Slice map (paused):** [`character/AVATAR_REFERENCE_INDEX.md`](./character/AVATAR_REFERENCE_INDEX.md).
 
-These files are **internal style mood boards** — **do not** trace into `static/portrait/*.svg`.
+**Legacy wiki mood JPEGs removed (3.6a)** — tone remains in §1 text; do not reintroduce traced third-party art.
 
-### Visual reference gallery
+### UI holo chrome (launch)
 
-![Vault Boy tone](./images/vault-boy-tone.jpg)
-![Vault Girl tone](./images/vault-girl-tone.jpg)
-![Bert the Turtle — Duck and Cover](./images/bert-turtle-duck-and-cover.jpg)
-![UPA cartoon tone](./images/upa-cartoon-tone.jpg)
-![Monopoly mascot tone](./images/monopoly-pennybags-tone.jpg)
-![Teen comic tone](./images/teen-comic-tone.jpg)
-![Phoenix palette](./images/phoenix-palette.png)
+| Subfolder | Role |
+|-----------|------|
+| [`ui/player/`](./ui/player/) | HQ holo well, identity deck, route shell layout refs — **not** operative bust art |
 
-### Agent mandatory read (3.5m-art · 3.5m-hair)
+See [`ui/README.md`](./ui/README.md).
 
-> Before **3.5m-art** or **3.5m-hair**: read **PORTRAIT_REFERENCE_BOARD.md** AND open **every** file in `docs/vision/references/images/`. Match Vault Boy bust cohesion + Bert Turtle simplicity + Phoenix palette. Hair must read as **hair** at 64px — not flame, fur, or mascot element.
+### Avatar Studio character sheets (3.6a) — **deferred post-launch**
+
+| Subfolder | Role |
+|-----------|------|
+| [`character/female-meg/`](./character/female-meg/) | Mighty Meg — concept, base turnarounds, kits, hair/face/ear catalog grids |
+| [`character/male-tom/`](./character/male-tom/) | Atomic Tom — concept, base turnarounds, hair/face/ear catalog grids |
+| [`mood/`](./mood/) | Sparky anti-ref + Gemini experiment PNGs (restore per index if missing) |
+
+PNG layer output (paused): [`static/avatar/layers/README.md`](../../../static/avatar/layers/README.md). Gate: [`.cursor/rules/avatar-builder-deferred.mdc`](../../../.cursor/rules/avatar-builder-deferred.mdc).
+
+### Agent mandatory read (post-launch ingest + slice)
+
+> **At launch:** follow **§2** holo recess + [`ui/player/`](./ui/player/) for chrome. **Do not** slice or ingest until owner unpause.
+>
+> **After unpause:** read **PORTRAIT_REFERENCE_BOARD.md**, **[`GEMINI_ART_BRIEF.md`](../GEMINI_ART_BRIEF.md)**, and **[`character/AVATAR_REFERENCE_INDEX.md`](./character/AVATAR_REFERENCE_INDEX.md)**. Match Vault-tone bust cohesion (§1). Hair must read as **hair** at 64px — not flame, fur, or mascot element.
+>
+> **Precomposed bust track:** ingest owner PNGs from `static/portrait/approved/` only — do not redraw. **PNG layer stack:** Photopea slice from `character/female-meg/` / `character/male-tom/` → `static/avatar/layers/`.
 >
 > **Pip-Boy** = wrist device (Fallout UI fiction). **Vault Boy/Girl** = cartoon mascot **tone** target for bust art — not an invitation to copy Bethesda poses or costumes.
 
@@ -132,9 +152,11 @@ These files are **internal style mood boards** — **do not** trace into `static
 
 ## Cross-links
 
+- Art creation (owner): [`GEMINI_ART_BRIEF.md`](../GEMINI_ART_BRIEF.md)
+- Composer pipeline: [`COMPOSER_PLAYBOOK.md`](../COMPOSER_PLAYBOOK.md) · [`ASSET_INGESTION.md`](../ASSET_INGESTION.md)
+- License log: [`ASSET_LICENSES.md`](./ASSET_LICENSES.md)
 - Image provenance: [`REFERENCE_SOURCES.md`](./REFERENCE_SOURCES.md)
-
-- Image mood boards: [`images/README.md`](./images/README.md)
+- Reference hierarchy: [`README.md`](./README.md) · UI mockups: [`ui/README.md`](./ui/README.md) · Character (paused): [`character/README.md`](./character/README.md)
 - Style locks & COPPA: [`PORTRAIT_ART_DIRECTION.md`](../PORTRAIT_ART_DIRECTION.md)
 - Card Z3 art well: [`OPERATIVE_ID_CARD.md`](../OPERATIVE_ID_CARD.md)
 - Catalog & pipeline: [`OPERATIVE_LOADOUT.md`](../OPERATIVE_LOADOUT.md)

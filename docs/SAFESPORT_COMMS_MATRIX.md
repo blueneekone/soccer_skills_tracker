@@ -50,12 +50,12 @@ Client-direct writes to monitored channels are **blocked** by rules; sends must 
 
 | Gap | Impact | Epic sprint |
 |-----|--------|-------------|
-| **Orphaned `MessagesTab`** | [`src/lib/components/coach/MessagesTab.svelte`](../src/lib/components/coach/MessagesTab.svelte) exists but is **not mounted** on any coach route | 4.1 |
-| **`/coach/logistics` 404** | Nav link in [`workspaceNav.js`](../src/lib/shell/workspaceNav.js) — **no route** | 4.1 |
+| **Orphaned `MessagesTab`** | **Resolved (4.1)** — mounted on [`/coach/logistics`](../src/routes/(app)/coach/logistics/+page.svelte) | — |
+| **`/coach/logistics` 404** | **Resolved (4.1)** — route + `ParentAnnouncementCompose` | — |
 | **Dual FCM paths** | Event multicast in `index.js` vs. `device_tokens` / comms callables — no unified bus | 4.3 |
 | **No messaging tests** | No `firestoreRulesSprint4*.test.ts` or callable integration tests for comms | 4.12 |
-| **`sendCoachPlayerMessage` still allows minor DM** | CC model contradicts 4.0 household-only charter | 4.2 |
-| **`consentComms` not enforced** | Parents can decline comms in VPC but sends still proceed | 4.2 |
+| **`sendCoachPlayerMessage` still allows minor DM** | **Resolved (4.2)** — minors blocked; adult-only direct mail | — |
+| **`consentComms` not enforced** | **Resolved (4.2)** — filtered on broadcast CC + monitored channel CC repair | — |
 | **Parent `/messages` partial** | [`src/routes/(app)/messages/+page.svelte`](../src/routes/(app)/messages/+page.svelte) — CC inbox only; no Parent Lounge | 4.4 |
 
 Inventory reference: [`docs/FCM_AND_MESSAGING_MATRIX.md`](./FCM_AND_MESSAGING_MATRIX.md)

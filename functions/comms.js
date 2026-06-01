@@ -29,6 +29,10 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
+const {
+  resolveIsMinor,
+  filterParentsWithCommsConsent,
+} = require('./src/domains/commsPolicy');
 
 const REGION = 'us-east1';
 const db = admin.firestore();
@@ -147,11 +151,11 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
       const profSnap = await db.collection('users').doc(email).get();
       if (!profSnap.exists) return;
       const prof = profSnap.data();
-      const isMinor = prof.isMinor === true || (typeof prof.age === 'number' && prof.age < 13);
-      if (!isMinor) return;
+      if (!resolveIsMinor(prof)) return;
       hasMinors = true;
 
-      // Resolve parent emails from household if available.
+      /** @type {string[]} */
+      const parentCandidates = [];
       const householdId = prof.householdId || '';
       if (householdId) {
         const hSnap = await db.collection('households').doc(householdId).get();
@@ -159,14 +163,20 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
           const pe = hSnap.data().parentEmails || [];
           pe.forEach((p) => {
             const n = normEmail(String(p));
-            if (n) ccParentEmailSet.add(n);
+            if (n) parentCandidates.push(n);
           });
         }
       }
 
-      // Fallback: parentEmail field directly on user profile.
       const directParent = normEmail(prof.parentEmail || '');
-      if (directParent) ccParentEmailSet.add(directParent);
+      if (directParent) parentCandidates.push(directParent);
+
+      const consented = await filterParentsWithCommsConsent(
+          db,
+          parentCandidates,
+          email,
+      );
+      consented.forEach((p) => ccParentEmailSet.add(p));
     } catch (err) {
       logger.warn('[safeSportBroadcast] profile resolution error', {email, err: err.message});
     }

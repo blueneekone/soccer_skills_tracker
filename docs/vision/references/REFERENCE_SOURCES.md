@@ -1,31 +1,88 @@
-# Portrait reference sources — download provenance
-
-**Sprint 3.5m-ref** · Mood-board images in [`images/`](./images/) · Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md)
-
-> Style/tone references only. Shipping `static/portrait/*.svg` must be **original** drawings — no traced Bethesda, Hasbro, UPA character, or Monopoly mascot linework.
-
-| File | Source URL | License / note | What to borrow | Do not copy |
-|------|------------|----------------|----------------|-------------|
-| `vault-boy-tone.jpg` | https://fallout.fandom.com/wiki/File:Art-vault_boy_gambler.jpg · CDN: https://static.wikia.nocookie.net/fallout/images/7/71/Art-vault_boy_gambler.jpg/revision/latest | Fan wiki / Bethesda franchise — **internal mood board only**; not redistributed as product art | Bust cohesion, bold outline, 1950s mascot attitude, jumpsuit bust crop | Trace face, hair, pose, or vault suit into catalog SVGs |
-| `vault-girl-tone.jpg` | https://fallout.fandom.com/wiki/File:ActionBoyGirl.png · CDN: https://static.wikia.nocookie.net/fallout/images/c/c6/ActionBoyGirl.png/revision/latest | Same as Vault Boy — wiki reference frame | Feminine teen athlete cartoon tone for girls roster | Same |
-| `bert-turtle-duck-and-cover.jpg` | https://archive.org/details/DuckandC1951 · extracted ~00:00:08 from https://archive.org/download/DuckandC1951/DuckandC1951.mpeg | **Public domain** (US civil defense film, 1951) | 1950s instructional cartoon simplicity (Vault Boy lineage); flat shapes, friendly outline | Trace Bert silhouette or shell into operative portraits |
-| `upa-cartoon-tone.jpg` | https://commons.wikimedia.org/wiki/File:United_Productions_of_America_logo_(1950s).jpg · https://upload.wikimedia.org/wikipedia/commons/0/08/United_Productions_of_America_logo_%281950s%29.jpg | Commons — check file page for attribution; logo reference | Flat graphic UPA-era shapes, clean lines, mid-century modern cartoon industry tone | Trace UPA character or logo into catalog SVGs |
-| `monopoly-pennybags-tone.jpg` | https://commons.wikimedia.org/wiki/File:US_Deluxe_Monopoly_Tokens_(detail_Rich_Uncle_Pennybags).jpg · https://upload.wikimedia.org/wikipedia/commons/c/ca/US_Deluxe_Monopoly_Tokens_%28detail_Rich_Uncle_Pennybags%29.jpg | Commons — Hasbro/Monopoly trademark; **tone board only** | Round friendly cartoon face, bold ink, approachable mascot read | Trace Monopoly man face, hat, or cane into operative SVGs |
-| `teen-comic-tone.jpg` | https://commons.wikimedia.org/wiki/File:Sis001.jpg · https://upload.wikimedia.org/wikipedia/commons/e/e5/Sis001.jpg | Commons — verify PD tag on file page before external reuse | Teen human cartoon proportions, period comic ink | Copy linework verbatim |
-| `phoenix-palette.png` | Copied from [`static/Images/Phoenixes_Logo_2026.png`](../../../static/Images/Phoenixes_Logo_2026.png) (resized 480px wide via ffmpeg) | SSTracker club asset — palette reference only | Navy, warm gold, skin-adjacent warm neutrals for kit/trim | Mascot head, flame hair, or Sparky proportions as operative **face** |
-
-## Manual fallback (if CDN blocks bots)
-
-| File | Fallback |
-|------|----------|
-| `vault-boy-tone.jpg` / `vault-girl-tone.jpg` | Export a bust still from Fallout Wiki image pages above; save into `images/` with same filename |
-| `bert-turtle-duck-and-cover.jpg` | Download `DuckandC1951.mpeg` from Internet Archive; screenshot one clear Bert frame at ~8s |
-| `upa-cartoon-tone.jpg` | Download Commons UPA logo URL above, or a PD Gerald McBoing-Boing still from Archive if logo is insufficient |
-| `monopoly-pennybags-tone.jpg` | Download Commons token detail URL above |
-| `teen-comic-tone.jpg` | Download `Sis001.jpg` from Commons URL above |
-| `phoenix-palette.png` | Copy `static/Images/Phoenixes_Logo_2026.png`; resize to ≤500KB |
-
-## Pip-Boy vs Vault Boy (terminology)
-
-- **Pip-Boy** = wrist-mounted UI device in Fallout fiction — **not** the portrait mascot target.
-- **Vault Boy / Vault Girl** = cartoon propaganda mascot **tone** target for operative bust cohesion (structure only).
+# Portrait & reference sources — provenance
+
+**Sprint 3.5m-ref** · **3.6a-ref-organize** · **LAUNCH-defer-avatar** · Authority: [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md)
+
+> Master index: [`README.md`](./README.md). **Launch:** UI refs in [`ui/`](./ui/) may guide layout; **character** refs in [`character/`](./character/) are owner-only until post-launch unpause.
+
+---
+
+## UI references (`ui/`) — layout & tokens
+
+Owner drops persona mockups before UI sprints. See [`ui/README.md`](./ui/README.md).
+
+| Rule | Detail |
+|------|--------|
+| Naming | `ref-{persona}-{feature}-{variant}.{png\|jpg\|webp}` |
+| Wire to app? | **Yes** — layout, spacing, deck grammar, holo **chrome** (not bust art) |
+| Portrait art | Launch uses `defaultPortraitV2` SVG + initials — not `ui/` face crops |
+
+---
+
+## Character references (`character/`) — deferred post-launch
+
+Owner-generated Gemini character design JPEGs. **Internal reference only** — **do not wire** until owner reopens Avatar Studio / PNG layer stack.
+
+### `character/female-meg/` — Mighty Meg
+
+| File | Role |
+|------|------|
+| `ref-female-meg-concept-jumpsuit.jpeg` | Concept / home kit direction |
+| `ref-female-meg-catalog-corporate-tunic.jpeg` | Corporate catalog kit |
+| `ref-female-meg-base-underwear-front.jpeg` | Base body — front |
+| `ref-female-meg-base-underwear-v2.jpeg` | Base body — side |
+| `ref-female-meg-base-underwear-v3.jpeg` | Base body — back |
+| `ref-female-meg-kit-away-7.jpeg` | Away kit sheet |
+| `ref-female-meg-kit-uniform.jpeg` | Uniform kit sheet |
+| `ref-catalog-female-meg-hair-18grid.jpeg` | Hair catalog grid |
+| `ref-catalog-female-meg-face-15grid.jpeg` | Face catalog grid |
+| `ref-catalog-female-meg-ear-11grid.jpeg` | Ear accessories grid |
+
+### `character/male-tom/` — Atomic Tom
+
+| File | Role |
+|------|------|
+| `ref-male-tom-concept-home-kit-9.jpeg` | Concept / home kit |
+| `ref-male-tom-base-underwear-v1.jpeg` | Base body — front |
+| `ref-male-tom-base-underwear-turnaround.jpeg` | Base body — side |
+| `ref-male-tom-base-underwear-v3.jpeg` | Base body — back |
+| `ref-catalog-male-tom-hair-18grid.jpeg` | Hair catalog grid |
+| `ref-catalog-male-tom-face-15grid.jpeg` | Face catalog grid |
+| `ref-catalog-male-tom-ear-grid.jpeg` | Ear accessories grid |
+
+Full slice map: [`character/AVATAR_REFERENCE_INDEX.md`](./character/AVATAR_REFERENCE_INDEX.md). Folder gate: [`character/README.md`](./character/README.md).
+
+---
+
+## Legacy mood boards — removed (3.6a)
+
+The following wiki mood-board files were **deleted** from the old `images/` root; tone guidance lives in [`PORTRAIT_REFERENCE_BOARD.md`](./PORTRAIT_REFERENCE_BOARD.md) §1 only:
+
+| Former file | Former source (archived) |
+|-------------|--------------------------|
+| `vault-boy-tone.jpg` | Fallout Wiki — Bethesda franchise |
+| `vault-girl-tone.jpg` | Fallout Wiki |
+| `bert-turtle-duck-and-cover.jpg` | Internet Archive — PD 1951 |
+| `upa-cartoon-tone.jpg` | Wikimedia Commons UPA logo |
+| `monopoly-pennybags-tone.jpg` | Wikimedia Commons Monopoly token |
+| `teen-comic-tone.jpg` | Wikimedia Commons |
+| `phoenix-palette.png` | Resized from `static/Images/Phoenixes_Logo_2026.png` |
+
+Do not re-download for product art trace.
+
+---
+
+## Mood folder (`mood/`) — experiments
+
+| File | Source | License / note | Use |
+|------|--------|----------------|-----|
+| `ref-mood-sparky-mascot.png` | SSTracker club mascot (`Sparky.png`) | Club asset — **anti-ref only** | Palette / mascot proportions — **not** operative teen face |
+| `ref-gemini-exp-*.png` | Owner Google Gemini Pro Art experiments | Owner verifies Gemini commercial terms at creation | Internal tone experiments only |
+
+Restore from owner exports if missing — see [`character/AVATAR_REFERENCE_INDEX.md`](./character/AVATAR_REFERENCE_INDEX.md) § Missing.
+
+---
+
+## Pip-Boy vs Vault Boy (terminology)
+
+- **Pip-Boy** = wrist-mounted UI device in Fallout fiction — **not** the portrait mascot target.
+- **Vault Boy / Vault Girl** = cartoon propaganda mascot **tone** target for operative bust cohesion (structure only — no restored wiki JPEGs in 3.6a).

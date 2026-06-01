@@ -14,6 +14,8 @@
 
 Operative portraits are **collectible 2D identity** inside the Player OS void — modular flat cartoon layers that read as **one cohesive human** at HQ ring scale (64–128px), earn trust through mastery tone (not random loot aesthetics), and stay COPPA-safe via catalog IDs only. The portrait is the operative's face in mission control: expressive, athletic, and unmistakably part of the Scintillation / Phoenix club family — **as a person, not a mascot sticker stack**.
 
+**Shipping defaults (3.5m-docs-gemini):** Precomposed teen bust PNGs created by the product owner in Google Gemini Pro Art mode, ingested by Composer from `static/portrait/approved/` per [`GEMINI_ART_BRIEF.md`](./GEMINI_ART_BRIEF.md) and [`ASSET_INGESTION.md`](./ASSET_INGESTION.md). The modular agent SVG redraw track (**3.5m-art**) is **deprecated** — human VA failed on agent-drawn layers. The layered catalog schema (`kit → face → hair`) may remain for future unlock swaps; default HQ/Studio holo ships precomposed busts until gate sign-off.
+
 ### Primary reference — human cartoon bust
 
 **Tone anchor:** Mid-century propaganda cartoon bust discipline — Vault Boy/Girl *read* (anatomy cohesion, bust crop, hair as solid graphic shapes) **without Bethesda IP copy**. Full trait table, holo recess grammar, anti-patterns, and human squint tests: **[`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md)**. Classic cel animation and sports-anime bust framing (shoulders-up, forward-facing or slight 3/4).
@@ -394,15 +396,17 @@ Use this gate at **3.5m-gate** after Phase 3 sprints (**3.5m-frame**, **3.5m-art
 | **3.5g-g** ✓ | Art well SIR proportions, banner watermark, optional arc flourish |
 | **3.5g-b** ✓ | Club resolver + recruit `clubName` |
 | **3.5h** ✓ | Bauhaus v1 generator retirement |
-| **3.5k** | **In progress** — collectible metadata — set #, rarity, card back, flavor text |
+| **3.5k** ✓ | Collectible metadata — set #, rarity, card back, flavor text |
 | **3.5i** | **Superseded** → split into **3.5l-a** through **3.5l-gate** (portrait quality Phase 2) |
 | **3.5l-a** ✓ | Compose/clip fix — hair visibility, ear ellipses, layer alignment |
 | **3.5l-b** → **3.5l-e** | Phase 2 art/schema/pose track — **superseded by Phase 3 (3.5m-*)** |
 | **3.5l-gate** | **Shipped — visual rejected by product owner** (automated tests ≠ human VA) |
 | **3.5m-docs** ✓ | Reopen avatar track + [`PORTRAIT_REFERENCE_BOARD.md`](./references/PORTRAIT_REFERENCE_BOARD.md) |
 | **3.5m-frame** | Art-well recess + frame/portrait alignment (no sticker-on-ring) |
-| **3.5m-art** | Matched-set cartoon bust SVG redraw (same 9 catalog ids) |
-| **3.5m-hair** | Human graphic hair pass — retire mascot flame default |
+| **3.5m-art** | **Superseded** — agent modular SVG redraw; human VA failed |
+| **3.5m-docs-gemini** ✓ | Owner Gemini art brief + Composer ingest playbook (docs/rules) |
+| **3.5m-gemini-ingest** | Wire one owner-approved bust PNG — [`ASSET_INGESTION.md`](./ASSET_INGESTION.md) |
+| **3.5m-hair** | **Superseded** — folded into Gemini bust + ingest |
 | **3.5m-gate** | Portrait stability gate — full regression + human VA (§7 + reference board §4) |
 | **3.5j** ✓ | Identity Studio cohesion — SYNC IDENTITY + unified picker |
 

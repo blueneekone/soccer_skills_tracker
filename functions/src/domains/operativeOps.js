@@ -13,6 +13,12 @@ const {
   assertParent,
   assertCoachMessageSender,
 } = require('../middleware/authBouncers');
+const {
+  assertStaffMayDirectMessagePlayer,
+  filterParentsWithCommsConsent,
+  isStaffRole,
+  resolveIsMinor,
+} = require('./commsPolicy');
 
 const REGION = 'us-east1';
 
@@ -223,9 +229,8 @@ async function assertChildInParentHousehold(actor, childUid) {
 // ── Exported callable functions ──────────────────────────────────────────────
 
 /**
- * SafeSport / Epic 1.4: coach or director sends in-app message to a rostered
- * athlete. Minors get parent emails denormalized for CC visibility; audit log
- * mirrors metadata (not full body in messaging_audit).
+ * SafeSport / Epic 1.4 + Sprint 4.2: coach or director sends in-app message to a
+ * rostered adult athlete (18+). Minors are blocked — use parent-targeted broadcasts.
  */
 exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
   const actor = assertCoachMessageSender(request);
@@ -304,30 +309,12 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
     throw new HttpsError('failed-precondition', 'Athlete is not on this team.');
   }
 
+  // Sprint 4.2 — household-only charter: block staff→minor direct mail entirely.
+  assertStaffMayDirectMessagePlayer(u);
+
   const actorEmail = actor.email || '';
   if (normEmail(actorEmail) === toPlayerEmail) {
     throw new HttpsError('invalid-argument', 'Cannot message yourself.');
-  }
-
-  let minorRecipient = u.isMinor === true;
-  if (!minorRecipient && u.dateOfBirth) {
-    try {
-      minorRecipient = computeAgeYears(u.dateOfBirth) < 17;
-    } catch (e) {
-      logger.warn('sendCoachPlayerMessage: age check failed', e);
-    }
-  }
-
-  /** @type {string[]} */
-  let ccParentEmails = [];
-  if (minorRecipient && u.householdId) {
-    const hSnap = await db().collection('households').doc(u.householdId).get();
-    if (hSnap.exists) {
-      const pe = hSnap.data().parentEmails || [];
-      ccParentEmails = [...new Set(
-          pe.map((x) => normEmail(String(x))).filter(Boolean),
-      )];
-    }
   }
 
   const now = admin.firestore.FieldValue.serverTimestamp();
@@ -346,8 +333,8 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
     toPlayerName: playerName,
     body: bodyRaw,
     bodyPreview,
-    minorRecipient,
-    ccParentEmails,
+    minorRecipient: false,
+    ccParentEmails: [],
     createdAt: now,
     createdByRole: actor.role,
   });
@@ -359,8 +346,8 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
     fromEmail: actorEmail,
     toPlayerEmail,
     toPlayerName: playerName,
-    minorRecipient,
-    ccParentEmails,
+    minorRecipient: false,
+    ccParentEmails: [],
     bodyPreview,
     bodyLength: bodyRaw.length,
     actorUid: request.auth.uid,
@@ -372,9 +359,9 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
   return {
     ok: true,
     messageId: msgRef.id,
-    minorRecipient,
-    ccCount: ccParentEmails.length,
-    warnNoCc: minorRecipient && ccParentEmails.length === 0,
+    minorRecipient: false,
+    ccCount: 0,
+    warnNoCc: false,
   };
 });
 
@@ -453,6 +440,22 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     );
   }
 
+  // Sprint 4.2 — staff cannot participate in interactive channels that include minors.
+  if (isStaffRole(callerRole)) {
+    for (const memberEmail of memberIds) {
+      const memberSnap = await db().collection('users').doc(memberEmail).get();
+      if (!memberSnap.exists) continue;
+      const memberData = memberSnap.data();
+      if (memberData.role === 'player' && resolveIsMinor(memberData)) {
+        throw new HttpsError(
+            'failed-precondition',
+            'SafeSport policy: staff cannot message in channels with minor athletes. ' +
+            'Use parent-targeted announcements instead.',
+        );
+      }
+    }
+  }
+
   // Cross-tenant guard: verify the channel's team belongs to the declared club.
   const channelTeamId =
       typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
@@ -519,20 +522,31 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     }
 
     const resolvedParents = [...resolvedParentSet].sort();
+    const consentedParents = [];
+    for (const playerEmail of playerEmailsInChannel) {
+      const filtered = await filterParentsWithCommsConsent(
+          db(),
+          resolvedParents,
+          playerEmail,
+      );
+      filtered.forEach((p) => consentedParents.push(p));
+    }
+    const consentedSet = new Set(consentedParents);
+    ccParentEmails = [...consentedSet].sort();
 
     // Detect parents missing from current memberIds (dropped after creation).
-    const missingParents = resolvedParents.filter((p) => !memberSet.has(p));
-    const newParentsFound = resolvedParents.length > ccParentEmails.length;
+    const missingParents = ccParentEmails.filter((p) => !memberSet.has(p));
+    const newParentsFound = ccParentEmails.length > 0 &&
+      ccParentEmails.length !== (channel.ccParentEmails || []).length;
 
     if (missingParents.length > 0 || newParentsFound) {
       const updatedMemberIds = [
-        ...new Set([...memberIds, ...resolvedParents]),
+        ...new Set([...memberIds, ...ccParentEmails]),
       ].sort();
       await channelRef.update({
         memberIds: updatedMemberIds,
-        ccParentEmails: resolvedParents,
+        ccParentEmails,
       });
-      ccParentEmails = resolvedParents;
       logger.info(
           `[sendChannelMessage] re-enforced SafeSport CC: ` +
           `${missingParents.length} missing + ${newParentsFound ? 'new' : '0 new'} ` +
@@ -581,6 +595,118 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     ccCount: safesportMonitored ? ccParentEmails.length : 0,
     warnNoCc: safesportMonitored && ccParentEmails.length === 0,
   };
+});
+
+/**
+ * Sprint 4.11 — household parent↔linked operative thread (householdId gate only).
+ * Writes: households/{householdId}/thread_messages/{messageId}
+ */
+async function assertHouseholdThreadActor(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('unauthenticated', 'Authenticated email is missing.');
+  }
+
+  if (role === 'parent') {
+    const actor = assertParent(request);
+    return {email: actor.email, householdId: actor.householdId, role: 'parent'};
+  }
+
+  if (role === 'player') {
+    const uSnap = await db().collection('users').doc(email).get();
+    if (!uSnap.exists) {
+      throw new HttpsError('not-found', 'Player profile not found.');
+    }
+    const householdId =
+      typeof uSnap.data().householdId === 'string' ?
+        uSnap.data().householdId.trim() :
+        '';
+    if (!householdId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Your account is not linked to a household thread.',
+      );
+    }
+    const hSnap = await db().collection('households').doc(householdId).get();
+    if (!hSnap.exists) {
+      throw new HttpsError('not-found', 'Household not found.');
+    }
+    const players = (hSnap.data().playerEmails || [])
+        .map((x) => normEmail(String(x)))
+        .filter(Boolean);
+    if (!players.includes(email)) {
+      throw new HttpsError(
+          'permission-denied',
+          'You are not authorized on this household thread.',
+      );
+    }
+    return {email, householdId, role: 'player'};
+  }
+
+  throw new HttpsError(
+      'permission-denied',
+      'Only linked parents and operatives may use household threads.',
+  );
+}
+
+exports.sendHouseholdMessage = onCall({region: REGION}, async (request) => {
+  const actor = await assertHouseholdThreadActor(request);
+  const data = request.data || {};
+  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
+  if (!bodyRaw) {
+    throw new HttpsError('invalid-argument', 'Message body is required.');
+  }
+  if (bodyRaw.length > 4000) {
+    throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
+  }
+
+  let senderName = actor.email.split('@')[0];
+  const userSnap = await db().collection('users').doc(actor.email).get();
+  if (userSnap.exists) {
+    const ud = userSnap.data();
+    const pn = typeof ud.playerName === 'string' ? ud.playerName.trim() : '';
+    const dn = typeof ud.displayName === 'string' ? ud.displayName.trim() : '';
+    senderName = pn || dn || senderName;
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const bodyPreview = bodyRaw.length > 200 ?
+    bodyRaw.slice(0, 200) + '\u2026' :
+    bodyRaw;
+
+  const msgRef = db()
+      .collection('households')
+      .doc(actor.householdId)
+      .collection('thread_messages')
+      .doc();
+
+  await msgRef.set({
+    householdId: actor.householdId,
+    fromEmail: actor.email,
+    fromRole: actor.role,
+    fromName: senderName,
+    body: bodyRaw,
+    bodyPreview,
+    createdAt: now,
+  });
+
+  await db().collection('messaging_audit').doc().set({
+    action: 'household_thread_message',
+    householdId: actor.householdId,
+    fromEmail: actor.email,
+    fromRole: actor.role,
+    bodyPreview,
+    bodyLength: bodyRaw.length,
+    actorUid: request.auth.uid,
+    at: now,
+  });
+
+  return {ok: true, messageId: msgRef.id, householdId: actor.householdId};
 });
 
 // ── Impersonation ────────────────────────────────────────────────────────────

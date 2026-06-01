@@ -240,7 +240,7 @@ Document-only ordering — code sprints reference these IDs in [`ROADMAP.md`](..
 | **3.5h** | Parallel OK | Bauhaus retirement |
 | **3.5i** | Planned | Age-band catalog + `bodyScale` |
 | **3.5i-pose** | Planned | `portrait_pose_*` catalog + Studio pose tab |
-| **3.5k** | Future | Collectible metadata — set #, rarity chip, card back, flavor text |
+| **3.5k** | **Done** | Collectible metadata — set #, rarity chip, card back, flavor text |
 
 ---
 

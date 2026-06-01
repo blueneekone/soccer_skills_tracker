@@ -75,11 +75,15 @@ export class CommsEngine {
 
 	// ── Private ───────────────────────────────────────────────────────────────
 	private _broadcastFn: ReturnType<typeof httpsCallable> | null = null;
+	private _channelFn: ReturnType<typeof httpsCallable> | null = null;
+	private _householdFn: ReturnType<typeof httpsCallable> | null = null;
 
 	constructor() {
 		if (!browser) return;
-		const fns = getFunctions(undefined, 'us-central1');
+		const fns = getFunctions(undefined, 'us-east1');
 		this._broadcastFn = httpsCallable(fns, 'safeSportBroadcast');
+		this._channelFn = httpsCallable(fns, 'sendChannelMessage');
+		this._householdFn = httpsCallable(fns, 'sendHouseholdMessage');
 	}
 
 	/**
@@ -141,6 +145,63 @@ export class CommsEngine {
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : 'Failed to send message.';
 			this.error = msg;
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Monitored club channel path — Sprint 4.2 unified callable surface. */
+	async sendChannelMessage(input: {
+		clubId: string;
+		channelId: string;
+		text: string;
+	}): Promise<{ ok: true; messageId: string }> {
+		const clubId = input.clubId?.trim() ?? '';
+		const channelId = input.channelId?.trim() ?? '';
+		const text = input.text?.trim() ?? '';
+		if (!clubId || !channelId) {
+			throw new SafeSportViolation('clubId and channelId are required for monitored channels.');
+		}
+		if (!text) throw new Error('Message text is required.');
+		if (text.length > 8000) throw new Error('Message text exceeds 8000 characters.');
+		if (!this._channelFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastResult = null;
+
+		try {
+			const response = await this._channelFn({ clubId, channelId, text });
+			this.phase = 'success';
+			return response.data as { ok: true; messageId: string };
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send channel message.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Household parent↔operative thread — Sprint 4.11. */
+	async sendHouseholdMessage(body: string): Promise<{ ok: true; messageId: string }> {
+		const text = body?.trim() ?? '';
+		if (!text) throw new Error('Message body is required.');
+		if (text.length > 4000) throw new Error('Message body exceeds 4000 characters.');
+		if (!this._householdFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastResult = null;
+
+		try {
+			const response = await this._householdFn({ body: text });
+			this.phase = 'success';
+			return response.data as { ok: true; messageId: string };
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send household message.';
 			this.phase = 'error';
 			throw err;
 		}

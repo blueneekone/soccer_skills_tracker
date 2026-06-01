@@ -1,0 +1,37 @@
+---
+description: Launch pause — avatar/character builder deferred; UI refs allowed under references/ui/
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Avatar builder deferred (post-launch)
+
+**Sprint LAUNCH-defer-avatar** · Product owner decision: pause **only** avatar/character building until post-launch.
+
+## MUST NOT (without owner reopen)
+
+- Implement or wire **PNG avatar layers** under `static/avatar/layers/`
+- Run **3.5m-gemini-ingest**, Photopea slice pipelines, or `npm run generate:portraits` for new bust art
+- Redraw or edit operative portrait SVG art in agent sessions
+- Wire files from [`docs/vision/references/character/`](../../docs/vision/references/character/) into app UI or Firestore
+
+## Launch portrait bar (OK to ship)
+
+- `defaultPortraitV2` SVG holo default
+- `profileIncomplete` initials fallback on holo / identity surfaces
+
+## UI sprints MAY use
+
+- [`docs/vision/references/ui/**`](../../docs/vision/references/ui/) — layout, tokens, deck chrome, holo **frame** (not bust art)
+- [`docs/vision/references/PORTRAIT_REFERENCE_BOARD.md`](../../docs/vision/references/PORTRAIT_REFERENCE_BOARD.md) §2 — art-well recess grammar
+
+## Character folder
+
+- [`docs/vision/references/character/`](../../docs/vision/references/character/) is **read-only** until owner unpause — index and JPEGs are owner art reference only.
+
+## When owner reopens
+
+- Update ROADMAP deferred rows → Planned
+- Re-enable [`portrait-gemini-ingest.mdc`](./portrait-gemini-ingest.mdc) gate language
+- Authority: [`docs/vision/references/character/README.md`](../../docs/vision/references/character/README.md)
