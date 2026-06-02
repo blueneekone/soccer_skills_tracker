@@ -1,0 +1,16 @@
+{
+  "name": "functions-core",
+  "version": "0.1.0",
+  "description": "Launch-critical training + intent Cloud Functions (scaffold — DEPLOY-C-core-scaffold)",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@google/genai": "^1.50.1",
+    "firebase-admin": "^13.8.0",
+    "firebase-functions": "^7.2.5",
+    "functions-shared": "file:../functions-shared"
+  }
+}

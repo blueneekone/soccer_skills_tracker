@@ -111,6 +111,30 @@
         "firebase-debug.*.log",
         "*.local"
       ]
+    },
+    {
+      "source": "functions-core",
+      "codebase": "core",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
+    },
+    {
+      "source": "functions-rl",
+      "codebase": "rl",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
     }
   ],
   "emulators": {

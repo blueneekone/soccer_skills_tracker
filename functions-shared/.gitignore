@@ -1,0 +1,10 @@
+node_modules/
+
+# DEPLOY-O-bundle — copied from functions/; do not commit
+/gamificationWorkoutXp.js
+/streakUtils.js
+/bountyVerification.js
+/bountyOps.js
+/coOpOps.js
+/tremendous.js
+/src/

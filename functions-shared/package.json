@@ -1,0 +1,10 @@
+{
+  "name": "functions-shared",
+  "version": "1.0.0",
+  "description": "Shared Cloud Functions utilities (re-export bridge until functions-core / functions-rl split)",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  }
+}

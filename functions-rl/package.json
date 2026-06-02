@@ -1,0 +1,16 @@
+{
+  "name": "functions-rl",
+  "version": "0.1.0",
+  "description": "RL adaptive workout Cloud Functions (scaffold — DEPLOY-E-rl-scaffold)",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "firebase-admin": "^13.8.0",
+    "firebase-functions": "^7.2.5",
+    "functions-shared": "file:../functions-shared"
+  }
+}

@@ -19,6 +19,10 @@
     "test:e2e:ui": "playwright test --ui",
     "lint:functions": "npm --prefix functions run lint",
     "deploy:functions": "npm run lint:functions && firebase deploy --only functions",
+    "bundle:functions": "node scripts/bundle-functions.cjs",
+    "deploy:core": "firebase deploy --only \"functions:core:logTrainingSession,functions:core:secureDeployIntent,functions:core:secureCancelIntent,functions:core:secureExtendIntent\"",
+    "deploy:rl": "firebase deploy --only \"functions:rl:getAdaptiveWorkoutPolicy,functions:rl:initRlPolicy,functions:rl:submitPhysioSelfReport,functions:rl:rlOnWorkoutLogCreated,functions:rl:rlOnPhysioReportCreated\"",
+    "deploy:launch-backend": "npm run deploy:core && npm run deploy:rl",
     "deploy": "npm run lint:functions && firebase deploy"
   },
   "devDependencies": {
