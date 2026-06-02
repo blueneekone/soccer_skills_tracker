@@ -1,0 +1,13 @@
+node_modules/
+
+# DEPLOY-O-bundle — copied from functions/; do not commit
+/tenantUtils.js
+/cellRouter.js
+/cellBootstrap.js
+/cellProvisioning.js
+/cellMigration.js
+/cellObservability.js
+/cellSeed.js
+/apiGateway.js
+/analytics.js
+/src/

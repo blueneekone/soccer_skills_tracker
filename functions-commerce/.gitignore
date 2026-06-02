@@ -1,0 +1,13 @@
+node_modules/
+
+# DEPLOY-O-bundle — copied from functions/; do not commit
+/commerce.js
+/ticketing.js
+/ticketReceipts.js
+/subscription.js
+/legacyBillingOps.js
+/hotelRebates.js
+/hotelPartnerOps.js
+/recruiterBilling.js
+/pricingPolicyOps.js
+/src/

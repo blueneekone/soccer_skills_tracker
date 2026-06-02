@@ -135,6 +135,54 @@
         ".git",
         "*.local"
       ]
+    },
+    {
+      "source": "functions-commerce",
+      "codebase": "commerce",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
+    },
+    {
+      "source": "functions-compliance",
+      "codebase": "compliance",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
+    },
+    {
+      "source": "functions-integrations",
+      "codebase": "integrations",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
+    },
+    {
+      "source": "functions-platform",
+      "codebase": "platform",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ]
     }
   ],
   "emulators": {
