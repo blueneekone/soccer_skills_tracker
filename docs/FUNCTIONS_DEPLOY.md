@@ -14,6 +14,10 @@ Firebase hosts multiple function codebases (see [`firebase.json`](../firebase.js
 
 Split codebases bundle monolith sources at predeploy (**DEPLOY-O-bundle**). Never `require('../functions/…')` from split packages — Firebase uploads only each codebase folder; parent paths do not exist on Cloud Run.
 
+Each split `index.js` must call `require('./bootstrapAdmin')` as its **first** require (before `tenantUtils`, `apiGateway`, or any domain module that touches `admin.firestore()` at load time). The monolith `functions/index.js` no longer runs before split packages during Firebase discovery or deploy — without this bootstrap, `partnerHandlers/hotelRebates.js` and similar modules throw `FirebaseAppError: The default Firebase app does not exist`.
+
+**Do not** `require('functions-shared/bootstrapAdmin')` from split indexes. Firebase uploads only each codebase folder (e.g. `functions-integrations/`); the parent `functions-shared` package and `file:../functions-shared` npm link are **not** present in Cloud Build `/workspace`, so that path fails at cold start with `Cannot find module 'functions-shared/bootstrapAdmin'`. Predeploy `bundle-functions.cjs` copies `functions-shared/bootstrapAdmin.js` → `<codebase>/bootstrapAdmin.js`; production code must use the local copy. Canonical source remains `functions-shared/bootstrapAdmin.js`.
+
 ## Firebase project
 
 [`.firebaserc`](../.firebaserc) default alias: `soccer-skills-tracker` (production).
@@ -56,6 +60,38 @@ cp functions/.env.sports-skill-tracker-dev functions-platform/.env
 
 Do not commit `.env` files.
 
+### WebAuthn RP identity (compliance)
+
+Passkey callables (`webauthnRegisterStart` / `Finish`, `webauthnLoginStart` / `Finish`) read **`WEBAUTHN_RP_ID`** and **`WEBAUTHN_RP_ORIGIN`** from the copied `.env` at deploy time. If unset, bundled `webauthn.js` defaults to `localhost` / `http://localhost:5173` and browsers show localhost errors on production hosting.
+
+| Variable | Dev / canonical user URL | Notes |
+|----------|--------------------------|-------|
+| `WEBAUTHN_RP_ID` | `sstracker.app` | Parent RP ID; valid for `soccer.sstracker.app` subdomain |
+| `WEBAUTHN_RP_ORIGIN` | `https://sstracker.app` | Must match the **exact** page origin (scheme + host, no trailing slash) |
+
+Copy into `functions-compliance/.env` before compliance deploy (same source file as other codebases):
+
+```bash
+cp functions/.env.sports-skill-tracker-dev functions-compliance/.env
+```
+
+**Canonical hosting:** `APP_BASE_URL` and primary passkey surface → `https://sstracker.app` (see `firebase.json` CSP `connect-src`). CI production hosting URL may be `https://soccer.sstracker.app`; one origin per deploy — if users only open the subdomain, set `WEBAUTHN_RP_ORIGIN=https://soccer.sstracker.app` on that project's compliance deploy (do not mix two origins in one `.env` without owner approval).
+
+**Redeploy after env change:**
+
+```powershell
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+firebase use sports-skill-tracker-dev
+cp functions/.env.sports-skill-tracker-dev functions-compliance/.env
+npm run deploy:compliance
+# Or WebAuthn-only hotfix:
+firebase deploy --project sports-skill-tracker-dev --only functions:compliance:webauthnRegisterStart,functions:compliance:webauthnRegisterFinish,functions:compliance:webauthnLoginStart,functions:compliance:webauthnLoginFinish
+```
+
+**Verify:** signed-in session → Network → `webauthnRegisterStart` response → `rp.id` is `sstracker.app` (not `localhost`). Google sign-in still bypasses passkey enrollment until magic-link users enroll.
+
+Template: [`functions/.env.example`](../functions/.env.example).
+
 ## Bundle before deploy (**DEPLOY-O-bundle**)
 
 All split codebases (`core`, `rl`, `commerce`, `compliance`, `integrations`, `platform`) run `node scripts/bundle-functions.cjs` as a **predeploy** hook in [`firebase.json`](../firebase.json).
@@ -69,7 +105,7 @@ The orchestrator copies monolith closures from `functions/` into each package:
 | `functions-rl` | `rlOps`, `src/ml/transitionRecorder`, `src/ml/trainer` (+ transitive) |
 | `functions-commerce` | commerce, ticketing, subscriptions, rebates, webhooksOps subset (+ transitive) |
 | `functions-compliance` | vaultOps, shredOps, coppa, webauthn, compliance, verifyDocument, complianceOps (+ transitive) |
-| `functions-integrations` | processMedia, ingestRoster, integrations, weather, uploadTokens, webhooksOps (+ transitive) |
+| `functions-integrations` | processMedia, ingestRoster, integrations, weather, uploadTokens, facilityWeatherWebhook (+ transitive; **no** webhooksOps / Stripe) |
 | `functions-platform` | tenantUtils, cellRouter, cell bootstrap/provisioning/migration/observability/seed, apiGateway, analytics, adminOps, operativeOps (+ transitive) |
 
 Run manually before local smoke tests or CI that `require()` split indexes:
@@ -78,6 +114,23 @@ Run manually before local smoke tests or CI that `require()` split indexes:
 npm run bundle:functions
 node -e "require('./functions-core/index.js'); console.log('core OK')"
 node -e "require('./functions-rl/index.js'); console.log('rl OK')"
+```
+
+After bundle, install dependencies **per codebase** (Firebase uploads only that folder; `node_modules` is not shared across codebases):
+
+```bash
+cd functions-integrations && npm ci
+# processMedia registers a Storage trigger — needs a bucket in FIREBASE_CONFIG for local require()
+export GCLOUD_PROJECT=smoke-test
+export FIREBASE_CONFIG='{"projectId":"smoke-test","storageBucket":"smoke-test.appspot.com"}'
+node -e "require('./index.js'); console.log('integrations OK')"
+cd ../functions-commerce && npm ci && node -e "require('./index.js'); console.log('commerce OK')"
+```
+
+Dependency parity guard (scans bundled `.js` for `require('pkg')` vs `package.json`):
+
+```bash
+node scripts/verify-codebase-deps.cjs
 ```
 
 Bundled files are gitignored; do not commit copies under split codebase folders.
@@ -176,9 +229,22 @@ firebase deploy --only functions:commerce:createRegistrationIntent
 
 `functions-commerce/index.js` re-exports 25 handlers from bundled `commerce`, `ticketing`, `ticketReceipts`, `webhooksOps`, `subscription`, `legacyBillingOps`, `hotelRebates`, `hotelPartnerOps`, `recruiterBilling`, `pricingPolicyOps`.
 
-Dependencies: `stripe`, `firebase-admin`, `firebase-functions`, `functions-shared` — **no** tfjs, sharp, pdf-parse, webauthn.
+Dependencies: `stripe`, `qrcode`, `@sendgrid/mail`, `firebase-admin`, `firebase-functions`, `functions-shared` — **no** tfjs, sharp, pdf-parse, webauthn.
 
-Deploy all commerce exports:
+**Pre-deploy smoke** (after `npm run bundle:functions`):
+
+```bash
+cd functions-commerce && npm ci
+node -e "require('./index.js'); console.log('commerce OK')"
+```
+
+Deploy **one function first** to confirm Cloud Run health before the full batch:
+
+```bash
+firebase deploy --only functions:commerce:stripeWebhook
+```
+
+When that revision is healthy, deploy the rest:
 
 ```bash
 npm run deploy:commerce
@@ -200,20 +266,51 @@ firebase deploy --only functions:compliance:vaultSealPii,functions:compliance:va
 firebase deploy --only functions:compliance:webauthnRegisterStart
 ```
 
-## Integrations codebase (**DEPLOY-L**)
+## Integrations codebase (**DEPLOY-L** / **DEPLOY-P** lazy index)
 
-`functions-integrations/index.js` re-exports:
+`functions-integrations/index.js` re-exports nine functions. Each Cloud Run service sets `FUNCTION_TARGET` to one export name at cold start; the index **only** `require()`s that handler’s module so lightweight callables (weather, feeds, uploads) never load `sharp` or `pdf-parse`.
 
-- `processMedia` (sharp + `GEMINI_API_KEY`)
-- `ingestRoster` (pdf-parse)
-- `getSoccerNews`, `searchPodcasts`, `getPodcastEpisodes`
-- `getWeatherConditions`
-- `getUploadToken`, `deleteAllPlayerMedia`
-- `facilityWeatherWebhook` (`webhooksOps`)
+| Export | Module | Heavy deps |
+|--------|--------|------------|
+| `processMedia` | `./processMedia` | sharp, Gemini |
+| `ingestRoster` | `./ingestRoster` | pdf-parse, Gemini |
+| `getSoccerNews`, `searchPodcasts`, `getPodcastEpisodes` | `./integrations` | — |
+| `getWeatherConditions` | `./weather` | — |
+| `getUploadToken`, `deleteAllPlayerMedia` | `./uploadTokens` | — |
+| `facilityWeatherWebhook` | `./src/domains/facilityWeatherWebhook` | — (**not** `webhooksOps`) |
+
+Discovery / local full smoke (`FUNCTION_TARGET` and `K_SERVICE` both unset) still eager-loads all modules.
+
+**Cloud Run env resolution (`resolveTarget.js`):** at cold start Cloud Run sets `K_SERVICE` to the lowercase service id (e.g. `getweatherconditions`). Firebase may also set `FUNCTION_TARGET` (camelCase, `integrations.<export>`, or `integrations-<export>`). Production often sets **both**; resolution tries `FUNCTION_TARGET` first (stripping `integrations.` / `integrations-` prefixes), then falls back to `K_SERVICE`. The index uses the Firebase per-export lazy pattern so healthchecks never eager-load `sharp` / `pdf-parse`.
 
 Dependencies: `sharp`, `pdf-parse`, `@google/genai`, `firebase-admin`, `firebase-functions`, `functions-shared` — **no** tfjs, stripe, webauthn.
 
+**Smoke (repo root, after bundle):**
+
 ```bash
+npm run bundle:functions
+cd functions-integrations && npm ci
+node ../../scripts/smoke-require-codebase.cjs integrations getWeatherConditions
+node ../../scripts/smoke-require-codebase.cjs integrations --simulate-cloud
+node ../../scripts/smoke-require-codebase.cjs integrations
+```
+
+`--simulate-cloud` sets `K_SERVICE=getweatherconditions` with no `FUNCTION_TARGET` (mirrors Cloud Run healthcheck) and asserts `sharp` is not loaded.
+
+**Predeploy gate:**
+
+```bash
+npm run predeploy:integrations
+# runs bundle + test:functions-deploy + both smoke paths above
+```
+
+**Canary deploy order (256MiB healthcheck):** deploy one light function first; if the revision is **Ready**, deploy the rest.
+
+```powershell
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+Copy-Item functions\.env.sports-skill-tracker-dev functions-integrations\.env
+firebase deploy --only functions:integrations:getWeatherConditions
+# revision Ready → then:
 npm run deploy:integrations
 ```
 
@@ -247,10 +344,13 @@ firebase deploy --only functions:rl:getAdaptiveWorkoutPolicy --dry-run
 ## Guard tests
 
 ```bash
+npm run test:functions-deploy
+# or:
 node --test functions/__tests__/functionsDeploy.guard.test.js
+node scripts/verify-codebase-deps.cjs
 ```
 
-Asserts: no `../functions/` in split indexes, bundle scripts exist, predeploy hooks registered, monolith slim exports.
+Asserts: no `../functions/` in split indexes, bundle scripts exist, predeploy hooks registered, monolith slim exports, per-codebase npm deps, integrations/commerce `require('./index.js')` smoke after `npm install`, integrations Cloud Run env simulation (`K_SERVICE` lowercase, prefixed `FUNCTION_TARGET`, `--simulate-cloud` smoke script).
 
 ## Related
 

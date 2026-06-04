@@ -187,6 +187,8 @@ async function finalizeWorkoutMission(input: {
 export async function executePlayerWorkoutLog(deps: {
 	drillType: string;
 	durationMin: number;
+	/** Total reps sent to logTrainingSession (sets × repsPerSet × bilateral factor). */
+	totalReps: number;
 	intensityCall: WorkoutIntensityApi;
 	focusLabel: string;
 	selectedDrill: string;
@@ -202,6 +204,8 @@ export async function executePlayerWorkoutLog(deps: {
 		duration: number;
 		reps: number;
 		intensity: WorkoutIntensityApi;
+		/** Raw Borg RPE 1–10 for RL telemetry (intensity bucket stays for XP math). */
+		subjectiveRpe: number;
 		assignmentId?: string;
 	}) => Promise<HttpsCallableResult<WorkoutSessionPayload>>;
 	writePlayerOsWorkout: (args: {
@@ -228,11 +232,13 @@ export async function executePlayerWorkoutLog(deps: {
 		deps.missionSource === 'coach_homework' && deps.activeMissionId ?
 			deps.activeMissionId
 		:	undefined;
+	const reps = Math.max(0, Math.floor(Number(deps.totalReps) || 0));
 	const res = await deps.logTrainingSession({
 		drillType: deps.drillType,
 		duration: deps.durationMin,
-		reps: 0,
+		reps,
 		intensity: deps.intensityCall,
+		subjectiveRpe: Math.max(1, Math.min(10, Math.round(deps.intensityStep))),
 		...(assignmentId ? { assignmentId } : {}),
 	});
 	const payload = res.data;
@@ -295,10 +301,14 @@ export async function executePlayerWorkoutLog(deps: {
 	};
 }
 
-export function expectedWorkoutXp(durationMin: number, intensityStep: number): number {
+export function expectedWorkoutXp(
+	durationMin: number,
+	intensityStep: number,
+	totalReps = 0,
+): number {
 	return calculateTrainingSessionEarnedXp({
 		duration: Math.max(0, Math.floor(Number(durationMin) || 0)),
-		reps: 0,
+		reps: Math.max(0, Math.floor(Number(totalReps) || 0)),
 		intensity: intensityApiFromStep(intensityStep),
 	});
 }

@@ -28,6 +28,23 @@
 	<section class="glass-panel">
 		<h2 class="panel-title">[ POLICY CONTROLS ]</h2>
 
+		{#if !engine.isLoading && !engine.policyState}
+			<div class="empty-state">
+				<p class="empty-state__lead">[ NO RL POLICY STATE ]</p>
+				<p class="empty-state__copy">
+					Cold-boot mints policy v1 in GCS and creates <code>rl_policy_state/current</code>.
+					Launch default keeps <strong>abPercent = 0</strong> — all players stay on heuristic until you ramp rollout.
+				</p>
+			</div>
+			<button
+				type="button"
+				class="ctrl-btn"
+				disabled={engine.saveState === 'saving'}
+				onclick={() => engine.initPolicy()}
+			>
+				{engine.saveState === 'saving' ? 'INITIALIZING…' : 'Initialize policy (v1)'}
+			</button>
+		{:else}
 		<!-- A/B percent slider -->
 		<div class="control-row">
 			<label class="ctrl-label">
@@ -99,6 +116,11 @@
 			</div>
 		</div>
 
+		{/if}
+
+		{#if engine.saveState === 'success'}
+			<p class="ctrl-success">Policy update saved.</p>
+		{/if}
 		{#if engine.saveState === 'error' && engine.saveError}
 			<p class="ctrl-error">{engine.saveError}</p>
 		{/if}
@@ -277,12 +299,41 @@
 		margin: 0.5rem 0 0;
 	}
 
+	.ctrl-success {
+		font-family: monospace;
+		font-size: 0.7rem;
+		color: #2dd4bf;
+		margin: 0.5rem 0 0;
+	}
+
 	.empty-state {
 		font-family: monospace;
 		font-size: 0.65rem;
 		color: rgba(255, 255, 255, 0.2);
 		letter-spacing: 0.08em;
 		padding: 1rem 0;
+	}
+
+	.empty-state__lead {
+		margin: 0 0 0.5rem;
+		color: rgba(226, 232, 240, 0.45);
+		font-weight: 700;
+	}
+
+	.empty-state__copy {
+		margin: 0 0 1rem;
+		line-height: 1.5;
+		color: rgba(226, 232, 240, 0.35);
+		max-width: 42rem;
+	}
+
+	.empty-state__copy code {
+		color: rgba(0, 212, 255, 0.75);
+	}
+
+	.empty-state__copy strong {
+		color: rgba(226, 232, 240, 0.55);
+		font-weight: 700;
 	}
 
 	.runs-table-wrap {

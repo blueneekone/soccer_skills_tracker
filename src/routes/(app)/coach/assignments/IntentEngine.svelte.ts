@@ -33,6 +33,7 @@ import type {
 	IntentScope,
 	DeployIntentInput,
 	DeployIntentResult,
+	IntentPrescription,
 	CancelIntentInput,
 	CancelIntentResult,
 	ExtendIntentInput,
@@ -71,6 +72,11 @@ export class IntentEngine {
 	draftScope = $state<IntentScope>('team');
 	draftTargetUids = $state<string[]>([]);
 	draftPriority = $state(100);
+	draftPrescriptionSets = $state(3);
+	draftPrescriptionRepsPerSet = $state(10);
+	draftPrescriptionBilateral = $state(false);
+	draftPrescriptionDurationMin = $state(0);
+	draftPrescriptionTargetRpe = $state(0);
 
 	// ── Mutation state ──────────────────────────────────────────────────────────
 	deployPhase = $state<DeployPhase>('idle');
@@ -196,8 +202,28 @@ export class IntentEngine {
 		this.draftScope = 'team';
 		this.draftTargetUids = [];
 		this.draftPriority = 100;
+		this.draftPrescriptionSets = 3;
+		this.draftPrescriptionRepsPerSet = 10;
+		this.draftPrescriptionBilateral = false;
+		this.draftPrescriptionDurationMin = 0;
+		this.draftPrescriptionTargetRpe = 0;
 		this.deployPhase = 'idle';
 		this.deployError = '';
+	}
+
+	buildDeployPrescription(): IntentPrescription {
+		const sets = Math.max(1, Math.min(99, Math.floor(Number(this.draftPrescriptionSets) || 1)));
+		const repsRaw = Math.floor(Number(this.draftPrescriptionRepsPerSet) || 0);
+		const rx: IntentPrescription = {
+			sets,
+			bilateral: this.draftPrescriptionBilateral === true,
+		};
+		if (repsRaw > 0) rx.repsPerSet = Math.min(999, repsRaw);
+		const dur = Math.floor(Number(this.draftPrescriptionDurationMin) || 0);
+		if (dur > 0) rx.targetDurationMin = Math.min(480, dur);
+		const rpe = Math.floor(Number(this.draftPrescriptionTargetRpe) || 0);
+		if (rpe >= 1 && rpe <= 10) rx.targetRpe = rpe;
+		return rx;
 	}
 
 	async deployIntent() {
@@ -219,6 +245,7 @@ export class IntentEngine {
 				scope: this.draftScope,
 				targetUids: this.draftScope === 'players' ? [...this.draftTargetUids] : [],
 				priority: this.draftPriority,
+				prescription: this.buildDeployPrescription(),
 			});
 			this.deployPhase = 'success';
 			setTimeout(() => this.resetDraft(), 2500);

@@ -23,14 +23,23 @@
   import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress } from '$lib/player/dashboard/activeBounties.js';
   import {
     attributeIdToWorkoutFocus,
+    buildPolicyHintsFromResult,
     clearMissionHandoff,
     COACH_INTENT_HINT,
     formatSuggestedDrillLine,
     isMissionHandoffStale,
     readMissionHandoff,
+    resolveHandoffDurationMinutes,
+    resolveHandoffTargetRpe,
     resolveHeuristicDrill,
     type MissionHandoff,
   } from '$lib/player/workout/coachMissionFlow.js';
+  import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
+  import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+  import {
+    computeWorkoutTotalReps,
+    formatPrescriptionVolumeLine,
+  } from '$lib/player/workout/workoutPrescription.js';
   import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
@@ -41,7 +50,7 @@
     title: 'TELEMETRY LOGGING',
     instructions: [
       '1. Select your drill or exercise.',
-      '2. Input your exact reps, sets, or time.',
+      '2. Set duration and RPE; when a coach prescription is armed, confirm sets and reps (both sides doubles total rep count).',
       '3. Honest data feeds the algorithm. Your stats will update your Operative ID Card on the main dashboard.',
     ],
   };
@@ -79,6 +88,9 @@
   );
 
   let logSubmitting = $state(false);
+  let workoutSets = $state(1);
+  let workoutRepsPerSet = $state(0);
+  let workoutBilateral = $state(false);
 
   /** Diegetic overlay state machine (Wave D — replaces legacy commit modals). */
   let overlayOpen = $state(false);
@@ -133,12 +145,24 @@
       const drill = await resolveHeuristicDrill(db, handoff.targetAttributeId, frustration);
       if (drill?.title) selectedDrill = drill.title;
     }
-    if (handoff.durationMinutes != null && handoff.durationMinutes > 0) {
-      duration = handoff.durationMinutes;
+    if (handoff.prescription) {
+      workoutSets = handoff.prescription.sets;
+      workoutRepsPerSet = handoff.prescription.repsPerSet ?? 0;
+      workoutBilateral = handoff.prescription.bilateral === true;
     }
-    if (handoff.targetRpe != null && handoff.targetRpe > 0) {
-      intensity = handoff.targetRpe;
-    }
+    duration = resolveHandoffDurationMinutes(handoff);
+    intensity = resolveHandoffTargetRpe(handoff);
+  }
+
+  /** Merge cached/fetched RL policy into armed handoff — duration/RPE only (prescription volume unchanged). */
+  function applyRlPolicyToArmedSession(result) {
+    if (!armedHandoff || !result) return;
+    const hints = buildPolicyHintsFromResult(result);
+    if (!hints) return;
+    const merged = { ...armedHandoff, policyHints: hints };
+    armedHandoff = merged;
+    duration = resolveHandoffDurationMinutes(merged);
+    intensity = resolveHandoffTargetRpe(merged);
   }
 
   function clearArmedMission() {
@@ -179,6 +203,39 @@
     untrack(() => {
       void applyMissionHandoff(handoff);
     });
+  });
+
+  // RL inference on Train when coach intent armed and no fresh policy cache (mount / intent change only).
+  $effect(() => {
+    if (!browser) return;
+    if (authStore.role !== 'player') return;
+    const missionId = activeMissionId;
+    if (!missionId) return;
+    const source = armedHandoff?.source;
+    if (source && source !== 'coach_intent') return;
+
+    const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
+    let cancelled = false;
+
+    void (async () => {
+      const cached = readRlPolicyCache(sportId);
+      if (cached) {
+        if (!cancelled && armedHandoff) applyRlPolicyToArmedSession(cached);
+        return;
+      }
+      const result = await ensureRlPolicyCached({
+        sportId,
+        fetchPolicy: async (sid) => {
+          const res = await httpsCallable(functions, 'getAdaptiveWorkoutPolicy')({ sportId: sid });
+          return res.data;
+        },
+      });
+      if (!cancelled && result && armedHandoff) applyRlPolicyToArmedSession(result);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   });
 
   // Drop armed state if coach intent was cancelled server-side.
@@ -291,10 +348,25 @@
 
   const missionBounty = $derived.by(() => armedGoalXp);
 
+  const armedPrescription = $derived(armedHandoff?.prescription ?? null);
+
+  const coachPrescriptionLine = $derived.by(() => {
+    if (!armedPrescription) return '';
+    return formatPrescriptionVolumeLine(
+      armedPrescription.sets,
+      armedPrescription.repsPerSet,
+      armedPrescription.bilateral,
+    );
+  });
+
+  const totalWorkoutReps = $derived.by(() =>
+    computeWorkoutTotalReps(workoutSets, workoutRepsPerSet || undefined, workoutBilateral),
+  );
+
   const estimatedLogXp = $derived.by(() => {
     return calculateTrainingSessionEarnedXp({
       duration: Math.max(0, Math.floor(Number(duration) || 0)),
-      reps: 0,
+      reps: totalWorkoutReps,
       intensity: intensityApiFromStep(intensity),
     });
   });
@@ -324,7 +396,7 @@
     const drillType = buildWorkoutDrillType(focusLabel, selectedDrill);
     const dMin = Math.max(0, Math.floor(Number(duration) || 0));
     const intensityCall = intensityApiFromStep(intensity);
-    const expectedXp = expectedWorkoutXp(dMin, intensity);
+    const expectedXp = expectedWorkoutXp(dMin, intensity, totalWorkoutReps);
     const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
     const user = authStore.user;
     if (!user) return;
@@ -335,6 +407,7 @@
       const result = await executePlayerWorkoutLog({
         drillType,
         durationMin: dMin,
+        totalReps: totalWorkoutReps,
         intensityCall,
         focusLabel,
         selectedDrill,
@@ -342,6 +415,7 @@
         missionSource: armedHandoff?.source ?? null,
         totalXpHud,
         oldLevel,
+        // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
         intensityStep: intensity,
         authUser: { uid: user.uid, email: user.email },
         profile,
@@ -408,6 +482,11 @@
         </h2>
         {#if armedDrillLine}
           <p class="pw-mission-armed__drill pw-mono">{armedDrillLine}</p>
+        {/if}
+        {#if coachPrescriptionLine}
+          <p class="pw-mission-armed__drill pw-mono pw-dim">
+            Coach prescription: {coachPrescriptionLine}
+          </p>
         {/if}
       </div>
     {/if}
@@ -496,6 +575,53 @@
 
         <div class="pw-theater__execute pd-os-deck__well">
           <span class="pw-eyebrow pd-panel-eyebrow">Execute</span>
+          {#if armedPrescription}
+            <div class="pw-configure-step" role="group" aria-label="Session volume">
+              <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
+              {#if armedPrescription}
+                <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
+              {/if}
+              <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
+                <div class="pw-gauge">
+                  <div class="pw-gauge__head">
+                    <span class="pw-eyebrow">Sets</span>
+                    <span class="pw-mono pw-data">{workoutSets}</span>
+                  </div>
+                  <input
+                    class="pw-range"
+                    type="range"
+                    min="1"
+                    max="20"
+                    step="1"
+                    bind:value={workoutSets}
+                    aria-label="Sets completed"
+                  />
+                </div>
+                <div class="pw-gauge">
+                  <div class="pw-gauge__head">
+                    <span class="pw-eyebrow">Reps / set</span>
+                    <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
+                  </div>
+                  <input
+                    class="pw-range"
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    bind:value={workoutRepsPerSet}
+                    aria-label="Reps per set"
+                  />
+                </div>
+              </div>
+              <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
+                <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
+                Both sides (doubles rep count for XP)
+              </label>
+              <p class="pw-mono pw-data">
+                Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
+              </p>
+            </div>
+          {/if}
           <div class="pw-gauges">
             <div class="pw-gauge">
               <div class="pw-gauge__head">

@@ -12,6 +12,10 @@ const {onDocumentCreated, onDocumentWritten} =
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
+// DEPLOY-N: slim default codebase — migrated exports live in split packages (see FUNCTIONS_DEPLOY.md).
+logger.warn(
+    '[functions/default] Legacy monolith index — deploy split codebases for production surfaces.',
+);
 const admin = require('firebase-admin');
 const {defineString, defineSecret} = require('firebase-functions/params');
 
@@ -50,99 +54,13 @@ const {
   grantTrainingXpAfterRepCreated,
 } = require('./gamificationWorkoutXp');
 
-// â”€â”€ Epic 7: Media Integrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const integrationHandlers = require('./integrations');
-exports.getSoccerNews = integrationHandlers.getSoccerNews;
-exports.searchPodcasts = integrationHandlers.searchPodcasts;
-exports.getPodcastEpisodes = integrationHandlers.getPodcastEpisodes;
-
-// â”€â”€ Epic 7: AEGIS Weather & Safety Protocol â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const weatherHandlers = require('./weather');
-exports.getWeatherConditions = weatherHandlers.getWeatherConditions;
-
-// â”€â”€ Epic 9: Secure Media Vault â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const uploadTokenHandlers = require('./uploadTokens');
-exports.getUploadToken = uploadTokenHandlers.getUploadToken;
-exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
-
-const processMediaHandlers = require('./processMedia');
-exports.processMedia = processMediaHandlers.processMedia;
-
-// â”€â”€ Epic 9: Universal Roster Ingestion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const ingestHandlers = require('./ingestRoster');
-exports.ingestRoster = ingestHandlers.ingestRoster;
-
-// â”€â”€ Epic 10: Marketing / Subscription checkout stub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const subscriptionHandlers = require('./subscription');
-exports.createSubscription = subscriptionHandlers.createSubscription;
-
-// â”€â”€ Epic 11: Commerce Engine (Stripe Connect) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const commerceHandlers = require('./commerce');
-exports.createRegistrationIntent = commerceHandlers.createRegistrationIntent;
-exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;
-exports.createConnectOnboarding = commerceHandlers.createConnectOnboarding;
-exports.getRegistrationStatus = commerceHandlers.getRegistrationStatus;
-
-// ── Phase 2, Epic 2: Transaction-based pricing (Session E) ─────────────────
-// Sunset path for the legacy per-seat SaaS subscription model.  Recruiter
-// subscriptions are excluded — they migrate to the hybrid model in Session M.
-const legacyBillingHandlers = require('./legacyBillingOps');
-exports.sunsetLegacySubscription = legacyBillingHandlers.sunsetLegacySubscription;
-exports.sweepLegacySubscriptions = legacyBillingHandlers.sweepLegacySubscriptions;
-
-// ── Phase 2, Epic 2: Digital Ticketing (Session H) ─────────────────────────
-// Same Stripe Connect destination-charge plumbing as season registrations,
-// but for tournament/event tickets.  Generates HMAC QR tokens on success.
-const ticketingHandlers = require('./ticketing');
-exports.createTicketSaleIntent    = ticketingHandlers.createTicketSaleIntent;
-exports.handleTicketingWebhook    = ticketingHandlers.handleTicketingWebhook;
-exports.upsertTournamentEvent     = ticketingHandlers.upsertTournamentEvent;
-exports.publishTournamentEvent    = ticketingHandlers.publishTournamentEvent;
-exports.verifyScanToken           = ticketingHandlers.verifyScanToken;
-
-// ── Phase 2, Epic 2: Branded ticket receipts (Session A8 — feature-flagged) ─
-// v1 receipts are handled by Stripe's built-in receipt_email in ticketing.js.
-// This trigger fires onCreate but self-disables unless the
-// feature_flags/brandedTicketReceipts doc has enabled:true.
-const ticketReceiptsHandlers = require('./ticketReceipts');
-exports.sendTicketReceiptOnCreate = ticketReceiptsHandlers.sendTicketReceiptOnCreate;
-
-// ── Phase 2, Epic 2: Hotel Block Rebates (Session I) ───────────────────────
-// Inverted economics — record hotel partner commission receipts and
-// transfer the NGB share via Stripe Transfers.  Both callables are
-// super_admin only; the rebate flow is operated from a console.
-const hotelRebateHandlers = require('./hotelRebates');
-exports.submitHotelRebateRecord = hotelRebateHandlers.submitHotelRebateRecord;
-exports.approveHotelRebatePayout = hotelRebateHandlers.approveHotelRebatePayout;
-
-// ── Phase 2, Epic 2: Hotel Partner Directory (Session B1) ──────────────────
-// Provisioning and key-rotation callables for hotel partner API credentials.
-const hotelPartnerOpsHandlers = require('./hotelPartnerOps');
-exports.provisionHotelPartner    = hotelPartnerOpsHandlers.provisionHotelPartner;
-exports.rotateHotelPartnerKeys   = hotelPartnerOpsHandlers.rotateHotelPartnerKeys;
-exports.setHotelPartnerStatus    = hotelPartnerOpsHandlers.setHotelPartnerStatus;
+// DEPLOY-N: integrations → functions-integrations/ · commerce → functions-commerce/
 
 // ── Phase 2, Epic 2: Clearance Expiry (Session K) ──────────────────────────
 // Daily sweep — flips cleared users past the 365-day validity window to
 // 'expired' and revokes their isCleared JWT claim.
 const clearanceExpiryHandlers = require('./clearanceExpiry');
 exports.expireStaleClearances = clearanceExpiryHandlers.expireStaleClearances;
-
-// ── Phase 2, Epic 2: Recruiter Hybrid Billing (Session M) ──────────────────
-// Per-export metered billing on top of the existing annual Stripe sub.
-// Charges are stacked onto the recruiter's existing invoice via
-// invoiceItem.create — no new PaymentIntents per export.
-const recruiterBillingHandlers = require('./recruiterBilling');
-exports.recordRecruiterExport = recruiterBillingHandlers.recordRecruiterExport;
-exports.cancelRecruiterAccount = recruiterBillingHandlers.cancelRecruiterAccount;
-
-// ── Phase 2, Epic 2: Live policy admin (Session N) ─────────────────────────
-// Super-admin only.  bootstrapPricingPolicy seeds the empty default-v1 doc.
-// updatePricingPolicy is the live rate-change knob — version-bumps the
-// policy and writes an audit row in the same transaction.
-const pricingPolicyOps = require('./pricingPolicyOps');
-exports.bootstrapPricingPolicy = pricingPolicyOps.bootstrapPricingPolicy;
-exports.updatePricingPolicy = pricingPolicyOps.updatePricingPolicy;
 
 // â”€â”€ Epic 11: Pitch Collision Avoidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const facilitiesHandlers = require('./facilities');
@@ -169,24 +87,11 @@ exports.updateFixture    = leagueHandlers.updateFixture;
 exports.cancelFixture    = leagueHandlers.cancelFixture;
 exports.schedulePractice = leagueHandlers.schedulePractice;
 
-// â”€â”€ Epic 6+: Compliance & Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// -- Epic 14: Vanguard Clearance Protocol ------------------------------------
-const complianceHandlers = require('./compliance');
-exports.generateCheckrEmbedToken = complianceHandlers.generateCheckrEmbedToken;
-exports.backgroundCheckCallback  = complianceHandlers.backgroundCheckCallback;
-exports.checkrWebhook            = complianceHandlers.checkrWebhook;
-exports.getComplianceRoster      = complianceHandlers.getComplianceRoster;
-exports.requestManualOverride    = complianceHandlers.requestManualOverride;
-exports.revokeCoachClearance     = complianceHandlers.revokeCoachClearance;
-exports.initiateAnkoredUplink    = complianceHandlers.initiateAnkoredUplink;
-exports.simulateClearance        = complianceHandlers.simulateClearance;
+// DEPLOY-N: compliance/COPPA/WebAuthn/vault → functions-compliance/
+
+// â”€â”€ Epic 6+: Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
-
-const verifyDocHandlers = require('./verifyDocument');
-exports.verifyDocument = verifyDocHandlers.verifyDocument;
-exports.processPendingDocDeletions = verifyDocHandlers.processPendingDocDeletions;
-exports.getRetentionReport = verifyDocHandlers.getRetentionReport;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
@@ -195,18 +100,6 @@ const inviteHandlers = require('./invites');
 // would silently overwrite the first assignment, creating a dead export.
 exports.consumeInviteCode  = inviteHandlers.consumeInviteCode;
 exports.generateInviteCode = inviteHandlers.generateInviteCode;
-
-const coppaHandlers = require('./coppa');
-exports.sendParentalConsentEmail      = coppaHandlers.sendParentalConsentEmail;
-exports.verifyParentalConsent         = coppaHandlers.verifyParentalConsent;
-// Epic 15: WebAuthn COPPA Attestation
-exports.generateWebAuthnChallenge     = coppaHandlers.generateWebAuthnChallenge;
-exports.verifyBiometricConsent        = coppaHandlers.verifyBiometricConsent;
-// Alpha Interlock: Director Out-of-Band VPC Override
-exports.directorOutOfBandClearance    = coppaHandlers.directorOutOfBandClearance;
-// Phase 2, Epic 3: WebAuthn Biometric Attestation for Parental Consent
-exports.generateConsentAttestationChallenge = coppaHandlers.generateConsentAttestationChallenge;
-exports.attestParentalConsent               = coppaHandlers.attestParentalConsent;
 
 // Phase 2, Epic 3: Teen 13-16 Ad-Block — client beacon + CF write-validator
 const teenAdInterceptorHandlers = require('./teenAdInterceptor');
@@ -232,13 +125,11 @@ exports.onWorkoutLogCreated        = profileTriggers.onWorkoutLogCreated;
 // bookings have been extracted to src/domains/adminOps.js.
 const adminOps = require('./src/domains/adminOps');
 
-// ── Deconstruction Sprint 4: Training & Gamification Domain ──────────────────
-// Workout reps, XP, match telemetry, homework, leaderboards, and AI tactics
-// have been extracted to src/domains/trainingOps.js.
+// ── Deconstruction Sprint 4: Training & Gamification (partial — default only) ─
+// Launch callables → functions-core/: logTrainingSession, secure*Intent.
 const trainingOps = require('./src/domains/trainingOps');
 exports.commitMatchTelemetry          = trainingOps.commitMatchTelemetry;
 exports.submitWorkoutRep              = trainingOps.submitWorkoutRep;
-exports.logTrainingSession            = trainingOps.logTrainingSession;
 exports.secureAssignHomework          = trainingOps.secureAssignHomework;
 exports.secureDeleteHomework          = trainingOps.secureDeleteHomework;
 exports.completeAssignmentStatus      = trainingOps.completeAssignmentStatus;
@@ -249,32 +140,16 @@ exports.getPublicClubLanding          = trainingOps.getPublicClubLanding;
 exports.logPlayerActivity             = trainingOps.logPlayerActivity;
 exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;
+// Epic 8 — intent lifecycle (not in functions-core launch slice)
+exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
+exports.scheduledExpireIntents        = trainingOps.scheduledExpireIntents;
 
 const gritHandlers = require('./lib/grit');
 exports.triggerGritAwardUpdate = gritHandlers.triggerGritAwardUpdate;
 
-// Epic 8 — Intent-Based Homework Triggers
-exports.secureDeployIntent   = trainingOps.secureDeployIntent;
-exports.secureCancelIntent   = trainingOps.secureCancelIntent;
-exports.secureExtendIntent   = trainingOps.secureExtendIntent;
-exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
-exports.scheduledExpireIntents        = trainingOps.scheduledExpireIntents;
-exports.syncUserClaims            = adminOps.syncUserClaims;
-exports.listTeamsForClub          = adminOps.listTeamsForClub;
-exports.logSecurityAudit          = adminOps.logSecurityAudit;
-exports.generateLicense           = adminOps.generateLicense;
-exports.directorSaveClubBranding  = adminOps.directorSaveClubBranding;
-exports.directorInviteCoach       = adminOps.directorInviteCoach;
-exports.claimCoachInvite          = adminOps.claimCoachInvite;
-exports.secureAllocateTeamSeats   = adminOps.secureAllocateTeamSeats;
-exports.secureAddPlayer           = adminOps.secureAddPlayer;
-exports.secureRemovePlayer        = adminOps.secureRemovePlayer;
-exports.secureUpdateJersey        = adminOps.secureUpdateJersey;
-exports.directorUpsertField       = adminOps.directorUpsertField;
-exports.secureBookField           = adminOps.secureBookField;
+// DEPLOY-N: admin/cell/gateway → functions-platform/ (createSportModule, publishClubCampaign, …)
 exports.createSportModule         = adminOps.createSportModule;
 exports.publishClubCampaign       = adminOps.publishClubCampaign;
-exports.assignTenantClaims        = adminOps.assignTenantClaims;
 
 // ── Deconstruction Sprint 5: Compliance & VPC Domain ─────────────────────────
 // Household linkages, verifiable consent, minor retention purges, and the
@@ -289,16 +164,6 @@ exports.parentSubmitVpcIntent       = complianceOps.parentSubmitVpcIntent;
 exports.playerSelfReportDob         = complianceOps.playerSelfReportDob;
 exports.parentGrantVpcConsent       = complianceOps.parentGrantVpcConsent;
 exports.registrarTransferPlayer     = complianceOps.registrarTransferPlayer;
-exports.enqueueMinorRetentionPurge  = complianceOps.enqueueMinorRetentionPurge;
-exports.processMinorRetentionQueue  = complianceOps.processMinorRetentionQueue;
-exports.purgeExpiredMinorData       = complianceOps.purgeExpiredMinorData;
-
-const vaultOps = require('./src/domains/vaultOps');
-exports.vaultSealPii                = vaultOps.vaultSealPii;
-exports.vaultUnsealPii              = vaultOps.vaultUnsealPii;
-
-const shredOps = require('./src/domains/shredOps');
-exports.shredSensitiveData          = shredOps.shredSensitiveData;
 
 // ── Deconstruction Sprint 5: Operative & Identity Domain ─────────────────────
 // Custom proxy enclaves, COPPA operatives, SafeSport comms, impersonation,
@@ -307,8 +172,6 @@ const operativeOps = require('./src/domains/operativeOps');
 exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
-exports.impersonateUserFn           = operativeOps.impersonateUserFn;
-exports.purgeUserDataFn             = operativeOps.purgeUserDataFn;
 exports.parentSignCoppaWaiver       = operativeOps.parentSignCoppaWaiver;
 exports.parentProvisionOperative    = operativeOps.parentProvisionOperative;
 exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
@@ -332,9 +195,6 @@ exports.verifyVideoTrial             = webhooksOps.verifyVideoTrial;
 exports.directorOverrideEligibility  = webhooksOps.directorOverrideEligibility;
 exports.affinityWebhook              = webhooksOps.affinityWebhook;
 exports.mockAffinityPush             = webhooksOps.mockAffinityPush;
-exports.createStripeCheckoutSession  = webhooksOps.createStripeCheckoutSession;
-exports.stripeWebhook                = webhooksOps.stripeWebhook;
-exports.facilityWeatherWebhook       = webhooksOps.facilityWeatherWebhook;
 
 // -- Deconstruction Sprint 6: Notifications & FCM Domain ---------------------
 // Device token registry, mission/assignment/trial score FCM push loops, and
@@ -353,72 +213,6 @@ exports.onTrialScoreWritten          = notificationOps.onTrialScoreWritten;
 const carRideOps = require('./src/domains/carRideOps');
 exports.onMatchResultCreated         = carRideOps.onMatchResultCreated;
 exports.deliverCarRideHomePush       = carRideOps.deliverCarRideHomePush;
-
-// ---------------------------------------------------------------------------
-// Zero-Trust tenant utilities pre-load.
-// ---------------------------------------------------------------------------
-require('./tenantUtils');
-
-// ---------------------------------------------------------------------------
-// Analytics aggregation triggers (Strike 1 / Agent 3).
-// ---------------------------------------------------------------------------
-const analyticsTriggers = require('./analytics');
-exports.onAnalyticsUserWritten   = analyticsTriggers.onUserWritten;
-exports.onAnalyticsClubWritten   = analyticsTriggers.onClubWritten;
-exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
-
-// ---------------------------------------------------------------------------
-// Phase 1, Epic 1 — Cell-Based Routing
-//
-// Registry bootstrap (Session A), tenant ↔ cell provisioning (Session B),
-// shared cell router accessor (Session D), migration tooling (Session G),
-// API gateway (Session E), and observability (Session I).
-// ---------------------------------------------------------------------------
-require('./cellRouter'); // Eager-load to seed the per-cellId Firestore cache.
-
-const cellBootstrapHandlers = require('./cellBootstrap');
-exports.bootstrapCellRegistry  = cellBootstrapHandlers.bootstrapCellRegistry;
-exports.registerDedicatedCell  = cellBootstrapHandlers.registerDedicatedCell;
-exports.activateCell           = cellBootstrapHandlers.activateCell;
-
-const cellProvisioningHandlers = require('./cellProvisioning');
-exports.provisionTenantCell    = cellProvisioningHandlers.provisionTenantCell;
-exports.peekTenantCell         = cellProvisioningHandlers.peekTenantCell;
-
-// /v1/* HTTP gateway — single entry point for all cell-aware REST traffic.
-// Session E: handlers register their routes via apiGateway.register() at
-// module load.  Adding new domain routes does not require touching
-// firebase.json or hosting rewrites — they bind to the same Cloud Function.
-const apiGatewayHandlers = require('./apiGateway');
-exports.apiGateway             = apiGatewayHandlers.apiGateway;
-
-// Tenant migration tooling (Session G).  Each callable advances a
-// migration record one phase: announce → freeze → export → import →
-// verify → cutover → rollback.  See functions/cellMigration.js for the
-// state machine.
-const cellMigrationHandlers = require('./cellMigration');
-exports.startTenantMigration      = cellMigrationHandlers.startTenantMigration;
-exports.markExportComplete        = cellMigrationHandlers.markExportComplete;
-exports.markImportComplete        = cellMigrationHandlers.markImportComplete;
-exports.verifyTenantOnCell        = cellMigrationHandlers.verifyTenantOnCell;
-exports.executeCutover            = cellMigrationHandlers.executeCutover;
-exports.rollbackTenantMigration   = cellMigrationHandlers.rollbackTenantMigration;
-
-// Observability + promotion queue (Session I).  Schedulers + admin
-// callables that feed the Director OS cell-health dashboard and
-// drive the noisy-neighbor early-warning system.
-const cellObservabilityHandlers = require('./cellObservability');
-exports.flagTenantForPromotion    = cellObservabilityHandlers.flagTenantForPromotion;
-exports.acknowledgePromotionFlag  = cellObservabilityHandlers.acknowledgePromotionFlag;
-exports.evaluateCellPromotions    = cellObservabilityHandlers.evaluateCellPromotions;
-exports.purgeGatewayCaches        = cellObservabilityHandlers.purgeGatewayCaches;
-
-// Synthetic NGB seed (Session J).  Sandboxed loader for end-to-end
-// verification of the migration pipeline — every doc is tagged
-// `synthetic: true` and tenantId must start with `synth-`.
-const cellSeedHandlers = require('./cellSeed');
-exports.seedSyntheticTenant       = cellSeedHandlers.seedSyntheticTenant;
-exports.purgeSyntheticTenant      = cellSeedHandlers.purgeSyntheticTenant;
 
 // Phone Number Verification (Phase 2, Epic 3 — Native Firebase Phone Auth).
 // Secondary linking: mirrorPhoneVerification stamps phoneVerified JWT claim
@@ -456,29 +250,7 @@ const clubOps = require('./src/domains/clubOps');
 exports.auditClubSportConfig = clubOps.auditClubSportConfig;
 exports.pruneOrphanedSports  = clubOps.pruneOrphanedSports;
 
-// ── Phase 3, Epic 4 (deliverable 2) — RL Adaptive Workout Engine ─────────────
-// submitPhysioSelfReport: daily player physiological self-report (S2).
-// initRlPolicy: cold-boot random-weight policy v1 (S4, stub until model ships).
-// getAdaptiveWorkoutPolicy: inference callable, returns heuristic until S5 (S5).
-// setPolicyAbPercent / freezeRlPolicy / rollbackRlPolicy: super_admin controls (S10).
-const rlOps = require('./rlOps');
-exports.submitPhysioSelfReport   = rlOps.submitPhysioSelfReport;
-exports.initRlPolicy             = rlOps.initRlPolicy;
-exports.getAdaptiveWorkoutPolicy = rlOps.getAdaptiveWorkoutPolicy;
-exports.setPolicyAbPercent       = rlOps.setPolicyAbPercent;
-exports.freezeRlPolicy           = rlOps.freezeRlPolicy;
-exports.rollbackRlPolicy         = rlOps.rollbackRlPolicy;
-
-// RL transition recording triggers (S6).
-// onWorkoutLogCreated: writes rl_transitions row when workout_logs doc is created.
-// onPhysioReportCreated: patches nextState when morning physio report arrives.
-const transitionRecorder = require('./src/ml/transitionRecorder');
-exports.rlOnWorkoutLogCreated    = transitionRecorder.onWorkoutLogCreated;
-exports.rlOnPhysioReportCreated  = transitionRecorder.onPhysioReportCreated;
-
-// Nightly RL training scheduler (S7).
-const trainer = require('./src/ml/trainer');
-exports.trainRlPolicyNightly = trainer.trainRlPolicyNightly;
+// DEPLOY-N: RL → functions-rl/ (getAdaptiveWorkoutPolicy, initRlPolicy, triggers, …)
 
 // ── Phase 3, Epic 5 — Loss Avoidance (Octalysis Core Drive 8) ────────────────
 // enforceLossAvoidance:       nightly sweep drains inactive XP, breaks/freezes
@@ -618,9 +390,3 @@ exports.onGritAwardCreated = onDocumentCreated(
     },
 );
 
-// -- Phase 2 Epic 3: WebAuthn (Passkey) Passwordless Auth --------------------
-const webauthnHandlers = require('./webauthn');
-exports.webauthnRegisterStart = webauthnHandlers.webauthnRegisterStart;
-exports.webauthnRegisterFinish = webauthnHandlers.webauthnRegisterFinish;
-exports.webauthnLoginStart = webauthnHandlers.webauthnLoginStart;
-exports.webauthnLoginFinish = webauthnHandlers.webauthnLoginFinish;

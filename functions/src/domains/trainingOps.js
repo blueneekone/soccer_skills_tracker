@@ -53,6 +53,9 @@ const {resolvePublicOperativeAvatarV2} = require('../utils/portraitV1Upgrade');
 
 const REGION = 'us-east1';
 
+/** Launch-critical callables — extra memory for cold-start headroom on Cloud Run. */
+const LAUNCH_CORE_CALLABLE_OPTS = {region: REGION, memory: '512MiB'};
+
 const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
     'WORKOUT_ATTESTATION_HMAC_SECRET',
 );
@@ -535,7 +538,7 @@ exports.submitWorkoutRep = onCall(
 /**
  * Epic 2/3: server-side XP, workout_logs, player_stats/{uid}, team_stats.
  */
-exports.logTrainingSession = onCall({region: REGION}, async (request) => {
+exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   if (!request.auth || !request.auth.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
@@ -1814,11 +1817,59 @@ exports.analyzeTacticWithAI = onCall(
 // ── Epic 8: Intent-Based Homework Triggers ────────────────────────────────────
 
 /**
+ * PRESCRIPTION-schema — validate and normalize optional coach prescription on deploy.
+ * @param {unknown} raw
+ * @returns {object|undefined}
+ */
+function normalizePrescription(raw) {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new HttpsError('invalid-argument', 'prescription must be an object.');
+  }
+  const drillTitle = typeof raw.drillTitle === 'string' ? raw.drillTitle.trim() : '';
+  const sets = Number(raw.sets);
+  if (!Number.isFinite(sets) || sets < 1 || sets > 99 || Math.floor(sets) !== sets) {
+    throw new HttpsError('invalid-argument', 'prescription.sets must be an integer 1–99.');
+  }
+  let repsPerSet;
+  if (raw.repsPerSet !== undefined && raw.repsPerSet !== null) {
+    repsPerSet = Number(raw.repsPerSet);
+    if (!Number.isFinite(repsPerSet) || repsPerSet < 1 || repsPerSet > 999 || Math.floor(repsPerSet) !== repsPerSet) {
+      throw new HttpsError('invalid-argument', 'prescription.repsPerSet must be an integer 1–999.');
+    }
+    repsPerSet = Math.floor(repsPerSet);
+  }
+  const bilateral = raw.bilateral === true;
+  let targetDurationMin;
+  if (raw.targetDurationMin !== undefined && raw.targetDurationMin !== null) {
+    targetDurationMin = Number(raw.targetDurationMin);
+    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 480) {
+      throw new HttpsError('invalid-argument', 'prescription.targetDurationMin must be 1–480.');
+    }
+    targetDurationMin = Math.floor(targetDurationMin);
+  }
+  let targetRpe;
+  if (raw.targetRpe !== undefined && raw.targetRpe !== null) {
+    targetRpe = Number(raw.targetRpe);
+    if (!Number.isFinite(targetRpe) || targetRpe < 1 || targetRpe > 10) {
+      throw new HttpsError('invalid-argument', 'prescription.targetRpe must be 1–10.');
+    }
+    targetRpe = Math.round(targetRpe);
+  }
+  const out = {sets: Math.floor(sets), bilateral};
+  if (drillTitle) out.drillTitle = drillTitle.slice(0, 200);
+  if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
+  if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
+  if (targetRpe !== undefined) out.targetRpe = targetRpe;
+  return out;
+}
+
+/**
  * Epic 8 — Deploy a macro-goal intent to team_assignments.
  * Coach/director picks a target attribute + XP bounty; the RL engine resolves
  * individualized drills per player at inference time.
  */
-exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
+exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   if (!request.auth || !request.auth.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
@@ -1836,6 +1887,7 @@ exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
   const priority = Number.isFinite(Number(data.priority)) && Number(data.priority) >= 1
     ? Math.floor(Number(data.priority))
     : 100;
+  const prescription = normalizePrescription(data.prescription);
 
   if (!teamId || teamId === 'admin') throw new HttpsError('invalid-argument', 'teamId is required.');
   if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
@@ -1879,7 +1931,7 @@ exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
   const intentRef = db().collection('team_assignments').doc();
   const intentId = intentRef.id;
 
-  await intentRef.set({
+  const intentPayload = {
     intentId,
     teamId,
     tenantId,
@@ -1896,7 +1948,9 @@ exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  };
+  if (prescription) intentPayload.prescription = prescription;
+  await intentRef.set(intentPayload);
 
   await db().collection('security_audit').add({
     action: 'secureDeployIntent',
@@ -1908,6 +1962,7 @@ exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
     requiredXp,
     scope,
     targetCount: scope === 'players' ? targetUids.length : 'team',
+    hasPrescription: Boolean(prescription),
     actorUid: request.auth.uid,
     at: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -1924,7 +1979,7 @@ exports.secureDeployIntent = onCall({region: REGION}, async (request) => {
  * Epic 8 — Cancel an active intent.
  * Allowed: the deploying coach, any director on the same club, super_admin.
  */
-exports.secureCancelIntent = onCall({region: REGION}, async (request) => {
+exports.secureCancelIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   if (!request.auth || !request.auth.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
@@ -1972,7 +2027,7 @@ exports.secureCancelIntent = onCall({region: REGION}, async (request) => {
 /**
  * Epic 8 — Extend the expiry of an active intent by additional days.
  */
-exports.secureExtendIntent = onCall({region: REGION}, async (request) => {
+exports.secureExtendIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   if (!request.auth || !request.auth.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }

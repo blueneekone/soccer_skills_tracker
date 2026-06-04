@@ -31,6 +31,23 @@ export type IntentScope = 'team' | 'players';
  */
 export type IntentStatus = 'active' | 'fulfilled' | 'expired' | 'cancelled';
 
+/**
+ * Optional coach drill prescription on team_assignments (PRESCRIPTION-schema).
+ * Omit `repsPerSet` for time-only homework. `bilateral` doubles rep count for XP math.
+ */
+export interface IntentPrescription {
+	drillTitle?: string;
+	/** Read-repair default: 1 */
+	sets: number;
+	/** Omit = time-only homework (no rep-based XP multiplier from prescription). */
+	repsPerSet?: number;
+	/** Read-repair default: false — repsPerSet applies per side (hand/foot). */
+	bilateral: boolean;
+	targetDurationMin?: number;
+	/** Coach target RPE 1–10 */
+	targetRpe?: number;
+}
+
 // ── Core document ─────────────────────────────────────────────────────────────
 
 /**
@@ -109,6 +126,13 @@ export interface IntentDoc {
   lastModifiedByUid?: string;
   /** @since 1 Timestamp of the most recent status mutation. */
   updatedAt?: AnyTimestamp;
+
+  /**
+   * @since 1 (PRESCRIPTION-schema)
+   * Optional structured drill prescription from coach deploy.
+   * Absent on legacy intents; use repairIntentPrescription on read.
+   */
+  prescription?: IntentPrescription;
 }
 
 /**
@@ -125,6 +149,54 @@ export const INTENT_MIGRATION_DEFAULTS: Partial<IntentDoc> = {
   intentVersion: 1,
 };
 
+/**
+ * Lazy read-repair for optional prescription sub-object (no Firestore backfill).
+ */
+export function repairIntentPrescription(raw: unknown): IntentPrescription | undefined {
+	if (raw == null || typeof raw !== 'object') return undefined;
+	const p = raw as Record<string, unknown>;
+	const sets =
+		typeof p.sets === 'number' && Number.isFinite(p.sets) && p.sets >= 1
+			? Math.floor(p.sets)
+			: 1;
+	const repaired: IntentPrescription = {
+		sets,
+		bilateral: p.bilateral === true,
+	};
+	if (typeof p.drillTitle === 'string' && p.drillTitle.trim()) {
+		repaired.drillTitle = p.drillTitle.trim();
+	}
+	if (typeof p.repsPerSet === 'number' && Number.isFinite(p.repsPerSet) && p.repsPerSet >= 1) {
+		repaired.repsPerSet = Math.floor(p.repsPerSet);
+	}
+	if (
+		typeof p.targetDurationMin === 'number' &&
+		Number.isFinite(p.targetDurationMin) &&
+		p.targetDurationMin >= 1
+	) {
+		repaired.targetDurationMin = Math.floor(p.targetDurationMin);
+	}
+	if (
+		typeof p.targetRpe === 'number' &&
+		Number.isFinite(p.targetRpe) &&
+		p.targetRpe >= 1 &&
+		p.targetRpe <= 10
+	) {
+		repaired.targetRpe = Math.round(p.targetRpe);
+	}
+	return repaired;
+}
+
+/**
+ * Effective rep count for XP math: sets × repsPerSet × (bilateral ? 2 : 1).
+ * Returns 0 when repsPerSet is omitted (time-only prescription).
+ */
+export function effectivePrescriptionReps(prescription: IntentPrescription | undefined): number {
+	if (!prescription?.repsPerSet || prescription.repsPerSet < 1) return 0;
+	const sideMultiplier = prescription.bilateral ? 2 : 1;
+	return prescription.sets * prescription.repsPerSet * sideMultiplier;
+}
+
 // ── Callable I/O ──────────────────────────────────────────────────────────────
 
 export interface DeployIntentInput {
@@ -140,6 +212,8 @@ export interface DeployIntentInput {
   targetUids?: string[];
   /** Optional priority override. Defaults to 100. */
   priority?: number;
+  /** Optional structured drill prescription (validated server-side on deploy). */
+  prescription?: IntentPrescription;
 }
 
 export interface DeployIntentResult {

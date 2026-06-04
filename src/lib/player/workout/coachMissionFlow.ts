@@ -11,10 +11,23 @@ import {
 	where,
 	type Firestore,
 } from 'firebase/firestore';
+import {
+	repairIntentPrescription,
+	type IntentPrescription,
+} from '$lib/types/intent.js';
+import { readRlPolicyCache } from './rlPolicyCache.js';
 
 export type WorkoutFocus = 'technical' | 'physical' | 'tactical' | 'recovery';
 
 export type MissionHandoffSource = 'coach_intent' | 'coach_homework';
+
+/** RL / heuristic hints from getAdaptiveWorkoutPolicy — duration/RPE only on Train. */
+export type MissionHandoffPolicyHints = {
+	recommendedDrillId?: string;
+	recommendedDurationMinutes?: number | null;
+	recommendedTargetRpe?: number | null;
+	mode?: 'policy' | 'heuristic';
+};
 
 export type MissionHandoff = {
 	missionId: string;
@@ -28,6 +41,10 @@ export type MissionHandoff = {
 	focusArea?: WorkoutFocus;
 	/** UTC ms when HQ stashed this handoff (for stale guard). */
 	stashedAt?: number;
+	/** Coach deploy prescription (PRESCRIPTION-schema). */
+	prescription?: IntentPrescription;
+	/** Policy/heuristic duration+RPE hints — never override prescription volume. */
+	policyHints?: MissionHandoffPolicyHints;
 };
 
 /** Handoffs older than this are cleared on Train mount. */
@@ -44,6 +61,100 @@ export type SuggestedDrill = {
 export const MISSION_HANDOFF_KEY = 'player_mission_handoff_v1';
 export const LEGACY_MISSION_ID_KEY = 'player_active_mission_id';
 export const LEGACY_ASSIGNMENT_ID_KEY = 'player_active_assignment_id';
+
+function parseOptionalPositiveInt(value: unknown, max?: number): number | undefined {
+	if (!Number.isFinite(Number(value))) return undefined;
+	const n = Math.floor(Number(value));
+	if (n <= 0) return undefined;
+	if (max != null) return Math.max(1, Math.min(max, n));
+	return n;
+}
+
+export function parsePolicyHints(raw: unknown): MissionHandoffPolicyHints | undefined {
+	if (!raw || typeof raw !== 'object') return undefined;
+	const p = raw as Record<string, unknown>;
+	const mode = p.mode === 'policy' || p.mode === 'heuristic' ? p.mode : undefined;
+	const recommendedDrillId =
+		typeof p.recommendedDrillId === 'string' && p.recommendedDrillId.trim() ?
+			p.recommendedDrillId.trim()
+		:	undefined;
+	const recommendedDurationMinutes =
+		p.recommendedDurationMinutes == null ?
+			undefined
+		: parseOptionalPositiveInt(p.recommendedDurationMinutes) ?? null;
+	const recommendedTargetRpe =
+		p.recommendedTargetRpe == null ?
+			undefined
+		: parseOptionalPositiveInt(p.recommendedTargetRpe, 10) ?? null;
+	if (
+		!mode &&
+		!recommendedDrillId &&
+		recommendedDurationMinutes == null &&
+		recommendedTargetRpe == null
+	) {
+		return undefined;
+	}
+	return {
+		mode,
+		recommendedDrillId,
+		recommendedDurationMinutes,
+		recommendedTargetRpe,
+	};
+}
+
+export function buildPolicyHintsFromResult(input: {
+	mode?: 'policy' | 'heuristic' | string | null;
+	recommendedDrillId?: string | null;
+	recommendedDurationMinutes?: number | null;
+	recommendedTargetRpe?: number | null;
+} | null | undefined): MissionHandoffPolicyHints | undefined {
+	if (!input) return undefined;
+	return parsePolicyHints({
+		mode: input.mode === 'policy' || input.mode === 'heuristic' ? input.mode : undefined,
+		recommendedDrillId: input.recommendedDrillId ?? undefined,
+		recommendedDurationMinutes: input.recommendedDurationMinutes ?? null,
+		recommendedTargetRpe: input.recommendedTargetRpe ?? null,
+	});
+}
+
+export function readCachedPolicyHints(): MissionHandoffPolicyHints | undefined {
+	return buildPolicyHintsFromResult(readRlPolicyCache());
+}
+
+/** Priority: prescription.targetDurationMin → policyHints → handoff.durationMinutes → default. */
+export function resolveHandoffDurationMinutes(
+	handoff: MissionHandoff,
+	defaultMinutes = 30,
+): number {
+	const rx = handoff.prescription;
+	if (rx?.targetDurationMin != null && rx.targetDurationMin > 0) {
+		return Math.max(1, Math.floor(rx.targetDurationMin));
+	}
+	const policyDur = handoff.policyHints?.recommendedDurationMinutes;
+	if (policyDur != null && policyDur > 0) {
+		return Math.max(1, Math.floor(policyDur));
+	}
+	if (handoff.durationMinutes != null && handoff.durationMinutes > 0) {
+		return handoff.durationMinutes;
+	}
+	return defaultMinutes;
+}
+
+/** Priority: prescription.targetRpe → policyHints → handoff.targetRpe → default. */
+export function resolveHandoffTargetRpe(handoff: MissionHandoff, defaultRpe = 5): number {
+	const rx = handoff.prescription;
+	if (rx?.targetRpe != null && rx.targetRpe > 0) {
+		return Math.max(1, Math.min(10, Math.floor(rx.targetRpe)));
+	}
+	const policyRpe = handoff.policyHints?.recommendedTargetRpe;
+	if (policyRpe != null && policyRpe > 0) {
+		return Math.max(1, Math.min(10, Math.floor(policyRpe)));
+	}
+	if (handoff.targetRpe != null && handoff.targetRpe > 0) {
+		return handoff.targetRpe;
+	}
+	return defaultRpe;
+}
 
 export const COACH_INTENT_HINT =
 	'Coach sets the goal — we suggest a drill from team focus.';
@@ -148,6 +259,8 @@ export function readMissionHandoff(): MissionHandoff | null {
 						Number.isFinite(Number(parsed.stashedAt)) ?
 							Math.floor(Number(parsed.stashedAt))
 						:	undefined,
+					prescription: repairIntentPrescription(parsed.prescription),
+					policyHints: parsePolicyHints(parsed.policyHints),
 				};
 			}
 		}
@@ -179,19 +292,66 @@ export function buildCoachIntentHandoff(input: {
 	drill?: Pick<SuggestedDrill, 'id' | 'title'> | null;
 	durationMinutes?: number | null;
 	targetRpe?: number | null;
+	prescription?: IntentPrescription | null;
+	policyHints?: MissionHandoffPolicyHints | null;
 }): MissionHandoff {
 	const focusArea = attributeIdToWorkoutFocus(input.targetAttributeId);
+	const rx = input.prescription ? repairIntentPrescription(input.prescription) : undefined;
+	const policyHints = input.policyHints ?? undefined;
+	const durationMinutes =
+		rx?.targetDurationMin != null && rx.targetDurationMin > 0 ?
+			rx.targetDurationMin
+		: input.durationMinutes != null && input.durationMinutes > 0 ?
+			Math.max(1, Math.floor(input.durationMinutes))
+		:	undefined;
+	const targetRpe =
+		rx?.targetRpe != null && rx.targetRpe > 0 ?
+			Math.max(1, Math.min(10, Math.floor(rx.targetRpe)))
+		: input.targetRpe != null && input.targetRpe > 0 ?
+			Math.max(1, Math.min(10, Math.floor(input.targetRpe)))
+		:	undefined;
+	const drillTitle =
+		input.drill?.title ?? rx?.drillTitle ?? undefined;
 	return {
 		missionId: input.missionId,
 		source: 'coach_intent',
 		targetAttributeId: input.targetAttributeId,
 		requiredXp: input.requiredXp,
 		drillId: input.drill?.id,
-		drillTitle: input.drill?.title,
-		durationMinutes: input.durationMinutes ?? 30,
-		targetRpe: input.targetRpe ?? 5,
+		drillTitle,
+		durationMinutes,
+		targetRpe,
 		focusArea,
+		prescription: rx,
+		policyHints,
 	};
+}
+
+/** Build + stash coach intent handoff from HQ surfaces (ActiveBounties, AdaptiveHomework). */
+export function stashCoachIntentHandoffForAssignment(input: {
+	missionId: string;
+	targetAttributeId: string;
+	requiredXp?: number;
+	prescription?: unknown;
+	drill?: Pick<SuggestedDrill, 'id' | 'title'> | null;
+	durationMinutes?: number | null;
+	targetRpe?: number | null;
+	policyHints?: MissionHandoffPolicyHints | null;
+}): void {
+	const prescription = repairIntentPrescription(input.prescription);
+	const policyHints = input.policyHints ?? readCachedPolicyHints();
+	stashMissionHandoff(
+		buildCoachIntentHandoff({
+			missionId: input.missionId,
+			targetAttributeId: input.targetAttributeId,
+			requiredXp: input.requiredXp,
+			drill: input.drill,
+			prescription,
+			durationMinutes: prescription?.targetDurationMin ?? input.durationMinutes ?? null,
+			targetRpe: prescription?.targetRpe ?? input.targetRpe ?? null,
+			policyHints,
+		}),
+	);
 }
 
 export function buildCoachHomeworkHandoff(input: {

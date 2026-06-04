@@ -4,6 +4,7 @@
  * functions-commerce — Stripe Connect, ticketing, subscriptions, rebates.
  * Domain sources are copied into this package by scripts/bundle-functions.cjs.
  */
+require('./bootstrapAdmin');
 const commerceHandlers = require('./commerce');
 exports.createRegistrationIntent = commerceHandlers.createRegistrationIntent;
 exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;

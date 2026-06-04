@@ -122,6 +122,11 @@
   bind:draftScope={engine.draftScope}
   bind:draftTargetUids={engine.draftTargetUids}
   bind:draftPriority={engine.draftPriority}
+  bind:draftPrescriptionSets={engine.draftPrescriptionSets}
+  bind:draftPrescriptionRepsPerSet={engine.draftPrescriptionRepsPerSet}
+  bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}
+  bind:draftPrescriptionDurationMin={engine.draftPrescriptionDurationMin}
+  bind:draftPrescriptionTargetRpe={engine.draftPrescriptionTargetRpe}
   deployPhase={engine.deployPhase}
   deployError={engine.deployError}
   isLoadingRoster={engine.isLoadingRoster}

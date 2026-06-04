@@ -54,3 +54,5 @@ npm test -- <paths from ROADMAP sprint>
 npm run check
 npm run build
 ```
+
+**Large Cloud Functions deploys:** use `npm run deploy:core` and `npm run deploy:rl` (not full `firebase deploy --only functions`) — see [`docs/FUNCTIONS_DEPLOY.md`](../../docs/FUNCTIONS_DEPLOY.md).

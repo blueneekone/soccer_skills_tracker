@@ -10,6 +10,7 @@ import {
 	getLevelProgressFromTotalXp,
 	getCurrentRank,
 } from '../level.js';
+import { computeWorkoutTotalReps } from '$lib/player/workout/workoutPrescription.js';
 
 /** Known numeric fixtures — keep aligned with functions/__tests__/gamificationWorkoutXp.test.js */
 const TRAINING_SESSION_FIXTURES = [
@@ -26,6 +27,26 @@ describe('calculateTrainingSessionEarnedXp', () => {
 			).toBe(expected);
 		});
 	}
+
+	it('bilateral prescription volume matches unilateral at half the reps', () => {
+		const bilateralReps = computeWorkoutTotalReps(3, 10, true);
+		const unilateralReps = computeWorkoutTotalReps(3, 10, false);
+		expect(bilateralReps).toBe(60);
+		expect(unilateralReps).toBe(30);
+		expect(
+			calculateTrainingSessionEarnedXp({
+				duration: 30,
+				reps: bilateralReps,
+				intensity: 'low',
+			}),
+		).toBe(
+			calculateTrainingSessionEarnedXp({
+				duration: 30,
+				reps: unilateralReps * 2,
+				intensity: 'low',
+			}),
+		);
+	});
 });
 
 describe('xpToAdvanceFromLevel', () => {

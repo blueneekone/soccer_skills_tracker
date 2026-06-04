@@ -70,8 +70,9 @@ const CODEBASES = {
       'integrations.js',
       'weather.js',
       'uploadTokens.js',
-      'src/domains/webhooksOps.js',
+      'src/domains/facilityWeatherWebhook.js',
     ],
+    preserve: ['resolveTarget.js'],
   },
   platform: {
     folder: 'functions-platform',
@@ -114,7 +115,7 @@ if (targets.length === 0) {
 }
 
 for (const name of targets) {
-  const {folder, seeds} = CODEBASES[name];
-  const count = bundleCodebase(REPO_ROOT, folder, seeds);
+  const {folder, seeds, preserve} = CODEBASES[name];
+  const count = bundleCodebase(REPO_ROOT, folder, seeds, preserve || []);
   console.log(`bundle-functions: ${folder} ${count} file(s)`);
 }

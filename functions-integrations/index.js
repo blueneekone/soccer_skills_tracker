@@ -1,27 +1,51 @@
 'use strict';
 
-/**
- * functions-integrations — media processing, roster ingest, feeds, weather, uploads.
- * Domain sources are copied into this package by scripts/bundle-functions.cjs.
- * processMedia uses GEMINI_API_KEY + sharp; ingestRoster uses pdf-parse.
- */
-const processMediaHandlers = require('./processMedia');
-exports.processMedia = processMediaHandlers.processMedia;
+require('./bootstrapAdmin');
 
-const ingestHandlers = require('./ingestRoster');
-exports.ingestRoster = ingestHandlers.ingestRoster;
+const {resolveTarget} = require('./resolveTarget');
+const target = resolveTarget();
 
-const integrationHandlers = require('./integrations');
-exports.getSoccerNews = integrationHandlers.getSoccerNews;
-exports.searchPodcasts = integrationHandlers.searchPodcasts;
-exports.getPodcastEpisodes = integrationHandlers.getPodcastEpisodes;
+if (!target || target === 'processMedia') {
+  exports.processMedia = require('./processMedia').processMedia;
+}
 
-const weatherHandlers = require('./weather');
-exports.getWeatherConditions = weatherHandlers.getWeatherConditions;
+if (!target || target === 'ingestRoster') {
+  exports.ingestRoster = require('./ingestRoster').ingestRoster;
+}
 
-const uploadTokenHandlers = require('./uploadTokens');
-exports.getUploadToken = uploadTokenHandlers.getUploadToken;
-exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
+if (
+  !target ||
+  target === 'getSoccerNews' ||
+  target === 'searchPodcasts' ||
+  target === 'getPodcastEpisodes'
+) {
+  const integrationHandlers = require('./integrations');
+  if (!target || target === 'getSoccerNews') {
+    exports.getSoccerNews = integrationHandlers.getSoccerNews;
+  }
+  if (!target || target === 'searchPodcasts') {
+    exports.searchPodcasts = integrationHandlers.searchPodcasts;
+  }
+  if (!target || target === 'getPodcastEpisodes') {
+    exports.getPodcastEpisodes = integrationHandlers.getPodcastEpisodes;
+  }
+}
 
-const webhooksOps = require('./src/domains/webhooksOps');
-exports.facilityWeatherWebhook = webhooksOps.facilityWeatherWebhook;
+if (!target || target === 'getWeatherConditions') {
+  exports.getWeatherConditions = require('./weather').getWeatherConditions;
+}
+
+if (!target || target === 'getUploadToken' || target === 'deleteAllPlayerMedia') {
+  const uploadTokenHandlers = require('./uploadTokens');
+  if (!target || target === 'getUploadToken') {
+    exports.getUploadToken = uploadTokenHandlers.getUploadToken;
+  }
+  if (!target || target === 'deleteAllPlayerMedia') {
+    exports.deleteAllPlayerMedia = uploadTokenHandlers.deleteAllPlayerMedia;
+  }
+}
+
+if (!target || target === 'facilityWeatherWebhook') {
+  exports.facilityWeatherWebhook =
+    require('./src/domains/facilityWeatherWebhook').facilityWeatherWebhook;
+}

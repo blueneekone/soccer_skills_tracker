@@ -10,15 +10,19 @@
 		getDoc,
 		setDoc,
 	} from 'firebase/firestore';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { db } from '$lib/firebase.js';
+	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
+	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
 	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
-	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string; scope?: string; targetUids?: string[]; priority?: number; status?: string }} Assignment */
+	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string; scope?: string; targetUids?: string[]; priority?: number; status?: string; prescription?: Record<string, unknown> }} Assignment */
 	/** @typedef {{ id: string; title: string; attributeId: string; tier: string; mediaType: string; payload?: string }} Drill */
 
 	/**
@@ -140,28 +144,35 @@
 		return unsub;
 	});
 
-	// Call getAdaptiveWorkoutPolicy on mount and when active assignment changes.
-	// Falls back gracefully to heuristic on error or non-policy mode.
+	// Call getAdaptiveWorkoutPolicy on mount / assignment change — shared 24h session cache.
 	$effect(() => {
 		const _assignment = activeAssignment;
 		const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
 		let cancelled = false;
 
-		async function fetchPolicy() {
+		async function loadPolicy() {
+			const cached = readRlPolicyCache(sportId);
+			if (cached) {
+				if (!cancelled) policyResult = cached;
+				return;
+			}
 			try {
-				const fns = getFunctions();
-				const getPolicy = httpsCallable(fns, 'getAdaptiveWorkoutPolicy');
-				const res = await getPolicy({ sportId });
-				if (!cancelled) {
-					policyResult = /** @type {PolicyResult} */ (res.data);
-				}
+				const result = await ensureRlPolicyCached({
+					sportId,
+					fetchPolicy: async (sid) => {
+						const fns = getFunctions();
+						const getPolicy = httpsCallable(fns, 'getAdaptiveWorkoutPolicy');
+						const res = await getPolicy({ sportId: sid });
+						return res.data;
+					},
+				});
+				if (!cancelled) policyResult = result;
 			} catch {
-				// Silent fallback — heuristic path will handle
 				if (!cancelled) policyResult = null;
 			}
 		}
 
-		fetchPolicy();
+		loadPolicy();
 		return () => { cancelled = true; };
 	});
 
@@ -229,6 +240,22 @@
 		fetchDrill();
 		return () => { cancelled = true; };
 	});
+
+	function logOnTrain() {
+		const assignment = activeAssignment;
+		if (!assignment) return;
+		stashCoachIntentHandoffForAssignment({
+			missionId: assignment.id,
+			targetAttributeId: assignment.targetAttributeId,
+			requiredXp: assignment.requiredXp,
+			prescription: assignment.prescription,
+			drill: suggestedDrill ?
+				{ id: suggestedDrill.id, title: suggestedDrill.title }
+			:	null,
+			policyHints: buildPolicyHintsFromResult(policyResult),
+		});
+		void goto(resolve('/player/workout'));
+	}
 </script>
 
 <div
@@ -372,6 +399,16 @@
 					</span>
 				</div>
 			{/if}
+
+			<button
+				type="button"
+				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
+				       tw-uppercase tw-border tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10
+				       hover:tw-bg-teal-500/20 tw-transition-colors"
+				onclick={logOnTrain}
+			>
+				Log on Train
+			</button>
 
 			<!-- XP progress bar -->
 			<div class="tw-flex tw-flex-col tw-gap-1.5">

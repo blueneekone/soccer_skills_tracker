@@ -12,12 +12,18 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 - [ ] Login → HQ loads missions, identity, telemetry
 - [ ] Train → log workout → XP/streak updates on HQ
+- [ ] **XP smoke — Train prescription volume** (armed mission or free log; confirm EST. YIELD before transmit matches post-log earned XP):
+  - [ ] 3 sets × 25 reps, **bilateral off** → **75** total reps sent to `logTrainingSession` (rep component in earned XP)
+  - [ ] 1 set × 10 reps, **bilateral on** → **20** total reps (10 × 2 sides)
+  - [ ] **30 min + RPE 5**, time-only coach prescription (**no** `repsPerSet`) — session still logs; XP from duration + RPE path (rep count 0 OK)
 - [ ] Coach-assigned bounty appears on HQ rail
 - [ ] Armory Studio SYNC IDENTITY (default portrait OK)
 - [ ] Album/set bonus path (3.4) still works
 - [ ] VPC/billing gates behave correctly
 
 **Primary routes:** `/player/dashboard`, `/player/workout`, `/player/armory`, `/stats`, `/player/settings`
+
+**Settings paths:** Player OS shell nav uses **`/player/settings`** (PlayerSettingsPanel, diegetic strap). **`/settings`** remains the cross-role Settings Terminal (profile, notifications, billing, family unit) for staff and parents — reachable from enterprise shell or direct URL; not linked from PlayerShell bottom rail.
 
 ---
 
@@ -37,6 +43,7 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 - [ ] Squad/roster view loads
 - [ ] Assign drill/bounty → appears on player HQ
+- [ ] (Optional) Coach intent deploy may include `prescription` on `team_assignments` — `sets`, optional `repsPerSet` (omit for time-only), `bilateral` (doubles effective reps per side), optional `targetDurationMin` / `targetRpe` (1–10). Train UI for prescription display is a follow-on slice; schema is additive with lazy read-repair (no backfill).
 - [ ] Match-day / development routes reachable
 - [ ] (After 4.1) Logistics compose + send to parents
 
@@ -71,12 +78,15 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 Expected cold-boot (no trained policy required for QA):
 
-1. Super-admin signs in → open `/admin/rl-policy` (or call `initRlPolicy` callable).
-2. `initRlPolicy` mints v1 weights to GCS and creates `rl_policy_state/current` with `{ policyVersion: 1, abPercent: 0, frozen: false }`.
-3. **Launch default:** leave `abPercent: 0` — all players stay on **heuristic**; transitions still accumulate once inference runs at `abPercent > 0`.
-4. Ramp `abPercent` via console when ready (see RL doc cold-boot schedule).
+1. Sign in as **super_admin** → open **`/admin/rl-policy`** → click **Initialize policy (v1)** when policy state is missing (or call `initRlPolicy` callable).
+2. Confirm Firestore **`rl_policy_state/current`** exists with `{ policyVersion: 1, abPercent: 0, frozen: false }` (`initRlPolicy` also mints v1 weights to GCS).
+3. **Launch default:** leave **`abPercent` at 0** — all players stay on **heuristic**; no `rl_inference_log` or `rl_transitions` until ramp. See **[Rollout Playbook](../RL_ADAPTIVE_WORKOUTS.md#rollout-playbook-sprint-rl-ramp-ops)** in `RL_ADAPTIVE_WORKOUTS.md`.
 
-If the doc is missing, `getAdaptiveWorkoutPolicy` returns heuristic (no error); `[ SUGGESTED BY AI ✦ ]` only appears when `mode === 'policy'` and `abPercent` rollout includes the player.
+If `rl_policy_state/current` is missing, `getAdaptiveWorkoutPolicy` returns heuristic (no error); `[ SUGGESTED BY AI ✦ ]` only appears when `mode === 'policy'` and `abPercent` rollout includes the player.
+
+### Rollout ramp (operator)
+
+When moving past launch default, follow the **[Rollout Playbook](../RL_ADAPTIVE_WORKOUTS.md#rollout-playbook-sprint-rl-ramp-ops)** — cold-boot → `abPercent: 5` → monitor inference/transitions → safety overrides → freeze/rollback if needed.
 
 ### `onWorkoutLogCreated` → transition chain
 
@@ -99,8 +109,19 @@ Architecture diagram label `recordRlTransition` in [`RL_ADAPTIVE_WORKOUTS.md`](.
 - [ ] `/player/dashboard` shows **Adaptive homework** band under mission rail
 - [ ] Active `team_assignments` intent → attribute + drill (heuristic OK)
 - [ ] With `abPercent > 0` and policy path: `[ SUGGESTED BY AI ✦ ]` pill on suggested drill
+- [ ] Rollout playbook human QA: in-bucket vs out-of-bucket heuristic; prescription volume unchanged when policy shifts duration/RPE (see [Rollout Playbook](../RL_ADAPTIVE_WORKOUTS.md#rollout-playbook-sprint-rl-ramp-ops))
 
 **Not chosen:** `/player/homework` redirect — HQ mount is smaller diff and matches AC-2 route.
+
+### Transition pipeline smoke (human QA — Sprint RL-transition-guards)
+
+Requires **`abPercent > 0`** and player in rollout cohort — at launch default (`abPercent: 0`) policy path is heuristic, **`rl_inference_log` is not written**, and **`rl_transitions` stay empty** (expected).
+
+- [ ] After policy inference (HQ AdaptiveHomework or armed Train session), **log a workout within 24h** of that inference (`workout_logs` + `subjectiveRpe` on Player Train)
+- [ ] Firestore **`rl_transitions/{tid}`** appears with **`nextState: null`**, linked via **`inferenceLogId`**
+- [ ] Submit **Morning Readiness** (`physio_self_reports/{uid}/daily/{date}`) → same transition row gets **`nextState`** patched (`patchedAt` set)
+
+**Regression guards:** `functions/__tests__/transitionRecorder.guard.test.js` · `playerRlFunctional.test.ts` (export wiring).
 
 ---
 
@@ -111,15 +132,15 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 | Gap | Severity | Route / surface | Notes | Suggested sprint |
 |-----|----------|-----------------|-------|------------------|
 | Logistics nav → missing route | **Resolved (4.1 Done)** | `/coach/logistics` | Route mounts `MessagesTab` + `ParentAnnouncementCompose` (`safeSportBroadcast`). | — |
-| Assignments not in coach sidebar | Discoverability | `/coach/assignments` | Intent deploy + `team_assignments` handoff is implemented; only linked from `/coach/drills`. | **LAUNCH-functional-os** (nav) or **4.1** |
-| Parent Co-op hub off nav | Discoverability | `/parent/dashboard` | Bounty terminal, Co-op arena, Car Ride debrief live here; parent login + sidebar default to `/parent/household` and omit dashboard. | **LAUNCH-functional-os** (nav) |
+| Assignments not in coach sidebar | **Resolved (LAUNCH-nav)** | `/coach/assignments` | Intent Engine in coach sidebar (`workspaceNav` coachLinks). | — |
+| Parent Co-op hub off nav | **Resolved (LAUNCH-nav)** | `/parent/dashboard` | Co-op Command in parent sidebar; login still defaults to `/parent/household`. | — |
 | Parent messages read-only | Partial | `/messages` | Staff CC inbox + **4.11 household thread** compose; Parent Lounge reply UX remains | **Epic 4.4** |
 | Coach→minor DM policy | **Resolved (4.2 Done)** | Messaging stack | `sendCoachPlayerMessage` blocks minors; staff blocked in minor channels | — |
 | Scouting mock data | Stub | `/coach/scouting` | `MOCK_PROSPECTS` only — not wired to roster/recruit pipeline. | Post-MVP scouting |
 | Match-day mock fallback | Degraded empty state | `/coach/match-day` | Uses `MOCK_OPERATIVES` when roster fetch empty; works with real roster. | **LAUNCH-functional-os** (empty-state copy) |
-| Dual player settings paths | Nav inconsistency | `/player/settings` vs `/settings` | PlayerShell uses `/player/settings`; enterprise `workspaceNav` athlete links use `/settings` (broader role terminal). Both load; confusing for QA. | **LAUNCH-functional-os** (nav align) |
+| Dual player settings paths | **Documented (LAUNCH-nav)** | `/player/settings` vs `/settings` | PlayerShell + `workspaceNav` athlete links → `/player/settings`; `/settings` = cross-role terminal (see Player OS section above). | — |
 | Player tracker off shell nav | Discoverability | `/player/tracker` | Route renders; not in PlayerShell bottom nav (HQ/Stats/Train/Armory/Settings only). | Low — document or add link |
-| Enterprise player nav label | Copy drift | `workspaceNav` athlete links | Sidebar label "Command Center" → `/player/workout`; HQ is `/player/dashboard` in PlayerShell. | **LAUNCH-functional-os** (copy) |
+| Enterprise player nav label | **Resolved (LAUNCH-nav)** | `workspaceNav` athlete links | Labels aligned to HQ / Train / Stats / Settings (PlayerShell parity). | — |
 
 ### Not gaps (expected / deferred)
 

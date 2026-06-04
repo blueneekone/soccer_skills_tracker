@@ -13,6 +13,11 @@
 		draftScope = $bindable<'team' | 'players'>('team'),
 		draftTargetUids = $bindable<string[]>([]),
 		draftPriority = $bindable(100),
+		draftPrescriptionSets = $bindable(3),
+		draftPrescriptionRepsPerSet = $bindable(10),
+		draftPrescriptionBilateral = $bindable(false),
+		draftPrescriptionDurationMin = $bindable(0),
+		draftPrescriptionTargetRpe = $bindable(0),
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
 		isLoadingRoster = false,
@@ -121,6 +126,84 @@
 				bind:value={draftDurationDays}
 				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
 			/>
+		</div>
+
+		<!-- ── Prescription volume ──────────────────────── -->
+		<div class="tw-flex tw-flex-col tw-gap-2">
+			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+				DRILL PRESCRIPTION
+			</span>
+			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
+				<div class="tw-flex tw-flex-col tw-gap-1">
+					<label for="hud-sets" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Sets</label>
+					<input
+						id="hud-sets"
+						type="number"
+						min="1"
+						max="99"
+						bind:value={draftPrescriptionSets}
+						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
+						       focus:tw-border-[#14b8a6]"
+					/>
+				</div>
+				<div class="tw-flex tw-flex-col tw-gap-1">
+					<label for="hud-reps" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Reps / set</label>
+					<input
+						id="hud-reps"
+						type="number"
+						min="0"
+						max="999"
+						bind:value={draftPrescriptionRepsPerSet}
+						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
+						       focus:tw-border-[#14b8a6]"
+					/>
+				</div>
+			</div>
+			<label class="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer">
+				<input
+					type="checkbox"
+					bind:checked={draftPrescriptionBilateral}
+					class="tw-accent-[#14b8a6] tw-w-3 tw-h-3"
+				/>
+				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/55 tw-uppercase">
+					Both sides
+				</span>
+			</label>
+			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
+				<div class="tw-flex tw-flex-col tw-gap-1">
+					<label for="hud-rx-dur" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Target min (opt)</label>
+					<input
+						id="hud-rx-dur"
+						type="number"
+						min="0"
+						max="480"
+						bind:value={draftPrescriptionDurationMin}
+						placeholder="—"
+						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
+						       focus:tw-border-[#14b8a6]"
+					/>
+				</div>
+				<div class="tw-flex tw-flex-col tw-gap-1">
+					<label for="hud-rx-rpe" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Target RPE (opt)</label>
+					<input
+						id="hud-rx-rpe"
+						type="number"
+						min="0"
+						max="10"
+						bind:value={draftPrescriptionTargetRpe}
+						placeholder="—"
+						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
+						       focus:tw-border-[#14b8a6]"
+					/>
+				</div>
+			</div>
+			<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
+				Leave reps at 0 for time-only homework. Both sides doubles rep count for XP.
+			</p>
 		</div>
 
 		<!-- ── Priority (secondary row) ─────────────────── -->

@@ -86,16 +86,50 @@ function copyClosure(monolithRoot, destRoot, rels) {
  * @param {string[]} seedRels
  * @returns {number} files copied
  */
-function bundleCodebase(repoRoot, destFolder, seedRels) {
+/** @param {string} repoRoot @param {string} destFolder */
+function copyBootstrapAdmin(repoRoot, destFolder) {
+  const src = path.join(repoRoot, 'functions-shared', 'bootstrapAdmin.js');
+  const dest = path.join(repoRoot, destFolder, 'bootstrapAdmin.js');
+  fs.copyFileSync(src, dest);
+}
+
+/** Remove bundled monolith copies no longer in the current closure. */
+function pruneOrphanBundles(destRoot, rels, preserveRels = []) {
+  const keep = new Set([...rels, 'bootstrapAdmin.js', ...preserveRels]);
+  /** @param {string} dir @param {string} prefix */
+  function walk(dir, prefix) {
+    for (const ent of fs.readdirSync(dir, {withFileTypes: true})) {
+      const rel = prefix ? `${prefix}/${ent.name}` : ent.name;
+      const abs = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (ent.name === 'node_modules') continue;
+        walk(abs, rel);
+        if (fs.readdirSync(abs).length === 0) {
+          fs.rmdirSync(abs);
+        }
+      } else if (ent.isFile() && ent.name.endsWith('.js') && rel !== 'index.js') {
+        if (!keep.has(rel)) {
+          fs.unlinkSync(abs);
+        }
+      }
+    }
+  }
+  if (fs.existsSync(destRoot)) walk(destRoot, '');
+}
+
+function bundleCodebase(repoRoot, destFolder, seedRels, preserveRels = []) {
   const monolithRoot = path.join(repoRoot, 'functions');
   const destRoot = path.join(repoRoot, destFolder);
   const rels = collectClosure(monolithRoot, seedRels);
+  pruneOrphanBundles(destRoot, rels, preserveRels);
   copyClosure(monolithRoot, destRoot, rels);
+  copyBootstrapAdmin(repoRoot, destFolder);
   return rels.size;
 }
 
 module.exports = {
   collectClosure,
   copyClosure,
+  copyBootstrapAdmin,
   bundleCodebase,
 };

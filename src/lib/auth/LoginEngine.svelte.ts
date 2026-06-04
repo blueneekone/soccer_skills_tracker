@@ -32,11 +32,15 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/types';
+import {
+  loginStartUserMessage,
+  parseLoginStartData,
+} from '$lib/auth/passkeys.js';
 
 // ── Callable references ──────────────────────────────────────────────────────
 const webauthnLoginStartFn = httpsCallable<
   { email: string },
-  { options: PublicKeyCredentialRequestOptionsJSON; uid: string }
+  { options: PublicKeyCredentialRequestOptionsJSON; uid: string | null }
 >(functions, 'webauthnLoginStart');
 
 const webauthnLoginFinishFn = httpsCallable<
@@ -134,15 +138,18 @@ class LoginEngine {
     this.busy = true;
     this.error = '';
     try {
-      // 1. Get authentication options from server
       const startResult = await webauthnLoginStartFn({ email: trimmedEmail });
-      const { options, uid } = startResult.data;
+      const { options, uid } = parseLoginStartData(startResult.data);
 
-      // 2. Trigger browser native passkey prompt
+      const startBlock = loginStartUserMessage(uid, options);
+      if (startBlock) {
+        this.error = startBlock;
+        return;
+      }
+
       const authResp = await startAuthentication({ optionsJSON: options });
 
-      // 3. Verify on server → receive custom token
-      const finishResult = await webauthnLoginFinishFn({ uid, authResp });
+      const finishResult = await webauthnLoginFinishFn({ uid: uid!, authResp });
       const { customToken } = finishResult.data;
 
       // 4. Sign in with custom token (mirrors validatePlayerOTP flow)

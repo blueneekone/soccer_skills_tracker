@@ -1,7 +1,7 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-06-01  
+**Last updated:** 2026-06-02  
 **Current sprint:** **LAUNCH-functional-os** · **next build order:** **XP-verify Done** · **3.5k Done** · **Epic 4.1 Done** · **4.2 Done** · **4.11 Done** → **4.4** → **4.3** · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
@@ -1440,6 +1440,319 @@ npm test -- src/lib/gamification/__tests__/levelXp.test.ts
 node --test functions/__tests__/gamificationWorkoutXp.test.js functions/src/domains/__tests__/trainingOpsXp.test.js
 npm run check
 ```
+
+---
+
+## Infrastructure — Firebase Functions deploy (LAUNCH-functional-os parallel)
+
+**Goal:** Split monolithic `functions/` into deployable codebases (`functions-shared`, `functions-core`, `functions-rl`) with cost guards and targeted deploy scripts. Mark a DEPLOY sprint **Done** only after its slice ships **and** the verify block below is green.
+
+| Sprint | Status | Goal |
+|--------|--------|------|
+| **DEPLOY-0-roadmap** | **Done** | Functions deploy tracker in ROADMAP (this section) |
+| **DEPLOY-A-hotfix** | **Done** | Bridge: memory + lazy index loads + `deploy:core` script |
+| **DEPLOY-B-shared** | **Done** | `functions-shared/` local package |
+| **DEPLOY-C-core-scaffold** | **Done** | `functions-core/` package scaffold (empty exports) |
+| **DEPLOY-D-core-index** | **Done** | Wire launch training + intent callables in `functions-core/index.js` |
+| **DEPLOY-C/D** | **Done** | Scaffold + thin index (domain files still under `functions/`) |
+| **DEPLOY-E-rl-scaffold** | **Done** | `functions-rl/` package scaffold (empty exports) |
+| **DEPLOY-F-rl-index** | **Done** | Wire RL callables + triggers in `functions-rl/index.js` |
+| **DEPLOY-E/F** | **Done** | Scaffold + thin index (domain files still under `functions/`) |
+| **DEPLOY-G-firebase-json** | **Done** | `firebase.json` multi-codebase (`default`, `core`, `rl`) |
+| **DEPLOY-H-deploy-scripts** | **Done** | `deploy:core` / `deploy:rl` / `deploy:launch-backend` + playbook |
+| **DEPLOY-I-core-tests** | **Done** | `functionsDeploy.guard.test.js` wiring guards |
+| **DEPLOY-J-commerce** | **Done** | `functions-commerce/` codebase (Stripe + ticketing) |
+| **DEPLOY-K-compliance** | **Done** | `functions-compliance/` codebase (vault, COPPA, WebAuthn, clearance) |
+| **DEPLOY-L-integrations** | **Done** | `functions-integrations/` codebase (media, feeds, weather webhook) |
+| **DEPLOY-M-platform** | **Done** | `functions-platform/` codebase (apiGateway, cells, admin subset, analytics) |
+| **DEPLOY-N-monolith-retire** | **Done** | Slim `functions/index.js`; CI sequential codebase deploy; Node 20 engines |
+| **DEPLOY-O-bundle** | **In progress** | Self-contained `functions-core` + `functions-shared` deploy tarballs (Session 1: core; Session 2: rl) |
+
+**Verify** (functions deploy track):
+
+```bash
+node --test functions/__tests__/functionsDeploy.guard.test.js functions/src/__tests__/cloudRunCostGuard.test.js
+npm run check
+npm run build
+```
+
+### Sprint DEPLOY-A-hotfix scope — **Done**
+
+**Goal:** Reduce Cloud Functions cold-start pressure without multi-codebase split; unblock launch QA for training + intent + RL callables/triggers.
+
+**Delivered:**
+
+- `trainingOps.js` — `512MiB` on `logTrainingSession`, `secureDeployIntent`, `secureCancelIntent`, `secureExtendIntent`
+- `rlOps.js` — `512MiB` on `submitPhysioSelfReport` (`initRlPolicy` 1GiB; `getAdaptiveWorkoutPolicy` 512MiB unchanged)
+- `functions/index.js` — lazy `require` for `processMedia` (sharp), `ingestRoster` (pdf-parse), `webauthn`, `trainRlPolicyNightly`; launch paths (`trainingOps`, `rlOps`, `transitionRecorder`) stay eager
+- Root `package.json` — `deploy:core` script (nine launch-critical functions only)
+
+**Verify:**
+
+```bash
+cd functions
+npx jest src/domains/__tests__/intentOps.test.js
+node --test src/domains/__tests__/trainingOpsXp.test.js __tests__/transitionRecorder.guard.test.js
+node -e "process.env.FUNCTION_TARGET='logTrainingSession'; console.time('load'); require('./index.js'); console.timeEnd('load')"
+cd ..
+npm run check
+```
+
+*(intentOps is Jest-based — `node --test` will fail with `jest is not defined`.)*
+
+**Manual deploy** (run when owner requests — set discovery timeout on Windows):
+
+```powershell
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+npm run deploy:core
+```
+
+### Sprint DEPLOY-B-shared scope — **Done**
+
+**Goal:** Shared server utilities package for future `functions-core` / `functions-rl` without duplicating business logic.
+
+**Delivered:**
+
+- `functions-shared/package.json` — `name: functions-shared`, `main: index.js`
+- `functions-shared/index.js` — re-exports `gamificationWorkoutXp`, `authBouncers`, `formatters`, `alphaRunOptions` from monolith `functions/` paths (flat + namespaced)
+- `functions-shared/README.md` — canonical path table + usage
+- `functions/package.json` — `"functions-shared": "file:../functions-shared"`
+
+**Out of scope (unchanged):** domain file moves, `functions/index.js` edits.
+
+**Verify:**
+
+```bash
+node -e "require('./functions-shared'); console.log('shared OK')"
+npm run check
+```
+
+### Sprint DEPLOY-C-core-scaffold scope — **Done**
+
+**Goal:** `functions-core/` package scaffold for training + intent codebases (depends on **DEPLOY-B-shared**).
+
+**Delivered:**
+
+- `functions-core/package.json` — Node **20**, `firebase-admin`, `firebase-functions`, `functions-shared`, `@google/genai`; no tfjs/sharp/pdf-parse/webauthn
+- `functions-core/index.js` — `module.exports = {}` stub
+- `functions-core/.gitignore`, `README.md`
+
+**Out of scope:** domain module moves, `firebase.json` multi-codebase, monolith `functions/index.js` edits.
+
+**Verify:**
+
+```bash
+cd functions-core
+npm install
+node -e "require('./index.js'); console.log('core scaffold OK')"
+```
+
+### Sprint DEPLOY-D-core-index scope — **Done**
+
+**Goal:** `functions-core/index.js` exports only launch-critical training + intent callables (thin re-export; no file moves).
+
+**Delivered:**
+
+- `functions-core/index.js` — `logTrainingSession`, `secureDeployIntent`, `secureCancelIntent`, `secureExtendIntent` from `../functions/src/domains/trainingOps`
+- `trainingOps.js` — `512MiB` on four callables (already set in **DEPLOY-A**)
+- `functions-core/README.md` — export list + verify
+
+**Out of scope:** monolith `functions/index.js` export removal (**DEPLOY-N**), RL codebase, intent lifecycle triggers (optional; not exported).
+
+**Verify:**
+
+```bash
+cd functions-core
+npm install
+node -e "const i=require('./index.js'); ['logTrainingSession','secureDeployIntent','secureCancelIntent','secureExtendIntent'].forEach(n=>{if(!i[n]) throw new Error('missing '+n)}); console.log('OK')"
+cd ..
+cd functions
+npx jest src/domains/__tests__/intentOps.test.js
+node --test src/domains/__tests__/trainingOpsXp.test.js
+cd ..
+npm run check
+```
+
+### Sprint DEPLOY-E-rl-scaffold scope — **Done**
+
+**Goal:** `functions-rl/` package scaffold for RL adaptive workout codebases (depends on **DEPLOY-B-shared**).
+
+**Delivered:**
+
+- `functions-rl/package.json` — Node **20**, `firebase-admin`, `firebase-functions`, `functions-shared`, `@tensorflow/tfjs-node`; no sharp/pdf-parse/stripe/webauthn
+- `functions-rl/index.js` — `module.exports = {}` stub
+- `functions-rl/.gitignore`, `README.md`
+
+**Out of scope:** `rlOps` / `transitionRecorder` wiring (**DEPLOY-F**), `firebase.json` multi-codebase, monolith exports.
+
+**Verify:**
+
+```bash
+cd functions-rl
+npm install
+node -e "require('./index.js'); console.log('rl scaffold OK')"
+```
+
+### Sprint DEPLOY-F-rl-index scope — **Done**
+
+**Goal:** Isolate RL + physio in `functions-rl/index.js` so tfjs never loads in core containers (thin re-export; no file moves).
+
+**Delivered:**
+
+- `functions-rl/index.js` — `rlOps` callables, `transitionRecorder` triggers, `trainRlPolicyNightly`
+- `rlOps.js` — `512MiB` on `submitPhysioSelfReport`; `1GiB` / `512MiB` on init/policy (unchanged from **DEPLOY-A**)
+- `trainer.js` — `trainRlPolicyNightly` `2GiB` scheduler memory (unchanged)
+- `functions-rl/README.md` — export + memory table
+
+**Out of scope:** monolith `functions/index.js` export removal (**DEPLOY-N**).
+
+**Verify:**
+
+```bash
+cd functions-rl
+npm install
+node -e "const i=require('./index.js'); ['getAdaptiveWorkoutPolicy','initRlPolicy','rlOnWorkoutLogCreated','rlOnPhysioReportCreated','submitPhysioSelfReport'].forEach(n=>{if(!i[n]) throw new Error(n)}); console.log('OK')"
+cd ..
+node --test functions/__tests__/transitionRecorder.guard.test.js functions/__tests__/transitionRecorderReward.test.js
+npm run check
+```
+
+### Sprint DEPLOY-G-firebase-json scope — **Done**
+
+**Goal:** Register `functions-core` and `functions-rl` alongside legacy monolith in `firebase.json`.
+
+**Delivered:**
+
+- `firebase.json` — three entries: `default` (`functions/`), `core` (`functions-core/`), `rl` (`functions-rl/`)
+- [`docs/FUNCTIONS_DEPLOY.md`](docs/FUNCTIONS_DEPLOY.md) — codebase-qualified deploy syntax, dev project note, discovery timeout
+
+**Out of scope:** removing monolith exports (**DEPLOY-N**), `deploy:core` script update (**DEPLOY-H**), `.firebaserc` default project change.
+
+**Verify:**
+
+```powershell
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+Copy-Item functions\.env.sports-skill-tracker-dev functions-core\.env
+Copy-Item functions\.env.sports-skill-tracker-dev functions-rl\.env
+firebase deploy --only functions:core:logTrainingSession --dry-run
+firebase deploy --only functions:rl:getAdaptiveWorkoutPolicy --dry-run
+npm run check
+```
+
+*(See [`docs/FUNCTIONS_DEPLOY.md`](docs/FUNCTIONS_DEPLOY.md) — `core`/`rl` need `.env` until monolith transitive requires are removed.)*
+
+### Sprint DEPLOY-H-deploy-scripts scope — **Done**
+
+**Goal:** Codebase-qualified deploy scripts + operator playbook (**DEPLOY-G**).
+
+**Delivered:**
+
+- Root `package.json` — `deploy:core` (four `functions:core:*`), `deploy:rl` (five `functions:rl:*`), `deploy:launch-backend`
+- [`docs/FUNCTIONS_DEPLOY.md`](docs/FUNCTIONS_DEPLOY.md) — discovery timeout (PS/Bash), batching, `--force`, rollback, Node 20 table, codebase table
+- `functions/package.json` — `lint` no-op stub (fixes `deploy:functions` pre-step)
+- [`.cursor/rules/sst-agent-workflow.mdc`](.cursor/rules/sst-agent-workflow.mdc) — use `deploy:core` / `deploy:rl` for large deploys
+
+**Verify:**
+
+```bash
+npm run check
+```
+
+**Manual (owner):**
+
+```powershell
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+Copy-Item functions\.env.sports-skill-tracker-dev functions-core\.env
+Copy-Item functions\.env.sports-skill-tracker-dev functions-rl\.env
+npm run deploy:core
+# wait 2–3 min
+npm run deploy:rl
+```
+
+### Sprint DEPLOY-I-core-tests scope — **Done**
+
+**Goal:** Regression guards for multi-codebase export wiring, `firebase.json` codebases, tfjs isolation, and launch callable memory.
+
+**Delivered:**
+
+- `functions/__tests__/functionsDeploy.guard.test.js` — `node:test` + `fs.readFileSync` guards for `functions-core` / `functions-rl` exports, `firebase.json` `core`/`rl`, package.json tfjs split, `trainingOps` `512MiB` launch opts
+
+**Verify:**
+
+```bash
+node --test functions/__tests__/functionsDeploy.guard.test.js functions/src/__tests__/cloudRunCostGuard.test.js
+npm run check
+```
+
+### Sprint DEPLOY-K-compliance scope — **Done**
+
+**Goal:** `functions-compliance/` post-launch codebase for vault, COPPA, WebAuthn, clearance, retention (thin re-export; monolith unchanged until **DEPLOY-N**).
+
+**Delivered:**
+
+- `functions-compliance/package.json` — Node **20**, `@simplewebauthn/server`, `firebase-admin`, `firebase-functions`, `functions-shared`
+- `functions-compliance/index.js` — 28 exports from `vaultOps`, `shredOps`, `coppa`, `webauthn`, `compliance`, `verifyDocument`, `complianceOps` (retention subset)
+- `firebase.json` — `codebase: compliance`
+- [`docs/FUNCTIONS_DEPLOY.md`](docs/FUNCTIONS_DEPLOY.md) — compliance section + `PII_VAULT_MASTER_KEY` note
+
+**Secrets:** `PII_VAULT_MASTER_KEY` should be bound only when deploying **compliance** vault callables.
+
+**Verify:**
+
+```bash
+cd functions-compliance
+npm install
+cd ..
+npm run check
+```
+
+### Sprint DEPLOY-N-monolith-retire scope — **Done**
+
+**Goal:** Stop default codebase from loading migrated exports; CI deploys split codebases in order; align all `engines.node` to **20**.
+
+**Delivered:**
+
+- `functions/index.js` — removed training launch callables, RL block, commerce/compliance/integrations/platform exports; `logger.warn` deprecation notice; removed unused lazy loaders
+- `.github/workflows/deploy.yml` — `functions:core` → `rl` → `commerce` → `compliance` → `integrations` → `platform` → `default`, then hosting
+- `functions/package.json`, `functions-shared/package.json` — `engines.node: "20"`
+- `functions/__tests__/functionsDeploy.guard.test.js` — monolith slim + engines guards
+- `functions/__tests__/transitionRecorder.guard.test.js` — RL wiring asserted on `functions-rl/index.js`
+
+**Depends on:** **DEPLOY-J/K/L/M** deployed and verified in production before removing duplicate exports from live default revisions (operator runbook).
+
+**Verify:**
+
+```bash
+node --test functions/__tests__/functionsDeploy.guard.test.js
+npm run check
+npm run build
+```
+
+### Sprint DEPLOY-O-bundle scope — **In progress**
+
+**Goal:** Cloud Run `/workspace` resolves every `require()` in `functions-core` and `functions-shared` without `../functions/` (Classification B: thin re-exports missing at runtime). **DEPLOY-N** production deploy depends on **O** for `logTrainingSession` / intent callables.
+
+**Session 1 (this slice):**
+
+- `scripts/bundle-functions-core.cjs` — copy `trainingOps` closure into `functions-core/`; copy shared utils into `functions-shared/`
+- `functions-core/index.js` — `require('./src/domains/trainingOps')`
+- `functions-shared/index.js` — local requires only
+- `firebase.json` — `predeploy` on `core` codebase only
+- `functions/__tests__/functionsDeploy.guard.test.js` — no `../functions/` in core/shared indexes; bundle script produces `functions-core/src/domains/trainingOps.js`
+- `docs/FUNCTIONS_DEPLOY.md` — bundle + predeploy runbook
+
+**Session 2:** **DEPLOY-O-bundle-rl** — same pattern for `functions-rl` (`rlOps`, `src/ml/*`, `trainer.js`).
+
+**Verify (Session 1):**
+
+```bash
+node scripts/bundle-functions-core.cjs
+node -e "process.env.FUNCTION_TARGET='logTrainingSession'; require('./functions-core/index.js'); console.log('core OK')"
+node --test functions/__tests__/functionsDeploy.guard.test.js
+npm run check
+```
+
+**Deploy verify (operator):** `npm run deploy:core` — no `Cannot find module` in `logtrainingsession` logs; package size well above thin re-export KB.
 
 ---
 

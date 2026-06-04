@@ -3,9 +3,11 @@
 /**
  * functions-platform — cell routing, /v1 apiGateway, admin + analytics.
  * Domain sources are copied into this package by scripts/bundle-functions.cjs.
- * Preload cellRouter + tenantUtils before gateway
- * (see docs/CELL_ROUTING.md — register() runs at module load in apiGateway.js).
+ * Load order: bootstrapAdmin → tenantUtils → cellRouter → apiGateway (and rest).
+ * apiGateway pulls partnerHandlers/hotelRebates.js which calls admin.firestore()
+ * at module load — bootstrap must run first (see docs/FUNCTIONS_DEPLOY.md).
  */
+require('./bootstrapAdmin');
 require('./tenantUtils');
 require('./cellRouter');
 

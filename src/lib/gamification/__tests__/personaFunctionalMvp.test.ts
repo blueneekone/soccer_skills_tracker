@@ -9,6 +9,7 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const FUNCTIONAL_MVP = join(ROOT, '..', 'docs/vision/FUNCTIONAL_MVP.md');
+const WORKSPACE_NAV = join(ROOT, 'lib/shell/workspaceNav.js');
 const RESEARCH_README = join(ROOT, '..', 'docs/vision/references/ui/research/README.md');
 const LAUNCH_FOCUS_RULE = join(ROOT, '..', '.cursor/rules/launch-focus.mdc');
 
@@ -66,6 +67,43 @@ describe('Sprint LAUNCH-functional-os — research README', () => {
 		expect(readme).toMatch(/post-launch visual system/i);
 		expect(readme).toMatch(/Gemini Deep Research/i);
 		expect(readme).toMatch(/Do not wire/i);
+	});
+});
+
+describe('Sprint LAUNCH-nav — workspaceNav discoverability', () => {
+	const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
+
+	it('coach sidebar links Intent Engine to /coach/assignments', () => {
+		expect(nav).toMatch(/Intent Engine/);
+		expect(nav).toMatch(/href:\s*'\/coach\/assignments'/);
+	});
+
+	it('parent sidebar links Co-op Command to /parent/dashboard', () => {
+		expect(nav).toMatch(/Co-op Command/);
+		expect(nav).toMatch(/href:\s*'\/parent\/dashboard'/);
+	});
+
+	it('athlete household links use HQ / Train labels (not Command Center)', () => {
+		expect(nav).toMatch(/label:\s*'HQ'/);
+		expect(nav).toMatch(/href:\s*'\/player\/dashboard'/);
+		expect(nav).toMatch(/label:\s*'Train'/);
+		expect(nav).toMatch(/href:\s*'\/player\/workout'/);
+		expect(nav).not.toMatch(/Command Center/);
+	});
+
+	it('athlete household Settings links to /player/settings', () => {
+		expect(nav).toMatch(/href:\s*'\/player\/settings'/);
+	});
+});
+
+describe('Sprint LAUNCH-nav — FUNCTIONAL_MVP settings + gaps', () => {
+	it('documents /player/settings vs /settings and resolved nav gaps', () => {
+		const doc = readFileSync(FUNCTIONAL_MVP, 'utf-8');
+		expect(doc).toMatch(/Settings paths:/);
+		expect(doc).toMatch(/\/player\/settings/);
+		expect(doc).toMatch(/\/settings/);
+		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/coach\/assignments/s);
+		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/parent\/dashboard/s);
 	});
 });
 

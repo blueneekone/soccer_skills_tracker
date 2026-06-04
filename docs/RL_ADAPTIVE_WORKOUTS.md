@@ -197,13 +197,38 @@ Run when no policy exists yet (first deployment or full reset):
 1. **Super-admin calls `initRlPolicy`** (or `initRlPolicy({ force: true })` to reset).
 2. v1 with random weights is minted and saved to GCS.
 3. `rl_policy_state/current` is created with `abPercent: 0, frozen: false`.
-4. **Ramp schedule (recommended):**
-   - Week 1: set `abPercent: 0` — all players on heuristic, transitions accumulate.
-   - Week 2: set `abPercent: 10` — 10% rollout for sanity check.
-   - Week 3: set `abPercent: 50` — half rollout; monitor `rl_training_runs`.
-   - Week 5: set `abPercent: 100` — full deployment.
+4. **Leave at launch default** until ramp checklist below — at `abPercent: 0` there are **no** `rl_inference_log` rows and **no** `rl_transitions` (heuristic only).
 
-Use the `/admin/rl-policy` console slider to adjust `abPercent` at each step.
+Use the `/admin/rl-policy` console (**Initialize policy (v1)** + A/B slider) for cold-boot and ramp steps.
+
+---
+
+## Rollout Playbook (Sprint RL-ramp-ops)
+
+Operator guide for launch default and controlled ramp. Authority for human QA on Epic 8 AC-2 / transitions: [`docs/vision/FUNCTIONAL_MVP.md`](vision/FUNCTIONAL_MVP.md) RL section.
+
+### Launch default
+
+- **`abPercent = 0`**, **`frozen = false`** → all players on **heuristic**
+- **`getAdaptiveWorkoutPolicy`** returns `mode: 'heuristic'` — **no** `rl_inference_log` writes
+- **`rlOnWorkoutLogCreated`** finds no matching inference log → **no** `rl_transitions` (expected at launch)
+- Adaptive homework and Train still work; coach prescriptions and handoff volume are unchanged
+
+### Ramp checklist (when ready)
+
+1. **`initRlPolicy` done** — confirm `rl_policy_state/current` exists and GCS model **v1** is present (`gs://…/rl_models/policy/v1/`). Random-weight v1 is acceptable for alpha.
+2. Set **`abPercent` to 5** on `/admin/rl-policy` → monitor **`rl_inference_log`** volume (only players in the rollout bucket).
+3. Confirm **`rl_transitions`** accumulating after workouts logged within **24h** of inference; check **`rl_training_runs/{date}`** after **04:00 UTC** nightly trainer.
+4. Watch **`rl_safety_overrides`** count (7-day pill on `/admin/rl-policy` HUD).
+5. **Rollback procedure:** **freeze** → **rollback** to prior `policyVersion` if needed → set **`abPercent` to 0** (see [Policy Rollback Runbook](#policy-rollback-runbook) below).
+
+Suggested longer schedule after alpha sanity at 5%: 10% → 50% → 100%, monitoring `rl_training_runs` acceptance rate at each step.
+
+### Human QA
+
+- [ ] Test player **in** rollout bucket sees **`[ SUGGESTED BY AI ✦ ]`** on Adaptive homework when `mode === 'policy'`
+- [ ] Test player **outside** bucket stays heuristic (no AI pill; no inference log for that uid)
+- [ ] **Prescription reps unchanged** when policy suggests different duration/RPE — coach `prescription` (sets × reps × bilateral) stays authoritative on Train; policy hints pre-fill duration/RPE only
 
 ---
 

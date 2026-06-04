@@ -8,7 +8,7 @@
  *   • rl_policy_state/current    — live deployment switch
  *   • rl_training_runs/{date}    — paginated nightly run history (latest 30)
  *   • rl_safety_overrides         — count last 7 days
- *   • Super-admin callables: setPolicyAbPercent, freezeRlPolicy, rollbackRlPolicy
+ *   • Super-admin callables: initRlPolicy, setPolicyAbPercent, freezeRlPolicy, rollbackRlPolicy
  */
 
 import {
@@ -32,7 +32,9 @@ import type {
 	FreezeRlPolicyInput,
 	FreezeRlPolicyResult,
 	RollbackRlPolicyInput,
-	RollbackRlPolicyResult
+	RollbackRlPolicyResult,
+	InitRlPolicyInput,
+	InitRlPolicyResult,
 } from '$lib/types/rlPolicy.js';
 
 export type SaveState = 'idle' | 'saving' | 'success' | 'error';
@@ -113,6 +115,25 @@ export class RlPolicyEngine {
 	}
 
 	// ── Callables ──────────────────────────────────────────────────────────────
+
+	async initPolicy(force = false) {
+		this.saveState = 'saving';
+		this.saveError = '';
+		try {
+			const fn = httpsCallable<InitRlPolicyInput, InitRlPolicyResult>(
+				getFunctions(),
+				'initRlPolicy',
+			);
+			await fn(force ? { force: true } : {});
+			this.saveState = 'success';
+			setTimeout(() => {
+				this.saveState = 'idle';
+			}, 2000);
+		} catch (err) {
+			this.saveState = 'error';
+			this.saveError = (err as Error).message ?? 'Failed to initialize policy.';
+		}
+	}
 
 	async setAbPercent(abPercent: number) {
 		this.saveState = 'saving';

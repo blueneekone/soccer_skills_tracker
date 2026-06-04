@@ -4,6 +4,7 @@
  * functions-core — launch-critical training + intent callables.
  * Domain sources are copied into this package by scripts/bundle-functions.cjs.
  */
+require('./bootstrapAdmin');
 const trainingOps = require('./src/domains/trainingOps');
 
 exports.logTrainingSession = trainingOps.logTrainingSession;

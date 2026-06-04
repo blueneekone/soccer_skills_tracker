@@ -2,6 +2,7 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
+    "lint": "node -e \"process.exit(0)\"",
     "build:grit": "npx tsc -p tsconfig.grit.json",
     "test": "node --test",
     "test:grit": "npm run build:grit && node src/__tests__/grit.test.js",
@@ -12,10 +13,11 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "22"
+    "node": "20"
   },
   "main": "index.js",
   "dependencies": {
+    "functions-shared": "file:../functions-shared",
     "@google-cloud/tasks": "^6.2.2",
     "@google/genai": "^1.50.1",
     "@sendgrid/mail": "^8.1.3",

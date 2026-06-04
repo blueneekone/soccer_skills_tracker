@@ -4,6 +4,7 @@
  * functions-rl — RL adaptive workout callables + triggers.
  * Domain sources are copied into this package by scripts/bundle-functions.cjs.
  */
+require('./bootstrapAdmin');
 const rlOps = require('./rlOps');
 exports.submitPhysioSelfReport = rlOps.submitPhysioSelfReport;
 exports.initRlPolicy = rlOps.initRlPolicy;

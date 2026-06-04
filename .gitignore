@@ -71,5 +71,8 @@ node_modules/
 serviceAccountKey.json
 **/serviceAccountKey.json
 
+# Dev tenant reset backups (may contain emails)
+artifacts/firestore-reset-*/
+
 # dataconnect generated files
 .dataconnect

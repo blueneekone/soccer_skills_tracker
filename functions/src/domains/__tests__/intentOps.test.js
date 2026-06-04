@@ -25,7 +25,7 @@ const mockTimestampFromMillis = jest.fn((ms) => ({
 const mockServerTimestamp = {};
 const mockFieldValue = { serverTimestamp: () => mockServerTimestamp };
 
-let capturedDocWrites = [];
+let mockCapturedDocWrites = [];
 let mockDocGet = jest.fn();
 let mockDocUpdate = jest.fn();
 let mockDocSet = jest.fn();
@@ -39,7 +39,7 @@ jest.mock('firebase-admin', () => ({
         doc: (id) => ({
           get: mockDocGet,
           set: (data) => {
-            capturedDocWrites.push({ collection: name, id, data });
+            mockCapturedDocWrites.push({ collection: name, id, data });
             return mockDocSet(data);
           },
           update: mockDocUpdate,
@@ -81,8 +81,9 @@ jest.mock('firebase-functions/v2/https', () => ({
 }));
 
 jest.mock('firebase-functions/v2/firestore', () => ({
-  onDocumentCreated: jest.fn(),
-  onDocumentUpdated: jest.fn(),
+  onDocumentCreated: jest.fn(() => jest.fn()),
+  onDocumentUpdated: jest.fn(() => jest.fn()),
+  onDocumentWritten: jest.fn(() => jest.fn()),
 }));
 
 jest.mock('firebase-functions/v2/scheduler', () => ({
@@ -97,6 +98,7 @@ jest.mock('firebase-functions/logger', () => ({
 
 jest.mock('firebase-functions/params', () => ({
   defineSecret: () => ({ value: () => 'test-secret' }),
+  defineString: (_name, opts = {}) => ({ value: () => opts.default ?? '' }),
 }));
 
 // Stub all other dependencies that trainingOps.js pulls in.
@@ -148,7 +150,10 @@ jest.mock('@google/genai', () => ({ GoogleGenAI: jest.fn() }));
 
 function makeCoachRequest(dataOverrides = {}) {
   return {
-    auth: { uid: 'coach-uid-1', token: { email: 'coach@example.com', clubId: 'club-abc' } },
+    auth: {
+      uid: 'coach-uid-1',
+      token: { email: 'coach@example.com', clubId: 'club-abc', role: 'coach', teamId: 'team-xyz' },
+    },
     data: {
       teamId: 'team-xyz',
       tenantId: 'club-abc',
@@ -173,16 +178,19 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  capturedDocWrites = [];
+  mockCapturedDocWrites = [];
   jest.clearAllMocks();
   // Re-wire the resolvers used by default.
-  mockDocGet.mockResolvedValue({ exists: true, data: () => ({ status: 'active', teamId: 'team-xyz', tenantId: 'club-abc' }) });
+  mockDocGet.mockResolvedValue({
+    exists: true,
+    data: () => ({ status: 'active', teamId: 'team-xyz', tenantId: 'club-abc', clubId: 'club-abc' }),
+  });
   mockDocSet.mockResolvedValue(undefined);
   mockDocUpdate.mockResolvedValue(undefined);
   mockCollectionAdd.mockResolvedValue({ id: 'audit-id' });
   mockQueryGet.mockResolvedValue({ docs: [] });
-  const { assertCanSecureAddPlayer } = require('../middleware/authBouncers');
-  assertCanSecureAddPlayer.mockResolvedValue({ clubId: 'club-abc' });
+  const authBouncers = require('../middleware/authBouncers');
+  authBouncers.assertCanSecureAddPlayer.mockResolvedValue({ clubId: 'club-abc' });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -211,9 +219,7 @@ describe('secureDeployIntent', () => {
   });
 
   it('throws permission-denied when clubId does not match verifiedClubId', async () => {
-    const { assertCanSecureAddPlayer } = require('../middleware/authBouncers');
-    assertCanSecureAddPlayer.mockResolvedValueOnce({ clubId: 'different-club' });
-    const req = makeCoachRequest();
+    const req = makeCoachRequest({ clubId: 'different-club' });
     await expect(trainingOps.secureDeployIntent(req)).rejects.toMatchObject({ code: 'permission-denied' });
   });
 
@@ -233,6 +239,53 @@ describe('secureDeployIntent', () => {
       expect.objectContaining({ action: 'secureDeployIntent' }),
     );
   });
+
+  it('persists optional prescription on deploy', async () => {
+    const req = makeCoachRequest({
+      prescription: {
+        drillTitle: 'Wall passes',
+        sets: 3,
+        repsPerSet: 10,
+        bilateral: true,
+        targetRpe: 7,
+      },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription).toEqual({
+      drillTitle: 'Wall passes',
+      sets: 3,
+      repsPerSet: 10,
+      bilateral: true,
+      targetRpe: 7,
+    });
+    expect(mockCollectionAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ hasPrescription: true }),
+    );
+  });
+
+  it('allows time-only prescription without repsPerSet', async () => {
+    const req = makeCoachRequest({
+      prescription: { sets: 1, targetDurationMin: 15, bilateral: false },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription).toEqual({
+      sets: 1,
+      bilateral: false,
+      targetDurationMin: 15,
+    });
+  });
+
+  it('throws invalid-argument when prescription.targetRpe is out of range', async () => {
+    const req = makeCoachRequest({ prescription: { sets: 1, targetRpe: 11 } });
+    await expect(trainingOps.secureDeployIntent(req)).rejects.toMatchObject({ code: 'invalid-argument' });
+  });
+
+  it('throws invalid-argument when prescription.sets is invalid', async () => {
+    const req = makeCoachRequest({ prescription: { sets: 0 } });
+    await expect(trainingOps.secureDeployIntent(req)).rejects.toMatchObject({ code: 'invalid-argument' });
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -246,7 +299,8 @@ describe('secureCancelIntent', () => {
 
   it('throws not-found when intent doc does not exist', async () => {
     mockDocGet.mockResolvedValueOnce({ exists: false });
-    const req = { auth: { uid: 'coach-uid-1' }, data: { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' } };
+    const req = makeCoachRequest();
+    req.data = { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' };
     await expect(trainingOps.secureCancelIntent(req)).rejects.toMatchObject({ code: 'not-found' });
   });
 
@@ -255,7 +309,8 @@ describe('secureCancelIntent', () => {
       exists: true,
       data: () => ({ status: 'active', teamId: 'team-xyz', tenantId: 'DIFFERENT' }),
     });
-    const req = { auth: { uid: 'coach-uid-1' }, data: { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' } };
+    const req = makeCoachRequest();
+    req.data = { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' };
     await expect(trainingOps.secureCancelIntent(req)).rejects.toMatchObject({ code: 'permission-denied' });
   });
 
@@ -264,12 +319,14 @@ describe('secureCancelIntent', () => {
       exists: true,
       data: () => ({ status: 'expired', teamId: 'team-xyz', tenantId: 'club-abc' }),
     });
-    const req = { auth: { uid: 'coach-uid-1' }, data: { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' } };
+    const req = makeCoachRequest();
+    req.data = { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' };
     await expect(trainingOps.secureCancelIntent(req)).rejects.toMatchObject({ code: 'failed-precondition' });
   });
 
   it('cancels an active intent and writes audit row', async () => {
-    const req = { auth: { uid: 'coach-uid-1' }, data: { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' } };
+    const req = makeCoachRequest();
+    req.data = { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' };
     const result = await trainingOps.secureCancelIntent(req);
     expect(result.status).toBe('cancelled');
     expect(mockDocUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'cancelled' }));

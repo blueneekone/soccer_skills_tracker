@@ -32,27 +32,31 @@ const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 const coachLinks = [
-	{ label: 'Daily Intel',       href: '/coach',           icon: 'content.grid' },
-	{ label: 'The Forge',         href: '/coach/forge',     icon: 'game.dumbbell' },
-	{ label: 'Match Day',         href: '/coach/match-day', icon: 'data.activity' },
-	{ label: 'Proving Grounds',   href: '/coach/scouting',  icon: 'data.target' },
-	{ label: 'Logistics & Comms', href: '/coach/logistics', icon: 'sys.calendar' },
+	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
+	{ label: 'Intent Engine',     href: '/coach/assignments',   icon: 'game.zap' },
+	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
+	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
+	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },
+	{ label: 'Logistics & Comms', href: '/coach/logistics',     icon: 'sys.calendar' },
 ];
 
 /**
- * Player OS (SIEM/SOAR): quests + logger = Command Center; stats = Operative Dossier.
+ * Player OS — labels match PlayerShell (HQ / Train / Stats / Settings).
+ * Primary player routes use PlayerShell; these links cover enterprise-shell edge cases.
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
-	{ tab: '', label: 'Command Center',   icon: 'status.shield-half', href: '/player/workout' },
-	{ tab: '', label: 'Operative Dossier',icon: 'data.chart-bar-2',   href: '/stats' },
-	{ tab: '', label: 'Settings',         icon: 'sys.settings',       href: '/settings' },
+	{ tab: '', label: 'HQ',     icon: 'content.grid',       href: '/player/dashboard' },
+	{ tab: '', label: 'Train',  icon: 'content.checks',   href: '/player/workout' },
+	{ tab: '', label: 'Stats',  icon: 'data.chart-bar-2',   href: '/stats' },
+	{ tab: '', label: 'Settings', icon: 'sys.settings',   href: '/player/settings' },
 ];
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
-	{ tab: '', label: 'Clearance',   icon: 'status.shield-check', href: '/parent/household' },
-	{ tab: '', label: 'Household',   icon: 'nav.home',             href: '/parent/vpc' },
+	{ tab: '', label: 'Clearance',     icon: 'status.shield-check', href: '/parent/household' },
+	{ tab: '', label: 'Co-op Command', icon: 'content.grid',        href: '/parent/dashboard' },
+	{ tab: '', label: 'Household',     icon: 'nav.home',            href: '/parent/vpc' },
 	{ tab: '', label: 'Log Workout', icon: 'user.check',           href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/parent/payments' },
 	{ tab: '', label: 'Messages',    icon: 'comm.chat',            href: '/messages' },

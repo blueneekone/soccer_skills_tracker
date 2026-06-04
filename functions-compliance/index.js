@@ -5,6 +5,7 @@
  * Domain sources are copied into this package by scripts/bundle-functions.cjs.
  * PII_VAULT_MASTER_KEY is bound in vaultOps (secrets on vaultSealPii / vaultUnsealPii).
  */
+require('./bootstrapAdmin');
 const vaultOps = require('./src/domains/vaultOps');
 exports.vaultSealPii = vaultOps.vaultSealPii;
 exports.vaultUnsealPii = vaultOps.vaultUnsealPii;

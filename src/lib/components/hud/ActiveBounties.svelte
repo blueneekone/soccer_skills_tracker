@@ -42,9 +42,11 @@
 		buildCoachIntentHandoff,
 		COACH_INTENT_HINT,
 		formatSuggestedDrillLine,
+		readCachedPolicyHints,
 		resolveHeuristicDrill,
 		stashMissionHandoff,
 	} from '$lib/player/workout/coachMissionFlow.js';
+	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import '$lib/styles/active-bounties.css';
 
 	let {
@@ -311,12 +313,17 @@
 				typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
 			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
 			const preview = drillPreviewByQuestId[quest.id];
+			const prescription = repairIntentPrescription(row.prescription);
 			stashMissionHandoff(
 				buildCoachIntentHandoff({
 					missionId: quest.id,
 					targetAttributeId,
 					requiredXp,
 					drill: preview ? { id: preview.id, title: preview.title } : null,
+					prescription,
+					durationMinutes: prescription?.targetDurationMin ?? null,
+					targetRpe: prescription?.targetRpe ?? null,
+					policyHints: readCachedPolicyHints(),
 				}),
 			);
 			return;

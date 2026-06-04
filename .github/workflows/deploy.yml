@@ -102,7 +102,7 @@ jobs:
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────────────
-  # JOB 3 — Deploy (sequential: Rules → Functions → Hosting)
+  # JOB 3 — Deploy (sequential: Rules → codebases → default → Hosting)
   # ─────────────────────────────────────────────────────────────────────────
   deploy:
     name: 🔥 Deploy to Firebase
@@ -126,9 +126,12 @@ jobs:
       - name: Install frontend dependencies (for firebase-tools)
         run: npm ci
 
-      - name: Install Cloud Functions dependencies
-        run: npm ci
-        working-directory: functions
+      - name: Install Cloud Functions dependencies (all codebases)
+        run: |
+          npm ci
+          for dir in functions functions-core functions-rl functions-commerce functions-compliance functions-integrations functions-platform; do
+            npm ci --prefix "$dir"
+          done
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -148,11 +151,18 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
-      # Step 2: Cloud Functions
-      - name: Deploy Cloud Functions
-        run: npx firebase-tools deploy --only functions --project soccer-skills-tracker
+      # Step 2: Cloud Functions — one codebase at a time (DEPLOY-N)
+      - name: Deploy Functions (core → rl → commerce → compliance → integrations → platform → default)
+        run: |
+          set -e
+          PROJECT=soccer-skills-tracker
+          for codebase in core rl commerce compliance integrations platform default; do
+            echo "Deploying functions codebase: ${codebase}"
+            npx firebase-tools deploy --only "functions:${codebase}" --project "${PROJECT}"
+          done
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+          FUNCTIONS_DISCOVERY_TIMEOUT: '120'
 
       # Step 3: Hosting (only after Functions are live to avoid 404 on new CF routes)
       - name: Deploy to Firebase Hosting

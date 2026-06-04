@@ -12,6 +12,13 @@ const FUNCTIONS_INDEX = join(ROOT, '..', 'functions/index.js');
 const ADAPTIVE_HOMEWORK = join(ROOT, 'routes/(app)/player/dashboard/AdaptiveHomework.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
 const FUNCTIONAL_MVP = join(ROOT, '..', 'docs/vision/FUNCTIONAL_MVP.md');
+const COACH_MISSION_FLOW = join(ROOT, 'lib/player/workout/coachMissionFlow.ts');
+const RL_POLICY_CACHE = join(ROOT, 'lib/player/workout/rlPolicyCache.ts');
+const TRAIN_PAGE = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+const RL_POLICY_ENGINE = join(ROOT, 'routes/(app)/admin/rl-policy/RlPolicyEngine.svelte.ts');
+const RL_POLICY_ARENA = join(ROOT, 'routes/(app)/admin/rl-policy/RlPolicyArena.svelte');
+const TRANSITION_GUARD = join(ROOT, '..', 'functions/__tests__/transitionRecorder.guard.test.js');
+const TRANSITION_RECORDER = join(ROOT, '..', 'functions/src/ml/transitionRecorder.js');
 
 describe('Sprint RL-audit — getAdaptiveWorkoutPolicy export', () => {
 	it('functions/index.js exports getAdaptiveWorkoutPolicy', () => {
@@ -36,6 +43,116 @@ describe('Sprint RL-audit — AdaptiveHomework callable wiring', () => {
 		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
 		expect(src).toMatch(/mode === 'policy'/);
 		expect(src).toMatch(/global_drills/);
+	});
+});
+
+describe('PRESCRIPTION-hq-cta — AdaptiveHomework Train handoff', () => {
+	it('AdaptiveHomework shows Log on Train and stashes coach intent handoff', () => {
+		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
+		expect(src).toMatch(/Log on Train/);
+		expect(src).toMatch(/stashCoachIntentHandoffForAssignment/);
+		expect(src).toMatch(/goto\(resolve\('\/player\/workout'\)\)/);
+	});
+
+	it('coachMissionFlow exposes stashCoachIntentHandoffForAssignment using MISSION_HANDOFF_KEY', () => {
+		const src = readFileSync(COACH_MISSION_FLOW, 'utf-8');
+		expect(src).toMatch(/export function stashCoachIntentHandoffForAssignment/);
+		expect(src).toMatch(/buildCoachIntentHandoff/);
+		expect(src).toMatch(/MISSION_HANDOFF_KEY/);
+		expect(src).toMatch(/player_mission_handoff_v1/);
+	});
+});
+
+describe('Sprint RL-inference-on-train — shared policy cache + Train fetch', () => {
+	it('rlPolicyCache exposes player_rl_policy_cache_v1 with 24h TTL', () => {
+		expect(existsSync(RL_POLICY_CACHE)).toBe(true);
+		const src = readFileSync(RL_POLICY_CACHE, 'utf-8');
+		expect(src).toMatch(/player_rl_policy_cache_v1/);
+		expect(src).toMatch(/RL_POLICY_CACHE_TTL_MS\s*=\s*86_400_000/);
+		expect(src).toMatch(/ensureRlPolicyCached/);
+	});
+
+	it('AdaptiveHomework reuses rlPolicyCache instead of bare session hints key', () => {
+		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
+		expect(src).toMatch(/ensureRlPolicyCached/);
+		expect(src).toMatch(/readRlPolicyCache/);
+		expect(src).not.toMatch(/cachePolicyHints/);
+	});
+
+	it('Train page fetches getAdaptiveWorkoutPolicy when coach intent armed via cache helper', () => {
+		expect(existsSync(TRAIN_PAGE)).toBe(true);
+		const src = readFileSync(TRAIN_PAGE, 'utf-8');
+		expect(src).toMatch(/ensureRlPolicyCached/);
+		expect(src).toMatch(/getAdaptiveWorkoutPolicy/);
+		expect(src).toMatch(/activeMissionId/);
+	});
+
+	it('coachMissionFlow readCachedPolicyHints reads from rlPolicyCache', () => {
+		const src = readFileSync(COACH_MISSION_FLOW, 'utf-8');
+		expect(src).toMatch(/readRlPolicyCache/);
+		expect(src).not.toMatch(/player_policy_hints_v1/);
+	});
+});
+
+describe('Sprint RL-dev-coldboot — admin initRlPolicy console', () => {
+	it('RlPolicyEngine exposes initPolicy calling initRlPolicy callable', () => {
+		expect(existsSync(RL_POLICY_ENGINE)).toBe(true);
+		const src = readFileSync(RL_POLICY_ENGINE, 'utf-8');
+		expect(src).toMatch(/async initPolicy/);
+		expect(src).toMatch(/'initRlPolicy'/);
+		expect(src).toMatch(/InitRlPolicyInput/);
+	});
+
+	it('RlPolicyArena shows Initialize policy (v1) when policyState is null', () => {
+		expect(existsSync(RL_POLICY_ARENA)).toBe(true);
+		const src = readFileSync(RL_POLICY_ARENA, 'utf-8');
+		expect(src).toMatch(/Initialize policy \(v1\)/);
+		expect(src).toMatch(/initPolicy/);
+		expect(src).toMatch(/!engine\.policyState/);
+		expect(src).toMatch(/abPercent = 0/);
+	});
+
+	it('FUNCTIONAL_MVP documents cold-boot QA steps for super_admin', () => {
+		const doc = readFileSync(FUNCTIONAL_MVP, 'utf-8');
+		expect(doc).toMatch(/Initialize policy \(v1\)/);
+		expect(doc).toMatch(/super_admin/);
+		expect(doc).toMatch(/rl_policy_state\/current/);
+		expect(doc).toMatch(/abPercent.*0/);
+	});
+});
+
+describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
+	it('transitionRecorder.guard.test.js exists and documents inference-log gate', () => {
+		expect(existsSync(TRANSITION_GUARD)).toBe(true);
+		const guard = readFileSync(TRANSITION_GUARD, 'utf-8');
+		expect(guard).toMatch(/transitionRecorder\.js/);
+		expect(guard).toMatch(/onWorkoutLogCreated/);
+		expect(guard).toMatch(/rl_inference_log/);
+		expect(guard).toMatch(/abPercent=0/);
+	});
+
+	it('transitionRecorder.js exports onWorkoutLogCreated with 24h inference match', () => {
+		expect(existsSync(TRANSITION_RECORDER)).toBe(true);
+		const src = readFileSync(TRANSITION_RECORDER, 'utf-8');
+		expect(src).toMatch(/exports\.onWorkoutLogCreated/);
+		expect(src).toMatch(/Only record a transition if we have a matching inference log/);
+		expect(src).toMatch(/rl_transitions/);
+		expect(src).toMatch(/nextState:\s*null/);
+	});
+
+	it('functions/index.js exports rlOnWorkoutLogCreated from transitionRecorder', () => {
+		const index = readFileSync(FUNCTIONS_INDEX, 'utf-8');
+		expect(index).toMatch(/exports\.rlOnWorkoutLogCreated\s*=\s*transitionRecorder\.onWorkoutLogCreated/);
+		expect(index).toMatch(/exports\.rlOnPhysioReportCreated\s*=\s*transitionRecorder\.onPhysioReportCreated/);
+	});
+
+	it('FUNCTIONAL_MVP documents transition smoke checklist and launch abPercent=0 expectation', () => {
+		const doc = readFileSync(FUNCTIONAL_MVP, 'utf-8');
+		expect(doc).toMatch(/Transition pipeline smoke/);
+		expect(doc).toMatch(/rl_transitions/);
+		expect(doc).toMatch(/nextState: null/);
+		expect(doc).toMatch(/Morning Readiness/);
+		expect(doc).toMatch(/abPercent: 0/);
 	});
 });
 
