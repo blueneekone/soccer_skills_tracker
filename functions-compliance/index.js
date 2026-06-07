@@ -31,6 +31,7 @@ exports.webauthnLoginFinish = webauthnHandlers.webauthnLoginFinish;
 
 const complianceHandlers = require('./compliance');
 exports.generateCheckrEmbedToken = complianceHandlers.generateCheckrEmbedToken;
+exports.checkrSessionTokens = complianceHandlers.checkrSessionTokens;
 exports.backgroundCheckCallback = complianceHandlers.backgroundCheckCallback;
 exports.checkrWebhook = complianceHandlers.checkrWebhook;
 exports.getComplianceRoster = complianceHandlers.getComplianceRoster;

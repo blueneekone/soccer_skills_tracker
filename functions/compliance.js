@@ -17,7 +17,8 @@
  *   { status: 'pending'|'cleared'|'flagged', checkrCandidateId: string, lastVerified: Timestamp }
  *
  * Functions exported:
- *   generateCheckrEmbedToken — onCall  (Coach — exchange user info for Checkr embed token)
+ *   generateCheckrEmbedToken — onCall  (preflight + Web SDK session token)
+ *   checkrSessionTokens      — HTTP   (embed sessionTokenPath + auto-renewal)
  *   backgroundCheckCallback  — HTTP webhook (Checkr report.completed webhook)
  *   getComplianceRoster      — onCall  (Directors & Registrars)
  *   requestManualOverride    — onCall  (Directors only)
@@ -26,7 +27,7 @@
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
-const { defineSecret } = require('firebase-functions/params');
+const { defineSecret, defineString } = require('firebase-functions/params');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const crypto = require('crypto');
@@ -38,6 +39,206 @@ const REGION = 'us-east1';
  * Set via: firebase functions:secrets:set CHECKR_API_KEY
  */
 const CHECKR_API_KEY = defineSecret('CHECKR_API_KEY');
+
+/**
+ * Checkr API environment — production (default) or staging.
+ * Set via: firebase functions:config or .env CHECKR_API_ENV=staging
+ */
+const CHECKR_API_ENV = defineString('CHECKR_API_ENV', { default: 'production' });
+
+/** Adult roles that require a background check before minor PII access. */
+const CLEARANCE_ROLES = ['coach', 'recruiter', 'director', 'tutor'];
+
+/**
+ * @returns {'production'|'staging'}
+ */
+function resolveCheckrEnv() {
+  const raw = String(CHECKR_API_ENV.value() || 'production').toLowerCase().trim();
+  return raw === 'staging' ? 'staging' : 'production';
+}
+
+/** @returns {string} Checkr API host base including /v1 */
+function checkrApiHost() {
+  return resolveCheckrEnv() === 'staging'
+    ? 'https://api.checkr-staging.com/v1'
+    : 'https://api.checkr.com/v1';
+}
+
+/**
+ * Turn a Checkr API error body into an actionable operator message.
+ * @param {number} status
+ * @param {string} rawBody
+ * @returns {string}
+ */
+function formatCheckrApiError(status, rawBody) {
+  /** @type {Record<string, unknown>|null} */
+  let parsed = null;
+  try {
+    parsed = JSON.parse(rawBody);
+  } catch {
+    parsed = null;
+  }
+
+  const parts = [];
+  if (parsed && typeof parsed.error === 'string') parts.push(parsed.error);
+  if (parsed && typeof parsed.message === 'string') parts.push(parsed.message);
+  if (parsed && parsed.errors && typeof parsed.errors === 'object') {
+    for (const [key, val] of Object.entries(parsed.errors)) {
+      if (Array.isArray(val)) {
+        parts.push(`${key}: ${val.join(', ')}`);
+      } else if (typeof val === 'string') {
+        parts.push(`${key}: ${val}`);
+      }
+    }
+  }
+
+  const detail = parts.length > 0
+    ? parts.join(' — ')
+    : (typeof rawBody === 'string' && rawBody.trim()
+      ? rawBody.trim().slice(0, 400)
+      : `HTTP ${status}`);
+
+  if (status === 401 || status === 403) {
+    return `Checkr rejected the API key (${status}). Verify CHECKR_API_KEY in Secret Manager matches ${resolveCheckrEnv()} — ${detail}`;
+  }
+  if (status === 422) {
+    return `Checkr account not credentialed for embed invitations (${status}). Contact Checkr AE to approve your account — ${detail}`;
+  }
+
+  return `Checkr session token failed (${status}): ${detail}`;
+}
+
+/**
+ * @param {import('firebase-admin/auth').DecodedIdToken} claims
+ * @returns {{ email: string, role: string }}
+ */
+function resolveClearanceCaller(claims) {
+  const role = String(claims.role || '');
+  if (!CLEARANCE_ROLES.includes(role)) {
+    throw new HttpsError(
+      'permission-denied',
+      'Only coaches, recruiters, directors, and tutors require a background check.',
+    );
+  }
+
+  const email = String(claims.email || '').toLowerCase().trim();
+  if (!email) throw new HttpsError('unauthenticated', 'Cannot resolve caller email.');
+
+  return { email, role };
+}
+
+/**
+ * Org-level Compliance Vault upstream deduplication.
+ * @param {string} email
+ * @returns {Promise<boolean>} true when vault already cleared this user
+ */
+async function tryOrgVaultPropagation(email) {
+  try {
+    const userSnap = await db().collection('users').doc(email).get();
+    const orgId = userSnap.exists ? (userSnap.data()?.orgId || '') : '';
+    if (!orgId) return false;
+
+    const vaultSnap = await db()
+      .collection('orgs').doc(orgId)
+      .collection('compliance_vault').doc(email)
+      .get();
+    if (!vaultSnap.exists) return false;
+
+    const vault = vaultSnap.data() || {};
+    if (vault.status !== 'cleared') return false;
+
+    logger.info('[compliance] Org-vault hit — propagating clearance', { email, orgId });
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await db().collection('users').doc(email).set(
+      { clearance: { status: 'cleared', source: 'org_vault_propagation', orgId, lastVerified: now } },
+      { merge: true },
+    );
+    const userRecord = await auth().getUserByEmail(email).catch(() => null);
+    if (userRecord) await stampClearanceClaim(userRecord.uid, email);
+    return true;
+  } catch (vaultErr) {
+    logger.warn('[compliance] Org-vault upstream check failed (non-fatal)', vaultErr);
+    return false;
+  }
+}
+
+/**
+ * Exchange the Checkr API key for a short-lived Web SDK session token.
+ * @param {string} apiKey
+ * @returns {Promise<string>}
+ */
+async function fetchCheckrSessionToken(apiKey) {
+  const b64Key = Buffer.from(`${apiKey}:`).toString('base64');
+  const url = `${checkrApiHost()}/web_sdk/session_tokens`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${b64Key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ scopes: ['order'], direct: true }),
+  });
+
+  const rawBody = await res.text().catch(() => String(res.status));
+  if (!res.ok) {
+    const message = formatCheckrApiError(res.status, rawBody);
+    logger.error('[compliance] Checkr session token request failed', {
+      status: res.status,
+      host: checkrApiHost(),
+      body: rawBody.slice(0, 500),
+    });
+    const err = new Error(message);
+    err.status = res.status;
+    err.rawBody = rawBody;
+    throw err;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(rawBody);
+  } catch {
+    logger.error('[compliance] Checkr session token response was not JSON', { rawBody: rawBody.slice(0, 200) });
+    throw new Error('Checkr returned a non-JSON session token response.');
+  }
+
+  const token = data.token || null;
+  if (!token) {
+    logger.error('[compliance] Checkr response missing token field', { data });
+    throw new Error('Checkr returned no session token.');
+  }
+
+  return token;
+}
+
+/** @param {string} email */
+async function markClearancePending(email) {
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await db().collection('users').doc(email).set(
+    { clearance: { status: 'pending', lastVerified: now } },
+    { merge: true },
+  );
+}
+
+/**
+ * @param {import('firebase-functions/v2/https').Request} req
+ * @returns {Promise<import('firebase-admin/auth').DecodedIdToken>}
+ */
+async function verifyBearerFromRequest(req) {
+  const header = String(req.headers.authorization || req.headers.Authorization || '');
+  if (!header.startsWith('Bearer ')) {
+    const err = new Error('Missing bearer token.');
+    err.status = 401;
+    throw err;
+  }
+  try {
+    return await auth().verifyIdToken(header.slice(7).trim());
+  } catch {
+    const err = new Error('Invalid bearer token.');
+    err.status = 401;
+    throw err;
+  }
+}
 
 /**
  * HMAC secret shared with Checkr for webhook signature verification.
@@ -80,14 +281,15 @@ async function stampClearanceClaim(uid, email) {
 
 // ── 0. generateCheckrEmbedToken ──────────────────────────────────────────────
 /**
- * Exchange the caller's identity for a short-lived Checkr embed token.
- * The token is returned to the frontend and passed directly to Checkr.mount().
- * No PII is stored in Firebase — Checkr owns the candidate record.
+ * Exchange the caller's identity for a short-lived Checkr Web SDK session token.
+ * Used for preflight (alpha / org-vault) and direct token fetch when needed.
  *
- * Checkr API reference: POST https://api.checkr.com/v1/embeds/tokens
+ * Checkr API reference: POST {host}/v1/web_sdk/session_tokens
  *   Auth: Basic <base64(API_KEY:)>
- *   Body: { candidate: { email, first_name?, last_name? }, package?: string }
- *   Response: { token: "<embed_token>" }
+ *   Body: { scopes: ["order"], direct: true }
+ *   Response: { token: "<session_token>" }
+ *
+ * The live embed also POSTs to `checkrSessionTokens` (HTTP) for token renewal.
  */
 exports.generateCheckrEmbedToken = onCall(
   { region: REGION, secrets: [CHECKR_API_KEY], enforceAppCheck: false },
@@ -96,109 +298,109 @@ exports.generateCheckrEmbedToken = onCall(
     if (!reqAuth) throw new HttpsError('unauthenticated', 'Login required.');
 
     const claims = reqAuth.token || {};
-    const role = claims.role || '';
-    // Phase 2, Epic 2 — Session K.  Extended clearance scope: every adult
-    // role that can touch minor PII (coach, recruiter, director, tutor).
-    // Players + parents are NOT in scope — they manage their own data.
-    if (!['coach', 'recruiter', 'director', 'tutor'].includes(role)) {
-      throw new HttpsError(
-        'permission-denied',
-        'Only coaches, recruiters, directors, and tutors require a background check.',
-      );
-    }
+    const { email } = resolveClearanceCaller(claims);
+    const preflight = request.data?.preflight === true;
 
-    const email = (claims.email || '').toLowerCase().trim();
-    if (!email) throw new HttpsError('unauthenticated', 'Cannot resolve caller email.');
-
-    // Split display name into first/last for Checkr candidate record.
-    const rawName = String(claims.name || claims.displayName || '').trim();
-    const nameParts = rawName.split(/\s+/);
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    // ── Org-level Compliance Vault: upstream deduplication ─────────────────
-    // Before making a billable Checkr API call, check if the user is already
-    // cleared at the parent-org level.  If a sibling division already completed
-    // a BGC, propagate the result and skip the Checkr flow entirely.
-    try {
-      const userSnap = await db().collection('users').doc(email).get();
-      const orgId = userSnap.exists ? (userSnap.data()?.orgId || '') : '';
-      if (orgId) {
-        const vaultSnap = await db()
-          .collection('orgs').doc(orgId)
-          .collection('compliance_vault').doc(email)
-          .get();
-        if (vaultSnap.exists) {
-          const vault = vaultSnap.data() || {};
-          if (vault.status === 'cleared') {
-            logger.info('[compliance] Org-vault hit — propagating clearance', { email, orgId });
-            const now = admin.firestore.FieldValue.serverTimestamp();
-            await db().collection('users').doc(email).set(
-              { clearance: { status: 'cleared', source: 'org_vault_propagation', orgId, lastVerified: now } },
-              { merge: true },
-            );
-            const userRecord = await auth().getUserByEmail(email).catch(() => null);
-            if (userRecord) await stampClearanceClaim(userRecord.uid, email);
-            return { embedToken: null, orgVaultCleared: true };
-          }
-        }
-      }
-    } catch (vaultErr) {
-      // Non-fatal: vault check failure must never block the Checkr flow.
-      logger.warn('[compliance] Org-vault upstream check failed (non-fatal)', vaultErr);
+    if (await tryOrgVaultPropagation(email)) {
+      return { embedToken: null, orgVaultCleared: true, checkrEnv: resolveCheckrEnv() };
     }
 
     const apiKey = CHECKR_API_KEY.value();
     if (!apiKey) {
-      // No live key — return a sentinel so the embed component can show a
-      // "contact director" message rather than crashing.
-      logger.warn('[compliance] CHECKR_API_KEY not set — returning mock token for Alpha');
-      return { embedToken: null, alphaMode: true };
+      logger.warn('[compliance] CHECKR_API_KEY not set — Alpha mode');
+      return { embedToken: null, alphaMode: true, checkrEnv: resolveCheckrEnv() };
     }
 
-    const b64Key = Buffer.from(`${apiKey}:`).toString('base64');
-    const body = {
-      candidate: {
-        email,
-        ...(firstName ? { first_name: firstName } : {}),
-        ...(lastName  ? { last_name: lastName }   : {}),
-      },
-    };
+    if (preflight) {
+      return { alphaMode: false, checkrEnv: resolveCheckrEnv() };
+    }
 
-    const res = await fetch('https://api.checkr.com/v1/embeds/tokens', {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${b64Key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    try {
+      const embedToken = await fetchCheckrSessionToken(apiKey);
+      await markClearancePending(email);
+      logger.info('[compliance] Checkr session token issued', { email, checkrEnv: resolveCheckrEnv() });
+      return { embedToken, checkrEnv: resolveCheckrEnv() };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Checkr session token request failed.';
+      throw new HttpsError('internal', message);
+    }
+  },
+);
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => String(res.status));
-      logger.error('[compliance] Checkr embed token request failed', {
-        status: res.status,
-        body: errText.slice(0, 500),
+// ── 0b. checkrSessionTokens — HTTP endpoint for Checkr embed sessionTokenPath ─
+/**
+ * POST /api/compliance/checkr/session-tokens (Firebase Hosting rewrite)
+ *
+ * The Checkr Web SDK NewInvitation embed POSTs here for session tokens and
+ * auto-renews on expiry.  Forwards Checkr API error bodies so the embed UI
+ * can surface actionable messages (per docs.checkr.com/embeds troubleshooting).
+ */
+exports.checkrSessionTokens = onRequest(
+  { region: REGION, secrets: [CHECKR_API_KEY], enforceAppCheck: false },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'method_not_allowed', message: 'POST required.' });
+      return;
+    }
+
+    try {
+      const decoded = await verifyBearerFromRequest(req);
+      const { email } = resolveClearanceCaller(decoded);
+
+      if (await tryOrgVaultPropagation(email)) {
+        res.status(200).json({ token: null, orgVaultCleared: true });
+        return;
+      }
+
+      const apiKey = CHECKR_API_KEY.value();
+      if (!apiKey) {
+        res.status(503).json({
+          error: 'alpha_mode',
+          message: 'CHECKR_API_KEY not configured. Use Director simulateClearance for QA.',
+        });
+        return;
+      }
+
+      const token = await fetchCheckrSessionToken(apiKey);
+      await markClearancePending(email);
+      res.status(200).json({ token });
+    } catch (err) {
+      if (err && typeof err === 'object' && 'status' in err) {
+        const status = Number(err.status) || 500;
+        if (status === 401) {
+          res.status(401).json({ error: 'unauthenticated', message: err.message || 'Unauthorized.' });
+          return;
+        }
+      }
+
+      if (err instanceof HttpsError) {
+        const code = err.code === 'permission-denied' ? 403 : 400;
+        res.status(code).json({ error: err.code, message: err.message });
+        return;
+      }
+
+      const httpStatus = err && typeof err.status === 'number' ? err.status : 500;
+      const rawBody = err && typeof err.rawBody === 'string' ? err.rawBody : null;
+
+      if (rawBody) {
+        try {
+          res.status(httpStatus).json(JSON.parse(rawBody));
+          return;
+        } catch {
+          res.status(httpStatus).json({
+            error: 'checkr_api_error',
+            message: err instanceof Error ? err.message : 'Checkr session token failed.',
+          });
+          return;
+        }
+      }
+
+      logger.error('[compliance] checkrSessionTokens unexpected error', err);
+      res.status(500).json({
+        error: 'internal',
+        message: err instanceof Error ? err.message : 'Checkr session token failed.',
       });
-      throw new HttpsError('internal', 'Failed to generate Checkr embed token. Check API key.');
     }
-
-    const data = await res.json();
-    const embedToken = data.token || data.embed_token || null;
-    if (!embedToken) {
-      logger.error('[compliance] Checkr response missing token field', { data });
-      throw new HttpsError('internal', 'Checkr returned no embed token.');
-    }
-
-    // Mark coach as pending in Firestore so the panopticon shows correct state.
-    const now = admin.firestore.FieldValue.serverTimestamp();
-    await db().collection('users').doc(email).set(
-      { clearance: { status: 'pending', lastVerified: now } },
-      { merge: true },
-    );
-
-    logger.info('[compliance] Checkr embed token issued', { email });
-    return { embedToken };
   },
 );
 

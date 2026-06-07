@@ -1,60 +1,125 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { auth } from '$lib/firebase.js';
 	import { functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { httpsCallable } from 'firebase/functions';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const generateToken = httpsCallable(functions, 'generateCheckrEmbedToken');
 
+	const CHECKR_SDK_CDN =
+		'https://cdn.jsdelivr.net/npm/@checkr/web-sdk/dist/web-sdk.umd.js';
+	const SESSION_TOKEN_PATH = '/api/compliance/checkr/session-tokens';
+
+	const checkrEnv =
+		import.meta.env.VITE_CHECKR_ENV === 'staging' ? 'staging' : 'production';
+
+	type CheckrEmbedInstance = {
+		render: (selector: string) => void;
+	};
+
+	type CheckrGlobal = {
+		Embeds: {
+			NewInvitation: new (options: Record<string, unknown>) => CheckrEmbedInstance;
+		};
+	};
+
 	let status = $state<'loading' | 'alpha' | 'ready' | 'error'>('loading');
 	let errorMsg = $state('');
+
+	async function getSessionTokenHeaders(): Promise<Record<string, string>> {
+		const user = auth.currentUser;
+		if (!user) throw new Error('Sign in required for Checkr screening.');
+		const token = await user.getIdToken();
+		return { Authorization: `Bearer ${token}` };
+	}
+
+	function loadScript(src: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if ((window as unknown as { Checkr?: CheckrGlobal }).Checkr) {
+				resolve();
+				return;
+			}
+			const script = document.createElement('script');
+			script.src = src;
+			script.onload = () => resolve();
+			script.onerror = () => reject(new Error(`Failed to load Checkr Web SDK: ${src}`));
+			document.head.appendChild(script);
+		});
+	}
 
 	$effect(() => {
 		if (!browser) return;
 
 		let cancelled = false;
 
-		function loadScript(src: string): Promise<void> {
-			return new Promise((resolve, reject) => {
-				if ((window as any).Checkr) {
-					resolve();
-					return;
-				}
-				const script = document.createElement('script');
-				script.src = src;
-				script.onload = () => resolve();
-				script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-				document.head.appendChild(script);
-			});
-		}
-
 		async function init() {
-			const result = await generateToken({});
-			const { embedToken, alphaMode } = result.data as any;
+			const preflight = await generateToken({ preflight: true });
+			const data = preflight.data as {
+				alphaMode?: boolean;
+				orgVaultCleared?: boolean;
+			};
 
 			if (cancelled) return;
 
-			if (alphaMode === true || !embedToken) {
+			if (data.orgVaultCleared === true) {
+				status = 'loading';
+				return;
+			}
+
+			if (data.alphaMode === true) {
 				status = 'alpha';
 				return;
 			}
 
-			await loadScript('https://sdk.checkr.com/embed/v1/checkr.js');
-
+			await loadScript(CHECKR_SDK_CDN);
 			if (cancelled) return;
 
-			(window as any).Checkr.mount({
-				token: embedToken,
-				elementId: 'checkr-embed-container',
-				theme: 'dark'
-			});
+			const Checkr = (window as unknown as { Checkr: CheckrGlobal }).Checkr;
+			if (!Checkr?.Embeds?.NewInvitation) {
+				throw new Error('Checkr Web SDK loaded but Embeds.NewInvitation is unavailable.');
+			}
+
+			const email = authStore.user?.email ?? authStore.userProfile?.email ?? '';
+			const externalId = authStore.user?.uid ?? email;
+
+			const embedOptions: Record<string, unknown> = {
+				sessionTokenPath: SESSION_TOKEN_PATH,
+				sessionTokenRequestHeaders: getSessionTokenHeaders,
+				externalCandidateId: externalId,
+				...(email ? { defaultEmail: email } : {}),
+				...(checkrEnv === 'staging' ? { env: 'staging' } : {}),
+				onInvitationError: (response: { errors?: Record<string, string[]> }) => {
+					const parts: string[] = [];
+					const errors = response?.errors;
+					if (errors && typeof errors === 'object') {
+						for (const [key, val] of Object.entries(errors)) {
+							if (Array.isArray(val)) parts.push(`${key}: ${val.join(', ')}`);
+						}
+					}
+					if (parts.length > 0) {
+						errorMsg = parts.join(' — ');
+						status = 'error';
+					}
+				},
+			};
+
+			const embed = new Checkr.Embeds.NewInvitation(embedOptions);
+			embed.render('#checkr-embed-container');
 			status = 'ready';
 		}
 
 		init().catch((err: unknown) => {
+			if (cancelled) return;
 			status = 'error';
-			errorMsg = (err instanceof Error ? err.message : null) ?? 'Screening connection failed. Contact your Director.';
+			if (err && typeof err === 'object' && 'code' in err && 'message' in err) {
+				errorMsg = String((err as { message: string }).message);
+			} else {
+				errorMsg =
+					(err instanceof Error ? err.message : null) ??
+					'Screening connection failed. Contact your Director.';
+			}
 		});
 
 		return () => {
@@ -140,7 +205,9 @@
 	}
 
 	@keyframes ceSpinAnim {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.checkr-embed__skeleton-label {
@@ -217,8 +284,15 @@
 	}
 
 	@keyframes cePulseDot {
-		0%, 100% { opacity: 1; transform: scale(1); }
-		50%       { opacity: 0.35; transform: scale(0.5); }
+		0%,
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.35;
+			transform: scale(0.5);
+		}
 	}
 
 	.checkr-embed__alpha-hint {
