@@ -28,6 +28,8 @@
 	/** @type {Record<string, { verifying: boolean, simulating: boolean, ordering: boolean, error: string }>} */
 	let rowActions = $state({});
 
+	const emptyRowState = { verifying: false, simulating: false, ordering: false, error: '' };
+
 	let toastMsg = $state('');
 	let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -39,9 +41,24 @@
 		}, 6000);
 	}
 
+	/** @param {CoachRow[]} rows */
+	function initRowActions(rows) {
+		const next = { ...rowActions };
+		for (const coach of rows) {
+			if (!next[coach.email]) {
+				next[coach.email] = { verifying: false, simulating: false, ordering: false, error: '' };
+			}
+		}
+		rowActions = next;
+	}
+
 	// ── Load coaches ─────────────────────────────────────────────────────────
 	$effect(() => {
-		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		if (authStore.isLoading) return;
+		if (!authStore.isAuthenticated) {
+			loading = false;
+			return;
+		}
 		const clubId = authStore.userProfile?.clubId;
 		if (!clubId && !['super_admin', 'global_admin'].includes(authStore.role ?? '')) {
 			loading = false;
@@ -63,6 +80,7 @@
 		getDocs(q)
 			.then((snap) => {
 				coaches = snap.docs.map((d) => /** @type {CoachRow} */ ({ email: d.id, ...d.data() }));
+				initRowActions(coaches);
 			})
 			.catch((e) => {
 				loadError = e.message ?? 'Failed to load coaches.';
@@ -109,7 +127,12 @@
 	}
 
 	/** @param {string} email */
-	function rowState(email) {
+	function getRowState(email) {
+		return rowActions[email] ?? emptyRowState;
+	}
+
+	/** @param {string} email */
+	function ensureRowState(email) {
 		if (!rowActions[email]) {
 			rowActions[email] = { verifying: false, simulating: false, ordering: false, error: '' };
 		}
@@ -126,7 +149,7 @@
 
 	/** @param {CoachRow} coach */
 	async function orderScreening(coach) {
-		const rs = rowState(coach.email);
+		const rs = ensureRowState(coach.email);
 		rs.ordering = true;
 		rs.error = '';
 		try {
@@ -153,7 +176,7 @@
 
 	/** @param {CoachRow} coach */
 	async function simulateClearance(coach) {
-		const rs = rowState(coach.email);
+		const rs = ensureRowState(coach.email);
 		rs.simulating = true;
 		rs.error = '';
 		try {
@@ -176,7 +199,7 @@
 
 	/** @param {CoachRow} coach */
 	async function revokeCoach(coach) {
-		const rs = rowState(coach.email);
+		const rs = ensureRowState(coach.email);
 		rs.verifying = true;
 		rs.error = '';
 		try {
@@ -280,7 +303,7 @@
 				<tbody>
 					{#each filtered as coach (coach.email)}
 						{@const status = getStatus(coach)}
-						{@const rs = rowState(coach.email)}
+						{@const rs = getRowState(coach.email)}
 						{@const ankoredId = /** @type {string|undefined} */ (coach.clearance?.ankoredId)}
 						{@const lastVerified = coach.clearance?.lastVerified}
 						<tr class="dp-row dp-row--{status}">
