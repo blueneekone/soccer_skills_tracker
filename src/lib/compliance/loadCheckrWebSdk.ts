@@ -7,6 +7,7 @@ export type CheckrEmbedInstance = {
 export type CheckrWebSdk = {
 	Embeds: {
 		NewInvitation: new (options: Record<string, unknown>) => CheckrEmbedInstance;
+		ReportsOverview: new (options: Record<string, unknown>) => CheckrEmbedInstance;
 	};
 };
 

@@ -29,11 +29,19 @@ const LOAD_CHECKR_SDK = path.join(
   'compliance',
   'loadCheckrWebSdk.ts',
 );
+const CHECKR_COACH_CLEARANCE = path.join(
+  REPO_ROOT,
+  'src',
+  'lib',
+  'compliance',
+  'checkrCoachClearance.ts',
+);
 const FIREBASE_JSON = path.join(REPO_ROOT, 'firebase.json');
 
 const complianceSrc = fs.readFileSync(COMPLIANCE_JS, 'utf8');
 const embedSrc = fs.readFileSync(CHECKR_EMBED, 'utf8');
 const loaderSrc = fs.readFileSync(LOAD_CHECKR_SDK, 'utf8');
+const coachClearanceSrc = fs.readFileSync(CHECKR_COACH_CLEARANCE, 'utf8');
 const firebaseJson = JSON.parse(fs.readFileSync(FIREBASE_JSON, 'utf8'));
 
 describe('CHECKR-FIX — compliance.js session token API', () => {
@@ -68,9 +76,36 @@ describe('CHECKR-BUNDLE — CheckrEmbed.svelte bundled Web SDK', () => {
 
   it('uses NewInvitation with sessionTokenPath', () => {
     assert.match(embedSrc, /Embeds\.NewInvitation/);
-    assert.match(embedSrc, /sessionTokenPath/);
-    assert.match(embedSrc, /sessionTokenRequestHeaders/);
+    assert.match(embedSrc, /buildNewInvitationOptions/);
+    assert.match(coachClearanceSrc, /sessionTokenPath/);
+    assert.match(coachClearanceSrc, /sessionTokenRequestHeaders/);
     assert.doesNotMatch(embedSrc, /Checkr\.mount/);
+  });
+
+  it('uses coach clearance presets via checkrCoachClearance helpers', () => {
+    assert.match(embedSrc, /checkrCoachClearance/);
+    assert.match(embedSrc, /buildNewInvitationOptions/);
+    assert.match(coachClearanceSrc, /presetEmail/);
+    assert.match(coachClearanceSrc, /hideBackButton/);
+    assert.match(coachClearanceSrc, /buildCheckrEmbedStyles/);
+  });
+
+  it('wires onInvitationSuccess and ReportsOverview tracking phase', () => {
+    assert.match(embedSrc, /onInvitationSuccess/);
+    assert.match(embedSrc, /Embeds\.ReportsOverview/);
+    assert.match(embedSrc, /buildReportsOverviewOptions/);
+    assert.match(embedSrc, /checkr-status-container/);
+    assert.match(loaderSrc, /ReportsOverview/);
+  });
+
+  it('uses readable light panel for embed host (not vanguard-card on main container)', () => {
+    assert.match(embedSrc, /checkr-embed__panel/);
+    assert.match(embedSrc, /checkr-invite-container/);
+    assert.doesNotMatch(
+      embedSrc,
+      /id="checkr-embed-container"[^>]*vanguard-card|vanguard-card[^>]*id="checkr-embed-container"/,
+    );
+    assert.match(embedSrc, /checkr-embed__alpha vanguard-card/);
   });
 });
 

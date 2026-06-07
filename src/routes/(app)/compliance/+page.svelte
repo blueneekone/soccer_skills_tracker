@@ -6,7 +6,6 @@
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import CheckrEmbed from './CheckrEmbed.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	export const ssr = false;
 
@@ -25,13 +24,12 @@
 </script>
 
 <svelte:head>
-	<title>Compliance Screening — Vanguard Protocol</title>
+	<title>Background Screening — SSTracker</title>
 </svelte:head>
 
 <div class="ct-root">
 	<div class="ct-grid" aria-hidden="true"></div>
 
-	<!-- Header -->
 	<header class="ct-header">
 		<div class="ct-shield" aria-hidden="true">
 			<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,33 +44,28 @@
 			</svg>
 		</div>
 		<div class="ct-header__text">
-			<div class="ct-badge">CLEARANCE PROTOCOL — CHECKR NATIVE EMBED</div>
-			<h1 class="ct-title">BACKGROUND SCREENING REQUIRED</h1>
+			<div class="ct-badge">Coach clearance</div>
+			<h1 class="ct-title">Background screening required</h1>
 			<p class="ct-subtitle">
-				Nexus Command requires USOPC-compliant background verification before War Room
-				access is granted. Screening is processed securely off-server by Checkr —
-				your SSN and payment details never touch this platform.
+				Before you can access coaching tools, your club needs a completed background check
+				and SafeSport-compliant clearance. Screening is handled securely by Checkr — your
+				SSN and payment details never touch this platform.
 			</p>
 		</div>
 	</header>
 
-	<!-- Identity strip -->
 	<div class="ct-strip">
-		<span>UID: {authStore.user?.uid ?? '—'}</span>
-		<span>ROLE: {authStore.role?.toUpperCase() ?? '—'}</span>
-		<span>CLUB: {authStore.userProfile?.clubId ?? '—'}</span>
-		<span>STATUS: {(authStore.userProfile?.clearance?.status)?.toUpperCase() ?? 'PENDING'}</span>
+		<span>Signed in as {authStore.user?.email ?? '—'}</span>
+		<span>Status: {(authStore.userProfile?.clearance?.status) ?? 'pending'}</span>
 	</div>
 
-	<!-- Checkr SDK embed -->
-	<div class="ct-embed-shell">
+	<div class="ct-embed-shell ct-embed-shell--light">
 		<CheckrEmbed />
 	</div>
 
-	<!-- Zero-liability callout -->
 	<div class="ct-zero-liability">
 		<Icon name="sys.lock-simple" />
-		<span>PII, SSN &amp; payment data processed exclusively inside Checkr's encrypted iframe.</span>
+		<span>PII, SSN, and payment data are processed only inside Checkr's encrypted flow.</span>
 	</div>
 </div>
 
@@ -81,7 +74,7 @@
 		min-height: 100dvh;
 		background: var(--vanguard-bg, #010409);
 		color: #e5e7eb;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -91,106 +84,101 @@
 		overflow: hidden;
 	}
 
-	/* Ambient threat grid */
 	.ct-grid {
 		position: fixed;
 		inset: 0;
 		pointer-events: none;
 		background-image:
-			linear-gradient(rgba(255, 0, 60, 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(255, 0, 60, 0.035) 1px, transparent 1px);
+			linear-gradient(rgba(255, 0, 60, 0.02) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 0, 60, 0.02) 1px, transparent 1px);
 		background-size: 3rem 3rem;
 		z-index: 0;
 	}
 
-	/* Ensure all direct children sit above the fixed grid */
-	.ct-root > * { position: relative; z-index: 1; }
+	.ct-root > * {
+		position: relative;
+		z-index: 1;
+	}
 
-	/* ── Header ─────────────────────────────────────────────────────────────── */
 	.ct-header {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 1rem;
 		text-align: center;
-		max-width: 540px;
+		max-width: 560px;
 	}
 
 	.ct-shield {
-		width: 4rem;
-		height: 4rem;
+		width: 3.5rem;
+		height: 3.5rem;
 		color: var(--vanguard-red, #ff003c);
-		animation: ctShieldPulse 2s ease-in-out infinite;
-		filter: drop-shadow(0 0 14px rgba(255, 0, 60, 0.65));
-	}
-
-	@keyframes ctShieldPulse {
-		0%, 100% { opacity: 0.8; transform: scale(1); }
-		50%       { opacity: 1;   transform: scale(1.06); }
+		opacity: 0.85;
 	}
 
 	.ct-badge {
-		font-size: 0.6rem;
-		letter-spacing: 0.24em;
-		font-weight: 700;
-		color: var(--vanguard-red, #ff003c);
-		border: 1px solid rgba(255, 0, 60, 0.3);
-		padding: 0.2rem 0.6rem;
-		border-radius: 2px;
-		display: inline-block;
+		font-size: 0.6875rem;
+		letter-spacing: 0.08em;
+		font-weight: 600;
+		color: rgba(229, 231, 235, 0.7);
+		text-transform: uppercase;
 	}
 
 	.ct-title {
 		margin: 0;
-		font-size: clamp(1.4rem, 4vw, 2rem);
-		font-weight: 900;
-		letter-spacing: 0.14em;
-		color: var(--vanguard-red, #ff003c);
-		text-shadow: 0 0 28px rgba(255, 0, 60, 0.55);
+		font-size: clamp(1.35rem, 4vw, 1.75rem);
+		font-weight: 700;
+		color: #f3f4f6;
+		letter-spacing: -0.01em;
 	}
 
 	.ct-subtitle {
 		margin: 0;
-		font-size: 0.78rem;
-		color: rgba(229, 231, 235, 0.55);
+		font-size: 0.9375rem;
+		color: rgba(229, 231, 235, 0.65);
 		line-height: 1.6;
 	}
 
-	/* ── Identity strip ──────────────────────────────────────────────────────── */
 	.ct-strip {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem 1.5rem;
 		justify-content: center;
-		font-size: 0.62rem;
-		letter-spacing: 0.12em;
-		color: rgba(20, 184, 166, 0.45);
-		border-top: 1px solid rgba(20, 184, 166, 0.08);
-		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
+		font-size: 0.8125rem;
+		color: rgba(229, 231, 235, 0.45);
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 		padding: 0.5rem 1rem;
 		width: 100%;
 		max-width: 680px;
 	}
 
-	/* ── Embed shell ────────────────────────────────────────────────────────── */
 	.ct-embed-shell {
 		width: 100%;
 		max-width: 760px;
 	}
 
-	/* ── Zero-liability notice ───────────────────────────────────────────────── */
+	.ct-embed-shell--light {
+		background: #f8fafc;
+		border-radius: 12px;
+		padding: 1.25rem;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+	}
+
 	.ct-zero-liability {
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
-		font-size: 0.62rem;
-		letter-spacing: 0.1em;
-		color: rgba(229, 231, 235, 0.3);
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-size: 0.75rem;
+		color: rgba(229, 231, 235, 0.35);
+		max-width: 560px;
+		text-align: center;
+		justify-content: center;
 	}
 
 	.ct-zero-liability :global(svg) {
 		width: 0.85rem;
 		height: 0.85rem;
+		flex-shrink: 0;
 	}
 </style>

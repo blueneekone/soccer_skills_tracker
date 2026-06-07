@@ -3,25 +3,51 @@
 	import { auth } from '$lib/firebase.js';
 	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { loadCheckrWebSdk } from '$lib/compliance/loadCheckrWebSdk.js';
+	import { loadCheckrWebSdk, type CheckrWebSdk } from '$lib/compliance/loadCheckrWebSdk.js';
+	import {
+		buildNewInvitationOptions,
+		buildReportsOverviewOptions,
+		type CheckrInvitationSuccessResponse,
+	} from '$lib/compliance/checkrCoachClearance.js';
 	import { httpsCallable } from 'firebase/functions';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const generateToken = httpsCallable(functions, 'generateCheckrEmbedToken');
 
-	const SESSION_TOKEN_PATH = '/api/compliance/checkr/session-tokens';
+	type EmbedStatus = 'loading' | 'alpha' | 'invite' | 'sent' | 'tracking' | 'error';
 
-	const checkrEnv =
-		import.meta.env.VITE_CHECKR_ENV === 'staging' ? 'staging' : 'production';
-
-	let status = $state<'loading' | 'alpha' | 'ready' | 'error'>('loading');
+	let status = $state<EmbedStatus>('loading');
 	let errorMsg = $state('');
+	let invitationPayload = $state<CheckrInvitationSuccessResponse | null>(null);
+	let reportsMounted = $state(false);
 
 	async function getSessionTokenHeaders(): Promise<Record<string, string>> {
 		const user = auth.currentUser;
 		if (!user) throw new Error('Sign in required for Checkr screening.');
 		const token = await user.getIdToken();
 		return { Authorization: `Bearer ${token}` };
+	}
+
+	function resolveCoachEmail(): string {
+		return authStore.user?.email ?? authStore.userProfile?.email ?? '';
+	}
+
+	async function mountReportsOverview(Checkr: CheckrWebSdk) {
+		if (reportsMounted) return;
+		const uid = authStore.user?.uid;
+		const email = resolveCoachEmail();
+		if (!uid || !email) return;
+
+		const options = buildReportsOverviewOptions({
+			uid,
+			email,
+			getSessionTokenHeaders,
+		});
+
+		const embed = new Checkr.Embeds.ReportsOverview(options);
+		embed.render('#checkr-status-container');
+		reportsMounted = true;
+		status = 'tracking';
 	}
 
 	$effect(() => {
@@ -48,18 +74,35 @@
 				return;
 			}
 
+			const email = resolveCoachEmail();
+			const uid = authStore.user?.uid;
+
+			if (!email) {
+				status = 'error';
+				errorMsg =
+					'Your account does not have an email address. Add an email to your profile, then return to this page to start screening.';
+				return;
+			}
+
+			if (!uid) {
+				status = 'error';
+				errorMsg = 'Sign in required to start background screening.';
+				return;
+			}
+
 			const Checkr = await loadCheckrWebSdk();
 			if (cancelled) return;
 
-			const email = authStore.user?.email ?? authStore.userProfile?.email ?? '';
-			const externalId = authStore.user?.uid ?? email;
-
-			const embedOptions: Record<string, unknown> = {
-				sessionTokenPath: SESSION_TOKEN_PATH,
-				sessionTokenRequestHeaders: getSessionTokenHeaders,
-				externalCandidateId: externalId,
-				...(email ? { defaultEmail: email } : {}),
-				...(checkrEnv === 'staging' ? { env: 'staging' } : {}),
+			const ctx = {
+				uid,
+				email,
+				getSessionTokenHeaders,
+				onInvitationSuccess: (response: CheckrInvitationSuccessResponse) => {
+					if (cancelled) return;
+					invitationPayload = response;
+					status = 'sent';
+					void mountReportsOverview(Checkr);
+				},
 				onInvitationError: (response: { errors?: Record<string, string[]> }) => {
 					const parts: string[] = [];
 					const errors = response?.errors;
@@ -75,9 +118,10 @@
 				},
 			};
 
+			const embedOptions = buildNewInvitationOptions(ctx);
 			const embed = new Checkr.Embeds.NewInvitation(embedOptions);
-			embed.render('#checkr-embed-container');
-			status = 'ready';
+			embed.render('#checkr-invite-container');
+			status = 'invite';
 		}
 
 		init().catch((err: unknown) => {
@@ -102,8 +146,8 @@
 	{#if status === 'loading'}
 		<div class="checkr-embed__skeleton" aria-busy="true">
 			<div class="checkr-embed__spinner" aria-hidden="true"></div>
-			<p class="checkr-embed__skeleton-label">ESTABLISHING SECURE CONNECTION…</p>
-			<p class="checkr-embed__skeleton-sub">Encrypting channel · Contacting Checkr</p>
+			<p class="checkr-embed__skeleton-label">Connecting to Checkr…</p>
+			<p class="checkr-embed__skeleton-sub">Preparing your screening form</p>
 		</div>
 	{/if}
 
@@ -112,11 +156,11 @@
 			<div class="checkr-embed__alpha-icon" aria-hidden="true">
 				<Icon name="status.shield-check" size={48} />
 			</div>
-			<h2 class="checkr-embed__alpha-title">SECURE CONNECTION ESTABLISHING</h2>
-			<p class="checkr-embed__alpha-body">Pending Provider Verification</p>
+			<h2 class="checkr-embed__alpha-title">Secure connection establishing</h2>
+			<p class="checkr-embed__alpha-body">Pending provider verification</p>
 			<div class="checkr-embed__alpha-badge">
 				<span class="checkr-embed__pulse" aria-hidden="true"></span>
-				ALPHA MODE — LIVE CHECKR API KEY PENDING AE APPROVAL
+				Alpha mode — live Checkr API key pending AE approval
 			</div>
 			<p class="checkr-embed__alpha-hint">
 				Contact your Director to use the <strong>[ SIMULATE CLEARANCE ]</strong> override
@@ -132,11 +176,51 @@
 		</div>
 	{/if}
 
+	{#if status === 'invite'}
+		<div class="checkr-embed__intro">
+			<p class="checkr-embed__intro-lead">
+				Complete your background check to unlock coaching tools.
+			</p>
+			<p class="checkr-embed__intro-sub">
+				You are inviting yourself using <strong>{resolveCoachEmail()}</strong>. Submit the
+				form below — Checkr will email you a link to finish identity verification and
+				payment. Your SSN and payment details stay inside Checkr, not on this platform.
+			</p>
+		</div>
+	{/if}
+
+	{#if status === 'sent' || status === 'tracking'}
+		<div class="checkr-embed__success" role="status">
+			<Icon name="status.verified" />
+			<div>
+				<p class="checkr-embed__success-lead">
+					Invitation sent. Open the link in your email to finish screening.
+				</p>
+				<p class="checkr-embed__success-sub">
+					This page will update when your clearance is approved. SSN and payment are
+					handled only inside Checkr.
+				</p>
+				{#if invitationPayload?.candidate_id}
+					<p class="checkr-embed__success-meta">
+						Reference: {invitationPayload.candidate_id}
+					</p>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<div
-		id="checkr-embed-container"
-		class="tw-w-full tw-min-h-[600px] vanguard-card"
-		style:display={status === 'ready' ? 'block' : 'none'}
-		aria-label="Checkr background screening"
+		id="checkr-invite-container"
+		class="checkr-embed__panel"
+		class:checkr-embed__panel--hidden={status !== 'invite'}
+		aria-label="Checkr background screening invitation"
+	></div>
+
+	<div
+		id="checkr-status-container"
+		class="checkr-embed__panel checkr-embed__panel--status"
+		class:checkr-embed__panel--hidden={status !== 'tracking'}
+		aria-label="Checkr screening status"
 	></div>
 </div>
 
@@ -146,6 +230,85 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	}
+
+	.checkr-embed__panel {
+		width: 100%;
+		min-height: 600px;
+		background: #ffffff;
+		color: #111827;
+		border: 1px solid #e5e7eb;
+		border-radius: 10px;
+		box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+		padding: 1.25rem;
+	}
+
+	.checkr-embed__panel--hidden {
+		display: none;
+	}
+
+	.checkr-embed__panel--status {
+		min-height: 320px;
+	}
+
+	.checkr-embed__intro {
+		padding: 0 0.25rem;
+	}
+
+	.checkr-embed__intro-lead {
+		margin: 0 0 0.5rem;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #111827;
+	}
+
+	.checkr-embed__intro-sub {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		color: #4b5563;
+	}
+
+	.checkr-embed__intro-sub strong {
+		color: #111827;
+		font-weight: 600;
+	}
+
+	.checkr-embed__success {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-start;
+		padding: 1rem 1.25rem;
+		background: #ecfdf5;
+		border: 1px solid #a7f3d0;
+		border-radius: 8px;
+		color: #065f46;
+	}
+
+	.checkr-embed__success :global(svg) {
+		flex-shrink: 0;
+		margin-top: 0.15rem;
+	}
+
+	.checkr-embed__success-lead {
+		margin: 0 0 0.35rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	.checkr-embed__success-sub {
+		margin: 0;
+		font-size: 0.8125rem;
+		line-height: 1.5;
+		color: #047857;
+	}
+
+	.checkr-embed__success-meta {
+		margin: 0.5rem 0 0;
+		font-size: 0.75rem;
+		color: #059669;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 	}
 
 	/* Skeleton */
@@ -156,20 +319,18 @@
 		justify-content: center;
 		gap: 0.75rem;
 		min-height: 300px;
-		border: 1px solid rgba(20, 184, 166, 0.1);
+		border: 1px solid #e5e7eb;
 		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.015);
-		backdrop-filter: blur(12px);
+		background: #f9fafb;
 		padding: 2rem;
 		text-align: center;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 	}
 
 	.checkr-embed__spinner {
 		width: 2rem;
 		height: 2rem;
-		border: 2px solid rgba(20, 184, 166, 0.15);
-		border-top-color: var(--vanguard-cyan, #14b8a6);
+		border: 2px solid #e5e7eb;
+		border-top-color: #2563eb;
 		border-radius: 50%;
 		animation: ceSpinAnim 0.8s linear infinite;
 	}
@@ -182,18 +343,15 @@
 
 	.checkr-embed__skeleton-label {
 		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		color: var(--vanguard-cyan, #14b8a6);
-		text-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #374151;
 	}
 
 	.checkr-embed__skeleton-sub {
 		margin: 0;
-		font-size: 0.62rem;
-		color: rgba(229, 231, 235, 0.35);
-		letter-spacing: 0.08em;
+		font-size: 0.8125rem;
+		color: #6b7280;
 	}
 
 	/* Alpha placeholder */
@@ -283,16 +441,14 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding: 1.25rem 1.5rem;
-		border: 1px solid rgba(255, 0, 60, 0.3);
-		background: rgba(255, 0, 60, 0.04);
+		border: 1px solid #fecaca;
+		background: #fef2f2;
 		border-radius: 6px;
-		font-size: 0.75rem;
-		color: var(--vanguard-red, #ff003c);
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		font-size: 0.875rem;
+		color: #b91c1c;
 	}
 
-	.checkr-embed__error i {
-		font-size: 1.25rem;
+	.checkr-embed__error :global(svg) {
 		flex-shrink: 0;
 	}
 
