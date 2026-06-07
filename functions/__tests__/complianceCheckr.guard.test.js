@@ -39,6 +39,23 @@ const DIRECTOR_COMPLIANCE = path.join(
   'compliance',
   '+page.svelte',
 );
+const ADMIN_COACH_CLEARANCE = path.join(
+  REPO_ROOT,
+  'src',
+  'routes',
+  '(app)',
+  'admin',
+  'coach-clearance',
+  '+page.svelte',
+);
+const PANOPTICON = path.join(
+  REPO_ROOT,
+  'src',
+  'lib',
+  'components',
+  'compliance',
+  'CoachClearancePanopticon.svelte',
+);
 const CHECKLIST = path.join(
   REPO_ROOT,
   'src',
@@ -75,6 +92,8 @@ const complianceSrc = fs.readFileSync(COMPLIANCE_JS, 'utf8');
 const embedSrc = fs.readFileSync(CHECKR_EMBED, 'utf8');
 const pageSrc = fs.readFileSync(COMPLIANCE_PAGE, 'utf8');
 const directorSrc = fs.readFileSync(DIRECTOR_COMPLIANCE, 'utf8');
+const adminCoachClearanceSrc = fs.readFileSync(ADMIN_COACH_CLEARANCE, 'utf8');
+const panopticonSrc = fs.readFileSync(PANOPTICON, 'utf8');
 const checklistSrc = fs.readFileSync(CHECKLIST, 'utf8');
 const loaderSrc = fs.readFileSync(LOAD_CHECKR_SDK, 'utf8');
 const coachClearanceSrc = fs.readFileSync(CHECKR_COACH_CLEARANCE, 'utf8');
@@ -128,9 +147,28 @@ describe('LAUNCH-CHECKR-MODEL — director-initiated club-paid flow', () => {
   });
 
   it('director compliance panopticon can order screening', () => {
-    assert.match(directorSrc, /directorInitiateCoachClearance/);
-    assert.match(directorSrc, /orderScreening/);
-    assert.match(directorSrc, /Order screening/i);
+    assert.match(panopticonSrc, /directorInitiateCoachClearance/);
+    assert.match(panopticonSrc, /orderScreening/);
+    assert.match(panopticonSrc, /Order screening/i);
+    assert.match(directorSrc, /CoachClearancePanopticon/);
+  });
+});
+
+describe('CHECKR-QA-ADMIN — platform admin coach clearance', () => {
+  it('admin route exists and reuses CoachClearancePanopticon', () => {
+    assert.match(adminCoachClearanceSrc, /CoachClearancePanopticon/);
+    assert.match(adminCoachClearanceSrc, /super_admin/);
+    assert.match(adminCoachClearanceSrc, /GLOBAL ADMIN — COACH CLEARANCE/);
+  });
+
+  it('simulateClearance allows super_admin and skips club match for platform admins', () => {
+    assert.match(complianceSrc, /super_admin.*global_admin/s);
+    assert.match(complianceSrc, /isPlatformAdmin/);
+    assert.match(complianceSrc, /!isPlatformAdmin && userData\.clubId !== clubId/);
+  });
+
+  it('simulate success surfaces coach re-login toast in panopticon', () => {
+    assert.match(panopticonSrc, /Coach must sign out and back in\./);
   });
 });
 

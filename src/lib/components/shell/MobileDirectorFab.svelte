@@ -18,7 +18,7 @@
 	const FAB_ACTIONS: FabEntry[] = [
 		{ prefix: '/director', tab: 'teams',      label: 'Invite Player',  icon: 'user.plus',           href: '/director?tab=teams' },
 		{ prefix: '/director', tab: 'household',  label: 'Add Household',  icon: 'nav.home',            href: '/director?tab=household' },
-		{ prefix: '/director', tab: 'compliance', label: 'Run Compliance', icon: 'status.shield-check', href: '/director/compliance' },
+		{ prefix: '/director', tab: 'compliance', label: 'Staff Clearance', icon: 'status.shield-check', href: '/director/compliance' },
 		{ prefix: '/director', tab: null,         label: 'Quick Action',   icon: 'game.zap',            href: '/director?tab=teams' },
 		{ prefix: '/admin/organizations',         label: 'New Club',       icon: 'org.building',        href: '/admin/organizations' },
 		{ prefix: '/admin/users',                 label: 'Add User',       icon: 'user.plus',           href: '/admin/users' },

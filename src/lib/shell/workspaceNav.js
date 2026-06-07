@@ -14,6 +14,7 @@ const adminLinks = [
 	{ label: 'Global Users',    icon: 'content.globe',     href: '/admin/users' },
 	{ label: 'Recruiters',      icon: 'sys.binoculars',    href: '/admin/recruiters' },
 	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
+	{ label: 'Coach clearance', icon: 'status.verified',   href: '/admin/coach-clearance' },
 	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
 ];
 
@@ -26,7 +27,8 @@ const directorLinks = [
 	{ tab: 'brand',      label: 'Club Branding',     icon: 'sys.palette',        href: '/director?tab=brand' },
 	{ tab: 'playbook',   label: 'Playbook',          icon: 'data.target',        href: '/director?tab=playbook' },
 	{ tab: 'licenses',   label: 'Licenses & Seats',  icon: 'sys.credit-card',   href: '/director?tab=licenses' },
-	{ tab: 'compliance', label: 'Compliance',        icon: 'status.shield-check',href: '/director?tab=compliance' },
+	{ tab: 'compliance', label: 'Player passports',  icon: 'status.shield-check',href: '/director?tab=compliance' },
+	{ label: 'Staff clearance', icon: 'status.verified',   href: '/director/compliance' },
 	{ tab: 'household',  label: 'Households & COPPA',icon: 'nav.home',           href: '/director?tab=household' },
 ];
 
