@@ -191,7 +191,7 @@
 		<div class="dcc-vpc-section">
 			<div class="dcc-vpc-section__head">
 				<Icon name="status.shield-check" />
-				<span>VPC approval queue</span>
+				<span>Consent audit</span>
 			</div>
 			<VpcApprovalQueue {clubId} />
 		</div>

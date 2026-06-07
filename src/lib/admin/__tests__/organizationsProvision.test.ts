@@ -45,4 +45,13 @@ describe('organizationsProvision.validateAddClubInput', () => {
 		expect(validateAddClubInput({ ...baseInput(), phoneNumber: 'abc' })).toMatch(/Phone/i);
 		expect(validateAddClubInput({ ...baseInput(), phoneNumber: '+15125550100' })).toBeNull();
 	});
+
+	it('writeClubDocuments does not set per-club vpcPolicy (single parent-auto-finalize path)', async () => {
+		const { readFileSync } = await import('node:fs');
+		const src = readFileSync(
+			new URL('../organizationsProvision.ts', import.meta.url),
+			'utf8',
+		);
+		expect(src).not.toMatch(/vpcPolicy/);
+	});
 });

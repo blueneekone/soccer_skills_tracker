@@ -74,5 +74,14 @@ serviceAccountKey.json
 # Dev tenant reset backups (may contain emails)
 artifacts/firestore-reset-*/
 
+# Firebase Storage audit/cleanup (object paths, sizes)
+artifacts/storage-audit-*/
+
+# Firestore root collection inventory (counts, sample ids)
+artifacts/firestore-inventory-*/
+
+# Firestore full debt pass reports
+artifacts/firestore-debt-pass-*/
+
 # dataconnect generated files
 .dataconnect

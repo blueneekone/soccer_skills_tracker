@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { httpsCallable } from 'firebase/functions';
-	import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+	import { doc, getDoc } from 'firebase/firestore';
 	import { db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -40,6 +40,17 @@
 	let submitting = $state(false);
 	let submitError = $state('');
 
+	async function resolvePlayerVpcStatus(playerEmail) {
+		const snap = await getDoc(doc(db, 'users', playerEmail));
+		return snap.exists() ? snap.data()?.vpcStatus || 'unknown' : 'unknown';
+	}
+
+	async function reloadPlayerStatus(playerEmail) {
+		const status = await resolvePlayerVpcStatus(playerEmail);
+		playerStatuses = { ...playerStatuses, [playerEmail]: status };
+		return status;
+	}
+
 	$effect(() => {
 		if (!householdId || authStore.role !== 'parent') {
 			household = null;
@@ -72,12 +83,11 @@
 
 			if (emails.length > 0) {
 				const statusMap = {};
-				const userSnaps = await Promise.all(
-					emails.map((em) => getDoc(doc(db, 'users', em)))
+				const resolved = await Promise.all(
+					emails.map((em) => resolvePlayerVpcStatus(em))
 				);
 				for (let i = 0; i < emails.length; i++) {
-					const ud = userSnaps[i].exists() ? userSnaps[i].data() : {};
-					statusMap[emails[i]] = ud?.vpcStatus || 'unknown';
+					statusMap[emails[i]] = resolved[i];
 				}
 				if (!cancelled) playerStatuses = statusMap;
 			}
@@ -121,11 +131,14 @@
 		switch (status) {
 			case 'verified': return { label: 'Verified', cls: 'badge--green' };
 			case 'not_required': return { label: 'Not required', cls: 'badge--muted' };
-			case 'parent_consented': return { label: 'Awaiting director', cls: 'badge--amber' };
 			case 'pending':
 			case 'pending_parent': return { label: 'Consent required', cls: 'badge--red' };
-			default: return { label: 'Unknown', cls: 'badge--muted' };
+			default: return { label: 'Consent required', cls: 'badge--red' };
 		}
+	}
+
+	function isPlayerVpcComplete(status) {
+		return status === 'verified' || status === 'not_required';
 	}
 
 	function startWizard(playerEmail) {
@@ -179,10 +192,7 @@
 				},
 			});
 			await parentGrantVpcConsentFn(payload);
-			playerStatuses = {
-				...playerStatuses,
-				[activePlayerEmail]: 'parent_consented',
-			};
+			await reloadPlayerStatus(activePlayerEmail);
 			wizardStage = 'done';
 		} catch (e) {
 			submitError = e instanceof Error ? e.message : String(e);
@@ -226,13 +236,10 @@
 				<!-- ── DONE STATE ─────────────────────────────────────────────── -->
 				<div class="vpc-done">
 					<div class="vpc-done__icon" aria-hidden="true"><Icon name="status.verified" /></div>
-					<h3 class="vpc-done__title">Consent submitted</h3>
+					<h3 class="vpc-done__title">Consent complete</h3>
 					<p class="vpc-done__body">
-						Your digital consent for <strong>{activePlayerEmail}</strong> has been recorded.
-						Your club director will receive an approval alert and must finalize the VPC in the platform.
-					</p>
-					<p class="vpc-done__body">
-						Status will change from <em>Awaiting director</em> to <em>Verified</em> once the director approves.
+						Your digital consent for <strong>{activePlayerEmail}</strong> has been recorded and
+						<strong>verified</strong>. Your athlete can sign in and start training immediately.
 					</p>
 					<button type="button" class="vpc-btn vpc-btn--primary" onclick={cancelWizard}>
 						Back to athletes
@@ -243,8 +250,8 @@
 				<!-- ── ATHLETE SELECT ─────────────────────────────────────────── -->
 				<p class="vpc-intro">
 					Complete the <strong>digital consent ceremony</strong> for each linked athlete below.
-					Once you submit, your club director will receive an in-platform alert to finalize
-					the Verifiable Parental Consent (VPC).
+					Submitting consent here verifies the athlete immediately — your athlete can train as soon
+					as you finish.
 				</p>
 				<ul class="vpc-athlete-list">
 					{#each playerEmails as em}
@@ -254,13 +261,9 @@
 								<span class="vpc-athlete-row__email">{em}</span>
 								<span class="vpc-status-badge {badge.cls}">{badge.label}</span>
 							</div>
-							{#if playerStatuses[em] === 'verified' || playerStatuses[em] === 'not_required'}
+							{#if isPlayerVpcComplete(playerStatuses[em])}
 								<span class="vpc-athlete-row__done">
 									<Icon name="status.check" /> Complete
-								</span>
-							{:else if playerStatuses[em] === 'parent_consented'}
-								<span class="vpc-athlete-row__done vpc-athlete-row__done--amber">
-									Awaiting director approval
 								</span>
 							{:else}
 								<button

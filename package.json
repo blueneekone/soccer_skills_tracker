@@ -54,6 +54,7 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
+    "@checkr/web-sdk": "^0.0.59",
     "@dicebear/core": "^9.4.2",
     "@dicebear/shapes": "^9.4.2",
     "@fontsource/geist-mono": "^5.2.7",

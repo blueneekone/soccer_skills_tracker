@@ -22,10 +22,18 @@ const CHECKR_EMBED = path.join(
   'compliance',
   'CheckrEmbed.svelte',
 );
+const LOAD_CHECKR_SDK = path.join(
+  REPO_ROOT,
+  'src',
+  'lib',
+  'compliance',
+  'loadCheckrWebSdk.ts',
+);
 const FIREBASE_JSON = path.join(REPO_ROOT, 'firebase.json');
 
 const complianceSrc = fs.readFileSync(COMPLIANCE_JS, 'utf8');
 const embedSrc = fs.readFileSync(CHECKR_EMBED, 'utf8');
+const loaderSrc = fs.readFileSync(LOAD_CHECKR_SDK, 'utf8');
 const firebaseJson = JSON.parse(fs.readFileSync(FIREBASE_JSON, 'utf8'));
 
 describe('CHECKR-FIX — compliance.js session token API', () => {
@@ -49,10 +57,13 @@ describe('CHECKR-FIX — compliance.js session token API', () => {
   });
 });
 
-describe('CHECKR-FIX — CheckrEmbed.svelte modern Web SDK', () => {
-  it('loads @checkr/web-sdk CDN', () => {
-    assert.match(embedSrc, /@checkr\/web-sdk/);
+describe('CHECKR-BUNDLE — CheckrEmbed.svelte bundled Web SDK', () => {
+  it('loads @checkr/web-sdk via loadCheckrWebSdk (no CDN)', () => {
+    assert.match(embedSrc, /loadCheckrWebSdk/);
+    assert.doesNotMatch(embedSrc, /cdn\.jsdelivr\.net/);
+    assert.doesNotMatch(embedSrc, /loadScript/);
     assert.doesNotMatch(embedSrc, /sdk\.checkr\.com\/embed/);
+    assert.match(loaderSrc, /import\(['"]@checkr\/web-sdk['"]\)/);
   });
 
   it('uses NewInvitation with sessionTokenPath', () => {
@@ -64,13 +75,13 @@ describe('CHECKR-FIX — CheckrEmbed.svelte modern Web SDK', () => {
 });
 
 describe('CHECKR-FIX — firebase.json CSP and rewrite', () => {
-  it('allows Checkr Web SDK script and frame sources', () => {
+  it('allows Checkr embed service hosts (bundled SDK, no jsDelivr)', () => {
     const csp = firebaseJson.hosting.headers
       .find((h) => h.source === '**')
       ?.headers?.find((h) => h.key === 'Content-Security-Policy')?.value;
     assert.ok(csp, 'CSP header missing');
     assert.match(csp, /web-sdk-services\.checkr\.com/);
-    assert.match(csp, /@checkr\/web-sdk/);
+    assert.doesNotMatch(csp, /cdn\.jsdelivr\.net/);
   });
 
   it('rewrites session-tokens path to checkrSessionTokens function', () => {

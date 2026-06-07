@@ -3,27 +3,16 @@
 	import { auth } from '$lib/firebase.js';
 	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { loadCheckrWebSdk } from '$lib/compliance/loadCheckrWebSdk.js';
 	import { httpsCallable } from 'firebase/functions';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const generateToken = httpsCallable(functions, 'generateCheckrEmbedToken');
 
-	const CHECKR_SDK_CDN =
-		'https://cdn.jsdelivr.net/npm/@checkr/web-sdk/dist/web-sdk.umd.js';
 	const SESSION_TOKEN_PATH = '/api/compliance/checkr/session-tokens';
 
 	const checkrEnv =
 		import.meta.env.VITE_CHECKR_ENV === 'staging' ? 'staging' : 'production';
-
-	type CheckrEmbedInstance = {
-		render: (selector: string) => void;
-	};
-
-	type CheckrGlobal = {
-		Embeds: {
-			NewInvitation: new (options: Record<string, unknown>) => CheckrEmbedInstance;
-		};
-	};
 
 	let status = $state<'loading' | 'alpha' | 'ready' | 'error'>('loading');
 	let errorMsg = $state('');
@@ -33,20 +22,6 @@
 		if (!user) throw new Error('Sign in required for Checkr screening.');
 		const token = await user.getIdToken();
 		return { Authorization: `Bearer ${token}` };
-	}
-
-	function loadScript(src: string): Promise<void> {
-		return new Promise((resolve, reject) => {
-			if ((window as unknown as { Checkr?: CheckrGlobal }).Checkr) {
-				resolve();
-				return;
-			}
-			const script = document.createElement('script');
-			script.src = src;
-			script.onload = () => resolve();
-			script.onerror = () => reject(new Error(`Failed to load Checkr Web SDK: ${src}`));
-			document.head.appendChild(script);
-		});
 	}
 
 	$effect(() => {
@@ -73,13 +48,8 @@
 				return;
 			}
 
-			await loadScript(CHECKR_SDK_CDN);
+			const Checkr = await loadCheckrWebSdk();
 			if (cancelled) return;
-
-			const Checkr = (window as unknown as { Checkr: CheckrGlobal }).Checkr;
-			if (!Checkr?.Embeds?.NewInvitation) {
-				throw new Error('Checkr Web SDK loaded but Embeds.NewInvitation is unavailable.');
-			}
 
 			const email = authStore.user?.email ?? authStore.userProfile?.email ?? '';
 			const externalId = authStore.user?.uid ?? email;

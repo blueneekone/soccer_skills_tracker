@@ -33,6 +33,90 @@ function vpcRequestId(parentUid, playerEmail) {
   return `${parentUid}__${safeEmail}`;
 }
 
+/**
+ * @param {string} playerEmail
+ * @return {Promise<FirebaseFirestore.QuerySnapshot>}
+ */
+async function fetchPendingVpcRequests(playerEmail) {
+  return db().collection('vpc_requests')
+      .where('playerEmail', '==', playerEmail)
+      .where('status', 'in', ['pending', 'parent_consented'])
+      .get();
+}
+
+/**
+ * Shared VPC verification writes: complete queue rows, verify user, passport waiver.
+ * @param {FirebaseFirestore.WriteBatch} batch
+ * @param {object} opts
+ * @param {string} opts.playerEmail
+ * @param {FirebaseFirestore.DocumentReference} opts.uRef
+ * @param {object} opts.u users/{playerEmail} snapshot data
+ * @param {FirebaseFirestore.QuerySnapshot} opts.pendingReqs
+ * @param {*} opts.now serverTimestamp()
+ * @param {string} opts.waiverAttestedBy
+ * @param {string} opts.waiverMethod
+ * @param {boolean} opts.grantCoppa flip coppaStatus for minors
+ */
+function applyVpcVerificationWrites(batch, opts) {
+  const {
+    playerEmail,
+    uRef,
+    u,
+    pendingReqs,
+    now,
+    waiverAttestedBy,
+    waiverMethod,
+    grantCoppa,
+  } = opts;
+
+  pendingReqs.forEach((d) => {
+    batch.set(d.ref, {status: 'completed', completedAt: now}, {merge: true});
+  });
+
+  const userPatch = {vpcStatus: 'verified'};
+  if (grantCoppa && u.isMinor !== false) {
+    userPatch.coppaStatus = 'granted';
+  }
+  batch.set(uRef, userPatch, {merge: true});
+
+  batch.set(db().collection('passports').doc(playerEmail), {
+    hasSignedWaiver: true,
+    waiverSignedAt: now,
+    waiverAttestedBy,
+    waiverMethod,
+  }, {merge: true});
+}
+
+/**
+ * Shared VPC terminalization — verified user, passport waiver, completed queue rows.
+ * Parent golden path (parentGrantVpcConsent) and directorApproveVpc (super_admin
+ * override only) append these writes to the caller's batch.
+ *
+ * @param {FirebaseFirestore.WriteBatch} batch
+ * @param {object} opts
+ * @param {string} opts.playerEmail
+ * @param {FirebaseFirestore.DocumentReference} opts.uRef
+ * @param {object} opts.u users/{playerEmail} snapshot data
+ * @param {*} opts.now serverTimestamp()
+ * @param {string} opts.waiverAttestedBy
+ * @param {string} opts.waiverMethod
+ * @param {boolean} [opts.grantCoppa=true] flip coppaStatus for minors
+ * @return {Promise<void>}
+ */
+async function finalizeVpcForPlayer(batch, opts) {
+  const pendingReqs = await fetchPendingVpcRequests(opts.playerEmail);
+  applyVpcVerificationWrites(batch, {
+    playerEmail: opts.playerEmail,
+    uRef: opts.uRef,
+    u: opts.u,
+    pendingReqs,
+    now: opts.now,
+    waiverAttestedBy: opts.waiverAttestedBy,
+    waiverMethod: opts.waiverMethod,
+    grantCoppa: opts.grantCoppa !== false,
+  });
+}
+
 async function resolveClubIdForVpcIntent(u, h, parentEmail) {
   const fromUser =
       typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : null;
@@ -60,9 +144,9 @@ async function resolveClubIdForVpcIntent(u, h, parentEmail) {
 }
 
 /**
- * Director / super_admin: after offline / gateway VPC, mark minor verified and
- * attest passport waiver (replaces canvas for U13). Real payment/KBA webhooks
- * should call the same internal logic later.
+ * super_admin / director support override — NOT part of the parent VPC golden path.
+ * parentGrantVpcConsent server-finalizes VPC in the same request; directors have
+ * read-only consent audit visibility in Director OS.
  *
  * @param {any} request
  * @param {string} auditAction security_audit.action value
@@ -116,27 +200,18 @@ async function executeDirectorVpcApproval(request, auditAction) {
     );
   }
 
-  const pendingReqs = await db().collection('vpc_requests')
-      .where('playerEmail', '==', playerEmail)
-      .where('status', 'in', ['pending', 'parent_consented'])
-      .get();
-
   const batch = db().batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  pendingReqs.forEach((d) => {
-    batch.set(d.ref, {status: 'completed', completedAt: now}, {merge: true});
-  });
-
-  batch.set(uRef, {vpcStatus: 'verified'}, {merge: true});
-
-  const passRef = db().collection('passports').doc(playerEmail);
-  batch.set(passRef, {
-    hasSignedWaiver: true,
-    waiverSignedAt: now,
+  await finalizeVpcForPlayer(batch, {
+    playerEmail,
+    uRef,
+    u,
+    now,
     waiverAttestedBy: actor.email || 'director',
     waiverMethod: 'vpc_director_attestation',
-  }, {merge: true});
+    grantCoppa: true,
+  });
 
   const consentRef = db().collection('consent_records').doc();
   batch.set(consentRef, {
@@ -587,8 +662,8 @@ exports.verifyVpcForMinor = onCall(
 );
 
 /**
- * Director / super_admin: finalize VPC. Sets users.vpcStatus = verified;
- * onWrite syncUserClaims stamps custom claim vpcVerified for Firestore rules.
+ * super_admin support override only — thin wrapper around finalizeVpcForPlayer.
+ * Not used in Parent OS or the documented golden path.
  */
 exports.directorApproveVpc = onCall(
     {region: REGION, enforceAppCheck: false},
@@ -596,8 +671,8 @@ exports.directorApproveVpc = onCall(
 );
 
 /**
- * Parent: after completing the club's VPC process offline, notify the club so
- * a director can run directorApproveVpc (legacy: verifyVpcForMinor).
+ * Parent: legacy offline VPC intake row (pending). Golden path uses
+ * parentGrantVpcConsent which server-finalizes in the same request.
  * Does not grant consent by itself.
  */
 exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
@@ -779,10 +854,10 @@ exports.playerSelfReportDob = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Sprint 1.2 — COPPA 2026: parent submits explicit granular consent via the
- * online consent ceremony. Creates a structured consent_records document and
- * updates vpc_requests to 'parent_consented'. Does NOT verify the minor —
- * directorApproveVpc is still required as the second factor.
+ * Sprint 1.2 / LAUNCH-VPC — parent submits explicit granular consent via the
+ * online consent ceremony. Creates consent_records + vpc_requests row and
+ * server-finalizes VPC in the same request (verified + coppaStatus granted).
+ * Director second factor removed from product flow.
  */
 exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
   const actor = assertParent(request);
@@ -865,6 +940,13 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
     return {ok: true, alreadyVerified: true, playerEmail};
   }
 
+  if (!h.coppaSigned) {
+    throw new HttpsError(
+        'failed-precondition',
+        'COPPA waiver is not on file. Sign the household waiver first.',
+    );
+  }
+
   const clubId = u.clubId || h.clubId || null;
   if (!clubId) {
     throw new HttpsError(
@@ -877,7 +959,10 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
   const nowIso = new Date().toISOString();
 
   const consentRef = db().collection('consent_records').doc();
-  await consentRef.set({
+  const docId = vpcRequestId(request.auth.uid, playerEmail);
+  const batch = db().batch();
+
+  batch.set(consentRef, {
     subjectEmail: playerEmail,
     parentEmail: actor.email,
     parentDisplayName,
@@ -895,30 +980,48 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
     grantedAtIso: nowIso,
   });
 
-  const docId = vpcRequestId(request.auth.uid, playerEmail);
-  await db().collection('vpc_requests').doc(docId).set({
+  batch.set(db().collection('vpc_requests').doc(docId), {
     playerEmail,
     parentEmail: actor.email,
     householdId: actor.householdId,
     clubId,
-    status: 'parent_consented',
+    status: 'completed',
     consentRecordId: consentRef.id,
     consentedAt: now,
+    completedAt: now,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: true});
 
-  await db().collection('security_audit').add({
+  await finalizeVpcForPlayer(batch, {
+    playerEmail,
+    uRef,
+    u,
+    now,
+    waiverAttestedBy: actor.email || parentDisplayName,
+    waiverMethod: 'parent_online_explicit',
+    grantCoppa: true,
+  });
+
+  batch.set(db().collection('security_audit').doc(), {
     action: 'parentGrantVpcConsent',
     playerEmail,
     parentEmail: actor.email,
     householdId: actor.householdId,
     clubId,
+    autoFinalized: true,
     consentRecordId: consentRef.id,
     actorUid: request.auth.uid,
     at: now,
   });
 
-  return {ok: true, playerEmail, pendingDirectorApproval: true};
+  await batch.commit();
+
+  return {
+    ok: true,
+    playerEmail,
+    vpcStatus: 'verified',
+    autoFinalized: true,
+  };
 });
 
 /**

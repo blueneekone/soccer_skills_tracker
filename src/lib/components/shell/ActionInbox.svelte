@@ -143,27 +143,6 @@
 						});
 					}
 
-					const vpcQ = query(
-						collection(db, 'vpc_requests'),
-						where('clubId', '==', clubId),
-						where('status', '==', 'parent_consented'),
-					);
-					let vpcN = 0;
-					try {
-						const vSnap = await getCountFromServer(vpcQ);
-						vpcN = vSnap.data().count;
-					} catch {
-						const vSnap = await getDocs(vpcQ);
-						vpcN = vSnap.size;
-					}
-					if (!cancelled && vpcN > 0) {
-						next.push({
-							id: 'vpc-approvals',
-							label: `${vpcN} VPC approval${vpcN === 1 ? '' : 's'} awaiting director sign-off`,
-							meta: 'Privacy · Consent',
-							href: '/director?tab=household',
-						});
-					}
 				} else if (role === 'registrar' && clubId) {
 					const tSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),

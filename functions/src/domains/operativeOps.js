@@ -1213,6 +1213,16 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     parentProvisionerEmail: parentEmail,
     updatedAt: now,
   };
+  const existingVpc = uExisting.exists ?
+    (typeof uExisting.data()?.vpcStatus === 'string' ?
+      uExisting.data().vpcStatus :
+      '') :
+    '';
+  if (existingVpc !== 'verified') {
+    userPayload.isMinor = true;
+    userPayload.vpcStatus = 'pending_parent';
+    userPayload.coppaStatus = 'pending';
+  }
   if (teamIdForUser) {
     userPayload.teamId = teamIdForUser;
   }

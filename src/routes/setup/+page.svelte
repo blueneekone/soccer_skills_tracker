@@ -70,7 +70,7 @@
 	});
 
 	/** Phase 4 — players are parent-provisioned only; no self-serve athlete path. */
-	let setupRole = $state(/** @type {'director' | 'coach' | 'parent'} */ ('parent'));
+	let setupRole = $state(/** @type {'parent' | 'coach'} */ ('parent'));
 	let displayName = $state('');
 	let selectedClubId = $state('');
 	let selectedTeamId = $state('');
@@ -117,13 +117,13 @@
 		};
 	});
 
-	function setSetupRole(/** @type {'director' | 'coach' | 'parent'} */ kind) {
+	function setSetupRole(/** @type {'parent' | 'coach'} */ kind) {
 		setupRole = kind;
 		selectedTeamId = '';
 		errorMsg = '';
 	}
 
-	function roleBtnClass(/** @type {'director' | 'coach' | 'parent'} */ id) {
+	function roleBtnClass(/** @type {'parent' | 'coach'} */ id) {
 		const on = setupRole === id;
 		return [
 			'tw-flex tw-min-h-[3.25rem] tw-w-full tw-flex-1 tw-items-center tw-justify-center tw-rounded-lg tw-border-2 tw-px-3 tw-py-3',
@@ -168,19 +168,6 @@
 						clubId: selectedClubId,
 						role: 'parent',
 						playerName: name,
-						joinedAt,
-						...basePrivacy,
-					},
-					{ merge: true },
-				);
-			} else if (setupRole === 'director') {
-				await setDoc(
-					userRef,
-					{
-						clubId: selectedClubId,
-						role: 'director',
-						playerName: name,
-						teamId: 'admin',
 						joinedAt,
 						...basePrivacy,
 					},
@@ -235,16 +222,6 @@
 		>
 			<button
 				type="button"
-				class={roleBtnClass('director')}
-				aria-pressed={setupRole === 'director'}
-				onclick={() => setSetupRole('director')}
-			>
-				Director<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
-					>(Club admin)</span
-				>
-			</button>
-			<button
-				type="button"
 				class={roleBtnClass('coach')}
 				aria-pressed={setupRole === 'coach'}
 				onclick={() => setSetupRole('coach')}
@@ -264,6 +241,9 @@
 				>
 			</button>
 		</div>
+		<p class="setup-helper-text tw-mb-5">
+			Club directors are invited by your organization admin — use the link you received or contact support.
+		</p>
 
 		<label for="setup-club">Select your club / organization</label>
 		<select
@@ -282,8 +262,6 @@
 		<label for="setup-name">
 			{#if setupRole === 'parent'}
 				Your name (as parent / guardian)
-			{:else if setupRole === 'director'}
-				Your name (as club director)
 			{:else}
 				Your name (as coach)
 			{/if}
@@ -320,10 +298,6 @@
 			<p class="setup-helper-text">
 				Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a “player
 				account” here.
-			</p>
-		{:else if setupRole === 'director'}
-			<p class="setup-helper-text">
-				Club-scoped access. You’ll manage your organization from the director console after setup.
 			</p>
 		{:else}
 			<p class="setup-helper-text">Pick the team you lead. Claims sync after you save (via the clearance server).</p>

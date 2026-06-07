@@ -15,8 +15,8 @@
  * Usage:
  *   node scripts/dev-tenant-reset.mjs --inventory
  *   node scripts/dev-tenant-reset.mjs
- *   node scripts/dev-tenant-reset.mjs --execute --club-id ab001
- *   node scripts/dev-tenant-reset.mjs --provision --club-id ab001 --team-id team-qa-01
+ *   node scripts/dev-tenant-reset.mjs --execute --club-id qa_launch_2026
+ *   node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc
  */
 
 import fs from 'node:fs';
@@ -30,7 +30,9 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const DEFAULT_PROJECT = 'sports-skill-tracker-dev';
 const BLOCKED_PROJECTS = new Set(['soccer-skills-tracker', 'soccer-skills-tracker-prod']);
 const DEFAULT_KEEP =
-	'ecwaechtler@gmail.com,ecwaechtler+parent@gmail.com,ecwaechtler+coach@gmail.com,aaron.hanks0287@gmail.com';
+	'ecwaechtler@gmail.com,ecwaechtler+parent@gmail.com,ecwaechtler+coach@gmail.com';
+const DEFAULT_QA_CLUB = 'qa_launch_2026';
+const DEFAULT_QA_TEAM = 'qa_launch_2026_ppc';
 const PARENT_EMAIL = 'ecwaechtler+parent@gmail.com';
 const BATCH_SIZE = 450;
 
@@ -125,20 +127,9 @@ function parseKeepClubIds(arg) {
 	);
 }
 
-function resolveKeepClubIds(inv) {
-	const fromCli = parseKeepClubIds(CLUB_ID_ARG);
-	if (fromCli.size) return fromCli;
-	const backupPath = path.join(ARTIFACT_DIR, 'backup-clubs-teams.json');
-	if (fs.existsSync(backupPath)) {
-		try {
-			const b = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
-			if (Array.isArray(b.clubIds) && b.clubIds.length) return new Set(b.clubIds);
-		} catch {
-			/* ignore */
-		}
-	}
-	if (inv?.clubPick?.clubId) return new Set([inv.clubPick.clubId]);
-	return new Set();
+/** Clubs/orgs preserved on execute only when owner passes `--club-id`. Blank slate = empty set. */
+function resolveKeepClubIds() {
+	return parseKeepClubIds(CLUB_ID_ARG);
 }
 
 function stamp() {
@@ -304,11 +295,9 @@ function pickCanonicalClubId(userDocs, keepEmails) {
 	}
 	const parent = byEmail[PARENT_EMAIL];
 	const coach = byEmail['ecwaechtler+coach@gmail.com'];
-	const aaron = byEmail['aaron.hanks0287@gmail.com'];
 	if (parent) return { clubId: parent, source: 'ecwaechtler+parent@gmail.com users.clubId' };
 	if (coach) return { clubId: coach, source: 'ecwaechtler+coach@gmail.com users.clubId' };
-	if (aaron) return { clubId: aaron, source: 'aaron.hanks0287@gmail.com users.clubId' };
-	return { clubId: '', source: 'owner must choose clubId (--club-id)' };
+	return { clubId: DEFAULT_QA_CLUB, source: `default ${DEFAULT_QA_CLUB}` };
 }
 
 async function buildInventory(auth, db) {
@@ -466,14 +455,6 @@ ${deleteUserDocs
 
 CLI override: \`--club-id <id>\`
 
-${
-	keptSnapshots['aaron.hanks0287@gmail.com']?.clubId &&
-	clubPick.clubId &&
-	keptSnapshots['aaron.hanks0287@gmail.com'].clubId !== clubPick.clubId
-		? `### ⚠ clubId conflict\n\nParent/coach QA canonical **${clubPick.clubId}** but Aaron \`users\` has **${keptSnapshots['aaron.hanks0287@gmail.com'].clubId}**. Execute with default \`--club-id ${clubPick.clubId}\` deletes Aaron's club. Owner must choose: keep \`${keptSnapshots['aaron.hanks0287@gmail.com'].clubId}\`, re-home Aaron to \`${clubPick.clubId}\` on provision, or keep two clubs (not supported by script — single \`--club-id\` only).\n`
-		: ''
-}
-
 ## Firestore collection counts
 
 | Collection | Count | Sample ids |
@@ -535,7 +516,7 @@ ${[...OWNER_ASK_COLLECTIONS].map((c) => `- \`${c}\` (pass \`--include-audit-coll
 
 async function runResetPlan(auth, db, inv, dryRun) {
 	const { deleteAuth, noEmailAuth, deleteUserDocs, emailToUid } = inv;
-	const keepClubIds = resolveKeepClubIds(inv);
+	const keepClubIds = resolveKeepClubIds();
 
 	let total = 0;
 
@@ -698,85 +679,83 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 		snapshots = JSON.parse(fs.readFileSync(snapPath, 'utf8'));
 	}
 
-	if (!keepClubIds.size) {
-		log('[provision] ERROR: --club-id required (comma-separated for multiple clubs)');
+	const clubIds =
+		keepClubIds.size > 0
+			? keepClubIds
+			: CLUB_ID_ARG
+				? parseKeepClubIds(CLUB_ID_ARG)
+				: new Set([DEFAULT_QA_CLUB]);
+	if (!clubIds.size) {
+		log('[provision] ERROR: --club-id required');
 		process.exit(1);
 	}
 
-	const parentClub =
-		(typeof snapshots[PARENT_EMAIL]?.clubId === 'string' && snapshots[PARENT_EMAIL].clubId) ||
-		'aggiesfc';
-	const aaronSnap = snapshots['aaron.hanks0287@gmail.com'] || {};
-	const aaronClub = (typeof aaronSnap.clubId === 'string' && aaronSnap.clubId) || 'ab001';
-	const aaronTeam = (typeof aaronSnap.teamId === 'string' && aaronSnap.teamId) || 'ab001_AB001';
-	const coachTeam = teamIdArg || 'aggiesfc_15bew';
+	const qaClub = [...clubIds][0];
+	const qaTeam = teamIdArg || DEFAULT_QA_TEAM;
+	const coachEmail = 'ecwaechtler+coach@gmail.com';
 
-	for (const cid of keepClubIds) {
+	for (const cid of clubIds) {
 		await db
 			.collection('clubs')
 			.doc(cid)
 			.set(
-				{ clubId: cid, updatedAt: new Date().toISOString() },
+				{
+					clubId: cid,
+					name: cid === DEFAULT_QA_CLUB ? 'QA Launch 2026' : cid,
+					updatedAt: new Date().toISOString(),
+				},
 				{ merge: true },
 			);
 		await db
 			.collection('organizations')
 			.doc(cid)
-			.set({ tenantId: cid, cellId: '(default)', updatedAt: new Date().toISOString() }, { merge: true });
+			.set(
+				{
+					tenantId: cid,
+					cellId: '(default)',
+					updatedAt: new Date().toISOString(),
+				},
+				{ merge: true },
+			);
 		log(`[provision] clubs/${cid} organizations/${cid}`);
 	}
 
-	const teams = [
-		{
-			id: coachTeam,
-			clubId: parentClub,
-			name: 'QA Team (Aggies)',
-			coachEmail: 'ecwaechtler+coach@gmail.com',
-		},
-		{
-			id: aaronTeam,
-			clubId: aaronClub,
-			name: 'QA Team (AB001)',
-			coachEmail: 'aaron.hanks0287@gmail.com',
-		},
-	];
-	for (const t of teams) {
-		if (!keepClubIds.has(t.clubId)) continue;
-		await db
-			.collection('teams')
-			.doc(t.id)
-			.set({ ...t, updatedAt: new Date().toISOString() }, { merge: true });
-		log(`[provision] teams/${t.id} clubId=${t.clubId}`);
-	}
+	await db
+		.collection('teams')
+		.doc(qaTeam)
+		.set(
+			{
+				id: qaTeam,
+				clubId: qaClub,
+				name: 'QA Launch PPC',
+				coachEmail,
+				updatedAt: new Date().toISOString(),
+			},
+			{ merge: true },
+		);
+	log(`[provision] teams/${qaTeam} clubId=${qaClub}`);
 
 	const profiles = [
 		{
 			email: 'ecwaechtler@gmail.com',
 			role: 'super_admin',
-			clubId: parentClub,
-			teamId: coachTeam,
+			clubId: qaClub,
+			teamId: qaTeam,
 		},
 		{
 			email: PARENT_EMAIL,
 			role: 'parent',
-			clubId: parentClub,
+			clubId: qaClub,
 			playerName:
 				(typeof snapshots[PARENT_EMAIL]?.playerName === 'string' && snapshots[PARENT_EMAIL].playerName) ||
 				'QA Player',
 			teamId: '',
 		},
 		{
-			email: 'ecwaechtler+coach@gmail.com',
+			email: coachEmail,
 			role: 'coach',
-			clubId: parentClub,
-			teamId: coachTeam,
-		},
-		{
-			email: 'aaron.hanks0287@gmail.com',
-			role: (typeof aaronSnap.role === 'string' && aaronSnap.role) || 'coach',
-			clubId: aaronClub,
-			teamId: aaronTeam,
-			playerName: aaronSnap.playerName || null,
+			clubId: qaClub,
+			teamId: qaTeam,
 		},
 	];
 
@@ -809,12 +788,9 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 
 	await db
 		.collection('coach_lookup')
-		.doc('ecwaechtler+coach@gmail.com')
-		.set({ role: 'coach', clubId: parentClub, teamId: coachTeam }, { merge: true });
-	await db
-		.collection('coach_lookup')
-		.doc('aaron.hanks0287@gmail.com')
-		.set({ role: 'coach', clubId: aaronClub, teamId: aaronTeam }, { merge: true });
+		.doc(coachEmail)
+		.set({ role: 'coach', clubId: qaClub, teamId: qaTeam }, { merge: true });
+	log(`[provision] coach_lookup/${coachEmail} clubId=${qaClub} teamId=${qaTeam}`);
 	log('[provision] Passkeys cleared — re-enroll on sstracker.app after WEBAUTHN_RP deploy');
 	log('[provision] Admin: ecwaechtler@gmail.com uses Google; ADMIN_EMAIL → super_admin via syncUserClaims');
 }
@@ -834,7 +810,16 @@ async function main() {
 		process.exit(1);
 	}
 
-	log(`project=${PROJECT_ID} mode=${EXECUTE ? 'EXECUTE' : INVENTORY_ONLY ? 'INVENTORY' : PROVISION ? 'PROVISION' : 'DRY-RUN'}`);
+	const modeLabel = EXECUTE
+		? 'EXECUTE'
+		: INVENTORY_ONLY
+			? 'INVENTORY'
+			: REINVENTORY
+				? 'RE-INVENTORY'
+				: PROVISION
+					? 'PROVISION'
+					: 'DRY-RUN';
+	log(`project=${PROJECT_ID} mode=${modeLabel}`);
 	log(`artifactDir=${ARTIFACT_DIR}`);
 	log(`keepEmails=${[...KEEP_EMAILS].join(', ')}`);
 
@@ -859,17 +844,19 @@ async function main() {
 	const deleteAuthN = inv.deleteAuth.length;
 	const deleteUsersN = inv.deleteUserDocs.length;
 	const teamsN = typeof inv.counts.teams === 'number' ? inv.counts.teams : 0;
-	const keepClubIds = resolveKeepClubIds(inv);
+	const keepClubIds = resolveKeepClubIds();
 	const clubLabel = keepClubIds.size
 		? [...keepClubIds].join(', ')
-		: CLUB_ID_ARG || inv.clubPick.clubId || '(owner must choose)';
+		: '(none — ALL clubs/orgs deleted on execute)';
 
 	if (PROVISION) {
 		if (!EXECUTE) {
 			log('[provision] Running provision (writes) — use after execute + owner approval');
 		}
 		await provision(db, auth, keepClubIds, TEAM_ID_ARG);
-		appendExecutionLog(`provision clubs=${clubLabel} teamId=${TEAM_ID_ARG || 'aggiesfc_15bew + ab001_AB001'}`);
+		appendExecutionLog(
+			`provision clubs=${clubLabel} teamId=${TEAM_ID_ARG || DEFAULT_QA_TEAM}`,
+		);
 		process.exit(0);
 	}
 

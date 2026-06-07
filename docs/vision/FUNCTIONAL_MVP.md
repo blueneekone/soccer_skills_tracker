@@ -37,6 +37,19 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 **Primary routes:** `/parent/household`, `/parent/vpc`, `/parent/dashboard`, `/parent/log-workout`, `/messages`
 
+### Permanent VPC golden path
+
+Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (see `scripts/dev-tenant-reset.mjs --provision`). Three accounts only: `ecwaechtler@gmail.com` (super_admin), `ecwaechtler+parent@gmail.com`, `ecwaechtler+coach@gmail.com`.
+
+1. **Admin bootstrap** — super_admin provisions club + team + parent/coach users.
+2. **Parent sign-in** — magic link → passkey enrollment → **Household waiver** (`parentSignCoppaWaiver` / `households.coppaSigned`) on `/parent/household`.
+3. **VPC ceremony per child** (`/parent/vpc`, `parentGrantVpcConsent`) — server **auto-finalizes** in the same request: `users.vpcStatus = verified`, `coppaStatus = granted` (minors), `consent_records` + `security_audit` written. No director step.
+4. **Parent (optional)** — provision operative via household flow (`parentProvisionOperative`; child starts `vpcStatus: pending_parent` until step 3 completes).
+5. **Child** — operative dispatch login → Train / HQ (no `/vpc-pending` block when consent is complete).
+6. **Coach** — assign bounty → appears on player HQ → child trains and earns XP.
+
+**Director approval is not part of SSTracker VPC.** `directorApproveVpc` remains a super_admin support override only. Director OS shows read-only consent audit (`VpcApprovalQueue` / `consent_records`) — no approve action required for operations.
+
 ---
 
 ## Coach OS
