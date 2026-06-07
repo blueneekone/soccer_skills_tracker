@@ -67,6 +67,8 @@ export const CLEARANCE_REQUIRED_ROLES = Object.freeze<
 export interface ClearanceDoc {
 	status: BackgroundCheckStatus;
 	checkrCandidateId?: string | null;
+	invitationId?: string | null;
+	invitationUrl?: string | null;
 	ankoredId?: string | null;
 	thirdPartyRef?: string | null;
 	source?: BackgroundCheckProvider;

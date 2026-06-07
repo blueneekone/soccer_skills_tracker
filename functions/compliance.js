@@ -24,6 +24,7 @@
  *   requestManualOverride    — onCall  (Directors only)
  *   revokeCoachClearance     — onCall  (Directors only)
  *   simulateClearance        — onCall  (Director — Alpha simulation, no live keys needed)
+ *   directorInitiateCoachClearance — onCall (Director — club-paid Checkr invitation)
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
@@ -45,6 +46,12 @@ const CHECKR_API_KEY = defineSecret('CHECKR_API_KEY');
  * Set via: firebase functions:config or .env CHECKR_API_ENV=staging
  */
 const CHECKR_API_ENV = defineString('CHECKR_API_ENV', { default: 'production' });
+
+/** Dev / platform fallback when club doc fields are unset. */
+const CHECKR_PACKAGE_SLUG = defineString('CHECKR_PACKAGE_SLUG', { default: '' });
+const CHECKR_WORK_STATE = defineString('CHECKR_WORK_STATE', { default: '' });
+const CHECKR_WORK_CITY = defineString('CHECKR_WORK_CITY', { default: '' });
+const CHECKR_NODE = defineString('CHECKR_NODE', { default: '' });
 
 /** Adult roles that require a background check before minor PII access. */
 const CLEARANCE_ROLES = ['coach', 'recruiter', 'director', 'tutor'];
@@ -104,8 +111,115 @@ function formatCheckrApiError(status, rawBody) {
   if (status === 422) {
     return `Checkr account not credentialed for embed invitations (${status}). Contact Checkr AE to approve your account — ${detail}`;
   }
+  if (status === 404 && /package/i.test(detail)) {
+    return `Checkr package not found (${status}). Verify checkrPackageSlug on the club document — ${detail}`;
+  }
 
   return `Checkr session token failed (${status}): ${detail}`;
+}
+
+/**
+ * Coach-readable messages for embed / compliance UI (no operator jargon).
+ * @param {number} status
+ * @param {string} rawBody
+ * @returns {string}
+ */
+function mapCheckrErrorForCoach(status, rawBody) {
+  const operatorMsg = formatCheckrApiError(status, rawBody).toLowerCase();
+
+  if (status === 401 || status === 403) {
+    return 'Screening is temporarily unavailable. Contact your club administrator — Checkr API key or environment may be misconfigured.';
+  }
+  if (
+    status === 422 ||
+    operatorMsg.includes('credentialed') ||
+    operatorMsg.includes('not approved') ||
+    operatorMsg.includes('pending approval')
+  ) {
+    return 'Contact your club administrator — Checkr account pending approval.';
+  }
+  if (operatorMsg.includes('package') && (operatorMsg.includes('not found') || operatorMsg.includes('invalid'))) {
+    return 'Your club\'s screening package is not configured correctly. Contact your club administrator.';
+  }
+
+  return 'Unable to connect to screening services. Contact your club administrator for help.';
+}
+
+/**
+ * Club-paid Checkr package + work location from Firestore with env fallback.
+ * Fields on `clubs/{clubId}`: checkrPackageSlug, checkrWorkState, checkrWorkCity, checkrNode.
+ *
+ * @param {string} clubId
+ * @returns {Promise<{ packageSlug: string, workState: string, workCity: string, node: string, clubName: string }>}
+ */
+async function readClubCheckrConfig(clubId) {
+  const envFallback = {
+    packageSlug: String(CHECKR_PACKAGE_SLUG.value() || '').trim(),
+    workState: String(CHECKR_WORK_STATE.value() || '').trim(),
+    workCity: String(CHECKR_WORK_CITY.value() || '').trim(),
+    node: String(CHECKR_NODE.value() || '').trim(),
+    clubName: '',
+  };
+
+  const id = String(clubId || '').trim();
+  if (!id) return envFallback;
+
+  const snap = await db().collection('clubs').doc(id).get();
+  if (!snap.exists) return envFallback;
+
+  const d = snap.data() || {};
+  return {
+    packageSlug: String(d.checkrPackageSlug || envFallback.packageSlug || '').trim(),
+    workState: String(d.checkrWorkState || envFallback.workState || '').trim(),
+    workCity: String(d.checkrWorkCity || envFallback.workCity || '').trim(),
+    node: String(d.checkrNode || envFallback.node || '').trim(),
+    clubName: String(d.name || '').trim(),
+  };
+}
+
+/**
+ * @param {string} apiKey
+ * @param {string} method
+ * @param {string} path
+ * @param {Record<string, unknown> | null} [body]
+ * @returns {Promise<Record<string, unknown>>}
+ */
+async function checkrApiRequest(apiKey, method, path, body = null) {
+  const b64Key = Buffer.from(`${apiKey}:`).toString('base64');
+  const url = `${checkrApiHost()}${path.startsWith('/') ? path : `/${path}`}`;
+
+  /** @type {RequestInit} */
+  const opts = {
+    method,
+    headers: {
+      Authorization: `Basic ${b64Key}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(url, opts);
+  const rawBody = await res.text().catch(() => String(res.status));
+  if (!res.ok) {
+    const message = formatCheckrApiError(res.status, rawBody);
+    logger.error('[compliance] Checkr API request failed', {
+      method,
+      path,
+      status: res.status,
+      host: checkrApiHost(),
+      body: rawBody.slice(0, 500),
+    });
+    const err = new Error(message);
+    err.status = res.status;
+    err.rawBody = rawBody;
+    throw err;
+  }
+
+  try {
+    return JSON.parse(rawBody);
+  } catch {
+    throw new Error('Checkr returned a non-JSON response.');
+  }
 }
 
 /**
@@ -384,12 +498,18 @@ exports.checkrSessionTokens = onRequest(
 
       if (rawBody) {
         try {
-          res.status(httpStatus).json(JSON.parse(rawBody));
+          const parsed = JSON.parse(rawBody);
+          res.status(httpStatus).json({
+            ...parsed,
+            message: mapCheckrErrorForCoach(httpStatus, rawBody),
+            coachMessage: mapCheckrErrorForCoach(httpStatus, rawBody),
+          });
           return;
         } catch {
           res.status(httpStatus).json({
             error: 'checkr_api_error',
-            message: err instanceof Error ? err.message : 'Checkr session token failed.',
+            message: mapCheckrErrorForCoach(httpStatus, rawBody),
+            coachMessage: mapCheckrErrorForCoach(httpStatus, rawBody),
           });
           return;
         }
@@ -791,6 +911,185 @@ exports.revokeCoachClearance = onCall(
     });
 
     return { ok: true, email: normalizedEmail, status: 'flagged' };
+  },
+);
+
+// ── 5. directorInitiateCoachClearance ────────────────────────────────────────
+/**
+ * Director/registrar orders a club-paid Checkr invitation for a coach.
+ * Creates candidate + invitation server-side; coach completes Checkr-hosted apply only.
+ *
+ * Request body: { coachEmail: string }
+ * Response: { ok: true, invitationUrl?, message }
+ */
+exports.directorInitiateCoachClearance = onCall(
+  { region: REGION, secrets: [CHECKR_API_KEY], enforceAppCheck: false },
+  async (request) => {
+    const reqAuth = request.auth;
+    if (!reqAuth) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+    const { role, clubId } = reqAuth.token;
+    const canInitiate =
+      role === 'director' ||
+      role === 'registrar' ||
+      role === 'super_admin' ||
+      role === 'global_admin';
+    if (!canInitiate) {
+      throw new HttpsError('permission-denied', 'Director or Registrar access required.');
+    }
+
+    const { coachEmail } = request.data || {};
+    if (typeof coachEmail !== 'string' || !coachEmail.trim()) {
+      throw new HttpsError('invalid-argument', 'coachEmail is required.');
+    }
+
+    const normalizedEmail = coachEmail.toLowerCase().trim();
+    const userRef = db().collection('users').doc(normalizedEmail);
+    const snap = await userRef.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'Coach not found.');
+
+    const userData = snap.data() || {};
+    if (!['coach', 'recruiter', 'tutor'].includes(userData.role)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Screening can only be ordered for coaches, recruiters, or tutors.',
+      );
+    }
+    if (clubId && userData.clubId !== clubId) {
+      throw new HttpsError('permission-denied', 'Coach is not in your club.');
+    }
+
+    const targetClubId = String(userData.clubId || clubId || '').trim();
+    const checkrConfig = await readClubCheckrConfig(targetClubId);
+    if (!checkrConfig.packageSlug) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Club Checkr package is not configured. Set checkrPackageSlug on the club document.',
+      );
+    }
+    if (!checkrConfig.workState) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Club work state is not configured. Set checkrWorkState on the club document.',
+      );
+    }
+
+    const apiKey = CHECKR_API_KEY.value();
+    if (!apiKey) {
+      throw new HttpsError(
+        'failed-precondition',
+        'CHECKR_API_KEY not configured. Use simulateClearance for QA.',
+      );
+    }
+
+    const existingCl =
+      typeof userData.clearance === 'object' && userData.clearance !== null
+        ? userData.clearance
+        : {};
+    if (existingCl.status === 'cleared') {
+      return { ok: true, message: 'Coach is already cleared.' };
+    }
+    if (existingCl.invitationId && existingCl.status === 'pending') {
+      return {
+        ok: true,
+        invitationUrl: existingCl.invitationUrl || null,
+        message: 'Screening invitation already sent.',
+      };
+    }
+
+    const displayName = userData.displayName || userData.playerName || normalizedEmail.split('@')[0];
+    const nameParts = String(displayName).trim().split(/\s+/);
+    const firstName = nameParts[0] || 'Coach';
+    const lastName = nameParts.slice(1).join(' ') || 'Staff';
+
+    const userRecord = await auth().getUserByEmail(normalizedEmail).catch(() => null);
+    const externalId = userRecord?.uid || normalizedEmail;
+
+    /** @type {string} */
+    let candidateId = typeof existingCl.checkrCandidateId === 'string'
+      ? existingCl.checkrCandidateId
+      : '';
+
+    if (!candidateId) {
+      const candidate = await checkrApiRequest(apiKey, 'POST', '/candidates', {
+        email: normalizedEmail,
+        first_name: firstName,
+        last_name: lastName,
+        custom_id: externalId,
+      });
+      candidateId = String(candidate.id || '');
+      if (!candidateId) {
+        throw new HttpsError('internal', 'Checkr did not return a candidate ID.');
+      }
+    }
+
+    /** @type {Record<string, unknown>} */
+    const invitationBody = {
+      candidate_id: candidateId,
+      package: checkrConfig.packageSlug,
+      work_locations: [{
+        country: 'US',
+        state: checkrConfig.workState,
+        ...(checkrConfig.workCity ? { city: checkrConfig.workCity } : {}),
+      }],
+    };
+    if (checkrConfig.node) invitationBody.node = checkrConfig.node;
+
+    let invitation;
+    try {
+      invitation = await checkrApiRequest(apiKey, 'POST', '/invitations', invitationBody);
+    } catch (inviteErr) {
+      const status = inviteErr && typeof inviteErr.status === 'number' ? inviteErr.status : 500;
+      const rawBody = inviteErr && typeof inviteErr.rawBody === 'string' ? inviteErr.rawBody : '';
+      throw new HttpsError(
+        status === 422 || status === 403 ? 'failed-precondition' : 'internal',
+        mapCheckrErrorForCoach(status, rawBody),
+      );
+    }
+
+    const invitationId = String(invitation.id || '');
+    const invitationUrl = typeof invitation.invitation_url === 'string'
+      ? invitation.invitation_url
+      : null;
+
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    await userRef.set(
+      {
+        clearance: {
+          status: 'pending',
+          checkrCandidateId: candidateId,
+          invitationId: invitationId || null,
+          invitationUrl,
+          source: 'checkr',
+          lastVerified: now,
+          invitedBy: reqAuth.uid,
+        },
+      },
+      { merge: true },
+    );
+
+    await db().collection('audit_logs').add({
+      action: 'director_initiate_coach_clearance',
+      actorUid: reqAuth.uid,
+      targetEmail: normalizedEmail,
+      clubId: targetClubId || null,
+      checkrCandidateId: candidateId,
+      invitationId: invitationId || null,
+      timestamp: now,
+    });
+
+    logger.info('[compliance] Director ordered coach clearance', {
+      targetEmail: normalizedEmail,
+      by: reqAuth.uid,
+      invitationId,
+    });
+
+    return {
+      ok: true,
+      invitationUrl,
+      invitationId: invitationId || null,
+      message: 'Screening invitation sent. The coach will receive an email from Checkr.',
+    };
   },
 );
 

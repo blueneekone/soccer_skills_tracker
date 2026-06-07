@@ -31,7 +31,7 @@
 	let search = $state('');
 
 	// Per-row action state
-	/** @type {Record<string, { verifying: boolean, simulating: boolean, error: string }>} */
+	/** @type {Record<string, { verifying: boolean, simulating: boolean, ordering: boolean, error: string }>} */
 	let rowActions = $state({});
 
 	// ── Load coaches ─────────────────────────────────────────────────────────
@@ -106,9 +106,44 @@
 	/** @param {string} email */
 	function rowState(email) {
 		if (!rowActions[email]) {
-			rowActions[email] = { verifying: false, simulating: false, error: '' };
+			rowActions[email] = { verifying: false, simulating: false, ordering: false, error: '' };
 		}
 		return rowActions[email];
+	}
+
+	/** @param {CoachRow} coach */
+	function needsScreeningOrder(coach) {
+		const status = getStatus(coach);
+		const cl = /** @type {Record<string, unknown>} */ (coach.clearance ?? {});
+		const invited = Boolean(cl.invitationId || cl.invitationUrl);
+		return ['pending', 'unsubmitted'].includes(status) && !invited;
+	}
+
+	/** @param {CoachRow} coach */
+	async function orderScreening(coach) {
+		const rs = rowState(coach.email);
+		rs.ordering = true;
+		rs.error = '';
+		try {
+			const fns = getFunctions(getApp(), 'us-east1');
+			const initiate = httpsCallable(fns, 'directorInitiateCoachClearance');
+			const result = await initiate({ coachEmail: coach.email });
+			const data = /** @type {Record<string, unknown>} */ (result.data ?? {});
+			coach.clearance = {
+				.../** @type {object} */ (coach.clearance ?? {}),
+				status: 'pending',
+				source: 'checkr',
+				invitationId:
+					typeof data.invitationId === 'string' ? data.invitationId : 'ordered',
+				invitationUrl:
+					typeof data.invitationUrl === 'string' ? data.invitationUrl : null,
+				lastVerified: { seconds: Math.floor(Date.now() / 1000) },
+			};
+		} catch (err) {
+			rs.error = /** @type {Error} */ (err).message ?? 'Order screening failed.';
+		} finally {
+			rs.ordering = false;
+		}
 	}
 
 	/** @param {CoachRow} coach */
@@ -227,9 +262,9 @@
 				<thead>
 					<tr>
 						<th>COACH / ROLE</th>
-						<th>ANKORED STATUS</th>
+						<th>CLEARANCE STATUS</th>
 						<th>LAST SYNCED</th>
-						<th>ANKORED DASHBOARD</th>
+						<th>CHECKR</th>
 						<th>ACTIONS</th>
 					</tr>
 				</thead>
@@ -249,7 +284,7 @@
 								<div class="dp-identity__role">{coach.role ?? 'coach'}</div>
 							</td>
 
-							<!-- Ankored status -->
+							<!-- Clearance status -->
 							<td class="dp-cell dp-cell--status">
 								<div class="dp-status dp-status--{status}">
 								{#if status === 'cleared'}
@@ -271,8 +306,23 @@
 								<span class="dp-synced-ts">{fmtTimestamp(lastVerified)}</span>
 							</td>
 
-							<!-- Open Ankored Dashboard -->
+							<!-- Checkr actions -->
 							<td class="dp-cell dp-cell--dashboard">
+								{#if needsScreeningOrder(coach)}
+									<button
+										class="dp-btn dp-btn--order"
+										disabled={rs.ordering}
+										onclick={() => orderScreening(coach)}
+										aria-label="Order Checkr screening for {coach.email}"
+									>
+										{#if rs.ordering}
+											<span class="dp-btn-spin">↻</span> Ordering…
+										{:else}
+											<Icon name="status.shield-check" />
+											Order screening
+										{/if}
+									</button>
+								{/if}
 								{#if status !== 'cleared'}
 									<button
 										class="dp-btn dp-btn--simulate"
@@ -690,6 +740,17 @@
 	.dp-btn--verify:not(:disabled):hover {
 		background: rgba(20, 184, 166, 0.08);
 		box-shadow: 0 0 8px rgba(20, 184, 166, 0.2);
+	}
+
+	.dp-btn--order {
+		color: #2563eb;
+		border: 1px solid rgba(37, 99, 235, 0.35);
+		background: rgba(37, 99, 235, 0.06);
+	}
+
+	.dp-btn--order:not(:disabled):hover {
+		background: rgba(37, 99, 235, 0.12);
+		box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
 	}
 
 	.dp-btn--simulate {

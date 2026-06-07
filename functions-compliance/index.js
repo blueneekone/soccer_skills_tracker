@@ -39,6 +39,7 @@ exports.requestManualOverride = complianceHandlers.requestManualOverride;
 exports.revokeCoachClearance = complianceHandlers.revokeCoachClearance;
 exports.initiateAnkoredUplink = complianceHandlers.initiateAnkoredUplink;
 exports.simulateClearance = complianceHandlers.simulateClearance;
+exports.directorInitiateCoachClearance = complianceHandlers.directorInitiateCoachClearance;
 
 const verifyDocHandlers = require('./verifyDocument');
 exports.verifyDocument = verifyDocHandlers.verifyDocument;

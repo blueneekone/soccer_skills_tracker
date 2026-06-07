@@ -4,14 +4,29 @@
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { fetchClubCheckrConfig } from '$lib/compliance/checkrClubConfig.js';
+	import type { ClearanceDoc } from '$lib/types/backgroundCheck.js';
+	import CoachClearanceChecklist from '$lib/components/compliance/CoachClearanceChecklist.svelte';
 	import CheckrEmbed from './CheckrEmbed.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	export const ssr = false;
 
-	// Phase 2, Epic 2 — Session L.  Once isCleared flips true, route back to
-	// the role-appropriate home.  Hard-coding /coach breaks director/tutor
-	// flows (now in scope); the login waterfall already handles every role.
+	let clubName = $state('Your club');
+
+	const clearance = $derived(
+		(authStore.userProfile?.clearance as ClearanceDoc | undefined) ?? null,
+	);
+	const coachEmail = $derived(authStore.user?.email ?? authStore.userProfile?.email ?? '');
+
+	$effect(() => {
+		const clubId = authStore.userProfile?.clubId;
+		if (!clubId) return;
+		fetchClubCheckrConfig(clubId).then((cfg) => {
+			if (cfg.clubName) clubName = cfg.clubName;
+		});
+	});
+
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (authStore.isCleared && browser) {
@@ -27,158 +42,127 @@
 	<title>Background Screening — SSTracker</title>
 </svelte:head>
 
-<div class="ct-root">
-	<div class="ct-grid" aria-hidden="true"></div>
-
-	<header class="ct-header">
-		<div class="ct-shield" aria-hidden="true">
-			<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path
-					d="M32 4L8 14v18c0 14 11 26 24 28 13-2 24-14 24-28V14L32 4Z"
-					stroke="currentColor"
-					stroke-width="2.5"
-					fill="none"
-				/>
-				<line x1="32" y1="22" x2="32" y2="34" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-				<circle cx="32" cy="41" r="2.5" fill="currentColor" />
-			</svg>
+<div class="cc-page">
+	<header class="cc-page__header">
+		<div class="cc-page__icon" aria-hidden="true">
+			<Icon name="status.shield-check" size={28} />
 		</div>
-		<div class="ct-header__text">
-			<div class="ct-badge">Coach clearance</div>
-			<h1 class="ct-title">Background screening required</h1>
-			<p class="ct-subtitle">
-				Before you can access coaching tools, your club needs a completed background check
-				and SafeSport-compliant clearance. Screening is handled securely by Checkr — your
-				SSN and payment details never touch this platform.
+		<div>
+			<p class="cc-page__eyebrow">Coach clearance</p>
+			<h1 class="cc-page__title">Background screening</h1>
+			<p class="cc-page__lead">
+				Your club sponsors this screening. Complete the Checkr invitation when your director
+				orders it — you will not pick packages or pay fees here.
 			</p>
 		</div>
 	</header>
 
-	<div class="ct-strip">
-		<span>Signed in as {authStore.user?.email ?? '—'}</span>
-		<span>Status: {(authStore.userProfile?.clearance?.status) ?? 'pending'}</span>
+	<div class="cc-page__meta">
+		<span>Signed in as {coachEmail || '—'}</span>
 	</div>
 
-	<div class="ct-embed-shell ct-embed-shell--light">
-		<CheckrEmbed />
+	<CoachClearanceChecklist {clubName} {coachEmail} {clearance} />
+
+	<div class="cc-page__tracking">
+		<h2 class="cc-page__section-title">Screening status</h2>
+		<CheckrEmbed mode="tracking" {clearance} />
 	</div>
 
-	<div class="ct-zero-liability">
-		<Icon name="sys.lock-simple" />
-		<span>PII, SSN, and payment data are processed only inside Checkr's encrypted flow.</span>
-	</div>
+	<p class="cc-page__privacy">
+		<Icon name="sys.lock-simple" size={14} />
+		Identity details and disclosures are handled only inside Checkr's secure flow.
+	</p>
 </div>
 
 <style>
-	.ct-root {
+	.cc-page {
 		min-height: 100dvh;
-		background: var(--vanguard-bg, #010409);
-		color: #e5e7eb;
+		background: #ffffff;
+		color: #111827;
 		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 2rem 1rem 4rem;
+		padding: 2rem 1rem 3rem;
 		gap: 1.5rem;
-		position: relative;
-		overflow: hidden;
 	}
 
-	.ct-grid {
-		position: fixed;
-		inset: 0;
-		pointer-events: none;
-		background-image:
-			linear-gradient(rgba(255, 0, 60, 0.02) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(255, 0, 60, 0.02) 1px, transparent 1px);
-		background-size: 3rem 3rem;
-		z-index: 0;
+	.cc-page__header,
+	.cc-page__meta,
+	:global(.ccc),
+	.cc-page__tracking,
+	.cc-page__privacy {
+		width: 100%;
+		max-width: 42rem;
 	}
 
-	.ct-root > * {
-		position: relative;
-		z-index: 1;
-	}
-
-	.ct-header {
+	.cc-page__header {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
 		gap: 1rem;
-		text-align: center;
-		max-width: 560px;
+		align-items: flex-start;
 	}
 
-	.ct-shield {
-		width: 3.5rem;
-		height: 3.5rem;
-		color: var(--vanguard-red, #ff003c);
-		opacity: 0.85;
+	.cc-page__icon {
+		flex-shrink: 0;
+		width: 3rem;
+		height: 3rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 10px;
+		background: #eff6ff;
+		color: #1d4ed8;
 	}
 
-	.ct-badge {
-		font-size: 0.6875rem;
-		letter-spacing: 0.08em;
+	.cc-page__eyebrow {
+		margin: 0 0 0.25rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
-		color: rgba(229, 231, 235, 0.7);
-		text-transform: uppercase;
+		color: #6b7280;
 	}
 
-	.ct-title {
-		margin: 0;
+	.cc-page__title {
+		margin: 0 0 0.5rem;
 		font-size: clamp(1.35rem, 4vw, 1.75rem);
 		font-weight: 700;
-		color: #f3f4f6;
+		color: #111827;
 		letter-spacing: -0.01em;
 	}
 
-	.ct-subtitle {
+	.cc-page__lead {
 		margin: 0;
 		font-size: 0.9375rem;
-		color: rgba(229, 231, 235, 0.65);
 		line-height: 1.6;
+		color: #4b5563;
 	}
 
-	.ct-strip {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1.5rem;
-		justify-content: center;
+	.cc-page__meta {
 		font-size: 0.8125rem;
-		color: rgba(229, 231, 235, 0.45);
-		border-top: 1px solid rgba(255, 255, 255, 0.06);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		padding: 0.5rem 1rem;
-		width: 100%;
-		max-width: 680px;
+		color: #6b7280;
+		padding-bottom: 0.25rem;
+		border-bottom: 1px solid #e5e7eb;
 	}
 
-	.ct-embed-shell {
-		width: 100%;
-		max-width: 760px;
+	.cc-page__tracking {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
 	}
 
-	.ct-embed-shell--light {
-		background: #f8fafc;
-		border-radius: 12px;
-		padding: 1.25rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+	.cc-page__section-title {
+		margin: 0;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #374151;
 	}
 
-	.ct-zero-liability {
+	.cc-page__privacy {
 		display: flex;
 		align-items: center;
-		gap: 0.45rem;
-		font-size: 0.75rem;
-		color: rgba(229, 231, 235, 0.35);
-		max-width: 560px;
-		text-align: center;
 		justify-content: center;
-	}
-
-	.ct-zero-liability :global(svg) {
-		width: 0.85rem;
-		height: 0.85rem;
-		flex-shrink: 0;
+		gap: 0.4rem;
+		font-size: 0.75rem;
+		color: #9ca3af;
+		text-align: center;
 	}
 </style>

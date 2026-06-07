@@ -1,12 +1,17 @@
 /**
  * Coach self-clearance presets and Checkr embed option builders for /compliance.
  *
- * Env (Vite — set in `.env` or hosting build env):
+ * Env (Vite — dev fallback when club doc fields unset):
  * - `VITE_CHECKR_ENV` — `staging` | `production` (default production)
- * - `VITE_CHECKR_PACKAGE_SLUG` — club coach package slug from Checkr dashboard (recommended)
+ * - `VITE_CHECKR_PACKAGE_SLUG` — club coach package slug from Checkr dashboard
  * - `VITE_CHECKR_WORK_STATE` — primary work state, e.g. `CA` (optional)
  * - `VITE_CHECKR_WORK_CITY` — primary work city (optional)
+ *
+ * Production: prefer Firestore `clubs/{clubId}` fields via `checkrClubConfig.ts`.
  */
+
+import type { ClearanceDoc } from '$lib/types/backgroundCheck.js';
+import type { ClubCheckrConfig } from './checkrClubConfig.js';
 
 export type CheckrEmbedStyles = Record<string, Record<string, string>>;
 
@@ -26,28 +31,47 @@ export type CoachClearanceContext = {
 
 const SESSION_TOKEN_PATH = '/api/compliance/checkr/session-tokens';
 
+/** Default off — directors order screening; coaches complete Checkr-hosted apply only. */
+export const COACH_SELF_START_ENABLED = false;
+
+export type CoachClearanceStepState =
+	| 'not_started'
+	| 'invited'
+	| 'in_progress'
+	| 'cleared'
+	| 'flagged';
+
+export function deriveCoachClearanceStep(clearance?: ClearanceDoc | null): CoachClearanceStepState {
+	if (!clearance) return 'not_started';
+	if (clearance.status === 'cleared') return 'cleared';
+	if (clearance.status === 'flagged') return 'flagged';
+	if (clearance.invitationUrl || clearance.invitationId) return 'invited';
+	if (clearance.checkrCandidateId) return 'in_progress';
+	return 'not_started';
+}
+
 export function getCheckrEnv(): 'staging' | 'production' {
 	return import.meta.env.VITE_CHECKR_ENV === 'staging' ? 'staging' : 'production';
 }
 
-export function getCheckrPackageSlug(): string | undefined {
-	const slug = import.meta.env.VITE_CHECKR_PACKAGE_SLUG;
+export function getCheckrPackageSlug(clubConfig?: Pick<ClubCheckrConfig, 'packageSlug'>): string | undefined {
+	const slug = clubConfig?.packageSlug || import.meta.env.VITE_CHECKR_PACKAGE_SLUG;
 	if (typeof slug === 'string' && slug.trim()) {
 		return slug.trim();
 	}
-	if (import.meta.env.DEV) {
+	if (import.meta.env.DEV && !clubConfig?.packageSlug) {
 		console.warn(
-			'[checkrCoachClearance] VITE_CHECKR_PACKAGE_SLUG unset — package field will appear in the embed.',
+			'[checkrCoachClearance] checkrPackageSlug unset — director must order screening or set club config.',
 		);
 	}
 	return undefined;
 }
 
-export function getCheckrWorkLocation():
-	| { country: 'US'; state?: string; city?: string }
-	| undefined {
-	const state = import.meta.env.VITE_CHECKR_WORK_STATE;
-	const city = import.meta.env.VITE_CHECKR_WORK_CITY;
+export function getCheckrWorkLocation(
+	clubConfig?: Pick<ClubCheckrConfig, 'workState' | 'workCity'>,
+): { country: 'US'; state?: string; city?: string } | undefined {
+	const state = clubConfig?.workState || import.meta.env.VITE_CHECKR_WORK_STATE;
+	const city = clubConfig?.workCity || import.meta.env.VITE_CHECKR_WORK_CITY;
 	const stateStr = typeof state === 'string' && state.trim() ? state.trim() : undefined;
 	const cityStr = typeof city === 'string' && city.trim() ? city.trim() : undefined;
 	if (!stateStr && !cityStr) return undefined;
@@ -130,9 +154,12 @@ function buildReportsOverviewStyles(): CheckrEmbedStyles {
 	};
 }
 
-export function buildNewInvitationOptions(ctx: CoachClearanceContext): Record<string, unknown> {
-	const packageSlug = getCheckrPackageSlug();
-	const workLocation = getCheckrWorkLocation();
+export function buildNewInvitationOptions(
+	ctx: CoachClearanceContext,
+	clubConfig?: ClubCheckrConfig,
+): Record<string, unknown> {
+	const packageSlug = getCheckrPackageSlug(clubConfig);
+	const workLocation = getCheckrWorkLocation(clubConfig);
 	const checkrEnv = getCheckrEnv();
 
 	return {
