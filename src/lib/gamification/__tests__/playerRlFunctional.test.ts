@@ -77,6 +77,8 @@ describe('Sprint RL-inference-on-train — shared policy cache + Train fetch', (
 		expect(src).toMatch(/ensureRlPolicyCached/);
 		expect(src).toMatch(/readRlPolicyCache/);
 		expect(src).not.toMatch(/cachePolicyHints/);
+		expect(src).toMatch(/httpsCallable\(functions,\s*'getAdaptiveWorkoutPolicy'/);
+		expect(src).not.toMatch(/getFunctions\(\)/);
 	});
 
 	it('Train page fetches getAdaptiveWorkoutPolicy when coach intent armed via cache helper', () => {

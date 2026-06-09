@@ -23,8 +23,8 @@ import {
 	getDocs,
 	type Unsubscribe,
 } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db } from '$lib/firebase.js';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '$lib/firebase.js';
 import { getRpgSportConfig } from '$lib/config/sports.js';
 import type {
 	IntentDoc,
@@ -232,7 +232,7 @@ export class IntentEngine {
 		this.deployError = '';
 		try {
 			const fn = httpsCallable<DeployIntentInput, DeployIntentResult>(
-				getFunctions(),
+				functions,
 				'secureDeployIntent',
 			);
 			await fn({
@@ -259,7 +259,7 @@ export class IntentEngine {
 		this.mutationError = '';
 		try {
 			const fn = httpsCallable<CancelIntentInput, CancelIntentResult>(
-				getFunctions(),
+				functions,
 				'secureCancelIntent',
 			);
 			await fn({ intentId, teamId: this._teamId, tenantId: this._tenantId });
@@ -272,7 +272,7 @@ export class IntentEngine {
 		this.mutationError = '';
 		try {
 			const fn = httpsCallable<ExtendIntentInput, ExtendIntentResult>(
-				getFunctions(),
+				functions,
 				'secureExtendIntent',
 			);
 			await fn({ intentId, teamId: this._teamId, tenantId: this._tenantId, additionalDays });
@@ -323,8 +323,12 @@ export class IntentEngine {
 			const rows: RosterEntry[] = snap.docs
 				.map((d) => {
 					const x = d.data();
+					const authUid =
+						typeof x.uid === 'string' && x.uid.trim() && !x.uid.includes('@') ?
+							x.uid.trim()
+						:	'';
 					return {
-						uid: (x.uid as string) || d.id,
+						uid: authUid,
 						email: d.id,
 						playerName: typeof x.playerName === 'string' && x.playerName.trim()
 							? x.playerName.trim()
@@ -332,6 +336,7 @@ export class IntentEngine {
 						xpByAttribute: (x.xpByAttribute as Record<string, number>) || {},
 					};
 				})
+				.filter((r) => r.uid.length > 0)
 				.sort((a, b) => a.playerName.localeCompare(b.playerName));
 			this.roster = rows;
 		} catch (e) {
