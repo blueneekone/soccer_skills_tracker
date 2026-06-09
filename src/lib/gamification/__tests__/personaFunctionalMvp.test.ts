@@ -162,4 +162,12 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		const src = readFileSync(OPERATIVE_OPS, 'utf-8');
 		expect(src).toMatch(/uid:\s*childUid/);
 	});
+
+	it('LAUNCH_CORE_CALLABLE_OPTS sets public invoker for browser CORS preflight', () => {
+		const trainingOps = readFileSync(
+			join(ROOT, '..', 'functions/src/domains/trainingOps.js'),
+			'utf-8',
+		);
+		expect(trainingOps).toMatch(/invoker:\s*'public'/);
+	});
 });

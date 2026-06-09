@@ -53,8 +53,12 @@ const {resolvePublicOperativeAvatarV2} = require('../utils/portraitV1Upgrade');
 
 const REGION = 'us-east1';
 
-/** Launch-critical callables — extra memory for cold-start headroom on Cloud Run. */
-const LAUNCH_CORE_CALLABLE_OPTS = {region: REGION, memory: '512MiB'};
+/** Launch-critical callables — extra memory + public invoker for browser SDK + CORS preflight. */
+const LAUNCH_CORE_CALLABLE_OPTS = {
+  region: REGION,
+  memory: '512MiB',
+  invoker: 'public',
+};
 
 const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
     'WORKOUT_ATTESTATION_HMAC_SECRET',

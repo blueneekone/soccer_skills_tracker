@@ -148,6 +148,31 @@ describe('functionsDeploy guard — codebase indexes', () => {
         /require\(['"]\.\/src\/ml\/transitionRecorder['"]\)/,
     );
   });
+
+  it('functions-compliance/index.js exports launch household + VPC + operative login', () => {
+    const src = readRepo('functions-compliance/index.js');
+    for (const name of [
+      'linkHousehold',
+      'parentGrantVpcConsent',
+      'parentSignCoppaWaiver',
+      'parentProvisionOperative',
+      'operativeSignInWithDispatch',
+      'generatePlayerOTP',
+      'validatePlayerOTP',
+    ]) {
+      assertExportLine(name, src);
+    }
+    assert.match(
+        src,
+        /require\(['"]\.\/src\/domains\/complianceOps['"]\)/,
+        'functions-compliance must require bundled local complianceOps',
+    );
+    assert.match(
+        src,
+        /require\(['"]\.\/src\/domains\/operativeOps['"]\)/,
+        'functions-compliance must require bundled local operativeOps',
+    );
+  });
 });
 
 describe('functionsDeploy guard — DEPLOY-O bundle scripts', () => {
@@ -182,6 +207,7 @@ describe('functionsDeploy guard — DEPLOY-O bundle scripts', () => {
       'functions-commerce/commerce.js',
       'functions-compliance/bootstrapAdmin.js',
       'functions-compliance/src/domains/vaultOps.js',
+      'functions-compliance/src/domains/operativeOps.js',
       'functions-integrations/bootstrapAdmin.js',
       'functions-integrations/processMedia.js',
       'functions-platform/bootstrapAdmin.js',
@@ -251,6 +277,13 @@ describe('functionsDeploy guard — monolith slim (DEPLOY-N)', () => {
     'vaultSealPii',
     'processMedia',
     'webauthnRegisterStart',
+    'linkHousehold',
+    'parentGrantVpcConsent',
+    'parentSignCoppaWaiver',
+    'parentProvisionOperative',
+    'operativeSignInWithDispatch',
+    'generatePlayerOTP',
+    'validatePlayerOTP',
   ];
 
   it('functions/index.js does not export symbols owned by split codebases', () => {
@@ -650,8 +683,8 @@ describe('functionsDeploy guard — launch callable memory', () => {
     );
     assert.match(
         src,
-        /LAUNCH_CORE_CALLABLE_OPTS\s*=\s*\{[^}]*memory:\s*['"]512MiB['"]/,
-        'LAUNCH_CORE_CALLABLE_OPTS must set memory 512MiB',
+        /LAUNCH_CORE_CALLABLE_OPTS\s*=\s*\{[^}]*memory:\s*['"]512MiB['"][^}]*invoker:\s*['"]public['"]/,
+        'LAUNCH_CORE_CALLABLE_OPTS must set memory 512MiB and invoker public',
     );
     for (const name of LAUNCH_CALLABLES) {
       const block = src.match(
