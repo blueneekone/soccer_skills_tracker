@@ -155,7 +155,11 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
 
   try {
     const userRecord = await admin.auth().getUserByEmail(userEmail);
-    await admin.auth().setCustomUserClaims(userRecord.uid, customClaims);
+    const authUid = userRecord.uid;
+    if (userData.uid !== authUid) {
+      await db().collection('users').doc(userEmail).set({uid: authUid}, {merge: true});
+    }
+    await admin.auth().setCustomUserClaims(authUid, customClaims);
     logger.info('Successfully stamped claims!');
     const r = userData.role || 'player';
     if (r !== 'player') {

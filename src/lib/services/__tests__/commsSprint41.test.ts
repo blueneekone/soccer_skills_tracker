@@ -59,11 +59,14 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(js).toMatch(/ssr\s*=\s*false/);
 	});
 
-	it('mounts MessagesTab and ParentAnnouncementCompose', () => {
+	it('mounts CoachLogisticsView from $lib/coach', () => {
 		const page = readFileSync(LOGISTICS_PAGE, 'utf-8');
-		expect(page).toMatch(/MessagesTab/);
-		expect(page).toMatch(/ParentAnnouncementCompose/);
-		expect(page).toMatch(/teamId=\{selectedTeamId\}/);
+		expect(page).toMatch(/\$lib\/coach\/logistics/);
+		expect(page).toMatch(/CoachLogisticsView/);
+		const view = readFileSync(join(ROOT, 'lib/coach/logistics/CoachLogisticsView.svelte'), 'utf-8');
+		expect(view).toMatch(/MessagesTab/);
+		expect(view).toMatch(/ParentAnnouncementCompose/);
+		expect(view).toMatch(/teamId=\{teamScope\.selectedTeamId\}/);
 	});
 
 	it('ParentAnnouncementCompose uses CommsEngine team broadcast', () => {

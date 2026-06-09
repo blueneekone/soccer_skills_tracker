@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { db } from '$lib/firebase.js';
-	import { collection, addDoc } from 'firebase/firestore';
-	import Swal from 'sweetalert2';
-	import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
+import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
+import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
+import Swal from 'sweetalert2';
+import FocusedWorkspaceWrapper from './FocusedWorkspaceWrapper.svelte';
+import Icon from '$lib/components/ui/Icon.svelte';
+import type { IconName } from '$lib/icons/registry.js';
+	import {
+		designerTypeToAttributeId,
+	} from '$lib/coach/teamDrillLibrary.js';
 
-	let { teamId = '', workouts = [], onWorkoutSaved } = $props();
+	let { teamId = '', onDrillSaved = () => {} } = $props();
 
-	/** @type {Array<Record<string, unknown> & { id?: string }>} */
-	const templateWorkouts = $derived(
-		workouts.filter(
-			(w) => w.recordType !== 'scheduled_event' && w.type !== 'scheduled',
-		),
-	);
-
-	let workoutType = $state('foundation');
+	let workoutType = $state('ball_mastery');
 	let workoutName = $state('');
-	let workoutLevel = $state('1');
+	let workoutDuration = $state(15);
 	let workoutDesc = $state('');
+
+	/** @type {Array<{ id: string, title: string, attributeId?: string }>} */
+	let savedTeamDrills = $state([]);
+	let loadingSaved = $state(false);
 
 	let dropzone;
 	let fabricCanvas;
@@ -27,11 +28,54 @@
 
 	const DRAG_ITEMS = [
 		{ type: 'cone', glyph: '▲', label: 'Cone' },
-		{ type: 'ball', glyph: '●', label: 'Ball' },
-		{ type: 'goal', glyph: '⌂', label: 'Goal' },
-		{ type: 'player_x', glyph: 'X', label: 'Player X' },
-		{ type: 'player_o', glyph: 'O', label: 'Player O' },
+		{ type: 'ball', glyph: '●', label: 'Soccer ball' },
+		{ type: 'mini_goal', glyph: '▢', label: 'Mini goal' },
+		{ type: 'ladder', glyph: '▥', label: 'Agility ladder' },
+		{ type: 'flag', glyph: '⚑', label: 'Flag / pole' },
+		{ type: 'goal', glyph: '⌂', label: 'Full goal' },
+		{ type: 'player_x', glyph: 'X', label: 'Defender (X)' },
+		{ type: 'player_o', glyph: 'O', label: 'Attacker (O)' },
 	];
+
+	$effect(() => {
+		const tid = teamId;
+		if (!tid) {
+			savedTeamDrills = [];
+			return;
+		}
+		let cancelled = false;
+		loadingSaved = true;
+		void (async () => {
+			try {
+				const snap = await getDocs(collection(db, 'teams', tid, 'drills'));
+				if (cancelled) return;
+				savedTeamDrills = snap.docs
+					.map((d) => {
+						const x = d.data() || {};
+						return {
+							id: d.id,
+							title:
+								typeof x.name === 'string' && x.name.trim() ?
+									x.name.trim()
+								: typeof x.title === 'string' ?
+									x.title
+								:	'Untitled',
+							attributeId:
+								typeof x.attributeId === 'string' ? x.attributeId : undefined,
+						};
+					})
+					.sort((a, b) => a.title.localeCompare(b.title));
+			} catch (e) {
+				console.error('[DrillDesignerTab] load team drills', e);
+				if (!cancelled) savedTeamDrills = [];
+			} finally {
+				if (!cancelled) loadingSaved = false;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	onMount(async () => {
 		try {
@@ -70,22 +114,55 @@
 	};
 
 	const saveWorkout = async () => {
-		if (!workoutName.trim()) return alert('Workout Name is required.');
-		if (!teamId) return alert('Select a team in the Roster tab first.');
+		if (!workoutName.trim()) return alert('Drill name is required.');
+		if (!teamId) return alert('Select a team first.');
+		const uid = authStore.user?.uid;
+		if (!uid) return alert('Sign in to save drills.');
 		let layoutData = null;
 		if (spatialCanvas?.getObjects().length > 0) {
 			layoutData = JSON.stringify(spatialCanvas.toJSON());
 		}
+		const attributeId = designerTypeToAttributeId(workoutType);
+		const focusLabel =
+			workoutType === 'ball_mastery' ? 'Ball Mastery'
+			: workoutType === 'cardio' ? 'Conditioning'
+			: workoutType === 'core' ? 'Conditioning'
+			: workoutType === 'gameday' ? 'Tactics'
+			: 'Ball Mastery';
+		const durationMinutes = Math.max(
+			1,
+			Math.min(120, Math.floor(Number(workoutDuration) || 15)),
+		);
 		try {
-			await addDoc(collection(db, 'team_workouts'), {
-				teamId, type: workoutType, name: workoutName, reqLevel: parseInt(workoutLevel),
-				drill: workoutDesc, spatialLayout: layoutData, createdAt: new Date()
+			await addDoc(collection(db, 'teams', teamId, 'drills'), {
+				name: workoutName.trim(),
+				title: workoutName.trim(),
+				focusArea: focusLabel,
+				category: focusLabel,
+				attributeId,
+				metricType: 'reps',
+				description: workoutDesc.trim().slice(0, 8000) || `${focusLabel} spatial drill`,
+				durationMinutes,
+				spatialLayout: layoutData,
+				scope: 'team',
+				createdBy: uid,
+				createdAt: serverTimestamp(),
 			});
-			await Swal.fire({ title: 'Drill Saved!', text: 'Workout and spatial layout securely saved.', icon: 'success', confirmButtonColor: '#0f172a', customClass: { popup: 'card' } });
-			workoutName = ''; workoutDesc = '';
+			await Swal.fire({
+				title: 'Drill saved',
+				text: 'Available in your team library and Intent Engine deploy picker.',
+				icon: 'success',
+				confirmButtonColor: '#0f172a',
+				customClass: { popup: 'card' },
+			});
+			workoutName = '';
+			workoutDesc = '';
+			workoutDuration = 15;
 			if (spatialCanvas) spatialCanvas.clear();
-			if (onWorkoutSaved) onWorkoutSaved();
-		} catch (err) { alert('Error: ' + err.message); }
+			onDrillSaved();
+		} catch (err) {
+			alert('Error: ' + (err instanceof Error ? err.message : String(err)));
+		}
 	};
 </script>
 
@@ -101,10 +178,10 @@
 				<option value="ball_mastery">Ball Mastery</option>
 				<option value="gameday">Gameday Drill</option>
 			</select>
-			<input type="text" bind:value={workoutName} placeholder="Drill Name (required)" />
-			<label>Required Level (1-5)</label>
-			<input type="number" bind:value={workoutLevel} min="1" max="5" />
-			<textarea bind:value={workoutDesc} rows="3" placeholder="Describe the drill..."></textarea>
+			<input type="text" bind:value={workoutName} placeholder="Drill name (required)" />
+			<label>Target duration (minutes)</label>
+			<input type="number" bind:value={workoutDuration} min="1" max="120" />
+			<textarea bind:value={workoutDesc} rows="3" placeholder="Coaching cues, constraints, progressions…"></textarea>
 
 			<!-- Spatial Canvas — dark workspace with floating item toolbar -->
 			<label>Spatial Layout</label>
@@ -150,24 +227,26 @@
 				</div>
 			</FocusedWorkspaceWrapper>
 
-			<button class="primary-btn btn-blue w-100" onclick={saveWorkout}>Save Workout</button>
+			<button class="primary-btn btn-blue w-100" onclick={saveWorkout}>Save to team library</button>
 		</div>
 	</div>
 
 	<div class="card">
-		<div class="card-header">Saved Drills for This Team</div>
+		<div class="card-header">Team drill library</div>
 		<div class="card-body p-0">
 			<ul class="session-list">
-				{#if templateWorkouts.length === 0}
-					<li class="session-empty">No custom workouts found for this team.</li>
+				{#if loadingSaved}
+					<li class="session-empty">Loading team drills…</li>
+				{:else if savedTeamDrills.length === 0}
+					<li class="session-empty">No team drills yet — save one above to assign from Intent Engine.</li>
 				{:else}
-					{#each templateWorkouts as w}
+					{#each savedTeamDrills as d (d.id)}
 						<li class="session-item workout-item">
 							<div class="flex-1">
-								<b>{w.name}</b>
-								<span class="level-badge">Lvl {w.reqLevel || 1}</span>
-								<div class="text-sm-sub">Type: {w.type}</div>
-								{#if w.drill}<div class="workout-desc">{w.drill}</div>{/if}
+								<b>{d.title}</b>
+								{#if d.attributeId}
+									<div class="text-sm-sub">Attribute: {d.attributeId}</div>
+								{/if}
 							</div>
 						</li>
 					{/each}

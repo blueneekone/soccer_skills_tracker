@@ -36,6 +36,12 @@ export type IntentStatus = 'active' | 'fulfilled' | 'expired' | 'cancelled';
  * Omit `repsPerSet` for time-only homework. `bilateral` doubles rep count for XP math.
  */
 export interface IntentPrescription {
+	/** teams/{teamId}/drills/{id} when coach assigns team library drill */
+	teamDrillId?: string;
+	/** clubs/{clubId}/shared_drills/{id} when director publishes club-wide */
+	clubDrillId?: string;
+	/** @deprecated RL catalog only — prefer teamDrillId for coach assigns */
+	drillId?: string;
 	drillTitle?: string;
 	/** Read-repair default: 1 */
 	sets: number;
@@ -163,6 +169,15 @@ export function repairIntentPrescription(raw: unknown): IntentPrescription | und
 		sets,
 		bilateral: p.bilateral === true,
 	};
+	if (typeof p.teamDrillId === 'string' && p.teamDrillId.trim()) {
+		repaired.teamDrillId = p.teamDrillId.trim();
+	}
+	if (typeof p.clubDrillId === 'string' && p.clubDrillId.trim()) {
+		repaired.clubDrillId = p.clubDrillId.trim();
+	}
+	if (typeof p.drillId === 'string' && p.drillId.trim()) {
+		repaired.drillId = p.drillId.trim();
+	}
 	if (typeof p.drillTitle === 'string' && p.drillTitle.trim()) {
 		repaired.drillTitle = p.drillTitle.trim();
 	}

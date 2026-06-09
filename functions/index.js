@@ -155,28 +155,24 @@ exports.publishClubCampaign       = adminOps.publishClubCampaign;
 // Household linkages, verifiable consent, minor retention purges, and the
 // COPPA / GDPR compliance lifecycle have been extracted to
 // src/domains/complianceOps.js.
+// DEPLOY-N-household: linkHousehold, parentGrantVpcConsent → functions-compliance/
 const complianceOps = require('./src/domains/complianceOps');
-exports.linkHousehold               = complianceOps.linkHousehold;
 exports.setPlayerDateOfBirth        = complianceOps.setPlayerDateOfBirth;
 exports.verifyVpcForMinor           = complianceOps.verifyVpcForMinor;
 exports.directorApproveVpc          = complianceOps.directorApproveVpc;
 exports.parentSubmitVpcIntent       = complianceOps.parentSubmitVpcIntent;
 exports.playerSelfReportDob         = complianceOps.playerSelfReportDob;
-exports.parentGrantVpcConsent       = complianceOps.parentGrantVpcConsent;
 exports.registrarTransferPlayer     = complianceOps.registrarTransferPlayer;
 
 // ── Deconstruction Sprint 5: Operative & Identity Domain ─────────────────────
 // Custom proxy enclaves, COPPA operatives, SafeSport comms, impersonation,
 // and GDPR wipes have been extracted to src/domains/operativeOps.js.
+// DEPLOY-N-household: parentSignCoppaWaiver, parentProvisionOperative,
+// operativeSignInWithDispatch, generatePlayerOTP, validatePlayerOTP → functions-compliance/
 const operativeOps = require('./src/domains/operativeOps');
 exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
-exports.parentSignCoppaWaiver       = operativeOps.parentSignCoppaWaiver;
-exports.parentProvisionOperative    = operativeOps.parentProvisionOperative;
-exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
-exports.generatePlayerOTP           = operativeOps.generatePlayerOTP;
-exports.validatePlayerOTP           = operativeOps.validatePlayerOTP;
 
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
 const loadoutOps = require('./src/domains/loadoutOps');

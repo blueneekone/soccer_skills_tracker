@@ -197,6 +197,7 @@ export async function executePlayerWorkoutLog(deps: {
 	totalXpHud: number;
 	oldLevel: number;
 	intensityStep: number;
+	sessionNotes?: string;
 	authUser: { uid: string; email?: string | null };
 	profile: { teamId?: unknown; playerName?: unknown };
 	logTrainingSession: (data: {
@@ -207,6 +208,7 @@ export async function executePlayerWorkoutLog(deps: {
 		/** Raw Borg RPE 1–10 for RL telemetry (intensity bucket stays for XP math). */
 		subjectiveRpe: number;
 		assignmentId?: string;
+		sessionNotes?: string;
 	}) => Promise<HttpsCallableResult<WorkoutSessionPayload>>;
 	writePlayerOsWorkout: (args: {
 		emailKey: string;
@@ -240,6 +242,7 @@ export async function executePlayerWorkoutLog(deps: {
 		intensity: deps.intensityCall,
 		subjectiveRpe: Math.max(1, Math.min(10, Math.round(deps.intensityStep))),
 		...(assignmentId ? { assignmentId } : {}),
+		...(deps.sessionNotes?.trim() ? { sessionNotes: deps.sessionNotes.trim() } : {}),
 	});
 	const payload = res.data;
 	const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;

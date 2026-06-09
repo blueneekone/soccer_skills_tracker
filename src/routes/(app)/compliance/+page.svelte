@@ -2,22 +2,31 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
+	import { doc, onSnapshot } from 'firebase/firestore';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { db } from '$lib/firebase.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { fetchClubCheckrConfig } from '$lib/compliance/checkrClubConfig.js';
 	import type { ClearanceDoc } from '$lib/types/backgroundCheck.js';
 	import CoachClearanceChecklist from '$lib/components/compliance/CoachClearanceChecklist.svelte';
+	import NativeClearanceStatus from '$lib/components/compliance/NativeClearanceStatus.svelte';
 	import CheckrEmbed from './CheckrEmbed.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	export const ssr = false;
 
 	let clubName = $state('Your club');
+	let liveClearance = $state<ClearanceDoc | null>(null);
 
-	const clearance = $derived(
+	const profileClearance = $derived(
 		(authStore.userProfile?.clearance as ClearanceDoc | undefined) ?? null,
 	);
+	const clearance = $derived(liveClearance ?? profileClearance);
 	const coachEmail = $derived(authStore.user?.email ?? authStore.userProfile?.email ?? '');
+
+	const showCheckrEmbed = $derived(
+		Boolean(clearance?.invitationId || clearance?.checkrCandidateId),
+	);
 
 	$effect(() => {
 		const clubId = authStore.userProfile?.clubId;
@@ -25,6 +34,25 @@
 		fetchClubCheckrConfig(clubId).then((cfg) => {
 			if (cfg.clubName) clubName = cfg.clubName;
 		});
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const email = authStore.user?.email ?? authStore.userProfile?.email;
+		if (!email) return;
+
+		const userRef = doc(db, 'users', email.toLowerCase());
+		const unsub = onSnapshot(userRef, (snap) => {
+			if (!snap.exists()) return;
+			const cl = snap.data()?.clearance as ClearanceDoc | undefined;
+			liveClearance = cl ?? null;
+			const profile = authStore.userProfile;
+			if (profile && cl) {
+				authStore.setProfile({ ...profile, clearance: cl });
+			}
+		});
+
+		return () => unsub();
 	});
 
 	$effect(() => {
@@ -65,7 +93,16 @@
 
 	<div class="cc-page__tracking">
 		<h2 class="cc-page__section-title">Screening status</h2>
-		<CheckrEmbed mode="tracking" {clearance} />
+		<NativeClearanceStatus {clearance} />
+		{#if showCheckrEmbed}
+			<details class="cc-page__embed">
+				<summary>Live Checkr report details (optional)</summary>
+				<p class="cc-page__embed-note">
+					If this panel fails to load, your checklist and status above remain accurate.
+				</p>
+				<CheckrEmbed mode="tracking" {clearance} />
+			</details>
+		{/if}
 	</div>
 
 	<p class="cc-page__privacy">
@@ -154,6 +191,28 @@
 		font-size: 0.9375rem;
 		font-weight: 600;
 		color: #374151;
+	}
+
+	.cc-page__embed {
+		margin-top: 0.25rem;
+		border: 1px solid #e5e7eb;
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		background: #ffffff;
+	}
+
+	.cc-page__embed summary {
+		cursor: pointer;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: #4b5563;
+	}
+
+	.cc-page__embed-note {
+		margin: 0.5rem 0 0.75rem;
+		font-size: 0.8125rem;
+		color: #6b7280;
+		line-height: 1.5;
 	}
 
 	.cc-page__privacy {

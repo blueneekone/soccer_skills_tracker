@@ -12,7 +12,7 @@
 ### AC-1: Coach Deploys a Scoped Intent
 
 - [ ] Sign in as `coach` role on a team with ≥ 4 players
-- [ ] Navigate to `/coach/assignments`
+- [ ] Navigate to `/coach/forge`
 - [ ] Verify page loads with the `[ INTENT ENGINE ]` header and fixed HUD panel
 - [ ] Select attribute (e.g. "Pace"), set Required XP to 300, Duration 14 days
 - [ ] Set Scope to **OPERATIVES** and select exactly 4 players from roster
@@ -56,7 +56,7 @@
 
 ### AC-5: Cancel Intent
 
-- [ ] Open `/coach/assignments` as coach
+- [ ] Open `/coach/forge` as coach
 - [ ] Click **CANCEL** on an active intent card
 - [ ] Confirm `secureCancelIntent` callable is invoked
 - [ ] Verify Firestore: `status === 'cancelled'`, `lastModifiedByUid` = coach UID
@@ -74,7 +74,7 @@
 
 - [ ] Navigate to `/coach/drills`
 - [ ] Confirm there is NO "Mission deploy" tab (only: Intent deploy link, Drill library, Spatial designer, Team schedule)
-- [ ] Confirm "Intent deploy" link navigates to `/coach/assignments`
+- [ ] Confirm "Intent deploy" link navigates to `/coach/forge`
 - [ ] Confirm `MISSION_DRILLS`, `deployMission()`, `assigned_missions` writes are absent from source
 - [ ] Run `rg "assigned_missions" src/routes/` — must return 0 results
 

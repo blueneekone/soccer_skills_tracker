@@ -73,9 +73,10 @@ describe('Sprint LAUNCH-functional-os — research README', () => {
 describe('Sprint LAUNCH-nav — workspaceNav discoverability', () => {
 	const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
 
-	it('coach sidebar links Intent Engine to /coach/assignments', () => {
-		expect(nav).toMatch(/Intent Engine/);
-		expect(nav).toMatch(/href:\s*'\/coach\/assignments'/);
+	it('coach sidebar links The Forge to intent deploy surface', () => {
+		expect(nav).toMatch(/The Forge/);
+		expect(nav).toMatch(/href:\s*'\/coach\/forge'/);
+		expect(nav).not.toMatch(/href:\s*'\/coach\/assignments'/);
 	});
 
 	it('parent sidebar links Co-op Command to /parent/dashboard', () => {
@@ -102,7 +103,7 @@ describe('Sprint LAUNCH-nav — FUNCTIONAL_MVP settings + gaps', () => {
 		expect(doc).toMatch(/Settings paths:/);
 		expect(doc).toMatch(/\/player\/settings/);
 		expect(doc).toMatch(/\/settings/);
-		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/coach\/assignments/s);
+		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/coach\/forge/s);
 		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/parent\/dashboard/s);
 	});
 });
@@ -120,7 +121,7 @@ describe('Sprint LAUNCH-functional-os — launch-focus rule', () => {
 });
 
 describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => {
-	const INTENT_ENGINE = join(ROOT, 'routes/(app)/coach/assignments/IntentEngine.svelte.ts');
+	const INTENT_ENGINE = join(ROOT, 'lib/coach/intent/IntentEngine.svelte.ts');
 	const ACTIVE_BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 	const WORKOUT_PAGE = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
 	const FIREBASE = join(ROOT, 'lib/firebase.js');
@@ -132,6 +133,8 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
 		expect(src).toMatch(/httpsCallable[\s\S]*functions[\s\S]*'secureDeployIntent'/);
 		expect(src).not.toMatch(/getFunctions\(\)/);
+		expect(src).toMatch(/refreshIntents/);
+		expect(src).toMatch(/_removeIntentFromList/);
 	});
 
 	it('ActiveBounties subscribes to team_assignments and deduplicates missions', () => {
@@ -149,6 +152,44 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/logTrainingSession/);
 		expect(src).toMatch(/recordQuestProgressAfterLog/);
 		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
+		expect(src).toMatch(/isCoachDirectedSession/);
+		expect(src).toMatch(/lockedCoachDrillLabel/);
+		expect(src).toMatch(/incomingMissions\.some/);
+		expect(src).toMatch(/FREE_LOG_DURATION_MAX_MINUTES/);
+		expect(src).toMatch(/sessionNotes/);
+	});
+
+	it('IntentEngine loads team drill library for coach sub-drill picker', () => {
+		expect(existsSync(INTENT_ENGINE)).toBe(true);
+		const src = readFileSync(INTENT_ENGINE, 'utf-8');
+		expect(src).toMatch(/teamDrillLibrary/);
+		expect(src).toMatch(/loadTeamDrillsForIntent/);
+		expect(src).toMatch(/teamDrillId/);
+		expect(src).not.toMatch(/global_drills/);
+	});
+
+	it('platformDrillLibrary supports copy-to-team from multi-sport basics', () => {
+		const lib = join(ROOT, 'lib/coach/platformDrillLibrary.ts');
+		expect(existsSync(lib)).toBe(true);
+		const src = readFileSync(lib, 'utf-8');
+		expect(src).toMatch(/loadPlatformBasics/);
+		expect(src).toMatch(/copyPlatformDrillToTeam/);
+		expect(src).toMatch(/buildDirectorDrillRecommendation/);
+		expect(src).toMatch(/sportId/);
+	});
+
+	it('coach drills page copies platform basics to team library', () => {
+		const drillsPage = join(ROOT, 'routes/(app)/coach/drills/+page.svelte');
+		const drillsView = join(ROOT, 'lib/coach/drills/CoachDrillsView.svelte');
+		expect(existsSync(drillsPage)).toBe(true);
+		expect(existsSync(drillsView)).toBe(true);
+		const routeSrc = readFileSync(drillsPage, 'utf-8');
+		expect(routeSrc).toMatch(/\$lib\/coach\/drills/);
+		const src = readFileSync(drillsView, 'utf-8');
+		expect(src).toMatch(/copyPlatformDrillToTeam/);
+		expect(src).toMatch(/Platform basics/);
+		expect(src).toMatch(/recommendToDirector/);
+		expect(src).toMatch(/CoachTeamScope/);
 	});
 
 	it('firebase.js pins Cloud Functions to us-east1', () => {

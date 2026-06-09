@@ -50,3 +50,12 @@ const complianceOps = require('./src/domains/complianceOps');
 exports.enqueueMinorRetentionPurge = complianceOps.enqueueMinorRetentionPurge;
 exports.processMinorRetentionQueue = complianceOps.processMinorRetentionQueue;
 exports.purgeExpiredMinorData = complianceOps.purgeExpiredMinorData;
+exports.linkHousehold = complianceOps.linkHousehold;
+exports.parentGrantVpcConsent = complianceOps.parentGrantVpcConsent;
+
+const operativeOps = require('./src/domains/operativeOps');
+exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;
+exports.parentProvisionOperative = operativeOps.parentProvisionOperative;
+exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
+exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
+exports.validatePlayerOTP = operativeOps.validatePlayerOTP;

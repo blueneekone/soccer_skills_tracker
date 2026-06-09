@@ -60,6 +60,7 @@ const CODEBASES = {
       'compliance.js',
       'verifyDocument.js',
       'src/domains/complianceOps.js',
+      'src/domains/operativeOps.js',
     ],
   },
   integrations: {

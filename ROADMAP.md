@@ -979,9 +979,11 @@ npm run build
 
 **Train logger — remaining optional polish (not blocking):**
 
-- Replace hardcoded `drillsByFocus` chips with `global_drills` catalog picker (coach policy drill stays suggested default)
+- ~~Replace hardcoded `drillsByFocus` chips with `global_drills` catalog picker~~ → shipped **LAUNCH-drill-library** (team + club picker on Intent Engine; platform basics copy-to-team on `/coach/drills`)
+- Coach-directed session lock on Train shipped **LAUNCH-train-lock** (notes-only edit; prescription read-only)
 - Single-click **Accept + Start session** on HQ if playtest shows two taps is friction
 - Mount tactical SVG preview from `AdaptiveHomework` logic on HQ cards only (no third surface)
+- **LAUNCH-club-drill-promote** — director promote team drill → club shared library (coach recommendation inbox)
 
 **Run after:** 6j-b Done. **Run before:** 6l.
 
@@ -1410,6 +1412,9 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.6a-ref-organize** | **Done** | Avatar reference rename + dedupe + `character/AVATAR_REFERENCE_INDEX.md` | `playerLoadoutSprint35mRef.test.ts` |
 | **LAUNCH-defer-avatar** | **Done** | Reference hierarchy + avatar builder pause | `playerLaunchDeferAvatar.test.ts` |
 | **LAUNCH-functional-os** | **In progress** | Three-persona functional MVP; table visual research | `personaFunctionalMvp.test.ts` |
+| **LAUNCH-drill-library** | **Done** | Three-tier drill library — team `teams/{id}/drills`, club `clubs/{id}/shared_drills`, platform basics (`drills` by `sportId`); Intent Engine team/club picker; spatial designer saves team drills | `personaFunctionalMvp.test.ts`, `teamDrillLibrary.ts`, `platformDrillLibrary.ts` |
+| **LAUNCH-train-lock** | **Done** | Coach-directed Train session — locked focus/drill/duration/RPE; session notes only; free log capped at 120 min | `personaFunctionalMvp.test.ts`, `coachMissionFlow.test.ts` |
+| **LAUNCH-club-drill-promote** | **Planned** | Optional team drill → club workflow — director inbox for coach recommendations; duplicate/publish team drill to `clubs/{clubId}/shared_drills`; coach read-only club repo on Intent Engine + drills page | `clubs/{clubId}/shared_drills` rules (read: coach, write: director) |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1418,6 +1423,32 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5m-hair** | **Superseded** | Folded into Gemini bust + ingest | — |
 | **3.5m-gate** | **Deferred (post-launch — owner art)** | Portrait stability gate — full regression + **product owner** human VA | [`s35m-gate-manifest.json`](docs/vision/va-screenshots/s35m-gate-manifest.json) |
 | **3.6b+** | **Deferred (post-launch — owner art)** | Avatar Studio PNG layer stack — Photopea slice from `references/character/` | [`character/AVATAR_REFERENCE_INDEX.md`](docs/vision/references/character/AVATAR_REFERENCE_INDEX.md), [`.cursor/rules/avatar-builder-deferred.mdc`](.cursor/rules/avatar-builder-deferred.mdc) |
+
+---
+
+## Sprint LAUNCH-club-drill-promote scope — **Planned**
+
+**Goal:** Close the optional team drill → club workflow. Coaches keep team-scoped drills by default; directors can promote approved drills to the club repo for all teams in the org.
+
+**In scope:**
+
+| Layer | Behavior |
+|-------|----------|
+| Coach `/coach/drills` | **Share with director** (clipboard recommendation today) → persist `drill_recommendations/{id}` or equivalent inbox doc |
+| Director OS | Inbox queue — preview spatial layout + metadata; **Publish to club** duplicates doc into `clubs/{clubId}/shared_drills` |
+| Intent Engine | Already reads club shared drills via `loadTeamDrillsForIntent`; no change beyond inbox-driven catalog growth |
+| Firestore rules | `clubs/{clubId}/shared_drills` — director write, coach read (shipped) |
+
+**Out of scope:** Global/platform drill publishing (platform basics remain super_admin seed only); tactics-board → intent shortcut.
+
+**Verify:**
+
+```bash
+npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts
+npm run check
+```
+
+**Run after:** LAUNCH-drill-library Done. **Run before:** platform basics seeder per sport (optional).
 
 ---
 

@@ -5,9 +5,7 @@
 
 <script>
 	import { page } from '$app/state';
-	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
-	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.ts';
 	import TacticalArena from '$lib/components/coach/TacticalArena.svelte';
 	import TacticalHUD from '$lib/components/coach/TacticalHUD.svelte';
@@ -20,6 +18,15 @@
 
 	let selectedTeamId = $state('');
 	let warRoomTool = $state(/** @type {'DRAG' | 'ROUTE'} */ ('DRAG'));
+
+	const teamScope = new CoachTeamScope({
+		preferUrlTeamId: () => page.url.searchParams.get('teamId'),
+		includeDirector: false,
+	});
+	$effect(() => {
+		teamScope.syncSelectedTeam();
+		selectedTeamId = teamScope.selectedTeamId;
+	});
 
 	// War-room token pools
 	let wrBucketPitch = $state(/** @type {TacticalToken[]} */ ([]));
@@ -61,37 +68,6 @@
 	};
 
 	const engine = createTacticalWarRoom(host);
-
-	const role = $derived(authStore.role);
-	const userEmail = $derived(authStore.user?.email || '');
-
-	const myTeams = $derived.by(() => {
-		if (!teamsStore.loaded) return [];
-		if (role === 'super_admin' || role === 'global_admin') return teamsStore.teams.slice();
-		if (!userEmail) return [];
-		return teamsStore.getCoachTeams(userEmail);
-	});
-
-	$effect(() => {
-		const teams = myTeams;
-		if (teams.length === 0) return;
-
-		const pivot = workspaceContextStore.activeTeamId?.trim();
-		if (pivot && teams.some((t) => t.id === pivot)) {
-			if (selectedTeamId !== pivot) selectedTeamId = pivot;
-			return;
-		}
-
-		const urlTeam = page.url.searchParams.get('teamId')?.trim();
-		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
-			if (selectedTeamId !== urlTeam) selectedTeamId = urlTeam;
-			return;
-		}
-
-		if (!selectedTeamId) {
-			selectedTeamId = teams[0].id;
-		}
-	});
 
 	// Load team roster into wrBucketXi whenever the selected team changes.
 	// Strategy: rosters/{tid} → player_lookup collection → numbered placeholders.

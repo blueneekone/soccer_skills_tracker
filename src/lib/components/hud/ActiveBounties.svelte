@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import {
 		collection,
+		getDocs,
 		onSnapshot,
 		orderBy,
 		query,
@@ -24,6 +25,7 @@
 		markQuestClaimed,
 		markQuestCompleted,
 		maxVisibleQuests,
+		purgeCoachIntentIds,
 		formatQuestRewardLabel,
 		isPromotedQuest,
 		questCtaLabel,
@@ -40,9 +42,11 @@
 	import {
 		buildCoachHomeworkHandoff,
 		buildCoachIntentHandoff,
+		clearMissionHandoff,
 		COACH_INTENT_HINT,
 		formatSuggestedDrillLine,
 		readCachedPolicyHints,
+		readMissionHandoff,
 		resolveHeuristicDrill,
 		stashMissionHandoff,
 	} from '$lib/player/workout/coachMissionFlow.js';
@@ -74,6 +78,9 @@
 	let drillPreviewByQuestId = $state<
 		Record<string, { id: string; title: string; line: string }>
 	>({});
+	let refreshNonce = $state(0);
+	let isRefreshing = $state(false);
+	let lastCoachIntentIds = $state<string[]>([]);
 
 	const quests = $derived(questsProp ?? internalQuests);
 	const loading = $derived(loadingProp ?? internalLoading);
@@ -165,6 +172,8 @@
 			return;
 		}
 
+		void refreshNonce;
+
 		const uid = playerUid;
 		const email = playerEmail;
 		const tid = teamId;
@@ -201,6 +210,30 @@
 			internalLoading = false;
 		};
 
+		const syncCoachIntentRemoval = (activeIds: Set<string>) => {
+			const removed = lastCoachIntentIds.filter((id) => !activeIds.has(id));
+			lastCoachIntentIds = [...activeIds];
+			if (removed.length === 0) return;
+			questProgress = purgeCoachIntentIds(questProgress, removed);
+			const handoff = readMissionHandoff();
+			if (handoff?.source === 'coach_intent' && removed.includes(handoff.missionId)) {
+				clearMissionHandoff();
+			}
+		};
+
+		const applyCoachIntents = (scopedRows: Array<{ id: string } & Record<string, unknown>>) => {
+			const activeIds = new Set(scopedRows.map((row) => row.id));
+			syncCoachIntentRemoval(activeIds);
+			const progress = loadQuestProgress();
+			intentDataById = Object.fromEntries(
+				scopedRows.map((row) => [row.id, row as Record<string, unknown>]),
+			);
+			intents = scopedRows
+				.map((row) => bountyFromCoachIntent(row.id, row, progress, uid))
+				.filter((b): b is QuestTask => b != null);
+			merge();
+		};
+
 		const unsubs: Array<() => void> = [];
 
 		if (tid) {
@@ -214,7 +247,6 @@
 				onSnapshot(
 					intentQ,
 					(snap) => {
-						const progress = loadQuestProgress();
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
 						const scopedRows = uniqueDocs
 							.map((d) => ({ id: d.id, ...d.data() }))
@@ -222,21 +254,36 @@
 								if (!row.scope || row.scope === 'team') return true;
 								return Array.isArray(row.targetUids) && row.targetUids.includes(uid);
 							});
-						intentDataById = Object.fromEntries(
-							scopedRows.map((row) => [row.id, row as Record<string, unknown>]),
-						);
-						intents = scopedRows
-							.map((row) => bountyFromCoachIntent(row.id, row, progress, uid))
-							.filter((b): b is QuestTask => b != null);
-						merge();
+						applyCoachIntents(scopedRows);
 					},
 					() => {
+						syncCoachIntentRemoval(new Set());
 						intents = [];
 						intentDataById = {};
 						merge();
 					},
 				),
 			);
+
+			if (refreshNonce > 0) {
+				void getDocs(intentQ)
+					.then((snap) => {
+						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+						const scopedRows = uniqueDocs
+							.map((d) => ({ id: d.id, ...d.data() }))
+							.filter((row) => {
+								if (!row.scope || row.scope === 'team') return true;
+								return Array.isArray(row.targetUids) && row.targetUids.includes(uid);
+							});
+						applyCoachIntents(scopedRows);
+					})
+					.catch(() => {
+						/* snapshot error handler covers persistent failures */
+					})
+					.finally(() => {
+						isRefreshing = false;
+					});
+			}
 		}
 
 		const hwQ = query(
@@ -297,6 +344,12 @@
 		};
 	});
 
+	function refreshQuestLog() {
+		if (isRefreshing || questsProp !== undefined) return;
+		isRefreshing = true;
+		refreshNonce += 1;
+	}
+
 	function patchQuestLifecycle(list: QuestTask[]): QuestTask[] {
 		return list.map((q) => ({
 			...q,
@@ -314,12 +367,25 @@
 			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
 			const preview = drillPreviewByQuestId[quest.id];
 			const prescription = repairIntentPrescription(row.prescription);
+			const coachDrill =
+				prescription?.drillTitle ?
+					{
+						id:
+							prescription.teamDrillId ??
+							prescription.clubDrillId ??
+							preview?.id ??
+							'',
+						title: prescription.drillTitle,
+					}
+				: preview ?
+					{ id: preview.id, title: preview.title }
+				:	null;
 			stashMissionHandoff(
 				buildCoachIntentHandoff({
 					missionId: quest.id,
 					targetAttributeId,
 					requiredXp,
-					drill: preview ? { id: preview.id, title: preview.title } : null,
+					drill: coachDrill,
 					prescription,
 					durationMinutes: prescription?.targetDurationMin ?? null,
 					targetRpe: prescription?.targetRpe ?? null,
@@ -537,6 +603,14 @@
 		{#if embedded}
 			<header class="quest-log__head quest-log__head--embedded">
 				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
+				<button
+					type="button"
+					class="quest-log__refresh pw-mono"
+					disabled={loading || isRefreshing}
+					onclick={refreshQuestLog}
+				>
+					{isRefreshing ? 'SYNC…' : 'REFRESH'}
+				</button>
 			</header>
 
 			<div
@@ -556,7 +630,17 @@
 		{:else}
 			<header class="quest-log__head">
 				<p class="quest-log__eyebrow">Mission queue</p>
-				<h2 class="quest-log__title">Active missions</h2>
+				<div class="quest-log__head-row">
+					<h2 class="quest-log__title">Active missions</h2>
+					<button
+						type="button"
+						class="quest-log__refresh pw-mono"
+						disabled={loading || isRefreshing}
+						onclick={refreshQuestLog}
+					>
+						{isRefreshing ? 'SYNC…' : 'REFRESH'}
+					</button>
+				</div>
 			</header>
 
 			<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid" aria-label="Active mission queue">

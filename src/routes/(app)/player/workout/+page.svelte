@@ -6,7 +6,7 @@
   import Icon from '$lib/components/ui/Icon.svelte';
   import { httpsCallable } from 'firebase/functions';
   import { db, functions } from '$lib/firebase.js';
-  import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+  import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
@@ -31,9 +31,17 @@
     readMissionHandoff,
     resolveHandoffDurationMinutes,
     resolveHandoffTargetRpe,
+    resolveDrillById,
     resolveHeuristicDrill,
     type MissionHandoff,
   } from '$lib/player/workout/coachMissionFlow.js';
+  import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
+  import {
+    clampFreeLogDurationMinutes,
+    FREE_LOG_DURATION_MAX_MINUTES,
+    isCoachDirectedHandoff,
+    SESSION_NOTES_MAX_LENGTH,
+  } from '$lib/player/workout/workoutSessionConstants.js';
   import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
   import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
   import {
@@ -49,9 +57,9 @@
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
     instructions: [
-      '1. Select your drill or exercise.',
-      '2. Set duration and RPE; when a coach prescription is armed, confirm sets and reps (both sides doubles total rep count).',
-      '3. Honest data feeds the algorithm. Your stats will update your Operative ID Card on the main dashboard.',
+      '1. Select your drill or exercise (free log) — coach missions lock the prescription.',
+      '2. Set duration (up to 120 min) and RPE for self-directed sessions.',
+      '3. Add session notes on coach assignments, then transmit to log XP.',
     ],
   };
 
@@ -80,9 +88,7 @@
   let selectedDrill = $state(/** @type {string | null} */ (null));
   let intensity = $state(5);
   let duration = $state(30);
-  const durationGaugePct = $derived(
-    ((Math.max(1, Math.min(1440, duration)) - 1) / (1440 - 1)) * 100,
-  );
+  let sessionNotes = $state('');
   const intensityGaugePct = $derived(
     ((Math.max(1, Math.min(10, intensity)) - 1) / 9) * 100,
   );
@@ -122,6 +128,8 @@
   let armedHandoff = $state(null);
   /** @type {Array<Record<string, unknown> & { id: string }>} */
   let incomingMissions = $state([]);
+  let missionSyncRefreshing = $state(false);
+  let missionRefreshNonce = $state(0);
 
   /**
    * @param {MissionHandoff} handoff
@@ -138,7 +146,27 @@
     } else if (handoff.targetAttributeId) {
       selectedFocus = attributeIdToWorkoutFocus(handoff.targetAttributeId);
     }
-    if (handoff.drillTitle) {
+    if (handoff.prescription?.teamDrillId || handoff.prescription?.clubDrillId) {
+      const teamId =
+        typeof authStore.userProfile?.teamId === 'string' ?
+          authStore.userProfile.teamId
+        : '';
+      const clubId =
+        typeof authStore.userProfile?.clubId === 'string' ?
+          authStore.userProfile.clubId
+        : typeof authStore.tenantId === 'string' ?
+          authStore.tenantId
+        : '';
+      const drillId =
+        handoff.prescription.teamDrillId ?? handoff.prescription.clubDrillId ?? '';
+      const row = teamId ?
+        await resolveTeamLibraryDrill(db, teamId, drillId, clubId || undefined)
+      :	null;
+      if (row?.title) selectedDrill = row.title;
+    } else if (handoff.prescription?.drillId) {
+      const drill = await resolveDrillById(db, handoff.prescription.drillId);
+      if (drill?.title) selectedDrill = drill.title;
+    } else if (handoff.drillTitle) {
       selectedDrill = handoff.drillTitle;
     } else if (handoff.targetAttributeId) {
       const frustration = String(profile?.recentFrustration ?? 'low');
@@ -154,9 +182,10 @@
     intensity = resolveHandoffTargetRpe(handoff);
   }
 
-  /** Merge cached/fetched RL policy into armed handoff — duration/RPE only (prescription volume unchanged). */
+  /** Merge cached/fetched RL policy into armed handoff — free log only (never override coach prescription). */
   function applyRlPolicyToArmedSession(result) {
     if (!armedHandoff || !result) return;
+    if (isCoachDirectedHandoff(armedHandoff.source)) return;
     const hints = buildPolicyHintsFromResult(result);
     if (!hints) return;
     const merged = { ...armedHandoff, policyHints: hints };
@@ -168,8 +197,23 @@
   function clearArmedMission() {
     activeMissionId = null;
     armedHandoff = null;
+    sessionNotes = '';
     clearMissionHandoff();
   }
+
+  const isCoachDirectedSession = $derived.by(() => {
+    if (!activeMissionId) return false;
+    if (armedHandoff?.source && isCoachDirectedHandoff(armedHandoff.source)) return true;
+    // Handoff payload missing but active coach intent still on file — stay locked.
+    return incomingMissions.some((m) => m.id === activeMissionId);
+  });
+
+  const lockedCoachDrillLabel = $derived.by(() => {
+    if (selectedDrill) return selectedDrill;
+    if (armedHandoff?.prescription?.drillTitle) return armedHandoff.prescription.drillTitle;
+    if (armedHandoff?.drillTitle) return armedHandoff.drillTitle;
+    return 'Coach-assigned drill';
+  });
 
   function recordQuestProgressAfterLog(handoff) {
     let progress = loadQuestProgress();
@@ -205,14 +249,13 @@
     });
   });
 
-  // RL inference on Train when coach intent armed and no fresh policy cache (mount / intent change only).
+  // RL inference on Train for non-coach sessions only (coach prescription is authoritative).
   $effect(() => {
     if (!browser) return;
     if (authStore.role !== 'player') return;
     const missionId = activeMissionId;
     if (!missionId) return;
-    const source = armedHandoff?.source;
-    if (source && source !== 'coach_intent') return;
+    if (isCoachDirectedHandoff(armedHandoff?.source)) return;
 
     const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
     let cancelled = false;
@@ -249,6 +292,7 @@
   // Epic 8: subscribe to active team_assignments for HQ link + armed mission goal XP.
   $effect(() => {
     if (!browser) return;
+    void missionRefreshNonce;
     const uid = authStore.user?.uid ?? '';
     const teamId = typeof authStore.userProfile?.teamId === 'string'
       ? authStore.userProfile.teamId
@@ -263,27 +307,41 @@
       where('status', '==', 'active'),
       orderBy('priority', 'asc'),
     );
+    const applyRows = (snap) => {
+      incomingMissions = snap.docs
+        .map((d) => {
+          const x = d.data() || {};
+          return /** @type {Record<string, unknown> & { id: string }} */ ({ id: d.id, ...x });
+        })
+        .filter((m) => {
+          if (!m.scope || m.scope === 'team') return true;
+          return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
+        });
+    };
     const unsub = onSnapshot(
       qy,
-      (snap) => {
-        incomingMissions = snap.docs
-          .map((d) => {
-            const x = d.data() || {};
-            return /** @type {Record<string, unknown> & { id: string }} */ ({ id: d.id, ...x });
-          })
-          .filter((m) => {
-            if (!m.scope || m.scope === 'team') return true;
-            return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
-          });
-      },
+      applyRows,
       (e) => {
         console.error('[Player OS] team_assignments', e);
       },
     );
+    if (missionRefreshNonce > 0) {
+      void getDocs(qy)
+        .then(applyRows)
+        .finally(() => {
+          missionSyncRefreshing = false;
+        });
+    }
     return () => {
       unsub();
     };
   });
+
+  function refreshMissionSync() {
+    if (missionSyncRefreshing) return;
+    missionSyncRefreshing = true;
+    missionRefreshNonce += 1;
+  }
 
   const focusAreas = [
     { id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
@@ -307,6 +365,7 @@
    * @param {'technical' | 'physical' | 'tactical' | 'recovery'} id
    */
   function selectFocus(id) {
+    if (isCoachDirectedSession) return;
     if (id !== selectedFocus) {
       selectedDrill = null;
       clearArmedMission();
@@ -380,7 +439,7 @@
   async function logWorkout() {
     const gate = validatePlayerWorkoutLog({
       selectedFocus,
-      selectedDrill,
+      selectedDrill: isCoachDirectedSession ? lockedCoachDrillLabel : selectedDrill,
       logSubmitting,
       role: authStore.role,
       profile,
@@ -391,10 +450,15 @@
       }
       return;
     }
-    if (!selectedDrill) return;
+    if (!selectedDrill && !isCoachDirectedSession) return;
 
-    const drillType = buildWorkoutDrillType(focusLabel, selectedDrill);
-    const dMin = Math.max(0, Math.floor(Number(duration) || 0));
+    const drillName = isCoachDirectedSession ? lockedCoachDrillLabel : selectedDrill;
+    if (!drillName) return;
+
+    const drillType = buildWorkoutDrillType(focusLabel, drillName);
+    const dMin = isCoachDirectedSession
+      ? Math.max(1, Math.floor(Number(duration) || 0))
+      : clampFreeLogDurationMinutes(duration);
     const intensityCall = intensityApiFromStep(intensity);
     const expectedXp = expectedWorkoutXp(dMin, intensity, totalWorkoutReps);
     const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
@@ -410,13 +474,14 @@
         totalReps: totalWorkoutReps,
         intensityCall,
         focusLabel,
-        selectedDrill,
+        selectedDrill: drillName,
         activeMissionId,
         missionSource: armedHandoff?.source ?? null,
         totalXpHud,
         oldLevel,
         // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
         intensityStep: intensity,
+        sessionNotes,
         authUser: { uid: user.uid, email: user.email },
         profile,
         logTrainingSession,
@@ -442,6 +507,7 @@
         'Command executed',
         `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
       );
+      sessionNotes = '';
       await authStore.refresh({ silent: true });
     } catch (e) {
       playerEngine.bumpBy(-expectedXp);
@@ -461,6 +527,28 @@
     <p class="pw-hq-link pw-mono">
       <a href={resolve('/player/dashboard')}>Coach missions on HQ →</a>
       <span class="pw-dim"> · accept a mission, then start session here</span>
+      <button
+        type="button"
+        class="pw-mission-armed__clear pw-mono"
+        disabled={missionSyncRefreshing}
+        onclick={refreshMissionSync}
+      >
+        {missionSyncRefreshing ? 'Syncing…' : 'Refresh missions'}
+      </button>
+    </p>
+  {/if}
+
+  {#if activeMissionId}
+    <p class="pw-hq-link pw-mono">
+      <button
+        type="button"
+        class="pw-mission-armed__clear pw-mono"
+        disabled={missionSyncRefreshing}
+        onclick={refreshMissionSync}
+      >
+        {missionSyncRefreshing ? 'Syncing…' : 'Refresh mission status'}
+      </button>
+      <span class="pw-dim"> · clears armed session if coach cancelled</span>
     </p>
   {/if}
 
@@ -532,142 +620,189 @@
         <div class="pw-theater__configure pd-os-deck__well">
           <div class="pw-configure-step">
             <span class="pw-eyebrow pd-panel-eyebrow">1 · Focus area</span>
-            <div class="pw-focus" role="group" aria-label="Focus area">
-              {#each focusAreas as focus}
-                <button
-                  type="button"
-                  class="pw-focus__btn"
-                  class:pw-focus__btn--on={selectedFocus === focus.id}
-                  onclick={() => selectFocus(focus.id)}
-                >
-                  <span class="pw-mono pw-focus__op">{focus.op}</span>
-                  <span class="pw-focus__lab">{focus.label}</span>
-                </button>
-              {/each}
-            </div>
+            {#if isCoachDirectedSession}
+              <p class="pw-mono pw-data pw-ghostline">
+                {focusLabel}
+                <span class="pw-dim"> · locked by coach</span>
+              </p>
+            {:else}
+              <div class="pw-focus" role="group" aria-label="Focus area">
+                {#each focusAreas as focus}
+                  <button
+                    type="button"
+                    class="pw-focus__btn"
+                    class:pw-focus__btn--on={selectedFocus === focus.id}
+                    onclick={() => selectFocus(focus.id)}
+                  >
+                    <span class="pw-mono pw-focus__op">{focus.op}</span>
+                    <span class="pw-focus__lab">{focus.label}</span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
           </div>
 
           <div class="pw-configure-step">
-            <span class="pw-eyebrow pd-panel-eyebrow">2 · Sub-drill (dynamic)</span>
-            <div class="pw-subdrill" role="list">
-              {#each availableDrills as drill}
-                <button
-                  type="button"
-                  class="pw-chip"
-                  class:pw-chip--on={selectedDrill === drill}
-                  onclick={() => {
-                    clearArmedMission();
-                    selectedDrill = drill;
-                  }}
-                >
-                  {drill}
-                </button>
-              {/each}
-            </div>
-            {#if selectedDrill && !availableDrills.includes(selectedDrill)}
-              <p class="pw-ghostline">
-                <span class="pw-eyebrow">Off-catalog transmit</span>
-                <span class="pw-mono pw-data">{selectedDrill}</span>
+            <span class="pw-eyebrow pd-panel-eyebrow">2 · Sub-drill</span>
+            {#if isCoachDirectedSession}
+              <p class="pw-mono pw-data pw-ghostline">
+                {lockedCoachDrillLabel}
+                <span class="pw-dim"> · assigned by coach</span>
               </p>
+            {:else}
+              <div class="pw-subdrill" role="list">
+                {#each availableDrills as drill}
+                  <button
+                    type="button"
+                    class="pw-chip"
+                    class:pw-chip--on={selectedDrill === drill}
+                    onclick={() => {
+                      clearArmedMission();
+                      selectedDrill = drill;
+                    }}
+                  >
+                    {drill}
+                  </button>
+                {/each}
+              </div>
+              {#if selectedDrill && !availableDrills.includes(selectedDrill)}
+                <p class="pw-ghostline">
+                  <span class="pw-eyebrow">Off-catalog transmit</span>
+                  <span class="pw-mono pw-data">{selectedDrill}</span>
+                </p>
+              {/if}
             {/if}
           </div>
         </div>
 
         <div class="pw-theater__execute pd-os-deck__well">
           <span class="pw-eyebrow pd-panel-eyebrow">Execute</span>
-          {#if armedPrescription}
-            <div class="pw-configure-step" role="group" aria-label="Session volume">
-              <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
-              {#if armedPrescription}
-                <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
+          {#if isCoachDirectedSession}
+            <div class="pw-configure-step" role="group" aria-label="Coach prescription">
+              <span class="pw-eyebrow pd-panel-eyebrow">Coach prescription</span>
+              {#if coachPrescriptionLine}
+                <p class="pw-mono pw-data">{coachPrescriptionLine}</p>
               {/if}
-              <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
-                <div class="pw-gauge">
-                  <div class="pw-gauge__head">
-                    <span class="pw-eyebrow">Sets</span>
-                    <span class="pw-mono pw-data">{workoutSets}</span>
-                  </div>
-                  <input
-                    class="pw-range"
-                    type="range"
-                    min="1"
-                    max="20"
-                    step="1"
-                    bind:value={workoutSets}
-                    aria-label="Sets completed"
-                  />
+              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
+                <div>
+                  <dt class="pw-dim tw-text-xs">Duration</dt>
+                  <dd>{duration} min</dd>
                 </div>
-                <div class="pw-gauge">
-                  <div class="pw-gauge__head">
-                    <span class="pw-eyebrow">Reps / set</span>
-                    <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
-                  </div>
-                  <input
-                    class="pw-range"
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    bind:value={workoutRepsPerSet}
-                    aria-label="Reps per set"
-                  />
+                <div>
+                  <dt class="pw-dim tw-text-xs">Target RPE</dt>
+                  <dd>{intensity} / 10</dd>
                 </div>
-              </div>
-              <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
-                <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
-                Both sides (doubles rep count for XP)
+                {#if totalWorkoutReps > 0}
+                  <div class="tw-col-span-2">
+                    <dt class="pw-dim tw-text-xs">Total reps</dt>
+                    <dd class="pw-green">{totalWorkoutReps}</dd>
+                  </div>
+                {/if}
+              </dl>
+            </div>
+            <div class="pw-configure-step">
+              <label for="pw-session-notes" class="pw-eyebrow pd-panel-eyebrow">
+                Session notes (optional)
               </label>
-              <p class="pw-mono pw-data">
-                Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
-              </p>
+              <textarea
+                id="pw-session-notes"
+                class="pw-mono tw-w-full tw-min-h-[72px] tw-rounded-lg tw-border tw-border-teal-900/40
+                       tw-bg-black/40 tw-p-2 tw-text-sm tw-text-teal-100/90 tw-outline-none
+                       focus:tw-border-teal-500/60"
+                maxlength={SESSION_NOTES_MAX_LENGTH}
+                placeholder="How did it feel? Anything your coach should know?"
+                bind:value={sessionNotes}
+              ></textarea>
+              <p class="pw-dim pw-mono tw-text-xs">{sessionNotes.length}/{SESSION_NOTES_MAX_LENGTH}</p>
+            </div>
+          {:else}
+            {#if armedPrescription}
+              <div class="pw-configure-step" role="group" aria-label="Session volume">
+                <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
+                <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
+                <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
+                  <div class="pw-gauge">
+                    <div class="pw-gauge__head">
+                      <span class="pw-eyebrow">Sets</span>
+                      <span class="pw-mono pw-data">{workoutSets}</span>
+                    </div>
+                    <input
+                      class="pw-range"
+                      type="range"
+                      min="1"
+                      max="20"
+                      step="1"
+                      bind:value={workoutSets}
+                      aria-label="Sets completed"
+                    />
+                  </div>
+                  <div class="pw-gauge">
+                    <div class="pw-gauge__head">
+                      <span class="pw-eyebrow">Reps / set</span>
+                      <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
+                    </div>
+                    <input
+                      class="pw-range"
+                      type="range"
+                      min="0"
+                      max="50"
+                      step="1"
+                      bind:value={workoutRepsPerSet}
+                      aria-label="Reps per set"
+                    />
+                  </div>
+                </div>
+                <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
+                  <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
+                  Both sides (doubles rep count for XP)
+                </label>
+                <p class="pw-mono pw-data">
+                  Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
+                </p>
+              </div>
+            {/if}
+            <div class="pw-gauges">
+              <div class="pw-gauge">
+                <div class="pw-gauge__head">
+                  <span class="pw-eyebrow">Time on task (min)</span>
+                  <span class="pw-mono pw-data">{duration}</span>
+                </div>
+                <input
+                  class="pw-mono tw-w-full tw-rounded-lg tw-border tw-border-teal-900/40 tw-bg-black/40
+                         tw-px-2 tw-py-1.5 tw-text-sm tw-text-teal-100"
+                  type="number"
+                  min="1"
+                  max={FREE_LOG_DURATION_MAX_MINUTES}
+                  step="1"
+                  bind:value={duration}
+                  aria-label="Duration in minutes"
+                />
+                <p class="pw-dim pw-mono tw-text-xs">Max {FREE_LOG_DURATION_MAX_MINUTES} min per session</p>
+              </div>
+              <div class="pw-gauge pw-gauge--rpe">
+                <div class="pw-gauge__head">
+                  <span class="pw-eyebrow">RPE (intensity 1–10)</span>
+                  <span class="pw-mono pw-action">{intensity} / 10</span>
+                </div>
+                <div
+                  class="pw-gauge__bar pw-gauge__bar--rpe"
+                  style:--gauge={`${intensityGaugePct}%`}
+                  aria-label="RPE"
+                >
+                  <div class="pw-gauge__bar-fill"></div>
+                </div>
+                <input
+                  class="pw-range pw-range--rpe"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  bind:value={intensity}
+                  aria-label="RPE intensity"
+                />
+              </div>
             </div>
           {/if}
-          <div class="pw-gauges">
-            <div class="pw-gauge">
-              <div class="pw-gauge__head">
-                <span class="pw-eyebrow">Time on task (min)</span>
-                <span class="pw-mono pw-data">{duration}</span>
-              </div>
-              <div
-                class="pw-gauge__bar"
-                style:--gauge={`${durationGaugePct}%`}
-                aria-label="Duration"
-              >
-                <div class="pw-gauge__bar-fill"></div>
-              </div>
-              <input
-                class="pw-range"
-                type="range"
-                min="1"
-                max="1440"
-                step="1"
-                bind:value={duration}
-                aria-label="Duration in minutes"
-              />
-            </div>
-            <div class="pw-gauge pw-gauge--rpe">
-              <div class="pw-gauge__head">
-                <span class="pw-eyebrow">RPE (intensity 1–10)</span>
-                <span class="pw-mono pw-action">{intensity} / 10</span>
-              </div>
-              <div
-                class="pw-gauge__bar pw-gauge__bar--rpe"
-                style:--gauge={`${intensityGaugePct}%`}
-                aria-label="RPE"
-              >
-                <div class="pw-gauge__bar-fill"></div>
-              </div>
-              <input
-                class="pw-range pw-range--rpe"
-                type="range"
-                min="1"
-                max="10"
-                step="1"
-                bind:value={intensity}
-                aria-label="RPE intensity"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -676,7 +811,7 @@
       <button
         type="button"
         class="pw-exec pw-exec--transmit"
-        disabled={!selectedDrill || logSubmitting}
+        disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting}
         onclick={logWorkout}
       >
         {#if logSubmitting}
@@ -686,7 +821,7 @@
           <span>Log session</span>
         {/if}
       </button>
-      {#if !selectedDrill}
+      {#if !selectedDrill && !isCoachDirectedSession}
         <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
       {/if}
     </div>

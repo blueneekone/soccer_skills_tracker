@@ -64,6 +64,15 @@ const CHECKLIST = path.join(
   'compliance',
   'CoachClearanceChecklist.svelte',
 );
+const NATIVE_STATUS = path.join(
+  REPO_ROOT,
+  'src',
+  'lib',
+  'components',
+  'compliance',
+  'NativeClearanceStatus.svelte',
+);
+const SRC_ROOT = path.join(REPO_ROOT, 'src');
 const LOAD_CHECKR_SDK = path.join(
   REPO_ROOT,
   'src',
@@ -95,6 +104,7 @@ const directorSrc = fs.readFileSync(DIRECTOR_COMPLIANCE, 'utf8');
 const adminCoachClearanceSrc = fs.readFileSync(ADMIN_COACH_CLEARANCE, 'utf8');
 const panopticonSrc = fs.readFileSync(PANOPTICON, 'utf8');
 const checklistSrc = fs.readFileSync(CHECKLIST, 'utf8');
+const nativeStatusSrc = fs.readFileSync(NATIVE_STATUS, 'utf8');
 const loaderSrc = fs.readFileSync(LOAD_CHECKR_SDK, 'utf8');
 const coachClearanceSrc = fs.readFileSync(CHECKR_COACH_CLEARANCE, 'utf8');
 const clubConfigSrc = fs.readFileSync(CHECKR_CLUB_CONFIG, 'utf8');
@@ -154,6 +164,28 @@ describe('LAUNCH-CHECKR-MODEL — director-initiated club-paid flow', () => {
   });
 });
 
+describe('CHECKR-PANOPTICON-COPY — staff clearance UI uses Checkr (not Ankored)', () => {
+  it('panopticon links Checkr dashboard env-aware and removes Ankored routing', () => {
+    assert.match(panopticonSrc, /getCheckrDashboardBaseUrl/);
+    assert.match(panopticonSrc, /Open Checkr dashboard/i);
+    assert.match(panopticonSrc, /Simulate clearance \(QA\)/i);
+    assert.match(panopticonSrc, /QA bypass available when live Checkr unavailable/);
+    assert.match(panopticonSrc, /getClearanceStatusSubLabel/);
+    assert.match(panopticonSrc, /Open Checkr invitation/i);
+    assert.match(panopticonSrc, /getCheckrCandidateDashboardUrl/);
+    assert.doesNotMatch(panopticonSrc, /app\.ankored\.com/);
+    assert.doesNotMatch(panopticonSrc, /ANKORED INTEGRATION SIMULATED/i);
+    assert.doesNotMatch(panopticonSrc, /SIMULATE ANKORED CLEARANCE/i);
+  });
+
+  it('checkrCoachClearance exposes dashboard URL helpers', () => {
+    assert.match(coachClearanceSrc, /getCheckrDashboardBaseUrl/);
+    assert.match(coachClearanceSrc, /dashboard\.checkr\.com/);
+    assert.match(coachClearanceSrc, /dashboard\.checkr-staging\.com/);
+    assert.match(coachClearanceSrc, /getClearanceStatusSubLabel/);
+  });
+});
+
 describe('CHECKR-QA-ADMIN — platform admin coach clearance', () => {
   it('admin route exists and reuses CoachClearancePanopticon', () => {
     assert.match(adminCoachClearanceSrc, /CoachClearancePanopticon/);
@@ -165,10 +197,50 @@ describe('CHECKR-QA-ADMIN — platform admin coach clearance', () => {
     assert.match(complianceSrc, /super_admin.*global_admin/s);
     assert.match(complianceSrc, /isPlatformAdmin/);
     assert.match(complianceSrc, /!isPlatformAdmin && userData\.clubId !== clubId/);
+    assert.match(complianceSrc, /source:\s*'qa_simulate'/);
+    assert.doesNotMatch(complianceSrc, /ANKORED-SIM-/);
   });
 
   it('simulate success surfaces coach re-login toast in panopticon', () => {
     assert.match(panopticonSrc, /Coach must sign out and back in\./);
+  });
+});
+
+describe('LAUNCH-CHECKR-NATIVE — coach status without required Checkr embed', () => {
+  it('compliance page uses NativeClearanceStatus as primary status panel', () => {
+    assert.match(pageSrc, /NativeClearanceStatus/);
+    assert.match(nativeStatusSrc, /deriveCoachClearanceStep/);
+    assert.match(nativeStatusSrc, /formatClearanceSource/);
+    assert.doesNotMatch(nativeStatusSrc, /invitationUrl/);
+  });
+
+  it('CheckrEmbed is optional enhancement gated by invitation or candidate id', () => {
+    assert.match(pageSrc, /showCheckrEmbed/);
+    assert.match(pageSrc, /invitationId.*checkrCandidateId/s);
+    assert.match(pageSrc, /optional/i);
+    assert.doesNotMatch(pageSrc, /CheckrEmbed[^]*mode="self-invite"/s);
+  });
+
+  it('no app.ankored.com anywhere under src/', () => {
+    /** @param {string} dir */
+    function scanDir(dir) {
+      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          scanDir(full);
+          continue;
+        }
+        if (!/\.(svelte|ts|js|tsx|jsx)$/.test(ent.name)) continue;
+        const body = fs.readFileSync(full, 'utf8');
+        assert.doesNotMatch(
+          body,
+          /app\.ankored\.com/,
+          `${path.relative(REPO_ROOT, full)} must not reference app.ankored.com`,
+        );
+      }
+    }
+    scanDir(SRC_ROOT);
   });
 });
 

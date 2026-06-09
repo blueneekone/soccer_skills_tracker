@@ -694,6 +694,15 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 	const qaTeam = teamIdArg || DEFAULT_QA_TEAM;
 	const coachEmail = 'ecwaechtler+coach@gmail.com';
 
+	const qaCheckrPackageSlug = process.env.QA_CHECKR_PACKAGE_SLUG || '';
+	const qaCheckrWorkState = process.env.QA_CHECKR_WORK_STATE || 'CA';
+	const qaCheckrWorkCity = process.env.QA_CHECKR_WORK_CITY || '';
+	if (!qaCheckrPackageSlug) {
+		log(
+			'[provision] WARN: QA_CHECKR_PACKAGE_SLUG unset — Order screening needs a real Checkr package slug on clubs doc',
+		);
+	}
+
 	for (const cid of clubIds) {
 		await db
 			.collection('clubs')
@@ -702,6 +711,9 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 				{
 					clubId: cid,
 					name: cid === DEFAULT_QA_CLUB ? 'QA Launch 2026' : cid,
+					checkrPackageSlug: qaCheckrPackageSlug,
+					checkrWorkState: qaCheckrWorkState,
+					checkrWorkCity: qaCheckrWorkCity,
 					updatedAt: new Date().toISOString(),
 				},
 				{ merge: true },

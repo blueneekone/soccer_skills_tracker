@@ -23,7 +23,7 @@
  *   getComplianceRoster      — onCall  (Directors & Registrars)
  *   requestManualOverride    — onCall  (Directors only)
  *   revokeCoachClearance     — onCall  (Directors only)
- *   simulateClearance        — onCall  (Director — Alpha simulation, no live keys needed)
+ *   simulateClearance        — onCall  (Director / platform admin — Alpha simulation, no live keys needed)
  *   directorInitiateCoachClearance — onCall (Director — club-paid Checkr invitation)
  */
 
@@ -955,7 +955,11 @@ exports.directorInitiateCoachClearance = onCall(
         'Screening can only be ordered for coaches, recruiters, or tutors.',
       );
     }
-    if (clubId && userData.clubId !== clubId) {
+    if (
+      clubId &&
+      !['super_admin', 'global_admin'].includes(role) &&
+      userData.clubId !== clubId
+    ) {
       throw new HttpsError('permission-denied', 'Coach is not in your club.');
     }
 
@@ -1155,9 +1159,9 @@ exports.initiateAnkoredUplink = onCall(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// simulateClearance  (Alpha — Ankored BGC simulation, Director-only)
+// simulateClearance  (Alpha — Ankored BGC simulation, Director / platform admin)
 // ─────────────────────────────────────────────────────────────────────────────
-// Director-only callable that mimics a successful Ankored clearance webhook
+// Director or platform-admin callable that mimics a successful Ankored clearance webhook
 // for the Alpha test cycle.  Writes the simplified clearance schema and refreshes
 // JWT custom claims so the coach regains access immediately without a logout.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1177,22 +1181,23 @@ exports.simulateClearance = onCall(
       throw new HttpsError('invalid-argument', 'Target coach email is required.');
     }
     const normalizedEmail = email.toLowerCase().trim();
+    const callerRole = callerClaims.role || '';
+    const isPlatformAdmin = ['super_admin', 'global_admin'].includes(callerRole);
     const clubId = callerClaims.clubId || callerClaims.tenantId || null;
 
     const userRef = db().collection('users').doc(normalizedEmail);
     const snap = await userRef.get();
     const userData = snap.data() || {};
-    if (clubId && userData.clubId !== clubId) {
+    if (clubId && !isPlatformAdmin && userData.clubId !== clubId) {
       throw new HttpsError('permission-denied', 'Target user is not in your club.');
     }
 
-    const ankoredId = `ANKORED-SIM-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const now = admin.firestore.FieldValue.serverTimestamp();
     await userRef.set(
       {
         clearance: {
           status: 'cleared',
-          ankoredId,
+          source: 'qa_simulate',
           lastVerified: now,
         },
       },
@@ -1205,15 +1210,15 @@ exports.simulateClearance = onCall(
     }
 
     await db().collection('audit_logs').add({
-      action: 'clearance_simulated_ankored',
+      action: 'clearance_simulated_qa',
       actorUid: reqAuth.uid,
       targetEmail: normalizedEmail,
-      ankoredId,
+      source: 'qa_simulate',
       clubId: clubId || null,
       timestamp: now,
     });
 
-    logger.info('[compliance] Ankored clearance simulated', {
+    logger.info('[compliance] QA clearance simulated', {
       targetEmail: normalizedEmail,
       by: reqAuth.uid,
     });

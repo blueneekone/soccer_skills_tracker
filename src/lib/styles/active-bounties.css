@@ -41,6 +41,37 @@
 
 .quest-log__head--embedded {
 	margin-bottom: clamp(6px, 1vw, 8px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.quest-log__head-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.quest-log__refresh {
+	margin: 0;
+	padding: 0.2rem 0.45rem;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.55rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-structural, #3b82f6) 75%, #94a3b8);
+	background: transparent;
+	border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 35%, transparent);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.quest-log__refresh:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 
 .quest-log__title--embedded {

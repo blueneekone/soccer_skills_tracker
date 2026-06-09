@@ -1,55 +1,27 @@
 <script>
-	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import CoachTrialBuilderPanel from '$lib/components/coach/CoachTrialBuilderPanel.svelte';
-	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
-	let selectedTeamId = $state('');
-
-	const role = $derived(authStore.role);
-	const userEmail = $derived(authStore.user?.email || '');
-
-	const myTeams = $derived.by(() => {
-		if (!teamsStore.loaded) return [];
-		if (role === 'super_admin' || role === 'global_admin') return teamsStore.teams.slice();
-		if (!userEmail) return [];
-		return teamsStore.getCoachTeams(userEmail);
+	const teamScope = new CoachTeamScope({
+		preferUrlTeamId: () => page.url.searchParams.get('teamId'),
+		syncWorkspaceOnUrlTeam: true,
+		includeDirector: false,
 	});
 
-	const selectedTeam = $derived(myTeams.find((t) => t.id === selectedTeamId));
+	$effect(() => {
+		teamScope.syncSelectedTeam();
+	});
+
+	const myTeams = $derived(teamScope.myTeams);
+	const selectedTeam = $derived(teamScope.currentTeam);
 	const sportHint = $derived(
 		typeof selectedTeam?.sport === 'string' && selectedTeam.sport.trim() ?
 			selectedTeam.sport.trim()
 		:	'',
 	);
-
-	$effect(() => {
-		const teams = myTeams;
-		if (teams.length === 0) return;
-
-		const pivot = workspaceContextStore.activeTeamId?.trim();
-		if (pivot && teams.some((t) => t.id === pivot)) {
-			if (selectedTeamId !== pivot) selectedTeamId = pivot;
-			return;
-		}
-
-		const urlTeam = page.url.searchParams.get('teamId')?.trim();
-		if (urlTeam && teams.some((t) => t.id === urlTeam)) {
-			if (selectedTeamId !== urlTeam) {
-				selectedTeamId = urlTeam;
-				untrack(() => workspaceContextStore.setActiveTeamId(urlTeam));
-			}
-			return;
-		}
-
-		if (!selectedTeamId || !teams.some((t) => t.id === selectedTeamId)) {
-			selectedTeamId = teams[0].id;
-			untrack(() => workspaceContextStore.setActiveTeamId(teams[0].id));
-		}
-	});
 </script>
 
 <div class="ec-page ec-coach trial-builder-route tw-min-h-0 tw-flex-1 tw-flex tw-flex-col tw-p-4 md:tw-p-6">
@@ -70,7 +42,7 @@
 				<span class="tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-slate-500">Team</span>
 				<select
 					class="tw-rounded-xl tw-border tw-border-slate-700 tw-bg-slate-900 tw-p-3 tw-font-semibold tw-text-slate-100"
-					bind:value={selectedTeamId}
+					bind:value={teamScope.selectedTeamId}
 				>
 					{#each myTeams as t (t.id)}
 						<option value={t.id}>{t.name || t.id}</option>
@@ -78,7 +50,7 @@
 				</select>
 			</label>
 		</div>
-		<CoachTrialBuilderPanel teamId={selectedTeamId} sportHint={sportHint} />
+		<CoachTrialBuilderPanel teamId={teamScope.selectedTeamId} sportHint={sportHint} />
 	{/if}
 </div>
 

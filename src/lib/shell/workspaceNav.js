@@ -35,7 +35,6 @@ const directorLinks = [
 /** @type {ShellNavItem[]} */
 const coachLinks = [
 	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
-	{ label: 'Intent Engine',     href: '/coach/assignments',   icon: 'game.zap' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },

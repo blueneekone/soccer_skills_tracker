@@ -1125,6 +1125,16 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
 
+      // Director-published drills visible to all coaches in the club (Intent Engine picker).
+      match /shared_drills/{drillId} {
+        allow read: if authed() && (
+          isSuper()
+          || (tokenClub() == clubId && (isDirector() || isCoach() || isRegistrar()))
+        );
+        allow create, update, delete: if isSuper()
+          || (isDirector() && tokenClub() == clubId);
+      }
+
       // Epic 17 Phase 1 — facility map metadata (Storage file lives under facility_maps/).
       match /facilities/{facilityId} {
         allow read: if authed() && canReadFacilityVault(clubId);

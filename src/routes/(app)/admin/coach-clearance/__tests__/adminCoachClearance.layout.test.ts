@@ -39,6 +39,12 @@ describe('/admin/coach-clearance — CHECKR-QA-ADMIN', () => {
 		expect(panopticonSrc).toMatch(/Coach must sign out and back in\./);
 	});
 
+	it('panopticon uses Checkr dashboard copy (CHECKR-PANOPTICON-COPY)', () => {
+		expect(panopticonSrc).toMatch(/Open Checkr dashboard/i);
+		expect(panopticonSrc).toMatch(/Simulate clearance \(QA\)/i);
+		expect(panopticonSrc).not.toMatch(/app\.ankored\.com/);
+	});
+
 	it('admin nav links Coach clearance to /admin/coach-clearance', () => {
 		expect(navSrc).toMatch(/Coach clearance/);
 		expect(navSrc).toMatch(/href:\s*'\/admin\/coach-clearance'/);

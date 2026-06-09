@@ -13,6 +13,7 @@ import {
 	resolveHeroQuest,
 	excludeHeroFromRailQuests,
 	maxVisibleQuests,
+	purgeCoachIntentIds,
 	type QuestTask,
 } from '../activeBounties.js';
 
@@ -82,6 +83,18 @@ describe('activeBounties', () => {
 		expect(resolveQuestLifecycle('q1', accepted)).toBe('complete');
 		const done = { ...accepted, completedIds: ['q1'] };
 		expect(resolveQuestLifecycle('q1', done)).toBe('claim');
+	});
+
+	it('purgeCoachIntentIds drops local progress for cancelled coach intents', () => {
+		const store = {
+			acceptedIds: ['intent-a', 'daily-training-log'],
+			completedIds: ['intent-a'],
+			claimedIds: [],
+			claimedDateUtc: '2026-01-01',
+		};
+		const next = purgeCoachIntentIds(store, ['intent-a']);
+		expect(next.acceptedIds).toEqual(['daily-training-log']);
+		expect(next.completedIds).toEqual([]);
 	});
 
 	it('builds daily habit quests with smaller XP', () => {

@@ -37,6 +37,7 @@
 export type BackgroundCheckProvider =
 	| 'checkr'
 	| 'ankored'
+	| 'qa_simulate'
 	| 'manual_override'
 	| 'org_vault_propagation';
 

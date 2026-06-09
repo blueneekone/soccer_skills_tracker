@@ -23,12 +23,11 @@ Route: `/coach` and sub-routes
 | Area | Surfaces | Purpose |
 |------|----------|---------|
 | Squad hub | `SquadTelemetryView` | Roster density, activity, readiness |
-| Assignments | `/coach/assignments` | Mission/bounty assignment to players |
-| Drills | `/coach/drills` | Drill library, prescribe work |
+| The Forge | `/coach/forge` | Intent deploy (Epic 8) — `$lib/coach/intent` |
+| Drills | `/coach/drills` | Drill library, spatial designer, platform basics |
 | Match-day | `/coach/match-day` | Cartridge simulator, lineup |
 | Tactical | `/coach/tactical` | Trinity tactical board |
 | Scouting | `/coach/scouting` | Evaluations, notes |
-| Forge | `/coach/forge` | Curriculum / content builder |
 
 ---
 

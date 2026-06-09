@@ -50,8 +50,98 @@ export function deriveCoachClearanceStep(clearance?: ClearanceDoc | null): Coach
 	return 'not_started';
 }
 
+const STEP_LABELS: Record<CoachClearanceStepState, string> = {
+	not_started: 'Not started',
+	invited: 'Invitation sent',
+	in_progress: 'In progress',
+	cleared: 'Cleared',
+	flagged: 'Needs review',
+};
+
+/** Human-readable clearance step for native coach status UI. */
+export function coachClearanceStepLabel(step: CoachClearanceStepState): string {
+	return STEP_LABELS[step];
+}
+
+/** Human-readable clearance source for native status panel. */
+export function formatClearanceSource(source?: ClearanceDoc['source'] | string | null): string | null {
+	if (!source || typeof source !== 'string') return null;
+	switch (source) {
+		case 'checkr':
+			return 'Checkr';
+		case 'qa_simulate':
+			return 'QA simulation';
+		case 'manual_override':
+			return 'Manual override';
+		case 'org_vault_propagation':
+			return 'Organization vault';
+		case 'ankored':
+			return 'Legacy record';
+		default:
+			return source;
+	}
+}
+
+/** Format Firestore Timestamp-like values for display. */
+export function formatClearanceTimestamp(ts: unknown): string | null {
+	if (!ts || typeof ts !== 'object') return null;
+	try {
+		const t = ts as Record<string, unknown>;
+		const ms =
+			typeof t.toMillis === 'function'
+				? (t.toMillis as () => number)()
+				: typeof t.seconds === 'number'
+					? t.seconds * 1000
+					: null;
+		if (!ms) return null;
+		return new Intl.DateTimeFormat('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		}).format(new Date(ms));
+	} catch {
+		return null;
+	}
+}
+
 export function getCheckrEnv(): 'staging' | 'production' {
 	return import.meta.env.VITE_CHECKR_ENV === 'staging' ? 'staging' : 'production';
+}
+
+/** Checkr Dashboard base URL — mirrors `VITE_CHECKR_ENV` (staging vs production). */
+export function getCheckrDashboardBaseUrl(): string {
+	return getCheckrEnv() === 'staging'
+		? 'https://dashboard.checkr-staging.com'
+		: 'https://dashboard.checkr.com';
+}
+
+/** Deep link to a candidate record in the Checkr Dashboard. */
+export function getCheckrCandidateDashboardUrl(candidateId: string): string {
+	const id = candidateId.trim();
+	return `${getCheckrDashboardBaseUrl()}/candidates/${encodeURIComponent(id)}`;
+}
+
+export type ClearanceStatusSubLabel =
+	| { kind: 'checkrCandidateId'; value: string }
+	| { kind: 'invitationId'; value: string }
+	| { kind: 'ankoredId'; value: string; legacy: true };
+
+/** Status sub-label for director clearance matrix — prefers Checkr ids over legacy Ankored. */
+export function getClearanceStatusSubLabel(
+	clearance?: Pick<ClearanceDoc, 'checkrCandidateId' | 'invitationId' | 'ankoredId'> | null,
+): ClearanceStatusSubLabel | null {
+	if (!clearance) return null;
+	const candidateId =
+		typeof clearance.checkrCandidateId === 'string' ? clearance.checkrCandidateId.trim() : '';
+	if (candidateId) return { kind: 'checkrCandidateId', value: candidateId };
+	const invitationId =
+		typeof clearance.invitationId === 'string' ? clearance.invitationId.trim() : '';
+	if (invitationId) return { kind: 'invitationId', value: invitationId };
+	const ankoredId = typeof clearance.ankoredId === 'string' ? clearance.ankoredId.trim() : '';
+	if (ankoredId) return { kind: 'ankoredId', value: ankoredId, legacy: true };
+	return null;
 }
 
 export function getCheckrPackageSlug(clubConfig?: Pick<ClubCheckrConfig, 'packageSlug'>): string | undefined {

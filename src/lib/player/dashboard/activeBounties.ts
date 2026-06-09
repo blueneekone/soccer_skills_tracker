@@ -263,6 +263,22 @@ export function markQuestClaimed(id: string, store: QuestProgressStore): QuestPr
 	return next;
 }
 
+/** Drop local accept/complete state for coach intents removed from Firestore. */
+export function purgeCoachIntentIds(
+	store: QuestProgressStore,
+	removedIntentIds: readonly string[],
+): QuestProgressStore {
+	if (removedIntentIds.length === 0) return store;
+	const remove = new Set(removedIntentIds);
+	const next = {
+		...store,
+		acceptedIds: store.acceptedIds.filter((id) => !remove.has(id)),
+		completedIds: store.completedIds.filter((id) => !remove.has(id)),
+	};
+	saveQuestProgress(next);
+	return next;
+}
+
 function emptyProgress(): QuestProgressStore {
 	return {
 		acceptedIds: [],

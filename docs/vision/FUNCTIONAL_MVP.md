@@ -17,6 +17,8 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
   - [ ] 1 set × 10 reps, **bilateral on** → **20** total reps (10 × 2 sides)
   - [ ] **30 min + RPE 5**, time-only coach prescription (**no** `repsPerSet`) — session still logs; XP from duration + RPE path (rep count 0 OK)
 - [ ] Coach-assigned bounty appears on HQ rail
+- [ ] Accept coach intent → **Start session** → Train shows **locked by coach** (read-only focus/drill/duration/RPE; session notes editable only)
+- [ ] Free log (no armed mission) — duration input max **120 min** (not 1440 slider)
 - [ ] Armory Studio SYNC IDENTITY (default portrait OK)
 - [ ] Album/set bonus path (3.4) still works
 - [ ] VPC/billing gates behave correctly
@@ -56,11 +58,14 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 
 - [ ] Squad/roster view loads
 - [ ] Assign drill/bounty → appears on player HQ
-- [ ] (Optional) Coach intent deploy may include `prescription` on `team_assignments` — `sets`, optional `repsPerSet` (omit for time-only), `bilateral` (doubles effective reps per side), optional `targetDurationMin` / `targetRpe` (1–10). Train UI for prescription display is a follow-on slice; schema is additive with lazy read-repair (no backfill).
+- [ ] Intent Engine sub-drill picker loads **team + club** drills (not global catalog)
+- [ ] Team drill spatial designer saves to `teams/{teamId}/drills`
+- [ ] (Optional) **Share with director** on team drill — full promote workflow tracked as **LAUNCH-club-drill-promote**
+- [ ] (Optional) Coach intent deploy may include `prescription` on `team_assignments` — `sets`, optional `repsPerSet` (omit for time-only), `bilateral` (doubles effective reps per side), optional `targetDurationMin` / `targetRpe` (1–10), `teamDrillId` / `clubDrillId`. Train locks prescription when armed from HQ handoff.
 - [ ] Match-day / development routes reachable
 - [ ] (After 4.1) Logistics compose + send to parents
 
-**Primary routes:** `/coach`, `/coach/assignments`, `/coach/drills`, `/coach/match-day`, `/coach/forge`, `/coach/scouting`, `/coach/logistics`
+**Primary routes:** `/coach`, `/coach/forge` (Intent Engine), `/coach/drills`, `/coach/match-day`, `/coach/scouting`, `/coach/logistics`
 
 ---
 
@@ -145,7 +150,7 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 | Gap | Severity | Route / surface | Notes | Suggested sprint |
 |-----|----------|-----------------|-------|------------------|
 | Logistics nav → missing route | **Resolved (4.1 Done)** | `/coach/logistics` | Route mounts `MessagesTab` + `ParentAnnouncementCompose` (`safeSportBroadcast`). | — |
-| Assignments not in coach sidebar | **Resolved (LAUNCH-nav)** | `/coach/assignments` | Intent Engine in coach sidebar (`workspaceNav` coachLinks). | — |
+| Assignments not in coach sidebar | **Resolved (LAUNCH-nav)** | `/coach/forge` | Intent Engine in The Forge (`workspaceNav` coachLinks). | — |
 | Parent Co-op hub off nav | **Resolved (LAUNCH-nav)** | `/parent/dashboard` | Co-op Command in parent sidebar; login still defaults to `/parent/household`. | — |
 | Parent messages read-only | Partial | `/messages` | Staff CC inbox + **4.11 household thread** compose; Parent Lounge reply UX remains | **Epic 4.4** |
 | Coach→minor DM policy | **Resolved (4.2 Done)** | Messaging stack | `sendCoachPlayerMessage` blocks minors; staff blocked in minor channels | — |

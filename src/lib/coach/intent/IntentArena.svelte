@@ -27,15 +27,33 @@
 	let {
 		intents = [] as EnrichedIntent[],
 		isLoading = false,
+		isRefreshing = false,
+		cancellingIntentIds = [] as string[],
 		mutationError = '',
 		onCancel = (_intentId: string) => {},
 		onExtend = (_intentId: string, _days: number) => {},
+		onRefresh = () => {},
 	} = $props();
 
 	const MAX_PILLS = 12;
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-3 tw-w-full">
+
+	<!-- Toolbar -->
+	<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+		<button
+			type="button"
+			class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]
+			       tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/25 tw-text-[#14b8a6]/60
+			       tw-transition-all hover:tw-border-[#14b8a6]/60 hover:tw-text-[#14b8a6]
+			       hover:tw-bg-[#14b8a6]/8 active:tw-scale-95 disabled:tw-opacity-40"
+			disabled={isRefreshing || isLoading}
+			onclick={() => onRefresh()}
+		>
+			{isRefreshing ? 'SYNCING…' : 'REFRESH'}
+		</button>
+	</div>
 
 	<!-- Mutation error banner -->
 	{#if mutationError}
@@ -177,10 +195,11 @@
 						class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]
 						       tw-tracking-widest tw-uppercase tw-border tw-border-[#ff3040]/30 tw-text-[#ff3040]/70
 						       tw-transition-all hover:tw-border-[#ff3040]/60 hover:tw-text-[#ff3040]
-						       hover:tw-bg-[#ff3040]/10 active:tw-scale-95"
+						       hover:tw-bg-[#ff3040]/10 active:tw-scale-95 disabled:tw-opacity-40"
+						disabled={cancellingIntentIds.includes(intent.intentId)}
 						onclick={() => onCancel(intent.intentId)}
 					>
-						CANCEL
+						{cancellingIntentIds.includes(intent.intentId) ? 'CANCELLING…' : 'CANCEL'}
 					</button>
 					<button
 						class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]

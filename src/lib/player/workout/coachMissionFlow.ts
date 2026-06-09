@@ -157,7 +157,7 @@ export function resolveHandoffTargetRpe(handoff: MissionHandoff, defaultRpe = 5)
 }
 
 export const COACH_INTENT_HINT =
-	'Coach sets the goal — we suggest a drill from team focus.';
+	'Coach set this session — review the prescription, add notes if needed, then log.';
 
 const ATTRIBUTE_FOCUS: Record<string, WorkoutFocus> = {
 	ball_mastery: 'technical',
@@ -312,12 +312,13 @@ export function buildCoachIntentHandoff(input: {
 		:	undefined;
 	const drillTitle =
 		input.drill?.title ?? rx?.drillTitle ?? undefined;
+	const drillId = input.drill?.id ?? rx?.drillId ?? undefined;
 	return {
 		missionId: input.missionId,
 		source: 'coach_intent',
 		targetAttributeId: input.targetAttributeId,
 		requiredXp: input.requiredXp,
-		drillId: input.drill?.id,
+		drillId,
 		drillTitle,
 		durationMinutes,
 		targetRpe,

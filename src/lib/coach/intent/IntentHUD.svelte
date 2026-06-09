@@ -6,7 +6,7 @@
 
 	let {
 		attributes = [] as Array<{ id: string; name: string; hexColor: string }>,
-		roster = [] as Array<{ uid: string; playerName: string; email: string }>,
+		roster = [] as Array<{ uid: string; rosterKey: string; playerName: string; email: string }>,
 		draftAttributeId = $bindable(''),
 		draftRequiredXp = $bindable(150),
 		draftDurationDays = $bindable(7),
@@ -18,6 +18,9 @@
 		draftPrescriptionBilateral = $bindable(false),
 		draftPrescriptionDurationMin = $bindable(0),
 		draftPrescriptionTargetRpe = $bindable(0),
+		draftDrillId = $bindable(''),
+		availableDrills = [] as Array<{ id: string; title: string; scope?: string }>,
+		isLoadingDrills = false,
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
 		isLoadingRoster = false,
@@ -26,6 +29,7 @@
 		onToggleUid = (_uid: string) => {},
 		onSelectAll = () => {},
 		onClearSelection = () => {},
+		onAttributeChange = () => {},
 	} = $props();
 
 	const deployBtnLabel = $derived(
@@ -75,6 +79,7 @@
 			<select
 				id="hud-attr"
 				bind:value={draftAttributeId}
+				onchange={() => onAttributeChange()}
 				class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
 				       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
 				       tw-px-3 tw-py-1.5 tw-outline-none tw-appearance-none
@@ -133,6 +138,34 @@
 			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
 				DRILL PRESCRIPTION
 			</span>
+			<div class="tw-flex tw-flex-col tw-gap-1">
+				<label for="hud-drill" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
+					Team drill
+				</label>
+				<select
+					id="hud-drill"
+					bind:value={draftDrillId}
+					disabled={isLoadingDrills}
+					class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
+					       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
+					       disabled:tw-opacity-40"
+				>
+					<option value="">
+						{isLoadingDrills ? 'Loading team drills…' : '— Open intent (RL suggests drill) —'}
+					</option>
+					{#each availableDrills as drill (drill.id)}
+						<option value={drill.id}>
+							{drill.scope === 'club' ? `[CLUB] ${drill.title}` : drill.title}
+						</option>
+					{/each}
+				</select>
+				{#if !isLoadingDrills && availableDrills.length === 0}
+					<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
+						No team drills for this attribute yet — create one under Drills → Spatial designer.
+					</p>
+				{/if}
+			</div>
 			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
 				<div class="tw-flex tw-flex-col tw-gap-1">
 					<label for="hud-sets" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Sets</label>
@@ -178,7 +211,7 @@
 						id="hud-rx-dur"
 						type="number"
 						min="0"
-						max="480"
+						max="120"
 						bind:value={draftPrescriptionDurationMin}
 						placeholder="—"
 						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
@@ -202,7 +235,7 @@
 				</div>
 			</div>
 			<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-				Leave reps at 0 for time-only homework. Both sides doubles rep count for XP.
+				Team + club drills only. Platform basics are copied from /coach/drills first.
 			</p>
 		</div>
 
@@ -289,9 +322,13 @@
 						{#each [0, 1, 2] as i (i)}
 							<div class="tw-h-7 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
 						{/each}
+					{:else if roster.length === 0}
+						<p class="tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
+							No operatives on this squad yet.
+						</p>
 					{:else}
-						{#each roster as player (player.uid)}
-							{@const isChecked = draftTargetUids.includes(player.uid)}
+						{#each roster as player (player.rosterKey)}
+							{@const isChecked = draftTargetUids.includes(player.rosterKey)}
 							<label
 								class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-cursor-pointer
 								       tw-transition-colors hover:tw-bg-[#14b8a6]/5"
@@ -300,7 +337,7 @@
 								<input
 									type="checkbox"
 									checked={isChecked}
-									onchange={() => onToggleUid(player.uid)}
+									onchange={() => onToggleUid(player.rosterKey)}
 									class="tw-accent-[#14b8a6] tw-w-3 tw-h-3 tw-shrink-0"
 								/>
 								<span

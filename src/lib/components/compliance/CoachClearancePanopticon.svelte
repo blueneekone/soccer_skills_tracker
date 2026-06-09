@@ -5,6 +5,11 @@
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { getApp } from 'firebase/app';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import {
+		getCheckrCandidateDashboardUrl,
+		getCheckrDashboardBaseUrl,
+		getClearanceStatusSubLabel,
+	} from '$lib/compliance/checkrCoachClearance.js';
 
 	interface Props {
 		headerLabel?: string;
@@ -147,6 +152,19 @@
 		return ['pending', 'unsubmitted'].includes(status) && !invited;
 	}
 
+	/** @param {unknown} err */
+	function callableErrMsg(err) {
+		if (err && typeof err === 'object') {
+			if ('message' in err && typeof err.message === 'string' && err.message) {
+				return err.message;
+			}
+			if ('details' in err && typeof err.details === 'string' && err.details) {
+				return err.details;
+			}
+		}
+		return 'Request failed.';
+	}
+
 	/** @param {CoachRow} coach */
 	async function orderScreening(coach) {
 		const rs = ensureRowState(coach.email);
@@ -168,7 +186,7 @@
 				lastVerified: { seconds: Math.floor(Date.now() / 1000) },
 			};
 		} catch (err) {
-			rs.error = /** @type {Error} */ (err).message ?? 'Order screening failed.';
+			rs.error = callableErrMsg(err);
 		} finally {
 			rs.ordering = false;
 		}
@@ -186,12 +204,12 @@
 			coach.clearance = {
 				.../** @type {object} */ (coach.clearance ?? {}),
 				status: 'cleared',
-				ankoredId: 'ANKORED-SIM',
+				source: 'qa_simulate',
 				lastVerified: { seconds: Math.floor(Date.now() / 1000) },
 			};
 			showToast('Coach must sign out and back in.');
 		} catch (err) {
-			rs.error = /** @type {Error} */ (err).message ?? 'Simulation failed.';
+			rs.error = callableErrMsg(err);
 		} finally {
 			rs.simulating = false;
 		}
@@ -208,11 +226,13 @@
 			await revoke({ email: coach.email, reason: 'Director initiated revocation via Panopticon' });
 			coach.clearance = { .../** @type {object} */ (coach.clearance ?? {}), status: 'flagged' };
 		} catch (err) {
-			rs.error = /** @type {Error} */ (err).message ?? 'Revoke failed.';
+			rs.error = callableErrMsg(err);
 		} finally {
 			rs.verifying = false;
 		}
 	}
+
+	const checkrDashboardUrl = getCheckrDashboardBaseUrl();
 
 	// Totals
 	const counts = $derived({
@@ -271,7 +291,7 @@
 		</div>
 		<div class="dp-alpha-badge">
 			<span class="dp-pulse-dot"></span>
-			ALPHA — ANKORED INTEGRATION SIMULATED
+			QA bypass available when live Checkr unavailable
 		</div>
 	</div>
 
@@ -304,7 +324,15 @@
 					{#each filtered as coach (coach.email)}
 						{@const status = getStatus(coach)}
 						{@const rs = getRowState(coach.email)}
-						{@const ankoredId = /** @type {string|undefined} */ (coach.clearance?.ankoredId)}
+						{@const statusSubLabel = getClearanceStatusSubLabel(
+							/** @type {import('$lib/types/backgroundCheck.js').ClearanceDoc|undefined} */ (
+								coach.clearance
+							),
+						)}
+						{@const invitationUrl = /** @type {string|undefined} */ (coach.clearance?.invitationUrl)}
+						{@const checkrCandidateId = /** @type {string|undefined} */ (
+							coach.clearance?.checkrCandidateId
+						)}
 						{@const lastVerified = coach.clearance?.lastVerified}
 						<tr class="dp-row dp-row--{status}">
 							<!-- Coach identity -->
@@ -328,8 +356,20 @@
 									{/if}
 									{status.toUpperCase()}
 								</div>
-								{#if ankoredId}
-									<div class="dp-ankored-id" title="Ankored record ID">{ankoredId}</div>
+								{#if statusSubLabel}
+									<div
+										class="dp-clearance-ref"
+										title={statusSubLabel.kind === 'ankoredId'
+											? 'Legacy Ankored record ID'
+											: statusSubLabel.kind === 'checkrCandidateId'
+												? 'Checkr candidate ID'
+												: 'Checkr invitation ID'}
+									>
+										{#if statusSubLabel.kind === 'ankoredId'}
+											<span class="dp-clearance-ref__legacy">legacy</span>
+										{/if}
+										{statusSubLabel.value}
+									</div>
 								{/if}
 							</td>
 
@@ -360,25 +400,49 @@
 										class="dp-btn dp-btn--simulate"
 										disabled={rs.simulating}
 										onclick={() => simulateClearance(coach)}
-										aria-label="Simulate Ankored clearance for {coach.email}"
+										aria-label="Simulate clearance (QA) for {coach.email}"
 									>
 										{#if rs.simulating}
 											<span class="dp-btn-spin">↻</span> SYNCING…
 										{:else}
 										<Icon name="game.zap" />
-										SIMULATE ANKORED CLEARANCE
+										Simulate clearance (QA)
 										{/if}
 									</button>
 								{/if}
+								{#if invitationUrl}
+									<a
+										href={invitationUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="dp-btn dp-btn--checkr"
+										aria-label="Open Checkr invitation for {coach.email}"
+									>
+										<Icon name="nav.external" />
+										Open Checkr invitation
+									</a>
+								{/if}
+								{#if checkrCandidateId}
+									<a
+										href={getCheckrCandidateDashboardUrl(checkrCandidateId)}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="dp-btn dp-btn--checkr"
+										aria-label="Open Checkr candidate for {coach.email}"
+									>
+										<Icon name="nav.external" />
+										Open Checkr candidate
+									</a>
+								{/if}
 								<a
-									href="https://app.ankored.com"
+									href={checkrDashboardUrl}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="dp-btn dp-btn--ankored"
-									aria-label="Open Ankored Dashboard (external)"
+									class="dp-btn dp-btn--checkr"
+									aria-label="Open Checkr dashboard"
 								>
 								<Icon name="nav.external" />
-								OPEN DASHBOARD
+								Open Checkr dashboard
 								</a>
 							</td>
 
@@ -725,12 +789,26 @@
 		50%       { box-shadow: 0 0 8px rgba(255, 0, 60, 0.25); }
 	}
 
-	/* Ankored ID sub-label */
-	.dp-ankored-id {
+	/* Clearance ref sub-label (Checkr id or legacy Ankored) */
+	.dp-clearance-ref {
 		font-size: 0.55rem;
 		color: rgba(20, 184, 166, 0.35);
 		margin-top: 0.2rem;
 		letter-spacing: 0.06em;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.dp-clearance-ref__legacy {
+		font-size: 0.5rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgba(251, 191, 36, 0.55);
+		border: 1px solid rgba(251, 191, 36, 0.2);
+		padding: 0.05rem 0.25rem;
+		border-radius: 2px;
 	}
 
 	/* Last-synced cell */
@@ -751,14 +829,14 @@
 		align-items: flex-start;
 	}
 
-	.dp-btn--ankored {
+	.dp-btn--checkr {
 		color: var(--vanguard-cyan, #14b8a6);
 		border: 1px solid rgba(20, 184, 166, 0.25);
 		background: rgba(20, 184, 166, 0.04);
 		text-decoration: none;
 	}
 
-	.dp-btn--ankored:hover {
+	.dp-btn--checkr:hover {
 		background: rgba(20, 184, 166, 0.1);
 		box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
 	}

@@ -1192,13 +1192,12 @@ exports.simulateClearance = onCall(
       throw new HttpsError('permission-denied', 'Target user is not in your club.');
     }
 
-    const ankoredId = `ANKORED-SIM-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const now = admin.firestore.FieldValue.serverTimestamp();
     await userRef.set(
       {
         clearance: {
           status: 'cleared',
-          ankoredId,
+          source: 'qa_simulate',
           lastVerified: now,
         },
       },
@@ -1211,15 +1210,15 @@ exports.simulateClearance = onCall(
     }
 
     await db().collection('audit_logs').add({
-      action: 'clearance_simulated_ankored',
+      action: 'clearance_simulated_qa',
       actorUid: reqAuth.uid,
       targetEmail: normalizedEmail,
-      ankoredId,
+      source: 'qa_simulate',
       clubId: clubId || null,
       timestamp: now,
     });
 
-    logger.info('[compliance] Ankored clearance simulated', {
+    logger.info('[compliance] QA clearance simulated', {
       targetEmail: normalizedEmail,
       by: reqAuth.uid,
     });

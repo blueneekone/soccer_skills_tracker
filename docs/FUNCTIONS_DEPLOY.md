@@ -104,7 +104,7 @@ The orchestrator copies monolith closures from `functions/` into each package:
 | `functions-core` | `src/domains/trainingOps` (+ transitive) |
 | `functions-rl` | `rlOps`, `src/ml/transitionRecorder`, `src/ml/trainer` (+ transitive) |
 | `functions-commerce` | commerce, ticketing, subscriptions, rebates, webhooksOps subset (+ transitive) |
-| `functions-compliance` | vaultOps, shredOps, coppa, webauthn, compliance, verifyDocument, complianceOps (+ transitive) |
+| `functions-compliance` | vaultOps, shredOps, coppa, webauthn, compliance, verifyDocument, complianceOps, operativeOps (+ transitive) |
 | `functions-integrations` | processMedia, ingestRoster, integrations, weather, uploadTokens, facilityWeatherWebhook (+ transitive; **no** webhooksOps / Stripe) |
 | `functions-platform` | tenantUtils, cellRouter, cell bootstrap/provisioning/migration/observability/seed, apiGateway, analytics, adminOps, operativeOps (+ transitive) |
 
@@ -145,7 +145,7 @@ npm run deploy:core               # four core callables
 npm run deploy:rl                 # five RL callables + triggers
 npm run deploy:platform           # apiGateway, cell ops, admin, analytics
 npm run deploy:commerce           # Stripe/commerce exports
-npm run deploy:compliance         # vault, COPPA, WebAuthn, clearance, retention
+npm run deploy:compliance         # vault, COPPA, WebAuthn, clearance, retention, household + VPC + operative login
 npm run deploy:integrations       # media, ingest, feeds, weather, uploads
 npm run deploy:launch-backend     # core then rl (two batches)
 npm run deploy:backend:systematic # full ordered ladder with gates (see below)
@@ -250,9 +250,21 @@ When that revision is healthy, deploy the rest:
 npm run deploy:commerce
 ```
 
-## Compliance codebase (**DEPLOY-K**)
+## Compliance codebase (**DEPLOY-K** / **DEPLOY-N-household**)
 
-`functions-compliance/index.js` re-exports vault (`vaultOps`, `shredOps`), COPPA (`coppa`), passkey auth (`webauthn`), Checkr clearance (`compliance`), document verification (`verifyDocument`), and minor retention purge queue (`complianceOps` subset).
+`functions-compliance/index.js` re-exports vault (`vaultOps`, `shredOps`), COPPA (`coppa`), passkey auth (`webauthn`), Checkr clearance (`compliance`), document verification (`verifyDocument`), minor retention purge queue (`complianceOps` subset), and the **launch household golden path**:
+
+| Export | Module | Launch surface |
+|--------|--------|----------------|
+| `linkHousehold` | `complianceOps` | Parent household linking |
+| `parentGrantVpcConsent` | `complianceOps` | `/parent/vpc` — VPC ceremony |
+| `parentSignCoppaWaiver` | `operativeOps` | `/parent/household` — COPPA waiver |
+| `parentProvisionOperative` | `operativeOps` | `/parent/household` — child provisioning |
+| `operativeSignInWithDispatch` | `operativeOps` | `/login` — operative dispatch |
+| `generatePlayerOTP` | `operativeOps` | `/parent/household` — OTP generation |
+| `validatePlayerOTP` | `operativeOps` | `/login` — OTP validation |
+
+Frontend `httpsCallable` names are unchanged — only the deploy target codebase moves from `default` to `compliance`.
 
 Dependencies: `@simplewebauthn/server`, `firebase-admin`, `firebase-functions`, `functions-shared` — **no** tfjs, sharp, pdf-parse, stripe.
 

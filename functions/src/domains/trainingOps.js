@@ -551,10 +551,10 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
 
   const duration = parseInt(String(data.duration), 10);
   const reps = parseInt(String(data.reps), 10);
-  if (!Number.isFinite(duration) || duration < 1 || duration > 1440) {
+  if (!Number.isFinite(duration) || duration < 1 || duration > 120) {
     throw new HttpsError(
         'invalid-argument',
-        'duration must be 1-1440 minutes.',
+        'duration must be 1-120 minutes.',
     );
   }
   if (!Number.isFinite(reps) || reps < 0 || reps > 100000) {
@@ -820,6 +820,10 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         Number(data.sleepHoursLastNight) <= 12 ?
           Number(data.sleepHoursLastNight) :
           null;
+    const sessionNotes =
+        typeof data.sessionNotes === 'string' ?
+          data.sessionNotes.trim().slice(0, 500) :
+          '';
 
     const logDoc = {
       drillType,
@@ -839,6 +843,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
       mood,
       sleepHoursLastNight,
     };
+    if (sessionNotes) logDoc.sessionNotes = sessionNotes;
+    if (assignmentIdRaw) logDoc.assignmentId = assignmentIdRaw;
     if (verifiedByUid) {
       logDoc.verifiedByUid = verifiedByUid;
       logDoc.verifiedByEmail = verifiedByEmail;
@@ -1831,6 +1837,9 @@ function normalizePrescription(raw) {
     throw new HttpsError('invalid-argument', 'prescription must be an object.');
   }
   const drillTitle = typeof raw.drillTitle === 'string' ? raw.drillTitle.trim() : '';
+  const teamDrillId = typeof raw.teamDrillId === 'string' ? raw.teamDrillId.trim() : '';
+  const clubDrillId = typeof raw.clubDrillId === 'string' ? raw.clubDrillId.trim() : '';
+  const legacyDrillId = typeof raw.drillId === 'string' ? raw.drillId.trim() : '';
   const sets = Number(raw.sets);
   if (!Number.isFinite(sets) || sets < 1 || sets > 99 || Math.floor(sets) !== sets) {
     throw new HttpsError('invalid-argument', 'prescription.sets must be an integer 1–99.');
@@ -1847,8 +1856,8 @@ function normalizePrescription(raw) {
   let targetDurationMin;
   if (raw.targetDurationMin !== undefined && raw.targetDurationMin !== null) {
     targetDurationMin = Number(raw.targetDurationMin);
-    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 480) {
-      throw new HttpsError('invalid-argument', 'prescription.targetDurationMin must be 1–480.');
+    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 120) {
+      throw new HttpsError('invalid-argument', 'prescription.targetDurationMin must be 1–120.');
     }
     targetDurationMin = Math.floor(targetDurationMin);
   }
@@ -1861,11 +1870,58 @@ function normalizePrescription(raw) {
     targetRpe = Math.round(targetRpe);
   }
   const out = {sets: Math.floor(sets), bilateral};
+  if (teamDrillId) out.teamDrillId = teamDrillId.slice(0, 128);
+  if (clubDrillId) out.clubDrillId = clubDrillId.slice(0, 128);
+  if (legacyDrillId) out.drillId = legacyDrillId.slice(0, 128);
   if (drillTitle) out.drillTitle = drillTitle.slice(0, 200);
   if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
   if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
   if (targetRpe !== undefined) out.targetRpe = targetRpe;
   return out;
+}
+
+/**
+ * Resolve coach-selected target (Auth uid or users/{email} doc id) to Firebase Auth uid.
+ * Backfills users.uid when missing on legacy parent-provisioned operatives.
+ * @param {string} rawTarget
+ * @param {FirebaseFirestore.QueryDocumentSnapshot[]} rosterDocs
+ * @return {Promise<string|null>}
+ */
+async function resolveTeamPlayerAuthUid(rawTarget, rosterDocs) {
+  const trimmed = typeof rawTarget === 'string' ? rawTarget.trim() : '';
+  if (!trimmed) return null;
+
+  const rosterByEmail = new Map(
+      rosterDocs.map((d) => [d.id.toLowerCase(), d]),
+  );
+
+  if (!trimmed.includes('@')) {
+    const byStoredUid = rosterDocs.find((d) => {
+      const u = d.data().uid;
+      return typeof u === 'string' && u.trim() === trimmed;
+    });
+    if (byStoredUid) return trimmed;
+    return trimmed;
+  }
+
+  const userDoc = rosterByEmail.get(trimmed.toLowerCase());
+  if (!userDoc) return null;
+
+  const data = userDoc.data() || {};
+  const storedUid =
+    typeof data.uid === 'string' && data.uid.trim() && !data.uid.includes('@') ?
+      data.uid.trim() :
+      '';
+  if (storedUid) return storedUid;
+
+  try {
+    const ur = await admin.auth().getUserByEmail(userDoc.id);
+    await userDoc.ref.set({uid: ur.uid}, {merge: true});
+    return ur.uid;
+  } catch (e) {
+    if (e && e.code === 'auth/user-not-found') return null;
+    throw e;
+  }
 }
 
 /**
@@ -1885,9 +1941,10 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   const requiredXp = Number(data.requiredXp);
   const durationDays = Number(data.durationDays);
   const scope = data.scope === 'players' ? 'players' : 'team';
-  const targetUids = scope === 'players' && Array.isArray(data.targetUids)
+  const rawTargetUids = scope === 'players' && Array.isArray(data.targetUids)
     ? data.targetUids.filter((u) => typeof u === 'string' && u.trim()).map((u) => u.trim())
     : [];
+  let targetUids = rawTargetUids;
   const priority = Number.isFinite(Number(data.priority)) && Number(data.priority) >= 1
     ? Math.floor(Number(data.priority))
     : 100;
@@ -1915,17 +1972,41 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     throw new HttpsError('permission-denied', 'clubId mismatch — cross-tenant write denied.');
   }
 
-  // When scoped to specific players, verify each uid is on this team.
-  if (scope === 'players' && targetUids.length > 0) {
+  // When scoped to specific players, resolve email keys to Auth uids and verify team membership.
+  if (scope === 'players' && rawTargetUids.length > 0) {
     const teamDoc = await db().collection('teams').doc(teamId).get();
     if (!teamDoc.exists) throw new HttpsError('not-found', 'Team not found.');
     const rosterSnap = await db().collection('users').where('teamId', '==', teamId).get();
-    const teamUids = new Set(rosterSnap.docs.map((d) => d.data().uid || d.id));
-    for (const uid of targetUids) {
-      if (!teamUids.has(uid)) {
-        throw new HttpsError('failed-precondition', `UID ${uid} is not on team ${teamId}.`);
+    const teamPlayerUids = new Set(
+        Array.isArray(teamDoc.data()?.playerUids) ?
+          teamDoc.data().playerUids.filter((u) => typeof u === 'string' && u.trim()) :
+          [],
+    );
+    const rosterAuthUids = new Set();
+    for (const d of rosterSnap.docs) {
+      const u = d.data().uid;
+      if (typeof u === 'string' && u.trim() && !u.includes('@')) {
+        rosterAuthUids.add(u.trim());
       }
     }
+
+    const resolvedUids = [];
+    for (const raw of rawTargetUids) {
+      const uid = await resolveTeamPlayerAuthUid(raw, rosterSnap.docs);
+      if (!uid) {
+        throw new HttpsError('failed-precondition', `Could not resolve player target ${raw}.`);
+      }
+      if (!rosterAuthUids.has(uid) && !teamPlayerUids.has(uid)) {
+        const onTeamByEmail = rosterSnap.docs.some(
+            (d) => d.id.toLowerCase() === raw.toLowerCase() || d.data().uid === uid,
+        );
+        if (!onTeamByEmail) {
+          throw new HttpsError('failed-precondition', `UID ${uid} is not on team ${teamId}.`);
+        }
+      }
+      resolvedUids.push(uid);
+    }
+    targetUids = resolvedUids;
   }
 
   const expiresAt = admin.firestore.Timestamp.fromMillis(
